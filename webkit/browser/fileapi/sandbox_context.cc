@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "net/base/net_util.h"
@@ -15,6 +16,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/sandbox_quota_observer.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -22,6 +24,22 @@
 namespace fileapi {
 
 namespace {
+
+const char kOpenFileSystemLabel[] = "FileSystem.OpenFileSystem";
+const char kOpenFileSystemDetailLabel[] = "FileSystem.OpenFileSystemDetail";
+const char kOpenFileSystemDetailNonThrottledLabel[] =
+    "FileSystem.OpenFileSystemDetailNonthrottled";
+int64 kMinimumStatsCollectionIntervalHours = 1;
+
+enum FileSystemError {
+  kOK = 0,
+  kIncognito,
+  kInvalidSchemeError,
+  kCreateDirectoryError,
+  kNotFound,
+  kUnknownError,
+  kFileSystemErrorMax,
+};
 
 // Restricted names.
 // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
@@ -54,6 +72,36 @@ class ObfuscatedOriginEnumerator
   scoped_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enum_;
 };
 
+void OpenFileSystemOnFileThread(
+    ObfuscatedFileUtil* file_util,
+    const GURL& origin_url,
+    FileSystemType type,
+    OpenFileSystemMode mode,
+    base::PlatformFileError* error_ptr) {
+  DCHECK(error_ptr);
+  const bool create = (mode == OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
+  file_util->GetDirectoryForOriginAndType(origin_url, type, create, error_ptr);
+  if (*error_ptr != base::PLATFORM_FILE_OK) {
+    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
+                              kCreateDirectoryError,
+                              kFileSystemErrorMax);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel, kOK, kFileSystemErrorMax);
+  }
+  // The reference of file_util will be derefed on the FILE thread
+  // when the storage of this callback gets deleted regardless of whether
+  // this method is called or not.
+}
+
+void DidOpenFileSystem(
+    base::WeakPtr<SandboxContext> sandbox_context,
+    const base::Callback<void(base::PlatformFileError error)>& callback,
+    base::PlatformFileError* error) {
+  if (sandbox_context.get())
+    sandbox_context.get()->CollectOpenFileSystemMetrics(*error);
+  callback.Run(*error);
+}
+
 }  // namespace
 
 const base::FilePath::CharType
@@ -78,7 +126,8 @@ SandboxContext::SandboxContext(
           sync_file_util(),
           usage_cache())),
       special_storage_policy_(special_storage_policy),
-      file_system_options_(file_system_options) {
+      file_system_options_(file_system_options),
+      weak_factory_(this) {
 }
 
 SandboxContext::~SandboxContext() {
@@ -157,6 +206,31 @@ base::FilePath SandboxContext::GetBaseDirectoryForOriginAndType(
   if (error != base::PLATFORM_FILE_OK)
     return base::FilePath();
   return path;
+}
+
+void SandboxContext::OpenFileSystem(
+    const GURL& origin_url,
+    fileapi::FileSystemType type,
+    OpenFileSystemMode mode,
+    const OpenFileSystemCallback& callback,
+    const GURL& root_url) {
+  if (!IsAllowedScheme(origin_url)) {
+    callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
+    return;
+  }
+
+  std::string name = GetFileSystemName(origin_url, type);
+
+  base::PlatformFileError* error_ptr = new base::PlatformFileError;
+  file_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&OpenFileSystemOnFileThread,
+                 sync_file_util(), origin_url, type, mode,
+                 base::Unretained(error_ptr)),
+      base::Bind(&DidOpenFileSystem,
+                 weak_factory_.GetWeakPtr(),
+                 base::Bind(callback, root_url, name),
+                 base::Owned(error_ptr)));
 }
 
 base::PlatformFileError SandboxContext::DeleteOriginDataOnFileThread(
@@ -307,6 +381,43 @@ int64 SandboxContext::RecalculateUsage(FileSystemContext* context,
   }
 
   return usage;
+}
+
+void SandboxContext::CollectOpenFileSystemMetrics(
+    base::PlatformFileError error_code) {
+  base::Time now = base::Time::Now();
+  bool throttled = now < next_release_time_for_open_filesystem_stat_;
+  if (!throttled) {
+    next_release_time_for_open_filesystem_stat_ =
+        now + base::TimeDelta::FromHours(kMinimumStatsCollectionIntervalHours);
+  }
+
+#define REPORT(report_value)                                            \
+  UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemDetailLabel,                 \
+                            (report_value),                             \
+                            kFileSystemErrorMax);                       \
+  if (!throttled) {                                                     \
+    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemDetailNonThrottledLabel,   \
+                              (report_value),                           \
+                              kFileSystemErrorMax);                     \
+  }
+
+  switch (error_code) {
+    case base::PLATFORM_FILE_OK:
+      REPORT(kOK);
+      break;
+    case base::PLATFORM_FILE_ERROR_INVALID_URL:
+      REPORT(kInvalidSchemeError);
+      break;
+    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
+      REPORT(kNotFound);
+      break;
+    case base::PLATFORM_FILE_ERROR_FAILED:
+    default:
+      REPORT(kUnknownError);
+      break;
+  }
+#undef REPORT
 }
 
 ObfuscatedFileUtil* SandboxContext::sync_file_util() {

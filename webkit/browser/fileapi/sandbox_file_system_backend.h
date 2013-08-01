@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/fileapi/sandbox_context.h"
@@ -108,8 +107,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
   virtual const AccessObserverList* GetAccessObservers(
       FileSystemType type) const OVERRIDE;
 
-  void CollectOpenFileSystemMetrics(base::PlatformFileError error_code);
-
   void set_enable_temporary_file_system_in_incognito(bool enable) {
     enable_temporary_file_system_in_incognito_ = enable;
   }
@@ -127,10 +124,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
   // Observers for syncable file systems.
   UpdateObserverList syncable_update_observers_;
   ChangeObserverList syncable_change_observers_;
-
-  base::Time next_release_time_for_open_filesystem_stat_;
-
-  base::WeakPtrFactory<SandboxFileSystemBackend> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxFileSystemBackend);
 };

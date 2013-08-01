@@ -12,6 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
@@ -40,6 +42,8 @@ class SandboxQuotaObserver;
 // An instance of this class is created and owned by FileSystemContext.
 class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
  public:
+  typedef FileSystemBackend::OpenFileSystemCallback OpenFileSystemCallback;
+
   // The FileSystem directory name.
   static const base::FilePath::CharType kFileSystemDirectory[];
 
@@ -88,6 +92,14 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
       FileSystemType type,
       bool create);
 
+  // FileSystemBackend helpers.
+  void OpenFileSystem(
+      const GURL& origin_url,
+      FileSystemType type,
+      OpenFileSystemMode mode,
+      const OpenFileSystemCallback& callback,
+      const GURL& root_url);
+
   // FileSystemQuotaUtil helpers.
   base::PlatformFileError DeleteOriginDataOnFileThread(
       FileSystemContext* context,
@@ -111,6 +123,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
   void StickyInvalidateUsageCache(
       const GURL& origin_url,
       FileSystemType type);
+
+  void CollectOpenFileSystemMetrics(base::PlatformFileError error_code);
 
   base::SequencedTaskRunner* file_task_runner() {
     return file_task_runner_.get();
@@ -162,6 +176,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
   std::set<GURL> visited_origins_;
 
   std::set<std::pair<GURL, FileSystemType> > sticky_dirty_origins_;
+
+  base::Time next_release_time_for_open_filesystem_stat_;
+
+  base::WeakPtrFactory<SandboxContext> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxContext);
 };

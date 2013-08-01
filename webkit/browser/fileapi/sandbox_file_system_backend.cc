@@ -35,62 +35,15 @@ namespace fileapi {
 
 namespace {
 
-const char kOpenFileSystemLabel[] = "FileSystem.OpenFileSystem";
-const char kOpenFileSystemDetailLabel[] = "FileSystem.OpenFileSystemDetail";
-const char kOpenFileSystemDetailNonThrottledLabel[] =
-    "FileSystem.OpenFileSystemDetailNonthrottled";
-int64 kMinimumStatsCollectionIntervalHours = 1;
-
-enum FileSystemError {
-  kOK = 0,
-  kIncognito,
-  kInvalidSchemeError,
-  kCreateDirectoryError,
-  kNotFound,
-  kUnknownError,
-  kFileSystemErrorMax,
-};
-
 const char kTemporaryOriginsCountLabel[] = "FileSystem.TemporaryOriginsCount";
 const char kPersistentOriginsCountLabel[] = "FileSystem.PersistentOriginsCount";
-
-void DidOpenFileSystem(
-    base::WeakPtr<SandboxFileSystemBackend> sandbox_backend,
-    const base::Callback<void(base::PlatformFileError error)>& callback,
-    base::PlatformFileError* error) {
-  if (sandbox_backend.get())
-    sandbox_backend.get()->CollectOpenFileSystemMetrics(*error);
-  callback.Run(*error);
-}
-
-void OpenFileSystemOnFileThread(
-    ObfuscatedFileUtil* file_util,
-    const GURL& origin_url,
-    FileSystemType type,
-    OpenFileSystemMode mode,
-    base::PlatformFileError* error_ptr) {
-  DCHECK(error_ptr);
-  const bool create = (mode == OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
-  file_util->GetDirectoryForOriginAndType(origin_url, type, create, error_ptr);
-  if (*error_ptr != base::PLATFORM_FILE_OK) {
-    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
-                              kCreateDirectoryError,
-                              kFileSystemErrorMax);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel, kOK, kFileSystemErrorMax);
-  }
-  // The reference of file_util will be derefed on the FILE thread
-  // when the storage of this callback gets deleted regardless of whether
-  // this method is called or not.
-}
 
 }  // anonymous namespace
 
 SandboxFileSystemBackend::SandboxFileSystemBackend(
     SandboxContext* sandbox_context)
     : sandbox_context_(sandbox_context),
-      enable_temporary_file_system_in_incognito_(false),
-      weak_factory_(this) {
+      enable_temporary_file_system_in_incognito_(false) {
 }
 
 SandboxFileSystemBackend::~SandboxFileSystemBackend() {
@@ -138,34 +91,18 @@ void SandboxFileSystemBackend::OpenFileSystem(
     return;
   }
 
-  if (!sandbox_context_->IsAllowedScheme(origin_url)) {
-    callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
-    return;
-  }
-
   // TODO(nhiroki): Factor out SyncFS related code to SyncFileSystemBackend we
   // plan to introduce. (http://crbug.com/242422/)
   GURL root_url = (type == kFileSystemTypeSyncable)
       ? sync_file_system::GetSyncableFileSystemRootURI(origin_url)
       : GetFileSystemRootURI(origin_url, type);
-  std::string name = GetFileSystemName(origin_url, type);
 
-  base::PlatformFileError* error_ptr = new base::PlatformFileError;
-  sandbox_context_->file_task_runner()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&OpenFileSystemOnFileThread,
-                 sandbox_context_->sync_file_util(),
-                 origin_url, type, mode,
-                 base::Unretained(error_ptr)),
-      base::Bind(&DidOpenFileSystem,
-                 weak_factory_.GetWeakPtr(),
-                 base::Bind(callback, root_url, name),
-                 base::Owned(error_ptr)));
-};
+  sandbox_context_->OpenFileSystem(
+      origin_url, type, mode, callback, root_url);
+}
 
 FileSystemFileUtil* SandboxFileSystemBackend::GetFileUtil(
     FileSystemType type) {
-  DCHECK(sandbox_context_);
   return sandbox_context_->sync_file_util();
 }
 
@@ -370,43 +307,6 @@ const AccessObserverList* SandboxFileSystemBackend::GetAccessObservers(
     FileSystemType type) const {
   DCHECK(CanHandleType(type));
   return &access_observers_;
-}
-
-void SandboxFileSystemBackend::CollectOpenFileSystemMetrics(
-    base::PlatformFileError error_code) {
-  base::Time now = base::Time::Now();
-  bool throttled = now < next_release_time_for_open_filesystem_stat_;
-  if (!throttled) {
-    next_release_time_for_open_filesystem_stat_ =
-        now + base::TimeDelta::FromHours(kMinimumStatsCollectionIntervalHours);
-  }
-
-#define REPORT(report_value)                                            \
-  UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemDetailLabel,                 \
-                            (report_value),                             \
-                            kFileSystemErrorMax);                       \
-  if (!throttled) {                                                     \
-    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemDetailNonThrottledLabel,   \
-                              (report_value),                           \
-                              kFileSystemErrorMax);                     \
-  }
-
-  switch (error_code) {
-    case base::PLATFORM_FILE_OK:
-      REPORT(kOK);
-      break;
-    case base::PLATFORM_FILE_ERROR_INVALID_URL:
-      REPORT(kInvalidSchemeError);
-      break;
-    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
-      REPORT(kNotFound);
-      break;
-    case base::PLATFORM_FILE_ERROR_FAILED:
-    default:
-      REPORT(kUnknownError);
-      break;
-  }
-#undef REPORT
 }
 
 }  // namespace fileapi
