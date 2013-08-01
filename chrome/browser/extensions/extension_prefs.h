@@ -372,6 +372,9 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
+  //
+  // IMPORTANT: you probably want to use ExtensionService::IsIncognitoEnabled
+  // instead of this method.
   bool IsIncognitoEnabled(const std::string& extension_id);
   void SetIsIncognitoEnabled(const std::string& extension_id, bool enabled);
 

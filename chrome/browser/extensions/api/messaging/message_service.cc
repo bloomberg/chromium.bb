@@ -203,6 +203,16 @@ void MessageService::OpenChannelToExtension(
     return;
   }
 
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+
+  if (profile->IsOffTheRecord() &&
+      !extension_service->IsIncognitoEnabled(target_extension_id)) {
+    DispatchOnDisconnect(
+        source, receiver_port_id, kReceivingEndDoesntExistError);
+    return;
+  }
+
   if (source_extension_id != target_extension_id) {
     // It's an external connection. Check the externally_connectable manifest
     // key if it's present. If it's not, we allow connection from any extension
