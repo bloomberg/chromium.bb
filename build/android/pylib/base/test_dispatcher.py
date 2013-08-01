@@ -21,7 +21,6 @@ import threading
 
 from pylib import android_commands
 from pylib import constants
-from pylib import forwarder
 from pylib.utils import reraiser_thread
 from pylib.utils import watchdog_timer
 
@@ -381,7 +380,6 @@ def RunTests(tests, runner_factory, wait_for_debugger, test_device,
   devices = _GetAttachedDevices(wait_for_debugger, test_device)
 
   logging.info('Will run %d tests: %s', len(tests), str(tests))
-  forwarder.Forwarder.KillHost(build_type)
   runners = _CreateRunners(runner_factory, devices, setup_timeout)
   try:
     return _RunAllTests(runners, test_collection_factory,
@@ -391,5 +389,3 @@ def RunTests(tests, runner_factory, wait_for_debugger, test_device,
       _TearDownRunners(runners, setup_timeout)
     except android_commands.errors.DeviceUnresponsiveError as e:
       logging.warning('Device unresponsive during TearDown: [%s]', e)
-    finally:
-      forwarder.Forwarder.KillHost(build_type)
