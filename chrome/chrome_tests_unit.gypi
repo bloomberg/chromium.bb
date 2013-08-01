@@ -376,8 +376,8 @@
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
-            'utility/media_galleries/pmp_test_helper.cc',
-            'utility/media_galleries/pmp_test_helper.h',
+            'common/media_galleries/pmp_test_helper.cc',
+            'common/media_galleries/pmp_test_helper.h',
           ],
         }],
         ['OS=="mac"', {

@@ -2,45 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/media_galleries/pmp_test_helper.h"
+#include "chrome/common/media_galleries/pmp_test_helper.h"
 
 #include <algorithm>
 #include <iterator>
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/media_galleries/picasa_types.h"
-#include "chrome/utility/media_galleries/pmp_column_reader.h"
 
 namespace picasa {
 
 namespace {
 
-bool WriteToFile(const base::FilePath& path, std::vector<uint8> data) {
-  // Cast for usage in WriteFile function
-  const char* data_char = reinterpret_cast<const char*>(&data[0]);
-  size_t bytes_written = file_util::WriteFile(path, data_char, data.size());
-  return (bytes_written == data.size());
-}
-
 // Flatten a vector of elements into an array of bytes.
 template<class T>
-std::vector<uint8> Flatten(const std::vector<T>& elems) {
+std::vector<char> Flatten(const std::vector<T>& elems) {
   if (elems.empty())
-    return std::vector<uint8>();
+    return std::vector<char>();
 
   const uint8* elems0 = reinterpret_cast<const uint8*>(&elems[0]);
-  std::vector<uint8> data_body(elems0, elems0 + sizeof(T) * elems.size());
-
+  std::vector<char> data_body(elems0, elems0 + sizeof(T) * elems.size());
   return data_body;
 }
 
 // Custom specialization for std::string.
 template<>
-std::vector<uint8> Flatten(const std::vector<std::string>& strings) {
-  std::vector<uint8> totalchars;
+std::vector<char> Flatten(const std::vector<std::string>& strings) {
+  std::vector<char> totalchars;
 
   for (std::vector<std::string>::const_iterator it = strings.begin();
       it != strings.end(); ++it) {
@@ -52,9 +42,9 @@ std::vector<uint8> Flatten(const std::vector<std::string>& strings) {
 }
 
 // Returns a new vector with the concatenated contents of |a| and |b|.
-std::vector<uint8> CombinedVectors(const std::vector<uint8>& a,
-                                   const std::vector<uint8>& b) {
-  std::vector<uint8> total;
+std::vector<char> CombinedVectors(const std::vector<char>& a,
+                                  const std::vector<char>& b) {
+  std::vector<char> total;
 
   std::copy(a.begin(), a.end(), std::back_inserter(total));
   std::copy(b.begin(), b.end(), std::back_inserter(total));
@@ -94,10 +84,11 @@ bool PmpTestHelper::WriteColumnFileFromVector(
   base::FilePath path = temp_dir_.path().Append(
       base::FilePath::FromUTF8Unsafe(file_name));
 
-  std::vector<uint8> data = PmpTestHelper::MakeHeaderAndBody(
+  std::vector<char> data = PmpTestHelper::MakeHeaderAndBody(
       field_type, elements_vector.size(), elements_vector);
 
-  return WriteToFile(path, data);
+  size_t bytes_written = file_util::WriteFile(path, &data[0], data.size());
+  return (bytes_written == data.size());
 }
 
 // Explicit Instantiation for all the valid types.
@@ -112,37 +103,10 @@ template bool PmpTestHelper::WriteColumnFileFromVector<uint8>(
 template bool PmpTestHelper::WriteColumnFileFromVector<uint64>(
     const std::string&, const PmpFieldType, const std::vector<uint64>&);
 
-bool PmpTestHelper::InitColumnReaderFromBytes(
-    PmpColumnReader* const reader,
-    const std::vector<uint8>& data,
-    const PmpFieldType expected_type) {
-  DCHECK(temp_dir_.IsValid());
-
-  base::FilePath temp_path;
-
-  if (!file_util::CreateTemporaryFileInDir(temp_dir_.path(), &temp_path)
-      || !WriteToFile(temp_path, data)) {
-    return false;
-  }
-
-  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  base::PlatformFile platform_file =
-      base::CreatePlatformFile(temp_path, flags, NULL, NULL);
-  if (platform_file == base::kInvalidPlatformFileValue)
-    return false;
-
-  bool read_success = reader->ReadFile(platform_file, expected_type);
-
-  base::ClosePlatformFile(platform_file);
-  base::DeleteFile(temp_path, false /* recursive */);
-
-  return read_success;
-}
-
 // Return a vector so we don't have to worry about memory management.
-std::vector<uint8> PmpTestHelper::MakeHeader(const PmpFieldType field_type,
-                                             const uint32 row_count) {
-  std::vector<uint8> header(picasa::kPmpHeaderSize);
+std::vector<char> PmpTestHelper::MakeHeader(const PmpFieldType field_type,
+                                            const uint32 row_count) {
+  std::vector<char> header(picasa::kPmpHeaderSize);
 
   // Copy in magic bytes.
   memcpy(&header[picasa::kPmpMagic1Offset], &picasa::kPmpMagic1,
@@ -168,7 +132,7 @@ std::vector<uint8> PmpTestHelper::MakeHeader(const PmpFieldType field_type,
 }
 
 template<class T>
-std::vector<uint8> PmpTestHelper::MakeHeaderAndBody(
+std::vector<char> PmpTestHelper::MakeHeaderAndBody(
     const PmpFieldType field_type, const uint32 row_count,
     const std::vector<T>& elems) {
   return CombinedVectors(PmpTestHelper::MakeHeader(field_type, row_count),
@@ -176,15 +140,15 @@ std::vector<uint8> PmpTestHelper::MakeHeaderAndBody(
 }
 
 // Explicit Instantiation for all the valid types.
-template std::vector<uint8> PmpTestHelper::MakeHeaderAndBody<std::string>(
+template std::vector<char> PmpTestHelper::MakeHeaderAndBody<std::string>(
     const PmpFieldType, const uint32, const std::vector<std::string>&);
-template std::vector<uint8> PmpTestHelper::MakeHeaderAndBody<uint32>(
+template std::vector<char> PmpTestHelper::MakeHeaderAndBody<uint32>(
     const PmpFieldType, const uint32, const std::vector<uint32>&);
-template std::vector<uint8> PmpTestHelper::MakeHeaderAndBody<double>(
+template std::vector<char> PmpTestHelper::MakeHeaderAndBody<double>(
     const PmpFieldType, const uint32, const std::vector<double>&);
-template std::vector<uint8> PmpTestHelper::MakeHeaderAndBody<uint8>(
+template std::vector<char> PmpTestHelper::MakeHeaderAndBody<uint8>(
     const PmpFieldType, const uint32, const std::vector<uint8>&);
-template std::vector<uint8> PmpTestHelper::MakeHeaderAndBody<uint64>(
+template std::vector<char> PmpTestHelper::MakeHeaderAndBody<uint64>(
     const PmpFieldType, const uint32, const std::vector<uint64>&);
 
 }  // namespace picasa

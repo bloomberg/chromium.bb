@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_MEDIA_GALLERIES_PMP_TEST_HELPER_H_
-#define CHROME_UTILITY_MEDIA_GALLERIES_PMP_TEST_HELPER_H_
+#ifndef CHROME_COMMON_MEDIA_GALLERIES_PMP_TEST_HELPER_H_
+#define CHROME_COMMON_MEDIA_GALLERIES_PMP_TEST_HELPER_H_
 
 #include <string>
 #include <vector>
@@ -34,17 +34,13 @@ class PmpTestHelper {
                                  const PmpFieldType field_type,
                                  const std::vector<T>& elements_vector);
 
-  bool InitColumnReaderFromBytes(PmpColumnReader* const reader,
-                                 const std::vector<uint8>& data,
-                                 const PmpFieldType expected_type);
-
-  static std::vector<uint8> MakeHeader(const PmpFieldType field_type,
+  static std::vector<char> MakeHeader(const PmpFieldType field_type,
                                        const uint32 row_count);
 
   template<class T>
-  static std::vector<uint8> MakeHeaderAndBody(const PmpFieldType field_type,
-                                              const uint32 row_count,
-                                              const std::vector<T>& elems);
+  static std::vector<char> MakeHeaderAndBody(const PmpFieldType field_type,
+                                             const uint32 row_count,
+                                             const std::vector<T>& elems);
 
  private:
   std::string table_name_;
@@ -53,4 +49,4 @@ class PmpTestHelper {
 
 }  // namespace picasa
 
-#endif  // CHROME_UTILITY_MEDIA_GALLERIES_PMP_TEST_HELPER_H_
+#endif  // CHROME_COMMON_MEDIA_GALLERIES_PMP_TEST_HELPER_H_

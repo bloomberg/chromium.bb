@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/common/media_galleries/pmp_constants.h"
+#include "chrome/common/media_galleries/pmp_test_helper.h"
 #include "chrome/utility/media_galleries/picasa_album_table_reader.h"
-#include "chrome/utility/media_galleries/pmp_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace picasa {
