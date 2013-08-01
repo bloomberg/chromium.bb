@@ -169,13 +169,14 @@ download-validator-test-nexes() {
 get-validator() {
   local arch="$1"
   if [[ ${arch} == "x86-32" ]] ; then
-    echo "$(pwd)/scons-out/opt-linux-x86-32/staging/ncval"
+    echo "$(pwd)/scons-out/opt-linux-x86-32/staging/ncval_new"
   elif [[ ${arch} == "x86-64" ]] ; then
-    echo "$(pwd)/scons-out/opt-linux-x86-64/staging/ncval"
+    echo "$(pwd)/scons-out/opt-linux-x86-64/staging/ncval_new"
   elif [[ ${arch} == "arm" ]] ; then
     echo "$(pwd)/scons-out/opt-linux-arm/staging/arm-ncval-core"
   else
     echo "ERROR: unknown arch"
+    exit 1
   fi
 }
 
@@ -205,8 +206,13 @@ build-validator() {
   if [[ ${arch} == "arm" ]] ; then
     # TODO(robertm): build the validator
     echo "NYI"
+  elif [[ ${arch} == "x86-32" ]] ; then
+    ${SCONS_NACL} platform=${arch} ncval_new
+  elif [[ ${arch} == "x86-64" ]] ; then
+    ${SCONS_NACL} platform=${arch} ncval_new
   else
-    ${SCONS_NACL} platform=${arch} ncval
+    echo "ERROR: unknown arch"
+    exit 1
   fi
 }
 
