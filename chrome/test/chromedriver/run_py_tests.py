@@ -143,9 +143,9 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         chrome_paths.GetTestData())
     if _ANDROID_PACKAGE:
       ChromeDriverTest._adb = android_commands.AndroidCommands()
-      self._host_port = ChromeDriverTest._http_server._server.server_port
+      host_port = ChromeDriverTest._http_server._server.server_port
       forwarder.Forwarder.Map(
-          [(self._host_port, self._host_port)], ChromeDriverTest._adb)
+          [(host_port, host_port)], ChromeDriverTest._adb)
 
   @staticmethod
   def GlobalTearDown():
