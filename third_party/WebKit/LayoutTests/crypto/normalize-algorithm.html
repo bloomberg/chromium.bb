@@ -151,7 +151,7 @@ function failedKeyImport(value)
 // This is a bogus key import, however the mock constructs something usable.
 keyFormat = "spki";
 data = new Uint8Array([]);
-algorithm = {name: "Sha-256"};
+algorithm = {name: "aes-cbc"};
 extractable = false;
 keyUsages = [];
 

@@ -167,7 +167,7 @@ ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* k
     }
 
     WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithmForImportKey(rawAlgorithm, algorithm, es))
+    if (!normalizeAlgorithm(rawAlgorithm, ImportKey, algorithm, es))
         return ScriptObject();
 
     const unsigned char* keyDataBytes = static_cast<unsigned char*>(keyData->baseAddress());

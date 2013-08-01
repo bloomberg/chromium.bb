@@ -51,12 +51,14 @@ function failHandler(value)
     startNextTest();
 }
 
+aesCbc = { name: 'aes-cbc' };
+
 allTests = [
     function()
     {
         keyFormat = "raw";
         data = asciiToArrayBuffer("private");
-        algorithm = {name: "Sha-256"};
+        algorithm = { name: 'hmac', hash: { name: 'sha-256' } };
         extractable = true;
         // Note there are duplicates
         keyUsages = ['encrypt', 'encrypt', 'encrypt', 'sign'];
@@ -66,19 +68,20 @@ allTests = [
             key = value;
             shouldBe("key.type", "'private'")
             shouldBe("key.extractable", "true")
-            shouldBe("key.algorithm.name", "'SHA-256'")
+            shouldBe("key.algorithm.name", "'HMAC'")
+            shouldBe("key.algorithm.hash.name", "'SHA-256'")
             shouldBe("key.usages.join(',')", "'encrypt,sign'")
 
             startNextTest();
         }, failHandler);
     },
 
-    // Same test as above, but with an keyUsages.
+    // Same test as above, but with an keyUsages, and AES-CBC.
     function()
     {
         keyFormat = "raw";
         data = asciiToArrayBuffer("private");
-        algorithm = {name: "Sha-256"};
+        algorithm = aesCbc;
         extractable = true;
         keyUsages = [];
 
@@ -87,7 +90,7 @@ allTests = [
             key = value;
             shouldBe("key.type", "'private'")
             shouldBe("key.extractable", "true")
-            shouldBe("key.algorithm.name", "'SHA-256'")
+            shouldBe("key.algorithm.name", "'AES-CBC'")
             shouldBe("key.usages.join(',')", "''")
 
             startNextTest();
@@ -99,7 +102,7 @@ allTests = [
     {
         keyFormat = "raw";
         data = asciiToArrayBuffer("private");
-        algorithm = {name: "Sha-256"};
+        algorithm = aesCbc;
         extractable = false;
         keyUsages = [];
 
@@ -108,7 +111,7 @@ allTests = [
             key = value;
             shouldBe("key.type", "'private'")
             shouldBe("key.extractable", "false")
-            shouldBe("key.algorithm.name", "'SHA-256'")
+            shouldBe("key.algorithm.name", "'AES-CBC'")
             shouldBe("key.usages.join(',')", "''")
 
             startNextTest();
@@ -120,7 +123,7 @@ allTests = [
     {
         keyFormat = "raw";
         data = asciiToArrayBuffer("public");
-        algorithm = {name: "Sha-256"};
+        algorithm = aesCbc;
         extractable = false;
         keyUsages = [];
 
@@ -129,7 +132,7 @@ allTests = [
             key = value;
             shouldBe("key.type", "'public'")
             shouldBe("key.extractable", "false")
-            shouldBe("key.algorithm.name", "'SHA-256'")
+            shouldBe("key.algorithm.name", "'AES-CBC'")
             shouldBe("key.usages.join(',')", "''")
 
             startNextTest();
@@ -141,7 +144,7 @@ allTests = [
     {
         keyFormat = "spki";
         data = asciiToArrayBuffer("public");
-        algorithm = {name: "Sha-256"};
+        algorithm = aesCbc;
         extractable = false;
         keyUsages = [];
 
@@ -150,7 +153,7 @@ allTests = [
             key = value;
             shouldBe("key.type", "'public'")
             shouldBe("key.extractable", "false")
-            shouldBe("key.algorithm.name", "'SHA-256'")
+            shouldBe("key.algorithm.name", "'AES-CBC'")
             shouldBe("key.usages.join(',')", "''")
 
             startNextTest();
@@ -161,7 +164,7 @@ allTests = [
     {
         keyFormat = "spki";
         data = asciiToArrayBuffer("reject");
-        algorithm = {name: "Sha-256"};
+        algorithm = aesCbc;
         extractable = false;
         keyUsages = [];
 
@@ -177,7 +180,7 @@ allTests = [
     {
         keyFormat = "spki";
         data = asciiToArrayBuffer("throw");
-        algorithm = {name: "Sha-256"};
+        algorithm = aesCbc;
         extractable = false;
         keyUsages = [];
 
@@ -189,7 +192,7 @@ allTests = [
     {
         keyFormat = "raw";
         data = asciiToArrayBuffer("");
-        algorithm = {name: 'sha-256'};
+        algorithm = aesCbc;
         extractable = true;
 
         // Note contains duplicates and invalid entries.
@@ -208,6 +211,14 @@ allTests = [
         // Invalid data
         shouldThrow("crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages)");
         shouldThrow("crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages)");
+
+        // Missing hash parameter for HMAC.
+        invalidHmac = { name: 'hmac' };
+        shouldThrow("crypto.subtle.importKey(keyFormat, data, invalidHmac, extractable, keyUsages)");
+
+        // SHA-1 doesn't support the importKey operation.
+        sha1 = { name: 'sha-1' };
+        shouldThrow("crypto.subtle.importKey(keyFormat, data, sha1, extractable, keyUsages)");
 
         startNextTest();
     },

@@ -47,6 +47,7 @@ enum AlgorithmOperation {
     Verify,
     Digest,
     GenerateKey,
+    ImportKey,
     DeriveKey,
     WrapKey,
     UnwrapKey,
@@ -57,7 +58,6 @@ enum AlgorithmOperation {
 // Normalizes an algorithm identifier (dictionary) into a WebCryptoAlgorithm. If
 // normalization fails then returns false and sets the ExceptionState.
 bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, WebKit::WebCryptoAlgorithm&, ExceptionState&) WARN_UNUSED_RETURN;
-bool normalizeAlgorithmForImportKey(const Dictionary&, WebKit::WebCryptoAlgorithm&, ExceptionState&) WARN_UNUSED_RETURN;
 
 } // namespace WebCore
 

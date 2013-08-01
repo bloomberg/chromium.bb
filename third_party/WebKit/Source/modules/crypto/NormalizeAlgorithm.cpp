@@ -80,11 +80,13 @@ const OperationParamsMapping operationParamsMappings[] = {
     {WebKit::WebCryptoAlgorithmIdAesCbc, Decrypt, WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams},
     {WebKit::WebCryptoAlgorithmIdAesCbc, Encrypt, WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams},
     {WebKit::WebCryptoAlgorithmIdAesCbc, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
+    {WebKit::WebCryptoAlgorithmIdAesCbc, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeNone},
 
     // HMAC (section 18.14.)
     {WebKit::WebCryptoAlgorithmIdHmac, Sign, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
     {WebKit::WebCryptoAlgorithmIdHmac, Verify, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
     {WebKit::WebCryptoAlgorithmIdHmac, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
+    {WebKit::WebCryptoAlgorithmIdHmac, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
 
     // SHA-1 (section 18.16.)
     {WebKit::WebCryptoAlgorithmIdSha1, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
@@ -260,16 +262,6 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::We
     }
 
     algorithm = WebKit::WebCryptoAlgorithm(info->algorithmId, info->algorithmName, params.release());
-    return true;
-}
-
-bool normalizeAlgorithmForImportKey(const Dictionary& raw, WebKit::WebCryptoAlgorithm& algorithm, ExceptionState& es)
-{
-    const AlgorithmInfo* info = algorithmInfo(raw, es);
-    if (!info)
-        return false;
-
-    algorithm = WebKit::WebCryptoAlgorithm(info->algorithmId, info->algorithmName, nullptr);
     return true;
 }
 
