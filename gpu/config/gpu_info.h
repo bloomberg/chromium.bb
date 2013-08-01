@@ -120,10 +120,6 @@ struct GPU_EXPORT GPUInfo {
   // GL window system binding extensions.  "" if not available.
   std::string gl_ws_extensions;
 
-  // GL reset notification strategy as defined by GL_ARB_robustness. 0 if GPU
-  // reset detection or notification not available.
-  uint32 gl_reset_notification_strategy;
-
   // The device semantics, i.e. whether the Vista and Windows 7 specific
   // semantics are available.
   bool can_lose_context;

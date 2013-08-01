@@ -108,14 +108,6 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
     gpu_info->gl_ws_extensions = window_system_binding_info.extensions;
   }
 
-  bool supports_robustness =
-      gpu_info->gl_extensions.find("GL_EXT_robustness") != std::string::npos ||
-      gpu_info->gl_extensions.find("GL_ARB_robustness") != std::string::npos;
-  if (supports_robustness) {
-    glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB,
-        reinterpret_cast<GLint*>(&gpu_info->gl_reset_notification_strategy));
-  }
-
   // TODO(kbr): remove once the destruction of a current context automatically
   // clears the current context.
   context->ReleaseCurrent(surface.get());
@@ -143,8 +135,6 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
   basic_gpu_info->gl_ws_vendor = context_gpu_info.gl_ws_vendor;
   basic_gpu_info->gl_ws_version = context_gpu_info.gl_ws_version;
   basic_gpu_info->gl_ws_extensions = context_gpu_info.gl_ws_extensions;
-  basic_gpu_info->gl_reset_notification_strategy =
-      context_gpu_info.gl_reset_notification_strategy;
 
   if (!context_gpu_info.driver_vendor.empty())
     basic_gpu_info->driver_vendor = context_gpu_info.driver_vendor;

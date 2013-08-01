@@ -27,6 +27,7 @@ class WebGLConformanceTest : public ContentBrowserTest {
     // Allow privileged WebGL extensions.
     command_line->AppendSwitch(switches::kEnablePrivilegedWebGLExtensions);
 #if defined(OS_ANDROID)
+    command_line->AppendSwitch(switches::kEnableExperimentalWebGL);
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
 #endif

@@ -19,7 +19,6 @@ GPUInfo::GPUInfo()
       amd_switchable(false),
       lenovo_dcute(false),
       adapter_luid(0),
-      gl_reset_notification_strategy(0),
       can_lose_context(false),
       software_rendering(false),
       sandboxed(false) {

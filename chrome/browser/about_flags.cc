@@ -418,11 +418,26 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableGpuVsync)
   },
   {
+    "enable-webgl",
+    IDS_FLAGS_ENABLE_WEBGL_NAME,
+    IDS_FLAGS_ENABLE_WEBGL_DESCRIPTION,
+    kOsAndroid,
+#if defined(OS_ANDROID)
+    SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebGL)
+#else
+    SINGLE_VALUE_TYPE("")
+#endif
+  },
+  {
     "disable-webgl",
     IDS_FLAGS_DISABLE_WEBGL_NAME,
     IDS_FLAGS_DISABLE_WEBGL_DESCRIPTION,
-    kOsAll,
+    kOsDesktop,
+#if defined(OS_ANDROID)
+    SINGLE_VALUE_TYPE("")
+#else
     SINGLE_VALUE_TYPE(switches::kDisableExperimentalWebGL)
+#endif
   },
   {
     "disable-webrtc",

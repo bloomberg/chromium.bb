@@ -162,10 +162,6 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
                                              gpu_info.gl_ws_version));
   basic_info->Append(NewDescriptionValuePair("Window system binding extensions",
                                              gpu_info.gl_ws_extensions));
-  std::string reset_strategy =
-      base::StringPrintf("0x%04x", gpu_info.gl_reset_notification_strategy);
-  basic_info->Append(NewDescriptionValuePair(
-      "Reset notification strategy", reset_strategy));
 
   base::DictionaryValue* info = new base::DictionaryValue();
   info->Set("basic_info", basic_info);
@@ -253,7 +249,11 @@ base::Value* GetFeatureStatus() {
       {
           "webgl",
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL),
+#if defined(OS_ANDROID)
+          !command_line.HasSwitch(switches::kEnableExperimentalWebGL),
+#else
           command_line.HasSwitch(switches::kDisableExperimentalWebGL),
+#endif
           "WebGL has been disabled, either via about:flags or command line.",
           false
       },

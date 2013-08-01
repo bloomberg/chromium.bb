@@ -38,7 +38,11 @@ CONTENT_EXPORT extern const char kDisableDeviceOrientation[];
 #if defined(OS_CHROMEOS)
 CONTENT_EXPORT extern const char kEnableEncodedScreenCapture[];
 #endif
+#if defined(OS_ANDROID)
+CONTENT_EXPORT extern const char kEnableExperimentalWebGL[];
+#else
 CONTENT_EXPORT extern const char kDisableExperimentalWebGL[];
+#endif
 CONTENT_EXPORT extern const char kBlacklistAcceleratedCompositing[];
 CONTENT_EXPORT extern const char kBlacklistWebGL[];
 extern const char kDisableFileSystem[];

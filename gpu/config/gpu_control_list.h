@@ -386,10 +386,6 @@ class GPU_EXPORT GpuControlList {
     bool SetGLExtensionsInfo(const std::string& extensions_op,
                              const std::string& extensions_value);
 
-    bool SetGLResetNotificationStrategyInfo(const std::string& op,
-                                            const std::string& int_string,
-                                            const std::string& int_string2);
-
     bool SetCpuBrand(const std::string& cpu_op,
                      const std::string& cpu_value);
 
@@ -448,7 +444,6 @@ class GPU_EXPORT GpuControlList {
     scoped_ptr<StringInfo> gl_vendor_info_;
     scoped_ptr<StringInfo> gl_renderer_info_;
     scoped_ptr<StringInfo> gl_extensions_info_;
-    scoped_ptr<IntInfo> gl_reset_notification_strategy_info_;
     scoped_ptr<StringInfo> cpu_brand_;
     scoped_ptr<FloatInfo> perf_graphics_info_;
     scoped_ptr<FloatInfo> perf_gaming_info_;
