@@ -523,11 +523,17 @@ static int ParseArgv(const int argc, const char* argv[]) {
   return nextarg;
 }
 
+static char g_standard_output_buffer[4 << 10];
+
 int main(const int argc, const char *argv[]) {
   int nextarg;
 
   NaClLogModuleInit();
   NaClLogSetVerbosity(LOG_FATAL);
+  if (0 != setvbuf(stdout, g_standard_output_buffer, _IOLBF,
+                   sizeof g_standard_output_buffer)) {
+    NaClLog(LOG_FATAL, "vdiff: setvbuf failed\n");
+  }
 #if NACL_LINUX || NACL_OSX
   srandom(time(NULL));
 #endif
