@@ -65,7 +65,7 @@ FileCopyManager.EventRouter.prototype.sendProgressEvent = function(
   event.reason = reason;
   event.status = status;
   if (opt_error)
-    event.error = opt.error;
+    event.error = opt_error;
   this.dispatchEvent(event);
 };
 
@@ -853,15 +853,10 @@ FileCopyManager.prototype.processCopyEntry_ = function(
     var isSourceOnDrive = PathUtil.isDriveBasedPath(sourceEntry.fullPath);
     var isTargetOnDrive = PathUtil.isDriveBasedPath(targetDirEntry.fullPath);
 
-    if (!isSourceOnDrive) {
-      // Here are two cases; a) copying a file from local to local, and b)
-      // copying a file from local to drive.
-      // Currently, file writing to the drive file system is done as follows;
-      // 1) Write the data onto local cache and set dirty bit.
-      // 2) When the writing to the local cache is done, return success, with
-      //   triggering the sync. Note that the sync will be done later.
-      // So, we won't have data transfer to the server during the writing.
-      // Thus, we can use the same procedure for both a) and b).
+    if (!isSourceOnDrive && !isTargetOnDrive) {
+      // Sending a file from local to local.
+      // To copy local file, we use File blob and FileWriter to take the
+      // progress.
       targetDirEntry.getFile(
           targetRelativePath,
           {create: true, exclusive: true},
@@ -875,7 +870,8 @@ FileCopyManager.prototype.processCopyEntry_ = function(
       return;
     }
 
-    // Sending a file from a) Drive to Drive or b) Drive to local.
+    // Sending a file from a) Drive to Drive, b) Drive to local or c) local to
+    // Drive.
     var sourceFileUrl = sourceEntry.toURL();
     var targetFileUrl =
         targetDirEntry.toURL() + '/' + encodeURIComponent(targetRelativePath);
@@ -946,11 +942,20 @@ FileCopyManager.prototype.processCopyEntry_ = function(
 
     self.cancelCallback_ = function() {
       self.cancelCallback_ = null;
-      chrome.fileBrowserPrivate.cancelFileTransfers(
-          [sourceFileUrl], function() {});
+
+      // Currently, we do NOT upload the file during the copy operation.
+      // It will be done as a part of file system sync after copy operation.
+      // So, we can cancel only file downloading.
+      if (isSourceOnDrive) {
+        chrome.fileBrowserPrivate.cancelFileTransfers(
+            [sourceFileUrl], function() {});
+      }
     };
 
-    if (isTargetOnDrive) {
+    // Note: for hosted documents, copyTo implementation of Drive file system
+    // and transferFile private API has special handling.
+    // See also drive::file_system::CopyOperation.
+    if (isSourceOnDrive && isTargetOnDrive) {
       // If this is the copy operation inside Drive file system,
       // we use copyTo method.
       targetDirEntry.getDirectory(
@@ -963,6 +968,8 @@ FileCopyManager.prototype.processCopyEntry_ = function(
           },
           onFilesystemError);
     } else {
+      // Sending a file either a) from local to Drive, or b) from Drive to
+      // local.
       // TODO(hidehiko): Migrate this code into copyFileEntry_().
       onStartTransfer();
       chrome.fileBrowserPrivate.transferFile(
