@@ -16,16 +16,18 @@ import os
 import shutil
 import sys
 
-from pylib import cmd_helper
 from pylib import constants
 from pylib import ports
 from pylib.base import base_test_result
 from pylib.base import test_dispatcher
-from pylib.gtest import setup as gtest_setup
 from pylib.gtest import gtest_config
+from pylib.gtest import setup as gtest_setup
+from pylib.gtest import test_options as gtest_test_options
 from pylib.host_driven import run_python_tests as python_dispatch
 from pylib.instrumentation import setup as instrumentation_setup
+from pylib.instrumentation import test_options as instrumentation_test_options
 from pylib.uiautomator import setup as uiautomator_setup
+from pylib.uiautomator import test_options as uiautomator_test_options
 from pylib.utils import report_results
 from pylib.utils import run_tests_helper
 
@@ -125,16 +127,13 @@ def ProcessGTestOptions(options):
 
   Args:
     options: Command line options.
-
-  Returns:
-    True if the command should continue.
   """
   if options.suite_name == 'help':
     print 'Available test suites are:'
     for test_suite in (gtest_config.STABLE_TEST_SUITES +
                        gtest_config.EXPERIMENTAL_TEST_SUITES):
       print test_suite
-    return False
+    sys.exit(0)
 
   # Convert to a list, assuming all test suites if nothing was specified.
   # TODO(gkanwar): Require having a test suite
@@ -142,7 +141,6 @@ def ProcessGTestOptions(options):
     options.suite_name = [options.suite_name]
   else:
     options.suite_name = [s for s in gtest_config.STABLE_TEST_SUITES]
-  return True
 
 
 def AddJavaTestOptions(option_parser):
@@ -253,7 +251,16 @@ def AddInstrumentationTestOptions(option_parser):
 
 
 def ProcessInstrumentationOptions(options, error_func):
-  """Processes options/arguments and populate |options| with defaults."""
+  """Processes options/arguments and populate |options| with defaults.
+
+  Args:
+    options: optparse.Options object.
+    error_func: Function to call with the error message in case of an error.
+
+  Returns:
+    An InstrumentationOptions named tuple which contains all options relevant to
+    instrumentation tests.
+  """
 
   ProcessJavaTestOptions(options, error_func)
 
@@ -273,6 +280,23 @@ def ProcessInstrumentationOptions(options, error_func):
     options.test_apk_jar_path = os.path.join(
         _SDK_OUT_DIR, options.build_type, constants.SDK_BUILD_TEST_JAVALIB_DIR,
         '%s.jar' %  options.test_apk)
+
+  return instrumentation_test_options.InstrumentationOptions(
+      options.build_type,
+      options.tool,
+      options.cleanup_test_files,
+      options.push_deps,
+      options.annotations,
+      options.exclude_annotations,
+      options.test_filter,
+      options.test_data,
+      options.save_perf_json,
+      options.screenshot_failures,
+      options.disable_assertions,
+      options.wait_for_debugger,
+      options.test_apk,
+      options.test_apk_path,
+      options.test_apk_jar_path)
 
 
 def AddUIAutomatorTestOptions(option_parser):
@@ -297,7 +321,16 @@ def AddUIAutomatorTestOptions(option_parser):
 
 
 def ProcessUIAutomatorOptions(options, error_func):
-  """Processes UIAutomator options/arguments."""
+  """Processes UIAutomator options/arguments.
+
+  Args:
+    options: optparse.Options object.
+    error_func: Function to call with the error message in case of an error.
+
+  Returns:
+    A UIAutomatorOptions named tuple which contains all options relevant to
+    instrumentation tests.
+  """
 
   ProcessJavaTestOptions(options, error_func)
 
@@ -318,18 +351,41 @@ def ProcessUIAutomatorOptions(options, error_func):
       options.uiautomator_jar[:options.uiautomator_jar.find('.dex.jar')] +
       '_java.jar')
 
+  return uiautomator_test_options.UIAutomatorOptions(
+      options.build_type,
+      options.tool,
+      options.cleanup_test_files,
+      options.push_deps,
+      options.annotations,
+      options.exclude_annotations,
+      options.test_filter,
+      options.test_data,
+      options.save_perf_json,
+      options.screenshot_failures,
+      options.disable_assertions,
+      options.uiautomator_jar,
+      options.uiautomator_info_jar,
+      options.package_name)
+
 
 def _RunGTests(options, error_func):
   """Subcommand of RunTestsCommands which runs gtests."""
-  if not ProcessGTestOptions(options):
-    return 0
+  ProcessGTestOptions(options)
 
   exit_code = 0
   for suite_name in options.suite_name:
-    runner_factory, tests = gtest_setup.Setup(
-        suite_name, options.test_arguments,
-        options.timeout, options.cleanup_test_files, options.tool,
-        options.build_type, options.push_deps, options.test_filter)
+    # TODO(gkanwar): Move this into ProcessGTestOptions once we require -s for
+    # the gtest command.
+    gtest_options = gtest_test_options.GTestOptions(
+        options.build_type,
+        options.tool,
+        options.cleanup_test_files,
+        options.push_deps,
+        options.test_filter,
+        options.test_arguments,
+        options.timeout,
+        suite_name)
+    runner_factory, tests = gtest_setup.Setup(gtest_options)
 
     results, test_exit_code = test_dispatcher.RunTests(
         tests, runner_factory, False, options.test_device,
@@ -356,18 +412,13 @@ def _RunGTests(options, error_func):
 
 def _RunInstrumentationTests(options, error_func):
   """Subcommand of RunTestsCommands which runs instrumentation tests."""
-  ProcessInstrumentationOptions(options, error_func)
+  instrumentation_options = ProcessInstrumentationOptions(options, error_func)
 
   results = base_test_result.TestRunResults()
   exit_code = 0
 
   if options.run_java_tests:
-    runner_factory, tests = instrumentation_setup.Setup(
-        options.test_apk_path, options.test_apk_jar_path, options.annotations,
-        options.exclude_annotations, options.test_filter, options.build_type,
-        options.test_data, options.save_perf_json, options.screenshot_failures,
-        options.tool, options.wait_for_debugger, options.disable_assertions,
-        options.push_deps, options.cleanup_test_files)
+    runner_factory, tests = instrumentation_setup.Setup(instrumentation_options)
 
     test_results, exit_code = test_dispatcher.RunTests(
         tests, runner_factory, options.wait_for_debugger,
@@ -402,19 +453,13 @@ def _RunInstrumentationTests(options, error_func):
 
 def _RunUIAutomatorTests(options, error_func):
   """Subcommand of RunTestsCommands which runs uiautomator tests."""
-  ProcessUIAutomatorOptions(options, error_func)
+  uiautomator_options = ProcessUIAutomatorOptions(options, error_func)
 
   results = base_test_result.TestRunResults()
   exit_code = 0
 
   if options.run_java_tests:
-    runner_factory, tests = uiautomator_setup.Setup(
-        options.uiautomator_jar, options.uiautomator_info_jar,
-        options.annotations, options.exclude_annotations, options.test_filter,
-        options.package_name, options.build_type, options.test_data,
-        options.save_perf_json, options.screenshot_failures, options.tool,
-        options.disable_assertions, options.push_deps,
-        options.cleanup_test_files)
+    runner_factory, tests = uiautomator_setup.Setup(uiautomator_options)
 
     test_results, exit_code = test_dispatcher.RunTests(
         tests, runner_factory, False, options.test_device,

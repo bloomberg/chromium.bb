@@ -23,30 +23,31 @@ def _TestSuiteRequiresMockTestServer(suite_name):
 
 
 class TestRunner(base_test_runner.BaseTestRunner):
-  def __init__(self, device, test_package, test_arguments, timeout,
-               cleanup_test_files, tool_name, build_type, push_deps):
+  def __init__(self, test_options, device, test_package):
     """Single test suite attached to a single device.
 
     Args:
+      test_options: A GTestOptions object.
       device: Device to run the tests.
       test_package: An instance of TestPackage class.
-      test_arguments: Additional arguments to pass to the test binary.
-      timeout: Timeout for each test.
-      cleanup_test_files: Whether or not to cleanup test files on device.
-      tool_name: Name of the Valgrind tool.
-      build_type: 'Release' or 'Debug'.
-      push_deps: If True, push all dependencies to the device.
     """
-    super(TestRunner, self).__init__(device, tool_name, build_type, push_deps,
-                                     cleanup_test_files)
+
+    super(TestRunner, self).__init__(device, test_options.tool,
+                                     test_options.build_type,
+                                     test_options.push_deps,
+                                     test_options.cleanup_test_files)
+
     self.test_package = test_package
     self.test_package.tool = self.tool
-    self._test_arguments = test_arguments
+    self._test_arguments = test_options.test_arguments
+
+    timeout = test_options.timeout
     if timeout == 0:
       timeout = 60
     # On a VM (e.g. chromium buildbots), this timeout is way too small.
     if os.environ.get('BUILDBOT_SLAVENAME'):
       timeout = timeout * 2
+
     self._timeout = timeout * self.tool.GetTimeoutScale()
 
   #override

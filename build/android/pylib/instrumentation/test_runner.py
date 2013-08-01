@@ -7,12 +7,9 @@
 import logging
 import os
 import re
-import shutil
-import sys
 import time
 
 from pylib import android_commands
-from pylib import cmd_helper
 from pylib import constants
 from pylib import json_perf_parser
 from pylib import perf_tests_helper
@@ -52,38 +49,25 @@ class TestRunner(base_test_runner.BaseTestRunner):
                                        '/chrome-profile*')
   _DEVICE_HAS_TEST_FILES = {}
 
-  def __init__(self, build_type, test_data, save_perf_json, screenshot_failures,
-               tool, wait_for_debugger, disable_assertions, push_deps,
-               cleanup_test_files, device, shard_index, test_pkg,
+  def __init__(self, test_options, device, shard_index, test_pkg,
                ports_to_forward):
     """Create a new TestRunner.
 
     Args:
-      build_type: 'Release' or 'Debug'.
-      test_data: Location of the test data.
-      save_perf_json: Whether or not to save the JSON file from UI perf tests.
-      screenshot_failures: Take a screenshot for a test failure
-      tool: Name of the Valgrind tool.
-      wait_for_debugger: Blocks until the debugger is connected.
-      disable_assertions: Whether to disable java assertions on the device.
-      push_deps: If True, push all dependencies to the device.
-      cleanup_test_files: Whether or not to cleanup test files on device.
+      test_options: An InstrumentationOptions object.
       device: Attached android device.
       shard_index: Shard index.
       test_pkg: A TestPackage object.
       ports_to_forward: A list of port numbers for which to set up forwarders.
-                        Can be optionally requested by a test case.
+          Can be optionally requested by a test case.
     """
-    super(TestRunner, self).__init__(device, tool, build_type, push_deps,
-                                     cleanup_test_files)
+    super(TestRunner, self).__init__(device, test_options.tool,
+                                     test_options.build_type,
+                                     test_options.push_deps,
+                                     test_options.cleanup_test_files)
     self._lighttp_port = constants.LIGHTTPD_RANDOM_PORT_FIRST + shard_index
 
-    self.build_type = build_type
-    self.test_data = test_data
-    self.save_perf_json = save_perf_json
-    self.screenshot_failures = screenshot_failures
-    self.wait_for_debugger = wait_for_debugger
-    self.disable_assertions = disable_assertions
+    self.options = test_options
     self.test_pkg = test_pkg
     self.ports_to_forward = ports_to_forward
 
@@ -111,7 +95,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     # TODO(frankf): Specify test data in this file as opposed to passing
     # as command-line.
-    for dest_host_pair in self.test_data:
+    for dest_host_pair in self.options.test_data:
       dst_src = dest_host_pair.split(':',1)
       dst_layer = dst_src[0]
       host_src = dst_src[1]
@@ -125,7 +109,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
   def _GetInstrumentationArgs(self):
     ret = {}
-    if self.wait_for_debugger:
+    if self.options.wait_for_debugger:
       ret['debug'] = 'true'
     return ret
 
@@ -142,7 +126,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
       logging.warning('Unable to enable java asserts for %s, non rooted device',
                       self.device)
     else:
-      if self.adb.SetJavaAssertsEnabled(enable=not self.disable_assertions):
+      if self.adb.SetJavaAssertsEnabled(
+          enable=not self.options.disable_assertions):
         self.adb.Reboot(full_reboot=False)
 
     # We give different default value to launch HTTP server based on shard index
@@ -250,7 +235,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       else:
         raise Exception('Perf file does not exist or is empty')
 
-      if self.save_perf_json:
+      if self.options.save_perf_json:
         json_local_file = '/tmp/chromium-android-perf-json-' + raw_test_name
         with open(json_local_file, 'w') as f:
           f.write(json_string)
@@ -286,7 +271,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
         scale_match = re.match('TimeoutScale:([0-9]+)', annotation)
         if scale_match:
           timeout_scale = int(scale_match.group(1))
-    if self.wait_for_debugger:
+    if self.options.wait_for_debugger:
       timeout_scale *= 100
     return timeout_scale
 
@@ -330,7 +315,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
         log = raw_result.GetFailureReason()
         if not log:
           log = 'No information.'
-        if self.screenshot_failures or log.find('INJECT_EVENTS perm') >= 0:
+        if (self.options.screenshot_failures or
+            log.find('INJECT_EVENTS perm') >= 0):
           self._TakeScreenshot(test)
         result = test_result.InstrumentationTestResult(
             test, base_test_result.ResultType.FAIL, start_date_ms, duration_ms,

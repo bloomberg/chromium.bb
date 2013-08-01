@@ -257,20 +257,11 @@ def _GetTestsFiltered(suite_name, gtest_filter, runner_factory, devices):
   return tests
 
 
-def Setup(suite_name, test_arguments, timeout,
-          cleanup_test_files, tool, build_type, push_deps,
-          gtest_filter):
+def Setup(test_options):
   """Create the test runner factory and tests.
 
   Args:
-    suite_name: The suite name specified on the command line.
-    test_arguments: Additional arguments to pass to the test binary.
-    timeout: Timeout for each test.
-    cleanup_test_files: Whether or not to cleanup test files on device.
-    tool: Name of the Valgrind tool.
-    build_type: 'Release' or 'Debug'.
-    push_deps: If True, push all dependencies to the device.
-    gtest_filter: Filter for tests.
+    test_options: A GTestOptions object.
 
   Returns:
     A tuple of (TestRunnerFactory, tests).
@@ -279,34 +270,32 @@ def Setup(suite_name, test_arguments, timeout,
   if not ports.ResetTestServerPortAllocation():
     raise Exception('Failed to reset test server port.')
 
-  test_package = test_package_apk.TestPackageApk(suite_name, build_type)
+  test_package = test_package_apk.TestPackageApk(test_options.suite_name,
+                                                 test_options.build_type)
   if not os.path.exists(test_package.suite_path):
     test_package = test_package_exe.TestPackageExecutable(
-        suite_name, build_type)
+        test_options.suite_name, test_options.build_type)
     if not os.path.exists(test_package.suite_path):
       raise Exception(
-          'Did not find %s target. Ensure it has been built.' % suite_name)
+          'Did not find %s target. Ensure it has been built.'
+          % test_options.suite_name)
   logging.warning('Found target %s', test_package.suite_path)
 
-  _GenerateDepsDirUsingIsolate(suite_name, build_type)
+  _GenerateDepsDirUsingIsolate(test_options.suite_name,
+                               test_options.build_type)
 
   # Constructs a new TestRunner with the current options.
   def TestRunnerFactory(device, shard_index):
     return test_runner.TestRunner(
+        test_options,
         device,
-        test_package,
-        test_arguments,
-        timeout,
-        cleanup_test_files,
-        tool,
-        build_type,
-        push_deps)
+        test_package)
 
   attached_devices = android_commands.GetAttachedDevices()
-  tests = _GetTestsFiltered(suite_name, gtest_filter,
+  tests = _GetTestsFiltered(test_options.suite_name, test_options.gtest_filter,
                             TestRunnerFactory, attached_devices)
   # Coalesce unit tests into a single test per device
-  if suite_name != 'content_browsertests':
+  if test_options.suite_name != 'content_browsertests':
     num_devices = len(attached_devices)
     tests = [':'.join(tests[i::num_devices]) for i in xrange(num_devices)]
     tests = [t for t in tests if t]

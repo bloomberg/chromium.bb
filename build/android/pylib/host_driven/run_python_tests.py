@@ -11,6 +11,7 @@ import types
 
 from pylib import android_commands
 from pylib.base import base_test_result
+from pylib.instrumentation import test_options
 from pylib.instrumentation import test_package
 from pylib.instrumentation import test_runner
 from pylib.utils import report_results
@@ -87,11 +88,24 @@ def DispatchPythonTests(options):
     logging.debug('Pushing files to device %s', device_id)
     test_pkg = test_package.TestPackage(options.test_apk_path,
                                         options.test_apk_jar_path)
-    test_files_copier = test_runner.TestRunner(
-        options.build_type, options.test_data, options.save_perf_json,
-        options.screenshot_failures, options.tool, options.wait_for_debugger,
-        options.disable_assertions, options.push_deps,
-        options.cleanup_test_files, device_id, 0, test_pkg, [])
+    instrumentation_options = test_options.InstrumentationOptions(
+        options.build_type,
+        options.tool,
+        options.cleanup_test_files,
+        options.push_deps,
+        options.annotations,
+        options.exclude_annotations,
+        options.test_filter,
+        options.test_data,
+        options.save_perf_json,
+        options.screenshot_failures,
+        options.disable_assertions,
+        options.wait_for_debugger,
+        options.test_apk,
+        options.test_apk_path,
+        options.test_apk_jar_path)
+    test_files_copier = test_runner.TestRunner(instrumentation_options,
+                                               device_id, 0, test_pkg, [])
     test_files_copier.InstallTestPackage()
     if options.push_deps:
       logging.info('Pushing data deps to device.')

@@ -4,32 +4,48 @@
 
 """Class for running uiautomator tests on a single device."""
 
+from pylib.instrumentation import test_options
 from pylib.instrumentation import test_runner as instr_test_runner
 
 
 class TestRunner(instr_test_runner.TestRunner):
   """Responsible for running a series of tests connected to a single device."""
 
-  def __init__(self, package_name, build_type, test_data, save_perf_json,
-               screenshot_failures, tool, wait_for_debugger,
-               disable_assertions, push_deps, cleanup_test_files, device,
-               shard_index, test_pkg, ports_to_forward):
+  def __init__(self, test_options, device, shard_index, test_pkg,
+               ports_to_forward):
     """Create a new TestRunner.
 
     Args:
-      package_name: Application package name under test.
-      See the super class for all other args.
+      test_options: A UIAutomatorOptions object.
+      device: Attached android device.
+      shard_index: Shard index.
+      test_pkg: A TestPackage object.
+      ports_to_forward: A list of port numbers for which to set up forwarders.
+          Can be optionally requested by a test case.
     """
-    super(TestRunner, self).__init__(
-        build_type, test_data, save_perf_json, screenshot_failures, tool,
-        wait_for_debugger, disable_assertions, push_deps, cleanup_test_files,
-        device, shard_index, test_pkg, ports_to_forward)
+    # Create an InstrumentationOptions object to pass to the super class
+    instrumentation_options = test_options.InstrumentationOptions(
+        test_options.build_type,
+        test_options.tool,
+        test_options.cleanup_test_files,
+        test_options.push_deps,
+        test_options.annotations,
+        test_options.exclude_annotations,
+        test_options.test_filter,
+        test_options.test_data,
+        test_options.save_perf_json,
+        test_options.screenshot_failures,
+        test_options.disable_assertions,
+        wait_for_debugger=False,
+        test_apk=None)
+    super(TestRunner, self).__init__(instrumentation_options, device,
+                                     shard_index, test_pkg, ports_to_forward)
 
-    self.package_name = package_name
+    self.package_name = test_options.package_name
 
   #override
   def InstallTestPackage(self):
-      self.test_pkg.Install(self.adb)
+    self.test_pkg.Install(self.adb)
 
   #override
   def PushDataDeps(self):

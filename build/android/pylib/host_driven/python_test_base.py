@@ -25,6 +25,7 @@ import time
 
 from pylib import android_commands
 from pylib.base import base_test_result
+from pylib.instrumentation import test_options
 from pylib.instrumentation import test_package
 from pylib.instrumentation import test_result
 from pylib.instrumentation import test_runner
@@ -78,15 +79,23 @@ class PythonTestBase(object):
     test = self._ComposeFullTestName(fname, suite, test)
     test_pkg = test_package.TestPackage(
         self.options.test_apk_path, self.options.test_apk_jar_path)
-    java_test_runner = test_runner.TestRunner(self.options.build_type,
-                                              self.options.test_data,
-                                              self.options.save_perf_json,
-                                              self.options.screenshot_failures,
-                                              self.options.tool,
-                                              self.options.wait_for_debugger,
-                                              self.options.disable_assertions,
-                                              self.options.push_deps,
-                                              self.options.cleanup_test_files,
+    instrumentation_options = test_options.InstrumentationOptions(
+        self.options.build_type,
+        self.options.tool,
+        self.options.cleanup_test_files,
+        self.options.push_deps,
+        self.options.annotations,
+        self.options.exclude_annotations,
+        self.options.test_filter,
+        self.options.test_data,
+        self.options.save_perf_json,
+        self.options.screenshot_failures,
+        self.options.disable_assertions,
+        self.options.wait_for_debugger,
+        self.options.test_apk,
+        self.options.test_apk_path,
+        self.options.test_apk_jar_path)
+    java_test_runner = test_runner.TestRunner(instrumentation_options,
                                               self.device_id,
                                               self.shard_index, test_pkg,
                                               self.ports_to_forward)
