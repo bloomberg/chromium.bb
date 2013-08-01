@@ -55,11 +55,10 @@ class MediaDecoderJob {
                               size_t)> DecoderCallback;
 
   // Called by MediaSourcePlayer to decode some data.
-  void Decode(
-      const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit,
-      const base::TimeTicks& start_time_ticks,
-      const base::TimeDelta& start_presentation_timestamp,
-      const MediaDecoderJob::DecoderCallback& callback);
+  void Decode(const AccessUnit& unit,
+              const base::TimeTicks& start_time_ticks,
+              const base::TimeDelta& start_presentation_timestamp,
+              const MediaDecoderJob::DecoderCallback& callback);
 
   // Flush the decoder.
   void Flush();
@@ -87,8 +86,7 @@ class MediaDecoderJob {
       const base::TimeDelta& presentation_timestamp,
       const MediaDecoderJob::DecoderCallback& callback, DecodeStatus status);
 
-  DecodeStatus QueueInputBuffer(
-      const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit);
+  DecodeStatus QueueInputBuffer(const AccessUnit& unit);
 
   // Helper function to decoder data on |thread_|. |unit| contains all the data
   // to be decoded. |start_time_ticks| and |start_presentation_timestamp|
@@ -96,12 +94,11 @@ class MediaDecoderJob {
   // frame is rendered. We use these information to estimate when the current
   // frame should be rendered. If |needs_flush| is true, codec needs to be
   // flushed at the beginning of this call.
-  void DecodeInternal(
-      const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit,
-      const base::TimeTicks& start_time_ticks,
-      const base::TimeDelta& start_presentation_timestamp,
-      bool needs_flush,
-      const MediaDecoderJob::DecoderCallback& callback);
+  void DecodeInternal(const AccessUnit& unit,
+                      const base::TimeTicks& start_time_ticks,
+                      const base::TimeDelta& start_presentation_timestamp,
+                      bool needs_flush,
+                      const MediaDecoderJob::DecoderCallback& callback);
 
   // The UI message loop where callbacks should be dispatched.
   scoped_refptr<base::MessageLoopProxy> ui_loop_;

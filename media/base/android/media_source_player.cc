@@ -100,7 +100,7 @@ class VideoDecoderJob : public MediaDecoderJob {
 };
 
 void MediaDecoderJob::Decode(
-    const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit,
+    const AccessUnit& unit,
     const base::TimeTicks& start_time_ticks,
     const base::TimeDelta& start_presentation_timestamp,
     const MediaDecoderJob::DecoderCallback& callback) {
@@ -115,7 +115,7 @@ void MediaDecoderJob::Decode(
 }
 
 MediaDecoderJob::DecodeStatus MediaDecoderJob::QueueInputBuffer(
-    const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit) {
+    const AccessUnit& unit) {
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
       kMediaCodecTimeoutInMilliseconds);
   int input_buf_index = media_codec_bridge_->DequeueInputBuffer(timeout);
@@ -148,7 +148,7 @@ MediaDecoderJob::DecodeStatus MediaDecoderJob::QueueInputBuffer(
 }
 
 void MediaDecoderJob::DecodeInternal(
-    const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit,
+    const AccessUnit& unit,
     const base::TimeTicks& start_time_ticks,
     const base::TimeDelta& start_presentation_timestamp,
     bool needs_flush,

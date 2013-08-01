@@ -50,8 +50,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params)
   IPC_STRUCT_TRAITS_MEMBER(access_units)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(
-    media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit)
+IPC_STRUCT_TRAITS_BEGIN(media::AccessUnit)
   IPC_STRUCT_TRAITS_MEMBER(status)
   IPC_STRUCT_TRAITS_MEMBER(end_of_stream)
   IPC_STRUCT_TRAITS_MEMBER(data)

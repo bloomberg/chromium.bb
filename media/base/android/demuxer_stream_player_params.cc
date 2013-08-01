@@ -19,16 +19,15 @@ MediaPlayerHostMsg_DemuxerReady_Params::
 MediaPlayerHostMsg_DemuxerReady_Params::
     ~MediaPlayerHostMsg_DemuxerReady_Params() {}
 
+AccessUnit::AccessUnit() : end_of_stream(false) {}
+
+AccessUnit::~AccessUnit() {}
+
 MediaPlayerHostMsg_ReadFromDemuxerAck_Params::
     MediaPlayerHostMsg_ReadFromDemuxerAck_Params()
     : type(DemuxerStream::UNKNOWN) {}
 
 MediaPlayerHostMsg_ReadFromDemuxerAck_Params::
     ~MediaPlayerHostMsg_ReadFromDemuxerAck_Params() {}
-
-MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit::AccessUnit()
-    : end_of_stream(false) {}
-
-MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit::~AccessUnit() {}
 
 }  // namespace media

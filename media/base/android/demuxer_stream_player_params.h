@@ -36,21 +36,21 @@ struct MEDIA_EXPORT MediaPlayerHostMsg_DemuxerReady_Params {
   std::string key_system;
 };
 
+struct MEDIA_EXPORT AccessUnit {
+  AccessUnit();
+  ~AccessUnit();
+
+  DemuxerStream::Status status;
+  bool end_of_stream;
+  // TODO(ycheo): Use the shared memory to transfer the block data.
+  std::vector<uint8> data;
+  base::TimeDelta timestamp;
+  std::vector<char> key_id;
+  std::vector<char> iv;
+  std::vector<media::SubsampleEntry> subsamples;
+};
+
 struct MEDIA_EXPORT MediaPlayerHostMsg_ReadFromDemuxerAck_Params {
-  struct MEDIA_EXPORT AccessUnit {
-    AccessUnit();
-    ~AccessUnit();
-
-    DemuxerStream::Status status;
-    bool end_of_stream;
-    // TODO(ycheo): Use the shared memory to transfer the block data.
-    std::vector<uint8> data;
-    base::TimeDelta timestamp;
-    std::vector<char> key_id;
-    std::vector<char> iv;
-    std::vector<media::SubsampleEntry> subsamples;
-  };
-
   MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
   ~MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
 
