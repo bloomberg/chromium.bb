@@ -225,16 +225,17 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
 
     // Fire all listeners registered for this event. Don't fire listeners removed
     // during event dispatch. Also, don't fire event listeners added during event
-    // dispatch. Conveniently, all new event listeners will be added after 'end',
-    // so iterating to 'end' naturally excludes new event listeners.
+    // dispatch. Conveniently, all new event listeners will be added after or at
+    // index |size|, so iterating up to (but not including) |size| naturally excludes
+    // new event listeners.
 
     bool userEventWasHandled = false;
     size_t i = 0;
-    size_t end = entry.size();
+    size_t size = entry.size();
     if (!d->firingEventIterators)
         d->firingEventIterators = adoptPtr(new FiringEventIteratorVector);
-    d->firingEventIterators->append(FiringEventIterator(event->type(), i, end));
-    for ( ; i < end; ++i) {
+    d->firingEventIterators->append(FiringEventIterator(event->type(), i, size));
+    for ( ; i < size; ++i) {
         RegisteredEventListener& registeredListener = entry[i];
         if (event->eventPhase() == Event::CAPTURING_PHASE && !registeredListener.useCapture)
             continue;
