@@ -346,6 +346,21 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // can not handle pre migrated user profile (M21 profile or older).
 }
 
+// Test for http://crbug.com/265689. When hooked up a large external monitor,
+// the default large resolution wallpaper should load.
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
+                       HotPlugInScreenAtGAIALoginScreen) {
+  UpdateDisplay("800x600");
+  // Set initial wallpaper to the default wallpaper.
+  WallpaperManager::Get()->SetDefaultWallpaper();
+  WaitAsyncWallpaperLoad();
+
+  // Hook up a 2000x2000 display. The large resolution custom wallpaper should
+  // be loaded.
+  UpdateDisplay("800x600,2000x2000");
+  WaitAsyncWallpaperLoad();
+}
+
 class WallpaperManagerBrowserTestNoAnimation
     : public WallpaperManagerBrowserTest {
  public:

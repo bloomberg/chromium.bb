@@ -630,6 +630,14 @@ void WallpaperManager::SetWallpaperFromImageSkia(
 void WallpaperManager::UpdateWallpaper() {
   ClearWallpaperCache();
   current_wallpaper_path_.clear();
+  // For GAIA login flow, the last_selected_user_ may not be set before user
+  // login. If UpdateWallpaper is called at GAIA login screen, no wallpaper will
+  // be set. It could result a black screen on external monitors.
+  // See http://crbug.com/265689 for detail.
+  if (last_selected_user_.empty()) {
+    SetDefaultWallpaper();
+    return;
+  }
   SetUserWallpaper(last_selected_user_);
 }
 
