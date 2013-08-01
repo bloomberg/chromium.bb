@@ -29,13 +29,12 @@ namespace WebCore {
 
 class CSSValue;
 class RenderStyle;
-class StyleCustomFilterProgramCache;
 
 class FilterOperationResolver {
 private:
     FilterOperationResolver();
 public:
-    static bool createFilterOperations(CSSValue* inValue, const RenderStyle* inStyle, const RenderStyle* rootStyle, FilterOperations& outOperations, StyleCustomFilterProgramCache*, StyleResolverState&);
+    static bool createFilterOperations(CSSValue* inValue, const RenderStyle* inStyle, const RenderStyle* rootStyle, FilterOperations& outOperations, StyleResolverState&);
 };
 
 } // namespace WebCore

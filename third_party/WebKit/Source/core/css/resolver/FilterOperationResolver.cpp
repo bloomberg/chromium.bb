@@ -44,7 +44,6 @@
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
 #include "core/rendering/style/StyleCustomFilterProgram.h"
-#include "core/rendering/style/StyleCustomFilterProgramCache.h"
 #include "core/rendering/style/StyleShader.h"
 #include "core/svg/SVGURIReference.h"
 
@@ -230,26 +229,21 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithAtRuleRe
     return 0;
 }
 
-static PassRefPtr<CustomFilterProgram> lookupCustomFilterProgram(CSSShaderValue* vertexShader, CSSShaderValue* fragmentShader,
+static PassRefPtr<CustomFilterProgram> createCustomFilterProgram(CSSShaderValue* vertexShader, CSSShaderValue* fragmentShader,
     CustomFilterProgramType programType, const CustomFilterProgramMixSettings& mixSettings, CustomFilterMeshType meshType,
-    StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
+    StyleResolverState& state)
 {
     ResourceFetcher* fetcher = state.document()->fetcher();
     KURL vertexShaderURL = vertexShader ? vertexShader->completeURL(fetcher) : KURL();
     KURL fragmentShaderURL = fragmentShader ? fragmentShader->completeURL(fetcher) : KURL();
-    RefPtr<StyleCustomFilterProgram> program;
-    if (customFilterProgramCache)
-        program = customFilterProgramCache->lookup(CustomFilterProgramInfo(vertexShaderURL.string(), fragmentShaderURL.string(), programType, mixSettings, meshType));
-    if (!program) {
-        // Create a new StyleCustomFilterProgram that will be resolved during the loadPendingShaders and added to the cache.
-        program = StyleCustomFilterProgram::create(vertexShaderURL, vertexShader ? styleShader(vertexShader, state) : 0,
+    RefPtr<StyleCustomFilterProgram> program = StyleCustomFilterProgram::create(vertexShaderURL, vertexShader ? styleShader(vertexShader, state) : 0,
             fragmentShaderURL, fragmentShader ? styleShader(fragmentShader, state) : 0, programType, mixSettings, meshType);
         // FIXME
-    }
+        // FIXME: Find out what the fixme above means.
     return program.release();
 }
 
-static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSyntax(CSSFilterValue* filterValue, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
+static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSyntax(CSSFilterValue* filterValue, StyleResolverState& state)
 {
     CSSValue* shadersValue = filterValue->itemWithoutBoundsCheck(0);
     ASSERT_WITH_SECURITY_IMPLICATION(shadersValue->isValueList());
@@ -348,19 +342,19 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
     if (parametersValue && !parseCustomFilterParameterList(parametersValue, parameterList, state))
         return 0;
 
-    RefPtr<CustomFilterProgram> program = lookupCustomFilterProgram(vertexShader, fragmentShader, programType, mixSettings, meshType, customFilterProgramCache, state);
+    RefPtr<CustomFilterProgram> program = createCustomFilterProgram(vertexShader, fragmentShader, programType, mixSettings, meshType, state);
     return CustomFilterOperation::create(program.release(), parameterList, meshRows, meshColumns, meshType);
 }
 
-static PassRefPtr<CustomFilterOperation> createCustomFilterOperation(CSSFilterValue* filterValue, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
+static PassRefPtr<CustomFilterOperation> createCustomFilterOperation(CSSFilterValue* filterValue, StyleResolverState& state)
 {
     ASSERT(filterValue->length());
     bool isAtRuleReferenceSyntax = filterValue->itemWithoutBoundsCheck(0)->isPrimitiveValue();
-    return isAtRuleReferenceSyntax ? createCustomFilterOperationWithAtRuleReferenceSyntax(filterValue) : createCustomFilterOperationWithInlineSyntax(filterValue, customFilterProgramCache, state);
+    return isAtRuleReferenceSyntax ? createCustomFilterOperationWithAtRuleReferenceSyntax(filterValue) : createCustomFilterOperationWithInlineSyntax(filterValue, state);
 }
 
 
-bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const RenderStyle* style, const RenderStyle* rootStyle, FilterOperations& outOperations, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
+bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const RenderStyle* style, const RenderStyle* rootStyle, FilterOperations& outOperations, StyleResolverState& state)
 {
     ASSERT(outOperations.isEmpty());
 
@@ -392,7 +386,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
             continue;
         }
         if (operationType == FilterOperation::CUSTOM) {
-            RefPtr<CustomFilterOperation> operation = createCustomFilterOperation(filterValue, customFilterProgramCache, state);
+            RefPtr<CustomFilterOperation> operation = createCustomFilterOperation(filterValue, state);
             if (!operation)
                 return false;
 

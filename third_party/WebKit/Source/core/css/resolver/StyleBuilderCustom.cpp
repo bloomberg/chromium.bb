@@ -1498,7 +1498,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
     case CSSPropertyWebkitFilter: {
         HANDLE_INHERIT_AND_INITIAL(filter, Filter);
         FilterOperations operations;
-        if (FilterOperationResolver::createFilterOperations(value, state.style(), state.rootElementStyle(), operations, styleResolver->m_styleResourceLoader.customFilterProgramCache(), state))
+        if (FilterOperationResolver::createFilterOperations(value, state.style(), state.rootElementStyle(), operations, state))
             state.style()->setFilter(operations);
         return;
     }
