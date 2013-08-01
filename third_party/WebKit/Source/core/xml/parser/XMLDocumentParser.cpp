@@ -1087,6 +1087,9 @@ void XMLDocumentParser::error(XMLErrors::ErrorType type, const char* message, va
 
     if (m_parserPaused) {
         m_pendingCallbacks.append(adoptPtr(new PendingErrorCallback(type, reinterpret_cast<const xmlChar*>(formattedMessage), lineNumber(), columnNumber())));
+#if HAVE(VASPRINTF)
+        free(formattedMessage);
+#endif
         return;
     }
 
