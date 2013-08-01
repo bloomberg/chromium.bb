@@ -17,9 +17,9 @@ EVBubbleView::EVBubbleView(const gfx::Font& font,
                            SkColor text_color,
                            SkColor parent_background_color,
                            LocationBarView* location_bar)
-    : IconLabelBubbleView(kBackgroundImages, IDR_OMNIBOX_HTTPS_VALID, font,
-                          font_y_offset, text_color, parent_background_color,
-                          true),
+    : IconLabelBubbleView(kBackgroundImages, NULL, IDR_OMNIBOX_HTTPS_VALID,
+                          font, font_y_offset, text_color,
+                          parent_background_color, true),
       page_info_helper_(this, location_bar) {
 }
 

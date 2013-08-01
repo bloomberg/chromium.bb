@@ -27,9 +27,9 @@ SelectedKeywordView::SelectedKeywordView(const gfx::Font& font,
                                          SkColor text_color,
                                          SkColor parent_background_color,
                                          Profile* profile)
-    : IconLabelBubbleView(kBackgroundImages, IDR_KEYWORD_SEARCH_MAGNIFIER, font,
-                          font_y_offset, text_color, parent_background_color,
-                          false),
+    : IconLabelBubbleView(kBackgroundImages, NULL, IDR_KEYWORD_SEARCH_MAGNIFIER,
+                          font, font_y_offset, text_color,
+                          parent_background_color, false),
       profile_(profile) {
   full_label_.SetFont(font);
   full_label_.SetVisible(false);

@@ -16,6 +16,7 @@
 
 
 IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
+                                         const int hover_background_images[],
                                          int contained_image,
                                          const gfx::Font& font,
                                          int font_y_offset,
@@ -26,11 +27,21 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
           views::Painter::CreateImageGridPainter(background_images)),
       image_(new views::ImageView()),
       label_(new views::Label()),
-      is_extension_icon_(false) {
+      is_extension_icon_(false),
+      in_hover_(false) {
   image_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           contained_image));
+
+  // Disable separate hit testing for |image_|.  This prevents views treating
+  // |image_| as a separate mouse hover region from |this|.
+  image_->set_interactive(false);
   AddChildView(image_);
+
+  if (hover_background_images) {
+    hover_background_painter_.reset(
+        views::Painter::CreateImageGridPainter(hover_background_images));
+  }
 
   label_->set_border(views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
   label_->SetFont(font);
@@ -93,6 +104,18 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
   return size;
 }
 
+void IconLabelBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
+  in_hover_ = true;
+  if (hover_background_painter_.get())
+    SchedulePaint();
+}
+
+void IconLabelBubbleView::OnMouseExited(const ui::MouseEvent& event) {
+  in_hover_ = false;
+  if (hover_background_painter_.get())
+    SchedulePaint();
+}
+
 // static
 int IconLabelBubbleView::GetBubbleOuterPadding(bool by_icon) {
   return LocationBarView::GetItemPadding() - LocationBarView::kBubblePadding +
@@ -100,7 +123,9 @@ int IconLabelBubbleView::GetBubbleOuterPadding(bool by_icon) {
 }
 
 void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
-  background_painter_->Paint(canvas, size());
+  views::Painter* painter = (in_hover_ && hover_background_painter_) ?
+      hover_background_painter_.get() : background_painter_.get();
+  painter->Paint(canvas, size());
 }
 
 int IconLabelBubbleView::GetPreLabelWidth() const {
