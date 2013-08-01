@@ -85,24 +85,30 @@ class SandboxFileSystemBackendTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    SetUpNewSandboxContext(CreateAllowFileAccessOptions());
+  }
+
+  void SetUpNewSandboxContext(const FileSystemOptions& options) {
     context_.reset(new SandboxContext(
         NULL /* quota_manager_proxy */,
         base::MessageLoopProxy::current().get(),
         data_dir_.path(),
-        NULL /* special_storage_policy */));
+        NULL /* special_storage_policy */,
+        options));
   }
 
   void SetUpNewBackend(const FileSystemOptions& options) {
-    backend_.reset(new SandboxFileSystemBackend(context_.get(), options));
+    SetUpNewSandboxContext(options);
+    backend_.reset(new SandboxFileSystemBackend(context_.get()));
   }
 
-  SandboxFileSystemBackend::OriginEnumerator* CreateOriginEnumerator() const {
+  SandboxContext::OriginEnumerator* CreateOriginEnumerator() const {
     return backend_->CreateOriginEnumerator();
   }
 
   void CreateOriginTypeDirectory(const GURL& origin,
                                  fileapi::FileSystemType type) {
-    base::FilePath target = backend_->
+    base::FilePath target = context_->
         GetBaseDirectoryForOriginAndType(origin, type, true);
     ASSERT_TRUE(!target.empty());
     ASSERT_TRUE(base::DirectoryExists(target));
@@ -120,7 +126,7 @@ class SandboxFileSystemBackendTest : public testing::Test {
     if (error != base::PLATFORM_FILE_OK)
       return false;
     base::FilePath returned_root_path =
-        backend_->GetBaseDirectoryForOriginAndType(
+        context_->GetBaseDirectoryForOriginAndType(
             origin_url, type, false /* create */);
     if (root_path)
       *root_path = returned_root_path;
@@ -139,7 +145,7 @@ class SandboxFileSystemBackendTest : public testing::Test {
 
 TEST_F(SandboxFileSystemBackendTest, Empty) {
   SetUpNewBackend(CreateAllowFileAccessOptions());
-  scoped_ptr<SandboxFileSystemBackend::OriginEnumerator> enumerator(
+  scoped_ptr<SandboxContext::OriginEnumerator> enumerator(
       CreateOriginEnumerator());
   ASSERT_TRUE(enumerator->Next().is_empty());
 }
@@ -172,7 +178,7 @@ TEST_F(SandboxFileSystemBackendTest, EnumerateOrigins) {
     persistent_set.insert(GURL(persistent_origins[i]));
   }
 
-  scoped_ptr<SandboxFileSystemBackend::OriginEnumerator> enumerator(
+  scoped_ptr<SandboxContext::OriginEnumerator> enumerator(
       CreateOriginEnumerator());
   size_t temporary_actual_size = 0;
   size_t persistent_actual_size = 0;
@@ -191,49 +197,6 @@ TEST_F(SandboxFileSystemBackendTest, EnumerateOrigins) {
 
   EXPECT_EQ(temporary_size, temporary_actual_size);
   EXPECT_EQ(persistent_size, persistent_actual_size);
-}
-
-TEST_F(SandboxFileSystemBackendTest, IsAccessValid) {
-  SetUpNewBackend(CreateAllowFileAccessOptions());
-
-  // Normal case.
-  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL("a")));
-
-  // Access to a path with parent references ('..') should be disallowed.
-  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL("a/../b")));
-
-  // Access from non-allowed scheme should be disallowed.
-  EXPECT_FALSE(backend_->IsAccessValid(
-      FileSystemURL::CreateForTest(
-          GURL("unknown://bar"), kFileSystemTypeTemporary,
-          base::FilePath::FromUTF8Unsafe("foo"))));
-
-  // Access for non-sandbox type should be disallowed.
-  EXPECT_FALSE(backend_->IsAccessValid(
-      FileSystemURL::CreateForTest(
-          GURL("http://foo/"), kFileSystemTypeTest,
-          base::FilePath::FromUTF8Unsafe("foo"))));
-
-  // Access with restricted name should be disallowed.
-  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL(".")));
-  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL("..")));
-
-  // This is also diallowed due to Windows XP parent path handling.
-  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL("...")));
-
-  // These are identified as unsafe cases due to weird path handling
-  // on Windows.
-  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL(" ..")));
-  EXPECT_FALSE(backend_->IsAccessValid(CreateFileSystemURL(".. ")));
-
-  // Similar but safe cases.
-  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL(" .")));
-  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL(". ")));
-  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL("b.")));
-  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL(".b")));
-
-  // A path that looks like a drive letter.
-  EXPECT_TRUE(backend_->IsAccessValid(CreateFileSystemURL("c:")));
 }
 
 TEST_F(SandboxFileSystemBackendTest, GetRootPathCreateAndExamine) {

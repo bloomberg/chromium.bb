@@ -113,10 +113,10 @@ FileSystemContext::FileSystemContext(
           quota_manager_proxy,
           task_runners_->file_task_runner(),
           partition_path,
-          special_storage_policy)),
-      sandbox_backend_(new SandboxFileSystemBackend(
-          sandbox_context_.get(),
+          special_storage_policy,
           options)),
+      sandbox_backend_(new SandboxFileSystemBackend(
+          sandbox_context_.get())),
       isolated_backend_(new IsolatedFileSystemBackend()),
       additional_backends_(additional_backends.Pass()),
       external_mount_points_(external_mount_points),

@@ -7,11 +7,8 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util.h"
 #include "base/task_runner_util.h"
-#include "net/base/net_util.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
@@ -20,7 +17,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
-#include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/fileapi/sandbox_context.h"
@@ -58,37 +54,6 @@ enum FileSystemError {
 const char kTemporaryOriginsCountLabel[] = "FileSystem.TemporaryOriginsCount";
 const char kPersistentOriginsCountLabel[] = "FileSystem.PersistentOriginsCount";
 
-// Restricted names.
-// http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
-const base::FilePath::CharType* const kRestrictedNames[] = {
-  FILE_PATH_LITERAL("."), FILE_PATH_LITERAL(".."),
-};
-
-// Restricted chars.
-const base::FilePath::CharType kRestrictedChars[] = {
-  FILE_PATH_LITERAL('/'), FILE_PATH_LITERAL('\\'),
-};
-
-class ObfuscatedOriginEnumerator
-    : public SandboxFileSystemBackend::OriginEnumerator {
- public:
-  explicit ObfuscatedOriginEnumerator(ObfuscatedFileUtil* file_util) {
-    enum_.reset(file_util->CreateOriginEnumerator());
-  }
-  virtual ~ObfuscatedOriginEnumerator() {}
-
-  virtual GURL Next() OVERRIDE {
-    return enum_->Next();
-  }
-
-  virtual bool HasFileSystemType(fileapi::FileSystemType type) const OVERRIDE {
-    return enum_->HasFileSystemType(type);
-  }
-
- private:
-  scoped_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enum_;
-};
-
 void DidOpenFileSystem(
     base::WeakPtr<SandboxFileSystemBackend> sandbox_backend,
     const base::Callback<void(base::PlatformFileError error)>& callback,
@@ -122,10 +87,8 @@ void OpenFileSystemOnFileThread(
 }  // anonymous namespace
 
 SandboxFileSystemBackend::SandboxFileSystemBackend(
-    SandboxContext* sandbox_context,
-    const FileSystemOptions& file_system_options)
-    : file_system_options_(file_system_options),
-      sandbox_context_(sandbox_context),
+    SandboxContext* sandbox_context)
+    : sandbox_context_(sandbox_context),
       enable_temporary_file_system_in_incognito_(false),
       weak_factory_(this) {
 }
@@ -156,7 +119,7 @@ void SandboxFileSystemBackend::Initialize(FileSystemContext* context) {
     sandbox_context_->file_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&ObfuscatedFileUtil::MaybePrepopulateDatabase,
-                  base::Unretained(sandbox_sync_file_util())));
+                  base::Unretained(sandbox_context_->sync_file_util())));
   }
 }
 
@@ -165,7 +128,9 @@ void SandboxFileSystemBackend::OpenFileSystem(
     fileapi::FileSystemType type,
     OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
-  if (file_system_options_.is_incognito() &&
+  DCHECK(CanHandleType(type));
+  DCHECK(sandbox_context_);
+  if (sandbox_context_->file_system_options().is_incognito() &&
       !(type == kFileSystemTypeTemporary &&
         enable_temporary_file_system_in_incognito_)) {
     // TODO(kinuko): return an isolated temporary directory.
@@ -173,7 +138,7 @@ void SandboxFileSystemBackend::OpenFileSystem(
     return;
   }
 
-  if (!IsAllowedScheme(origin_url)) {
+  if (!sandbox_context_->IsAllowedScheme(origin_url)) {
     callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
     return;
   }
@@ -189,7 +154,7 @@ void SandboxFileSystemBackend::OpenFileSystem(
   sandbox_context_->file_task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&OpenFileSystemOnFileThread,
-                 sandbox_sync_file_util(),
+                 sandbox_context_->sync_file_util(),
                  origin_url, type, mode,
                  base::Unretained(error_ptr)),
       base::Bind(&DidOpenFileSystem,
@@ -223,7 +188,9 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
-  if (!IsAccessValid(url)) {
+  DCHECK(CanHandleType(url.type()));
+  DCHECK(sandbox_context_);
+  if (!sandbox_context_->IsAccessValid(url)) {
     *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
     return NULL;
   }
@@ -258,7 +225,9 @@ SandboxFileSystemBackend::CreateFileStreamReader(
     int64 offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  if (!IsAccessValid(url))
+  DCHECK(CanHandleType(url.type()));
+  DCHECK(sandbox_context_);
+  if (!sandbox_context_->IsAccessValid(url))
     return scoped_ptr<webkit_blob::FileStreamReader>();
   return scoped_ptr<webkit_blob::FileStreamReader>(
       new FileSystemFileStreamReader(
@@ -270,7 +239,9 @@ SandboxFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  if (!IsAccessValid(url))
+  DCHECK(CanHandleType(url.type()));
+  DCHECK(sandbox_context_);
+  if (!sandbox_context_->IsAccessValid(url))
     return scoped_ptr<fileapi::FileStreamWriter>();
   return scoped_ptr<fileapi::FileStreamWriter>(
       new SandboxFileStreamWriter(context, url, offset, update_observers_));
@@ -280,19 +251,10 @@ FileSystemQuotaUtil* SandboxFileSystemBackend::GetQuotaUtil() {
   return this;
 }
 
-SandboxFileSystemBackend::OriginEnumerator*
+SandboxContext::OriginEnumerator*
 SandboxFileSystemBackend::CreateOriginEnumerator() {
-  return new ObfuscatedOriginEnumerator(sandbox_sync_file_util());
-}
-
-base::FilePath SandboxFileSystemBackend::GetBaseDirectoryForOriginAndType(
-    const GURL& origin_url, fileapi::FileSystemType type, bool create) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  base::FilePath path = sandbox_sync_file_util()->GetDirectoryForOriginAndType(
-      origin_url, type, create, &error);
-  if (error != base::PLATFORM_FILE_OK)
-    return base::FilePath();
-  return path;
+  DCHECK(sandbox_context_);
+  return sandbox_context_->CreateOriginEnumerator();
 }
 
 base::PlatformFileError
@@ -301,35 +263,17 @@ SandboxFileSystemBackend::DeleteOriginDataOnFileThread(
     QuotaManagerProxy* proxy,
     const GURL& origin_url,
     fileapi::FileSystemType type) {
-  int64 usage = GetOriginUsageOnFileThread(file_system_context,
-                                           origin_url, type);
-
-  usage_cache()->CloseCacheFiles();
-  bool result = sandbox_sync_file_util()->DeleteDirectoryForOriginAndType(
-          origin_url, type);
-  if (result && proxy) {
-    proxy->NotifyStorageModified(
-        quota::QuotaClient::kFileSystem,
-        origin_url,
-        FileSystemTypeToQuotaStorageType(type),
-        -usage);
-  }
-
-  if (result)
-    return base::PLATFORM_FILE_OK;
-  return base::PLATFORM_FILE_ERROR_FAILED;
+  DCHECK(CanHandleType(type));
+  DCHECK(sandbox_context_);
+  return sandbox_context_->DeleteOriginDataOnFileThread(
+      file_system_context, proxy, origin_url, type);
 }
 
 void SandboxFileSystemBackend::GetOriginsForTypeOnFileThread(
     fileapi::FileSystemType type, std::set<GURL>* origins) {
   DCHECK(CanHandleType(type));
-  DCHECK(origins);
-  scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
-  GURL origin;
-  while (!(origin = enumerator->Next()).is_empty()) {
-    if (enumerator->HasFileSystemType(type))
-      origins->insert(origin);
-  }
+  DCHECK(sandbox_context_);
+  sandbox_context_->GetOriginsForTypeOnFileThread(type, origins);
   switch (type) {
     case kFileSystemTypeTemporary:
       UMA_HISTOGRAM_COUNTS(kTemporaryOriginsCountLabel, origins->size());
@@ -346,14 +290,8 @@ void SandboxFileSystemBackend::GetOriginsForHostOnFileThread(
     fileapi::FileSystemType type, const std::string& host,
     std::set<GURL>* origins) {
   DCHECK(CanHandleType(type));
-  DCHECK(origins);
-  scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
-  GURL origin;
-  while (!(origin = enumerator->Next()).is_empty()) {
-    if (host == net::GetHostOrSpecFromURL(origin) &&
-        enumerator->HasFileSystemType(type))
-      origins->insert(origin);
-  }
+  DCHECK(sandbox_context_);
+  sandbox_context_->GetOriginsForHostOnFileThread(type, host, origins);
 }
 
 int64 SandboxFileSystemBackend::GetOriginUsageOnFileThread(
@@ -361,60 +299,25 @@ int64 SandboxFileSystemBackend::GetOriginUsageOnFileThread(
     const GURL& origin_url,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
-
-  // Don't use usage cache and return recalculated usage for sticky invalidated
-  // origins.
-  if (ContainsKey(sticky_dirty_origins_, std::make_pair(origin_url, type)))
-    return RecalculateUsage(file_system_context, origin_url, type);
-
-  base::FilePath base_path =
-      GetBaseDirectoryForOriginAndType(origin_url, type, false);
-  if (base_path.empty() || !base::DirectoryExists(base_path))
-    return 0;
-  base::FilePath usage_file_path =
-      base_path.Append(FileSystemUsageCache::kUsageFileName);
-
-  bool is_valid = usage_cache()->IsValid(usage_file_path);
-  uint32 dirty_status = 0;
-  bool dirty_status_available =
-      usage_cache()->GetDirty(usage_file_path, &dirty_status);
-  bool visited = !visited_origins_.insert(origin_url).second;
-  if (is_valid && (dirty_status == 0 || (dirty_status_available && visited))) {
-    // The usage cache is clean (dirty == 0) or the origin is already
-    // initialized and running.  Read the cache file to get the usage.
-    int64 usage = 0;
-    return usage_cache()->GetUsage(usage_file_path, &usage) ? usage : -1;
-  }
-  // The usage cache has not been initialized or the cache is dirty.
-  // Get the directory size now and update the cache.
-  usage_cache()->Delete(usage_file_path);
-
-  int64 usage = RecalculateUsage(file_system_context, origin_url, type);
-
-  // This clears the dirty flag too.
-  usage_cache()->UpdateUsage(usage_file_path, usage);
-  return usage;
+  DCHECK(sandbox_context_);
+  return sandbox_context_->GetOriginUsageOnFileThread(
+      file_system_context, origin_url, type);
 }
 
 void SandboxFileSystemBackend::InvalidateUsageCache(
     const GURL& origin,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  base::FilePath usage_file_path = GetUsageCachePathForOriginAndType(
-      sandbox_sync_file_util(), origin, type, &error);
-  if (error != base::PLATFORM_FILE_OK)
-    return;
-  usage_cache()->IncrementDirty(usage_file_path);
+  DCHECK(sandbox_context_);
+  sandbox_context_->InvalidateUsageCache(origin, type);
 }
 
 void SandboxFileSystemBackend::StickyInvalidateUsageCache(
     const GURL& origin,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
-  sticky_dirty_origins_.insert(std::make_pair(origin, type));
-  sandbox_context_->quota_observer()->SetUsageCacheEnabled(origin, type, false);
-  InvalidateUsageCache(origin, type);
+  DCHECK(sandbox_context_);
+  sandbox_context_->StickyInvalidateUsageCache(origin, type);
 }
 
 void SandboxFileSystemBackend::AddFileUpdateObserver(
@@ -504,116 +407,6 @@ void SandboxFileSystemBackend::CollectOpenFileSystemMetrics(
       break;
   }
 #undef REPORT
-}
-
-bool SandboxFileSystemBackend::IsAccessValid(
-    const FileSystemURL& url) const {
-  if (!IsAllowedScheme(url.origin()))
-    return false;
-
-  if (!CanHandleType(url.type()))
-    return false;
-
-  if (url.path().ReferencesParent())
-    return false;
-
-  // Return earlier if the path is '/', because VirtualPath::BaseName()
-  // returns '/' for '/' and we fail the "basename != '/'" check below.
-  // (We exclude '.' because it's disallowed by spec.)
-  if (VirtualPath::IsRootPath(url.path()) &&
-      url.path() != base::FilePath(base::FilePath::kCurrentDirectory))
-    return true;
-
-  // Restricted names specified in
-  // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
-  base::FilePath filename = VirtualPath::BaseName(url.path());
-  // See if the name is allowed to create.
-  for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
-    if (filename.value() == kRestrictedNames[i])
-      return false;
-  }
-  for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
-    if (filename.value().find(kRestrictedChars[i]) !=
-        base::FilePath::StringType::npos)
-      return false;
-  }
-
-  return true;
-}
-
-base::FilePath SandboxFileSystemBackend::GetUsageCachePathForOriginAndType(
-    const GURL& origin_url,
-    FileSystemType type) {
-  base::PlatformFileError error;
-  base::FilePath path = GetUsageCachePathForOriginAndType(
-      sandbox_sync_file_util(), origin_url, type, &error);
-  if (error != base::PLATFORM_FILE_OK)
-    return base::FilePath();
-  return path;
-}
-
-// static
-base::FilePath SandboxFileSystemBackend::GetUsageCachePathForOriginAndType(
-    ObfuscatedFileUtil* sandbox_file_util,
-    const GURL& origin_url,
-    fileapi::FileSystemType type,
-    base::PlatformFileError* error_out) {
-  DCHECK(error_out);
-  *error_out = base::PLATFORM_FILE_OK;
-  base::FilePath base_path = sandbox_file_util->GetDirectoryForOriginAndType(
-      origin_url, type, false /* create */, error_out);
-  if (*error_out != base::PLATFORM_FILE_OK)
-    return base::FilePath();
-  return base_path.Append(FileSystemUsageCache::kUsageFileName);
-}
-
-bool SandboxFileSystemBackend::IsAllowedScheme(const GURL& url) const {
-  // Basically we only accept http or https. We allow file:// URLs
-  // only if --allow-file-access-from-files flag is given.
-  if (url.SchemeIs("http") || url.SchemeIs("https"))
-    return true;
-  if (url.SchemeIsFileSystem())
-    return url.inner_url() && IsAllowedScheme(*url.inner_url());
-
-  for (size_t i = 0;
-       i < file_system_options_.additional_allowed_schemes().size();
-       ++i) {
-    if (url.SchemeIs(
-            file_system_options_.additional_allowed_schemes()[i].c_str()))
-      return true;
-  }
-  return false;
-}
-
-ObfuscatedFileUtil* SandboxFileSystemBackend::sandbox_sync_file_util() {
-  DCHECK(sandbox_context_);
-  return sandbox_context_->sync_file_util();
-}
-
-FileSystemUsageCache* SandboxFileSystemBackend::usage_cache() {
-  DCHECK(sandbox_context_);
-  return sandbox_context_->usage_cache();
-}
-
-int64 SandboxFileSystemBackend::RecalculateUsage(FileSystemContext* context,
-                                                  const GURL& origin,
-                                                  FileSystemType type) {
-  FileSystemOperationContext operation_context(context);
-  FileSystemURL url = context->CreateCrackedFileSystemURL(
-      origin, type, base::FilePath());
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
-      sandbox_sync_file_util()->CreateFileEnumerator(
-          &operation_context, url, true));
-
-  base::FilePath file_path_each;
-  int64 usage = 0;
-
-  while (!(file_path_each = enumerator->Next()).empty()) {
-    usage += enumerator->Size();
-    usage += ObfuscatedFileUtil::ComputeFilePathCost(file_path_each);
-  }
-
-  return usage;
 }
 
 }  // namespace fileapi

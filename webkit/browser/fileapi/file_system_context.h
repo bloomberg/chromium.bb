@@ -238,6 +238,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   void EnableTemporaryFileSystemInIncognito();
 #endif
 
+  SandboxContext* sandbox_context() { return sandbox_context_.get(); }
+
  private:
   typedef std::map<FileSystemType, FileSystemBackend*>
       FileSystemBackendMap;
