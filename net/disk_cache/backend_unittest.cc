@@ -417,6 +417,13 @@ TEST_F(DiskCacheBackendTest, ShutdownWithPendingFileIO) {
   BackendShutdownWithPendingFileIO(false);
 }
 
+// Here and below, tests that simulate crashes are not compiled in LeakSanitizer
+// builds because they contain a lot of intentional memory leaks.
+// The wrapper scripts used to run tests under Valgrind Memcheck and
+// Heapchecker will also disable these tests under those tools. See:
+// tools/valgrind/gtest_exclude/net_unittests.gtest-memcheck.txt
+// tools/heapcheck/net_unittests.gtest-heapcheck.txt
+#if !defined(LEAK_SANITIZER)
 // We'll be leaking from this test.
 TEST_F(DiskCacheBackendTest, ShutdownWithPendingFileIO_Fast) {
   // The integrity test sets kNoRandom so there's a version mismatch if we don't
@@ -424,6 +431,7 @@ TEST_F(DiskCacheBackendTest, ShutdownWithPendingFileIO_Fast) {
   SetNewEviction();
   BackendShutdownWithPendingFileIO(true);
 }
+#endif
 
 // Tests that we deal with background-thread pending operations.
 void DiskCacheBackendTest::BackendShutdownWithPendingIO(bool fast) {
@@ -460,6 +468,7 @@ TEST_F(DiskCacheBackendTest, ShutdownWithPendingIO) {
   BackendShutdownWithPendingIO(false);
 }
 
+#if !defined(LEAK_SANITIZER)
 // We'll be leaking from this test.
 TEST_F(DiskCacheBackendTest, ShutdownWithPendingIO_Fast) {
   // The integrity test sets kNoRandom so there's a version mismatch if we don't
@@ -467,6 +476,7 @@ TEST_F(DiskCacheBackendTest, ShutdownWithPendingIO_Fast) {
   SetNewEviction();
   BackendShutdownWithPendingIO(true);
 }
+#endif
 
 // Tests that we deal with create-type pending operations.
 void DiskCacheBackendTest::BackendShutdownWithPendingCreate(bool fast) {
@@ -499,6 +509,7 @@ TEST_F(DiskCacheBackendTest, ShutdownWithPendingCreate) {
   BackendShutdownWithPendingCreate(false);
 }
 
+#if !defined(LEAK_SANITIZER)
 // We'll be leaking an entry from this test.
 TEST_F(DiskCacheBackendTest, ShutdownWithPendingCreate_Fast) {
   // The integrity test sets kNoRandom so there's a version mismatch if we don't
@@ -506,6 +517,7 @@ TEST_F(DiskCacheBackendTest, ShutdownWithPendingCreate_Fast) {
   SetNewEviction();
   BackendShutdownWithPendingCreate(true);
 }
+#endif
 
 TEST_F(DiskCacheTest, TruncatedIndex) {
   ASSERT_TRUE(CleanupCacheDir());
@@ -791,11 +803,8 @@ void DiskCacheBackendTest::BackendInvalidEntry() {
   EXPECT_EQ(0, cache_->GetEntryCount());
 }
 
-// This and the other intentionally leaky tests below are excluded from
-// valgrind runs by naming them in the files
-//   net/data/valgrind/net_unittests.gtest.txt
-// The scripts tools/valgrind/chrome_tests.sh
-// read those files and pass the appropriate --gtest_filter to net_unittests.
+#if !defined(LEAK_SANITIZER)
+// We'll be leaking memory from this test.
 TEST_F(DiskCacheBackendTest, InvalidEntry) {
   BackendInvalidEntry();
 }
@@ -1057,6 +1066,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionTrimInvalidEntry2) {
   SetNewEviction();
   BackendTrimInvalidEntry2();
 }
+#endif  // !defined(LEAK_SANITIZER)
 
 void DiskCacheBackendTest::BackendEnumerations() {
   InitCache();
@@ -1234,6 +1244,7 @@ TEST_F(DiskCacheBackendTest, ShaderCacheEnumerationReadData) {
   cache_->EndEnumeration(&iter);
 }
 
+#if !defined(LEAK_SANITIZER)
 // Verify handling of invalid entries while doing enumerations.
 // We'll be leaking memory from this test.
 void DiskCacheBackendTest::BackendInvalidEntryEnumeration() {
@@ -1281,6 +1292,7 @@ TEST_F(DiskCacheBackendTest, NewEvictionInvalidEntryEnumeration) {
   SetNewEviction();
   BackendInvalidEntryEnumeration();
 }
+#endif  // !defined(LEAK_SANITIZER)
 
 // Tests that if for some reason entries are modified close to existing cache
 // iterators, we don't generate fatal errors or reset the cache.

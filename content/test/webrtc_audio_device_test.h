@@ -112,10 +112,19 @@ class WebRTCAutoDelete {
 // Implemented and defined in the cc file.
 class ReplaceContentClientRenderer;
 
-class WebRTCAudioDeviceTest : public ::testing::Test, public IPC::Listener {
+// Temporarily disabled in LeakSanitizer builds due to memory leaks.
+// http://crbug.com/148865
+#if defined(LEAK_SANITIZER)
+#define MAYBE_WebRTCAudioDeviceTest DISABLED_WebRTCAudioDeviceTest
+#else
+#define MAYBE_WebRTCAudioDeviceTest WebRTCAudioDeviceTest
+#endif
+
+class MAYBE_WebRTCAudioDeviceTest : public ::testing::Test,
+                                    public IPC::Listener {
  public:
-  WebRTCAudioDeviceTest();
-  virtual ~WebRTCAudioDeviceTest();
+  MAYBE_WebRTCAudioDeviceTest();
+  virtual ~MAYBE_WebRTCAudioDeviceTest();
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;

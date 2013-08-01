@@ -383,7 +383,7 @@ int RunWebRtcLoopbackTimeTest(media::AudioManager* manager,
 // Trivial test which verifies that one part of the test harness
 // (HardwareSampleRatesAreValid()) works as intended for all supported
 // hardware input sample rates.
-TEST_F(WebRTCAudioDeviceTest, TestValidInputRates) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest, TestValidInputRates) {
   int valid_rates[] = {16000, 32000, 44100, 48000, 96000};
 
   // Verify that we will approve all rates listed in |valid_rates|.
@@ -404,7 +404,7 @@ TEST_F(WebRTCAudioDeviceTest, TestValidInputRates) {
 // Trivial test which verifies that one part of the test harness
 // (HardwareSampleRatesAreValid()) works as intended for all supported
 // hardware output sample rates.
-TEST_F(WebRTCAudioDeviceTest, TestValidOutputRates) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest, TestValidOutputRates) {
   int valid_rates[] = {44100, 48000, 96000};
 
   // Verify that we will approve all rates listed in |valid_rates|.
@@ -424,7 +424,7 @@ TEST_F(WebRTCAudioDeviceTest, TestValidOutputRates) {
 
 // Basic test that instantiates and initializes an instance of
 // WebRtcAudioDeviceImpl.
-TEST_F(WebRTCAudioDeviceTest, Construct) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest, Construct) {
 #if defined(OS_WIN)
   // This test crashes on Win XP bots.
   if (base::win::GetVersion() <= base::win::VERSION_XP)
@@ -472,7 +472,7 @@ TEST_F(WebRTCAudioDeviceTest, Construct) {
 // verify that streaming starts correctly.
 // Disabled when running headless since the bots don't have the required config.
 // Flaky, http://crbug.com/167299 .
-TEST_F(WebRTCAudioDeviceTest, DISABLED_StartPlayout) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest, DISABLED_StartPlayout) {
   if (!has_output_devices_) {
     LOG(WARNING) << "No output device detected.";
     return;
@@ -562,7 +562,7 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_StartPlayout) {
 #else
 #define MAYBE_StartRecording StartRecording
 #endif
-TEST_F(WebRTCAudioDeviceTest, MAYBE_StartRecording) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartRecording) {
   if (!has_input_devices_ || !has_output_devices_) {
     LOG(WARNING) << "Missing audio devices.";
     return;
@@ -642,7 +642,7 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_StartRecording) {
 // Uses WebRtcAudioDeviceImpl to play a local wave file.
 // Disabled when running headless since the bots don't have the required config.
 // Flaky, http://crbug.com/167298 .
-TEST_F(WebRTCAudioDeviceTest, DISABLED_PlayLocalFile) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest, DISABLED_PlayLocalFile) {
   if (!has_output_devices_) {
     LOG(WARNING) << "No output device detected.";
     return;
@@ -723,7 +723,7 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_PlayLocalFile) {
 #else
 #define MAYBE_FullDuplexAudioWithAGC FullDuplexAudioWithAGC
 #endif
-TEST_F(WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   if (!has_output_devices_ || !has_input_devices_) {
     LOG(WARNING) << "Missing audio devices.";
     return;
@@ -812,7 +812,7 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
 }
 
 // Test times out on bots, see http://crbug.com/247447
-TEST_F(WebRTCAudioDeviceTest, DISABLED_WebRtcRecordingSetupTime) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest, DISABLED_WebRtcRecordingSetupTime) {
   if (!has_input_devices_) {
     LOG(WARNING) << "Missing audio capture devices.";
     return;
@@ -868,7 +868,7 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_WebRtcRecordingSetupTime) {
   EXPECT_EQ(0, base->Terminate());
 }
 
-TEST_F(WebRTCAudioDeviceTest, WebRtcPlayoutSetupTime) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest, WebRtcPlayoutSetupTime) {
   if (!has_output_devices_) {
     LOG(WARNING) << "No output device detected.";
     return;
@@ -914,7 +914,8 @@ TEST_F(WebRTCAudioDeviceTest, WebRtcPlayoutSetupTime) {
         WebRtcLoopbackTimeWithoutSignalProcessing
 #endif
 
-TEST_F(WebRTCAudioDeviceTest, MAYBE_WebRtcLoopbackTimeWithoutSignalProcessing) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest,
+       MAYBE_WebRtcLoopbackTimeWithoutSignalProcessing) {
   int latency = RunWebRtcLoopbackTimeTest(audio_manager_.get(), false);
   PrintPerfResultMs("webrtc_loopback_without_sigal_processing (100 packets)",
                     "t", latency);
@@ -929,7 +930,8 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_WebRtcLoopbackTimeWithoutSignalProcessing) {
         WebRtcLoopbackTimeWithSignalProcessing
 #endif
 
-TEST_F(WebRTCAudioDeviceTest, MAYBE_WebRtcLoopbackTimeWithSignalProcessing) {
+TEST_F(MAYBE_WebRTCAudioDeviceTest,
+       MAYBE_WebRtcLoopbackTimeWithSignalProcessing) {
   int latency = RunWebRtcLoopbackTimeTest(audio_manager_.get(), true);
   PrintPerfResultMs("webrtc_loopback_with_signal_processing (100 packets)",
                     "t", latency);
