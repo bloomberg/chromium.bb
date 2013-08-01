@@ -26,16 +26,9 @@ interface CharacterData : Node {
     [TreatReturnedNullStringAs=Null, RaisesException] DOMString substringData([IsIndex,Default=Undefined] optional unsigned long offset, [IsIndex,Default=Undefined] optional unsigned long length);
 
     void appendData(DOMString data);
-
-     [RaisesException] void insertData([IsIndex,Default=Undefined] optional unsigned long offset,
-                                   [Default=Undefined] optional DOMString data);
-
-     [RaisesException] void deleteData([IsIndex,Default=Undefined] optional unsigned long offset,
-                                   [IsIndex,Default=Undefined] optional unsigned long length);
-
-     [RaisesException] void replaceData([IsIndex,Default=Undefined] optional unsigned long offset,
-                                    [IsIndex,Default=Undefined] optional unsigned long length,
-                                    [Default=Undefined] optional DOMString data);
+    [RaisesException] void insertData([IsIndex] unsigned long offset, DOMString data);
+    [RaisesException] void deleteData([IsIndex] unsigned long offset, unsigned long length);
+    [RaisesException] void replaceData([IsIndex] unsigned long offset, unsigned long length, DOMString data);
 };
 
 CharacterData implements ChildNode;

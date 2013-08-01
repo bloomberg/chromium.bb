@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="help" href="http://www.w3.org/TR/2012/WD-dom-20121206/#interface-characterdata" />
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("Tests that the CharacterData API arguments are correctly validated.");
+
+var text = document.createTextNode("abcd");
+shouldBeEqualToString("text.data", "abcd");
+shouldBe("text.__proto__.__proto__", "CharacterData.prototype");
+
+// appendData()
+shouldNotThrow("text.appendData('efg')");
+shouldBeEqualToString("text.data", "abcdefg");
+shouldThrow("text.appendData()", "'TypeError: Not enough arguments'");
+shouldBeEqualToString("text.data", "abcdefg");
+
+// insertData()
+text.data = "efg";
+shouldNotThrow("text.insertData(0, 'abcd')");
+shouldBeEqualToString("text.data", "abcdefg");
+shouldThrow("text.insertData()", "'TypeError: Not enough arguments'");
+shouldBeEqualToString("text.data", "abcdefg");
+shouldThrow("text.insertData(0)", "'TypeError: Not enough arguments'");
+shouldBeEqualToString("text.data", "abcdefg");
+shouldThrow("text.insertData(999, 'test')", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // offset greater than length.
+shouldBeEqualToString("text.data", "abcdefg");
+shouldNotThrow("text.insertData(-4294967294, 'test')");
+shouldBeEqualToString("text.data", "abtestcdefg");
+
+// deleteData()
+text.data = "abcdefg";
+shouldNotThrow("text.deleteData(4, 3)");
+shouldBeEqualToString("text.data", "abcd");
+shouldThrow("text.deleteData()", "'TypeError: Not enough arguments'");
+shouldBeEqualToString("text.data", "abcd");
+shouldThrow("text.deleteData(0)", "'TypeError: Not enough arguments'");
+shouldBeEqualToString("text.data", "abcd");
+shouldThrow("text.deleteData(999, 3)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // offset greater than length.
+shouldBeEqualToString("text.data", "abcd");
+shouldNotThrow("text.deleteData(-4294967294, 2)");
+shouldBeEqualToString("text.data", "ab");
+shouldNotThrow("text.deleteData(1, 999)"); // Length argument is too large, should be adjusted.
+shouldBeEqualToString("text.data", "a");
+
+// ReplaceData()
+text.data = "efg";
+shouldNotThrow("text.replaceData(0, 0, 'abcd')");
+shouldBeEqualToString("text.data", "abcdefg");
+shouldThrow("text.replaceData()", "'TypeError: Not enough arguments'");
+shouldBeEqualToString("text.data", "abcdefg");
+shouldThrow("text.replaceData(0)", "'TypeError: Not enough arguments'");
+shouldBeEqualToString("text.data", "abcdefg");
+shouldThrow("text.replaceData(0, 0)", "'TypeError: Not enough arguments'");
+shouldBeEqualToString("text.data", "abcdefg");
+shouldThrow("text.replaceData(999, 3, 'test')", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // offset greater than length.
+shouldBeEqualToString("text.data", "abcdefg");
+shouldNotThrow("text.replaceData(-4294967294, 0, 'test')");
+shouldBeEqualToString("text.data", "abtestcdefg");
+shouldNotThrow("text.replaceData(1, 999, 'aaa')"); // Length argument is too large, should be adjusted.
+shouldBeEqualToString("text.data", "aaaa");
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
