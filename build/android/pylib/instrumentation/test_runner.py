@@ -151,7 +151,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     http_server_ports = self.LaunchTestHttpServer(
         os.path.join(constants.DIR_SOURCE_ROOT), self._lighttp_port)
     if self.ports_to_forward:
-      self.ForwardPorts([(port, port) for port in self.ports_to_forward])
+      self._ForwardPorts([(port, port) for port in self.ports_to_forward])
     self.flags.AddFlags(['--enable-test-intents'])
 
   def TearDown(self):
