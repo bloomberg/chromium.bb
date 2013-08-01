@@ -25,7 +25,7 @@ interface CharacterData : Node {
 
     [TreatReturnedNullStringAs=Null, RaisesException] DOMString substringData([IsIndex,Default=Undefined] optional unsigned long offset, [IsIndex,Default=Undefined] optional unsigned long length);
 
-    void appendData([Default=Undefined] optional DOMString data);
+    void appendData(DOMString data);
 
      [RaisesException] void insertData([IsIndex,Default=Undefined] optional unsigned long offset,
                                    [Default=Undefined] optional DOMString data);

@@ -1,0 +1,15 @@
+Tests that CharacterData.appendData() argument is mandatory.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS text.data is "abcd"
+PASS text.__proto__.__proto__ is CharacterData.prototype
+PASS text.appendData('efg') did not throw exception.
+PASS text.data is "abcdefg"
+PASS text.appendData() threw exception TypeError: Not enough arguments.
+PASS text.data is "abcdefg"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="help" href="http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-32791A2F" />
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("Tests that CharacterData.appendData() argument is mandatory.");
+
+var text = document.createTextNode("abcd");
+shouldBeEqualToString("text.data", "abcd");
+shouldBe("text.__proto__.__proto__", "CharacterData.prototype");
+shouldNotThrow("text.appendData('efg')");
+shouldBeEqualToString("text.data", "abcdefg");
+shouldThrow("text.appendData()", "'TypeError: Not enough arguments'"); // Missing argument.
+shouldBeEqualToString("text.data", "abcdefg");
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
