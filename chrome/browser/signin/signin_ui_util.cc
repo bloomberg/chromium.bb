@@ -126,14 +126,16 @@ void GetStatusLabelsForAuthError(Profile* profile,
         link_label->clear();
       break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
-      // Note that there is little the user can do if the server is not
-      // reachable. Since attempting to re-connect is done automatically by
-      // the Syncer, we do not show the (re)login link.
       if (status_label) {
         status_label->assign(
             l10n_util::GetStringFUTF16(IDS_SYNC_SERVER_IS_UNREACHABLE,
                                        product_name));
       }
+      // Note that there is little the user can do if the server is not
+      // reachable. Since attempting to re-connect is done automatically by
+      // the Syncer, we do not show the (re)login link.
+      if (link_label)
+        link_label->clear();
       break;
     default:
       if (status_label) {
