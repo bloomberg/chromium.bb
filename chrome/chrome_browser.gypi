@@ -1434,6 +1434,8 @@
         'browser/policy/profile_policy_connector.h',
         'browser/policy/profile_policy_connector_factory.cc',
         'browser/policy/profile_policy_connector_factory.h',
+        'browser/policy/registry_dict_win.cc',
+        'browser/policy/registry_dict_win.h',
         'browser/policy/url_blacklist_manager.cc',
         'browser/policy/url_blacklist_manager.h',
         'browser/predictors/autocomplete_action_predictor.cc',

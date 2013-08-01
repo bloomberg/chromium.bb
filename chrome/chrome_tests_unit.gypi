@@ -1051,6 +1051,7 @@
         'browser/policy/preferences_mock_mac.cc',
         'browser/policy/preferences_mock_mac.h',
         'browser/policy/preg_parser_win_unittest.cc',
+        'browser/policy/registry_dict_win_unittest.cc',
         'browser/policy/url_blacklist_manager_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_table_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_unittest.cc',
