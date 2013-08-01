@@ -7,6 +7,7 @@
 
 #include "apps/app_launcher.h"
 #include "apps/app_shim/app_shim_handler_mac.h"
+#include "apps/app_shim/app_shim_mac.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -240,8 +241,7 @@ bool AppListControllerDelegateCocoa::CanPin() {
 
 bool AppListControllerDelegateCocoa::CanDoCreateShortcutsFlow(
     bool is_platform_app) {
-  return is_platform_app &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppShims);
+  return is_platform_app && apps::IsAppShimsEnabled();
 }
 
 void AppListControllerDelegateCocoa::DoCreateShortcutsFlow(

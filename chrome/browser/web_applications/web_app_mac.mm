@@ -7,6 +7,7 @@
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
+#include "apps/app_shim/app_shim_mac.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
@@ -694,7 +695,7 @@ base::FilePath GetAppInstallPath(
 }
 
 void MaybeLaunchShortcut(const ShellIntegration::ShortcutInfo& shortcut_info) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppShims))
+  if (!apps::IsAppShimsEnabled())
     return;
 
   content::BrowserThread::PostTask(

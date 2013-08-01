@@ -27,6 +27,10 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
+#if defined(OS_MACOSX)
+#include "apps/app_shim/app_shim_mac.h"
+#endif
+
 using extensions::Extension;
 
 namespace {
@@ -95,8 +99,7 @@ void AppShortcutManager::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
 #if defined(OS_MACOSX)
-      if (!CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableAppShims))
+      if (!apps::IsAppShimsEnabled())
         break;
 #endif  // defined(OS_MACOSX)
 
@@ -151,8 +154,7 @@ void AppShortcutManager::OnceOffCreateShortcuts() {
   // Until it is enabled permanently, we need to check the flag, and set the
   // pref accordingly.
 #if defined(OS_MACOSX)
-  bool is_now_enabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppShims);
+  bool is_now_enabled = apps::IsAppShimsEnabled();
 #else
   bool is_now_enabled = true;
 #endif  // defined(OS_MACOSX)

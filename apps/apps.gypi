@@ -45,6 +45,8 @@
         'app_shim/app_shim_host_mac.h',
         'app_shim/app_shim_host_manager_mac.h',
         'app_shim/app_shim_host_manager_mac.mm',
+        'app_shim/app_shim_mac.cc',
+        'app_shim/app_shim_mac.h',
         'app_shim/chrome_main_app_mode_mac.mm',
         'app_shim/extension_app_shim_handler_mac.cc',
         'app_shim/extension_app_shim_handler_mac.h',
