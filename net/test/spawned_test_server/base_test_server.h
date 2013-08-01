@@ -120,8 +120,8 @@ class BaseTestServer {
     // response returned.
     OCSPStatus ocsp_status;
 
-    // If not zero, |serial| will be the serial number of the auto-generated
-    // leaf certificate when |server_certificate==CERT_AUTO|.
+    // If not zero, |cert_serial| will be the serial number of the
+    // auto-generated leaf certificate when |server_certificate==CERT_AUTO|.
     uint64 cert_serial;
 
     // True if a CertificateRequest should be sent to the client during

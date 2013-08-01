@@ -378,9 +378,10 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     if (!ocsp_arg.empty())
       arguments->SetString("ocsp", ocsp_arg);
 
-    if (ssl_options_.cert_serial != 0)
+    if (ssl_options_.cert_serial != 0) {
       arguments->Set("cert-serial",
                      base::Value::CreateIntegerValue(ssl_options_.cert_serial));
+    }
 
     // Check bulk cipher argument.
     scoped_ptr<base::ListValue> bulk_cipher_values(new base::ListValue());
