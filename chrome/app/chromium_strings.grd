@@ -649,6 +649,16 @@ Chromium is unable to recover your settings.
         Adding to Chromium...
       </message>
 
+      <message name="IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS"
+               desc="Message shown on the download shelf when the download is known to change browser settings.">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may change your Chromium settings.
+      </message>
+
+      <message name="IDS_PROMPT_DOWNLOAD_CHANGES_SEARCH_SETTINGS"
+               desc="Message shown on the download shelf when the download is known to change search engine settings in the browser.">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may change how your searches work in Chromium.
+      </message>
+
       <!-- Remove in-progress downloads confirmation dialog -->
       <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when one download is in progress.">
         A download is currently in progress. Do you want to exit Chromium and cancel the download?
