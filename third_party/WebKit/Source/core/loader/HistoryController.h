@@ -60,7 +60,6 @@ public:
 
     void updateForCommit();
     void updateForSameDocumentNavigation();
-    void updateForFrameLoadCompleted();
 
     HistoryItem* currentItem() const { return m_currentItem.get(); }
     void setCurrentItem(HistoryItem*);
@@ -107,8 +106,6 @@ private:
     RefPtr<HistoryItem> m_currentItem;
     RefPtr<HistoryItem> m_previousItem;
     RefPtr<HistoryItem> m_provisionalItem;
-
-    bool m_frameLoadComplete;
 
     bool m_defersLoading;
     RefPtr<HistoryItem> m_deferredItem;

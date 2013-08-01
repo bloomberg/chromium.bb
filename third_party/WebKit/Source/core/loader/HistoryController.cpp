@@ -50,7 +50,6 @@ namespace WebCore {
 
 HistoryController::HistoryController(Frame* frame)
     : m_frame(frame)
-    , m_frameLoadComplete(true)
     , m_defersLoading(false)
 {
 }
@@ -129,27 +128,15 @@ void HistoryController::updateBackForwardListForFragmentScroll()
 
 void HistoryController::saveDocumentState()
 {
-    // For a standard page load, we will have a previous item set, which will be used to
-    // store the form state.  However, in some cases we will have no previous item, and
-    // the current item is the right place to save the state.  One example is when we
-    // detach a bunch of frames because we are navigating from a site with frames to
-    // another site.  Another is when saving the frame state of a frame that is not the
-    // target of the current navigation (if we even decide to save with that granularity).
-
-    // Because of previousItem's "masking" of currentItem for this purpose, it's important
-    // that we keep track of the end of a page transition with m_frameLoadComplete.  We
-    // leverage the checkLoadComplete recursion to achieve this goal.
-
-    HistoryItem* item = m_frameLoadComplete ? m_currentItem.get() : m_previousItem.get();
-    if (!item)
+    if (!m_currentItem)
         return;
 
     Document* document = m_frame->document();
     ASSERT(document);
 
-    if (item->isCurrentDocument(document) && document->attached()) {
-        LOG(Loading, "WebCoreLoading %s: saving form state to %p", m_frame->tree()->uniqueName().string().utf8().data(), item);
-        item->setDocumentState(document->formElementsState());
+    if (m_currentItem->isCurrentDocument(document) && document->attached()) {
+        LOG(Loading, "WebCoreLoading %s: saving form state to %p", m_frame->tree()->uniqueName().string().utf8().data(), m_currentItem.get());
+        m_currentItem->setDocumentState(document->formElementsState());
     }
 }
 
@@ -268,9 +255,7 @@ void HistoryController::updateForBackForwardNavigation()
         LOG(History, "WebCoreHistory: Updating History for back/forward navigation in frame %s", m_frame->loader()->documentLoader()->title().string().utf8().data());
 #endif
 
-    // Must grab the current scroll position before disturbing it
-    if (!m_frameLoadComplete)
-        saveScrollPositionAndViewStateToItem(m_previousItem.get());
+    saveScrollPositionAndViewStateToItem(m_previousItem.get());
 
     // When traversing history, we may end up redirecting to a different URL
     // this time (e.g., due to cookies).  See http://webkit.org/b/49654.
@@ -341,7 +326,6 @@ void HistoryController::updateForCommit()
         // the provisional item for restoring state.
         // Note previousItem must be set before we close the URL, which will
         // happen when the data source is made non-provisional below
-        m_frameLoadComplete = false;
         m_previousItem = m_currentItem;
         ASSERT(m_provisionalItem);
         m_currentItem = m_provisionalItem;
@@ -392,9 +376,8 @@ void HistoryController::recursiveUpdateForCommit()
 
     // For each frame that already had the content the item requested (based on
     // (a matching URL and frame tree snapshot), just restore the scroll position.
-    // Save form state (works from currentItem, since m_frameLoadComplete is true)
+    // Save form state
     if (m_currentItem && itemsAreClones(m_currentItem.get(), m_provisionalItem.get())) {
-        ASSERT(m_frameLoadComplete);
         saveDocumentState();
         saveScrollPositionAndViewStateToItem(m_currentItem.get());
 
@@ -402,7 +385,6 @@ void HistoryController::recursiveUpdateForCommit()
             view->setWasScrolledByUser(false);
 
         // Now commit the provisional item
-        m_frameLoadComplete = false;
         m_previousItem = m_currentItem;
         m_currentItem = m_provisionalItem;
         m_provisionalItem = 0;
@@ -447,7 +429,6 @@ void HistoryController::recursiveUpdateForSameDocumentNavigation()
         return;
 
     // Commit the provisional item.
-    m_frameLoadComplete = false;
     m_previousItem = m_currentItem;
     m_currentItem = m_provisionalItem;
     m_provisionalItem = 0;
@@ -457,17 +438,8 @@ void HistoryController::recursiveUpdateForSameDocumentNavigation()
         child->loader()->history()->recursiveUpdateForSameDocumentNavigation();
 }
 
-void HistoryController::updateForFrameLoadCompleted()
-{
-    // Even if already complete, we might have set a previous item on a frame that
-    // didn't do any data loading on the past transaction. Make sure to track that
-    // the load is complete so that we use the current item instead.
-    m_frameLoadComplete = true;
-}
-
 void HistoryController::setCurrentItem(HistoryItem* item)
 {
-    m_frameLoadComplete = false;
     m_previousItem = m_currentItem;
     m_currentItem = item;
 }
@@ -542,7 +514,6 @@ PassRefPtr<HistoryItem> HistoryController::createItem()
     initializeItem(item.get());
 
     // Set the item for which we will save document state
-    m_frameLoadComplete = false;
     m_previousItem = m_currentItem;
     m_currentItem = item;
 
@@ -552,8 +523,7 @@ PassRefPtr<HistoryItem> HistoryController::createItem()
 PassRefPtr<HistoryItem> HistoryController::createItemTree(Frame* targetFrame, bool clipAtTarget)
 {
     RefPtr<HistoryItem> bfItem = createItem();
-    if (!m_frameLoadComplete)
-        saveScrollPositionAndViewStateToItem(m_previousItem.get());
+    saveScrollPositionAndViewStateToItem(m_previousItem.get());
 
     if (!clipAtTarget || m_frame != targetFrame) {
         // save frame state for items that aren't loading (khtml doesn't save those)

@@ -1193,8 +1193,6 @@ void FrameLoader::setState(FrameState newState)
 
     if (newState == FrameStateProvisional)
         m_frame->navigationScheduler()->cancel();
-    else if (newState == FrameStateComplete)
-        frameLoadCompleted();
 }
 
 void FrameLoader::commitProvisionalLoad()
@@ -1374,7 +1372,6 @@ void FrameLoader::checkLoadCompleteForThisFrame()
 
         case FrameStateComplete:
             m_loadType = FrameLoadTypeStandard;
-            frameLoadCompleted();
             return;
     }
 
@@ -1390,12 +1387,6 @@ void FrameLoader::didFirstLayout()
 {
     if (m_frame->page() && isBackForwardLoadType(m_loadType))
         history()->restoreScrollPositionAndViewState();
-}
-
-void FrameLoader::frameLoadCompleted()
-{
-    // Note: Can be called multiple times.
-    history()->updateForFrameLoadCompleted();
 }
 
 void FrameLoader::detachChildren()
