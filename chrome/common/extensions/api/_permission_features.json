@@ -557,13 +557,11 @@
   },
   "system.cpu": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
-    "whitelist": [""]
+    "extension_types": ["extension", "packaged_app", "platform_app"]
   },
   "system.memory": {
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
-    "whitelist": [""]
+    "extension_types": ["extension", "packaged_app", "platform_app"]
   },
   "system.storage": {
     "channel": "stable",

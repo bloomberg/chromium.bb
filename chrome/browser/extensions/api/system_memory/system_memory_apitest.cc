@@ -2,19 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/api/system_memory/memory_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/ui_test_utils.h"
 
 namespace extensions {
 
 using api::system_memory::MemoryInfo;
-
-const char kExtensionId[] = "lfmcnjhchhgejbpbonjobnlbcgcnmjif";
 
 class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
  public:
@@ -33,12 +27,6 @@ class SystemMemoryApiTest: public ExtensionApiTest {
  public:
   SystemMemoryApiTest() {}
   virtual ~SystemMemoryApiTest() {}
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kWhitelistedExtensionID,
-                                    kExtensionId);
-  }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();

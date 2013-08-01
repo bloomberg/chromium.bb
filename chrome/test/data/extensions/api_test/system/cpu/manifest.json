@@ -1,6 +1,4 @@
 {
-  // extension id: lfakdgdkbaleijdcpbfbngfphpmgfdfn
-  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDQ3waZNZ2qInxrEiUFPCx26uyf5BdWPHlvZYX6BS8v70Ps7yPJzOkXbQ1shS1sKGnooLljTNfeWW6vyBx9B5VQqKvPcdHHwhVNumKEJztVkszskPWVaZybVtckQq/WvqJlEgatsgNMoXnF+WC4cm6fSD/m2esXd3zZH8SB1Z24cwIDAQAB",
   "name": "system.cpu test",
   "version": "1.0",
   "description": "Test system.cpu API",
