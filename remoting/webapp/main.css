@@ -49,11 +49,6 @@ strong, b {
   color: #000;
 }
 
-/* Override the default apps v2 overflow behaviour. */
-html, body {
-  overflow: scroll;
-}
-
 /*------------------------------------------------------------------
 Component: Buttons
 ------------------------------------------------------------------*/
