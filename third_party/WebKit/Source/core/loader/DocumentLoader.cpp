@@ -31,6 +31,7 @@
 #include "core/loader/DocumentLoader.h"
 
 #include "FetchInitiatorTypeNames.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
@@ -437,6 +438,8 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
     if (policy == NavigationPolicyCurrentTab)
         return true;
     if (policy == NavigationPolicyIgnore)
+        return false;
+    if (!DOMWindow::allowPopUp(m_frame) && !ScriptController::processingUserGesture())
         return false;
     frameLoader()->client()->loadURLExternally(request, policy);
     return false;
