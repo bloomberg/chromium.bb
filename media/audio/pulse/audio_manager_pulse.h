@@ -50,9 +50,12 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
   void DestroyPulse();
 
   // Callback to get the devices' info like names, used by GetInputDevices().
-  static void DevicesInfoCallback(pa_context* context,
-                                  const pa_source_info* info,
-                                  int error, void* user_data);
+  static void InputDevicesInfoCallback(pa_context* context,
+                                       const pa_source_info* info,
+                                       int error, void* user_data);
+  static void OutputDevicesInfoCallback(pa_context* context,
+                                        const pa_sink_info* info,
+                                        int error, void* user_data);
 
   // Callback to get the native sample rate of PulseAudio, used by
   // GetNativeSampleRate().

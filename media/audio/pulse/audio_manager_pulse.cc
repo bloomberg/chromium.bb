@@ -66,13 +66,21 @@ AudioManagerPulse::~AudioManagerPulse() {
 
 // Implementation of AudioManager.
 bool AudioManagerPulse::HasAudioOutputDevices() {
-  // TODO(xians): implement this function.
-  return true;
+  DCHECK(input_mainloop_);
+  DCHECK(input_context_);
+  media::AudioDeviceNames devices;
+  AutoPulseLock auto_lock(input_mainloop_);
+  devices_ = &devices;
+  pa_operation* operation = pa_context_get_sink_info_list(
+      input_context_, OutputDevicesInfoCallback, this);
+  WaitForOperationCompletion(input_mainloop_, operation);
+  return !devices.empty();
 }
 
 bool AudioManagerPulse::HasAudioInputDevices() {
-  // TODO(xians): implement this function.
-  return true;
+  media::AudioDeviceNames devices;
+  GetAudioInputDeviceNames(&devices);
+  return !devices.empty();
 }
 
 void AudioManagerPulse::ShowAudioInputSettings() {
@@ -84,10 +92,10 @@ void AudioManagerPulse::GetAudioInputDeviceNames(
   DCHECK(device_names->empty());
   DCHECK(input_mainloop_);
   DCHECK(input_context_);
-  devices_ = device_names;
   AutoPulseLock auto_lock(input_mainloop_);
+  devices_ = device_names;
   pa_operation* operation = pa_context_get_source_info_list(
-      input_context_, DevicesInfoCallback, this);
+      input_context_, InputDevicesInfoCallback, this);
   WaitForOperationCompletion(input_mainloop_, operation);
 
   // Append the default device on the top of the list if the list is not empty.
@@ -265,9 +273,9 @@ void AudioManagerPulse::DestroyPulse() {
   input_mainloop_ = NULL;
 }
 
-void AudioManagerPulse::DevicesInfoCallback(pa_context* context,
-                                            const pa_source_info* info,
-                                            int error, void *user_data) {
+void AudioManagerPulse::InputDevicesInfoCallback(pa_context* context,
+                                                 const pa_source_info* info,
+                                                 int error, void *user_data) {
   AudioManagerPulse* manager = reinterpret_cast<AudioManagerPulse*>(user_data);
 
   if (error) {
@@ -281,6 +289,21 @@ void AudioManagerPulse::DevicesInfoCallback(pa_context* context,
     manager->devices_->push_back(media::AudioDeviceName(info->description,
                                                         info->name));
   }
+}
+
+void AudioManagerPulse::OutputDevicesInfoCallback(pa_context* context,
+                                                  const pa_sink_info* info,
+                                                  int error, void *user_data) {
+  AudioManagerPulse* manager = reinterpret_cast<AudioManagerPulse*>(user_data);
+
+  if (error) {
+    // Signal the pulse object that it is done.
+    pa_threaded_mainloop_signal(manager->input_mainloop_, 0);
+    return;
+  }
+
+  manager->devices_->push_back(media::AudioDeviceName(info->description,
+                                                      info->name));
 }
 
 void AudioManagerPulse::SampleRateInfoCallback(pa_context* context,
