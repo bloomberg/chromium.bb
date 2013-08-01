@@ -405,14 +405,15 @@ GpuProcessTransportFactory::OffscreenContextProviderForMainThread() {
         base::Bind(&GpuProcessTransportFactory::
                        CreateOffscreenCommandBufferContext,
                    base::Unretained(this)));
-    shared_contexts_main_thread_->SetLostContextCallback(base::Bind(
-        &GpuProcessTransportFactory::
-            OnLostMainThreadSharedContextInsideCallback,
-        callback_factory_.GetWeakPtr()));
+    if (shared_contexts_main_thread_) {
+      shared_contexts_main_thread_->SetLostContextCallback(base::Bind(
+          &GpuProcessTransportFactory::
+              OnLostMainThreadSharedContextInsideCallback,
+          callback_factory_.GetWeakPtr()));
 
-    if (shared_contexts_main_thread_.get() &&
-        !shared_contexts_main_thread_->BindToCurrentThread())
-      shared_contexts_main_thread_ = NULL;
+      if (!shared_contexts_main_thread_->BindToCurrentThread())
+        shared_contexts_main_thread_ = NULL;
+    }
   }
   return shared_contexts_main_thread_;
 }
