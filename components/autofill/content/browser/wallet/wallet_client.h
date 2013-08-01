@@ -11,6 +11,7 @@
 
 #include "base/callback.h"  // For base::Closure.
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/autofill/content/browser/autocheckout_statistic.h"
@@ -250,6 +251,8 @@ class WalletClient : public net::URLFetcherDelegate {
 
   // When the current request started. Used to track client side latency.
   base::Time request_started_timestamp_;
+
+  base::WeakPtrFactory<WalletClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WalletClient);
 };

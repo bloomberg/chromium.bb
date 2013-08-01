@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -268,7 +269,8 @@ WalletClient::WalletClient(net::URLRequestContextGetter* context_getter,
     : context_getter_(context_getter),
       delegate_(delegate),
       request_type_(NO_PENDING_REQUEST),
-      one_time_pad_(kOneTimePadLength) {
+      one_time_pad_(kOneTimePadLength),
+      weak_ptr_factory_(this) {
   DCHECK(context_getter_.get());
   DCHECK(delegate_);
 }
@@ -632,6 +634,14 @@ void WalletClient::OnURLFetchComplete(
   // |method, but should be freed once control leaves the method.
   scoped_ptr<net::URLFetcher> scoped_request(request_.Pass());
 
+  // Prepare to start the next pending request.  This is queued up as an
+  // asynchronous message because |this| WalletClient instance can be destroyed
+  // before the end of the method in response to the current incoming request.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&WalletClient::StartNextPendingRequest,
+                 weak_ptr_factory_.GetWeakPtr()));;
+
   std::string data;
   source->GetResponseAsString(&data);
   VLOG(1) << "Response body: " << data;
@@ -761,8 +771,6 @@ void WalletClient::OnURLFetchComplete(
     case NO_PENDING_REQUEST:
       NOTREACHED();
   }
-
-  StartNextPendingRequest();
 }
 
 void WalletClient::StartNextPendingRequest() {

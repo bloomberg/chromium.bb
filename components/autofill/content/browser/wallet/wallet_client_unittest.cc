@@ -6,6 +6,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -726,6 +727,10 @@ class WalletClientTest : public testing::Test {
     fetcher->set_response_code(response_code);
     fetcher->SetResponseString(response_body);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+    // Pump the message loop to catch up to any asynchronous tasks that might
+    // have been posted from OnURLFetchComplete().
+    base::RunLoop().RunUntilIdle();
   }
 
   void VerifyAndFinishFormEncodedRequest(net::HttpStatusCode response_code,
