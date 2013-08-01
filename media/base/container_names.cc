@@ -975,8 +975,6 @@ static bool CheckMov(const uint8* buffer, int buffer_size) {
       default:
         return false;
     }
-    if (atomsize <= 0)
-      break;  // Indicates the last atom or length too big.
     if (atomsize == 1) {
       // Indicates that the length is the next 64bits.
       if (offset + 16 > buffer_size)
@@ -985,6 +983,8 @@ static bool CheckMov(const uint8* buffer, int buffer_size) {
         break;  // Offset is way past buffer size.
       atomsize = Read32(buffer + offset + 12);
     }
+    if (atomsize <= 0)
+      break;  // Indicates the last atom or length too big.
     offset += atomsize;
   }
   return true;
