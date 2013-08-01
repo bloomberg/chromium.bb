@@ -42,13 +42,13 @@ class WebstorePrivateApi {
       Profile* profile, const std::string& extension_id);
 };
 
-class InstallBundleFunction : public AsyncExtensionFunction,
+class WebstorePrivateInstallBundleFunction : public AsyncExtensionFunction,
                               public extensions::BundleInstaller::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.installBundle",
                              WEBSTOREPRIVATE_INSTALLBUNDLE)
 
-  InstallBundleFunction();
+  WebstorePrivateInstallBundleFunction();
 
   // BundleInstaller::Delegate:
   virtual void OnBundleInstallApproved() OVERRIDE;
@@ -56,7 +56,7 @@ class InstallBundleFunction : public AsyncExtensionFunction,
   virtual void OnBundleInstallCompleted() OVERRIDE;
 
  protected:
-  virtual ~InstallBundleFunction();
+  virtual ~WebstorePrivateInstallBundleFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -69,7 +69,7 @@ class InstallBundleFunction : public AsyncExtensionFunction,
   scoped_refptr<extensions::BundleInstaller> bundle_;
 };
 
-class BeginInstallWithManifestFunction
+class WebstorePrivateBeginInstallWithManifest3Function
     : public AsyncExtensionFunction,
       public ExtensionInstallPrompt::Delegate,
       public WebstoreInstallHelper::Delegate,
@@ -112,7 +112,7 @@ class BeginInstallWithManifestFunction
     ALREADY_INSTALLED,
   };
 
-  BeginInstallWithManifestFunction();
+  WebstorePrivateBeginInstallWithManifest3Function();
 
   // WebstoreInstallHelper::Delegate:
   virtual void OnWebstoreParseSuccess(
@@ -129,7 +129,7 @@ class BeginInstallWithManifestFunction
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
  protected:
-  virtual ~BeginInstallWithManifestFunction();
+  virtual ~WebstorePrivateBeginInstallWithManifest3Function();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -167,14 +167,14 @@ class BeginInstallWithManifestFunction
   scoped_ptr<SigninTracker> signin_tracker_;
 };
 
-class CompleteInstallFunction
+class WebstorePrivateCompleteInstallFunction
     : public AsyncExtensionFunction,
       public WebstoreInstaller::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.completeInstall",
                              WEBSTOREPRIVATE_COMPLETEINSTALL)
 
-  CompleteInstallFunction();
+  WebstorePrivateCompleteInstallFunction();
 
   // WebstoreInstaller::Delegate:
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
@@ -184,7 +184,7 @@ class CompleteInstallFunction
       WebstoreInstaller::FailureReason reason) OVERRIDE;
 
  protected:
-  virtual ~CompleteInstallFunction();
+  virtual ~WebstorePrivateCompleteInstallFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -193,66 +193,66 @@ class CompleteInstallFunction
   scoped_ptr<WebstoreInstaller::Approval> approval_;
 };
 
-class EnableAppLauncherFunction
+class WebstorePrivateEnableAppLauncherFunction
     : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.enableAppLauncher",
                              WEBSTOREPRIVATE_ENABLEAPPLAUNCHER)
 
-  EnableAppLauncherFunction();
+  WebstorePrivateEnableAppLauncherFunction();
 
  protected:
-  virtual ~EnableAppLauncherFunction();
+  virtual ~WebstorePrivateEnableAppLauncherFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetBrowserLoginFunction : public SyncExtensionFunction {
+class WebstorePrivateGetBrowserLoginFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getBrowserLogin",
                              WEBSTOREPRIVATE_GETBROWSERLOGIN)
 
  protected:
-  virtual ~GetBrowserLoginFunction() {}
+  virtual ~WebstorePrivateGetBrowserLoginFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetStoreLoginFunction : public SyncExtensionFunction {
+class WebstorePrivateGetStoreLoginFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getStoreLogin",
                              WEBSTOREPRIVATE_GETSTORELOGIN)
 
  protected:
-  virtual ~GetStoreLoginFunction() {}
+  virtual ~WebstorePrivateGetStoreLoginFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SetStoreLoginFunction : public SyncExtensionFunction {
+class WebstorePrivateSetStoreLoginFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.setStoreLogin",
                              WEBSTOREPRIVATE_SETSTORELOGIN)
 
  protected:
-  virtual ~SetStoreLoginFunction() {}
+  virtual ~WebstorePrivateSetStoreLoginFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetWebGLStatusFunction : public AsyncExtensionFunction {
+class WebstorePrivateGetWebGLStatusFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getWebGLStatus",
                              WEBSTOREPRIVATE_GETWEBGLSTATUS)
 
-  GetWebGLStatusFunction();
+  WebstorePrivateGetWebGLStatusFunction();
 
  protected:
-  virtual ~GetWebGLStatusFunction();
+  virtual ~WebstorePrivateGetWebGLStatusFunction();
 
   void OnFeatureCheck(bool feature_allowed);
 
@@ -265,15 +265,16 @@ class GetWebGLStatusFunction : public AsyncExtensionFunction {
   scoped_refptr<GPUFeatureChecker> feature_checker_;
 };
 
-class GetIsLauncherEnabledFunction : public AsyncExtensionFunction {
+class WebstorePrivateGetIsLauncherEnabledFunction
+    : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.getIsLauncherEnabled",
                              WEBSTOREPRIVATE_GETISLAUNCHERENABLED)
 
-  GetIsLauncherEnabledFunction() {}
+  WebstorePrivateGetIsLauncherEnabledFunction() {}
 
  protected:
-  virtual ~GetIsLauncherEnabledFunction() {}
+  virtual ~WebstorePrivateGetIsLauncherEnabledFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -282,15 +283,15 @@ class GetIsLauncherEnabledFunction : public AsyncExtensionFunction {
   void OnIsLauncherCheckCompleted(bool is_enabled);
 };
 
-class IsInIncognitoModeFunction : public AsyncExtensionFunction {
+class WebstorePrivateIsInIncognitoModeFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.isInIncognitoMode",
                              WEBSTOREPRIVATE_ISININCOGNITOMODEFUNCTION)
 
-  IsInIncognitoModeFunction() {}
+  WebstorePrivateIsInIncognitoModeFunction() {}
 
  protected:
-  virtual ~IsInIncognitoModeFunction() {}
+  virtual ~WebstorePrivateIsInIncognitoModeFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

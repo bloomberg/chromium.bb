@@ -105,6 +105,7 @@
           'web_navigation.json',
           'web_request.json',
           'web_socket_proxy_private.json',
+          'webstore_private.json',
           'webview.json',
           'windows.json',
         ],

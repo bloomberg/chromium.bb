@@ -328,8 +328,8 @@ class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
     static const char kEmptyArgs[] = "[]";
     static const char kWebGLStatusAllowed[] = "webgl_allowed";
     static const char kWebGLStatusBlocked[] = "webgl_blocked";
-    scoped_refptr<GetWebGLStatusFunction> function =
-        new GetWebGLStatusFunction();
+    scoped_refptr<WebstorePrivateGetWebGLStatusFunction> function =
+        new WebstorePrivateGetWebGLStatusFunction();
     scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
             function.get(), kEmptyArgs, browser()));
     ASSERT_TRUE(result);
