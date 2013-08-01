@@ -49,13 +49,8 @@
             '../third_party/skia/src/opts/SkUtils_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkBitmapFilter_opts_SSE2.cpp',
           ],
-          'conditions': [
-            # x86 Android doesn't support SSSE3 instructions.
-            [ 'OS != "android"', {
-              'dependencies': [
-                'skia_opts_ssse3',
-              ],
-            }],
+          'dependencies': [
+            'skia_opts_ssse3',
           ],
         }],
         [ 'target_arch == "arm"', {
@@ -144,7 +139,7 @@
         '../third_party/skia/src/core',
       ],
       'conditions': [
-        [ 'OS in ["linux", "freebsd", "openbsd", "solaris"]', {
+        [ 'OS in ["linux", "freebsd", "openbsd", "solaris", "android"]', {
           'cflags': [
             '-mssse3',
           ],
