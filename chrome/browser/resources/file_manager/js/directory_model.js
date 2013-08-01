@@ -10,6 +10,57 @@ var SIMULTANEOUS_RESCAN_INTERVAL = 1000;
 // Used for operations that require almost instant rescan.
 var SHORT_RESCAN_INTERVAL = 100;
 
+function DirectoryModelUtil() {}
+
+/**
+ * Returns root entries asynchronously.
+ * @param {DirectoryEntry} root The root entry of the whole file system.
+ * @param {boolean} isDriveEnabled True if the drive is enabled.
+ * @param {function(Array.<Entry>)} callback Called when roots are resolved.
+ */
+DirectoryModelUtil.resolveRoots = function(root, isDriveEnabled, callback) {
+  var groups = {
+    drive: null,
+    downloads: null,
+    archives: null,
+    removables: null,
+  };
+
+  // Use a fake instead, to return a list as fast as possible.
+  groups.drive = (isDriveEnabled ? [DirectoryModel.fakeDriveEntry_] : []);
+
+  var addRootEntryList = function(key, rootEntryList) {
+    groups[key] = rootEntryList;
+
+    for (var key in groups) {
+      if (!groups[key]) {
+        // There is a pending task.
+        return;
+      }
+    }
+
+    // Concat the result in the order.
+    callback([].concat(
+        groups.drive, groups.downloads, groups.archives, groups.removables));
+  };
+
+  // Resolve download root directory.
+  root.getDirectory(
+      RootDirectory.DOWNLOADS.substring(1),  // Remove the leading '/'.
+      { create: false },
+      function(entry) { addRootEntryList('downloads', [entry]); },
+      function(err) {
+        console.error('Error resolving downloads root dir: ' + error);
+        addRootEntryList('downloads', []);
+      });
+
+  // Reads 'archives' and 'removables' roots.
+  util.readDirectory(root, RootDirectory.ARCHIVE.substring(1),
+                     addRootEntryList.bind(null, 'archives'));
+  util.readDirectory(root, RootDirectory.REMOVABLE.substring(1),
+                     addRootEntryList.bind(null, 'removables'));
+};
+
 /**
  * Data model of the file manager.
  *
@@ -49,6 +100,7 @@ function DirectoryModel(root, singleSelection, fileFilter, fileWatcher,
   this.currentDirContents_ = new DirectoryContentsBasic(
       this.currentFileListContext_, root);
 
+  // TODO(hidehiko): Move this variable to VolumeManager.
   this.rootsList_ = new cr.ui.ArrayDataModel([]);
   this.volumeManager_ = volumeManager;
 
@@ -1154,86 +1206,24 @@ DirectoryModel.prototype.selectIndex = function(index) {
 };
 
 /**
- * Get root entries asynchronously.
- * @param {function(Array.<Entry>)} callback Called when roots are resolved.
- * @private
- */
-DirectoryModel.prototype.resolveRoots_ = function(callback) {
-  var groups = {
-    drive: null,
-    downloads: null,
-    archives: null,
-    removables: null
-  };
-  var self = this;
-
-  metrics.startInterval('Load.Roots');
-  var done = function() {
-    var roots = [];
-    for (var i in groups) {
-      if (!groups[i])
-        return;
-      roots = roots.concat(groups[i]);
-    }
-
-    callback(roots);
-    metrics.recordInterval('Load.Roots');
-  };
-
-  var append = function(index, values, opt_error) {
-    groups[index] = values;
-    done();
-  };
-
-  var appendSingle = function(index, entry) {
-    groups[index] = [entry];
-    done();
-  };
-
-  var onSingleError = function(index, defaultValue, error) {
-    groups[index] = defaultValue || [];
-    done();
-    console.error('Error resolving root dir ', index, 'error: ', error);
-  };
-
-  var root = this.root_;
-  var readSingle = function(dir, index, opt_defaultValue) {
-    root.getDirectory(dir, { create: false },
-                      appendSingle.bind(this, index),
-                      onSingleError.bind(this, index, opt_defaultValue));
-  };
-
-  readSingle(RootDirectory.DOWNLOADS.substring(1), 'downloads');
-  util.readDirectory(root, RootDirectory.ARCHIVE.substring(1),
-                     append.bind(this, 'archives'));
-  util.readDirectory(root, RootDirectory.REMOVABLE.substring(1),
-                     append.bind(this, 'removables'));
-
-  if (this.driveEnabled_) {
-    // Use a fake instead to return a list as fast as possible.
-    groups.drive = [DirectoryModel.fakeDriveEntry_];
-    done();
-  } else {
-    groups.drive = [];
-    done();
-  }
-};
-
-/**
  * Updates the roots list.
  *
  * @param {function()=} opt_callback Completion callback.
  * @private
  */
 DirectoryModel.prototype.updateRoots_ = function(opt_callback) {
-  var self = this;
-  this.resolveRoots_(function(rootEntries) {
-    var dm = self.rootsList_;
-    var args = [0, dm.length].concat(rootEntries);
-    dm.splice.apply(dm, args);
-    if (opt_callback)
-      opt_callback();
-  });
+  metrics.startInterval('Load.Roots');
+  DirectoryModelUtil.resolveRoots(
+      this.root_, this.driveEnabled_,
+      function(rootEntries) {
+        metrics.recordInterval('Load.Roots');
+
+        var rootsList = this.rootsList_;
+        rootsList.splice.apply(
+            rootsList, [0, rootsList.length].concat(rootEntries));
+        if (opt_callback)
+          opt_callback();
+      }.bind(this));
 };
 
 /**
@@ -1319,25 +1309,6 @@ DirectoryModel.prototype.updateRootEntry_ = function(entry) {
     }
   }
   console.error('Cannot find root: ' + entry.fullPath);
-};
-
-/**
- * Finds the first entry in the roots list model which has the given root type.
- *
- * @param {RootType} rootType RootType of the desired root..
- * @return {DirectoryEntry} Root entry for with the given root type.
- * @private
- */
-DirectoryModel.prototype.findRootEntryByType_ = function(rootType) {
-  var root;
-  for (var index = 0; index < this.rootsList_.length; index++) {
-    if (PathUtil.getRootType(this.rootsList_.item(index).fullPath) ==
-        rootType) {
-      root = this.rootsList_.item(index);
-      break;
-    }
-  }
-  return root;
 };
 
 /**
