@@ -14,9 +14,12 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/managed_mode/custodian_profile_downloader_service.h"
+#include "chrome/browser/managed_mode/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
-#include "chrome/browser/managed_mode/managed_user_registration_service.h"
-#include "chrome/browser/managed_mode/managed_user_registration_service_factory.h"
+#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -556,18 +559,16 @@ void ManagedUserService::Init() {
 }
 
 void ManagedUserService::RegisterAndInitSync(
+    ManagedUserRegistrationUtility* registration_utility,
     Profile* custodian_profile,
     const ProfileManager::CreateCallback& callback) {
   DCHECK(ProfileIsManaged());
   DCHECK(!custodian_profile->IsManaged());
 
-  // Register the managed user with the custodian's account.
-  ManagedUserRegistrationService* registration_service =
-      ManagedUserRegistrationServiceFactory::GetForProfile(custodian_profile);
   string16 name = UTF8ToUTF16(
       profile_->GetPrefs()->GetString(prefs::kProfileName));
   ManagedUserRegistrationInfo info(name);
-  registration_service->Register(
+  registration_utility->Register(
       info,
       base::Bind(&ManagedUserService::OnManagedUserRegistered,
                  weak_ptr_factory_.GetWeakPtr(), callback, custodian_profile));
@@ -575,9 +576,12 @@ void ManagedUserService::RegisterAndInitSync(
   // Fetch the custodian's profile information, to store the name.
   // TODO(pamg): If --gaia-profile-info (keyword: switches::kGaiaProfileInfo)
   // is ever enabled, take the name from the ProfileInfoCache instead.
-  registration_service->DownloadProfile(custodian_profile,
-    base::Bind(&ManagedUserService::OnCustodianProfileDownloaded,
-               weak_ptr_factory_.GetWeakPtr()));
+  CustodianProfileDownloaderService* profile_downloader_service =
+      CustodianProfileDownloaderServiceFactory::GetForProfile(
+          custodian_profile);
+  profile_downloader_service->DownloadProfile(
+      base::Bind(&ManagedUserService::OnCustodianProfileDownloaded,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ManagedUserService::OnCustodianProfileDownloaded(

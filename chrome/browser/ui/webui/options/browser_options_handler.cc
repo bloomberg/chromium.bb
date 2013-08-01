@@ -85,8 +85,7 @@
 #include "ui/webui/web_ui_util.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_registration_service.h"
-#include "chrome/browser/managed_mode/managed_user_registration_service_factory.h"
+#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #endif
@@ -1161,8 +1160,12 @@ void BrowserOptionsHandler::RegisterNewManagedUser(
       ManagedUserServiceFactory::GetForProfile(new_profile);
 
   // Register the managed user using the profile of the custodian.
-  managed_user_service->RegisterAndInitSync(Profile::FromWebUI(web_ui()),
-                                            callback);
+  managed_user_registration_utility_ =
+      ManagedUserRegistrationUtility::Create(Profile::FromWebUI(web_ui()));
+  managed_user_service->RegisterAndInitSync(
+      managed_user_registration_utility_.get(),
+      Profile::FromWebUI(web_ui()),
+      callback);
 }
 
 void BrowserOptionsHandler::RecordProfileCreationMetrics(
@@ -1293,10 +1296,8 @@ void BrowserOptionsHandler::CancelProfileRegistration(bool user_initiated) {
     RecordProfileCreationMetrics(Profile::CREATE_STATUS_CANCELED);
   }
 
-  ManagedUserRegistrationService* registration_service =
-      ManagedUserRegistrationServiceFactory::GetForProfile(
-          Profile::FromWebUI(web_ui()));
-  registration_service->CancelPendingRegistration();
+  DCHECK(managed_user_registration_utility_.get());
+  managed_user_registration_utility_.reset();
 
   // Cancelling registration means the callback passed into
   // RegisterAndInitSync() won't be called, so the cleanup must be done here.

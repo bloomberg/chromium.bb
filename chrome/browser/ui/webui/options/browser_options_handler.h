@@ -30,6 +30,7 @@
 class AutocompleteController;
 class CloudPrintSetupHandler;
 class CustomHomePagesTableModel;
+class ManagedUserRegistrationUtility;
 class TemplateURLService;
 
 namespace options {
@@ -344,6 +345,8 @@ class BrowserOptionsHandler
   DoublePrefMember default_zoom_level_;
 
   PrefChangeRegistrar profile_pref_registrar_;
+
+  scoped_ptr<ManagedUserRegistrationUtility> managed_user_registration_utility_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);
 };

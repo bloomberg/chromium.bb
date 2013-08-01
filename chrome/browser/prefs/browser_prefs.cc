@@ -102,8 +102,8 @@
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_registration_service.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -324,7 +324,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(ENABLE_MANAGED_USERS)
   ManagedUserService::RegisterProfilePrefs(registry);
-  ManagedUserRegistrationService::RegisterProfilePrefs(registry);
+  ManagedUserSyncService::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(ENABLE_NOTIFICATIONS)

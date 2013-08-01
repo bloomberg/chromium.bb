@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/managed_mode/managed_user_registration_service_factory.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,8 +49,7 @@ LocallyManagedUserCreationController::StatusConsumer::~StatusConsumer() {}
 LocallyManagedUserCreationController::UserCreationContext::UserCreationContext()
     : token_acquired(false),
       token_succesfully_written(false),
-      manager_profile(NULL),
-      service(NULL) {}
+      manager_profile(NULL) {}
 
 LocallyManagedUserCreationController::UserCreationContext::
     ~UserCreationContext() {}
@@ -152,14 +150,14 @@ void LocallyManagedUserCreationController::OnMountSuccess(
 }
 
 void LocallyManagedUserCreationController::OnAddKeySuccess() {
-  creation_context_->service =
-      ManagedUserRegistrationServiceFactory::GetForProfile(
+  creation_context_->registration_utility =
+      ManagedUserRegistrationUtility::Create(
           creation_context_->manager_profile);
 
   VLOG(1) << "Creating user on server";
   ManagedUserRegistrationInfo info(creation_context_->display_name);
   info.master_key = creation_context_->master_key;
-  creation_context_->service->Register(
+  creation_context_->registration_utility->Register(
       info,
       base::Bind(&LocallyManagedUserCreationController::RegistrationCallback,
                  weak_factory_.GetWeakPtr()));
@@ -189,8 +187,7 @@ void LocallyManagedUserCreationController::FinishCreation() {
 }
 
 void LocallyManagedUserCreationController::CancelCreation() {
-  if (creation_context_->service)
-    creation_context_->service->CancelPendingRegistration();
+  creation_context_->registration_utility.reset();
   chrome::AttemptUserExit();
 }
 

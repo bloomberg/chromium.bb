@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_authenticator.h"
-#include "chrome/browser/managed_mode/managed_user_registration_service.h"
+#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
 
 class Profile;
 
@@ -87,7 +87,7 @@ class LocallyManagedUserCreationController
     std::string token;
     bool token_succesfully_written;
     Profile* manager_profile;
-    ManagedUserRegistrationService* service;
+    scoped_ptr<ManagedUserRegistrationUtility> registration_utility;
   };
 
   // ManagedUserAuthenticator::StatusConsumer overrides.

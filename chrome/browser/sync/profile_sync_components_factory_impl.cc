@@ -61,9 +61,9 @@
 #include "sync/api/syncable_service.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_registration_service.h"
-#include "chrome/browser/managed_mode/managed_user_registration_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -399,7 +399,7 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       return policy::ProfilePolicyConnectorFactory::GetForProfile(profile_)->
           managed_mode_policy_provider()->AsWeakPtr();
     case syncer::MANAGED_USERS:
-      return ManagedUserRegistrationServiceFactory::GetForProfile(profile_)->
+      return ManagedUserSyncServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
 #endif
     default:
