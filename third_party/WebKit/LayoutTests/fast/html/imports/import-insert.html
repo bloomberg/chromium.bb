@@ -30,7 +30,7 @@ waitAndTest([
         {
             document.head.appendChild(window.toInsert);
         },
-        ready: function() { return toInsert.import; },
+        ready: function() { return toInsert.import && toInsert.import.querySelector('h1'); },
         test: function()
         {
             shouldBe("toInsert.import.querySelector('h1').innerHTML", "'Hello'");
