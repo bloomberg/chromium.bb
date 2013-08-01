@@ -1,0 +1,11 @@
+include_rules = [
+  # TODO(benwells): move this whole folder out of apps and review these.
+  # See http://crbug.com/266705.
+  "+chrome/browser/ui/extensions/application_launch.h",
+  "+chrome/browser/ui/web_applications/web_app_ui.h",
+  "+chrome/browser/web_applications/web_app_mac.h",
+  "+chrome/common/chrome_constants.h",
+  "+chrome/common/chrome_paths.h",
+  "+chrome/common/mac/app_mode_common.h",
+  "+grit/generated_resources.h",
+]

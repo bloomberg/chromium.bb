@@ -12,11 +12,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/host_desktop.h"
 
-#if defined(OS_WIN)
-#include "chrome/installer/launcher_support/chrome_launcher_support.h"
-#include "chrome/installer/util/browser_distribution.h"
-#endif
-
 namespace apps {
 
 bool IsAppLauncherEnabled() {
