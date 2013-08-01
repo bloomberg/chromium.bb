@@ -1759,44 +1759,75 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DnsProbe.ErrorPageUpdateStatus" enum="DnsProbe.ProbeStatus">
+  <summary>Status of DNS probe updates sent to a DNS error page.</summary>
+</histogram>
+
 <histogram name="DnsProbe.Probe.Elapsed" units="ms">
+  <obsolete>
+    Renamed 7/2013 to DnsProbe.ProbeDuration.
+  </obsolete>
   <summary>Time between starting and finishing DNS probe.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.NcnOffline.Elapsed" units="ms">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>
     Time between starting and finishing DNS probe when NCN says we're offline.
   </summary>
 </histogram>
 
-<histogram name="DnsProbe.Probe.NcnOffline.Result" enum="DnsProbe.Probe.Result">
+<histogram name="DnsProbe.Probe.NcnOffline.Result"
+    enum="DnsProbe.ObsoleteProbeResult">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>
     Result of DNS probes sent by the probe service when NCN says we're offline.
   </summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.NcnOnline.Elapsed" units="ms">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>
     Time between starting and finishing DNS probe when NCN says we're online.
   </summary>
 </histogram>
 
-<histogram name="DnsProbe.Probe.NcnOnline.Result" enum="DnsProbe.Probe.Result">
+<histogram name="DnsProbe.Probe.NcnOnline.Result"
+    enum="DnsProbe.ObsoleteProbeResult">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>
     Result of DNS probes sent by the probe service when NCN says we're online.
   </summary>
 </histogram>
 
-<histogram name="DnsProbe.Probe.Result" enum="DnsProbe.Probe.Result">
+<histogram name="DnsProbe.Probe.Result" enum="DnsProbe.ObsoleteProbeResult">
+  <obsolete>
+    Renamed 7/2013 to DnsProbe.ProbeResult.  (Also switched to the full
+    DnsProbe.ProbeStatus enum.)
+  </obsolete>
   <summary>Result of DNS probes sent by the probe service.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultBadConfig.Elapsed" units="ms">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>Elapsed time of DNS probes that return PROBE_BAD_CONFIG.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultBadConfig.SystemIsLocalhost"
-    enum="DnsProbe.Probe.SystemIsLocalhost">
+    enum="DnsProbe.SystemIsLocalhost">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>
     Whether the only nameserver in the system DNS config was 127.0.0.1 when the
     probe result was BAD_CONFIG.
@@ -1804,7 +1835,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultBadConfig.SystemJobResult"
-    enum="DnsProbe.Job.Result">
+    enum="DnsProbe.JobResult">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>
     The result of the system probe job when the overall probe result was
     BAD_CONFIG.
@@ -1812,6 +1846,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultBadConfig.SystemNameserverCount">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>
     The number of nameservers in the system DNS config when the probe result was
     BAD_CONFIG.
@@ -1819,15 +1856,32 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultNoInternet.Elapsed" units="ms">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>Elapsed time of DNS probes that return PROBE_NO_INTERNET.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultNxdomain.Elapsed" units="ms">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>Elapsed time of DNS probes that return PROBE_NXDOMAIN.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultUnknown.Elapsed" units="ms">
+  <obsolete>
+    Removed 7/2013.
+  </obsolete>
   <summary>Elapsed time of DNS probes that return PROBE_UNKNOWN.</summary>
+</histogram>
+
+<histogram name="DnsProbe.ProbeDuration" units="ms">
+  <summary>Time between starting and finishing DNS probe.</summary>
+</histogram>
+
+<histogram name="DnsProbe.ProbeResult" enum="DnsProbe.ProbeStatus">
+  <summary>Result of DNS probes sent by the probe service.</summary>
 </histogram>
 
 <histogram name="DomainBoundCerts.DBLoadedCount">
@@ -15579,7 +15633,7 @@ other types of suffix sets.
   <int value="1" label="Success reported but Address List is empty"/>
 </enum>
 
-<enum name="DnsProbe.Job.Result" type="int">
+<enum name="DnsProbe.JobResult" type="int">
   <int value="0" label="SERVERS_UNKNOWN"/>
   <int value="1" label="SERVERS_CORRECT"/>
   <int value="2" label="SERVERS_INCORRECT"/>
@@ -15587,14 +15641,24 @@ other types of suffix sets.
   <int value="4" label="SERVERS_UNREACHABLE"/>
 </enum>
 
-<enum name="DnsProbe.Probe.Result" type="int">
-  <int value="0" label="UNKNOWN"/>
+<enum name="DnsProbe.ObsoleteProbeResult" type="int">
+  <int value="0" label="INCONCLUSIVE"/>
   <int value="1" label="NO_INTERNET"/>
   <int value="2" label="BAD_CONFIG"/>
   <int value="3" label="NXDOMAIN"/>
 </enum>
 
-<enum name="DnsProbe.Probe.SystemIsLocalhost" type="int">
+<enum name="DnsProbe.ProbeStatus" type="int">
+  <int value="0" label="POSSIBLE"/>
+  <int value="1" label="NOT_RUN"/>
+  <int value="2" label="STARTED"/>
+  <int value="3" label="FINISHED_INCONCLUSIVE"/>
+  <int value="4" label="FINISHED_NO_INTERNET"/>
+  <int value="5" label="FINISHED_BAD_CONFIG"/>
+  <int value="6" label="FINISHED_NXDOMAIN"/>
+</enum>
+
+<enum name="DnsProbe.SystemIsLocalhost" type="int">
   <int value="0" label="Not just 127.0.0.1">
     127.0.0.1 was not the only nameserver in the system DNS config.
   </int>

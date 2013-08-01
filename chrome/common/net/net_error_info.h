@@ -14,7 +14,7 @@ namespace chrome_common_net {
 // 1. FINISHED_UNKNOWN must remain the first FINISHED_* value.
 // 2. FINISHED_* values must not be rearranged relative to FINISHED_UNKNOWN.
 // 3. New FINISHED_* values must be inserted at the end.
-// 4. New non-FINISHED_* values must be inserted before FINISHED_UNKNOWN.
+// 4. New non-FINISHED_* values cannot be inserted.
 enum DnsProbeStatus {
   // A DNS probe may be run for this error page.  (This status is only used on
   // the renderer side before it's received a status update from the browser.)

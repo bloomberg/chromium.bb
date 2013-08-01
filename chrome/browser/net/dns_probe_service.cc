@@ -72,50 +72,9 @@ DnsProbeStatus EvaluateResults(DnsProbeRunner::Result system_result,
 void HistogramProbe(DnsProbeStatus status, base::TimeDelta elapsed) {
   DCHECK(chrome_common_net::DnsProbeStatusIsFinished(status));
 
-  int result = status - chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE;
-
-  const int kMaxResult = chrome_common_net::DNS_PROBE_MAX -
-                         chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE;
-
-  UMA_HISTOGRAM_ENUMERATION("DnsProbe.Status", result, kMaxResult);
-  UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed", elapsed);
-
-  if (NetworkChangeNotifier::IsOffline()) {
-    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Status_NcnOffline",
-                              result, kMaxResult);
-    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_NcnOffline", elapsed);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Status_NcnOnline",
-                              result, kMaxResult);
-    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_NcnOnline", elapsed);
-  }
-
-  switch (status) {
-    case chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE:
-      UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_Unknown",
-                                 elapsed);
-      break;
-    case chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET:
-      UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_NoInternet",
-                                 elapsed);
-      break;
-    case chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG:
-      UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_BadConfig",
-                                 elapsed);
-      break;
-    case chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN:
-      UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_Nxdomain",
-                                 elapsed);
-      break;
-
-    // These aren't actually results.
-    case chrome_common_net::DNS_PROBE_POSSIBLE:
-    case chrome_common_net::DNS_PROBE_NOT_RUN:
-    case chrome_common_net::DNS_PROBE_STARTED:
-    case chrome_common_net::DNS_PROBE_MAX:
-      NOTREACHED();
-      break;
-  }
+  UMA_HISTOGRAM_ENUMERATION("DnsProbe.ProbeResult", status,
+                            chrome_common_net::DNS_PROBE_MAX);
+  UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.ProbeDuration", elapsed);
 }
 
 }  // namespace

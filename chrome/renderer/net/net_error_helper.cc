@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/localized_error.h"
@@ -234,6 +235,10 @@ void NetErrorHelper::UpdateErrorPage() {
 
   string16 frame_xpath;
   render_view()->EvaluateScript(frame_xpath, js16, 0, false);
+
+  UMA_HISTOGRAM_ENUMERATION("DnsProbe.ErrorPageUpdateStatus",
+                            last_probe_status_,
+                            chrome_common_net::DNS_PROBE_MAX);
 }
 
 WebKit::WebURLError NetErrorHelper::GetUpdatedError() const {
