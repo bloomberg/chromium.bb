@@ -893,7 +893,8 @@ void PictureLayerImpl::CalculateRasterContentsScale(
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(bounds(), *raster_contents_scale));
   gfx::Size tile_size = CalculateTileSize(content_bounds);
-  if (tile_size == content_bounds) {
+  if (tile_size.width() >= content_bounds.width() &&
+      tile_size.height() >= content_bounds.height()) {
     *low_res_raster_contents_scale = *raster_contents_scale;
     return;
   }

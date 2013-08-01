@@ -648,7 +648,13 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   } while (false)
 
 TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
-  SetupDefaultTrees(gfx::Size(300, 100));
+  // Make sure this layer covers multiple tiles, since otherwise low
+  // res won't get created because it is too small.
+  gfx::Size tile_size(host_impl_.settings().default_tile_size);
+  SetupDefaultTrees(gfx::Size(tile_size.width() + 1, tile_size.height() + 1));
+  // Avoid max untiled layer size heuristics via fixed tile size.
+  pending_layer_->set_fixed_tile_size(tile_size);
+  active_layer_->set_fixed_tile_size(tile_size);
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
   float contents_scale = 1.f;
@@ -694,10 +700,21 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   SetupDefaultTrees(tile_size);
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
-  float contents_scale = 1.f;
   float device_scale = 1.f;
   float page_scale = 1.f;
   bool animating_transform = false;
+
+  // Contents exactly fit on one tile at scale 1, no low res.
+  float contents_scale = 1.f;
+  SetContentsScaleOnBothLayers(
+      contents_scale, device_scale, page_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
+  EXPECT_BOTH_EQ(num_tilings(), 1u);
+
+  ResetTilingsAndRasterScales();
+
+  // Contents that are smaller than one tile, no low res.
+  contents_scale = 0.123f;
   SetContentsScaleOnBothLayers(
       contents_scale, device_scale, page_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
@@ -707,7 +724,7 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
 
   // Any content bounds that would create more than one tile will
   // generate a low res tiling.
-  contents_scale = 1.2f;
+  contents_scale = 2.5f;
   SetContentsScaleOnBothLayers(
       contents_scale, device_scale, page_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
@@ -836,7 +853,7 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
 
   pending_layer_->CalculateContentsScale(
       1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
-  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_LE(1u, pending_layer_->tilings()->num_tilings());
 
   pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
 
@@ -859,7 +876,7 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
 
   pending_layer_->CalculateContentsScale(
       1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
-  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_LE(1u, pending_layer_->tilings()->num_tilings());
 
   pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
 
