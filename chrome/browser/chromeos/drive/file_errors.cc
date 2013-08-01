@@ -141,6 +141,8 @@ FileError GDataToFileError(google_apis::GDataErrorCode status) {
       return FILE_ERROR_ABORT;
     case google_apis::GDATA_NO_CONNECTION:
       return FILE_ERROR_NO_CONNECTION;
+    case google_apis::GDATA_NO_SPACE:
+      return FILE_ERROR_NO_SPACE;
     default:
       return FILE_ERROR_FAILED;
   }
