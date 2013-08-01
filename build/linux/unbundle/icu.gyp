@@ -33,7 +33,7 @@
       'dependencies': ['system_icu'],
       'export_dependent_settings': ['system_icu'],
       'variables': {
-        'headers_root_path': 'public/i18n',
+        'headers_root_path': 'source/i18n',
         'header_filenames': [
           # This list can easily be updated using the command below:
           # find third_party/icu/source/i18n/unicode -iname '*.h' \
@@ -119,7 +119,7 @@
       'dependencies': ['system_icu'],
       'export_dependent_settings': ['system_icu'],
       'variables': {
-        'headers_root_path': 'public/common',
+        'headers_root_path': 'source/common',
         'header_filenames': [
           # This list can easily be updated using the command below:
           # find third_party/icu/source/common/unicode -iname '*.h' \
