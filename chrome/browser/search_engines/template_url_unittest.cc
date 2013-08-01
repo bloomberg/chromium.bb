@@ -208,13 +208,14 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
   GURL result(url.image_url_ref().ReplaceSearchTerms(search_args));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ(KImageSearchURL, result.spec());
-  std::string post_data;
+  TemplateURLRef::PostContent post_content;
   TestSearchTermsData search_terms_data("http://X");
   result = GURL(url.image_url_ref().ReplaceSearchTermsUsingTermsData(
-      search_args, search_terms_data, &post_data));
+      search_args, search_terms_data, &post_content));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ(KImageSearchURL, result.spec());
-  ASSERT_FALSE(post_data.empty());
+  ASSERT_FALSE(post_content.first.empty());
+  ASSERT_FALSE(post_content.second.empty());
 
   // Check parsed result of post parameters.
   const TemplateURLRef::Replacements& replacements =
@@ -252,7 +253,7 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
     if (i->first == "empty_param") {
       EXPECT_TRUE(i->second.empty());
     } else if (i->first == "sbisrc") {
-      EXPECT_EQ("unknown", i->second);
+      EXPECT_FALSE(i->second.empty());
     } else {
       EXPECT_EQ("constant_param", i->first);
       EXPECT_EQ("constant", i->second);

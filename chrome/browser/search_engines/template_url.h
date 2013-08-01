@@ -52,6 +52,13 @@ class TemplateURLRef {
     INDEXED
   };
 
+  // Type to store <content_type, post_data> pair for POST URLs.
+  // The |content_type|(first part of the pair) is the content-type of
+  // the |post_data|(second part of the pair) which is encoded in
+  // "multipart/form-data" format, it also contains the MIME boundary used in
+  // the |post_data|. See http://tools.ietf.org/html/rfc2046 for the details.
+  typedef std::pair<std::string, std::string> PostContent;
+
   // This struct encapsulates arguments passed to
   // TemplateURLRef::ReplaceSearchTerms methods.  By default, only search_terms
   // is required and is passed in the constructor.
@@ -129,15 +136,15 @@ class TemplateURLRef {
   //
   // If this TemplateURLRef does not support replacement (SupportsReplacement
   // returns false), an empty string is returned.
-  // If this TemplateURLRef uses POST, and |post_data| is not NULL, the
+  // If this TemplateURLRef uses POST, and |post_content| is not NULL, the
   // |post_params_| will be replaced, encoded in "multipart/form-data" format
-  // and stored into |post_data|.
+  // and stored into |post_content|.
   std::string ReplaceSearchTerms(
       const SearchTermsArgs& search_terms_args,
-      std::string* post_data) const;
+      PostContent* post_content) const;
   // TODO(jnd): remove the following ReplaceSearchTerms definition which does
-  // not have |post_data| parameter once all reference callers pass |post_data|
-  // parameter.
+  // not have |post_content| parameter once all reference callers pass
+  // |post_content| parameter.
   std::string ReplaceSearchTerms(
       const SearchTermsArgs& search_terms_args) const {
     return ReplaceSearchTerms(search_terms_args, NULL);
@@ -149,7 +156,7 @@ class TemplateURLRef {
   std::string ReplaceSearchTermsUsingTermsData(
       const SearchTermsArgs& search_terms_args,
       const SearchTermsData& search_terms_data,
-      std::string* post_data) const;
+      PostContent* post_content) const;
 
   // Returns true if the TemplateURLRef is valid. An invalid TemplateURLRef is
   // one that contains unknown terms, or invalid characters.
@@ -304,10 +311,10 @@ class TemplateURLRef {
       const SearchTermsData& search_terms_data) const;
 
   // Encode post parameters in "multipart/form-data" format and store it
-  // inside |post_data|. Returns false if errors are encountered during
+  // inside |post_content|. Returns false if errors are encountered during
   // encoding. This method is called each time ReplaceSearchTerms gets called.
   bool EncodeFormData(const PostParams& post_params,
-                      std::string* post_data) const;
+                      PostContent* post_content) const;
 
   // Handles a replacement by using real term data. If the replacement
   // belongs to a PostParam, the PostParam will be replaced by the term data.
@@ -324,7 +331,7 @@ class TemplateURLRef {
   std::string HandleReplacements(
       const SearchTermsArgs& search_terms_args,
       const SearchTermsData& search_terms_data,
-      std::string* post_data) const;
+      PostContent* post_content) const;
 
   // The TemplateURL that contains us.  This should outlive us.
   TemplateURL* const owner_;

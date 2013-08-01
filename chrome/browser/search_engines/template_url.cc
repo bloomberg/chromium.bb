@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url.h"
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
@@ -12,6 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -26,6 +28,7 @@
 #include "extensions/common/constants.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
+#include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -169,6 +172,7 @@ std::string GetGoogleImageSearchSource() {
     std::string modifier(version_info.GetVersionStringModifier());
     if (!modifier.empty())
       version += " " + modifier;
+    return version;
   }
   return "unknown";
 }
@@ -257,15 +261,35 @@ bool TemplateURLRef::UsesPOSTMethodUsingTermsData(
   return !post_params_.empty();
 }
 
-bool TemplateURLRef::EncodeFormData(const std::vector<PostParam>& post_params,
-                                    std::string* post_data) const {
+bool TemplateURLRef::EncodeFormData(const PostParams& post_params,
+                                    PostContent* post_content) const {
   // TODO(jnd): implement this function once we have form encoding utility in
   // Chrome side.
-  if (!post_params.empty()) {
-    if (!post_data)
-      return false;
-    *post_data = "not implemented yet!";
+  if (post_params.empty())
+    return true;
+  if (!post_content)
+    return false;
+
+  const char kUploadDataMIMEType[] = "multipart/form-data; boundary=";
+  const char kMultipartBoundary[] = "----+*+----%016" PRIx64 "----+*+----";
+  // Each name/value pair is stored in a body part which is preceded by a
+  // boundary delimiter line. Uses random number generator here to create
+  // a unique boundary delimiter for form data encoding.
+  std::string boundary = base::StringPrintf(kMultipartBoundary,
+                                            base::RandUint64());
+  // Sets the content MIME type.
+  post_content->first = kUploadDataMIMEType;
+  post_content->first += boundary;
+  // Encodes the post parameters.
+  std::string* post_data = &post_content->second;
+  post_data->clear();
+  for (PostParams::const_iterator param = post_params.begin();
+       param != post_params.end(); ++param) {
+    DCHECK(!param->first.empty());
+    net::AddMultipartValueForUpload(param->first, param->second, boundary,
+                                    std::string(), post_data);
   }
+  net::AddMultipartFinalDelimiterForUpload(boundary, post_data);
   return true;
 }
 
@@ -282,22 +306,22 @@ bool TemplateURLRef::SupportsReplacementUsingTermsData(
 
 std::string TemplateURLRef::ReplaceSearchTerms(
     const SearchTermsArgs& search_terms_args,
-    std::string* post_data) const {
+    PostContent* post_content) const {
   UIThreadSearchTermsData search_terms_data(owner_->profile());
   return ReplaceSearchTermsUsingTermsData(search_terms_args, search_terms_data,
-                                          post_data);
+                                          post_content);
 }
 
 std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
     const SearchTermsArgs& search_terms_args,
     const SearchTermsData& search_terms_data,
-    std::string* post_data) const {
+    PostContent* post_content) const {
   ParseIfNecessaryUsingTermsData(search_terms_data);
   if (!valid_)
     return std::string();
 
   std::string url(HandleReplacements(search_terms_args, search_terms_data,
-                                     post_data));
+                                     post_content));
 
   // If the user specified additional query params on the command line, add
   // them.
@@ -727,10 +751,10 @@ void TemplateURLRef::HandleReplacement(const std::string& name,
 std::string TemplateURLRef::HandleReplacements(
     const SearchTermsArgs& search_terms_args,
     const SearchTermsData& search_terms_data,
-    std::string* post_data) const {
+    PostContent* post_content) const {
   if (replacements_.empty()) {
     if (!post_params_.empty())
-      EncodeFormData(post_params_, post_data);
+      EncodeFormData(post_params_, post_content);
     return parsed_url_;
   }
 
@@ -925,7 +949,7 @@ std::string TemplateURLRef::HandleReplacements(
   }
 
   if (!post_params_.empty())
-    EncodeFormData(post_params_, post_data);
+    EncodeFormData(post_params_, post_content);
 
   return url;
 }
