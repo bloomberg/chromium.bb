@@ -292,8 +292,6 @@
         '<(libjingle_source)/talk/base/flags.h',
         '<(libjingle_source)/talk/base/helpers.cc',
         '<(libjingle_source)/talk/base/helpers.h',
-        '<(libjingle_source)/talk/base/host.cc',
-        '<(libjingle_source)/talk/base/host.h',
         '<(libjingle_source)/talk/base/httpbase.cc',
         '<(libjingle_source)/talk/base/httpbase.h',
         '<(libjingle_source)/talk/base/httpclient.cc',
