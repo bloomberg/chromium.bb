@@ -182,7 +182,6 @@
     '../third_party/skia/include/utils',
     '../third_party/skia/src/core',
     '../third_party/skia/src/image',
-    '../third_party/skia/src/ports',
     '../third_party/skia/src/sfnt',
     '../third_party/skia/src/utils',
     '../third_party/skia/src/lazy',
