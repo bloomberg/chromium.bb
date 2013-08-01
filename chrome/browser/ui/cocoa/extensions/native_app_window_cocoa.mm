@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/extensions/native_app_window_cocoa.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
@@ -760,13 +758,7 @@ void NativeAppWindowCocoa::RemoveObserver(
 void NativeAppWindowCocoa::WindowWillClose() {
   [window_controller_ setAppWindow:NULL];
   shell_window_->OnNativeWindowChanged();
-  // On other platforms, the native window doesn't get destroyed synchronously.
-  // We simulate that here so that ShellWindow can assume that it doesn't get
-  // deleted immediately upon calling Close().
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ShellWindow::OnNativeClose,
-                 base::Unretained(shell_window_)));
+  shell_window_->OnNativeClose();
 }
 
 void NativeAppWindowCocoa::WindowDidBecomeKey() {

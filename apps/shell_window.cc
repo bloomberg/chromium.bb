@@ -285,15 +285,9 @@ void ShellWindow::RequestToLockMouse(WebContents* web_contents,
 }
 
 void ShellWindow::OnNativeClose() {
-  if (extension_) {
-    // If |extension_| is NULL here, it is because the extension has been
-    // unloaded. In this case, the window will have already been removed from
-    // the ShellWindowRegistry, and the app can not be informed of the window
-    // closing as it has gone.
-    extensions::ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
-    if (shell_window_contents_)
-      shell_window_contents_->NativeWindowClosed();
-  }
+  extensions::ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
+  if (shell_window_contents_)
+    shell_window_contents_->NativeWindowClosed();
   delete this;
 }
 
@@ -452,7 +446,7 @@ void ShellWindow::UpdateExtensionAppIcon() {
 }
 
 void ShellWindow::CloseContents(WebContents* contents) {
-  Close();
+  native_app_window_->Close();
 }
 
 bool ShellWindow::ShouldSuppressDialogs() {
@@ -531,16 +525,12 @@ void ShellWindow::Observe(int type,
       const extensions::Extension* unloaded_extension =
           content::Details<extensions::UnloadedExtensionInfo>(
               details)->extension;
-      if (extension_ == unloaded_extension) {
-        Close();
-        // After this notification finishes processing, the Extension will be
-        // deleted, so we null out our reference to avoid bad access.
-        extension_ = NULL;
-      }
+      if (extension_ == unloaded_extension)
+        native_app_window_->Close();
       break;
     }
     case chrome::NOTIFICATION_APP_TERMINATING:
-      Close();
+      native_app_window_->Close();
       break;
     default:
       NOTREACHED() << "Received unexpected notification";
@@ -564,11 +554,6 @@ extensions::ActiveTabPermissionGranter*
 
 WebContentsModalDialogHost* ShellWindow::GetWebContentsModalDialogHost() {
   return native_app_window_.get();
-}
-
-void ShellWindow::Close() {
-  extensions::ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
-  native_app_window_->Close();
 }
 
 void ShellWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,

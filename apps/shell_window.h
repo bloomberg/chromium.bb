@@ -179,6 +179,7 @@ class ShellWindow : public content::NotificationObserver,
             ShellWindowContents* shell_window_contents,
             const CreateParams& params);
 
+
   const std::string& window_key() const { return window_key_; }
   const SessionID& session_id() const { return session_id_; }
   const extensions::Extension* extension() const { return extension_; }
@@ -295,11 +296,6 @@ class ShellWindow : public content::NotificationObserver,
                                      bool blocked) OVERRIDE;
   virtual bool IsWebContentsVisible(
       content::WebContents* web_contents) OVERRIDE;
-
-  // Remove the window from the ShellWindowRegistry and tell the native
-  // window to close. The native window won't be actually closed until
-  // OnNativeClose().
-  void Close();
 
   // Helper method to add a message to the renderer's DevTools console.
   void AddMessageToDevToolsConsole(content::ConsoleMessageLevel level,
