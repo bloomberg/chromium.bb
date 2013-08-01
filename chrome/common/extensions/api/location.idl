@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 // TODO(vadimt): Consider reusing WebKit/Blink types, if this is possible.
 
-// The <code>chrome.location</code> API augments the events from the
-// <a href="http://dev.w3.org/geo/api/spec-source.html">HTML Geolocation API</a>
-// to be event page compatible.
+// Use the <code>chrome.location</code> API to retrieve the geographic location
+// of the host machine. This API is a version of the <a
+// href="http://dev.w3.org/geo/api/spec-source.html">HTML Geolocation API</a>
+// that is compatible with event pages.
 namespace location {
   // Coordinates part of the Location object.
   dictionary Coordinates {

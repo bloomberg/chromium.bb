@@ -1,0 +1,24 @@
+<h2 id="overview">Overview</h2>
+<p>
+  To start retrieving location information, you need to create a location watch
+  by calling $ref:location.watchLocation, passing in
+  the location watch details via the <code>requestInfo</code> parameter:
+</p>
+
+<pre>chrome.location.watchLocation(name, requestInfo);</pre>
+<p>
+  You also need to add a listener
+  for the $ref:location.onLocationUpdate event.
+  Chrome will fire this event after you create your location watch, and
+  it will keep firing the event every time the geographic
+  location of the host machine changes, until you call $ref:location.clearWatch.
+</p>
+<p>
+  Here's sample code
+  to listen for location updates:
+</p>
+<pre>
+  chrome.location.onLocationUpdate.addListener(function(position) {
+    console.log(JSON.stringify(position));
+  });
+</pre>
