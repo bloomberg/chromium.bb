@@ -143,8 +143,6 @@
         'browser/chromeos/attestation/attestation_policy_observer.h',
         'browser/chromeos/audio/audio_devices_pref_handler_impl.cc',
         'browser/chromeos/audio/audio_devices_pref_handler_impl.h',
-        'browser/chromeos/audio/audio_pref_handler_impl.cc',
-        'browser/chromeos/audio/audio_pref_handler_impl.h',
         'browser/chromeos/background/ash_user_wallpaper_delegate.cc',
         'browser/chromeos/background/ash_user_wallpaper_delegate.h',
         'browser/chromeos/bluetooth/bluetooth_pairing_dialog.cc',

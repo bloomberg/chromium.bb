@@ -37,7 +37,6 @@
         'audio/audio_device.h',
         'audio/audio_devices_pref_handler.h',
         'audio/audio_pref_observer.h',
-        'audio/audio_pref_handler.h',
         'audio/cras_audio_handler.cc',
         'audio/cras_audio_handler.h',
         'audio/audio_devices_pref_handler_stub.cc',

@@ -175,9 +175,16 @@ void AudioDevicesPrefHandlerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kAudioDevicesVolumePercent);
   registry->RegisterDictionaryPref(prefs::kAudioDevicesMute);
 
-  // TODO(jennyz,rkc): Move the rest of the preferences registered by
-  // AudioPrefHandlerImpl::RegisterPrefs here once we remove the old audio
-  // handler code.
+  // Register the prefs backing the audio muting policies.
+  registry->RegisterBooleanPref(prefs::kAudioOutputAllowed, true);
+  // This pref has moved to the media subsystem but we should verify it is there
+  // before we use it.
+  registry->RegisterBooleanPref(::prefs::kAudioCaptureAllowed, true);
+
+  // Register the legacy audio prefs for migration.
+  registry->RegisterDoublePref(prefs::kAudioVolumePercent,
+                               kDefaultVolumeGainPercent);
+  registry->RegisterIntegerPref(prefs::kAudioMute, kPrefMuteOff);
 }
 
 // static
