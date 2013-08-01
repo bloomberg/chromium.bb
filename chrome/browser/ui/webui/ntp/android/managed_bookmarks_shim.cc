@@ -7,9 +7,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/policy/configuration_policy_handler_android.h"
 #include "chrome/common/pref_names.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -63,8 +65,21 @@ const BookmarkNode* ManagedBookmarksShim::GetNodeByID(int64 id) const {
 }
 
 void ManagedBookmarksShim::Reload() {
+  std::string domain;
+  std::string username = prefs_->GetString(prefs::kGoogleServicesUsername);
+  if (!username.empty())
+    domain = gaia::ExtractDomainName(username);
+  string16 root_node_name;
+  if (domain.empty()) {
+    root_node_name =
+        l10n_util::GetStringUTF16(IDS_POLICY_MANAGED_BOOKMARKS_DEFAULT_NAME);
+  } else {
+    root_node_name = l10n_util::GetStringFUTF16(IDS_POLICY_MANAGED_BOOKMARKS,
+                                                base::UTF8ToUTF16(domain));
+  }
+
   root_.reset(new BookmarkPermanentNode(0));
-  root_->SetTitle(l10n_util::GetStringUTF16(IDS_POLICY_MANAGED_BOOKMARKS));
+  root_->SetTitle(root_node_name);
 
   const base::ListValue* list = prefs_->GetList(prefs::kManagedBookmarks);
   int64 id = 1;

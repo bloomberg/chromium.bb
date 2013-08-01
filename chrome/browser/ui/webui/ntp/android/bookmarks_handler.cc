@@ -274,10 +274,7 @@ void BookmarksHandler::QueryInitialBookmarks() {
   DictionaryValue result;
   DCHECK(partner_bookmarks_shim_ != NULL);
 
-  if (managed_bookmarks_shim_->HasManagedBookmarks()) {
-    PopulateBookmarksInFolder(
-        managed_bookmarks_shim_->GetManagedBookmarksRoot(), &result);
-  } else if (partner_bookmarks_shim_->HasPartnerBookmarks()) {
+  if (partner_bookmarks_shim_->HasPartnerBookmarks()) {
     PopulateBookmarksInFolder(
         partner_bookmarks_shim_->GetPartnerBookmarksRoot(), &result);
   } else {
