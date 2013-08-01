@@ -181,12 +181,12 @@ void SMILTimeContainer::setElapsed(SMILTime time)
 
     double now = currentTime();
     m_beginTime = now - time.value();
-
+    m_resumeTime = 0;
     if (m_pauseTime) {
-        m_resumeTime = m_pauseTime = now;
+        m_pauseTime = now;
         m_accumulatedActiveTime = time.value();
     } else {
-        m_resumeTime = 0;
+        m_accumulatedActiveTime = 0;
     }
 
 #ifndef NDEBUG
