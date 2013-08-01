@@ -378,6 +378,8 @@
         'browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h',
         'browser/extensions/api/record/record_api.cc',
         'browser/extensions/api/record/record_api.h',
+        'browser/extensions/api/recovery_private/recovery_private_api.cc',
+        'browser/extensions/api/recovery_private/recovery_private_api.h',
         'browser/extensions/api/runtime/runtime_api.cc',
         'browser/extensions/api/runtime/runtime_api.h',
         'browser/extensions/api/serial/serial_api.cc',

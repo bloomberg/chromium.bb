@@ -107,6 +107,7 @@ class APIPermission {
     kPrivacy,
     kProxy,
     kPushMessaging,
+    kRecoveryPrivate,
     kRtcPrivate,
     kScreensaver,
     kSerial,

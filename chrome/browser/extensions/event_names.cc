@@ -106,6 +106,10 @@ const char kOnFeedbackRequested[] = "feedbackPrivate.onFeedbackRequested";
 const char kDeveloperPrivateOnItemStateChanged[] =
     "developerPrivate.onItemStateChanged";
 
+const char kRecoveryOnWriteProgress[] = "recoveryPrivate.onWriteProgress";
+const char kRecoveryOnWriteComplete[] = "recoveryPrivate.onWriteComplete";
+const char kRecoveryOnWriteError[] = "recoveryPrivate.onWriteError";
+
 }  // namespace event_names
 
 }  // namespace extensions

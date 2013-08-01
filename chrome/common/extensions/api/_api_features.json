@@ -372,6 +372,11 @@
     "dependencies": ["permission:pushMessaging"],
     "contexts": ["blessed_extension"]
   },
+  "recoveryPrivate": {
+    "dependencies": ["permission:recoveryPrivate"],
+    "extension_types": ["platform_app"],
+    "contexts": ["blessed_extension"]
+  },
   "rtcPrivate": {
     "dependencies": ["permission:rtcPrivate"],
     "contexts": ["blessed_extension"]

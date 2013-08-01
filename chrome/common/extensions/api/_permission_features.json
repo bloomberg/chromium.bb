@@ -483,6 +483,13 @@
     "channel": "stable",
     "extension_types": ["extension", "platform_app"]
   },
+  "recoveryPrivate": {
+    "channel": "dev",
+    "extension_types": ["platform_app"],
+    "whitelist": [
+      "nmedaodmkamdcnmfceajookiaicfnkhd"
+    ]
+  },
   "rtcPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],

@@ -125,6 +125,11 @@ extern const char kOnFeedbackRequested[];
 // DeveloperPrivate.
 extern const char kDeveloperPrivateOnItemStateChanged[];
 
+// ImageWriter
+extern const char kRecoveryOnWriteProgress[];
+extern const char kRecoveryOnWriteComplete[];
+extern const char kRecoveryOnWriteError[];
+
 }  // namespace event_names
 
 }  // namespace extensions

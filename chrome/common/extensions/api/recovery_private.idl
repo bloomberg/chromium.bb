@@ -1,0 +1,118 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use the <code>chrome.recovery</code> API to write images to
+// removable media.
+[nodoc] namespace recoveryPrivate {
+  // The different stages of a write call.
+  //
+  // <dl>
+  //    <dt>confirmation</dt>
+  //    <dd>The process starts by prompting the user for confirmation.</dd>
+  //    <dt>download</dt>
+  //    <dd>The image file is being download if a remote image was
+  //    requested.</dd>
+  //    <dt>verifyDownload</dt>
+  //    <dd>The download is being verified to match the image hash, if
+  //    provided</dd>
+  //    <dt>write</dt>
+  //    <dd>The image is being written to disk.</dd>
+  //    <dt>verifyWrite</dt>
+  //    <dt>The system is verifying that the written image matches the
+  //    downloaded image.</dd>
+  // <dl>
+  enum Stage {
+    confirmation,
+    download,
+    verifyDownload,
+    write,
+    verifyWrite
+  };
+
+  // Options for writing an image.
+  dictionary UrlWriteOptions {
+    // If present, verify that the downloaded image matches this hash.
+    DOMString? imageHash;
+    // If true, save the downloaded image as a file using the user's downloads
+    // preferences.
+    boolean? saveAsDownload;
+  };
+
+  dictionary ProgressInfo {
+    // The $ref:Stage that the write process is currently in.
+    Stage stage;
+    // Current progress within the stage.
+    long percentComplete;
+  };
+
+  callback WriteImageCallback = void ();
+  callback WriteCancelCallback = void ();
+  callback DestroyPartitionsCallback = void ();
+
+  interface Functions {
+    // Write an image to the disk downloaded from the provided URL.  The
+    // callback will be called when the entire operation completes, either
+    // successfully or on error.
+    //
+    // |storageUnitId|: The identifier for the storage unit, as provided by
+    // experimental.system_info.storage.
+    // |options|: If present the imageUrl of the options will be used to
+    // download the image.  Otherwise the user will be prompted for a local
+    // image to burn.
+    // |callback|: The callback which signifies that the write operation has
+    // been started by the system and provides a unique ID for this operation.
+    static void writeFromUrl(DOMString storageUnitId,
+                             DOMString imageUrl,
+                             optional UrlWriteOptions options,
+                             WriteImageCallback callback);
+
+    // Write an image to the disk, prompting the user to supply the image from
+    // a local file.  The callback will be called when the entire operation
+    // completes, either successfully or on error.
+    //
+    // |storageUnitId|: The identifier for the storage unit, as provided by
+    // experimental.system_info.storage.
+    // |options|: If present the imageUrl of the options will be used to
+    // download the image.  Otherwise the user will be prompted for a local
+    // image to burn.
+    // |callback|: The callback which signifies that the write operation has
+    // been started by the system and provides a unique ID for this operation.
+    static void writeFromFile(DOMString storageUnitId,
+                              WriteImageCallback callback);
+
+    // Cancel a current write operation.
+    //
+    // |callback|: The callback which is triggered with the write is
+    // successfully cancelled, passing the $ref:ProgressInfo of the operation at
+    // the time it was cancelled.
+    static boolean cancelWrite(WriteCancelCallback callback);
+
+    // Destroys the partition table of a disk, effectively erasing it.  This is
+    // a fairly quick operation and so it does not have complex stages or
+    // progress information.  However, it can fail and call the callback with
+    // an error.
+    //
+    // |storageUnitId|: The identifier of the storage unit to wipe, as provided
+    // by experimental.system_info.storage.
+    // |callback|: A callback which is called when the operation is complete.
+    static void destroyPartitions(DOMString storageUnitId,
+                                  DestroyPartitionsCallback callback);
+  };
+
+  interface Events {
+    // Fires periodically throughout the writing operation and at least once per
+    // stage.
+    static void onWriteProgress(ProgressInfo info);
+    // Fires when the write operation has completely finished, such as all
+    // devices being finalized and resources released.
+    static void onWriteComplete(ProgressInfo info);
+    // Fires when an error occured during writing, passing the $ref:ProgressInfo
+    // of the operation at the time the error occured.
+    static void onWriteError(ProgressInfo info);
+    // Fires when an error occured while destroying partitions.
+    static void onDestroyPartitionsError();
+  };
+
+};
+
