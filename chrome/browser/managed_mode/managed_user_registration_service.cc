@@ -103,7 +103,9 @@ void ManagedUserRegistrationService::Register(
   callback_ = callback;
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kNoManagedUserRegistrationTimeout)) {
+        switches::kNoManagedUserRegistrationTimeout) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kNoManagedUserAcknowledgmentCheck)) {
     registration_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kRegistrationTimeoutMS),
@@ -361,8 +363,10 @@ void ManagedUserRegistrationService::OnReceivedToken(
 }
 
 void ManagedUserRegistrationService::CompleteRegistrationIfReady() {
-  if (!pending_managed_user_acknowledged_ ||
-      pending_managed_user_token_.empty()) {
+  bool acknowledged = pending_managed_user_acknowledged_ ||
+                      CommandLine::ForCurrentProcess()->HasSwitch(
+                          switches::kNoManagedUserAcknowledgmentCheck);
+  if (!acknowledged || pending_managed_user_token_.empty()) {
     return;
   }
 

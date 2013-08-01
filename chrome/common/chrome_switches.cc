@@ -1008,6 +1008,13 @@ const char kNoServiceAutorun[]              = "no-service-autorun";
 // launching Chrome for the purpose of hosting background apps).
 const char kNoStartupWindow[]               = "no-startup-window";
 
+// Disables checking whether we received an acknowledgement when registering
+// a supervised user. Also disables the timeout during registration that waits
+// for the ack. Useful when debugging against a server that does not
+// support notifications.
+const char kNoManagedUserAcknowledgmentCheck[]  =
+    "no-managed-user-acknowledgment-check";
+
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
