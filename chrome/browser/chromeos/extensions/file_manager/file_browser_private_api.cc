@@ -695,7 +695,7 @@ bool GetPreferencesFunction::RunImpl() {
 
   SetResult(value.release());
 
-  drive::util::Log("%s succeeded.", name().c_str());
+  drive::util::Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
   return true;
 }
 
@@ -721,7 +721,7 @@ bool SetPreferencesFunction::RunImpl() {
   if (value->GetBoolean("hostedFilesDisabled", &tmp))
     service->SetBoolean(prefs::kDisableDriveHostedFiles, tmp);
 
-  drive::util::Log("%s succeeded.", name().c_str());
+  drive::util::Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
   return true;
 }
 

@@ -695,7 +695,8 @@ void JobScheduler::QueueJob(JobID job_id) {
 
   const std::string retry_prefix = job_entry->retry_count > 0 ?
       base::StringPrintf(" (retry %d)", job_entry->retry_count) : "";
-  util::Log("Job queued%s: %s - %s",
+  util::Log(logging::LOG_INFO,
+            "Job queued%s: %s - %s",
             retry_prefix.c_str(),
             job_info.ToString().c_str(),
             GetQueueInfo(queue_type).c_str());
@@ -732,7 +733,8 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
 
   entry->cancel_callback = entry->task.Run();
 
-  util::Log("Job started: %s - %s",
+  util::Log(logging::LOG_INFO,
+            "Job started: %s - %s",
             job_info->ToString().c_str(),
             GetQueueInfo(queue_type).c_str());
 }
@@ -810,7 +812,9 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
   queue_[queue_type]->MarkFinished(job_id);
 
   const base::TimeDelta elapsed = base::Time::Now() - job_info->start_time;
-  util::Log("Job done: %s => %s (elapsed time: %sms) - %s",
+  bool success = (GDataToFileError(error) == FILE_ERROR_OK);
+  util::Log(success ? logging::LOG_INFO : logging::LOG_WARNING,
+            "Job done: %s => %s (elapsed time: %sms) - %s",
             job_info->ToString().c_str(),
             GDataErrorCodeToString(error).c_str(),
             base::Int64ToString(elapsed.InMilliseconds()).c_str(),
@@ -1019,7 +1023,8 @@ void JobScheduler::AbortNotRunningJob(JobEntry* job,
 
   const base::TimeDelta elapsed = base::Time::Now() - job->job_info.start_time;
   const QueueType queue_type = GetJobQueueType(job->job_info.job_type);
-  util::Log("Job aborted: %s => %s (elapsed time: %sms) - %s",
+  util::Log(logging::LOG_INFO,
+            "Job aborted: %s => %s (elapsed time: %sms) - %s",
             job->job_info.ToString().c_str(),
             GDataErrorCodeToString(error).c_str(),
             base::Int64ToString(elapsed.InMilliseconds()).c_str(),

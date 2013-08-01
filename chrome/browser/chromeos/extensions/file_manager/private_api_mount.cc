@@ -81,7 +81,8 @@ bool AddMountFunction::RunImpl() {
     return false;
   }
 
-  drive::util::Log("%s[%d] called. (source: '%s', type:'%s')",
+  drive::util::Log(logging::LOG_INFO,
+                   "%s[%d] called. (source: '%s', type:'%s')",
                    name().c_str(),
                    request_id(),
                    file_url.empty() ? "(none)" : file_url.c_str(),
@@ -186,7 +187,8 @@ bool RemoveMountFunction::RunImpl() {
     return false;
   }
 
-  drive::util::Log("%s[%d] called. (mount_path: '%s')",
+  drive::util::Log(logging::LOG_INFO,
+                   "%s[%d] called. (mount_path: '%s')",
                    name().c_str(),
                    request_id(),
                    mount_path.c_str());
@@ -254,7 +256,8 @@ bool GetMountPointsFunction::RunImpl() {
 
   log_string += "]";
 
-  drive::util::Log("%s[%d] succeeded. (results: '%s', %" PRIuS " mount points)",
+  drive::util::Log(logging::LOG_INFO,
+                   "%s[%d] succeeded. (results: '%s', %" PRIuS " mount points)",
                    name().c_str(),
                    request_id(),
                    log_string.c_str(),

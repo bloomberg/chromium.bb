@@ -540,7 +540,8 @@ bool SearchDriveMetadataFunction::RunImpl() {
   if (!search_params->GetInteger("maxResults", &max_results))
     return false;
 
-  drive::util::Log("%s[%d] called. (types: '%s', maxResults: '%d')",
+  drive::util::Log(logging::LOG_INFO,
+                   "%s[%d] called. (types: '%s', maxResults: '%d')",
                    name().c_str(),
                    request_id(),
                    types.c_str(),
@@ -677,7 +678,7 @@ bool GetDriveConnectionStateFunction::RunImpl() {
   value->Set("reasons", reasons.release());
   SetResult(value.release());
 
-  drive::util::Log("%s succeeded.", name().c_str());
+  drive::util::Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
   return true;
 }
 

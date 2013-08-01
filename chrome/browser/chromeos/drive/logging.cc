@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/logging.h"
 
+#include <stdarg.h>   // va_list
+
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/drive/event_logger.h"
@@ -17,7 +19,7 @@ static base::LazyInstance<EventLogger> g_logger =
 
 }  // namespace
 
-void Log(const char* format, ...) {
+void Log(logging::LogSeverity severity, const char* format, ...) {
   std::string what;
 
   va_list args;
@@ -25,10 +27,12 @@ void Log(const char* format, ...) {
   base::StringAppendV(&what, format, args);
   va_end(args);
 
+  DVLOG(1) << what;
+
   // On thread-safety: LazyInstance guarantees thread-safety for the object
   // creation. EventLogger::Log() internally maintains the lock.
   EventLogger* ptr = g_logger.Pointer();
-  ptr->Log("%s", what.c_str());
+  ptr->Log(severity, what);
 }
 
 std::vector<EventLogger::Event> GetLogHistory() {

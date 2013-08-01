@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_DRIVE_EVENT_LOGGER_H_
 #define CHROME_BROWSER_DRIVE_EVENT_LOGGER_H_
 
-#include <stdarg.h>   // va_list
 #include <deque>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 
@@ -27,8 +27,9 @@ class EventLogger {
  public:
   // Represents a single event log.
   struct Event {
-    Event(int id, const std::string& what);
+    Event(int id, logging::LogSeverity severity, const std::string& what);
     int id;  // Monotonically increasing ID starting from 0.
+    logging::LogSeverity severity;  // Severity of the event.
     base::Time when;  // When the event occurred.
     std::string what;  // What happened.
   };
@@ -37,11 +38,9 @@ class EventLogger {
   EventLogger();
   ~EventLogger();
 
-  // Logs a message using printf format.
+  // Logs a message and its severity.
   // Can be called from any thread as long as the object is alive.
-  // Note that PRINTF_FORMAT should be (2, 3) instead of (1, 2) as this is a
-  // C++ member function.
-  void Log(const char* format, ...) PRINTF_FORMAT(2, 3);
+  void Log(logging::LogSeverity severity, const std::string& what);
 
   // Sets the history size. The existing history is cleared.
   // Can be called from any thread as long as the object is alive.

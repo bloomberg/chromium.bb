@@ -271,7 +271,7 @@ void DriveIntegrationService::OnPushNotificationEnabled(bool enabled) {
     drive_app_registry_->Update();
 
   const char* status = (enabled ? "enabled" : "disabled");
-  util::Log("Push notification is %s", status);
+  util::Log(logging::LOG_INFO, "Push notification is %s", status);
 }
 
 bool DriveIntegrationService::IsDriveEnabled() {
@@ -336,7 +336,7 @@ void DriveIntegrationService::AddDriveMountPoint() {
       drive_mount_point);
 
   if (success) {
-    util::Log("Drive mount point is added");
+    util::Log(logging::LOG_INFO, "Drive mount point is added");
     FOR_EACH_OBSERVER(DriveIntegrationServiceObserver, observers_,
                       OnFileSystemMounted());
   }
@@ -356,7 +356,7 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
 
   mount_points->RevokeFileSystem(
       util::GetDriveMountPointPath().BaseName().AsUTF8Unsafe());
-  util::Log("Drive mount point is removed");
+  util::Log(logging::LOG_INFO, "Drive mount point is removed");
 }
 
 void DriveIntegrationService::InitializeAfterMetadataInitialized(
@@ -385,7 +385,7 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
     const bool registered =
         drive_notification_manager->push_notification_registered();
     const char* status = (registered ? "registered" : "not registered");
-    util::Log("Push notification is %s", status);
+    util::Log(logging::LOG_INFO, "Push notification is %s", status);
 
     if (drive_notification_manager->push_notification_enabled())
       drive_app_registry_->Update();

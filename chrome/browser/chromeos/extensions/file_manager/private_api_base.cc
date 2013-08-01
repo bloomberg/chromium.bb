@@ -25,13 +25,15 @@ LoggedAsyncExtensionFunction::~LoggedAsyncExtensionFunction() {
 void LoggedAsyncExtensionFunction::SendResponse(bool success) {
   int64 elapsed = (base::Time::Now() - start_time_).InMilliseconds();
   if (log_on_completion_) {
-    drive::util::Log("%s[%d] %s. (elapsed time: %sms)",
+    drive::util::Log(logging::LOG_INFO,
+                     "%s[%d] %s. (elapsed time: %sms)",
                      name().c_str(),
                      request_id(),
                      success ? "succeeded" : "failed",
                      base::Int64ToString(elapsed).c_str());
   } else if (elapsed >= kSlowOperationThresholdMs) {
     drive::util::Log(
+        logging::LOG_WARNING,
         "PEFORMANCE WARNING: %s[%d] was slow. (elapsed time: %sms)",
         name().c_str(),
         request_id(),
