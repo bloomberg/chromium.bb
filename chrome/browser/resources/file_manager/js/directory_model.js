@@ -189,6 +189,10 @@ DirectoryModel.prototype.getFileList = function() {
 DirectoryModel.prototype.setDriveEnabled = function(enabled) {
   if (this.driveEnabled_ == enabled)
     return;
+  // Mount Drive if it was previously disabled and is now enabled.
+  if (enabled)
+    this.volumeManager_.mountDrive(function() {}, function() {});
+
   this.driveEnabled_ = enabled;
   this.enqueueClosure_(this.updateRoots_);
   if (!enabled && (this.getCurrentRootType() == RootType.DRIVE ||
