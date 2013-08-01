@@ -73,10 +73,8 @@ class BlinkIDLLexer(IDLLexer):
     # Analogs to _AddToken/_AddTokens in base lexer
     # Needed to remove COMMENT token, since comments ignored
     def _RemoveToken(self, token):
-        try:
+        if token in self.tokens:
             self.tokens.remove(token)
-        except ValueError:
-            raise RuntimeError('Token "%s" not present, so cannot be removed ' % token)
 
     def _RemoveTokens(self, tokens):
         for token in tokens:

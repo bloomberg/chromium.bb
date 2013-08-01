@@ -68,9 +68,10 @@ from idl_parser.idl_parser import ParseFile as parse_file
 
 from blink_idl_lexer import BlinkIDLLexer
 
-# We ignore comments, but base parser preserves them
+# We ignore comments (and hence don't need 'Top') but base parser preserves them
 # FIXME: Upstream: comments should be removed in base parser
-REMOVED_RULES = ['Comments',  # [0.1]
+REMOVED_RULES = ['Top',  # [0]
+                 'Comments',  # [0.1]
                  'CommentsRest',  # [0.2]
                 ]
 
@@ -341,7 +342,9 @@ class BlinkIDLParser(IDLParser):
         # FIXME: Upstream
         keys = set(self.__dict__.keys() + dir(self.__class__))
         for rule in REMOVED_RULES:
-            keys.remove('p_' + rule)
+            production_name = 'p_' + rule
+            if production_name in keys:
+                keys.remove(production_name)
         return list(keys)
 
     def __init__(self, lexer=None, verbose=False, debug=False, mute_error=False, outputdir=''):
