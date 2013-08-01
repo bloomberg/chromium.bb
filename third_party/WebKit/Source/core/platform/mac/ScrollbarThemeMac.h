@@ -28,8 +28,6 @@
 
 #include "core/platform/ScrollbarThemeComposite.h"
 
-typedef id ScrollbarPainter;
-
 namespace WebCore {
 
 class ScrollbarThemeMacCommon : public ScrollbarThemeComposite {
@@ -61,55 +59,6 @@ protected:
     void paintGivenTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, const Vector<IntRect>&);
 
     RefPtr<Pattern> m_overhangPattern;
-};
-
-class ScrollbarThemeMacOverlayAPI : public ScrollbarThemeMacCommon {
-public:
-    virtual void updateEnabledState(ScrollbarThemeClient*);
-    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar);
-    virtual bool usesOverlayScrollbars() const;
-    virtual void updateScrollbarOverlayStyle(ScrollbarThemeClient*);
-    virtual ScrollbarButtonsPlacement buttonsPlacement() const;
-
-    virtual void registerScrollbar(ScrollbarThemeClient*);
-    virtual void unregisterScrollbar(ScrollbarThemeClient*);
-
-    void setNewPainterForScrollbar(ScrollbarThemeClient*, ScrollbarPainter);
-    ScrollbarPainter painterForScrollbar(ScrollbarThemeClient*);
-
-    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
-
-protected:
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false);
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false);
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false);
-
-    virtual bool hasButtons(ScrollbarThemeClient*) { return false; }
-    virtual bool hasThumb(ScrollbarThemeClient*);
-
-    virtual int minimumThumbLength(ScrollbarThemeClient*);
-};
-
-class ScrollbarThemeMacNonOverlayAPI : public ScrollbarThemeMacCommon {
-public:
-    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar);
-    virtual bool usesOverlayScrollbars() const { return false; }
-    virtual ScrollbarButtonsPlacement buttonsPlacement() const;
-
-    virtual bool paint(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect);
-
-protected:
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false);
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false);
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false);
-
-    virtual void updateButtonPlacement();
-
-    virtual bool hasButtons(ScrollbarThemeClient*);
-    virtual bool hasThumb(ScrollbarThemeClient*);
-
-    virtual int minimumThumbLength(ScrollbarThemeClient*);
 };
 
 }

@@ -711,6 +711,8 @@
             ['include', 'platform/mac/LocalCurrentGraphicsContext\\.mm$'],
             ['include', 'platform/mac/NSScrollerImpDetails\\.mm$'],
             ['include', 'platform/mac/ScrollbarThemeMac\\.mm$'],
+            ['include', 'platform/mac/ScrollbarThemeMacNonOverlayAPI\\.mm$'],
+            ['include', 'platform/mac/ScrollbarThemeMacOverlayAPI\\.mm$'],
             ['include', 'platform/mac/ScrollAnimatorMac\\.mm$'],
             ['include', 'platform/mac/ScrollElasticityController\\.mm$'],
             ['include', 'platform/mac/ThemeMac\\.h$'],
