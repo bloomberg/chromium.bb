@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_STREAM_NOARGS_UI_POLICY_H_
 
 #include <string>
+
 #include "base/containers/hash_tables.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 
@@ -18,12 +19,12 @@ class StreamWithoutArgsUIPolicy : public FullStreamUIPolicy {
   virtual ~StreamWithoutArgsUIPolicy();
 
  protected:
-  virtual void ProcessArguments(scoped_refptr<Action> action) const
-      OVERRIDE;
+  // Clears the args field of the action (except for some DOM events and a
+  // small whitelisted set of api_names).  For WEB_REQUEST actions, keeps keys
+  // but removes values from the "web_request" dictionary in other.
+  virtual scoped_refptr<Action> ProcessArguments(
+      scoped_refptr<Action> action) const OVERRIDE;
 
-  virtual void ProcessWebRequestModifications(
-      base::DictionaryValue& details,
-      std::string& details_string) const OVERRIDE;
  private:
   base::hash_set<std::string> arg_whitelist_api_;
 };

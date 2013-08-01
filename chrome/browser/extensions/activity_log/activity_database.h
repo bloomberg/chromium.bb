@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -74,7 +75,16 @@ class ActivityDatabase {
 
     // Initializes the database schema; this gives a policy a chance to create
     // or update database tables as needed.  Should return true on success.
-    virtual bool OnDatabaseInit(sql::Connection* db) = 0;
+    virtual bool InitDatabase(sql::Connection* db) = 0;
+
+    // Requests that the policy flush any pending actions to the database.
+    // Should return true on success or false on a database error.
+    virtual bool FlushDatabase(sql::Connection* db) = 0;
+
+    // Called if the database encounters a permanent error; the policy should
+    // not expect to make any future writes to the database and may want to
+    // discard any queued data.
+    virtual void OnDatabaseFailure() = 0;
 
     // Called by ActivityDatabase just before the ActivityDatabase object is
     // deleted.  The database will make no further callbacks after invoking
@@ -82,9 +92,6 @@ class ActivityDatabase {
     // itself.
     virtual void OnDatabaseClose() = 0;
   };
-
-  // Used to simplify the return type of GetActions.
-  typedef std::vector<scoped_refptr<Action> > ActionVector;
 
   // Need to call Init to actually use the ActivityDatabase.  The Delegate
   // provides hooks for an ActivityLogPolicy to control the database schema and
@@ -98,19 +105,17 @@ class ActivityDatabase {
   // An ActivityLogPolicy should call this to kill the ActivityDatabase.
   void Close();
 
-  // Record an Action in the database.
-  void RecordAction(scoped_refptr<Action> action);
+  // Inform the database that there may be additional data which could be
+  // written out.
+  // TODO(mvrable): Add a method to force a database flush, or perhaps pass
+  // hints to the database about how much data is queued up so the database can
+  // flush before the timeout if there is a large amount of data?
+  void NotifyAction();
 
   // Turns off batch I/O writing mode. This should only be used in unit tests,
   // browser tests, or in our special --enable-extension-activity-log-testing
   // policy state.
   void SetBatchModeForTesting(bool batch_mode);
-
-  // Gets all actions for a given extension for the specified day. 0 = today,
-  // 1 = yesterday, etc. Only returns 1 day at a time. Actions are sorted from
-  // newest to oldest.
-  scoped_ptr<ActionVector> GetActions(const std::string& extension_id,
-                                      const int days_ago);
 
   bool is_db_valid() const { return valid_db_; }
 
@@ -124,6 +129,11 @@ class ActivityDatabase {
                               const char* content_fields[],
                               const char* field_types[],
                               const int num_content_fields);
+
+  // Runs the given callback, passing it a handle to the database connection.
+  // If the database is not valid, the callback is run (to allow it to do any
+  // needed cleanup) but passed a NULL value.
+  void RunOnDatabase(const base::Callback<void(sql::Connection*)>& callback);
 
  private:
   // This should never be invoked by another class. Use Close() to order a
@@ -157,22 +167,25 @@ class ActivityDatabase {
 
   // For unit testing only.
   void RecordBatchedActionsWhileTesting();
-  void SetClockForTesting(base::Clock* clock);
   void SetTimerForTesting(int milliseconds);
+
+  // Retrieve a handle to the raw SQL database.  This is only intended to be
+  // used by ActivityLogDatabasePolicy::GetDatabaseConnection(), and should
+  // only be called on the database thread.
+  sql::Connection* GetSqlConnection();
 
   // A reference a Delegate for policy-specific database behavior.  See the
   // top-level comment for ActivityDatabase for comments on cleanup.
   Delegate* delegate_;
 
-  base::Clock* testing_clock_;
   sql::Connection db_;
   bool valid_db_;
   bool batch_mode_;
-  std::vector<scoped_refptr<Action> > batched_actions_;
   base::RepeatingTimer<ActivityDatabase> timer_;
   bool already_closed_;
   bool did_init_;
 
+  friend class ActivityLogDatabasePolicy;
   FRIEND_TEST_ALL_PREFIXES(ActivityDatabaseTest, BatchModeOff);
   FRIEND_TEST_ALL_PREFIXES(ActivityDatabaseTest, BatchModeOn);
   DISALLOW_COPY_AND_ASSIGN(ActivityDatabase);

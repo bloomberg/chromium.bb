@@ -68,59 +68,7 @@ class ActivityLog : public BrowserContextKeyedService,
   // Logs an extension action: passes it to any installed policy to be logged
   // to the database, to any observers, and logs to the console if in testing
   // mode.
-  //
-  // The convenience Log*Action methods below can be used as well if the caller
-  // does not wish to construct the Action object itself, however those methods
-  // are somewhat deprecated.
   void LogAction(scoped_refptr<Action> action);
-
-  // TODO(mvrable): The calls below take args as a raw pointer, but the callee
-  // does not own the object so these should more properly be a const pointer.
-  // The callee is forced to make a copy of the object which in some cases is
-  // wasteful, and it could be better to take a scoped_ptr as input.  Switching
-  // to using LogAction is another way to clean this up.
-
-  // Log a successful API call made by an extension.
-  // This will create an APIAction for storage in the database.
-  // (Note: implemented as a wrapper for LogAPIActionInternal.)
-  void LogAPIAction(const std::string& extension_id,
-                    const std::string& name,    // e.g., tabs.get
-                    base::ListValue* args,      // the argument values e.g. 46
-                    const std::string& extra);  // any extra logging info
-
-  // Log an event notification delivered to an extension.
-  // This will create an APIAction for storage in the database.
-  // (Note: implemented as a wrapper for LogAPIActionInternal.)
-  void LogEventAction(const std::string& extension_id,
-                      const std::string& name,    // e.g., tabs.onUpdate
-                      base::ListValue* args,      // arguments to the callback
-                      const std::string& extra);  // any extra logging info
-
-  // Log a blocked API call made by an extension.
-  // This will create a BlockedAction for storage in the database.
-  void LogBlockedAction(const std::string& extension_id,
-                        const std::string& blocked_call,  // e.g., tabs.get
-                        base::ListValue* args,            // argument values
-                        BlockedAction::Reason reason,     // why it's blocked
-                        const std::string& extra);        // extra logging info
-
-  // Log an interaction between an extension and a URL.
-  // This will create a DOMAction for storage in the database.
-  void LogDOMAction(const std::string& extension_id,
-                    const GURL& url,                      // target URL
-                    const string16& url_title,            // title of the URL
-                    const std::string& api_call,          // api call
-                    const base::ListValue* args,          // arguments
-                    DomActionType::Type call_type,        // type of the call
-                    const std::string& extra);            // extra logging info
-
-  // Log a use of the WebRequest API to redirect, cancel, or modify page
-  // headers.
-  void LogWebRequestAction(const std::string& extension_id,
-                           const GURL& url,
-                           const std::string& api_call,
-                           scoped_ptr<base::DictionaryValue> details,
-                           const std::string& extra);
 
   // Retrieves the list of actions for a given extension on a specific day.
   // Today is 0, yesterday is 1, etc. Returns one day at a time.
@@ -171,15 +119,6 @@ class ActivityLog : public BrowserContextKeyedService,
   // Some setup needs to wait until after the ExtensionSystem/ExtensionService
   // are done with their own setup.
   void Init();
-
-  // We log callbacks and API calls very similarly, so we handle them the same
-  // way internally.
-  void LogAPIActionInternal(
-      const std::string& extension_id,
-      const std::string& api_call,
-      base::ListValue* args,
-      const std::string& extra,
-      const APIAction::Type type);
 
   // TabHelper::ScriptExecutionObserver implementation.
   // Fires when a ContentScript is executed.

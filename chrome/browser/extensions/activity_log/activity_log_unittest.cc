@@ -76,44 +76,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ(2, static_cast<int>(i->size()));
   }
 
-  static void RetrieveActions_LogAndFetchPathActions(
-      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
-    std::string args;
-    ASSERT_EQ(1U, i->size());
-    scoped_refptr<Action> last = i->front();
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableExtensionActivityLogTesting))
-      args =
-          "ID=abc CATEGORY=content_script API=document.write ARGS=[] "
-          "PAGE_URL=http://www.google.com/foo?bar "
-          "OTHER={\"dom_verb\":3,\"extra\":\"extra\"}";
-    else
-      args =
-          "ID=abc CATEGORY=content_script API=document.write ARGS=[] "
-          "PAGE_URL=http://www.google.com/foo "
-          "OTHER={\"dom_verb\":3,\"extra\":\"extra\"}";
-    ASSERT_EQ(args, last->PrintForDebug());
-  }
-
-  static void Arguments_Missing(
-      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
-    scoped_refptr<Action> last = i->front();
-    std::string id(kExtensionId);
-    std::string noargs =
-        "ID=" + id + " CATEGORY=api_call API=tabs.testMethod";
-    ASSERT_EQ(noargs, last->PrintForDebug());
-  }
-
-  static void Arguments_Present(
-      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
-    scoped_refptr<Action> last = i->front();
-    std::string id(kExtensionId);
-    std::string args = "ID=" + id +
-                       " CATEGORY=api_call API=extension.connect "
-                       "ARGS=[\"hello\",\"world\"]";
-    ASSERT_EQ(args, last->PrintForDebug());
-  }
-
   void SetPolicy(bool log_arguments) {
     ActivityLog* activity_log = ActivityLog::GetInstance(profile());
     if (log_arguments)
@@ -128,8 +90,8 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     scoped_refptr<Action> last = i->front();
     std::string args =
         "ID=odlameecjipmbmbejkplpemijjgpljce CATEGORY=content_script API= "
-        "ARGS=[\"script \"] PAGE_URL=http://www.google.com/ "
-        "OTHER={\"dom_verb\":3,\"extra\":\"(prerender)\"}";
+        "ARGS=[\"script\"] PAGE_URL=http://www.google.com/ "
+        "OTHER={\"prerender\":true}";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 
@@ -153,10 +115,13 @@ TEST_F(ActivityLogTest, Enabled) {
 
 TEST_F(ActivityLogTest, Construct) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  scoped_ptr<base::ListValue> args(new base::ListValue());
   ASSERT_TRUE(activity_log->IsLogEnabled());
-  activity_log->LogAPIAction(
-      kExtensionId, std::string("tabs.testMethod"), args.get(), std::string());
+
+  scoped_refptr<Action> action = new Action(kExtensionId,
+                                            base::Time::Now(),
+                                            Action::ACTION_API_CALL,
+                                            "tabs.testMethod");
+  activity_log->LogAction(action);
 }
 
 TEST_F(ActivityLogTest, LogAndFetchActions) {
@@ -165,66 +130,22 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
   ASSERT_TRUE(activity_log->IsLogEnabled());
 
   // Write some API calls
-  activity_log->LogAPIAction(
-      kExtensionId, std::string("tabs.testMethod"), args.get(), std::string());
-  activity_log->LogDOMAction(kExtensionId,
-                             GURL("http://www.google.com"),
-                             string16(),
-                             std::string("document.write"),
-                             args.get(),
-                             DomActionType::METHOD,
-                             std::string("extra"));
+  scoped_refptr<Action> action = new Action(kExtensionId,
+                                            base::Time::Now(),
+                                            Action::ACTION_API_CALL,
+                                            "tabs.testMethod");
+  activity_log->LogAction(action);
+  action = new Action(kExtensionId,
+                      base::Time::Now(),
+                      Action::ACTION_DOM_ACCESS,
+                      "document.write");
+  action->set_page_url(GURL("http://www.google.com"));
+  activity_log->LogAction(action);
+
   activity_log->GetActions(
       kExtensionId,
       0,
       base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchActions));
-}
-
-TEST_F(ActivityLogTest, LogAndFetchPathActions) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  ASSERT_TRUE(activity_log->IsLogEnabled());
-
-  activity_log->LogDOMAction(kExtensionId,
-                             GURL("http://www.google.com/foo?bar"),
-                             string16(),
-                             std::string("document.write"),
-                             args.get(),
-                             DomActionType::INSERTED,
-                             std::string("extra"));
-  activity_log->GetActions(
-      kExtensionId,
-      0,
-      base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchPathActions));
-}
-
-TEST_F(ActivityLogTest, LogWithoutArguments) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  ASSERT_TRUE(activity_log->IsLogEnabled());
-  SetPolicy(false);
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, new base::StringValue("hello"));
-  args->Set(1, new base::StringValue("world"));
-  activity_log->LogAPIAction(
-      kExtensionId, std::string("tabs.testMethod"), args.get(), std::string());
-  activity_log->GetActions(
-      kExtensionId, 0, base::Bind(ActivityLogTest::Arguments_Missing));
-  SetPolicy(true);
-}
-
-TEST_F(ActivityLogTest, LogWithArguments) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  ASSERT_TRUE(activity_log->IsLogEnabled());
-
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, new base::StringValue("hello"));
-  args->Set(1, new base::StringValue("world"));
-  activity_log->LogAPIAction(kExtensionId,
-                             std::string("extension.connect"),
-                             args.get(),
-                             std::string());
-  activity_log->GetActions(
-      kExtensionId, 0, base::Bind(ActivityLogTest::Arguments_Present));
 }
 
 TEST_F(ActivityLogTest, LogPrerender) {
@@ -270,4 +191,3 @@ TEST_F(ActivityLogTest, LogPrerender) {
 }
 
 }  // namespace extensions
-

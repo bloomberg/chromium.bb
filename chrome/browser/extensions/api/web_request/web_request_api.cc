@@ -17,6 +17,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/extensions/activity_log/activity_action_constants.h"
+#include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/activity_log/web_request_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
@@ -1634,12 +1636,16 @@ void LogExtensionActivity(void* profile_id,
     Profile* profile = static_cast<Profile*>(profile_id);
     if (!g_browser_process->profile_manager()->IsValidProfile(profile))
       return;
-    extensions::ActivityLog::GetInstance(profile)->LogWebRequestAction(
-        extension_id,
-        is_incognito ?  GURL(extensions::APIAction::kIncognitoUrl) : url,
-        api_call,
-        details.Pass(),
-        "");
+    scoped_refptr<extensions::Action> action =
+        new extensions::Action(extension_id,
+                               base::Time::Now(),
+                               extensions::Action::ACTION_WEB_REQUEST,
+                               api_call);
+    action->set_page_url(url);
+    action->set_page_incognito(is_incognito);
+    action->mutable_other()->Set(activity_log_constants::kActionWebRequest,
+                                 details.release());
+    extensions::ActivityLog::GetInstance(profile)->LogAction(action);
   }
 }
 

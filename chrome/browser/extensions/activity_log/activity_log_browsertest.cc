@@ -46,10 +46,10 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
     scoped_refptr<Action> last = i->front();
 
     std::string args = base::StringPrintf(
-        "ID=%s CATEGORY=content_script API= ARGS=[\"/google_cs.js \"] "
+        "ID=%s CATEGORY=content_script API= ARGS=[\"/google_cs.js\"] "
         "PAGE_URL=http://www.google.com.bo:%d/test.html "
         "PAGE_TITLE=\"www.google.com.bo:%d/test.html\" "
-        "OTHER={\"dom_verb\":3,\"extra\":\"(prerender)\"}",
+        "OTHER={\"prerender\":true}",
         extension_id.c_str(), port, port);
     // TODO: Replace PrintForDebug with field testing
     // when this feature will be available

@@ -2,22 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/activity_log/activity_actions.h"
+
 #include <string>
+
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/activity_log/activity_actions.h"
+#include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/api_name_constants.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "sql/statement.h"
+
+namespace constants = activity_log_constants;
 
 namespace {
 
@@ -30,31 +34,6 @@ std::string Serialize(const base::Value* value) {
     serializer.SerializeAndOmitBinaryValues(*value);
   }
   return value_as_text;
-}
-
-// Gets the URL for a given tab ID. Helper method for APIAction::LookupTabId.
-std::string GetUrlForTabId(int tab_id, Profile* profile) {
-  content::WebContents* contents = NULL;
-  Browser* browser = NULL;
-  bool found = ExtensionTabUtil::GetTabById(tab_id,
-                                            profile,
-                                            true,  // search incognito tabs too
-                                            &browser,
-                                            NULL,
-                                            &contents,
-                                            NULL);
-  if (found) {
-    // Check whether the profile the tab was found in is a normal or incognito
-    // profile.
-    if (!browser->profile()->IsOffTheRecord()) {
-      GURL url = contents->GetURL();
-      return std::string(url.spec());
-    } else {
-      return std::string(extensions::APIAction::kIncognitoUrl);
-    }
-  } else {
-    return std::string();
-  }
 }
 
 // Sets up the hashmap for mapping extension strings to "ints". The hashmap is
@@ -123,61 +102,6 @@ using api::activity_log_private::ChromeActivityDetail;
 using api::activity_log_private::DomActivityDetail;
 using api::activity_log_private::ExtensionActivity;
 
-// We should log the arguments to these API calls, even if argument logging is
-// disabled by default.
-const char* APIAction::kAlwaysLog[] =
-    {"extension.connect", "extension.sendMessage",
-     "tabs.executeScript", "tabs.insertCSS" };
-const int APIAction::kSizeAlwaysLog = arraysize(kAlwaysLog);
-
-// A string used in place of the real URL when the URL is hidden because it is
-// in an incognito window.  Extension activity logs mentioning kIncognitoUrl
-// let the user know that an extension is manipulating incognito tabs without
-// recording specific data about the pages.
-const char* APIAction::kIncognitoUrl = "http://incognito/";
-
-// static
-void APIAction::LookupTabId(const std::string& api_call,
-                            base::ListValue* args,
-                            Profile* profile) {
-  if (api_call == "tabs.get" ||                 // api calls, ID as int
-      api_call == "tabs.connect" ||
-      api_call == "tabs.sendMessage" ||
-      api_call == "tabs.duplicate" ||
-      api_call == "tabs.update" ||
-      api_call == "tabs.reload" ||
-      api_call == "tabs.detectLanguage" ||
-      api_call == "tabs.executeScript" ||
-      api_call == "tabs.insertCSS" ||
-      api_call == "tabs.move" ||                // api calls, IDs in array
-      api_call == "tabs.remove" ||
-      api_call == "tabs.onUpdated" ||           // events, ID as int
-      api_call == "tabs.onMoved" ||
-      api_call == "tabs.onDetached" ||
-      api_call == "tabs.onAttached" ||
-      api_call == "tabs.onRemoved" ||
-      api_call == "tabs.onReplaced") {
-    int tab_id;
-    base::ListValue* id_list;
-    if (args->GetInteger(0, &tab_id)) {
-      std::string url = GetUrlForTabId(tab_id, profile);
-      if (url != std::string())
-        args->Set(0, new base::StringValue(url));
-    } else if ((api_call == "tabs.move" || api_call == "tabs.remove") &&
-               args->GetList(0, &id_list)) {
-      for (int i = 0; i < static_cast<int>(id_list->GetSize()); ++i) {
-        if (id_list->GetInteger(i, &tab_id)) {
-          std::string url = GetUrlForTabId(tab_id, profile);
-          if (url != std::string())
-            id_list->Set(i, new base::StringValue(url));
-        } else {
-          LOG(ERROR) << "The tab ID array is malformed at index " << i;
-        }
-      }
-    }
-  }
-}
-
 Action::Action(const std::string& extension_id,
                const base::Time& time,
                const ActionType action_type,
@@ -185,9 +109,29 @@ Action::Action(const std::string& extension_id,
     : extension_id_(extension_id),
       time_(time),
       action_type_(action_type),
-      api_name_(api_name) {}
+      api_name_(api_name),
+      page_incognito_(false),
+      arg_incognito_(false) {}
 
 Action::~Action() {}
+
+// TODO(mvrable): As an optimization, we might return this directly if the
+// refcount is one.  However, there are likely to be other stray references in
+// many cases that will prevent this optimization.
+scoped_refptr<Action> Action::Clone() const {
+  scoped_refptr<Action> clone(
+      new Action(extension_id(), time(), action_type(), api_name()));
+  if (args())
+    clone->set_args(make_scoped_ptr(args()->DeepCopy()));
+  clone->set_page_url(page_url());
+  clone->set_page_title(page_title());
+  clone->set_page_incognito(page_incognito());
+  clone->set_arg_url(arg_url());
+  clone->set_arg_incognito(arg_incognito());
+  if (other())
+    clone->set_other(make_scoped_ptr(other()->DeepCopy()));
+  return clone;
+}
 
 void Action::set_args(scoped_ptr<ListValue> args) {
   args_.reset(args.release());
@@ -217,50 +161,6 @@ DictionaryValue* Action::mutable_other() {
     other_.reset(new DictionaryValue());
   }
   return other_.get();
-}
-
-bool Action::Record(sql::Connection* db) {
-  std::string sql_str =
-      "INSERT INTO " + std::string(FullStreamUIPolicy::kTableName) +
-      " (extension_id, time, action_type, api_name, args, "
-      "page_url, page_title, arg_url, other) VALUES (?,?,?,?,?,?,?,?,?)";
-  sql::Statement statement(db->GetCachedStatement(
-      sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
-  statement.BindString(0, extension_id());
-  statement.BindInt64(1, time().ToInternalValue());
-  statement.BindInt(2, static_cast<int>(action_type()));
-  statement.BindString(3, api_name());
-  if (args()) {
-    statement.BindString(4, Serialize(args()));
-  } else {
-    statement.BindNull(4);
-  }
-  if (other()) {
-    statement.BindString(8, Serialize(other()));
-  } else {
-    statement.BindNull(8);
-  }
-
-  url_canon::Replacements<char> url_sanitizer;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionActivityLogTesting)) {
-    url_sanitizer.ClearQuery();
-    url_sanitizer.ClearRef();
-  }
-  if (page_url().is_valid()) {
-    statement.BindString(5, page_url().ReplaceComponents(url_sanitizer).spec());
-  }
-  statement.BindString(6, page_title());
-  if (arg_url().is_valid()) {
-    statement.BindString(7, arg_url().ReplaceComponents(url_sanitizer).spec());
-  }
-
-  if (!statement.Run()) {
-    LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
-    statement.Clear();
-    return false;
-  }
-  return true;
 }
 
 scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
@@ -326,9 +226,13 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
       details->api_call.reset(new std::string(api_name()));
       details->args.reset(new std::string(Serialize(args())));
       details->extra.reset(new std::string(Serialize(other())));
-      details->url.reset(new std::string(page_url().spec()));
-      if (!page_title().empty())
-        details->url_title.reset(new std::string(page_title()));
+      if (page_incognito()) {
+        details->url.reset(new std::string(constants::kIncognitoUrl));
+      } else {
+        details->url.reset(new std::string(page_url().spec()));
+        if (!page_title().empty())
+          details->url_title.reset(new std::string(page_title()));
+      }
 
       result->activity_type = ExtensionActivity::ACTIVITY_TYPE_DOM;
       result->dom_activity_detail.reset(details);
@@ -379,14 +283,20 @@ std::string Action::PrintForDebug() {
     result += " ARGS=" + Serialize(args_.get());
   }
   if (page_url_.is_valid()) {
-    result += " PAGE_URL=" + page_url_.spec();
+    if (page_incognito_)
+      result += " PAGE_URL=(incognito)" + page_url_.spec();
+    else
+      result += " PAGE_URL=" + page_url_.spec();
   }
   if (!page_title_.empty()) {
     StringValue title(page_title_);
     result += " PAGE_TITLE=" + Serialize(&title);
   }
   if (arg_url_.is_valid()) {
-    result += " ARG_URL=" + arg_url_.spec();
+    if (arg_incognito_)
+      result += " ARG_URL=(incognito)" + arg_url_.spec();
+    else
+      result += " ARG_URL=" + arg_url_.spec();
   }
   if (other_.get()) {
     result += " OTHER=" + Serialize(other_.get());

@@ -9,11 +9,15 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/extensions/activity_log/activity_action_constants.h"
+#include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -37,85 +41,26 @@
 
 using content::BrowserThread;
 using extensions::APIPermission;
+using extensions::api::activity_log_private::BlockedChromeActivityDetail;
 using WebKit::WebCache;
 
 namespace {
 
-enum ActivityLogCallType {
-  ACTIVITYAPI,
-  ACTIVITYEVENT
-};
-
-void AddAPIActionToExtensionActivityLog(
+// Logs an action to the extension activity log for the specified profile.  Can
+// be called from any thread.
+void AddActionToExtensionActivityLog(
     Profile* profile,
-    const ActivityLogCallType call_type,
-    const std::string& extension_id,
-    const std::string& api_call,
-    scoped_ptr<ListValue> args,
-    const std::string& extra) {
+    scoped_refptr<extensions::Action> action) {
   // The ActivityLog can only be accessed from the main (UI) thread.  If we're
   // running on the wrong thread, re-dispatch from the main thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&AddAPIActionToExtensionActivityLog, profile, call_type,
-                   extension_id, api_call, base::Passed(&args), extra));
+        base::Bind(&AddActionToExtensionActivityLog, profile, action));
   } else {
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
-    if (activity_log->IsLogEnabled()) {
-      if (call_type == ACTIVITYAPI)
-        activity_log->LogAPIAction(extension_id, api_call, args.get(), extra);
-      else if (call_type == ACTIVITYEVENT)
-        activity_log->LogEventAction(extension_id, api_call, args.get(), extra);
-    }
-  }
-}
-
-void AddBlockedActionToExtensionActivityLog(
-    Profile* profile,
-    const std::string& extension_id,
-    const std::string& api_call) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&AddBlockedActionToExtensionActivityLog, profile,
-                   extension_id, api_call));
-  } else {
-    extensions::ActivityLog* activity_log =
-        extensions::ActivityLog::GetInstance(profile);
-    if (activity_log->IsLogEnabled()) {
-      scoped_ptr<ListValue> empty_args(new ListValue());
-      activity_log->LogBlockedAction(extension_id, api_call, empty_args.get(),
-                                     extensions::BlockedAction::ACCESS_DENIED,
-                                     std::string());
-    }
-  }
-}
-
-void AddDOMActionToExtensionActivityLog(
-    Profile* profile,
-    const std::string& extension_id,
-    const GURL& url,
-    const string16& url_title,
-    const std::string& api_call,
-    scoped_ptr<ListValue> args,
-    const int call_type) {
-  // The ActivityLog can only be accessed from the main (UI) thread.  If we're
-  // running on the wrong thread, re-dispatch from the main thread.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&AddDOMActionToExtensionActivityLog, profile, extension_id,
-                   url, url_title, api_call, base::Passed(&args), call_type));
-  } else {
-    extensions::ActivityLog* activity_log =
-        extensions::ActivityLog::GetInstance(profile);
-    if (activity_log->IsLogEnabled())
-      activity_log->LogDOMAction(
-          extension_id, url, url_title, api_call, args.get(),
-          static_cast<extensions::DomActionType::Type>(call_type),
-          std::string());
+    activity_log->LogAction(action);
   }
 }
 
@@ -558,40 +503,69 @@ void ChromeRenderMessageFilter::OnExtensionResumeRequests(int route_id) {
 void ChromeRenderMessageFilter::OnAddAPIActionToExtensionActivityLog(
     const std::string& extension_id,
     const ExtensionHostMsg_APIActionOrEvent_Params& params) {
-  scoped_ptr<ListValue> args(params.arguments.DeepCopy());
-  // The activity is recorded as an API action in the extension
-  // activity log.
-  AddAPIActionToExtensionActivityLog(profile_, ACTIVITYAPI, extension_id,
-                                     params.api_call, args.Pass(),
-                                     params.extra);
+  scoped_refptr<extensions::Action> action = new extensions::Action(
+      extension_id, base::Time::Now(), extensions::Action::ACTION_API_CALL,
+      params.api_call);
+  action->set_args(make_scoped_ptr(params.arguments.DeepCopy()));
+  if (!params.extra.empty()) {
+    action->mutable_other()->SetString(
+        activity_log_constants::kActionExtra, params.extra);
+  }
+  AddActionToExtensionActivityLog(profile_, action);
 }
 
 void ChromeRenderMessageFilter::OnAddDOMActionToExtensionActivityLog(
     const std::string& extension_id,
     const ExtensionHostMsg_DOMAction_Params& params) {
-  scoped_ptr<ListValue> args(params.arguments.DeepCopy());
-  // The activity is recorded as a DOM action on the extension
-  // activity log.
-  AddDOMActionToExtensionActivityLog(profile_, extension_id, params.url,
-                                     params.url_title, params.api_call,
-                                     args.Pass(), params.call_type);
+  extensions::Action::ActionType type;
+  switch (params.call_type) {
+    case extensions::DomActionType::INSERTED:
+      type = extensions::Action::ACTION_CONTENT_SCRIPT;
+      break;
+    case extensions::DomActionType::XHR:
+      type = extensions::Action::ACTION_DOM_XHR;
+      break;
+    default:
+      type = extensions::Action::ACTION_DOM_ACCESS;
+      break;
+  }
+
+  scoped_refptr<extensions::Action> action = new extensions::Action(
+      extension_id, base::Time::Now(), type, params.api_call);
+  action->set_args(make_scoped_ptr(params.arguments.DeepCopy()));
+  // TODO(mvrable): Check for incognito pages
+  action->set_page_url(params.url);
+  action->set_page_title(base::UTF16ToUTF8(params.url_title));
+  action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
+                                      params.call_type);
+  AddActionToExtensionActivityLog(profile_, action);
 }
 
 void ChromeRenderMessageFilter::OnAddEventToExtensionActivityLog(
     const std::string& extension_id,
     const ExtensionHostMsg_APIActionOrEvent_Params& params) {
-  scoped_ptr<ListValue> args(params.arguments.DeepCopy());
-  // The activity is recorded as an event in the extension
-  // activity log.
-  AddAPIActionToExtensionActivityLog(profile_, ACTIVITYEVENT, extension_id,
-                                     params.api_call, args.Pass(),
-                                     params.extra);
+  scoped_refptr<extensions::Action> action = new extensions::Action(
+      extension_id, base::Time::Now(), extensions::Action::ACTION_API_EVENT,
+      params.api_call);
+  action->set_args(make_scoped_ptr(params.arguments.DeepCopy()));
+  if (!params.extra.empty()) {
+    action->mutable_other()->SetString(activity_log_constants::kActionExtra,
+                                       params.extra);
+  }
+  AddActionToExtensionActivityLog(profile_, action);
 }
 
 void ChromeRenderMessageFilter::OnAddBlockedCallToExtensionActivityLog(
     const std::string& extension_id,
     const std::string& function_name) {
-  AddBlockedActionToExtensionActivityLog(profile_, extension_id, function_name);
+  scoped_refptr<extensions::Action> action = new extensions::Action(
+      extension_id, base::Time::Now(), extensions::Action::ACTION_API_BLOCKED,
+      function_name);
+  action->mutable_other()->SetString(
+      activity_log_constants::kActionBlockedReason,
+      BlockedChromeActivityDetail::ToString(
+          BlockedChromeActivityDetail::REASON_ACCESS_DENIED));
+  AddActionToExtensionActivityLog(profile_, action);
 }
 
 void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,

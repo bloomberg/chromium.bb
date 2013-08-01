@@ -109,8 +109,10 @@ void EventRouter::LogExtensionEventMessage(void* profile_id,
     Profile* profile = reinterpret_cast<Profile*>(profile_id);
     if (!g_browser_process->profile_manager()->IsValidProfile(profile))
       return;
-    ActivityLog::GetInstance(profile)->LogEventAction(
-        extension_id, event_name, event_args.get(), std::string());
+    scoped_refptr<Action> action = new Action(
+        extension_id, base::Time::Now(), Action::ACTION_API_EVENT, event_name);
+    action->set_args(event_args.Pass());
+    ActivityLog::GetInstance(profile)->LogAction(action);
   }
 }
 

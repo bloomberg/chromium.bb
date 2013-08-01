@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_ACTIONS_H_
 
 #include <string>
+#include <vector>
+
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -35,6 +37,10 @@ class Action : public base::RefCountedThreadSafe<Action> {
     ACTION_WEB_REQUEST = 7,
   };
 
+  // A useful shorthand for methods that take or return collections of Action
+  // objects.
+  typedef std::vector<scoped_refptr<Action> > ActionVector;
+
   // Creates a new activity log Action object.  The extension_id, time, and
   // type are immutable.  All other fields can be filled in with the
   // accessors/mutators below.
@@ -42,6 +48,9 @@ class Action : public base::RefCountedThreadSafe<Action> {
          const base::Time& time,
          const ActionType action_type,
          const std::string& api_name);
+
+  // Creates and returns a mutable copy of an Action.
+  scoped_refptr<Action> Clone() const;
 
   // The extension which caused this record to be generated.
   const std::string& extension_id() const { return extension_id_; }
@@ -78,13 +87,17 @@ class Action : public base::RefCountedThreadSafe<Action> {
   const GURL& arg_url() const { return arg_url_; }
   void set_arg_url(const GURL& arg_url);
 
+  // Get or set a flag indicating whether the page or argument values above
+  // refer to incognito pages.
+  bool page_incognito() const { return page_incognito_; }
+  void set_page_incognito(bool incognito) { page_incognito_ = incognito; }
+  bool arg_incognito() const { return arg_incognito_; }
+  void set_arg_incognito(bool incognito) { arg_incognito_ = incognito; }
+
   // A dictionary where any additional data can be stored.
   const DictionaryValue* other() const { return other_.get(); }
   void set_other(scoped_ptr<DictionaryValue> other);
   DictionaryValue* mutable_other();
-
-  // Record the action in the database.
-  bool Record(sql::Connection* db);
 
   // Flatten the activity's type-specific fields into an ExtensionActivity.
   scoped_ptr<api::activity_log_private::ExtensionActivity>
@@ -107,54 +120,12 @@ class Action : public base::RefCountedThreadSafe<Action> {
   scoped_ptr<ListValue> args_;
   GURL page_url_;
   std::string page_title_;
+  bool page_incognito_;
   GURL arg_url_;
+  bool arg_incognito_;
   scoped_ptr<DictionaryValue> other_;
 
   DISALLOW_COPY_AND_ASSIGN(Action);
-};
-
-// Constants defined for various action types.
-// TODO(mvrable): These are here for compatibility but should be moved
-// elsewhere as cleanup progresses.
-class APIAction {
- public:
-  // These values should not be changed. Append any additional values to the
-  // end with sequential numbers.
-  enum Type {
-    CALL = 0,
-    EVENT_CALLBACK = 1,
-    UNKNOWN_TYPE = 2,
-  };
-
-  static const char* kAlwaysLog[];
-  static const int kSizeAlwaysLog;
-
-  static const char* kIncognitoUrl;
-
-  // Used to associate tab IDs with URLs. It will swap out the int in args with
-  // a URL as a string. If the tab is in incognito mode, we leave it alone as
-  // the original int. There is a small chance that the URL translation could
-  // be wrong, if the tab has already been navigated by the time of invocation.
-  static void LookupTabId(const std::string& api_call,
-                          base::ListValue* args,
-                          Profile* profile);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(APIAction);
-};
-
-class BlockedAction {
- public:
-  // These values should not be changed. Append any additional values to the
-  // end with sequential numbers.
-  enum Reason {
-      UNKNOWN = 0,
-      ACCESS_DENIED = 1,
-      QUOTA_EXCEEDED = 2,
-  };
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(BlockedAction);
 };
 
 }  // namespace extensions

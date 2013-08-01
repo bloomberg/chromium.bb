@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_FULLSTREAM_UI_POLICY_H_
 
 #include <string>
-#include <vector>
+
 #include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
 
@@ -16,8 +16,7 @@ namespace extensions {
 
 // A policy for logging the full stream of actions, including all arguments.
 // It's mostly intended to be used in testing and analysis.
-class FullStreamUIPolicy : public ActivityLogPolicy,
-                           public ActivityDatabase::Delegate {
+class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
  public:
   // For more info about these member functions, see the super class.
   explicit FullStreamUIPolicy(Profile* profile);
@@ -33,8 +32,7 @@ class FullStreamUIPolicy : public ActivityLogPolicy,
       const std::string& extension_id,
       const int day,
       const base::Callback
-          <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback)
-      const OVERRIDE;
+          <void(scoped_ptr<Action::ActionVector>)>& callback) OVERRIDE;
 
   // Returns the actual key for a given key type
   virtual std::string GetKey(ActivityLogPolicy::KeyType key_id) const OVERRIDE;
@@ -50,28 +48,33 @@ class FullStreamUIPolicy : public ActivityLogPolicy,
  protected:
   // Only ever run by OnDatabaseClose() below; see the comments on the
   // ActivityDatabase class for an overall discussion of how cleanup works.
-  virtual ~FullStreamUIPolicy() {}
+  virtual ~FullStreamUIPolicy();
 
   // The ActivityDatabase::PolicyDelegate interface.  These are always called
   // from the database thread.
-  virtual bool OnDatabaseInit(sql::Connection* db) OVERRIDE;
+  virtual bool InitDatabase(sql::Connection* db) OVERRIDE;
+  virtual bool FlushDatabase(sql::Connection* db) OVERRIDE;
+  virtual void OnDatabaseFailure() OVERRIDE;
   virtual void OnDatabaseClose() OVERRIDE;
 
-  // Strips arguments if needed by policy.
-  virtual void ProcessArguments(scoped_refptr<Action> action) const;
+  // Strips arguments if needed by policy.  May return the original object (if
+  // unmodified), or a copy (if modifications were made).  The implementation
+  // in FullStreamUIPolicy returns the action unmodified.
+  virtual scoped_refptr<Action> ProcessArguments(
+      scoped_refptr<Action> action) const;
 
-  // Concatenates arguments.
-  virtual std::string JoinArguments(ActionType action_type,
-                                    const std::string& name,
-                                    const base::ListValue* args) const;
+  // Tracks any pending updates to be written to the database, if write
+  // batching is turned on.  Should only be accessed from the database thread.
+  Action::ActionVector queued_actions_;
 
-  virtual void ProcessWebRequestModifications(
-      base::DictionaryValue& details,
-      std::string& details_string) const;
+ private:
+  // Adds an Action to queued_actions_; this should be invoked only on the
+  // database thread.
+  void QueueAction(scoped_refptr<Action> action);
 
-  // See the comments for the ActivityDatabase class for a discussion of how
-  // cleanup runs.
-  ActivityDatabase* db_;
+  // The implementation of ReadData; this must only run on the database thread.
+  scoped_ptr<Action::ActionVector> DoReadData(const std::string& extension_id,
+                                              const int days_ago);
 };
 
 }  // namespace extensions

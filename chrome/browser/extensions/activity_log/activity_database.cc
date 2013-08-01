@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/activity_log/activity_database.h"
+
 #include <string>
+
 #include "base/command_line.h"
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -12,7 +14,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "sql/error_delegate_util.h"
@@ -29,7 +30,6 @@ namespace extensions {
 
 ActivityDatabase::ActivityDatabase(ActivityDatabase::Delegate* delegate)
     : delegate_(delegate),
-      testing_clock_(NULL),
       valid_db_(false),
       already_closed_(false),
       did_init_(false) {
@@ -68,7 +68,7 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
   base::mac::SetFileBackupExclusion(db_name);
 #endif
 
-  if (!delegate_->OnDatabaseInit(&db_))
+  if (!delegate_->InitDatabase(&db_))
     return LogInitFailure();
 
   sql::InitStatus stat = committer.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
@@ -91,27 +91,18 @@ void ActivityDatabase::LogInitFailure() {
   SoftFailureClose();
 }
 
-void ActivityDatabase::RecordAction(scoped_refptr<Action> action) {
-  if (!valid_db_) return;
-  if (batch_mode_) {
-    batched_actions_.push_back(action);
-  } else {
-    if (!action->Record(&db_)) SoftFailureClose();
+void ActivityDatabase::NotifyAction() {
+  if (valid_db_ && !batch_mode_) {
+    if (!delegate_->FlushDatabase(&db_))
+      SoftFailureClose();
   }
 }
 
 void ActivityDatabase::RecordBatchedActions() {
-  if (!valid_db_) return;
-  bool failure = false;
-  std::vector<scoped_refptr<Action> >::size_type i;
-  for (i = 0; i != batched_actions_.size(); ++i) {
-    if (!batched_actions_.at(i)->Record(&db_)) {
-      failure = true;
-      break;
-    }
+  if (valid_db_) {
+    if (!delegate_->FlushDatabase(&db_))
+      SoftFailureClose();
   }
-  batched_actions_.clear();
-  if (failure) SoftFailureClose();
 }
 
 void ActivityDatabase::SetBatchModeForTesting(bool batch_mode) {
@@ -127,85 +118,15 @@ void ActivityDatabase::SetBatchModeForTesting(bool batch_mode) {
   batch_mode_ = batch_mode;
 }
 
-scoped_ptr<ActivityDatabase::ActionVector> ActivityDatabase::GetActions(
-    const std::string& extension_id, const int days_ago) {
+sql::Connection* ActivityDatabase::GetSqlConnection() {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  DCHECK_GE(days_ago, 0);
-
-  scoped_ptr<ActionVector> actions(new ActionVector());
-  if (!valid_db_)
-    return actions.Pass();
-  // Compute the time bounds for that day.
-  base::Time morning_midnight = testing_clock_ ?
-      testing_clock_->Now().LocalMidnight() :
-      base::Time::Now().LocalMidnight();
-  int64 early_bound = 0;
-  int64 late_bound = 0;
-  if (days_ago == 0) {
-      early_bound = morning_midnight.ToInternalValue();
-      late_bound = base::Time::Max().ToInternalValue();
+  if (valid_db_) {
+    return &db_;
   } else {
-      base::Time early_time = morning_midnight -
-          base::TimeDelta::FromDays(days_ago);
-      base::Time late_time = morning_midnight -
-          base::TimeDelta::FromDays(days_ago-1);
-      early_bound = early_time.ToInternalValue();
-      late_bound = late_time.ToInternalValue();
+    LOG(WARNING) << "Activity log database is not valid";
+    return NULL;
   }
-  std::string query_str = base::StringPrintf(
-      "SELECT time, action_type, api_name, args, page_url, page_title, "
-      "arg_url, other "
-      "FROM %s WHERE extension_id=? AND time>? AND time<=? "
-      "ORDER BY time DESC",
-      FullStreamUIPolicy::kTableName);
-  sql::Statement query(db_.GetCachedStatement(SQL_FROM_HERE,
-                                              query_str.c_str()));
-  query.BindString(0, extension_id);
-  query.BindInt64(1, early_bound);
-  query.BindInt64(2, late_bound);
-  while (query.is_valid() && query.Step()) {
-    scoped_refptr<Action> action =
-        new Action(extension_id,
-                   base::Time::FromInternalValue(query.ColumnInt64(0)),
-                   static_cast<Action::ActionType>(query.ColumnInt(1)),
-                   query.ColumnString(2));
-
-    if (query.ColumnType(3) != sql::COLUMN_TYPE_NULL) {
-      scoped_ptr<Value> parsed_value(
-          base::JSONReader::Read(query.ColumnString(3)));
-      if (parsed_value && parsed_value->IsType(Value::TYPE_LIST)) {
-        action->set_args(
-            make_scoped_ptr(static_cast<ListValue*>(parsed_value.release())));
-      } else {
-        LOG(WARNING) << "Unable to parse args: '" << query.ColumnString(3)
-                     << "'";
-      }
-    }
-
-    GURL page_url(query.ColumnString(4));
-    action->set_page_url(page_url);
-
-    action->set_page_title(query.ColumnString(5));
-
-    GURL arg_url(query.ColumnString(6));
-    action->set_arg_url(arg_url);
-
-    if (query.ColumnType(7) != sql::COLUMN_TYPE_NULL) {
-      scoped_ptr<Value> parsed_value(
-          base::JSONReader::Read(query.ColumnString(7)));
-      if (parsed_value && parsed_value->IsType(Value::TYPE_DICTIONARY)) {
-        action->set_other(make_scoped_ptr(
-            static_cast<DictionaryValue*>(parsed_value.release())));
-      } else {
-        LOG(WARNING) << "Unable to parse other: '" << query.ColumnString(7)
-                     << "'";
-      }
-    }
-
-    actions->push_back(action);
-  }
-  return actions.Pass();
 }
 
 void ActivityDatabase::Close() {
@@ -228,12 +149,14 @@ void ActivityDatabase::HardFailureClose() {
   timer_.Stop();
   db_.reset_error_callback();
   db_.RazeAndClose();
+  delegate_->OnDatabaseFailure();
   already_closed_ = true;
 }
 
 void ActivityDatabase::SoftFailureClose() {
   valid_db_ = false;
   timer_.Stop();
+  delegate_->OnDatabaseFailure();
 }
 
 void ActivityDatabase::DatabaseErrorCallback(int error, sql::Statement* stmt) {
@@ -245,10 +168,6 @@ void ActivityDatabase::DatabaseErrorCallback(int error, sql::Statement* stmt) {
     LOG(ERROR) << "Closing the ActivityDatabase due to error.";
     SoftFailureClose();
   }
-}
-
-void ActivityDatabase::SetClockForTesting(base::Clock* clock) {
-  testing_clock_ = clock;
 }
 
 void ActivityDatabase::RecordBatchedActionsWhileTesting() {

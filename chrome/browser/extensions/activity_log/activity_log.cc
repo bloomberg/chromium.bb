@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/activity_log/activity_log.h"
+
 #include <set>
 #include <vector>
+
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
@@ -11,16 +14,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
-#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/activity_log/stream_noargs_ui_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -86,6 +90,82 @@ class LogIsEnabled {
   bool any_profile_enabled_;
   bool cmd_line_enabled_;
 };
+
+// Gets the URL for a given tab ID.  Helper method for LookupTabId.  Returns
+// true if able to perform the lookup.  The URL is stored to *url, and
+// *is_incognito is set to indicate whether the URL is for an incognito tab.
+bool GetUrlForTabId(int tab_id,
+                    Profile* profile,
+                    GURL* url,
+                    bool* is_incognito) {
+  content::WebContents* contents = NULL;
+  Browser* browser = NULL;
+  bool found = ExtensionTabUtil::GetTabById(tab_id,
+                                            profile,
+                                            true,  // search incognito tabs too
+                                            &browser,
+                                            NULL,
+                                            &contents,
+                                            NULL);
+  if (found) {
+    *url = contents->GetURL();
+    *is_incognito = browser->profile()->IsOffTheRecord();
+    return true;
+  } else {
+    return false;
+  }
+}
+
+// Translate tab IDs to URLs in tabs API calls.  Mutates the Action object in
+// place.  Translate tab IDs to URLs in tabs API calls.  It will swap out the
+// int in args with a URL as a string.  There is a small chance that the URL
+// translation could be wrong, if the tab has already been navigated by the
+// time of invocation.
+void LookupTabIds(scoped_refptr<extensions::Action> action, Profile* profile) {
+  const std::string& api_call = action->api_name();
+  if (api_call == "tabs.get" ||                 // api calls, ID as int
+      api_call == "tabs.connect" ||
+      api_call == "tabs.sendMessage" ||
+      api_call == "tabs.duplicate" ||
+      api_call == "tabs.update" ||
+      api_call == "tabs.reload" ||
+      api_call == "tabs.detectLanguage" ||
+      api_call == "tabs.executeScript" ||
+      api_call == "tabs.insertCSS" ||
+      api_call == "tabs.move" ||                // api calls, IDs in array
+      api_call == "tabs.remove" ||
+      api_call == "tabs.onUpdated" ||           // events, ID as int
+      api_call == "tabs.onMoved" ||
+      api_call == "tabs.onDetached" ||
+      api_call == "tabs.onAttached" ||
+      api_call == "tabs.onRemoved" ||
+      api_call == "tabs.onReplaced") {
+    int tab_id;
+    base::ListValue* id_list;
+    base::ListValue* args = action->mutable_args();
+    if (args->GetInteger(0, &tab_id)) {
+      GURL url;
+      bool is_incognito;
+      if (GetUrlForTabId(tab_id, profile, &url, &is_incognito)) {
+        action->set_arg_url(url);
+        action->set_arg_incognito(is_incognito);
+      }
+    } else if ((api_call == "tabs.move" || api_call == "tabs.remove") &&
+               args->GetList(0, &id_list)) {
+      for (int i = 0; i < static_cast<int>(id_list->GetSize()); ++i) {
+        if (id_list->GetInteger(i, &tab_id)) {
+          GURL url;
+          bool is_incognito;
+          if (GetUrlForTabId(tab_id, profile, &url, &is_incognito) &&
+              !is_incognito)
+            id_list->Set(i, new base::StringValue(url.spec()));
+        } else {
+          LOG(ERROR) << "The tab ID array is malformed at index " << i;
+        }
+      }
+    }
+  }
+}
 
 }  // namespace
 
@@ -256,150 +336,26 @@ void ActivityLog::RemoveObserver(ActivityLog::Observer* observer) {
 }
 
 void ActivityLog::LogAction(scoped_refptr<Action> action) {
-  if (IsLogEnabled() &&
-      !ActivityLogAPI::IsExtensionWhitelisted(action->extension_id())) {
-    if (policy_)
-      policy_->ProcessAction(action);
-    observers_->Notify(&Observer::OnExtensionActivity, action);
-    if (testing_mode_)
-      LOG(INFO) << action->PrintForDebug();
-  }
-}
-
-void ActivityLog::LogAPIActionInternal(const std::string& extension_id,
-                                       const std::string& api_call,
-                                       base::ListValue* args,
-                                       const std::string& extra,
-                                       const APIAction::Type type) {
-  std::string verb, manager;
-  bool matches = RE2::FullMatch(api_call, "(.*?)\\.(.*)", &manager, &verb);
-  if (matches) {
-    if (!args->empty() && manager == "tabs") {
-      APIAction::LookupTabId(api_call, args, profile_);
-    }
-
-    DCHECK((type == APIAction::CALL || type == APIAction::EVENT_CALLBACK) &&
-           "Unexpected APIAction call type.");
-
-    scoped_refptr<Action> action;
-    action = new Action(extension_id,
-                        base::Time::Now(),
-                        type == APIAction::CALL ? Action::ACTION_API_CALL
-                                                : Action::ACTION_API_EVENT,
-                        api_call);
-    action->set_args(make_scoped_ptr(args->DeepCopy()));
-    if (!extra.empty())
-      action->mutable_other()->SetString(constants::kActionExtra, extra);
-
-    LogAction(action);
-  } else {
-    LOG(ERROR) << "Unknown API call! " << api_call;
-  }
-}
-
-// A wrapper around LogAPIActionInternal, but we know it's an API call.
-void ActivityLog::LogAPIAction(const std::string& extension_id,
-                               const std::string& api_call,
-                               base::ListValue* args,
-                               const std::string& extra) {
   if (!IsLogEnabled() ||
-      ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
-  LogAPIActionInternal(extension_id,
-                       api_call,
-                       args,
-                       extra,
-                       APIAction::CALL);
-}
+      ActivityLogAPI::IsExtensionWhitelisted(action->extension_id()))
+    return;
 
-// A wrapper around LogAPIActionInternal, but we know it's actually an event
-// being fired and triggering extension code. Having the two separate methods
-// (LogAPIAction vs LogEventAction) lets us hide how we actually choose to
-// handle them. Right now they're being handled almost the same.
-void ActivityLog::LogEventAction(const std::string& extension_id,
-                                 const std::string& api_call,
-                                 base::ListValue* args,
-                                 const std::string& extra) {
-  if (!IsLogEnabled() ||
-      ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
-  LogAPIActionInternal(extension_id,
-                       api_call,
-                       args,
-                       extra,
-                       APIAction::EVENT_CALLBACK);
-}
-
-void ActivityLog::LogBlockedAction(const std::string& extension_id,
-                                   const std::string& blocked_call,
-                                   base::ListValue* args,
-                                   BlockedAction::Reason reason,
-                                   const std::string& extra) {
-  if (!IsLogEnabled() ||
-      ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
-
-  scoped_refptr<Action> action;
-  action = new Action(extension_id,
-                      base::Time::Now(),
-                      Action::ACTION_API_BLOCKED,
-                      blocked_call);
-  action->set_args(make_scoped_ptr(args->DeepCopy()));
-  action->mutable_other()
-      ->SetInteger(constants::kActionBlockedReason, static_cast<int>(reason));
-  if (!extra.empty())
-    action->mutable_other()->SetString(constants::kActionExtra, extra);
-
-  LogAction(action);
-}
-
-void ActivityLog::LogDOMAction(const std::string& extension_id,
-                               const GURL& url,
-                               const string16& url_title,
-                               const std::string& api_call,
-                               const base::ListValue* args,
-                               DomActionType::Type call_type,
-                               const std::string& extra) {
-  if (!IsLogEnabled() ||
-      ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
-
-  Action::ActionType action_type = Action::ACTION_DOM_ACCESS;
-  if (call_type == DomActionType::INSERTED) {
-    action_type = Action::ACTION_CONTENT_SCRIPT;
-  } else if (call_type == DomActionType::METHOD &&
-             api_call == "XMLHttpRequest.open") {
-    call_type = DomActionType::XHR;
-    action_type = Action::ACTION_DOM_XHR;
+  // Perform some preprocessing of the Action data: convert tab IDs to URLs and
+  // mask out incognito URLs if appropriate.
+  if ((action->action_type() == Action::ACTION_API_CALL ||
+       action->action_type() == Action::ACTION_API_EVENT) &&
+      StartsWithASCII(action->api_name(), "tabs.", true)) {
+    LookupTabIds(action, profile_);
   }
 
-  scoped_refptr<Action> action;
-  action = new Action(extension_id, base::Time::Now(), action_type, api_call);
-  if (args)
-    action->set_args(make_scoped_ptr(args->DeepCopy()));
-  action->set_page_url(url);
-  action->set_page_title(base::UTF16ToUTF8(url_title));
-  action->mutable_other()
-      ->SetInteger(constants::kActionDomVerb, static_cast<int>(call_type));
-  if (!extra.empty())
-    action->mutable_other()->SetString(constants::kActionExtra, extra);
+  // TODO(mvrable): Add any necessary processing of incognito URLs here, for
+  // crbug.com/253368
 
-  LogAction(action);
-}
-
-void ActivityLog::LogWebRequestAction(const std::string& extension_id,
-                                      const GURL& url,
-                                      const std::string& api_call,
-                                      scoped_ptr<DictionaryValue> details,
-                                      const std::string& extra) {
-  if (!IsLogEnabled() ||
-      ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
-
-  scoped_refptr<Action> action;
-  action = new Action(
-      extension_id, base::Time::Now(), Action::ACTION_WEB_REQUEST, api_call);
-  action->set_page_url(url);
-  action->mutable_other()->Set(constants::kActionWebRequest, details.release());
-  if (!extra.empty())
-    action->mutable_other()->SetString(constants::kActionExtra, extra);
-
-  LogAction(action);
+  if (policy_)
+    policy_->ProcessAction(action);
+  observers_->Notify(&Observer::OnExtensionActivity, action);
+  if (testing_mode_)
+    LOG(INFO) << action->PrintForDebug();
 }
 
 void ActivityLog::GetActions(
@@ -426,11 +382,6 @@ void ActivityLog::OnScriptsExecuted(
   const prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  std::string extra;
-
-  if (prerender_manager &&
-      prerender_manager->IsWebContentsPrerendering(web_contents, NULL))
-    extra = "(prerender)";
 
   for (ExecutingScriptsMap::const_iterator it = extension_ids.begin();
        it != extension_ids.end(); ++it) {
@@ -442,22 +393,24 @@ void ActivityLog::OnScriptsExecuted(
     // of content scripts will be empty.  We don't want to log it because
     // the call to tabs.executeScript will have already been logged anyway.
     if (!it->second.empty()) {
-      std::string ext_scripts_str;
+      scoped_refptr<Action> action;
+      action = new Action(extension->id(),
+                          base::Time::Now(),
+                          Action::ACTION_CONTENT_SCRIPT,
+                          "");  // no API call here
+      action->set_page_url(on_url);
+      action->set_page_title(base::UTF16ToUTF8(web_contents->GetTitle()));
+      action->set_page_incognito(
+          web_contents->GetBrowserContext()->IsOffTheRecord());
+      if (prerender_manager &&
+          prerender_manager->IsWebContentsPrerendering(web_contents, NULL))
+        action->mutable_other()->SetBoolean(constants::kActionPrerender, true);
       for (std::set<std::string>::const_iterator it2 = it->second.begin();
            it2 != it->second.end();
            ++it2) {
-        ext_scripts_str += *it2;
-        ext_scripts_str += " ";
+        action->mutable_args()->AppendString(*it2);
       }
-      scoped_ptr<base::ListValue> script_names(new base::ListValue());
-      script_names->Set(0, new base::StringValue(ext_scripts_str));
-      LogDOMAction(extension->id(),
-                   on_url,
-                   web_contents->GetTitle(),
-                   std::string(),  // no api call here
-                   script_names.get(),
-                   DomActionType::INSERTED,
-                   extra);
+      LogAction(action);
     }
   }
 }

@@ -13,7 +13,14 @@ namespace activity_log_constants {
 extern const char kActionBlockedReason[];
 extern const char kActionDomVerb[];
 extern const char kActionExtra[];
+extern const char kActionPrerender[];
 extern const char kActionWebRequest[];
+
+// A string used in place of the real URL when the URL is hidden because it is
+// in an incognito window.  Extension activity logs mentioning kIncognitoUrl
+// let the user know that an extension is manipulating incognito tabs without
+// recording specific data about the pages.
+extern const char kIncognitoUrl[];
 
 }  // namespace activity_log_constants
 

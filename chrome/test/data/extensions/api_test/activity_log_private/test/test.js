@@ -337,11 +337,11 @@ chrome.activityLogPrivate.onExtensionActivity.addListener(
         var url = activity[activityDetailName]['url'];
         if (url) {
           if (testCases[testCaseIndx].is_incognito) {
-            chrome.test.assertEq('http://incognito/', url,
+            chrome.test.assertEq('<incognito>', url,
                                  'URL was not anonymized for apiCall:' +
                                  activity[activityDetailName]['apiCall']);
           } else {
-            chrome.test.assertTrue(url != 'http://incognito/',
+            chrome.test.assertTrue(url != '<incognito>',
                                    'Non-incognito URL was anonymized');
           }
         }
