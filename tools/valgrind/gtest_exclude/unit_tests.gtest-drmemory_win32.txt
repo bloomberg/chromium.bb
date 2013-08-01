@@ -66,4 +66,5 @@ UserCloudPolicyStoreTest.StoreValidationError
 PnaclTranslationCacheTest.*
 
 # Failing on the bot. crbug.com/266452
-ackgroundModeManagerTest.BackgroundAppLoadUnload 
+BackgroundModeManagerTest.BackgroundAppLoadUnload 
+
