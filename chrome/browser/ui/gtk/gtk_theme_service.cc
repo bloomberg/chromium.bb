@@ -638,6 +638,11 @@ void GtkThemeService::ClearAllThemeData() {
 }
 
 void GtkThemeService::LoadThemePrefs() {
+  // Initialize the values sent to webkit with the default values.
+  // ThemeService::LoadThemePrefs() will replace them with values for the native
+  // gtk theme if necessary.
+  LoadDefaultValues();
+
   // This takes care of calling SetNativeTheme() if necessary.
   ThemeService::LoadThemePrefs();
 
