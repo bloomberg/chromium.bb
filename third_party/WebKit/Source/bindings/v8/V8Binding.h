@@ -112,12 +112,7 @@ namespace WebCore {
     template<typename CallbackInfo>
     inline void v8SetReturnValueUnsigned(const CallbackInfo& args, unsigned v)
     {
-        // FIXME: this is temporary workaround to a v8 bug
-        if (V8_LIKELY((v & (1 << 31)) == 0)) {
-            args.GetReturnValue().Set(static_cast<int32_t>(v));
-            return;
-        }
-        args.GetReturnValue().Set(v8::Integer::NewFromUnsigned(v, args.GetReturnValue().GetIsolate()));
+        args.GetReturnValue().Set(v);
     }
 
     template<typename CallbackInfo>
@@ -126,14 +121,26 @@ namespace WebCore {
         args.GetReturnValue().SetNull();
     }
 
+    template<typename CallbackInfo>
+    inline void v8SetReturnValueUndefined(const CallbackInfo& args)
+    {
+        args.GetReturnValue().SetUndefined();
+    }
+
+    template<typename CallbackInfo>
+    inline void v8SetReturnValueEmptyString(const CallbackInfo& args)
+    {
+        args.GetReturnValue().SetEmptyString();
+    }
+
     template <class CallbackInfo>
     inline void v8SetReturnValueString(const CallbackInfo& info, const String& string, v8::Isolate* isolate)
     {
         if (string.isNull()) {
-            v8SetReturnValue(info, v8::String::Empty(isolate));
+            v8SetReturnValueEmptyString(info);
             return;
         }
-        V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info, string.impl(), isolate);
+        V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
     }
 
     template <class CallbackInfo>
@@ -143,17 +150,17 @@ namespace WebCore {
             v8SetReturnValueNull(info);
             return;
         }
-        V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info, string.impl(), isolate);
+        V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
     }
 
     template <class CallbackInfo>
     inline void v8SetReturnValueStringOrUndefined(const CallbackInfo& info, const String& string, v8::Isolate* isolate)
     {
         if (string.isNull()) {
-            v8SetReturnValue(info, v8::Undefined(isolate));
+            v8SetReturnValueUndefined(info);
             return;
         }
-        V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info, string.impl(), isolate);
+        V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
     }
 
     // Convert v8 types to a WTF::String. If the V8 string is not already

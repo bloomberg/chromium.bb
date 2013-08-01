@@ -99,4 +99,27 @@ v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(StringImpl* st
     return newString;
 }
 
+void StringCache::setReturnValueFromStringSlow(v8::ReturnValue<v8::Value> returnValue, StringImpl* stringImpl)
+{
+    if (!stringImpl->length()) {
+        returnValue.SetEmptyString();
+        return;
+    }
+
+    UnsafePersistent<v8::String> cachedV8String = m_stringCache.get(stringImpl);
+    if (cachedV8String.isWeak()) {
+        m_lastStringImpl = stringImpl;
+        m_lastV8String = cachedV8String;
+        returnValue.Set(*cachedV8String.persistent());
+        return;
+    }
+
+    v8::Local<v8::String> newString = createStringAndInsertIntoCache(stringImpl, returnValue.GetIsolate());
+    if (newString.IsEmpty())
+        returnValue.SetEmptyString();
+    else
+        returnValue.Set(newString);
+}
+
+
 } // namespace WebCore

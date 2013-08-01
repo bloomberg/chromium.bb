@@ -47,13 +47,12 @@ public:
         return v8ExternalStringSlow(stringImpl, isolate);
     }
 
-    template <class T>
-    void setReturnValueFromString(const T& info, StringImpl* stringImpl, v8::Isolate* isolate)
+    void setReturnValueFromString(v8::ReturnValue<v8::Value> returnValue, StringImpl* stringImpl)
     {
         if (m_lastStringImpl.get() == stringImpl && m_lastV8String.isWeak())
-            info.GetReturnValue().Set(*m_lastV8String.persistent());
+            returnValue.Set(*m_lastV8String.persistent());
         else
-            setReturnValueFromStringSlow(info, stringImpl, isolate);
+            setReturnValueFromStringSlow(returnValue, stringImpl);
     }
 
     void clearOnGC()
@@ -69,30 +68,7 @@ private:
     static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::String>*, StringImpl*);
 
     v8::Handle<v8::String> v8ExternalStringSlow(StringImpl*, v8::Isolate*);
-
-    template <class CallbackInfo>
-    void setReturnValueFromStringSlow(const CallbackInfo& info, StringImpl* stringImpl, v8::Isolate* isolate)
-    {
-        if (!stringImpl->length()) {
-            info.GetReturnValue().SetEmptyString();
-            return;
-        }
-
-        UnsafePersistent<v8::String> cachedV8String = m_stringCache.get(stringImpl);
-        if (cachedV8String.isWeak()) {
-            m_lastStringImpl = stringImpl;
-            m_lastV8String = cachedV8String;
-            info.GetReturnValue().Set(*cachedV8String.persistent());
-            return;
-        }
-
-        v8::Local<v8::String> newString = createStringAndInsertIntoCache(stringImpl, isolate);
-        if (newString.IsEmpty())
-            info.GetReturnValue().SetEmptyString();
-        else
-            info.GetReturnValue().Set(newString);
-    }
-
+    void setReturnValueFromStringSlow(v8::ReturnValue<v8::Value>, StringImpl*);
     v8::Local<v8::String> createStringAndInsertIntoCache(StringImpl*, v8::Isolate*);
 
     HashMap<StringImpl*, UnsafePersistent<v8::String> > m_stringCache;
