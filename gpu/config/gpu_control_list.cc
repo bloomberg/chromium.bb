@@ -625,6 +625,24 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
+  const base::DictionaryValue* gl_reset_notification_strategy_value = NULL;
+  if (value->GetDictionary("gl_reset_notification_strategy",
+                           &gl_reset_notification_strategy_value)) {
+    std::string op;
+    std::string int_value;
+    std::string int_value2;
+    gl_reset_notification_strategy_value->GetString(kOp, &op);
+    gl_reset_notification_strategy_value->GetString("value", &int_value);
+    gl_reset_notification_strategy_value->GetString("value2", &int_value2);
+    if (!entry->SetGLResetNotificationStrategyInfo(
+            op, int_value, int_value2)) {
+      LOG(WARNING) << "Malformed gl_reset_notification_strategy entry "
+                   << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
   const base::DictionaryValue* cpu_brand_value = NULL;
   if (value->GetDictionary("cpu_info", &cpu_brand_value)) {
     std::string cpu_op;
@@ -906,6 +924,15 @@ bool GpuControlList::GpuControlListEntry::SetGLExtensionsInfo(
   return gl_extensions_info_->IsValid();
 }
 
+bool GpuControlList::GpuControlListEntry::SetGLResetNotificationStrategyInfo(
+    const std::string& op,
+    const std::string& int_string,
+    const std::string& int_string2) {
+  gl_reset_notification_strategy_info_.reset(
+      new IntInfo(op, int_string, int_string2));
+  return gl_reset_notification_strategy_info_->IsValid();
+}
+
 bool GpuControlList::GpuControlListEntry::SetCpuBrand(
     const std::string& cpu_op,
     const std::string& cpu_value) {
@@ -1069,6 +1096,10 @@ bool GpuControlList::GpuControlListEntry::Contains(
     return false;
   if (gl_extensions_info_.get() != NULL && !gpu_info.gl_extensions.empty() &&
       !gl_extensions_info_->Contains(gpu_info.gl_extensions))
+    return false;
+  if (gl_reset_notification_strategy_info_.get() != NULL &&
+      !gl_reset_notification_strategy_info_->Contains(
+          gpu_info.gl_reset_notification_strategy))
     return false;
   if (perf_graphics_info_.get() != NULL &&
       (gpu_info.performance_stats.graphics == 0.0 ||

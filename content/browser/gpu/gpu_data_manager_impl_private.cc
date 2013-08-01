@@ -157,11 +157,7 @@ void UpdateStats(const gpu::GpuBlacklist* blacklist,
   const bool kGpuFeatureUserFlags[] = {
       command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
       command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
-#if defined(OS_ANDROID)
-      !command_line.HasSwitch(switches::kEnableExperimentalWebGL),
-#else
       command_line.HasSwitch(switches::kDisableExperimentalWebGL),
-#endif
       command_line.HasSwitch(switches::kDisableImageTransportSurface)
   };
 #if defined(OS_WIN)
