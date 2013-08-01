@@ -433,6 +433,7 @@ include/ppapi/c/ppb_net_address.h
 include/ppapi/c/ppb_network_proxy.h
 include/ppapi/c/ppb_opengles2.h
 include/ppapi/c/ppb_tcp_socket.h
+include/ppapi/c/ppb_text_input_controller.h
 include/ppapi/c/ppb_udp_socket.h
 include/ppapi/c/ppb_url_loader.h
 include/ppapi/c/ppb_url_request_info.h
@@ -538,6 +539,7 @@ include/ppapi/cpp/rect.h
 include/ppapi/cpp/resource.h
 include/ppapi/cpp/size.h
 include/ppapi/cpp/tcp_socket.h
+include/ppapi/cpp/text_input_controller.h
 include/ppapi/cpp/touch_point.h
 include/ppapi/cpp/udp_socket.h
 include/ppapi/cpp/url_loader.h
@@ -887,6 +889,7 @@ src/ppapi_cpp/selection_dev.cc
 src/ppapi_cpp/simple_thread.cc
 src/ppapi_cpp/socket_dev.cc
 src/ppapi_cpp/tcp_socket.cc
+src/ppapi_cpp/text_input_controller.cc
 src/ppapi_cpp/text_input_dev.cc
 src/ppapi_cpp/truetype_font_dev.cc
 src/ppapi_cpp/udp_socket.cc
