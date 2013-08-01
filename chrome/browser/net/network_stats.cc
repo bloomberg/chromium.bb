@@ -562,7 +562,7 @@ void NetworkStats::RecordHistograms(TestType test_type) {
 
 void NetworkStats::RecordInterArrivalHistograms(TestType test_type) {
   std::string histogram_name =
-      base::StringPrintf("NetConnectivity4.%s.Sent%02d.PacketDelay.%d.%dB",
+      base::StringPrintf("NetConnectivity4.%s.Sent%d.PacketDelay.%d.%dB",
                          kTestName[test_type],
                          maximum_sequential_packets_,
                          histogram_port_,
@@ -574,7 +574,7 @@ void NetworkStats::RecordInterArrivalHistograms(TestType test_type) {
 void NetworkStats::RecordPacketsReceivedHistograms(TestType test_type) {
   const char* test_name = kTestName[test_type];
   std::string histogram_prefix = base::StringPrintf(
-      "NetConnectivity4.%s.Sent%02d.", test_name, maximum_sequential_packets_);
+      "NetConnectivity4.%s.Sent%d.", test_name, maximum_sequential_packets_);
   std::string histogram_suffix =
       base::StringPrintf(".%d.%dB", histogram_port_, probe_packet_bytes_);
   std::string name = histogram_prefix + "GotAPacket" + histogram_suffix;
@@ -686,7 +686,7 @@ void NetworkStats::RecordRTTHistograms(TestType test_type, uint32 index) {
     return;  // Probe packet never received.
 
   std::string rtt_histogram_name = base::StringPrintf(
-      "NetConnectivity4.%s.Sent%02d.Success.RTT.Packet%02d.%d.%dB",
+      "NetConnectivity4.%s.Sent%d.Success.RTT.Packet%02d.%d.%dB",
       kTestName[test_type],
       maximum_sequential_packets_,
       index + 1,
@@ -701,7 +701,7 @@ void NetworkStats::RecordSendToLastRecvDelayHistograms(TestType test_type) {
   uint32 packets_sent = test_type == NAT_BIND_TEST
       ? maximum_NAT_packets_ : maximum_sequential_packets_;
   std::string histogram_name = base::StringPrintf(
-      "NetConnectivity4.%s.Sent%02d.SendToLastRecvDelay.%d.%dB",
+      "NetConnectivity4.%s.Sent%d.SendToLastRecvDelay.%d.%dB",
       kTestName[test_type],
       packets_sent,
       histogram_port_,
