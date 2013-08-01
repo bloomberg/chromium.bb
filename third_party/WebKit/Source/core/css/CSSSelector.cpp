@@ -418,7 +418,8 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
         nameToPseudoType->set(distributed.impl(), CSSSelector::PseudoDistributed);
         nameToPseudoType->set(inRange.impl(), CSSSelector::PseudoInRange);
         nameToPseudoType->set(outOfRange.impl(), CSSSelector::PseudoOutOfRange);
-        nameToPseudoType->set(part.impl(), CSSSelector::PseudoPart);
+        if (RuntimeEnabledFeatures::shadowDOMEnabled())
+            nameToPseudoType->set(part.impl(), CSSSelector::PseudoPart);
         if (RuntimeEnabledFeatures::customDOMElementsEnabled())
             nameToPseudoType->set(unresolved.impl(), CSSSelector::PseudoUnresolved);
     }
