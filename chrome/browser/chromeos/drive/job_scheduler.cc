@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -692,7 +693,11 @@ void JobScheduler::QueueJob(JobID job_id) {
   QueueType queue_type = GetJobQueueType(job_info.job_type);
   queue_[queue_type]->Push(job_id, job_entry->context.type);
 
-  util::Log("Job queued: %s - %s", job_info.ToString().c_str(),
+  const std::string retry_prefix = job_entry->retry_count > 0 ?
+      base::StringPrintf(" (retry %d)", job_entry->retry_count) : "";
+  util::Log("Job queued%s: %s - %s",
+            retry_prefix.c_str(),
+            job_info.ToString().c_str(),
             GetQueueInfo(queue_type).c_str());
 }
 
