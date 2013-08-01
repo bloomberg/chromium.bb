@@ -18,15 +18,12 @@
 
 namespace content {
 
-void GetFontFamilyForCharacters(const uint16_t* utf16,
-                                size_t num_utf16,
-                                const char* preferred_locale,
-                                WebKit::WebFontFamily* family) {
+void GetFontFamilyForCharacter(int32_t character,
+                               const char* preferred_locale,
+                               WebKit::WebFontFamily* family) {
   Pickle request;
-  request.WriteInt(LinuxSandbox::METHOD_GET_FONT_FAMILY_FOR_CHARS);
-  request.WriteInt(num_utf16);
-  for (size_t i = 0; i < num_utf16; ++i)
-    request.WriteUInt32(utf16[i]);
+  request.WriteInt(LinuxSandbox::METHOD_GET_FONT_FAMILY_FOR_CHAR);
+  request.WriteInt(character);
   request.WriteString(preferred_locale);
 
   uint8_t buf[512];

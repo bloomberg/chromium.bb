@@ -25,7 +25,7 @@ class LinuxSandbox {
   // This isn't the full list, values < 32 are reserved for methods called from
   // Skia.
   enum LinuxSandboxIPCMethods {
-    METHOD_GET_FONT_FAMILY_FOR_CHARS = 32,
+    METHOD_GET_FONT_FAMILY_FOR_CHAR = 32,
     METHOD_LOCALTIME = 33,
     METHOD_GET_CHILD_WITH_INODE = 34,
     METHOD_GET_STYLE_FOR_STRIKE = 35,

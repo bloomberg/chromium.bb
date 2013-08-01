@@ -16,18 +16,16 @@ struct WebFontRenderStyle;
 
 namespace content {
 
-// Return a font family which provides glyphs for the Unicode code points
-// specified by |utf16|
-//   utf16: a native-endian UTF16 string
-//   num_utf16: the number of 16-bit words in |utf16|
-//   preferred_locale: preferred locale identifier for the |utf16|
+// Return a font family which provides glyphs for the Unicode code point
+// specified by |character|
+//   character: a UTF32 character
+//   preferred_locale: preferred locale identifier for the |character|
 //
 // Returns: a font family instance.
 // The instance has an empty font name if the request could not be satisfied.
-void GetFontFamilyForCharacters(const uint16_t* utf16,
-                                size_t num_utf16,
-                                const char* preferred_locale,
-                                WebKit::WebFontFamily* family);
+void GetFontFamilyForCharacter(const int32_t character,
+                               const char* preferred_locale,
+                               WebKit::WebFontFamily* family);
 
 void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
                              WebKit::WebFontRenderStyle* out);

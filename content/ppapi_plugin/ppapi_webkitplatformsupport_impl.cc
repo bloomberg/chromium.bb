@@ -22,6 +22,7 @@
 #elif defined(OS_POSIX)
 #if !defined(OS_ANDROID)
 #include "content/common/child_process_sandbox_support_impl_linux.h"
+#include "third_party/icu/source/common/unicode/utf16.h"
 #endif
 #include "third_party/WebKit/public/platform/linux/WebFontFamily.h"
 #include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
@@ -31,6 +32,7 @@
 using WebKit::WebSandboxSupport;
 using WebKit::WebString;
 using WebKit::WebUChar;
+using WebKit::WebUChar32;
 
 typedef struct CGFont* CGFontRef;
 
@@ -48,8 +50,12 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
       NSFont* srcFont, CGFontRef* out, uint32_t* fontID);
 #elif defined(OS_POSIX)
   virtual void getFontFamilyForCharacters(
-      const WebUChar* characters,
-      size_t numCharacters,
+      const WebKit::WebUChar* characters,
+      size_t num_characters,
+      const char* preferred_locale,
+      WebKit::WebFontFamily* family);
+  virtual void getFontFamilyForCharacter(
+      WebUChar32 character,
       const char* preferred_locale,
       WebKit::WebFontFamily* family);
   virtual void getRenderStyleForStrike(
@@ -58,10 +64,9 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
  private:
   // WebKit likes to ask us for the correct font family to use for a set of
   // unicode code points. It needs this information frequently so we cache it
-  // here. The key in this map is an array of 16-bit UTF16 values from WebKit.
-  // The value is a string containing the correct font family.
+  // here.
   base::Lock unicode_font_families_mutex_;
-  std::map<string16, WebKit::WebFontFamily> unicode_font_families_;
+  std::map<int32_t, WebKit::WebFontFamily> unicode_font_families_;
 #endif
 };
 
@@ -104,6 +109,14 @@ PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
   NOTIMPLEMENTED();
 }
 
+void
+PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
+    WebUChar32* character,
+    const char* preferred_locale,
+    WebKit::WebFontFamily* family) {
+  NOTIMPLEMENTED();
+}
+
 void PpapiWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
     const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
   NOTIMPLEMENTED();
@@ -117,10 +130,20 @@ PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
     size_t num_characters,
     const char* preferred_locale,
     WebKit::WebFontFamily* family) {
+  DCHECK(num_characters <= 2);
+  WebUChar32 c;
+  U16_GET(characters, 0, 0, num_characters, c);
+  getFontFamilyForCharacter(c, preferred_locale, family);
+}
+
+void
+PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
+    WebUChar32 character,
+    const char* preferred_locale,
+    WebKit::WebFontFamily* family) {
   base::AutoLock lock(unicode_font_families_mutex_);
-  const string16 key(characters, num_characters);
-  const std::map<string16, WebKit::WebFontFamily>::const_iterator iter =
-      unicode_font_families_.find(key);
+  const std::map<int32_t, WebKit::WebFontFamily>::const_iterator iter =
+      unicode_font_families_.find(character);
   if (iter != unicode_font_families_.end()) {
     family->name = iter->second.name;
     family->isBold = iter->second.isBold;
@@ -128,12 +151,8 @@ PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
     return;
   }
 
-  GetFontFamilyForCharacters(
-      characters,
-      num_characters,
-      preferred_locale,
-      family);
-  unicode_font_families_.insert(make_pair(key, *family));
+  GetFontFamilyForCharacter(character, preferred_locale, family);
+  unicode_font_families_.insert(std::make_pair(character, *family));
 }
 
 void PpapiWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
