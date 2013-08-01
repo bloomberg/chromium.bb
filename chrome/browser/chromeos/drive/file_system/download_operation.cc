@@ -164,7 +164,7 @@ FileError PrepareForDownloadFile(internal::FileCache* cache,
 
   // Ensure enough space in the cache.
   if (!cache->FreeDiskSpaceIfNeededFor(expected_file_size))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   // Create the temporary file which will store the downloaded content.
   return CreateTemporaryReadableFileInDir(

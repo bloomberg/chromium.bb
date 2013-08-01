@@ -775,7 +775,8 @@ TEST_F(FileCacheTestOnUIThread, StoreToCacheNoSpace) {
   std::string md5("abcdef0123456789");
 
   // Try to store an existing file.
-  TestStoreToCache(resource_id, md5, dummy_file_path_, FILE_ERROR_NO_SPACE,
+  TestStoreToCache(resource_id, md5, dummy_file_path_,
+                   FILE_ERROR_NO_LOCAL_SPACE,
                    TEST_CACHE_STATE_NONE);
 
   // Verify that there's no files added.

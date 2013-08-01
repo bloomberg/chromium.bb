@@ -34,8 +34,8 @@ std::string FileErrorToString(FileError error) {
     case FILE_ERROR_NO_MEMORY:
       return "FILE_ERROR_NO_MEMORY";
 
-    case FILE_ERROR_NO_SPACE:
-      return "FILE_ERROR_NO_SPACE";
+    case FILE_ERROR_NO_SERVER_SPACE:
+      return "FILE_ERROR_NO_SERVER_SPACE";
 
     case FILE_ERROR_NOT_A_DIRECTORY:
       return "FILE_ERROR_NOT_A_DIRECTORY";
@@ -60,6 +60,9 @@ std::string FileErrorToString(FileError error) {
 
     case FILE_ERROR_NO_CONNECTION:
       return "FILE_ERROR_NO_CONNECTION";
+
+    case FILE_ERROR_NO_LOCAL_SPACE:
+      return "FILE_ERROR_NO_LOCAL_SPACE";
   }
 
   NOTREACHED();
@@ -92,7 +95,7 @@ base::PlatformFileError FileErrorToPlatformError(FileError error) {
     case FILE_ERROR_NO_MEMORY:
       return base::PLATFORM_FILE_ERROR_NO_MEMORY;
 
-    case FILE_ERROR_NO_SPACE:
+    case FILE_ERROR_NO_SERVER_SPACE:
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
 
     case FILE_ERROR_NOT_A_DIRECTORY:
@@ -118,6 +121,9 @@ base::PlatformFileError FileErrorToPlatformError(FileError error) {
 
     case FILE_ERROR_NO_CONNECTION:
       return base::PLATFORM_FILE_ERROR_FAILED;
+
+    case FILE_ERROR_NO_LOCAL_SPACE:
+      return base::PLATFORM_FILE_ERROR_FAILED;
   }
 
   NOTREACHED();
@@ -142,7 +148,7 @@ FileError GDataToFileError(google_apis::GDataErrorCode status) {
     case google_apis::GDATA_NO_CONNECTION:
       return FILE_ERROR_NO_CONNECTION;
     case google_apis::GDATA_NO_SPACE:
-      return FILE_ERROR_NO_SPACE;
+      return FILE_ERROR_NO_SERVER_SPACE;
     default:
       return FILE_ERROR_FAILED;
   }

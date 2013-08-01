@@ -16,12 +16,8 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
-class Profile;
-
 namespace base {
-
 class SequencedTaskRunner;
-
 }  // namespace base
 
 namespace drive {
@@ -293,8 +289,8 @@ class FileCache {
   DISALLOW_COPY_AND_ASSIGN(FileCache);
 };
 
-// The minimum free space to keep. FileSystem::GetFileByPath() returns
-// GDATA_FILE_ERROR_NO_SPACE if the available space is smaller than
+// The minimum free space to keep. Operations that add cache files return
+// FILE_ERROR_NO_LOCAL_SPACE if the available space is smaller than
 // this value.
 //
 // Copied from cryptohome/homedirs.h.

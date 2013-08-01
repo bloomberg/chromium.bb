@@ -137,7 +137,7 @@ FileError ResourceMetadata::Initialize() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   if (!SetUpDefaultEntries())
     return FILE_ERROR_FAILED;
@@ -170,7 +170,7 @@ FileError ResourceMetadata::Reset() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   if (!storage_->SetLargestChangestamp(0) ||
       !RemoveEntryRecursively(util::kDriveGrandRootSpecialResourceId) ||
@@ -245,7 +245,7 @@ FileError ResourceMetadata::SetLargestChangestamp(int64 value) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   storage_->SetLargestChangestamp(value);
   return FILE_ERROR_OK;
@@ -266,7 +266,7 @@ FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   ResourceEntry existing_entry;
   if (storage_->GetEntry(entry.resource_id(), &existing_entry))
@@ -316,7 +316,7 @@ FileError ResourceMetadata::RemoveEntry(const std::string& resource_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   // Disallow deletion of special entries "/drive" and "/drive/other".
   if (util::IsSpecialResourceId(resource_id))
@@ -434,7 +434,7 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   ResourceEntry old_entry;
   if (!storage_->GetEntry(entry.resource_id(), &old_entry))
@@ -525,7 +525,7 @@ FileError ResourceMetadata::MoveEntryToDirectory(
   DCHECK(out_file_path);
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   ResourceEntry entry, destination;
   if (!FindEntryByPathSync(file_path, &entry) ||
@@ -554,7 +554,7 @@ FileError ResourceMetadata::RenameEntry(
   DVLOG(1) << "RenameEntry " << file_path.value() << " to " << new_title;
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   ResourceEntry entry;
   if (!FindEntryByPathSync(file_path, &entry))
@@ -627,7 +627,7 @@ FileError ResourceMetadata::RefreshDirectory(
   DCHECK(!directory_fetch_info.empty());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   ResourceEntry directory;
   if (!storage_->GetEntry(directory_fetch_info.resource_id(), &directory))
@@ -645,7 +645,7 @@ FileError ResourceMetadata::RefreshDirectory(
   for (ResourceEntryMap::const_iterator it = entry_map.begin();
        it != entry_map.end(); ++it) {
     if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-      return FILE_ERROR_NO_SPACE;
+      return FILE_ERROR_NO_LOCAL_SPACE;
 
     const ResourceEntry& entry = it->second;
     // Skip if the parent resource ID does not match. This is needed to
@@ -670,7 +670,7 @@ FileError ResourceMetadata::RefreshDirectory(
   storage_->GetChildren(directory.resource_id(), &children);
   for (size_t i = 0; i < children.size(); ++i) {
     if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-      return FILE_ERROR_NO_SPACE;
+      return FILE_ERROR_NO_LOCAL_SPACE;
 
     if (entry_map.count(children[i]) == 0) {
       if (!RemoveEntryRecursively(children[i]))

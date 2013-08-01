@@ -89,7 +89,7 @@ TEST_F(DownloadOperationTest,
           &error, &file_path, &entry));
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(FILE_ERROR_NO_SPACE, error);
+  EXPECT_EQ(FILE_ERROR_NO_LOCAL_SPACE, error);
 }
 
 TEST_F(DownloadOperationTest,
@@ -183,7 +183,7 @@ TEST_F(DownloadOperationTest,
           &error, &file_path, &entry));
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(FILE_ERROR_NO_SPACE, error);
+  EXPECT_EQ(FILE_ERROR_NO_LOCAL_SPACE, error);
 }
 
 TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_FromCache) {

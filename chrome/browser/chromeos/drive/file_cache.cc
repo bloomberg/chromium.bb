@@ -518,7 +518,7 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
     }
   }
   if (!FreeDiskSpaceIfNeededFor(file_size))
-    return FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_LOCAL_SPACE;
 
   FileCacheEntry cache_entry;
   storage_->GetCacheEntry(resource_id, &cache_entry);
