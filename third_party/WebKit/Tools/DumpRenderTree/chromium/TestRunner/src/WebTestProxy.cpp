@@ -1063,6 +1063,8 @@ WebUserMediaClient* WebTestProxyBase::userMediaClient()
 void WebTestProxyBase::printPage(WebFrame* frame)
 {
     WebSize pageSizeInPixels = webWidget()->size();
+    if (pageSizeInPixels.isEmpty())
+        return;
     WebPrintParams printParams(pageSizeInPixels);
     frame->printBegin(printParams);
     frame->printEnd();

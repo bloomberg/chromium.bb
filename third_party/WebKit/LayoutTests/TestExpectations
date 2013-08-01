@@ -1299,8 +1299,6 @@ crbug.com/259560 inspector/timeline/timeline-decode-resize.html [ Skip ]
 
 crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
-crbug.com/247614 [ Debug ] printing/print-close-crash.html [ Crash ]
-
 # Seems to have been timing out for a long time.
 crbug.com/248969 [ Win7 Debug ] printing/page-count-with-one-word.html [ Timeout Pass ]
 
