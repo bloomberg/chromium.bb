@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 
+#include "base/bind.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/chrome_style.h"
@@ -41,7 +43,8 @@ AutofillDialogView* AutofillDialogView::Create(
 }
 
 AutofillDialogCocoa::AutofillDialogCocoa(AutofillDialogController* controller)
-    : controller_(controller) {
+    : close_weak_ptr_factory_(this),
+      controller_(controller) {
 }
 
 AutofillDialogCocoa::~AutofillDialogCocoa() {
@@ -64,8 +67,16 @@ void AutofillDialogCocoa::Hide() {
   [sheet_controller_ hide];
 }
 
-// Closes the sheet and ends the modal loop. Triggers cleanup sequence.
 void AutofillDialogCocoa::PerformClose() {
+  if (!close_weak_ptr_factory_.HasWeakPtrs()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AutofillDialogCocoa::CloseNow,
+                   close_weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void AutofillDialogCocoa::CloseNow() {
   constrained_window_->CloseWebContentsModalDialog();
 }
 
