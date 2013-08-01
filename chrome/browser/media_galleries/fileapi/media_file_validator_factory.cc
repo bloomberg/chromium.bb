@@ -9,7 +9,6 @@
 #include "chrome/browser/media_galleries/fileapi/supported_image_type_validator.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/common/blob/shareable_file_reference.h"
 
 namespace chrome {
 

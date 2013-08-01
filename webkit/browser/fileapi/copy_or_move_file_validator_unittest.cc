@@ -180,31 +180,38 @@ class CopyOrMoveFileValidatorTestHelper {
   DISALLOW_COPY_AND_ASSIGN(CopyOrMoveFileValidatorTestHelper);
 };
 
+// For TestCopyOrMoveFileValidatorFactory
+enum Validity {
+  VALID,
+  PRE_WRITE_INVALID,
+  POST_WRITE_INVALID
+};
+
 class TestCopyOrMoveFileValidatorFactory
     : public CopyOrMoveFileValidatorFactory {
  public:
   // A factory that creates validators that accept everything or nothing.
-  explicit TestCopyOrMoveFileValidatorFactory(bool all_valid,
-                                              bool all_valid_write)
-      : all_valid_(all_valid),
-        all_valid_write_(all_valid_write) {}
+  // TODO(gbillock): switch args to enum or something
+  explicit TestCopyOrMoveFileValidatorFactory(Validity validity)
+      : validity_(validity) {}
   virtual ~TestCopyOrMoveFileValidatorFactory() {}
 
   virtual CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
       const base::FilePath& /*platform_path*/) OVERRIDE {
-    return new TestCopyOrMoveFileValidator(all_valid_, all_valid_write_);
+    return new TestCopyOrMoveFileValidator(validity_);
   }
 
  private:
   class TestCopyOrMoveFileValidator : public CopyOrMoveFileValidator {
    public:
-    explicit TestCopyOrMoveFileValidator(bool pre_copy_valid,
-                                         bool post_copy_valid)
-        : result_(pre_copy_valid ? base::PLATFORM_FILE_OK
-                                 : base::PLATFORM_FILE_ERROR_SECURITY),
-          write_result_(post_copy_valid ? base::PLATFORM_FILE_OK
-                                        : base::PLATFORM_FILE_ERROR_SECURITY) {
+    explicit TestCopyOrMoveFileValidator(Validity validity)
+        : result_(validity == VALID || validity == POST_WRITE_INVALID
+                  ? base::PLATFORM_FILE_OK
+                  : base::PLATFORM_FILE_ERROR_SECURITY),
+          write_result_(validity == VALID || validity == PRE_WRITE_INVALID
+                        ? base::PLATFORM_FILE_OK
+                        : base::PLATFORM_FILE_ERROR_SECURITY) {
     }
     virtual ~TestCopyOrMoveFileValidator() {}
 
@@ -230,8 +237,7 @@ class TestCopyOrMoveFileValidatorFactory
     DISALLOW_COPY_AND_ASSIGN(TestCopyOrMoveFileValidator);
   };
 
-  bool all_valid_;
-  bool all_valid_write_;
+  Validity validity_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCopyOrMoveFileValidatorFactory);
 };
@@ -266,7 +272,7 @@ TEST(CopyOrMoveFileValidatorTest, AcceptAll) {
                                            kWithValidatorType);
   helper.SetUp();
   scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
-      new TestCopyOrMoveFileValidatorFactory(true, true /*accept_all*/));
+      new TestCopyOrMoveFileValidatorFactory(VALID));
   helper.SetMediaCopyOrMoveFileValidatorFactory(factory.Pass());
 
   helper.CopyTest(base::PLATFORM_FILE_OK);
@@ -279,7 +285,7 @@ TEST(CopyOrMoveFileValidatorTest, AcceptNone) {
                                            kWithValidatorType);
   helper.SetUp();
   scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
-      new TestCopyOrMoveFileValidatorFactory(false, false /*accept_all*/));
+      new TestCopyOrMoveFileValidatorFactory(PRE_WRITE_INVALID));
   helper.SetMediaCopyOrMoveFileValidatorFactory(factory.Pass());
 
   helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -293,11 +299,11 @@ TEST(CopyOrMoveFileValidatorTest, OverrideValidator) {
                                            kWithValidatorType);
   helper.SetUp();
   scoped_ptr<CopyOrMoveFileValidatorFactory> reject_factory(
-      new TestCopyOrMoveFileValidatorFactory(false, false /*accept_all*/));
+      new TestCopyOrMoveFileValidatorFactory(PRE_WRITE_INVALID));
   helper.SetMediaCopyOrMoveFileValidatorFactory(reject_factory.Pass());
 
   scoped_ptr<CopyOrMoveFileValidatorFactory> accept_factory(
-      new TestCopyOrMoveFileValidatorFactory(true, true /*accept_all*/));
+      new TestCopyOrMoveFileValidatorFactory(VALID));
   helper.SetMediaCopyOrMoveFileValidatorFactory(accept_factory.Pass());
 
   helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -310,8 +316,7 @@ TEST(CopyOrMoveFileValidatorTest, RejectPostWrite) {
                                            kWithValidatorType);
   helper.SetUp();
   scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
-      // accept pre-copy, reject post-copy
-      new TestCopyOrMoveFileValidatorFactory(true, false));
+      new TestCopyOrMoveFileValidatorFactory(POST_WRITE_INVALID));
   helper.SetMediaCopyOrMoveFileValidatorFactory(factory.Pass());
 
   helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);

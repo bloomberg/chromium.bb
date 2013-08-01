@@ -46,6 +46,7 @@ class TestValidatorFactory : public CopyOrMoveFileValidatorFactory {
   virtual CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
       const base::FilePath& /*platform_path*/) OVERRIDE {
+    // Move arg management to TestValidator?
     return new TestValidator(true, true, std::string("2"));
   }
 
@@ -113,6 +114,15 @@ class CopyOrMoveOperationTestHelper {
   }
 
   void SetUp() {
+    SetUp(true, true);
+  }
+
+  void SetUpNoValidator() {
+    SetUp(true, false);
+  }
+
+  void SetUp(bool require_copy_or_move_validator,
+             bool init_copy_or_move_validator) {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.path();
     quota_manager_ =
@@ -138,8 +148,10 @@ class CopyOrMoveOperationTestHelper {
           static_cast<TestFileSystemBackend*>(backend);
       scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
           new TestValidatorFactory);
-      test_backend->set_require_copy_or_move_validator(true);
-      test_backend->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
+      test_backend->set_require_copy_or_move_validator(
+          require_copy_or_move_validator);
+      if (init_copy_or_move_validator)
+        test_backend->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
     }
     backend->OpenFileSystem(origin_, dest_type_,
                             OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
@@ -527,6 +539,24 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
   helper.VerifyTestCaseFiles(dest,
                              kMoveDirResultCases,
                              arraysize(kMoveDirResultCases));
+}
+
+TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFileNoValidator) {
+  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+                                       kFileSystemTypeTemporary,
+                                       kFileSystemTypeTest);
+  helper.SetUpNoValidator();
+
+  FileSystemURL src = helper.SourceURL("a");
+  FileSystemURL dest = helper.DestURL("b");
+
+  // Set up a source file.
+  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateFile(src, 10));
+
+  // The copy attempt should fail with a security error -- getting
+  // the factory returns a security error, and the copy operation must
+  // respect that.
+  ASSERT_EQ(base::PLATFORM_FILE_ERROR_SECURITY, helper.Copy(src, dest));
 }
 
 }  // namespace fileapi

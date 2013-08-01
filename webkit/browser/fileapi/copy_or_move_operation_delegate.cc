@@ -110,9 +110,9 @@ void CopyOrMoveOperationDelegate::DidTryRemoveDestRoot(
   // and operation==MOVE case, probably we can just rename the root directory.
   // http://crbug.com/172187
   StartRecursiveOperation(
-      src_root_, base::Bind(&CopyOrMoveOperationDelegate::DidFinishCopyDir,
-                            AsWeakPtr(), src_root_,
-                            callback_));
+      src_root_,
+      base::Bind(&CopyOrMoveOperationDelegate::DidFinishRecursiveCopyDir,
+                 AsWeakPtr(), src_root_, callback_));
 }
 
 void CopyOrMoveOperationDelegate::CopyOrMoveFile(
@@ -190,7 +190,7 @@ void CopyOrMoveOperationDelegate::DidValidateFile(
   operation_runner()->CopyInForeignFile(platform_path, dest, callback);
 }
 
-void CopyOrMoveOperationDelegate::DidFinishCopyDir(
+void CopyOrMoveOperationDelegate::DidFinishRecursiveCopyDir(
     const FileSystemURL& src,
     const StatusCallback& callback,
     base::PlatformFileError error) {
@@ -200,7 +200,7 @@ void CopyOrMoveOperationDelegate::DidFinishCopyDir(
     return;
   }
 
-  DCHECK_EQ(operation_type_, OPERATION_MOVE);
+  DCHECK_EQ(OPERATION_MOVE, operation_type_);
 
   // Remove the source for finalizing move operation.
   operation_runner()->Remove(

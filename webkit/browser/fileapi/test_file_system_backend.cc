@@ -185,11 +185,6 @@ TestFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
 
 void TestFileSystemBackend::InitializeCopyOrMoveFileValidatorFactory(
     scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
-  // What purpose is this check serving?
-  if (!require_copy_or_move_validator_) {
-    DCHECK(!factory);
-    return;
-  }
   if (!copy_or_move_file_validator_factory_)
     copy_or_move_file_validator_factory_ = factory.Pass();
 }

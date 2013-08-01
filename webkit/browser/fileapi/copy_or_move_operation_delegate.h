@@ -75,7 +75,7 @@ class CopyOrMoveOperationDelegate
       const base::PlatformFileInfo& file_info,
       const base::FilePath& platform_path,
       base::PlatformFileError error);
-  void DidFinishCopyDir(
+  void DidFinishRecursiveCopyDir(
       const FileSystemURL& src,
       const StatusCallback& callback,
       base::PlatformFileError error);
