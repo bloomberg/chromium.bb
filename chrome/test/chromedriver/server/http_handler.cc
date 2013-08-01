@@ -24,11 +24,11 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
-#include "chrome/test/chromedriver/server/http_response.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/util.h"
 #include "net/server/http_server_request_info.h"
+#include "net/server/http_server_response_info.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -64,10 +64,12 @@ HttpHandler::HttpHandler(Log* log, const std::string& url_base)
       weak_ptr_factory_(this) {}
 
 HttpHandler::HttpHandler(
+    const base::Closure& quit_func,
     const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     Log* log,
     const std::string& url_base)
-    : log_(log),
+    : quit_func_(quit_func),
+      log_(log),
       url_base_(url_base),
       received_shutdown_(false),
       weak_ptr_factory_(this) {
@@ -448,14 +450,12 @@ void HttpHandler::Handle(const net::HttpServerRequestInfo& request,
 
   if (received_shutdown_)
     return;
-  if (ShouldShutdown(request))
-    received_shutdown_ = true;
 
   std::string path = request.path;
   if (!StartsWithASCII(path, url_base_, true)) {
-    scoped_ptr<HttpResponse> response(
-        new HttpResponse(HttpResponse::kBadRequest));
-    response->set_body("unhandled request");
+    scoped_ptr<net::HttpServerResponseInfo> response(
+        new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
+    response->SetBody("unhandled request", "text/plain");
     send_response_func.Run(response.Pass());
     return;
   }
@@ -463,10 +463,9 @@ void HttpHandler::Handle(const net::HttpServerRequestInfo& request,
   path.erase(0, url_base_.length());
 
   HandleCommand(request, path, send_response_func);
-}
 
-bool HttpHandler::ShouldShutdown(const net::HttpServerRequestInfo& request) {
-  return request.path == url_base_ + kShutdownPath;
+  if (path == kShutdownPath)
+    received_shutdown_ = true;
 }
 
 Command HttpHandler::WrapToCommand(
@@ -502,9 +501,9 @@ void HttpHandler::HandleCommand(
   CommandMap::const_iterator iter = command_map_->begin();
   while (true) {
     if (iter == command_map_->end()) {
-      scoped_ptr<HttpResponse> response(
-          new HttpResponse(HttpResponse::kNotFound));
-      response->set_body("unknown command: " + trimmed_path);
+      scoped_ptr<net::HttpServerResponseInfo> response(
+          new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
+      response->SetBody("unknown command: " + trimmed_path, "text/plain");
       send_response_func.Run(response.Pass());
       return;
     }
@@ -519,9 +518,9 @@ void HttpHandler::HandleCommand(
     base::DictionaryValue* body_params;
     scoped_ptr<base::Value> parsed_body(base::JSONReader::Read(request.data));
     if (!parsed_body || !parsed_body->GetAsDictionary(&body_params)) {
-      scoped_ptr<HttpResponse> response(
-          new HttpResponse(HttpResponse::kBadRequest));
-      response->set_body("missing command parameters");
+      scoped_ptr<net::HttpServerResponseInfo> response(
+          new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
+      response->SetBody("missing command parameters", "test/plain");
       send_response_func.Run(response.Pass());
       return;
     }
@@ -543,24 +542,26 @@ void HttpHandler::PrepareResponse(
     scoped_ptr<base::Value> value,
     const std::string& session_id) {
   CHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<HttpResponse> response =
+  scoped_ptr<net::HttpServerResponseInfo> response =
       PrepareResponseHelper(trimmed_path, status, value.Pass(), session_id);
   log_->AddEntry(Log::kLog,
                  base::StringPrintf("sending response: %d %s",
-                                    response->status(),
+                                    response->status_code(),
                                     response->body().c_str()));
   send_response_func.Run(response.Pass());
+  if (trimmed_path == kShutdownPath)
+    quit_func_.Run();
 }
 
-scoped_ptr<HttpResponse> HttpHandler::PrepareResponseHelper(
+scoped_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
     const std::string& trimmed_path,
     const Status& status,
     scoped_ptr<base::Value> value,
     const std::string& session_id) {
   if (status.code() == kUnknownCommand) {
-    scoped_ptr<HttpResponse> response(
-        new HttpResponse(HttpResponse::kNotImplemented));
-    response->set_body("unimplemented command: " + trimmed_path);
+    scoped_ptr<net::HttpServerResponseInfo> response(
+        new net::HttpServerResponseInfo(net::HTTP_NOT_IMPLEMENTED));
+    response->SetBody("unimplemented command: " + trimmed_path, "text/plain");
     return response.Pass();
   }
 
@@ -568,8 +569,8 @@ scoped_ptr<HttpResponse> HttpHandler::PrepareResponseHelper(
     // Creating a session involves a HTTP request to /session, which is
     // supposed to redirect to /session/:sessionId, which returns the
     // session info.
-    scoped_ptr<HttpResponse> response(
-        new HttpResponse(HttpResponse::kSeeOther));
+    scoped_ptr<net::HttpServerResponseInfo> response(
+        new net::HttpServerResponseInfo(net::HTTP_SEE_OTHER));
     response->AddHeader("Location", url_base_ + "session/" + session_id);
     return response.Pass();
   } else if (status.IsError()) {
@@ -595,9 +596,9 @@ scoped_ptr<HttpResponse> HttpHandler::PrepareResponseHelper(
   base::JSONWriter::WriteWithOptions(
       &body_params, base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION,
       &body);
-  scoped_ptr<HttpResponse> response(new HttpResponse(HttpResponse::kOk));
-  response->SetMimeType("application/json; charset=utf-8");
-  response->set_body(body);
+  scoped_ptr<net::HttpServerResponseInfo> response(
+      new net::HttpServerResponseInfo(net::HTTP_OK));
+  response->SetBody(body, "application/json; charset=utf-8");
   return response.Pass();
 }
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -29,12 +30,12 @@ class SingleThreadTaskRunner;
 
 namespace net {
 class HttpServerRequestInfo;
+class HttpServerResponseInfo;
 }
 
 class Adb;
 class DeviceManager;
 class Log;
-class HttpResponse;
 class URLRequestContextGetter;
 
 enum HttpMethod {
@@ -54,19 +55,20 @@ struct CommandMapping {
   Command command;
 };
 
-typedef base::Callback<void(scoped_ptr<HttpResponse>)> HttpResponseSenderFunc;
+typedef base::Callback<void(scoped_ptr<net::HttpServerResponseInfo>)>
+    HttpResponseSenderFunc;
 
 class HttpHandler {
  public:
   HttpHandler(Log* log, const std::string& url_base);
-  HttpHandler(const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+  HttpHandler(const base::Closure& quit_func,
+              const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
               Log* log,
               const std::string& url_base);
   ~HttpHandler();
 
   void Handle(const net::HttpServerRequestInfo& request,
               const HttpResponseSenderFunc& send_response_func);
-  bool ShouldShutdown(const net::HttpServerRequestInfo& request);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpHandlerTest, HandleUnknownCommand);
@@ -87,13 +89,14 @@ class HttpHandler {
                        const Status& status,
                        scoped_ptr<base::Value> value,
                        const std::string& session_id);
-  scoped_ptr<HttpResponse> PrepareResponseHelper(
+  scoped_ptr<net::HttpServerResponseInfo> PrepareResponseHelper(
       const std::string& trimmed_path,
       const Status& status,
       scoped_ptr<base::Value> value,
       const std::string& session_id);
 
   base::ThreadChecker thread_checker_;
+  base::Closure quit_func_;
   Log* log_;
   std::string url_base_;
   bool received_shutdown_;

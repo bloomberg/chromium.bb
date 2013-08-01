@@ -1001,8 +1001,6 @@
       'sources': [
         'test/chromedriver/server/http_handler.cc',
         'test/chromedriver/server/http_handler.h',
-        'test/chromedriver/server/http_response.cc',
-        'test/chromedriver/server/http_response.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -1017,13 +1015,10 @@
         '..',
       ],
       'sources': [
-        '../third_party/mongoose/mongoose.c',
-        '../third_party/mongoose/mongoose.h',
         'test/chromedriver/server/chromedriver_server.cc',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      # c4306 is because Mongoose casts -1 directly to a handle type.
-      'msvs_disabled_warnings': [ 4306, 4267, ],
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'chromedriver2_unittests',
@@ -1063,7 +1058,6 @@
         'test/chromedriver/commands_unittest.cc',
         'test/chromedriver/logging_unittest.cc',
         'test/chromedriver/server/http_handler_unittest.cc',
-        'test/chromedriver/server/http_response_unittest.cc',
         'test/chromedriver/session_commands_unittest.cc',
         'test/chromedriver/session_unittest.cc',
         'test/chromedriver/util_unittest.cc',

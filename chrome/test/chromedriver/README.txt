@@ -37,18 +37,17 @@ process through DevTools. ChromeDriver is a standalone server which
 communicates with the WebDriver client via the WebDriver wire protocol, which
 is essentially synchronous JSON commands over HTTP. WebDriver clients are
 available in many languages, and many are available from the open source
-selenium/webdriver project: http://code.google.com/p/selenium.
+selenium/webdriver project: http://code.google.com/p/selenium. ChromeDriver
+uses the webserver from net/server.
 
-ChromeDriver has several threads. The webserver code, third_party/mongoose,
-spawns a thread for the server socket and a certain amount of request handling
-threads. When a request is received, the command is processed on the message
-loop of the main thread, also called the command thread. Commands may be handled
-asynchronously on the command thread, but the request handler threads
-will block waiting for the response. One of the commands allows the user to
-create a session, which includes spawning a dedicated session thread. Session
-commands will be dispatched to the session thread and handled synchronously
-there. Lastly, there is an IO/net thread on which the net/ code operates.
-This is used to keep reading incoming data from Chrome in the background.
+ChromeDriver has a main thread, called the command thread, an IO thread,
+and a thread per session. The webserver receives a request on the IO thread,
+which is sent to a handler on the command thread. The handler executes the
+appropriate command function, which completes asynchronously. The create
+session command may create a new thread for subsequent session-related commands,
+which will execute on the dedicated session thread synchronously. When a
+command is finished, it will invoke a callback, which will eventually make its
+way back to the IO thread as a HTTP response for the server to send.
 
 =====Code structure=====
 1) chrome/test/chromedriver
@@ -76,9 +75,6 @@ An extension used for automating the desktop browser.
 
 8) chrome/test/chromedriver/third_party
 Third party libraries used by chromedriver.
-
-9) third_party/mongoose
-The webserver for chromedriver.
 
 =====Testing=====
 There are 4 test suites for verifying ChromeDriver's correctness:

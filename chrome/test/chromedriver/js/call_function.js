@@ -51,7 +51,7 @@ Cache.prototype = {
       if (item == this.cache_[i])
         return i;
     }
-    var id = this.idPrefix_  + ':' + this.nextId_;
+    var id = this.idPrefix_  + '-' + this.nextId_;
     this.cache_[id] = item;
     this.nextId_++;
     return id;
