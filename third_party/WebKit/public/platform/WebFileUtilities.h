@@ -50,22 +50,14 @@ public:
 #else
     typedef int FileHandle;
 #endif
-    virtual bool fileExists(const WebString& path) { return false; }
-    virtual bool deleteFile(const WebString& path) { return false; }
-    virtual bool deleteEmptyDirectory(const WebString& path) { return false; }
     virtual bool getFileInfo(const WebString& path, WebFileInfo& result) { return false; }
     virtual WebString directoryName(const WebString& path)  { return WebString(); }
-    virtual WebString pathByAppendingComponent(const WebString& path, const WebString& component)  { return WebString(); }
-    virtual bool makeAllDirectories(const WebString& path) { return false; }
     virtual bool isDirectory(const WebString& path) { return false; }
     virtual WebURL filePathToURL(const WebString& path)  { return WebURL(); }
     virtual FileHandle openFile(const WebString& path, int mode)  { return FileHandle(); }
     // Should set the FileHandle to a invalid value if the file is closed successfully.
     virtual void closeFile(FileHandle&) { }
-    virtual long long seekFile(FileHandle, long long offset, int origin) { return 0; }
-    virtual bool truncateFile(FileHandle, long long offset) { return false; }
     virtual int readFromFile(FileHandle, char* data, int length) { return 0; }
-    virtual int writeToFile(FileHandle, const char* data, int length) { return 0; }
 
 protected:
     ~WebFileUtilities() { }

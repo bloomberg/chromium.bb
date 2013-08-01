@@ -50,41 +50,20 @@ enum FileOpenMode {
     OpenForWrite
 };
 
-enum FileSeekOrigin {
-    SeekFromBeginning = 0,
-    SeekFromCurrent,
-    SeekFromEnd
-};
-
-#if OS(WINDOWS)
-static const char PlatformFilePathSeparator = '\\';
-#else
-static const char PlatformFilePathSeparator = '/';
-#endif
-
 struct FileMetadata;
 
-bool fileExists(const String&);
-bool deleteFile(const String&);
-bool deleteEmptyDirectory(const String&);
 bool getFileSize(const String&, long long& result);
 bool getFileModificationTime(const String&, time_t& result);
 bool getFileMetadata(const String&, FileMetadata&);
-String pathByAppendingComponent(const String& path, const String& component);
-bool makeAllDirectories(const String& path);
 String pathGetFileName(const String&);
 String directoryName(const String&);
 
 inline double invalidFileTime() { return std::numeric_limits<double>::quiet_NaN(); }
 inline bool isValidFileTime(double time) { return std::isfinite(time); }
 
+// FIXME: Only used by test code, move them into WebUnitTestSupport.
 PlatformFileHandle openFile(const String& path, FileOpenMode);
 void closeFile(PlatformFileHandle&);
-// Returns the resulting offset from the beginning of the file if successful, -1 otherwise.
-long long seekFile(PlatformFileHandle, long long offset, FileSeekOrigin);
-bool truncateFile(PlatformFileHandle, long long offset);
-// Returns number of bytes actually read if successful, -1 otherwise.
-int writeToFile(PlatformFileHandle, const char* data, int length);
 // Returns number of bytes actually written if successful, -1 otherwise.
 int readFromFile(PlatformFileHandle, char* data, int length);
 

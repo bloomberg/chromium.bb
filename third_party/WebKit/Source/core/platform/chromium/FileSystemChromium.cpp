@@ -41,16 +41,6 @@
 
 namespace WebCore {
 
-bool deleteFile(const String& path)
-{
-    return WebKit::Platform::current()->fileUtilities()->deleteFile(path);
-}
-
-bool deleteEmptyDirectory(const String& path)
-{
-    return WebKit::Platform::current()->fileUtilities()->deleteEmptyDirectory(path);
-}
-
 bool getFileSize(const String& path, long long& result)
 {
     FileMetadata metadata;
@@ -85,21 +75,6 @@ String directoryName(const String& path)
     return WebKit::Platform::current()->fileUtilities()->directoryName(path);
 }
 
-String pathByAppendingComponent(const String& path, const String& component)
-{
-    return WebKit::Platform::current()->fileUtilities()->pathByAppendingComponent(path, component);
-}
-
-bool makeAllDirectories(const String& path)
-{
-    return WebKit::Platform::current()->fileUtilities()->makeAllDirectories(path);
-}
-
-bool fileExists(const String& path)
-{
-    return WebKit::Platform::current()->fileUtilities()->fileExists(path);
-}
-
 PlatformFileHandle openFile(const String& path, FileOpenMode mode)
 {
     return WebKit::Platform::current()->fileUtilities()->openFile(path, mode);
@@ -110,24 +85,9 @@ void closeFile(PlatformFileHandle& handle)
     WebKit::Platform::current()->fileUtilities()->closeFile(handle);
 }
 
-long long seekFile(PlatformFileHandle handle, long long offset, FileSeekOrigin origin)
-{
-    return WebKit::Platform::current()->fileUtilities()->seekFile(handle, offset, origin);
-}
-
-bool truncateFile(PlatformFileHandle handle, long long offset)
-{
-    return WebKit::Platform::current()->fileUtilities()->truncateFile(handle, offset);
-}
-
 int readFromFile(PlatformFileHandle handle, char* data, int length)
 {
     return WebKit::Platform::current()->fileUtilities()->readFromFile(handle, data, length);
-}
-
-int writeToFile(PlatformFileHandle handle, const char* data, int length)
-{
-    return WebKit::Platform::current()->fileUtilities()->writeToFile(handle, data, length);
 }
 
 } // namespace WebCore
