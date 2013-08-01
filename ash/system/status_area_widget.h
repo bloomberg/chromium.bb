@@ -37,9 +37,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   // Update the alignment of the widget and tray views.
   void SetShelfAlignment(ShelfAlignment alignment);
 
-  // Set the visibility state of web notifications.
-  void SetHideWebNotifications(bool hide);
-
   // Set the visibility of system notifications.
   void SetHideSystemNotifications(bool hide);
 

@@ -8,9 +8,11 @@
 
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/test_system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
@@ -55,6 +57,34 @@ WebNotificationTray* GetSecondaryTray() {
 message_center::MessageCenter* GetMessageCenter() {
   return GetTray()->message_center();
 }
+
+SystemTray* GetSystemTray() {
+  return Shell::GetPrimaryRootWindowController()->shelf()->
+      status_area_widget()->system_tray();
+}
+
+// Trivial item implementation for testing PopupAndSystemTray test case.
+class TestItem : public SystemTrayItem {
+ public:
+  TestItem() : SystemTrayItem(GetSystemTray()) {}
+
+  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
+    views::View* default_view = new views::View;
+    default_view->SetLayoutManager(new views::FillLayout);
+    default_view->AddChildView(new views::Label(UTF8ToUTF16("Default")));
+    return default_view;
+  }
+
+  virtual views::View* CreateNotificationView(
+      user::LoginStatus status) OVERRIDE {
+    return new views::View;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestItem);
+};
+
+}  // namespace
 
 class WebNotificationTrayTest : public test::AshTestBase {
  public:
@@ -106,11 +136,17 @@ class WebNotificationTrayTest : public test::AshTestBase {
     return GetTray()->GetWidget();
   }
 
+  gfx::Rect GetPopupWorkArea() {
+    return GetPopupWorkAreaForTray(GetTray());
+  }
+
+  gfx::Rect GetPopupWorkAreaForTray(WebNotificationTray* tray) {
+    return tray->popup_collection_->work_area_;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTrayTest);
 };
-
-}  // namespace
 
 TEST_F(WebNotificationTrayTest, WebNotifications) {
   // TODO(mukai): move this test case to ui/message_center.
@@ -196,9 +232,7 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
     std::string id = base::StringPrintf("test_id%d", static_cast<int>(i));
     AddNotification(id);
   }
-  // Hide and reshow the bubble so that it is updated immediately, not delayed.
-  GetTray()->SetHidePopupBubble(true);
-  GetTray()->SetHidePopupBubble(false);
+  GetTray()->ShowPopups();
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   EXPECT_EQ(notifications_to_add,
             GetMessageCenter()->NotificationCount());
@@ -210,8 +244,11 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
 #if defined(OS_CHROMEOS)
 // Display notification is ChromeOS only.
 #define MAYBE_PopupShownOnBothDisplays PopupShownOnBothDisplays
+#define MAYBE_PopupAndSystemTrayMultiDisplay PopupAndSystemTrayMultiDisplay
 #else
 #define MAYBE_PopupShownOnBothDisplays DISABLED_PopupShownOnBothDisplays
+#define MAYBE_PopupAndSystemTrayMultiDisplay \
+  DISABLED_PopupAndSystemTrayMultiDisplay
 #endif
 
 // Verifies if the notification appears on both displays when extended mode.
@@ -250,6 +287,73 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupShownOnBothDisplays) {
   secondary_tray = GetSecondaryTray();
   ASSERT_TRUE(secondary_tray);
   EXPECT_TRUE(secondary_tray->IsPopupVisible());
+}
+
+TEST_F(WebNotificationTrayTest, PopupAndSystemTray) {
+  TestItem* test_item = new TestItem;
+  GetSystemTray()->AddTrayItem(test_item);
+
+  AddNotification("test_id");
+  EXPECT_TRUE(GetTray()->IsPopupVisible());
+  gfx::Rect work_area = GetPopupWorkArea();
+
+  // System tray is created, the popup's work area should be narrowed but still
+  // visible.
+  GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+  EXPECT_TRUE(GetTray()->IsPopupVisible());
+  gfx::Rect work_area_with_tray = GetPopupWorkArea();
+  EXPECT_GT(work_area.size().GetArea(), work_area_with_tray.size().GetArea());
+
+  // System tray notification is also created, the popup's work area is narrowed
+  // even more, but still visible.
+  GetSystemTray()->ShowNotificationView(test_item);
+  EXPECT_TRUE(GetTray()->IsPopupVisible());
+  gfx::Rect work_area_with_tray_notificaiton = GetPopupWorkArea();
+  EXPECT_GT(work_area.size().GetArea(),
+            work_area_with_tray_notificaiton.size().GetArea());
+  EXPECT_GT(work_area_with_tray.size().GetArea(),
+            work_area_with_tray_notificaiton.size().GetArea());
+
+  // Close system tray, only system tray notifications.
+  GetSystemTray()->ClickedOutsideBubble();
+  EXPECT_TRUE(GetTray()->IsPopupVisible());
+  gfx::Rect work_area_with_notification = GetPopupWorkArea();
+  EXPECT_GT(work_area.size().GetArea(),
+            work_area_with_notification.size().GetArea());
+  EXPECT_LT(work_area_with_tray_notificaiton.size().GetArea(),
+            work_area_with_notification.size().GetArea());
+
+  // Close the notifications.
+  GetSystemTray()->HideNotificationView(test_item);
+  EXPECT_TRUE(GetTray()->IsPopupVisible());
+  EXPECT_EQ(work_area.ToString(), GetPopupWorkArea().ToString());
+}
+
+TEST_F(WebNotificationTrayTest, PopupAndSystemTrayAlignment) {
+  Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
+      SetAlignment(SHELF_ALIGNMENT_LEFT);
+  AddNotification("test_id");
+  gfx::Rect work_area = GetPopupWorkArea();
+
+  // System tray is created, but the work area is not affected since the tray
+  // appears at the left-bottom while the popups appear at the right bottom.
+  GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+  EXPECT_EQ(work_area.ToString(), GetPopupWorkArea().ToString());
+}
+
+TEST_F(WebNotificationTrayTest, MAYBE_PopupAndSystemTrayMultiDisplay) {
+  UpdateDisplay("800x600,600x400");
+
+  AddNotification("test_id");
+  gfx::Rect work_area = GetPopupWorkArea();
+  gfx::Rect work_area_second = GetPopupWorkAreaForTray(GetSecondaryTray());
+
+  // System tray is created on the primary display. The popups in the secondary
+  // tray aren't affected.
+  GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+  EXPECT_GT(work_area.size().GetArea(), GetPopupWorkArea().size().GetArea());
+  EXPECT_EQ(work_area_second.ToString(),
+            GetPopupWorkAreaForTray(GetSecondaryTray()).ToString());
 }
 
 }  // namespace ash

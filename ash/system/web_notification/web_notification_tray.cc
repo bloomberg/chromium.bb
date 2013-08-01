@@ -19,6 +19,7 @@
 #include "ash/system/tray/tray_utils.h"
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
+#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_strings.h"
@@ -26,6 +27,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/views/message_bubble_base.h"
@@ -74,6 +76,8 @@ class WorkAreaObserver : public ShelfLayoutManagerObserver,
                    ShelfLayoutManager* shelf);
   virtual ~WorkAreaObserver();
 
+  void SetSystemTrayHeight(int height);
+
   // Overridden from ShellObserver:
   virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
 
@@ -83,6 +87,7 @@ class WorkAreaObserver : public ShelfLayoutManagerObserver,
  private:
   message_center::MessagePopupCollection* collection_;
   ShelfLayoutManager* shelf_;
+  int system_tray_height_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkAreaObserver);
 };
@@ -91,7 +96,8 @@ WorkAreaObserver::WorkAreaObserver(
     message_center::MessagePopupCollection* collection,
     ShelfLayoutManager* shelf)
     : collection_(collection),
-      shelf_(shelf) {
+      shelf_(shelf),
+      system_tray_height_(0) {
   DCHECK(collection_);
   shelf_->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
@@ -100,6 +106,14 @@ WorkAreaObserver::WorkAreaObserver(
 WorkAreaObserver::~WorkAreaObserver() {
   Shell::GetInstance()->RemoveShellObserver(this);
   shelf_->RemoveObserver(this);
+}
+
+void WorkAreaObserver::SetSystemTrayHeight(int height) {
+  system_tray_height_ = height;
+  if (system_tray_height_ > 0 && ash::switches::UseAlternateShelfLayout())
+    system_tray_height_ += message_center::kMarginBetweenItems;
+
+  OnAutoHideStateChanged(shelf_->auto_hide_state());
 }
 
 void WorkAreaObserver::OnDisplayWorkAreaInsetsChanged() {
@@ -112,21 +126,43 @@ void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
       shelf_->shelf_widget()->GetNativeView());
   gfx::Rect work_area = display.work_area();
-  int width = (new_state == SHELF_AUTO_HIDE_HIDDEN) ?
-      ShelfLayoutManager::kAutoHideSize :
-      ShelfLayoutManager::GetPreferredShelfSize();
+  int width = 0;
+  if (shelf_->auto_hide_behavior() != SHELF_AUTO_HIDE_BEHAVIOR_NEVER) {
+    width = (new_state == SHELF_AUTO_HIDE_HIDDEN) ?
+        ShelfLayoutManager::kAutoHideSize :
+        ShelfLayoutManager::GetPreferredShelfSize();
+  }
   switch (shelf_->GetAlignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
       work_area.Inset(0, 0, 0, width);
+      if (system_tray_height_ > 0) {
+        work_area.set_height(
+            std::max(0, work_area.height() - system_tray_height_));
+      }
       break;
     case SHELF_ALIGNMENT_LEFT:
       work_area.Inset(width, 0, 0, 0);
+      // Popups appear on the left bottom only when UI is RTL.
+      if (base::i18n::IsRTL() && system_tray_height_ > 0) {
+        work_area.set_height(
+            std::max(0, work_area.height() - system_tray_height_));
+      }
       break;
     case SHELF_ALIGNMENT_RIGHT:
       work_area.Inset(0, 0, width, 0);
+      // Popups appear on the right bottom only when UI isn't RTL.
+      if (!base::i18n::IsRTL() && system_tray_height_ > 0) {
+        work_area.set_height(
+            std::max(0, work_area.height() - system_tray_height_));
+      }
       break;
     case SHELF_ALIGNMENT_TOP:
       work_area.Inset(0, width, 0, 0);
+      if (system_tray_height_ > 0) {
+        work_area.set_y(work_area.y() + system_tray_height_);
+        work_area.set_height(
+            std::max(0, work_area.height() - system_tray_height_));
+      }
       break;
   }
   collection_->SetDisplayInfo(work_area, display.bounds());
@@ -321,11 +357,10 @@ void WebNotificationTray::HideMessageCenter() {
   button_->SetBubbleVisible(false);
 }
 
-void WebNotificationTray::SetHidePopupBubble(bool hide) {
-  if (hide)
-    message_center_tray_->HidePopupBubble();
-  else
-    message_center_tray_->ShowPopupBubble();
+void WebNotificationTray::SetSystemTrayHeight(int height) {
+  if (!work_area_observer_)
+    return;
+  work_area_observer_->SetSystemTrayHeight(height);
 }
 
 bool WebNotificationTray::ShowPopups() {
