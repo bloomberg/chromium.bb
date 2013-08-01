@@ -14,48 +14,48 @@ namespace local_discovery {
 
 namespace {
 
-const char kSamplePacketA[] = {
+const uint8 kSamplePacketA[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x01',               // 1 RR (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x01,               // 1 RR (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
-  '\x07', 'm', 'y', 'h', 'e', 'l', 'l', 'o',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x01',        // TYPE is A.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x00',        // TTL (4 bytes) is 16 seconds.
-  '\x00', '\x10',
-  '\x00', '\x04',        // RDLENGTH is 4 bytes.
-  '\x01', '\x02',
-  '\x03', '\x04',
+  0x07, 'm', 'y', 'h', 'e', 'l', 'l', 'o',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x01,        // TYPE is A.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x00,        // TTL (4 bytes) is 16 seconds.
+  0x00, 0x10,
+  0x00, 0x04,        // RDLENGTH is 4 bytes.
+  0x01, 0x02,
+  0x03, 0x04,
 };
 
-const char kSamplePacketAAAA[] = {
+const uint8 kSamplePacketAAAA[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x01',               // 1 RR (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x01,               // 1 RR (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
-  '\x07', 'm', 'y', 'h', 'e', 'l', 'l', 'o',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x1C',        // TYPE is AAAA.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x00',        // TTL (4 bytes) is 16 seconds.
-  '\x00', '\x10',
-  '\x00', '\x10',        // RDLENGTH is 4 bytes.
-  '\x00', '\x0A', '\x00', '\x00',
-  '\x00', '\x00', '\x00', '\x00',
-  '\x00', '\x01', '\x00', '\x02',
-  '\x00', '\x03', '\x00', '\x04',
+  0x07, 'm', 'y', 'h', 'e', 'l', 'l', 'o',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x1C,        // TYPE is AAAA.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x00,        // TTL (4 bytes) is 16 seconds.
+  0x00, 0x10,
+  0x00, 0x10,        // RDLENGTH is 4 bytes.
+  0x00, 0x0A, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00,
+  0x00, 0x01, 0x00, 0x02,
+  0x00, 0x03, 0x00, 0x04,
 };
 
 class LocalDomainResolverTest : public testing::Test {

@@ -84,7 +84,7 @@ scoped_ptr<DatagramServerSocket> MockMDnsSocketFactory::CreateSocket() {
   return new_socket.PassAs<DatagramServerSocket>();
 }
 
-void MockMDnsSocketFactory::SimulateReceive(const char* packet, int size) {
+void MockMDnsSocketFactory::SimulateReceive(const uint8* packet, int size) {
   DCHECK(recv_buffer_size_ >= size);
   DCHECK(recv_buffer_.get());
   DCHECK(!recv_callback_.is_null());

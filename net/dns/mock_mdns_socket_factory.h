@@ -77,7 +77,7 @@ class MockMDnsSocketFactory : public MDnsConnection::SocketFactory {
 
   virtual scoped_ptr<DatagramServerSocket> CreateSocket() OVERRIDE;
 
-  void SimulateReceive(const char* packet, int size);
+  void SimulateReceive(const uint8* packet, int size);
 
   MOCK_METHOD1(OnSendTo, void(const std::string&));
 

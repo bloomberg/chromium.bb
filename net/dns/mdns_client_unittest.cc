@@ -28,310 +28,314 @@ namespace net {
 
 namespace {
 
-const char kSamplePacket1[] = {
+const uint8 kSamplePacket1[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x02',               // 2 RRs (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x02,               // 2 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
   // Answer 1
-  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x04', '_', 't', 'c', 'p',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x00',        // TTL (4 bytes) is 1 second;
-  '\x00', '\x01',
-  '\x00', '\x08',        // RDLENGTH is 8 bytes.
-  '\x05', 'h', 'e', 'l', 'l', 'o',
-  '\xc0', '\x0c',
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x00,        // TTL (4 bytes) is 1 second;
+  0x00, 0x01,
+  0x00, 0x08,        // RDLENGTH is 8 bytes.
+  0x05, 'h', 'e', 'l', 'l', 'o',
+  0xc0, 0x0c,
 
   // Answer 2
-  '\x08', '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',
-  '\xc0', '\x14',         // Pointer to "._tcp.local"
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 49 seconds.
-  '\x24', '\x75',
-  '\x00', '\x08',        // RDLENGTH is 8 bytes.
-  '\x05', 'h', 'e', 'l', 'l', 'o',
-  '\xc0', '\x32'
+  0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',
+  0xc0, 0x14,         // Pointer to "._tcp.local"
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 49 seconds.
+  0x24, 0x75,
+  0x00, 0x08,        // RDLENGTH is 8 bytes.
+  0x05, 'h', 'e', 'l', 'l', 'o',
+  0xc0, 0x32
 };
 
-const char kCorruptedPacketBadQuestion[] = {
+const uint8 kCorruptedPacketBadQuestion[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x01',               // One question
-  '\x00', '\x02',               // 2 RRs (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x01,               // One question
+  0x00, 0x02,               // 2 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
   // Question is corrupted and cannot be read.
-  '\x99', 'h', 'e', 'l', 'l', 'o',
-  '\x00',
-  '\x00', '\x00',
-  '\x00', '\x00',
+  0x99, 'h', 'e', 'l', 'l', 'o',
+  0x00,
+  0x00, 0x00,
+  0x00, 0x00,
 
   // Answer 1
-  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x04', '_', 't', 'c', 'p',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x99',        // RDLENGTH is impossible
-  '\x05', 'h', 'e', 'l', 'l', 'o',
-  '\xc0', '\x0c',
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x99,        // RDLENGTH is impossible
+  0x05, 'h', 'e', 'l', 'l', 'o',
+  0xc0, 0x0c,
 
   // Answer 2
-  '\x08', '_', 'p', 'r',  // Useless trailing data.
+  0x08, '_', 'p', 'r',  // Useless trailing data.
 };
 
-const char kCorruptedPacketUnsalvagable[] = {
+const uint8 kCorruptedPacketUnsalvagable[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x02',               // 2 RRs (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x02,               // 2 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
   // Answer 1
-  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x04', '_', 't', 'c', 'p',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x99',        // RDLENGTH is impossible
-  '\x05', 'h', 'e', 'l', 'l', 'o',
-  '\xc0', '\x0c',
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x99,        // RDLENGTH is impossible
+  0x05, 'h', 'e', 'l', 'l', 'o',
+  0xc0, 0x0c,
 
   // Answer 2
-  '\x08', '_', 'p', 'r',  // Useless trailing data.
+  0x08, '_', 'p', 'r',  // Useless trailing data.
 };
 
-const char kCorruptedPacketDoubleRecord[] = {
+const uint8 kCorruptedPacketDoubleRecord[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x02',               // 2 RRs (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x02,               // 2 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
   // Answer 1
-  '\x06', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x01',        // TYPE is A.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x04',        // RDLENGTH is 4
-  '\x05', '\x03',
-  '\xc0', '\x0c',
+  0x06, 'p', 'r', 'i', 'v', 'e', 't',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x01,        // TYPE is A.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x04,        // RDLENGTH is 4
+  0x05, 0x03,
+  0xc0, 0x0c,
 
   // Answer 2 -- Same key
-  '\x06', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x01',        // TYPE is A.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x04',        // RDLENGTH is 4
-  '\x02', '\x03',
-  '\x04', '\x05',
+  0x06, 'p', 'r', 'i', 'v', 'e', 't',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x01,        // TYPE is A.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x04,        // RDLENGTH is 4
+  0x02, 0x03,
+  0x04, 0x05,
 };
 
-const char kCorruptedPacketSalvagable[] = {
+const uint8 kCorruptedPacketSalvagable[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x02',               // 2 RRs (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x02,               // 2 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
   // Answer 1
-  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x04', '_', 't', 'c', 'p',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x08',        // RDLENGTH is 8 bytes.
-  '\x99', 'h', 'e', 'l', 'l', 'o',   // Bad RDATA format.
-  '\xc0', '\x0c',
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x08,        // RDLENGTH is 8 bytes.
+  0x99, 'h', 'e', 'l', 'l', 'o',   // Bad RDATA format.
+  0xc0, 0x0c,
 
   // Answer 2
-  '\x08', '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',
-  '\xc0', '\x14',         // Pointer to "._tcp.local"
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 49 seconds.
-  '\x24', '\x75',
-  '\x00', '\x08',        // RDLENGTH is 8 bytes.
-  '\x05', 'h', 'e', 'l', 'l', 'o',
-  '\xc0', '\x32'
+  0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',
+  0xc0, 0x14,         // Pointer to "._tcp.local"
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 49 seconds.
+  0x24, 0x75,
+  0x00, 0x08,        // RDLENGTH is 8 bytes.
+  0x05, 'h', 'e', 'l', 'l', 'o',
+  0xc0, 0x32
 };
 
-const char kSamplePacket2[] = {
+const uint8 kSamplePacket2[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x02',               // 2 RRs (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x02,               // 2 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
   // Answer 1
-  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x04', '_', 't', 'c', 'p',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x08',        // RDLENGTH is 8 bytes.
-  '\x05', 'z', 'z', 'z', 'z', 'z',
-  '\xc0', '\x0c',
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x08,        // RDLENGTH is 8 bytes.
+  0x05, 'z', 'z', 'z', 'z', 'z',
+  0xc0, 0x0c,
 
   // Answer 2
-  '\x08', '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',
-  '\xc0', '\x14',         // Pointer to "._tcp.local"
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x08',        // RDLENGTH is 8 bytes.
-  '\x05', 'z', 'z', 'z', 'z', 'z',
-  '\xc0', '\x32'
+  0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',
+  0xc0, 0x14,         // Pointer to "._tcp.local"
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x08,        // RDLENGTH is 8 bytes.
+  0x05, 'z', 'z', 'z', 'z', 'z',
+  0xc0, 0x32
 };
 
-const char kQueryPacketPrivet[] = {
+const uint8 kQueryPacketPrivet[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x00', '\x00',               // No flags.
-  '\x00', '\x01',               // One question.
-  '\x00', '\x00',               // 0 RRs (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x00, 0x00,               // No flags.
+  0x00, 0x01,               // One question.
+  0x00, 0x00,               // 0 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
   // Question
   // This part is echoed back from the respective query.
-  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x04', '_', 't', 'c', 'p',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
 };
 
-const char kSamplePacketAdditionalOnly[] = {
+const uint8 kSamplePacketAdditionalOnly[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x00',               // 2 RRs (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x01',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x00,               // 2 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x01,               // 0 additional RRs
 
   // Answer 1
-  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x04', '_', 't', 'c', 'p',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x08',        // RDLENGTH is 8 bytes.
-  '\x05', 'h', 'e', 'l', 'l', 'o',
-  '\xc0', '\x0c',
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x08,        // RDLENGTH is 8 bytes.
+  0x05, 'h', 'e', 'l', 'l', 'o',
+  0xc0, 0x0c,
 };
 
-const char kSamplePacketNsec[] = {
+const uint8 kSamplePacketNsec[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x01',               // 1 RR (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x01,               // 1 RR (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
   // Answer 1
-  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x04', '_', 't', 'c', 'p',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x2f',        // TYPE is NSEC.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x06',        // RDLENGTH is 6 bytes.
-  '\xc0', '\x0c',
-  '\x00', '\x02', '\x00', '\x08'  // Only A record present
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x2f,        // TYPE is NSEC.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x06,        // RDLENGTH is 6 bytes.
+  0xc0, 0x0c,
+  0x00, 0x02, 0x00, 0x08  // Only A record present
 };
 
-const char kSamplePacketAPrivet[] = {
+const uint8 kSamplePacketAPrivet[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x01',               // 1 RR (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x01,               // 1 RR (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
   // Answer 1
-  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x04', '_', 't', 'c', 'p',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x01',        // TYPE is A.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x04',        // RDLENGTH is 4 bytes.
-  '\xc0', '\x0c',
-  '\x00', '\x02',
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x01,        // TYPE is A.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x04,        // RDLENGTH is 4 bytes.
+  0xc0, 0x0c,
+  0x00, 0x02,
 };
 
-const char kSamplePacketGoodbye[] = {
+const uint8 kSamplePacketGoodbye[] = {
   // Header
-  '\x00', '\x00',               // ID is zeroed out
-  '\x81', '\x80',               // Standard query response, RA, no error
-  '\x00', '\x00',               // No questions (for simplicity)
-  '\x00', '\x01',               // 2 RRs (answers)
-  '\x00', '\x00',               // 0 authority RRs
-  '\x00', '\x00',               // 0 additional RRs
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x01,               // 2 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
 
   // Answer 1
-  '\x07', '_', 'p', 'r', 'i', 'v', 'e', 't',
-  '\x04', '_', 't', 'c', 'p',
-  '\x05', 'l', 'o', 'c', 'a', 'l',
-  '\x00',
-  '\x00', '\x0c',        // TYPE is PTR.
-  '\x00', '\x01',        // CLASS is IN.
-  '\x00', '\x00',        // TTL (4 bytes) is zero;
-  '\x00', '\x00',
-  '\x00', '\x08',        // RDLENGTH is 8 bytes.
-  '\x05', 'z', 'z', 'z', 'z', 'z',
-  '\xc0', '\x0c',
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x00,        // TTL (4 bytes) is zero;
+  0x00, 0x00,
+  0x00, 0x08,        // RDLENGTH is 8 bytes.
+  0x05, 'z', 'z', 'z', 'z', 'z',
+  0xc0, 0x0c,
 };
+
+std::string MakeString(const uint8* data, unsigned size) {
+  return std::string(reinterpret_cast<const char*>(data), size);
+}
 
 class PtrRecordCopyContainer {
  public:
@@ -385,8 +389,8 @@ class MDnsTest : public ::testing::Test {
 
 
  protected:
-  void ExpectPacket(const char* packet, unsigned size);
-  void SimulatePacketReceive(const char* packet, unsigned size);
+  void ExpectPacket(const uint8* packet, unsigned size);
+  void SimulatePacketReceive(const uint8* packet, unsigned size);
 
   scoped_ptr<MDnsClientImpl> test_client_;
   IPEndPoint mdns_ipv4_endpoint_;
@@ -424,12 +428,12 @@ void MDnsTest::SetUp() {
 void MDnsTest::TearDown() {
 }
 
-void MDnsTest::SimulatePacketReceive(const char* packet, unsigned size) {
+void MDnsTest::SimulatePacketReceive(const uint8* packet, unsigned size) {
   socket_factory_->SimulateReceive(packet, size);
 }
 
-void MDnsTest::ExpectPacket(const char* packet, unsigned size) {
-  EXPECT_CALL(*socket_factory_, OnSendTo(std::string(packet, size)))
+void MDnsTest::ExpectPacket(const uint8* packet, unsigned size) {
+  EXPECT_CALL(*socket_factory_, OnSendTo(MakeString(packet, size)))
       .Times(2);
 }
 
@@ -1096,8 +1100,8 @@ class MDnsConnectionTest : public ::testing::Test {
 };
 
 TEST_F(MDnsConnectionTest, ReceiveSynchronous) {
-  std::string sample_packet =
-      std::string(kSamplePacket1, sizeof(kSamplePacket1));
+  std::string sample_packet = MakeString(kSamplePacket1,
+      sizeof(kSamplePacket1));
 
   socket_ipv6_->SetResponsePacket(sample_packet);
   EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
@@ -1113,8 +1117,8 @@ TEST_F(MDnsConnectionTest, ReceiveSynchronous) {
 }
 
 TEST_F(MDnsConnectionTest, ReceiveAsynchronous) {
-  std::string sample_packet =
-      std::string(kSamplePacket1, sizeof(kSamplePacket1));
+  std::string sample_packet = MakeString(kSamplePacket1,
+      sizeof(kSamplePacket1));
   socket_ipv6_->SetResponsePacket(sample_packet);
   EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
       .WillOnce(Return(ERR_IO_PENDING));
@@ -1131,8 +1135,8 @@ TEST_F(MDnsConnectionTest, ReceiveAsynchronous) {
 }
 
 TEST_F(MDnsConnectionTest, Send) {
-  std::string sample_packet =
-      std::string(kSamplePacket1, sizeof(kSamplePacket1));
+  std::string sample_packet = MakeString(kSamplePacket1,
+      sizeof(kSamplePacket1));
 
   scoped_refptr<IOBufferWithSize> buf(
       new IOBufferWithSize(sizeof kSamplePacket1));

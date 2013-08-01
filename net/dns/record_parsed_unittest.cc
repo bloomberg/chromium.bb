@@ -12,22 +12,22 @@
 
 namespace net {
 
-static const char kT1ResponseWithCacheFlushBit[] = {
-  '\x0a', 'c', 'o', 'd', 'e', 'r', 'e', 'v', 'i', 'e', 'w',
-  '\x08', 'c', 'h', 'r', 'o', 'm', 'i', 'u', 'm',
-  '\x03', 'o', 'r', 'g',
-  '\x00',
-  '\x00', '\x05',        // TYPE is CNAME.
-  '\x80', '\x01',        // CLASS is IN with cache flush bit set.
-  '\x00', '\x01',        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  '\x24', '\x74',
-  '\x00', '\x12',        // RDLENGTH is 18 bytes.
+static const uint8 kT1ResponseWithCacheFlushBit[] = {
+  0x0a, 'c', 'o', 'd', 'e', 'r', 'e', 'v', 'i', 'e', 'w',
+  0x08, 'c', 'h', 'r', 'o', 'm', 'i', 'u', 'm',
+  0x03, 'o', 'r', 'g',
+  0x00,
+  0x00, 0x05,        // TYPE is CNAME.
+  0x80, 0x01,        // CLASS is IN with cache flush bit set.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x12,        // RDLENGTH is 18 bytes.
   // ghs.l.google.com in DNS format.
-  '\x03', 'g', 'h', 's',
-  '\x01', 'l',
-  '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
-  '\x03', 'c', 'o', 'm',
-  '\x00'
+  0x03, 'g', 'h', 's',
+  0x01, 'l',
+  0x06, 'g', 'o', 'o', 'g', 'l', 'e',
+  0x03, 'c', 'o', 'm',
+  0x00
 };
 
 TEST(RecordParsedTest, ParseSingleRecord) {
