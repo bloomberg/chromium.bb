@@ -764,8 +764,8 @@ public:
     // Helper function to validate if front/back stencilMask and stencilFunc settings are the same.
     bool validateStencilSettings(const char* functionName);
 
-    // Helper function to validate stencil func.
-    bool validateStencilFunc(const char* functionName, GC3Denum);
+    // Helper function to validate stencil or depth func.
+    bool validateStencilOrDepthFunc(const char* functionName, GC3Denum);
 
     // Helper function for texParameterf and texParameteri.
     void texParameter(GC3Denum target, GC3Denum pname, GC3Dfloat parami, GC3Dint paramf, bool isFloat);

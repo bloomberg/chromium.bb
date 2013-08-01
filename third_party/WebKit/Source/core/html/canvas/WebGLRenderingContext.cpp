@@ -1177,7 +1177,7 @@ void WebGLRenderingContext::blendEquation(GC3Denum mode)
 
 void WebGLRenderingContext::blendEquationSeparate(GC3Denum modeRGB, GC3Denum modeAlpha)
 {
-    if (isContextLost() || !validateBlendEquation("blendEquation", modeRGB) || !validateBlendEquation("blendEquation", modeAlpha))
+    if (isContextLost() || !validateBlendEquation("blendEquationSeparate", modeRGB) || !validateBlendEquation("blendEquationSeparate", modeAlpha))
         return;
     m_context->blendEquationSeparate(modeRGB, modeAlpha);
 }
@@ -1193,7 +1193,7 @@ void WebGLRenderingContext::blendFunc(GC3Denum sfactor, GC3Denum dfactor)
 void WebGLRenderingContext::blendFuncSeparate(GC3Denum srcRGB, GC3Denum dstRGB, GC3Denum srcAlpha, GC3Denum dstAlpha)
 {
     // Note: Alpha does not have the same restrictions as RGB.
-    if (isContextLost() || !validateBlendFuncFactors("blendFunc", srcRGB, dstRGB))
+    if (isContextLost() || !validateBlendFuncFactors("blendFuncSeparate", srcRGB, dstRGB))
         return;
     m_context->blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
@@ -1595,6 +1595,15 @@ void WebGLRenderingContext::cullFace(GC3Denum mode)
 {
     if (isContextLost())
         return;
+    switch (mode) {
+    case GraphicsContext3D::FRONT_AND_BACK:
+    case GraphicsContext3D::FRONT:
+    case GraphicsContext3D::BACK:
+        break;
+    default:
+        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "cullFace", "invalid mode");
+        return;
+    }
     m_context->cullFace(mode);
 }
 
@@ -1677,6 +1686,8 @@ void WebGLRenderingContext::deleteTexture(WebGLTexture* texture)
 void WebGLRenderingContext::depthFunc(GC3Denum func)
 {
     if (isContextLost())
+        return;
+    if (!validateStencilOrDepthFunc("depthFunc", func))
         return;
     m_context->depthFunc(func);
 }
@@ -1967,6 +1978,14 @@ void WebGLRenderingContext::frontFace(GC3Denum mode)
 {
     if (isContextLost())
         return;
+    switch (mode) {
+    case GraphicsContext3D::CW:
+    case GraphicsContext3D::CCW:
+        break;
+    default:
+        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "frontFace", "invalid mode");
+        return;
+    }
     m_context->frontFace(mode);
 }
 
@@ -3173,7 +3192,7 @@ void WebGLRenderingContext::stencilFunc(GC3Denum func, GC3Dint ref, GC3Duint mas
 {
     if (isContextLost())
         return;
-    if (!validateStencilFunc("stencilFunc", func))
+    if (!validateStencilOrDepthFunc("stencilFunc", func))
         return;
     m_stencilFuncRef = ref;
     m_stencilFuncRefBack = ref;
@@ -3186,7 +3205,7 @@ void WebGLRenderingContext::stencilFuncSeparate(GC3Denum face, GC3Denum func, GC
 {
     if (isContextLost())
         return;
-    if (!validateStencilFunc("stencilFuncSeparate", func))
+    if (!validateStencilOrDepthFunc("stencilFuncSeparate", func))
         return;
     switch (face) {
     case GraphicsContext3D::FRONT_AND_BACK:
@@ -4938,7 +4957,7 @@ bool WebGLRenderingContext::validateStencilSettings(const char* functionName)
     return true;
 }
 
-bool WebGLRenderingContext::validateStencilFunc(const char* functionName, GC3Denum func)
+bool WebGLRenderingContext::validateStencilOrDepthFunc(const char* functionName, GC3Denum func)
 {
     switch (func) {
     case GraphicsContext3D::NEVER:
