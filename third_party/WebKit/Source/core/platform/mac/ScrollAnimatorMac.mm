@@ -63,15 +63,16 @@ static bool supportsContentAreaScrolledInDirection()
     return globalSupportsContentAreaScrolledInDirection;
 }
 
-static ScrollbarThemeMac* macScrollbarTheme()
+static ScrollbarThemeMacOverlayAPI* macOverlayScrollbarTheme()
 {
+    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(isScrollbarOverlayAPIAvailable());
     ScrollbarTheme* scrollbarTheme = ScrollbarTheme::theme();
-    return !scrollbarTheme->isMockTheme() ? static_cast<ScrollbarThemeMac*>(scrollbarTheme) : 0;
+    return !scrollbarTheme->isMockTheme() ? static_cast<ScrollbarThemeMacOverlayAPI*>(scrollbarTheme) : 0;
 }
 
 static ScrollbarPainter scrollbarPainterForScrollbar(Scrollbar* scrollbar)
 {
-    if (ScrollbarThemeMac* scrollbarTheme = macScrollbarTheme())
+    if (ScrollbarThemeMacOverlayAPI* scrollbarTheme = macOverlayScrollbarTheme())
         return scrollbarTheme->painterForScrollbar(scrollbar);
 
     return nil;
@@ -1189,7 +1190,7 @@ void ScrollAnimatorMac::updateScrollerStyle()
         return;
     }
 
-    ScrollbarThemeMac* macTheme = macScrollbarTheme();
+    ScrollbarThemeMacOverlayAPI* macTheme = macOverlayScrollbarTheme();
     if (!macTheme) {
         m_needsScrollerStyleUpdate = false;
         return;
