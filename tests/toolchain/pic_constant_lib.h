@@ -8,3 +8,4 @@
 
 extern const char *g(const char *, size_t);
 extern const char *i(void);
+extern void sprint_nybble(int i, char s[4]);

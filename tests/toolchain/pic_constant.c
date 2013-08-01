@@ -16,6 +16,16 @@ const char *g(const char *s, size_t n) {
 }
 
 int main(void) {
+  int result = 0;
+
   const char *s = i();
-  return strcmp(s, "string constant") == 0 ? 0 : 1;
+  if (strcmp(s, "string constant") != 0)
+    result = 1;
+
+  char buf[4];
+  sprint_nybble(9, buf);
+  if (memcmp(buf, "1001", 4) != 0)
+    result = 1;
+
+  return result;
 }
