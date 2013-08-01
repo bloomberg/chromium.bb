@@ -69,6 +69,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContentSecurityPolicy.h"
+#include "core/page/ContentSecurityPolicyResponseHeaders.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"

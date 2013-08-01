@@ -1130,6 +1130,7 @@
             'page/Chrome.cpp',
             'page/Console.cpp',
             'page/ContentSecurityPolicy.cpp',
+            'page/ContentSecurityPolicyResponseHeaders.cpp',
             'page/ContextMenuController.cpp',
             'page/ContextMenuProvider.h',
             'page/CreateWindow.cpp',

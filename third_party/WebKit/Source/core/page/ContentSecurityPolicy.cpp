@@ -37,6 +37,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/PingLoader.h"
+#include "core/page/ContentSecurityPolicyResponseHeaders.h"
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/JSONValues.h"
@@ -163,14 +164,6 @@ UseCounter::Feature getUseCounterType(ContentSecurityPolicy::HeaderType type)
 }
 
 } // namespace
-
-ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(const ResourceResponse& response)
-    : m_contentSecuitryPolicy(response.httpHeaderField("Content-Security-Policy"))
-    , m_contentSecurityPolicyReportOnly(response.httpHeaderField("Content-Security-Policy-Report-Only"))
-    , m_xWebKitCSP(response.httpHeaderField("X-WebKit-CSP"))
-    , m_xWebKitCSPReportOnly(response.httpHeaderField("X-WebKit-CSP-Report-Only"))
-{
-}
 
 static bool skipExactly(const UChar*& position, const UChar* end, UChar delimiter)
 {

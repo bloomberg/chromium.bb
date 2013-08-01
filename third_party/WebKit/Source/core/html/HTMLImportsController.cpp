@@ -38,7 +38,7 @@
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/loader/cache/ResourceFetcher.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/ContentSecurityPolicyResponseHeaders.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
