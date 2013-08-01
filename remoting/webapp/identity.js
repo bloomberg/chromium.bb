@@ -69,32 +69,14 @@ remoting.Identity.prototype.callWithToken = function(onOk, onError) {
 remoting.Identity.prototype.getEmail = function(onOk, onError) {
   /** @type {remoting.Identity} */
   var that = this;
-  /** @param {XMLHttpRequest} xhr The XHR response. */
-  var onResponse = function(xhr) {
-    var email = null;
-    if (xhr.status == 200) {
-      email = xhr.responseText.split('&')[0].split('=')[1];
-      that.email_ = email;
-      onOk(email);
-      return;
-    }
-    console.error('Unable to get email address:', xhr.status, xhr);
-    if (xhr.status == 401) {
-      onError(remoting.Error.AUTHENTICATION_FAILED);
-    } else {
-      onError(that.interpretUnexpectedXhrStatus_(xhr.status));
-    }
+  /** @param {string} email */
+  var onResponse = function(email) {
+    that.email_ = email;
+    onOk(email);
   };
 
-  /** @param {string} token The access token. */
-  var getEmailFromToken = function(token) {
-    var headers = { 'Authorization': 'OAuth ' + token };
-    // TODO(ajwong): Update to new v2 API.
-    remoting.xhr.get('https://www.googleapis.com/userinfo/email',
-                     onResponse, '', headers);
-  };
-
-  this.callWithToken(getEmailFromToken, onError);
+  this.callWithToken(
+      remoting.OAuth2Api.getEmail.bind(null, onResponse, onError), onError);
 };
 
 /**
@@ -105,30 +87,6 @@ remoting.Identity.prototype.getEmail = function(onOk, onError) {
  */
 remoting.Identity.prototype.getCachedEmail = function() {
   return this.email_;
-};
-
-/**
- * Interprets unexpected HTTP response codes to authentication XMLHttpRequests.
- * The caller should handle the usual expected responses (200, 400) separately.
- *
- * @param {number} xhrStatus Status (HTTP response code) of the XMLHttpRequest.
- * @return {remoting.Error} An error code to be raised.
- * @private
- */
-remoting.Identity.prototype.interpretUnexpectedXhrStatus_ = function(
-    xhrStatus) {
-  // Return AUTHENTICATION_FAILED by default, so that the user can try to
-  // recover from an unexpected failure by signing in again.
-  /** @type {remoting.Error} */
-  var error = remoting.Error.AUTHENTICATION_FAILED;
-  if (xhrStatus == 502 || xhrStatus == 503) {
-    error = remoting.Error.SERVICE_UNAVAILABLE;
-  } else if (xhrStatus == 0) {
-    error = remoting.Error.NETWORK_FAILURE;
-  } else {
-    console.warn('Unexpected authentication response code: ' + xhrStatus);
-  }
-  return error;
 };
 
 /**

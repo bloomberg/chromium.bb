@@ -171,6 +171,7 @@
       'webapp/log_to_server.js',
       'webapp/menu_button.js',
       'webapp/oauth2.js',
+      'webapp/oauth2_api.js',
       'webapp/oauth2_callback.js',
       'webapp/paired_client_manager.js',
       'webapp/plugin_settings.js',
