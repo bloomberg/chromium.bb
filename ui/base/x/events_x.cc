@@ -311,7 +311,10 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
         return ET_MOUSE_DRAGGED;
       return ET_MOUSE_MOVED;
     case EnterNotify:
-      return ET_MOUSE_ENTERED;
+      // The standard on Windows is to send a MouseMove event when the mouse
+      // first enters a window instead of sending a special mouse enter event.
+      // To be consistent we follow the same style.
+      return ET_MOUSE_MOVED;
     case LeaveNotify:
       return ET_MOUSE_EXITED;
     case GenericEvent: {

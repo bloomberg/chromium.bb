@@ -217,7 +217,10 @@ TEST(EventsXTest, EnterLeaveEvent) {
   event.xcrossing.x_root = 110;
   event.xcrossing.y_root = 120;
 
-  EXPECT_EQ(ui::ET_MOUSE_ENTERED, ui::EventTypeFromNative(&event));
+  // Mouse enter events are converted to mouse move events to be consistent with
+  // the way views handle mouse enter. See comments for EnterNotify case in
+  // ui::EventTypeFromNative for more details.
+  EXPECT_EQ(ui::ET_MOUSE_MOVED, ui::EventTypeFromNative(&event));
   EXPECT_EQ("10,20", ui::EventLocationFromNative(&event).ToString());
   EXPECT_EQ("110,120", ui::EventSystemLocationFromNative(&event).ToString());
 
