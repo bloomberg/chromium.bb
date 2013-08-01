@@ -111,7 +111,6 @@ void InspectorProfilerAgent::addStartProfilingMessageToConsole(const String& tit
 PassRefPtr<TypeBuilder::Profiler::ProfileHeader> InspectorProfilerAgent::createProfileHeader(const ScriptProfile& profile)
 {
     return TypeBuilder::Profiler::ProfileHeader::create()
-        .setTypeId(TypeBuilder::Profiler::ProfileHeader::TypeId::CPU)
         .setUid(profile.uid())
         .setTitle(profile.title())
         .release();
@@ -161,9 +160,9 @@ void InspectorProfilerAgent::getCPUProfile(ErrorString* errorString, int rawUid,
         *errorString = "Profile wasn't found";
         return;
     }
-    profileObject = TypeBuilder::Profiler::CPUProfile::create();
-    profileObject->setHead(it->value->buildInspectorObjectForHead());
-    profileObject->setIdleTime(it->value->idleTime());
+    profileObject = TypeBuilder::Profiler::CPUProfile::create()
+        .setHead(it->value->buildInspectorObjectForHead())
+        .setIdleTime(it->value->idleTime());
     profileObject->setSamples(it->value->buildInspectorObjectForSamples());
 }
 
