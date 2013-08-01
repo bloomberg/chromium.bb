@@ -614,7 +614,7 @@
                          'stevenjb+watch@chromium.org',
                          'nkostylev+watch@chromium.org'],
     'browser_components': ['browser-components-watch@chromium.org'],
-    'browser_compositor': ['backer@chromium.org', 'vollick@chromium.org',
+    'browser_compositor': ['vollick@chromium.org',
                            'piman+watch@chromium.org'],
     'browser_resources': ['arv+watch@chromium.org'],
     'browsing_data': ['markusheintz@chromium.org'],
