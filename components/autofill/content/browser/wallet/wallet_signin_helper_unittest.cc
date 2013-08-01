@@ -43,9 +43,11 @@ const char kGetTokenPairValidResponse[] =
     "}";
 
 const char kGetAccountInfoValidResponseFormat[] =
-    "{"
-    "  \"email\": \"%s\""
-    "}";
+    "{\"user_info\":["
+    "  {"
+    "    \"email\": \"%s\""
+    "  }"
+    "]}";
 
 class MockWalletSigninHelperDelegate : public WalletSigninHelperDelegate {
  public:

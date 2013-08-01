@@ -32,7 +32,7 @@ namespace {
 
 // Toolbar::GetAccountInfo API URL (JSON).
 const char kGetAccountInfoUrlFormat[] =
-    "https://clients1.google.com/tbproxy/getaccountinfo?key=%d&rv=2";
+    "https://clients1.google.com/tbproxy/getaccountinfo?key=%d&rv=2&requestor=chrome";
 
 const char kWalletCookieName[] = "gdtoken";
 
@@ -287,8 +287,23 @@ bool WalletSigninHelper::ParseGetAccountInfoResponse(
     return false;
   }
 
-  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
-  if (!dict->GetStringWithoutPathExpansion("email", email)) {
+  DictionaryValue* dict = static_cast<base::DictionaryValue*>(value.get());
+  base::ListValue* user_info;
+  if (!dict->GetListWithoutPathExpansion("user_info", &user_info)) {
+    DVLOG(1) << "no user_info in JSON response";
+    return false;
+  }
+
+  // |user_info| will contain each signed in user in the cookie jar.
+  // We only support the first user at the moment. http://crbug.com/259543
+  // will change that.
+  base::DictionaryValue* user_info_detail;
+  if (!user_info->GetDictionary(0, &user_info_detail)) {
+    DVLOG(1) << "empty list in JSON response";
+    return false;
+  }
+
+  if (!user_info_detail->GetStringWithoutPathExpansion("email", email)) {
     DVLOG(1) << "no email in JSON response";
     return false;
   }
