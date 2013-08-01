@@ -129,7 +129,24 @@ VolumeListModel.prototype.indexOf = function(item, opt_fromIndex) {
 };
 
 /**
+ * A volume item.
+ * @constructor
+ * @extends {HTMLLIElement}
+ */
+var VolumeItem = cr.ui.define('li');
+
+VolumeItem.prototype = {
+  __proto__: HTMLLIElement.prototype,
+
+  decorate: function() {
+    // Nothing to do.
+  },
+};
+
+/**
  * A volume list.
+ * @constructor
+ * @extends {cr.ui.List}
  */
 function VolumeList() {
 }
@@ -195,11 +212,13 @@ VolumeList.prototype.decorate = function(directoryModel, pinnedFolderModel) {
  * Creates an element of a volume. This method is called from cr.ui.List
  * internally.
  * @param {string} path Path of the directory to be rendered.
- * @return {HTMLElement} Rendered element.
+ * @return {VolumeItem} Rendered element.
  * @private
  */
 VolumeList.prototype.renderRoot_ = function(path) {
-  var li = cr.doc.createElement('li');
+  var li = new VolumeItem;
+  // TODO(yoshiki): Move the following initialization code to the constructor
+  // of VolumeItem.
   li.className = 'root-item';
   li.setAttribute('role', 'option');
   var dm = this.directoryModel_;

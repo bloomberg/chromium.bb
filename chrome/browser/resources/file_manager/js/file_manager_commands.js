@@ -9,21 +9,32 @@ var CommandUtil = {};
 /**
  * Extracts path on which command event was dispatched.
  *
- * @param {Event} event Command event for which to retrieve root to operate on.
- * @param {DirectoryTree|VolumeList|cr.ui.List} element Element to extract a
- *     path from.
+ * @param {DirectoryTree|DirectoryItem|VolumeList|HTMLLIElement|cr.ui.List}
+ *     element Directory to extract a path from.
  * @return {?string} Path of the found node.
  */
-CommandUtil.getCommandPath = function(event, element) {
+CommandUtil.getCommandPath = function(element) {
   if (element instanceof VolumeList) {
-    var result =
-        element.dataModel.item(element.getIndexOfListItem(event.target)) ||
-        element.selectedItem;
-    return result;
+    // element is a VolumeList.
+    return element.selectedItem;
+  } else if (element instanceof VolumeItem) {
+    // element is a subitem of VolumeList.
+    var volumeList = element.parentElement;
+    var index = volumeList.getIndexOfListItem(element);
+    return (index != -1) ? volumeList.dataModel.item(index) : null;
   } else if (element instanceof DirectoryTree) {
+    // element is a DirectoryTree.
     var item = element.selectedItem;
     return item && item.fullPath;
+  } else if (element instanceof DirectoryItem) {
+    // element is a sub item in DirectoryTree.
+
+    // DirectoryItem.fullPath is set on initialization, but entry is lazily.
+    // We may use fullPath just in case that the entry has not been set yet.
+    return element.entry && element.entry.fullPath ||
+           element.fullPath;
   } else if (cr.ui.List) {
+    // element is a normal List (eg. the file list on the right panel).
     var entry = element.selectedItem;
     return entry && entry.fullPath;
   } else {
@@ -33,12 +44,11 @@ CommandUtil.getCommandPath = function(event, element) {
 };
 
 /**
- * @param {Event} event Command event for which to retrieve root type.
  * @param {VolumeList} volumeList Volume list to extract root node.
  * @return {?RootType} Type of the found root.
  */
-CommandUtil.getCommandRootType = function(event, volumeList) {
-  var root = CommandUtil.getCommandPath(event, volumeList);
+CommandUtil.getCommandRootType = function(volumeList) {
+  var root = CommandUtil.getCommandPath(volumeList);
   return root && PathUtil.isRootPath(root) && PathUtil.getRootType(root);
 };
 
@@ -164,7 +174,7 @@ Commands.unmountCommand = {
    * @param {VolumeList} volumeList Target volume list.
    */
   execute: function(event, volumeList, fileManager) {
-    var root = CommandUtil.getCommandPath(event, volumeList);
+    var root = CommandUtil.getCommandPath(volumeList);
     if (root)
       fileManager.unmountVolume(PathUtil.getRootPath(root));
   },
@@ -173,7 +183,7 @@ Commands.unmountCommand = {
    * @param {VolumeList} volumeList Target volume list.
    */
   canExecute: function(event, volumeList) {
-    var rootType = CommandUtil.getCommandRootType(event, volumeList);
+    var rootType = CommandUtil.getCommandRootType(volumeList);
 
     event.canExecute = (rootType == RootType.ARCHIVE ||
                         rootType == RootType.REMOVABLE);
@@ -194,7 +204,7 @@ Commands.formatCommand = {
    * @param {FileManager} fileManager The file manager instance.
    */
   execute: function(event, volumeList, fileManager) {
-    var root = CommandUtil.getCommandPath(event, volumeList);
+    var root = CommandUtil.getCommandPath(volumeList);
 
     if (root) {
       var url = util.makeFilesystemUrl(PathUtil.getRootPath(root));
@@ -210,7 +220,7 @@ Commands.formatCommand = {
    * @param {DirectoryModel} directoryModel The directory model instance.
    */
   canExecute: function(event, volumeList, fileManager, directoryModel) {
-    var root = CommandUtil.getCommandPath(event, volumeList);
+    var root = CommandUtil.getCommandPath(volumeList);
     var removable = root &&
                     PathUtil.getRootType(root) == RootType.REMOVABLE;
     var isReadOnly = root && directoryModel.isPathReadOnly(root);
@@ -228,7 +238,7 @@ Commands.importCommand = {
    * @param {VolumeList} volumeList Target volume list.
    */
   execute: function(event, volumeList) {
-    var root = CommandUtil.getCommandPath(event, volumeList);
+    var root = CommandUtil.getCommandPath(volumeList);
     if (!root)
       return;
 
@@ -239,7 +249,7 @@ Commands.importCommand = {
    * @param {VolumeList} volumeList Target volume list.
    */
   canExecute: function(event, volumeList) {
-    var rootType = CommandUtil.getCommandRootType(event, volumeList);
+    var rootType = CommandUtil.getCommandRootType(volumeList);
     event.canExecute = (rootType != RootType.DRIVE);
   }
 };
@@ -556,26 +566,38 @@ Commands.createFolderShortcutCommand = {
    * @param {FileManager} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    var entries = fileManager.getSelection().entries;
-    fileManager.createFolderShortcut(entries[0].fullPath);
+    var path = CommandUtil.getCommandPath(event.target);
+    if (path)
+      fileManager.createFolderShortcut(path);
   },
+
   /**
    * @param {Event} event Command event.
    * @param {FileManager} fileManager The file manager instance.
    */
   canExecute: function(event, fileManager) {
+    var target = event.target;
     // TODO(yoshiki): remove this after launching folder shortcuts feature.
-    if (!fileManager.isFolderShortcutsEnabled()) {
+    if (!fileManager.isFolderShortcutsEnabled() ||
+        !target instanceof VolumeItem && !target instanceof DirectoryItem) {
       event.command.setHidden(true);
       return;
     }
 
-    var selection = fileManager.getSelection();
-    var selectionEntries = selection.entries;
-    var onlyOneFolderSelected =
-        selection && selection.directoryCount == 1 && selection.fileCount == 0;
-    event.canExecute = onlyOneFolderSelected &&
-        !fileManager.folderShortcutExists(selectionEntries[0].fullPath);
+    var path = CommandUtil.getCommandPath(event.target);
+    var folderShortcutExists = path && fileManager.folderShortcutExists(path);
+
+    var onlyOneFolderSelected = true;
+    // Only on list, user can select multiple files. The command is enabled only
+    // when a single file is selected.
+    if (event.target instanceof cr.ui.List) {
+      var items = event.target.selectedItems;
+      onlyOneFolderSelected = (items.length == 1 && items[0].isDirectory);
+    }
+
+    var eligible = path && PathUtil.isEligibleForFolderShortcut(path);
+    event.canExecute =
+        eligible && onlyOneFolderSelected && !folderShortcutExists;
     event.command.setHidden(!onlyOneFolderSelected);
   }
 };
@@ -587,29 +609,30 @@ Commands.removeFolderShortcutCommand = {
   /**
    * @param {Event} event Command event.
    * @param {FileManager} fileManager The file manager instance.
-   * @param {VolumeList} volumeList Volume list to extract the node from.
    */
-  execute: function(event, fileManager, volumeList) {
-    var path = CommandUtil.getCommandPath(event, volumeList);
-
+  execute: function(event, fileManager) {
+    var path = CommandUtil.getCommandPath(event.target);
     if (path)
       fileManager.removeFolderShortcut(path);
   },
+
   /**
    * @param {Event} event Command event.
    * @param {FileManager} fileManager The file manager instance.
-   * @param {VolumeList} volumeList Volume list to extract the node from.
    */
-  canExecute: function(event, fileManager, volumeList) {
+  canExecute: function(event, fileManager) {
+    var target = event.target;
     // TODO(yoshiki): remove this after launching folder shortcut feature.
-    if (!fileManager.isFolderShortcutsEnabled()) {
+    if (!fileManager.isFolderShortcutsEnabled() ||
+        !target instanceof VolumeItem && !target instanceof DirectoryItem) {
       event.command.setHidden(true);
       return;
     }
 
-    var path = CommandUtil.getCommandPath(event, volumeList);
+    var path = CommandUtil.getCommandPath(target);
+    var eligible = path && PathUtil.isEligibleForFolderShortcut(path);
     var isShortcut = path && fileManager.folderShortcutExists(path);
-    event.canExecute = isShortcut;
+    event.canExecute = isShortcut && eligible;
     event.command.setHidden(!isShortcut);
   }
 };

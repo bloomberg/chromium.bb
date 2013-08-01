@@ -44,20 +44,20 @@ DirectoryTreeUtil.updateChangedDirectoryItem = function(
  *     created items.
  * @param {function(number): DirectoryEntry} iterator Function which returns
  *     the n-th Entry in the directory.
- * @param {DirectoryModel} directoryModel Current DirectoryModel.
+ * @param {DirectoryTree} tree Current directory tree, which contains this item.
  * @param {boolean} recursive True if the all visible sub-directories are
  *     updated recursively including left arrows. If false, the update walks
  *     only immediate child directories without arrows.
  */
 DirectoryTreeUtil.updateSubElementsFromList = function(
-    parentElement, iterator, directoryModel, recursive) {
+    parentElement, iterator, tree, recursive) {
   var index = 0;
   while (iterator(index)) {
     var currentEntry = iterator(index);
     var currentElement = parentElement.items[index];
 
     if (index >= parentElement.items.length) {
-      var item = new DirectoryItem(currentEntry, parentElement, directoryModel);
+      var item = new DirectoryItem(currentEntry, parentElement, tree);
       parentElement.add(item);
       index++;
     } else if (currentEntry.fullPath == currentElement.fullPath) {
@@ -66,7 +66,7 @@ DirectoryTreeUtil.updateSubElementsFromList = function(
 
       index++;
     } else if (currentEntry.fullPath < currentElement.fullPath) {
-      var item = new DirectoryItem(currentEntry, parentElement, directoryModel);
+      var item = new DirectoryItem(currentEntry, parentElement, tree);
       parentElement.addAt(item, index);
       index++;
     } else if (currentEntry.fullPath > currentElement.fullPath) {
@@ -241,13 +241,13 @@ DirectoryTreeUtil.shouldHideTree = function(path) {
  *
  * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
  * @param {DirectoryItem|DirectoryTree} parentDirItem Parent of this item.
- * @param {DirectoryModel} directoryModel Current DirectoryModel.
+ * @param {DirectoryTree} tree Current tree, which contains this item.
  * @extends {cr.ui.TreeItem}
  * @constructor
  */
-function DirectoryItem(dirEntry, parentDirItem, directoryModel) {
+function DirectoryItem(dirEntry, parentDirItem, tree) {
   var item = cr.doc.createElement('div');
-  DirectoryItem.decorate(item, dirEntry, parentDirItem, directoryModel);
+  DirectoryItem.decorate(item, dirEntry, parentDirItem, tree);
   return item;
 }
 
@@ -255,13 +255,13 @@ function DirectoryItem(dirEntry, parentDirItem, directoryModel) {
  * @param {HTMLElement} el Element to be DirectoryItem.
  * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
  * @param {DirectoryItem|DirectoryTree} parentDirItem Parent of this item.
- * @param {DirectoryModel} directoryModel Current DirectoryModel.
+ * @param {DirectoryTree} tree Current tree, which contains this item.
  */
 DirectoryItem.decorate =
-    function(el, dirEntry, parentDirItem, directoryModel) {
+    function(el, dirEntry, parentDirItem, tree) {
   el.__proto__ = DirectoryItem.prototype;
   (/** @type {DirectoryItem} */ el).decorate(
-      dirEntry, parentDirItem, directoryModel);
+      dirEntry, parentDirItem, tree);
 };
 
 DirectoryItem.prototype = {
@@ -290,10 +290,10 @@ DirectoryItem.prototype = {
 /**
  * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
  * @param {DirectoryItem|DirectoryTree} parentDirItem Parent of this item.
- * @param {DirectoryModel} directoryModel Current DirectoryModel.
+ * @param {DirectoryTree} tree Current tree, which contains this item.
  */
 DirectoryItem.prototype.decorate = function(
-    dirEntry, parentDirItem, directoryModel) {
+    dirEntry, parentDirItem, tree) {
   var path = dirEntry.fullPath;
   var label;
   label = dirEntry.label ? dirEntry.label : dirEntry.name;
@@ -309,7 +309,8 @@ DirectoryItem.prototype.decorate = function(
       '<div class="tree-children"></div>';
   this.setAttribute('role', 'treeitem');
 
-  this.directoryModel_ = directoryModel;
+  this.parentTree_ = tree;
+  this.directoryModel_ = tree.directoryModel;
   this.parent_ = parentDirItem;
   this.label = label;
   this.fullPath = path;
@@ -340,6 +341,13 @@ DirectoryItem.prototype.decorate = function(
 
         volumeManager.unmount(path, function() {}, function() {});
       }.bind(this));
+
+  if (this.parentTree_.contextMenuForSubitems)
+    this.setContextMenu(this.parentTree_.contextMenuForSubitems);
+  // Adds handler for future change.
+  this.parentTree_.addEventListener(
+      'contextMenuForSubitemsChange',
+      function(e) { this.setContextMenu(e.newValue); }.bind(this));
 
   if (parentDirItem.expanded)
     this.updateSubDirectories(false /* recursive */);
@@ -414,7 +422,7 @@ DirectoryItem.prototype.redrawSubDirectoryList_ = function(recursive) {
   DirectoryTreeUtil.updateSubElementsFromList(
       this,
       function(i) { return this.entries_[i]; }.bind(this),
-      this.directoryModel_,
+      this.parentTree_,
       recursive);
 };
 
@@ -450,6 +458,15 @@ DirectoryItem.prototype.doDropTargetAction = function() {
 DirectoryItem.prototype.doAction = function() {
   if (this.fullPath != this.directoryModel_.getCurrentDirPath())
     this.directoryModel_.changeDirectory(this.fullPath);
+};
+
+/**
+ * Sets the context menu for directory tree.
+ * @param {cr.ui.Menu} menu Menu to be set.
+ */
+DirectoryItem.prototype.setContextMenu = function(menu) {
+  if (this.entry && PathUtil.isEligibleForFolderShortcut(this.entry.fullPath))
+    cr.ui.contextMenuHandler.setContextMenu(this, menu);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -492,8 +509,14 @@ DirectoryTree.prototype = {
    **/
   get entry() {
       return this.dirEntry_;
+  },
+
+  get directoryModel() {
+    return this.directoryModel_;
   }
 };
+
+cr.defineProperty(DirectoryTree, 'contextMenuForSubitems', cr.PropertyKind.JS);
 
 /**
  * Decorates an element.
@@ -639,7 +662,7 @@ DirectoryTree.prototype.redraw = function(recursive) {
   DirectoryTreeUtil.updateSubElementsFromList(
       this,
       function(i) { return this.entries_[i]; }.bind(this),
-      this.directoryModel_,
+      this,
       recursive);
 };
 

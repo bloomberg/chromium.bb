@@ -332,3 +332,14 @@ PathUtil.getFolderLabel = function(directoryPath) {
 
   return directoryPath;
 };
+
+/**
+ * Returns if the given path can be a target path of folder shortcut.
+ *
+ * @param {string} directoryPath Diretcoty path to be checked.
+ * @return {boolean} True if the path can be a target path of the shortcut.
+ */
+PathUtil.isEligibleForFolderShortcut = function(directoryPath) {
+  return !PathUtil.isSpecialSearchRoot(directoryPath) &&
+         !PathUtil.isRootPath(directoryPath);
+};

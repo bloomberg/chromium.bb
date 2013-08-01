@@ -483,8 +483,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.rootsContextMenu_ =
         this.dialogDom_.querySelector('#roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
-
     this.volumeList_.setContextMenu(this.rootsContextMenu_);
+
+    this.directoryTreeContextMenu_ =
+        this.dialogDom_.querySelector('#directory-tree-context-menu');
+    cr.ui.Menu.decorate(this.directoryTreeContextMenu_);
+    this.directoryTree_.contextMenuForSubitems = this.directoryTreeContextMenu_;
 
     this.textContextMenu_ =
         this.dialogDom_.querySelector('#text-context-menu');
@@ -617,8 +621,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'create-folder-shortcut', Commands.createFolderShortcutCommand, this);
 
     CommandUtil.registerCommand(this.dialogContainer_,
-        'remove-folder-shortcut', Commands.removeFolderShortcutCommand, this,
-        this.volumeList_);
+        'remove-folder-shortcut', Commands.removeFolderShortcutCommand, this);
 
     CommandUtil.registerCommand(this.dialogContainer_, 'search',
         Commands.searchCommand, this,
