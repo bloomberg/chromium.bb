@@ -287,9 +287,14 @@ void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& 
         dirAttributeChanged(value);
     else if (name == tabindexAttr) {
         int tabindex = 0;
-        if (value.isEmpty())
+        if (value.isEmpty()) {
             clearTabIndexExplicitlyIfNeeded();
-        else if (parseHTMLInteger(value, tabindex)) {
+            if (treeScope()->adjustedFocusedElement() == this) {
+                // We might want to call blur(), but it's dangerous to dispatch
+                // events here.
+                document()->setNeedsFocusedElementCheck();
+            }
+        } else if (parseHTMLInteger(value, tabindex)) {
             // Clamp tabindex to the range of 'short' to match Firefox's behavior.
             setTabIndexExplicitly(max(static_cast<int>(std::numeric_limits<short>::min()), min(tabindex, static_cast<int>(std::numeric_limits<short>::max()))));
         }

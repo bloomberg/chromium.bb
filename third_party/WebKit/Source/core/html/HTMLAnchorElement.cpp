@@ -282,8 +282,14 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicSt
     if (name == hrefAttr) {
         bool wasLink = isLink();
         setIsLink(!value.isNull());
-        if (wasLink != isLink())
+        if (wasLink != isLink()) {
             didAffectSelector(AffectedSelectorLink | AffectedSelectorVisited | AffectedSelectorEnabled);
+            if (wasLink && treeScope()->adjustedFocusedElement() == this) {
+                // We might want to call blur(), but it's dangerous to dispatch
+                // events here.
+                document()->setNeedsFocusedElementCheck();
+            }
+        }
         if (isLink()) {
             String parsedURL = stripLeadingAndTrailingHTMLSpaces(value);
             if (document()->isDNSPrefetchEnabled()) {

@@ -629,6 +629,7 @@ public:
     Element* focusedElement() const { return m_focusedElement.get(); }
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
+    void setNeedsFocusedElementCheck();
     void didRunCheckFocusedElementTask() { m_didPostCheckFocusedElementTask = false; }
 
     // The m_ignoreAutofocus flag specifies whether or not the document has been changed by the user enough

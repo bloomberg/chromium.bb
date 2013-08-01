@@ -354,8 +354,10 @@ private:
         Element* element = document->focusedElement();
         if (!element)
             return;
-        if (document->childNeedsStyleRecalc())
+        if (document->childNeedsStyleRecalc()) {
+            document->setNeedsFocusedElementCheck();
             return;
+        }
         if (element->renderer() && element->renderer()->needsLayout())
             return;
         if (!element->isFocusable())
@@ -1717,11 +1719,16 @@ void Document::updateLayout()
     if (frameView && renderer() && (frameView->layoutPending() || renderer()->needsLayout()))
         frameView->layout();
 
+    setNeedsFocusedElementCheck();
+}
+
+void Document::setNeedsFocusedElementCheck()
+{
     // FIXME: Using a Task doesn't look a good idea.
-    if (m_focusedElement && !m_didPostCheckFocusedElementTask) {
-        postTask(CheckFocusedElementTask::create());
-        m_didPostCheckFocusedElementTask = true;
-    }
+    if (!m_focusedElement || m_didPostCheckFocusedElementTask)
+        return;
+    postTask(CheckFocusedElementTask::create());
+    m_didPostCheckFocusedElementTask = true;
 }
 
 // FIXME: This is a bad idea and needs to be removed eventually.
