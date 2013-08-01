@@ -2468,6 +2468,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.PolicyInvalidationsStartupTime"
+    units="milliseconds">
+  <summary>
+    Time since startup of the cloud policy code until the policy invalidation
+    service first reported its online status.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.PolicyLoadStatus" enum="EnterprisePolicyLoadStatus">
   <summary>
     Load status from the policy loaders which pull policy settings from the
