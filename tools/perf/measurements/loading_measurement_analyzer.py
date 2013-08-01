@@ -19,6 +19,7 @@ import csv
 import heapq
 import optparse
 import os
+import re
 import sys
 
 
@@ -37,6 +38,7 @@ class LoadingMeasurementAnalyzer(object):
     if options.rank_csv_file:
       self._ParseRankCsvFile(os.path.expanduser(options.rank_csv_file))
     self._ParseInputFile(input_file, options)
+    self._display_zeros = options.display_zeros
 
   def _ParseInputFile(self, input_file, options):
     with open(input_file, 'r') as csvfile:
@@ -85,51 +87,69 @@ class LoadingMeasurementAnalyzer(object):
       return self.ranks[url]
     return len(self.ranks)
 
-  def PrintSummary(self):
+  def PrintSummary(self, stdout):
     sum_totals = {}
+    units = None
     for key, values in self.totals.iteritems():
+      m = re.match('.* [(](.*)[)]', key)
+      assert m, 'All keys should have units.'
+      assert not units or units == m.group(1), 'All units should be the same.'
+      units = m.group(1)
       sum_totals[key] = sum([v[0] for v in values])
     total_cpu_time = sum([v[0] for v in self.cpu_times])
     total_page_load_time = sum([v[0] for v in self.load_times])
 
-    print
-    print 'Total URLs: ', self.num_rows_parsed
-    print 'Total CPU time: %ds' % int(round(total_cpu_time / 1000))
-    print 'Total page load time: %ds' % int(round(total_page_load_time / 1000))
-    print 'Average CPU time: %dms' % int(round(
-        total_cpu_time / self.num_rows_parsed))
-    print 'Average page load time: %dms' % int(round(
+    print >> stdout
+    print >> stdout, 'Total URLs:', self.num_rows_parsed
+    print >> stdout, 'Total page load time: %ds' % int(round(
+        total_page_load_time / 1000))
+    print >> stdout, 'Average page load time: %dms' % int(round(
         total_page_load_time / self.num_rows_parsed))
-    print
+    if units == 'ms':
+      print >> stdout, 'Total CPU time: %ds' % int(round(total_cpu_time / 1000))
+      print >> stdout, 'Average CPU time: %dms' % int(round(
+          total_cpu_time / self.num_rows_parsed))
+    print >> stdout
     for key, value in sorted(sum_totals.iteritems(), reverse=True,
                              key=lambda i: i[1]):
-      output_key = '%30s: ' % key.replace(' (ms)', '')
-      output_value = '%10ds ' % (value / 1000)
-      output_percent = '%.1f%%' % (100 * value / total_page_load_time)
-      print output_key, output_value, output_percent
+      if not self._display_zeros and not int(value / 100.):
+        break
+      output_key = '%60s: ' % re.sub(' [(].*[)]', '', key)
+      if units == 'ms':
+        output_value = '%10ds ' % (value / 1000)
+        output_percent = '%.1f%%' % (100 * value / total_page_load_time)
+      else:
+        output_value = '%10d%s ' % (value, units)
+        output_percent = '%.1f%%' % (100 * value / total_cpu_time)
+      print >> stdout, output_key, output_value, output_percent
 
     if not self.num_slowest_urls:
       return
 
     for key, values in sorted(self.totals.iteritems(), reverse=True,
                               key=lambda i: sum_totals[i[0]]):
-      print
-      print 'Top %d slowest %s:' % (self.num_slowest_urls,
-                                    key.replace(' (ms)', ''))
+      if not self._display_zeros and not int(sum_totals[key] / 100.):
+        break
+      print >> stdout
+      print >> stdout, 'Top %d slowest %s:' % (self.num_slowest_urls,
+                                               re.sub(' [(].*[)]', '', key))
       slowest = heapq.nlargest(self.num_slowest_urls, values)
       for value, url in slowest:
-        print '\t', '%dms\t' % value, url, '(#%s)' % self._GetRank(url)
+        print >> stdout, '%10d%s\t%s (#%s)' % (value, units, url,
+                                               self._GetRank(url))
 
     if self.network_percents:
-      print
-      print 'Top %d highest network to CPU time ratios:' % self.num_slowest_urls
+      print >> stdout
+      print >> stdout, 'Top %d highest network to CPU time ratios:' % (
+          self.num_slowest_urls)
       for percent, url in sorted(
           self.network_percents, reverse=True)[:self.num_slowest_urls]:
         percent *= 100
-        print '\t', '%.1f%%' % percent, url, '(#%s)' % self._GetRank(url)
+        print >> stdout, '\t', '%.1f%%' % percent, url, '(#%s)' % (
+            self._GetRank(url))
 
 
-def main(argv):
+def main(arguments, stdout=sys.stdout):
   prog_desc = 'Parses CSV output from the loading_measurement'
   parser = optparse.OptionParser(usage=('%prog [options]' + '\n\n' + prog_desc))
 
@@ -142,18 +162,20 @@ def main(argv):
                     help='Only process pages higher than this rank')
   parser.add_option('--show-network', action='store_true',
                     help='Whether to display Network as a category')
+  parser.add_option('--display-zeros', action='store_true',
+                    help='Whether to display categories with zero time')
 
-  options, args = parser.parse_args(argv[1:])
+  options, args = parser.parse_args(arguments)
 
   assert len(args) == 1, 'Must pass exactly one CSV file to analyze'
   if options.rank_limit and not options.rank_csv_file:
     print 'Must pass --rank-csv-file with --rank-limit'
     return 1
 
-  LoadingMeasurementAnalyzer(args[0], options).PrintSummary()
+  LoadingMeasurementAnalyzer(args[0], options).PrintSummary(stdout)
 
   return 0
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

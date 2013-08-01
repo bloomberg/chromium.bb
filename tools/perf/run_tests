@@ -10,6 +10,7 @@ This script DOES NOT run benchmarks. run_benchmarks and run_measurement do that.
 import os
 import sys
 
+import measurements
 import perf_tools
 from telemetry.unittest import gtest_testrunner
 from telemetry.unittest import run_tests
@@ -17,8 +18,12 @@ from telemetry.unittest import run_tests
 if __name__ == '__main__':
   top_level_dir = os.path.abspath(os.path.dirname(__file__))
   runner = gtest_testrunner.GTestTestRunner(print_result_after_run=False)
-  start_dir = 'perf_tools'
+
+  start_dir = 'measurements'
   ret = run_tests.Main(sys.argv[1:], start_dir, top_level_dir, runner)
+
+  start_dir = 'perf_tools'
+  ret += run_tests.Main(sys.argv[1:], start_dir, top_level_dir, runner)
 
   if runner.result:
     runner.result.PrintSummary()
