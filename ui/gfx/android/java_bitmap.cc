@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "jni/BitmapHelper_jni.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 
@@ -40,7 +41,7 @@ bool JavaBitmap::RegisterJavaBitmap(JNIEnv* env) {
   return ui::RegisterNativesImpl(env);
 }
 
-ScopedJavaLocalRef<jobject> CreateJavaBitmap(const gfx::Size& size) {
+static ScopedJavaLocalRef<jobject> CreateJavaBitmap(const gfx::Size& size) {
   return ui::Java_BitmapHelper_createBitmap(AttachCurrentThread(),
       size.width(), size.height());
 }
@@ -61,10 +62,13 @@ ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
 }
 
 static ScopedJavaLocalRef<jobject> CreateJavaBitmapFromResource(
-    const char* name) {
+    const char* name, gfx::Size requested_size) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jname(env, env->NewStringUTF(name));
-  return ui::Java_BitmapHelper_decodeDrawableResource(env, jname.obj());
+  return ui::Java_BitmapHelper_decodeDrawableResource(env,
+                                                      jname.obj(),
+                                                      requested_size.width(),
+                                                      requested_size.height());
 }
 
 static SkBitmap ConvertToSkBitmap(ScopedJavaLocalRef<jobject> jbitmap) {
@@ -90,8 +94,15 @@ static SkBitmap ConvertToSkBitmap(ScopedJavaLocalRef<jobject> jbitmap) {
   return skbitmap;
 }
 
-SkBitmap CreateSkBitmapFromResource(const char* name) {
-  return ConvertToSkBitmap(CreateJavaBitmapFromResource(name));
+SkBitmap CreateSkBitmapFromResource(const char* name, gfx::Size size) {
+  DCHECK(!size.IsEmpty());
+  SkBitmap bitmap =
+      ConvertToSkBitmap(CreateJavaBitmapFromResource(name, size));
+  if (bitmap.isNull())
+    return bitmap;
+  return skia::ImageOperations::Resize(bitmap,
+                                       skia::ImageOperations::RESIZE_GOOD,
+                                       size.width(), size.height());
 }
 
 }  //  namespace gfx

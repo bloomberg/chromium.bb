@@ -4,10 +4,10 @@
 
 #include "content/browser/android/overscroll_glow.h"
 
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "cc/layers/image_layer.h"
 #include "content/browser/android/edge_effect.h"
-#include "skia/ext/image_operations.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 using std::max;
@@ -19,22 +19,16 @@ namespace {
 
 const float kEpsilon = 1e-3f;
 
-SkBitmap CreateBitmap(const char* resource, gfx::Size size) {
-  SkBitmap bitmap = gfx::CreateSkBitmapFromResource(resource);
-  if (bitmap.isNull())
-    return bitmap;
-  return skia::ImageOperations::Resize(bitmap,
-                                       skia::ImageOperations::RESIZE_GOOD,
-                                       size.width(), size.height());
-}
-
 class OverscrollResources {
  public:
-  OverscrollResources()
-    : edge_bitmap_(CreateBitmap("android:drawable/overscroll_edge",
-                                gfx::Size(256, 12))),
-      glow_bitmap_(CreateBitmap("android:drawable/overscroll_glow",
-                                gfx::Size(128, 128))) {
+  OverscrollResources() {
+    TRACE_EVENT0("browser", "OverscrollResources::Create");
+    edge_bitmap_ =
+        gfx::CreateSkBitmapFromResource("android:drawable/overscroll_edge",
+                                        gfx::Size(128, 12));
+    glow_bitmap_ =
+        gfx::CreateSkBitmapFromResource("android:drawable/overscroll_glow",
+                                        gfx::Size(128, 64));
   }
 
   const SkBitmap& edge_bitmap() { return edge_bitmap_; }

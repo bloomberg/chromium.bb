@@ -33,11 +33,6 @@ const float kHeldEdgeScaleY = .5f;
 
 const float kMaxGlowHeight = 4.f;
 
-// Note: The Android version computes the aspect ratio from the source texture;
-// because we use rescaled images, this is precomputed from the original Android
-// textures.
-const float kGlowImageAspectRatioInverse = 0.25f;
-
 const float kPullGlowBegin = 1.f;
 const float kPullEdgeBegin = 0.6f;
 
@@ -352,8 +347,9 @@ void EdgeEffect::ApplyToLayers(gfx::SizeF size, Edge edge) {
                                 &dummy_scale_x, &dummy_scale_y,
                                 &glow_image_bounds);
   const int glow_height = glow_image_bounds.height();
+  const int glow_width = glow_image_bounds.width();
   const int glow_bottom = static_cast<int>(std::min(
-      glow_height * glow_scale_y_ * kGlowImageAspectRatioInverse * 0.6f,
+      glow_height * glow_scale_y_ * glow_height / glow_width * 0.6f,
       glow_height * kMaxGlowHeight) * dpi_scale_ + 0.5f);
   UpdateLayer(glow_.get(), edge, size, glow_bottom, glow_alpha_);
 

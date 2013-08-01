@@ -41,13 +41,11 @@ class UI_EXPORT JavaBitmap {
   DISALLOW_COPY_AND_ASSIGN(JavaBitmap);
 };
 
-UI_EXPORT base::android::ScopedJavaLocalRef<jobject> CreateJavaBitmap(
-    const gfx::Size& size);
-
 UI_EXPORT base::android::ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(
     const SkBitmap* skbitmap);
 
-UI_EXPORT SkBitmap CreateSkBitmapFromResource(const char* name);
+// If the resource loads successfully, it will be resized to |size|.
+UI_EXPORT SkBitmap CreateSkBitmapFromResource(const char* name, gfx::Size size);
 
 }  // namespace gfx
 
