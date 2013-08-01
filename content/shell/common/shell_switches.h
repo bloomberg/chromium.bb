@@ -15,7 +15,6 @@ extern const char kContentBrowserTest[];
 extern const char kContentShellDataPath[];
 extern const char kDumpRenderTree[];
 extern const char kEnableAccelerated2DCanvas[];
-extern const char kEnableSoftwareCompositing[];
 extern const char kEncodeBinary[];
 extern const char kExposeInternalsForTesting[];
 extern const char kOutputLayoutTestDifferences[];

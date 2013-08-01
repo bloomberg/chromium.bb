@@ -17,7 +17,8 @@ class DelegatingRendererTest : public LayerTreeTest {
   DelegatingRendererTest() : LayerTreeTest(), output_surface_(NULL) {}
   virtual ~DelegatingRendererTest() {}
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
     scoped_ptr<FakeOutputSurface> output_surface =
         FakeOutputSurface::CreateDelegating3d();
     output_surface_ = output_surface.get();

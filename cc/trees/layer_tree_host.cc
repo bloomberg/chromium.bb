@@ -392,7 +392,7 @@ void LayerTreeHost::CommitComplete() {
 }
 
 scoped_ptr<OutputSurface> LayerTreeHost::CreateOutputSurface() {
-  return client_->CreateOutputSurface();
+  return client_->CreateOutputSurface(num_failed_recreate_attempts_ >= 4);
 }
 
 scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(

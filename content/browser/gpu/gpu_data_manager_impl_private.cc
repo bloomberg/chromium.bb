@@ -812,6 +812,13 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     prefs->accelerated_compositing_for_3d_transforms_enabled = false;
     prefs->accelerated_compositing_for_plugins_enabled = false;
   }
+
+  if (use_software_compositor_) {
+    prefs->force_compositing_mode = true;
+    prefs->accelerated_compositing_enabled = true;
+    prefs->accelerated_compositing_for_3d_transforms_enabled = true;
+    prefs->accelerated_compositing_for_plugins_enabled = true;
+  }
 }
 
 gpu::GpuSwitchingOption
@@ -964,7 +971,8 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
       domain_blocking_enabled_(true),
       owner_(owner),
       display_count_(0),
-      gpu_process_accessible_(true) {
+      gpu_process_accessible_(true),
+      use_software_compositor_(false) {
   DCHECK(owner_);
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
@@ -973,6 +981,8 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
   }
   if (command_line->HasSwitch(switches::kDisableGpu))
     DisableHardwareAcceleration();
+  if (command_line->HasSwitch(switches::kEnableSoftwareCompositing))
+    use_software_compositor_ = true;
   if (command_line->HasSwitch(switches::kGpuSwitching)) {
     std::string option_string = command_line->GetSwitchValueASCII(
         switches::kGpuSwitching);

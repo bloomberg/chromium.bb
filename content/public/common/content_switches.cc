@@ -515,9 +515,11 @@ const char kForceFieldTrials[]              = "force-fieldtrials";
 // overrides this if present.
 const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
 
-// Force the compositor to use its software implementation instead of GL.
-const char kEnableSoftwareCompositingGLAdapter[] =
-    "enable-software-compositing-gl-adapter";
+// Allow the compositor to use its software implementation if GL fails.
+const char kEnableSoftwareCompositing[] = "enable-software-compositing";
+
+// Prevent the compositor from using its GPU implementation.
+const char kDisableGpuCompositing[] = "disable-gpu-compositing";
 
 // Passes gpu device_id from browser process to GPU process.
 const char kGpuDeviceID[]                   = "gpu-device-id";

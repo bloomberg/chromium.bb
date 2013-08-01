@@ -358,7 +358,8 @@ bool CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
   return true;
 }
 
-scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface() {
+scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
+    bool fallback) {
   WebKit::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;

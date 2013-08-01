@@ -174,7 +174,7 @@ class CONTENT_EXPORT RenderWidget
 
   RenderWidgetCompositor* compositor() const;
 
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface();
+  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback);
 
   // Callback for use with BeginSmoothScroll.
   typedef base::Callback<void()> SmoothScrollCompletionCallback;

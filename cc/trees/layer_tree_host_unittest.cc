@@ -2390,7 +2390,8 @@ class MockIOSurfaceWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
 class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
  protected:
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
     scoped_ptr<MockIOSurfaceWebGraphicsContext3D> context(
         new MockIOSurfaceWebGraphicsContext3D);
     mock_context_ = context.get();
@@ -2575,7 +2576,8 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
     EXPECT_EQ(4u, callbacks_.size());
   }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
     if (use_gl_renderer_)
       return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
     return FakeOutputSurface::CreateSoftware(
@@ -3113,7 +3115,8 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
     scoped_ptr<TestWebGraphicsContext3D> context3d(
         TestWebGraphicsContext3D::Create());
     context3d->set_support_swapbuffers_complete_callback(false);

@@ -669,7 +669,7 @@ void Compositor::Layout() {
   disable_schedule_composite_ = false;
 }
 
-scoped_ptr<cc::OutputSurface> Compositor::CreateOutputSurface() {
+scoped_ptr<cc::OutputSurface> Compositor::CreateOutputSurface(bool fallback) {
   return ContextFactory::GetInstance()->CreateOutputSurface(this);
 }
 

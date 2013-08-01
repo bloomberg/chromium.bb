@@ -158,7 +158,7 @@ void WebLayerTreeViewImplForTesting::ApplyScrollAndScale(
     float page_scale) {}
 
 scoped_ptr<cc::OutputSurface>
-WebLayerTreeViewImplForTesting::CreateOutputSurface() {
+WebLayerTreeViewImplForTesting::CreateOutputSurface(bool fallback) {
   scoped_ptr<cc::OutputSurface> surface;
   scoped_ptr<WebGraphicsContext3D> context3d(
       new cc::FakeWebGraphicsContext3D);

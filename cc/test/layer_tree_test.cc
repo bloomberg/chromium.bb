@@ -251,8 +251,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
     test_hooks_->ApplyScrollAndScale(scroll_delta, scale);
   }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
-    return test_hooks_->CreateOutputSurface();
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
+    return test_hooks_->CreateOutputSurface(fallback);
   }
 
   virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
@@ -600,7 +601,7 @@ void LayerTreeTest::RunTest(bool threaded,
   AfterTest();
 }
 
-scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
+scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface(bool fallback) {
   scoped_ptr<FakeOutputSurface> output_surface;
   if (delegating_renderer_)
     output_surface = FakeOutputSurface::CreateDelegating3d();

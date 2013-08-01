@@ -17,7 +17,8 @@ FakeLayerTreeHostClient::FakeLayerTreeHostClient(RendererOptions options)
 
 FakeLayerTreeHostClient::~FakeLayerTreeHostClient() {}
 
-scoped_ptr<OutputSurface> FakeLayerTreeHostClient::CreateOutputSurface() {
+scoped_ptr<OutputSurface> FakeLayerTreeHostClient::CreateOutputSurface(
+    bool fallback) {
   if (use_software_rendering_) {
     if (use_delegating_renderer_) {
       return FakeOutputSurface::CreateDelegatingSoftware(

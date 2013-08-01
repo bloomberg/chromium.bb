@@ -536,8 +536,9 @@ void RenderWidgetCompositor::ApplyScrollAndScale(gfx::Vector2d scroll_delta,
   widget_->webwidget()->applyScrollAndScale(scroll_delta, page_scale);
 }
 
-scoped_ptr<cc::OutputSurface> RenderWidgetCompositor::CreateOutputSurface() {
-  return widget_->CreateOutputSurface();
+scoped_ptr<cc::OutputSurface> RenderWidgetCompositor::CreateOutputSurface(
+    bool fallback) {
+  return widget_->CreateOutputSurface(fallback);
 }
 
 void RenderWidgetCompositor::DidInitializeOutputSurface(bool success) {

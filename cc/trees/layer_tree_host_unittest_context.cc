@@ -62,7 +62,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
         times_create_failed_(0),
         times_offscreen_created_(0),
         committed_at_least_once_(false),
-        context_should_support_io_surface_(false) {
+        context_should_support_io_surface_(false),
+        fallback_context_works_(false) {
     media::InitializeMediaLibraryForTesting();
   }
 
@@ -76,7 +77,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     return TestWebGraphicsContext3D::Create();
   }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
     if (times_to_fail_create_) {
       --times_to_fail_create_;
       ExpectCreateToFail();
@@ -91,7 +93,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       context3d_->set_have_extension_egl_image(true);
     }
 
-    if (times_to_fail_initialize_) {
+    if (times_to_fail_initialize_ && !(fallback && fallback_context_works_)) {
       --times_to_fail_initialize_;
       // Make the context get lost during reinitialization.
       // The number of times MakeCurrent succeeds is not important, and
@@ -231,6 +233,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   int times_offscreen_created_;
   bool committed_at_least_once_;
   bool context_should_support_io_surface_;
+  bool fallback_context_works_;
 
   scoped_refptr<FakeContextProvider> offscreen_contexts_main_thread_;
   scoped_refptr<FakeContextProvider> offscreen_contexts_compositor_thread_;
@@ -262,8 +265,8 @@ class LayerTreeHostContextTestLostContextSucceeds
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(10u, test_case_);
-    EXPECT_EQ(8 + 10 + 10, num_losses_);
+    EXPECT_EQ(11u, test_case_);
+    EXPECT_EQ(8 + 10 + 10 + 1, num_losses_);
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
@@ -293,78 +296,98 @@ class LayerTreeHostContextTestLostContextSucceeds
     static const TestCase kTests[] = {
       // Losing the context and failing to recreate it (or losing it again
       // immediately) a small number of times should succeed.
-      { 1,  // times_to_lose_during_commit
-        0,  // times_to_lose_during_draw
-        3,  // times_to_fail_reinitialize
-        0,  // times_to_fail_recreate
-        0,  // times_to_lose_on_recreate
-        0,  // times_to_fail_recreate_offscreen
-      },
-      { 0,  // times_to_lose_during_commit
-        1,  // times_to_lose_during_draw
-        3,  // times_to_fail_reinitialize
-        0,  // times_to_fail_recreate
-        0,  // times_to_lose_on_recreate
-        0,  // times_to_fail_recreate_offscreen
-      },
-      { 1,  // times_to_lose_during_commit
-        0,  // times_to_lose_during_draw
-        0,  // times_to_fail_reinitialize
-        3,  // times_to_fail_recreate
-        0,  // times_to_lose_on_recreate
-        0,  // times_to_fail_recreate_offscreen
-      },
-      { 0,  // times_to_lose_during_commit
-        1,  // times_to_lose_during_draw
-        0,  // times_to_fail_reinitialize
-        3,  // times_to_fail_recreate
-        0,  // times_to_lose_on_recreate
-        0,  // times_to_fail_recreate_offscreen
-      },
-      { 1,  // times_to_lose_during_commit
-        0,  // times_to_lose_during_draw
-        0,  // times_to_fail_reinitialize
-        0,  // times_to_fail_recreate
-        3,  // times_to_lose_on_recreate
-        0,  // times_to_fail_recreate_offscreen
-      },
-      { 0,  // times_to_lose_during_commit
-        1,  // times_to_lose_during_draw
-        0,  // times_to_fail_reinitialize
-        0,  // times_to_fail_recreate
-        3,  // times_to_lose_on_recreate
-        0,  // times_to_fail_recreate_offscreen
-      },
-      { 1,  // times_to_lose_during_commit
-        0,  // times_to_lose_during_draw
-        0,  // times_to_fail_reinitialize
-        0,  // times_to_fail_recreate
-        0,  // times_to_lose_on_recreate
-        3,  // times_to_fail_recreate_offscreen
-      },
-      { 0,  // times_to_lose_during_commit
-        1,  // times_to_lose_during_draw
-        0,  // times_to_fail_reinitialize
-        0,  // times_to_fail_recreate
-        0,  // times_to_lose_on_recreate
-        3,  // times_to_fail_recreate_offscreen
-      },
-      // Losing the context and recreating it any number of times should
+      { 1,      // times_to_lose_during_commit
+        0,      // times_to_lose_during_draw
+        3,      // times_to_fail_reinitialize
+        0,      // times_to_fail_recreate
+        0,      // times_to_lose_on_recreate
+        0,      // times_to_fail_recreate_offscreen
+        false,  // fallback_context_works
+    },
+      { 0,      // times_to_lose_during_commit
+        1,      // times_to_lose_during_draw
+        3,      // times_to_fail_reinitialize
+        0,      // times_to_fail_recreate
+        0,      // times_to_lose_on_recreate
+        0,      // times_to_fail_recreate_offscreen
+        false,  // fallback_context_works
+    },
+      { 1,      // times_to_lose_during_commit
+        0,      // times_to_lose_during_draw
+        0,      // times_to_fail_reinitialize
+        3,      // times_to_fail_recreate
+        0,      // times_to_lose_on_recreate
+        0,      // times_to_fail_recreate_offscreen
+        false,  // fallback_context_works
+    },
+      { 0,      // times_to_lose_during_commit
+        1,      // times_to_lose_during_draw
+        0,      // times_to_fail_reinitialize
+        3,      // times_to_fail_recreate
+        0,      // times_to_lose_on_recreate
+        0,      // times_to_fail_recreate_offscreen
+        false,  // fallback_context_works
+    },
+      { 1,      // times_to_lose_during_commit
+        0,      // times_to_lose_during_draw
+        0,      // times_to_fail_reinitialize
+        0,      // times_to_fail_recreate
+        3,      // times_to_lose_on_recreate
+        0,      // times_to_fail_recreate_offscreen
+        false,  // fallback_context_works
+    },
+      { 0,      // times_to_lose_during_commit
+        1,      // times_to_lose_during_draw
+        0,      // times_to_fail_reinitialize
+        0,      // times_to_fail_recreate
+        3,      // times_to_lose_on_recreate
+        0,      // times_to_fail_recreate_offscreen
+        false,  // fallback_context_works
+    },
+      { 1,      // times_to_lose_during_commit
+        0,      // times_to_lose_during_draw
+        0,      // times_to_fail_reinitialize
+        0,      // times_to_fail_recreate
+        0,      // times_to_lose_on_recreate
+        3,      // times_to_fail_recreate_offscreen
+        false,  // fallback_context_works
+    },
+      { 0,      // times_to_lose_during_commit
+        1,      // times_to_lose_during_draw
+        0,      // times_to_fail_reinitialize
+        0,      // times_to_fail_recreate
+        0,      // times_to_lose_on_recreate
+        3,      // times_to_fail_recreate_offscreen
+        false,  // fallback_context_works
+    },
+             // Losing the context and recreating it any number of times should
       // succeed.
       { 10,  // times_to_lose_during_commit
-        0,  // times_to_lose_during_draw
-        0,  // times_to_fail_reinitialize
-        0,  // times_to_fail_recreate
-        0,  // times_to_lose_on_recreate
-        0,  // times_to_fail_recreate_offscreen
-      },
-      { 0,  // times_to_lose_during_commit
-        10,  // times_to_lose_during_draw
-        0,  // times_to_fail_reinitialize
-        0,  // times_to_fail_recreate
-        0,  // times_to_lose_on_recreate
-        0,  // times_to_fail_recreate_offscreen
-      },
+        0,   // times_to_lose_during_draw
+        0,   // times_to_fail_reinitialize
+        0,   // times_to_fail_recreate
+        0,   // times_to_lose_on_recreate
+        0,   // times_to_fail_recreate_offscreen
+        false,  // fallback_context_works
+    },
+      { 0,      // times_to_lose_during_commit
+        10,     // times_to_lose_during_draw
+        0,      // times_to_fail_reinitialize
+        0,      // times_to_fail_recreate
+        0,      // times_to_lose_on_recreate
+        0,      // times_to_fail_recreate_offscreen
+        false,  // fallback_context_works
+    },
+      // Losing the context, failing to reinitialize it, and making a fallback
+      // context should work.
+      { 0,      // times_to_lose_during_commit
+        1,      // times_to_lose_during_draw
+        10,     // times_to_fail_reinitialize
+        0,      // times_to_fail_recreate
+        0,      // times_to_lose_on_recreate
+        0,      // times_to_fail_recreate_offscreen
+        true,   // fallback_context_works
+    },
     };
 
     if (test_case_ >= arraysize(kTests))
@@ -379,6 +402,7 @@ class LayerTreeHostContextTestLostContextSucceeds
     times_to_lose_on_recreate_ = kTests[test_case_].times_to_lose_on_recreate;
     times_to_fail_recreate_offscreen_ =
         kTests[test_case_].times_to_fail_recreate_offscreen;
+    fallback_context_works_ = kTests[test_case_].fallback_context_works;
     ++test_case_;
     return true;
   }
@@ -390,6 +414,7 @@ class LayerTreeHostContextTestLostContextSucceeds
     int times_to_fail_recreate;
     int times_to_lose_on_recreate;
     int times_to_fail_recreate_offscreen;
+    bool fallback_context_works;
   };
 
  protected:
@@ -466,9 +491,10 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
       // 6 from test cases that fail on initializing the renderer (after the
       // offscreen context is created) +
       // 6 from test cases that lose the offscreen context directly +
+      // 4 from test cases that create a fallback +
       // All the test cases that recreate both contexts only once
       // per time it is lost.
-      EXPECT_EQ(6 + 6 + 1 + num_losses_, times_offscreen_created_);
+      EXPECT_EQ(6 + 6 + 1 + 4 + num_losses_, times_offscreen_created_);
     } else {
       EXPECT_EQ(0, times_offscreen_created_);
     }
@@ -1576,7 +1602,8 @@ class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
       : FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D) {}
 
   // FakeLayerTreeHostClient implementation.
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
     return scoped_ptr<OutputSurface>();
   }
 

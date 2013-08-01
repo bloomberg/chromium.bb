@@ -635,7 +635,7 @@ bool RenderWidget::ForceCompositingModeEnabled() {
   return false;
 }
 
-scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
+scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
 #if defined(OS_ANDROID)
@@ -646,12 +646,6 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
 #endif
 
   uint32 output_surface_id = next_output_surface_id_++;
-
-  if (command_line.HasSwitch(switches::kEnableSoftwareCompositingGLAdapter)) {
-      return scoped_ptr<cc::OutputSurface>(
-          new CompositorOutputSurface(routing_id(), output_surface_id, NULL,
-              new CompositorSoftwareOutputDevice(), true));
-  }
 
   // Explicitly disable antialiasing for the compositor. As of the time of
   // this writing, the only platform that supported antialiasing for the
@@ -671,10 +665,20 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   attributes.stencil = false;
   if (command_line.HasSwitch(cc::switches::kForceDirectLayerDrawing))
     attributes.stencil = true;
-  WebGraphicsContext3DCommandBufferImpl* context =
-      CreateGraphicsContext3D(attributes);
-  if (!context)
-    return scoped_ptr<cc::OutputSurface>();
+  WebGraphicsContext3DCommandBufferImpl* context = NULL;
+  if (!fallback)
+    context = CreateGraphicsContext3D(attributes);
+
+  if (!context) {
+    if (!command_line.HasSwitch(switches::kEnableSoftwareCompositing))
+      return scoped_ptr<cc::OutputSurface>();
+    return scoped_ptr<cc::OutputSurface>(
+        new CompositorOutputSurface(routing_id(),
+                                    output_surface_id,
+                                    NULL,
+                                    new CompositorSoftwareOutputDevice(),
+                                    true));
+  }
 
   if (command_line.HasSwitch(switches::kEnableDelegatedRenderer) &&
       !command_line.HasSwitch(switches::kDisableDelegatedRenderer)) {
@@ -2479,6 +2483,9 @@ bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
 WebGraphicsContext3DCommandBufferImpl* RenderWidget::CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
   if (!webwidget_)
+    return NULL;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuCompositing))
     return NULL;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(

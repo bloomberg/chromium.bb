@@ -28,7 +28,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   LayerTreePixelTest();
   virtual ~LayerTreePixelTest();
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE;
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForMainThread() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>

@@ -73,9 +73,9 @@ class TestHooks : public AnimationDelegate {
   virtual void NotifyAnimationStarted(double time) OVERRIDE {}
   virtual void NotifyAnimationFinished(double time) OVERRIDE {}
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() = 0;
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) = 0;
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() = 0;
+  OffscreenContextProviderForMainThread() = 0;
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForCompositorThread() = 0;
 };
@@ -156,9 +156,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   bool delegating_renderer() const { return delegating_renderer_; }
   FakeOutputSurface* output_surface() { return output_surface_; }
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE;
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() OVERRIDE;
+  OffscreenContextProviderForMainThread() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForCompositorThread() OVERRIDE;
 

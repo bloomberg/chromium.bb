@@ -793,7 +793,8 @@ class TextureLayerClientTest
         expected_used_textures_on_draw_(0),
         expected_used_textures_on_commit_(0) {}
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
     scoped_ptr<TestWebGraphicsContext3D> context(
         TestWebGraphicsContext3D::Create());
     context_ = context.get();
@@ -907,7 +908,8 @@ class TextureLayerLostContextTest
       : texture_(0),
         draw_count_(0) {}
 
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
     texture_context_ = TestWebGraphicsContext3D::Create();
     texture_ = texture_context_->createTexture();
     return CreateFakeOutputSurface();

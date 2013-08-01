@@ -29,7 +29,8 @@ LayerTreePixelTest::LayerTreePixelTest()
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
-scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
+scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
+    bool fallback) {
   gfx::Vector2d viewport_offset(20, 10);
   gfx::Size surface_expansion_size(40, 60);
   scoped_ptr<PixelTestOutputSurface> output_surface;
