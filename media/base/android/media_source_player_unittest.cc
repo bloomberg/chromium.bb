@@ -393,7 +393,10 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
   EXPECT_TRUE(video_decoder_job->is_decoding());
 }
 
-TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
+// Disabled due to http://crbug.com/266041.
+// TODO(xhwang/qinmin): Fix this test and reenable it.
+TEST_F(MediaSourcePlayerTest,
+       DISABLED_StartTimeTicksResetAfterDecoderUnderruns) {
   if (!MediaCodecBridge::IsAvailable())
     return;
 
