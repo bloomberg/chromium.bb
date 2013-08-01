@@ -569,14 +569,9 @@ std::string TestFileIO::TestTouchQuery() {
   ASSERT_EQ(4, callback.result());
 
   // last_access_time's granularity is 1 day
-  const PP_Time last_access_time = 123 * 24 * 3600.0;
   // last_modified_time's granularity is 2 seconds
-  // NOTE: In NaCl on Windows, NaClDescIO uses _fstat64 to retrieve file info.
-  // This function returns strange values for very small time values (near the
-  // Unix Epoch). For a value like 246.0, it returns -1. For larger values, it
-  // returns values that are exactly an hour less. The value below is handled
-  // correctly, and is only 100 days after the start of Unix time.
-  const PP_Time last_modified_time = 100 * 24 * 3600.0;
+  const PP_Time last_access_time = 123 * 24 * 3600.0;
+  const PP_Time last_modified_time = 246.0;
   callback.WaitForResult(file_io.Touch(last_access_time, last_modified_time,
                                        callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);

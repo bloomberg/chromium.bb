@@ -23,7 +23,6 @@
 #include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_file_io.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -144,7 +143,6 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
                                    PP_Instance instance,
                                    PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      renderer_ppapi_host_(host),
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       quota_policy_(quota::kQuotaLimitTypeUnknown),
@@ -163,8 +161,12 @@ int32_t PepperFileIOHost::OnResourceMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PepperFileIOHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_Open,
                                       OnHostMsgOpen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileIO_Query,
+                                        OnHostMsgQuery)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_Touch,
                                       OnHostMsgTouch)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_Read,
+                                      OnHostMsgRead)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_Write,
                                       OnHostMsgWrite)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_SetLength,
@@ -247,6 +249,25 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
   return PP_OK_COMPLETIONPENDING;
 }
 
+int32_t PepperFileIOHost::OnHostMsgQuery(
+    ppapi::host::HostMessageContext* context) {
+  int32_t rv = state_manager_.CheckOperationState(
+      FileIOStateManager::OPERATION_EXCLUSIVE, true);
+  if (rv != PP_OK)
+    return rv;
+
+  if (!base::FileUtilProxy::GetFileInfoFromPlatformFile(
+          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
+          file_,
+          base::Bind(&PepperFileIOHost::ExecutePlatformQueryCallback,
+                     weak_factory_.GetWeakPtr(),
+                     context->MakeReplyMessageContext())))
+    return PP_ERROR_FAILED;
+
+  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
+  return PP_OK_COMPLETIONPENDING;
+}
+
 int32_t PepperFileIOHost::OnHostMsgTouch(
     ppapi::host::HostMessageContext* context,
     PP_Time last_access_time,
@@ -283,6 +304,39 @@ int32_t PepperFileIOHost::OnHostMsgTouch(
     return PP_ERROR_FAILED;
 
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
+  return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t PepperFileIOHost::OnHostMsgRead(
+    ppapi::host::HostMessageContext* context,
+    int64_t offset,
+    int32_t max_read_length) {
+  int32_t rv = state_manager_.CheckOperationState(
+      FileIOStateManager::OPERATION_READ, true);
+  if (rv != PP_OK)
+    return rv;
+
+  // Validate max_read_length before allocating below. This value is coming from
+  // the untrusted plugin.
+  if (max_read_length < 0) {
+    ReplyMessageContext reply_context = context->MakeReplyMessageContext();
+    reply_context.params.set_result(PP_ERROR_FAILED);
+    host()->SendReply(reply_context,
+                      PpapiPluginMsg_FileIO_ReadReply(std::string()));
+    return PP_OK_COMPLETIONPENDING;
+  }
+
+  if (!base::FileUtilProxy::Read(
+          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
+          file_,
+          offset,
+          max_read_length,
+          base::Bind(&PepperFileIOHost::ExecutePlatformReadCallback,
+                     weak_factory_.GetWeakPtr(),
+                     context->MakeReplyMessageContext())))
+    return PP_ERROR_FAILED;
+
+  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_READ);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -435,13 +489,16 @@ int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
       quota_policy_ != quota::kQuotaLimitTypeUnlimited)
     return PP_ERROR_FAILED;
 
+  RendererPpapiHost* renderer_ppapi_host =
+      RendererPpapiHost::GetForPPInstance(pp_instance());
+
   // Whitelist to make it privately accessible.
   if (!GetContentClient()->renderer()->IsPluginAllowedToCallRequestOSFileHandle(
-          renderer_ppapi_host_->GetContainerForInstance(pp_instance())))
+          renderer_ppapi_host->GetContainerForInstance(pp_instance())))
     return PP_ERROR_NOACCESS;
 
   IPC::PlatformFileForTransit file =
-      renderer_ppapi_host_->ShareHandleWithRemote(file_, false);
+      renderer_ppapi_host->ShareHandleWithRemote(file_, false);
   if (file == IPC::InvalidPlatformFileForTransit())
     return PP_ERROR_FAILED;
   ppapi::host::ReplyMessageContext reply_context =
@@ -494,26 +551,11 @@ void PepperFileIOHost::ExecutePlatformOpenFileCallback(
   file_ = file.ReleaseValue();
 
   DCHECK(!quota_file_io_.get());
-  if (file_ != base::kInvalidPlatformFileValue) {
-    if (file_system_type_ == PP_FILESYSTEMTYPE_LOCALTEMPORARY ||
-        file_system_type_ == PP_FILESYSTEMTYPE_LOCALPERSISTENT) {
-      quota_file_io_.reset(new QuotaFileIO(
-          new QuotaFileIODelegate, file_, file_system_url_, file_system_type_));
-    }
-
-    IPC::PlatformFileForTransit file_for_transit =
-        renderer_ppapi_host_->ShareHandleWithRemote(file_, false);
-    if (!(file_for_transit == IPC::InvalidPlatformFileForTransit())) {
-      // Send the file descriptor to the plugin process. This is used in the
-      // plugin for any file operations that can be done there.
-      // IMPORTANT: Clear PP_FILEOPENFLAG_WRITE and PP_FILEOPENFLAG_APPEND so
-      // the plugin can't bypass our quota checks.
-      int32_t no_write_flags =
-          open_flags_ & ~(PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_APPEND);
-      ppapi::proxy::SerializedHandle file_handle;
-      file_handle.set_file_handle(file_for_transit, no_write_flags);
-      reply_context.params.AppendHandle(file_handle);
-    }
+  if (file_ != base::kInvalidPlatformFileValue &&
+      (file_system_type_ == PP_FILESYSTEMTYPE_LOCALTEMPORARY ||
+       file_system_type_ == PP_FILESYSTEMTYPE_LOCALPERSISTENT)) {
+    quota_file_io_.reset(new QuotaFileIO(
+        new QuotaFileIODelegate, file_, file_system_url_, file_system_type_));
   }
 
   reply_context.params.set_result(pp_error);
@@ -531,6 +573,36 @@ void PepperFileIOHost::ExecutePlatformOpenFileSystemURLCallback(
     notify_close_file_callback_ = callback;
   quota_policy_ = quota_policy;
   ExecutePlatformOpenFileCallback(reply_context, error_code, file);
+}
+
+void PepperFileIOHost::ExecutePlatformQueryCallback(
+    ppapi::host::ReplyMessageContext reply_context,
+    base::PlatformFileError error_code,
+    const base::PlatformFileInfo& file_info) {
+  PP_FileInfo pp_info;
+  ppapi::PlatformFileInfoToPepperFileInfo(file_info, file_system_type_,
+                                          &pp_info);
+
+  int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
+  reply_context.params.set_result(pp_error);
+  host()->SendReply(reply_context,
+                    PpapiPluginMsg_FileIO_QueryReply(pp_info));
+  state_manager_.SetOperationFinished();
+}
+
+void PepperFileIOHost::ExecutePlatformReadCallback(
+    ppapi::host::ReplyMessageContext reply_context,
+    base::PlatformFileError error_code,
+    const char* data, int bytes_read) {
+  int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
+
+  // Only send the amount of data in the string that was actually read.
+  std::string buffer;
+  if (pp_error == PP_OK)
+    buffer.append(data, bytes_read);
+  reply_context.params.set_result(ErrorOrByteNumber(pp_error, bytes_read));
+  host()->SendReply(reply_context, PpapiPluginMsg_FileIO_ReadReply(buffer));
+  state_manager_.SetOperationFinished();
 }
 
 void PepperFileIOHost::ExecutePlatformWriteCallback(

@@ -71,30 +71,26 @@ class PPAPI_PROXY_EXPORT FileIOResource
                         int32_t bytes_to_read,
                         const PP_ArrayOutput& array_output,
                         scoped_refptr<TrackedCallback> callback);
-  void CloseFileHandle();
 
-  // Reply message handlers for operations that are done in the host.
+  // Handlers of reply messages. Note that all of them have a callback
+  // parameters bound when call to the host.
   void OnPluginMsgGeneralComplete(scoped_refptr<TrackedCallback> callback,
                                   const ResourceMessageReplyParams& params);
   void OnPluginMsgOpenFileComplete(scoped_refptr<TrackedCallback> callback,
                                    const ResourceMessageReplyParams& params);
+  void OnPluginMsgQueryComplete(scoped_refptr<TrackedCallback> callback,
+                                PP_FileInfo* output_info_,
+                                const ResourceMessageReplyParams& params,
+                                const PP_FileInfo& info);
+  void OnPluginMsgReadComplete(scoped_refptr<TrackedCallback> callback,
+                               PP_ArrayOutput array_output,
+                               const ResourceMessageReplyParams& params,
+                               const std::string& data);
   void OnPluginMsgRequestOSFileHandleComplete(
       scoped_refptr<TrackedCallback> callback,
       PP_FileHandle* output_handle,
       const ResourceMessageReplyParams& params);
 
-  // Reply message handlers for operations that are done in the plugin.
-  void OnQueryComplete(scoped_refptr<TrackedCallback> callback,
-                       PP_FileInfo* output_info,
-                       base::PlatformFileError error_code,
-                       const base::PlatformFileInfo& file_info);
-  void OnReadComplete(scoped_refptr<TrackedCallback> callback,
-                      PP_ArrayOutput array_output,
-                      base::PlatformFileError error_code,
-                      const char* data, int bytes_read);
-
-  PP_FileHandle file_handle_;
-  PP_FileSystemType file_system_type_;
   FileIOStateManager state_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FileIOResource);
