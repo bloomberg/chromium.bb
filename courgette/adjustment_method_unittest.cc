@@ -26,7 +26,8 @@ class AdjustmentMethodTest : public testing::Test {
   // Returns one of two similar a simple programs.  They differ only in the
   // label assignment, so that it is possible to make them look identical.
   courgette::AssemblyProgram* MakeProgram(int kind) const {
-    courgette::AssemblyProgram* prog = new courgette::AssemblyProgram();
+    courgette::AssemblyProgram* prog =
+      new courgette::AssemblyProgram(courgette::EXE_WIN_32_X86);
     prog->set_image_base(0x00400000);
 
     courgette::Label* labelA = prog->FindOrMakeAbs32Label(0x00410000);

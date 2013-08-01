@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 
+#include "courgette/assembly_program.h"
 #include "courgette/ensemble.h"
 
 namespace courgette {

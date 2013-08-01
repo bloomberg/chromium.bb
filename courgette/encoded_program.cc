@@ -243,6 +243,11 @@ CheckBool EncodedProgram::AddRel32(int label_index) {
   return ops_.push_back(REL32) && rel32_ix_.push_back(label_index);
 }
 
+CheckBool EncodedProgram::AddRel32ARM(uint16 op, int label_index) {
+  return ops_.push_back(static_cast<OP>(op)) &&
+      rel32_ix_.push_back(label_index);
+}
+
 CheckBool EncodedProgram::AddPeMakeRelocs() {
   return ops_.push_back(MAKE_PE_RELOCATION_TABLE);
 }
@@ -398,6 +403,119 @@ bool VectorAt(const V& v, size_t index, T* output) {
   return true;
 }
 
+CheckBool EncodedProgram::EvaluateRel32ARM(OP op,
+                                           size_t& ix_rel32_ix,
+                                           RVA& current_rva,
+                                           SinkStream* output) {
+  switch (op & 0x0000F000) {
+    case REL32ARM8: {
+      uint32 index;
+      if (!VectorAt(rel32_ix_, ix_rel32_ix, &index))
+        return false;
+      ++ix_rel32_ix;
+      RVA rva;
+      if (!VectorAt(rel32_rva_, index, &rva))
+        return false;
+      uint32 decompressed_op;
+      if (!DisassemblerElf32ARM::Decompress(ARM_OFF8,
+                                            static_cast<uint16>(op),
+                                            static_cast<uint32>(rva -
+                                                                current_rva),
+                                            &decompressed_op)) {
+        return false;
+      }
+      uint16 op16 = decompressed_op;
+      if (!output->Write(&op16, 2))
+        return false;
+      current_rva += 2;
+      break;
+    }
+    case REL32ARM11: {
+      uint32 index;
+      if (!VectorAt(rel32_ix_, ix_rel32_ix, &index))
+        return false;
+      ++ix_rel32_ix;
+      RVA rva;
+      if (!VectorAt(rel32_rva_, index, &rva))
+        return false;
+      uint32 decompressed_op;
+      if (!DisassemblerElf32ARM::Decompress(ARM_OFF11, (uint16) op,
+                                            (uint32) (rva - current_rva),
+                                            &decompressed_op)) {
+        return false;
+      }
+      uint16 op16 = decompressed_op;
+      if (!output->Write(&op16, 2))
+        return false;
+      current_rva += 2;
+      break;
+    }
+    case REL32ARM24: {
+      uint32 index;
+      if (!VectorAt(rel32_ix_, ix_rel32_ix, &index))
+        return false;
+      ++ix_rel32_ix;
+      RVA rva;
+      if (!VectorAt(rel32_rva_, index, &rva))
+        return false;
+      uint32 decompressed_op;
+      if (!DisassemblerElf32ARM::Decompress(ARM_OFF24, (uint16) op,
+                                            (uint32) (rva - current_rva),
+                                            &decompressed_op)) {
+        return false;
+      }
+      if (!output->Write(&decompressed_op, 4))
+        return false;
+      current_rva += 4;
+      break;
+    }
+    case REL32ARM25: {
+      uint32 index;
+      if (!VectorAt(rel32_ix_, ix_rel32_ix, &index))
+        return false;
+      ++ix_rel32_ix;
+      RVA rva;
+      if (!VectorAt(rel32_rva_, index, &rva))
+        return false;
+      uint32 decompressed_op;
+      if (!DisassemblerElf32ARM::Decompress(ARM_OFF25, (uint16) op,
+                                            (uint32) (rva - current_rva),
+                                            &decompressed_op)) {
+        return false;
+      }
+      uint32 words = (decompressed_op << 16) | (decompressed_op >> 16);
+      if (!output->Write(&words, 4))
+        return false;
+      current_rva += 4;
+      break;
+    }
+    case REL32ARM21: {
+      uint32 index;
+      if (!VectorAt(rel32_ix_, ix_rel32_ix, &index))
+        return false;
+      ++ix_rel32_ix;
+      RVA rva;
+      if (!VectorAt(rel32_rva_, index, &rva))
+        return false;
+      uint32 decompressed_op;
+      if (!DisassemblerElf32ARM::Decompress(ARM_OFF21, (uint16) op,
+                                            (uint32) (rva - current_rva),
+                                            &decompressed_op)) {
+        return false;
+      }
+      uint32 words = (decompressed_op << 16) | (decompressed_op >> 16);
+      if (!output->Write(&words, 4))
+        return false;
+      current_rva += 4;
+      break;
+    }
+    default:
+      return false;
+  }
+
+  return true;
+}
+
 CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
   // For the most part, the assembly process walks the various tables.
   // ix_mumble is the index into the mumble table.
@@ -420,7 +538,9 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
 
     switch (op) {
       default:
-        return false;
+        if (!EvaluateRel32ARM(op, ix_rel32_ix, current_rva, output))
+          return false;
+        break;
 
       case ORIGIN: {
         RVA section_rva;

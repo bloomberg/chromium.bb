@@ -389,9 +389,9 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
       RVA target_rva = (RVA)(origin + (file_offset - origin_offset) +
                              relative_target);
 
-      if (!program->EmitRel32(program->FindOrMakeRel32Label(target_rva)))
+      if (! (**current_rel)->EmitInstruction(program, target_rva))
         return false;
-      file_offset += sizeof(RVA);
+      file_offset += (**current_rel)->op_size();
       (*current_rel)++;
       continue;
     }

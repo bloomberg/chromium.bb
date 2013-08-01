@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
+#include "courgette/assembly_program.h"
 #include "courgette/disassembler.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/types_elf.h"
@@ -54,7 +55,14 @@ class DisassemblerElf32 : public Disassembler {
       offset_ = offset;
     }
 
+    // Computes the relative jump's offset from the op in p.
     virtual CheckBool ComputeRelativeTarget(const uint8* op_pointer) = 0;
+
+    // Emits the courgette instruction corresponding to the RVA type.
+    virtual CheckBool EmitInstruction(AssemblyProgram* program,
+                                      RVA target_rva) = 0;
+
+    virtual uint16 op_size() const = 0;
 
     static bool IsLessThan(TypedRVA *a, TypedRVA *b) {
       return a->rva() < b->rva();

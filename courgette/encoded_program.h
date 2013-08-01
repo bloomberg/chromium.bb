@@ -43,6 +43,7 @@ class EncodedProgram {
   CheckBool AddOrigin(RVA rva) WARN_UNUSED_RESULT;
   CheckBool AddCopy(uint32 count, const void* bytes) WARN_UNUSED_RESULT;
   CheckBool AddRel32(int label_index) WARN_UNUSED_RESULT;
+  CheckBool AddRel32ARM(uint16 op, int label_index) WARN_UNUSED_RESULT;
   CheckBool AddAbs32(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddPeMakeRelocs() WARN_UNUSED_RESULT;
   CheckBool AddElfMakeRelocs() WARN_UNUSED_RESULT;
@@ -74,6 +75,14 @@ class EncodedProgram {
     MAKE_PE_RELOCATION_TABLE = 5,  // Emit PE base relocation table blocks.
     MAKE_ELF_RELOCATION_TABLE = 6, // Emit Elf relocation table for X86
     MAKE_ELF_ARM_RELOCATION_TABLE = 7, // Emit Elf relocation table for ARM
+    // ARM reserves 0x1000-LAST_ARM, bits 13-16 define the opcode
+    // subset, and 1-12 are the compressed ARM op.
+    REL32ARM8   = 0x1000,
+    REL32ARM11  = 0x2000,
+    REL32ARM24  = 0x3000,
+    REL32ARM25  = 0x4000,
+    REL32ARM21  = 0x5000,
+    LAST_ARM    = 0x5FFF,
   };
 
   typedef NoThrowBuffer<RVA> RvaVector;
@@ -87,6 +96,10 @@ class EncodedProgram {
                                    SinkStream *buffer) WARN_UNUSED_RESULT;
   CheckBool DefineLabelCommon(RvaVector*, int, RVA) WARN_UNUSED_RESULT;
   void FinishLabelsCommon(RvaVector* addresses);
+
+  // Decodes and evaluates courgette ops for ARM rel32 addresses.
+  CheckBool EvaluateRel32ARM(OP op, size_t& ix_rel32_ix, RVA& current_rva,
+                             SinkStream* output);
 
   // Binary assembly language tables.
   uint64 image_base_;

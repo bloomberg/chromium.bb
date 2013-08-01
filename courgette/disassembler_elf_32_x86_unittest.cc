@@ -38,7 +38,8 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   EXPECT_EQ('L', offset_p[2]);
   EXPECT_EQ('F', offset_p[3]);
 
-  courgette::AssemblyProgram* program = new courgette::AssemblyProgram();
+  courgette::AssemblyProgram* program =
+    new courgette::AssemblyProgram(courgette::EXE_ELF_32_X86);
 
   EXPECT_TRUE(disassembler->Disassemble(program));
 

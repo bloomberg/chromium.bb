@@ -79,7 +79,7 @@ Status ParseDetectedExecutable(const void* buffer, size_t length,
     return C_INPUT_NOT_RECOGNIZED;
   }
 
-  AssemblyProgram* program = new AssemblyProgram();
+  AssemblyProgram* program = new AssemblyProgram(disassembler->kind());
 
   if (!disassembler->Disassemble(program)) {
     delete program;

@@ -31,11 +31,12 @@ typedef NoThrowBuffer<Instruction*> InstructionVector;
 class Label {
  public:
   static const int kNoIndex = -1;
-  Label() : rva_(0), index_(kNoIndex) {}
-  explicit Label(RVA rva) : rva_(rva), index_(kNoIndex) {}
+  Label() : rva_(0), index_(kNoIndex), count_(0) {}
+  explicit Label(RVA rva) : rva_(rva), index_(kNoIndex), count_(0) {}
 
   RVA rva_;    // Address referred to by the label.
   int index_;  // Index of address in address table, kNoIndex until assigned.
+  int count_;
 };
 
 typedef std::map<RVA, Label*> RVAToLabel;
@@ -61,8 +62,10 @@ typedef std::map<RVA, Label*> RVAToLabel;
 //
 class AssemblyProgram {
  public:
-  AssemblyProgram();
+  explicit AssemblyProgram(ExecutableType kind);
   ~AssemblyProgram();
+
+  ExecutableType kind() const { return kind_; }
 
   void set_image_base(uint64 image_base) { image_base_ = image_base; }
 
@@ -85,6 +88,11 @@ class AssemblyProgram {
 
   // Generates 4-byte relative reference to address of 'label'.
   CheckBool EmitRel32(Label* label) WARN_UNUSED_RESULT;
+
+  // Generates 4-byte relative reference to address of 'label' for
+  // ARM.
+  CheckBool EmitRel32ARM(uint16 op, Label* label, const uint8* arm_op,
+                         uint16 op_size) WARN_UNUSED_RESULT;
 
   // Generates 4-byte absolute reference to address of 'label'.
   CheckBool EmitAbs32(Label* label) WARN_UNUSED_RESULT;
@@ -114,7 +122,12 @@ class AssemblyProgram {
   // otherwise returns NULL.
   Label* InstructionRel32Label(const Instruction* instruction) const;
 
+  void PrintLabelCounts(RVAToLabel* labels);
+  void CountRel32ARM();
+
  private:
+  ExecutableType kind_;
+
   CheckBool Emit(Instruction* instruction) WARN_UNUSED_RESULT;
 
   // Looks up a label or creates a new one.  Might return NULL.

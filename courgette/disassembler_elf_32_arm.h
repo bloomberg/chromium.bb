@@ -18,6 +18,8 @@ enum ARM_RVA {
   ARM_OFF8,
   ARM_OFF11,
   ARM_OFF24,
+  ARM_OFF25,
+  ARM_OFF21,
 };
 
 class DisassemblerElf32ARM : public DisassemblerElf32 {
@@ -26,10 +28,22 @@ class DisassemblerElf32ARM : public DisassemblerElf32 {
    public:
     TypedRVAARM(ARM_RVA type, RVA rva) : TypedRVA(rva), type_(type) { }
 
-    virtual CheckBool ComputeRelativeTarget(const uint8* op_pointer) OVERRIDE;
+    uint16 c_op() const {
+      return c_op_;
+    }
+
+    virtual CheckBool ComputeRelativeTarget(const uint8* op_pointer);
+
+    virtual CheckBool EmitInstruction(AssemblyProgram* program,
+                                      RVA target_rva);
+
+    virtual uint16 op_size() const;
 
    private:
     ARM_RVA type_;
+
+    uint16 c_op_;  // set by ComputeRelativeTarget()
+    const uint8* arm_op_;
   };
 
   explicit DisassemblerElf32ARM(const void* start, size_t length);
@@ -37,6 +51,12 @@ class DisassemblerElf32ARM : public DisassemblerElf32 {
   virtual ExecutableType kind() { return EXE_ELF_32_ARM; }
 
   virtual e_machine_values ElfEM() { return EM_ARM; }
+
+  static CheckBool Compress(ARM_RVA type, uint32 arm_op, RVA rva,
+                            uint16* c_op /* out */, uint32* addr /* out */);
+
+  static CheckBool Decompress(ARM_RVA type, uint16 c_op, uint32 addr,
+                              uint32* arm_op /* out */);
 
  protected:
 
