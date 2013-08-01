@@ -200,9 +200,8 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     HTMLFrameOwnerElement::defaultEventHandler(event);
 }
 
-bool HTMLPlugInElement::isKeyboardFocusable(KeyboardEvent* event) const
+bool HTMLPlugInElement::isKeyboardFocusable() const
 {
-    UNUSED_PARAM(event);
     if (!document()->page())
         return false;
 

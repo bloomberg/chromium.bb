@@ -429,7 +429,7 @@ public:
     virtual bool supportsFocus() const;
     // Whether the node can actually be focused.
     bool isFocusable() const;
-    virtual bool isKeyboardFocusable(KeyboardEvent*) const;
+    virtual bool isKeyboardFocusable() const;
     virtual bool isMouseFocusable() const;
     virtual Node* focusDelegate();
     // This is called only when the node is focused.

@@ -78,7 +78,6 @@ protected:
     virtual void didSetValueByUserEdit(ValueChangeState);
 
 private:
-    virtual bool isKeyboardFocusable(KeyboardEvent*) const OVERRIDE;
     virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE;
     virtual bool isTextField() const OVERRIDE;
     virtual bool valueMissing(const String&) const OVERRIDE;

@@ -67,11 +67,6 @@ TextFieldInputType::~TextFieldInputType()
         m_innerSpinButton->removeSpinButtonOwner();
 }
 
-bool TextFieldInputType::isKeyboardFocusable(KeyboardEvent*) const
-{
-    return element()->isFocusable();
-}
-
 bool TextFieldInputType::shouldShowFocusRingOnMouseFocus() const
 {
     return true;

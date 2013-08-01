@@ -2682,24 +2682,10 @@ void WebViewImpl::setInitialFocus(bool reverse)
 {
     if (!m_page)
         return;
-
-    // Since we don't have a keyboard event, we'll create one.
-    WebKeyboardEvent keyboardEvent;
-    keyboardEvent.type = WebInputEvent::RawKeyDown;
-    if (reverse)
-        keyboardEvent.modifiers = WebInputEvent::ShiftKey;
-
-    // VK_TAB which is only defined on Windows.
-    keyboardEvent.windowsKeyCode = 0x09;
-    PlatformKeyboardEventBuilder platformEvent(keyboardEvent);
-    RefPtr<KeyboardEvent> webkitEvent = KeyboardEvent::create(platformEvent, 0);
-
     Frame* frame = page()->focusController()->focusedOrMainFrame();
     if (Document* document = frame->document())
         document->setFocusedElement(0);
-    page()->focusController()->setInitialFocus(
-        reverse ? FocusDirectionBackward : FocusDirectionForward,
-        webkitEvent.get());
+    page()->focusController()->setInitialFocus(reverse ? FocusDirectionBackward : FocusDirectionForward);
 }
 
 void WebViewImpl::clearFocusedNode()
@@ -2822,7 +2808,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
 
 void WebViewImpl::advanceFocus(bool reverse)
 {
-    page()->focusController()->advanceFocus(reverse ? FocusDirectionBackward : FocusDirectionForward, 0);
+    page()->focusController()->advanceFocus(reverse ? FocusDirectionBackward : FocusDirectionForward);
 }
 
 double WebViewImpl::zoomLevel()

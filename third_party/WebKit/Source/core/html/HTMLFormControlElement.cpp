@@ -316,7 +316,7 @@ bool HTMLFormControlElement::rendererIsFocusable() const
     return HTMLElement::rendererIsFocusable();
 }
 
-bool HTMLFormControlElement::isKeyboardFocusable(KeyboardEvent*) const
+bool HTMLFormControlElement::isKeyboardFocusable() const
 {
     // Skip tabIndex check in a parent class.
     return isFocusable();

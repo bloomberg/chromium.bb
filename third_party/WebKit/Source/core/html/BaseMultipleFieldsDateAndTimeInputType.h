@@ -97,7 +97,6 @@ private:
     virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE FINAL;
     virtual bool hasBadInput() const OVERRIDE;
     virtual bool hasCustomFocusLogic() const OVERRIDE FINAL;
-    virtual bool isKeyboardFocusable(KeyboardEvent*) const OVERRIDE FINAL;
     virtual void minOrMaxAttributeChanged() OVERRIDE FINAL;
     virtual void readonlyAttributeChanged() OVERRIDE FINAL;
     virtual void requiredAttributeChanged() OVERRIDE FINAL;

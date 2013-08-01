@@ -67,8 +67,8 @@ public:
     Frame* focusedFrame() const { return m_focusedFrame.get(); }
     Frame* focusedOrMainFrame() const;
 
-    bool setInitialFocus(FocusDirection, KeyboardEvent*);
-    bool advanceFocus(FocusDirection, KeyboardEvent*, bool initialFocus = false);
+    bool setInitialFocus(FocusDirection);
+    bool advanceFocus(FocusDirection direction) { return advanceFocus(direction, false); }
 
     bool setFocusedElement(Element*, PassRefPtr<Frame>, FocusDirection = FocusDirectionNone);
 
@@ -84,12 +84,13 @@ public:
 private:
     explicit FocusController(Page*);
 
-    bool advanceFocusDirectionally(FocusDirection, KeyboardEvent*);
-    bool advanceFocusInDocumentOrder(FocusDirection, KeyboardEvent*, bool initialFocus);
+    bool advanceFocus(FocusDirection, bool initialFocus);
+    bool advanceFocusDirectionally(FocusDirection);
+    bool advanceFocusInDocumentOrder(FocusDirection, bool initialFocus);
 
-    Node* findFocusableNodeAcrossFocusScope(FocusDirection, FocusNavigationScope startScope, Node* start, KeyboardEvent*);
-    Node* findFocusableNodeRecursively(FocusDirection, FocusNavigationScope, Node* start, KeyboardEvent*);
-    Node* findFocusableNodeDecendingDownIntoFrameDocument(FocusDirection, Node*, KeyboardEvent*);
+    Node* findFocusableNodeAcrossFocusScope(FocusDirection, FocusNavigationScope startScope, Node* start);
+    Node* findFocusableNodeRecursively(FocusDirection, FocusNavigationScope, Node* start);
+    Node* findFocusableNodeDecendingDownIntoFrameDocument(FocusDirection, Node*);
 
     // Searches through the given tree scope, starting from start node, for the next/previous selectable element that comes after/before start node.
     // The order followed is as specified in section 17.11.1 of the HTML4 spec, which is elements with tab indexes
@@ -100,15 +101,15 @@ private:
     // @return The focus node that comes after/before start node.
     //
     // See http://www.w3.org/TR/html4/interact/forms.html#h-17.11.1
-    inline Node* findFocusableNode(FocusDirection, FocusNavigationScope, Node* start, KeyboardEvent*);
+    inline Node* findFocusableNode(FocusDirection, FocusNavigationScope, Node* start);
 
-    Node* nextFocusableNode(FocusNavigationScope, Node* start, KeyboardEvent*);
-    Node* previousFocusableNode(FocusNavigationScope, Node* start, KeyboardEvent*);
+    Node* nextFocusableNode(FocusNavigationScope, Node* start);
+    Node* previousFocusableNode(FocusNavigationScope, Node* start);
 
-    Node* findNodeWithExactTabIndex(Node* start, int tabIndex, KeyboardEvent*, FocusDirection);
+    Node* findNodeWithExactTabIndex(Node* start, int tabIndex, FocusDirection);
 
-    bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, FocusDirection, KeyboardEvent*);
-    void findFocusCandidateInContainer(Node* container, const LayoutRect& startingRect, FocusDirection, KeyboardEvent*, FocusCandidate& closest);
+    bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, FocusDirection);
+    void findFocusCandidateInContainer(Node* container, const LayoutRect& startingRect, FocusDirection, FocusCandidate& closest);
 
     Page* m_page;
     RefPtr<Frame> m_focusedFrame;

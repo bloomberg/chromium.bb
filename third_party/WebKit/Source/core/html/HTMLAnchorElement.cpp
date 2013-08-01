@@ -160,10 +160,10 @@ bool HTMLAnchorElement::isMouseFocusable() const
     return HTMLElement::isMouseFocusable();
 }
 
-bool HTMLAnchorElement::isKeyboardFocusable(KeyboardEvent* event) const
+bool HTMLAnchorElement::isKeyboardFocusable() const
 {
     if (!isLink())
-        return HTMLElement::isKeyboardFocusable(event);
+        return HTMLElement::isKeyboardFocusable();
 
     if (!isFocusable())
         return false;

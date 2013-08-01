@@ -365,19 +365,14 @@ bool HTMLInputElement::hasCustomFocusLogic() const
     return m_inputType->hasCustomFocusLogic();
 }
 
-bool HTMLInputElement::isKeyboardFocusable(KeyboardEvent* event) const
+bool HTMLInputElement::isKeyboardFocusable() const
 {
-    return m_inputType->isKeyboardFocusable(event);
+    return m_inputType->isKeyboardFocusable();
 }
 
 bool HTMLInputElement::shouldShowFocusRingOnMouseFocus() const
 {
     return m_inputType->shouldShowFocusRingOnMouseFocus();
-}
-
-bool HTMLInputElement::isTextFormControlKeyboardFocusable(KeyboardEvent* event) const
-{
-    return HTMLTextFormControlElement::isKeyboardFocusable(event);
 }
 
 void HTMLInputElement::updateFocusAppearance(bool restorePreviousSelection)

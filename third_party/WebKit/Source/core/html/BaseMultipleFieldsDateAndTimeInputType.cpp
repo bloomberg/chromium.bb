@@ -378,7 +378,7 @@ void BaseMultipleFieldsDateAndTimeInputType::handleFocusEvent(Element* oldFocuse
         return;
     if (direction == FocusDirectionBackward) {
         if (element()->document()->page())
-            element()->document()->page()->focusController()->advanceFocus(direction, 0);
+            element()->document()->page()->focusController()->advanceFocus(direction);
     } else if (direction == FocusDirectionNone || direction == FocusDirectionMouse) {
         edit->focusByOwner(oldFocusedElement);
     } else
@@ -428,11 +428,6 @@ bool BaseMultipleFieldsDateAndTimeInputType::hasBadInput() const
 {
     DateTimeEditElement* edit = dateTimeEditElement();
     return element()->value().isEmpty() && edit && edit->anyEditableFieldsHaveValues();
-}
-
-bool BaseMultipleFieldsDateAndTimeInputType::isKeyboardFocusable(KeyboardEvent*) const
-{
-    return element()->isFocusable();
 }
 
 AtomicString BaseMultipleFieldsDateAndTimeInputType::localeIdentifier() const

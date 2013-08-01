@@ -1035,7 +1035,7 @@ bool SVGElement::hasFocusEventListeners() const
     return mutableThis->hasEventListeners(eventNames().focusinEvent) || mutableThis->hasEventListeners(eventNames().focusoutEvent);
 }
 
-bool SVGElement::isKeyboardFocusable(KeyboardEvent*) const
+bool SVGElement::isKeyboardFocusable() const
 {
     return isFocusable();
 }

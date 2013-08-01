@@ -174,7 +174,7 @@ private:
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
     virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return computedStyle(pseudoElementSpecifier); }
     virtual void willRecalcStyle(StyleChange) OVERRIDE;
-    virtual bool isKeyboardFocusable(KeyboardEvent*) const OVERRIDE;
+    virtual bool isKeyboardFocusable() const OVERRIDE;
 
     void buildPendingResourcesIfNeeded();
 

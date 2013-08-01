@@ -191,7 +191,7 @@ HTMLImageElement* HTMLAreaElement::imageElement() const
     return toHTMLMapElement(mapElement)->imageElement();
 }
 
-bool HTMLAreaElement::isKeyboardFocusable(KeyboardEvent*) const
+bool HTMLAreaElement::isKeyboardFocusable() const
 {
     return isFocusable();
 }

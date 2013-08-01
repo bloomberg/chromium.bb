@@ -115,9 +115,9 @@ void RadioInputType::handleKeyupEvent(KeyboardEvent* event)
     dispatchSimulatedClickIfActive(event);
 }
 
-bool RadioInputType::isKeyboardFocusable(KeyboardEvent* event) const
+bool RadioInputType::isKeyboardFocusable() const
 {
-    if (!InputType::isKeyboardFocusable(event))
+    if (!InputType::isKeyboardFocusable())
         return false;
 
     // When using Spatial Navigation, every radio button should be focusable.

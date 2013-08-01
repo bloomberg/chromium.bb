@@ -107,9 +107,9 @@ void HTMLFrameOwnerElement::setSandboxFlags(SandboxFlags flags)
     m_sandboxFlags = flags;
 }
 
-bool HTMLFrameOwnerElement::isKeyboardFocusable(KeyboardEvent* event) const
+bool HTMLFrameOwnerElement::isKeyboardFocusable() const
 {
-    return m_contentFrame && HTMLElement::isKeyboardFocusable(event);
+    return m_contentFrame && HTMLElement::isKeyboardFocusable();
 }
 
 SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionCode& ec) const

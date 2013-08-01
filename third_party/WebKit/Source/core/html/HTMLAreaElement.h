@@ -52,7 +52,7 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool supportsFocus() const;
     virtual String target() const;
-    virtual bool isKeyboardFocusable(KeyboardEvent*) const;
+    virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool isMouseFocusable() const;
     virtual bool rendererIsFocusable() const OVERRIDE;
     virtual void updateFocusAppearance(bool /*restorePreviousSelection*/);

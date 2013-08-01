@@ -87,7 +87,7 @@ private:
     virtual bool supportsFocus() const OVERRIDE { return true; };
     virtual bool rendererIsFocusable() const OVERRIDE;
 
-    virtual bool isKeyboardFocusable(KeyboardEvent*) const;
+    virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool isPluginElement() const;
 
     mutable ScriptInstance m_instance;

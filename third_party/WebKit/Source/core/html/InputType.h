@@ -193,7 +193,7 @@ public:
     virtual bool shouldSubmitImplicitly(Event*);
     virtual PassRefPtr<HTMLFormElement> formForSubmission() const;
     virtual bool hasCustomFocusLogic() const;
-    virtual bool isKeyboardFocusable(KeyboardEvent*) const;
+    virtual bool isKeyboardFocusable() const;
     virtual bool shouldShowFocusRingOnMouseFocus() const;
     virtual bool shouldUseInputMethod() const;
     virtual void handleFocusEvent(Element* oldFocusedElement, FocusDirection);
