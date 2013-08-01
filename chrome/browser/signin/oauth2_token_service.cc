@@ -77,6 +77,8 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   // The given |oauth2_token_service| will be informed when fetching is done.
   static Fetcher* CreateAndStart(OAuth2TokenService* oauth2_token_service,
                                  net::URLRequestContextGetter* getter,
+                                 const std::string& chrome_client_id,
+                                 const std::string& chrome_client_secret,
                                  const std::string& refresh_token,
                                  const OAuth2TokenService::ScopeSet& scopes,
                                  base::WeakPtr<RequestImpl> waiting_request);
@@ -102,6 +104,8 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
  private:
   Fetcher(OAuth2TokenService* oauth2_token_service,
           net::URLRequestContextGetter* getter,
+          const std::string& chrome_client_id,
+          const std::string& chrome_client_secret,
           const std::string& refresh_token,
           const OAuth2TokenService::ScopeSet& scopes,
           base::WeakPtr<RequestImpl> waiting_request);
@@ -131,6 +135,9 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   GoogleServiceAuthError error_;
   std::string access_token_;
   base::Time expiration_date_;
+  // OAuth2 client id and secret.
+  std::string chrome_client_id_;
+  std::string chrome_client_secret_;
 
   DISALLOW_COPY_AND_ASSIGN(Fetcher);
 };
@@ -139,11 +146,19 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
 OAuth2TokenService::Fetcher* OAuth2TokenService::Fetcher::CreateAndStart(
     OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* getter,
+    const std::string& chrome_client_id,
+    const std::string& chrome_client_secret,
     const std::string& refresh_token,
     const OAuth2TokenService::ScopeSet& scopes,
     base::WeakPtr<RequestImpl> waiting_request) {
   OAuth2TokenService::Fetcher* fetcher = new Fetcher(
-      oauth2_token_service, getter, refresh_token, scopes, waiting_request);
+      oauth2_token_service,
+      getter,
+      chrome_client_id,
+      chrome_client_secret,
+      refresh_token,
+      scopes,
+      waiting_request);
   fetcher->Start();
   return fetcher;
 }
@@ -151,6 +166,8 @@ OAuth2TokenService::Fetcher* OAuth2TokenService::Fetcher::CreateAndStart(
 OAuth2TokenService::Fetcher::Fetcher(
     OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* getter,
+    const std::string& chrome_client_id,
+    const std::string& chrome_client_secret,
     const std::string& refresh_token,
     const OAuth2TokenService::ScopeSet& scopes,
     base::WeakPtr<RequestImpl> waiting_request)
@@ -159,7 +176,9 @@ OAuth2TokenService::Fetcher::Fetcher(
       refresh_token_(refresh_token),
       scopes_(scopes),
       retry_number_(0),
-      error_(GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
+      error_(GoogleServiceAuthError::SERVICE_UNAVAILABLE),
+      chrome_client_id_(chrome_client_id),
+      chrome_client_secret_(chrome_client_secret) {
   DCHECK(oauth2_token_service_);
   DCHECK(getter_.get());
   DCHECK(refresh_token_.length());
@@ -174,8 +193,8 @@ OAuth2TokenService::Fetcher::~Fetcher() {
 
 void OAuth2TokenService::Fetcher::Start() {
   fetcher_.reset(new OAuth2AccessTokenFetcher(this, getter_.get()));
-  fetcher_->Start(GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-                  GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
+  fetcher_->Start(chrome_client_id_,
+                  chrome_client_secret_,
                   refresh_token_,
                   std::vector<std::string>(scopes_.begin(), scopes_.end()));
   retry_timer_.Stop();
@@ -318,12 +337,46 @@ bool OAuth2TokenService::RefreshTokenIsAvailable() {
 scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
-  return StartRequestWithContext(GetRequestContext(), scopes, consumer);
+  return StartRequestForClientWithContext(
+      GetRequestContext(),
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
+      scopes,
+      consumer);
+}
+
+scoped_ptr<OAuth2TokenService::Request>
+OAuth2TokenService::StartRequestForClient(
+    const std::string& client_id,
+    const std::string& client_secret,
+    const OAuth2TokenService::ScopeSet& scopes,
+    OAuth2TokenService::Consumer* consumer) {
+  return StartRequestForClientWithContext(
+      GetRequestContext(),
+      client_id,
+      client_secret,
+      scopes,
+      consumer);
 }
 
 scoped_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestWithContext(
     net::URLRequestContextGetter* getter,
+    const ScopeSet& scopes,
+    Consumer* consumer) {
+  return StartRequestForClientWithContext(
+      getter,
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
+      scopes,
+      consumer);
+}
+
+scoped_ptr<OAuth2TokenService::Request>
+OAuth2TokenService::StartRequestForClientWithContext(
+    net::URLRequestContextGetter* getter,
+    const std::string& client_id,
+    const std::string& client_secret,
     const ScopeSet& scopes,
     Consumer* consumer) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -357,7 +410,12 @@ OAuth2TokenService::StartRequestWithContext(
   }
 
   pending_fetchers_[fetch_parameters] =
-      Fetcher::CreateAndStart(this, getter, refresh_token, scopes,
+      Fetcher::CreateAndStart(this,
+                              getter,
+                              client_id,
+                              client_secret,
+                              refresh_token,
+                              scopes,
                               request->AsWeakPtr());
   return request.PassAs<Request>();
 }

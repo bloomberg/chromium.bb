@@ -227,9 +227,25 @@ void ExperimentalIdentityGetAuthTokenFunction::OnGetTokenFailure(
 }
 
 void ExperimentalIdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
-  login_token_request_ =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
-          StartRequest(OAuth2TokenService::ScopeSet(), this);
+  ProfileOAuth2TokenService* service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+#if defined(OS_CHROMEOS)
+  if (chrome::IsRunningInForcedAppMode()) {
+    std::string app_client_id;
+    std::string app_client_secret;
+    if (chromeos::UserManager::Get()->GetAppModeChromeClientOAuthInfo(
+           &app_client_id, &app_client_secret)) {
+      login_token_request_ =
+          service->StartRequestForClient(app_client_id,
+                                         app_client_secret,
+                                         OAuth2TokenService::ScopeSet(),
+                                         this);
+      return;
+    }
+  }
+#endif
+  login_token_request_ = service->StartRequest(OAuth2TokenService::ScopeSet(),
+                                               this);
 }
 
 void ExperimentalIdentityGetAuthTokenFunction::StartGaiaRequest(
@@ -269,17 +285,6 @@ ExperimentalIdentityGetAuthTokenFunction::CreateMintTokenFlow(
               oauth2_info.client_id,
               oauth2_info.scopes,
               gaia_mint_token_mode_));
-#if defined(OS_CHROMEOS)
-  if (chrome::IsRunningInForcedAppMode()) {
-    std::string chrome_client_id;
-    std::string chrome_client_secret;
-    if (chromeos::UserManager::Get()->GetAppModeChromeClientOAuthInfo(
-           &chrome_client_id, &chrome_client_secret)) {
-      mint_token_flow->SetChromeOAuthClientInfo(chrome_client_id,
-                                                chrome_client_secret);
-    }
-  }
-#endif
   return mint_token_flow;
 }
 
