@@ -68,3 +68,6 @@ PnaclTranslationCacheTest.*
 # Failing on the bot. crbug.com/266452
 BackgroundModeManagerTest.*
 
+# Failing on the bot. crbug.com/266972
+OneClickSigninBubbleViewTest.ShowBubble
+
