@@ -1391,20 +1391,6 @@ crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html
 crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/canvas-text-alignment.html [ ImageOnlyFailure ]
 crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
 
-# Below test case need to rebaseline after crbug.com/252120
-# Image only
-crbug.com/252120 [ Linux Win ] tables/mozilla/bugs/bug73321.html [ NeedsRebaseline ]
-crbug.com/252120 [ Linux Win Mac ] tables/mozilla/bugs/bug13169.html [ NeedsRebaseline ]
-crbug.com/252120 [ Linux ] tables/mozilla_expected_failures/bugs/bug23847.html [ NeedsRebaseline ]
-# Text only
-crbug.com/252120 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ NeedsRebaseline ]
-crbug.com/252120 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ NeedsRebaseline ]
-crbug.com/252120 [ Mac ] fast/table/table-all-rowspans-height-distribution-in-rows-except-overlapped.html [ NeedsRebaseline ]
-crbug.com/252120 [ Mac ] fast/table/table-all-rowspans-height-distribution-in-rows.html [ NeedsRebaseline ]
-# Text and image both
-crbug.com/252120 [ Mac ] tables/mozilla/bugs/bug73321.html [ NeedsRebaseline ]
-crbug.com/252120 [ Win Mac ] tables/mozilla_expected_failures/bugs/bug23847.html [ NeedsRebaseline ]
-
 crbug.com/259083 compositing/geometry/clipping-foreground.html [ NeedsRebaseline ]
 crbug.com/259083 compositing/geometry/foreground-layer.html [ NeedsRebaseline ]
 crbug.com/259083 compositing/geometry/repaint-foreground-layer.html [ NeedsRebaseline ]
