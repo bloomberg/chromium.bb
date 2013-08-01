@@ -196,6 +196,8 @@ extern const char kEnableResourceContentSettings[];
 extern const char kEnableSavePasswordBubble[];
 extern const char kEnableSdch[];
 extern const char kEnableStickyKeys[];
+extern const char kDisableStickyKeys[];
+extern const char kDisableSpdy31[];
 extern const char kEnableSpdy4a2[];
 extern const char kEnableSpdyCredentialFrames[];
 extern const char kEnableSpellingAutoCorrect[];

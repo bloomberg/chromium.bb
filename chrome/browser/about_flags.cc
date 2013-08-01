@@ -1595,7 +1595,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_STICKY_KEYS_NAME,
     IDS_FLAGS_ENABLE_STICKY_KEYS_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableStickyKeys),
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableStickyKeys,
+                              switches::kDisableStickyKeys)
   },
 #endif
   {

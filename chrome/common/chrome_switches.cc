@@ -686,6 +686,9 @@ const char kEnableSdch[]                    = "enable-sdch";
 // Enables support of sticky keys.
 const char kEnableStickyKeys[]              = "enable-sticky-keys";
 
+// Disables support of sticky keys.
+const char kDisableStickyKeys[]              = "disable-sticky-keys";
+
 // Disable SPDY/3.1. This is a temporary testing flag.
 const char kDisableSpdy31[]                 = "disable-spdy31";
 
