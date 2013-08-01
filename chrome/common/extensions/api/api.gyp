@@ -30,6 +30,7 @@
           'bluetooth.idl',
           'bookmark_manager_private.json',
           'bookmarks.json',
+          'browsing_data.json',
           'chromeos_info_private.json',
           'cloud_print_private.json',
           'command_line_private.json',
