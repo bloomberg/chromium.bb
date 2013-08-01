@@ -28,16 +28,13 @@ found in the LICENSE file.
       <div class="page" id="extension-settings">
         <tabbox id="tab-box">
           <div id="header">
-            <div id="developer-controls">
-              <h1 id="header-title" i18n-content="appsDevtoolTitle"></h1>
-              <input id="search" type="text"
-                  i18n-values=".placeholder:appsDevtoolSearch"
-                  spellcheck="false">
-            </div>
             <div id="tabs-header-container">
               <tabs id="tabs" tabindex="0">
                 <tab i18n-content="appsDevtoolApps"></tab>
                 <tab i18n-content="appsDevtoolExtensions"></tab>
+                <input id="search" type="text"
+                    i18n-values=".placeholder:appsDevtoolSearch"
+                    spellcheck="false">
               </tabs>
             </div>
             <div id="header-bottom-gradient"></div>
@@ -47,7 +44,7 @@ found in the LICENSE file.
             <tabpanel id="apps-tab">
               <div class="unpacked-list">
                 <div class="list-header">
-                  <span i18n-content="appsDevtoolUnpacked"></span>
+                  <span class="title" i18n-content="appsDevtoolUnpacked"></span>
                   <button class="load-unpacked"
                       i18n-content="appsDevtoolLoadUnpackedButton"></button>
                 </div>
@@ -59,10 +56,11 @@ found in the LICENSE file.
               </div>
               <div class="packed-list">
                 <div class="list-header">
-                  <span i18n-content="appsDevtoolInstalled"></span>
+                  <span class="title" i18n-content="appsDevtoolInstalled">
+                  </span>
                   <div class="update-items-container">
-                    <span class="update-items-progress"
-                        i18n-content="appsDevtoolUpdating"></span>
+                    <button class="update-items-progress"
+                        i18n-content="appsDevtoolUpdating" disabled></span>
                     <button class="update-items-now"
                         i18n-content="appsDevtoolUpdateButton"></button>
                   </div>
@@ -78,7 +76,7 @@ found in the LICENSE file.
             <tabpanel id="extensions-tab">
               <div class="unpacked-list">
                 <div class="list-header">
-                  <span i18n-content="appsDevtoolUnpacked"></span>
+                  <span class="title" i18n-content="appsDevtoolUnpacked"></span>
                   <button class="load-unpacked"
                       i18n-content="appsDevtoolLoadUnpackedButton"></button>
                 </div>
@@ -90,10 +88,11 @@ found in the LICENSE file.
               </div>
               <div class="packed-list">
                 <div class="list-header">
-                  <span i18n-content="appsDevtoolInstalled"></span>
+                  <span class="title" i18n-content="appsDevtoolInstalled">
+                  </span>
                   <div class="update-items-container">
-                    <span class="update-items-progress"
-                        i18n-content="appsDevtoolUpdating"></span>
+                    <button class="update-items-progress"
+                        i18n-content="appsDevtoolUpdating" disabled></span>
                     <button class="update-items-now"
                         i18n-content="appsDevtoolUpdateButton"></button>
                   </div>

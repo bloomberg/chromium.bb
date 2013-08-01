@@ -74,7 +74,8 @@ cr.define('apps_dev_tool', function() {
 
   /**
    * Applies the given |filter| to the items list.
-   * @param {string} filter Curent string in the search box.
+   * @param {string} filter Regular expression to that will be used to
+   *     match the name of the items we want to show.
    */
   function rebuildAppList(filter) {
     packedAppList = [];
@@ -84,7 +85,7 @@ cr.define('apps_dev_tool', function() {
 
     for (var i = 0; i < completeList.length; i++) {
       var item = completeList[i];
-      if (filter && item.name.toLowerCase().search(filter.toLowerCase()) < 0)
+      if (filter && item.name.toLowerCase().search(filter) < 0)
         continue;
       if (item.isApp) {
         if (item.is_unpacked)
@@ -502,7 +503,9 @@ cr.define('apps_dev_tool', function() {
    * Rebuilds the item list and reloads the app on every search input.
    */
   ItemsList.onSearchInput = function() {
-    rebuildAppList($('search').value);
+    // Escape regexp special chars (e.g. ^, $, etc.).
+    rebuildAppList($('search').value.toLowerCase().replace(
+        /[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
     reloadAppDisplay();
   };
 

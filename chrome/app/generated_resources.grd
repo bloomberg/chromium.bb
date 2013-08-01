@@ -5520,9 +5520,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
         Boo... You have no extensions :-(
       </message>
-      <message name="IDS_APPS_DEVTOOL_TITLE" desc="Title for the apps devtool app.">
-        Apps Developer Tool
-      </message>
       <message name="IDS_EXTENSIONS_PERMISSIONS_HEADING" desc="Heading for permissions dialog in apps_devtools">
         It can:
       </message>
@@ -5536,7 +5533,7 @@ Make sure you do not expose any sensitive information.
         Pack...
       </message>
       <message name="IDS_APPS_DEVTOOL_UPDATE_BUTTON" desc="Text for the 'Update app/extensions' button.">
-        Update now
+        Update
       </message>
       <message name="IDS_APPS_DEVTOOL_SEARCH" desc="Placeholder text that appears inside the search box until the user inputs data.">
         Search
@@ -5565,7 +5562,7 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_APPS_DEVTOOL_INSTALLED" desc="Text for the word 'Installed' (installed app or extension).">
         Installed
       </message>
-      <message name="IDS_APPS_DEVTOOL_UPDATING" desc="Text for the word 'Updateing...' when the user clicked on 'Update Now'.">
+      <message name="IDS_APPS_DEVTOOL_UPDATING" desc="Text for the word 'Updating...' when the user clicks on 'Update'.">
         Updating...
       </message>
       <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_BUTTON" desc="Text of  the delete button in the apps/extension delete confirmation dialog.">

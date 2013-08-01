@@ -5,11 +5,14 @@
 body,
 html {
   color: rgb(48, 57, 66);
-  font-family: Arial, sans-serif;
-  font-size: 90%;
+  font-family: Ubuntu, Arial, sans-serif;
   height: 100%;
   overflow: hidden;
   width: 100%;
+}
+
+body {
+  font-size: 75%;
 }
 
 #container {
@@ -28,19 +31,22 @@ hr {
 #tabs-header-container {
   border-bottom: 1px solid #e0e0e0;
   height: calc(100% - 53px);
+  margin-top: 10px;
 }
 
 #tabs {
   border-bottom: none;
+  left: -5px;
   margin: 5px auto 0;
   padding: 0 5px;
-  width: 710px;
+  position: relative;
+  width: 720px;
 }
 
 tabs tab {
   border-color: #e0e0e0;
-  min-width: 150px;
-  padding: 5px 20px;
+  min-width: 100px;
+  padding: 7px 20px;
 }
 
 tabs > [selected] {
@@ -71,14 +77,16 @@ tabpanels {
 
 tabpanel {
   margin: 0 auto;
-  padding-top: 80px;
+  padding-top: 24px;
   width: 710px;
 }
 
 /* Header */
 
 #header {
-  background-color: rgba(255, 255, 255, 0.9);
+  background-image: -webkit-linear-gradient(white,
+                                            white 40%,
+                                            rgba(255, 255, 255, 0.92));
   position: fixed;
   top: 0;
   width: 100%;
@@ -102,21 +110,23 @@ tabpanel {
 
 #header-bottom-gradient {
   background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0));
-  height: 30px;
+  height: 20px;
   position: fixed;
-  top: 80px;
+  top: 42px;
   width: 100%;
 }
 
 #search {
-  float: right;
-  margin-top: 7px;
   padding: 4px;
+  position: absolute;
+  right: 15px;
+  text-align: left;
   width: 200px;
 }
 
 html[dir='rtl'] #search {
-  float: left;
+  left: 15px;
+  right: auto;
 }
 
 /* Contents */
@@ -124,7 +134,7 @@ html[dir='rtl'] #search {
 #extension-settings {
   margin: 0;
   max-width: 100%;
-  padding: 10px 0;
+  padding: 0 0 10px;
 }
 
 #no-extensions-message,
@@ -142,10 +152,12 @@ html[dir='rtl'] .load-unpacked {
   float: left;
 }
 
+.update-items-progress.updating ~ .update-items-now,
 .update-items-progress {
   display: none;
 }
 
+.update-items-progress ~ .update-items-now,
 .update-items-progress.updating {
   display: inline;
 }
@@ -162,7 +174,7 @@ html[dir='rtl'] .load-unpacked {
 }
 
 .empty-item-list {
-  height: 3em;
+  height: 6em;
 }
 
 #no-extensions,
@@ -183,8 +195,15 @@ html[dir='rtl'] .load-unpacked {
 }
 
 .list-header {
+  border-bottom: 1px solid #e0e0e0;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+}
+
+.list-header .title {
+  display: inline-block;
+  margin-top: 5px;
 }
 
 .extension-list-item-wrapper {
@@ -213,6 +232,7 @@ html[dir='rtl'] .extension-list-item {
   color: rgb(48, 57, 66);
   font-size: 14px;
   font-weight: 500;
+  margin-bottom: 5px;
   text-decoration: none;
 }
 
@@ -245,7 +265,9 @@ html[dir='rtl'] .extension-list-item {
 
 .extension-details {
   -webkit-box-flex: 1;
+  -webkit-margin-start: 8px;
   -webkit-padding-start: 55px;
+  margin-top: 15px;
   max-width: 600px;
 }
 
@@ -317,8 +339,8 @@ html[dir='rtl'] .enable-control {
   margin-bottom: 10px;
 }
 
-.delete-link {
-  float: right;
+.extension-details-all div {
+  margin: 5px 0;
 }
 
 html[dir='rtl'] .delete-link {
