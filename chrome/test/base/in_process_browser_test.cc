@@ -53,9 +53,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "ui/compositor/compositor_switches.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/audio/audio_handler.h"
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 

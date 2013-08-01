@@ -33,9 +33,6 @@ ASH_EXPORT extern const char kAshDisableAutoMaximizing[];
 ASH_EXPORT extern const char kAshDisableAutoWindowPlacement[];
 ASH_EXPORT extern const char kAshDisableDisplayChangeLimiter[];
 ASH_EXPORT extern const char kAshDisableImmersiveFullscreen[];
-#if defined(OS_CHROMEOS)
-ASH_EXPORT extern const char kAshDisableNewAudioHandler[];
-#endif
 ASH_EXPORT extern const char kAshDisableNewLockAnimations[];
 ASH_EXPORT extern const char kAshDisablePerAppLauncher[];
 ASH_EXPORT extern const char kAshDisableUIScaling[];
@@ -53,9 +50,6 @@ ASH_EXPORT extern const char kAshEnableDockedWindows[];
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreen[];
-#if defined(OS_CHROMEOS)
-ASH_EXPORT extern const char kAshEnableNewAudioHandler[];
-#endif
 ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshEnableStickyEdges[];
 ASH_EXPORT extern const char kAshEnableTrayDragging[];

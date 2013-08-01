@@ -18,7 +18,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
-#include "ash/system/chromeos/audio/audio_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/network_tray_delegate.h"
 #include "ash/system/date/clock_observer.h"
@@ -48,7 +47,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -230,7 +228,6 @@ ash::NetworkObserver::NetworkType NetworkTypeForCellular(
 }
 
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
-                           public AudioHandler::VolumeObserver,
                            public PowerManagerClient::Observer,
                            public SessionManagerClient::Observer,
                            public NetworkLibrary::NetworkManagerObserver,
@@ -293,9 +290,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void Initialize() OVERRIDE {
-    if (!ash::switches::UseNewAudioHandler()) {
-      AudioHandler::GetInstance()->AddVolumeObserver(this);
-    }
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
@@ -361,10 +355,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     // Unregister content notifications befure destroying any components.
     registrar_.reset();
-
-    if (!ash::switches::UseNewAudioHandler() && AudioHandler::GetInstance()) {
-      AudioHandler::GetInstance()->RemoveVolumeObserver(this);
-    }
 
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
@@ -1021,17 +1011,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       session_length_limit_ = base::TimeDelta();
     }
     GetSystemTrayNotifier()->NotifySessionLengthLimitChanged();
-  }
-
-  // Overridden from AudioHandler::VolumeObserver.
-  virtual void OnVolumeChanged() OVERRIDE {
-    float level = AudioHandler::GetInstance()->GetVolumePercent() / 100.f;
-    GetSystemTrayNotifier()->NotifyVolumeChanged(level);
-  }
-
-  // Overridden from AudioHandler::VolumeObserver.
-  virtual void OnMuteToggled() OVERRIDE {
-    GetSystemTrayNotifier()->NotifyMuteToggled();
   }
 
   // Overridden from PowerManagerClient::Observer.

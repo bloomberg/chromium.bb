@@ -119,18 +119,6 @@ class DummyVolumeControlDelegate : public VolumeControlDelegate {
     last_accelerator_ = accelerator;
     return consume_;
   }
-  virtual void SetVolumePercent(double percent) OVERRIDE {
-  }
-  virtual bool IsAudioMuted() const OVERRIDE {
-    return false;
-  }
-  virtual void SetAudioMuted(bool muted) OVERRIDE {
-  }
-  virtual float GetVolumeLevel() const OVERRIDE {
-    return 0.0;
-  }
-  virtual void SetVolumeLevel(float level) OVERRIDE {
-  }
 
   int handle_volume_mute_count() const {
     return handle_volume_mute_count_;

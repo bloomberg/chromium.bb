@@ -141,7 +141,6 @@ std::string DeriveCommandLine(const GURL& start_url,
       ash::switches::kAshDefaultWallpaperSmall,
 #if defined(OS_CHROMEOS)
       ash::switches::kAshDisableAudioDeviceMenu,
-      ash::switches::kAshDisableNewAudioHandler,
 #endif
       ash::switches::kAshHostWindowBounds,
       ash::switches::kAshTouchHud,

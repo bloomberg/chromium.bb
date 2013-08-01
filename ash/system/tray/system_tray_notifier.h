@@ -27,7 +27,6 @@
 #include "base/observer_list.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/chromeos/audio/audio_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/sms_observer.h"
 #include "ash/system/chromeos/screen_security/screen_capture_observer.h"
@@ -82,9 +81,6 @@ public:
   void RemoveUserObserver(UserObserver* observer);
 
 #if defined(OS_CHROMEOS)
-  void AddAudioObserver(AudioObserver* observer);
-  void RemoveAudioObserver(AudioObserver* observer);
-
   void AddNetworkObserver(NetworkObserver* observer);
   void RemoveNetworkObserver(NetworkObserver* observer);
 
@@ -122,8 +118,6 @@ public:
   void NotifyUpdateRecommended(UpdateObserver::UpdateSeverity severity);
   void NotifyUserUpdate();
 #if defined(OS_CHROMEOS)
-  void NotifyVolumeChanged(float level);
-  void NotifyMuteToggled();
   void NotifySetNetworkMessage(NetworkTrayDelegate* delegate,
                                NetworkObserver::MessageType message_type,
                                NetworkObserver::NetworkType network_type,
@@ -160,7 +154,6 @@ public:
   ObserverList<UpdateObserver> update_observers_;
   ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)
-  ObserverList<AudioObserver> audio_observers_;
   ObserverList<NetworkObserver> network_observers_;
   ObserverList<SmsObserver> sms_observers_;
   ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;

@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
@@ -90,7 +89,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
-#include "chromeos/audio/audio_pref_handler.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
@@ -453,13 +451,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO));
 
-  if (ash::switches::UseNewAudioHandler()) {
-    CrasAudioHandler::Initialize(
-        AudioDevicesPrefHandler::Create(g_browser_process->local_state()));
-  } else {
-    AudioHandler::Initialize(
-       AudioPrefHandler::Create(g_browser_process->local_state()));
-  }
+  CrasAudioHandler::Initialize(
+      AudioDevicesPrefHandler::Create(g_browser_process->local_state()));
 
   if (!StartupUtils::IsOobeCompleted())
     system::StatisticsProvider::GetInstance()->LoadOemManifest();
@@ -784,11 +777,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // even if Initialize() wasn't called.
   SystemKeyEventListener::Shutdown();
   imageburner::BurnManager::Shutdown();
-  if (ash::switches::UseNewAudioHandler()) {
-    CrasAudioHandler::Shutdown();
-  } else {
-    AudioHandler::Shutdown();
-  }
+  CrasAudioHandler::Shutdown();
 
   WebSocketProxyController::Shutdown();
 

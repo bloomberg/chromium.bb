@@ -18,7 +18,6 @@ class VolumeControllerTest : public InProcessBrowserTest {
   virtual ~VolumeControllerTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    CHECK(ash::switches::UseNewAudioHandler());
     volume_controller_.reset(new VolumeController());
     audio_handler_ = chromeos::CrasAudioHandler::Get();
   }

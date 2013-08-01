@@ -78,20 +78,6 @@ class DummyVolumeControlDelegate : public VolumeControlDelegate,
   virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) OVERRIDE {
     return true;
   }
-  virtual void SetVolumePercent(double percent) OVERRIDE {
-    SetPercent(percent);
-  }
-  virtual bool IsAudioMuted() const OVERRIDE {
-    return false;
-  }
-  virtual void SetAudioMuted(bool muted) OVERRIDE {
-  }
-  virtual float GetVolumeLevel() const OVERRIDE {
-    return 0.0;
-  }
-  virtual void SetVolumeLevel(float level) OVERRIDE {
-  }
-
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyVolumeControlDelegate);

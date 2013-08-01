@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
@@ -43,6 +42,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -1186,13 +1186,13 @@ void TestingAutomationProvider::GetVolumeInfo(DictionaryValue* args,
                                               IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
   if (!audio_handler) {
-    reply.SendError("AudioHandler not initialized.");
+    reply.SendError("CrasAudioHandler not initialized.");
     return;
   }
-  return_value->SetDouble("volume", audio_handler->GetVolumePercent());
-  return_value->SetBoolean("is_mute", audio_handler->IsMuted());
+  return_value->SetDouble("volume", audio_handler->GetOutputVolumePercent());
+  return_value->SetBoolean("is_mute", audio_handler->IsOutputMuted());
   reply.SendSuccess(return_value.get());
 }
 
@@ -1204,12 +1204,12 @@ void TestingAutomationProvider::SetVolume(DictionaryValue* args,
     reply.SendError("Invalid or missing args.");
     return;
   }
-  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
   if (!audio_handler) {
-    reply.SendError("AudioHandler not initialized.");
+    reply.SendError("CrasAudioHandler not initialized.");
     return;
   }
-  audio_handler->SetVolumePercent(volume_percent);
+  audio_handler->SetOutputVolumePercent(volume_percent);
   reply.SendSuccess(NULL);
 }
 
@@ -1221,12 +1221,12 @@ void TestingAutomationProvider::SetMute(DictionaryValue* args,
     reply.SendError("Invalid or missing args.");
     return;
   }
-  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
   if (!audio_handler) {
-    reply.SendError("AudioHandler not initialized.");
+    reply.SendError("CrasAudioHandler not initialized.");
     return;
   }
-  audio_handler->SetMuted(mute);
+  audio_handler->SetOutputMute(mute);
   reply.SendSuccess(NULL);
 }
 

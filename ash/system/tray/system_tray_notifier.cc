@@ -124,14 +124,6 @@ void SystemTrayNotifier::RemoveUserObserver(UserObserver* observer) {
 
 #if defined(OS_CHROMEOS)
 
-void SystemTrayNotifier::AddAudioObserver(AudioObserver* observer) {
-  audio_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
-  audio_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddNetworkObserver(NetworkObserver* observer) {
   network_observers_.AddObserver(observer);
 }
@@ -287,18 +279,6 @@ void SystemTrayNotifier::NotifyUserUpdate() {
 }
 
 #if defined(OS_CHROMEOS)
-
-void SystemTrayNotifier::NotifyVolumeChanged(float level) {
-  FOR_EACH_OBSERVER(AudioObserver,
-                    audio_observers_,
-                    OnVolumeChanged(level));
-}
-
-void SystemTrayNotifier::NotifyMuteToggled() {
-  FOR_EACH_OBSERVER(AudioObserver,
-                    audio_observers_,
-                    OnMuteToggled());
-}
 
 void SystemTrayNotifier::NotifySetNetworkMessage(
     NetworkTrayDelegate* delegate,

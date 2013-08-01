@@ -116,11 +116,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   message_center::MessageCenter::Initialize();
 
 #if defined(OS_CHROMEOS)
-  if (ash::switches::UseNewAudioHandler()) {
-    // Create CrasAudioHandler for testing since g_browser_process
-    // is absent.
-    chromeos::CrasAudioHandler::InitializeForTesting();
-  }
+  // Create CrasAudioHandler for testing since g_browser_process
+  // is absent.
+  chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
 
   ash::Shell::CreateInstance(delegate_);
@@ -155,8 +153,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   message_center::MessageCenter::Shutdown();
 
 #if defined(OS_CHROMEOS)
-  if (ash::switches::UseNewAudioHandler())
-    chromeos::CrasAudioHandler::Shutdown();
+  chromeos::CrasAudioHandler::Shutdown();
 #endif
 
   aura::Env::DeleteInstance();

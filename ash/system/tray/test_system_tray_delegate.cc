@@ -31,18 +31,6 @@ class TestVolumeControlDelegate : public VolumeControlDelegate {
   virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) OVERRIDE {
     return true;
   }
-  virtual void SetVolumePercent(double percent) OVERRIDE {
-  }
-  virtual bool IsAudioMuted() const OVERRIDE {
-    return true;
-  }
-  virtual void SetAudioMuted(bool muted) OVERRIDE {
-  }
-  virtual float GetVolumeLevel() const OVERRIDE {
-    return 0.0;
-  }
-  virtual void SetVolumeLevel(float level) OVERRIDE {
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestVolumeControlDelegate);

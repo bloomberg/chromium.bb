@@ -5,7 +5,6 @@
 #ifndef ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_
 #define ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_
 
-#include "ash/system/chromeos/audio/audio_observer.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "chromeos/audio/cras_audio_handler.h"
 
@@ -18,8 +17,7 @@ class AudioDetailedView;
 }
 
 class TrayAudio : public TrayImageItem,
-                  public chromeos::CrasAudioHandler::AudioObserver,
-                  public AudioObserver {
+                  public chromeos::CrasAudioHandler::AudioObserver {
  public:
   explicit TrayAudio(SystemTray* system_tray);
   virtual ~TrayAudio();
@@ -35,10 +33,6 @@ class TrayAudio : public TrayImageItem,
   virtual void DestroyDetailedView() OVERRIDE;
   virtual bool ShouldHideArrow() const OVERRIDE;
   virtual bool ShouldShowLauncher() const OVERRIDE;
-
-  // Overridden from AudioObserver.
-  virtual void OnVolumeChanged(float percent) OVERRIDE;
-  virtual void OnMuteToggled() OVERRIDE;
 
   // Overridden from chromeos::CrasAudioHandler::AudioObserver.
   virtual void OnOutputVolumeChanged() OVERRIDE;

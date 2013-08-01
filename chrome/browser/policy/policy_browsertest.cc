@@ -130,8 +130,7 @@
 #include "ash/shell_delegate.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/audio/audio_handler.h"
-#include "chromeos/audio/audio_pref_handler.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #endif
 
 using content::BrowserThread;
@@ -426,17 +425,27 @@ bool ContainsVisibleElement(content::WebContents* contents,
 }
 
 #if defined(OS_CHROMEOS)
-// Volume observer mock used by the audio policy tests.
-class TestVolumeObserver : public chromeos::AudioHandler::VolumeObserver {
+class TestAudioObserver : public chromeos::CrasAudioHandler::AudioObserver {
  public:
-  TestVolumeObserver() {}
-  virtual ~TestVolumeObserver() {}
+  TestAudioObserver() : output_mute_changed_count_(0) {
+  }
 
-  MOCK_METHOD0(OnVolumeChanged, void());
-  MOCK_METHOD0(OnMuteToggled, void());
+  int output_mute_changed_count() const {
+    return output_mute_changed_count_;
+  }
+
+  virtual ~TestAudioObserver() {}
+
+ protected:
+  // chromeos::CrasAudioHandler::AudioObserver overrides.
+  virtual void OnOutputMuteChanged() OVERRIDE {
+    ++output_mute_changed_count_;
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestVolumeObserver);
+  int output_mute_changed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAudioObserver);
 };
 #endif
 
@@ -1857,44 +1866,41 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableScreenshotsFile) {
   ASSERT_EQ(CountScreenshots(), screenshot_count + 1);
 }
 
-// TODO(rkc,jennyz): Fix this once we remove the old Audio Handler completely.
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_DisableAudioOutput) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
   // Set up the mock observer.
-  chromeos::AudioHandler::Initialize(
-      chromeos::AudioPrefHandler::Create(g_browser_process->local_state()));
-  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
-  scoped_ptr<TestVolumeObserver> mock(new TestVolumeObserver());
-  audio_handler->AddVolumeObserver(mock.get());
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
+  scoped_ptr<TestAudioObserver> test_observer(new TestAudioObserver);
+  audio_handler->AddAudioObserver(test_observer.get());
 
-  bool prior_state = audio_handler->IsMuted();
-  // Make sure we are not muted and then toggle the policy and observe if the
-  // trigger was successful.
-  audio_handler->SetMuted(false);
-  EXPECT_FALSE(audio_handler->IsMuted());
-  EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
+  bool prior_state = audio_handler->IsOutputMuted();
+  // Make sure the audio is not muted and then toggle the policy and observe
+  // if the output mute changed event is fired.
+  audio_handler->SetOutputMute(false);
+  EXPECT_FALSE(audio_handler->IsOutputMuted());
+  EXPECT_EQ(1, test_observer->output_mute_changed_count());
   PolicyMap policies;
   policies.Set(key::kAudioOutputAllowed, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
   UpdateProviderPolicy(policies);
-  EXPECT_TRUE(audio_handler->IsMuted());
-  // This should not change the state now and should not trigger OnMuteToggled.
-  audio_handler->SetMuted(false);
-  EXPECT_TRUE(audio_handler->IsMuted());
+  EXPECT_TRUE(audio_handler->IsOutputMuted());
+  // This should not change the state now and should not trigger output mute
+  // changed event.
+  audio_handler->SetOutputMute(false);
+  EXPECT_TRUE(audio_handler->IsOutputMuted());
+  EXPECT_EQ(1, test_observer->output_mute_changed_count());
 
-  // Toggle back and observe if the trigger was successful.
-  EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
+  // Toggle back and observe if the output mute changed event is fired.
   policies.Set(key::kAudioOutputAllowed, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
-  EXPECT_FALSE(audio_handler->IsMuted());
-  EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
-  audio_handler->SetMuted(true);
-  EXPECT_TRUE(audio_handler->IsMuted());
+  EXPECT_FALSE(audio_handler->IsOutputMuted());
+  EXPECT_EQ(1, test_observer->output_mute_changed_count());
+  audio_handler->SetOutputMute(true);
+  EXPECT_TRUE(audio_handler->IsOutputMuted());
+  EXPECT_EQ(2, test_observer->output_mute_changed_count());
   // Revert the prior state.
-  EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
-  audio_handler->SetMuted(prior_state);
-  audio_handler->RemoveVolumeObserver(mock.get());
-  chromeos::AudioHandler::Shutdown();
+  audio_handler->SetOutputMute(prior_state);
+  audio_handler->RemoveAudioObserver(test_observer.get());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_SessionLengthLimit) {
