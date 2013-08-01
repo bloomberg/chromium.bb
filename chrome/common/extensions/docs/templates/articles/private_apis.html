@@ -1,0 +1,15 @@
+<h1 class="page_title">Private APIs</h1>
+
+<p>These are only usable by extensions bundled with Chrome, they are not publicly accessible.</p>
+
+<ul>
+{{?is_apps}}
+{{#api_list.apps.private}}
+<li><a href="{{name}}.html">{{name}}</a></li>
+{{/api_list.apps.private}}
+{{:is_apps}}
+{{#api_list.extensions.private}}
+<li><a href="{{name}}.html">{{name}}</a></li>
+{{/api_list.extensions.private}}
+{{/is_apps}}
+</ul>

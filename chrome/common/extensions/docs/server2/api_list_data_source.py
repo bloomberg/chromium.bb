@@ -37,21 +37,27 @@ class APIListDataSource(object):
                            for name in public_templates)
       experimental_apis = []
       chrome_apis = []
+      private_apis = []
       for template_name in sorted(template_names):
         if model.UnixName(template_name) not in api_names:
           continue
         entry = {'name': template_name.replace('_', '.')}
         if template_name.startswith('experimental'):
           experimental_apis.append(entry)
+        elif template_name.endswith('Private'):
+          private_apis.append(entry)
         else:
           chrome_apis.append(entry)
       if len(chrome_apis):
         chrome_apis[-1]['last'] = True
       if len(experimental_apis):
         experimental_apis[-1]['last'] = True
+      if len(private_apis):
+        private_apis[-1]['last'] = True
       return {
         'chrome': chrome_apis,
-        'experimental': experimental_apis
+        'experimental': experimental_apis,
+        'private': private_apis
       }
 
     def _ListAPIs(self, base_dir, apis):
@@ -71,7 +77,7 @@ class APIListDataSource(object):
   def GetAllNames(self):
     names = []
     for platform in ['apps', 'extensions']:
-      for category in ['chrome', 'experimental']:
+      for category in ['chrome', 'experimental', 'private']:
        names.extend(self.get(platform).get(category))
     return [api_name['name'] for api_name in names]
 

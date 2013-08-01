@@ -118,7 +118,11 @@ class LinkErrorDetector(object):
     self._public_path = public_path
     self._pages = defaultdict(lambda: Page(404, (), (), ()))
     self._root_pages = frozenset(root_pages)
-    self._always_detached = frozenset(('apps/404.html', 'extensions/404.html'))
+    self._always_detached = frozenset((
+        'apps/404.html',
+        'extensions/404.html',
+        'apps/private_apis.html',
+        'extensions/private_apis.html'))
     self._redirection_whitelist = frozenset(('extensions/', 'apps/'))
 
     self._RenderAllPages()
@@ -183,7 +187,7 @@ class LinkErrorDetector(object):
       fragment = components.fragment
 
       if components.path == '':
-        if fragment == 'top':
+        if fragment == 'top' or fragment == '':
           continue
         if not fragment in page.anchors:
           broken_links.append((200, url, link, 'target anchor not found'))
@@ -238,7 +242,7 @@ class LinkErrorDetector(object):
     part of the connected component containing the |root_pages|. These pages
     are orphans and cannot be reached simply by clicking through the server.
     '''
-    pages_to_check = deque(self._root_pages)
+    pages_to_check = deque(self._root_pages.union(self._always_detached))
     found = set(self._root_pages) | self._always_detached
 
     while pages_to_check:
