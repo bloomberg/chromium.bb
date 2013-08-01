@@ -652,13 +652,15 @@ void LoadNSSLibraries() {
   // For Debian derivatives NSS libraries are located here.
   paths.push_back(base::FilePath("/usr/lib/nss"));
 
-  // Ubuntu 11.10 (Oneiric) places the libraries here.
+  // Ubuntu 11.10 (Oneiric) and Debian Wheezy place the libraries here.
 #if defined(ARCH_CPU_X86_64)
   paths.push_back(base::FilePath("/usr/lib/x86_64-linux-gnu/nss"));
 #elif defined(ARCH_CPU_X86)
   paths.push_back(base::FilePath("/usr/lib/i386-linux-gnu/nss"));
 #elif defined(ARCH_CPU_ARMEL)
   paths.push_back(base::FilePath("/usr/lib/arm-linux-gnueabi/nss"));
+#elif defined(ARCH_CPU_MIPSEL)
+  paths.push_back(base::FilePath("/usr/lib/mipsel-linux-gnu/nss"));
 #endif
 
   // A list of library files to load.
