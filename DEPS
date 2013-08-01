@@ -312,7 +312,7 @@ deps_os = {
     # Binary level profile guided optimizations. This points to the
     # latest release binaries for the toolchain.
     "src/third_party/syzygy/binaries":
-      (Var("googlecode_url") % "sawbuck") + "/trunk/syzygy/binaries@1627",
+      (Var("googlecode_url") % "sawbuck") + "/trunk/syzygy/binaries@1689",
 
     # Binaries for nacl sdk.
     "src/third_party/nacl_sdk_binaries":
