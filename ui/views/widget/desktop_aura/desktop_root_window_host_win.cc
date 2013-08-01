@@ -192,8 +192,14 @@ void DesktopRootWindowHostWin::InitFocus(aura::Window* window) {
 void DesktopRootWindowHostWin::Close() {
   if (should_animate_window_close_) {
     pending_close_ = true;
-    // OnWindowHidingAnimationCompleted does the actual Close.
     content_window_->Hide();
+    const bool is_animating =
+        content_window_->layer()->GetAnimator()->IsAnimatingProperty(
+            ui::LayerAnimationElement::VISIBILITY);
+    // Animation may not start for a number of reasons.
+    if (!is_animating)
+      message_handler_->Close();
+    // else case, OnWindowHidingAnimationCompleted does the actual Close.
   } else {
     message_handler_->Close();
   }
@@ -525,7 +531,7 @@ void DesktopRootWindowHostWin::PrepareForShutdown() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostWin, aura::WindowAnimationHost implementation:
+// DesktopRootWindowHostWin, aura::AnimationHost implementation:
 
 void DesktopRootWindowHostWin::SetHostTransitionBounds(
     const gfx::Rect& bounds) {

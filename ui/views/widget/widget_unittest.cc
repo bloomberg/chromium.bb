@@ -1998,6 +1998,54 @@ TEST_F(WidgetTest, GetNativeThemeFromDestructor) {
     RunGetNativeThemeFromDestructor(params, false);
 }
 
+// Used by HideCloseDestroy. Allows setting a boolean when the widget is
+// destroyed.
+class CloseDestroysWidget : public Widget {
+ public:
+  explicit CloseDestroysWidget(bool* destroyed)
+      : destroyed_(destroyed) {
+  }
+
+  virtual ~CloseDestroysWidget() {
+    if (destroyed_) {
+      *destroyed_ = true;
+      base::MessageLoop::current()->QuitNow();
+    }
+  }
+
+  void Detach() { destroyed_ = NULL; }
+
+ private:
+  // If non-null set to true from destructor.
+  bool* destroyed_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloseDestroysWidget);
+};
+
+// Verifies Close() results in destroying.
+TEST_F(WidgetTest, CloseDestroys) {
+  bool destroyed = false;
+  CloseDestroysWidget* widget = new CloseDestroysWidget(&destroyed);
+  Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_MENU);
+  params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  params.native_widget = new DesktopNativeWidgetAura(widget);
+#endif
+  widget->Init(params);
+  widget->Show();
+  widget->Hide();
+  widget->Close();
+  // Run the message loop as Close() asynchronously deletes.
+  RunPendingMessages();
+  EXPECT_TRUE(destroyed);
+  // Close() should destroy the widget. If not we'll cleanup to avoid leaks.
+  if (!destroyed) {
+    widget->Detach();
+    widget->CloseNow();
+  }
+}
+
 // A view that consumes mouse-pressed event and gesture-tap-down events.
 class RootViewTestView : public View {
  public:
