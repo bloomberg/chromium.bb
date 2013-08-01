@@ -126,7 +126,12 @@ def run_torture(status, compiler, platform, extra_args):
                  'localgcc': 'local_gcc'}
 
   failures = []
-  for optmode in ['O0', 'O3']:
+  if compiler == 'pnacl':
+    # O3_O0 is clang -O3 followed by pnacl-translate -O0
+    optmodes = ['O0', 'O3', 'O0_O0', 'O3_O0']
+  else:
+    optmodes = ['O0', 'O3']
+  for optmode in optmodes:
     # TODO: support an option like -k? For now, always keep going
     retcode = eh_tests(status.context,
                       '_'.join((config_map[compiler], platform, optmode)),
