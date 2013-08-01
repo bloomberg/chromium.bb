@@ -58,6 +58,8 @@ class LoadingMeasurementAnalyzer(object):
           if not value or value == '-':
             continue
           value = float(value)
+          if not value:
+            continue
           if '_avg' in key:
             self.avgs[key].append((value, row['url']))
           elif '_max' in key:
