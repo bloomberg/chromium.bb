@@ -87,6 +87,14 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
                 "expected": "PASS",
                 "actual": "SKIP"
             },
+            "unexpected-fail.html": {
+                "expected": "PASS",
+                "actual": "FAIL"
+            },
+            "flaky-failed.html": {
+                "expected": "PASS FAIL",
+                "actual": "FAIL"
+            },
             "media-document-audio-repaint.html": {
                 "expected": "IMAGE",
                 "actual": "IMAGE",
@@ -117,7 +125,7 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
         "SKIP": 2,
         "TIMEOUT": 16,
         "IMAGE+TEXT": 0,
-        "FAIL": 0,
+        "FAIL": 2,
         "AUDIO": 0
     },
     "has_wdiff": true,
@@ -336,8 +344,8 @@ class JsonResultsTest(unittest.TestCase):
             "builds": ["2", "1"],
             "tests": {
                 "001.html": {
-                    "results": [[100, TEXT]],
-                    "times": [[100, 0]],
+                    "results": [[100, TEXT], [100, FAIL]],
+                    "times": [[200, 0]],
                 }
             }
         }, json_string=JSON_RESULTS_OLD_TEMPLATE)
@@ -351,13 +359,13 @@ class JsonResultsTest(unittest.TestCase):
             }
         }, json_string=JSON_RESULTS_OLD_TEMPLATE)
         incremental_json, _ = JsonResults._get_incremental_json(self._builder, incremental_results, is_full_results_format=False)
-        merged_results, _ = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=200, sort_keys=True)
+        merged_results, _ = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=201, sort_keys=True)
         self.assert_json_equal(merged_results, self._make_test_json({
             "builds": ["3", "2", "1"],
             "tests": {
                 "001.html": {
-                    "results": [[101, TEXT]],
-                    "times": [[101, 0]],
+                    "results": [[101, TEXT], [100, FAIL]],
+                    "times": [[201, 0]],
                 }
             }
         }))
@@ -369,7 +377,7 @@ class JsonResultsTest(unittest.TestCase):
                 "buildNumbers": ["3"],
                 "chromeRevision": ["5678"],
                 "failure_map": CHAR_TO_FAILURE,
-                "num_failures_by_type": {"AUDIO": [0], "CRASH": [3], "IMAGE": [1], "IMAGE+TEXT": [0], "MISSING": [0], "PASS": [10], "SKIP": [2], "TEXT": [3], "TIMEOUT": [16]},
+                "num_failures_by_type": {"AUDIO": [0], "CRASH": [3], "FAIL": [2], "IMAGE": [1], "IMAGE+TEXT": [0], "MISSING": [0], "PASS": [10], "SKIP": [2], "TEXT": [3], "TIMEOUT": [16]},
                 "secondsSinceEpoch": [1368146629],
                 "tests": {
                     "media": {
@@ -405,7 +413,16 @@ class JsonResultsTest(unittest.TestCase):
                             "expected": "PASS FAIL IMAGE TIMEOUT CRASH MISSING",
                             "results": [[1, TIMEOUT]],
                             "times": [[1, 6]],
-                        }
+                        },
+                        "flaky-failed.html": {
+                            "expected": "PASS FAIL",
+                            "results": [[1, FAIL]],
+                            "times": [[1, 0]],
+                        },
+                        "unexpected-fail.html": {
+                            "results": [[1, FAIL]],
+                            "times": [[1, 0]],
+                        },
                     }
                 }
             },
@@ -574,13 +591,13 @@ class JsonResultsTest(unittest.TestCase):
             # Incremental results
             {"builds": ["4", "3"],
              "tests": {"001.html": {
-                           "results": [[2, IMAGE]],
-                           "times": [[2, 2]]}}},
+                           "results": [[2, IMAGE], [1, FAIL]],
+                           "times": [[3, 2]]}}},
             # Expected results
             {"builds": ["4", "3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[2, IMAGE], [200, TEXT]],
-                           "times": [[2, 2], [200, 0]]}}})
+                           "results": [[1, FAIL], [2, IMAGE], [200, TEXT]],
+                           "times": [[3, 2], [200, 0]]}}})
 
     def test_merge_multiple_tests_multiple_runs(self):
         self._test_merge(
@@ -1019,6 +1036,9 @@ class JsonResultsTest(unittest.TestCase):
                        "foo.bar2": {
                            "results": [[100, IMAGE]],
                            "times": [[100, 0]]},
+                       "test.failed": {
+                           "results": [[5, FAIL]],
+                           "times": [[5, 0]]},
                        },
              "version": 3},
             # Incremental results
@@ -1029,6 +1049,9 @@ class JsonResultsTest(unittest.TestCase):
                        "foo.bar3": {
                            "results": [[1, TEXT]],
                            "times": [[1, 0]]},
+                       "test.failed": {
+                           "results": [[5, FAIL]],
+                           "times": [[5, 0]]},
                        },
              "version": 4},
             # Expected results
@@ -1042,6 +1065,9 @@ class JsonResultsTest(unittest.TestCase):
                        "foo.bar3": {
                            "results": [[1, TEXT]],
                            "times": [[1, 0]]},
+                       "test.failed": {
+                           "results": [[10, FAIL]],
+                           "times": [[10, 0]]},
                        },
              "version": 4})
 

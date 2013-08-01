@@ -32,7 +32,7 @@ import re
 import sys
 import traceback
 
-from model.testfile import TestFile
+from testfile import TestFile
 
 JSON_RESULTS_FILE = "results.json"
 JSON_RESULTS_FILE_SMALL = "results-small.json"
@@ -44,10 +44,11 @@ JSON_RESULTS_HIERARCHICAL_VERSION = 4
 JSON_RESULTS_MAX_BUILDS = 500
 JSON_RESULTS_MAX_BUILDS_SMALL = 100
 
+ACTUAL_KEY = "actual"
 BUG_KEY = "bugs"
 BUILD_NUMBERS_KEY = "buildNumbers"
+BUILDER_NAME_KEY = "builder_name"
 EXPECTED_KEY = "expected"
-ACTUAL_KEY = "actual"
 FAILURE_MAP_KEY = "failure_map"
 FAILURES_BY_TYPE_KEY = "num_failures_by_type"
 FIXABLE_COUNTS_KEY = "fixableCounts"
@@ -59,10 +60,11 @@ VERSIONS_KEY = "version"
 
 AUDIO = "A"
 CRASH = "C"
-IMAGE = "I"
-IMAGE_PLUS_TEXT = "Z"
+FAIL = "Q"
 # This is only output by gtests.
 FLAKY = "L"
+IMAGE = "I"
+IMAGE_PLUS_TEXT = "Z"
 MISSING = "O"
 NO_DATA = "N"
 NOTRUN = "Y"
@@ -75,6 +77,7 @@ AUDIO_STRING = "AUDIO"
 CRASH_STRING = "CRASH"
 IMAGE_PLUS_TEXT_STRING = "IMAGE+TEXT"
 IMAGE_STRING = "IMAGE"
+FAIL_STRING = "FAIL"
 FLAKY_STRING = "FLAKY"
 MISSING_STRING = "MISSING"
 NO_DATA_STRING = "NO DATA"
@@ -90,6 +93,7 @@ FAILURE_TO_CHAR = {
     IMAGE_PLUS_TEXT_STRING: IMAGE_PLUS_TEXT,
     IMAGE_STRING: IMAGE,
     FLAKY_STRING: FLAKY,
+    FAIL_STRING: FAIL,
     MISSING_STRING: MISSING,
     NO_DATA_STRING: NO_DATA,
     NOTRUN_STRING: NOTRUN,
@@ -369,16 +373,12 @@ class JsonResults(object):
         num_failing_tests = 0
         failures_by_type = full_results_format[FAILURES_BY_TYPE_KEY]
 
-        # FIXME: full_results format has "FAIL" entries, but that is no longer a possible result type.
-        if 'FAIL' in failures_by_type:
-            del failures_by_type['FAIL']
-
         tests = {}
         cls._populate_tests_from_full_results(full_results_format[TESTS_KEY], tests)
 
         aggregate_results_format = {
             VERSIONS_KEY: JSON_RESULTS_HIERARCHICAL_VERSION,
-            full_results_format['builder_name']: {
+            full_results_format[BUILDER_NAME_KEY]: {
                 # FIXME: Use dict comprehensions once we update the server to python 2.7.
                 FAILURES_BY_TYPE_KEY: dict((key, [value]) for key, value in failures_by_type.items()),
                 TESTS_KEY: tests,
