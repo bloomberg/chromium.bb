@@ -88,16 +88,6 @@ void ConfigurationPolicyPrefStore::OnPolicyUpdated(
 void ConfigurationPolicyPrefStore::OnPolicyServiceInitialized(
     PolicyDomain domain) {
   if (domain == POLICY_DOMAIN_CHROME) {
-    // Subtle: the current implementation of PolicyServiceImpl sends out this
-    // notification before invoking OnPolicyUpdated(), which gets posted to
-    // execute "soon" after on the current message loop.
-    // But the PrefService will start reading the preferences published by
-    // this store once OnInitializationCompleted() is sent out, so make sure
-    // this is reading the current policies before doing so.
-    // TODO(joaodasilva): remove this, and fix the order of notifications from
-    // the PolicyService instead. http://crbug.com/263728
-    Refresh();
-
     FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
                       OnInitializationCompleted(true));
   }

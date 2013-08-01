@@ -51,19 +51,6 @@ class PolicyServiceImpl : public PolicyService,
   typedef ObserverList<PolicyService::Observer, true> Observers;
   typedef std::map<PolicyDomain, Observers*> ObserverMap;
 
-  // Information about policy changes sent to observers.
-  class PolicyChangeInfo {
-   public:
-    PolicyChangeInfo(const PolicyNamespace& policy_namespace,
-                     const PolicyMap& previous,
-                     const PolicyMap& current);
-    ~PolicyChangeInfo();
-
-    PolicyNamespace policy_namespace_;
-    PolicyMap previous_;
-    PolicyMap current_;
-  };
-
   // ConfigurationPolicyProvider::Observer overrides:
   virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
 
@@ -72,11 +59,6 @@ class PolicyServiceImpl : public PolicyService,
   void NotifyNamespaceUpdated(const PolicyNamespace& ns,
                               const PolicyMap& previous,
                               const PolicyMap& current);
-
-  // Helper function invoked by NotifyNamespaceUpdated() to notify observers
-  // via a queued task, to deal with reentrancy issues caused by observers
-  // generating policy changes.
-  void NotifyNamespaceUpdatedTask(scoped_ptr<PolicyChangeInfo> info);
 
   // Combines the policies from all the providers, and notifies the observers
   // of namespaces whose policies have been modified.
@@ -115,7 +97,7 @@ class PolicyServiceImpl : public PolicyService,
 
   // Used to create tasks to delay new policy updates while we may be already
   // processing previous policy updates.
-  base::WeakPtrFactory<PolicyServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PolicyServiceImpl> update_task_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyServiceImpl);
 };

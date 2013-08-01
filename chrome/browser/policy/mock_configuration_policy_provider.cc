@@ -7,6 +7,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/policy/policy_bundle.h"
 
 namespace policy {
@@ -21,6 +23,8 @@ void MockConfigurationPolicyProvider::UpdateChromePolicy(
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(policy);
   UpdatePolicy(bundle.Pass());
+  if (base::MessageLoop::current())
+    base::RunLoop().RunUntilIdle();
 }
 
 MockConfigurationPolicyObserver::MockConfigurationPolicyObserver() {}

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
@@ -15,22 +14,10 @@
 
 namespace policy {
 
-PolicyServiceImpl::PolicyChangeInfo::PolicyChangeInfo(
-    const PolicyNamespace& policy_namespace,
-    const PolicyMap& previous,
-    const PolicyMap& current)
-    : policy_namespace_(policy_namespace) {
-  previous_.CopyFrom(previous);
-  current_.CopyFrom(current);
-}
-
-PolicyServiceImpl::PolicyChangeInfo::~PolicyChangeInfo() {
-}
-
 typedef PolicyServiceImpl::Providers::const_iterator Iterator;
 
 PolicyServiceImpl::PolicyServiceImpl(const Providers& providers)
-    : weak_ptr_factory_(this) {
+    : update_task_ptr_factory_(this) {
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
   providers_ = providers;
@@ -102,8 +89,13 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
     refresh_callbacks_.push_back(callback);
 
   if (providers_.empty()) {
-    // Refresh is immediately complete if there are no providers.
-    MergeAndTriggerUpdates();
+    // Refresh is immediately complete if there are no providers. See the note
+    // on OnUpdatePolicy() about why this is a posted task.
+    update_task_ptr_factory_.InvalidateWeakPtrs();
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&PolicyServiceImpl::MergeAndTriggerUpdates,
+                   update_task_ptr_factory_.GetWeakPtr()));
   } else {
     // Some providers might invoke OnUpdatePolicy synchronously while handling
     // RefreshPolicies. Mark all as pending before refreshing.
@@ -117,45 +109,31 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
 void PolicyServiceImpl::OnUpdatePolicy(ConfigurationPolicyProvider* provider) {
   DCHECK_EQ(1, std::count(providers_.begin(), providers_.end(), provider));
   refresh_pending_.erase(provider);
-  MergeAndTriggerUpdates();
+
+  // Note: a policy change may trigger further policy changes in some providers.
+  // For example, disabling SigninAllowed would cause the CloudPolicyManager to
+  // drop all its policies, which makes this method enter again for that
+  // provider.
+  //
+  // Therefore this update is posted asynchronously, to prevent reentrancy in
+  // MergeAndTriggerUpdates. Also, cancel a pending update if there is any,
+  // since both will produce the same PolicyBundle.
+  update_task_ptr_factory_.InvalidateWeakPtrs();
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&PolicyServiceImpl::MergeAndTriggerUpdates,
+                 update_task_ptr_factory_.GetWeakPtr()));
 }
 
 void PolicyServiceImpl::NotifyNamespaceUpdated(
     const PolicyNamespace& ns,
     const PolicyMap& previous,
     const PolicyMap& current) {
-  // If running a unit test that hasn't setup a MessageLoop, don't send any
-  // notifications.
-  if (!base::MessageLoop::current())
-    return;
-
-  // Don't queue up a task if we have no observers - that way Observers added
-  // later don't get notified of changes that happened during construction time.
-  if (observers_.find(ns.domain) == observers_.end())
-    return;
-
-  // Notify Observers via a queued task, so Observers can't trigger a re-entrant
-  // call to MergeAndTriggerUpdates() by modifying policy.
-  scoped_ptr<PolicyChangeInfo> changes(
-      new PolicyChangeInfo(ns, previous, current));
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PolicyServiceImpl::NotifyNamespaceUpdatedTask,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&changes)));
-}
-
-void PolicyServiceImpl::NotifyNamespaceUpdatedTask(
-    scoped_ptr<PolicyChangeInfo> changes) {
-  ObserverMap::iterator iterator = observers_.find(
-      changes->policy_namespace_.domain);
+  ObserverMap::iterator iterator = observers_.find(ns.domain);
   if (iterator != observers_.end()) {
-    FOR_EACH_OBSERVER(
-        PolicyService::Observer,
-        *iterator->second,
-        OnPolicyUpdated(changes->policy_namespace_,
-                        changes->previous_,
-                        changes->current_));
+    FOR_EACH_OBSERVER(PolicyService::Observer,
+                      *iterator->second,
+                      OnPolicyUpdated(ns, previous, current));
   }
 }
 
