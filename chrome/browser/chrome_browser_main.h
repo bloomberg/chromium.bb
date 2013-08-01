@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/main_function_params.h"
 
 class ActiveTabTracker;
 class BrowserProcessImpl;
@@ -39,10 +40,6 @@ extern const char kMissingLocaleDataMessage[];
 
 namespace chrome_browser_metrics {
 class TrackingSynchronizer;
-}
-
-namespace content {
-struct MainFunctionParams;
 }
 
 namespace performance_monitor {
@@ -134,7 +131,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Members initialized on construction ---------------------------------------
 
-  const content::MainFunctionParams& parameters_;
+  const content::MainFunctionParams parameters_;
   const CommandLine& parsed_command_line_;
   int result_code_;
 

@@ -16,7 +16,7 @@ import org.chromium.base.MemoryPressureListener;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.AndroidBrowserProcess;
-import org.chromium.content.browser.ContentVideoView;
+import org.chromium.content.browser.BrowserStartupConfig;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
@@ -51,19 +51,39 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
     private DevToolsServer mDevToolsServer;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (!CommandLine.isInitialized()) CommandLine.initFromFile(COMMAND_LINE_FILE);
         waitForDebuggerIfNeeded();
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
+
+        BrowserStartupConfig.setAsync(new BrowserStartupConfig.StartupCallback() {
+            @Override
+            public void run(int startupResult) {
+                if (startupResult > 0) {
+                    // TODO: Show error message.
+                    Log.e(TAG, "Chromium browser process initialization failed");
+                    finish();
+                } else {
+                    finishInitialization(savedInstanceState);
+                }
+            }
+        });
+
         try {
-            AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_LIMIT);
+            if (!AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_LIMIT)) {
+                // Process was already running, finish initialization now.
+                finishInitialization(savedInstanceState);
+            }
         } catch (ProcessInitException e) {
             Log.e(TAG, "Chromium browser process initialization failed", e);
             finish();
         }
+    }
+
+    private void finishInitialization(final Bundle savedInstanceState) {
         setContentView(R.layout.testshell_activity);
         mTabManager = (TabManager) findViewById(R.id.tab_manager);
         String startupUrl = getUrlFromIntent(getIntent());
@@ -161,6 +181,7 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
 
     /**
      * Creates a {@link TestShellTab} with a URL specified by {@code url}.
+     *
      * @param url The URL the new {@link TestShellTab} should start with.
      */
     public void createTab(String url) {

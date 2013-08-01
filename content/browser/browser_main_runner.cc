@@ -29,11 +29,7 @@ namespace content {
 
 class BrowserMainRunnerImpl : public BrowserMainRunner {
  public:
-  BrowserMainRunnerImpl()
-      : is_initialized_(false),
-        is_shutdown_(false),
-        created_threads_(false) {
-  }
+  BrowserMainRunnerImpl() : is_initialized_(false), is_shutdown_(false) {}
 
   virtual ~BrowserMainRunnerImpl() {
     if (is_initialized_ && !is_shutdown_)
@@ -102,11 +98,10 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 #endif
     ui::InitializeInputMethod();
 
-    main_loop_->CreateThreads();
+    main_loop_->CreateStartupTasks();
     int result_code = main_loop_->GetResultCode();
     if (result_code > 0)
       return result_code;
-    created_threads_ = true;
 
     // Return -1 to indicate no early termination.
     return -1;
@@ -124,8 +119,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     DCHECK(!is_shutdown_);
     g_exited_main_message_loop = true;
 
-    if (created_threads_)
-      main_loop_->ShutdownThreadsAndCleanUp();
+    main_loop_->ShutdownThreadsAndCleanUp();
 
     ui::ShutdownInputMethod();
 #if defined(OS_WIN)
@@ -145,9 +139,6 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 
   // True if the runner has been shut down.
   bool is_shutdown_;
-
-  // True if the non-UI threads were created.
-  bool created_threads_;
 
   scoped_ptr<NotificationServiceImpl> notification_service_;
   scoped_ptr<BrowserMainLoop> main_loop_;

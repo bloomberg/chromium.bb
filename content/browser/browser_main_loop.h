@@ -6,8 +6,10 @@
 #define CONTENT_BROWSER_BROWSER_MAIN_LOOP_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_process_sub_thread.h"
+#include "content/public/browser/browser_main_runner.h"
 
 class CommandLine;
 
@@ -65,8 +67,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   void InitializeToolkit();
   void MainMessageLoopStart();
 
-  // Create all secondary threads.
-  void CreateThreads();
+  // Create the tasks we need to complete startup.
+  void CreateStartupTasks();
 
   // Perform the default message loop run logic.
   void RunMainMessageLoopParts();
@@ -94,8 +96,16 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   void InitializeMainThread();
 
+  // Called just before creating the threads
+  int PreCreateThreads();
+
+  // Create all secondary threads.
+  int CreateThreads();
+
   // Called right after the browser threads have been started.
-  void BrowserThreadsStarted();
+  int BrowserThreadsStarted();
+
+  int PreMainMessageLoopRun();
 
   void MainMessageLoopRun();
 
@@ -103,6 +113,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   const MainFunctionParams& parameters_;
   const CommandLine& parsed_command_line_;
   int result_code_;
+  // True if the non-UI threads were created.
+  bool created_threads_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<base::MessageLoop> main_message_loop_;

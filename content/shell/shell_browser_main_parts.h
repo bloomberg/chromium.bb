@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/common/main_function_params.h"
 
 namespace base {
 class Thread;
@@ -22,7 +23,6 @@ namespace content {
 class ShellBrowserContext;
 class ShellDevToolsDelegate;
 class ShellPluginServiceFilter;
-struct MainFunctionParams;
 
 class ShellBrowserMainParts : public BrowserMainParts {
  public:
@@ -54,7 +54,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   scoped_ptr<ShellBrowserContext> off_the_record_browser_context_;
 
   // For running content_browsertests.
-  const MainFunctionParams& parameters_;
+  const MainFunctionParams parameters_;
   bool run_message_loop_;
 
   scoped_ptr<ShellDevToolsDelegate> devtools_delegate_;
