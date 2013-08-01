@@ -4108,13 +4108,6 @@ void RenderViewImpl::deleteFileSystem(
   NOTREACHED();
 }
 
-void RenderViewImpl::queryStorageUsageAndQuota(
-    WebFrame* frame,
-    WebStorageQuotaType type,
-    WebStorageQuotaCallbacks* callbacks) {
-  NOTREACHED();
-}
-
 void RenderViewImpl::requestStorageQuota(
     WebFrame* frame,
     WebStorageQuotaType type,

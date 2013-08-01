@@ -640,10 +640,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void deleteFileSystem(WebKit::WebFrame* frame,
                                 WebKit::WebFileSystemType type,
                                 WebKit::WebFileSystemCallbacks* callbacks);
-  virtual void queryStorageUsageAndQuota(
-      WebKit::WebFrame* frame,
-      WebKit::WebStorageQuotaType type,
-      WebKit::WebStorageQuotaCallbacks* callbacks);
   virtual void requestStorageQuota(
       WebKit::WebFrame* frame,
       WebKit::WebStorageQuotaType type,

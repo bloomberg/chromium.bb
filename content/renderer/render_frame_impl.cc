@@ -808,23 +808,6 @@ void RenderFrameImpl::deleteFileSystem(
       base::Bind(&FileStatusCallbackAdapter, callbacks));
 }
 
-void RenderFrameImpl::queryStorageUsageAndQuota(
-    WebKit::WebFrame* frame,
-    WebKit::WebStorageQuotaType type,
-    WebKit::WebStorageQuotaCallbacks* callbacks) {
-  DCHECK(frame);
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isUnique()) {
-    // Unique origins cannot store persistent state.
-    callbacks->didFail(WebKit::WebStorageQuotaErrorAbort);
-    return;
-  }
-  ChildThread::current()->quota_dispatcher()->QueryStorageUsageAndQuota(
-      GURL(origin.toString()),
-      static_cast<quota::StorageType>(type),
-      QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
-}
-
 void RenderFrameImpl::requestStorageQuota(
     WebKit::WebFrame* frame,
     WebKit::WebStorageQuotaType type,
