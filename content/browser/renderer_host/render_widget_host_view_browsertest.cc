@@ -855,15 +855,8 @@ class CompositingRenderWidgetHostViewTabCaptureHighDPI
   DISALLOW_COPY_AND_ASSIGN(CompositingRenderWidgetHostViewTabCaptureHighDPI);
 };
 
-// High-DPI doesn't work right with content-shell on linux-aura.
-// http://crbug.com/265028
-#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_CopyFromCompositingSurface DISABLED_CopyFromCompositingSurface
-#else
-#define MAYBE_CopyFromCompositingSurface CopyFromCompositingSurface
-#endif
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewTabCaptureHighDPI,
-                       MAYBE_CopyFromCompositingSurface) {
+                       CopyFromCompositingSurface) {
   gfx::Rect copy_rect(200, 150);
   gfx::Size output_size = copy_rect.size();
   gfx::Size expected_bitmap_size =
@@ -877,17 +870,8 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewTabCaptureHighDPI,
                                 video_frame);
 }
 
-// High-DPI doesn't work right with content-shell on linux-aura.
-// http://crbug.com/265028
-#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_CopyFromCompositingSurfaceVideoFrame \
-    DISABLED_CopyFromCompositingSurfaceVideoFrame
-#else
-#define MAYBE_CopyFromCompositingSurfaceVideoFrame \
-    CopyFromCompositingSurfaceVideoFrame
-#endif
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewTabCaptureHighDPI,
-                       MAYBE_CopyFromCompositingSurfaceVideoFrame) {
+                       CopyFromCompositingSurfaceVideoFrame) {
   gfx::Size html_rect_size(200, 150);
   // Grab 90x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect =
