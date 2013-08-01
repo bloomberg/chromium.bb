@@ -670,7 +670,10 @@ enum NotificationType {
   NOTIFICATION_EXTENSION_UPDATE_FOUND,
 
   // Component Updater -------------------------------------------------------
-
+  //
+  // The component updater notifications are deprecated and they will be
+  // removed soon.
+  //
   // Sent when the component updater starts doing update checks. If no
   // component has been registered for update this notification is not
   // generated. The source is the component updater itself and there are

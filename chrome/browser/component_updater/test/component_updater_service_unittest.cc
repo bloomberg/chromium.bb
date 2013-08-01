@@ -24,6 +24,16 @@
 using content::BrowserThread;
 using content::TestNotificationTracker;
 
+using ::testing::_;
+using ::testing::InSequence;
+using ::testing::Mock;
+
+MockComponentObserver::MockComponentObserver() {
+}
+
+MockComponentObserver::~MockComponentObserver() {
+}
+
 TestConfigurator::TestConfigurator()
     : times_(1),
       recheck_time_(0),
@@ -264,8 +274,11 @@ TEST_F(ComponentUpdaterTest, StartStop) {
 TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
+  MockComponentObserver observer;
+
   TestInstaller installer;
   CrxComponent com;
+  com.observer = &observer;
   EXPECT_EQ(ComponentUpdateService::kOk,
             RegisterComponent(&com,
                               kTestComponent_abag,
@@ -281,12 +294,19 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 
   // We loop twice, but there are no updates so we expect two sleep messages.
   test_configurator()->SetLoopCount(2);
+
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+              .Times(1);
   component_updater()->Start();
 
   ASSERT_EQ(1ul, notification_tracker().size());
   TestNotificationTracker::Event ev1 = notification_tracker().at(0);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev1.type);
 
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+              .Times(2);
   message_loop_.Run();
 
   ASSERT_EQ(3ul, notification_tracker().size());
@@ -309,8 +329,15 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 
   notification_tracker().Reset();
   test_configurator()->SetLoopCount(2);
+
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+              .Times(1);
   component_updater()->Start();
 
+  EXPECT_CALL(observer,
+              OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+              .Times(2);
   message_loop_.Run();
 
   ASSERT_EQ(3ul, notification_tracker().size());
@@ -347,11 +374,41 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   URLRequestPostInterceptor post_interceptor(&ping_checker);
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
+  MockComponentObserver observer1;
+  {
+    InSequence seq;
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATE_FOUND, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATE_READY, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(2);
+  }
+
+  MockComponentObserver observer2;
+  {
+    InSequence seq;
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(2);
+  }
+
   TestInstaller installer1;
   CrxComponent com1;
+  com1.observer = &observer1;
   RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), &installer1);
   TestInstaller installer2;
   CrxComponent com2;
+  com2.observer = &observer2;
   RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), &installer2);
 
   const GURL expected_update_url_1(
@@ -386,6 +443,9 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   EXPECT_EQ(0, ping_checker.NumMisses());
 
   ASSERT_EQ(5ul, notification_tracker().size());
+
+  TestNotificationTracker::Event ev0 = notification_tracker().at(0);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
 
   TestNotificationTracker::Event ev1 = notification_tracker().at(1);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND, ev1.type);
@@ -454,11 +514,47 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   URLRequestPostInterceptor post_interceptor(&ping_checker);
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
+  MockComponentObserver observer1;
+  {
+    InSequence seq;
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+  }
+
+  MockComponentObserver observer2;
+  {
+    InSequence seq;
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATE_FOUND, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATE_READY, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+  }
+
   TestInstaller installer1;
   CrxComponent com1;
+  com1.observer = &observer1;
   RegisterComponent(&com1, kTestComponent_abag, Version("2.2"), &installer1);
   TestInstaller installer2;
   CrxComponent com2;
+  com2.observer = &observer2;
   RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"), &installer2);
 
   const GURL expected_update_url_1(
@@ -518,6 +614,27 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
 
   // Test a few error cases. NOTE: We don't have callbacks for
   // when the updates failed yet.
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
+  {
+    InSequence seq;
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+  }
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer2));
+  {
+    InSequence seq;
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+  }
+
   const GURL expected_update_url_3(
       "http://localhost/upd?extra=foo"
       "&x=id%3Djebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26fp%3D%26uc"
@@ -542,6 +659,27 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   component_updater()->Stop();
 
   // No update: already updated to 1.0 so nothing new
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
+  {
+    InSequence seq;
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+  }
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer2));
+  {
+    InSequence seq;
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+  }
+
   interceptor.SetResponse(expected_update_url_3,
                           test_file("updatecheck_reply_1.xml"));
   notification_tracker().Reset();
@@ -575,11 +713,47 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   URLRequestPostInterceptor post_interceptor(&ping_checker);
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
+  MockComponentObserver observer1;
+  {
+    InSequence seq;
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATE_FOUND, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATE_READY, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+  }
+
+  MockComponentObserver observer2;
+  {
+    InSequence seq;
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+  }
+
   TestInstaller installer1;
   CrxComponent com1;
+  com1.observer = &observer1;
   RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), &installer1);
   TestInstaller installer2;
   CrxComponent com2;
+  com2.observer = &observer2;
   RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), &installer2);
 
   // Start with 0.9, and update to 1.0
@@ -633,9 +807,32 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   TestNotificationTracker::Event ev4 = notification_tracker().at(4);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev4.type);
 
-  // Now re-register, pretending to be an even newer version (2.2)
-  TestInstaller installer3;
   component_updater()->Stop();
+
+  // Now re-register, pretending to be an even newer version (2.2)
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
+  {
+    InSequence seq;
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer1,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+  }
+
+  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer2));
+  {
+    InSequence seq;
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_STARTED, 0))
+                .Times(1);
+    EXPECT_CALL(observer2,
+                OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
+                .Times(1);
+  }
+
+  TestInstaller installer3;
   EXPECT_EQ(ComponentUpdateService::kReplaced,
             RegisterComponent(&com1,
                               kTestComponent_jebg,

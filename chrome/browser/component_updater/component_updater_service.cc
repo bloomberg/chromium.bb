@@ -219,7 +219,8 @@ CrxUpdateItem::~CrxUpdateItem() {
 }
 
 CrxComponent::CrxComponent()
-    : installer(NULL) {
+    : installer(NULL),
+      observer(NULL) {
 }
 
 CrxComponent::~CrxComponent() {
@@ -340,6 +341,9 @@ class CrxUpdateService : public ComponentUpdateService {
 
   CrxUpdateItem* FindUpdateItemById(const std::string& id);
 
+  void NotifyComponentObservers(ComponentObserver::Events event,
+                                int extra) const;
+
   scoped_ptr<ComponentUpdateService::Configurator> config_;
 
   scoped_ptr<ComponentPatcher> component_patcher_;
@@ -392,6 +396,8 @@ ComponentUpdateService::Status CrxUpdateService::Start() {
   if (work_items_.empty())
     return kOk;
 
+  NotifyComponentObservers(ComponentObserver::COMPONENT_UPDATER_STARTED, 0);
+
   content::NotificationService::current()->Notify(
     chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED,
     content::Source<ComponentUpdateService>(this),
@@ -431,6 +437,8 @@ void CrxUpdateService::ScheduleNextRun(bool step_delay) {
       ? config_->StepDelay() : config_->NextCheckDelay();
 
   if (!step_delay) {
+    NotifyComponentObservers(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0);
+
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
         content::Source<ComponentUpdateService>(this),
@@ -779,6 +787,11 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
     crx->next_fp = it->package_fingerprint;
     ++update_pending;
 
+    if (crx->component.observer) {
+      crx->component.observer->OnEvent(
+          ComponentObserver::COMPONENT_UPDATE_FOUND, 0);
+    }
+
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND,
         content::Source<std::string>(&crx->id),
@@ -854,6 +867,11 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
     DCHECK_EQ(count, 1ul);
 
     url_fetcher_.reset();
+
+    if (crx->component.observer) {
+      crx->component.observer->OnEvent(
+          ComponentObserver::COMPONENT_UPDATE_READY, 0);
+    }
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATE_READY,
@@ -946,6 +964,16 @@ void CrxUpdateService::DoneInstalling(const std::string& component_id,
   ping_manager_->OnUpdateComplete(item);
 
   ScheduleNextRun(false);
+}
+
+void CrxUpdateService::NotifyComponentObservers(
+    ComponentObserver::Events event, int extra) const {
+  for (UpdateItems::const_iterator it = work_items_.begin();
+       it != work_items_.end(); ++it) {
+    ComponentObserver* observer = (*it)->component.observer;
+    if (observer)
+      observer->OnEvent(event, 0);
+  }
 }
 
 // The component update factory. Using the component updater as a singleton

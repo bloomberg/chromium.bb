@@ -21,6 +21,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestInstaller;
@@ -162,6 +163,13 @@ class PingChecker : public RequestCounter {
   int num_misses_;
   const std::map<std::string, std::string> attributes_;
   virtual bool Test(net::URLRequest* request);
+};
+
+class MockComponentObserver : public ComponentObserver {
+ public:
+  MockComponentObserver();
+  ~MockComponentObserver();
+  MOCK_METHOD2(OnEvent, void(Events event, int extra));
 };
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_UPDATER_SERVICE_UNITTEST_H_

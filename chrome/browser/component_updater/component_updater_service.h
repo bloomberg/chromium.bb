@@ -50,14 +50,41 @@ class ComponentInstaller {
   virtual ~ComponentInstaller() {}
 };
 
+// Defines an interface to observe a CrxComponent.
+class ComponentObserver {
+ public:
+  enum Events {
+    // Sent when the component updater starts doing update checks.
+    COMPONENT_UPDATER_STARTED,
+
+    // Sent when the component updater is going to take a long nap.
+    COMPONENT_UPDATER_SLEEPING,
+
+    // Sent when there is a new version of a registered component. After
+    // the notification is sent the component will be downloaded.
+    COMPONENT_UPDATE_FOUND,
+
+    // Sent when the new component has been downloaded and an installation
+    // or upgrade is about to be attempted.
+    COMPONENT_UPDATE_READY,
+  };
+
+  virtual ~ComponentObserver() {}
+
+  // The component updater service will call this function when an interesting
+  // event happens for a specific component. |extra| is |event| dependent.
+  virtual void OnEvent(Events event, int extra) = 0;
+};
+
 // Describes a particular component that can be installed or updated. This
 // structure is required to register a component with the component updater.
 // |pk_hash| is the SHA256 hash of the component's public key. If the component
 // is to be installed then version should be "0" or "0.0", else it should be
-// the current version. |fingerprint| and |name| are optional.
+// the current version. |observer|, |fingerprint|, and |name| are optional.
 struct CrxComponent {
   std::vector<uint8> pk_hash;
   ComponentInstaller* installer;
+  ComponentObserver* observer;
   Version version;
   std::string fingerprint;
   std::string name;
