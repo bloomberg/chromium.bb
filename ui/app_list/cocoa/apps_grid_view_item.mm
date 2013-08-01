@@ -341,10 +341,12 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   if (!isInstalling == !progressIndicator_)
     return;
 
+  [self ensureVisible];
   if (!isInstalling) {
     [progressIndicator_ removeFromSuperview];
     progressIndicator_.reset();
     [self updateButtonTitle];
+    [self setSelected:YES];
     return;
   }
 
