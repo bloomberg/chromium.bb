@@ -31,9 +31,35 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
         public int mDesiredFps = 0;
     }
 
+    // Some devices with OS older than JELLY_BEAN don't support YV12 format correctly.
+    // Some devices don't support YV12 format correctly even with JELLY_BEAN or newer OS.
+    // To work around the issues on those devices, we'd have to request NV21.
+    // This is a temporary hack till device manufacturers fix the problem or
+    // we don't need to support those devices any more.
+    private static class DeviceImageFormatHack {
+        private static final String[] sBUGGY_DEVICE_LIST = {
+            "SAMSUNG-SGH-I747",
+        };
+
+        static int getImageFormat() {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                return ImageFormat.NV21;
+            }
+
+            for (String buggyDevice : sBUGGY_DEVICE_LIST) {
+                if (buggyDevice.contentEquals(android.os.Build.MODEL)) {
+                    return ImageFormat.NV21;
+                }
+            }
+
+            return ImageFormat.YV12;
+        }
+    }
+
     private Camera mCamera;
     public ReentrantLock mPreviewBufferLock = new ReentrantLock();
-    private int mPixelFormat = ImageFormat.YV12;
+    private int mImageFormat = ImageFormat.YV12;
+    private byte[] mColorPlane = null;
     private Context mContext = null;
     // True when native code has started capture.
     private boolean mIsRunning = false;
@@ -147,8 +173,10 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
             Log.d(TAG, "allocate: matched width=" + matchedWidth +
                   ", height=" + matchedHeight);
 
+            calculateImageFormat(matchedWidth, matchedHeight);
+
             parameters.setPreviewSize(matchedWidth, matchedHeight);
-            parameters.setPreviewFormat(mPixelFormat);
+            parameters.setPreviewFormat(mImageFormat);
             parameters.setPreviewFpsRange(fpsMin, fpsMax);
             mCamera.setParameters(parameters);
 
@@ -174,7 +202,7 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
             mCamera.setPreviewTexture(mSurfaceTexture);
 
             int bufSize = matchedWidth * matchedHeight *
-                          ImageFormat.getBitsPerPixel(mPixelFormat) / 8;
+                          ImageFormat.getBitsPerPixel(mImageFormat) / 8;
             for (int i = 0; i < NUM_CAPTURE_BUFFERS; i++) {
                 byte[] buffer = new byte[bufSize];
                 mCamera.addCallbackBuffer(buffer);
@@ -291,6 +319,9 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
                 } else {
                     rotation = (mCameraOrientation - rotation + 360) % 360;
                 }
+                if (mImageFormat == ImageFormat.NV21) {
+                    convertNV21ToYV12(data);
+                }
                 nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid,
                         data, mExpectedFrameSize,
                         rotation, flipVertical, flipHorizontal);
@@ -376,5 +407,23 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
             }
         }
         return orientation;
+    }
+
+    private void calculateImageFormat(int width, int height) {
+        mImageFormat = DeviceImageFormatHack.getImageFormat();
+        if (mImageFormat == ImageFormat.NV21) {
+            mColorPlane = new byte[width * height / 4];
+        }
+    }
+
+    private void convertNV21ToYV12(byte[] data) {
+        final int ySize = mCurrentCapability.mWidth * mCurrentCapability.mHeight;
+        final int uvSize = ySize / 4;
+        for (int i = 0; i < uvSize; i++) {
+            final int index = ySize + i * 2;
+            data[ySize + i] = data[index];
+            mColorPlane[i] = data[index + 1];
+        }
+        System.arraycopy(mColorPlane, 0, data, ySize + uvSize, uvSize);
     }
 }
