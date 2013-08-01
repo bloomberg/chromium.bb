@@ -72,7 +72,6 @@ xkb:us:intl:eng	us(intl)	en-US
 xkb:us:altgr-intl:eng	us(altgr-intl)	en-US
 xkb:us:dvorak:eng	us(dvorak)	en-US
 xkb:us:colemak:eng	us(colemak)	en-US
-english-m	us	en-US
 # U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
 # will be selected as the default keyboard when the UI language is set to Dutch.
 
