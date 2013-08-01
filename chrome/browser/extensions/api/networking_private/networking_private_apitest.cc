@@ -155,6 +155,10 @@ class ExtensionNetworkingPrivateApiTest :
     service_test->SetServiceProperty("stub_wifi2",
                                      flimflam::kSignalStrengthProperty,
                                      base::FundamentalValue(80));
+    service_test->SetServiceProperty("stub_wifi2",
+                                     flimflam::kConnectableProperty,
+                                     base::FundamentalValue(true));
+
     base::ListValue frequencies2;
     frequencies2.AppendInteger(2400);
     frequencies2.AppendInteger(5000);
@@ -362,4 +366,3 @@ INSTANTIATE_TEST_CASE_P(ExtensionNetworkingPrivateApiTestInstantiation,
                         testing::Bool());
 
 }  // namespace chromeos
-

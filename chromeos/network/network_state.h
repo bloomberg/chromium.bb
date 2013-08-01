@@ -38,10 +38,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // stored.
   void GetProperties(base::DictionaryValue* dictionary) const;
 
-  // Fills |dictionary| with the state properties required to configure a
-  // network.
-  void GetConfigProperties(base::DictionaryValue* dictionary) const;
-
   // Accessors
   const std::string& security() const { return security_; }
   const std::string& device_path() const { return device_path_; }
@@ -63,9 +59,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Wireless property accessors
   int signal_strength() const { return signal_strength_; }
   bool connectable() const { return connectable_; }
-  // Wifi property accessors
-  bool passphrase_required() const { return passphrase_required_; }
-  const FrequencyList& wifi_frequencies() const { return wifi_frequencies_; }
   // Cellular property accessors
   const std::string& network_technology() const {
     return network_technology_;
@@ -96,9 +89,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // Converts the prefix length to a netmaks string.
   std::string GetNetmask() const;
-
-  // Returns true if |error_| contains an authentication error.
-  bool HasAuthenticationError() const;
 
   // Helpers (used e.g. when a state is cached)
   static bool StateIsConnected(const std::string& connection_state);
@@ -147,9 +137,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Wireless properties
   int signal_strength_;
   bool connectable_;
-  // Wifi properties
-  bool passphrase_required_;
-  FrequencyList wifi_frequencies_;
   // Cellular properties
   std::string network_technology_;
   std::string activation_state_;

@@ -39,20 +39,20 @@ void InvokeErrorCallback(const std::string& service_path,
   error_callback.Run(error_name, error_data.Pass());
 }
 
-bool NetworkConnectable(const NetworkState* network) {
-  if (network->type() == flimflam::kTypeVPN)
-    return false;  // TODO(stevenjb): Shill needs to properly set Connectable.
-  return network->connectable();
+bool IsAuthenticationError(const std::string& error) {
+  return (error == flimflam::kErrorBadWEPKey ||
+          error == flimflam::kErrorPppAuthFailed ||
+          error == shill::kErrorEapLocalTlsFailed ||
+          error == shill::kErrorEapRemoteTlsFailed ||
+          error == shill::kErrorEapAuthenticationFailed);
 }
 
-bool NetworkMayNeedCredentials(const NetworkState* network) {
-  if (network->type() == flimflam::kTypeWifi &&
-      (network->security() == flimflam::kSecurity8021x ||
-       network->security() == flimflam::kSecurityWep /* For dynamic WEP*/))
-    return true;
-  if (network->type() == flimflam::kTypeVPN)
-    return true;
-  return false;
+void CopyStringFromDictionary(const base::DictionaryValue& source,
+                              const std::string& key,
+                              base::DictionaryValue* dest) {
+  std::string string_value;
+  if (source.GetStringWithoutPathExpansion(key, &string_value))
+    dest->SetStringWithoutPathExpansion(key, string_value);
 }
 
 bool NetworkRequiresActivation(const NetworkState* network) {
@@ -131,6 +131,8 @@ const char NetworkConnectionHandler::kErrorCertificateRequired[] =
     "certificate-required";
 const char NetworkConnectionHandler::kErrorConfigurationRequired[] =
     "configuration-required";
+const char NetworkConnectionHandler::kErrorAuthenticationRequired[] =
+    "authentication-required";
 const char NetworkConnectionHandler::kErrorShillError[] = "shill-error";
 const char NetworkConnectionHandler::kErrorConnectFailed[] = "connect-failed";
 const char NetworkConnectionHandler::kErrorDisconnectFailed[] =
@@ -222,7 +224,7 @@ void NetworkConnectionHandler::OnCertificatesLoaded(
     ConnectToNetwork(queued_connect_->service_path,
                      queued_connect_->success_callback,
                      queued_connect_->error_callback,
-                     true /* ignore_error_state */);
+                     false /* check_error_state */);
   } else if (initial_load) {
     // Once certificates have loaded, connect to the "best" available network.
     network_state_handler_->ConnectToBestWifiNetwork();
@@ -233,19 +235,22 @@ void NetworkConnectionHandler::ConnectToNetwork(
     const std::string& service_path,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback,
-    bool ignore_error_state) {
+    bool check_error_state) {
   NET_LOG_USER("ConnectToNetwork", service_path);
   // Clear any existing queued connect request.
   queued_connect_.reset();
+  if (HasConnectingNetwork(service_path)) {
+    NET_LOG_USER("Connect Request While Pending", service_path);
+    InvokeErrorCallback(service_path, error_callback, kErrorConnecting);
+    return;
+  }
+
+  // Check cached network state for connected, connecting, or unactivated
+  // networks. These states will not be affected by a recent configuration.
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);
   if (!network) {
     InvokeErrorCallback(service_path, error_callback, kErrorNotFound);
-    return;
-  }
-  if (HasConnectingNetwork(service_path)) {
-    NET_LOG_USER("Connect Request While Pending", service_path);
-    InvokeErrorCallback(service_path, error_callback, kErrorConnecting);
     return;
   }
   if (network->IsConnectedState()) {
@@ -260,47 +265,37 @@ void NetworkConnectionHandler::ConnectToNetwork(
     InvokeErrorCallback(service_path, error_callback, kErrorActivationRequired);
     return;
   }
-  if (!ignore_error_state) {
-    if (network->passphrase_required()) {
-      InvokeErrorCallback(service_path, error_callback,
-                          kErrorPassphraseRequired);
-      return;
-    }
-    if (network->error() == flimflam::kErrorConnectFailed) {
-      InvokeErrorCallback(service_path, error_callback,
-                          kErrorPassphraseRequired);
-      return;
-    }
-    if (network->error() == flimflam::kErrorBadPassphrase) {
-      InvokeErrorCallback(service_path, error_callback,
-                          kErrorPassphraseRequired);
-      return;
-    }
-    if (network->HasAuthenticationError()) {
-      InvokeErrorCallback(service_path, error_callback,
-                          kErrorConfigurationRequired);
-      return;
-    }
-  }
 
   // All synchronous checks passed, add |service_path| to connecting list.
   pending_requests_.insert(std::make_pair(
       service_path,
       ConnectRequest(service_path, success_callback, error_callback)));
 
-  if (!NetworkConnectable(network) &&
-      NetworkMayNeedCredentials(network)) {
-    // Request additional properties to check.
-    network_configuration_handler_->GetProperties(
-        network->path(),
-        base::Bind(&NetworkConnectionHandler::VerifyConfiguredAndConnect,
-                   AsWeakPtr()),
-        base::Bind(&NetworkConnectionHandler::HandleConfigurationFailure,
-                   AsWeakPtr(), network->path()));
+  // Connect immediately to 'connectable' networks.
+  // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
+  if (network->connectable() && network->type() != flimflam::kTypeVPN) {
+    CallShillConnect(service_path);
     return;
   }
-  // All checks passed, send connect request.
-  CallShillConnect(service_path);
+
+  if (network->type() == flimflam::kTypeCellular ||
+      (network->type() == flimflam::kTypeWifi &&
+       network->security() == flimflam::kSecurityNone)) {
+    NET_LOG_ERROR("Network has no security but is not 'Connectable'",
+                  service_path);
+    CallShillConnect(service_path);
+    return;
+  }
+
+  // Request additional properties to check. VerifyConfiguredAndConnect will
+  // use only these properties, not cached properties, to ensure that they
+  // are up to date after any recent configuration.
+  network_configuration_handler_->GetProperties(
+      network->path(),
+      base::Bind(&NetworkConnectionHandler::VerifyConfiguredAndConnect,
+                 AsWeakPtr(), check_error_state),
+      base::Bind(&NetworkConnectionHandler::HandleConfigurationFailure,
+                 AsWeakPtr(), service_path));
 }
 
 void NetworkConnectionHandler::DisconnectNetwork(
@@ -347,19 +342,47 @@ NetworkConnectionHandler::pending_request(
 // ConnectToNetwork implementation
 
 void NetworkConnectionHandler::VerifyConfiguredAndConnect(
+    bool check_error_state,
     const std::string& service_path,
     const base::DictionaryValue& service_properties) {
   NET_LOG_EVENT("VerifyConfiguredAndConnect", service_path);
 
-  const NetworkState* network =
-      network_state_handler_->GetNetworkState(service_path);
-  if (!network) {
-    ErrorCallbackForPendingRequest(service_path, kErrorNotFound);
+  std::string type;
+  service_properties.GetStringWithoutPathExpansion(
+      flimflam::kTypeProperty, &type);
+
+  if (check_error_state) {
+    std::string error;
+    service_properties.GetStringWithoutPathExpansion(
+        flimflam::kErrorProperty, &error);
+    if (error == flimflam::kErrorConnectFailed) {
+      ErrorCallbackForPendingRequest(service_path, kErrorPassphraseRequired);
+      return;
+    }
+    if (error == flimflam::kErrorBadPassphrase) {
+      ErrorCallbackForPendingRequest(service_path, kErrorPassphraseRequired);
+      return;
+    }
+
+    if (IsAuthenticationError(error)) {
+      ErrorCallbackForPendingRequest(service_path,
+                                     kErrorAuthenticationRequired);
+      return;
+    }
+  }
+
+  // If 'passphrase_required' is still true, then the 'Passphrase' property
+  // has not been set to a minimum length value.
+  bool passphrase_required = false;
+  service_properties.GetBooleanWithoutPathExpansion(
+      flimflam::kPassphraseRequiredProperty, &passphrase_required);
+  if (passphrase_required) {
+    ErrorCallbackForPendingRequest(service_path, kErrorPassphraseRequired);
     return;
   }
 
   // VPN requires a host and username to be set.
-  if (network->type() == flimflam::kTypeVPN &&
+  if (type == flimflam::kTypeVPN &&
       !VPNIsConfigured(service_path, service_properties)) {
     ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
     return;
@@ -400,9 +423,17 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     const std::string& tpm_slot = cert_loader_->tpm_token_slot();
     const std::string& tpm_pin = cert_loader_->tpm_user_pin();
     base::DictionaryValue config_properties;
-    network->GetConfigProperties(&config_properties);
+    // Set configuration properties required by Shill to identify the network.
+    config_properties.SetStringWithoutPathExpansion(
+        flimflam::kTypeProperty, type);
+    CopyStringFromDictionary(service_properties, flimflam::kNameProperty,
+                             &config_properties);
+    CopyStringFromDictionary(service_properties, flimflam::kSecurityProperty,
+                             &config_properties);
+    CopyStringFromDictionary(service_properties, flimflam::kGuidProperty,
+                             &config_properties);
 
-    if (network->type() == flimflam::kTypeVPN) {
+    if (type == flimflam::kTypeVPN) {
       // VPN Provider values are read from the "Provider" dictionary, not the
       // "Provider.Type", etc keys (which are used only to set the values).
       std::string provider_type;
@@ -431,7 +462,7 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
         config_properties.SetStringWithoutPathExpansion(
             flimflam::kL2tpIpsecClientCertIdProperty, pkcs11_id);
       }
-    } else if (network->type() == flimflam::kTypeWifi) {
+    } else if (type == flimflam::kTypeWifi) {
       config_properties.SetStringWithoutPathExpansion(
           flimflam::kEapPinProperty, cert_loader_->tpm_user_pin());
       config_properties.SetStringWithoutPathExpansion(

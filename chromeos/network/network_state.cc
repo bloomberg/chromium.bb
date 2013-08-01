@@ -81,7 +81,6 @@ NetworkState::NetworkState(const std::string& path)
       prefix_length_(0),
       signal_strength_(0),
       connectable_(false),
-      passphrase_required_(false),
       activate_over_non_cellular_networks_(false),
       cellular_out_of_credits_(false) {
 }
@@ -100,27 +99,6 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &connection_state_);
   } else if (key == flimflam::kConnectableProperty) {
     return GetBooleanValue(key, value, &connectable_);
-  } else if (key == flimflam::kPassphraseRequiredProperty) {
-    return GetBooleanValue(key, value, &passphrase_required_);
-  } else if (key == shill::kWifiFrequencyListProperty) {
-    const base::ListValue* frequencies;
-    if (!value.GetAsList(&frequencies)) {
-      NET_LOG_ERROR("Failed to parse " + key, path());
-      return false;
-    }
-    wifi_frequencies_.clear();
-    for (base::ListValue::const_iterator iter = frequencies->begin();
-         iter != frequencies->end(); ++iter) {
-      int frequency;
-      if ((*iter)->GetAsInteger(&frequency))
-        wifi_frequencies_.push_back(frequency);
-    }
-    if (!wifi_frequencies_.empty()) {
-      std::string str;
-      base::JSONWriter::Write(frequencies, &str);
-      NET_LOG_DEBUG("WifiFrequencies for " + path(), str);
-    }
-    return true;
   } else if (key == flimflam::kErrorProperty) {
     return GetStringValue(key, value, &error_);
   } else if (key == shill::kErrorDetailsProperty) {
@@ -226,16 +204,6 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                             connection_state_);
   dictionary->SetBooleanWithoutPathExpansion(flimflam::kConnectableProperty,
                                              connectable_);
-  dictionary->SetBooleanWithoutPathExpansion(
-      flimflam::kPassphraseRequiredProperty, passphrase_required_);
-
-  base::ListValue* frequencies = new base::ListValue;
-  for (FrequencyList::const_iterator iter = wifi_frequencies_.begin();
-       iter != wifi_frequencies_.end(); ++iter) {
-    frequencies->AppendInteger(*iter);
-  }
-  dictionary->SetWithoutPathExpansion(shill::kWifiFrequencyListProperty,
-                                      frequencies);
 
   dictionary->SetStringWithoutPathExpansion(flimflam::kErrorProperty,
                                             error_);
@@ -302,15 +270,6 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                       payment_portal_properties);
 }
 
-void NetworkState::GetConfigProperties(
-    base::DictionaryValue* dictionary) const {
-  dictionary->SetStringWithoutPathExpansion(flimflam::kNameProperty, name());
-  dictionary->SetStringWithoutPathExpansion(flimflam::kTypeProperty, type());
-  dictionary->SetStringWithoutPathExpansion(flimflam::kSecurityProperty,
-                                            security());
-  dictionary->SetStringWithoutPathExpansion(flimflam::kGuidProperty, guid());
-}
-
 bool NetworkState::IsConnectedState() const {
   return StateIsConnected(connection_state_);
 }
@@ -341,15 +300,6 @@ std::string NetworkState::GetDnsServersAsString() const {
 
 std::string NetworkState::GetNetmask() const {
   return network_util::PrefixLengthToNetmask(prefix_length_);
-}
-
-bool NetworkState::HasAuthenticationError() const {
-  return (error_ == flimflam::kErrorBadPassphrase ||
-          error_ == flimflam::kErrorBadWEPKey ||
-          error_ == flimflam::kErrorPppAuthFailed ||
-          error_ == shill::kErrorEapLocalTlsFailed ||
-          error_ == shill::kErrorEapRemoteTlsFailed ||
-          error_ == shill::kErrorEapAuthenticationFailed);
 }
 
 bool NetworkState::UpdateName(const base::DictionaryValue& properties) {

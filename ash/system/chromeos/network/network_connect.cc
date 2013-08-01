@@ -40,7 +40,8 @@ void OnConnectFailed(const std::string& service_path,
   }
   if (error_name == NetworkConnectionHandler::kErrorActivationRequired ||
       error_name == NetworkConnectionHandler::kErrorCertificateRequired ||
-      error_name == NetworkConnectionHandler::kErrorConfigurationRequired) {
+      error_name == NetworkConnectionHandler::kErrorConfigurationRequired ||
+      error_name == NetworkConnectionHandler::kErrorAuthenticationRequired) {
     ash::Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
         service_path);
     return;
@@ -82,7 +83,7 @@ void ConnectToNetwork(const std::string& service_path) {
       service_path,
       base::Bind(&OnConnectSucceeded, service_path),
       base::Bind(&OnConnectFailed, service_path),
-      false /* ignore_error_state */);
+      true /* check_error_state */);
 }
 
 string16 ErrorString(const std::string& error) {

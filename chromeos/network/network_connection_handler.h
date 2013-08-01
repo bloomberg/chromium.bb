@@ -54,6 +54,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   static const char kErrorPassphraseRequired[];
   static const char kErrorActivationRequired[];
   static const char kErrorCertificateRequired[];
+  static const char kErrorAuthenticationRequired[];
   static const char kErrorConfigurationRequired[];
   static const char kErrorShillError[];
   static const char kErrorConnectFailed[];
@@ -74,16 +75,18 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   //  kErrorConnected if already connected to the network.
   //  kErrorConnecting if already connecting to the network.
   //  kErrorCertificateRequired if the network requires a cert and none exists.
-  //  kErrorPassphraseRequired if passphrase only is required.
+  //  kErrorPassphraseRequired if passphrase only is missing or incorrect.
+  //  kErrorAuthenticationRequired if other authentication is required.
   //  kErrorConfigurationRequired if additional configuration is required.
   //  kErrorShillError if a DBus or Shill error occurred.
   // |error_message| will contain an additional error string for debugging.
-  // If |ignore_error_state| is true, error state for the network is ignored
-  //  (e.g. for repeat attempts).
+  // If |check_error_state| is true, the current state of the network is
+  //  checked for errors, otherwise current state is ignored (e.g. for recently
+  //  configured networks or repeat attempts).
   void ConnectToNetwork(const std::string& service_path,
                         const base::Closure& success_callback,
                         const network_handler::ErrorCallback& error_callback,
-                        bool ignore_error_state);
+                        bool check_error_state);
 
   // DisconnectNetwork() will send a Disconnect request to Shill.
   // On success, |success_callback| will be called.
@@ -127,8 +130,10 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Callback from Shill.Service.GetProperties. Parses |properties| to verify
   // whether or not the network appears to be configured. If configured,
   // attempts a connection, otherwise invokes error_callback from
-  // pending_requests_[service_path].
-  void VerifyConfiguredAndConnect(const std::string& service_path,
+  // pending_requests_[service_path]. |check_error_state| is passed from
+  // ConnectToNetwork(), see comment for info.
+  void VerifyConfiguredAndConnect(bool check_error_state,
+                                  const std::string& service_path,
                                   const base::DictionaryValue& properties);
 
   // Calls Shill.Manager.Connect asynchronously.

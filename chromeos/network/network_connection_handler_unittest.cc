@@ -81,14 +81,14 @@ class NetworkConnectionHandlerTest : public testing::Test {
   }
 
   void Connect(const std::string& service_path) {
-    const bool ignore_error_state = false;
+    const bool check_error_state = true;
     network_connection_handler_->ConnectToNetwork(
         service_path,
         base::Bind(&NetworkConnectionHandlerTest::SuccessCallback,
                    base::Unretained(this)),
         base::Bind(&NetworkConnectionHandlerTest::ErrorCallback,
                    base::Unretained(this)),
-        ignore_error_state);
+        check_error_state);
     message_loop_.RunUntilIdle();
   }
 
@@ -141,14 +141,15 @@ class NetworkConnectionHandlerTest : public testing::Test {
 namespace {
 
 const char* kConfigConnectable =
-    "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"idle\" }";
+    "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"idle\", "
+    "  \"Connectable\": true }";
 const char* kConfigConnected =
     "{ \"GUID\": \"wifi1\", \"Type\": \"wifi\", \"State\": \"online\" }";
 const char* kConfigConnecting =
     "{ \"GUID\": \"wifi2\", \"Type\": \"wifi\", \"State\": \"association\" }";
 const char* kConfigRequiresPassphrase =
     "{ \"GUID\": \"wifi3\", \"Type\": \"wifi\", "
-    "\"PassphraseRequired\": true }";
+    "  \"PassphraseRequired\": true }";
 const char* kConfigRequiresActivation =
     "{ \"GUID\": \"cellular1\", \"Type\": \"cellular\","
     "  \"Cellular.ActivationState\": \"not-activated\" }";

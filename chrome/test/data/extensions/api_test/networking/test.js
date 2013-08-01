@@ -100,7 +100,6 @@ var availableTests = [
                     "Type": "WiFi",
                     "WiFi": {
                       "AutoConnect": false,
-                      "FrequencyList": [2400],
                       "Security": "WEP-PSK",
                       "SignalStrength": 0
                     }
@@ -112,7 +111,6 @@ var availableTests = [
                     "Type": "WiFi",
                     "WiFi": {
                       "AutoConnect": false,
-                      "FrequencyList": [2400, 5000],
                       "Security": "WPA-PSK",
                       "SignalStrength": 80
                     }
@@ -151,7 +149,6 @@ var availableTests = [
                     "Type": "WiFi",
                     "WiFi": {
                       "AutoConnect": false,
-                      "FrequencyList": [2400],
                       "Security": "WEP-PSK",
                       "SignalStrength": 0
                     }
@@ -163,7 +160,6 @@ var availableTests = [
                     "Type": "WiFi",
                     "WiFi": {
                       "AutoConnect": false,
-                      "FrequencyList": [2400, 5000],
                       "Security": "WPA-PSK",
                       "SignalStrength": 80
                     }
@@ -287,7 +283,6 @@ var availableTests = [
           "Type": "WiFi",
           "WiFi": {
             "AutoConnect": false,
-            "FrequencyList": [2400, 5000],
             "Security": "WPA-PSK",
             "SignalStrength": 80
           }
