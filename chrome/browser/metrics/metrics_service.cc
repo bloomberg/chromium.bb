@@ -194,7 +194,6 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/metrics/caching_permuted_entropy_provider.h"
 #include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/metrics/metrics_log_manager.h"
 #include "chrome/common/net/test_server_locations.h"

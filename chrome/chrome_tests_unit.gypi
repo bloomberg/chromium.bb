@@ -1721,7 +1721,6 @@
         'common/mac/nscoder_util_unittest.mm',
         'common/mac/objc_method_swizzle_unittest.mm',
         'common/mac/objc_zombie_unittest.mm',
-        'common/metrics/caching_permuted_entropy_provider_unittest.cc',
         'common/metrics/entropy_provider_unittest.cc',
         'common/metrics/metrics_log_base_unittest.cc',
         'common/metrics/metrics_log_manager_unittest.cc',
