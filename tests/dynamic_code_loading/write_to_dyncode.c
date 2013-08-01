@@ -4,16 +4,39 @@
  * found in the LICENSE file.
  */
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <nacl/nacl_dyncode.h>
+
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/tests/dynamic_code_loading/dynamic_segment.h"
 
 
 /* Test that we can't write to the dynamic code area. */
 
-int main(void) {
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    fprintf(stderr, "Usage: write_to_dyncode <alloc_dest_first>\n");
+    return 1;
+  }
+  int alloc_dest_first = atoi(argv[1]);
+
   void (*func)(void);
   uintptr_t code_ptr = (uintptr_t) DYNAMIC_CODE_SEGMENT_START;
+
+  if (alloc_dest_first) {
+    char code_buf[32];
+    uint32_t halt_val = NACL_HALT_WORD;
+    for (int i = 0; i < sizeof(code_buf); i += NACL_HALT_LEN) {
+      memcpy(code_buf + i, &halt_val, NACL_HALT_LEN);
+    }
+    int rc = nacl_dyncode_create((void *) code_ptr, code_buf, sizeof(code_buf));
+    assert(rc == 0);
+  }
 
   fprintf(stdout, "This should fault...\n");
   fflush(stdout);
