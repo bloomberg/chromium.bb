@@ -19,7 +19,7 @@ class RobohornetProMeasurement(page_measurement.PageMeasurement):
     done = 'document.getElementById("results").innerHTML.indexOf("Total") != -1'
     def _IsDone():
       return tab.EvaluateJavaScript(done)
-    util.WaitFor(_IsDone, 60)
+    util.WaitFor(_IsDone, 120)
 
     result = int(tab.EvaluateJavaScript('stopTime - startTime'))
     results.Add('Total', 'ms', result)
