@@ -132,6 +132,7 @@ void ShillServiceClientStub::ClearProperty(
     return;
   }
   dict->RemoveWithoutPathExpansion(name, NULL);
+  // Note: Shill does not send notifications when properties are cleared.
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -149,16 +150,9 @@ void ShillServiceClientStub::ClearProperties(
   scoped_ptr<base::ListValue> results(new base::ListValue);
   for (std::vector<std::string>::const_iterator iter = names.begin();
       iter != names.end(); ++iter) {
-    dict->Remove(*iter, NULL);
+    dict->RemoveWithoutPathExpansion(*iter, NULL);
+    // Note: Shill does not send notifications when properties are cleared.
     results->AppendBoolean(true);
-  }
-  for (std::vector<std::string>::const_iterator iter = names.begin();
-      iter != names.end(); ++iter) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &ShillServiceClientStub::NotifyObserversPropertyChanged,
-            weak_ptr_factory_.GetWeakPtr(), service_path, *iter));
   }
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -476,7 +470,7 @@ void ShillServiceClientStub::NotifyObserversPropertyChanged(
   base::Value* value = NULL;
   if (!dict->GetWithoutPathExpansion(property, &value)) {
     LOG(ERROR) << "Notify for unknown property: "
-        << path << " : " << property;
+               << path << " : " << property;
     return;
   }
   FOR_EACH_OBSERVER(ShillPropertyChangedObserver,

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -26,51 +27,6 @@
 namespace chromeos {
 
 namespace {
-
-// None of these error messages are user-facing: they should only appear in
-// logs.
-const char kErrorsListTag[] = "errors";
-const char kClearPropertiesFailedError[] = "Error.ClearPropertiesFailed";
-const char kClearPropertiesFailedErrorMessage[] = "Clear properties failed";
-
-void ClearPropertiesCallback(
-    const std::vector<std::string>& names,
-    const std::string& service_path,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback,
-    const base::ListValue& result) {
-  bool some_failed = false;
-  for (size_t i = 0; i < result.GetSize(); ++i) {
-    bool success;
-    if (result.GetBoolean(i, &success)) {
-      if (!success) {
-        NET_LOG_ERROR("ClearProperties Failed: " + names[i], service_path);
-        some_failed = true;
-      }
-    } else {
-      NOTREACHED() << "Result garbled from ClearProperties";
-    }
-  }
-
-  if (some_failed) {
-    if (!error_callback.is_null()) {
-      DCHECK(names.size() == result.GetSize())
-          << "Result wrong size from ClearProperties.";
-      scoped_ptr<base::DictionaryValue> error_data(
-          network_handler::CreateErrorData(service_path,
-                                           kClearPropertiesFailedError,
-                                           kClearPropertiesFailedErrorMessage));
-      error_data->Set("errors", result.DeepCopy());
-      scoped_ptr<base::ListValue> name_list(new base::ListValue);
-      name_list->AppendStrings(names);
-      error_data->Set("names", name_list.release());
-      error_callback.Run(kClearPropertiesFailedError, error_data.Pass());
-    }
-  } else {
-    if (!callback.is_null())
-      callback.Run();
-  }
-}
 
 // Strip surrounding "" from keys (if present).
 std::string StripQuotations(const std::string& in_str) {
@@ -232,14 +188,10 @@ void NetworkConfigurationHandler::ClearProperties(
   DBusThreadManager::Get()->GetShillServiceClient()->ClearProperties(
       dbus::ObjectPath(service_path),
       names,
-      base::Bind(&ClearPropertiesCallback,
-                 names,
-                 service_path,
-                 callback,
-                 error_callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 "Config.ClearProperties Failed",
-                 service_path, error_callback));
+      base::Bind(&NetworkConfigurationHandler::ClearPropertiesSuccessCallback,
+                 AsWeakPtr(), service_path, names, callback, error_callback),
+      base::Bind(&NetworkConfigurationHandler::ClearPropertiesErrorCallback,
+                 AsWeakPtr(), service_path, error_callback));
 }
 
 void NetworkConfigurationHandler::CreateConfiguration(
@@ -346,6 +298,57 @@ void NetworkConfigurationHandler::SetPropertiesErrorCallback(
     const std::string& dbus_error_message) {
   network_handler::ShillErrorCallbackFunction(
       "Config.SetProperties Failed",
+      service_path, error_callback,
+      dbus_error_name, dbus_error_message);
+  // Some properties may have changed so request an update regardless.
+  network_state_handler_->RequestUpdateForNetwork(service_path);
+}
+
+void NetworkConfigurationHandler::ClearPropertiesSuccessCallback(
+    const std::string& service_path,
+    const std::vector<std::string>& names,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback,
+    const base::ListValue& result) {
+  const std::string kClearPropertiesFailedError("Error.ClearPropertiesFailed");
+  DCHECK(names.size() == result.GetSize())
+      << "Incorrect result size from ClearProperties.";
+
+  bool some_failed = false;
+  for (size_t i = 0; i < result.GetSize(); ++i) {
+    bool success = false;
+    result.GetBoolean(i, &success);
+    if (!success) {
+      NET_LOG_ERROR("ClearProperties Failed: " + names[i], service_path);
+      some_failed = true;
+    }
+  }
+
+  if (some_failed) {
+    if (!error_callback.is_null()) {
+      scoped_ptr<base::DictionaryValue> error_data(
+          network_handler::CreateErrorData(
+              service_path, kClearPropertiesFailedError,
+              base::StringPrintf("Errors: %" PRIuS, result.GetSize())));
+      error_data->Set("errors", result.DeepCopy());
+      scoped_ptr<base::ListValue> name_list(new base::ListValue);
+      name_list->AppendStrings(names);
+      error_data->Set("names", name_list.release());
+      error_callback.Run(kClearPropertiesFailedError, error_data.Pass());
+    }
+  } else if (!callback.is_null()) {
+    callback.Run();
+  }
+  network_state_handler_->RequestUpdateForNetwork(service_path);
+}
+
+void NetworkConfigurationHandler::ClearPropertiesErrorCallback(
+    const std::string& service_path,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& dbus_error_name,
+    const std::string& dbus_error_message) {
+  network_handler::ShillErrorCallbackFunction(
+      "Config.ClearProperties Failed",
       service_path, error_callback,
       dbus_error_name, dbus_error_message);
   // Some properties may have changed so request an update regardless.

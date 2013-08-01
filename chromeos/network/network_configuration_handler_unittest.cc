@@ -13,9 +13,12 @@
 #include "chromeos/dbus/mock_shill_profile_client.h"
 #include "chromeos/dbus/mock_shill_service_client.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -188,7 +191,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   MockShillServiceClient* mock_service_client_;
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
-  base::MessageLoop message_loop_;
+  base::MessageLoopForUI message_loop_;
   base::DictionaryValue* dictionary_value_result_;
 };
 
@@ -366,6 +369,146 @@ TEST_F(NetworkConfigurationHandlerTest, RemoveConfiguration) {
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1, test_callback.run_count());
   EXPECT_FALSE(PendingProfileEntryDeleterForTest(service_path));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Stub based tests
+
+namespace {
+
+class TestObserver : public chromeos::NetworkStateHandlerObserver {
+ public:
+  TestObserver() : network_list_changed_count_(0) {}
+  virtual ~TestObserver() {}
+
+  virtual void NetworkListChanged() OVERRIDE {
+    ++network_list_changed_count_;
+  }
+
+  virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE {
+    property_updates_[network->path()]++;
+  }
+
+  size_t network_list_changed_count() { return network_list_changed_count_; }
+
+  int PropertyUpdatesForService(const std::string& service_path) {
+    return property_updates_[service_path];
+  }
+
+  void ClearPropertyUpdates() {
+    property_updates_.clear();
+  }
+
+ private:
+  size_t network_list_changed_count_;
+  std::map<std::string, int> property_updates_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
+
+}
+
+class NetworkConfigurationHandlerStubTest : public testing::Test {
+ public:
+  NetworkConfigurationHandlerStubTest()  {
+  }
+
+  virtual ~NetworkConfigurationHandlerStubTest() {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    DBusThreadManager::InitializeWithStub();
+
+    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    test_observer_.reset(new TestObserver());
+    network_state_handler_->AddObserver(test_observer_.get(), FROM_HERE);
+
+    network_configuration_handler_.reset(new NetworkConfigurationHandler());
+    network_configuration_handler_->Init(network_state_handler_.get());
+
+    message_loop_.RunUntilIdle();
+    test_observer_->ClearPropertyUpdates();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    network_configuration_handler_.reset();
+    network_state_handler_->RemoveObserver(test_observer_.get(), FROM_HERE);
+    network_state_handler_.reset();
+    DBusThreadManager::Shutdown();
+  }
+
+  void SuccessCallback(const std::string& callback_name) {
+    success_callback_name_ = callback_name;
+  }
+
+ protected:
+  bool GetServiceStringProperty(const std::string& service_path,
+                                const std::string& key,
+                                std::string* result) {
+    ShillServiceClient::TestInterface* service_test =
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+    const base::DictionaryValue* properties =
+        service_test->GetServiceProperties(service_path);
+    if (properties && properties->GetString(key, result))
+      return true;
+    return false;
+  }
+
+  scoped_ptr<NetworkStateHandler> network_state_handler_;
+  scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
+  scoped_ptr<TestObserver> test_observer_;
+  base::MessageLoopForUI message_loop_;
+  std::string success_callback_name_;
+};
+
+TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
+  // TODO(stevenjb): Remove dependency on default Stub service.
+  const std::string service_path("wifi1");
+  const std::string test_identity("test_identity");
+  const std::string test_passphrase("test_passphrase");
+
+  // Set Properties
+  base::DictionaryValue properties_to_set;
+  properties_to_set.SetString(flimflam::kIdentityProperty, test_identity);
+  properties_to_set.SetString(flimflam::kPassphraseProperty, test_passphrase);
+  network_configuration_handler_->SetProperties(
+      service_path,
+      properties_to_set,
+      base::Bind(
+          &NetworkConfigurationHandlerStubTest::SuccessCallback,
+          base::Unretained(this), "SetProperties"),
+      base::Bind(&ErrorCallback, false, service_path));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ("SetProperties", success_callback_name_);
+  std::string identity, passphrase;
+  EXPECT_TRUE(GetServiceStringProperty(
+      service_path, flimflam::kIdentityProperty, &identity));
+  EXPECT_TRUE(GetServiceStringProperty(
+      service_path, flimflam::kPassphraseProperty, &passphrase));
+  EXPECT_EQ(test_identity, identity);
+  EXPECT_EQ(test_passphrase, passphrase);
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(service_path));
+
+  // Clear Properties
+  std::vector<std::string> properties_to_clear;
+  properties_to_clear.push_back(flimflam::kIdentityProperty);
+  properties_to_clear.push_back(flimflam::kPassphraseProperty);
+  network_configuration_handler_->ClearProperties(
+      service_path,
+      properties_to_clear,
+      base::Bind(
+          &NetworkConfigurationHandlerStubTest::SuccessCallback,
+          base::Unretained(this), "ClearProperties"),
+      base::Bind(&ErrorCallback, false, service_path));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ("ClearProperties", success_callback_name_);
+  EXPECT_FALSE(GetServiceStringProperty(
+      service_path, flimflam::kIdentityProperty, &identity));
+  EXPECT_FALSE(GetServiceStringProperty(
+      service_path, flimflam::kIdentityProperty, &passphrase));
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(service_path));
 }
 
 }  // namespace chromeos

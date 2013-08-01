@@ -21,6 +21,7 @@
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 namespace dbus {
@@ -105,6 +106,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
  protected:
   friend class NetworkHandler;
   friend class NetworkConfigurationHandlerTest;
+  friend class NetworkConfigurationHandlerStubTest;
   class ProfileEntryDeleter;
 
   NetworkConfigurationHandler();
@@ -122,10 +124,24 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
   }
 
   // Invoke the callback and inform NetworkStateHandler to request an update
-  // for the service.
+  // for the service after setting properties.
   void SetPropertiesSuccessCallback(const std::string& service_path,
                                     const base::Closure& callback);
   void SetPropertiesErrorCallback(
+      const std::string& service_path,
+      const network_handler::ErrorCallback& error_callback,
+      const std::string& dbus_error_name,
+      const std::string& dbus_error_message);
+
+  // Invoke the callback and inform NetworkStateHandler to request an update
+  // for the service after clearing properties.
+  void ClearPropertiesSuccessCallback(
+      const std::string& service_path,
+      const std::vector<std::string>& names,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback,
+      const base::ListValue& result);
+  void ClearPropertiesErrorCallback(
       const std::string& service_path,
       const network_handler::ErrorCallback& error_callback,
       const std::string& dbus_error_name,
