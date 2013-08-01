@@ -15,12 +15,17 @@ leak:net::ProxyResolverV8::SetPacScript
 leak:net::(anonymous namespace)::ProxyResolverV8WithMockBindings::SetPacScriptFromDisk
 leak:net::(anonymous namespace)::InitResolver
 
-# NSS leaks. http://crbug.com/51988
-leak:net::NSSCertDatabase::
+# NSS leaks in CertDatabaseNSSTest tests. http://crbug.com/51988
+leak:net::NSSCertDatabase::ImportFromPKCS12
+leak:net::NSSCertDatabase::ListCerts
+leak:net::NSSCertDatabase::DeleteCertAndKey
 leak:crypto::ScopedTestNSSDB::ScopedTestNSSDB
-# The two suppressions above will not fire when the fast stack unwinder is used,
-# because it can't unwind through libnssutil. Just suppress it for the time being.
-leak:libnssutil
+# The suppressions above will not fire when the fast stack unwinder is used,
+# because it can't unwind through NSS libraries. Apply blanket supressions for now.
+leak:libnssutil3
+leak:libnspr4
+leak:libnss3
+leak:libplds4
 
 # Skia leaks. http://crbug.com/189170
 leak:SkFontHost::CreateTypeface
