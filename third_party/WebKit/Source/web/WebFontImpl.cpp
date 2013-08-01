@@ -107,24 +107,6 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
     gc.clip(textClipRect);
     m_font.drawText(&gc, runInfo, leftBaseline);
     gc.restore();
-
-#if defined(WIN32)
-    if (canvasIsOpaque && SkColorGetA(color) == 0xFF && !canvas->isDrawingToLayer()) {
-        // The text drawing logic on Windows ignores the alpha component
-        // intentionally, for performance reasons.
-        // (Please see TransparencyAwareFontPainter::initializeForGDI in
-        // FontChromiumWin.cpp.)
-        const SkBitmap& bitmap = canvas->getTopDevice()->accessBitmap(true);
-        IntRect textBounds = estimateTextBounds(run, leftBaseline);
-        IntRect destRect = gc.getCTM().mapRect(textBounds);
-        destRect.intersect(IntRect(0, 0, bitmap.width(), bitmap.height()));
-        for (int y = destRect.y(), maxY = destRect.maxY(); y < maxY; y++) {
-            uint32_t* row = bitmap.getAddr32(0, y);
-            for (int x = destRect.x(), maxX = destRect.maxX(); x < maxX; x++)
-                row[x] |= (0xFF << SK_A32_SHIFT);
-        }
-    }
-#endif
 }
 
 int WebFontImpl::calculateWidth(const WebTextRun& run) const
@@ -143,17 +125,6 @@ WebFloatRect WebFontImpl::selectionRectForText(const WebTextRun& run, const WebF
 {
     FontCachePurgePreventer fontCachePurgePreventer;
     return m_font.selectionRectForText(run, leftBaseline, height, from, to);
-}
-
-WebRect WebFontImpl::estimateTextBounds(const WebTextRun& run, const WebFloatPoint& leftBaseline) const
-{
-    FontCachePurgePreventer fontCachePurgePreventer;
-    int totalWidth = m_font.width(run, 0);
-    const WebCore::FontMetrics& fontMetrics = m_font.fontMetrics();
-    return WebRect(leftBaseline.x - (fontMetrics.ascent() + fontMetrics.descent()) / 2,
-                   leftBaseline.y - fontMetrics.ascent() - fontMetrics.lineGap(),
-                   totalWidth + fontMetrics.ascent() + fontMetrics.descent(),
-                   fontMetrics.lineSpacing());
 }
 
 } // namespace WebKit

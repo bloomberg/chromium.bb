@@ -58,9 +58,6 @@ public:
                                               int height, int from = 0, int to = -1) const;
 
 private:
-    // Estimates the bounding box of the given text.
-    WebRect estimateTextBounds(const WebTextRun&, const WebFloatPoint& leftBaseline) const;
-
     WebCore::Font m_font;
 };
 
