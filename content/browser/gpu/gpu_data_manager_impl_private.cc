@@ -266,6 +266,8 @@ void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
       gpu_info.gl_vendor.find("Broadcom") != std::string::npos;
   bool is_mali_t604 = is_arm &&
       gpu_info.gl_renderer.find("Mali-T604") != std::string::npos;
+  bool is_nvidia =
+      gpu_info.gl_vendor.find("NVIDIA") != std::string::npos;
 
   bool is_vivante =
       gpu_info.gl_extensions.find("GL_VIV_shader_binary") !=
@@ -279,7 +281,7 @@ void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
   // IMG: avoid context switching perf problems, crashes with share groups
   // Mali-T604: http://crbug.com/154715
   // QualComm, NVIDIA: Crashes with share groups
-  if (is_vivante || is_img || is_mali_t604 || is_nexus7 || is_qualcomm ||
+  if (is_vivante || is_img || is_mali_t604 || is_nvidia || is_qualcomm ||
       is_broadcom)
     command_line->AppendSwitch(switches::kEnableVirtualGLContexts);
 
