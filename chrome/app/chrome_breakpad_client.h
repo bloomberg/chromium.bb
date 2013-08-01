@@ -56,6 +56,10 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
   virtual bool GetCollectStatsConsent() OVERRIDE;
 #endif
 
+#if defined(OS_ANDROID)
+  virtual int GetAndroidMinidumpDescriptor() OVERRIDE;
+#endif
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBreakpadClient);
 };

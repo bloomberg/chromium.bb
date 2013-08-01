@@ -49,7 +49,6 @@
 
 #include "base/android/build_info.h"
 #include "base/android/path_utils.h"
-#include "chrome/common/descriptors_android.h"
 #endif
 #include "third_party/lss/linux_syscall_support.h"
 
@@ -1703,7 +1702,7 @@ void InitNonBrowserCrashReporterForAndroid() {
     // generated as the renderer and browser run with different UIDs
     // (preventing the browser from inspecting the renderer process).
     int minidump_fd = base::GlobalDescriptors::GetInstance()->
-        MaybeGet(kAndroidMinidumpDescriptor);
+        MaybeGet(breakpad::GetBreakpadClient()->GetAndroidMinidumpDescriptor());
     if (minidump_fd == base::kInvalidPlatformFileValue) {
       NOTREACHED() << "Could not find minidump FD, crash reporting disabled.";
     } else {

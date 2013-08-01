@@ -39,6 +39,10 @@
 #include "chrome/installer/util/google_update_settings.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/common/descriptors_android.h"
+#endif
+
 namespace chrome {
 
 namespace {
@@ -241,6 +245,12 @@ bool ChromeBreakpadClient::IsRunningUnattended() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
 bool ChromeBreakpadClient::GetCollectStatsConsent() {
   return GoogleUpdateSettings::GetCollectStatsConsent();
+}
+#endif
+
+#if defined(OS_ANDROID)
+int ChromeBreakpadClient::GetAndroidMinidumpDescriptor() {
+  return kAndroidMinidumpDescriptor;
 }
 #endif
 

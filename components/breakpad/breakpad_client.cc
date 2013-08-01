@@ -104,4 +104,10 @@ bool BreakpadClient::GetCollectStatsConsent() {
 }
 #endif
 
+#if defined(OS_ANDROID)
+int BreakpadClient::GetAndroidMinidumpDescriptor() {
+  return 0;
+}
+#endif
+
 }  // namespace breakpad

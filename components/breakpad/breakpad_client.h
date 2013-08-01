@@ -103,6 +103,11 @@ class BreakpadClient {
   // Returns true if the user has given consent to collect stats.
   virtual bool GetCollectStatsConsent();
 #endif
+
+#if defined(OS_ANDROID)
+  // Returns the descriptor key of the android minidump global descriptor.
+  virtual int GetAndroidMinidumpDescriptor();
+#endif
 };
 
 }  // namespace breakpad
