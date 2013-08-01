@@ -28,7 +28,7 @@ leak:libnss3
 leak:libplds4
 
 # Skia leaks. http://crbug.com/189170
-leak:SkFontHost::CreateTypeface
+leak:FontConfigTypeface::LegacyCreateTypeface
 
 # Angle leaks. http://crbug.com/181691
 leak:InitializeGlobalParseContext
