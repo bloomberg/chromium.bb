@@ -426,7 +426,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_eventQueue(DocumentEventQueue::create(this))
     , m_weakFactory(this)
     , m_idAttributeName(idAttr)
-    , m_hasFullscreenController(false)
+    , m_hasFullscreenElementStack(false)
     , m_loadEventDelayCount(0)
     , m_loadEventDelayTimer(this, &Document::loadEventDelayTimerFired)
     , m_referrerPolicy(ReferrerPolicyDefault)

@@ -33,7 +33,7 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/dom/FullscreenController.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLVideoElement.h"
@@ -176,7 +176,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
         changedDefaultStyle = true;
     }
 
-    if (!fullscreenStyleSheet && FullscreenController::isFullScreen(element->document())) {
+    if (!fullscreenStyleSheet && FullscreenElementStack::isFullScreen(element->document())) {
         String fullscreenRules = String(fullscreenUserAgentStyleSheet, sizeof(fullscreenUserAgentStyleSheet)) + RenderTheme::defaultTheme()->extraFullScreenStyleSheet();
         fullscreenStyleSheet = parseUASheet(fullscreenRules);
         defaultStyle->addRulesFromSheet(fullscreenStyleSheet, screenEval());

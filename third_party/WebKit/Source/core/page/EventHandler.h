@@ -50,7 +50,7 @@ class Event;
 class EventTarget;
 class FloatPoint;
 class FloatQuad;
-class FullscreenController;
+class FullscreenElementStack;
 class Frame;
 class HTMLFrameSetElement;
 class HitTestRequest;
@@ -285,7 +285,7 @@ private:
 
     bool capturesDragging() const { return m_capturesDragging; }
 
-    bool isKeyEventAllowedInFullScreen(FullscreenController*, const PlatformKeyboardEvent&) const;
+    bool isKeyEventAllowedInFullScreen(FullscreenElementStack*, const PlatformKeyboardEvent&) const;
 
     bool handleGestureTapDown();
 

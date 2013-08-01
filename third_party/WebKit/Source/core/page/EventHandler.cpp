@@ -36,7 +36,7 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/EventPathWalker.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
-#include "core/dom/FullscreenController.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/TextEvent.h"
@@ -2929,7 +2929,7 @@ bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
     return true;
 }
 
-bool EventHandler::isKeyEventAllowedInFullScreen(FullscreenController* fullscreen, const PlatformKeyboardEvent& keyEvent) const
+bool EventHandler::isKeyEventAllowedInFullScreen(FullscreenElementStack* fullscreen, const PlatformKeyboardEvent& keyEvent) const
 {
     if (fullscreen->webkitFullScreenKeyboardInputAllowed())
         return true;
@@ -2952,7 +2952,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 {
     RefPtr<FrameView> protector(m_frame->view());
 
-    if (FullscreenController* fullscreen = FullscreenController::fromIfExists(m_frame->document())) {
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(m_frame->document())) {
         if (fullscreen->webkitIsFullScreen() && !isKeyEventAllowedInFullScreen(fullscreen, initialKeyEvent))
             return false;
     }

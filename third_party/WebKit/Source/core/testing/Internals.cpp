@@ -51,7 +51,7 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/FullscreenController.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Range.h"
@@ -1838,28 +1838,28 @@ void Internals::webkitWillEnterFullScreenForElement(Document* document, Element*
 {
     if (!document)
         return;
-    FullscreenController::from(document)->webkitWillEnterFullScreenForElement(element);
+    FullscreenElementStack::from(document)->webkitWillEnterFullScreenForElement(element);
 }
 
 void Internals::webkitDidEnterFullScreenForElement(Document* document, Element* element)
 {
     if (!document)
         return;
-    FullscreenController::from(document)->webkitDidEnterFullScreenForElement(element);
+    FullscreenElementStack::from(document)->webkitDidEnterFullScreenForElement(element);
 }
 
 void Internals::webkitWillExitFullScreenForElement(Document* document, Element* element)
 {
     if (!document)
         return;
-    FullscreenController::from(document)->webkitWillExitFullScreenForElement(element);
+    FullscreenElementStack::from(document)->webkitWillExitFullScreenForElement(element);
 }
 
 void Internals::webkitDidExitFullScreenForElement(Document* document, Element* element)
 {
     if (!document)
         return;
-    FullscreenController::from(document)->webkitDidExitFullScreenForElement(element);
+    FullscreenElementStack::from(document)->webkitDidExitFullScreenForElement(element);
 }
 
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)

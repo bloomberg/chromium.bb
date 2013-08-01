@@ -36,7 +36,7 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/FullscreenController.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
@@ -286,7 +286,7 @@ bool SharedStyleFinder::canShareStyleWithElement(const ElementResolveContext& co
     if (element->isWebVTTElement() && context.element()->isWebVTTElement() && toWebVTTElement(element)->isPastNode() != toWebVTTElement(context.element())->isPastNode())
         return false;
 
-    if (FullscreenController* fullscreen = FullscreenController::fromIfExists(context.document())) {
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(context.document())) {
         if (element == fullscreen->webkitCurrentFullScreenElement() || context.element() == fullscreen->webkitCurrentFullScreenElement())
             return false;
     }

@@ -29,7 +29,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContainerNode.h"
-#include "core/dom/FullscreenController.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -243,7 +243,7 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
     element->setRenderer(newRenderer);
     newRenderer->setAnimatableStyle(m_style.release()); // setAnimatableStyle() can depend on renderer() already being set.
 
-    if (FullscreenController::isActiveFullScreenElement(element)) {
+    if (FullscreenElementStack::isActiveFullScreenElement(element)) {
         newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, element->document());
         if (!newRenderer)
             return;

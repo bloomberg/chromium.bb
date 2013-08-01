@@ -48,6 +48,8 @@
       'FindInPageCoordinates.h',
       'FrameLoaderClientImpl.cpp',
       'FrameLoaderClientImpl.h',
+      'FullscreenController.cpp',
+      'FullscreenController.h',
       'GeolocationClientProxy.cpp',
       'GeolocationClientProxy.h',
       'GraphicsLayerFactoryChromium.cpp',

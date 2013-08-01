@@ -48,7 +48,7 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
-#include "core/dom/FullscreenController.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeList.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLBodyElement.h"
@@ -210,14 +210,14 @@ void WebDocument::insertUserStyleSheet(const WebString& sourceCode, UserStyleLev
 
 void WebDocument::cancelFullScreen()
 {
-    if (FullscreenController* fullscreen = FullscreenController::fromIfExists(unwrap<Document>()))
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(unwrap<Document>()))
         fullscreen->webkitCancelFullScreen();
 }
 
 WebElement WebDocument::fullScreenElement() const
 {
     Element* fullScreenElement = 0;
-    if (FullscreenController* fullscreen = FullscreenController::fromIfExists(const_cast<WebDocument*>(this)->unwrap<Document>()))
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(const_cast<WebDocument*>(this)->unwrap<Document>()))
         fullScreenElement = fullscreen->webkitCurrentFullScreenElement();
     return WebElement(fullScreenElement);
 }

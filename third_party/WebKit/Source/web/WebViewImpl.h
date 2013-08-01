@@ -120,6 +120,7 @@ class WebPrerendererClient;
 class WebSettingsImpl;
 class WebTouchEvent;
 class WebViewBenchmarkSupport;
+class FullscreenController;
 
 class WebViewImpl : public WebView
     , public RefCounted<WebViewImpl>
@@ -708,8 +709,6 @@ private:
     // Saved page scale state.
     float m_savedPageScaleFactor; // 0 means that no page scale factor is saved.
     WebCore::IntSize m_savedScrollOffset;
-    float m_exitFullscreenPageScaleFactor;
-    WebCore::IntSize m_exitFullscreenScrollOffset;
 
     // The scale moved to by the latest double tap zoom, if any.
     float m_doubleTapZoomPageScaleFactor;
@@ -786,13 +785,6 @@ private:
     // If set, the (plugin) node which has mouse capture.
     RefPtr<WebCore::Node> m_mouseCaptureNode;
 
-    // If set, the WebView is transitioning to fullscreen for this element.
-    RefPtr<WebCore::Element> m_provisionalFullScreenElement;
-
-    // If set, the WebView is in fullscreen mode for an element in this frame.
-    RefPtr<WebCore::Frame> m_fullScreenFrame;
-    bool m_isCancelingFullScreen;
-
     WebViewBenchmarkSupportImpl m_benchmarkSupport;
 
     WebCore::IntRect m_rootLayerScrollDamage;
@@ -830,6 +822,7 @@ private:
     bool m_flingSourceDevice;
     OwnPtr<LinkHighlight> m_linkHighlight;
     OwnPtr<ValidationMessageClientImpl> m_validationMessage;
+    OwnPtr<FullscreenController> m_fullscreenController;
 
     bool m_showFPSCounter;
     bool m_showPaintRects;

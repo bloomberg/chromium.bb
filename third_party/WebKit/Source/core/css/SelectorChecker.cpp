@@ -34,7 +34,7 @@
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/FullscreenController.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -707,7 +707,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             // context's Document is in the fullscreen state has the 'full-screen' pseudoclass applied.
             if (element->isFrameElementBase() && element->containsFullScreenElement())
                 return true;
-            if (FullscreenController* fullscreen = FullscreenController::fromIfExists(element->document())) {
+            if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(element->document())) {
                 if (!fullscreen->webkitIsFullScreen())
                     return false;
                 return element == fullscreen->webkitCurrentFullScreenElement();
@@ -718,7 +718,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoFullScreenDocument:
             // While a Document is in the fullscreen state, the 'full-screen-document' pseudoclass applies
             // to all elements of that Document.
-            if (!FullscreenController::isFullScreen(element->document()))
+            if (!FullscreenElementStack::isFullScreen(element->document()))
                 return false;
             return true;
         case CSSSelector::PseudoSeamlessDocument:

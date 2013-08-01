@@ -26,51 +26,51 @@
 #include "config.h"
 #include "core/dom/DocumentFullscreen.h"
 
-#include "core/dom/FullscreenController.h"
+#include "core/dom/FullscreenElementStack.h"
 
 namespace WebCore {
 
 bool DocumentFullscreen::webkitIsFullScreen(Document* document)
 {
-    if (FullscreenController* controller = FullscreenController::fromIfExists(document))
-        return controller->webkitIsFullScreen();
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
+        return fullscreen->webkitIsFullScreen();
     return false;
 }
 
 bool DocumentFullscreen::webkitFullScreenKeyboardInputAllowed(Document* document)
 {
-    if (FullscreenController* controller = FullscreenController::fromIfExists(document))
-        return controller->webkitFullScreenKeyboardInputAllowed();
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
+        return fullscreen->webkitFullScreenKeyboardInputAllowed();
     return false;
 }
 
 Element* DocumentFullscreen::webkitCurrentFullScreenElement(Document* document)
 {
-    if (FullscreenController* controller = FullscreenController::fromIfExists(document))
-        return controller->webkitCurrentFullScreenElement();
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
+        return fullscreen->webkitCurrentFullScreenElement();
     return 0;
 }
 
 void DocumentFullscreen::webkitCancelFullScreen(Document* document)
 {
-    FullscreenController::from(document)->webkitCancelFullScreen();
+    FullscreenElementStack::from(document)->webkitCancelFullScreen();
 }
 
 bool DocumentFullscreen::webkitFullscreenEnabled(Document* document)
 {
-    return FullscreenController::webkitFullscreenEnabled(document);
+    return FullscreenElementStack::webkitFullscreenEnabled(document);
 }
 
 Element* DocumentFullscreen::webkitFullscreenElement(Document* document)
 {
-    if (FullscreenController* controller = FullscreenController::fromIfExists(document))
-        return controller->webkitFullscreenElement();
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
+        return fullscreen->webkitFullscreenElement();
     return 0;
 }
 
 void DocumentFullscreen::webkitExitFullscreen(Document* document)
 {
-    FullscreenController::from(document)->webkitExitFullscreen();
+    FullscreenElementStack::from(document)->webkitExitFullscreen();
 }
 
 } // namespace WebCore

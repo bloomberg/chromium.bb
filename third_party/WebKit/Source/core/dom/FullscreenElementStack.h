@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef FullscreenController_h
-#define FullscreenController_h
+#ifndef FullscreenElementStack_h
+#define FullscreenElementStack_h
 
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/Element.h"
@@ -46,14 +46,14 @@ class RenderFullScreen;
 class RenderStyle;
 class ScriptExecutionContext;
 
-class FullscreenController
+class FullscreenElementStack
     : public Supplement<ScriptExecutionContext>
     , public DocumentLifecycleObserver {
 public:
-    virtual ~FullscreenController();
+    virtual ~FullscreenElementStack();
     static const char* supplementName();
-    static FullscreenController* from(Document*);
-    static FullscreenController* fromIfExists(Document*);
+    static FullscreenElementStack* from(Document*);
+    static FullscreenElementStack* fromIfExists(Document*);
     static Element* fullscreenElementFrom(Document*);
     static Element* currentFullScreenElementFrom(Document*);
     static bool isFullScreen(Document*);
@@ -98,39 +98,39 @@ public:
     virtual void documentWasDisposed() OVERRIDE;
 
 private:
-    static FullscreenController* fromIfExistsSlow(Document*);
+    static FullscreenElementStack* fromIfExistsSlow(Document*);
 
-    explicit FullscreenController(Document*);
+    explicit FullscreenElementStack(Document*);
 
     Document* document();
-    void fullScreenChangeDelayTimerFired(Timer<FullscreenController>*);
+    void fullScreenChangeDelayTimerFired(Timer<FullscreenElementStack>*);
 
     bool m_areKeysEnabledInFullScreen;
     RefPtr<Element> m_fullScreenElement;
     Vector<RefPtr<Element> > m_fullScreenElementStack;
     RenderFullScreen* m_fullScreenRenderer;
-    Timer<FullscreenController> m_fullScreenChangeDelayTimer;
+    Timer<FullscreenElementStack> m_fullScreenChangeDelayTimer;
     Deque<RefPtr<Node> > m_fullScreenChangeEventTargetQueue;
     Deque<RefPtr<Node> > m_fullScreenErrorEventTargetQueue;
     LayoutRect m_savedPlaceholderFrameRect;
     RefPtr<RenderStyle> m_savedPlaceholderRenderStyle;
 };
 
-inline bool FullscreenController::isActiveFullScreenElement(const Element* element)
+inline bool FullscreenElementStack::isActiveFullScreenElement(const Element* element)
 {
-    FullscreenController* controller = fromIfExists(element->document());
+    FullscreenElementStack* controller = fromIfExists(element->document());
     if (!controller)
         return false;
     return controller->webkitIsFullScreen() && controller->webkitCurrentFullScreenElement() == element;
 }
 
-inline FullscreenController* FullscreenController::fromIfExists(Document* document)
+inline FullscreenElementStack* FullscreenElementStack::fromIfExists(Document* document)
 {
-    if (!document->hasFullscreenController())
+    if (!document->hasFullscreenElementStack())
         return 0;
     return fromIfExistsSlow(document);
 }
 
 } // namespace WebCore
 
-#endif // FullscreenController_h
+#endif // FullscreenElementStack_h

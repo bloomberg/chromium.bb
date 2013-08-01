@@ -925,8 +925,8 @@ public:
 
     const QualifiedName& idAttributeName() const { return m_idAttributeName; }
 
-    bool hasFullscreenController() const { return m_hasFullscreenController; }
-    void setHasFullscreenController() { m_hasFullscreenController = true; }
+    bool hasFullscreenElementStack() const { return m_hasFullscreenElementStack; }
+    void setHasFullscreenElementStack() { m_hasFullscreenElementStack = true; }
 
     void webkitExitPointerLock();
     Element* webkitPointerLockElement() const;
@@ -1280,7 +1280,7 @@ private:
 
     QualifiedName m_idAttributeName;
 
-    bool m_hasFullscreenController; // For early return in FullscreenController::fromIfExists()
+    bool m_hasFullscreenElementStack; // For early return in FullscreenElementStack::fromIfExists()
 
     Vector<RefPtr<Element> > m_topLayerElements;
 

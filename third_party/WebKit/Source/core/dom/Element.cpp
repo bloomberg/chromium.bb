@@ -53,7 +53,7 @@
 #include "core/dom/EventDispatcher.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FocusEvent.h"
-#include "core/dom/FullscreenController.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/NamedNodeMap.h"
@@ -2563,12 +2563,12 @@ bool Element::childShouldCreateRenderer(const NodeRenderingContext& childContext
 
 void Element::webkitRequestFullscreen()
 {
-    FullscreenController::from(document())->requestFullScreenForElement(this, ALLOW_KEYBOARD_INPUT, FullscreenController::EnforceIFrameAllowFullScreenRequirement);
+    FullscreenElementStack::from(document())->requestFullScreenForElement(this, ALLOW_KEYBOARD_INPUT, FullscreenElementStack::EnforceIFrameAllowFullScreenRequirement);
 }
 
 void Element::webkitRequestFullScreen(unsigned short flags)
 {
-    FullscreenController::from(document())->requestFullScreenForElement(this, (flags | LEGACY_MOZILLA_REQUEST), FullscreenController::EnforceIFrameAllowFullScreenRequirement);
+    FullscreenElementStack::from(document())->requestFullScreenForElement(this, (flags | LEGACY_MOZILLA_REQUEST), FullscreenElementStack::EnforceIFrameAllowFullScreenRequirement);
 }
 
 bool Element::containsFullScreenElement() const
@@ -2658,7 +2658,7 @@ bool Element::shouldMoveToFlowThread(RenderStyle* styleToUse) const
 {
     ASSERT(styleToUse);
 
-    if (FullscreenController::isActiveFullScreenElement(this))
+    if (FullscreenElementStack::isActiveFullScreenElement(this))
         return false;
 
     if (isInShadowTree())

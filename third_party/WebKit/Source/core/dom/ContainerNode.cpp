@@ -27,7 +27,7 @@
 #include "core/dom/ContainerNodeAlgorithms.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/FullscreenController.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/MutationEvent.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderStyle.h"
@@ -468,7 +468,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionCode& ec)
 
     document()->removeFocusedElementOfSubtree(child.get());
 
-    if (FullscreenController* fullscreen = FullscreenController::fromIfExists(document()))
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document()))
         fullscreen->removeFullScreenElementOfSubtree(child.get());
 
     // Events fired when blurring currently focused node might have moved this
@@ -555,7 +555,7 @@ void ContainerNode::removeChildren()
     // The container node can be removed from event handlers.
     RefPtr<ContainerNode> protect(this);
 
-    if (FullscreenController* fullscreen = FullscreenController::fromIfExists(document()))
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document()))
         fullscreen->removeFullScreenElementOfSubtree(this, true);
 
     // Do any prep work needed before actually starting to detach
