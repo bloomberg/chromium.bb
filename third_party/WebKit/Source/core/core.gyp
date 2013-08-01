@@ -30,7 +30,7 @@
 
 {
   'includes': [
-    '../WebKit/chromium/WinPrecompile.gypi',
+    '../build/win/precompile.gypi',
     'features.gypi',
     '../modules/modules.gypi',
     '../bindings/bindings.gypi',
@@ -567,11 +567,6 @@
         'dom/default/PlatformMessagePortChannel.cpp',
         'dom/default/PlatformMessagePortChannel.h',
       ],
-      'sources/': [
-        # FIXME: Figure out how to store these patterns in a variable.
-        ['exclude', '(cf|cg|mac|opentype|svg|win)/'],
-        ['exclude', '(?<!Chromium)(CF|CG|Mac|OpenType|Win)\\.(cpp|mm?)$'],
-      ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
@@ -821,7 +816,7 @@
         }],
         ['OS=="win" and chromium_win_pch==1', {
           'sources/': [
-            ['include', '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.cpp'],
+            ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
           ],
         }],
         ['OS=="android"', {
@@ -925,7 +920,7 @@
         }],
         ['OS=="win" and chromium_win_pch==1', {
           'sources/': [
-            ['include', '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WinPrecompile.cpp'],
+            ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
           ],
         }],
         ['OS=="mac"', {
@@ -1009,6 +1004,11 @@
         }],
         ['OS!="mac"', {
           'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]
+        }],
+        ['OS=="win" and chromium_win_pch==1', {
+          'sources/': [
+            ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
+          ],
         }],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
