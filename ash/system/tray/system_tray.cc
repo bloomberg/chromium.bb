@@ -27,7 +27,6 @@
 #include "ash/system/tray_update.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -374,13 +373,12 @@ bool SystemTray::HasSystemBubbleType(SystemTrayBubble::BubbleType type) {
 void SystemTray::DestroySystemBubble() {
   system_bubble_.reset();
   detailed_item_ = NULL;
-  UpdateWebNotifications();
 }
 
 void SystemTray::DestroyNotificationBubble() {
   if (notification_bubble_) {
     notification_bubble_.reset();
-    UpdateWebNotifications();
+    status_area_widget()->SetHideWebNotifications(false);
   }
 }
 
@@ -479,8 +477,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     detailed_item_ = NULL;
 
   UpdateNotificationBubble();  // State changed, re-create notifications.
-  if (!notification_bubble_)
-    UpdateWebNotifications();
+  status_area_widget()->SetHideWebNotifications(true);
   GetShelfLayoutManager()->UpdateAutoHideState();
 }
 
@@ -530,29 +527,7 @@ void SystemTray::UpdateNotificationBubble() {
   if (hide_notifications_)
     notification_bubble->SetVisible(false);
   else
-    UpdateWebNotifications();
-}
-
-void SystemTray::UpdateWebNotifications() {
-  TrayBubbleView* bubble_view = NULL;
-  if (notification_bubble_)
-    bubble_view = notification_bubble_->bubble_view();
-  else if (system_bubble_)
-    bubble_view = system_bubble_->bubble_view();
-
-  int height = 0;
-  if (bubble_view) {
-    gfx::Rect work_area = Shell::GetScreen()->GetDisplayNearestWindow(
-        bubble_view->GetWidget()->GetNativeView()).work_area();
-    if (GetShelfLayoutManager()->GetAlignment() != SHELF_ALIGNMENT_TOP) {
-      height = std::max(
-          0, work_area.height() - bubble_view->GetBoundsInScreen().y());
-    } else {
-      height = std::max(
-          0, bubble_view->GetBoundsInScreen().bottom() - work_area.y());
-    }
-  }
-  status_area_widget()->web_notification_tray()->SetSystemTrayHeight(height);
+    status_area_widget()->SetHideWebNotifications(true);
 }
 
 void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {

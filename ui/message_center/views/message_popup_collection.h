@@ -29,7 +29,6 @@ class Widget;
 }
 
 namespace ash {
-class WebNotificationTrayTest;
 FORWARD_DECLARE_TEST(WebNotificationTrayTest, ManyPopupNotifications);
 }
 
@@ -110,7 +109,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
                            ManyPopupNotifications);
   friend class test::MessagePopupCollectionTest;
   friend class test::MessagePopupCollectionWidgetsTest;
-  friend class ash::WebNotificationTrayTest;
   typedef std::list<ToastContentsView*> Toasts;
 
   void CloseAllWidgets();

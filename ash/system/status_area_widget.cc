@@ -116,6 +116,11 @@ void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
   status_area_widget_delegate_->UpdateLayout();
 }
 
+void StatusAreaWidget::SetHideWebNotifications(bool hide) {
+  if (web_notification_tray_)
+    web_notification_tray_->SetHidePopupBubble(hide);
+}
+
 void StatusAreaWidget::SetHideSystemNotifications(bool hide) {
   if (system_tray_)
     system_tray_->SetHideNotifications(hide);

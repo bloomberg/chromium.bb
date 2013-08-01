@@ -191,10 +191,6 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   // |notification_items_|, or destroys it if there are no notification items.
   void UpdateNotificationBubble();
 
-  // Checks the current status of the system tray and updates the web
-  // notification tray according to the current status.
-  void UpdateWebNotifications();
-
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
 
   // Overridden from internal::ActionableView.
