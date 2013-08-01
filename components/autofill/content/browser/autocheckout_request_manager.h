@@ -6,7 +6,6 @@
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOCHECKOUT_REQUEST_MANAGER_H_
 
 #include "base/supports_user_data.h"
-#include "components/autofill/content/browser/autocheckout_statistic.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_client_delegate.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -47,7 +46,6 @@ class AutocheckoutRequestManager : public base::SupportsUserData::Data,
   void SendAutocheckoutStatus(
       AutocheckoutStatus status,
       const GURL& source_url,
-      const std::vector<AutocheckoutStatistic>& latency_statistics,
       const std::string& google_transaction_id);
 
   // wallet::WalletClientDelegate:

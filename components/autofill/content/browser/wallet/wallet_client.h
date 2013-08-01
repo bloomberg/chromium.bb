@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/autofill/content/browser/autocheckout_statistic.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
@@ -170,12 +169,10 @@ class WalletClient : public net::URLFetcherDelegate {
   // SendAutocheckoutStatus is used for tracking the success of Autocheckout
   // flows. |status| is the result of the flow, |source_url| is the domain
   // where the purchase occured, and |google_transaction_id| is the same as the
-  // one provided by GetWalletItems. |latency_statistics| contain statistics
-  // required to measure Autocheckout process.
+  // one provided by GetWalletItems.
   virtual void SendAutocheckoutStatus(
       autofill::AutocheckoutStatus status,
       const GURL& source_url,
-      const std::vector<AutocheckoutStatistic>& latency_statistics,
       const std::string& google_transaction_id);
 
   bool HasRequestInProgress() const;

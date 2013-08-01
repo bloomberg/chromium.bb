@@ -39,11 +39,9 @@ AutocheckoutRequestManager* AutocheckoutRequestManager::FromBrowserContext(
 void AutocheckoutRequestManager::SendAutocheckoutStatus(
     AutocheckoutStatus status,
     const GURL& source_url,
-    const std::vector<AutocheckoutStatistic>& latency_statistics,
     const std::string& google_transaction_id) {
   wallet_client_.SendAutocheckoutStatus(status,
                                         source_url,
-                                        latency_statistics,
                                         google_transaction_id);
 }
 
