@@ -942,9 +942,8 @@ void RenderDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         if (newHeight == child->height())
             continue;
 
-        child->setChildNeedsLayout(true, MarkOnlyThis);
         child->setOverrideLogicalContentHeight(newHeight - child->borderAndPaddingHeight());
-        child->layoutIfNeeded();
+        child->forceChildLayout();
 
         // FIXME: For now don't support RTL.
         if (style()->direction() != LTR)

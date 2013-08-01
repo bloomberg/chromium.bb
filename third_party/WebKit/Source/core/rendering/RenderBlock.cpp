@@ -2855,10 +2855,8 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, bool fixedPosit
         r->layoutIfNeeded();
 
         // Lay out again if our estimate was wrong.
-        if (needsBlockDirectionLocationSetBeforeLayout && logicalTopForChild(r) != oldLogicalTop) {
-            r->setChildNeedsLayout(true, MarkOnlyThis);
-            r->layoutIfNeeded();
-        }
+        if (needsBlockDirectionLocationSetBeforeLayout && logicalTopForChild(r) != oldLogicalTop)
+            r->forceChildLayout();
     }
 
     if (hasColumns())

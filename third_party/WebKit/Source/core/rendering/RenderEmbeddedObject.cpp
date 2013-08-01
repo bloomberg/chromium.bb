@@ -253,8 +253,7 @@ void RenderEmbeddedObject::layout()
     childBox->setLocation(LayoutPoint(borderLeft(), borderTop()) + LayoutSize(paddingLeft(), paddingTop()));
     childBox->style()->setHeight(Length(newSize.height(), Fixed));
     childBox->style()->setWidth(Length(newSize.width(), Fixed));
-    childBox->setNeedsLayout(true, MarkOnlyThis);
-    childBox->layout();
+    childBox->forceLayout();
     setChildNeedsLayout(false);
 
     statePusher.pop();

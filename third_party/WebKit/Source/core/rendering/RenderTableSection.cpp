@@ -525,8 +525,7 @@ int RenderTableSection::calcRowLogicalHeight()
                     }
                     cell->clearIntrinsicPadding();
                     cell->clearOverrideSize();
-                    cell->setChildNeedsLayout(true, MarkOnlyThis);
-                    cell->layoutIfNeeded();
+                    cell->forceChildLayout();
                 }
 
                 if (RuntimeEnabledFeatures::rowSpanLogicalHeightSpreadingEnabled()) {
@@ -792,12 +791,11 @@ void RenderTableSection::layoutRows()
             }
 
             if (cellChildrenFlex) {
-                cell->setChildNeedsLayout(true, MarkOnlyThis);
                 // Alignment within a cell is based off the calculated
                 // height, which becomes irrelevant once the cell has
                 // been resized based off its percentage.
                 cell->setOverrideLogicalContentHeightFromRowHeight(rHeight);
-                cell->layoutIfNeeded();
+                cell->forceChildLayout();
 
                 // If the baseline moved, we may have to update the data for our row. Find out the new baseline.
                 if (cell->isBaselineAligned()) {
