@@ -42,29 +42,22 @@ public:
 
     v8::Handle<v8::String> v8ExternalString(StringImpl* stringImpl, v8::Isolate* isolate)
     {
-        if (m_lastStringImpl.get() == stringImpl && m_lastV8String.isWeak())
+        ASSERT(stringImpl);
+        if (m_lastStringImpl.get() == stringImpl)
             return m_lastV8String.newLocal(isolate);
         return v8ExternalStringSlow(stringImpl, isolate);
     }
 
     void setReturnValueFromString(v8::ReturnValue<v8::Value> returnValue, StringImpl* stringImpl)
     {
-        if (m_lastStringImpl.get() == stringImpl && m_lastV8String.isWeak())
+        ASSERT(stringImpl);
+        if (m_lastStringImpl.get() == stringImpl)
             returnValue.Set(*m_lastV8String.persistent());
         else
             setReturnValueFromStringSlow(returnValue, stringImpl);
     }
 
-    void clearOnGC()
-    {
-        m_lastStringImpl = 0;
-        m_lastV8String.clear();
-    }
-
-    void remove(StringImpl*);
-
 private:
-    static v8::Local<v8::String> makeExternalString(const String&);
     static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::String>*, StringImpl*);
 
     v8::Handle<v8::String> v8ExternalStringSlow(StringImpl*, v8::Isolate*);

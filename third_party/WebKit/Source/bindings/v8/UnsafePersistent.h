@@ -97,11 +97,6 @@ public:
         return !m_value;
     }
 
-    bool isWeak()
-    {
-        return persistent()->IsWeak();
-    }
-
 private:
     T* m_value;
 };
