@@ -117,8 +117,8 @@ static void NaClSysListMappingsDyncodeVisit(void *statev,
       state,
       /* start= */ (uint32_t) NaClSysToUser(state->nap, rg->start),
       /* size= */ (uint32_t) rg->size,
-      /* prot= */ PROT_READ | PROT_EXEC,
-      /* max_prot= */ PROT_READ | PROT_EXEC,
+      /* prot= */ NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
+      /* max_prot= */ NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
       /* vmmap_type= */ 0);
 }
 

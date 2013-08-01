@@ -1819,7 +1819,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     NaClVmmapAddWithOverwrite(&nap->mem_map,
                               NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
                               length >> NACL_PAGESHIFT,
-                              NaClProtMap(prot),
+                              prot,
                               flags,
                               ndp,
                               offset);

@@ -156,7 +156,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   NaClVmmapAdd(&nap->mem_map,
                NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                region_size >> NACL_PAGESHIFT,
-               PROT_READ | PROT_EXEC,
+               NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                NACL_ABI_MAP_PRIVATE,
                NULL,
                0);
@@ -181,7 +181,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
     NaClVmmapAdd(&nap->mem_map,
                  NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                  region_size >> NACL_PAGESHIFT,
-                 PROT_READ | PROT_EXEC,
+                 NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                  NACL_ABI_MAP_PRIVATE,
                  nap->text_shm,
                  0);
@@ -224,7 +224,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
     NaClVmmapAdd(&nap->mem_map,
                  NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                  region_size >> NACL_PAGESHIFT,
-                 PROT_READ,
+                 NACL_ABI_PROT_READ,
                  NACL_ABI_MAP_PRIVATE,
                  NULL,
                  0);
@@ -259,7 +259,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
     NaClVmmapAdd(&nap->mem_map,
                  NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                  region_size >> NACL_PAGESHIFT,
-                 PROT_READ | PROT_WRITE,
+                 NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                  NACL_ABI_MAP_PRIVATE,
                  NULL,
                  0);
@@ -292,7 +292,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   NaClVmmapAdd(&nap->mem_map,
                NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                nap->stack_size >> NACL_PAGESHIFT,
-               PROT_READ | PROT_WRITE,
+               NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                NACL_ABI_MAP_PRIVATE,
                NULL,
                0);

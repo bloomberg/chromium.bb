@@ -37,7 +37,7 @@ TEST_F(SelMemTest, AddTest) {
     NaClVmmapAdd(&mem_map,
                  start_page_num*i,
                  i,
-                 PROT_READ | PROT_EXEC,
+                 NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                  NACL_ABI_MAP_PRIVATE,
                  NULL,
                  0);
@@ -49,7 +49,7 @@ TEST_F(SelMemTest, AddTest) {
   NaClVmmapAdd(&mem_map,
                start_page_num,
                2,
-               PROT_READ,
+               NACL_ABI_PROT_READ,
                NACL_ABI_MAP_PRIVATE,
                NULL,
                0);
@@ -68,7 +68,7 @@ TEST_F(SelMemTest, UpdateTest) {
   NaClVmmapAddWithOverwrite(&mem_map,
                             32,
                             12,
-                            PROT_READ | PROT_EXEC,
+                            NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                             NACL_ABI_MAP_PRIVATE,
                             NULL,
                             0);
@@ -78,7 +78,7 @@ TEST_F(SelMemTest, UpdateTest) {
   NaClVmmapAddWithOverwrite(&mem_map,
                             64,
                             10,
-                            PROT_READ,
+                            NACL_ABI_PROT_READ,
                             NACL_ABI_MAP_PRIVATE,
                             NULL,
                             0);
@@ -89,7 +89,7 @@ TEST_F(SelMemTest, UpdateTest) {
   NaClVmmapAddWithOverwrite(&mem_map,
                             42,
                             24,
-                            PROT_READ,
+                            NACL_ABI_PROT_READ,
                             NACL_ABI_MAP_PRIVATE,
                             NULL,
                             0);
@@ -100,7 +100,7 @@ TEST_F(SelMemTest, UpdateTest) {
   NaClVmmapAddWithOverwrite(&mem_map,
                             36,
                             2,
-                            PROT_READ | PROT_EXEC,
+                            NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                             NACL_ABI_MAP_PRIVATE,
                             NULL,
                             0);
@@ -111,7 +111,7 @@ TEST_F(SelMemTest, UpdateTest) {
   NaClVmmapAddWithOverwrite(&mem_map,
                             32,
                             6,
-                            PROT_READ | PROT_EXEC,
+                            NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                             NACL_ABI_MAP_PRIVATE,
                             NULL,
                             0);
@@ -146,7 +146,7 @@ TEST_F(SelMemTest, FindPageTest) {
     NaClVmmapAdd(&mem_map,
                  start_page_num*i,
                  2*i,
-                 PROT_READ | PROT_EXEC,
+                 NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                  NACL_ABI_MAP_PRIVATE,
                  NULL,
                  0);
@@ -184,7 +184,7 @@ TEST_F(SelMemTest, FindSpaceTest) {
   NaClVmmapAdd(&mem_map,
                32,
                10,
-               PROT_READ | PROT_EXEC,
+               NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                NACL_ABI_MAP_PRIVATE,
                NULL,
                0);
@@ -196,7 +196,7 @@ TEST_F(SelMemTest, FindSpaceTest) {
   NaClVmmapAdd(&mem_map,
                64,
                10,
-               PROT_READ | PROT_EXEC,
+               NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                NACL_ABI_MAP_PRIVATE,
                NULL,
                0);
@@ -212,7 +212,7 @@ TEST_F(SelMemTest, FindSpaceTest) {
   NaClVmmapAdd(&mem_map,
                96,
                10,
-               PROT_READ | PROT_EXEC,
+               NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                NACL_ABI_MAP_PRIVATE,
                NULL,
                0);

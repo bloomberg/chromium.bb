@@ -28,6 +28,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 
 #define START_ENTRIES   5   /* tramp+text, rodata, data, bss, stack */
 #define REMOVE_MARKED_DEBUG 0
@@ -508,20 +509,20 @@ int NaClVmmapEntryMaxProt(struct NaClVmmapEntry *entry) {
     int o_flags = (*NACL_VTBL(NaClDesc, entry->desc)->GetFlags)(entry->desc);
     switch (o_flags & NACL_ABI_O_ACCMODE) {
       case NACL_ABI_O_RDONLY:
-        flags = PROT_READ;
+        flags = NACL_ABI_PROT_READ;
         break;
       case NACL_ABI_O_WRONLY:
-        flags = PROT_WRITE;
+        flags = NACL_ABI_PROT_WRITE;
         break;
       case NACL_ABI_O_RDWR:
-        flags = PROT_READ | PROT_WRITE;
+        flags = NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE;
         break;
       default:
         NaClLog(LOG_FATAL, "Internal error: illegal O_ACCMODE\n");
         break;
     }
   } else {
-    flags = PROT_READ | PROT_WRITE;
+    flags = NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE;
   }
 
   return flags;
