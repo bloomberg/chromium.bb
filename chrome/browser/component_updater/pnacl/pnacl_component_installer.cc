@@ -419,6 +419,22 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
   }
 }
 
+// Remove old per-profile copies of PNaCl (was for ChromeOS).
+// TODO(jvoung): Delete this code once most ChromeOS users have reaped
+// their old per-profile copies of PNaCl.
+void ReapOldChromeOSPnaclFiles(PnaclComponentInstaller* pci) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::FilePath path = pci->GetPnaclBaseDirectory();
+  if (!base::PathExists(path))
+    return;
+
+  // Do a basic sanity check first.
+  if (pci->per_user()
+      && path.BaseName().value().compare(FILE_PATH_LITERAL("pnacl")) == 0)
+    base::DeleteFile(path, true);
+}
+
+
 void GetProfileInformation(PnaclComponentInstaller* pci) {
   // Bail if not logged in yet.
   if (!g_browser_process->profile_manager()->IsLoggedIn()) {
@@ -427,11 +443,12 @@ void GetProfileInformation(PnaclComponentInstaller* pci) {
 
   pci->OnProfileChange();
 
-  BrowserThread::PostTask(
-     BrowserThread::FILE, FROM_HERE,
-     base::Bind(&StartPnaclUpdateRegistration, pci));
+  // Do not actually register PNaCl for component updates, for CHROMEOS.
+  // Just get the profile information and delete the per-profile files
+  // if they exist.
+ BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                         base::Bind(&ReapOldChromeOSPnaclFiles, pci));
 }
-
 
 }  // namespace
 
