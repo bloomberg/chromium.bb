@@ -14,7 +14,6 @@
 using fileapi::ExternalMountPoints;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemURL;
-using fileapi::LocalFileSystemOperation;
 
 namespace sync_file_system {
 

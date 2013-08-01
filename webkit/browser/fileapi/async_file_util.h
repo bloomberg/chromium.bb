@@ -27,9 +27,9 @@ class FileSystemOperationContext;
 class FileSystemURL;
 
 // An interface which provides filesystem-specific file operations for
-// LocalFileSystemOperation.
+// FileSystemOperationImpl.
 //
-// Each filesystem which needs to be dispatched from LocalFileSystemOperation
+// Each filesystem which needs to be dispatched from FileSystemOperationImpl
 // must implement this interface or a synchronous version of interface:
 // FileSystemFileUtil.
 //
@@ -84,7 +84,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
   // a new file at the given |url| and calls back with
   // PLATFORM_FILE_ERROR_FILE_EXISTS if the |url| already exists.
   //
-  // LocalFileSystemOperation::OpenFile calls this.
+  // FileSystemOperationImpl::OpenFile calls this.
   // This is used only by Pepper/NaCL File API.
   //
   virtual void CreateOrOpen(
@@ -96,7 +96,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
   // Ensures that the given |url| exist.  This creates a empty new file
   // at |url| if the |url| does not exist.
   //
-  // LocalFileSystemOperation::CreateFile calls this.
+  // FileSystemOperationImpl::CreateFile calls this.
   //
   // This reports following error code via |callback|:
   // - PLATFORM_FILE_OK and created==true if a file has not existed and
@@ -112,7 +112,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
 
   // Creates directory at given url.
   //
-  // LocalFileSystemOperation::CreateDirectory calls this.
+  // FileSystemOperationImpl::CreateDirectory calls this.
   //
   // This reports following error code via |callback|:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if the |url|'s parent directory
@@ -132,7 +132,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
 
   // Retrieves the information about a file.
   //
-  // LocalFileSystemOperation::GetMetadata calls this.
+  // FileSystemOperationImpl::GetMetadata calls this.
   //
   // This reports following error code via |callback|:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if the file doesn't exist.
@@ -145,7 +145,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
 
   // Reads contents of a directory at |path|.
   //
-  // LocalFileSystemOperation::ReadDirectory calls this.
+  // FileSystemOperationImpl::ReadDirectory calls this.
   //
   // Note that the |name| field of each entry in |file_list|
   // returned by |callback| should have a base file name
@@ -170,7 +170,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
   // |last_access_time| and |last_modified_time|. The function DOES NOT
   // create a file unlike 'touch' command on Linux.
   //
-  // LocalFileSystemOperation::TouchFile calls this.
+  // FileSystemOperationImpl::TouchFile calls this.
   // This is used only by Pepper/NaCL File API.
   //
   virtual void Touch(
@@ -184,7 +184,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
   // the original file size, the file will be extended, and the extended
   // part is filled with null bytes.
   //
-  // LocalFileSystemOperation::Truncate calls this.
+  // FileSystemOperationImpl::Truncate calls this.
   //
   // This reports following error code via |callback|:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if the file doesn't exist.
@@ -199,7 +199,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
   // This must be called for files that belong to the same filesystem
   // (i.e. type() and origin() of the |src_url| and |dest_url| must match).
   //
-  // LocalFileSystemOperation::Copy calls this for same-filesystem copy case.
+  // FileSystemOperationImpl::Copy calls this for same-filesystem copy case.
   //
   // This reports following error code via |callback|:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
@@ -220,7 +220,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
   // This must be called for files that belong to the same filesystem
   // (i.e. type() and origin() of the |src_url| and |dest_url| must match).
   //
-  // LocalFileSystemOperation::Move calls this for same-filesystem move case.
+  // FileSystemOperationImpl::Move calls this for same-filesystem move case.
   //
   // This reports following error code via |callback|:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
@@ -239,7 +239,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
 
   // Copies in a single file from a different filesystem.
   //
-  // LocalFileSystemOperation::Copy or Move calls this for cross-filesystem
+  // FileSystemOperationImpl::Copy or Move calls this for cross-filesystem
   // cases.
   //
   // This reports following error code via |callback|:
@@ -258,7 +258,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
 
   // Deletes a single file.
   //
-  // LocalFileSystemOperation::RemoveFile calls this.
+  // FileSystemOperationImpl::RemoveFile calls this.
   //
   // This reports following error code via |callback|:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
@@ -271,7 +271,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
 
   // Removes a single empty directory.
   //
-  // LocalFileSystemOperation::RemoveDirectory calls this.
+  // FileSystemOperationImpl::RemoveDirectory calls this.
   //
   // This reports following error code via |callback|:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
@@ -286,7 +286,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
   // Removes a single file or a single directory with its contents
   // (i.e. files/subdirectories under the directory).
   //
-  // LocalFileSystemOperation::Remove calls this.
+  // FileSystemOperationImpl::Remove calls this.
   // On some platforms, such as Chrome OS Drive File System, recursive file
   // deletion can be implemented more efficiently than calling DeleteFile() and
   // DeleteDirectory() for each files/directories.
@@ -323,7 +323,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
   // Via the |file_ref| implementors can schedule a file deletion
   // or arbitrary callbacks when the last reference of File/Blob is dropped.
   //
-  // LocalFileSystemOperation::CreateSnapshotFile calls this.
+  // FileSystemOperationImpl::CreateSnapshotFile calls this.
   //
   // This reports following error code via |callback|:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.

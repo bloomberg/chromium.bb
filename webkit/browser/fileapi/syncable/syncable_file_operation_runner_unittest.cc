@@ -333,7 +333,7 @@ TEST_F(SyncableFileOperationRunnerTest, QueueAndCancel) {
 }
 
 // Test if CopyInForeignFile runs cooperatively with other Sync operations
-// when it is called directly via AsLocalFileSystemOperation.
+// when it is called directly via AsFileSystemOperationImpl.
 TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   const std::string kTestData("test data");
 

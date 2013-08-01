@@ -15,9 +15,10 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
+#include "webkit/browser/fileapi/file_system_operation_impl.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/fileapi/sandbox_context.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
@@ -153,7 +154,7 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
   else
     operation_context->set_quota_limit_type(quota::kQuotaLimitTypeLimited);
 
-  return new LocalFileSystemOperation(url, context, operation_context.Pass());
+  return new FileSystemOperationImpl(url, context, operation_context.Pass());
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>

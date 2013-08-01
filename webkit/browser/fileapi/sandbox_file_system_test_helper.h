@@ -31,7 +31,6 @@ class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperationContext;
 class FileSystemOperationRunner;
-class LocalFileSystemOperation;
 
 // Filesystem test helper class that encapsulates test environment for
 // a given {origin, type} pair.  This helper only works for sandboxed

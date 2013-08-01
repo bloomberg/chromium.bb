@@ -9,7 +9,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
 #include "webkit/browser/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"

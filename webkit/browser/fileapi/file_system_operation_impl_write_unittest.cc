@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,11 +47,11 @@ void AssertStatusEq(base::PlatformFileError expected,
 
 }  // namespace
 
-class LocalFileSystemOperationWriteTest
+class FileSystemOperationImplWriteTest
     : public testing::Test,
-      public base::SupportsWeakPtr<LocalFileSystemOperationWriteTest> {
+      public base::SupportsWeakPtr<FileSystemOperationImplWriteTest> {
  public:
-  LocalFileSystemOperationWriteTest()
+  FileSystemOperationImplWriteTest()
       : loop_(base::MessageLoop::TYPE_IO),
         status_(base::PLATFORM_FILE_OK),
         cancel_status_(base::PLATFORM_FILE_ERROR_FAILED),
@@ -117,12 +117,12 @@ class LocalFileSystemOperationWriteTest
 
   // Callback function for recording test results.
   FileSystemOperation::WriteCallback RecordWriteCallback() {
-    return base::Bind(&LocalFileSystemOperationWriteTest::DidWrite,
+    return base::Bind(&FileSystemOperationImplWriteTest::DidWrite,
                       AsWeakPtr());
   }
 
   FileSystemOperation::StatusCallback RecordCancelCallback() {
-    return base::Bind(&LocalFileSystemOperationWriteTest::DidCancel,
+    return base::Bind(&FileSystemOperationImplWriteTest::DidCancel,
                       AsWeakPtr());
   }
 
@@ -168,10 +168,10 @@ class LocalFileSystemOperationWriteTest
   MockFileChangeObserver change_observer_;
   ChangeObserverList change_observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemOperationWriteTest);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImplWriteTest);
 };
 
-TEST_F(LocalFileSystemOperationWriteTest, TestWriteSuccess) {
+TEST_F(FileSystemOperationImplWriteTest, TestWriteSuccess) {
   const GURL blob_url("blob:success");
   ScopedTextBlob blob(url_request_context(), blob_url, "Hello, world!\n");
 
@@ -187,7 +187,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteSuccess) {
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
-TEST_F(LocalFileSystemOperationWriteTest, TestWriteZero) {
+TEST_F(FileSystemOperationImplWriteTest, TestWriteZero) {
   GURL blob_url("blob:zero");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
 
@@ -208,7 +208,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteZero) {
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
-TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
+TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidBlobUrl) {
   file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_path_),
       GURL("blob:invalid"), 0, RecordWriteCallback());
@@ -221,7 +221,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
   EXPECT_EQ(0, change_observer()->get_and_reset_modify_file_count());
 }
 
-TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidFile) {
+TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidFile) {
   GURL blob_url("blob:writeinvalidfile");
   ScopedTextBlob blob(url_request_context(), blob_url,
                       "It\'ll not be written.");
@@ -239,7 +239,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidFile) {
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
-TEST_F(LocalFileSystemOperationWriteTest, TestWriteDir) {
+TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
   base::FilePath virtual_dir_path(FILE_PATH_LITERAL("d"));
   file_system_context_->operation_runner()->CreateDirectory(
       URLForPath(virtual_dir_path),
@@ -266,7 +266,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteDir) {
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
-TEST_F(LocalFileSystemOperationWriteTest, TestWriteFailureByQuota) {
+TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
   GURL blob_url("blob:success");
   ScopedTextBlob blob(url_request_context(), blob_url, "Hello, world!\n");
 
@@ -284,7 +284,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteFailureByQuota) {
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
 }
 
-TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
+TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelSuccessfulWrite) {
   GURL blob_url("blob:success");
   ScopedTextBlob blob(url_request_context(), blob_url, "Hello, world!\n");
 
@@ -308,7 +308,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
   EXPECT_EQ(0, change_observer()->get_and_reset_modify_file_count());
 }
 
-TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
+TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelFailingWrite) {
   GURL blob_url("blob:writeinvalidfile");
   ScopedTextBlob blob(url_request_context(), blob_url,
                       "It\'ll not be written.");

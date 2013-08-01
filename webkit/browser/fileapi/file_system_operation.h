@@ -31,7 +31,7 @@ namespace fileapi {
 
 class FileSystemURL;
 class FileWriterDelegate;
-class LocalFileSystemOperation;
+class FileSystemOperationImpl;
 
 // The interface class for FileSystemOperation implementations.
 //
@@ -230,10 +230,10 @@ class FileSystemOperation {
                         base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) = 0;
 
-  // For downcasting to FileSystemOperation.
+  // For downcasting to FileSystemOperationImpl.
   // TODO(kinuko): this hack should go away once appropriate upload-stream
   // handling based on element types is supported.
-  virtual LocalFileSystemOperation* AsLocalFileSystemOperation() = 0;
+  virtual FileSystemOperationImpl* AsFileSystemOperationImpl() = 0;
 
   // Creates a local snapshot file for a given |path| and returns the
   // metadata and platform path of the snapshot file via |callback|.

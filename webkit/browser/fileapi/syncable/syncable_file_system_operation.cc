@@ -8,8 +8,8 @@
 #include "net/url_request/url_request.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
+#include "webkit/browser/fileapi/file_system_operation_impl.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_operation_runner.h"
@@ -18,7 +18,7 @@
 
 using fileapi::FileSystemURL;
 using fileapi::FileSystemOperationContext;
-using fileapi::LocalFileSystemOperation;
+using fileapi::FileSystemOperationImpl;
 
 namespace sync_file_system {
 
@@ -303,7 +303,7 @@ void SyncableFileSystemOperation::CopyInForeignFile(
   completion_callback_ = callback;
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       AsWeakPtr(),
-      base::Bind(&LocalFileSystemOperation::CopyInForeignFile,
+      base::Bind(&FileSystemOperationImpl::CopyInForeignFile,
                  NewOperation()->AsWeakPtr(),
                  src_local_disk_path, dest_url,
                  base::Bind(&self::DidFinish, AsWeakPtr()))));
@@ -314,8 +314,8 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
     const FileSystemURL& url,
     fileapi::FileSystemContext* file_system_context,
     scoped_ptr<FileSystemOperationContext> operation_context)
-    : LocalFileSystemOperation(url, file_system_context,
-                               operation_context.Pass()),
+    : FileSystemOperationImpl(url, file_system_context,
+                              operation_context.Pass()),
       url_(url) {
   DCHECK(file_system_context);
   if (!file_system_context->sync_context()) {
@@ -328,9 +328,9 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
   is_directory_operation_enabled_ = IsSyncFSDirectoryOperationEnabled();
 }
 
-LocalFileSystemOperation* SyncableFileSystemOperation::NewOperation() {
+FileSystemOperationImpl* SyncableFileSystemOperation::NewOperation() {
   DCHECK(operation_context_);
-  inflight_operation_.reset(new LocalFileSystemOperation(
+  inflight_operation_.reset(new FileSystemOperationImpl(
       url_, file_system_context(), operation_context_.Pass()));
   DCHECK(inflight_operation_);
   return inflight_operation_.get();

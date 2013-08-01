@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/local_file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_impl.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -45,12 +45,12 @@ void AssertFileErrorEq(const tracked_objects::Location& from_here,
 
 }  // namespace (anonymous)
 
-// Test class for LocalFileSystemOperation.
-class LocalFileSystemOperationTest
+// Test class for FileSystemOperationImpl.
+class FileSystemOperationImplTest
     : public testing::Test,
-      public base::SupportsWeakPtr<LocalFileSystemOperationTest> {
+      public base::SupportsWeakPtr<FileSystemOperationImplTest> {
  public:
-  LocalFileSystemOperationTest()
+  FileSystemOperationImplTest()
       : status_(kFileOperationStatusNotSet) {}
 
  protected:
@@ -165,22 +165,22 @@ class LocalFileSystemOperationTest
 
   // Callbacks for recording test results.
   FileSystemOperation::StatusCallback RecordStatusCallback() {
-    return base::Bind(&LocalFileSystemOperationTest::DidFinish, AsWeakPtr());
+    return base::Bind(&FileSystemOperationImplTest::DidFinish, AsWeakPtr());
   }
 
   FileSystemOperation::ReadDirectoryCallback
   RecordReadDirectoryCallback() {
-    return base::Bind(&LocalFileSystemOperationTest::DidReadDirectory,
+    return base::Bind(&FileSystemOperationImplTest::DidReadDirectory,
                       AsWeakPtr());
   }
 
   FileSystemOperation::GetMetadataCallback RecordMetadataCallback() {
-    return base::Bind(&LocalFileSystemOperationTest::DidGetMetadata,
+    return base::Bind(&FileSystemOperationImplTest::DidGetMetadata,
                       AsWeakPtr());
   }
 
   FileSystemOperation::SnapshotFileCallback RecordSnapshotFileCallback() {
-    return base::Bind(&LocalFileSystemOperationTest::DidCreateSnapshotFile,
+    return base::Bind(&FileSystemOperationImplTest::DidCreateSnapshotFile,
                       AsWeakPtr());
   }
 
@@ -287,10 +287,10 @@ class LocalFileSystemOperationTest
   MockFileChangeObserver change_observer_;
   ChangeObserverList change_observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemOperationTest);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImplTest);
 };
 
-TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
+TEST_F(FileSystemOperationImplTest, TestMoveFailureSrcDoesntExist) {
   change_observer()->ResetCount();
   operation_runner()->Move(URLForPath("a"), URLForPath("b"),
                            RecordStatusCallback());
@@ -299,7 +299,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestMoveFailureContainsPath) {
+TEST_F(FileSystemOperationImplTest, TestMoveFailureContainsPath) {
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir(CreateDirectory("src/dest"));
 
@@ -309,7 +309,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveFailureContainsPath) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcDirExistsDestFile) {
+TEST_F(FileSystemOperationImplTest, TestMoveFailureSrcDirExistsDestFile) {
   // Src exists and is dir. Dest is a file.
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir(CreateDirectory("dest"));
@@ -321,7 +321,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcDirExistsDestFile) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest,
+TEST_F(FileSystemOperationImplTest,
        TestMoveFailureSrcFileExistsDestNonEmptyDir) {
   // Src exists and is a directory. Dest is a non-empty directory.
   FileSystemURL src_dir(CreateDirectory("src"));
@@ -334,7 +334,7 @@ TEST_F(LocalFileSystemOperationTest,
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcFileExistsDestDir) {
+TEST_F(FileSystemOperationImplTest, TestMoveFailureSrcFileExistsDestDir) {
   // Src exists and is a file. Dest is a directory.
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL src_file(CreateFile("src/file"));
@@ -346,7 +346,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveFailureSrcFileExistsDestDir) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestMoveFailureDestParentDoesntExist) {
+TEST_F(FileSystemOperationImplTest, TestMoveFailureDestParentDoesntExist) {
   // Dest. parent path does not exist.
   FileSystemURL src_dir(CreateDirectory("src"));
   operation_runner()->Move(src_dir, URLForPath("nonexistent/deset"),
@@ -356,7 +356,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveFailureDestParentDoesntExist) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcFileAndOverwrite) {
+TEST_F(FileSystemOperationImplTest, TestMoveSuccessSrcFileAndOverwrite) {
   FileSystemURL src_file(CreateFile("src"));
   FileSystemURL dest_file(CreateFile("dest"));
 
@@ -372,7 +372,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcFileAndOverwrite) {
   EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcFileAndNew) {
+TEST_F(FileSystemOperationImplTest, TestMoveSuccessSrcFileAndNew) {
   FileSystemURL src_file(CreateFile("src"));
 
   operation_runner()->Move(src_file, URLForPath("new"), RecordStatusCallback());
@@ -385,7 +385,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcFileAndNew) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirAndOverwrite) {
+TEST_F(FileSystemOperationImplTest, TestMoveSuccessSrcDirAndOverwrite) {
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir(CreateDirectory("dest"));
 
@@ -403,7 +403,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirAndOverwrite) {
   EXPECT_FALSE(DirectoryExists("dest/src"));
 }
 
-TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
+TEST_F(FileSystemOperationImplTest, TestMoveSuccessSrcDirAndNew) {
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir(CreateDirectory("dest"));
 
@@ -419,7 +419,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
+TEST_F(FileSystemOperationImplTest, TestMoveSuccessSrcDirRecursive) {
   FileSystemURL src_dir(CreateDirectory("src"));
   CreateDirectory("src/dir");
   CreateFile("src/dir/sub");
@@ -439,7 +439,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
+TEST_F(FileSystemOperationImplTest, TestCopyFailureSrcDoesntExist) {
   operation_runner()->Copy(URLForPath("a"), URLForPath("b"),
                            RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
@@ -447,7 +447,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopyFailureContainsPath) {
+TEST_F(FileSystemOperationImplTest, TestCopyFailureContainsPath) {
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir(CreateDirectory("src/dir"));
 
@@ -457,7 +457,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureContainsPath) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcDirExistsDestFile) {
+TEST_F(FileSystemOperationImplTest, TestCopyFailureSrcDirExistsDestFile) {
   // Src exists and is dir. Dest is a file.
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir(CreateDirectory("dest"));
@@ -469,7 +469,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcDirExistsDestFile) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest,
+TEST_F(FileSystemOperationImplTest,
        TestCopyFailureSrcFileExistsDestNonEmptyDir) {
   // Src exists and is a directory. Dest is a non-empty directory.
   FileSystemURL src_dir(CreateDirectory("src"));
@@ -482,7 +482,7 @@ TEST_F(LocalFileSystemOperationTest,
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcFileExistsDestDir) {
+TEST_F(FileSystemOperationImplTest, TestCopyFailureSrcFileExistsDestDir) {
   // Src exists and is a file. Dest is a directory.
   FileSystemURL src_file(CreateFile("src"));
   FileSystemURL dest_dir(CreateDirectory("dest"));
@@ -493,7 +493,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureSrcFileExistsDestDir) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopyFailureDestParentDoesntExist) {
+TEST_F(FileSystemOperationImplTest, TestCopyFailureDestParentDoesntExist) {
   // Dest. parent path does not exist.
   FileSystemURL src_dir(CreateDirectory("src"));
 
@@ -504,7 +504,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureDestParentDoesntExist) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopyFailureByQuota) {
+TEST_F(FileSystemOperationImplTest, TestCopyFailureByQuota) {
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL src_file(CreateFile("src/file"));
   FileSystemURL dest_dir(CreateDirectory("dest"));
@@ -524,7 +524,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyFailureByQuota) {
   EXPECT_FALSE(FileExists("dest/file"));
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcFileAndOverwrite) {
+TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcFileAndOverwrite) {
   FileSystemURL src_file(CreateFile("src"));
   FileSystemURL dest_file(CreateFile("dest"));
 
@@ -538,7 +538,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcFileAndOverwrite) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcFileAndNew) {
+TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcFileAndNew) {
   FileSystemURL src_file(CreateFile("src"));
 
   operation_runner()->Copy(src_file, URLForPath("new"),
@@ -552,7 +552,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcFileAndNew) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
+TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirAndOverwrite) {
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir(CreateDirectory("dest"));
 
@@ -570,7 +570,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
+TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirAndNew) {
   FileSystemURL src_dir(CreateDirectory("src"));
   FileSystemURL dest_dir_new(URLForPath("dest"));
 
@@ -584,7 +584,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
+TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirRecursive) {
   FileSystemURL src_dir(CreateDirectory("src"));
   CreateDirectory("src/dir");
   CreateFile("src/dir/sub");
@@ -607,7 +607,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopyInForeignFileSuccess) {
+TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileSuccess) {
   base::FilePath src_local_disk_file_path;
   file_util::CreateTemporaryFile(&src_local_disk_file_path);
   const char test_data[] = "foo";
@@ -640,7 +640,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyInForeignFileSuccess) {
     EXPECT_EQ(test_data[i], buffer[i]);
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCopyInForeignFileFailureByQuota) {
+TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileFailureByQuota) {
   base::FilePath src_local_disk_file_path;
   file_util::CreateTemporaryFile(&src_local_disk_file_path);
   const char test_data[] = "foo";
@@ -660,7 +660,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopyInForeignFileFailureByQuota) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCreateFileFailure) {
+TEST_F(FileSystemOperationImplTest, TestCreateFileFailure) {
   // Already existing file and exclusive true.
   FileSystemURL file(CreateFile("file"));
   operation_runner()->CreateFile(file, true, RecordStatusCallback());
@@ -669,7 +669,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateFileFailure) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessFileExists) {
+TEST_F(FileSystemOperationImplTest, TestCreateFileSuccessFileExists) {
   // Already existing file and exclusive false.
   FileSystemURL file(CreateFile("file"));
   operation_runner()->CreateFile(file, false, RecordStatusCallback());
@@ -681,7 +681,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessFileExists) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessExclusive) {
+TEST_F(FileSystemOperationImplTest, TestCreateFileSuccessExclusive) {
   // File doesn't exist but exclusive is true.
   operation_runner()->CreateFile(URLForPath("new"), true,
                                  RecordStatusCallback());
@@ -691,7 +691,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessExclusive) {
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_count());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessFileDoesntExist) {
+TEST_F(FileSystemOperationImplTest, TestCreateFileSuccessFileDoesntExist) {
   // Non existing file.
   operation_runner()->CreateFile(URLForPath("nonexistent"), false,
                                  RecordStatusCallback());
@@ -700,7 +700,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateFileSuccessFileDoesntExist) {
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_count());
 }
 
-TEST_F(LocalFileSystemOperationTest,
+TEST_F(FileSystemOperationImplTest,
        TestCreateDirFailureDestParentDoesntExist) {
   // Dest. parent path does not exist.
   operation_runner()->CreateDirectory(
@@ -711,7 +711,7 @@ TEST_F(LocalFileSystemOperationTest,
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCreateDirFailureDirExists) {
+TEST_F(FileSystemOperationImplTest, TestCreateDirFailureDirExists) {
   // Exclusive and dir existing at path.
   FileSystemURL dir(CreateDirectory("dir"));
   operation_runner()->CreateDirectory(dir, true, false,
@@ -721,7 +721,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateDirFailureDirExists) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCreateDirFailureFileExists) {
+TEST_F(FileSystemOperationImplTest, TestCreateDirFailureFileExists) {
   // Exclusive true and file existing at path.
   FileSystemURL file(CreateFile("file"));
   operation_runner()->CreateDirectory(file, true, false,
@@ -731,7 +731,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateDirFailureFileExists) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCreateDirSuccess) {
+TEST_F(FileSystemOperationImplTest, TestCreateDirSuccess) {
   // Dir exists and exclusive is false.
   FileSystemURL dir(CreateDirectory("dir"));
   operation_runner()->CreateDirectory(dir, false, false,
@@ -749,7 +749,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateDirSuccess) {
   EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCreateDirSuccessExclusive) {
+TEST_F(FileSystemOperationImplTest, TestCreateDirSuccessExclusive) {
   // Dir doesn't exist.
   operation_runner()->CreateDirectory(URLForPath("new"), true, false,
                                       RecordStatusCallback());
@@ -760,7 +760,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateDirSuccessExclusive) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataFailure) {
+TEST_F(FileSystemOperationImplTest, TestExistsAndMetadataFailure) {
   operation_runner()->GetMetadata(URLForPath("nonexistent"),
                                   RecordMetadataCallback());
   base::MessageLoop::current()->RunUntilIdle();
@@ -778,7 +778,7 @@ TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataFailure) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataSuccess) {
+TEST_F(FileSystemOperationImplTest, TestExistsAndMetadataSuccess) {
   FileSystemURL dir(CreateDirectory("dir"));
   FileSystemURL file(CreateFile("dir/file"));
   int read_access = 0;
@@ -810,7 +810,7 @@ TEST_F(LocalFileSystemOperationTest, TestExistsAndMetadataSuccess) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestTypeMismatchErrors) {
+TEST_F(FileSystemOperationImplTest, TestTypeMismatchErrors) {
   FileSystemURL dir(CreateDirectory("dir"));
   operation_runner()->FileExists(dir, RecordStatusCallback());
   base::MessageLoop::current()->RunUntilIdle();
@@ -822,7 +822,7 @@ TEST_F(LocalFileSystemOperationTest, TestTypeMismatchErrors) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY, status());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestReadDirFailure) {
+TEST_F(FileSystemOperationImplTest, TestReadDirFailure) {
   // Path doesn't exist
   operation_runner()->ReadDirectory(URLForPath("nonexistent"),
                                     RecordReadDirectoryCallback());
@@ -837,7 +837,7 @@ TEST_F(LocalFileSystemOperationTest, TestReadDirFailure) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestReadDirSuccess) {
+TEST_F(FileSystemOperationImplTest, TestReadDirSuccess) {
   //      parent_dir
   //       |       |
   //  child_dir  child_file
@@ -861,7 +861,7 @@ TEST_F(LocalFileSystemOperationTest, TestReadDirSuccess) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestRemoveFailure) {
+TEST_F(FileSystemOperationImplTest, TestRemoveFailure) {
   // Path doesn't exist.
   operation_runner()->Remove(URLForPath("nonexistent"), false /* recursive */,
                              RecordStatusCallback());
@@ -885,7 +885,7 @@ TEST_F(LocalFileSystemOperationTest, TestRemoveFailure) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestRemoveSuccess) {
+TEST_F(FileSystemOperationImplTest, TestRemoveSuccess) {
   FileSystemURL empty_dir(CreateDirectory("empty_dir"));
   EXPECT_TRUE(DirectoryExists("empty_dir"));
   operation_runner()->Remove(empty_dir, false /* recursive */,
@@ -898,7 +898,7 @@ TEST_F(LocalFileSystemOperationTest, TestRemoveSuccess) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestRemoveSuccessRecursive) {
+TEST_F(FileSystemOperationImplTest, TestRemoveSuccessRecursive) {
   // Removing a non-empty directory with recursive flag == true should be ok.
   //      parent_dir
   //       |       |
@@ -925,7 +925,7 @@ TEST_F(LocalFileSystemOperationTest, TestRemoveSuccessRecursive) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestTruncate) {
+TEST_F(FileSystemOperationImplTest, TestTruncate) {
   FileSystemURL file(CreateFile("file"));
   base::FilePath platform_path = PlatformPath("file");
 
@@ -982,7 +982,7 @@ TEST_F(LocalFileSystemOperationTest, TestTruncate) {
   EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestTruncateFailureByQuota) {
+TEST_F(FileSystemOperationImplTest, TestTruncateFailureByQuota) {
   FileSystemURL dir(CreateDirectory("dir"));
   FileSystemURL file(CreateFile("dir/file"));
 
@@ -1005,7 +1005,7 @@ TEST_F(LocalFileSystemOperationTest, TestTruncateFailureByQuota) {
   EXPECT_EQ(10, GetFileSize("dir/file"));
 }
 
-TEST_F(LocalFileSystemOperationTest, TestTouchFile) {
+TEST_F(FileSystemOperationImplTest, TestTouchFile) {
   FileSystemURL file(CreateFile("file"));
   base::FilePath platform_path = PlatformPath("file");
 
@@ -1036,7 +1036,7 @@ TEST_F(LocalFileSystemOperationTest, TestTouchFile) {
   EXPECT_EQ(new_accessed_time.ToTimeT(), info.last_accessed.ToTimeT());
 }
 
-TEST_F(LocalFileSystemOperationTest, TestCreateSnapshotFile) {
+TEST_F(FileSystemOperationImplTest, TestCreateSnapshotFile) {
   FileSystemURL dir(CreateDirectory("dir"));
 
   // Create a file for the testing.
@@ -1047,7 +1047,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateSnapshotFile) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
 
   // See if we can get a 'snapshot' file info for the file.
-  // Since LocalFileSystemOperation assumes the file exists in the local
+  // Since FileSystemOperationImpl assumes the file exists in the local
   // directory it should just returns the same metadata and platform_path
   // as the file itself.
   operation_runner()->CreateSnapshotFile(file, RecordSnapshotFileCallback());
@@ -1062,7 +1062,7 @@ TEST_F(LocalFileSystemOperationTest, TestCreateSnapshotFile) {
   EXPECT_EQ(NULL, shareable_file_ref());
 }
 
-TEST_F(LocalFileSystemOperationTest,
+TEST_F(FileSystemOperationImplTest,
        TestMoveSuccessSrcDirRecursiveWithQuota) {
   FileSystemURL src(CreateDirectory("src"));
   int src_path_cost = GetUsage();
@@ -1110,7 +1110,7 @@ TEST_F(LocalFileSystemOperationTest,
             GetUsage());
 }
 
-TEST_F(LocalFileSystemOperationTest,
+TEST_F(FileSystemOperationImplTest,
        TestCopySuccessSrcDirRecursiveWithQuota) {
   FileSystemURL src(CreateDirectory("src"));
   FileSystemURL dest1(CreateDirectory("dest1"));

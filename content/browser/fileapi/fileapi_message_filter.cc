@@ -31,7 +31,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/common/blob/shareable_file_reference.h"
@@ -44,7 +43,6 @@ using fileapi::FileSystemBackend;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemURL;
 using fileapi::FileUpdateObserver;
-using fileapi::LocalFileSystemOperation;
 using fileapi::UpdateObserverList;
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_LOCAL_FILE_SYSTEM_OPERATION_H_
-#define WEBKIT_BROWSER_FILEAPI_LOCAL_FILE_SYSTEM_OPERATION_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_IMPL_H_
+#define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_IMPL_H_
 
 #include <vector>
 
@@ -24,21 +24,21 @@ class AsyncFileUtil;
 class FileSystemContext;
 class RecursiveOperationDelegate;
 
-// FileSystemOperation implementation for local file systems.
-class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
+// The default implementation of FileSystemOperation for file systems.
+class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
     : public NON_EXPORTED_BASE(FileSystemOperation),
-      public base::SupportsWeakPtr<LocalFileSystemOperation> {
+      public base::SupportsWeakPtr<FileSystemOperationImpl> {
  public:
   // NOTE: This constructor should not be called outside FileSystemBackends;
   // instead please consider using
   // file_system_context->CreateFileSystemOperation() to instantiate
   // an appropriate FileSystemOperation.
-  LocalFileSystemOperation(
+  FileSystemOperationImpl(
       const FileSystemURL& url,
       FileSystemContext* file_system_context,
       scoped_ptr<FileSystemOperationContext> operation_context);
 
-  virtual ~LocalFileSystemOperation();
+  virtual ~FileSystemOperationImpl();
 
   // FileSystemOperation overrides.
   virtual void CreateFile(const FileSystemURL& url,
@@ -79,7 +79,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
                         base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
-  virtual LocalFileSystemOperation* AsLocalFileSystemOperation() OVERRIDE;
+  virtual FileSystemOperationImpl* AsFileSystemOperationImpl() OVERRIDE;
   virtual void CreateSnapshotFile(
       const FileSystemURL& path,
       const SnapshotFileCallback& callback) OVERRIDE;
@@ -255,9 +255,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemOperation);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImpl);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_LOCAL_FILE_SYSTEM_OPERATION_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_IMPL_H_

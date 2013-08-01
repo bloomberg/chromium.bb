@@ -14,8 +14,8 @@
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_system_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
+#include "webkit/browser/fileapi/file_system_operation_impl.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/local_file_util.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
@@ -204,7 +204,7 @@ FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
   operation_context->set_change_observers(
       *quota_util_->GetChangeObservers(url.type()));
   operation_context->set_root_path(base_path_);
-  return new LocalFileSystemOperation(url, context, operation_context.Pass());
+  return new FileSystemOperationImpl(url, context, operation_context.Pass());
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>

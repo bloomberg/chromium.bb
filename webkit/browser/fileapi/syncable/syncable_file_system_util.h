@@ -14,7 +14,6 @@
 namespace fileapi {
 class FileSystemContext;
 class FileSystemURL;
-class LocalFileSystemOperation;
 }
 
 namespace sync_file_system {

@@ -28,7 +28,6 @@ using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemURL;
-using fileapi::LocalFileSystemOperation;
 
 namespace sync_file_system {
 

@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_impl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace fileapi {
@@ -25,9 +25,9 @@ namespace sync_file_system {
 
 class SyncableFileOperationRunner;
 
-// A wrapper class of LocalFileSystemOperation for syncable file system.
+// A wrapper class of FileSystemOperationImpl for syncable file system.
 class WEBKIT_STORAGE_BROWSER_EXPORT SyncableFileSystemOperation
-    : public fileapi::LocalFileSystemOperation,
+    : public fileapi::FileSystemOperationImpl,
       public base::SupportsWeakPtr<SyncableFileSystemOperation>,
       public base::NonThreadSafe {
  public:
@@ -76,7 +76,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SyncableFileSystemOperation
       const fileapi::FileSystemURL& path,
       const SnapshotFileCallback& callback) OVERRIDE;
 
-  // LocalFileSystemOperation overrides.
+  // FileSystemOperationImpl overrides.
   virtual void CopyInForeignFile(const base::FilePath& src_local_disk_path,
                                  const fileapi::FileSystemURL& dest_url,
                                  const StatusCallback& callback) OVERRIDE;
@@ -94,7 +94,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SyncableFileSystemOperation
       const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* file_system_context,
       scoped_ptr<fileapi::FileSystemOperationContext> operation_context);
-  fileapi::LocalFileSystemOperation* NewOperation();
+  fileapi::FileSystemOperationImpl* NewOperation();
 
   void DidFinish(base::PlatformFileError status);
   void DidWrite(const WriteCallback& callback,
@@ -107,7 +107,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SyncableFileSystemOperation
   const fileapi::FileSystemURL url_;
 
   base::WeakPtr<SyncableFileOperationRunner> operation_runner_;
-  scoped_ptr<fileapi::LocalFileSystemOperation> inflight_operation_;
+  scoped_ptr<fileapi::FileSystemOperationImpl> inflight_operation_;
   std::vector<fileapi::FileSystemURL> target_paths_;
 
   StatusCallback completion_callback_;

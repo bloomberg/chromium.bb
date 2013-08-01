@@ -34,7 +34,7 @@ class FileSystemContext;
 //
 // Some operations (e.g. CopyInForeignFile, RemoveFile, RemoveDirectory,
 // CopyFileLocal, MoveFileLocal and SyncGetPlatformPath) are only supported
-// by filesystems which implement LocalFileSystemOperation.
+// by filesystems which implement FileSystemOperationImpl.
 // If they are called on other filesystems
 // base::PLATFORM_FILE_ERROR_INVALID_OPERATION is returned via callback.
 class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
@@ -263,12 +263,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
-  // A helper method for creating LocalFileSystemOperation for operations
-  // that are supported only in LocalFileSystemOperation.
+  // A helper method for creating FileSystemOperationImpl for operations
+  // that are supported only in FileSystemOperationImpl.
   // Note that this returns FileSystemOperation, so the caller needs to
-  // call AsLocalFileSystemOperation() (which is guaranteed to be non-null
+  // call AsFileSystemOperationImpl() (which is guaranteed to be non-null
   // if this method returns without error).
-  FileSystemOperation* CreateLocalFileSystemOperation(
+  FileSystemOperation* CreateFileSystemOperationImpl(
       const FileSystemURL& url,
       base::PlatformFileError* error);
 
