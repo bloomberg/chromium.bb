@@ -82,6 +82,8 @@ ErrorCode NaClBpfSandboxPolicy(
 #if defined(__i386__) || defined(__arm__)
     case __NR_ugetrlimit:
 #endif
+    // NaCl runtime exposes clock_getres to untrusted code.
+    case __NR_clock_getres:
     case __NR_pread64:
     case __NR_pwrite64:
     case __NR_sched_get_priority_max:
