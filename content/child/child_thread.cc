@@ -75,14 +75,16 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
     //
     // So, we install a filter on the channel so that we can process this event
     // here and kill the process.
-    //
-    // We want to kill this process after giving it 30 seconds to run the exit
-    // handlers. SIGALRM has a default disposition of terminating the
-    // application.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChildCleanExit))
-      alarm(30);
-    else
+    if (CommandLine::ForCurrentProcess()->
+        HasSwitch(switches::kChildCleanExit)) {
+      // If clean exit is requested, we want to kill this process after giving
+      // it 60 seconds to run exit handlers. Exit handlers may including ones
+      // that write profile data to disk (which happens under profile collection
+      // mode).
+      alarm(60);
+    } else {
       _exit(0);
+    }
   }
 
  protected:
