@@ -140,7 +140,7 @@ class Creds(object):
       oper.Error('Unable to store auth token to file at "%s"' % filepath)
 
   def SetCreds(self, user, password=None):
-    if not user.endswith('@chromium.org'):
+    if not '@' in user:
       user = '%s@chromium.org' % user
 
     if not password:
@@ -633,9 +633,9 @@ class RetrySpreadsheetsService(gdata.spreadsheet.service.SpreadsheetsService):
   """Extend SpreadsheetsService to put retry logic around http request method.
 
   The entire purpose of this class is to remove some flakiness from
-  interactions with Google Docs spreadsheet service, in the form of
-  certain 40* http error responses to http requests.  This is documented in
-  http://code.google.com/p/chromium-os/issues/detail?id=23819.
+  interactions with Google Drive spreadsheet service, in the form of
+  certain 40* and 50* http error responses to http requests.  This is
+  documented in https://code.google.com/p/chromium/issues/detail?id=206798.
   There are two "request" methods that need to be wrapped in retry logic.
   1) The request method on self.  Original implementation is in
      base class atom.service.AtomService.
@@ -646,7 +646,9 @@ class RetrySpreadsheetsService(gdata.spreadsheet.service.SpreadsheetsService):
   # pylint: disable=R0904
 
   TRY_MAX = 5
-  RETRYABLE_STATUSES = (403,)
+  RETRYABLE_STATUSES = (403,  # Forbidden (but retries still seem to help).
+                        500,  # Internal server error.
+                       )
 
   def __init__(self, *args, **kwargs):
     gdata.spreadsheet.service.SpreadsheetsService.__init__(self, *args,
