@@ -9976,6 +9976,10 @@ inline bool CSSParser::detectFunctionTypeToken(int length)
             m_parsingMode = NthChildMode;
             return true;
         }
+        CASE("part") {
+            m_token = PARTFUNCTION;
+            return true;
+        }
     }
     return false;
 }

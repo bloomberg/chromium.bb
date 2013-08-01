@@ -42,7 +42,7 @@ var host = document.getElementById("host");
 var tuple = buildShadowWithOneChild(host, "a", "x-shadow-child");
 shouldBe("window.getComputedStyle(tuple.shadowChild).color", "'rgb(255, 0, 0)'");
 var shadowTuple = buildShadowWithOneChild(tuple.shadowChild, "b", "x-nested-shadow-child");
-shouldBe("window.getComputedStyle(shadowTuple.shadowChild).color", "'rgb(0, 0, 255)'");
+shouldBe("window.getComputedStyle(shadowTuple.shadowChild).color", "'rgb(255, 0, 0)'");
 shouldBe("window.getComputedStyle(shadowTuple.shadowChild).backgroundColor", "'rgb(0, 128, 0)'");
 
 var successfullyParsed = true;

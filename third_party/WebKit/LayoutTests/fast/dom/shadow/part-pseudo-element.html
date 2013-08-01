@@ -1,0 +1,77 @@
+ <!doctype html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<style>
+div::part(header) {
+   background-color: green;
+}
+
+div::part(-webkit-header) {
+   background-color: red;
+}
+</style>
+</head>
+<body class='mytheme'>
+  <div>
+    <div id='sandbox'></div>
+  </div>
+  <pre id='console'></pre>
+<script>
+description('Test whether ::part matches elements whose part attributes have the same as ::part\'s argument in shadow trees.');
+
+var sandbox = document.getElementById('sandbox');
+
+function backgroundColorOf(selector) {
+    return window.getComputedStyle(getNodeInShadowTreeStack(selector)).backgroundColor;
+}
+
+function backgroundColorShouldBe(selector, expected) {
+    shouldBeEqualToString('backgroundColorOf(\'' + selector + '\')', expected);
+}
+
+function cleanUp() {
+    sandbox.innerHTML = '';
+}
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('div', {'id': 'target', 'part': 'header'},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host1'},
+        createShadowRoot(
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'target', 'part': 'header'},
+                        document.createTextNode('Hello')))))));
+
+// Currently ::part cannot match elements in deep shadow trees.
+backgroundColorShouldBe('host1/host2/target', 'rgba(0, 0, 0, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('div', {'id': 'target', 'part': '-webkit-header'},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host/target', 'rgba(0, 0, 0, 0)');
+document.body.offsetLeft; // should finish layout or style recalc here for a next test.
+
+getNodeInShadowTreeStack('host/target').setAttribute('part', 'header');
+
+backgroundColorShouldBe('host/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>

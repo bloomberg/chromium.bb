@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/css/RuleFeature.h"
 
+#include "HTMLNames.h"
 #include "core/css/CSSSelector.h"
 
 namespace WebCore {
@@ -48,6 +49,9 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector)
     case CSSSelector::PseudoBefore:
     case CSSSelector::PseudoAfter:
         m_usesBeforeAfterRules = true;
+        break;
+    case CSSSelector::PseudoPart:
+        attrsInRules.add(HTMLNames::partAttr.localName().impl());
         break;
     default:
         break;

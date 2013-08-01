@@ -1622,9 +1622,15 @@ ShadowRoot* Element::ensureUserAgentShadowRoot()
     return shadowRoot;
 }
 
+// FIXME: After replacing all internal shadowPseudoId with shadowPartId, remove this method.
 const AtomicString& Element::shadowPseudoId() const
 {
     return pseudo();
+}
+
+const AtomicString& Element::shadowPartId() const
+{
+    return part();
 }
 
 bool Element::childTypeAllowed(NodeType type) const
@@ -2146,6 +2152,7 @@ String Element::textFromChildren()
     return content.toString();
 }
 
+// FIXME: pseudo should be deprecated after all pseudo is replaced with ::part.
 const AtomicString& Element::pseudo() const
 {
     return getAttribute(pseudoAttr);
@@ -2154,6 +2161,16 @@ const AtomicString& Element::pseudo() const
 void Element::setPseudo(const AtomicString& value)
 {
     setAttribute(pseudoAttr, value);
+}
+
+const AtomicString& Element::part() const
+{
+    return getAttribute(partAttr);
+}
+
+void Element::setPart(const AtomicString& value)
+{
+    setAttribute(partAttr, value);
 }
 
 LayoutSize Element::minimumSizeForResizing() const

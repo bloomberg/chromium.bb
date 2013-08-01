@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS window.getComputedStyle(tuple.shadowChild).color is 'rgb(255, 0, 0)'
-PASS window.getComputedStyle(shadowTuple.shadowChild).color is 'rgb(0, 0, 255)'
+FAIL window.getComputedStyle(shadowTuple.shadowChild).color should be rgb(255, 0, 0). Was rgb(0, 0, 255).
 PASS window.getComputedStyle(shadowTuple.shadowChild).backgroundColor is 'rgb(0, 128, 0)'
 PASS successfullyParsed is true
 

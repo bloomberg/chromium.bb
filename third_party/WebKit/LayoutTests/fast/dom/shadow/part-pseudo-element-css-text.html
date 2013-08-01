@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<style id="style1">
+div > .foo::part(target) { display: block; }
+</style>
+<style id="style-invalid">
+::part(target1, target2) { display: block }
+::part(target1.foo#bar) { display: block }
+::part(target1:hover) { display: block }
+::part() { display: block }
+::part { display: block }
+</style>
+</head>
+<script>
+description("Test for cssText of ':host()' rule.");
+shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(0).cssText", "div > .foo::part(target) { display: block; }");
+shouldBe("document.getElementById('style-invalid').sheet.cssRules.length", "0");
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</html>

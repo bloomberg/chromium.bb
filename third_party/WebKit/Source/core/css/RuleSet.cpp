@@ -262,7 +262,8 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector* component, RuleData& rule
         return true;
     }
     if (component->isCustomPseudoElement()) {
-        addToRuleSet(component->value().impl(), ensurePendingRules()->shadowPseudoElementRules, ruleData);
+        StringImpl* pseudoValue = component->pseudoType() == CSSSelector::PseudoPart ? component->argument().impl() : component->value().impl();
+        addToRuleSet(pseudoValue, ensurePendingRules()->shadowPseudoElementRules, ruleData);
         return true;
     }
     if (component->pseudoType() == CSSSelector::PseudoCue) {

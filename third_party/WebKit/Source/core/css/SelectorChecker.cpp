@@ -70,6 +70,27 @@ SelectorChecker::SelectorChecker(Document* document, Mode mode)
 {
 }
 
+static bool matchesCustomPseudoElement(const Element* element, const CSSSelector* selector)
+{
+    ShadowRoot* root = element->containingShadowRoot();
+    if (!root)
+        return false;
+
+    if (selector->pseudoType() != CSSSelector::PseudoPart) {
+        if (element->shadowPseudoId() != selector->value())
+            return false;
+        if (selector->pseudoType() == CSSSelector::PseudoWebKitCustomElement && root->type() != ShadowRoot::UserAgentShadowRoot)
+            return false;
+        return true;
+    }
+
+    if (element->shadowPartId() != selector->argument())
+        return false;
+    if (selector->isMatchUserAgentOnly() && root->type() != ShadowRoot::UserAgentShadowRoot)
+        return false;
+    return true;
+}
+
 // Recursive check of selectors and combinators
 // It can return 4 different values:
 // * SelectorMatches          - the selector matches the element e
@@ -85,13 +106,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
 
     if (context.selector->m_match == CSSSelector::PseudoElement) {
         if (context.selector->isCustomPseudoElement()) {
-            if (ShadowRoot* root = context.element->containingShadowRoot()) {
-                if (context.element->shadowPseudoId() != context.selector->value())
-                    return SelectorFailsLocally;
-
-                if (context.selector->pseudoType() == CSSSelector::PseudoWebKitCustomElement && root->type() != ShadowRoot::UserAgentShadowRoot)
-                    return SelectorFailsLocally;
-            } else
+            if (!matchesCustomPseudoElement(context.element, context.selector))
                 return SelectorFailsLocally;
         } else {
             if ((!context.elementStyle && m_mode == ResolvingStyle) || m_mode == QueryingRules)

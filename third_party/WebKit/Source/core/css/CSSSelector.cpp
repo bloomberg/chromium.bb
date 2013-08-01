@@ -247,6 +247,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoPastCue:
     case PseudoSeamlessDocument:
     case PseudoDistributed:
+    case PseudoPart:
     case PseudoUnresolved:
         return NOPSEUDO;
     case PseudoNotParsed:
@@ -336,6 +337,7 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
     DEFINE_STATIC_LOCAL(AtomicString, inRange, ("in-range", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, outOfRange, ("out-of-range", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, scope, ("scope", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, part, ("part(", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, unresolved, ("unresolved", AtomicString::ConstructFromLiteral));
 
     static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoType = 0;
@@ -416,6 +418,7 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
         nameToPseudoType->set(distributed.impl(), CSSSelector::PseudoDistributed);
         nameToPseudoType->set(inRange.impl(), CSSSelector::PseudoInRange);
         nameToPseudoType->set(outOfRange.impl(), CSSSelector::PseudoOutOfRange);
+        nameToPseudoType->set(part.impl(), CSSSelector::PseudoPart);
         if (RuntimeEnabledFeatures::customDOMElementsEnabled())
             nameToPseudoType->set(unresolved.impl(), CSSSelector::PseudoUnresolved);
     }
@@ -470,6 +473,7 @@ void CSSSelector::extractPseudoType() const
     case PseudoSelection:
     case PseudoUserAgentCustomElement:
     case PseudoWebKitCustomElement:
+    case PseudoPart:
         element = true;
         break;
     case PseudoUnknown:
@@ -637,6 +641,10 @@ String CSSSelector::selectorText(const String& rightSide) const
         } else if (cs->m_match == CSSSelector::PseudoElement) {
             str.appendLiteral("::");
             str.append(cs->value());
+            if (cs->pseudoType() == PseudoPart) {
+                str.append(cs->argument());
+                str.append(')');
+            }
         } else if (cs->isAttributeSelector()) {
             str.append('[');
             const AtomicString& prefix = cs->attribute().prefix();
@@ -722,6 +730,12 @@ void CSSSelector::setSelectorList(PassOwnPtr<CSSSelectorList> selectorList)
     m_data.m_rareData->m_selectorList = selectorList;
 }
 
+void CSSSelector::setMatchUserAgentOnly()
+{
+    createRareData();
+    m_data.m_rareData->m_matchUserAgentOnly = true;
+}
+
 bool CSSSelector::parseNth() const
 {
     if (!m_hasRareData)
@@ -744,6 +758,7 @@ CSSSelector::RareData::RareData(PassRefPtr<StringImpl> value)
     , m_b(0)
     , m_attribute(anyQName())
     , m_argument(nullAtom)
+    , m_matchUserAgentOnly(0)
 {
 }
 

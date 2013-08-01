@@ -212,6 +212,7 @@ public:
     void setRelation(CSSSelector::Relation value) { m_selector->m_relation = value; }
     void setForPage() { m_selector->setForPage(); }
     void setRelationIsForShadowDistributed() { m_selector->setRelationIsForShadowDistributed(); }
+    void setMatchUserAgentOnly() { m_selector->setMatchUserAgentOnly(); }
 
     void adoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& selectorVector);
 
