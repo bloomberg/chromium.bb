@@ -658,6 +658,17 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
       !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+
+  if (use_software_compositor_ &&
+      !command_line->HasSwitch(switches::kEnableSoftwareCompositing))
+    command_line->AppendSwitch(switches::kEnableSoftwareCompositing);
+
+#if defined(USE_AURA)
+  if (!CanUseGpuBrowserCompositor()) {
+    command_line->AppendSwitch(switches::kDisableGpuCompositing);
+    command_line->AppendSwitch(switches::kDisablePepper3d);
+  }
+#endif
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
@@ -819,6 +830,11 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     prefs->accelerated_compositing_for_3d_transforms_enabled = true;
     prefs->accelerated_compositing_for_plugins_enabled = true;
   }
+
+#if defined(USE_AURA)
+  if (!CanUseGpuBrowserCompositor())
+    prefs->accelerated_2d_canvas_enabled = false;
+#endif
 }
 
 gpu::GpuSwitchingOption
