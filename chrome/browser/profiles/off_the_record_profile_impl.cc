@@ -117,7 +117,8 @@ void OffTheRecordProfileImpl::Init() {
   InitHostZoomMap();
 
   // Make the chrome//extension-icon/ resource available.
-  ExtensionIconSource* icon_source = new ExtensionIconSource(profile_);
+  extensions::ExtensionIconSource* icon_source =
+      new extensions::ExtensionIconSource(profile_);
   content::URLDataSource::Add(this, icon_source);
 
 #if defined(ENABLE_PLUGINS)

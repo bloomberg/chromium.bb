@@ -15,6 +15,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace extensions {
+
 PackExtensionHandler::PackExtensionHandler() {
 }
 
@@ -68,21 +70,19 @@ void PackExtensionHandler::OnPackSuccess(const base::FilePath& crx_file,
                                          const base::FilePath& pem_file) {
   ListValue arguments;
   arguments.Append(Value::CreateStringValue(
-      UTF16ToUTF8(extensions::PackExtensionJob::StandardSuccessMessage(
+      UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(
           crx_file, pem_file))));
   web_ui()->CallJavascriptFunction(
       "PackExtensionOverlay.showSuccessMessage", arguments);
 }
 
-void PackExtensionHandler::OnPackFailure(
-    const std::string& error,
-    extensions::ExtensionCreator::ErrorType type) {
-  if (type == extensions::ExtensionCreator::kCRXExists) {
+void PackExtensionHandler::OnPackFailure(const std::string& error,
+                                         ExtensionCreator::ErrorType type) {
+  if (type == ExtensionCreator::kCRXExists) {
     base::StringValue error_str(error);
-    base::StringValue extension_path_str(extension_path_);
-    base::StringValue key_path_str(private_key_path_);
-    base::FundamentalValue overwrite_flag(
-        extensions::ExtensionCreator::kOverwriteCRX);
+    base::StringValue extension_path_str(extension_path_.value());
+    base::StringValue key_path_str(private_key_path_.value());
+    base::FundamentalValue overwrite_flag(ExtensionCreator::kOverwriteCRX);
 
     web_ui()->CallJavascriptFunction(
         "ExtensionSettings.askToOverrideWarning", error_str, extension_path_str,
@@ -105,25 +105,26 @@ void PackExtensionHandler::MultiFilesSelected(
 }
 
 void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
-
   DCHECK_EQ(3U, args->GetSize());
 
-  if (!args->GetString(0, &extension_path_) ||
-      !args->GetString(1, &private_key_path_))
-    NOTREACHED();
-
   double flags_double = 0.0;
-  if (!args->GetDouble(2, &flags_double))
+  base::FilePath::StringType extension_path_str;
+  base::FilePath::StringType private_key_path_str;
+  if (!args->GetString(0, &extension_path_str) ||
+      !args->GetString(1, &private_key_path_str) ||
+      !args->GetDouble(2, &flags_double)) {
     NOTREACHED();
+    return;
+  }
+
+  extension_path_ = base::FilePath(extension_path_str);
+  private_key_path_ = base::FilePath(private_key_path_str);
 
   int run_flags = static_cast<int>(flags_double);
 
-  base::FilePath root_directory =
-      base::FilePath::FromWStringHack(UTF8ToWide(extension_path_));
-  base::FilePath key_file =
-      base::FilePath::FromWStringHack(UTF8ToWide(private_key_path_));
-  last_used_path_ =
-      base::FilePath::FromWStringHack(UTF8ToWide(extension_path_));
+  base::FilePath root_directory = extension_path_;
+  base::FilePath key_file = private_key_path_;
+  last_used_path_ = extension_path_;
 
   if (root_directory.empty()) {
     if (extension_path_.empty()) {
@@ -143,8 +144,7 @@ void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
     return;
   }
 
-  pack_job_ = new extensions::PackExtensionJob(
-      this, root_directory, key_file, run_flags);
+  pack_job_ = new PackExtensionJob(this, root_directory, key_file, run_flags);
   pack_job_->Start();
 }
 
@@ -204,3 +204,5 @@ void PackExtensionHandler::ShowAlert(const std::string& message) {
   arguments.Append(Value::CreateStringValue(message));
   web_ui()->CallJavascriptFunction("PackExtensionOverlay.showError", arguments);
 }
+
+}  // namespace extensions

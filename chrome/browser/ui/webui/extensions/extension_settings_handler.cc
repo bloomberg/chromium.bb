@@ -82,11 +82,18 @@
 
 using content::RenderViewHost;
 using content::WebContents;
-using extensions::Extension;
-using extensions::ExtensionUpdater;
-using extensions::ExtensionWarning;
-using extensions::ManagementPolicy;
-using extensions::Manifest;
+
+namespace extensions {
+
+ExtensionPage::ExtensionPage(const GURL& url,
+                             int render_process_id,
+                             int render_view_id,
+                             bool incognito)
+    : url(url),
+      render_process_id(render_process_id),
+      render_view_id(render_view_id),
+      incognito(incognito) {
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -137,10 +144,10 @@ void ExtensionSettingsHandler::RegisterProfilePrefs(
 DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const Extension* extension,
     const std::vector<ExtensionPage>& pages,
-    const extensions::ExtensionWarningService* warning_service) {
+    const ExtensionWarningService* warning_service) {
   DictionaryValue* extension_data = new DictionaryValue();
   bool enabled = extension_service_->IsExtensionEnabled(extension->id());
-  extensions::GetExtensionBasicInfo(extension, enabled, extension_data);
+  GetExtensionBasicInfo(extension, enabled, extension_data);
 
   extension_data->SetBoolean(
       "userModifiable",
@@ -171,14 +178,14 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
   extension_data->SetBoolean("is_platform_app", extension->is_platform_app());
   extension_data->SetBoolean("homepageProvided",
-      extensions::ManifestURL::GetHomepageURL(extension).is_valid());
+      ManifestURL::GetHomepageURL(extension).is_valid());
 
   string16 location_text;
   if (extension->location() == Manifest::EXTERNAL_POLICY_DOWNLOAD) {
     location_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_INSTALL_LOCATION_ENTERPRISE);
   } else if (extension->location() == Manifest::INTERNAL &&
-      !extensions::ManifestURL::UpdatesFromGallery(extension)) {
+      !ManifestURL::UpdatesFromGallery(extension)) {
     location_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_INSTALL_LOCATION_UNKNOWN);
   } else if (extension->location() == Manifest::EXTERNAL_REGISTRY) {
@@ -194,7 +201,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   else
     extension_data->SetInteger("order", 2);
 
-  if (!extensions::ExtensionActionAPI::GetBrowserActionVisibility(
+  if (!ExtensionActionAPI::GetBrowserActionVisibility(
           extension_service_->extension_prefs(), extension->id())) {
     extension_data->SetBoolean("enable_show_button", true);
   }
@@ -204,7 +211,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   for (std::vector<ExtensionPage>::const_iterator iter = pages.begin();
        iter != pages.end(); ++iter) {
     DictionaryValue* view_value = new DictionaryValue;
-    if (iter->url.scheme() == extensions::kExtensionScheme) {
+    if (iter->url.scheme() == kExtensionScheme) {
       // No leading slash.
       view_value->SetString("path", iter->url.path().substr(1));
     } else {
@@ -217,8 +224,8 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     views->Append(view_value);
   }
   extension_data->Set("views", views);
-  extensions::ExtensionActionManager* extension_action_manager =
-      extensions::ExtensionActionManager::Get(extension_service_->profile());
+  ExtensionActionManager* extension_action_manager =
+      ExtensionActionManager::Get(extension_service_->profile());
   extension_data->SetBoolean(
       "hasPopupAction",
       extension_action_manager->GetBrowserAction(*extension) ||
@@ -241,15 +248,14 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
 
   // Add install warnings (these are not the same as warnings!).
   if (Manifest::IsUnpackedLocation(extension->location())) {
-    const std::vector<extensions::InstallWarning>& install_warnings =
+    const std::vector<InstallWarning>& install_warnings =
         extension->install_warnings();
     if (!install_warnings.empty()) {
       scoped_ptr<ListValue> list(new ListValue());
-      for (std::vector<extensions::InstallWarning>::const_iterator it =
+      for (std::vector<InstallWarning>::const_iterator it =
                install_warnings.begin(); it != install_warnings.end(); ++it) {
         DictionaryValue* item = new DictionaryValue();
-        item->SetBoolean("isHTML",
-                         it->format == extensions::InstallWarning::FORMAT_HTML);
+        item->SetBoolean("isHTML", it->format == InstallWarning::FORMAT_HTML);
         item->SetString("message", it->message);
         list->Append(item);
       }
@@ -386,7 +392,7 @@ void ExtensionSettingsHandler::RegisterMessages() {
         GetExtensionService();
   }
   if (!management_policy_) {
-    management_policy_ = extensions::ExtensionSystem::Get(
+    management_policy_ = ExtensionSystem::Get(
         extension_service_->profile())->management_policy();
   }
 
@@ -441,7 +447,7 @@ void ExtensionSettingsHandler::FileSelected(const base::FilePath& path,
                                             int index,
                                             void* params) {
   last_unpacked_directory_ = base::FilePath(path);
-  extensions::UnpackedInstaller::Create(extension_service_)->Load(path);
+  UnpackedInstaller::Create(extension_service_)->Load(path);
 }
 
 void ExtensionSettingsHandler::MultiFilesSelected(
@@ -565,8 +571,8 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   // Add the extensions to the results structure.
   ListValue* extensions_list = new ListValue();
 
-  extensions::ExtensionWarningService* warnings =
-      extensions::ExtensionSystem::Get(profile)->warning_service();
+  ExtensionWarningService* warnings =
+      ExtensionSystem::Get(profile)->warning_service();
 
   const ExtensionSet* extensions = extension_service_->extensions();
   for (ExtensionSet::const_iterator extension = extensions->begin();
@@ -653,7 +659,7 @@ void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {
 
     ExtensionService* service = extension_service_;
     if (incognito)
-      service = extensions::ExtensionSystem::Get(extension_service_->
+      service = ExtensionSystem::Get(extension_service_->
           profile()->GetOffTheRecordProfile())->extension_service();
 
     service->InspectBackgroundPage(extension);
@@ -674,7 +680,7 @@ void ExtensionSettingsHandler::HandleLaunchMessage(const ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
-  const extensions::Extension* extension =
+  const Extension* extension =
       extension_service_->GetExtensionById(extension_id, false);
   chrome::OpenApplication(chrome::AppLaunchParams(extension_service_->profile(),
                                                   extension,
@@ -712,9 +718,9 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
   }
 
   if (enable_str == "true") {
-    extensions::ExtensionPrefs* prefs = extension_service_->extension_prefs();
+    ExtensionPrefs* prefs = extension_service_->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
-      extensions::ShowExtensionDisabledDialog(
+      ShowExtensionDisabledDialog(
           extension_service_, web_ui()->GetWebContents(), extension);
     } else if ((prefs->GetDisableReasons(extension_id) &
                    Extension::DISABLE_UNSUPPORTED_REQUIREMENT) &&
@@ -723,7 +729,7 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
       scoped_refptr<const Extension> extension =
           extension_service_->GetExtensionById(extension_id,
                                                true /* include disabled */);
-      requirements_checker_.reset(new extensions::RequirementsChecker());
+      requirements_checker_.reset(new RequirementsChecker);
       requirements_checker_->Check(
           extension,
           base::Bind(&ExtensionSettingsHandler::OnRequirementsChecked,
@@ -732,7 +738,7 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
       extension_service_->EnableExtension(extension_id);
 
       // Make sure any browser action contained within it is not hidden.
-      extensions::ExtensionActionAPI::SetBrowserActionVisibility(
+      ExtensionActionAPI::SetBrowserActionVisibility(
           prefs, extension->id(), true);
     }
   } else {
@@ -815,8 +821,7 @@ void ExtensionSettingsHandler::HandleUninstallMessage(const ListValue* args) {
 
 void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
-  if (!extension ||
-      extensions::ManifestURL::GetOptionsPage(extension).is_empty())
+  if (!extension || ManifestURL::GetOptionsPage(extension).is_empty())
     return;
   ExtensionTabUtil::OpenOptionsPage(extension,
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
@@ -836,7 +841,7 @@ void ExtensionSettingsHandler::HandlePermissionsMessage(const ListValue* args) {
   extension_id_prompting_ = extension->id();
   prompt_.reset(new ExtensionInstallPrompt(web_contents()));
   std::vector<base::FilePath> retained_file_paths;
-  if (extension->HasAPIPermission(extensions::APIPermission::kFileSystem)) {
+  if (extension->HasAPIPermission(APIPermission::kFileSystem)) {
     std::vector<apps::SavedFileEntry> retained_file_entries =
         apps::SavedFilesService::Get(Profile::FromWebUI(
             web_ui()))->GetAllFileEntries(extension_id_prompting_);
@@ -851,7 +856,7 @@ void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
   if (!extension)
     return;
-  extensions::ExtensionActionAPI::SetBrowserActionVisibility(
+  ExtensionActionAPI::SetBrowserActionVisibility(
       extension_service_->extension_prefs(), extension->id(), true);
 }
 
@@ -936,7 +941,7 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      content::Source<extensions::ExtensionPrefs>(
+      content::Source<ExtensionPrefs>(
           profile->GetExtensionService()->extension_prefs()));
 
   content::RenderViewHost::AddCreatedCallback(rvh_created_callback_);
@@ -944,7 +949,7 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 
   warning_service_observer_.Add(
-      extensions::ExtensionSystem::Get(profile)->warning_service());
+      ExtensionSystem::Get(profile)->warning_service());
 
   base::Closure callback = base::Bind(
       &ExtensionSettingsHandler::MaybeUpdateAfterNotification,
@@ -961,8 +966,7 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
 
   // Get the extension process's active views.
   ExtensionProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(extension_service_->profile())->
-          process_manager();
+      ExtensionSystem::Get(extension_service_->profile())->process_manager();
   GetInspectablePagesForExtensionProcess(
       process_manager->GetRenderViewHostsForExtension(extension->id()),
       &result);
@@ -972,31 +976,29 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
       extension_service_->profile(), &result);
 
   // Include a link to start the lazy background page, if applicable.
-  if (extensions::BackgroundInfo::HasLazyBackgroundPage(extension) &&
+  if (BackgroundInfo::HasLazyBackgroundPage(extension) &&
       extension_is_enabled &&
       !process_manager->GetBackgroundHostForExtension(extension->id())) {
-    result.push_back(
-        ExtensionPage(extensions::BackgroundInfo::GetBackgroundURL(extension),
-                      -1, -1, false));
+    result.push_back(ExtensionPage(
+        BackgroundInfo::GetBackgroundURL(extension), -1, -1, false));
   }
 
   // Repeat for the incognito process, if applicable. Don't try to get
   // shell windows for incognito processes.
   if (extension_service_->profile()->HasOffTheRecordProfile() &&
-      extensions::IncognitoInfo::IsSplitMode(extension)) {
+      IncognitoInfo::IsSplitMode(extension)) {
     ExtensionProcessManager* process_manager =
-        extensions::ExtensionSystem::Get(extension_service_->profile()->
+        ExtensionSystem::Get(extension_service_->profile()->
             GetOffTheRecordProfile())->process_manager();
     GetInspectablePagesForExtensionProcess(
         process_manager->GetRenderViewHostsForExtension(extension->id()),
         &result);
 
-    if (extensions::BackgroundInfo::HasLazyBackgroundPage(extension)
-        && extension_is_enabled &&
+    if (BackgroundInfo::HasLazyBackgroundPage(extension) &&
+        extension_is_enabled &&
         !process_manager->GetBackgroundHostForExtension(extension->id())) {
-      result.push_back(
-          ExtensionPage(extensions::BackgroundInfo::GetBackgroundURL(extension),
-                        -1, -1, true));
+      result.push_back(ExtensionPage(
+          BackgroundInfo::GetBackgroundURL(extension), -1, -1, true));
     }
   }
 
@@ -1010,10 +1012,10 @@ void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
        iter != views.end(); ++iter) {
     RenderViewHost* host = *iter;
     WebContents* web_contents = WebContents::FromRenderViewHost(host);
-    extensions::ViewType host_type = extensions::GetViewType(web_contents);
+    ViewType host_type = GetViewType(web_contents);
     if (host == deleting_rvh_ ||
-        extensions::VIEW_TYPE_EXTENSION_POPUP == host_type ||
-        extensions::VIEW_TYPE_EXTENSION_DIALOG == host_type)
+        VIEW_TYPE_EXTENSION_POPUP == host_type ||
+        VIEW_TYPE_EXTENSION_DIALOG == host_type)
       continue;
 
     GURL url = web_contents->GetURL();
@@ -1028,14 +1030,13 @@ void ExtensionSettingsHandler::GetShellWindowPagesForExtensionProfile(
     const Extension* extension,
     Profile* profile,
     std::vector<ExtensionPage>* result) {
-  extensions::ShellWindowRegistry* registry =
-      extensions::ShellWindowRegistry::Get(profile);
+  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile);
   if (!registry) return;
 
-  const extensions::ShellWindowRegistry::ShellWindowList windows =
+  const ShellWindowRegistry::ShellWindowList windows =
       registry->GetShellWindowsForApp(extension->id());
 
-  for (extensions::ShellWindowRegistry::const_iterator it = windows.begin();
+  for (ShellWindowRegistry::const_iterator it = windows.begin();
        it != windows.end(); ++it) {
     WebContents* web_contents = (*it)->web_contents();
     RenderViewHost* host = web_contents->GetRenderViewHost();
@@ -1076,3 +1077,5 @@ void ExtensionSettingsHandler::OnRequirementsChecked(
   }
   requirements_checker_.reset();
 }
+
+}  // namespace extensions

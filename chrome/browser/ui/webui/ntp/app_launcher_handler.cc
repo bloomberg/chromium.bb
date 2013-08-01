@@ -123,19 +123,21 @@ void AppLauncherHandler::CreateAppInfo(
 
   bool icon_big_exists = true;
   // Instead of setting grayscale here, we do it in apps_page.js.
-  GURL icon_big =
-      ExtensionIconSource::GetIconURL(extension,
-                                      extension_misc::EXTENSION_ICON_LARGE,
-                                      ExtensionIconSet::MATCH_BIGGER,
-                                      false, &icon_big_exists);
+  GURL icon_big = extensions::ExtensionIconSource::GetIconURL(
+      extension,
+      extension_misc::EXTENSION_ICON_LARGE,
+      ExtensionIconSet::MATCH_BIGGER,
+      false,
+      &icon_big_exists);
   value->SetString("icon_big", icon_big.spec());
   value->SetBoolean("icon_big_exists", icon_big_exists);
   bool icon_small_exists = true;
-  GURL icon_small =
-      ExtensionIconSource::GetIconURL(extension,
-                                      extension_misc::EXTENSION_ICON_BITTY,
-                                      ExtensionIconSet::MATCH_BIGGER,
-                                      false, &icon_small_exists);
+  GURL icon_small = extensions::ExtensionIconSource::GetIconURL(
+      extension,
+      extension_misc::EXTENSION_ICON_BITTY,
+      ExtensionIconSet::MATCH_BIGGER,
+      false,
+      &icon_small_exists);
   value->SetString("icon_small", icon_small.spec());
   value->SetBoolean("icon_small_exists", icon_small_exists);
   value->SetInteger("launch_container",

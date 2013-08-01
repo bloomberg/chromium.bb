@@ -17,6 +17,8 @@ namespace content {
 class WebUIDataSource;
 }
 
+namespace extensions {
+
 // WebUI controller for the informative bubble shown on clicking a script badge.
 class ExtensionInfoUI : public content::WebUIController {
  public:
@@ -35,5 +37,7 @@ class ExtensionInfoUI : public content::WebUIController {
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfoUI);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_INFO_UI_H_

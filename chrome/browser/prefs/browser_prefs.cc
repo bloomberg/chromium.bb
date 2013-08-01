@@ -351,7 +351,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
   extensions::CommandService::RegisterProfilePrefs(registry);
-  ExtensionSettingsHandler::RegisterProfilePrefs(registry);
+  extensions::ExtensionSettingsHandler::RegisterProfilePrefs(registry);
   PepperFlashSettingsManager::RegisterProfilePrefs(registry);
   PinnedTabCodec::RegisterProfilePrefs(registry);
   PluginsUI::RegisterProfilePrefs(registry);

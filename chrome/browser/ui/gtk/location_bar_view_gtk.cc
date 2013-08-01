@@ -2068,7 +2068,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
 
     case LocationBarController::ACTION_SHOW_SCRIPT_POPUP:
       ExtensionPopupGtk::Show(
-          ExtensionInfoUI::GetURL(extension->id()),
+          extensions::ExtensionInfoUI::GetURL(extension->id()),
           owner_->browser_,
           event_box_.get(),
           ExtensionPopupGtk::SHOW);

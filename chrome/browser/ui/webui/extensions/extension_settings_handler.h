@@ -38,25 +38,21 @@ namespace content {
 class WebUIDataSource;
 }
 
-namespace extensions {
-class Extension;
-class ExtensionHost;
-class ManagementPolicy;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace extensions {
+class Extension;
+class ManagementPolicy;
+
 // Information about a page running in an extension, for example a popup bubble,
 // a background page, or a tab contents.
 struct ExtensionPage {
-  ExtensionPage(const GURL& url, int render_process_id, int render_view_id,
-                bool incognito)
-      : url(url),
-        render_process_id(render_process_id),
-        render_view_id(render_view_id),
-        incognito(incognito) {}
+  ExtensionPage(const GURL& url,
+                int render_process_id,
+                int render_view_id,
+                bool incognito);
   GURL url;
   int render_process_id;
   int render_view_id;
@@ -71,7 +67,7 @@ class ExtensionSettingsHandler
       public ui::SelectFileDialog::Listener,
       public ExtensionInstallPrompt::Delegate,
       public ExtensionUninstallDialog::Delegate,
-      public extensions::ExtensionWarningService::Observer,
+      public ExtensionWarningService::Observer,
       public base::SupportsWeakPtr<ExtensionSettingsHandler> {
  public:
   ExtensionSettingsHandler();
@@ -83,9 +79,9 @@ class ExtensionSettingsHandler
   // testing.
   // Note: |warning_service| can be NULL in unit tests.
   base::DictionaryValue* CreateExtensionDetailValue(
-      const extensions::Extension* extension,
+      const Extension* extension,
       const std::vector<ExtensionPage>& pages,
-      const extensions::ExtensionWarningService* warning_service);
+      const ExtensionWarningService* warning_service);
 
   void GetLocalizedValues(content::WebUIDataSource* source);
 
@@ -103,14 +99,15 @@ class ExtensionSettingsHandler
 
   // Allows injection for testing by friend classes.
   ExtensionSettingsHandler(ExtensionService* service,
-                           extensions::ManagementPolicy* policy);
+                           ManagementPolicy* policy);
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const base::FilePath& path,
-                            int index, void* params) OVERRIDE;
+                            int index,
+                            void* params) OVERRIDE;
   virtual void MultiFilesSelected(
       const std::vector<base::FilePath>& files, void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE {}
@@ -125,7 +122,7 @@ class ExtensionSettingsHandler
   virtual void ExtensionUninstallAccepted() OVERRIDE;
   virtual void ExtensionUninstallCanceled() OVERRIDE;
 
-  // extensions::ExtensionWarningService::Observer implementation.
+  // ExtensionWarningService::Observer implementation.
   virtual void ExtensionWarningsChanged() OVERRIDE;
 
   // ExtensionInstallPrompt::Delegate implementation.
@@ -185,7 +182,7 @@ class ExtensionSettingsHandler
 
   // Utility for callbacks that get an extension ID as the sole argument.
   // Returns NULL if the extension isn't active.
-  const extensions::Extension* GetActiveExtension(const base::ListValue* args);
+  const Extension* GetActiveExtension(const base::ListValue* args);
 
   // Forces a UI update if appropriate after a notification is received.
   void MaybeUpdateAfterNotification();
@@ -195,12 +192,12 @@ class ExtensionSettingsHandler
 
   // Helper that lists the current inspectable html pages for an extension.
   std::vector<ExtensionPage> GetInspectablePagesForExtension(
-      const extensions::Extension* extension, bool extension_is_enabled);
+      const Extension* extension, bool extension_is_enabled);
   void GetInspectablePagesForExtensionProcess(
       const std::set<content::RenderViewHost*>& views,
       std::vector<ExtensionPage>* result);
   void GetShellWindowPagesForExtensionProfile(
-      const extensions::Extension* extension,
+      const Extension* extension,
       Profile* profile,
       std::vector<ExtensionPage>* result);
 
@@ -216,7 +213,7 @@ class ExtensionSettingsHandler
   ExtensionService* extension_service_;
 
   // A convenience member, filled once the extension_service_ is known.
-  extensions::ManagementPolicy* management_policy_;
+  ManagementPolicy* management_policy_;
 
   // Used to pick the directory when loading an extension.
   scoped_refptr<ui::SelectFileDialog> load_extension_dialog_;
@@ -258,16 +255,17 @@ class ExtensionSettingsHandler
   // This will not be empty when a requirements check is in progress. Doing
   // another Check() before the previous one is complete will cause the first
   // one to abort.
-  scoped_ptr<extensions::RequirementsChecker> requirements_checker_;
+  scoped_ptr<RequirementsChecker> requirements_checker_;
 
   // The UI for showing what permissions the extension has.
   scoped_ptr<ExtensionInstallPrompt> prompt_;
 
-  ScopedObserver<extensions::ExtensionWarningService,
-                 extensions::ExtensionWarningService::Observer>
+  ScopedObserver<ExtensionWarningService, ExtensionWarningService::Observer>
       warning_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsHandler);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_SETTINGS_HANDLER_H_

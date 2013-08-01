@@ -14,6 +14,8 @@ namespace content {
 class WebUIDataSource;
 }
 
+namespace extensions {
+
 // Handles installing an extension when its file is dragged onto the page.
 class InstallExtensionHandler : public content::WebUIMessageHandler {
  public:
@@ -54,5 +56,7 @@ class InstallExtensionHandler : public content::WebUIMessageHandler {
 
   DISALLOW_COPY_AND_ASSIGN(InstallExtensionHandler);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_UI_WEBUI_EXTENSIONS_INSTALL_EXTENSION_HANDLER_H_

@@ -144,7 +144,9 @@ bool PageActionDecoration::ActivatePageAction(NSRect frame) {
       break;
 
     case LocationBarController::ACTION_SHOW_SCRIPT_POPUP:
-      ShowPopup(frame, ExtensionInfoUI::GetURL(page_action_->extension_id()));
+      ShowPopup(
+          frame,
+          extensions::ExtensionInfoUI::GetURL(page_action_->extension_id()));
       break;
   }
 

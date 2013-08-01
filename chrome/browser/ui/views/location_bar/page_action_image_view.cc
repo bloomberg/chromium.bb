@@ -135,8 +135,9 @@ void PageActionImageView::ExecuteAction(
       break;
 
     case LocationBarController::ACTION_SHOW_SCRIPT_POPUP:
-      ShowPopupWithURL(ExtensionInfoUI::GetURL(page_action_->extension_id()),
-                       show_action);
+      ShowPopupWithURL(
+          extensions::ExtensionInfoUI::GetURL(page_action_->extension_id()),
+          show_action);
       break;
   }
 }

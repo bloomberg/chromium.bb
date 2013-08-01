@@ -19,6 +19,8 @@
 #include "chrome/browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h"
 #endif
 
+namespace extensions {
+
 namespace {
 
 content::WebUIDataSource* CreateExtensionsHTMLSource() {
@@ -50,8 +52,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   pack_handler->GetLocalizedValues(source);
   web_ui->AddMessageHandler(pack_handler);
 
-  extensions::CommandHandler* commands_handler =
-      new extensions::CommandHandler(profile);
+  CommandHandler* commands_handler = new CommandHandler(profile);
   commands_handler->GetLocalizedValues(source);
   web_ui->AddMessageHandler(commands_handler);
 
@@ -74,3 +75,5 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
 ExtensionsUI::~ExtensionsUI() {
 }
+
+}  // namespace extensions

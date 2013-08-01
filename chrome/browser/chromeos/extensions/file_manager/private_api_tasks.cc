@@ -400,12 +400,12 @@ bool GetFileTasksFunction::FindAppTasks(
         task->SetBoolean("isDefault", false);
       }
 
-      GURL best_icon =
-          ExtensionIconSource::GetIconURL(extension,
-                                          kPreferredIconSize,
-                                          ExtensionIconSet::MATCH_BIGGER,
-                                          false,  // grayscale
-                                          NULL);  // exists
+      GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
+          extension,
+          kPreferredIconSize,
+          ExtensionIconSet::MATCH_BIGGER,
+          false,  // grayscale
+          NULL);  // exists
       if (!best_icon.is_empty())
         task->SetString("iconUrl", best_icon.spec());
       else
@@ -527,11 +527,12 @@ bool GetFileTasksFunction::RunImpl() {
     task->SetString("title", handler->title());
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.
-    GURL icon =
-        ExtensionIconSource::GetIconURL(extension,
-                                        extension_misc::EXTENSION_ICON_BITTY,
-                                        ExtensionIconSet::MATCH_BIGGER,
-                                        false, NULL);     // grayscale
+    GURL icon = extensions::ExtensionIconSource::GetIconURL(
+        extension,
+        extension_misc::EXTENSION_ICON_BITTY,
+        ExtensionIconSet::MATCH_BIGGER,
+        false,  // grayscale
+        NULL);  // exists
     task->SetString("iconUrl", icon.spec());
     task->SetBoolean("driveApp", false);
 

@@ -7,10 +7,14 @@
 
 #include "content/public/browser/web_ui_controller.h"
 
+namespace extensions {
+
 class ExtensionsUI : public content::WebUIController {
  public:
   explicit ExtensionsUI(content::WebUI* web_ui);
   virtual ~ExtensionsUI();
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSIONS_UI_H_

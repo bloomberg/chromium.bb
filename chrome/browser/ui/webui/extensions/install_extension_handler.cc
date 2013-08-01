@@ -23,6 +23,8 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace extensions {
+
 InstallExtensionHandler::InstallExtensionHandler() {
 }
 
@@ -36,7 +38,7 @@ void InstallExtensionHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALL_DROP_TARGET));
   source->AddBoolean(
       "offStoreInstallEnabled",
-      extensions::FeatureSwitch::easy_off_store_install()->IsEnabled());
+      FeatureSwitch::easy_off_store_install()->IsEnabled());
 }
 
 void InstallExtensionHandler::RegisterMessages() {
@@ -94,13 +96,12 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
 
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
-  scoped_refptr<extensions::CrxInstaller> crx_installer(
-      extensions::CrxInstaller::Create(
-          extensions::ExtensionSystem::Get(profile)->extension_service(),
-          new ExtensionInstallPrompt(web_ui()->GetWebContents())));
+  scoped_refptr<CrxInstaller> crx_installer(CrxInstaller::Create(
+      ExtensionSystem::Get(profile)->extension_service(),
+      new ExtensionInstallPrompt(web_ui()->GetWebContents())));
   crx_installer->set_error_on_unsupported_requirements(true);
   crx_installer->set_off_store_install_allow_reason(
-      extensions::CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
+      CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
   crx_installer->set_install_wait_for_idle(false);
 
   const bool kCaseSensitive = false;
@@ -125,7 +126,9 @@ void InstallExtensionHandler::HandleInstallDirectoryMessage(
     const ListValue* args) {
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
-  extensions::UnpackedInstaller::Create(
-      extensions::ExtensionSystem::Get(profile)->
+  UnpackedInstaller::Create(
+      ExtensionSystem::Get(profile)->
           extension_service())->Load(file_to_install_);
 }
+
+}  // namespace extensions

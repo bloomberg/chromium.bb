@@ -152,9 +152,9 @@ WebUIController* NewWebUI<ExtensionWebUI>(WebUI* web_ui,
 }
 
 template<>
-WebUIController* NewWebUI<ExtensionInfoUI>(WebUI* web_ui,
-                                           const GURL& url) {
-  return new ExtensionInfoUI(web_ui, url);
+WebUIController* NewWebUI<extensions::ExtensionInfoUI>(WebUI* web_ui,
+                                                       const GURL& url) {
+  return new extensions::ExtensionInfoUI(web_ui, url);
 }
 
 // Special case for older about: handlers.
@@ -426,10 +426,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(ENABLE_EXTENSIONS)
   if (url.host() == chrome::kChromeUIExtensionInfoHost &&
       extensions::FeatureSwitch::script_badges()->IsEnabled()) {
-    return &NewWebUI<ExtensionInfoUI>;
+    return &NewWebUI<extensions::ExtensionInfoUI>;
   }
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)
-    return &NewWebUI<ExtensionsUI>;
+    return &NewWebUI<extensions::ExtensionsUI>;
 #endif
 #if defined(ENABLE_PRINTING)
   if (url.host() == chrome::kChromeUIPrintHost &&

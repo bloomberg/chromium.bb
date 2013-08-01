@@ -24,8 +24,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
-using extensions::Extension;
-using extensions::Manifest;
+namespace extensions {
 
 class ExtensionUITest : public testing::Test {
  public:
@@ -38,9 +37,8 @@ class ExtensionUITest : public testing::Test {
     // Create an ExtensionService and ManagementPolicy to inject into the
     // ExtensionSettingsHandler.
     profile_.reset(new TestingProfile());
-    extensions::TestExtensionSystem* system =
-        static_cast<extensions::TestExtensionSystem*>(
-            extensions::ExtensionSystem::Get(profile_.get()));
+    TestExtensionSystem* system =
+        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile_.get()));
     extension_service_ = system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), base::FilePath(), false);
     management_policy_ = system->management_policy();
@@ -72,8 +70,7 @@ class ExtensionUITest : public testing::Test {
       Manifest::Location location) {
     std::string error;
 
-    base::FilePath manifest_path = extension_path.Append(
-        extensions::kManifestFilename);
+    base::FilePath manifest_path = extension_path.Append(kManifestFilename);
     scoped_ptr<DictionaryValue> extension_data(DeserializeJSONTestData(
         manifest_path, &error));
     EXPECT_EQ("", error);
@@ -123,7 +120,7 @@ class ExtensionUITest : public testing::Test {
   content::TestBrowserThread file_thread_;
   scoped_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
-  extensions::ManagementPolicy* management_policy_;
+  ManagementPolicy* management_policy_;
   scoped_ptr<ExtensionSettingsHandler> handler_;
 
 #if defined OS_CHROMEOS
@@ -279,3 +276,5 @@ TEST_F(ExtensionUITest, PathPropagation) {
   EXPECT_TRUE(extension_details->GetString("path", &ui_path));
   EXPECT_EQ(extension_path, base::FilePath(ui_path));
 }
+
+}  // namespace extensions

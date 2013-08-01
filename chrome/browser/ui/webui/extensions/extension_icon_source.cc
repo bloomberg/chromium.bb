@@ -37,6 +37,8 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "url/gurl.h"
 
+namespace extensions {
+
 namespace {
 
 scoped_refptr<base::RefCountedMemory> BitmapToMemory(const SkBitmap* image) {
@@ -59,29 +61,26 @@ SkBitmap* ToBitmap(const unsigned char* data, size_t size) {
 
 }  // namespace
 
-ExtensionIconSource::ExtensionIconSource(Profile* profile)
-    : profile_(profile) {
+ExtensionIconSource::ExtensionIconSource(Profile* profile) : profile_(profile) {
 }
 
 struct ExtensionIconSource::ExtensionIconRequest {
   content::URLDataSource::GotDataCallback callback;
-  scoped_refptr<const extensions::Extension> extension;
+  scoped_refptr<const Extension> extension;
   bool grayscale;
   int size;
   ExtensionIconSet::MatchType match;
 };
 
 // static
-GURL ExtensionIconSource::GetIconURL(const extensions::Extension* extension,
+GURL ExtensionIconSource::GetIconURL(const Extension* extension,
                                      int icon_size,
                                      ExtensionIconSet::MatchType match,
                                      bool grayscale,
                                      bool* exists) {
-  if (exists)
-    *exists = true;
-  if (exists && extensions::IconsInfo::GetIconURL(
-          extension, icon_size, match) == GURL()) {
-    *exists = false;
+  if (exists) {
+    *exists =
+        IconsInfo::GetIconURL(extension, icon_size, match) != GURL::EmptyGURL();
   }
 
   GURL icon_url(base::StringPrintf("%s%s/%d/%d%s",
@@ -134,7 +133,7 @@ void ExtensionIconSource::StartDataRequest(
   }
 
   ExtensionIconRequest* request = GetData(next_id);
-  extensions::ExtensionResource icon = extensions::IconsInfo::GetIconResource(
+  ExtensionResource icon = IconsInfo::GetIconResource(
       request->extension, request->size, request->match);
 
   if (icon.relative_path().empty()) {
@@ -200,11 +199,10 @@ void ExtensionIconSource::LoadDefaultImage(int request_id) {
   FinalizeImage(&resized_image, request_id);
 }
 
-void ExtensionIconSource::LoadExtensionImage(
-    const extensions::ExtensionResource& icon,
-    int request_id) {
+void ExtensionIconSource::LoadExtensionImage(const ExtensionResource& icon,
+                                             int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
-  extensions::ImageLoader::Get(profile_)->LoadImageAsync(
+  ImageLoader::Get(profile_)->LoadImageAsync(
       request->extension, icon,
       gfx::Size(request->size, request->size),
       base::Bind(&ExtensionIconSource::OnImageLoaded, AsWeakPtr(), request_id));
@@ -219,8 +217,8 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
     return;
   }
 
-  GURL favicon_url = extensions::AppLaunchInfo::GetFullLaunchURL(
-      GetData(request_id)->extension);
+  GURL favicon_url =
+      AppLaunchInfo::GetFullLaunchURL(GetData(request_id)->extension);
   favicon_service->GetRawFaviconForURL(
       FaviconService::FaviconForURLParams(
           profile_, favicon_url, chrome::FAVICON, gfx::kFaviconSize),
@@ -262,7 +260,7 @@ void ExtensionIconSource::OnImageLoaded(int request_id,
 
 void ExtensionIconSource::LoadIconFailed(int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
-  extensions::ExtensionResource icon = extensions::IconsInfo::GetIconResource(
+  ExtensionResource icon = IconsInfo::GetIconResource(
       request->extension, request->size, request->match);
 
   if (request->size == extension_misc::EXTENSION_ICON_BITTY)
@@ -304,9 +302,8 @@ bool ExtensionIconSource::ParseData(
     match_type = ExtensionIconSet::MATCH_EXACTLY;
 
   std::string extension_id = path_parts.at(0);
-  const extensions::Extension* extension =
-      extensions::ExtensionSystem::Get(profile_)->extension_service()->
-          GetInstalledExtension(extension_id);
+  const Extension* extension = ExtensionSystem::Get(profile_)->
+      extension_service()->GetInstalledExtension(extension_id);
   if (!extension)
     return false;
 
@@ -320,7 +317,7 @@ bool ExtensionIconSource::ParseData(
 void ExtensionIconSource::SetData(
     int request_id,
     const content::URLDataSource::GotDataCallback& callback,
-    const extensions::Extension* extension,
+    const Extension* extension,
     bool grayscale,
     int size,
     ExtensionIconSet::MatchType match) {
@@ -347,3 +344,5 @@ void ExtensionIconSource::ClearData(int request_id) {
   delete i->second;
   request_map_.erase(i);
 }
+
+}  // namespace extensions
