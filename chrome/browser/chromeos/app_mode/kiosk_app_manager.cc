@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -146,7 +145,7 @@ void KioskAppManager::OnLockDevice(
 
 void KioskAppManager::OnOwnerFileChecked(
     const KioskAppManager::GetConsumerKioskModeStatusCallback& callback,
-    bool *owner_present) {
+    bool* owner_present) {
   ownership_established_ = *owner_present;
 
   if (callback.is_null())
@@ -383,7 +382,8 @@ void KioskAppManager::UpdateAppData() {
        it != old_apps.end(); ++it) {
     it->second->ClearCache();
     cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-        it->first, base::Bind(&OnRemoveAppCryptohomeComplete, it->first));
+        it->second->user_id(),
+        base::Bind(&OnRemoveAppCryptohomeComplete, it->first));
   }
   STLDeleteValues(&old_apps);
 
