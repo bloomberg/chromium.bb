@@ -69,7 +69,7 @@ class DeviceOAuth2TokenService : public OAuth2TokenService {
   // Implementation of OAuth2TokenService.
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
-  void OnValidationComplete(ValidatingConsumer* validator, bool token_is_valid);
+  void OnValidationComplete(bool token_is_valid);
 
   bool refresh_token_is_valid_;
   int max_refresh_token_validation_retries_;

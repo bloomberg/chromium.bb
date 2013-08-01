@@ -190,16 +190,17 @@ void DeviceOAuth2TokenService::ValidatingConsumer::RefreshTokenIsValid(
 void DeviceOAuth2TokenService::ValidatingConsumer::InformConsumer() {
   DCHECK(token_fetch_done_);
   DCHECK(token_validation_done_);
+  token_service_->OnValidationComplete(token_is_valid_);
+  // Note: this object (which is also the Request instance) may be deleted in
+  // these consumer callbacks, so the callbacks must be the last line executed.
   if (!token_is_valid_) {
-    consumer_->OnGetTokenFailure(request_.get(), GoogleServiceAuthError(
+    consumer_->OnGetTokenFailure(this, GoogleServiceAuthError(
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   } else if (error_) {
-    consumer_->OnGetTokenFailure(request_.get(), *error_.get());
+    consumer_->OnGetTokenFailure(this, *error_.get());
   } else {
-    consumer_->OnGetTokenSuccess(request_.get(), access_token_,
-                                 expiration_time_);
+    consumer_->OnGetTokenSuccess(this, access_token_, expiration_time_);
   }
-  token_service_->OnValidationComplete(this, token_is_valid_);
 }
 
 DeviceOAuth2TokenService::DeviceOAuth2TokenService(
@@ -237,7 +238,6 @@ scoped_ptr<OAuth2TokenService::Request> DeviceOAuth2TokenService::StartRequest(
 }
 
 void DeviceOAuth2TokenService::OnValidationComplete(
-    ValidatingConsumer* validator,
     bool refresh_token_is_valid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   refresh_token_is_valid_ = refresh_token_is_valid;
