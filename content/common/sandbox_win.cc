@@ -679,13 +679,15 @@ base::ProcessHandle StartSandboxedProcess(
   TRACE_EVENT_END_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 
   if (sandbox::SBOX_ALL_OK != result) {
-    DLOG(ERROR) << "Failed to launch process. Error: " << result;
+    if (result == sandbox::SBOX_ERROR_GENERIC)
+      DPLOG(ERROR) << "Failed to launch process";
+    else
+      DLOG(ERROR) << "Failed to launch process. Error: " << result;
     return 0;
   }
 
   if (delegate)
     delegate->PostSpawnTarget(target.process_handle());
-
 
   ResumeThread(target.thread_handle());
 
