@@ -906,10 +906,8 @@ class NinjaWriter:
       link_deps.extend(list(extra_link_deps))
 
     extra_bindings = []
-    if self.is_mac_bundle:
-      output = self.ComputeMacBundleBinaryOutput()
-    else:
-      output = self.ComputeOutput(spec)
+    output = self.ComputeOutput(spec)
+    if not self.is_mac_bundle:
       extra_bindings.append(('postbuilds',
                              self.GetPostbuildCommand(spec, output, output)))
 
@@ -1111,13 +1109,6 @@ class NinjaWriter:
     return self.ExpandSpecial(
         os.path.join(path, self.xcode_settings.GetWrapperName()))
 
-  def ComputeMacBundleBinaryOutput(self):
-    """Return the 'output' (full output path) to the binary in a bundle."""
-    assert self.is_mac_bundle
-    path = generator_default_variables['PRODUCT_DIR']
-    return self.ExpandSpecial(
-        os.path.join(path, self.xcode_settings.GetExecutablePath()))
-
   def ComputeOutputFileName(self, spec, type=None):
     """Compute the filename of the final output for the current target."""
     if not type:
@@ -1170,8 +1161,6 @@ class NinjaWriter:
 
   def ComputeOutput(self, spec, type=None):
     """Compute the path for the final output of the spec."""
-    assert not self.is_mac_bundle or type
-
     if not type:
       type = spec['type']
 
