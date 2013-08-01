@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<p>
+    This tests that layout overflow is computed correctly, even if the element
+    is not near the top-left corner of its ancestors and has visual overflow.
+    See crbug.com/254002.
+</p>
+<p id="result">PASS</p>
+<div id="test"></div>
+<script>
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    document.getElementById('test').addEventListener('overflowchanged', function(e) {
+        // This element has no children. How could it possibly have layout overflow?
+        if (e.verticalOverflow || e.horizontalOverflow)
+            document.getElementById('result').innerHTML = 'FAIL';
+    }, false /* capture */);
+</script>
+<style>
+    #test {
+        width: 100px;
+        height: 100px;
+        background: yellow;
+        overflow: hidden;
+        box-shadow: 0px 0px 0px 1px #000; /* causes visual overflow */
+    }
+</style>

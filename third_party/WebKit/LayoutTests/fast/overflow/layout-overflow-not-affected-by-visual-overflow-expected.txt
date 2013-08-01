@@ -1,0 +1,5 @@
+This tests that layout overflow is computed correctly, even if the element is not near the top-left corner of its ancestors and has visual overflow. See crbug.com/254002.
+
+PASS
+
+

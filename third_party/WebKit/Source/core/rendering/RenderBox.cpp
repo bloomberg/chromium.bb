@@ -4304,13 +4304,12 @@ void RenderBox::clearLayoutOverflow()
     if (!m_overflow)
         return;
 
-    LayoutRect noOverflowRect = this->noOverflowRect();
-    if (visualOverflowRect() == noOverflowRect) {
+    if (!hasVisualOverflow()) {
         m_overflow.clear();
         return;
     }
 
-    m_overflow->setLayoutOverflow(noOverflowRect);
+    m_overflow->setLayoutOverflow(noOverflowRect());
 }
 
 inline static bool percentageLogicalHeightIsResolvable(const RenderBox* box)
