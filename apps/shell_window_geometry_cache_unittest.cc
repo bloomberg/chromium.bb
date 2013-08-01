@@ -141,6 +141,60 @@ TEST_F(ShellWindowGeometryCacheTest, GetGeometryAndStateFromStore) {
   ASSERT_EQ(state, new_state);
 }
 
+// Test corrupt bounds will not be loaded.
+TEST_F(ShellWindowGeometryCacheTest, CorruptBounds) {
+  const std::string extension_id = prefs_->AddExtensionAndReturnId("ext1");
+  gfx::Rect bounds;
+  gfx::Rect screen_bounds(0, 0, 1600, 900);
+  ui::WindowShowState state = ui::SHOW_STATE_NORMAL;
+  AddGeometryAndLoadExtension(extension_id, kWindowId, bounds,
+                              screen_bounds, state);
+  gfx::Rect new_bounds;
+  gfx::Rect new_screen_bounds;
+  ui::WindowShowState new_state = ui::SHOW_STATE_DEFAULT;
+  ASSERT_FALSE(cache_->GetGeometry(
+      extension_id, kWindowId, &new_bounds, &new_screen_bounds, &new_state));
+  ASSERT_TRUE(new_bounds.IsEmpty());
+  ASSERT_TRUE(new_screen_bounds.IsEmpty());
+  ASSERT_EQ(new_state, ui::SHOW_STATE_DEFAULT);
+}
+
+// Test corrupt screen bounds will not be loaded.
+TEST_F(ShellWindowGeometryCacheTest, CorruptScreenBounds) {
+  const std::string extension_id = prefs_->AddExtensionAndReturnId("ext1");
+  gfx::Rect bounds(4, 5, 31, 43);
+  gfx::Rect screen_bounds;
+  ui::WindowShowState state = ui::SHOW_STATE_NORMAL;
+  AddGeometryAndLoadExtension(extension_id, kWindowId, bounds,
+                              screen_bounds, state);
+  gfx::Rect new_bounds;
+  gfx::Rect new_screen_bounds;
+  ui::WindowShowState new_state = ui::SHOW_STATE_DEFAULT;
+  ASSERT_FALSE(cache_->GetGeometry(
+      extension_id, kWindowId, &new_bounds, &new_screen_bounds, &new_state));
+  ASSERT_TRUE(new_bounds.IsEmpty());
+  ASSERT_TRUE(new_screen_bounds.IsEmpty());
+  ASSERT_EQ(new_state, ui::SHOW_STATE_DEFAULT);
+}
+
+// Test corrupt state will not be loaded.
+TEST_F(ShellWindowGeometryCacheTest, CorruptState) {
+  const std::string extension_id = prefs_->AddExtensionAndReturnId("ext1");
+  gfx::Rect bounds(4, 5, 31, 43);
+  gfx::Rect screen_bounds(0, 0, 1600, 900);
+  ui::WindowShowState state = ui::SHOW_STATE_DEFAULT;
+  AddGeometryAndLoadExtension(extension_id, kWindowId, bounds,
+                              screen_bounds, state);
+  gfx::Rect new_bounds;
+  gfx::Rect new_screen_bounds;
+  ui::WindowShowState new_state = ui::SHOW_STATE_DEFAULT;
+  ASSERT_FALSE(cache_->GetGeometry(
+      extension_id, kWindowId, &new_bounds, &new_screen_bounds, &new_state));
+  ASSERT_TRUE(new_bounds.IsEmpty());
+  ASSERT_TRUE(new_screen_bounds.IsEmpty());
+  ASSERT_EQ(new_state, ui::SHOW_STATE_DEFAULT);
+}
+
 // Test saving geometry, screen_bounds and state to the cache and state store,
 // and reading it back.
 TEST_F(ShellWindowGeometryCacheTest, SaveGeometryAndStateToStore) {

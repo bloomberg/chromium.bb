@@ -147,18 +147,26 @@ bool ShellWindowGeometryCache::GetGeometry(
     DCHECK(extension_data_it != cache_.end());
   }
 
-  ExtensionData::const_iterator window_data = extension_data_it->second.find(
+  ExtensionData::const_iterator window_data_it = extension_data_it->second.find(
       window_id);
 
-  if (window_data == extension_data_it->second.end())
+  if (window_data_it == extension_data_it->second.end())
+    return false;
+
+  const WindowData& window_data = window_data_it->second;
+
+  // Check for and do not return corrupt data.
+  if ((bounds && window_data.bounds.IsEmpty()) ||
+      (screen_bounds && window_data.screen_bounds.IsEmpty()) ||
+      (window_state && window_data.window_state == ui::SHOW_STATE_DEFAULT))
     return false;
 
   if (bounds)
-    *bounds = window_data->second.bounds;
+    *bounds = window_data.bounds;
   if (screen_bounds)
-    *screen_bounds = window_data->second.screen_bounds;
+    *screen_bounds = window_data.screen_bounds;
   if (window_state)
-    *window_state = window_data->second.window_state;
+    *window_state = window_data.window_state;
   return true;
 }
 

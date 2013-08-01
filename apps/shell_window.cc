@@ -108,7 +108,9 @@ void ShellWindow::Init(const GURL& url,
   // If left and top are left undefined, the native shell window will center
   // the window on the main screen in a platform-defined manner.
 
-  ui::WindowShowState cached_state = ui::SHOW_STATE_DEFAULT;
+  CreateParams new_params = params;
+
+  // Load cached state if it exists.
   if (!params.window_key.empty()) {
     window_key_ = params.window_key;
 
@@ -116,25 +118,22 @@ void ShellWindow::Init(const GURL& url,
 
     gfx::Rect cached_bounds;
     gfx::Rect cached_screen_bounds;
+    ui::WindowShowState cached_state = ui::SHOW_STATE_DEFAULT;
     if (cache->GetGeometry(extension()->id(), params.window_key, &cached_bounds,
                            &cached_screen_bounds, &cached_state)) {
-      bounds = cached_bounds;
       // App window has cached screen bounds, make sure it fits on screen in
       // case the screen resolution changed.
-      if (!cached_screen_bounds.IsEmpty()) {
-        gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-        gfx::Display display = screen->GetDisplayMatching(cached_bounds);
-        gfx::Rect current_screen_bounds = display.work_area();
-        AdjustBoundsToBeVisibleOnScreen(cached_bounds,
-                                        cached_screen_bounds,
-                                        current_screen_bounds,
-                                        params.minimum_size,
-                                        &bounds);
-      }
+      gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+      gfx::Display display = screen->GetDisplayMatching(cached_bounds);
+      gfx::Rect current_screen_bounds = display.work_area();
+      AdjustBoundsToBeVisibleOnScreen(cached_bounds,
+                                      cached_screen_bounds,
+                                      current_screen_bounds,
+                                      params.minimum_size,
+                                      &bounds);
+      new_params.state = cached_state;
     }
   }
-
-  CreateParams new_params = params;
 
   gfx::Size& minimum_size = new_params.minimum_size;
   gfx::Size& maximum_size = new_params.maximum_size;
@@ -157,9 +156,6 @@ void ShellWindow::Init(const GURL& url,
     bounds.set_height(minimum_size.height());
 
   new_params.bounds = bounds;
-
-  if (cached_state != ui::SHOW_STATE_DEFAULT)
-    new_params.state = cached_state;
 
   native_app_window_.reset(NativeAppWindow::Create(this, new_params));
 
@@ -589,16 +585,12 @@ void ShellWindow::AdjustBoundsToBeVisibleOnScreen(
     const gfx::Rect& current_screen_bounds,
     const gfx::Size& minimum_size,
     gfx::Rect* bounds) const {
-  if (!bounds)
-    return;
-
   *bounds = cached_bounds;
 
   // Reposition and resize the bounds if the cached_screen_bounds is different
   // from the current screen bounds and the current screen bounds doesn't
   // completely contain the bounds.
-  if (!cached_screen_bounds.IsEmpty() &&
-      cached_screen_bounds != current_screen_bounds &&
+  if (cached_screen_bounds != current_screen_bounds &&
       !current_screen_bounds.Contains(cached_bounds)) {
     bounds->set_width(
         std::max(minimum_size.width(),

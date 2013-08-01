@@ -73,8 +73,8 @@ class ShellWindowGeometryCache
                     ui::WindowShowState state);
 
   // Get any saved geometry and state associated with |extension_id| and
-  // |window_id|. If saved data exists, sets |bounds| and |state| if not NULL
-  // and returns true.
+  // |window_id|. If saved data exists, sets |bounds|, |screen_bounds| and
+  // |state| if not NULL and returns true.
   bool GetGeometry(const std::string& extension_id,
                    const std::string& window_id,
                    gfx::Rect* bounds,
