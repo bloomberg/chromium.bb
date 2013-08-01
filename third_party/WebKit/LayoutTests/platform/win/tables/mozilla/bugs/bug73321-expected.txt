@@ -1,8 +1,8 @@
-layer at (0,0) size 785x1351
+layer at (0,0) size 785x1395
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x919
-  RenderBlock {HTML} at (0,0) size 785x918.88
-    RenderBody {BODY} at (8,8) size 769x902.88 [bgcolor=#555555]
+layer at (0,0) size 785x1395
+  RenderBlock {HTML} at (0,0) size 785x1394.88
+    RenderBody {BODY} at (8,8) size 769x1378.88 [bgcolor=#555555]
       RenderBlock {H1} at (16,37.44) size 737x102 [bgcolor=#CCCCCC]
         RenderText {#text} at (85,32) size 165x37
           text run at (85,32) width 165: "Simplified "
@@ -11,9 +11,9 @@ layer at (0,0) size 785x919
             text run at (250,32) width 160: "Linux.com"
         RenderText {#text} at (410,32) size 242x37
           text run at (410,32) width 242: " Table Testcase"
-      RenderTable {TABLE} at (16,160.88) size 737x726
-        RenderTableSection {TBODY} at (0,0) size 737x726
-          RenderTableRow {TR} at (0,2) size 737x506
+      RenderTable {TABLE} at (16,160.88) size 737x1202
+        RenderTableSection {TBODY} at (0,0) size 737x1202
+          RenderTableRow {TR} at (0,2) size 737x841
             RenderTableCell {TD} at (2,2) size 135x722.13 [bgcolor=#FFFFFF] [r=0 c=0 rs=2 cs=1]
               RenderBlock {H2} at (5,18.27) size 125x20
                 RenderText {#text} at (0,0) size 117x19
@@ -188,8 +188,8 @@ layer at (0,0) size 785x919
                   text run at (0,32) width 108: "blah blah blah blah"
                   text run at (0,48) width 108: "blah blah blah blah"
                   text run at (0,64) width 52: "blah blah"
-          RenderTableRow {TR} at (0,510) size 737x214
-            RenderTableCell {TD} at (600,554) size 135x169.53 [bgcolor=#FFFFFF] [r=1 c=2 rs=1 cs=1]
+          RenderTableRow {TR} at (0,845) size 737x355
+            RenderTableCell {TD} at (600,1030) size 135x169.53 [bgcolor=#FFFFFF] [r=1 c=2 rs=1 cs=1]
               RenderBlock {H2} at (5,18.27) size 125x40
                 RenderText {#text} at (0,0) size 88x39
                   text run at (0,0) width 88: "Community"

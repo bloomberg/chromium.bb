@@ -369,11 +369,31 @@ void RenderTableSection::distributeExtraRowSpanHeightToRemainingRows(RenderTable
     extraRowSpanningHeight -= accumulatedPositionIncrease;
 }
 
+// To avoid unneeded extra height distributions, we apply the following sorting algorithm:
+// 1. We sort by increasing start row but decreasing last row (ie the top-most, shortest cells first).
+// 2. For cells spanning the same rows, we sort by intrinsic size.
+static bool compareRowSpanCellsInHeightDistributionOrder(const RenderTableCell* cell2, const RenderTableCell* cell1)
+{
+    unsigned cellRowIndex1 = cell1->rowIndex();
+    unsigned cellRowSpan1 = cell1->rowSpan();
+    unsigned cellRowIndex2 = cell2->rowIndex();
+    unsigned cellRowSpan2 = cell2->rowSpan();
+
+    if (cellRowIndex1 == cellRowIndex2 && cellRowSpan1 == cellRowSpan2)
+        return (cell2->logicalHeightForRowSizing() > cell1->logicalHeightForRowSizing());
+
+    return (cellRowIndex2 >= cellRowIndex1 && (cellRowIndex2 + cellRowSpan2) <= (cellRowIndex1 + cellRowSpan1));
+}
+
 // Distribute rowSpan cell height in rows those comes in rowSpan cell based on the ratio of row's height if
 // 1. RowSpan cell height is greater then the total height of rows in rowSpan cell
 void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells& rowSpanCells)
 {
     ASSERT(rowSpanCells.size());
+
+    // 'rowSpanCells' list is already sorted based on the cells rowIndex in ascending order
+    // Arrange row spanning cell in the order in which we need to process first.
+    std::sort(rowSpanCells.begin(), rowSpanCells.end(), compareRowSpanCellsInHeightDistributionOrder);
 
     unsigned extraHeightToPropagate = 0;
     unsigned lastRowIndex = 0;
@@ -384,12 +404,13 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
 
         unsigned rowIndex = cell->rowIndex();
 
-        // FIXME: For now, we are handling only rowspan cells those are not overlapping with other
-        // rowspan cells but this is wrong.
-        if (rowIndex < lastRowIndex + lastRowSpan)
+        unsigned rowSpan = cell->rowSpan();
+
+        // Only heightest spanning cell will distribute it's extra height in row if more then one spanning cells
+        // present at same level.
+        if (rowIndex == lastRowIndex && rowSpan == lastRowSpan)
             continue;
 
-        unsigned rowSpan = cell->rowSpan();
         int originalBeforePosition = m_rowPos[rowIndex + rowSpan];
 
         if (extraHeightToPropagate) {
@@ -410,6 +431,9 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
         int totalPercent = 0;
         int totalAutoRowsHeight = 0;
         int totalRemainingRowsHeight = spanningRowsHeight.totalRowsHeight;
+
+        // FIXME: Inner spanning cell height should not change if it have fixed height when it's parent spanning cell
+        // is distributing it's extra height in rows.
 
         // Calculate total percentage, total auto rows height and total rows height except percent rows.
         for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
