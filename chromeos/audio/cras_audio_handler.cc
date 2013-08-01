@@ -333,20 +333,6 @@ void CrasAudioHandler::AudioClientRestarted() {
   InitializeAudioState();
 }
 
-void CrasAudioHandler::OutputMuteChanged(bool mute_on) {
-  if (output_mute_on_ != mute_on) {
-    LOG(WARNING) << "output mute state inconsistent, internal mute="
-        << output_mute_on_  << ", dbus signal mute=" << mute_on;
-  }
-}
-
-void CrasAudioHandler::InputMuteChanged(bool mute_on) {
-  if (input_mute_on_ != mute_on) {
-    LOG(WARNING) << "input mute state inconsistent, internal mute="
-        << input_mute_on_  << ", dbus signal mute=" << mute_on;
-  }
-}
-
 void CrasAudioHandler::NodesChanged() {
   // Refresh audio nodes data.
   GetNodes();

@@ -172,8 +172,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
  private:
   // Overriden from CrasAudioClient::Observer.
   virtual void AudioClientRestarted() OVERRIDE;
-  virtual void OutputMuteChanged(bool mute_on) OVERRIDE;
-  virtual void InputMuteChanged(bool mute_on) OVERRIDE;
   virtual void NodesChanged() OVERRIDE;
   virtual void ActiveOutputNodeChanged(uint64 node_id) OVERRIDE;
   virtual void ActiveInputNodeChanged(uint64 node_id) OVERRIDE;
