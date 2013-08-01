@@ -104,13 +104,15 @@ class RequestFileSystemFunction : public LoggedAsyncExtensionFunction {
       scoped_refptr<const extensions::Extension> extension);
 };
 
-// Implements the chrome.fileBrowserPrivate.addFileWatch method.
-class FileWatchBrowserFunctionBase : public LoggedAsyncExtensionFunction {
+// Base class for AddFileWatchFunction and RemoveFileWatchFunction. Although
+// it's called "FileWatch", the class and its sub classes are used only for
+// watching changes in directories.
+class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
  public:
-  FileWatchBrowserFunctionBase();
+  FileWatchFunctionBase();
 
  protected:
-  virtual ~FileWatchBrowserFunctionBase();
+  virtual ~FileWatchFunctionBase();
 
   // Performs a file watch operation (ex. adds or removes a file watch).
   virtual void PerformFileWatchOperation(
@@ -126,17 +128,18 @@ class FileWatchBrowserFunctionBase : public LoggedAsyncExtensionFunction {
 };
 
 // Implements the chrome.fileBrowserPrivate.addFileWatch method.
-class AddFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
+// Starts watching changes in directories.
+class AddFileWatchFunction : public FileWatchFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.addFileWatch",
                              FILEBROWSERPRIVATE_ADDFILEWATCH)
 
-  AddFileWatchBrowserFunction();
+  AddFileWatchFunction();
 
  protected:
-  virtual ~AddFileWatchBrowserFunction();
+  virtual ~AddFileWatchFunction();
 
-  // FileWatchBrowserFunctionBase override.
+  // FileWatchFunctionBase override.
   virtual void PerformFileWatchOperation(
       const base::FilePath& local_path,
       const base::FilePath& virtual_path,
@@ -145,17 +148,18 @@ class AddFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
 
 
 // Implements the chrome.fileBrowserPrivate.removeFileWatch method.
-class RemoveFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
+// Stops watching changes in directories.
+class RemoveFileWatchFunction : public FileWatchFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.removeFileWatch",
                              FILEBROWSERPRIVATE_REMOVEFILEWATCH)
 
-  RemoveFileWatchBrowserFunction();
+  RemoveFileWatchFunction();
 
  protected:
-  virtual ~RemoveFileWatchBrowserFunction();
+  virtual ~RemoveFileWatchFunction();
 
-  // FileWatchBrowserFunctionBase override.
+  // FileWatchFunctionBase override.
   virtual void PerformFileWatchOperation(
       const base::FilePath& local_path,
       const base::FilePath& virtual_path,

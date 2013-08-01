@@ -242,8 +242,8 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<LogoutUserFunction>();
   registry->RegisterFunction<GetVolumeMetadataFunction>();
   registry->RegisterFunction<RequestFileSystemFunction>();
-  registry->RegisterFunction<AddFileWatchBrowserFunction>();
-  registry->RegisterFunction<RemoveFileWatchBrowserFunction>();
+  registry->RegisterFunction<AddFileWatchFunction>();
+  registry->RegisterFunction<RemoveFileWatchFunction>();
   registry->RegisterFunction<GetSizeStatsFunction>();
   registry->RegisterFunction<FormatDeviceFunction>();
   registry->RegisterFunction<ViewFilesFunction>();
@@ -394,20 +394,20 @@ bool RequestFileSystemFunction::RunImpl() {
   return true;
 }
 
-FileWatchBrowserFunctionBase::FileWatchBrowserFunctionBase() {
+FileWatchFunctionBase::FileWatchFunctionBase() {
 }
 
-FileWatchBrowserFunctionBase::~FileWatchBrowserFunctionBase() {
+FileWatchFunctionBase::~FileWatchFunctionBase() {
 }
 
-void FileWatchBrowserFunctionBase::Respond(bool success) {
+void FileWatchFunctionBase::Respond(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SetResult(Value::CreateBooleanValue(success));
   SendResponse(success);
 }
 
-bool FileWatchBrowserFunctionBase::RunImpl() {
+bool FileWatchFunctionBase::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!render_view_host() || !render_view_host()->GetProcess())
@@ -435,13 +435,13 @@ bool FileWatchBrowserFunctionBase::RunImpl() {
   return true;
 }
 
-AddFileWatchBrowserFunction::AddFileWatchBrowserFunction() {
+AddFileWatchFunction::AddFileWatchFunction() {
 }
 
-AddFileWatchBrowserFunction::~AddFileWatchBrowserFunction() {
+AddFileWatchFunction::~AddFileWatchFunction() {
 }
 
-void AddFileWatchBrowserFunction::PerformFileWatchOperation(
+void AddFileWatchFunction::PerformFileWatchOperation(
     const base::FilePath& local_path,
     const base::FilePath& virtual_path,
     const std::string& extension_id) {
@@ -453,16 +453,16 @@ void AddFileWatchBrowserFunction::PerformFileWatchOperation(
       local_path,
       virtual_path,
       extension_id,
-      base::Bind(&AddFileWatchBrowserFunction::Respond, this));
+      base::Bind(&AddFileWatchFunction::Respond, this));
 }
 
-RemoveFileWatchBrowserFunction::RemoveFileWatchBrowserFunction() {
+RemoveFileWatchFunction::RemoveFileWatchFunction() {
 }
 
-RemoveFileWatchBrowserFunction::~RemoveFileWatchBrowserFunction() {
+RemoveFileWatchFunction::~RemoveFileWatchFunction() {
 }
 
-void RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
+void RemoveFileWatchFunction::PerformFileWatchOperation(
     const base::FilePath& local_path,
     const base::FilePath& unused,
     const std::string& extension_id) {
