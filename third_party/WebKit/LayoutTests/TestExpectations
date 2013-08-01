@@ -1390,3 +1390,5 @@ crbug.com/266798 [ Win ] transforms/3d/point-mapping/3d-point-mapping.html [ Ima
 crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ ImageOnlyFailure ]
 crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/canvas-text-alignment.html [ ImageOnlyFailure ]
 crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
+
+crbug.com/259083 fast/sub-pixel/ellipsis-zoom.html [ Failure ]
