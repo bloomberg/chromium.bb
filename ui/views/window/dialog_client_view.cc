@@ -55,10 +55,11 @@ void DialogClientView::AcceptWindow() {
 }
 
 void DialogClientView::CancelWindow() {
-  // Call the standard Close handler, which checks with the delegate before
-  // proceeding. This checking _isn't_ done here, but in the WM_CLOSE handler,
-  // so that the close box on the window also shares this code path.
-  Close();
+  // Only notify the delegate once. See |notified_delegate_|'s comment.
+  if (!notified_delegate_ && GetDialogDelegate()->Cancel()) {
+    notified_delegate_ = true;
+    Close();
+  }
 }
 
 void DialogClientView::UpdateDialogButtons() {
@@ -109,16 +110,14 @@ bool DialogClientView::CanClose() {
   if (notified_delegate_)
     return true;
 
-  DialogDelegate* dialog = GetDialogDelegate();
-  int buttons = dialog->GetDialogButtons();
-  bool close = true;
-  if ((buttons & ui::DIALOG_BUTTON_CANCEL) ||
-      (buttons == ui::DIALOG_BUTTON_NONE))
-    close = dialog->Cancel();
-  else if (buttons & ui::DIALOG_BUTTON_OK)
-    close = dialog->Accept(true);
-  notified_delegate_ = close;
-  return close;
+  // The dialog is closing but no Accept or Cancel action has been performed
+  // before: it's a Close action.
+  if (GetDialogDelegate()->Close()) {
+    notified_delegate_ = true;
+    GetDialogDelegate()->OnClosed();
+    return true;
+  }
+  return false;
 }
 
 DialogClientView* DialogClientView::AsDialogClientView() {
@@ -403,7 +402,7 @@ gfx::Insets DialogClientView::GetButtonRowInsets() const {
 
 void DialogClientView::Close() {
   GetWidget()->Close();
-  GetDialogDelegate()->OnClose();
+  GetDialogDelegate()->OnClosed();
 }
 
 }  // namespace views

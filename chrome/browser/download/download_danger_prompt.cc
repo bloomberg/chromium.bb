@@ -41,6 +41,7 @@ class DownloadDangerPromptImpl
   virtual string16 GetAcceptButtonTitle() OVERRIDE;
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;
+  virtual void OnClosed() OVERRIDE;
 
   void RunDone(Action action);
 
@@ -139,6 +140,10 @@ void DownloadDangerPromptImpl::OnAccepted() {
 }
 
 void DownloadDangerPromptImpl::OnCanceled() {
+  RunDone(CANCEL);
+}
+
+void DownloadDangerPromptImpl::OnClosed() {
   RunDone(CANCEL);
 }
 

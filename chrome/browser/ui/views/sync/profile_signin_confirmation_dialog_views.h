@@ -51,7 +51,7 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   virtual views::View* CreateExtraView() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
-  virtual void OnClose() OVERRIDE;
+  virtual void OnClosed() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;

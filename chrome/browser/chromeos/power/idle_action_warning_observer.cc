@@ -16,7 +16,7 @@ IdleActionWarningObserver::IdleActionWarningObserver() : warning_dialog_(NULL) {
 IdleActionWarningObserver::~IdleActionWarningObserver() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   if (warning_dialog_)
-    warning_dialog_->Close();
+    warning_dialog_->CloseDialog();
 }
 
 void IdleActionWarningObserver::IdleActionImminent() {
@@ -26,7 +26,7 @@ void IdleActionWarningObserver::IdleActionImminent() {
 
 void IdleActionWarningObserver::IdleActionDeferred() {
   if (warning_dialog_)
-    warning_dialog_->Close();
+    warning_dialog_->CloseDialog();
   warning_dialog_ = NULL;
 }
 

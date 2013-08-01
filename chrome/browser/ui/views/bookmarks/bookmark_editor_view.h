@@ -116,9 +116,6 @@ class BookmarkEditorView : public BookmarkEditor,
   // closed the BookmarkEditorView is deleted.
   void Show(gfx::NativeWindow parent);
 
-  // Closes the dialog.
-  void Close();
-
   // views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point,

@@ -78,7 +78,7 @@ void AppLaunchView::UpdateAppLaunchState(AppLaunchState state) {
 // static
 void AppLaunchView::CloseAppLaunchSplashScreen() {
   if (g_instance) {
-    g_instance->Close();
+    g_instance->GetWidget()->Close();
     g_instance = NULL;
   }
 }
@@ -118,11 +118,6 @@ void AppLaunchView::Show() {
   InitializeWindow();
   // Show the window.
   ShowWindow();
-}
-
-void AppLaunchView::Close() {
-  DCHECK(GetWidget());
-  GetWidget()->Close();
 }
 
 void AppLaunchView::AddChildWebContents() {

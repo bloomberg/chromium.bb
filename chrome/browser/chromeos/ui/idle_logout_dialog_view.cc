@@ -76,7 +76,7 @@ void IdleLogoutDialogView::ShowDialog() {
 // static
 void IdleLogoutDialogView::CloseDialog() {
   if (g_instance)
-    g_instance->Close();
+    g_instance->GetWidget()->Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -91,6 +91,17 @@ ui::ModalType IdleLogoutDialogView::GetModalType() const {
 
 string16 IdleLogoutDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_IDLE_LOGOUT_TITLE);
+}
+
+bool IdleLogoutDialogView::Close() {
+  if (timer_.IsRunning())
+    timer_.Stop();
+
+  // We just closed our dialog. The global
+  // instance is invalid now, set it to null.
+  g_instance = NULL;
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -159,18 +170,6 @@ void IdleLogoutDialogView::Show() {
                IdleLogoutDialogView::provider_->GetCountdownUpdateInterval(),
                this,
                &IdleLogoutDialogView::UpdateCountdown);
-}
-
-void IdleLogoutDialogView::Close() {
-  DCHECK(GetWidget());
-
-  if (timer_.IsRunning())
-    timer_.Stop();
-  GetWidget()->Close();
-
-  // We just closed our dialog. The global
-  // instance is invalid now, set it to null.
-  g_instance = NULL;
 }
 
 void IdleLogoutDialogView::UpdateCountdown() {

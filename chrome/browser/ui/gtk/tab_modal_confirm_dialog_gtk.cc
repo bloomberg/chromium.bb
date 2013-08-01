@@ -32,7 +32,8 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents)
     : delegate_(delegate),
-      window_(NULL) {
+      window_(NULL),
+      closing_(false) {
   dialog_ = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
   GtkWidget* label = gtk_label_new(
       UTF16ToUTF8(delegate->GetMessage()).c_str());
@@ -108,6 +109,10 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
 }
 
 TabModalConfirmDialogGtk::~TabModalConfirmDialogGtk() {
+  // Provide a disposition in case the dialog was closed without accepting or
+  // cancelling.
+  delegate_->Close();
+
   gtk_widget_destroy(dialog_);
 }
 
@@ -120,7 +125,10 @@ void TabModalConfirmDialogGtk::CancelTabModalDialog() {
 }
 
 void TabModalConfirmDialogGtk::CloseDialog() {
-  gtk_widget_destroy(window_);
+  if (!closing_) {
+    closing_ = true;
+    gtk_widget_destroy(window_);
+  }
 }
 
 void TabModalConfirmDialogGtk::OnAccept(GtkWidget* widget) {

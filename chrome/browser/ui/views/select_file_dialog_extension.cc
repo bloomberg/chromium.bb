@@ -32,6 +32,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/base_window.h"
 #include "ui/shell_dialogs/selected_file_info.h"
+#include "ui/views/widget/widget.h"
 
 using apps::ShellWindow;
 using content::BrowserThread;
@@ -156,7 +157,7 @@ void SelectFileDialogExtension::ExtensionTerminated(
                    extension_id));
   }
 
-  dialog->Close();
+  dialog->GetWidget()->Close();
 }
 
 // static

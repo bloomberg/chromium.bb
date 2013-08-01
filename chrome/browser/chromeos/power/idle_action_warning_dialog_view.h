@@ -17,7 +17,7 @@ namespace chromeos {
 class IdleActionWarningDialogView : public views::DialogDelegateView {
  public:
   IdleActionWarningDialogView();
-  void Close();
+  void CloseDialog();
 
   // views::DialogDelegateView:
   virtual ui::ModalType GetModalType() const OVERRIDE;

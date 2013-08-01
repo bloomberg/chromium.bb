@@ -55,6 +55,8 @@ class TabModalConfirmDialogGtk : public TabModalConfirmDialog {
 
   GtkWidget* window_;
 
+  bool closing_;
+
   DISALLOW_COPY_AND_ASSIGN(TabModalConfirmDialogGtk);
 };
 

@@ -45,6 +45,8 @@ class TabModalConfirmDialogMac : public TabModalConfirmDialog,
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE;
 
+  bool closing_;
+
   scoped_ptr<ConstrainedWindowMac> window_;
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
   base::scoped_nsobject<ConstrainedWindowAlert> alert_;

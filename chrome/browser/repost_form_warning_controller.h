@@ -29,6 +29,7 @@ class RepostFormWarningController : public TabModalConfirmDialogDelegate,
 #endif  // defined(TOOLKIT_GTK)
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;
+  virtual void OnClosed() OVERRIDE;
 
   // content::WebContentsObserver methods:
   virtual void BeforeFormRepostWarningShow() OVERRIDE;

@@ -57,7 +57,6 @@ class AppLaunchView : public views::WidgetDelegateView,
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
   void Show();
-  void Close();
 
   // Updates UI state of the app launch splash screen.
   void UpdateState(AppLaunchState state);

@@ -73,7 +73,7 @@ IdleActionWarningDialogView::IdleActionWarningDialogView() : closing_(false) {
       this, ash::Shell::GetPrimaryRootWindow(), NULL)->Show();
 }
 
-void IdleActionWarningDialogView::Close() {
+void IdleActionWarningDialogView::CloseDialog() {
   closing_ = true;
   GetDialogClientView()->CancelWindow();
 }

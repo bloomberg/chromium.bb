@@ -57,7 +57,8 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
 TabModalConfirmDialogMac::TabModalConfirmDialogMac(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents)
-    : delegate_(delegate) {
+    : closing_(false),
+      delegate_(delegate) {
   bridge_.reset([[TabModalConfirmDialogMacBridge alloc]
       initWithDelegate:delegate]);
 
@@ -103,10 +104,16 @@ void TabModalConfirmDialogMac::CancelTabModalDialog() {
 }
 
 void TabModalConfirmDialogMac::CloseDialog() {
-  window_->CloseWebContentsModalDialog();
+  if (!closing_) {
+    closing_ = true;
+    window_->CloseWebContentsModalDialog();
+  }
 }
 
 void TabModalConfirmDialogMac::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
+  // Provide a disposition in case the dialog was closed without accepting or
+  // cancelling.
+  delegate_->Close();
   delete this;
 }

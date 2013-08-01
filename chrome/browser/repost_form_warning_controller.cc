@@ -52,6 +52,10 @@ void RepostFormWarningController::OnCanceled() {
   web_contents()->GetController().CancelPendingReload();
 }
 
+void RepostFormWarningController::OnClosed() {
+  web_contents()->GetController().CancelPendingReload();
+}
+
 void RepostFormWarningController::BeforeFormRepostWarningShow() {
   // Close the dialog if we show an additional dialog, to avoid them
   // stacking up.

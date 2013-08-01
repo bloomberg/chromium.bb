@@ -108,7 +108,7 @@ bool JavaScriptAppModalDialogViews::Accept() {
   return true;
 }
 
-void JavaScriptAppModalDialogViews::OnClose() {
+void JavaScriptAppModalDialogViews::OnClosed() {
   parent_->OnClose();
 }
 

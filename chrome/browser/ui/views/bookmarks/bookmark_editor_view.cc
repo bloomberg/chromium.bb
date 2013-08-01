@@ -229,11 +229,6 @@ void BookmarkEditorView::Show(gfx::NativeWindow parent) {
   title_tf_->RequestFocus();
 }
 
-void BookmarkEditorView::Close() {
-  DCHECK(GetWidget());
-  GetWidget()->Close();
-}
-
 void BookmarkEditorView::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& point,

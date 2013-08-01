@@ -43,7 +43,7 @@ class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual void OnClose() OVERRIDE;
+  virtual void OnClosed() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 

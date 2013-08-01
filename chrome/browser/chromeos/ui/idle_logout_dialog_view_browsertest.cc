@@ -9,6 +9,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/widget/widget.h"
 
 namespace chromeos {
 
@@ -26,7 +27,7 @@ public:
   }
 
   virtual void LogoutCurrentUser(IdleLogoutDialogView* dialog) OVERRIDE {
-    dialog->Close();
+    dialog->GetWidget()->Close();
   }
 
 private:
@@ -77,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, ShowDialogAndCloseView) {
   IdleLogoutDialogView::ShowDialog();
   EXPECT_NO_FATAL_FAILURE(ExpectOpenDialog());
 
-  IdleLogoutDialogView::current_instance()->Close();
+  IdleLogoutDialogView::CloseDialog();
   content::RunAllPendingInMessageLoop();
   ExpectClosedDialog();
 }
@@ -86,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, ShowDialogAndCloseViewClose) {
   IdleLogoutDialogView::ShowDialog();
   EXPECT_NO_FATAL_FAILURE(ExpectOpenDialog());
 
-  IdleLogoutDialogView::current_instance()->Close();
+  IdleLogoutDialogView::CloseDialog();
   content::RunAllPendingInMessageLoop();
   IdleLogoutDialogView::CloseDialog();
 

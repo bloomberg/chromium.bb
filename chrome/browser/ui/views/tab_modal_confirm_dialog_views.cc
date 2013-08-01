@@ -111,6 +111,11 @@ bool TabModalConfirmDialogViews::Accept() {
   return true;
 }
 
+bool TabModalConfirmDialogViews::Close() {
+  delegate_->Close();
+  return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabModalConfirmDialogViews, views::WidgetDelegate implementation:
 

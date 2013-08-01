@@ -27,8 +27,7 @@ using content::WebContents;
 
 ExtensionDialog::ExtensionDialog(extensions::ExtensionHost* host,
                                  ExtensionDialogObserver* observer)
-    : window_(NULL),
-      extension_host_(host),
+    : extension_host_(host),
       observer_(observer) {
   AddRef();  // Balanced in DeleteDelegate();
 
@@ -99,7 +98,7 @@ void ExtensionDialog::InitWindow(ui::BaseWindow* base_window,
                                  int width,
                                  int height) {
   gfx::NativeWindow parent = base_window->GetNativeWindow();
-  window_ = CreateBrowserModalDialogViews(this, parent);
+  views::Widget* window = CreateBrowserModalDialogViews(this, parent);
 
   // Center the window over the browser.
   gfx::Point center = base_window->GetBounds().CenterPoint();
@@ -111,23 +110,15 @@ void ExtensionDialog::InitWindow(ui::BaseWindow* base_window,
       GetDisplayNearestPoint(center).bounds();
   gfx::Rect bounds_rect = gfx::Rect(x, y, width, height);
   bounds_rect.AdjustToFit(screen_rect);
-  window_->SetBounds(bounds_rect);
+  window->SetBounds(bounds_rect);
 
-  window_->Show();
+  window->Show();
   // TODO(jamescook): Remove redundant call to Activate()?
-  window_->Activate();
+  window->Activate();
 }
 
 void ExtensionDialog::ObserverDestroyed() {
   observer_ = NULL;
-}
-
-void ExtensionDialog::Close() {
-  if (!window_)
-    return;
-
-  window_->Close();
-  window_ = NULL;
 }
 
 void ExtensionDialog::MaybeFocusRenderView() {
@@ -225,7 +216,7 @@ void ExtensionDialog::Observe(int type,
       // If we aren't the host of the popup, then disregard the notification.
       if (content::Details<extensions::ExtensionHost>(host()) != details)
         return;
-      Close();
+      GetWidget()->Close();
       break;
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
       if (content::Details<extensions::ExtensionHost>(host()) != details)

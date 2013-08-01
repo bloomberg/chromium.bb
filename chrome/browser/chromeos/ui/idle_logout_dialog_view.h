@@ -47,6 +47,7 @@ class IdleLogoutDialogView : public views::DialogDelegateView {
   virtual int GetDialogButtons() const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual bool Close() OVERRIDE;
 
  private:
   friend class MockIdleLogoutSettingsProvider;
@@ -62,7 +63,6 @@ class IdleLogoutDialogView : public views::DialogDelegateView {
   void InitAndShow();
 
   void Show();
-  void Close();
 
   void UpdateCountdown();
 

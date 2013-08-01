@@ -54,21 +54,28 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   virtual View* CreateFootnoteView();
 
   // For Dialog boxes, if there is a "Cancel" button or no dialog button at all,
-  // this is called when the user presses the "Cancel" button or the Close
-  // button on the window or in the system menu, or presses the Esc key.
-  // This function should return true if the window can be closed after it
-  // returns, or false if it must remain open.
+  // this is called when the user presses the "Cancel" button or the Esc key.
+  // It can also be called on a close action if |Close| has not been
+  // overridden. This function should return true if the window can be closed
+  // after it returns, or false if it must remain open.
   virtual bool Cancel();
 
   // For Dialog boxes, this is called when the user presses the "OK" button,
-  // or the Enter key.  Can also be called on Esc key or close button
-  // presses if there is no "Cancel" button.  This function should return
-  // true if the window can be closed after it returns, or false if it must
-  // remain open.  If |window_closing| is true, it means that this handler is
+  // or the Enter key. It can also be called on a close action if |Close|
+  // has not been overridden. This function should return true if the window
+  // can be closed after it returns, or false if it must remain open.
+  // If |window_closing| is true, it means that this handler is
   // being called because the window is being closed (e.g.  by Window::Close)
   // and there is no Cancel handler, so Accept is being called instead.
   virtual bool Accept(bool window_closing);
   virtual bool Accept();
+
+  // Called when the user closes the window without selecting an option,
+  // e.g. by pressing the close button on the window or using a window manager
+  // gesture. By default, this calls Accept() if the only button in the dialog
+  // is Accept, Cancel() otherwise. This function should return true if the
+  // window can be closed after it returns, or false if it must remain open.
+  virtual bool Close();
 
   // Overridden from ui::DialogModel:
   virtual base::string16 GetDialogLabel() const OVERRIDE;
@@ -101,7 +108,7 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   virtual bool UseNewStyleForThisDialog() const;
 
   // Called when the window has been closed.
-  virtual void OnClose() {}
+  virtual void OnClosed() {}
 
   // A helper for accessing the DialogClientView object contained by this
   // delegate's Window.

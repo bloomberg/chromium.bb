@@ -140,7 +140,7 @@ bool ProfileSigninConfirmationDialogViews::Cancel() {
   return true;
 }
 
-void ProfileSigninConfirmationDialogViews::OnClose() {
+void ProfileSigninConfirmationDialogViews::OnClosed() {
   Cancel();
 }
 

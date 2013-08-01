@@ -42,20 +42,31 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
     close_delegate_ = close_delegate;
   }
 
-  // Accepts the confirmation prompt and calls |OnAccepted|.
+  // Accepts the confirmation prompt and calls |OnAccepted| if no other call
+  // to |Accept|, |Cancel|, |LinkClicked| or |Close| has been made before.
   // This method is safe to call even from an |OnAccepted| or |OnCanceled|
   // callback.
   void Accept();
 
-  // Cancels the confirmation prompt and calls |OnCanceled|.
+  // Cancels the confirmation prompt and calls |OnCanceled| if no other call
+  // to |Accept|, |Cancel|, |LinkClicked| or |Close| has been made before.
   // This method is safe to call even from an |OnAccepted| or |OnCanceled|
   // callback.
   void Cancel();
 
   // Called when the link (if any) is clicked. Calls |OnLinkClicked| and closes
-  // the dialog. The |disposition| specifies how the resulting document should
-  // be loaded (based on the event flags present when the link was clicked).
+  // the dialog if no other call to |Accept|, |Cancel|, |LinkClicked| or
+  // |Close| has been made before. The |disposition| specifies how the
+  // resulting document should be loaded (based on the event flags present when
+  // the link was clicked).
   void LinkClicked(WindowOpenDisposition disposition);
+
+  // Called when the dialog is closed without selecting an option, e.g. by
+  // pressing the close button on the dialog, using a window manager gesture,
+  // closing the parent tab or navigating in the parent tab.
+  // Calls |OnClosed| and closes the dialog if no other call to |Accept|,
+  // |Cancel|, |LinkClicked| or |Close| has been made before.
+  void Close();
 
   // The title of the dialog. Note that the title is not shown on all platforms.
   virtual string16 GetTitle() = 0;
@@ -94,10 +105,9 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
  private:
-  // It is guaranteed that exactly one of |OnAccepted|, |OnCanceled| or
-  // |OnLinkClicked| is eventually called. These method are private to
-  // enforce this guarantee. Access to them is controlled by |Accept|,
-  // |Cancel| and |LinkClicked|.
+  // It is guaranteed that exactly one of the |On...| methods is eventually
+  // called. These method are private to enforce this guarantee. Access to them
+  // is  controlled by |Accept|, |Cancel|, |LinkClicked| and |Close|.
 
   // Called when the user accepts or cancels the dialog, respectively.
   virtual void OnAccepted();
@@ -105,6 +115,9 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
 
   // Called when the user clicks on the link (if any).
   virtual void OnLinkClicked(WindowOpenDisposition disposition);
+
+  // Called when the dialog is closed.
+  virtual void OnClosed();
 
   // Close the dialog.
   void CloseDialog();

@@ -54,9 +54,6 @@ class ExtensionDialog : public views::DialogDelegate,
   // be sent notifications.
   void ObserverDestroyed();
 
-  // Closes the ExtensionDialog.
-  void Close();
-
   // Focus to the render view if possible.
   void MaybeFocusRenderView();
 
@@ -108,9 +105,6 @@ class ExtensionDialog : public views::DialogDelegate,
                                                         Profile* profile);
 
   void InitWindow(ui::BaseWindow* base_window, int width, int height);
-
-  // Window that holds the extension host view.
-  views::Widget* window_;
 
   // Window Title
   string16 window_title_;

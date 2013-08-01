@@ -45,7 +45,7 @@ class EnrollmentDialogView : public views::DialogDelegateView {
   // views::DialogDelegateView overrides
   virtual int GetDialogButtons() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual void OnClose() OVERRIDE;
+  virtual void OnClosed() OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
 
   // views::WidgetDelegate overrides
@@ -112,7 +112,7 @@ bool EnrollmentDialogView::Accept() {
   return true;
 }
 
-void EnrollmentDialogView::OnClose() {
+void EnrollmentDialogView::OnClosed() {
   if (!accepted_)
     return;
   chrome::NavigateParams params(profile_,

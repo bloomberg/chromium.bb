@@ -85,6 +85,15 @@ bool DialogDelegate::Accept() {
   return true;
 }
 
+bool DialogDelegate::Close() {
+  int buttons = GetDialogButtons();
+  if ((buttons & ui::DIALOG_BUTTON_CANCEL) ||
+      (buttons == ui::DIALOG_BUTTON_NONE)) {
+    return Cancel();
+  }
+  return Accept(true);
+}
+
 base::string16 DialogDelegate::GetDialogLabel() const {
   return base::string16();
 }
