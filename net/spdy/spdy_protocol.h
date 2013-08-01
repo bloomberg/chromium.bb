@@ -255,6 +255,13 @@ const char kV3Dictionary[] = {
 };
 const int kV3DictionarySize = arraysize(kV3Dictionary);
 
+// The HTTP/2 connection header prefix, which must be the first bytes
+// sent by the client upon starting an HTTP/2 connection, and which
+// must be followed by a SETTINGS frame.
+const char kHttp2ConnectionHeaderPrefix[] = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
+const int kHttp2ConnectionHeaderPrefixSize =
+    arraysize(kHttp2ConnectionHeaderPrefix);
+
 // Types of SPDY frames.
 enum SpdyFrameType {
   DATA = 0,
