@@ -77,7 +77,6 @@ class AppIndicatorIcon : public StatusIconLinux {
   base::FilePath icon_file_path_;
   int icon_change_count_;
   bool block_activation_;
-  bool has_click_action_replacement_;
 };
 
 }  // namespace libgtk2ui

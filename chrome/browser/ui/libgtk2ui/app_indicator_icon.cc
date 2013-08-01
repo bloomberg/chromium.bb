@@ -132,8 +132,7 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
       gtk_menu_(NULL),
       menu_model_(NULL),
       icon_change_count_(0),
-      block_activation_(false),
-      has_click_action_replacement_(false) {
+      block_activation_(false) {
   EnsureMethodsLoaded();
   tool_tip_ = UTF16ToUTF8(tool_tip);
   SetImage(image);
