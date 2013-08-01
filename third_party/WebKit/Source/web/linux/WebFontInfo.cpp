@@ -32,8 +32,14 @@
 #include "WebFontInfo.h"
 
 #include "WebFontRenderStyle.h"
-#include <fontconfig/fontconfig.h>
 #include "public/platform/linux/WebFontFamily.h"
+#include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicStringHash.h"
+#include <fontconfig/fontconfig.h>
 #include <string.h>
 #include <unicode/utf16.h>
 
@@ -53,80 +59,184 @@ void WebFontInfo::familyForChars(const WebUChar* characters, size_t numCharacter
     return familyForChar(c, preferredLocale, family);
 }
 
-void WebFontInfo::familyForChar(WebUChar32 c, const char* preferredLocale, WebFontFamily* family)
-{
-    FcCharSet* cset = FcCharSetCreate();
-    FcCharSetAddChar(cset, c);
-    FcPattern* pattern = FcPatternCreate();
-
-    FcValue fcvalue;
-    fcvalue.type = FcTypeCharSet;
-    fcvalue.u.c = cset;
-    FcPatternAdd(pattern, FC_CHARSET, fcvalue, FcFalse);
-
-    fcvalue.type = FcTypeBool;
-    fcvalue.u.b = FcTrue;
-    FcPatternAdd(pattern, FC_SCALABLE, fcvalue, FcFalse);
-
-    if (preferredLocale) {
-        FcLangSet* langset = FcLangSetCreate();
-        FcLangSetAdd(langset, reinterpret_cast<const FcChar8 *>(preferredLocale));
-        FcPatternAddLangSet(pattern, FC_LANG, langset);
-        FcLangSetDestroy(langset);
+class CachedFont {
+public:
+    // Note: We pass the charset explicitly as callers
+    // should not create CachedFont entries without knowing
+    // that the FcPattern contains a valid charset.
+    CachedFont(FcPattern* pattern, FcCharSet* charSet)
+        : m_supportedCharacters(charSet)
+    {
+        ASSERT(pattern);
+        ASSERT(charSet);
+        m_family.name = fontName(pattern);
+        m_family.isBold = fontIsBold(pattern);
+        m_family.isItalic = fontIsItalic(pattern);
+    }
+    const WebFontFamily& family() const { return m_family; }
+    bool hasGlyphForCharacter(WebUChar32 c)
+    {
+        return m_supportedCharacters && FcCharSetHasChar(m_supportedCharacters, c);
     }
 
-    FcConfigSubstitute(0, pattern, FcMatchPattern);
-    FcDefaultSubstitute(pattern);
-
-    FcResult result;
-    FcFontSet* fontSet = FcFontSort(0, pattern, 0, 0, &result);
-    FcPatternDestroy(pattern);
-    FcCharSetDestroy(cset);
-
-    if (!fontSet) {
-        family->name = WebCString();
-        family->isBold = false;
-        family->isItalic = false;
-        return;
-    }
-    // Older versions of fontconfig have a bug where they cannot select
-    // only scalable fonts so we have to manually filter the results.
-    for (int i = 0; i < fontSet->nfont; ++i) {
-        FcPattern* current = fontSet->fonts[i];
-        FcBool isScalable;
-
-        if (FcPatternGetBool(current, FC_SCALABLE, 0, &isScalable) != FcResultMatch
-            || !isScalable)
-            continue;
-
-        // fontconfig can also return fonts which are unreadable
-        FcChar8* cFilename;
-        if (FcPatternGetString(current, FC_FILE, 0, &cFilename) != FcResultMatch)
-            continue;
-
-        if (access(reinterpret_cast<char*>(cFilename), R_OK))
-            continue;
-
+private:
+    static WebCString fontName(FcPattern* pattern)
+    {
         FcChar8* familyName;
-        if (FcPatternGetString(current, FC_FAMILY, 0, &familyName) == FcResultMatch) {
-            const char* charFamily = reinterpret_cast<char*>(familyName);
-            family->name = WebCString(charFamily, strlen(charFamily));
-        }
-        int weight;
-        if (FcPatternGetInteger(current, FC_WEIGHT, 0, &weight) == FcResultMatch)
-            family->isBold = weight >= FC_WEIGHT_BOLD;
-        else
-            family->isBold = false;
-        int slant;
-        if (FcPatternGetInteger(current, FC_SLANT, 0, &slant) == FcResultMatch)
-            family->isItalic = slant != FC_SLANT_ROMAN;
-        else
-            family->isItalic = false;
-        FcFontSetDestroy(fontSet);
-        return;
+        if (FcPatternGetString(pattern, FC_FAMILY, 0, &familyName) != FcResultMatch)
+            return WebCString();
+
+        // FCChar8 is unsigned char, so we cast to char for WebCString.
+        const char* charFamily = reinterpret_cast<char*>(familyName);
+        return WebCString(charFamily, strlen(charFamily));
     }
 
-    FcFontSetDestroy(fontSet);
+    static bool fontIsBold(FcPattern* pattern)
+    {
+        int weight;
+        if (FcPatternGetInteger(pattern, FC_WEIGHT, 0, &weight) != FcResultMatch)
+            return false;
+        return weight >= FC_WEIGHT_BOLD;
+    }
+
+    static bool fontIsItalic(FcPattern* pattern)
+    {
+        int slant;
+        if (FcPatternGetInteger(pattern, FC_SLANT, 0, &slant) != FcResultMatch)
+            return false;
+        return slant != FC_SLANT_ROMAN;
+    }
+
+    WebFontFamily m_family;
+    // m_supportedCharaters is owned by the parent
+    // FcFontSet and should never be freed.
+    FcCharSet* m_supportedCharacters;
+};
+
+
+class CachedFontSet {
+    WTF_MAKE_NONCOPYABLE(CachedFontSet);
+public:
+    // CachedFontSet takes ownership of the passed FcFontSet.
+    static PassOwnPtr<CachedFontSet> createForLocale(const char* locale)
+    {
+        FcFontSet* fontSet = createFcFontSetForLocale(locale);
+        return adoptPtr(new CachedFontSet(fontSet));
+    }
+
+    ~CachedFontSet()
+    {
+        m_fallbackList.clear();
+        FcFontSetDestroy(m_fontSet);
+    }
+
+    WebFontFamily familyForChar(WebUChar32 c)
+    {
+        Vector<CachedFont>::iterator itr = m_fallbackList.begin();
+        for (; itr != m_fallbackList.end(); itr++) {
+            if (itr->hasGlyphForCharacter(c))
+                return itr->family();
+        }
+        // The previous code just returned garbage if the user didn't
+        // have the necessary fonts, this seems better than garbage.
+        // Current callers happen to ignore any values with an empty family string.
+        return WebFontFamily();
+    }
+
+private:
+    static FcFontSet* createFcFontSetForLocale(const char* locale)
+    {
+        ASSERT(locale);
+        FcPattern* pattern = FcPatternCreate();
+        // FcChar* is unsigned char* so we have to cast.
+        FcPatternAddString(pattern, FC_LANG, reinterpret_cast<const FcChar8*>(locale));
+        FcConfigSubstitute(0, pattern, FcMatchPattern);
+        FcDefaultSubstitute(pattern);
+
+        // The result parameter returns if any fonts were found.
+        // We already handle 0 fonts correctly, so we ignore the param.
+        FcResult result;
+        FcFontSet* fontSet = FcFontSort(0, pattern, 0, 0, &result);
+        FcPatternDestroy(pattern);
+
+        // The caller will take ownership of this FcFontSet.
+        return fontSet;
+    }
+
+    CachedFontSet(FcFontSet* fontSet)
+        : m_fontSet(fontSet)
+    {
+        fillFallbackList();
+    }
+
+    void fillFallbackList()
+    {
+        ASSERT(m_fallbackList.isEmpty());
+        if (!m_fontSet)
+            return;
+
+        for (int i = 0; i < m_fontSet->nfont; ++i) {
+            FcPattern* pattern = m_fontSet->fonts[i];
+
+            // Ignore any bitmap fonts users may still have installed from last century.
+            FcBool isScalable;
+            if (FcPatternGetBool(pattern, FC_SCALABLE, 0, &isScalable) != FcResultMatch
+                || !isScalable)
+                continue;
+
+            // Ignore any fonts FontConfig knows about, but that we don't have persmision to read.
+            FcChar8* cFilename;
+            if (FcPatternGetString(pattern, FC_FILE, 0, &cFilename) != FcResultMatch)
+                continue;
+            if (access(reinterpret_cast<char*>(cFilename), R_OK))
+                continue;
+
+            // Make sure this font can tell us what characters it has glyphs for.
+            FcCharSet* charSet;
+            if (FcPatternGetCharSet(pattern, FC_CHARSET, 0, &charSet) != FcResultMatch)
+                continue;
+
+            m_fallbackList.append(CachedFont(pattern, charSet));
+        }
+    }
+
+    FcFontSet* m_fontSet; // Owned by this object.
+    // CachedFont has a FcCharset* which points into the FcFontSet.
+    // If the FcFontSet is ever destoryed, the fallbackList
+    // must be cleared first.
+    Vector<CachedFont> m_fallbackList;
+};
+
+class FontSetCache {
+public:
+    static FontSetCache& shared()
+    {
+        DEFINE_STATIC_LOCAL(FontSetCache, cache, ());
+        return cache;
+    }
+
+    WebFontFamily fontFamilyForCharInLocale(WebUChar32 c, const char* locale)
+    {
+        LocaleToCachedFont::iterator itr = m_setsByLocale.find(locale);
+        if (itr == m_setsByLocale.end()) {
+            OwnPtr<CachedFontSet> newEntry = CachedFontSet::createForLocale(locale);
+            itr = m_setsByLocale.add(locale, newEntry.release()).iterator;
+        }
+        return itr.get()->value->familyForChar(c);
+    }
+    // FIXME: We may wish to add a way to prune the cache at a later time.
+
+private:
+    // FIXME: This shouldn't need to be AtomicString, but
+    // currently HashTraits<const char*> isn't smart enough
+    // to hash the string (only does pointer compares).
+    typedef HashMap<AtomicString, OwnPtr<CachedFontSet> > LocaleToCachedFont;
+    LocaleToCachedFont m_setsByLocale;
+};
+
+void WebFontInfo::familyForChar(WebUChar32 c, const char* locale, WebFontFamily* family)
+{
+    *family = FontSetCache::shared().fontFamilyForCharInLocale(c, locale);
 }
 
 void WebFontInfo::renderStyleForStrike(const char* family, int sizeAndStyle, WebFontRenderStyle* out)

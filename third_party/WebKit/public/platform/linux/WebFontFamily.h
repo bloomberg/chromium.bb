@@ -37,6 +37,12 @@
 namespace WebKit {
 
 struct WebFontFamily {
+    WebFontFamily()
+        : isBold(false)
+        , isItalic(false)
+    {
+    }
+
     WebCString name;
     bool isBold;
     bool isItalic;
