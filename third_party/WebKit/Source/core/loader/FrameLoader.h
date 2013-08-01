@@ -143,7 +143,6 @@ public:
 
     bool subframeIsLoading() const;
     void didChangeTitle(DocumentLoader*);
-    void didChangeIcons(IconType);
 
     bool shouldTreatURLAsSrcdocDocument(const KURL&) const;
 

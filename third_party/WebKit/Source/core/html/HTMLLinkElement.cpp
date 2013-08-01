@@ -39,9 +39,11 @@
 #include "core/dom/EventSender.h"
 #include "core/html/HTMLImportsController.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/FetchRequest.h"
 #include "core/loader/cache/ResourceFetcher.h"
+#include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "wtf/StdLibExtras.h"
@@ -563,8 +565,12 @@ void LinkStyle::process()
     if (m_owner->relAttribute().iconType() != InvalidIcon && builder.url().isValid() && !builder.url().isEmpty()) {
         if (!m_owner->shouldLoadLink())
             return;
+        if (!document()->securityOrigin()->canDisplay(builder.url()))
+            return;
+        if (!document()->contentSecurityPolicy()->allowImageFromSource(builder.url()))
+            return;
         if (document()->frame())
-            document()->frame()->loader()->didChangeIcons(m_owner->relAttribute().iconType());
+            document()->frame()->loader()->client()->dispatchDidChangeIcons(m_owner->relAttribute().iconType());
     }
 
     if (!m_owner->loadLink(type, builder.url()))

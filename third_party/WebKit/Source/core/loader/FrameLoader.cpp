@@ -2146,11 +2146,6 @@ void FrameLoader::didChangeTitle(DocumentLoader* loader)
     }
 }
 
-void FrameLoader::didChangeIcons(IconType type)
-{
-    m_client->dispatchDidChangeIcons(type);
-}
-
 void FrameLoader::dispatchDidCommitLoad()
 {
     m_client->dispatchDidCommitLoad();
