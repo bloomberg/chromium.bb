@@ -837,10 +837,11 @@ TimeDelta ChunkDemuxer::GetStartTime() const {
 void ChunkDemuxer::StartWaitingForSeek(TimeDelta seek_time) {
   DVLOG(1) << "StartWaitingForSeek()";
   base::AutoLock auto_lock(lock_);
-  DCHECK(state_ == INITIALIZED || state_ == ENDED || state_ == SHUTDOWN);
+  DCHECK(state_ == INITIALIZED || state_ == ENDED || state_ == SHUTDOWN ||
+         state_ == PARSE_ERROR) << state_;
   DCHECK(seek_cb_.is_null());
 
-  if (state_ == SHUTDOWN)
+  if (state_ == SHUTDOWN || state_ == PARSE_ERROR)
     return;
 
   AbortPendingReads();

@@ -2746,4 +2746,12 @@ TEST_F(ChunkDemuxerTest, AppendWindow) {
   CheckExpectedRanges(kSourceId, "{ [120,300) [420,660) }");
 }
 
+TEST_F(ChunkDemuxerTest, StartWaitingForSeekAfterParseError) {
+  ASSERT_TRUE(InitDemuxer(true, true));
+  EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_DECODE));
+  AppendGarbage();
+  base::TimeDelta seek_time = base::TimeDelta::FromSeconds(50);
+  demuxer_->StartWaitingForSeek(seek_time);
+}
+
 }  // namespace media
