@@ -217,7 +217,8 @@ DirectoryModel.prototype.getFileListSelection = function() {
  * @return {RootType} Root type of current root.
  */
 DirectoryModel.prototype.getCurrentRootType = function() {
-  return PathUtil.getRootType(this.currentDirContents_.getPath());
+  return PathUtil.getRootType(
+      this.currentDirContents_.getDirectoryEntry().fullPath);
 };
 
 /**
@@ -232,7 +233,8 @@ DirectoryModel.prototype.getCurrentRootName = function() {
  * @return {string} Root name.
  */
 DirectoryModel.prototype.getCurrentRootPath = function() {
-  return PathUtil.getRootPath(this.currentDirContents_.getPath());
+  return PathUtil.getRootPath(
+      this.currentDirContents_.getDirectoryEntry().fullPath);
 };
 
 /**
@@ -379,7 +381,7 @@ DirectoryModel.prototype.getCurrentDirectoryURL = function() {
  * @return {string} Path for the current directory.
  */
 DirectoryModel.prototype.getCurrentDirPath = function() {
-  return this.currentDirContents_.getPath();
+  return this.currentDirContents_.getDirectoryEntry().fullPath;
 };
 
 /**

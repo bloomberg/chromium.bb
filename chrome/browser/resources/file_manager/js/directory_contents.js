@@ -170,13 +170,6 @@ DirectoryContents.prototype.replaceContextFileList = function() {
 };
 
 /**
- * @return {string} The path.
- */
-DirectoryContents.prototype.getPath = function() {
-  throw 'Not implemented.';
-};
-
-/**
  * @return {boolean} If the scan is active.
  */
 DirectoryContents.prototype.isScanning = function() {
@@ -347,13 +340,6 @@ DirectoryContentsBasic.prototype.clone = function() {
 };
 
 /**
- * @return {string} Current path.
- */
-DirectoryContentsBasic.prototype.getPath = function() {
-  return this.entry_.fullPath;
-};
-
-/**
  * @return {DirectoryEntry} DirectoryEntry of the current directory.
  */
 DirectoryContentsBasic.prototype.getDirectoryEntry = function() {
@@ -514,13 +500,6 @@ DirectoryContentsDriveSearch.prototype.getLastNonSearchDirectoryEntry =
 };
 
 /**
- * @return {string} The path.
- */
-DirectoryContentsDriveSearch.prototype.getPath = function() {
-  return this.directoryEntry_.fullPath;
-};
-
-/**
  * Start directory scan.
  */
 DirectoryContentsDriveSearch.prototype.scan = function() {
@@ -596,13 +575,6 @@ DirectoryContentsLocalSearch.prototype.__proto__ = DirectoryContents.prototype;
 DirectoryContentsLocalSearch.prototype.clone = function() {
   return new DirectoryContentsLocalSearch(
       this.context_, this.directoryEntry_, this.query_);
-};
-
-/**
- * @return {string} The path.
- */
-DirectoryContentsLocalSearch.prototype.getPath = function() {
-  return this.directoryEntry_.fullPath;
 };
 
 /**
@@ -766,13 +738,6 @@ DirectoryContentsDriveSearchMetadata.prototype.getDirectoryEntry = function() {
 DirectoryContentsDriveSearchMetadata.prototype.getLastNonSearchDirectoryEntry =
     function() {
   return this.driveDirEntry_;
-};
-
-/**
- * @return {string} The path.
- */
-DirectoryContentsDriveSearchMetadata.prototype.getPath = function() {
-  return this.fakeDirEntry_.fullPath;
 };
 
 /**
