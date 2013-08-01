@@ -205,9 +205,6 @@ base::Value* NetLogSpdyGoAwayCallback(SpdyStreamId last_stream_id,
   return dict;
 }
 
-// Maximum number of concurrent streams we will create, unless the server
-// sends a SETTINGS frame with a different value.
-const size_t kInitialMaxConcurrentStreams = 100;
 // The maximum number of concurrent streams we will ever create.  Even if
 // the server permits more, we will never exceed this limit.
 const size_t kMaxConcurrentStreamLimit = 256;
@@ -320,7 +317,7 @@ SpdySession::SpdySession(
     const SpdySessionKey& spdy_session_key,
     const base::WeakPtr<HttpServerProperties>& http_server_properties,
     bool verify_domain_authentication,
-    bool enable_sending_initial_settings,
+    bool enable_sending_initial_data,
     bool enable_credential_frames,
     bool enable_compression,
     bool enable_ping_based_connection_checking,
@@ -364,6 +361,7 @@ SpdySession::SpdySession(
       next_ping_id_(1),
       last_activity_time_(time_func()),
       check_ping_status_pending_(false),
+      send_connection_header_prefix_(false),
       flow_control_state_(FLOW_CONTROL_NONE),
       stream_initial_send_window_size_(kSpdyStreamInitialWindowSize),
       stream_initial_recv_window_size_(stream_initial_recv_window_size == 0 ?
@@ -374,7 +372,7 @@ SpdySession::SpdySession(
       session_unacked_recv_window_bytes_(0),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SPDY_SESSION)),
       verify_domain_authentication_(verify_domain_authentication),
-      enable_sending_initial_settings_(enable_sending_initial_settings),
+      enable_sending_initial_data_(enable_sending_initial_data),
       enable_credential_frames_(enable_credential_frames),
       enable_compression_(enable_compression),
       enable_ping_based_connection_checking_(
@@ -458,6 +456,9 @@ Error SpdySession::InitializeWithSocket(
                                             host_port_pair().ToString()));
   }
 
+  if (protocol_ == kProtoHTTP2Draft04)
+    send_connection_header_prefix_ = true;
+
   if (protocol_ >= kProtoSPDY31) {
     flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
     session_send_window_size_ = kSpdySessionInitialWindowSize;
@@ -490,7 +491,8 @@ Error SpdySession::InitializeWithSocket(
   if (error == OK) {
     DCHECK_NE(availability_state_, STATE_CLOSED);
     connection_->AddLayeredPool(this);
-    SendInitialSettings();
+    if (enable_sending_initial_data_)
+      SendInitialData();
     pool_ = pool;
   } else {
     DcheckClosed();
@@ -672,29 +674,37 @@ void SpdySession::CancelStreamRequest(SpdyStreamRequest* request) {
 }
 
 void SpdySession::ProcessPendingStreamRequests() {
-  while (!max_concurrent_streams_ ||
-         (active_streams_.size() + created_streams_.size() <
-          max_concurrent_streams_)) {
-    bool no_pending_create_streams = true;
-    for (int i = NUM_PRIORITIES - 1; i >= MINIMUM_PRIORITY; --i) {
-      if (!pending_create_stream_queues_[i].empty()) {
-        SpdyStreamRequest* pending_request =
-            pending_create_stream_queues_[i].front();
-        CHECK(pending_request);
-        pending_create_stream_queues_[i].pop_front();
-        no_pending_create_streams = false;
-        DCHECK(!ContainsKey(pending_stream_request_completions_,
-                            pending_request));
-        pending_stream_request_completions_.insert(pending_request);
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&SpdySession::CompleteStreamRequest,
-                       weak_factory_.GetWeakPtr(), pending_request));
-        break;
-      }
+  // Like |max_concurrent_streams_|, 0 means infinite for
+  // |max_requests_to_process|.
+  size_t max_requests_to_process = 0;
+  if (max_concurrent_streams_ != 0) {
+    max_requests_to_process =
+        max_concurrent_streams_ -
+        (active_streams_.size() + created_streams_.size());
+  }
+  for (size_t i = 0;
+       max_requests_to_process == 0 || i < max_requests_to_process; ++i) {
+    bool processed_request = false;
+    for (int j = NUM_PRIORITIES - 1; j >= MINIMUM_PRIORITY; --j) {
+      if (pending_create_stream_queues_[j].empty())
+        continue;
+
+      SpdyStreamRequest* pending_request =
+          pending_create_stream_queues_[j].front();
+      CHECK(pending_request);
+      pending_create_stream_queues_[j].pop_front();
+      processed_request = true;
+      DCHECK(!ContainsKey(pending_stream_request_completions_,
+                          pending_request));
+      pending_stream_request_completions_.insert(pending_request);
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&SpdySession::CompleteStreamRequest,
+                     weak_factory_.GetWeakPtr(), pending_request));
+      break;
     }
-    if (no_pending_create_streams)
-      return;  // there were no streams in any queue
+    if (!processed_request)
+      break;
   }
 }
 
@@ -2348,29 +2358,38 @@ void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,
       stream_id, delta_window_size, it->second.stream->priority());
 }
 
-void SpdySession::SendInitialSettings() {
+void SpdySession::SendInitialData() {
+  DCHECK(enable_sending_initial_data_);
   DCHECK_NE(availability_state_, STATE_CLOSED);
+
+  if (send_connection_header_prefix_) {
+    DCHECK_EQ(protocol_, kProtoHTTP2Draft04);
+    scoped_ptr<SpdyFrame> connection_header_prefix_frame(
+        new SpdyFrame(const_cast<char*>(kHttp2ConnectionHeaderPrefix),
+                      kHttp2ConnectionHeaderPrefixSize,
+                      false /* take_ownership */));
+    // Count the prefix as part of the subsequent SETTINGS frame.
+    EnqueueSessionWrite(HIGHEST, SETTINGS,
+                        connection_header_prefix_frame.Pass());
+  }
 
   // First, notify the server about the settings they should use when
   // communicating with us.
-  if (GetProtocolVersion() >= 2 && enable_sending_initial_settings_) {
-    SettingsMap settings_map;
-    // Create a new settings frame notifying the sever of our
-    // max_concurrent_streams_ and initial window size.
-    settings_map[SETTINGS_MAX_CONCURRENT_STREAMS] =
-        SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
-    if (GetProtocolVersion() > 2 &&
-        stream_initial_recv_window_size_ != kSpdyStreamInitialWindowSize) {
-      settings_map[SETTINGS_INITIAL_WINDOW_SIZE] =
-          SettingsFlagsAndValue(SETTINGS_FLAG_NONE,
-                                stream_initial_recv_window_size_);
-    }
-    SendSettings(settings_map);
+  SettingsMap settings_map;
+  // Create a new settings frame notifying the server of our
+  // max concurrent streams and initial window size.
+  settings_map[SETTINGS_MAX_CONCURRENT_STREAMS] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
+  if (flow_control_state_ >= FLOW_CONTROL_STREAM &&
+      stream_initial_recv_window_size_ != kSpdyStreamInitialWindowSize) {
+    settings_map[SETTINGS_INITIAL_WINDOW_SIZE] =
+        SettingsFlagsAndValue(SETTINGS_FLAG_NONE,
+                              stream_initial_recv_window_size_);
   }
+  SendSettings(settings_map);
 
   // Next, notify the server about our initial recv window size.
-  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION &&
-      enable_sending_initial_settings_) {
+  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
     // Bump up the receive window size to the real initial value. This
     // has to go here since the WINDOW_UPDATE frame sent by
     // IncreaseRecvWindowSize() call uses |buffered_spdy_framer_|.
@@ -2382,30 +2401,27 @@ void SpdySession::SendInitialSettings() {
         kDefaultInitialRecvWindowSize - session_recv_window_size_);
   }
 
-  // Finally, notify the server about the settings they have previously
-  // told us to use when communicating with them.
-  const SettingsMap& settings_map =
+  // Finally, notify the server about the settings they have
+  // previously told us to use when communicating with them (after
+  // applying them).
+  const SettingsMap& server_settings_map =
       http_server_properties_->GetSpdySettings(host_port_pair());
-  if (settings_map.empty())
+  if (server_settings_map.empty())
     return;
 
-  const SpdySettingsIds id = SETTINGS_CURRENT_CWND;
-  SettingsMap::const_iterator it = settings_map.find(id);
-  uint32 value = 0;
-  if (it != settings_map.end())
-    value = it->second.second;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwndSent", value, 1, 200, 100);
+  SettingsMap::const_iterator it =
+      server_settings_map.find(SETTINGS_CURRENT_CWND);
+  uint32 cwnd = (it != server_settings_map.end()) ? it->second.second : 0;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwndSent", cwnd, 1, 200, 100);
 
-  const SettingsMap& settings_map_new =
-      http_server_properties_->GetSpdySettings(host_port_pair());
-  for (SettingsMap::const_iterator i = settings_map_new.begin(),
-           end = settings_map_new.end(); i != end; ++i) {
-    const SpdySettingsIds new_id = i->first;
-    const uint32 new_val = i->second.second;
+  for (SettingsMap::const_iterator it = server_settings_map.begin();
+       it != server_settings_map.end(); ++it) {
+    const SpdySettingsIds new_id = it->first;
+    const uint32 new_val = it->second.second;
     HandleSetting(new_id, new_val);
   }
 
-  SendSettings(settings_map_new);
+  SendSettings(server_settings_map);
 }
 
 

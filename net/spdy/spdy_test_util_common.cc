@@ -401,7 +401,7 @@ HttpNetworkSession* SpdySessionDependencies::SpdyCreateSession(
   params.client_socket_factory = session_deps->socket_factory.get();
   HttpNetworkSession* http_session = new HttpNetworkSession(params);
   SpdySessionPoolPeer pool_peer(http_session->spdy_session_pool());
-  pool_peer.EnableSendingInitialSettings(false);
+  pool_peer.SetEnableSendingInitialData(false);
   return http_session;
 }
 
@@ -413,7 +413,7 @@ HttpNetworkSession* SpdySessionDependencies::SpdyCreateSessionDeterministic(
       session_deps->deterministic_socket_factory.get();
   HttpNetworkSession* http_session = new HttpNetworkSession(params);
   SpdySessionPoolPeer pool_peer(http_session->spdy_session_pool());
-  pool_peer.EnableSendingInitialSettings(false);
+  pool_peer.SetEnableSendingInitialData(false);
   return http_session;
 }
 
@@ -476,7 +476,7 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
   scoped_refptr<HttpNetworkSession> network_session(
       new HttpNetworkSession(params));
   SpdySessionPoolPeer pool_peer(network_session->spdy_session_pool());
-  pool_peer.EnableSendingInitialSettings(false);
+  pool_peer.SetEnableSendingInitialData(false);
   storage_.set_http_transaction_factory(new HttpCache(
       network_session.get(), HttpCache::DefaultBackend::InMemory(0)));
 }
@@ -686,8 +686,8 @@ void SpdySessionPoolPeer::DisableDomainAuthenticationVerification() {
   pool_->verify_domain_authentication_ = false;
 }
 
-void SpdySessionPoolPeer::EnableSendingInitialSettings(bool enabled) {
-  pool_->enable_sending_initial_settings_ = enabled;
+void SpdySessionPoolPeer::SetEnableSendingInitialData(bool enabled) {
+  pool_->enable_sending_initial_data_ = enabled;
 }
 
 SpdyTestUtil::SpdyTestUtil(NextProto protocol)

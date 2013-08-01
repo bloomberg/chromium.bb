@@ -238,23 +238,11 @@ class SpdyWebSocketStreamTest
   }
 
   void InitSession(MockRead* reads, size_t reads_count,
-                   MockWrite* writes, size_t writes_count,
-                   bool throttling) {
+                   MockWrite* writes, size_t writes_count) {
     data_.reset(new OrderedSocketData(reads, reads_count,
                                       writes, writes_count));
     session_deps_.socket_factory->AddSocketDataProvider(data_.get());
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-    SpdySessionPool* spdy_session_pool(http_session_->spdy_session_pool());
-
-    if (throttling) {
-      // Set max concurrent streams to 1.
-      spdy_session_pool->http_server_properties()->SetSpdySetting(
-          host_port_pair_,
-          spdy_settings_id_to_set_,
-          spdy_settings_flags_to_set_,
-          spdy_settings_value_to_set_);
-    }
-
     session_ = CreateInsecureSpdySession(
         http_session_, spdy_session_key_, BoundNetLog());
   }
@@ -327,7 +315,7 @@ TEST_P(SpdyWebSocketStreamTest, Basic) {
     MockRead(SYNCHRONOUS, 0, 8)  // EOF cause OnCloseSpdyStream event.
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), false);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
@@ -399,7 +387,7 @@ TEST_P(SpdyWebSocketStreamTest, DestructionBeforeClose) {
     MockRead(ASYNC, ERR_IO_PENDING, 5)
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), false);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
@@ -461,7 +449,7 @@ TEST_P(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
     MockRead(ASYNC, ERR_IO_PENDING, 6)
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), false);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
@@ -512,24 +500,27 @@ TEST_P(SpdyWebSocketStreamTest, IOPending) {
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(spdy_settings_to_send_));
   MockWrite writes[] = {
-    // Setting throttling make SpdySession send settings frame automatically.
-    CreateMockWrite(*settings_frame.get(), 1),
-    CreateMockWrite(*request_frame_.get(), 3),
-    CreateMockWrite(*message_frame_.get(), 6),
-    CreateMockWrite(*closing_frame_.get(), 9)
+    CreateMockWrite(*request_frame_.get(), 1),
+    CreateMockWrite(*message_frame_.get(), 3),
+    CreateMockWrite(*closing_frame_.get(), 5)
   };
 
   MockRead reads[] = {
-    CreateMockRead(*settings_frame.get(), 2),
-    CreateMockRead(*response_frame_.get(), 4),
-    // Skip sequence 5 (I/O Pending)
-    CreateMockRead(*message_frame_.get(), 7),
-    // Skip sequence 8 (I/O Pending)
-    CreateMockRead(*closing_frame_.get(), 10),
-    MockRead(SYNCHRONOUS, 0, 11)  // EOF cause OnCloseSpdyStream event.
+    CreateMockRead(*settings_frame.get(), 0),
+    CreateMockRead(*response_frame_.get(), 2),
+    CreateMockRead(*message_frame_.get(), 4),
+    CreateMockRead(*closing_frame_.get(), 6),
+    MockRead(SYNCHRONOUS, 0, 7)  // EOF cause OnCloseSpdyStream event.
   };
 
-  InitSession(reads, arraysize(reads), writes, arraysize(writes), true);
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+  http_session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
+
+  session_ = CreateInsecureSpdySession(
+      http_session_, spdy_session_key_, BoundNetLog());
 
   // Create a dummy WebSocketStream which cause ERR_IO_PENDING to another
   // WebSocketStream under test.
@@ -541,6 +532,8 @@ TEST_P(SpdyWebSocketStreamTest, IOPending) {
   GURL block_url("ws://example.com/block");
   ASSERT_EQ(OK,
             block_stream->InitializeStream(block_url, HIGHEST, block_net_log));
+
+  data.RunFor(1);
 
   // Create a WebSocketStream under test.
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
@@ -566,6 +559,7 @@ TEST_P(SpdyWebSocketStreamTest, IOPending) {
 
   SendRequest();
 
+  data.RunFor(7);
   completion_callback_.WaitForResult();
 
   websocket_stream_.reset();
@@ -605,8 +599,8 @@ TEST_P(SpdyWebSocketStreamTest, IOPending) {
   // EOF close SPDY session.
   EXPECT_FALSE(
       HasSpdySession(http_session_->spdy_session_pool(), spdy_session_key_));
-  EXPECT_TRUE(data()->at_read_eof());
-  EXPECT_TRUE(data()->at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 }  // namespace net

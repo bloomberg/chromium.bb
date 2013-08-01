@@ -4276,9 +4276,13 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
                                      net_log, GetParam(), NULL);
   helper.RunPreTestSetup();
 
+  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
+
+  SpdySessionPoolPeer pool_peer(spdy_session_pool);
+  pool_peer.SetEnableSendingInitialData(true);
+
   // Verify that no settings exist initially.
   HostPortPair host_port_pair("www.google.com", helper.port());
-  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
   EXPECT_TRUE(spdy_session_pool->http_server_properties()->GetSpdySettings(
       host_port_pair).empty());
 
@@ -4304,7 +4308,20 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   EXPECT_EQ(2u, spdy_session_pool->http_server_properties()->GetSpdySettings(
       host_port_pair).size());
 
-  // Construct the SETTINGS frame.
+  // Construct the initial SETTINGS frame.
+  SettingsMap initial_settings;
+  initial_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
+  scoped_ptr<SpdyFrame> initial_settings_frame(
+      spdy_util_.ConstructSpdySettings(initial_settings));
+
+  // Construct the initial window update.
+  scoped_ptr<SpdyFrame> initial_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+
+  // Construct the persisted SETTINGS frame.
   const SettingsMap& settings =
       spdy_session_pool->http_server_properties()->GetSpdySettings(
           host_port_pair);
@@ -4315,10 +4332,19 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
 
-  MockWrite writes[] = {
-    CreateMockWrite(*settings_frame),
-    CreateMockWrite(*req),
+  std::vector<MockWrite> writes;
+  if (GetParam().protocol == kProtoHTTP2Draft04) {
+    writes.push_back(
+        MockWrite(ASYNC,
+                  kHttp2ConnectionHeaderPrefix,
+                  kHttp2ConnectionHeaderPrefixSize));
+  }
+  writes.push_back(CreateMockWrite(*initial_settings_frame));
+  if (GetParam().protocol >= kProtoSPDY31) {
+    writes.push_back(CreateMockWrite(*initial_window_update));
   };
+  writes.push_back(CreateMockWrite(*settings_frame));
+  writes.push_back(CreateMockWrite(*req));
 
   // Construct the reply.
   scoped_ptr<SpdyHeaderBlock> reply_headers(new SpdyHeaderBlock());
@@ -4335,7 +4361,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   };
 
   DelayedSocketData data(2, reads, arraysize(reads),
-                         writes, arraysize(writes));
+                         vector_as_array(&writes), writes.size());
   helper.AddData(&data);
   helper.RunDefaultTest();
   helper.VerifyDataConsumed();

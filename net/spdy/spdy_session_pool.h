@@ -211,7 +211,7 @@ class NET_EXPORT SpdySessionPool
 
   // Defaults to true. May be controlled via SpdySessionPoolPeer for tests.
   bool verify_domain_authentication_;
-  bool enable_sending_initial_settings_;
+  bool enable_sending_initial_data_;
   bool force_single_domain_;
   bool enable_ip_pooling_;
   bool enable_credential_frames_;

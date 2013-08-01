@@ -280,7 +280,7 @@ class SpdySessionPoolPeer {
 
   void RemoveAliases(const SpdySessionKey& key);
   void DisableDomainAuthenticationVerification();
-  void EnableSendingInitialSettings(bool enabled);
+  void SetEnableSendingInitialData(bool enabled);
 
  private:
   SpdySessionPool* const pool_;

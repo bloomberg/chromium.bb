@@ -49,6 +49,10 @@ const int kMss = 1430;
 // The 8 is the size of the SPDY frame header.
 const int kMaxSpdyFrameChunkSize = (2 * kMss) - 8;
 
+// Maximum number of concurrent streams we will create, unless the server
+// sends a SETTINGS frame with a different value.
+const size_t kInitialMaxConcurrentStreams = 100;
+
 // Specifies the maxiumum concurrent streams server could send (via push).
 const int kMaxConcurrentPushedStreams = 1000;
 
@@ -202,7 +206,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   SpdySession(const SpdySessionKey& spdy_session_key,
               const base::WeakPtr<HttpServerProperties>& http_server_properties,
               bool verify_domain_authentication,
-              bool enable_sending_initial_settings,
+              bool enable_sending_initial_data,
               bool enable_credential_frames,
               bool enable_compression,
               bool enable_ping_based_connection_checking,
@@ -646,10 +650,15 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   int DoWrite();
   int DoWriteComplete(int result);
 
-  // Send relevant SETTINGS.  This is generally called on connection setup.
-  void SendInitialSettings();
+  // TODO(akalin): Rename the Send* and Write* functions below to
+  // Enqueue*.
 
-  // Helper method to send SETTINGS a frame.
+  // Send initial data. Called when a connection is successfully
+  // established in InitializeWithSocket() and
+  // |enable_sending_initial_data_| is true.
+  void SendInitialData();
+
+  // Helper method to send a SETTINGS frame.
   void SendSettings(const SettingsMap& settings);
 
   // Handle SETTING.  Either when we send settings, or when we receive a
@@ -1056,6 +1065,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // status.
   bool check_ping_status_pending_;
 
+  // Whether to send the (HTTP/2) connection header prefix.
+  bool send_connection_header_prefix_;
+
   // The (version-dependent) flow control state.
   FlowControlState flow_control_state_;
 
@@ -1085,7 +1097,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Outside of tests, these should always be true.
   bool verify_domain_authentication_;
-  bool enable_sending_initial_settings_;
+  bool enable_sending_initial_data_;
   bool enable_credential_frames_;
   bool enable_compression_;
   bool enable_ping_based_connection_checking_;
