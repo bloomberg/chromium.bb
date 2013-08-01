@@ -2127,6 +2127,17 @@ import java.util.Map;
         scheduleTextHandleFadeIn();
     }
 
+    private boolean allowTextHandleFadeIn() {
+        if (mContentViewGestureHandler.isNativeScrolling() ||
+                mContentViewGestureHandler.isNativePinching()) {
+            return false;
+        }
+
+        if (mPopupZoomer.isShowing()) return false;
+
+        return true;
+    }
+
     // Cancels any pending fade in and schedules a new one.
     private void scheduleTextHandleFadeIn() {
         if (!isInsertionHandleShowing() && !isSelectionHandleShowing()) return;
@@ -2135,9 +2146,8 @@ import java.util.Map;
             mDeferredHandleFadeInRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (mContentViewGestureHandler.isNativeScrolling() ||
-                            mContentViewGestureHandler.isNativePinching()) {
-                        // Delay fade in until no longer scrolling or pinching.
+                    if (!allowTextHandleFadeIn()) {
+                        // Delay fade in until it is allowed.
                         scheduleTextHandleFadeIn();
                     } else {
                         if (isSelectionHandleShowing()) {
@@ -2298,6 +2308,7 @@ import java.util.Map;
     private void showDisambiguationPopup(Rect targetRect, Bitmap zoomedBitmap) {
         mPopupZoomer.setBitmap(zoomedBitmap);
         mPopupZoomer.show(targetRect);
+        temporarilyHideTextHandles();
     }
 
     @SuppressWarnings("unused")
