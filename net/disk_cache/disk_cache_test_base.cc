@@ -50,8 +50,7 @@ void DiskCacheTest::TearDown() {
 }
 
 DiskCacheTestWithCache::DiskCacheTestWithCache()
-    : cache_(NULL),
-      cache_impl_(NULL),
+    : cache_impl_(NULL),
       simple_cache_impl_(NULL),
       mem_cache_(NULL),
       mask_(0),
@@ -89,7 +88,7 @@ void DiskCacheTestWithCache::SimulateCrash() {
   ASSERT_EQ(net::OK, cb.GetResult(rv));
   cache_impl_->ClearRefCountForTest();
 
-  delete cache_impl_;
+  cache_.reset();
   EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask_));
 
   CreateBackend(disk_cache::kNoRandom, &cache_thread_);
@@ -230,7 +229,7 @@ void DiskCacheTestWithCache::AddDelay() {
 
 void DiskCacheTestWithCache::TearDown() {
   base::RunLoop().RunUntilIdle();
-  delete cache_;
+  cache_.reset();
   if (cache_thread_.IsRunning())
     cache_thread_.Stop();
 
@@ -243,8 +242,8 @@ void DiskCacheTestWithCache::TearDown() {
 
 void DiskCacheTestWithCache::InitMemoryCache() {
   mem_cache_ = new disk_cache::MemBackendImpl(NULL);
-  cache_ = mem_cache_;
-  ASSERT_TRUE(NULL != cache_);
+  cache_.reset(mem_cache_);
+  ASSERT_TRUE(cache_);
 
   if (size_)
     EXPECT_TRUE(mem_cache_->SetMaxSize(size_));
@@ -274,15 +273,16 @@ void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
 
   if (simple_cache_mode_) {
     net::TestCompletionCallback cb;
-    disk_cache::SimpleBackendImpl* simple_backend =
+    scoped_ptr<disk_cache::SimpleBackendImpl> simple_backend(
         new disk_cache::SimpleBackendImpl(
-            cache_path_, size_, type_, make_scoped_refptr(runner).get(), NULL);
+            cache_path_, size_, type_, make_scoped_refptr(runner).get(), NULL));
     int rv = simple_backend->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
-    cache_ = simple_cache_impl_ = simple_backend;
+    simple_cache_impl_ = simple_backend.get();
+    cache_ = simple_backend.PassAs<disk_cache::Backend>();
     if (simple_cache_wait_for_index_) {
       net::TestCompletionCallback wait_for_index_cb;
-      rv = simple_backend->index()->ExecuteWhenReady(
+      rv = simple_cache_impl_->index()->ExecuteWhenReady(
           wait_for_index_cb.callback());
       ASSERT_EQ(net::OK, wait_for_index_cb.GetResult(rv));
     }
@@ -293,8 +293,8 @@ void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
     cache_impl_ = new disk_cache::BackendImpl(cache_path_, mask_, runner, NULL);
   else
     cache_impl_ = new disk_cache::BackendImpl(cache_path_, runner, NULL);
-  cache_ = cache_impl_;
-  ASSERT_TRUE(NULL != cache_);
+  cache_.reset(cache_impl_);
+  ASSERT_TRUE(cache_);
   if (size_)
     EXPECT_TRUE(cache_impl_->SetMaxSize(size_));
   if (new_eviction_)
@@ -304,5 +304,4 @@ void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
   net::TestCompletionCallback cb;
   int rv = cache_impl_->Init(cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
-  cache_ = cache_impl_;
 }

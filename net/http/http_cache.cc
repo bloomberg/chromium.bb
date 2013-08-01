@@ -73,7 +73,7 @@ HttpCache::BackendFactory* HttpCache::DefaultBackend::InMemory(int max_bytes) {
 }
 
 int HttpCache::DefaultBackend::CreateBackend(
-    NetLog* net_log, disk_cache::Backend** backend,
+    NetLog* net_log, scoped_ptr<disk_cache::Backend>* backend,
     const CompletionCallback& callback) {
   DCHECK_GE(max_bytes_, 0);
   return disk_cache::CreateCacheBackend(type_,
@@ -108,11 +108,11 @@ HttpCache::ActiveEntry::~ActiveEntry() {
 // This structure keeps track of work items that are attempting to create or
 // open cache entries or the backend itself.
 struct HttpCache::PendingOp {
-  PendingOp() : disk_entry(NULL), backend(NULL), writer(NULL) {}
+  PendingOp() : disk_entry(NULL), writer(NULL) {}
   ~PendingOp() {}
 
   disk_cache::Entry* disk_entry;
-  disk_cache::Backend* backend;
+  scoped_ptr<disk_cache::Backend> backend;
   WorkItem* writer;
   CompletionCallback callback;  // BackendCallback.
   WorkItemList pending_queue;
@@ -1111,7 +1111,6 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
 
   // We don't need the callback anymore.
   pending_op->callback.Reset();
-  disk_cache::Backend* backend = pending_op->backend;
 
   if (backend_factory_.get()) {
     // We may end up calling OnBackendCreated multiple times if we have pending
@@ -1119,7 +1118,7 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
     // and the last call clears building_backend_.
     backend_factory_.reset();  // Reclaim memory.
     if (result == OK)
-      disk_cache_.reset(backend);
+      disk_cache_ = pending_op->backend.Pass();
   }
 
   if (!pending_op->pending_queue.empty()) {
@@ -1141,7 +1140,7 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
   }
 
   // The cache may be gone when we return from the callback.
-  if (!item->DoCallback(result, backend))
+  if (!item->DoCallback(result, disk_cache_.get()))
     item->NotifyTransaction(result, NULL);
 }
 

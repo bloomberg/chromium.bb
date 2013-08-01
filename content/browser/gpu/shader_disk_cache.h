@@ -75,7 +75,7 @@ class CONTENT_EXPORT ShaderDiskCache
 
   void CacheCreatedCallback(int rv);
 
-  disk_cache::Backend* backend() { return backend_; }
+  disk_cache::Backend* backend() { return backend_.get(); }
 
   void EntryComplete(void* entry);
   void ReadComplete();
@@ -87,7 +87,7 @@ class CONTENT_EXPORT ShaderDiskCache
   net::CompletionCallback available_callback_;
   net::CompletionCallback cache_complete_callback_;
 
-  disk_cache::Backend* backend_;
+  scoped_ptr<disk_cache::Backend> backend_;
 
   scoped_refptr<ShaderDiskReadHelper> helper_;
   std::map<void*, scoped_refptr<ShaderDiskCacheEntry> > entry_map_;

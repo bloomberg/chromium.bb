@@ -76,7 +76,7 @@ class SimpleCacheDumper {
   State state_;
   base::FilePath input_path_;
   base::FilePath output_path_;
-  disk_cache::Backend* cache_;
+  scoped_ptr<disk_cache::Backend> cache_;
   scoped_ptr<DiskDumper> writer_;
   base::Thread* cache_thread_;
   void* iter_;

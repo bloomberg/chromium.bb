@@ -319,7 +319,7 @@ bool MasterSM::DoInit() {
   DEBUGMSG("Master DoInit\n");
   DCHECK(state_ == MASTER_INITIAL);
 
-  disk_cache::Backend* cache;
+  scoped_ptr<disk_cache::Backend> cache;
   net::TestCompletionCallback cb;
   int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
                                           net::CACHE_BACKEND_DEFAULT, path_, 0,
@@ -330,7 +330,7 @@ bool MasterSM::DoInit() {
     printf("Unable to initialize new files\n");
     return false;
   }
-  cache_.reset(cache);
+  cache_ = cache.Pass();
   writer_ = new CacheDumper(cache_.get());
 
   copied_entries_ = 0;
@@ -594,7 +594,7 @@ class SlaveSM : public BaseSM {
 
 SlaveSM::SlaveSM(const base::FilePath& path, HANDLE channel)
     : BaseSM(channel), iterator_(NULL) {
-  disk_cache::Backend* cache;
+  scoped_ptr<disk_cache::Backend> cache;
   net::TestCompletionCallback cb;
   int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
                                           net::CACHE_BACKEND_BLOCKFILE, path, 0,
@@ -605,7 +605,7 @@ SlaveSM::SlaveSM(const base::FilePath& path, HANDLE channel)
     printf("Unable to open cache files\n");
     return;
   }
-  cache_.reset(reinterpret_cast<disk_cache::BackendImpl*>(cache));
+  cache_.reset(reinterpret_cast<disk_cache::BackendImpl*>(cache.release()));
   cache_->SetUpgradeMode();
 }
 

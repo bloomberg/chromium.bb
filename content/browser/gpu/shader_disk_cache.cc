@@ -507,15 +507,12 @@ ShaderDiskCache::ShaderDiskCache(const base::FilePath& cache_path)
     : cache_available_(false),
       host_id_(0),
       cache_path_(cache_path),
-      is_initialized_(false),
-      backend_(NULL) {
+      is_initialized_(false) {
   ShaderCacheFactory::GetInstance()->AddToCache(cache_path_, this);
 }
 
 ShaderDiskCache::~ShaderDiskCache() {
   ShaderCacheFactory::GetInstance()->RemoveFromCache(cache_path_);
-  if (backend_)
-    delete backend_;
 }
 
 void ShaderDiskCache::Init() {

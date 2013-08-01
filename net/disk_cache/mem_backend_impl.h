@@ -32,7 +32,7 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
   // size the cache can grow to. If zero is passed in as max_bytes, the cache
   // will determine the value to use based on the available memory. The returned
   // pointer can be NULL if a fatal error is found.
-  static Backend* CreateBackend(int max_bytes, net::NetLog* net_log);
+  static scoped_ptr<Backend> CreateBackend(int max_bytes, net::NetLog* net_log);
 
   // Performs general initialization for this current instance of the cache.
   bool Init();

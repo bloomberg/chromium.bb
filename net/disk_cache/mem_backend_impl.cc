@@ -41,15 +41,15 @@ MemBackendImpl::~MemBackendImpl() {
 }
 
 // Static.
-Backend* MemBackendImpl::CreateBackend(int max_bytes, net::NetLog* net_log) {
-  MemBackendImpl* cache = new MemBackendImpl(net_log);
+scoped_ptr<Backend> MemBackendImpl::CreateBackend(int max_bytes,
+                                                  net::NetLog* net_log) {
+  scoped_ptr<MemBackendImpl> cache(new MemBackendImpl(net_log));
   cache->SetMaxSize(max_bytes);
   if (cache->Init())
-    return cache;
+    return cache.PassAs<Backend>();
 
-  delete cache;
   LOG(ERROR) << "Unable to create cache";
-  return NULL;
+  return scoped_ptr<Backend>();
 }
 
 bool MemBackendImpl::Init() {

@@ -480,9 +480,9 @@ void MockDiskCache::CallbackLater(const net::CompletionCallback& callback,
 //-----------------------------------------------------------------------------
 
 int MockBackendFactory::CreateBackend(net::NetLog* net_log,
-                                      disk_cache::Backend** backend,
+                                      scoped_ptr<disk_cache::Backend>* backend,
                                       const net::CompletionCallback& callback) {
-  *backend = new MockDiskCache();
+  backend->reset(new MockDiskCache());
   return net::OK;
 }
 
@@ -576,9 +576,9 @@ int MockDiskCacheNoCB::CreateEntry(const std::string& key,
 //-----------------------------------------------------------------------------
 
 int MockBackendNoCbFactory::CreateBackend(
-    net::NetLog* net_log, disk_cache::Backend** backend,
+    net::NetLog* net_log, scoped_ptr<disk_cache::Backend>* backend,
     const net::CompletionCallback& callback) {
-  *backend = new MockDiskCacheNoCB();
+  backend->reset(new MockDiskCacheNoCB());
   return net::OK;
 }
 
@@ -594,11 +594,11 @@ MockBlockingBackendFactory::~MockBlockingBackendFactory() {
 }
 
 int MockBlockingBackendFactory::CreateBackend(
-    net::NetLog* net_log, disk_cache::Backend** backend,
+    net::NetLog* net_log, scoped_ptr<disk_cache::Backend>* backend,
     const net::CompletionCallback& callback) {
   if (!block_) {
     if (!fail_)
-      *backend = new MockDiskCache();
+      backend->reset(new MockDiskCache());
     return Result();
   }
 
@@ -611,7 +611,7 @@ void MockBlockingBackendFactory::FinishCreation() {
   block_ = false;
   if (!callback_.is_null()) {
     if (!fail_)
-      *backend_ = new MockDiskCache();
+      backend_->reset(new MockDiskCache());
     net::CompletionCallback cb = callback_;
     callback_.Reset();
     cb.Run(Result());  // This object can be deleted here.

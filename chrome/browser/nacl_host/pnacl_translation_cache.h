@@ -77,7 +77,7 @@ class PnaclTranslationCache
   // PnaclTranslationCacheEntry should only use the
   // OpComplete and backend methods on PnaclTranslationCache.
   void OpComplete(PnaclTranslationCacheEntry* entry);
-  disk_cache::Backend* backend() { return disk_cache_; }
+  disk_cache::Backend* backend() { return disk_cache_.get(); }
 
   int InitWithDiskBackend(const base::FilePath& disk_cache_dir,
                           int cache_size,
@@ -92,7 +92,7 @@ class PnaclTranslationCache
 
   void OnCreateBackendComplete(int rv);
 
-  disk_cache::Backend* disk_cache_;
+  scoped_ptr<disk_cache::Backend> disk_cache_;
   CompletionCallback init_callback_;
   bool in_memory_;
   std::map<void*, scoped_refptr<PnaclTranslationCacheEntry> > open_entries_;

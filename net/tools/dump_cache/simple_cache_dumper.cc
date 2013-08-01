@@ -24,7 +24,6 @@ SimpleCacheDumper::SimpleCacheDumper(base::FilePath input_path,
     : state_(STATE_NONE),
       input_path_(input_path),
       output_path_(output_path),
-      cache_(NULL),
       writer_(new DiskDumper(output_path)),
       cache_thread_(new base::Thread("CacheThead")),
       iter_(NULL),
@@ -36,7 +35,6 @@ SimpleCacheDumper::SimpleCacheDumper(base::FilePath input_path,
 }
 
 SimpleCacheDumper::~SimpleCacheDumper() {
-  delete(cache_);
 }
 
 int SimpleCacheDumper::Run() {
@@ -140,8 +138,8 @@ int SimpleCacheDumper::DoCreateCacheComplete(int rv) {
   if (rv < 0)
     return rv;
 
-  reinterpret_cast<disk_cache::BackendImpl*>(cache_)->SetUpgradeMode();
-  reinterpret_cast<disk_cache::BackendImpl*>(cache_)->SetFlags(
+  reinterpret_cast<disk_cache::BackendImpl*>(cache_.get())->SetUpgradeMode();
+  reinterpret_cast<disk_cache::BackendImpl*>(cache_.get())->SetFlags(
       disk_cache::kNoRandom);
 
   state_ = STATE_OPEN_ENTRY;
@@ -267,8 +265,7 @@ void SimpleCacheDumper::OnIOComplete(int rv) {
 
   if (rv != ERR_IO_PENDING) {
     rv_ = rv;
-    delete cache_;
-    cache_ = NULL;
+    cache_.reset();
     base::MessageLoop::current()->Quit();
   }
 }

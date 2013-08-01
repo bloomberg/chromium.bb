@@ -1924,12 +1924,12 @@ TEST(HttpCache, DeleteCacheWaitingForBackend) {
   // We cannot call FinishCreation because the factory itself will go away with
   // the cache, so grab the callback and attempt to use it.
   net::CompletionCallback callback = factory->callback();
-  disk_cache::Backend** backend = factory->backend();
+  scoped_ptr<disk_cache::Backend>* backend = factory->backend();
 
   cache.reset();
   base::MessageLoop::current()->RunUntilIdle();
 
-  *backend = NULL;
+  backend->reset();
   callback.Run(net::ERR_ABORTED);
 }
 

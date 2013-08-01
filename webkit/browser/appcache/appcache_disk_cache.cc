@@ -22,7 +22,7 @@ class AppCacheDiskCache::CreateBackendCallbackShim
     : public base::RefCounted<CreateBackendCallbackShim> {
  public:
   explicit CreateBackendCallbackShim(AppCacheDiskCache* object)
-      : backend_ptr_(NULL), appcache_diskcache_(object) {
+      : appcache_diskcache_(object) {
   }
 
   void Cancel() {
@@ -34,13 +34,12 @@ class AppCacheDiskCache::CreateBackendCallbackShim
       appcache_diskcache_->OnCreateBackendComplete(rv);
   }
 
-  disk_cache::Backend* backend_ptr_;  // Accessed directly.
+  scoped_ptr<disk_cache::Backend> backend_ptr_;  // Accessed directly.
 
  private:
   friend class base::RefCounted<CreateBackendCallbackShim>;
 
   ~CreateBackendCallbackShim() {
-    delete backend_ptr_;
   }
 
   AppCacheDiskCache* appcache_diskcache_;  // Unowned pointer.
@@ -285,8 +284,7 @@ int AppCacheDiskCache::Init(net::CacheType cache_type,
 
 void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
   if (rv == net::OK) {
-    disk_cache_.reset(create_backend_callback_->backend_ptr_);
-    create_backend_callback_->backend_ptr_ = NULL;
+    disk_cache_ = create_backend_callback_->backend_ptr_.Pass();
   }
   create_backend_callback_ = NULL;
 

@@ -50,9 +50,11 @@ class Backend;
 NET_EXPORT int CreateCacheBackend(net::CacheType type,
                                   net::BackendType backend_type,
                                   const base::FilePath& path,
-                                  int max_bytes, bool force,
+                                  int max_bytes,
+                                  bool force,
                                   base::MessageLoopProxy* thread,
-                                  net::NetLog* net_log, Backend** backend,
+                                  net::NetLog* net_log,
+                                  scoped_ptr<Backend>* backend,
                                   const net::CompletionCallback& callback);
 
 // The root interface for a disk cache instance.

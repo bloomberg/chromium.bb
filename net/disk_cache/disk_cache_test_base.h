@@ -146,7 +146,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
 
   // cache_ will always have a valid object, regardless of how the cache was
   // initialized. The implementation pointers can be NULL.
-  disk_cache::Backend* cache_;
+  scoped_ptr<disk_cache::Backend> cache_;
   disk_cache::BackendImpl* cache_impl_;
   disk_cache::SimpleBackendImpl* simple_cache_impl_;
   disk_cache::MemBackendImpl* mem_cache_;

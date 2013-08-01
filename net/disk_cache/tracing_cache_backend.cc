@@ -176,8 +176,8 @@ EntryProxy::~EntryProxy() {
   }
 }
 
-TracingCacheBackend::TracingCacheBackend(Backend* backend)
-  : backend_(backend) {
+TracingCacheBackend::TracingCacheBackend(scoped_ptr<Backend> backend)
+  : backend_(backend.Pass()) {
 }
 
 TracingCacheBackend::~TracingCacheBackend() {

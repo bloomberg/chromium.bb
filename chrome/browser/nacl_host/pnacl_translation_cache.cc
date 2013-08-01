@@ -304,10 +304,9 @@ void PnaclTranslationCache::OpComplete(PnaclTranslationCacheEntry* entry) {
 
 //////////////////////////////////////////////////////////////////////
 // Construction and cache backend initialization
-PnaclTranslationCache::PnaclTranslationCache()
-    : disk_cache_(NULL), in_memory_(false) {}
+PnaclTranslationCache::PnaclTranslationCache() : in_memory_(false) {}
 
-PnaclTranslationCache::~PnaclTranslationCache() { delete disk_cache_; }
+PnaclTranslationCache::~PnaclTranslationCache() {}
 
 int PnaclTranslationCache::InitWithDiskBackend(
     const base::FilePath& cache_dir,

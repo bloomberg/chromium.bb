@@ -19,7 +19,7 @@ class EntryProxy;
 class NET_EXPORT TracingCacheBackend : public Backend,
     public base::SupportsWeakPtr<TracingCacheBackend> {
  public:
-  explicit TracingCacheBackend(Backend* backend);
+  explicit TracingCacheBackend(scoped_ptr<Backend> backend);
 
   virtual net::CacheType GetCacheType() const OVERRIDE;
   virtual int32 GetEntryCount() const OVERRIDE;

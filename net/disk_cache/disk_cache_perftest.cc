@@ -165,7 +165,7 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
 
   ASSERT_TRUE(CleanupCacheDir());
   net::TestCompletionCallback cb;
-  disk_cache::Backend* cache;
+  scoped_ptr<disk_cache::Backend> cache;
   int rv = disk_cache::CreateCacheBackend(
       net::DISK_CACHE, net::CACHE_BACKEND_BLOCKFILE, cache_path_, 0, false,
       cache_thread.message_loop_proxy().get(), NULL, &cache, cb.callback());
@@ -178,10 +178,10 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
   TestEntries entries;
   int num_entries = 1000;
 
-  EXPECT_TRUE(TimeWrite(num_entries, cache, &entries));
+  EXPECT_TRUE(TimeWrite(num_entries, cache.get(), &entries));
 
   base::MessageLoop::current()->RunUntilIdle();
-  delete cache;
+  cache.reset();
 
   ASSERT_TRUE(file_util::EvictFileFromSystemCache(
               cache_path_.AppendASCII("index")));
@@ -199,12 +199,11 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
       cache_thread.message_loop_proxy().get(), NULL, &cache, cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
 
-  EXPECT_TRUE(TimeRead(num_entries, cache, entries, true));
+  EXPECT_TRUE(TimeRead(num_entries, cache.get(), entries, true));
 
-  EXPECT_TRUE(TimeRead(num_entries, cache, entries, false));
+  EXPECT_TRUE(TimeRead(num_entries, cache.get(), entries, false));
 
   base::MessageLoop::current()->RunUntilIdle();
-  delete cache;
 }
 
 // Creating and deleting "entries" on a block-file is something quite frequent

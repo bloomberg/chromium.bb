@@ -89,7 +89,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     // The implementation must not access the factory object after invoking the
     // |callback| because the object can be deleted from within the callback.
     virtual int CreateBackend(NetLog* net_log,
-                              disk_cache::Backend** backend,
+                              scoped_ptr<disk_cache::Backend>* backend,
                               const CompletionCallback& callback) = 0;
   };
 
@@ -109,7 +109,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
 
     // BackendFactory implementation.
     virtual int CreateBackend(NetLog* net_log,
-                              disk_cache::Backend** backend,
+                              scoped_ptr<disk_cache::Backend>* backend,
                               const CompletionCallback& callback) OVERRIDE;
 
    private:

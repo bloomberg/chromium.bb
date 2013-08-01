@@ -2025,17 +2025,17 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyDoomSparseEntry) {
 // way to simulate a race is to execute what we want on the callback.
 class SparseTestCompletionCallback: public net::TestCompletionCallback {
  public:
-  explicit SparseTestCompletionCallback(disk_cache::Backend* cache)
-      : cache_(cache) {
+  explicit SparseTestCompletionCallback(scoped_ptr<disk_cache::Backend> cache)
+      : cache_(cache.Pass()) {
   }
 
  private:
   virtual void SetResult(int result) OVERRIDE {
-    delete cache_;
+    cache_.reset();
     TestCompletionCallback::SetResult(result);
   }
 
-  disk_cache::Backend* cache_;
+  scoped_ptr<disk_cache::Backend> cache_;
   DISALLOW_COPY_AND_ASSIGN(SparseTestCompletionCallback);
 };
 
@@ -2063,13 +2063,11 @@ TEST_F(DiskCacheEntryTest, DoomSparseEntry2) {
   EXPECT_EQ(9, cache_->GetEntryCount());
 
   entry->Close();
-  SparseTestCompletionCallback cb(cache_);
-  int rv = cache_->DoomEntry(key, cb.callback());
+  disk_cache::Backend* cache = cache_.get();
+  SparseTestCompletionCallback cb(cache_.Pass());
+  int rv = cache->DoomEntry(key, cb.callback());
   EXPECT_EQ(net::ERR_IO_PENDING, rv);
   EXPECT_EQ(net::OK, cb.WaitForResult());
-
-  // TearDown will attempt to delete the cache_.
-  cache_ = NULL;
 }
 
 void DiskCacheEntryTest::PartialSparseEntry() {

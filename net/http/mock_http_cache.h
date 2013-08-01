@@ -152,7 +152,7 @@ class MockDiskCache : public disk_cache::Backend {
 class MockBackendFactory : public net::HttpCache::BackendFactory {
  public:
   virtual int CreateBackend(net::NetLog* net_log,
-                            disk_cache::Backend** backend,
+                            scoped_ptr<disk_cache::Backend>* backend,
                             const net::CompletionCallback& callback) OVERRIDE;
 };
 
@@ -206,7 +206,7 @@ class MockDiskCacheNoCB : public MockDiskCache {
 class MockBackendNoCbFactory : public net::HttpCache::BackendFactory {
  public:
   virtual int CreateBackend(net::NetLog* net_log,
-                            disk_cache::Backend** backend,
+                            scoped_ptr<disk_cache::Backend>* backend,
                             const net::CompletionCallback& callback) OVERRIDE;
 };
 
@@ -217,14 +217,14 @@ class MockBlockingBackendFactory : public net::HttpCache::BackendFactory {
   virtual ~MockBlockingBackendFactory();
 
   virtual int CreateBackend(net::NetLog* net_log,
-                            disk_cache::Backend** backend,
+                            scoped_ptr<disk_cache::Backend>* backend,
                             const net::CompletionCallback& callback) OVERRIDE;
 
   // Completes the backend creation. Any blocked call will be notified via the
   // provided callback.
   void FinishCreation();
 
-  disk_cache::Backend** backend() { return backend_; }
+  scoped_ptr<disk_cache::Backend>* backend() { return backend_; }
   void set_fail(bool fail) { fail_ = fail; }
 
   const net::CompletionCallback& callback() { return callback_; }
@@ -232,7 +232,7 @@ class MockBlockingBackendFactory : public net::HttpCache::BackendFactory {
  private:
   int Result() { return fail_ ? net::ERR_FAILED : net::OK; }
 
-  disk_cache::Backend** backend_;
+  scoped_ptr<disk_cache::Backend>* backend_;
   net::CompletionCallback callback_;
   bool block_;
   bool fail_;
