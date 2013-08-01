@@ -244,22 +244,6 @@ class GetVolumeMetadataFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Implements the chrome.fileBrowserPrivate.getStrings method.
-// Used to get strings for the file manager from JavaScript.
-class GetStringsFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getStrings",
-                             FILEBROWSERPRIVATE_GETSTRINGS)
-
-  GetStringsFunction();
-
- protected:
-  virtual ~GetStringsFunction();
-
-  // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
 // Read setting value.
 class GetPreferencesFunction : public SyncExtensionFunction {
  public:
