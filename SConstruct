@@ -1979,7 +1979,7 @@ pre_base_env.AddMethod(MakeGTestEnv)
 
 def MakeUntrustedNativeEnv(env):
   native_env = nacl_env.Clone()
-  if native_env.Bit('bitcode'):
+  if native_env.Bit('bitcode') and not native_env.Bit('target_mips32'):
     native_env = native_env.PNaClGetNNaClEnv()
   return native_env
 

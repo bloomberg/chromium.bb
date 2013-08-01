@@ -816,8 +816,38 @@ if not env.Bit('validator_ragel') and env.Bit('target_x86'):
   env.AddNodeToTestSuite(node, ['medium_tests', 'validator_tests'],
                          'run_dfa_validator_hello_world_test')
 
-unaligned_data_nexe = env.File(os.path.join(arch_testdata_dir,
-                                            'unaligned_data.nexe'))
+if env.Bit('target_mips32'):
+  rodata_region_start = 0x10020000
+  text_region_start = 0x00020000
+  untrusted_env = env.MakeUntrustedNativeEnv()
+  unaligned_data_objs = env.ComponentObject('arch/mips/unaligned_data_test.S')
+  unaligned_data_nexe = untrusted_env.ComponentProgram(
+      'unaligned_data.nexe',
+      unaligned_data_objs,
+      LINKFLAGS=['-nostdlib',
+                 '--pnacl-allow-native', '-arch', 'mips32',
+                 untrusted_env.TextSwitch('0x%x' % text_region_start),
+                 # Use arbitrary non-page-aligned address.
+                 untrusted_env.RodataSwitch(
+                     '0x%x' % (rodata_region_start + 0x94))],
+      ASFLAGS=['--pnacl-allow-native', '-arch', 'mips32'])
+
+  rodata_region_start_irt = 0x3eef0000
+  text_region_start_irt = 0x0fc00000
+  unaligned_data_irt_nexe = untrusted_env.ComponentProgram(
+      'unaligned_data_irt.nexe',
+      unaligned_data_objs,
+      LINKFLAGS=['-nostdlib',
+                 '--pnacl-allow-native', '-arch', 'mips32',
+                 untrusted_env.TextSwitch('0x%x' % text_region_start_irt),
+                 untrusted_env.RodataSwitch(
+                     '0x%x' % (rodata_region_start_irt))],
+      ASFLAGS=['--pnacl-allow-native', '-arch', 'mips32'])
+else:
+  unaligned_data_nexe = env.File(os.path.join(arch_testdata_dir,
+                                              'unaligned_data.nexe'))
+  unaligned_data_irt_nexe = env.File(os.path.join(arch_testdata_dir,
+                                                  'unaligned_data_irt.nexe'))
 
 node = env.CommandSelLdrTestNacl('unaligned_data.out', unaligned_data_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_unaligned_data_test')
@@ -825,8 +855,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_unaligned_data_test')
 node = env.CommandSelLdrTestNacl(
     'unaligned_data_irt.out',
     unaligned_data_nexe,
-    sel_ldr_flags=['-B', env.File(os.path.join(arch_testdata_dir,
-                                               'unaligned_data_irt.nexe'))]
+    sel_ldr_flags=['-B', unaligned_data_irt_nexe]
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_unaligned_data_irt_test')
 
