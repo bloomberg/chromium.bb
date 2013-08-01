@@ -80,9 +80,14 @@ typedef unsigned short uint16_t;
 typedef int int32_t;
 typedef unsigned int uint32_t;
 typedef unsigned __int64 uint64_t;
+#else
+#include <stdint.h> // For int32_t
 #endif
 
 namespace WebKit {
+
+// UTF-32 character type
+typedef int32_t WebUChar32;
 
 // UTF-16 character type
 #if defined(WIN32)

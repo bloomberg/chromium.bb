@@ -48,17 +48,15 @@ void WebFontInfo::setSubpixelPositioning(bool subpixelPositioning)
 
 void WebFontInfo::familyForChars(const WebUChar* characters, size_t numCharacters, const char* preferredLocale, WebFontFamily* family)
 {
+    WebUChar32 c;
+    U16_GET(characters, 0, 0, numCharacters, c);
+    return familyForChar(c, preferredLocale, family);
+}
+
+void WebFontInfo::familyForChar(WebUChar32 c, const char* preferredLocale, WebFontFamily* family)
+{
     FcCharSet* cset = FcCharSetCreate();
-    for (size_t i = 0; i < numCharacters; ++i) {
-        if (U16_IS_SURROGATE(characters[i])
-         && U16_IS_SURROGATE_LEAD(characters[i])
-         && i != numCharacters - 1
-         && U16_IS_TRAIL(characters[i + 1])) {
-              FcCharSetAddChar(cset, U16_GET_SUPPLEMENTARY(characters[i], characters[i+1]));
-          i++;
-        } else
-              FcCharSetAddChar(cset, characters[i]);
-    }
+    FcCharSetAddChar(cset, c);
     FcPattern* pattern = FcPatternCreate();
 
     FcValue fcvalue;

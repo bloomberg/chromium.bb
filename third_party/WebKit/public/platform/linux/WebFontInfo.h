@@ -47,16 +47,17 @@ public:
     // a parameter for controlling this.
     WEBKIT_EXPORT static void setSubpixelPositioning(bool);
 
-    // Return a font family which provides glyphs for the Unicode code points
-    // specified by |utf16|
-    //   characters: a native-endian UTF16 string
-    //   numCharacters: the number of 16-bit words in |utf16|
+    // Return a font family which provides a glyph for the Unicode code point
+    // specified by character.
+    //   character: a UTF-32 code point
     //   preferredLocale: preferred locale identifier for the |characters|
     //                    (e.g. "en", "ja", "zh-CN")
     //
-    // Returns: the font family or an empty string if the request could not be
-    // satisfied.
+    // Returns: the font family or an empty string if the request could not be satisfied.
     // Returns: the font family instance. The instance has an empty font name if the request could not be satisfied.
+    WEBKIT_EXPORT static void familyForChar(const WebUChar32 character, const char* preferredLocale, WebFontFamily*);
+
+    // DEPRECATED
     WEBKIT_EXPORT static void familyForChars(const WebUChar* characters, size_t numCharacters, const char* preferredLocale, WebFontFamily*);
 
     // Fill out the given WebFontRenderStyle with the user's preferences for
