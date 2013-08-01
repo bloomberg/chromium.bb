@@ -338,8 +338,14 @@
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_RIGHT" file="common/textbutton_pressed_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER" file="throbber.png" />
       <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_TRAY_ICON_PRESSED" file="mac/tray_icon_pressed.png"/>
-        <structure type="chrome_scaled_image" name="IDR_TRAY_ICON_REGULAR" file="mac/tray_icon_regular.png"/>
+        <structure type="chrome_scaled_image" name="IDR_TRAY_ATTENTION" file="mac/notification_tray_attention.png"/>
+        <structure type="chrome_scaled_image" name="IDR_TRAY_ATTENTION_PRESSED" file="mac/notification_tray_attention_pressed.png"/>
+        <structure type="chrome_scaled_image" name="IDR_TRAY_DO_NOT_DISTURB_ATTENTION" file="mac/notification_tray_do_not_disturb_attention.png"/>
+        <structure type="chrome_scaled_image" name="IDR_TRAY_DO_NOT_DISTURB_ATTENTION_PRESSED" file="mac/notification_tray_do_not_disturb_attention_pressed.png"/>
+        <structure type="chrome_scaled_image" name="IDR_TRAY_DO_NOT_DISTURB_EMPTY" file="mac/notification_tray_do_not_disturb_empty.png"/>
+        <structure type="chrome_scaled_image" name="IDR_TRAY_DO_NOT_DISTURB_EMPTY_PRESSED" file="mac/notification_tray_do_not_disturb_empty_pressed.png"/>
+        <structure type="chrome_scaled_image" name="IDR_TRAY_EMPTY" file="mac/notification_tray_empty.png"/>
+        <structure type="chrome_scaled_image" name="IDR_TRAY_EMPTY_PRESSED" file="mac/notification_tray_empty_pressed.png"/>
       </if>
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_CENTER" file="common/window_bottom_center.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="common/window_bottom_left_corner.png" />

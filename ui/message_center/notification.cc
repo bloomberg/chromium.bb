@@ -59,6 +59,9 @@ Notification::Notification(NotificationType type,
       extension_id_(extension_id),
       serial_number_(g_next_serial_number_++),
       optional_fields_(optional_fields),
+      shown_as_popup_(false),
+      is_read_(false),
+      is_expanded_(false),
       delegate_(delegate) {}
 
 Notification::Notification(const Notification& other)

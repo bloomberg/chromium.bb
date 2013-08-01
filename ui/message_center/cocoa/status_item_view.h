@@ -35,6 +35,9 @@ MESSAGE_CENTER_EXPORT
   // The unread count number to be drawn next to the icon.
   size_t unreadCount_;
 
+  // Whether or not we are to display the quiet mode version of the status icon.
+  BOOL quietMode_;
+
   // Whether or not to force the highlight pattern to be drawn.
   BOOL highlight_;
 
@@ -44,15 +47,23 @@ MESSAGE_CENTER_EXPORT
 }
 
 @property(copy, nonatomic) message_center::StatusItemClickedCallack callback;
-@property(nonatomic) size_t unreadCount;
 @property(nonatomic) BOOL highlight;
 
 // Designated initializer. Creates a new NSStatusItem in the system menubar.
 - (id)init;
 
+// Sets the unread count and quiet mode status of the icon.
+- (void)setUnreadCount:(size_t)unreadCount withQuietMode:(BOOL)quietMode;
+
 // Removes the status item from the menubar. Must be called to break the
 // retain cycle between self and the NSStatusItem view.
 - (void)removeItem;
+
+@end
+
+@interface MCStatusItemView (TestingAPI)
+
+- (size_t)unreadCount;
 
 @end
 

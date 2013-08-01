@@ -38,7 +38,7 @@ class MessageCenterTrayBridgeTest : public ui::CocoaTest {
   scoped_ptr<MessageCenterTrayBridge> bridge_;
 };
 
-TEST_F(MessageCenterTrayBridgeTest, StatusItemOnlyWithNotifications) {
+TEST_F(MessageCenterTrayBridgeTest, StatusItemOnlyAfterFirstNotification) {
   EXPECT_FALSE(status_item());
 
   message_center::RichNotificationData data;
@@ -65,5 +65,5 @@ TEST_F(MessageCenterTrayBridgeTest, StatusItemOnlyWithNotifications) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(status_item());
+  EXPECT_TRUE(status_item());
 }

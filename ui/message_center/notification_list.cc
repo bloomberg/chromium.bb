@@ -315,11 +315,10 @@ void NotificationList::SetQuietModeInternal(bool quiet_mode) {
   quiet_mode_ = quiet_mode;
   if (quiet_mode_) {
     for (Notifications::iterator iter = notifications_.begin();
-         iter != notifications_.end(); ++iter) {
-      (*iter)->set_is_read(true);
+         iter != notifications_.end();
+         ++iter) {
       (*iter)->set_shown_as_popup(true);
     }
-    unread_count_ = 0;
   }
 }
 
@@ -354,10 +353,10 @@ void NotificationList::PushNotification(scoped_ptr<Notification> notification) {
   if (!state_inherited) {
     // TODO(mukai): needs to distinguish if a notification is dismissed by
     // the quiet mode or user operation.
-    notification->set_is_read(quiet_mode_);
+    notification->set_is_read(false);
     notification->set_shown_as_popup(message_center_visible_ || quiet_mode_);
-    if (!quiet_mode_ && notification->priority() > MIN_PRIORITY)
-        ++unread_count_;
+    if (notification->priority() > MIN_PRIORITY)
+      ++unread_count_;
   }
   // Take ownership. The notification can only be removed from the list
   // in EraseNotification(), which will delete it.

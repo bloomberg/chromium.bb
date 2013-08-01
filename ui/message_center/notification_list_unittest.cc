@@ -606,9 +606,6 @@ TEST_F(NotificationListTest, QuietMode) {
   AddPriorityNotification(MAX_PRIORITY);
   EXPECT_EQ(3u, notification_list()->NotificationCount());
   EXPECT_EQ(0u, GetPopupCounts());
-  // TODO(mukai): fix here when notification_list distinguish dismiss by quiet
-  // mode and by user operation.
-  EXPECT_EQ(0u, notification_list()->unread_count());
 
   notification_list()->SetQuietMode(false);
   AddNotification();

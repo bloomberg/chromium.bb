@@ -31,13 +31,12 @@ const CGFloat kUnreadCountMinY = 4;
 // Whether or not the status item should be drawn highlighted.
 - (BOOL)shouldHighlight;
 
-// Returns an autoreleased, styled string for the unread count.
-- (NSAttributedString*)unreadCountString;
+- (int)getTrayResourceId;
+
 @end
 
 @implementation MCStatusItemView
 
-@synthesize unreadCount = unreadCount_;
 @synthesize highlight = highlight_;
 
 - (id)init {
@@ -57,6 +56,10 @@ const CGFloat kUnreadCountMinY = 4;
   statusItem_.reset();
 }
 
+- (size_t)unreadCount {
+  return unreadCount_;
+}
+
 - (message_center::StatusItemClickedCallack)callback {
   return callback_.get();
 }
@@ -65,21 +68,12 @@ const CGFloat kUnreadCountMinY = 4;
   callback_.reset(Block_copy(callback));
 }
 
-- (void)setUnreadCount:(size_t)unreadCount {
+- (void)setUnreadCount:(size_t)unreadCount withQuietMode:(BOOL)quietMode {
   unreadCount_ = unreadCount;
+  quietMode_ = quietMode;
 
   NSRect frame = [self frame];
   frame.size.width = kStatusItemLength;
-  NSAttributedString* countString = [self unreadCountString];
-  if (countString) {
-    // Get the subpixel bounding rectangle for the string. -size doesn't yield
-    // correct results for pixel-precise drawing, since it doesn't use the
-    // device metrics.
-    NSRect boundingRect =
-        [countString boundingRectWithSize:NSZeroSize
-                                  options:NSStringDrawingUsesDeviceMetrics];
-    frame.size.width += roundf(NSWidth(boundingRect)) + kMargin;
-  }
   [self setFrame:frame];
 
   [self setNeedsDisplay:YES];
@@ -127,10 +121,10 @@ const CGFloat kUnreadCountMinY = 4;
   [statusItem_ drawStatusBarBackgroundInRect:frame
                                withHighlight:highlight];
 
+  int resource_id = [self getTrayResourceId];
   // Draw the icon.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNativeImageNamed(
-      highlight ? IDR_TRAY_ICON_PRESSED : IDR_TRAY_ICON_REGULAR).ToNSImage();
+  NSImage* image = rb.GetNativeImageNamed(resource_id).ToNSImage();
   NSSize size = [image size];
   NSRect drawRect = NSMakeRect(kMargin,
                                floorf((NSHeight(frame) - size.height) / 2),
@@ -140,14 +134,6 @@ const CGFloat kUnreadCountMinY = 4;
            fromRect:NSZeroRect
           operation:NSCompositeSourceOver
            fraction:1.0];
-
-  // Draw the unread count.
-  NSAttributedString* countString = [self unreadCountString];
-  if (countString) {
-    NSPoint countPoint = NSMakePoint(
-        NSMaxX(drawRect) + kUnreadCountPadding, kUnreadCountMinY);
-    [countString drawAtPoint:countPoint];
-  }
 }
 
 - (NSArray*)accessibilityActionNames {
@@ -169,24 +155,22 @@ const CGFloat kUnreadCountMinY = 4;
   return highlight_ || inMouseEventSequence_;
 }
 
-- (NSAttributedString*)unreadCountString {
-  if (unreadCount_ == 0)
-    return nil;
-
-  NSString* count = nil;
-  if (unreadCount_ > 9)
-    count = @"9+";
-  else
-    count = [NSString stringWithFormat:@"%" PRIuS, unreadCount_];
-
-  NSColor* fontColor = [self shouldHighlight] ? [NSColor whiteColor]
-                                              : [NSColor blackColor];
-  NSDictionary* attributes = @{
-      NSFontAttributeName: [NSFont fontWithName:@"Helvetica-Bold" size:12],
-      NSForegroundColorAttributeName: fontColor,
+- (int)getTrayResourceId {
+  BOOL highlight = [self shouldHighlight];
+  BOOL hasUnreadItems = unreadCount_ > 0;
+  int kResourceIds[2][2][2] = {
+    {
+      { IDR_TRAY_EMPTY, IDR_TRAY_EMPTY_PRESSED },
+      { IDR_TRAY_ATTENTION, IDR_TRAY_ATTENTION_PRESSED },
+    },
+    {
+      { IDR_TRAY_DO_NOT_DISTURB_EMPTY,
+        IDR_TRAY_DO_NOT_DISTURB_EMPTY_PRESSED },
+      { IDR_TRAY_DO_NOT_DISTURB_ATTENTION,
+        IDR_TRAY_DO_NOT_DISTURB_ATTENTION_PRESSED },
+    },
   };
-  return [[[NSAttributedString alloc] initWithString:count
-                                          attributes:attributes] autorelease];
+  return kResourceIds[quietMode_][hasUnreadItems][highlight];
 }
 
 @end

@@ -52,30 +52,21 @@ TEST_F(StatusItemViewTest, Callback) {
 TEST_F(StatusItemViewTest, UnreadCount) {
   CGFloat initial_width = NSWidth([view_ frame]);
 
-  CGFloat width = initial_width;
-  [view_ setUnreadCount:2];
+  [view_ setUnreadCount:2 withQuietMode:NO];
   [view_ display];
-  EXPECT_GT(NSWidth([view_ frame]), width);
-  width = NSWidth([view_ frame]);
+  EXPECT_EQ(NSWidth([view_ frame]), initial_width);
 
-  [view_ setUnreadCount:10];
+  [view_ setUnreadCount:0 withQuietMode:NO];
   [view_ display];
-  EXPECT_GT(NSWidth([view_ frame]), width);
-  width = NSWidth([view_ frame]);
+  EXPECT_EQ(NSWidth([view_ frame]), initial_width);
 
-  CGFloat max_width = width;
-
-  [view_ setUnreadCount:0];
+  [view_ setUnreadCount:1000 withQuietMode:YES];
   [view_ display];
-  EXPECT_LT(NSWidth([view_ frame]), width);
-  width = NSWidth([view_ frame]);
-  EXPECT_CGFLOAT_EQ(width, initial_width);
+  EXPECT_EQ(NSWidth([view_ frame]), initial_width);
 
-  [view_ setUnreadCount:1000];
+  [view_ setUnreadCount:0 withQuietMode:YES];
   [view_ display];
-  EXPECT_GT(NSWidth([view_ frame]), width);
-  width = NSWidth([view_ frame]);
-  EXPECT_CGFLOAT_EQ(width, max_width);
+  EXPECT_EQ(NSWidth([view_ frame]), initial_width);
 }
 
 TEST_F(StatusItemViewTest, Highlight) {
