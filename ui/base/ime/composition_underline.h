@@ -12,7 +12,7 @@
 namespace ui {
 
 // Intentionally keep sync with WebKit::WebCompositionUnderline defined in:
-// third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h
+// third_party/WebKit/public/web/WebCompositionUnderline.h
 struct CompositionUnderline {
   CompositionUnderline()
     : start_offset(0),

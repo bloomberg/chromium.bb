@@ -8,7 +8,7 @@
 namespace ui {
 
 // Intentionally keep sync with WebKit::WebTextInputType defined in:
-// third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h
+// third_party/WebKit/public/web/WebTextInputType.h
 enum TextInputType {
   // Input caret is not in an editable node, no input method shall be used.
   TEXT_INPUT_TYPE_NONE,

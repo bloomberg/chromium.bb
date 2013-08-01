@@ -31,7 +31,7 @@ UI_EXPORT int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
                                           unichar* characterIgnoringModifiers);
 
 // This implementation cribbed from:
-//   third_party/WebKit/Source/WebKit/chromium/src/mac/WebInputEventFactory.mm
+//   third_party/WebKit/Source/web/mac/WebInputEventFactory.mm
 // Converts |event| into a |KeyboardCode|.  The mapping is not direct as the Mac
 // has a different notion of key codes.
 UI_EXPORT KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event);
