@@ -1404,3 +1404,17 @@ crbug.com/252120 [ Mac ] fast/table/table-all-rowspans-height-distribution-in-ro
 # Text and image both
 crbug.com/252120 [ Mac ] tables/mozilla/bugs/bug73321.html [ NeedsRebaseline ]
 crbug.com/252120 [ Win Mac ] tables/mozilla_expected_failures/bugs/bug23847.html [ NeedsRebaseline ]
+
+crbug.com/259083 compositing/geometry/clipping-foreground.html [ NeedsRebaseline ]
+crbug.com/259083 compositing/geometry/foreground-layer.html [ NeedsRebaseline ]
+crbug.com/259083 compositing/geometry/repaint-foreground-layer.html [ NeedsRebaseline ]
+crbug.com/259083 fast/clip/overflow-border-radius-combinations.html [ NeedsRebaseline ]
+crbug.com/259083 fast/clip/overflow-border-radius-composited.html [ NeedsRebaseline ]
+crbug.com/259083 fast/clip/overflow-border-radius-transformed.html [ NeedsRebaseline ]
+crbug.com/259083 fast/forms/linebox-overflow-in-textarea-padding.html [ NeedsRebaseline ]
+crbug.com/259083 fast/inline-block/tricky-baseline.html [ NeedsRebaseline ]
+crbug.com/259083 fast/overflow/line-clamp.html [ NeedsRebaseline ]
+crbug.com/259083 fast/sub-pixel/ellipsis-zoom.html [ NeedsRebaseline ]
+crbug.com/259083 virtual/softwarecompositing/geometry/clipping-foreground.html [ NeedsRebaseline ]
+crbug.com/259083 virtual/softwarecompositing/geometry/foreground-layer.html [ NeedsRebaseline ]
+crbug.com/259083 virtual/softwarecompositing/geometry/repaint-foreground-layer.html [ NeedsRebaseline ]
