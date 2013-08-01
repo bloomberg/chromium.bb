@@ -42,8 +42,7 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
  */
 NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
                                struct NaClDesc *ndp,
-                               uint8_t addr_bits,
-                               uintptr_t mem_start);
+                               struct NaClApp *nap);
 
 /*
  * Loads an ELF object after NaClMemoryProtection() has been called.

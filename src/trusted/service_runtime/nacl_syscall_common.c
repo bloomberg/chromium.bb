@@ -1621,6 +1621,9 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
        * cause problems due to scheduler races.
        *
        * Use NaClDynamicRegionCreate to mark region as allocated.
+       *
+       * See NaClElfFileMapSegment in elf_util.c for corresponding
+       * mmap-based main executable loading.
        */
       uintptr_t image_sys_addr;
       NaClValidationStatus validator_status = NaClValidationFailed;
@@ -1703,17 +1706,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
         /*
          * Remove scratch mapping.
          */
-#if NACL_WINDOWS
-        sys_ret = (*NACL_VTBL(NaClDesc, ndp)->
-                   UnmapUnsafe)(ndp, (void *) image_sys_addr, length);
-#else
-        sys_ret = munmap((void *) image_sys_addr, length);
-#endif
-        if (0 != sys_ret) {
-          NaClLog(LOG_FATAL,
-                  "NaClSysMmap: validated internal copy,"
-                  " but could not unmap\n");
-        }
+        NaClDescUnmapUnsafe(ndp, (void *) image_sys_addr, length);
         /*
          * We must succeed in mapping into the untrusted executable
          * space, since otherwise it would mean that the temporary

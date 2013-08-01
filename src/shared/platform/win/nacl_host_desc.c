@@ -306,6 +306,19 @@ static void NaClflProtectAndDesiredAccessMap(int prot,
     /* PROT_READ | PROT_WRITE */
     M(PAGE_EXECUTE_READ, FILE_MAP_COPY, NULL),
 
+    /*
+     * NB: PAGE_EXECUTE_WRITECOPY is not supported on Server 2003 or
+     * XP, which means that the mmap will fail.  The behavior of
+     * PAGE_EXECUTE_WRITECOPY is the same as PAGE_EXECUTE_READ, so we
+     * just use that (possibly for backward compatibility / eventual
+     * transition?).
+     *
+     * Even with PAGE_EXECUTE_WRITECOPY, the PROT_WRITE | PROT_EXEC
+     * case where we are asking for FILE_MAP_COPY | FILE_MAP_EXECUTE
+     * seems to always fail, with GetLastError() yielding 87
+     * (ERROR_INVALID_PARAMETER).  This may be due to antivirus.
+     */
+
     /* PROT_EXEC */
     M(PAGE_EXECUTE_READ, FILE_MAP_READ | FILE_MAP_EXECUTE, NULL),
     /* PROT_READ | PROT_EXEC */
@@ -646,16 +659,28 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
     net_offset = offset + chunk_offset;
     net_offset_high = (uint32_t) (net_offset >> 32);
     net_offset_low = (uint32_t) net_offset;
+    NaClLog(4,
+            "NaClHostDescMap: MapViewOfFileEx(hMap=%d, dwDesiredAccess=0x%x,"
+            " net_offset_high = 0x%08x, net_offset_low = 0x%08x,"
+            " chunk_size = 0x%"NACL_PRIxS", chunk_addr = 0x%"NACL_PRIxPTR"\n",
+            hMap, dwDesiredAccess, net_offset_high, net_offset_low,
+            chunk_size, chunk_addr);
     map_result = (uintptr_t) MapViewOfFileEx(hMap,
                                              dwDesiredAccess,
                                              net_offset_high,
                                              net_offset_low,
                                              chunk_size,
                                              (void *) chunk_addr);
+    NaClLog(3,
+            "NaClHostDescMap: map_result %"NACL_PRIxPTR
+            ", chunk_addr %"NACL_PRIxPTR
+            ", addr + chunk_offset %"NACL_PRIxPTR"\n",
+            map_result, chunk_addr, (addr + chunk_offset));
     if ((addr + chunk_offset) != map_result) {
       DWORD err = GetLastError();
       NaClLog(LOG_INFO,
-              "MapViewOfFileEx failed at 0x%08x, got 0x%08x, err %x\n",
+              "MapViewOfFileEx failed at 0x%08"NACL_PRIxPTR
+              ", got 0x%08"NACL_PRIxPTR", err %x\n",
               addr + chunk_offset,
               map_result,
               err);
@@ -804,7 +829,7 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
   }
 
   NaClLog(1,
-          "NaClHostDescOpen: CreateFileA(path=%s, desired_access=%d,"
+          "NaClHostDescOpen: CreateFileA(path=%s, desired_access=0x%x,"
           " share_mode=ALL, security_attributes=NULL, creation_disposition=%d,"
           " flags_and_attributes=%d, template_file=NULL)\n",
           path, dwDesiredAccess, dwCreationDisposition, dwFlagsAndAttributes);

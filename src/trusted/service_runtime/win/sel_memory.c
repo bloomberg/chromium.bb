@@ -211,8 +211,8 @@ int NaClPageAllocRandomized(void **p, size_t num_bytes) {
   return neg_errno;
 }
 
-uintptr_t NaClProtectChunkSize(uintptr_t start,
-                               uintptr_t end) {
+static uintptr_t NaClProtectChunkSize(uintptr_t start,
+                                      uintptr_t end) {
   uintptr_t chunk_end;
 
   chunk_end = NaClRoundAllocPage(start + 1);
@@ -224,9 +224,27 @@ uintptr_t NaClProtectChunkSize(uintptr_t start,
 
 
 /*
+ * Change memory protection.
+ *
  * This is critical to make the text region non-writable, and the data
  * region read/write but no exec.  Of course, some kernels do not
  * respect the lack of PROT_EXEC.
+ *
+ * NB: this function signature is likely to need to change.  In
+ * particular, when on Windows, if the memory originated from a memory
+ * mapping, whether the file was MAP_SHARED or MAP_PRIVATE and thus
+ * whether the dwDesiredAccess used in the MapViewOfFileEx contained
+ * FILE_MAP_WRITE or FILE_MAP_COPY determines whether the right
+ * newProtection below should be PAGE_READWRITE or PAGE_WRITECOPY.
+ * So, we need to have either extend prot to include a PROT_CoW, or
+ * otherwise some way to look up whether the region had what level of
+ * access when MapViewOfFileEx was invoked.
+ *
+ * For now, we implement a "fallback" mechanism on windows, where if
+ * PAGE_READWRITE fails, we retry with PAGE_WRITECOPY.  Fortunately,
+ * this is only needed when setting up memory protection for the BSS
+ * segment during program loading, when the executable was deemed to
+ * be safe-for-mapping.
  */
 int NaClMprotect(void *addr, size_t len, int prot) {
   uintptr_t start_addr;
@@ -255,29 +273,35 @@ int NaClMprotect(void *addr, size_t len, int prot) {
   }
   end_addr = start_addr + len;
 
+#define M(P)                                                      \
+  do {                                                            \
+    NaClLog(2, "NaClMprotect: newProtection %s, 0x%x\n", #P, P);  \
+    newProtection = P;                                            \
+  } while (0)
+
   switch (prot) {
     case PROT_EXEC: {
-      newProtection = PAGE_EXECUTE;
+      M(PAGE_EXECUTE);
       break;
     }
-    case PROT_EXEC|PROT_READ: {
-      newProtection = PAGE_EXECUTE_READ;
+    case PROT_EXEC | PROT_READ: {
+      M(PAGE_EXECUTE_READ);
       break;
     }
-    case PROT_EXEC|PROT_READ|PROT_WRITE: {
-      newProtection = PAGE_EXECUTE_READWRITE;
+    case PROT_EXEC | PROT_READ | PROT_WRITE: {
+      M(PAGE_EXECUTE_READWRITE);
       break;
     }
     case PROT_READ: {
-      newProtection = PAGE_READONLY;
+      M(PAGE_READONLY);
       break;
     }
-    case PROT_READ|PROT_WRITE: {
-      newProtection = PAGE_READWRITE;
+    case PROT_READ | PROT_WRITE: {
+      M(PAGE_READWRITE);
       break;
     }
     case PROT_NONE: {
-      newProtection = PAGE_NOACCESS;
+      M(PAGE_NOACCESS);
       break;
     }
     default: {
@@ -285,7 +309,7 @@ int NaClMprotect(void *addr, size_t len, int prot) {
       return -EINVAL;
     }
   }
-  NaClLog(2, "NaClMprotect: newProtection = 0x%x\n", newProtection);
+#undef M
   /*
    * VirtualProtect region cannot span allocations: all addresses from
    * [lpAddress, lpAddress+dwSize) must be in one region of memory
@@ -296,25 +320,45 @@ int NaClMprotect(void *addr, size_t len, int prot) {
        cur_addr < end_addr;
        cur_addr += cur_chunk_size,
            cur_chunk_size = NaClProtectChunkSize(cur_addr, end_addr)) {
-    NaClLog(5,
+    NaClLog(7,
             "NaClMprotect: VirtualProtect(0x%016"NACL_PRIxPTR","
             " 0x%"NACL_PRIxPTR", 0x%x, *)\n",
             cur_addr, cur_chunk_size, newProtection);
 
     if (newProtection != PAGE_NOACCESS) {
-      res = VirtualProtect((void*) cur_addr,
+      res = VirtualProtect((void *) cur_addr,
                            cur_chunk_size,
                            newProtection,
                            &oldProtection);
+
+      if (!res && newProtection == PAGE_READWRITE) {
+        NaClLog(4,
+                "NaClMprotect: VirtualProtect(0x%016"NACL_PRIxPTR","
+                " 0x%"NACL_PRIxPTR", 0x%x, *) failed,"
+                " trying CoW fallback\n",
+                cur_addr, cur_chunk_size, newProtection);
+        res = VirtualProtect((void *) cur_addr,
+                             cur_chunk_size,
+                             PAGE_WRITECOPY,
+                             &oldProtection);
+        if (!res) {
+          NaClLog(4,
+                  "NaClMprotect: VirtualProtect with PAGE_WRITECOPY failed,"
+                  " trying VirtualAlloc\n");
+        }
+      }
+
       if (!res) {
         void *p;
-        NaClLog(5, "NaClMprotect: ... failed; trying VirtualAlloc instead\n");
         p = VirtualAlloc((void*) cur_addr,
                          cur_chunk_size,
                          MEM_COMMIT,
                          newProtection);
         if (p != (void*) cur_addr) {
-          NaClLog(2, "NaClMprotect: ... failed\n");
+          NaClLog(2,
+                  "NaClMprotect: VirtualAlloc(0x%016"NACL_PRIxPTR","
+                  " 0x%"NACL_PRIxPTR", MEM_COMMIT, 0x%x) failed\n",
+                  cur_addr, cur_chunk_size, newProtection);
           return -NaClXlateSystemError(GetLastError());
         }
       }
@@ -334,7 +378,6 @@ int NaClMprotect(void *addr, size_t len, int prot) {
   NaClLog(2, "NaClMprotect: done\n");
   return 0;
 }
-
 
 int NaClMadvise(void *start, size_t length, int advice) {
   int       err;
@@ -366,7 +409,7 @@ int NaClMadvise(void *start, size_t length, int advice) {
            cur_addr < end_addr;
            cur_addr += cur_chunk_size,
                cur_chunk_size = NaClProtectChunkSize(cur_addr, end_addr)) {
-        NaClLog(5,
+        NaClLog(7,
                 ("NaClMadvise: MADV_DONTNEED"
                  " -> VirtualAlloc(0x%016"NACL_PRIxPTR","
                  " 0x%"NACL_PRIxPTR", MEM_RESET, PAGE_NOACCESS)\n"),

@@ -332,7 +332,7 @@ NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
             "Error code 0x%x\n",
             ret);
   }
-  subret = NaClElfImageLoad(image, ndp, nap->addr_bits, nap->mem_start);
+  subret = NaClElfImageLoad(image, ndp, nap);
   if (LOAD_OK != subret) {
     ret = subret;
     goto done;
@@ -374,8 +374,14 @@ NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
    */
   NaClFillEndOfTextRegion(nap);
 
-  NaClLog(2, "Validating image\n");
-  subret = NaClValidateImage(nap);
+  if (nap->main_exe_prevalidated) {
+    NaClLog(2, "Main executable segment hit validation cache and mapped in,"
+            " skipping validation.\n");
+    subret = LOAD_OK;
+  } else {
+    NaClLog(2, "Validating image\n");
+    subret = NaClValidateImage(nap);
+  }
   NaClPerfCounterMark(&time_load_file,
                       NACL_PERF_IMPORTANT_PREFIX "ValidateImg");
   NaClPerfCounterIntervalLast(&time_load_file);
@@ -394,7 +400,7 @@ NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
   NaClLoadSpringboard(nap);
 
   /*
-   * NaClMemoryProtect also initializes the mem_map w/ information
+   * NaClMemoryProtection also initializes the mem_map w/ information
    * about the memory pages and their current protection value.
    *
    * The contents of the dynamic text region will get remapped as

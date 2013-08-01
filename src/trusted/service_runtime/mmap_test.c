@@ -14,6 +14,8 @@
 # include <mach/mach.h>
 #endif
 
+#include "native_client/src/shared/platform/nacl_log.h"
+
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -107,6 +109,7 @@ int main(int argc, char **argv) {
    * 4. rw  Stack
    * There is no dynamic code area in this case.
    */
+  NaClAppPrintDetails(&state, NaClLogGetGio());
   /* Check the initial mappings. */
   mem_map = &state.mem_map;
   ASSERT_EQ(mem_map->nvalid, 5);

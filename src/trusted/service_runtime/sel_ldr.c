@@ -175,6 +175,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->bootstrap_channel = NULL;
   nap->secure_service = NULL;
   nap->irt_loaded = 0;
+  nap->main_exe_prevalidated = 0;
 
   nap->manifest_proxy = NULL;
   nap->kernel_service = NULL;
@@ -1000,6 +1001,14 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
 
   free(nap->aux_info);
   nap->aux_info = aux;
+
+  /*
+   * Check / Mark the nexe binary as OK to attempt memory mapping.
+   *
+   * TODO(bsy): change needed to get NaClFileToken and resolve to file
+   * path information, set NaClRichFileInfo, and stash via
+   * NaClSetFileOriginInfo, then set NACL_DESC_FLAGS_MMAP_EXEC_OK.
+   */
 
   suberr = NACL_FI_VAL("load_module", NaClErrorCode,
                        NaClAppLoadFile(nexe_binary, nap));

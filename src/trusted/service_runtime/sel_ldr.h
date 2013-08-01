@@ -225,6 +225,17 @@ struct NaClApp {
    */
   int irt_loaded;  /* bool */
 
+  /*
+   * The main NaCl executable may already be validated during ELF
+   * loading, where after a validation cache hit the code gets mmapped
+   * into memory if the file descriptor is "blessed" as referring to a
+   * file which the embedding environment guarantees to be effectively
+   * immutable.  If it did not validate or the file descriptor is not
+   * blessed, then the code is read into memory, and we will validate
+   * it later in the code path, in NaClAppLoadFileAslr.
+   */
+  int main_exe_prevalidated;  /* bool */
+
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
 

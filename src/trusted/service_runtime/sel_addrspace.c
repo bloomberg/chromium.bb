@@ -148,7 +148,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
             ("NaClMemoryProtection: "
              "NaClMprotect(0x%08"NACL_PRIxPTR", "
              "0x%08"NACL_PRIxS", 0x%x) failed, "
-             "error %d (trampoline)\n"),
+             "error %d (trampoline + code)\n"),
             start_addr, region_size, PROT_READ | PROT_EXEC,
             err);
     return LOAD_MPROTECT_FAIL;
@@ -216,7 +216,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
               ("NaClMemoryProtection: "
                "NaClMprotect(0x%08"NACL_PRIxPTR", "
                "0x%08"NACL_PRIxS", 0x%x) failed, "
-               "error %d (data)\n"),
+               "error %d (rodata)\n"),
               start_addr, region_size, PROT_READ,
               err);
       return LOAD_MPROTECT_FAIL;
