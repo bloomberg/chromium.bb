@@ -49,12 +49,14 @@ protected:
     virtual PassRefPtr<Event> getLastEvent() = 0;
     virtual void registerWithDispatcher() = 0;
     virtual void unregisterWithDispatcher() = 0;
+    virtual bool isNullEvent(Event*) = 0;
 
 private:
     void fireDeviceEvent(Timer<DeviceSensorEventController>*);
 
     Document* m_document;
     bool m_isActive;
+    bool m_needsCheckingNullEvents;
     Timer<DeviceSensorEventController> m_timer;
 };
 

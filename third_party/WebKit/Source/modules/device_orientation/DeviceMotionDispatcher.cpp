@@ -29,11 +29,12 @@
  */
 
 #include "config.h"
-#include "DeviceMotionDispatcher.h"
+#include "modules/device_orientation/DeviceMotionDispatcher.h"
 
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "public/platform/Platform.h"
+#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
@@ -69,20 +70,24 @@ void DeviceMotionDispatcher::startListening()
 void DeviceMotionDispatcher::stopListening()
 {
     WebKit::Platform::current()->setDeviceMotionListener(0);
+    m_lastDeviceMotionData.clear();
 }
 
 void DeviceMotionDispatcher::didChangeDeviceMotion(const WebKit::WebDeviceMotionData& motion)
 {
     m_lastDeviceMotionData = DeviceMotionData::create(motion);
-    bool needsPurge = false;
-    for (size_t i = 0; i < m_controllers.size(); ++i) {
-        if (m_controllers[i])
-            static_cast<DeviceMotionController*>(m_controllers[i])->didChangeDeviceMotion(m_lastDeviceMotionData.get());
-        else
-            needsPurge = true;
+
+    {
+        TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);
+        // Don't fire controllers removed or added during event dispatch.
+        size_t size = m_controllers.size();
+        for (size_t i = 0; i < size; ++i) {
+            if (m_controllers[i])
+                static_cast<DeviceMotionController*>(m_controllers[i])->didChangeDeviceMotion(m_lastDeviceMotionData.get());
+        }
     }
 
-    if (needsPurge)
+    if (m_needsPurge)
         purgeControllers();
 }
 

@@ -34,6 +34,8 @@
 namespace WebCore {
 
 DeviceSensorEventDispatcher::DeviceSensorEventDispatcher()
+    : m_needsPurge(false)
+    , m_isDispatching(false)
 {
 }
 
@@ -52,17 +54,27 @@ void DeviceSensorEventDispatcher::addController(DeviceSensorEventController* con
 
 void DeviceSensorEventDispatcher::removeController(DeviceSensorEventController* controller)
 {
-    // Do not actually remove controller from the vector, instead zero them out.
-    // The zeros are removed after didChangeDeviceMotion has dispatched all events.
-    // This is to prevent re-entrancy case when a controller is destroyed while in the
-    // didChangeDeviceMotion method.
+    // Do not actually remove the controller from the vector, instead zero them out.
+    // The zeros are removed in these two cases:
+    // 1. either immediately if we are not dispatching any events,
+    // 2. or after didChangeDeviceMotion/Orientation has dispatched all events.
+    // This is to correctly handle the re-entrancy case when a controller is destroyed
+    // while in the didChangeDeviceMotion/Orientation method.
     size_t index = m_controllers.find(controller);
-    if (index != notFound)
-        m_controllers[index] = 0;
+    if (index == notFound)
+        return;
+
+    m_controllers[index] = 0;
+    m_needsPurge = true;
+
+    if (!m_isDispatching)
+        purgeControllers();
 }
 
 void DeviceSensorEventDispatcher::purgeControllers()
 {
+    ASSERT(m_needsPurge);
+
     size_t i = 0;
     while (i < m_controllers.size()) {
         if (!m_controllers[i]) {
@@ -72,6 +84,8 @@ void DeviceSensorEventDispatcher::purgeControllers()
             ++i;
         }
     }
+
+    m_needsPurge = false;
 
     if (m_controllers.isEmpty())
         stopListening();

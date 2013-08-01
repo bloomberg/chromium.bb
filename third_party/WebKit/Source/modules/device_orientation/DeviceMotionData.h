@@ -98,6 +98,8 @@ public:
     bool canProvideInterval() const { return m_canProvideInterval; }
     double interval() const { return m_interval; }
 
+    bool canProvideEventData() const;
+
 private:
     DeviceMotionData();
     DeviceMotionData(PassRefPtr<Acceleration> acceleration, PassRefPtr<Acceleration> accelerationIncludingGravity,

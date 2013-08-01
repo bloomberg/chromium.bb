@@ -108,4 +108,9 @@ bool DeviceOrientationData::canProvideAbsolute() const
     return m_canProvideAbsolute;
 }
 
+bool DeviceOrientationData::canProvideEventData() const
+{
+    return canProvideAlpha() || canProvideBeta() || canProvideGamma();
+}
+
 } // namespace WebCore

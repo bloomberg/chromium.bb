@@ -35,6 +35,7 @@ namespace WebCore {
 DeviceSensorEventController::DeviceSensorEventController(Document* document)
     : m_document(document)
     , m_isActive(false)
+    , m_needsCheckingNullEvents(true)
     , m_timer(this, &DeviceSensorEventController::fireDeviceEvent)
 {
 }
@@ -60,6 +61,13 @@ void DeviceSensorEventController::dispatchDeviceEvent(PassRefPtr<Event> prpEvent
         && !m_document->activeDOMObjectsAreSuspended()
         && !m_document->activeDOMObjectsAreStopped())
         m_document->domWindow()->dispatchEvent(event);
+
+    if (m_needsCheckingNullEvents) {
+        if (isNullEvent(event.get()))
+            stopUpdating();
+        else
+            m_needsCheckingNullEvents = false;
+    }
 }
 
 void DeviceSensorEventController::startUpdating()
@@ -67,19 +75,22 @@ void DeviceSensorEventController::startUpdating()
     if (m_isActive)
         return;
 
-    registerWithDispatcher();
-    m_isActive = true;
-
     if (hasLastData() && !m_timer.isActive()) {
         // Make sure to fire the device motion data as soon as possible.
         m_timer.startOneShot(0);
     }
+
+    registerWithDispatcher();
+    m_isActive = true;
 }
 
 void DeviceSensorEventController::stopUpdating()
 {
     if (!m_isActive)
         return;
+
+    if (m_timer.isActive())
+        m_timer.stop();
 
     unregisterWithDispatcher();
     m_isActive = false;

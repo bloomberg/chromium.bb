@@ -28,6 +28,7 @@
 #include "modules/device_orientation/NewDeviceOrientationController.h"
 
 #include "core/dom/Document.h"
+#include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"
 
@@ -81,6 +82,13 @@ void NewDeviceOrientationController::registerWithDispatcher()
 void NewDeviceOrientationController::unregisterWithDispatcher()
 {
     DeviceOrientationDispatcher::instance().removeDeviceOrientationController(this);
+}
+
+bool NewDeviceOrientationController::isNullEvent(Event* event)
+{
+    ASSERT(event->type() == eventNames().devicemotionEvent);
+    DeviceOrientationEvent* orientationEvent = static_cast<DeviceOrientationEvent*>(event);
+    return !orientationEvent->orientation()->canProvideEventData();
 }
 
 } // namespace WebCore

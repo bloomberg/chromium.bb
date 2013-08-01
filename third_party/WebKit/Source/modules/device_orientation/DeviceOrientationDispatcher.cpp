@@ -34,6 +34,7 @@
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/NewDeviceOrientationController.h"
 #include "public/platform/Platform.h"
+#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
@@ -69,20 +70,24 @@ void DeviceOrientationDispatcher::startListening()
 void DeviceOrientationDispatcher::stopListening()
 {
     WebKit::Platform::current()->setDeviceOrientationListener(0);
+    m_lastDeviceOrientationData.clear();
 }
 
 void DeviceOrientationDispatcher::didChangeDeviceOrientation(const WebKit::WebDeviceOrientationData& motion)
 {
     m_lastDeviceOrientationData = DeviceOrientationData::create(motion);
-    bool needsPurge = false;
-    for (size_t i = 0; i < m_controllers.size(); ++i) {
-        if (m_controllers[i])
-            static_cast<NewDeviceOrientationController*>(m_controllers[i])->didChangeDeviceOrientation(m_lastDeviceOrientationData.get());
-        else
-            needsPurge = true;
+
+    {
+        TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);
+        // Don't fire controllers removed or added during event dispatch.
+        size_t size = m_controllers.size();
+        for (size_t i = 0; i < size; ++i) {
+            if (m_controllers[i])
+                static_cast<NewDeviceOrientationController*>(m_controllers[i])->didChangeDeviceOrientation(m_lastDeviceOrientationData.get());
+        }
     }
 
-    if (needsPurge)
+    if (m_needsPurge)
         purgeControllers();
 }
 

@@ -49,6 +49,8 @@ protected:
     virtual void stopListening() = 0;
 
     Vector<DeviceSensorEventController*> m_controllers;
+    bool m_needsPurge;
+    bool m_isDispatching;
 };
 
 } // namespace WebCore

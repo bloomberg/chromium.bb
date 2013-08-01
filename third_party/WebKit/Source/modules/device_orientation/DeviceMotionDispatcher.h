@@ -31,7 +31,6 @@
 #ifndef DeviceMotionDispatcher_h
 #define DeviceMotionDispatcher_h
 
-#include "modules/device_orientation/DeviceMotionData.h"
 #include "modules/device_orientation/DeviceSensorEventDispatcher.h"
 #include "public/platform/WebDeviceMotionListener.h"
 #include "wtf/RefPtr.h"

@@ -109,4 +109,13 @@ DeviceMotionData::DeviceMotionData(PassRefPtr<Acceleration> acceleration, PassRe
 {
 }
 
+bool DeviceMotionData::canProvideEventData() const
+{
+    const bool hasAcceleration = m_acceleration && (m_acceleration->canProvideX() || m_acceleration->canProvideY() || m_acceleration->canProvideZ());
+    const bool hasAccelerationIncludingGravity = m_accelerationIncludingGravity && (m_accelerationIncludingGravity->canProvideX() || m_accelerationIncludingGravity->canProvideY() || m_accelerationIncludingGravity->canProvideZ());
+    const bool hasRotationRate = m_rotationRate && (m_rotationRate->canProvideAlpha() || m_rotationRate->canProvideBeta() || m_rotationRate->canProvideGamma());
+
+    return hasAcceleration || hasAccelerationIncludingGravity || hasRotationRate;
+}
+
 } // namespace WebCore

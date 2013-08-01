@@ -50,6 +50,8 @@ public:
     bool canProvideGamma() const;
     bool canProvideAbsolute() const;
 
+    bool canProvideEventData() const;
+
 private:
     DeviceOrientationData();
     DeviceOrientationData(bool canProvideAlpha, double alpha, bool canProvideBeta, double beta, bool canProvideGamma, double gamma, bool canProvideAbsolute, bool absolute);
