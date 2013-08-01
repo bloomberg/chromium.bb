@@ -1022,11 +1022,14 @@ protected:
     void setDocumentForAnonymous(Document* document) { ASSERT(isAnonymous()); m_node = document; }
 
     // Add hit-test rects for the render tree rooted at this node to the provided collection on a
-    // per-RenderLayer basis. CurrentLayer must be the enclosing layer,
-    // and layerOffset is the current offset within this layer. Subclass implementations will add
-    // any offset for this renderer within it's container, so callers should provide only the
-    // offset of the container within it's layer.
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const;
+    // per-RenderLayer basis.
+    // currentLayer must be the enclosing layer, and layerOffset is the current offset within
+    // this layer. Subclass implementations will add any offset for this renderer within it's
+    // container, so callers should provide only the offset of the container within it's layer.
+    // containerRect is a rect that has already been added for the currentLayer which is likely to
+    // be a container for child elements. Any rect wholly contained by containerRect can be
+    // skipped.
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const;
 
     // Add hit-test rects for this renderer only to the provided list. layerOffset is the offset
     // of this renderer within the current layer that should be used for each result.

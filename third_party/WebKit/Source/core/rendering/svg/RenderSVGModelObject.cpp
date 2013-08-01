@@ -100,7 +100,7 @@ void RenderSVGModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) co
     SVGRenderSupport::findTreeRootObject(this)->computeLayerHitTestRects(rects);
 }
 
-void RenderSVGModelObject::addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const
+void RenderSVGModelObject::addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     // We don't walk into SVG trees at all - just report their container.
 }

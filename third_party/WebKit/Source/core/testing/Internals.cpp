@@ -101,6 +101,7 @@
 #include "core/platform/ColorChooser.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/Language.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
@@ -1320,6 +1321,10 @@ unsigned Internals::touchEventTargetLayerRectsUpdateCount(Document* document, Ex
 
 void Internals::touchEventTargetRectsChanged(const LayerHitTestRects& rects)
 {
+    // When profiling content_shell, it can be handy to exclude this time (since it's only
+    // present for testing / debugging).
+    TRACE_EVENT0("input", "Internals::touchEventTargetRectsChanged");
+
     m_touchEventTargetRectUpdateCount++;
 
     // Since it's not safe to hang onto the pointers in a LayerHitTestRects, we immediately

@@ -2295,13 +2295,33 @@ void RenderObject::computeLayerHitTestRects(LayerHitTestRects& layerRects) const
             return;
     }
 
-    this->addLayerHitTestRects(layerRects, currentLayer, layerOffset);
+    this->addLayerHitTestRects(layerRects, currentLayer, layerOffset, LayoutRect());
 }
 
-void RenderObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const
+void RenderObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const RenderLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     ASSERT(currentLayer);
     ASSERT(currentLayer == this->enclosingLayer());
+
+    // Compute the rects for this renderer only and add them to the results.
+    // Note that we could avoid passing the offset and instead adjust each result, but this
+    // seems slightly simpler.
+    Vector<LayoutRect> ownRects;
+    LayoutRect newContainerRect;
+    computeSelfHitTestRects(ownRects, layerOffset);
+
+    LayerHitTestRects::iterator iter = layerRects.find(currentLayer);
+    if (iter == layerRects.end())
+        iter = layerRects.add(currentLayer, Vector<LayoutRect>()).iterator;
+    for (size_t i = 0; i < ownRects.size(); i++) {
+        if (!containerRect.contains(ownRects[i])) {
+            iter->value.append(ownRects[i]);
+            if (newContainerRect.isEmpty())
+                newContainerRect = ownRects[i];
+        }
+    }
+    if (newContainerRect.isEmpty())
+        newContainerRect = containerRect;
 
     // If it's possible for children to have rects outside our bounds, then we need to descend into
     // the children and compute them.
@@ -2312,21 +2332,9 @@ void RenderObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const Ren
     // rewrite Region to be more efficient. See https://bugs.webkit.org/show_bug.cgi?id=100814.
     if (!isRenderView()) {
         for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
-            curr->addLayerHitTestRects(layerRects, currentLayer,  layerOffset);
+            curr->addLayerHitTestRects(layerRects, currentLayer,  layerOffset, newContainerRect);
         }
     }
-
-    // Compute the rects for this renderer only and add them to the results.
-    // Note that we could avoid passing the offset and instead adjust each result, but this
-    // seems slightly simpler.
-    Vector<LayoutRect> ownRects;
-    computeSelfHitTestRects(ownRects, layerOffset);
-
-    LayerHitTestRects::iterator iter = layerRects.find(currentLayer);
-    if (iter == layerRects.end())
-        layerRects.add(currentLayer, ownRects);
-    else
-        iter->value.append(ownRects);
 }
 
 bool RenderObject::isRooted(RenderView** view) const
