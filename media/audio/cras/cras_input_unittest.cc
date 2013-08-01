@@ -62,13 +62,14 @@ class CrasInputStreamTest : public testing::Test {
                            kTestSampleRate,
                            kTestBitsPerSample,
                            samples_per_packet);
-    return new CrasInputStream(params, mock_manager_.get());
+    return new CrasInputStream(params, mock_manager_.get(),
+                               AudioManagerBase::kDefaultDeviceId);
   }
 
   void CaptureSomeFrames(const AudioParameters &params,
                          unsigned int duration_ms) {
-    CrasInputStream* test_stream = new CrasInputStream(params,
-                                                       mock_manager_.get());
+    CrasInputStream* test_stream = new CrasInputStream(
+        params, mock_manager_.get(), AudioManagerBase::kDefaultDeviceId);
 
     ASSERT_TRUE(test_stream->Open());
 
@@ -137,8 +138,8 @@ TEST_F(CrasInputStreamTest, BadBitsPerSample) {
                                  kTestSampleRate,
                                  kTestBitsPerSample - 1,
                                  kTestFramesPerPacket);
-  CrasInputStream* test_stream =
-      new CrasInputStream(bad_bps_params, mock_manager_.get());
+  CrasInputStream* test_stream = new CrasInputStream(
+      bad_bps_params, mock_manager_.get(), AudioManagerBase::kDefaultDeviceId);
   EXPECT_FALSE(test_stream->Open());
   test_stream->Close();
 }
@@ -149,8 +150,9 @@ TEST_F(CrasInputStreamTest, BadFormat) {
                                     kTestSampleRate,
                                     kTestBitsPerSample,
                                     kTestFramesPerPacket);
-  CrasInputStream* test_stream =
-      new CrasInputStream(bad_format_params, mock_manager_.get());
+  CrasInputStream* test_stream = new CrasInputStream(
+      bad_format_params, mock_manager_.get(),
+      AudioManagerBase::kDefaultDeviceId);
   EXPECT_FALSE(test_stream->Open());
   test_stream->Close();
 }
@@ -161,8 +163,8 @@ TEST_F(CrasInputStreamTest, BadSampleRate) {
                                   0,
                                   kTestBitsPerSample,
                                   kTestFramesPerPacket);
-  CrasInputStream* test_stream =
-      new CrasInputStream(bad_rate_params, mock_manager_.get());
+  CrasInputStream* test_stream = new CrasInputStream(
+      bad_rate_params, mock_manager_.get(), AudioManagerBase::kDefaultDeviceId);
   EXPECT_FALSE(test_stream->Open());
   test_stream->Close();
 }

@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'use_cras%': 0,
+  },
   'dependencies': [
     'browser/speech/proto/speech_proto.gyp:speech_proto',
     '../base/base.gyp:base_static',
@@ -1344,6 +1347,11 @@
     ['use_x11==1', {
       'dependencies': [
         '../build/linux/system.gyp:x11',
+      ],
+    }],
+    ['use_cras==1', {
+      'defines': [
+        'USE_CRAS',
       ],
     }],
     ['use_pango==1', {

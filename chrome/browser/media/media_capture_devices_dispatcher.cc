@@ -175,7 +175,8 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
     const extensions::Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE) {
+  if (request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE ||
+      request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE) {
     ProcessScreenCaptureAccessRequest(
         web_contents, request, callback,
         extension && extension->location() == extensions::Manifest::COMPONENT);
@@ -210,19 +211,26 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
   //  1. Screen capturing is enabled via command line switch or white-listed for
   //     the given origin.
   //  2. Request comes from a page with a secure origin or from an extension.
-  //  3. Audio capture was not requested (it's not supported yet).
+  //  3. Video capture is requested for screen video.
+  //  4. Audio capture is either not requested, or requested for system audio.
   if (screen_capture_enabled && origin_is_secure &&
-      request.audio_type == content::MEDIA_NO_SERVICE) {
+      request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE &&
+      (request.audio_type == content::MEDIA_NO_SERVICE ||
+       request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE)) {
     // For component extensions, bypass message box.
     bool user_approved = false;
     if (!component_extension) {
       string16 application_name = UTF8ToUTF16(request.security_origin.spec());
+      string16 confirmation_text = l10n_util::GetStringFUTF16(
+          request.audio_type == content::MEDIA_NO_SERVICE ?
+              IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT :
+              IDS_MEDIA_SCREEN_AND_AUDIO_CAPTURE_CONFIRMATION_TEXT,
+          application_name);
       chrome::MessageBoxResult result = chrome::ShowMessageBox(
           NULL,
           l10n_util::GetStringFUTF16(
               IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE, application_name),
-          l10n_util::GetStringFUTF16(
-              IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT, application_name),
+          confirmation_text,
           chrome::MESSAGE_BOX_TYPE_QUESTION);
       user_approved = (result == chrome::MESSAGE_BOX_RESULT_YES);
     }
@@ -230,6 +238,10 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     if (user_approved || component_extension) {
       devices.push_back(content::MediaStreamDevice(
           content::MEDIA_SCREEN_VIDEO_CAPTURE, std::string(), "Screen"));
+      if (request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE) {
+        devices.push_back(content::MediaStreamDevice(
+            content::MEDIA_SYSTEM_AUDIO_CAPTURE, std::string(), std::string()));
+      }
     }
   }
 

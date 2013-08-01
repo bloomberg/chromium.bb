@@ -57,6 +57,8 @@ void UpdateRequestOptions(
       options->audio_device_id = GetStreamConstraint(
           user_media_request.audioConstraints(),
           kMediaStreamSourceId, true);
+    } else if (audio_stream_source == kMediaStreamSourceSystem) {
+      options->audio_type = content::MEDIA_SYSTEM_AUDIO_CAPTURE;
     }
   }
 

@@ -10080,6 +10080,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT" desc="Text for the prompt shown when screen capturing is requrested by an app.">
         Do you want <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> to share your screen?
       </message>
+      <message name="IDS_MEDIA_SCREEN_AND_AUDIO_CAPTURE_CONFIRMATION_TEXT" desc="Text for the prompt shown when screen and audio capturing is requrested by an app.">
+        Do you want <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> to share your screen and audio output?
+      </message>
       <message name="IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TITLE" desc="Text shown on the button that stops screen capture.">
         Screen capture - <ph name="APP_NAME">$1<ex>Sharing App</ex></ph>
       </message>

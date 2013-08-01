@@ -33,6 +33,9 @@ enum MediaStreamType {
   MEDIA_SCREEN_VIDEO_CAPTURE,
   MEDIA_WINDOW_VIDEO_CAPTURE,
 
+  // Capture system audio (post-mix loopback stream).
+  MEDIA_SYSTEM_AUDIO_CAPTURE,
+
   NUM_MEDIA_TYPES
 };
 

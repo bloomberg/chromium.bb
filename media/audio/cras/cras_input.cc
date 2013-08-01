@@ -17,14 +17,18 @@
 namespace media {
 
 CrasInputStream::CrasInputStream(const AudioParameters& params,
-                                 AudioManagerCras* manager)
+                                 AudioManagerCras* manager,
+                                 const std::string& device_id)
     : audio_manager_(manager),
       bytes_per_frame_(0),
       callback_(NULL),
       client_(NULL),
       params_(params),
       started_(false),
-      stream_id_(0) {
+      stream_id_(0),
+      stream_direction_(device_id == AudioManagerCras::kLoopbackDeviceId
+                            ? CRAS_STREAM_POST_MIX_PRE_DSP
+                            : CRAS_STREAM_INPUT) {
   DCHECK(audio_manager_);
 }
 
@@ -127,7 +131,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
 
   unsigned int frames_per_packet = params_.frames_per_buffer();
   cras_stream_params* stream_params = cras_client_stream_params_create(
-      CRAS_STREAM_INPUT,
+      stream_direction_,
       frames_per_packet,  // Total latency.
       frames_per_packet,  // Call back when this many ready.
       frames_per_packet,  // Minimum Callback level ignored for capture streams.

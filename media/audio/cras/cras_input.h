@@ -27,7 +27,8 @@ class CrasInputStream : public AgcAudioStream<AudioInputStream> {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
   // audio manager who is creating this object.
-  CrasInputStream(const AudioParameters& params, AudioManagerCras* manager);
+  CrasInputStream(const AudioParameters& params, AudioManagerCras* manager,
+                  const std::string& device_id);
 
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioOutputStream::Close().
@@ -76,7 +77,7 @@ class CrasInputStream : public AgcAudioStream<AudioInputStream> {
   // want circular references.  Additionally, stream objects live on the audio
   // thread, which is owned by the audio manager and we don't want to addref
   // the manager from that thread.
-  AudioManagerCras* audio_manager_;
+  AudioManagerCras* const audio_manager_;
 
   // Size of frame in bytes.
   uint32 bytes_per_frame_;
@@ -88,13 +89,16 @@ class CrasInputStream : public AgcAudioStream<AudioInputStream> {
   cras_client* client_;
 
   // PCM parameters for the stream.
-  AudioParameters params_;
+  const AudioParameters params_;
 
   // True if the stream has been started.
   bool started_;
 
   // ID of the playing stream.
   cras_stream_id_t stream_id_;
+
+  // Direction of the stream.
+  const CRAS_STREAM_DIRECTION stream_direction_;
 
   DISALLOW_COPY_AND_ASSIGN(CrasInputStream);
 };
