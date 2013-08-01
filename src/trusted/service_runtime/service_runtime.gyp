@@ -197,13 +197,18 @@
             }],
             ['OS=="linux" or OS=="mac" or OS=="FreeBSD"', {
               'sources': [
-                'posix/nacl_signal.c',
+                'posix/nacl_signal_stack.c',
                 'posix/sel_addrspace_posix.c',
+               ],
+            }],
+            ['OS=="linux" or OS=="FreeBSD"', {
+              'sources': [
+                'posix/nacl_signal.c',
                ],
             }],
             ['OS=="win"', {
               'sources': [
-                'win/nacl_signal.c',
+                'win/nacl_signal_stack.c',
                 'win/sel_addrspace_win.c',
                 'win/thread_suspension.c',
                 'win/vm_hole.c',

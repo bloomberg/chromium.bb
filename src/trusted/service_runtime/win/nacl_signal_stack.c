@@ -26,9 +26,3 @@ void NaClSignalStackRegister(void *stack) {
 
 void NaClSignalStackUnregister(void) {
 }
-
-void NaClSignalHandlerInitPlatform(void) {
-}
-
-void NaClSignalHandlerFiniPlatform(void) {
-}

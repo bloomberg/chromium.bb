@@ -8,8 +8,6 @@
 #include <signal.h>
 #include <stddef.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <unistd.h>
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -31,18 +29,10 @@
  * http://www.opengroup.org/onlinepubs/009695399/functions/sigaction.html
  */
 
-#ifndef MAP_ANONYMOUS
-#define MAP_ANONYMOUS MAP_ANON
-#endif
-
 /*
  * TODO(noelallen) split these macros and conditional compiles
  * into architecture specific files. Bug #955
  */
-
-/* Use 4K more than the minimum to allow breakpad to run. */
-#define SIGNAL_STACK_SIZE (SIGSTKSZ + 4096)
-#define STACK_GUARD_SIZE NACL_PAGESIZE
 
 static int s_Signals[] = {
 #if NACL_LINUX
@@ -63,88 +53,6 @@ static NaClSignalHandler g_handler_func;
 
 void NaClSignalHandlerSet(NaClSignalHandler func) {
   g_handler_func = func;
-}
-
-int NaClSignalStackAllocate(void **result) {
-  /*
-   * We use mmap() to allocate the signal stack for two reasons:
-   *
-   * 1) By page-aligning the memory allocation (which malloc() does
-   * not do for small allocations), we avoid allocating any real
-   * memory in the common case in which the signal handler is never
-   * run.
-   *
-   * 2) We get to create a guard page, to guard against the unlikely
-   * occurrence of the signal handler both overrunning and doing so in
-   * an exploitable way.
-   */
-  uint8_t *stack = mmap(NULL, SIGNAL_STACK_SIZE + STACK_GUARD_SIZE,
-                        PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS,
-                        -1, 0);
-  if (stack == MAP_FAILED) {
-    return 0;
-  }
-  /* We assume that the stack grows downwards. */
-  if (mprotect(stack, STACK_GUARD_SIZE, PROT_NONE) != 0) {
-    NaClLog(LOG_FATAL, "Failed to mprotect() the stack guard page:\n\t%s\n",
-      strerror(errno));
-  }
-  *result = stack;
-  return 1;
-}
-
-void NaClSignalStackFree(void *stack) {
-  CHECK(stack != NULL);
-  if (munmap(stack, SIGNAL_STACK_SIZE + STACK_GUARD_SIZE) != 0) {
-    NaClLog(LOG_FATAL, "Failed to munmap() signal stack:\n\t%s\n",
-      strerror(errno));
-  }
-}
-
-void NaClSignalStackRegister(void *stack) {
-  /*
-   * If we set up signal handlers, we must ensure that any thread that
-   * runs untrusted code has an alternate signal stack set up.  The
-   * default for a new thread is to use the stack pointer from the
-   * point at which the fault occurs, but it would not be safe to use
-   * untrusted code's %esp/%rsp value.
-   */
-  stack_t st;
-  st.ss_size = SIGNAL_STACK_SIZE;
-  st.ss_sp = ((uint8_t *) stack) + STACK_GUARD_SIZE;
-  st.ss_flags = 0;
-  if (sigaltstack(&st, NULL) != 0) {
-    NaClLog(LOG_FATAL, "Failed to register signal stack:\n\t%s\n",
-      strerror(errno));
-  }
-}
-
-void NaClSignalStackUnregister(void) {
-  /*
-   * Unregister the signal stack in case a fault occurs between the
-   * thread deallocating the signal stack and exiting.  Such a fault
-   * could be unsafe if the address space were reallocated before the
-   * fault, although that is unlikely.
-   */
-  stack_t st;
-#if NACL_OSX
-  /*
-   * This is a workaround for a bug in Mac OS X's libc, in which new
-   * versions of the sigaltstack() wrapper return ENOMEM if ss_size is
-   * less than MINSIGSTKSZ, even when ss_size should be ignored
-   * because we are unregistering the signal stack.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=1053
-   */
-  st.ss_size = MINSIGSTKSZ;
-#else
-  st.ss_size = 0;
-#endif
-  st.ss_sp = NULL;
-  st.ss_flags = SS_DISABLE;
-  if (sigaltstack(&st, NULL) != 0) {
-    NaClLog(LOG_FATAL, "Failed to unregister signal stack:\n\t%s\n",
-      strerror(errno));
-  }
 }
 
 static void FindAndRunHandler(int sig, siginfo_t *info, void *uc) {
@@ -397,7 +305,7 @@ static void AssertNoOtherSignalHandlers(void) {
        * valid signal number, which produces EINVAL.
        */
       if (errno != EINVAL) {
-        NaClLog(LOG_FATAL, "NaClSignalHandlerInitPlatform: "
+        NaClLog(LOG_FATAL, "AssertNoOtherSignalHandlers: "
                 "sigaction() call failed for signal %d: errno=%d\n",
                 signum, errno);
       }
@@ -415,13 +323,13 @@ static void AssertNoOtherSignalHandlers(void) {
             sa.sa_sigaction == (void (*)(int, siginfo_t *, void *)) SIG_IGN)
           continue;
       }
-      NaClLog(LOG_FATAL, "NaClSignalHandlerInitPlatform: "
+      NaClLog(LOG_FATAL, "AssertNoOtherSignalHandlers: "
               "A signal handler is registered for signal %d\n", signum);
     }
   }
 }
 
-void NaClSignalHandlerInitPlatform(void) {
+void NaClSignalHandlerInit(void) {
   struct sigaction sa;
   unsigned int a;
 
@@ -455,7 +363,7 @@ void NaClSignalHandlerInitPlatform(void) {
   }
 }
 
-void NaClSignalHandlerFiniPlatform(void) {
+void NaClSignalHandlerFini(void) {
   unsigned int a;
 
   /* Remove all handlers */

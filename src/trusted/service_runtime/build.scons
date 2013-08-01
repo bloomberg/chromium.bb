@@ -208,7 +208,7 @@ if env.Bit('windows'):
   ldr_inputs += [
     'win/debug_exception_handler.c',
     'win/debug_exception_handler_standalone.c',
-    'win/nacl_signal.c',
+    'win/nacl_signal_stack.c',
     'win/thread_handle_map.c',
     'win/thread_suspension.c',
     'win/sel_addrspace_win.c',
@@ -231,6 +231,7 @@ if env.Bit('linux'):
   ldr_inputs += [
       'linux/thread_suspension.c',
       'posix/nacl_signal.c',
+      'posix/nacl_signal_stack.c',
       'posix/sel_addrspace_posix.c'
       ]
   if env.Bit('target_arm'):
@@ -247,7 +248,7 @@ if env.Bit('linux'):
 if env.Bit('mac'):
   ldr_inputs += [
       'osx/thread_suspension.c',
-      'posix/nacl_signal.c',
+      'posix/nacl_signal_stack.c',
       'posix/sel_addrspace_posix.c'
       ]
   if env.Bit('target_x86_32'):

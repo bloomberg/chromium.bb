@@ -245,15 +245,6 @@ void NaClSignalTestCrashOnStartup(void) {
   }
 }
 
-void NaClSignalHandlerInit(void) {
-  NaClSignalHandlerInitPlatform();
-}
-
-void NaClSignalHandlerFini(void) {
-  /* We try to lock, but since we are shutting down, we ignore failures. */
-  NaClSignalHandlerFiniPlatform();
-}
-
 static void NaClUserRegisterStateFromSignalContext(
     volatile NaClUserRegisterState *dest,
     const struct NaClSignalContext *src) {

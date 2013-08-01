@@ -167,12 +167,6 @@ void NaClSignalHandleUntrusted(int signal_number,
                                int is_untrusted);
 
 
-/*
- * Platform specific code. Do not call directly.
- */
-void NaClSignalHandlerInitPlatform(void);
-void NaClSignalHandlerFiniPlatform(void);
-
 void NaClSignalSetUpExceptionFrame(volatile struct NaClExceptionFrame *frame,
                                    const struct NaClSignalContext *regs,
                                    uint32_t context_user_addr);
