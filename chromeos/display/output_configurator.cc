@@ -104,6 +104,7 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
       current_mode(None),
       native_mode(None),
       mirror_mode(None),
+      selected_mode(None),
       y(0),
       height(0),
       is_internal(false),
@@ -196,7 +197,8 @@ void OutputConfigurator::Start(uint32 background_color_argb) {
   delegate_->GrabServer();
   delegate_->InitXRandRExtension(&xrandr_event_base_);
 
-  std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
+  std::vector<OutputSnapshot> outputs =
+      delegate_->GetOutputs(state_controller_);
   if (outputs.size() > 1 && background_color_argb)
     delegate_->SetBackgroundColor(background_color_argb);
   EnterStateOrFallBackToSoftwareMirroring(
@@ -225,7 +227,8 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
     return true;
 
   delegate_->GrabServer();
-  std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
+  std::vector<OutputSnapshot> outputs =
+      delegate_->GetOutputs(state_controller_);
 
   bool only_if_single_internal_display =
       flags & kSetDisplayPowerOnlyIfSingleInternalDisplay;
@@ -259,7 +262,8 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   }
 
   delegate_->GrabServer();
-  std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
+  std::vector<OutputSnapshot> outputs =
+      delegate_->GetOutputs(state_controller_);
   bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_, outputs);
   delegate_->UngrabServer();
@@ -351,11 +355,25 @@ void OutputConfigurator::ResumeDisplays() {
   SetDisplayPower(power_state_, kSetDisplayPowerForceProbe);
 }
 
+void OutputConfigurator::ScheduleConfigureOutputs() {
+  if (configure_timer_.get()) {
+    configure_timer_->Reset();
+  } else {
+    configure_timer_.reset(new base::OneShotTimer<OutputConfigurator>());
+    configure_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
+        this,
+        &OutputConfigurator::ConfigureOutputs);
+  }
+}
+
 void OutputConfigurator::ConfigureOutputs() {
   configure_timer_.reset();
 
   delegate_->GrabServer();
-  std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
+  std::vector<OutputSnapshot> outputs =
+      delegate_->GetOutputs(state_controller_);
   OutputState new_state = GetOutputState(outputs, power_state_);
   bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_, outputs);
@@ -368,19 +386,6 @@ void OutputConfigurator::ConfigureOutputs() {
         Observer, observers_, OnDisplayModeChangeFailed(new_state));
   }
   delegate_->SendProjectingStateToPowerManager(IsProjecting(outputs));
-}
-
-void OutputConfigurator::ScheduleConfigureOutputs() {
-  if (configure_timer_.get()) {
-    configure_timer_->Reset();
-  } else {
-    configure_timer_.reset(new base::OneShotTimer<OutputConfigurator>());
-    configure_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
-        this,
-        &OutputConfigurator::ConfigureOutputs);
-  }
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
@@ -434,14 +439,15 @@ bool OutputConfigurator::EnterState(
       const OutputSnapshot& output = outputs.size() == 1 ? outputs[0] :
           (output_power[0] ? outputs[0] : outputs[1]);
       int width = 0, height = 0;
-      if (!delegate_->GetModeDetails(output.native_mode, &width, &height, NULL))
+      if (!delegate_->GetModeDetails(
+              output.selected_mode, &width, &height, NULL))
         return false;
 
       std::vector<CrtcConfig> configs(outputs.size());
       for (size_t i = 0; i < outputs.size(); ++i) {
         configs[i] = CrtcConfig(
             outputs[i].crtc, 0, 0,
-            output_power[i] ? outputs[i].native_mode : None,
+            output_power[i] ? outputs[i].selected_mode : None,
             outputs[i].output);
       }
       delegate_->CreateFrameBuffer(width, height, configs);
@@ -509,14 +515,14 @@ bool OutputConfigurator::EnterState(
       int width = 0, height = 0;
 
       for (size_t i = 0; i < outputs.size(); ++i) {
-        if (!delegate_->GetModeDetails(outputs[i].native_mode,
+        if (!delegate_->GetModeDetails(outputs[i].selected_mode,
                 &(mode_sizes[i].first), &(mode_sizes[i].second), NULL)) {
           return false;
         }
 
         configs[i] = CrtcConfig(
             outputs[i].crtc, 0, (height ? height + kVerticalGap : 0),
-            output_power[i] ? outputs[i].native_mode : None,
+            output_power[i] ? outputs[i].selected_mode : None,
             outputs[i].output);
 
         // Retain the full screen size even if all outputs are off so the

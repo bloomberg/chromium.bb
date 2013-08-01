@@ -31,6 +31,9 @@ class DisplayChangeObserverX11
   // chromeos::OutputConfigurator::StateController overrides:
   virtual chromeos::OutputState GetStateForDisplayIds(
       const std::vector<int64>& outputs) const OVERRIDE;
+  virtual bool GetResolutionForDisplayId(int64 display_id,
+                                         int* width,
+                                         int* height) const OVERRIDE;
 
   // Overriden from chromeos::OutputConfigurator::Observer:
   virtual void OnDisplayModeChanged() OVERRIDE;
@@ -47,12 +50,6 @@ class DisplayChangeObserverX11
 
   DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserverX11);
 };
-
-// Returns true if the size info in the output_info isn't valid
-// and should be ignored. This is exposed for testing.
-// |mm_width| and |mm_height| are given in millimeters.
-ASH_EXPORT bool ShouldIgnoreSize(unsigned long mm_width,
-                                 unsigned long mm_height);
 
 }  // namespace internal
 }  // namespace ash

@@ -321,11 +321,24 @@ void DisplayManager::SetDisplayUIScale(int64 display_id,
   UpdateDisplays(display_info_list);
 }
 
+void DisplayManager::SetDisplayResolution(int64 display_id,
+                                          const gfx::Size& resolution) {
+  DCHECK_NE(gfx::Display::InternalDisplayId(), display_id);
+  if (gfx::Display::InternalDisplayId() == display_id)
+    return;
+  resolutions_[display_id] = resolution;
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  if (base::chromeos::IsRunningOnChromeOS())
+    Shell::GetInstance()->output_configurator()->ScheduleConfigureOutputs();
+#endif
+}
+
 void DisplayManager::RegisterDisplayProperty(
     int64 display_id,
     gfx::Display::Rotation rotation,
     float ui_scale,
-    const gfx::Insets* overscan_insets) {
+    const gfx::Insets* overscan_insets,
+    const gfx::Size& resolution_in_pixels) {
   if (display_info_.find(display_id) == display_info_.end()) {
     display_info_[display_id] =
         DisplayInfo(display_id, std::string(""), false);
@@ -337,6 +350,19 @@ void DisplayManager::RegisterDisplayProperty(
     display_info_[display_id].set_ui_scale(ui_scale);
   if (overscan_insets)
     display_info_[display_id].SetOverscanInsets(*overscan_insets);
+  if (!resolution_in_pixels.IsEmpty())
+    resolutions_[display_id] = resolution_in_pixels;
+}
+
+bool DisplayManager::GetSelectedResolutionForDisplayId(
+    int64 id,
+    gfx::Size* resolution_out) const {
+  std::map<int64, gfx::Size>::const_iterator iter =
+      resolutions_.find(id);
+  if (iter == resolutions_.end())
+    return false;
+  *resolution_out = iter->second;
+  return true;
 }
 
 bool DisplayManager::IsDisplayRotationEnabled() const {

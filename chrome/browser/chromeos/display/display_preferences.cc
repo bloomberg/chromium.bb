@@ -135,13 +135,20 @@ void LoadDisplayProperties() {
     int ui_scale_value = 0;
     if (dict_value->GetInteger("ui-scale", &ui_scale_value))
       ui_scale = static_cast<float>(ui_scale_value) / 1000.0f;
+
+    int width = 0, height = 0;
+    dict_value->GetInteger("width", &width);
+    dict_value->GetInteger("height", &height);
+    gfx::Size resolution_in_pixels(width, height);
+
     gfx::Insets insets;
     if (ValueToInsets(*dict_value, &insets))
       insets_to_set = &insets;
     GetDisplayManager()->RegisterDisplayProperty(id,
                                                  rotation,
                                                  ui_scale,
-                                                 insets_to_set);
+                                                 insets_to_set,
+                                                 resolution_in_pixels);
   }
 }
 
@@ -182,7 +189,8 @@ void StoreCurrentDisplayProperties() {
 
   size_t num = display_manager->GetNumDisplays();
   for (size_t i = 0; i < num; ++i) {
-    int64 id = display_manager->GetDisplayAt(i).id();
+    const gfx::Display& display = display_manager->GetDisplayAt(i);
+    int64 id = display.id();
     ash::internal::DisplayInfo info = display_manager->GetDisplayInfo(id);
 
     scoped_ptr<base::DictionaryValue> property_value(
@@ -190,6 +198,13 @@ void StoreCurrentDisplayProperties() {
     property_value->SetInteger("rotation", static_cast<int>(info.rotation()));
     property_value->SetInteger("ui-scale",
                                static_cast<int>(info.ui_scale() * 1000));
+    gfx::Size resolution;
+    if (!display.IsInternal() &&
+        display_manager->GetSelectedResolutionForDisplayId(id, &resolution)) {
+      property_value->SetInteger("width", resolution.width());
+      property_value->SetInteger("height", resolution.height());
+    }
+
     if (!info.overscan_insets_in_dip().empty())
       InsetsToValue(info.overscan_insets_in_dip(), property_value.get());
     pref_data->Set(base::Int64ToString(id), property_value.release());

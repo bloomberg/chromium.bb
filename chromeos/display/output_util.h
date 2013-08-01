@@ -13,6 +13,13 @@
 // Forward declarations for Xlib and Xrandr.
 // This is so unused X definitions don't pollute the namespace.
 typedef unsigned long XID;
+typedef XID RRMode;
+struct _XRRModeInfo;
+typedef _XRRModeInfo XRRModeInfo;
+struct _XRRScreenResources;
+typedef _XRRScreenResources XRRScreenResources;
+struct _XRROutputInfo;
+typedef _XRROutputInfo XRROutputInfo;
 
 namespace chromeos {
 
@@ -56,6 +63,32 @@ CHROMEOS_EXPORT bool ParseOutputOverscanFlag(const unsigned char* prop,
 
 // Returns true if an output named |name| is an internal display.
 CHROMEOS_EXPORT bool IsInternalOutputName(const std::string& name);
+
+// Find a XRRModeInfo that matches |mode|.
+CHROMEOS_EXPORT const XRRModeInfo* FindModeInfo(
+    const XRRScreenResources* screen_resources,
+    XID mode);
+
+// Find a mode that matches the given size with highest refresh
+// rate. Non-interlaced mode takes precedence, so non-interlaced mode
+// with a lower refresh rate will be used even if there is an interlaced
+// mode with a higher refresh rate.
+CHROMEOS_EXPORT RRMode FindOutputModeMatchingSize(
+    const XRRScreenResources* screen_resources,
+    const XRROutputInfo* output_info,
+    size_t width,
+    size_t height);
+
+namespace test {
+
+// Creates XRRModeInfo for unit tests.
+CHROMEOS_EXPORT XRRModeInfo CreateModeInfo(int id,
+                                           int width,
+                                           int height,
+                                           bool interlaced,
+                                           float refresh_rate);
+
+}  // namespace test
 
 }  // namespace chromeos
 

@@ -98,6 +98,8 @@
         'display/display_manager.cc',
         'display/display_manager.h',
         'display/display_pref_util.h',
+        'display/display_util_x11.cc',
+        'display/display_util_x11.h',
         'display/event_transformation_handler.cc',
         'display/event_transformation_handler.h',
         'display/mirror_window_controller.cc',
@@ -791,7 +793,7 @@
         }],
         ['use_x11==1', {
           'sources': [
-            'display/display_change_observer_x11_unittest.cc'
+            'display/display_util_x11_unittest.cc'
           ],
         }],
         ['chromeos!=1', {

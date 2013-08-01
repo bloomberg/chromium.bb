@@ -111,6 +111,16 @@ bool GetOutputDeviceData(XID output,
   return result;
 }
 
+float GetRefreshRate(const XRRModeInfo* mode_info) {
+  if (mode_info->hTotal && mode_info->vTotal) {
+    return static_cast<float>(mode_info->dotClock) /
+        (static_cast<float>(mode_info->hTotal) *
+         static_cast<float>(mode_info->vTotal));
+  } else {
+    return 0.0f;
+  }
+}
+
 }  // namespace
 
 std::string GetDisplayName(XID output_id) {
@@ -320,5 +330,76 @@ bool IsInternalOutputName(const std::string& name) {
   return name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0 ||
       name.find(kInternal_DSI) == 0;
 }
+
+const XRRModeInfo* FindModeInfo(const XRRScreenResources* screen_resources,
+                                XID current_mode) {
+  for (int m = 0; m < screen_resources->nmode; m++) {
+    XRRModeInfo *mode = &screen_resources->modes[m];
+    if (mode->id == current_mode)
+      return mode;
+  }
+  return NULL;
+}
+
+// Find a mode that matches the given size with highest
+// reflesh rate.
+RRMode FindOutputModeMatchingSize(
+    const XRRScreenResources* screen_resources,
+    const XRROutputInfo* output_info,
+    size_t width,
+    size_t height) {
+  RRMode found = None;
+  float best_rate = 0;
+  bool non_interlaced_found = false;
+  for (int i = 0; i < output_info->nmode; ++i) {
+    RRMode mode = output_info->modes[i];
+    const XRRModeInfo* info = FindModeInfo(screen_resources, mode);
+
+    if (info->width == width && info->height == height) {
+      float rate = GetRefreshRate(info);
+
+      if (info->modeFlags & RR_Interlace) {
+        if (non_interlaced_found)
+          continue;
+      } else {
+        // Reset the best rate if the non interlaced is
+        // found the first time.
+        if (!non_interlaced_found) {
+          best_rate = rate;
+        }
+        non_interlaced_found = true;
+      }
+      if (rate < best_rate)
+        continue;
+
+      found = mode;
+      best_rate = rate;
+    }
+  }
+  return found;
+}
+
+namespace test {
+
+XRRModeInfo CreateModeInfo(int id,
+                           int width,
+                           int height,
+                           bool interlaced,
+                           float refresh_rate) {
+  XRRModeInfo mode_info = {0};
+  mode_info.id = id;
+  mode_info.width = width;
+  mode_info.height = height;
+  if (interlaced)
+    mode_info.modeFlags = RR_Interlace;
+  if (refresh_rate != 0.0f) {
+    mode_info.hTotal = 1;
+    mode_info.vTotal = 1;
+    mode_info.dotClock = refresh_rate;
+  }
+  return mode_info;
+}
+
+}  // namespace test
 
 }  // namespace chromeos

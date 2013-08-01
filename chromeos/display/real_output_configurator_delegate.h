@@ -37,7 +37,8 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   virtual void SyncWithServer() OVERRIDE;
   virtual void SetBackgroundColor(uint32 color_argb) OVERRIDE;
   virtual void ForceDPMSOn() OVERRIDE;
-  virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs() OVERRIDE;
+  virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs(
+      const OutputConfigurator::StateController* state_controller) OVERRIDE;
   virtual bool GetModeDetails(
       RRMode mode,
       int* width,

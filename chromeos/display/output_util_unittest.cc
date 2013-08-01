@@ -7,6 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include <X11/extensions/Xrandr.h>
+
 namespace chromeos {
 
 namespace {
@@ -242,6 +244,94 @@ TEST(OutputUtilTest, GetDisplayIdFailure) {
   int64 id = -1;
   EXPECT_FALSE(GetDisplayIdFromEDID(NULL, 0, 0, &id));
   EXPECT_EQ(-1, id);
+}
+
+TEST(OutputUtilTest, FindOutputModeMatchingSize) {
+  XRRScreenResources resources = {0};
+  RROutput outputs[] = {1};
+  resources.noutput = arraysize(outputs);
+  resources.outputs = outputs;
+  XRRModeInfo modes[] = {
+    // id, width, height, interlaced, refresh rate
+    test::CreateModeInfo(11, 1920, 1200, false, 60.0f),
+
+    // different rates
+    test::CreateModeInfo(12, 1920, 1080, false, 30.0f),
+    test::CreateModeInfo(13, 1920, 1080, false, 50.0f),
+    test::CreateModeInfo(14, 1920, 1080, false, 40.0f),
+    test::CreateModeInfo(15, 1920, 1080, false, 0.0f),
+
+    // interlace vs non interlace
+    test::CreateModeInfo(16, 1280, 720, true, 60.0f),
+    test::CreateModeInfo(17, 1280, 720, false, 40.0f),
+
+    // interlace only
+    test::CreateModeInfo(18, 1024, 768, true, 0.0f),
+    test::CreateModeInfo(19, 1024, 768, true, 40.0f),
+    test::CreateModeInfo(20, 1024, 768, true, 60.0f),
+
+    // mixed
+    test::CreateModeInfo(21, 1024, 600, true, 60.0f),
+    test::CreateModeInfo(22, 1024, 600, false, 40.0f),
+    test::CreateModeInfo(23, 1024, 600, false, 50.0f),
+
+    // just one interlaced mode
+    test::CreateModeInfo(24, 640, 480, true, 60.0f),
+
+    // refresh rate not available.
+    test::CreateModeInfo(25, 320, 200, false, 0.0f),
+  };
+  resources.nmode = arraysize(modes);
+  resources.modes = modes;
+
+  XRROutputInfo output_info = {0};
+  RRMode output_modes[] = {
+    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25
+  };
+  output_info.nmode = arraysize(output_modes);
+  output_info.modes = output_modes;
+
+  EXPECT_EQ(11u, FindOutputModeMatchingSize(&resources,
+                                           &output_info,
+                                           1920, 1200));
+
+  // Should pick highest refresh rate.
+  EXPECT_EQ(13u, FindOutputModeMatchingSize(&resources,
+                                            &output_info,
+                                            1920, 1080));
+
+  // Should pick non interlaced mode.
+  EXPECT_EQ(17u, FindOutputModeMatchingSize(&resources,
+                                            &output_info,
+                                            1280, 720));
+
+  // Interlaced only. Should pick one with the highest refresh rate in
+  // interlaced mode.
+  EXPECT_EQ(20u, FindOutputModeMatchingSize(&resources,
+                                            &output_info,
+                                            1024, 768));
+
+  // Mixed: Should pick one with the highest refresh rate in
+  // interlaced mode.
+  EXPECT_EQ(23u, FindOutputModeMatchingSize(&resources,
+                                            &output_info,
+                                            1024, 600));
+
+  // Just one interlaced mode.
+  EXPECT_EQ(24u, FindOutputModeMatchingSize(&resources,
+                                            &output_info,
+                                            640, 480));
+
+  // Refresh rate not available.
+  EXPECT_EQ(25u, FindOutputModeMatchingSize(&resources,
+                                            &output_info,
+                                            320, 200));
+
+  // No mode found.
+  EXPECT_EQ(static_cast<XID>(None),
+            FindOutputModeMatchingSize(&resources,
+                                       &output_info,
+                                       1440, 900));
 }
 
 }   // namespace chromeos

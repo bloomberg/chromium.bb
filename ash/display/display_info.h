@@ -6,6 +6,7 @@
 #define ASH_DISPLAY_DISPLAY_INFO_H_
 
 #include <string>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
@@ -15,6 +16,15 @@
 
 namespace ash {
 namespace internal {
+
+// A struct that represents the display's resolution and
+// interlaced info.
+struct ASH_EXPORT Resolution {
+  Resolution(const gfx::Size& size, bool interlaced);
+
+  gfx::Size size;
+  bool interlaced;
+};
 
 // DisplayInfo contains metadata for each display. This is used to
 // create |gfx::Display| as well as to maintain extra infomation
@@ -114,8 +124,20 @@ class ASH_EXPORT DisplayInfo {
   void set_native(bool native) { native_ = native; }
   bool native() const { return native_; }
 
-  // Returns a string representation of the DisplayInfo;
+  const std::vector<Resolution>& resolutions() const {
+    return resolutions_;
+  }
+  void set_resolutions(std::vector<Resolution>& resolution) {
+    resolutions_.swap(resolution);
+  }
+
+  // Returns a string representation of the DisplayInfo
+  // excluding resolutions.
   std::string ToString() const;
+
+  // Returns a string representation of the DisplayInfo
+  // including resolutions.
+  std::string ToFullString() const;
 
  private:
   int64 id_;
@@ -134,6 +156,9 @@ class ASH_EXPORT DisplayInfo {
 
   // True if this comes from native platform (DisplayChangeObserverX11).
   bool native_;
+
+  // The list of resolutions supported by this display.
+  std::vector<Resolution> resolutions_;
 };
 
 }  // namespace internal

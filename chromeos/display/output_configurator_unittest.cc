@@ -127,8 +127,8 @@ class TestDelegate : public OutputConfigurator::Delegate {
     AppendAction(GetBackgroundAction(color_argb));
   }
   virtual void ForceDPMSOn() OVERRIDE { AppendAction(kForceDPMS); }
-  virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs()
-      OVERRIDE {
+  virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs(
+      const OutputConfigurator::StateController* controller) OVERRIDE {
     return outputs_;
   }
   virtual bool GetModeDetails(
@@ -210,6 +210,12 @@ class TestStateController : public OutputConfigurator::StateController {
   // OutputConfigurator::StateController overrides:
   virtual OutputState GetStateForDisplayIds(
       const std::vector<int64>& outputs) const OVERRIDE { return state_; }
+  virtual bool GetResolutionForDisplayId(
+      int64 display_id,
+      int *width,
+      int *height) const OVERRIDE {
+    return false;
+  }
 
  private:
   OutputState state_;
@@ -255,6 +261,7 @@ class OutputConfiguratorTest : public testing::Test {
     o->crtc = 10;
     o->current_mode = kSmallModeId;
     o->native_mode = kSmallModeId;
+    o->selected_mode = kSmallModeId;
     o->mirror_mode = kSmallModeId;
     o->y = 0;
     o->height = kSmallModeHeight;
@@ -268,6 +275,7 @@ class OutputConfiguratorTest : public testing::Test {
     o->crtc = 11;
     o->current_mode = kBigModeId;
     o->native_mode = kBigModeId;
+    o->selected_mode = kBigModeId;
     o->mirror_mode = kSmallModeId;
     o->y = 0;
     o->height = kBigModeHeight;
@@ -681,6 +689,7 @@ TEST_F(OutputConfiguratorTest, Headless) {
   // Connect an external display and check that it's configured correctly.
   outputs_[0].is_internal = false;
   outputs_[0].native_mode = kBigModeId;
+  outputs_[0].selected_mode = kBigModeId;
   UpdateOutputs(1);
   EXPECT_TRUE(test_api_.SendOutputChangeEvents(true));
   EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,

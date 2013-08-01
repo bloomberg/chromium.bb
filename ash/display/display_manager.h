@@ -130,12 +130,20 @@ class ASH_EXPORT DisplayManager
   // Sets the display's ui scale.
   void SetDisplayUIScale(int64 display_id, float ui_scale);
 
+  // Sets the display's resolution.
+  void SetDisplayResolution(int64 display_id, const gfx::Size& resolution);
+
   // Register per display properties. |overscan_insets| is NULL if
   // the display has no custom overscan insets.
   void RegisterDisplayProperty(int64 display_id,
                                gfx::Display::Rotation rotation,
                                float ui_scale,
-                               const gfx::Insets* overscan_insets);
+                               const gfx::Insets* overscan_insets,
+                               const gfx::Size& resolution_in_pixels);
+
+  // Returns the display's selected resolution.
+  bool GetSelectedResolutionForDisplayId(int64 display_id,
+                                         gfx::Size* resolution_out) const;
 
   // Tells if display rotation/ui scaling features are enabled.
   bool IsDisplayRotationEnabled() const;
@@ -269,6 +277,9 @@ private:
 
   // The mapping from the display ID to its internal data.
   std::map<int64, DisplayInfo> display_info_;
+
+  // Selected resolutions for displays. Key is the displays' ID.
+  std::map<int64, gfx::Size> resolutions_;
 
   // When set to true, the host window's resize event updates
   // the display's size. This is set to true when running on

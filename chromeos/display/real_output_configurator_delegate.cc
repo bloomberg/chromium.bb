@@ -105,7 +105,8 @@ void RealOutputConfiguratorDelegate::ForceDPMSOn() {
 }
 
 std::vector<OutputConfigurator::OutputSnapshot>
-RealOutputConfiguratorDelegate::GetOutputs() {
+RealOutputConfiguratorDelegate::GetOutputs(
+    const OutputConfigurator::StateController* state_controller) {
   CHECK(screen_) << "Server not grabbed";
 
   std::vector<OutputConfigurator::OutputSnapshot> outputs;
@@ -150,8 +151,20 @@ RealOutputConfiguratorDelegate::GetOutputs() {
           break;
         }
       }
-
       to_populate.native_mode = GetOutputNativeMode(output_info);
+      if (to_populate.has_display_id) {
+        int width = 0, height = 0;
+        if (state_controller &&
+            state_controller->GetResolutionForDisplayId(
+                to_populate.display_id, &width, &height)) {
+          to_populate.selected_mode =
+              FindOutputModeMatchingSize(screen_, output_info, width, height);
+        }
+      }
+      // Fallback to native mode.
+      if (to_populate.selected_mode == None)
+        to_populate.selected_mode = to_populate.native_mode;
+
       to_populate.is_aspect_preserving_scaling =
           IsOutputAspectPreservingScaling(this_id);
       to_populate.touch_device_id = None;

@@ -15,6 +15,7 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/display_util_x11.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_pump_aurax11.h"
@@ -26,39 +27,14 @@
 
 namespace ash {
 namespace internal {
-
 namespace {
 
 // The DPI threshold to detect high density screen.
 // Higher DPI than this will use device_scale_factor=2.
-// Note: This value has to be kept in sync with the mouse/touchpad driver
-// which controls mouse pointer acceleration. If you need to update this value,
-// please update the bug (crosbug.com/31628) first and make sure that the
-// driver will use the same value.
-// This value also has to be kept in sync with the value in
-// chromeos/display/output_configurator.cc. See crbug.com/130188
 const unsigned int kHighDensityDPIThreshold = 160;
 
 // 1 inch in mm.
 const float kInchInMm = 25.4f;
-
-XRRModeInfo* FindMode(XRRScreenResources* screen_resources, XID current_mode) {
-  for (int m = 0; m < screen_resources->nmode; m++) {
-    XRRModeInfo *mode = &screen_resources->modes[m];
-    if (mode->id == current_mode)
-      return mode;
-  }
-  return NULL;
-}
-
-// A list of bogus sizes in mm that X detects and should be ignored.
-// See crbug.com/136533.
-const unsigned long kInvalidDisplaySizeList[][2] = {
-  {40, 30},
-  {50, 40},
-  {160, 90},
-  {160, 100},
-};
 
 int64 GetDisplayId(XID output, size_t output_index) {
   int64 display_id;
@@ -68,24 +44,6 @@ int64 GetDisplayId(XID output, size_t output_index) {
 }
 
 }  // namespace
-
-bool ShouldIgnoreSize(unsigned long mm_width, unsigned long mm_height) {
-  // Ignore if the reported display is smaller than minimum size.
-  if (mm_width <= kInvalidDisplaySizeList[0][0] ||
-      mm_height <= kInvalidDisplaySizeList[0][1]) {
-    LOG(WARNING) << "Smaller than minimum display size";
-    return true;
-  }
-  for (unsigned long i = 1 ; i < arraysize(kInvalidDisplaySizeList); ++i) {
-    const unsigned long* size = kInvalidDisplaySizeList[i];
-    if (mm_width == size[0] && mm_height == size[1]) {
-      LOG(WARNING) << "Black listed display size detected:"
-                   << size[0] << "x" << size[1];
-      return true;
-    }
-  }
-  return false;
-}
 
 DisplayChangeObserverX11::DisplayChangeObserverX11()
     : xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
@@ -114,6 +72,21 @@ chromeos::OutputState DisplayChangeObserverX11::GetStateForDisplayIds(
       layout_store()->GetRegisteredDisplayLayout(pair);
   return layout.mirrored ?
       chromeos::STATE_DUAL_MIRROR : chromeos::STATE_DUAL_EXTENDED;
+}
+
+bool DisplayChangeObserverX11::GetResolutionForDisplayId(int64 display_id,
+                                                         int* width,
+                                                         int* height) const {
+
+  gfx::Size resolution;
+  if (!Shell::GetInstance()->display_manager()->
+      GetSelectedResolutionForDisplayId(display_id, &resolution)) {
+    return false;
+  }
+
+  *width = resolution.width();
+  *height = resolution.height();
+  return true;
 }
 
 void DisplayChangeObserverX11::OnDisplayModeChanged() {
@@ -151,13 +124,14 @@ void DisplayChangeObserverX11::OnDisplayModeChanged() {
       XRRFreeOutputInfo(output_info);
       continue;
     }
-    XRRCrtcInfo* crtc_info = crtc_info_map[output_info->crtc];
+    const XRRCrtcInfo* crtc_info = crtc_info_map[output_info->crtc];
     if (!crtc_info) {
       LOG(WARNING) << "Crtc not found for output: output_index="
                    << output_index;
       continue;
     }
-    XRRModeInfo* mode = FindMode(screen_resources, crtc_info->mode);
+    const XRRModeInfo* mode =
+        chromeos::FindModeInfo(screen_resources, crtc_info->mode);
     if (!mode) {
       LOG(WARNING) << "Could not find a mode for the output: output_index="
                    << output_index;
@@ -172,6 +146,10 @@ void DisplayChangeObserverX11::OnDisplayModeChanged() {
     }
     gfx::Rect display_bounds(
         crtc_info->x, crtc_info->y, mode->width, mode->height);
+
+    std::vector<Resolution> resolutions;
+    if (!is_internal)
+      resolutions = GetResolutionList(screen_resources, output_info);
 
     XRRFreeOutputInfo(output_info);
 
@@ -195,6 +173,7 @@ void DisplayChangeObserverX11::OnDisplayModeChanged() {
     displays.back().set_device_scale_factor(device_scale_factor);
     displays.back().SetBounds(display_bounds);
     displays.back().set_native(true);
+    displays.back().set_resolutions(resolutions);
   }
 
   // Free all allocated resources.

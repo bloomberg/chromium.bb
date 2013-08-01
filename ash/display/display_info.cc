@@ -22,6 +22,11 @@
 namespace ash {
 namespace internal {
 
+Resolution::Resolution(const gfx::Size& size, bool interlaced)
+    : size(size),
+      interlaced(interlaced) {
+}
+
 // satic
 DisplayInfo DisplayInfo::CreateFromSpec(const std::string& spec) {
   return CreateFromSpecWithID(spec, gfx::Display::kInvalidDisplayID);
@@ -148,6 +153,7 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   bounds_in_pixel_ = native_info.bounds_in_pixel_;
   size_in_pixel_ = native_info.size_in_pixel_;
   device_scale_factor_ = native_info.device_scale_factor_;
+  resolutions_ = native_info.resolutions_;
 
   // Copy overscan_insets_in_dip_ if it's not empty. This is for test
   // cases which use "/o" annotation which sets the overscan inset
@@ -212,6 +218,19 @@ std::string DisplayInfo::ToString() const {
       overscan_insets_in_dip_.ToString().c_str(),
       rotation_degree,
       ui_scale_);
+}
+
+std::string DisplayInfo::ToFullString() const {
+  std::string resolutions_str;
+  std::vector<Resolution>::const_iterator iter = resolutions_.begin();
+  for (; iter != resolutions_.end(); ++iter) {
+    if (!resolutions_str.empty())
+      resolutions_str += ",";
+    resolutions_str += iter->size.ToString();
+    if (iter->interlaced)
+      resolutions_str += "(i)";
+  }
+  return ToString() + ", resolutions=" + resolutions_str;
 }
 
 }  // namespace internal
