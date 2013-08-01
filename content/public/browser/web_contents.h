@@ -80,6 +80,7 @@ class WebContents : public PageNavigator,
 
     BrowserContext* browser_context;
     SiteInstance* site_instance;
+    WebContents* opener;
     int routing_id;
     int main_frame_routing_id;
 

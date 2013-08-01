@@ -320,6 +320,8 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
   if (params.source_contents) {
     create_params.initial_size =
         params.source_contents->GetView()->GetContainerSize();
+    if (params.should_set_opener)
+      create_params.opener = params.source_contents;
   }
 #if defined(USE_AURA)
   if (params.browser->window() &&
@@ -329,7 +331,8 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
   }
 #endif
 
-  content::WebContents* target_contents = WebContents::Create(create_params);
+  WebContents* target_contents = WebContents::Create(create_params);
+
   // New tabs can have WebUI URLs that will make calls back to arbitrary
   // tab helpers, so the entire set of tab helpers needs to be set up
   // immediately.
@@ -393,7 +396,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
       browser(a_browser),
       initiating_profile(NULL),
       host_desktop_type(GetHostDesktop(a_browser)),
-      should_replace_current_entry(false) {
+      should_replace_current_entry(false),
+      should_set_opener(false) {
 }
 
 NavigateParams::NavigateParams(Browser* a_browser,
@@ -412,7 +416,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
       browser(a_browser),
       initiating_profile(NULL),
       host_desktop_type(GetHostDesktop(a_browser)),
-      should_replace_current_entry(false) {
+      should_replace_current_entry(false),
+      should_set_opener(false) {
 }
 
 NavigateParams::NavigateParams(Profile* a_profile,
@@ -433,7 +438,8 @@ NavigateParams::NavigateParams(Profile* a_profile,
       browser(NULL),
       initiating_profile(a_profile),
       host_desktop_type(chrome::GetActiveDesktop()),
-      should_replace_current_entry(false) {
+      should_replace_current_entry(false),
+      should_set_opener(false) {
 }
 
 NavigateParams::~NavigateParams() {}

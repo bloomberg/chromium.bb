@@ -268,7 +268,8 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
 }  // namespace
 
 WebContents* WebContents::Create(const WebContents::CreateParams& params) {
-  return WebContentsImpl::CreateWithOpener(params, NULL);
+  return WebContentsImpl::CreateWithOpener(
+      params, static_cast<WebContentsImpl*>(params.opener));
 }
 
 WebContents* WebContents::CreateWithSessionStorage(

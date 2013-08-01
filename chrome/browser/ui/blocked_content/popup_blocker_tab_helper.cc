@@ -109,6 +109,7 @@ void PopupBlockerTabHelper::AddBlockedPopup(
   nav_params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
   nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = user_gesture;
+  nav_params.should_set_opener = !opener_suppressed;
   web_contents()->GetView()->GetContainerBounds(&nav_params.window_bounds);
   if (features.xSet)
     nav_params.window_bounds.set_x(features.x);
