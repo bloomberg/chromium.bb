@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/metrics/entropy_provider.h"
+
 #include <cmath>
 #include <limits>
 #include <numeric>
@@ -9,10 +11,8 @@
 #include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/metrics/metrics_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +25,7 @@ namespace {
 const size_t kMaxLowEntropySize = 8000;
 
 // Field trial names used in unit tests.
-const std::string kTestTrialNames[] = { "TestTrial", "AnotherTestTrial",
+const char* const kTestTrialNames[] = { "TestTrial", "AnotherTestTrial",
                                         "NewTabButton" };
 
 // Computes the Chi-Square statistic for |values| assuming they follow a uniform
@@ -182,10 +182,7 @@ void PerformEntropyUniformityTest(
 
 }  // namespace
 
-class EntropyProviderTest : public testing::Test {
-};
-
-TEST_F(EntropyProviderTest, UseOneTimeRandomizationSHA1) {
+TEST(EntropyProviderTest, UseOneTimeRandomizationSHA1) {
   // Simply asserts that two trials using one-time randomization
   // that have different names, normally generate different results.
   //
@@ -214,7 +211,7 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationSHA1) {
   EXPECT_NE(trials[0]->group_name(), trials[1]->group_name());
 }
 
-TEST_F(EntropyProviderTest, UseOneTimeRandomizationPermuted) {
+TEST(EntropyProviderTest, UseOneTimeRandomizationPermuted) {
   // Simply asserts that two trials using one-time randomization
   // that have different names, normally generate different results.
   //
@@ -244,7 +241,7 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationPermuted) {
   EXPECT_NE(trials[0]->group_name(), trials[1]->group_name());
 }
 
-TEST_F(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedPermuted) {
+TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedPermuted) {
   // Ensures that two trials with different names but the same custom seed used
   // for one time randomization produce the same group assignments.
   base::FieldTrialList field_trial_list(
@@ -271,7 +268,7 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedPermuted) {
   EXPECT_EQ(trials[0]->group_name(), trials[1]->group_name());
 }
 
-TEST_F(EntropyProviderTest, SHA1Entropy) {
+TEST(EntropyProviderTest, SHA1Entropy) {
   const double results[] = { GenerateSHA1Entropy("hi", "1"),
                              GenerateSHA1Entropy("there", "1") };
 
@@ -287,7 +284,7 @@ TEST_F(EntropyProviderTest, SHA1Entropy) {
             GenerateSHA1Entropy("yo", "else"));
 }
 
-TEST_F(EntropyProviderTest, PermutedEntropy) {
+TEST(EntropyProviderTest, PermutedEntropy) {
   const double results[] = {
       GeneratePermutedEntropy(1234, kMaxLowEntropySize, "1"),
       GeneratePermutedEntropy(4321, kMaxLowEntropySize, "1") };
@@ -304,7 +301,7 @@ TEST_F(EntropyProviderTest, PermutedEntropy) {
             GeneratePermutedEntropy(1234, kMaxLowEntropySize, "else"));
 }
 
-TEST_F(EntropyProviderTest, PermutedEntropyProviderResults) {
+TEST(EntropyProviderTest, PermutedEntropyProviderResults) {
   // Verifies that PermutedEntropyProvider produces expected results. This
   // ensures that the results are the same between platforms and ensures that
   // changes to the implementation do not regress this accidentally.
@@ -317,21 +314,21 @@ TEST_F(EntropyProviderTest, PermutedEntropyProviderResults) {
                    GeneratePermutedEntropy(5000, kMaxLowEntropySize, "Foo"));
 }
 
-TEST_F(EntropyProviderTest, SHA1EntropyIsUniform) {
+TEST(EntropyProviderTest, SHA1EntropyIsUniform) {
   for (size_t i = 0; i < arraysize(kTestTrialNames); ++i) {
     SHA1EntropyGenerator entropy_generator(kTestTrialNames[i]);
     PerformEntropyUniformityTest(kTestTrialNames[i], entropy_generator);
   }
 }
 
-TEST_F(EntropyProviderTest, PermutedEntropyIsUniform) {
+TEST(EntropyProviderTest, PermutedEntropyIsUniform) {
   for (size_t i = 0; i < arraysize(kTestTrialNames); ++i) {
     PermutedEntropyGenerator entropy_generator(kTestTrialNames[i]);
     PerformEntropyUniformityTest(kTestTrialNames[i], entropy_generator);
   }
 }
 
-TEST_F(EntropyProviderTest, SeededRandGeneratorIsUniform) {
+TEST(EntropyProviderTest, SeededRandGeneratorIsUniform) {
   // Verifies that SeededRandGenerator has a uniform distribution.
   //
   // Mirrors RandUtilTest.RandGeneratorIsUniform in base/rand_util_unittest.cc.
@@ -366,35 +363,6 @@ TEST_F(EntropyProviderTest, SeededRandGeneratorIsUniform) {
     ASSERT_LT(count, kMaxAttempts) << "Expected average was " <<
         kExpectedAverage << ", average ended at " << cumulative_average <<
         ", for trial " << kTestTrialNames[i];
-  }
-}
-
-TEST_F(EntropyProviderTest, CachingPermutedEntropyProvider) {
-  TestingPrefServiceSimple prefs;
-  CachingPermutedEntropyProvider::RegisterPrefs(prefs.registry());
-  const int kEntropyValue = 1234;
-
-  // Check that the caching provider returns the same results as the non caching
-  // one. Loop over the trial names twice, to test that caching returns the
-  // expected results.
-  PermutedEntropyProvider provider(kEntropyValue, kMaxLowEntropySize);
-  for (size_t i = 0; i < 2 * arraysize(kTestTrialNames); ++i) {
-    CachingPermutedEntropyProvider cached_provider(&prefs, kEntropyValue,
-                                                   kMaxLowEntropySize);
-    const std::string trial_name =
-        kTestTrialNames[i % arraysize(kTestTrialNames)];
-    EXPECT_EQ(provider.GetEntropyForTrial(trial_name, 0),
-              cached_provider.GetEntropyForTrial(trial_name, 0));
-  }
-
-  // Now, do the same test re-using the same caching provider.
-  CachingPermutedEntropyProvider cached_provider(&prefs, kEntropyValue,
-                                                 kMaxLowEntropySize);
-  for (size_t i = 0; i < 2 * arraysize(kTestTrialNames); ++i) {
-    const std::string trial_name =
-        kTestTrialNames[i % arraysize(kTestTrialNames)];
-    EXPECT_EQ(provider.GetEntropyForTrial(trial_name, 0),
-              cached_provider.GetEntropyForTrial(trial_name, 0));
   }
 }
 

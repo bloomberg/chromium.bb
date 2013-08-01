@@ -1,0 +1,110 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/common/metrics/caching_permuted_entropy_provider.h"
+
+#include <string>
+
+#include "base/base64.h"
+#include "base/logging.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
+
+namespace metrics {
+
+CachingPermutedEntropyProvider::CachingPermutedEntropyProvider(
+    PrefService* local_state,
+    uint16 low_entropy_source,
+    size_t low_entropy_source_max)
+    : PermutedEntropyProvider(low_entropy_source, low_entropy_source_max),
+      local_state_(local_state) {
+  ReadFromLocalState();
+}
+
+CachingPermutedEntropyProvider::~CachingPermutedEntropyProvider() {
+}
+
+// static
+void CachingPermutedEntropyProvider::RegisterPrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kMetricsPermutedEntropyCache,
+                               std::string());
+}
+
+// static
+void CachingPermutedEntropyProvider::ClearCache(PrefService* local_state) {
+  local_state->ClearPref(prefs::kMetricsPermutedEntropyCache);
+}
+
+uint16 CachingPermutedEntropyProvider::GetPermutedValue(
+    uint32 randomization_seed) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  uint16 value = 0;
+  if (!FindValue(randomization_seed, &value)) {
+    value = PermutedEntropyProvider::GetPermutedValue(randomization_seed);
+    AddToCache(randomization_seed, value);
+  }
+  return value;
+}
+
+void CachingPermutedEntropyProvider::ReadFromLocalState() const {
+  const std::string base64_cache_data =
+      local_state_->GetString(prefs::kMetricsPermutedEntropyCache);
+  std::string cache_data;
+  if (!base::Base64Decode(base64_cache_data, &cache_data) ||
+      !cache_.ParseFromString(cache_data)) {
+    local_state_->ClearPref(prefs::kMetricsPermutedEntropyCache);
+    NOTREACHED();
+  }
+}
+
+void CachingPermutedEntropyProvider::UpdateLocalState() const {
+  std::string serialized;
+  cache_.SerializeToString(&serialized);
+
+  std::string base64_encoded;
+  if (!base::Base64Encode(serialized, &base64_encoded)) {
+    NOTREACHED();
+    return;
+  }
+  local_state_->SetString(prefs::kMetricsPermutedEntropyCache, base64_encoded);
+}
+
+void CachingPermutedEntropyProvider::AddToCache(uint32 randomization_seed,
+                                                uint16 value) const {
+  PermutedEntropyCache::Entry* entry;
+  const int kMaxSize = 25;
+  if (cache_.entry_size() >= kMaxSize) {
+    // If the cache is full, evict the first entry, swapping later entries in
+    // to take its place. This effectively creates a FIFO cache, which is good
+    // enough here because the expectation is that there shouldn't be more than
+    // |kMaxSize| field trials at any given time, so eviction should happen very
+    // rarely, only as new trials are introduced, evicting old expired trials.
+    for (int i = 1; i < kMaxSize; ++i)
+      cache_.mutable_entry()->SwapElements(i - 1, i);
+    entry = cache_.mutable_entry(kMaxSize - 1);
+  } else {
+    entry = cache_.add_entry();
+  }
+
+  entry->set_randomization_seed(randomization_seed);
+  entry->set_value(value);
+
+  UpdateLocalState();
+}
+
+bool CachingPermutedEntropyProvider::FindValue(uint32 randomization_seed,
+                                               uint16* value) const {
+  for (int i = 0; i < cache_.entry_size(); ++i) {
+    if (cache_.entry(i).randomization_seed() == randomization_seed) {
+      *value = cache_.entry(i).value();
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace metrics
