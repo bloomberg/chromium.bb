@@ -2,3 +2,13 @@ This is a new App Engine Python 2.7 application for http://gonacl.com
 
 At this time it presents the existing functionality of redirecting
 to http://developers.google.com/native-client/
+
+To upload, run this from the root directory of the AppEngine SDK:
+
+$ ./appcfg.py update <path-to-this-dir>
+
+It probably makes sense to bump the application version in app.yaml for each
+upload, as it lets us use AppEngine's versioning. The newly uploaded version can
+be tried before actually being activated, by going to the "Versions" section on
+the AppEngine dashboard. Note that the newly uploaded version only becomes
+active when it's set as the "default" version in the dashboard.
