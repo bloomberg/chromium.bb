@@ -1091,7 +1091,8 @@ void RendererWebKitPlatformSupportImpl::setDeviceMotionListener(
       device_motion_event_pump_->Attach(RenderThreadImpl::current());
     }
     device_motion_event_pump_->SetListener(listener);
-  } else {
+  } else if (listener) {
+    // Testing mode: just echo the test data to the listener.
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(&WebKit::WebDeviceMotionListener::didChangeDeviceMotion,
