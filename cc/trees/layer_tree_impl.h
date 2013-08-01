@@ -5,12 +5,14 @@
 #ifndef CC_TREES_LAYER_TREE_IMPL_H_
 #define CC_TREES_LAYER_TREE_IMPL_H_
 
+#include <list>
 #include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/values.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/resources/ui_resource_client.h"
 #include "ui/base/latency_info.h"
 
 #if defined(COMPILER_GCC)
@@ -40,6 +42,9 @@ class Proxy;
 class ResourceProvider;
 class TileManager;
 struct RendererCapabilities;
+struct UIResourceRequest;
+
+typedef std::list<UIResourceRequest> UIResourceRequestQueue;
 
 class CC_EXPORT LayerTreeImpl {
  public:
@@ -150,6 +155,8 @@ class CC_EXPORT LayerTreeImpl {
   void set_needs_full_tree_sync(bool needs) { needs_full_tree_sync_ = needs; }
   bool needs_full_tree_sync() const { return needs_full_tree_sync_; }
 
+  void set_ui_resource_request_queue(const UIResourceRequestQueue& queue);
+
   const LayerImplList& RenderSurfaceLayerList() const;
 
   // These return the size of the root scrollable area and the size of
@@ -190,6 +197,9 @@ class CC_EXPORT LayerTreeImpl {
   void ClearLatencyInfo();
 
   void WillModifyTilePriorities();
+
+  ResourceProvider::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
+  void ProcessUIResourceRequestQueue();
 
   void AddLayerWithCopyOutputRequest(LayerImpl* layer);
   void RemoveLayerWithCopyOutputRequest(LayerImpl* layer);
@@ -239,6 +249,8 @@ class CC_EXPORT LayerTreeImpl {
   bool needs_full_tree_sync_;
 
   ui::LatencyInfo latency_info_;
+
+  UIResourceRequestQueue ui_resource_request_queue_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);

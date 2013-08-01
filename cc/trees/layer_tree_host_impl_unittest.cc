@@ -6242,5 +6242,51 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   EXPECT_EQ(not_visible_cutoff_value, current_priority_cutoff_value_);
 }
 
+TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
+  scoped_ptr<TestWebGraphicsContext3D> context =
+      TestWebGraphicsContext3D::Create();
+  TestWebGraphicsContext3D* context3d = context.get();
+  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d(
+      context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+  host_impl_->InitializeRenderer(output_surface.Pass());
+
+  EXPECT_EQ(0u, context3d->NumTextures());
+
+  UIResourceId ui_resource_id = 1;
+  scoped_refptr<UIResourceBitmap> bitmap = UIResourceBitmap::Create(
+      new uint8_t[1], UIResourceBitmap::RGBA8, gfx::Size(1, 1));
+  host_impl_->CreateUIResource(ui_resource_id, bitmap);
+  EXPECT_EQ(1u, context3d->NumTextures());
+  ResourceProvider::ResourceId id1 =
+      host_impl_->ResourceIdForUIResource(ui_resource_id);
+  EXPECT_NE(0u, id1);
+
+  // Multiple requests with the same id is allowed.  The previous texture is
+  // deleted.
+  host_impl_->CreateUIResource(ui_resource_id, bitmap);
+  EXPECT_EQ(1u, context3d->NumTextures());
+  ResourceProvider::ResourceId id2 =
+      host_impl_->ResourceIdForUIResource(ui_resource_id);
+  EXPECT_NE(0u, id2);
+  EXPECT_NE(id1, id2);
+
+  // Deleting invalid UIResourceId is allowed and does not change state.
+  host_impl_->DeleteUIResource(-1);
+  EXPECT_EQ(1u, context3d->NumTextures());
+
+  // Should return zero for invalid UIResourceId.  Number of textures should
+  // not change.
+  EXPECT_EQ(0u, host_impl_->ResourceIdForUIResource(-1));
+  EXPECT_EQ(1u, context3d->NumTextures());
+
+  host_impl_->DeleteUIResource(ui_resource_id);
+  EXPECT_EQ(0u, host_impl_->ResourceIdForUIResource(ui_resource_id));
+  EXPECT_EQ(0u, context3d->NumTextures());
+
+  // Should not change state for multiple deletion on one UIResourceId
+  host_impl_->DeleteUIResource(ui_resource_id);
+  EXPECT_EQ(0u, context3d->NumTextures());
+}
+
 }  // namespace
 }  // namespace cc

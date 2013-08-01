@@ -6,6 +6,7 @@
 #define CC_TREES_LAYER_TREE_HOST_H_
 
 #include <limits>
+#include <list>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -23,6 +24,8 @@
 #include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/output/output_surface.h"
+#include "cc/resources/ui_resource_bitmap.h"
+#include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/rate_limiter.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -79,6 +82,20 @@ struct CC_EXPORT RendererCapabilities {
   bool avoid_pow2_textures;
   bool using_map_image;
   bool using_shared_memory_resources;
+};
+
+struct CC_EXPORT UIResourceRequest {
+  enum UIResourceRequestType {
+    UIResourceCreate,
+    UIResourceDelete,
+    UIResourceInvalidRequest
+  };
+
+  UIResourceRequest();
+  ~UIResourceRequest();
+  UIResourceRequestType type;
+  UIResourceId id;
+  scoped_refptr<UIResourceBitmap> bitmap;
 };
 
 class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
@@ -256,6 +273,16 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
+  // CreateUIResource creates a resource given a bitmap.  The bitmap is
+  // generated via an interface function, which is called when initializing the
+  // resource and when the resource has been lost (due to lost context).  The
+  // parameter of the interface is a single boolean, which indicates whether the
+  // resource has been lost or not.  CreateUIResource returns an Id of the
+  // resource, which is always positive.
+  virtual UIResourceId CreateUIResource(UIResourceClient* client);
+  // Deletes a UI resource.  May safely be called more than once.
+  virtual void DeleteUIResource(UIResourceId id);
+
   bool UsingSharedMemoryResources();
   int id() const { return tree_id_; }
 
@@ -291,6 +318,17 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
       const RenderSurfaceLayerList& update_list);
 
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
+
+  void UIResourceLost(UIResourceId id);
+
+  void DidLoseUIResources();
+
+  typedef base::hash_map<UIResourceId, UIResourceClient*> UIResourceClientMap;
+  UIResourceClientMap ui_resource_client_map_;
+  int next_ui_resource_id_;
+
+  typedef std::list<UIResourceRequest> UIResourceRequestQueue;
+  UIResourceRequestQueue ui_resource_request_queue_;
 
   void CalculateLCDTextMetricsCallback(Layer* layer);
 

@@ -40,6 +40,7 @@
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_layer_tiling.h"
 #include "cc/resources/prioritized_resource_manager.h"
+#include "cc/resources/ui_resource_bitmap.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/texture_uploader.h"
 #include "cc/trees/damage_tracker.h"
@@ -1457,6 +1458,11 @@ void LayerTreeHostImpl::ActivatePendingTree() {
                                    active_tree_->root_layer());
   DCHECK(!recycle_tree_);
 
+  // Process any requests in the UI resource queue.  The request queue is given
+  // in LayerTreeHost::FinishCommitOnImplThread.  This must take place before
+  // the swap.
+  pending_tree_->ProcessUIResourceRequestQueue();
+
   pending_tree_->PushPropertiesTo(active_tree_.get());
 
   // Now that we've synced everything from the pending tree to the active
@@ -1524,6 +1530,9 @@ void LayerTreeHostImpl::ReleaseTreeResources() {
     SendReleaseResourcesRecursive(pending_tree_->root_layer());
   if (recycle_tree_ && recycle_tree_->root_layer())
     SendReleaseResourcesRecursive(recycle_tree_->root_layer());
+
+  // Remove all existing maps from UIResourceId to ResourceId.
+  ui_resource_map_.clear();
 }
 
 void LayerTreeHostImpl::CreateAndSetRenderer(
@@ -2447,6 +2456,44 @@ void LayerTreeHostImpl::SetDebugState(
 
   debug_state_ = new_debug_state;
   SetFullRootLayerDamage();
+}
+
+void LayerTreeHostImpl::CreateUIResource(
+    UIResourceId uid,
+    scoped_refptr<UIResourceBitmap> bitmap) {
+  DCHECK_GT(uid, 0);
+  DCHECK_EQ(bitmap->GetFormat(), UIResourceBitmap::RGBA8);
+
+  // Allow for multiple creation requests with the same UIResourceId.  The
+  // previous resource is simply deleted.
+  ResourceProvider::ResourceId id = ResourceIdForUIResource(uid);
+  if (id)
+    DeleteUIResource(uid);
+  id = resource_provider_->CreateResource(
+      bitmap->GetSize(), GL_RGBA, ResourceProvider::TextureUsageAny);
+
+  ui_resource_map_[uid] = id;
+  resource_provider_->SetPixels(id,
+                                reinterpret_cast<uint8_t*>(bitmap->GetPixels()),
+                                gfx::Rect(bitmap->GetSize()),
+                                gfx::Rect(bitmap->GetSize()),
+                                gfx::Vector2d(0, 0));
+}
+
+void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
+  ResourceProvider::ResourceId id = ResourceIdForUIResource(uid);
+  if (id) {
+    resource_provider_->DeleteResource(id);
+    ui_resource_map_.erase(uid);
+  }
+}
+
+ResourceProvider::ResourceId LayerTreeHostImpl::ResourceIdForUIResource(
+    UIResourceId uid) const {
+  UIResourceMap::const_iterator iter = ui_resource_map_.find(uid);
+  if (iter != ui_resource_map_.end())
+    return iter->second;
+  return 0;
 }
 
 }  // namespace cc

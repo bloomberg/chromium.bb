@@ -135,6 +135,8 @@
       'test/fake_output_surface.h',
       'test/fake_output_surface_client.cc',
       'test/fake_output_surface_client.h',
+      'test/fake_scoped_ui_resource.cc',
+      'test/fake_scoped_ui_resource.h',
       'test/fake_video_frame_provider.cc',
       'test/fake_video_frame_provider.h',
       'test/geometry_test_utils.cc',

@@ -5,10 +5,12 @@
 #ifndef CC_TREES_LAYER_TREE_HOST_IMPL_H_
 #define CC_TREES_LAYER_TREE_HOST_IMPL_H_
 
+#include <list>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_events.h"
@@ -24,7 +26,9 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/render_pass.h"
+#include "cc/resources/resource_provider.h"
 #include "cc/resources/tile_manager.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
 
@@ -42,9 +46,10 @@ class PaintTimeCounter;
 class MemoryHistory;
 class RenderingStatsInstrumentation;
 class RenderPassDrawQuad;
-class ResourceProvider;
 class TopControlsManager;
+class UIResourceBitmap;
 struct RendererCapabilities;
+struct UIResourceRequest;
 
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
@@ -374,6 +379,13 @@ class CC_EXPORT LayerTreeHostImpl
 
   bool page_scale_animation_active() const { return !!page_scale_animation_; }
 
+  void CreateUIResource(UIResourceId uid,
+                        scoped_refptr<UIResourceBitmap> bitmap);
+  // Deletes a UI resource.  May safely be called more than once.
+  void DeleteUIResource(UIResourceId uid);
+
+  ResourceProvider::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -442,6 +454,10 @@ class CC_EXPORT LayerTreeHostImpl
   void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
 
   void DidInitializeVisibleTile();
+
+  typedef base::hash_map<UIResourceId, ResourceProvider::ResourceId>
+      UIResourceMap;
+  UIResourceMap ui_resource_map_;
 
   scoped_ptr<OutputSurface> output_surface_;
 

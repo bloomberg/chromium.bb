@@ -31,6 +31,7 @@
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
+#include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
@@ -1107,7 +1108,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
 MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers);
 
 // Verify atomicity of commits and reuse of textures.
-class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
+class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     // Make sure partial texture updates are turned off.
@@ -1158,19 +1159,18 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        // Number of textures should be doubled as the first textures
-        // are used by impl thread and cannot by used for update.
-        ASSERT_EQ(4u, context->NumTextures());
-        // Number of textures used for commit should still be
-        // one for each layer.
+        // Number of textures should be one for scrollbar layer since it was
+        // requested and deleted on the impl-thread, and double for the content
+        // layer since its first texture is used by impl thread and cannot by
+        // used for update.
+        ASSERT_EQ(3u, context->NumTextures());
+        // Number of textures used for commit should be one for each layer.
         EXPECT_EQ(2u, context->NumUsedTextures());
         // First textures should not have been used.
         EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
         // New textures should have been used.
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
-
         context->ResetUsedTextures();
         PostSetNeedsCommitToMainThread();
         break;
@@ -1205,14 +1205,68 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
 
   virtual void AfterTest() OVERRIDE {}
 
- private:
+ protected:
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> layer_;
   scoped_refptr<FakeScrollbarLayer> scrollbar_;
   int drew_frame_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestAtomicCommit);
+MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostTestDirectRendererAtomicCommit);
+
+class LayerTreeHostTestDelegatingRendererAtomicCommit
+    : public LayerTreeHostTestDirectRendererAtomicCommit {
+ public:
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
+
+    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
+        impl->output_surface()->context3d());
+
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        // Number of textures should be one for each layer
+        ASSERT_EQ(2u, context->NumTextures());
+        // Number of textures used for commit should be one for each layer.
+        EXPECT_EQ(2u, context->NumUsedTextures());
+        // Verify that used texture is correct.
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
+        context->ResetUsedTextures();
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        // Number of textures should be doubled as the first context layer
+        // texture is being used by the impl-thread and cannot be used for
+        // update.  The scrollbar behavior is different direct renderer because
+        // UI resource deletion with delegating renderer occurs after tree
+        // activation.
+        ASSERT_EQ(4u, context->NumTextures());
+        // Number of textures used for commit should still be
+        // one for each layer.
+        EXPECT_EQ(2u, context->NumUsedTextures());
+        // First textures should not have been used.
+        EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
+        EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
+        // New textures should have been used.
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
+        context->ResetUsedTextures();
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+};
+
+MULTI_THREAD_DELEGATING_RENDERER_TEST_F(
+    LayerTreeHostTestDelegatingRendererAtomicCommit);
 
 static void SetLayerPropertiesForTesting(Layer* layer,
                                          Layer* parent,
@@ -1237,8 +1291,6 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     // Allow one partial texture update.
     settings->max_partial_texture_updates = 1;
-    // Linear fade animator prevents scrollbars from drawing immediately.
-    settings->use_linear_fade_scrollbar_animator = false;
     // No partial updates when impl side painting is enabled.
     settings->impl_side_painting = false;
   }
@@ -1251,22 +1303,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     child_->SetPosition(gfx::Point(0, 10));
     child_->SetBounds(gfx::Size(3, 10));
 
-    bool paint_scrollbar = true;
-    bool has_thumb = false;
-    scrollbar_with_paints_ =
-        FakeScrollbarLayer::Create(paint_scrollbar, has_thumb, parent_->id());
-    scrollbar_with_paints_->SetPosition(gfx::Point(3, 10));
-    scrollbar_with_paints_->SetBounds(gfx::Size(3, 10));
-
-    paint_scrollbar = false;
-    scrollbar_without_paints_ =
-        FakeScrollbarLayer::Create(paint_scrollbar, has_thumb, parent_->id());
-    scrollbar_without_paints_->SetPosition(gfx::Point(6, 10));
-    scrollbar_without_paints_->SetBounds(gfx::Size(3, 10));
-
     parent_->AddChild(child_);
-    parent_->AddChild(scrollbar_with_paints_);
-    parent_->AddChild(scrollbar_without_paints_);
 
     layer_tree_host()->SetRootLayer(parent_);
     LayerTreeHostTest::SetupTree();
@@ -1281,22 +1318,14 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
       case 1:
         parent_->SetNeedsDisplay();
         child_->SetNeedsDisplay();
-        scrollbar_with_paints_->SetNeedsDisplay();
-        scrollbar_without_paints_->SetNeedsDisplay();
         break;
       case 2:
         // Damage part of layers.
         parent_->SetNeedsDisplayRect(gfx::RectF(0.f, 0.f, 5.f, 5.f));
         child_->SetNeedsDisplayRect(gfx::RectF(0.f, 0.f, 5.f, 5.f));
-        scrollbar_with_paints_->SetNeedsDisplayRect(
-            gfx::RectF(0.f, 0.f, 5.f, 5.f));
-        scrollbar_without_paints_->SetNeedsDisplayRect(
-            gfx::RectF(0.f, 0.f, 5.f, 5.f));
         break;
       case 3:
         child_->SetNeedsDisplay();
-        scrollbar_with_paints_->SetNeedsDisplay();
-        scrollbar_without_paints_->SetNeedsDisplay();
         layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
         break;
       case 4:
@@ -1320,53 +1349,40 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
         // Number of textures should be one for each layer.
-        ASSERT_EQ(4u, context->NumTextures());
+        ASSERT_EQ(2u, context->NumTextures());
         // Number of textures used for commit should be one for each layer.
-        EXPECT_EQ(4u, context->NumUsedTextures());
+        EXPECT_EQ(2u, context->NumUsedTextures());
         // Verify that used textures are correct.
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
+        context->ResetUsedTextures();
+        break;
+      case 1:
+        // Number of textures should be two for each content layer.
+        ASSERT_EQ(4u, context->NumTextures());
+        // Number of textures used for commit should be one for each content
+        // layer.
+        EXPECT_EQ(2u, context->NumUsedTextures());
+
+        // First content textures should not have been used.
+        EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
+        EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
+        // New textures should have been used.
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
 
         context->ResetUsedTextures();
         break;
-      case 1:
-        // Number of textures should be two for each content layer and one
-        // for each scrollbar, since they always do a partial update.
-        ASSERT_EQ(6u, context->NumTextures());
-        // Number of textures used for commit should be one for each content
-        // layer, and one for the scrollbar layer that paints.
-        EXPECT_EQ(3u, context->NumUsedTextures());
-
-        // First content textures should not have been used.
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
-        // The non-painting scrollbar's texture wasn't updated.
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(2)));
-        // The painting scrollbar's partial update texture was used.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
-        // New textures should have been used.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(4)));
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(5)));
-
-        context->ResetUsedTextures();
-        break;
       case 2:
-        // Number of textures should be two for each content layer and one
-        // for each scrollbar, since they always do a partial update.
-        ASSERT_EQ(6u, context->NumTextures());
+        // Number of textures should be two for each content layer.
+        ASSERT_EQ(4u, context->NumTextures());
         // Number of textures used for commit should be one for each content
-        // layer, and one for the scrollbar layer that paints.
-        EXPECT_EQ(3u, context->NumUsedTextures());
+        // layer.
+        EXPECT_EQ(2u, context->NumUsedTextures());
 
-        // The non-painting scrollbar's texture wasn't updated.
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(2)));
-        // The painting scrollbar does a partial update.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
         // One content layer does a partial update also.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(4)));
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(5)));
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
+        EXPECT_FALSE(context->UsedTexture(context->TextureAt(3)));
 
         context->ResetUsedTextures();
         break;
@@ -1377,10 +1393,9 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
         context->ResetUsedTextures();
         break;
       case 4:
-        // Number of textures used for commit should be two. One for the
-        // content layer, and one for the painting scrollbar. The
-        // non-painting scrollbar doesn't update its texture.
-        EXPECT_EQ(2u, context->NumUsedTextures());
+        // Number of textures used for commit should be one, for the
+        // content layer.
+        EXPECT_EQ(1u, context->NumUsedTextures());
 
         context->ResetUsedTextures();
         break;
@@ -1401,8 +1416,8 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     if (impl->active_tree()->source_frame_number() == 3) {
       EXPECT_EQ(1u, context->NumUsedTextures());
     } else {
-      EXPECT_EQ(4u, context->NumUsedTextures()) <<
-          "For frame " << impl->active_tree()->source_frame_number();
+      EXPECT_EQ(2u, context->NumUsedTextures()) <<
+        "For frame " << impl->active_tree()->source_frame_number();
     }
 
     context->ResetUsedTextures();
@@ -1414,8 +1429,6 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> parent_;
   scoped_refptr<FakeContentLayer> child_;
-  scoped_refptr<FakeScrollbarLayer> scrollbar_with_paints_;
-  scoped_refptr<FakeScrollbarLayer> scrollbar_without_paints_;
 };
 
 // Partial updates are not possible with a delegating renderer.
@@ -1935,7 +1948,7 @@ class LayerTreeHostWithProxy : public LayerTreeHost {
                          const LayerTreeSettings& settings,
                          scoped_ptr<FakeProxy> proxy)
       : LayerTreeHost(client, settings) {
-        proxy->SetLayerTreeHost(this);
+    proxy->SetLayerTreeHost(this);
     EXPECT_TRUE(InitializeForTesting(proxy.PassAs<Proxy>()));
   }
 };
@@ -2372,7 +2385,7 @@ class MockIOSurfaceWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   MOCK_METHOD1(activeTexture, void(WebKit::WGC3Denum texture));
   MOCK_METHOD2(bindTexture, void(WebKit::WGC3Denum target,
-                                WebKit::WebGLId texture_id));
+                                 WebKit::WebGLId texture_id));
   MOCK_METHOD3(texParameteri, void(WebKit::WGC3Denum target,
                                    WebKit::WGC3Denum pname,
                                    WebKit::WGC3Dint param));
@@ -3195,6 +3208,107 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitialize);
+
+// Test for UI Resource management.
+class LayerTreeHostTestUIResource : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestUIResource() : num_ui_resources_(0), num_commits_(0) {}
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void DidCommit() OVERRIDE {
+    int frame = num_commits_;
+    switch (frame) {
+      case 1:
+        CreateResource();
+        CreateResource();
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        // Usually ScopedUIResource are deleted from the manager in their
+        // destructor.  Here we just want to test that a direct call to
+        // DeleteUIResource works.
+        layer_tree_host()->DeleteUIResource(ui_resources_[0]->id());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 3:
+        // DeleteUIResource can be called with an invalid id.
+        layer_tree_host()->DeleteUIResource(ui_resources_[0]->id());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 4:
+        CreateResource();
+        CreateResource();
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 5:
+        ClearResources();
+        EndTest();
+        break;
+    }
+  }
+
+  void PerformTest(LayerTreeHostImpl* impl) {
+    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
+        impl->output_surface()->context3d());
+
+    int frame = num_commits_;
+    switch (frame) {
+      case 1:
+        ASSERT_EQ(0u, context->NumTextures());
+        break;
+      case 2:
+        // Created two textures.
+        ASSERT_EQ(2u, context->NumTextures());
+        break;
+      case 3:
+        // One texture left after one deletion.
+        ASSERT_EQ(1u, context->NumTextures());
+        break;
+      case 4:
+        // Resource manager state should not change when delete is called on an
+        // invalid id.
+        ASSERT_EQ(1u, context->NumTextures());
+        break;
+      case 5:
+        // Creation after deletion: two more creates should total up to
+        // three textures.
+        ASSERT_EQ(3u, context->NumTextures());
+        break;
+    }
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    ++num_commits_;
+    if (!layer_tree_host()->settings().impl_side_painting)
+      PerformTest(impl);
+  }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    if (layer_tree_host()->settings().impl_side_painting)
+      PerformTest(impl);
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  // Must clear all resources before exiting.
+  void ClearResources() {
+    for (int i = 0; i < num_ui_resources_; i++)
+      ui_resources_[i].reset();
+  }
+
+  void CreateResource() {
+    ui_resources_[num_ui_resources_++] =
+        FakeScopedUIResource::Create(layer_tree_host());
+  }
+
+  scoped_ptr<FakeScopedUIResource> ui_resources_[5];
+  int num_ui_resources_;
+  int num_commits_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestUIResource);
 
 class PushPropertiesCountingLayer : public Layer {
  public:

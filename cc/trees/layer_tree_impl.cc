@@ -104,6 +104,9 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
 }
 
 void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
+  // The request queue should have been processed and does not require a push.
+  DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
+
   target_tree->SetLatencyInfo(latency_info_);
   latency_info_.Clear();
   target_tree->SetPageScaleFactorAndLimits(
@@ -282,7 +285,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
 
   // For max_texture_size.
   if (!layer_tree_host_impl_->renderer())
-      return;
+    return;
 
   if (!root_layer())
     return;
@@ -529,7 +532,7 @@ scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {
 }
 
 void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
-      LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) {
+    LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) {
   root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
   if (root_scroll_layer_) {
     root_scroll_layer_->SetScrollOffsetDelegate(
@@ -570,6 +573,35 @@ void LayerTreeImpl::ClearLatencyInfo() {
 
 void LayerTreeImpl::WillModifyTilePriorities() {
   layer_tree_host_impl_->SetNeedsManageTiles();
+}
+
+void LayerTreeImpl::set_ui_resource_request_queue(
+    const UIResourceRequestQueue& queue) {
+  ui_resource_request_queue_ = queue;
+}
+
+ResourceProvider::ResourceId LayerTreeImpl::ResourceIdForUIResource(
+    UIResourceId uid) const {
+  return layer_tree_host_impl_->ResourceIdForUIResource(uid);
+}
+
+void LayerTreeImpl::ProcessUIResourceRequestQueue() {
+  while (ui_resource_request_queue_.size() > 0) {
+    UIResourceRequest req = ui_resource_request_queue_.front();
+    ui_resource_request_queue_.pop_front();
+
+    switch (req.type) {
+      case UIResourceRequest::UIResourceCreate:
+        layer_tree_host_impl_->CreateUIResource(req.id, req.bitmap);
+        break;
+      case UIResourceRequest::UIResourceDelete:
+        layer_tree_host_impl_->DeleteUIResource(req.id);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
 }
 
 void LayerTreeImpl::AddLayerWithCopyOutputRequest(LayerImpl* layer) {
