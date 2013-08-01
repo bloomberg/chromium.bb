@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "sql/error_delegate_util.h"
+#include "sql/transaction.h"
 #include "url/gurl.h"
 
 using base::Callback;
@@ -101,6 +102,10 @@ bool FullStreamUIPolicy::FlushDatabase(sql::Connection* db) {
   if (queued_actions_.empty())
     return true;
 
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return false;
+
   std::string sql_str =
       "INSERT INTO " + std::string(FullStreamUIPolicy::kTableName) +
       " (extension_id, time, action_type, api_name, args, "
@@ -154,6 +159,9 @@ bool FullStreamUIPolicy::FlushDatabase(sql::Connection* db) {
       return false;
     }
   }
+
+  if (!transaction.Commit())
+    return false;
 
   queued_actions_.clear();
   return true;
