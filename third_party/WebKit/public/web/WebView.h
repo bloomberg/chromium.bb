@@ -294,9 +294,6 @@ public:
     // The returned size has the page zoom factor applied.
     virtual WebSize contentsPreferredMinimumSize() = 0;
 
-    // FIXME(aelias): Delete this after Chromium switches to the other name.
-    void setIgnoreViewportTagMaximumScale(bool ignore) { setIgnoreViewportTagScaleLimits(ignore); }
-
     // The ratio of the current device's screen DPI to the target device's screen DPI.
     virtual float deviceScaleFactor() const = 0;
 
