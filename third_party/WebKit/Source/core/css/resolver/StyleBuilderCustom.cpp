@@ -486,8 +486,12 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(StyleResolver*, Style
         return;
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    // FIXME : Per http://www.w3.org/TR/css3-text/#text-align0 can now take <string> but this is not implemented in the
+    // rendering code.
+    if (primitiveValue->isString())
+        return;
 
-    if (primitiveValue->getValueID() != CSSValueWebkitMatchParent)
+    if (primitiveValue->isValueID() && primitiveValue->getValueID() != CSSValueWebkitMatchParent)
         state.style()->setTextAlign(*primitiveValue);
     else if (state.parentStyle()->textAlign() == TASTART)
         state.style()->setTextAlign(state.parentStyle()->isLeftToRightDirection() ? LEFT : RIGHT);
