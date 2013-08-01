@@ -31,9 +31,9 @@
 #include "chrome/app/breakpad_field_trial_win.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_result_codes.h"
 #include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/result_codes.h"
 #include "policy/policy_constants.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sidestep/preamble_patcher.h"
@@ -781,8 +781,9 @@ bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
     *exit_now = (IDOK != ::MessageBoxW(NULL, text, caption, flags));
   } __except(EXCEPTION_EXECUTE_HANDLER) {
     // Its not safe to continue executing, exit silently here.
-    ::TerminateProcess(::GetCurrentProcess(),
-                       chrome::RESULT_CODE_RESPAWN_FAILED);
+    ::TerminateProcess(
+        ::GetCurrentProcess(),
+        breakpad::GetBreakpadClient()->GetResultCodeRespawnFailed());
   }
 
   return true;

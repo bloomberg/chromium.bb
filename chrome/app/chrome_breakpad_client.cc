@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
@@ -176,6 +177,10 @@ bool ChromeBreakpadClient::GetShouldDumpLargerDumps(bool is_per_user_install) {
       channel_name == GoogleChromeSxSDistribution::ChannelName())
     return true;
   return false;
+}
+
+int ChromeBreakpadClient::GetResultCodeRespawnFailed() {
+  return chrome::RESULT_CODE_RESPAWN_FAILED;
 }
 #endif
 

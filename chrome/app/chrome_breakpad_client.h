@@ -33,6 +33,7 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
   virtual bool GetDeferredUploadsSupported(bool is_per_user_install) OVERRIDE;
   virtual bool GetIsPerUserInstall(const base::FilePath& exe_path) OVERRIDE;
   virtual bool GetShouldDumpLargerDumps(bool is_per_user_install) OVERRIDE;
+  virtual int GetResultCodeRespawnFailed() OVERRIDE;
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)

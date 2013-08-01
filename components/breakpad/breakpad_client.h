@@ -67,6 +67,10 @@ class BreakpadClient {
 
   // Returns true if larger crash dumps should be dumped.
   virtual bool GetShouldDumpLargerDumps(bool is_per_user_install);
+
+  // Returns the result code to return when breakpad failed to respawn a
+  // crashed process.
+  virtual int GetResultCodeRespawnFailed();
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)

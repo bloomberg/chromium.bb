@@ -65,6 +65,10 @@ bool BreakpadClient::GetIsPerUserInstall(const base::FilePath& exe_path) {
 bool BreakpadClient::GetShouldDumpLargerDumps(bool is_per_user_install) {
   return false;
 }
+
+int BreakpadClient::GetResultCodeRespawnFailed() {
+  return 0;
+}
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
