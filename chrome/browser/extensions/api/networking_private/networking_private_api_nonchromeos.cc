@@ -164,7 +164,6 @@ bool NetworkingPrivateGetStateFunction::RunImpl() {
       "  \"Type\": \"WiFi\","
       "  \"WiFi\": {"
       "    \"AutoConnect\": false,"
-      "    \"FrequencyList\": [2400, 5000],"
       "    \"Security\": \"WPA-PSK\","
       "    \"SignalStrength\": 80"
       "  }"
@@ -221,7 +220,6 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
       "    \"Type\": \"WiFi\","
       "    \"WiFi\": {"
       "      \"AutoConnect\": false,"
-      "      \"FrequencyList\": [2400],"
       "      \"Security\": \"WEP-PSK\","
       "      \"SignalStrength\": 0"
       "    }"
@@ -233,7 +231,6 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
       "    \"Type\": \"WiFi\","
       "    \"WiFi\": {"
       "      \"AutoConnect\": false,"
-      "      \"FrequencyList\": [2400, 5000],"
       "      \"Security\": \"WPA-PSK\","
       "      \"SignalStrength\": 80"
       "    }"
@@ -321,8 +318,6 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
        "\"Name\":\"wifi2_PSK\","
        "\"Type\":\"WiFi\","
        "\"WiFi\":{"
-         "\"Frequency\":5000,"
-         "\"FrequencyList\":[2400,5000],"
          "\"SSID\":\"stub_wifi2\","
          "\"Security\":\"WPA-PSK\","
          "\"SignalStrength\":80}}";
@@ -432,4 +427,3 @@ bool NetworkingPrivateVerifyAndEncryptDataFunction::RunImpl() {
   SendResponse(true);
   return true;
 }
-
