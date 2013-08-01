@@ -113,11 +113,11 @@ function handleMessage(message_event) {
   var args = parts.slice(1);
 
   if (command == 'ERR') {
-    common.logMessage('Error: ' + args[0] + '\n');
+    common.logMessage('Error: ' + args[0]);
   } else if (command == 'STAT') {
-    common.logMessage(args[0] + '\n');
+    common.logMessage(args[0]);
   } else if (command == 'READY') {
-    common.logMessage('Filesystem ready!\n');
+    common.logMessage('Filesystem ready!');
   } else if (command == 'DISP') {
     // Find the file editor that is currently visible.
     var fileEditorEl =

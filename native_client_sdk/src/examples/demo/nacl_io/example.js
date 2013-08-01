@@ -85,7 +85,7 @@ function fopenResult(filename, filehandle) {
   filehandle_map[filehandle] = filename;
 
   addNameToSelectElements('.file-handle', filehandle, filename);
-  common.logMessage('File ' + filename + ' opened successfully.\n');
+  common.logMessage('File ' + filename + ' opened successfully.');
 }
 
 function fclose(e) {
@@ -96,7 +96,7 @@ function fclose(e) {
 function fcloseResult(filehandle) {
   var filename = filehandle_map[filehandle];
   removeNameFromSelectElements('.file-handle', filehandle, filename);
-  common.logMessage('File ' + filename + ' closed successfully.\n');
+  common.logMessage('File ' + filename + ' closed successfully.');
 }
 
 function fread(e) {
@@ -107,7 +107,7 @@ function fread(e) {
 
 function freadResult(filehandle, data) {
   var filename = filehandle_map[filehandle];
-  common.logMessage('Read "' + data + '" from file ' + filename + '.\n');
+  common.logMessage('Read "' + data + '" from file ' + filename + '.');
 }
 
 function fwrite(e) {
@@ -119,7 +119,7 @@ function fwrite(e) {
 function fwriteResult(filehandle, bytes_written) {
   var filename = filehandle_map[filehandle];
   common.logMessage('Wrote ' + bytes_written + ' bytes to file ' + filename +
-      '.\n');
+      '.');
 }
 
 function fseek(e) {
@@ -132,7 +132,7 @@ function fseek(e) {
 function fseekResult(filehandle, filepos) {
   var filename = filehandle_map[filehandle];
   common.logMessage('Seeked to location ' + filepos + ' in file ' + filename +
-      '.\n');
+      '.');
 }
 
 function stat(e) {
@@ -141,7 +141,7 @@ function stat(e) {
 }
 
 function statResult(filename, size) {
-  common.logMessage('File ' + filename + ' has size ' + size + '.\n');
+  common.logMessage('File ' + filename + ' has size ' + size + '.');
 }
 
 function opendir(e) {
@@ -153,7 +153,7 @@ function opendirResult(dirname, dirhandle) {
   dirhandle_map[dirhandle] = dirname;
 
   addNameToSelectElements('.dir-handle', dirhandle, dirname);
-  common.logMessage('Directory ' + dirname + ' opened successfully.\n');
+  common.logMessage('Directory ' + dirname + ' opened successfully.');
 }
 
 function readdir(e) {
@@ -164,10 +164,10 @@ function readdir(e) {
 function readdirResult(dirhandle, ino, name) {
   var dirname = dirhandle_map[dirhandle];
   if (ino === '') {
-    common.logMessage('End of directory.\n');
+    common.logMessage('End of directory.');
   } else {
     common.logMessage('Read entry ("' + name + '", ino = ' + ino +
-                      ') from directory ' + dirname + '.\n');
+                      ') from directory ' + dirname + '.');
   }
 }
 
@@ -181,7 +181,7 @@ function closedirResult(dirhandle) {
   delete dirhandle_map[dirhandle];
 
   removeNameFromSelectElements('.dir-handle', dirhandle, dirname);
-  common.logMessage('Directory ' + dirname + ' closed successfully.\n');
+  common.logMessage('Directory ' + dirname + ' closed successfully.');
 }
 
 function mkdir(e) {
@@ -191,7 +191,7 @@ function mkdir(e) {
 }
 
 function mkdirResult(dirname) {
-  common.logMessage('Directory ' + dirname + ' created successfully.\n');
+  common.logMessage('Directory ' + dirname + ' created successfully.');
 }
 
 /**
@@ -220,7 +220,7 @@ function makeCall(func) {
 function handleMessage(message_event) {
   var msg = message_event.data;
   if (startsWith(msg, 'Error:')) {
-    common.logMessage(msg + '\n');
+    common.logMessage(msg);
   } else {
     // Result from a function call.
     var params = msg.split('\1');
@@ -230,7 +230,7 @@ function handleMessage(message_event) {
 
     if (!resultFunc) {
       common.logMessage('Error: Bad message ' + funcName +
-                        ' received from NaCl module.\n');
+                        ' received from NaCl module.');
       return;
     }
 

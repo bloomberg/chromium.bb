@@ -20,7 +20,7 @@ function domContentLoaded(name, tc, config, width, height) {
 // event is always triggered when an <EMBED> tag has a MIME type of
 // application/x-nacl.
 function moduleDidStartLoad() {
-  common.logMessage('loadstart\n');
+  common.logMessage('loadstart');
 }
 
 // Progress event handler.  |event| contains a couple of interesting
@@ -45,7 +45,7 @@ function moduleLoadProgress(event) {
     loadPercentString = 'Computing...';
   }
   common.logMessage('progress: ' + loadPercentString +
-                   ' (' + event.loaded + ' of ' + event.total + ' bytes)\n');
+                   ' (' + event.loaded + ' of ' + event.total + ' bytes)');
 }
 
 // Handler that gets called if an error occurred while loading the NaCl
@@ -53,17 +53,17 @@ function moduleLoadProgress(event) {
 // the error, you have to check lastError on the <EMBED> element to find
 // out what happened.
 function moduleLoadError() {
-  common.logMessage('error: ' + common.naclModule.lastError + '\n');
+  common.logMessage('error: ' + common.naclModule.lastError);
 }
 
 // Handler that gets called if the NaCl module load is aborted.
 function moduleLoadAbort() {
-  common.logMessage('abort\n');
+  common.logMessage('abort');
 }
 
 // When the NaCl module has loaded indicate success.
 function moduleDidLoad() {
-  common.logMessage('load\n');
+  common.logMessage('load');
   common.updateStatus('LOADED');
 }
 
@@ -74,15 +74,15 @@ function moduleDidLoad() {
 // that if the NaCl module loads successfully, you will get both a 'load'
 // event and a 'loadend' event.
 function moduleDidEndLoad() {
-  common.logMessage('loadend\n');
+  common.logMessage('loadend');
   var lastError = event.target.lastError;
   if (lastError == undefined || lastError.length == 0) {
     lastError = '<none>';
   }
-  common.logMessage('lastError: ' + lastError + '\n');
+  common.logMessage('lastError: ' + lastError);
 }
 
 // Handle a message coming from the NaCl module.
 function handleMessage(message_event) {
-  common.logMessage('Received PostMessage: ' + message_event.data + '\n');
+  common.logMessage('Received PostMessage: ' + message_event.data);
 }

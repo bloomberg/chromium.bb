@@ -37,5 +37,5 @@ function doClose() {
 }
 
 function handleMessage(message) {
-  common.logMessage(message.data + '\n');
+  common.logMessage(message.data);
 }

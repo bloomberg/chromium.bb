@@ -235,7 +235,7 @@ var common = (function() {
     if (logMessageArray.length > kMaxLogMessageLength)
       logMessageArray.shift();
 
-    document.getElementById('log').textContent = logMessageArray.join('');
+    document.getElementById('log').textContent = logMessageArray.join('\n');
     console.log(message);
   }
 
@@ -273,7 +273,7 @@ var common = (function() {
       return;
     }
 
-    logMessage('Unhandled message: ' + message_event.data + '\n')
+    logMessage('Unhandled message: ' + message_event.data)
   }
 
   /**

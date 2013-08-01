@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<!--
+Copyright (c) 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="-1">
+  <title>{{title}}</title>
+  <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="example.js"></script>
+</head>
+<body {{attrs}}>
+  <h1>{{title}}</h1>
+  <h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <p>The socket example demonstrates how to use the TCP and UDP socket API.<br>
+     First set a server address in the form of 'hostname:port', then push the
+     "Connect" button to establish a connection.<br>
+     "Send" button sends the message of the text area to the the remote host.
+     Any data recieved back will be output to the status log.<br>
+     For example, try connecting to a TCP echo server that will reply with
+     whatever bytes you send, or connect to a web server and send a GET
+     request.<br>
+     "Close" button closes the connection.<br>
+  </p>
+
+  <form id="connectForm">
+    <select id="connect_type">
+      <option value="tcp">TCP</option>
+      <option value="udp">UDP</option>
+    </select>
+    <input type="text" id="hostname" size="25"
+      value="google.com:80">
+    <input type="submit" value="Connect">
+  </form>
+
+  <form id="sendForm">
+    <input type="text" id="message" value="GET / HTTP/1.1\n\n" size="50">
+    <input type="submit" value="Send">
+  </form>
+
+  <button id="closeButton">Close</button>
+
+  <div id="createServer">
+    <h2>Create a local server:</h2>
+    <p>The "Listen" button can be used create a local TCP or UDP echo server listenting
+       on the port specified.  This is implemented using the 'chrome.socket' javascript
+       API which will only work when this application is run as a packaged app.<br>
+    </p>
+    <p>
+    <form id="listenForm">
+      <select id="listen_type">
+        <option value="tcp">TCP</option>
+        <option value="udp">UDP</option>
+      </select>
+      Port:
+      <input type="text" id="port" value="8080" size="6">
+      <input type="submit" value="Listen">
+    </form>
+    </p>
+  </div>
+
+  <pre id="log" style="font-weight: bold"></pre>
+  <div id="listener"></div>
+</body>
+</html>

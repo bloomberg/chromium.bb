@@ -89,6 +89,9 @@ def GetBrowserTesterCommand(desc, toolchain, config):
     '--timeout', '30.0',  # seconds
     # Prevent the infobar that shows up when requesting filesystem quota.
     '--browser_flag', '--unlimited-storage',
+    # Some samples need the use the socket API.  Enabling this for all
+    # tests should be harmless.
+    '--browser_flag', '--allow-nacl-socket-api=localhost',
   ]
 
   args.extend(['--serving_dir', GetServingDirForProject(desc)])

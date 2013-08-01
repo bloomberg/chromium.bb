@@ -71,6 +71,15 @@ examples/api/mouse_lock/Makefile
 examples/api/mouse_lock/manifest.json
 examples/api/mouse_lock/mouse_lock.cc
 examples/api/mouse_lock/mouse_lock.h
+examples/api/socket/background.js
+examples/api/socket/common.js
+examples/api/socket/example.js
+examples/api/socket/icon128.png
+examples/api/socket/index.html
+[win]examples/api/socket/make.bat
+examples/api/socket/Makefile
+examples/api/socket/manifest.json
+examples/api/socket/socket.cc
 examples/api/url_loader/background.js
 examples/api/url_loader/common.js
 examples/api/url_loader/example.js
@@ -302,9 +311,9 @@ include/json/reader.h
 include/json/value.h
 include/json/writer.h
 include/KHR/khrplatform.h
+include/nacl_io/error.h
 include/nacl_io/event_emitter.h
 include/nacl_io/event_listener.h
-include/nacl_io/error.h
 include/nacl_io/inode_pool.h
 include/nacl_io/ioctl.h
 include/nacl_io/kernel_handle.h
