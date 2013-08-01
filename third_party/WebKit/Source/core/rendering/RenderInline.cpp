@@ -24,7 +24,6 @@
 #include "core/rendering/RenderInline.h"
 
 #include "core/dom/FullscreenController.h"
-#include "core/editing/VisiblePosition.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
@@ -803,7 +802,7 @@ bool RenderInline::hitTestCulledInline(const HitTestRequest& request, HitTestRes
     return false;
 }
 
-VisiblePosition RenderInline::positionForPoint(const LayoutPoint& point)
+PositionWithAffinity RenderInline::positionForPoint(const LayoutPoint& point)
 {
     // FIXME: Does not deal with relative or sticky positioned inlines (should it?)
     RenderBlock* cb = containingBlock();

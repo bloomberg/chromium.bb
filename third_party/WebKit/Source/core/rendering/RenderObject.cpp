@@ -2667,9 +2667,9 @@ void RenderObject::postDestroy()
     delete this;
 }
 
-VisiblePosition RenderObject::positionForPoint(const LayoutPoint&)
+PositionWithAffinity RenderObject::positionForPoint(const LayoutPoint&)
 {
-    return createVisiblePosition(caretMinOffset(), DOWNSTREAM);
+    return createPositionWithAffinity(caretMinOffset(), DOWNSTREAM);
 }
 
 void RenderObject::updateDragState(bool dragOn)
@@ -3128,7 +3128,7 @@ Element* RenderObject::offsetParent() const
     return node && node->isElementNode() ? toElement(node) : 0;
 }
 
-VisiblePosition RenderObject::createVisiblePosition(int offset, EAffinity affinity)
+PositionWithAffinity RenderObject::createPositionWithAffinity(int offset, EAffinity affinity)
 {
     // If this is a non-anonymous renderer in an editable area, then it's simple.
     if (Node* node = nonPseudoNode()) {
@@ -3137,13 +3137,13 @@ VisiblePosition RenderObject::createVisiblePosition(int offset, EAffinity affini
             Position position = createLegacyEditingPosition(node, offset);
             Position candidate = position.downstream(CanCrossEditingBoundary);
             if (candidate.deprecatedNode()->rendererIsEditable())
-                return VisiblePosition(candidate, affinity);
+                return PositionWithAffinity(candidate, affinity);
             candidate = position.upstream(CanCrossEditingBoundary);
             if (candidate.deprecatedNode()->rendererIsEditable())
-                return VisiblePosition(candidate, affinity);
+                return PositionWithAffinity(candidate, affinity);
         }
         // FIXME: Eliminate legacy editing positions
-        return VisiblePosition(createLegacyEditingPosition(node, offset), affinity);
+        return PositionWithAffinity(createLegacyEditingPosition(node, offset), affinity);
     }
 
     // We don't want to cross the boundary between editable and non-editable
@@ -3158,7 +3158,7 @@ VisiblePosition RenderObject::createVisiblePosition(int offset, EAffinity affini
         RenderObject* renderer = child;
         while ((renderer = renderer->nextInPreOrder(parent))) {
             if (Node* node = renderer->nonPseudoNode())
-                return VisiblePosition(firstPositionInOrBeforeNode(node), DOWNSTREAM);
+                return PositionWithAffinity(firstPositionInOrBeforeNode(node), DOWNSTREAM);
         }
 
         // Find non-anonymous content before.
@@ -3167,28 +3167,28 @@ VisiblePosition RenderObject::createVisiblePosition(int offset, EAffinity affini
             if (renderer == parent)
                 break;
             if (Node* node = renderer->nonPseudoNode())
-                return VisiblePosition(lastPositionInOrAfterNode(node), DOWNSTREAM);
+                return PositionWithAffinity(lastPositionInOrAfterNode(node), DOWNSTREAM);
         }
 
         // Use the parent itself unless it too is anonymous.
         if (Node* node = parent->nonPseudoNode())
-            return VisiblePosition(firstPositionInOrBeforeNode(node), DOWNSTREAM);
+            return PositionWithAffinity(firstPositionInOrBeforeNode(node), DOWNSTREAM);
 
         // Repeat at the next level up.
         child = parent;
     }
 
     // Everything was anonymous. Give up.
-    return VisiblePosition();
+    return PositionWithAffinity();
 }
 
-VisiblePosition RenderObject::createVisiblePosition(const Position& position)
+PositionWithAffinity RenderObject::createPositionWithAffinity(const Position& position)
 {
     if (position.isNotNull())
-        return VisiblePosition(position);
+        return PositionWithAffinity(position);
 
     ASSERT(!node());
-    return createVisiblePosition(0, DOWNSTREAM);
+    return createPositionWithAffinity(0, DOWNSTREAM);
 }
 
 CursorDirective RenderObject::getCursor(const LayoutPoint&, Cursor&) const

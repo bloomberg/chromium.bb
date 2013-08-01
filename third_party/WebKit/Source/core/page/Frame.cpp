@@ -409,7 +409,7 @@ VisiblePosition Frame::visiblePositionForPoint(const IntPoint& framePoint)
     RenderObject* renderer = node->renderer();
     if (!renderer)
         return VisiblePosition();
-    VisiblePosition visiblePos = renderer->positionForPoint(result.localPoint());
+    VisiblePosition visiblePos = VisiblePosition(renderer->positionForPoint(result.localPoint()));
     if (visiblePos.isNull())
         visiblePos = firstPositionInOrBeforeNode(node);
     return visiblePos;

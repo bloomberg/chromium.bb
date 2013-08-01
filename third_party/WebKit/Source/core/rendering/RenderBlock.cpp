@@ -5247,7 +5247,7 @@ static inline bool isEditingBoundary(RenderObject* ancestor, RenderObject* child
 // FIXME: This function should go on RenderObject as an instance method. Then
 // all cases in which positionForPoint recurs could call this instead to
 // prevent crossing editable boundaries. This would require many tests.
-static VisiblePosition positionForPointRespectingEditingBoundaries(RenderBlock* parent, RenderBox* child, const LayoutPoint& pointInParentCoordinates)
+static PositionWithAffinity positionForPointRespectingEditingBoundaries(RenderBlock* parent, RenderBox* child, const LayoutPoint& pointInParentCoordinates)
 {
     LayoutPoint childLocation = child->location();
     if (child->isInFlowPositioned())
@@ -5275,16 +5275,16 @@ static VisiblePosition positionForPointRespectingEditingBoundaries(RenderBlock* 
     LayoutUnit childMiddle = parent->logicalWidthForChild(child) / 2;
     LayoutUnit logicalLeft = parent->isHorizontalWritingMode() ? pointInChildCoordinates.x() : pointInChildCoordinates.y();
     if (logicalLeft < childMiddle)
-        return ancestor->createVisiblePosition(childNode->nodeIndex(), DOWNSTREAM);
-    return ancestor->createVisiblePosition(childNode->nodeIndex() + 1, UPSTREAM);
+        return ancestor->createPositionWithAffinity(childNode->nodeIndex(), DOWNSTREAM);
+    return ancestor->createPositionWithAffinity(childNode->nodeIndex() + 1, UPSTREAM);
 }
 
-VisiblePosition RenderBlock::positionForPointWithInlineChildren(const LayoutPoint& pointInLogicalContents)
+PositionWithAffinity RenderBlock::positionForPointWithInlineChildren(const LayoutPoint& pointInLogicalContents)
 {
     ASSERT(childrenInline());
 
     if (!firstRootBox())
-        return createVisiblePosition(0, DOWNSTREAM);
+        return createPositionWithAffinity(0, DOWNSTREAM);
 
     bool linesAreFlipped = style()->isFlippedLinesWritingMode();
     bool blocksAreFlipped = style()->isFlippedBlocksWritingMode();
@@ -5340,7 +5340,7 @@ VisiblePosition RenderBlock::positionForPointWithInlineChildren(const LayoutPoin
                         box = newBox;
                 }
                 // y coordinate is above first root line box, so return the start of the first
-                return VisiblePosition(positionForBox(box, true), DOWNSTREAM);
+                return PositionWithAffinity(positionForBox(box, true), DOWNSTREAM);
             }
         }
 
@@ -5358,13 +5358,13 @@ VisiblePosition RenderBlock::positionForPointWithInlineChildren(const LayoutPoin
         ASSERT(moveCaretToBoundary);
         InlineBox* logicallyLastBox;
         if (lastRootBoxWithChildren->getLogicalEndBoxWithNode(logicallyLastBox))
-            return VisiblePosition(positionForBox(logicallyLastBox, false), DOWNSTREAM);
+            return PositionWithAffinity(positionForBox(logicallyLastBox, false), DOWNSTREAM);
     }
 
     // Can't reach this. We have a root line box, but it has no kids.
     // FIXME: This should ASSERT_NOT_REACHED(), but clicking on placeholder text
     // seems to hit this code path.
-    return createVisiblePosition(0, DOWNSTREAM);
+    return createPositionWithAffinity(0, DOWNSTREAM);
 }
 
 static inline bool isChildHitTestCandidate(RenderBox* box)
@@ -5372,7 +5372,7 @@ static inline bool isChildHitTestCandidate(RenderBox* box)
     return box->height() && box->style()->visibility() == VISIBLE && !box->isFloatingOrOutOfFlowPositioned();
 }
 
-VisiblePosition RenderBlock::positionForPoint(const LayoutPoint& point)
+PositionWithAffinity RenderBlock::positionForPoint(const LayoutPoint& point)
 {
     if (isTable())
         return RenderBox::positionForPoint(point);
@@ -5383,9 +5383,9 @@ VisiblePosition RenderBlock::positionForPoint(const LayoutPoint& point)
         LayoutUnit pointLogicalTop = isHorizontalWritingMode() ? point.y() : point.x();
 
         if (pointLogicalTop < 0 || (pointLogicalTop < logicalHeight() && pointLogicalLeft < 0))
-            return createVisiblePosition(caretMinOffset(), DOWNSTREAM);
+            return createPositionWithAffinity(caretMinOffset(), DOWNSTREAM);
         if (pointLogicalTop >= logicalHeight() || (pointLogicalTop >= 0 && pointLogicalLeft >= logicalWidth()))
-            return createVisiblePosition(caretMaxOffset(), DOWNSTREAM);
+            return createPositionWithAffinity(caretMaxOffset(), DOWNSTREAM);
     }
 
     LayoutPoint pointInContents = point;

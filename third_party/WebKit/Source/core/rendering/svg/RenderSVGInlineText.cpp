@@ -155,10 +155,10 @@ bool RenderSVGInlineText::characterStartsNewTextChunk(int position) const
     return it->value.x != SVGTextLayoutAttributes::emptyValue() || it->value.y != SVGTextLayoutAttributes::emptyValue();
 }
 
-VisiblePosition RenderSVGInlineText::positionForPoint(const LayoutPoint& point)
+PositionWithAffinity RenderSVGInlineText::positionForPoint(const LayoutPoint& point)
 {
     if (!firstTextBox() || !textLength())
-        return createVisiblePosition(0, DOWNSTREAM);
+        return createPositionWithAffinity(0, DOWNSTREAM);
 
     float baseline = m_scaledFont.fontMetrics().floatAscent();
 
@@ -203,10 +203,10 @@ VisiblePosition RenderSVGInlineText::positionForPoint(const LayoutPoint& point)
     }
 
     if (!closestDistanceFragment)
-        return createVisiblePosition(0, DOWNSTREAM);
+        return createPositionWithAffinity(0, DOWNSTREAM);
 
     int offset = closestDistanceBox->offsetForPositionInFragment(*closestDistanceFragment, absolutePoint.x() - closestDistancePosition, true);
-    return createVisiblePosition(offset + closestDistanceBox->start(), offset > 0 ? VP_UPSTREAM_IF_POSSIBLE : DOWNSTREAM);
+    return createPositionWithAffinity(offset + closestDistanceBox->start(), offset > 0 ? VP_UPSTREAM_IF_POSSIBLE : DOWNSTREAM);
 }
 
 void RenderSVGInlineText::updateScaledFont()

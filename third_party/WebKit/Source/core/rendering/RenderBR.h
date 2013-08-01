@@ -51,7 +51,7 @@ public:
     virtual int caretMinOffset() const;
     virtual int caretMaxOffset() const;
 
-    virtual VisiblePosition positionForPoint(const LayoutPoint&);
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
 
 protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);

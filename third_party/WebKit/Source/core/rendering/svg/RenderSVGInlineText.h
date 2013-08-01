@@ -55,7 +55,7 @@ private:
     virtual bool requiresLayer() const { return false; }
     virtual bool isSVGInlineText() const { return true; }
 
-    virtual VisiblePosition positionForPoint(const LayoutPoint&);
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0);
     virtual IntRect linesBoundingBox() const;
     virtual InlineTextBox* createTextBox();

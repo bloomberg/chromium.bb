@@ -28,7 +28,7 @@
 
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Element.h"
-#include "core/editing/TextAffinity.h"
+#include "core/dom/Position.h"
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/LayoutRect.h"
@@ -68,7 +68,6 @@ class RenderSVGResourceContainer;
 class RenderTable;
 class RenderTheme;
 class TransformState;
-class VisiblePosition;
 
 struct PaintInfo;
 
@@ -689,9 +688,9 @@ public:
     virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
 
-    virtual VisiblePosition positionForPoint(const LayoutPoint&);
-    VisiblePosition createVisiblePosition(int offset, EAffinity);
-    VisiblePosition createVisiblePosition(const Position&);
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&);
+    PositionWithAffinity createPositionWithAffinity(int offset, EAffinity);
+    PositionWithAffinity createPositionWithAffinity(const Position&);
 
     virtual void dirtyLinesFromChangedChild(RenderObject*);
 

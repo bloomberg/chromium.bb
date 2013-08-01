@@ -493,7 +493,7 @@ public:
 
     LayoutRect maskClipRect();
 
-    virtual VisiblePosition positionForPoint(const LayoutPoint&);
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
 
     void removeFloatingOrPositionedChildFromBlockLists();
 

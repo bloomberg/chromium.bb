@@ -63,7 +63,7 @@ private:
     virtual void paint(PaintInfo&, const LayoutPoint&);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
-    virtual VisiblePosition positionForPoint(const LayoutPoint&);
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
 
     virtual bool requiresLayer() const { return false; }
     virtual void layout();

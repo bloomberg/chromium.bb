@@ -25,7 +25,6 @@
 #include "HTMLNames.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/VisiblePosition.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/platform/graphics/Font.h"
@@ -204,9 +203,9 @@ void RenderFileUploadControl::computePreferredLogicalWidths()
     setPreferredLogicalWidthsDirty(false);
 }
 
-VisiblePosition RenderFileUploadControl::positionForPoint(const LayoutPoint&)
+PositionWithAffinity RenderFileUploadControl::positionForPoint(const LayoutPoint&)
 {
-    return VisiblePosition();
+    return PositionWithAffinity();
 }
 
 HTMLInputElement* RenderFileUploadControl::uploadButton() const

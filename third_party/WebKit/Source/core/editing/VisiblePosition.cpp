@@ -50,6 +50,11 @@ VisiblePosition::VisiblePosition(const Position &pos, EAffinity affinity)
     init(pos, affinity);
 }
 
+VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinity)
+{
+    init(positionWithAffinity.position(), positionWithAffinity.affinity());
+}
+
 void VisiblePosition::init(const Position& position, EAffinity affinity)
 {
     m_affinity = affinity;

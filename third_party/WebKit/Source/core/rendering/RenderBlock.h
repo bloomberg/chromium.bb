@@ -227,7 +227,7 @@ public:
     LayoutUnit startAlignedOffsetForLine(LayoutUnit position, bool shouldIndentText);
     LayoutUnit textIndentOffset() const;
 
-    virtual VisiblePosition positionForPoint(const LayoutPoint&);
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
 
     // Block flows subclass availableWidth to handle multi column layout (shrinking the width available to children when laying out.)
     virtual LayoutUnit availableLogicalWidth() const OVERRIDE FINAL;
@@ -965,7 +965,7 @@ private:
     void newLine(EClear);
 
     Position positionForBox(InlineBox*, bool start = true) const;
-    VisiblePosition positionForPointWithInlineChildren(const LayoutPoint&);
+    PositionWithAffinity positionForPointWithInlineChildren(const LayoutPoint&);
 
     virtual void calcColumnWidth();
     void makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, RenderBlock* newBlockBox, RenderObject* newChild);

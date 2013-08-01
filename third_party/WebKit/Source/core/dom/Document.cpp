@@ -1216,11 +1216,11 @@ PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
     RenderObject* renderer = node->renderer();
     if (!renderer)
         return 0;
-    VisiblePosition visiblePosition = renderer->positionForPoint(localPoint);
-    if (visiblePosition.isNull())
+    PositionWithAffinity positionWithAffinity = renderer->positionForPoint(localPoint);
+    if (positionWithAffinity.position().isNull())
         return 0;
 
-    Position rangeCompliantPosition = visiblePosition.deepEquivalent().parentAnchoredEquivalent();
+    Position rangeCompliantPosition = positionWithAffinity.position().parentAnchoredEquivalent();
     return Range::create(this, rangeCompliantPosition, rangeCompliantPosition);
 }
 

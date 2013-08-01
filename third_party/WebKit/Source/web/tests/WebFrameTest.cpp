@@ -62,6 +62,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SpellChecker.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/EventHandler.h"
@@ -2603,6 +2604,11 @@ TEST_F(WebFrameTest, SelectRangeCanMoveSelectionEnd)
     // EXPECT_EQ("Editable 1. Editable 2. ]", selectionAsString(frame));
 }
 
+static int computeOffset(WebCore::RenderObject* renderer, int x, int y)
+{
+    return WebCore::VisiblePosition(renderer->positionForPoint(WebCore::LayoutPoint(x, y))).deepEquivalent().computeOffsetInContainerNode();
+}
+
 // positionForPoint returns the wrong values for contenteditable spans. See
 // http://crbug.com/238334.
 TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
@@ -2611,15 +2617,15 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
     m_webView = createWebViewForTextSelection(m_baseURL + "select_range_span_editable.html");
     WebFrameImpl* mainFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
     WebCore::RenderObject* renderer = mainFrame->frame()->selection()->rootEditableElement()->renderer();
-    EXPECT_EQ(0, renderer->positionForPoint(WebCore::LayoutPoint(-1, -1)).deepEquivalent().computeOffsetInContainerNode());
-    EXPECT_EQ(64, renderer->positionForPoint(WebCore::LayoutPoint(1000, 1000)).deepEquivalent().computeOffsetInContainerNode());
+    EXPECT_EQ(0, computeOffset(renderer, -1, -1));
+    EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 
     registerMockedHttpURLLoad("select_range_div_editable.html");
     m_webView = createWebViewForTextSelection(m_baseURL + "select_range_div_editable.html");
     mainFrame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
     renderer = mainFrame->frame()->selection()->rootEditableElement()->renderer();
-    EXPECT_EQ(0, renderer->positionForPoint(WebCore::LayoutPoint(-1, -1)).deepEquivalent().computeOffsetInContainerNode());
-    EXPECT_EQ(64, renderer->positionForPoint(WebCore::LayoutPoint(1000, 1000)).deepEquivalent().computeOffsetInContainerNode());
+    EXPECT_EQ(0, computeOffset(renderer, -1, -1));
+    EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
 }
 
 #if !OS(DARWIN)

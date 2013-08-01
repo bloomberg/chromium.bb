@@ -24,7 +24,6 @@
 #include "config.h"
 #include "core/rendering/RenderReplaced.h"
 
-#include "core/editing/VisiblePosition.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderBlock.h"
@@ -465,7 +464,7 @@ void RenderReplaced::computePreferredLogicalWidths()
     setPreferredLogicalWidthsDirty(false);
 }
 
-VisiblePosition RenderReplaced::positionForPoint(const LayoutPoint& point)
+PositionWithAffinity RenderReplaced::positionForPoint(const LayoutPoint& point)
 {
     // FIXME: This code is buggy if the replaced element is relative positioned.
     InlineBox* box = inlineBoxWrapper();
@@ -478,15 +477,15 @@ VisiblePosition RenderReplaced::positionForPoint(const LayoutPoint& point)
     LayoutUnit lineDirectionPosition = isHorizontalWritingMode() ? point.x() + x() : point.y() + y();
 
     if (blockDirectionPosition < top)
-        return createVisiblePosition(caretMinOffset(), DOWNSTREAM); // coordinates are above
+        return createPositionWithAffinity(caretMinOffset(), DOWNSTREAM); // coordinates are above
 
     if (blockDirectionPosition >= bottom)
-        return createVisiblePosition(caretMaxOffset(), DOWNSTREAM); // coordinates are below
+        return createPositionWithAffinity(caretMaxOffset(), DOWNSTREAM); // coordinates are below
 
     if (node()) {
         if (lineDirectionPosition <= logicalLeft() + (logicalWidth() / 2))
-            return createVisiblePosition(0, DOWNSTREAM);
-        return createVisiblePosition(1, DOWNSTREAM);
+            return createPositionWithAffinity(0, DOWNSTREAM);
+        return createPositionWithAffinity(1, DOWNSTREAM);
     }
 
     return RenderBox::positionForPoint(point);

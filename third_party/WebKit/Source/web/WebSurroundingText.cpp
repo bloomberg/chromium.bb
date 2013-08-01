@@ -45,7 +45,7 @@ void WebSurroundingText::initialize(const WebNode& webNode, const WebPoint& node
     if (!node || !node->renderer())
         return;
 
-    m_private.reset(new SurroundingText(node->renderer()->positionForPoint(static_cast<IntPoint>(nodePoint)), maxLength));
+    m_private.reset(new SurroundingText(VisiblePosition(node->renderer()->positionForPoint(static_cast<IntPoint>(nodePoint))), maxLength));
 }
 
 WebString WebSurroundingText::textContent() const

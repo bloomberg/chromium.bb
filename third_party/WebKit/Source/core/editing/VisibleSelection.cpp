@@ -643,7 +643,7 @@ VisiblePosition VisibleSelection::visiblePositionRespectingEditingBoundary(const
         targetNode = editableElement;
     }
 
-    return targetNode->renderer()->positionForPoint(selectionEndPoint);
+    return VisiblePosition(targetNode->renderer()->positionForPoint(selectionEndPoint));
 }
 
 

@@ -23,7 +23,6 @@
 #include "core/rendering/RenderBR.h"
 
 #include "core/dom/Document.h"
-#include "core/editing/VisiblePosition.h"
 
 namespace WebCore {
 
@@ -73,9 +72,9 @@ int RenderBR::caretMaxOffset() const
     return 1;
 }
 
-VisiblePosition RenderBR::positionForPoint(const LayoutPoint&)
+PositionWithAffinity RenderBR::positionForPoint(const LayoutPoint&)
 {
-    return createVisiblePosition(0, DOWNSTREAM);
+    return createPositionWithAffinity(0, DOWNSTREAM);
 }
 
 } // namespace WebCore

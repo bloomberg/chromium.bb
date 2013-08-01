@@ -28,7 +28,6 @@
 
 #include "core/rendering/svg/RenderSVGText.h"
 
-#include "core/editing/VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"
@@ -465,11 +464,11 @@ bool RenderSVGText::nodeAtPoint(const HitTestRequest&, HitTestResult&, const Hit
     return false;
 }
 
-VisiblePosition RenderSVGText::positionForPoint(const LayoutPoint& pointInContents)
+PositionWithAffinity RenderSVGText::positionForPoint(const LayoutPoint& pointInContents)
 {
     RootInlineBox* rootBox = firstRootBox();
     if (!rootBox)
-        return createVisiblePosition(0, DOWNSTREAM);
+        return createPositionWithAffinity(0, DOWNSTREAM);
 
     ASSERT_WITH_SECURITY_IMPLICATION(rootBox->isSVGRootInlineBox());
     ASSERT(!rootBox->nextRootBox());
@@ -477,7 +476,7 @@ VisiblePosition RenderSVGText::positionForPoint(const LayoutPoint& pointInConten
 
     InlineBox* closestBox = static_cast<SVGRootInlineBox*>(rootBox)->closestLeafChildForPosition(pointInContents);
     if (!closestBox)
-        return createVisiblePosition(0, DOWNSTREAM);
+        return createPositionWithAffinity(0, DOWNSTREAM);
 
     return closestBox->renderer()->positionForPoint(LayoutPoint(pointInContents.x(), closestBox->y()));
 }
