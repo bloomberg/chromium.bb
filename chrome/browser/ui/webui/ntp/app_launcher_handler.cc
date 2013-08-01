@@ -81,6 +81,11 @@ void RecordAppLauncherPromoHistogram(
       "Apps.AppLauncherPromo", value, apps::APP_LAUNCHER_PROMO_MAX);
 }
 
+// This is used to avoid a DCHECK due to an unhandled WebUI callback. The
+// JavaScript used to switch between pages sends "pageSelected" which is used
+// in the context of the NTP for recording metrics we don't need here.
+void NoOpCallback(const ListValue* args) {}
+
 }  // namespace
 
 AppLauncherHandler::AppInstallInfo::AppInstallInfo() {}
@@ -223,6 +228,7 @@ void AppLauncherHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("onLearnMore",
       base::Bind(&AppLauncherHandler::OnLearnMore,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("pageSelected", base::Bind(&NoOpCallback));
 }
 
 void AppLauncherHandler::Observe(int type,
