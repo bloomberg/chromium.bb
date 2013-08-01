@@ -373,6 +373,11 @@ void AudioCodecBridge::PlayOutputBuffer(int index, size_t size) {
       env, media_codec(), byte_array.obj());
 }
 
+void AudioCodecBridge::SetVolume(double volume) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_MediaCodecBridge_setVolume(env, media_codec(), volume);
+}
+
 VideoCodecBridge::VideoCodecBridge(const char* mime)
     : MediaCodecBridge(mime) {
 }

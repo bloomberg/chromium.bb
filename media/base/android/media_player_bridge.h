@@ -58,7 +58,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual void Pause() OVERRIDE;
   virtual void SeekTo(base::TimeDelta time) OVERRIDE;
   virtual void Release() OVERRIDE;
-  virtual void SetVolume(float leftVolume, float rightVolume) OVERRIDE;
+  virtual void SetVolume(double volume) OVERRIDE;
   virtual int GetVideoWidth() OVERRIDE;
   virtual int GetVideoHeight() OVERRIDE;
   virtual base::TimeDelta GetCurrentTime() OVERRIDE;

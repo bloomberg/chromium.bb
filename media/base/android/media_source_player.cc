@@ -82,6 +82,8 @@ class AudioDecoderJob : public MediaDecoderJob {
       const AudioCodec audio_codec, int sample_rate, int channel_count,
       const uint8* extra_data, size_t extra_data_size, jobject media_crypto);
 
+  void SetVolume(double volume);
+
  private:
   AudioDecoderJob(MediaCodecBridge* media_codec_bridge);
 };
@@ -301,6 +303,10 @@ AudioDecoderJob::AudioDecoderJob(MediaCodecBridge* media_codec_bridge)
                       media_codec_bridge,
                       true) {}
 
+void AudioDecoderJob::SetVolume(double volume) {
+  static_cast<AudioCodecBridge*>(media_codec_bridge_.get())->SetVolume(volume);
+}
+
 MediaSourcePlayer::MediaSourcePlayer(
     int player_id,
     MediaPlayerManager* manager)
@@ -318,6 +324,7 @@ MediaSourcePlayer::MediaSourcePlayer(
       playing_(false),
       is_audio_encrypted_(false),
       is_video_encrypted_(false),
+      volume_(-1.0),
       clock_(&default_tick_clock_),
       reconfig_audio_decoder_(false),
       reconfig_video_decoder_(false),
@@ -421,7 +428,9 @@ void MediaSourcePlayer::Release() {
   ReleaseMediaResourcesFromManager();
 }
 
-void MediaSourcePlayer::SetVolume(float leftVolume, float rightVolume) {
+void MediaSourcePlayer::SetVolume(double volume) {
+  volume_ = volume;
+  SetVolumeInternal();
 }
 
 bool MediaSourcePlayer::CanPause() {
@@ -808,8 +817,10 @@ void MediaSourcePlayer::ConfigureAudioDecoderJob() {
       audio_codec_, sampling_rate_, num_channels_, &audio_extra_data_[0],
       audio_extra_data_.size(), media_codec.obj()));
 
-  if (audio_decoder_job_)
+  if (audio_decoder_job_) {
+    SetVolumeInternal();
     reconfig_audio_decoder_ =  false;
+  }
 }
 
 void MediaSourcePlayer::ConfigureVideoDecoderJob() {
@@ -918,6 +929,11 @@ bool MediaSourcePlayer::HasAudioData() const {
 
 bool MediaSourcePlayer::HasVideoData() const {
   return video_access_unit_index_ < received_video_.access_units.size();
+}
+
+void MediaSourcePlayer::SetVolumeInternal() {
+  if (audio_decoder_job_ && volume_ >= 0)
+    audio_decoder_job_.get()->SetVolume(volume_);
 }
 
 }  // namespace media

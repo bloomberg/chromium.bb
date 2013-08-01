@@ -300,14 +300,14 @@ void MediaPlayerBridge::Release() {
   listener_.ReleaseMediaPlayerListenerResources();
 }
 
-void MediaPlayerBridge::SetVolume(float left_volume, float right_volume) {
+void MediaPlayerBridge::SetVolume(double volume) {
   if (j_media_player_bridge_.is_null())
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   Java_MediaPlayerBridge_setVolume(
-      env, j_media_player_bridge_.obj(), left_volume, right_volume);
+      env, j_media_player_bridge_.obj(), volume);
 }
 
 void MediaPlayerBridge::OnVideoSizeChanged(int width, int height) {

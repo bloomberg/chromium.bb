@@ -71,7 +71,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual void Release() = 0;
 
   // Set the player volume.
-  virtual void SetVolume(float leftVolume, float rightVolume) = 0;
+  virtual void SetVolume(double volume) = 0;
 
   // Get the media information from the player.
   virtual int GetVideoWidth() = 0;

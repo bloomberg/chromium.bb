@@ -50,6 +50,9 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   // Performs seek on the player.
   void Seek(int player_id, base::TimeDelta time);
 
+  // Set the player volume.
+  void SetVolume(int player_id, double volume);
+
   // Release resources for the player.
   void ReleaseResources(int player_id);
 

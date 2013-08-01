@@ -133,6 +133,9 @@ class AudioCodecBridge : public MediaCodecBridge {
   // DequeueOutputBuffer() and before ReleaseOutputBuffer.
   void PlayOutputBuffer(int index, size_t size);
 
+  // Set the volume of the audio output.
+  void SetVolume(double volume);
+
  private:
   explicit AudioCodecBridge(const char* mime);
 

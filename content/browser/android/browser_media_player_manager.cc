@@ -58,12 +58,12 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(BrowserMediaPlayerManager, msg)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_EnterFullscreen, OnEnterFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ExitFullscreen, OnExitFullscreen)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerInitialize, OnInitialize)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerStart, OnStart)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerSeek, OnSeek)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerPause, OnPause)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerRelease,
-                        OnReleaseResources)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Initialize, OnInitialize)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Start, OnStart)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Seek, OnSeek)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Pause, OnPause)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_SetVolume, OnSetVolume)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_Release, OnReleaseResources)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
                         DestroyAllMediaPlayers)
@@ -404,6 +404,12 @@ void BrowserMediaPlayerManager::OnPause(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->Pause();
+}
+
+void BrowserMediaPlayerManager::OnSetVolume(int player_id, double volume) {
+  MediaPlayerAndroid* player = GetPlayer(player_id);
+  if (player)
+    player->SetVolume(volume);
 }
 
 void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {

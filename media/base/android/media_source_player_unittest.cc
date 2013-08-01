@@ -94,9 +94,12 @@ class MediaSourcePlayerTest : public testing::Test {
  protected:
   // Get the decoder job from the MediaSourcePlayer.
   MediaDecoderJob* GetMediaDecoderJob(bool is_audio) {
-    if (is_audio)
-      return player_->audio_decoder_job_.get();
-    return player_->video_decoder_job_.get();
+    if (is_audio) {
+      return reinterpret_cast<MediaDecoderJob*>(
+          player_->audio_decoder_job_.get());
+    }
+    return reinterpret_cast<MediaDecoderJob*>(
+        player_->video_decoder_job_.get());
   }
 
   // Starts an audio decoder job.

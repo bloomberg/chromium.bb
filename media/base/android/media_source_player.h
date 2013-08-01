@@ -63,10 +63,6 @@ class MediaDecoderJob {
   // Flush the decoder.
   void Flush();
 
-  struct Deleter {
-    inline void operator()(MediaDecoderJob* ptr) const { ptr->Release(); }
-  };
-
   // Causes this instance to be deleted on the thread it is bound to.
   void Release();
 
@@ -123,8 +119,9 @@ class MediaDecoderJob {
   bool is_decoding_;
 };
 
-typedef scoped_ptr<MediaDecoderJob, MediaDecoderJob::Deleter>
-    ScopedMediaDecoderJob;
+struct DecoderJobDeleter {
+  inline void operator()(MediaDecoderJob* ptr) const { ptr->Release(); }
+};
 
 // This class handles media source extensions on Android. It uses Android
 // MediaCodec to decode audio and video streams in two separate threads.
@@ -143,7 +140,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   virtual void Pause() OVERRIDE;
   virtual void SeekTo(base::TimeDelta timestamp) OVERRIDE;
   virtual void Release() OVERRIDE;
-  virtual void SetVolume(float leftVolume, float rightVolume) OVERRIDE;
+  virtual void SetVolume(double volume) OVERRIDE;
   virtual int GetVideoWidth() OVERRIDE;
   virtual int GetVideoHeight() OVERRIDE;
   virtual base::TimeDelta GetCurrentTime() OVERRIDE;
@@ -220,6 +217,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   bool HasAudioData() const;
   bool HasVideoData() const;
 
+  // Helper function to set the volume.
+  void SetVolumeInternal();
+
   enum PendingEventFlags {
     NO_EVENT_PENDING = 0,
     SEEK_EVENT_PENDING = 1 << 0,
@@ -247,6 +247,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   bool playing_;
   bool is_audio_encrypted_;
   bool is_video_encrypted_;
+  double volume_;
 
   // base::TickClock used by |clock_|.
   base::DefaultTickClock default_tick_clock_;
@@ -267,8 +268,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   gfx::ScopedJavaSurface surface_;
 
   // Decoder jobs
-  ScopedMediaDecoderJob audio_decoder_job_;
-  ScopedMediaDecoderJob video_decoder_job_;
+  scoped_ptr<AudioDecoderJob, DecoderJobDeleter> audio_decoder_job_;
+  scoped_ptr<VideoDecoderJob, DecoderJobDeleter> video_decoder_job_;
 
   bool reconfig_audio_decoder_;
   bool reconfig_video_decoder_;

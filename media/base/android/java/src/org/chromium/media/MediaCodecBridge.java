@@ -285,6 +285,13 @@ class MediaCodecBridge {
         }
     }
 
+    @CalledByNative
+    private void setVolume(double volume) {
+        if (mAudioTrack != null) {
+            mAudioTrack.setStereoVolume((float) volume, (float) volume);
+        }
+    }
+
     private void resetLastPresentationTimeIfNeeded(long presentationTimeUs) {
         if (mFlushed) {
             mLastPresentationTimeUs =

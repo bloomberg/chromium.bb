@@ -153,36 +153,36 @@ IPC_MESSAGE_ROUTED0(MediaPlayerHostMsg_DestroyAllMediaPlayers)
 
 // Initialize a media player object with the given player_id.
 IPC_MESSAGE_ROUTED4(
-    MediaPlayerHostMsg_MediaPlayerInitialize,
+    MediaPlayerHostMsg_Initialize,
     int /* player_id */,
     GURL /* url */,
     media::MediaPlayerAndroid::SourceType /* source_type */,
     GURL /* first_party_for_cookies */)
 
 // Pause the player.
-IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_MediaPlayerPause,
-                    int /* player_id */)
+IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_Pause, int /* player_id */)
 
 // Release player resources, but keep the object for future usage.
-IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_MediaPlayerRelease,
-                    int /* player_id */)
+IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_Release, int /* player_id */)
 
 // Perform a seek.
-IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_MediaPlayerSeek,
+IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_Seek,
                     int /* player_id */,
                     base::TimeDelta /* time */)
 
 // Start the player for playback.
-IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_MediaPlayerStart,
-                    int /* player_id */)
+IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_Start, int /* player_id */)
+
+// Start the player for playback.
+IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_SetVolume,
+                    int /* player_id */,
+                    double /* volume */)
 
 // Request the player to enter fullscreen.
-IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen,
-                    int /* player_id */)
+IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen, int /* player_id */)
 
 // Request the player to exit fullscreen.
-IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_ExitFullscreen,
-                    int /* player_id */)
+IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_ExitFullscreen, int /* player_id */)
 
 // Sent when the seek request is received by the WebMediaPlayerAndroid.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_MediaSeekRequestAck,

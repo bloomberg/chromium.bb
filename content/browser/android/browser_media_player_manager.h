@@ -116,6 +116,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnStart(int player_id);
   virtual void OnSeek(int player_id, base::TimeDelta time);
   virtual void OnPause(int player_id);
+  virtual void OnSetVolume(int player_id, double volume);
   virtual void OnReleaseResources(int player_id);
   virtual void OnDestroyPlayer(int player_id);
   virtual void OnDemuxerReady(

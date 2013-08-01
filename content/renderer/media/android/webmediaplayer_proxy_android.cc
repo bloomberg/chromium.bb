@@ -57,24 +57,28 @@ void WebMediaPlayerProxyAndroid::Initialize(
     const GURL& url,
     media::MediaPlayerAndroid::SourceType source_type,
     const GURL& first_party_for_cookies) {
-  Send(new MediaPlayerHostMsg_MediaPlayerInitialize(
+  Send(new MediaPlayerHostMsg_Initialize(
       routing_id(), player_id, url, source_type, first_party_for_cookies));
 }
 
 void WebMediaPlayerProxyAndroid::Start(int player_id) {
-  Send(new MediaPlayerHostMsg_MediaPlayerStart(routing_id(), player_id));
+  Send(new MediaPlayerHostMsg_Start(routing_id(), player_id));
 }
 
 void WebMediaPlayerProxyAndroid::Pause(int player_id) {
-  Send(new MediaPlayerHostMsg_MediaPlayerPause(routing_id(), player_id));
+  Send(new MediaPlayerHostMsg_Pause(routing_id(), player_id));
 }
 
 void WebMediaPlayerProxyAndroid::Seek(int player_id, base::TimeDelta time) {
-  Send(new MediaPlayerHostMsg_MediaPlayerSeek(routing_id(), player_id, time));
+  Send(new MediaPlayerHostMsg_Seek(routing_id(), player_id, time));
+}
+
+void WebMediaPlayerProxyAndroid::SetVolume(int player_id, double volume) {
+  Send(new MediaPlayerHostMsg_SetVolume(routing_id(), player_id, volume));
 }
 
 void WebMediaPlayerProxyAndroid::ReleaseResources(int player_id) {
-  Send(new MediaPlayerHostMsg_MediaPlayerRelease(routing_id(), player_id));
+  Send(new MediaPlayerHostMsg_Release(routing_id(), player_id));
 }
 
 void WebMediaPlayerProxyAndroid::DestroyPlayer(int player_id) {

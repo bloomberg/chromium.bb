@@ -85,8 +85,8 @@ public class MediaPlayerBridge {
     }
 
     @CalledByNative
-    protected void setVolume(float leftVolume, float rightVolume) {
-        getLocalPlayer().setVolume(leftVolume, rightVolume);
+    protected void setVolume(double volume) {
+        getLocalPlayer().setVolume((float) volume, (float) volume);
     }
 
     @CalledByNative
