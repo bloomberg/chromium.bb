@@ -159,7 +159,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_mixedContentChecker(frame)
     , m_state(FrameStateProvisional)
     , m_loadType(FrameLoadTypeStandard)
-    , m_delegateIsHandlingProvisionalLoadError(false)
     , m_inStopAllLoaders(false)
     , m_didCallImplicitClose(true)
     , m_wasUnloadEventEmitted(false)
@@ -1198,13 +1197,6 @@ void FrameLoader::setState(FrameState newState)
         frameLoadCompleted();
 }
 
-void FrameLoader::clearProvisionalLoad()
-{
-    setProvisionalDocumentLoader(0);
-    m_progressTracker->progressCompleted();
-    setState(FrameStateComplete);
-}
-
 void FrameLoader::commitProvisionalLoad()
 {
     ASSERT(m_client->hasWebView());
@@ -1344,50 +1336,8 @@ void FrameLoader::checkLoadCompleteForThisFrame()
 
     switch (m_state) {
         case FrameStateProvisional: {
-            if (m_delegateIsHandlingProvisionalLoadError)
-                return;
-
-            RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
-            if (!pdl)
-                return;
-
-            // If we've received any errors we may be stuck in the provisional state and actually complete.
-            const ResourceError& error = pdl->mainDocumentError();
-            if (error.isNull())
-                return;
-
-            // Check all children first.
-            RefPtr<HistoryItem> item;
-            if (Page* page = m_frame->page())
-                if (isBackForwardLoadType(loadType()))
-                    // Reset the back forward list to the last committed history item at the top level.
-                    item = page->mainFrame()->loader()->history()->currentItem();
-
-            // Only reset if we aren't already going to a new provisional item.
-            bool shouldReset = !history()->provisionalItem();
-            if (!pdl->isLoadingInAPISense() || pdl->isStopping()) {
-                m_delegateIsHandlingProvisionalLoadError = true;
-                m_client->dispatchDidFailProvisionalLoad(error);
-                m_delegateIsHandlingProvisionalLoadError = false;
-
-                ASSERT(!pdl->isLoading());
-
-                // Finish resetting the load state, but only if another load hasn't been started by the
-                // delegate callback.
-                if (pdl == m_provisionalDocumentLoader)
-                    clearProvisionalLoad();
-                else if (activeDocumentLoader()) {
-                    KURL unreachableURL = activeDocumentLoader()->unreachableURL();
-                    if (!unreachableURL.isEmpty() && unreachableURL == pdl->request().url())
-                        shouldReset = false;
-                }
-            }
-            if (shouldReset && item)
-                if (Page* page = m_frame->page())
-                    page->backForward()->setCurrentItem(item.get());
             return;
         }
-
         case FrameStateCommittedPage: {
             DocumentLoader* dl = m_documentLoader.get();
             if (!dl || (dl->isLoadingInAPISense() && !dl->isStopping()))
@@ -1672,6 +1622,18 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
     if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
         if (m_submittedFormURL == m_provisionalDocumentLoader->originalRequestCopy().url())
             m_submittedFormURL = KURL();
+
+        m_client->dispatchDidFailProvisionalLoad(error);
+        if (loader != m_provisionalDocumentLoader)
+            return;
+        setProvisionalDocumentLoader(0);
+        m_progressTracker->progressCompleted();
+        setState(FrameStateComplete);
+
+        // Reset the back forward list to the last committed history item at the top level.
+        RefPtr<HistoryItem> item = m_frame->page()->mainFrame()->loader()->history()->currentItem();
+        if (isBackForwardLoadType(loadType()) && !history()->provisionalItem() && item)
+            m_frame->page()->backForward()->setCurrentItem(item.get());
     }
 
     checkCompleted();

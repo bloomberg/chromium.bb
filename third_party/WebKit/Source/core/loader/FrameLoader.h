@@ -253,7 +253,6 @@ private:
     void setReferrerForFrameRequest(ResourceRequest&, ShouldSendReferrer);
     FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
 
-    void clearProvisionalLoad();
     void frameLoadCompleted();
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);
@@ -324,8 +323,6 @@ private:
     RefPtr<DocumentLoader> m_documentLoader;
     RefPtr<DocumentLoader> m_provisionalDocumentLoader;
     RefPtr<DocumentLoader> m_policyDocumentLoader;
-
-    bool m_delegateIsHandlingProvisionalLoadError;
 
     bool m_inStopAllLoaders;
 
