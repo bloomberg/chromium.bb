@@ -7,35 +7,27 @@
       (drawsContent 1)
       (children 1
         (GraphicsLayer
-          (position 8.00 8.00)
-          (bounds 202.00 202.00)
-          (drawsContent 1)
+          (bounds 320.00 340.00)
           (children 4
             (GraphicsLayer
-              (position 1.00 1.00)
-              (bounds 185.00 185.00)
+              (bounds 305.00 325.00)
               (children 1
                 (GraphicsLayer
-                  (bounds 185.00 1025.00)
+                  (bounds 305.00 1224.00)
                   (drawsContent 1)
                 )
               )
             )
             (GraphicsLayer
-              (position 1.00 186.00)
-              (bounds 185.00 15.00)
+              (position 0.00 325.00)
+              (bounds 305.00 15.00)
             )
             (GraphicsLayer
-              (position 186.00 1.00)
-              (bounds 15.00 185.00)
-              (repaint rects
-                (rect 0.00 0.00 15.00 185.00)
-                (rect 0.00 0.00 15.00 185.00)
-                (rect 0.00 0.00 15.00 185.00)
-              )
+              (position 305.00 0.00)
+              (bounds 15.00 325.00)
             )
             (GraphicsLayer
-              (position 186.00 186.00)
+              (position 305.00 325.00)
               (bounds 15.00 15.00)
               (drawsContent 1)
             )
