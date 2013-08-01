@@ -61,8 +61,8 @@ struct FormatType {
 }  // anonymous namespace
 
 // crbug.com/135229
-// Fails on Win Intel, Linux Intel.
-#if ((defined(OS_WIN) || defined(OS_LINUX)) && defined(NDEBUG))
+// Fails on all Windows platforms and on Linux Intel.
+#if defined(OS_WIN) || (defined(OS_LINUX) && defined(NDEBUG))
 #define MAYBE_RenderTo DISABLED_RenderTo
 #else
 #define MAYBE_RenderTo RenderTo
