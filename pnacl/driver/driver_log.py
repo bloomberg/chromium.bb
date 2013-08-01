@@ -53,6 +53,7 @@ def FixArch(arch):
 
               'arm'   : 'ARM',
               'armv7' : 'ARM',
+              'armv7a': 'ARM',
               'arm-thumb2' : 'ARM',
 
               'mips32': 'MIPS32',
