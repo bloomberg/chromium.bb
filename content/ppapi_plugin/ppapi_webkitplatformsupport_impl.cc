@@ -206,11 +206,6 @@ WebKit::WebString PpapiWebKitPlatformSupportImpl::cookies(
   return WebKit::WebString();
 }
 
-void PpapiWebKitPlatformSupportImpl::prefetchHostName(
-    const WebKit::WebString&) {
-  NOTREACHED();
-}
-
 WebKit::WebString PpapiWebKitPlatformSupportImpl::defaultLocale() {
   NOTREACHED();
   return WebKit::WebString();

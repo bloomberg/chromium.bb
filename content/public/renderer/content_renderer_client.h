@@ -211,7 +211,6 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length);
   virtual bool IsLinkVisited(unsigned long long link_hash);
-  virtual void PrefetchHostName(const char* hostname, size_t length) {}
   virtual WebKit::WebPrescientNetworking* GetPrescientNetworking();
   virtual bool ShouldOverridePageVisibilityState(
       const RenderView* render_view,

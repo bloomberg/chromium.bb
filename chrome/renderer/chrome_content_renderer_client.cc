@@ -1080,11 +1080,6 @@ bool ChromeContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
   return visited_link_slave_->IsVisited(link_hash);
 }
 
-void ChromeContentRendererClient::PrefetchHostName(const char* hostname,
-                                                   size_t length) {
-  net_predictor_->Resolve(hostname, length);
-}
-
 WebKit::WebPrescientNetworking*
 ChromeContentRendererClient::GetPrescientNetworking() {
   return prescient_networking_dispatcher_.get();

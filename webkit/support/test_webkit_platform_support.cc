@@ -192,9 +192,6 @@ TestWebKitPlatformSupport::createMessagePortChannel() {
   return new TestWebMessagePortChannel();
 }
 
-void TestWebKitPlatformSupport::prefetchHostName(const WebKit::WebString&) {
-}
-
 WebKit::WebURLLoader* TestWebKitPlatformSupport::createURLLoader() {
   return url_loader_factory_.CreateURLLoader(
       webkit_glue::WebKitPlatformSupportImpl::createURLLoader());

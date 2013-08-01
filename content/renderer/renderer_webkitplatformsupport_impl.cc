@@ -321,16 +321,6 @@ RendererWebKitPlatformSupportImpl::createMessagePortChannel() {
   return new WebMessagePortChannelImpl(child_thread_loop_.get());
 }
 
-void RendererWebKitPlatformSupportImpl::prefetchHostName(
-    const WebString& hostname) {
-  if (hostname.isEmpty())
-    return;
-
-  std::string hostname_utf8 = UTF16ToUTF8(hostname);
-  GetContentClient()->renderer()->PrefetchHostName(
-      hostname_utf8.data(), hostname_utf8.length());
-}
-
 WebKit::WebPrescientNetworking*
 RendererWebKitPlatformSupportImpl::prescientNetworking() {
   return GetContentClient()->renderer()->GetPrescientNetworking();

@@ -154,10 +154,6 @@ WebString WorkerWebKitPlatformSupportImpl::cookies(
   return WebString();
 }
 
-void WorkerWebKitPlatformSupportImpl::prefetchHostName(const WebString&) {
-  NOTREACHED();
-}
-
 WebString WorkerWebKitPlatformSupportImpl::defaultLocale() {
   NOTREACHED();
   return WebString();

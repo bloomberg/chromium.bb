@@ -51,7 +51,6 @@ class TestWebKitPlatformSupport :
                                              size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
   virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
-  virtual void prefetchHostName(const WebKit::WebString&);
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebData loadResource(const char* name);
   virtual WebKit::WebString queryLocalizedString(

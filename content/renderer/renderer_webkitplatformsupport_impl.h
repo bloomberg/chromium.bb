@@ -67,7 +67,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const char* canonicalURL, size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
   virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
-  virtual void prefetchHostName(const WebKit::WebString&);
   virtual WebKit::WebPrescientNetworking* prescientNetworking();
   virtual void cacheMetadata(
       const WebKit::WebURL&, double, const char*, size_t);

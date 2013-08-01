@@ -102,10 +102,4 @@ bool AwContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
   return visited_link_slave_->IsVisited(link_hash);
 }
 
-void AwContentRendererClient::PrefetchHostName(const char* hostname,
-                                               size_t length) {
-  // TODO(boliu): Implement hostname prefetch for Android WebView.
-  // Perhaps componentize chrome implementation or move to content/?
-}
-
 }  // namespace android_webview

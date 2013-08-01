@@ -113,7 +113,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length) OVERRIDE;
   virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;
-  virtual void PrefetchHostName(const char* hostname, size_t length) OVERRIDE;
   virtual WebKit::WebPrescientNetworking* GetPrescientNetworking() OVERRIDE;
   virtual bool ShouldOverridePageVisibilityState(
       const content::RenderView* render_view,
