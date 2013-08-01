@@ -82,6 +82,7 @@ public:
     void resumeAnimationsForDocument(Document*);
 
     bool isRunningAnimationOnRenderer(RenderObject*, CSSPropertyID, bool isRunningNow) const;
+    bool isRunningAcceleratableAnimationOnRenderer(RenderObject*) const;
     bool isRunningAcceleratedAnimationOnRenderer(RenderObject*, CSSPropertyID, bool isRunningNow) const;
 
     void pauseAnimationsForTesting(double t);
