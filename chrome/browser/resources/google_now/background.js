@@ -403,8 +403,12 @@ function requestNotificationCards(position, callback) {
 function requestLocation() {
   console.log('requestLocation');
   recordEvent(GoogleNowEvent.LOCATION_REQUEST);
-  // TODO(vadimt): Figure out location request options.
-  chrome.location.watchLocation(LOCATION_WATCH_NAME, {});
+  // TODO(vadimt): Figure out location request options. Use experiments
+  // framework to enable setting these parameters remotely.
+  chrome.location.watchLocation(LOCATION_WATCH_NAME, {
+    minDistanceInMeters: 100,
+    minTimeInMilliseconds: 180000  // 3 minutes.
+  });
 }
 
 /**
