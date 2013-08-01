@@ -1381,6 +1381,7 @@ crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-chang
 
 crbug.com/261998 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
 
+crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
 Bug(ccameron) compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ NeedsRebaseline ]
 Bug(ccameron) compositing/overflow/nested-scrolling.html [ NeedsRebaseline ]
