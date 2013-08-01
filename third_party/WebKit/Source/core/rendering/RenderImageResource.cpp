@@ -73,6 +73,8 @@ void RenderImageResource::setCachedImage(CachedImage* newImage)
         m_cachedImage->addClient(m_renderer);
         if (m_cachedImage->errorOccurred())
             m_renderer->imageChanged(m_cachedImage.get());
+    } else {
+        m_renderer->imageChanged(m_cachedImage.get());
     }
 }
 
