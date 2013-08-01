@@ -66,6 +66,23 @@ ManageProfileUITest.prototype = {
   },
 };
 
+// The default options should be reset each time the creation overlay is shown.
+TEST_F('ManageProfileUITest', 'DefaultCreateOptions', function() {
+  OptionsPage.showPageByName('createProfile');
+  var shortcutsAllowed = loadTimeData.getBoolean('profileShortcutsEnabled');
+  var createShortcut = $('create-shortcut');
+  var createManaged = $('create-profile-managed');
+  assertEquals(shortcutsAllowed, createShortcut.checked);
+  assertFalse(createManaged.checked);
+
+  createShortcut.checked = !shortcutsAllowed;
+  createManaged.checked = true;
+  OptionsPage.closeOverlay();
+  OptionsPage.showPageByName('createProfile');
+  assertEquals(shortcutsAllowed, createShortcut.checked);
+  assertFalse(createManaged.checked);
+});
+
 // Creating managed users should be disallowed when they are not enabled.
 TEST_F('ManageProfileUITest', 'CreateManagedUserAllowed', function() {
   var container = $('create-profile-managed-container');

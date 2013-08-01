@@ -464,6 +464,8 @@ cr.define('options', function() {
       $('create-profile-name-label').hidden = true;
       $('create-profile-name').hidden = true;
       $('create-profile-ok').disabled = true;
+
+      $('create-profile-managed').checked = false;
       $('create-profile-managed-signed-in').disabled = true;
       $('create-profile-managed-signed-in').hidden = true;
       $('create-profile-managed-not-signed-in').hidden = true;
@@ -578,8 +580,6 @@ cr.define('options', function() {
         $('create-profile-managed-signed-in-label').textContent =
             loadTimeData.getStringF(
                 'manageProfilesManagedSignedInLabel', email);
-      } else {
-        $('create-profile-managed').checked = false;
       }
     },
 
@@ -598,7 +598,6 @@ cr.define('options', function() {
 
       $('create-profile-managed-not-signed-in-link').hidden = !allowed;
       if (!allowed) {
-        $('create-profile-managed').checked = false;
         $('create-profile-managed-indicator').setAttribute('controlled-by',
                                                            'policy');
       } else {
