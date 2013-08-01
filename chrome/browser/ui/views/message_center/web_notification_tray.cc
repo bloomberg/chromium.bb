@@ -35,13 +35,20 @@ const int kSystemTrayWidth = 16;
 const int kSystemTrayHeight = 16;
 const int kNumberOfSystemTraySprites = 10;
 
-gfx::ImageSkia GetIcon(int unread_count) {
-  bool has_unread = unread_count > 0;
+gfx::ImageSkia* GetIcon(int unread_count, bool is_quiet_mode) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (!has_unread)
-    return *rb.GetImageSkiaNamed(IDR_NOTIFICATION_TRAY_EMPTY);
+  int resource_id = IDR_NOTIFICATION_TRAY_EMPTY;
 
-  return *rb.GetImageSkiaNamed(IDR_NOTIFICATION_TRAY_ATTENTION);
+  if (unread_count) {
+    if (is_quiet_mode)
+      resource_id = IDR_NOTIFICATION_TRAY_DO_NOT_DISTURB_ATTENTION;
+    else
+      resource_id = IDR_NOTIFICATION_TRAY_ATTENTION;
+  } else if (is_quiet_mode) {
+    resource_id = IDR_NOTIFICATION_TRAY_DO_NOT_DISTURB_EMPTY;
+  }
+
+  return rb.GetImageSkiaNamed(resource_id);
 }
 
 }  // namespace
@@ -209,14 +216,18 @@ void WebNotificationTray::UpdateStatusIcon() {
   } else {
     tool_tip = l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_TOOLTIP);
   }
-  gfx::ImageSkia icon_image = GetIcon(unread_notifications);
 
-  if (status_icon_ == NULL) {
-    CreateStatusIcon(icon_image, tool_tip);
-  } else {
-    status_icon_->SetImage(icon_image);
+  gfx::ImageSkia* icon_image = GetIcon(
+      unread_notifications,
+      message_center()->IsQuietMode());
+
+  if (status_icon_) {
+    status_icon_->SetImage(*icon_image);
     status_icon_->SetToolTip(tool_tip);
+    return;
   }
+
+  CreateStatusIcon(*icon_image, tool_tip);
 }
 
 void WebNotificationTray::SendHideMessageCenter() {
