@@ -1182,7 +1182,7 @@ TEST_F(PolicyLoaderWinTest, LoadExtensionPolicyAlternativeSpelling) {
 
   PolicyBundle expected;
   base::DictionaryValue expected_a;
-  expected_a.SetInteger("policy 1", 1);
+  expected_a.SetInteger("policy 1", 3);
   expected_a.SetInteger("policy 2", 3);
   expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
                                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))

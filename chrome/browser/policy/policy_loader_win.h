@@ -22,6 +22,7 @@ namespace policy {
 class AppliedGPOListProvider;
 class PolicyLoadStatusSample;
 class PolicyMap;
+class RegistryDict;
 struct PolicyDefinitionList;
 
 // Interface for mocking out GPO enumeration in tests.
@@ -64,7 +65,7 @@ class PolicyLoaderWin : public AsyncPolicyLoader,
   // Reads Chrome Policy from a PReg file at the given path and stores the
   // result in |policy|.
   bool ReadPRegFile(const base::FilePath& preg_file,
-                    base::DictionaryValue* policy,
+                    RegistryDict* policy,
                     PolicyLoadStatusSample *status);
 
   // Loads and parses GPO policy in |policy_object_list| for scope |scope|. If
@@ -73,25 +74,25 @@ class PolicyLoaderWin : public AsyncPolicyLoader,
   // back to reading the registry.
   bool LoadGPOPolicy(PolicyScope scope,
                      PGROUP_POLICY_OBJECT policy_object_list,
-                     base::DictionaryValue* policy,
+                     RegistryDict* policy,
                      PolicyLoadStatusSample *status);
 
   // Queries Windows for applied group policy and writes the result to |policy|.
   // This is the preferred way to obtain GPO data, there are reports of abuse
   // of the registry GPO keys by 3rd-party software.
   bool ReadPolicyFromGPO(PolicyScope scope,
-                         base::DictionaryValue* policy,
+                         RegistryDict* policy,
                          PolicyLoadStatusSample *status);
 
   // Parses Chrome policy from |gpo_dict| for the given |scope| and |level| and
   // merges it into |chrome_policy_map|.
-  void LoadChromePolicy(const base::DictionaryValue* gpo_dict,
+  void LoadChromePolicy(const RegistryDict* gpo_dict,
                         PolicyLevel level,
                         PolicyScope scope,
                         PolicyMap* chrome_policy_map);
 
   // Loads 3rd-party policy from |gpo_dict| and merges it into |bundle|.
-  void Load3rdPartyPolicy(const base::DictionaryValue* gpo_dict,
+  void Load3rdPartyPolicy(const RegistryDict* gpo_dict,
                           PolicyScope scope,
                           PolicyBundle* bundle);
 

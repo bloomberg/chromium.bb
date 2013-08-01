@@ -16,13 +16,13 @@
 #include "base/strings/string16.h"
 
 namespace base {
-class DictionaryValue;
 class FilePath;
 }
 
 namespace policy {
 
 class PolicyLoadStatusSample;
+class RegistryDict;
 
 namespace preg_parser {
 
@@ -34,7 +34,7 @@ extern const char kPRegFileHeader[8];
 // everything else gets ignored.
 bool ReadFile(const base::FilePath& file_path,
               const string16& root,
-              base::DictionaryValue* dict,
+              RegistryDict* dict,
               PolicyLoadStatusSample* status);
 
 }  // namespace preg_parser

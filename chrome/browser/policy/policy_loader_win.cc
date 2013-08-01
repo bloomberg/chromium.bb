@@ -25,23 +25,16 @@
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/sys_byteorder.h"
-#include "base/win/registry.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/preg_parser_win.h"
+#include "chrome/browser/policy/registry_dict_win.h"
 #include "chrome/common/json_schema/json_schema_constants.h"
 #include "policy/policy_constants.h"
 
 namespace schema = json_schema_constants;
-
-using base::win::RegKey;
-using base::win::RegistryKeyIterator;
-using base::win::RegistryValueIterator;
 
 namespace policy {
 
@@ -49,7 +42,6 @@ namespace {
 
 const char kKeyMandatory[] = "policy";
 const char kKeyRecommended[] = "recommended";
-const char kKeyRecommendedChrome[] = "Recommended";
 const char kKeySchema[] = "schema";
 const char kKeyThirdParty[] = "3rdparty";
 
@@ -170,29 +162,6 @@ class WinGPOListProvider : public AppliedGPOListProvider {
 static base::LazyInstance<WinGPOListProvider> g_win_gpo_list_provider =
     LAZY_INSTANCE_INITIALIZER;
 
-// Returns the entry with key |name| in |dictionary| (can be NULL), or NULL.
-const base::DictionaryValue* GetEntry(const base::DictionaryValue* dictionary,
-                                      const std::string& name) {
-  if (!dictionary)
-    return NULL;
-  const base::DictionaryValue* entry = NULL;
-  dictionary->GetDictionaryWithoutPathExpansion(name, &entry);
-  return entry;
-}
-
-// Tries to extract the dictionary at |key| in |dict| and returns it.
-scoped_ptr<base::DictionaryValue> RemoveDict(base::DictionaryValue* dict,
-                                             const std::string& key) {
-  base::Value* entry = NULL;
-  base::DictionaryValue* result_dict = NULL;
-  if (dict && dict->RemoveWithoutPathExpansion(key, &entry) && entry) {
-    if (!entry->GetAsDictionary(&result_dict))
-      delete entry;
-  }
-
-  return make_scoped_ptr(result_dict);
-}
-
 std::string GetSchemaTypeForValueType(base::Value::Type value_type) {
   switch (value_type) {
     case base::Value::TYPE_DICTIONARY:
@@ -213,220 +182,9 @@ std::string GetSchemaTypeForValueType(base::Value::Type value_type) {
   return json_schema_constants::kNull;
 }
 
-// Returns the Value type described in |schema|, or |default_type| if not found.
-base::Value::Type GetValueTypeForSchema(const base::DictionaryValue* schema,
-                                        base::Value::Type default_type) {
-  // JSON-schema types to base::Value::Type mapping.
-  static const struct {
-    // JSON schema type.
-    const char* schema_type;
-    // Correspondent value type.
-    base::Value::Type value_type;
-  } kSchemaToValueTypeMap[] = {
-    { schema::kArray,        base::Value::TYPE_LIST        },
-    { schema::kBoolean,      base::Value::TYPE_BOOLEAN     },
-    { schema::kInteger,      base::Value::TYPE_INTEGER     },
-    { schema::kNull,         base::Value::TYPE_NULL        },
-    { schema::kNumber,       base::Value::TYPE_DOUBLE      },
-    { schema::kObject,       base::Value::TYPE_DICTIONARY  },
-    { schema::kString,       base::Value::TYPE_STRING      },
-  };
-
-  if (!schema)
-    return default_type;
-  std::string type;
-  if (!schema->GetStringWithoutPathExpansion(schema::kType, &type))
-    return default_type;
-  for (size_t i = 0; i < arraysize(kSchemaToValueTypeMap); ++i) {
-    if (type == kSchemaToValueTypeMap[i].schema_type)
-      return kSchemaToValueTypeMap[i].value_type;
-  }
-  return default_type;
-}
-
-// Returns the schema for property |name| given the |schema| of an object.
-// Returns the "additionalProperties" schema if no specific schema for
-// |name| is present. Returns NULL if no schema is found.
-const base::DictionaryValue* GetSchemaFor(const base::DictionaryValue* schema,
-                                          const std::string& name) {
-  const base::DictionaryValue* properties =
-      GetEntry(schema, schema::kProperties);
-  const base::DictionaryValue* sub_schema = GetEntry(properties, name);
-  if (sub_schema)
-    return sub_schema;
-  // "additionalProperties" can be a boolean, but that case is ignored.
-  return GetEntry(schema, schema::kAdditionalProperties);
-}
-
-// Reads the subtree of the Windows registry at |root| into the passed |dict|.
-void ReadRegistry(HKEY hive,
-                  const string16& root,
-                  base::DictionaryValue* dict) {
-  // First, read all the values of the key.
-  for (RegistryValueIterator it(hive, root.c_str()); it.Valid(); ++it) {
-    const std::string name = UTF16ToUTF8(it.Name());
-    switch (it.Type()) {
-      case REG_SZ:
-      case REG_EXPAND_SZ:
-        dict->SetStringWithoutPathExpansion(name, UTF16ToUTF8(it.Value()));
-        continue;
-      case REG_DWORD_LITTLE_ENDIAN:
-      case REG_DWORD_BIG_ENDIAN:
-        if (it.ValueSize() == sizeof(DWORD)) {
-          DWORD dword_value = *(reinterpret_cast<const DWORD*>(it.Value()));
-          if (it.Type() == REG_DWORD_BIG_ENDIAN)
-            dword_value = base::NetToHost32(dword_value);
-          else
-            dword_value = base::ByteSwapToLE32(dword_value);
-          dict->SetIntegerWithoutPathExpansion(name, dword_value);
-          continue;
-        }
-      case REG_NONE:
-      case REG_LINK:
-      case REG_MULTI_SZ:
-      case REG_RESOURCE_LIST:
-      case REG_FULL_RESOURCE_DESCRIPTOR:
-      case REG_RESOURCE_REQUIREMENTS_LIST:
-      case REG_QWORD_LITTLE_ENDIAN:
-        // Unsupported type, message gets logged below.
-        break;
-    }
-
-    LOG(WARNING) << "Failed to read hive " << hive << " at "
-                 << root << "\\" << name
-                 << " type " << it.Type();
-  }
-
-  // Recurse for all subkeys.
-  for (RegistryKeyIterator it(hive, root.c_str()); it.Valid(); ++it) {
-    std::string name(UTF16ToUTF8(it.Name()));
-    if (dict->HasKey(name)) {
-      DLOG(WARNING) << "Ignoring registry key because a value exists with the "
-                       "same name: " << root << "\\" << name;
-    } else {
-      scoped_ptr<base::DictionaryValue> subdict(new base::DictionaryValue());
-      ReadRegistry(hive, root + L"\\" + it.Name(), subdict.get());
-      dict->SetWithoutPathExpansion(name, subdict.release());
-    }
-  }
-}
-
-// Converts |value| in raw GPO representation to the internal policy value, as
-// described by |schema|. This maps the ambiguous GPO data types to the
-// internal policy value representations.
-scoped_ptr<base::Value> ConvertPolicyValue(
-    const base::Value& value,
-    const base::DictionaryValue* schema) {
-  // Figure out the type to convert to from the schema.
-  const base::Value::Type result_type(
-      GetValueTypeForSchema(schema, value.GetType()));
-
-  // If the type is good already, go with it.
-  if (value.IsType(result_type)) {
-    // Recurse for complex types if there is a schema.
-    if (schema) {
-      const base::DictionaryValue* dict = NULL;
-      const base::ListValue* list = NULL;
-      if (value.GetAsDictionary(&dict)) {
-        scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-        for (base::DictionaryValue::Iterator entry(*dict); !entry.IsAtEnd();
-             entry.Advance()) {
-          scoped_ptr<base::Value> converted_value(
-              ConvertPolicyValue(entry.value(),
-                                 GetSchemaFor(schema, entry.key())));
-          result->SetWithoutPathExpansion(entry.key(),
-                                          converted_value.release());
-        }
-        return result.Pass();
-      } else if (value.GetAsList(&list)) {
-        scoped_ptr<base::ListValue> result(new base::ListValue());
-        const base::DictionaryValue* item_schema =
-            GetEntry(schema, schema::kItems);
-        for (base::ListValue::const_iterator entry(list->begin());
-             entry != list->end(); ++entry) {
-          result->Append(ConvertPolicyValue(**entry, item_schema).release());
-        }
-        return result.Pass();
-      }
-    }
-    return make_scoped_ptr(value.DeepCopy());
-  }
-
-  // Else, do some conversions to map windows registry data types to JSON types.
-  std::string string_value;
-  int int_value = 0;
-  switch (result_type) {
-    case base::Value::TYPE_NULL: {
-      return make_scoped_ptr(base::Value::CreateNullValue());
-    }
-    case base::Value::TYPE_BOOLEAN: {
-      // Accept booleans encoded as either string or integer.
-      if (value.GetAsInteger(&int_value) ||
-          (value.GetAsString(&string_value) &&
-           base::StringToInt(string_value, &int_value))) {
-        return make_scoped_ptr(Value::CreateBooleanValue(int_value != 0));
-      }
-      break;
-    }
-    case base::Value::TYPE_INTEGER: {
-      // Integers may be string-encoded.
-      if (value.GetAsString(&string_value) &&
-          base::StringToInt(string_value, &int_value)) {
-        return make_scoped_ptr(base::Value::CreateIntegerValue(int_value));
-      }
-      break;
-    }
-    case base::Value::TYPE_DOUBLE: {
-      // Doubles may be string-encoded or integer-encoded.
-      double double_value = 0;
-      if (value.GetAsInteger(&int_value)) {
-        return make_scoped_ptr(base::Value::CreateDoubleValue(int_value));
-      } else if (value.GetAsString(&string_value) &&
-                 base::StringToDouble(string_value, &double_value)) {
-        return make_scoped_ptr(base::Value::CreateDoubleValue(double_value));
-      }
-      break;
-    }
-    case base::Value::TYPE_LIST: {
-      // Lists are encoded as subkeys with numbered value in the registry.
-      const base::DictionaryValue* dict = NULL;
-      if (value.GetAsDictionary(&dict)) {
-        scoped_ptr<base::ListValue> result(new base::ListValue());
-        const base::DictionaryValue* item_schema =
-            GetEntry(schema, schema::kItems);
-        for (int i = 1; ; ++i) {
-          const base::Value* entry = NULL;
-          if (!dict->Get(base::IntToString(i), &entry))
-            break;
-          result->Append(ConvertPolicyValue(*entry, item_schema).release());
-        }
-        return result.Pass();
-      }
-      // Fall through in order to accept lists encoded as JSON strings.
-    }
-    case base::Value::TYPE_DICTIONARY: {
-      // Dictionaries may be encoded as JSON strings.
-      if (value.GetAsString(&string_value)) {
-        scoped_ptr<base::Value> result(base::JSONReader::Read(string_value));
-        if (result && result->IsType(result_type))
-          return result.Pass();
-      }
-      break;
-    }
-    case base::Value::TYPE_STRING:
-    case base::Value::TYPE_BINARY:
-      // No conversion possible.
-      break;
-  }
-
-  LOG(WARNING) << "Failed to convert " << value.GetType()
-               << " to " << result_type;
-  return make_scoped_ptr(base::Value::CreateNullValue());
-}
-
 // Parses |gpo_dict| according to |schema| and writes the resulting policy
 // settings to |policy| for the given |scope| and |level|.
-void ParsePolicy(const base::DictionaryValue* gpo_dict,
+void ParsePolicy(const RegistryDict* gpo_dict,
                  PolicyLevel level,
                  PolicyScope scope,
                  const base::DictionaryValue* schema,
@@ -434,7 +192,7 @@ void ParsePolicy(const base::DictionaryValue* gpo_dict,
   if (!gpo_dict)
     return;
 
-  scoped_ptr<base::Value> policy_value(ConvertPolicyValue(*gpo_dict, schema));
+  scoped_ptr<base::Value> policy_value(gpo_dict->ConvertToJSON(schema));
   const base::DictionaryValue* policy_dict = NULL;
   if (!policy_value->GetAsDictionary(&policy_dict) || !policy_dict) {
     LOG(WARNING) << "Root policy object is not a dictionary!";
@@ -513,7 +271,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
   for (size_t i = 0; i < arraysize(kScopes); ++i) {
     PolicyScope scope = kScopes[i].scope;
     PolicyLoadStatusSample status;
-    base::DictionaryValue gpo_dict;
+    RegistryDict gpo_dict;
 
     // Note: GPO rules mandate a call to EnterCriticalPolicySection() here, and
     // a matching LeaveCriticalPolicySection() call below after the
@@ -535,15 +293,15 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     if (!ReadPolicyFromGPO(scope, &gpo_dict, &status)) {
       VLOG(1) << "Failed to read GPO files for " << scope
               << " falling back to registry.";
-      ReadRegistry(kScopes[i].hive, chrome_policy_key_, &gpo_dict);
+      gpo_dict.ReadRegistry(kScopes[i].hive, chrome_policy_key_);
     }
 
     // Remove special-cased entries from the GPO dictionary.
     base::DictionaryValue* temp_dict = NULL;
-    scoped_ptr<base::DictionaryValue> recommended_dict(
-        RemoveDict(&gpo_dict, kKeyRecommendedChrome));
-    scoped_ptr<base::DictionaryValue> third_party_dict(
-        RemoveDict(&gpo_dict, kKeyThirdParty));
+    scoped_ptr<RegistryDict> recommended_dict(
+        gpo_dict.RemoveKey(kKeyRecommended));
+    scoped_ptr<RegistryDict> third_party_dict(
+        gpo_dict.RemoveKey(kKeyThirdParty));
 
     // Load Chrome policy.
     LoadChromePolicy(&gpo_dict, POLICY_LEVEL_MANDATORY, scope, chrome_policy);
@@ -584,7 +342,7 @@ void PolicyLoaderWin::BuildChromePolicySchema() {
 }
 
 bool PolicyLoaderWin::ReadPRegFile(const base::FilePath& preg_file,
-                                   base::DictionaryValue* policy,
+                                   RegistryDict* policy,
                                    PolicyLoadStatusSample* status) {
   // The following deals with the minor annoyance that Wow64 FS redirection
   // might need to be turned off: This is the case if running as a 32-bit
@@ -612,10 +370,10 @@ bool PolicyLoaderWin::ReadPRegFile(const base::FilePath& preg_file,
 
 bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
                                     PGROUP_POLICY_OBJECT policy_object_list,
-                                    base::DictionaryValue* policy,
+                                    RegistryDict* policy,
                                     PolicyLoadStatusSample* status) {
-  base::DictionaryValue parsed_policy;
-  base::DictionaryValue forced_policy;
+  RegistryDict parsed_policy;
+  RegistryDict forced_policy;
   for (GROUP_POLICY_OBJECT* policy_object = policy_object_list;
        policy_object; policy_object = policy_object->pNext) {
     if (policy_object->dwOptions & GPO_FLAG_DISABLE)
@@ -632,13 +390,13 @@ bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
     base::FilePath preg_file_path(
         base::FilePath(policy_object->lpFileSysPath).Append(kPRegFileName));
     if (policy_object->dwOptions & GPO_FLAG_FORCE) {
-      base::DictionaryValue new_forced_policy;
+      RegistryDict new_forced_policy;
       if (!ReadPRegFile(preg_file_path, &new_forced_policy, status))
         return false;
 
       // Merge with existing forced policy, giving precedence to the existing
       // forced policy.
-      new_forced_policy.MergeDictionary(&forced_policy);
+      new_forced_policy.Merge(forced_policy);
       forced_policy.Swap(&new_forced_policy);
     } else {
       if (!ReadPRegFile(preg_file_path, &parsed_policy, status))
@@ -647,15 +405,14 @@ bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
   }
 
   // Merge, give precedence to forced policy.
-  parsed_policy.MergeDictionary(&forced_policy);
+  parsed_policy.Merge(forced_policy);
   policy->Swap(&parsed_policy);
 
   return true;
 }
 
-
 bool PolicyLoaderWin::ReadPolicyFromGPO(PolicyScope scope,
-                                        base::DictionaryValue* policy,
+                                        RegistryDict* policy,
                                         PolicyLoadStatusSample* status) {
   PGROUP_POLICY_OBJECT policy_object_list = NULL;
   DWORD flags = scope == POLICY_SCOPE_MACHINE ? GPO_LIST_FLAG_MACHINE : 0;
@@ -679,7 +436,7 @@ bool PolicyLoaderWin::ReadPolicyFromGPO(PolicyScope scope,
   return result;
 }
 
-void PolicyLoaderWin::LoadChromePolicy(const base::DictionaryValue* gpo_dict,
+void PolicyLoaderWin::LoadChromePolicy(const RegistryDict* gpo_dict,
                                        PolicyLevel level,
                                        PolicyScope scope,
                                        PolicyMap* chrome_policy_map) {
@@ -688,19 +445,15 @@ void PolicyLoaderWin::LoadChromePolicy(const base::DictionaryValue* gpo_dict,
   chrome_policy_map->MergeFrom(policy);
 }
 
-void PolicyLoaderWin::Load3rdPartyPolicy(
-    const DictionaryValue* gpo_dict,
-    PolicyScope scope,
-    PolicyBundle* bundle) {
+void PolicyLoaderWin::Load3rdPartyPolicy(const RegistryDict* gpo_dict,
+                                         PolicyScope scope,
+                                         PolicyBundle* bundle) {
   // Map of known 3rd party policy domain name to their enum values.
   static const struct {
     const char* name;
     PolicyDomain domain;
   } k3rdPartyDomains[] = {
     { "extensions", POLICY_DOMAIN_EXTENSIONS },
-    // Support a common misspelling. The correct spelling is first, so it takes
-    // precedence in case of collisions.
-    { "Extensions", POLICY_DOMAIN_EXTENSIONS },
   };
 
   // Policy level and corresponding path.
@@ -715,45 +468,37 @@ void PolicyLoaderWin::Load3rdPartyPolicy(
   for (size_t i = 0; i < arraysize(k3rdPartyDomains); i++) {
     const char* name = k3rdPartyDomains[i].name;
     const PolicyDomain domain = k3rdPartyDomains[i].domain;
-    const base::DictionaryValue* domain_dict = NULL;
-    if (!gpo_dict->GetDictionaryWithoutPathExpansion(name, &domain_dict) ||
-        !domain_dict) {
+    const RegistryDict* domain_dict = gpo_dict->GetKey(name);
+    if (!domain_dict)
       continue;
-    }
 
-    for (base::DictionaryValue::Iterator component(*domain_dict);
-         !component.IsAtEnd(); component.Advance()) {
-      const base::DictionaryValue* component_dict = NULL;
-      if (!component.value().GetAsDictionary(&component_dict) ||
-          !component_dict) {
-        continue;
-      }
-
+    for (RegistryDict::KeyMap::const_iterator component(
+             domain_dict->keys().begin());
+         component != domain_dict->keys().end();
+         ++component) {
       // Load the schema.
-      scoped_ptr<base::Value> schema;
       const base::DictionaryValue* schema_dict = NULL;
+      scoped_ptr<base::Value> schema;
       std::string schema_json;
-      if (component_dict->GetStringWithoutPathExpansion(kKeySchema,
-                                                        &schema_json)) {
+      const base::Value* schema_value = component->second->GetValue(kKeySchema);
+      if (schema_value && schema_value->GetAsString(&schema_json)) {
         schema.reset(base::JSONReader::Read(schema_json));
         if (!schema || !schema->GetAsDictionary(&schema_dict)) {
           LOG(WARNING) << "Failed to parse 3rd-part policy schema for "
-                       << domain << "/" << component.key();
+                       << domain << "/" << component->first;
         }
       }
 
       // Parse policy.
       for (size_t j = 0; j < arraysize(kLevels); j++) {
-        const base::DictionaryValue* policy_dict = NULL;
-        if (!component_dict->GetDictionaryWithoutPathExpansion(
-                kLevels[j].path, &policy_dict) ||
-            !policy_dict) {
+        const RegistryDict* policy_dict =
+            component->second->GetKey(kLevels[j].path);
+        if (!policy_dict)
           continue;
-        }
 
         PolicyMap policy;
         ParsePolicy(policy_dict, kLevels[j].level, scope, schema_dict, &policy);
-        PolicyNamespace policy_namespace(domain, component.key());
+        PolicyNamespace policy_namespace(domain, component->first);
         bundle->Get(policy_namespace).MergeFrom(policy);
       }
     }

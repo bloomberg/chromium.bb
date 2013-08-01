@@ -21,6 +21,7 @@
 #include "base/sys_byteorder.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_load_status.h"
+#include "chrome/browser/policy/registry_dict_win.h"
 
 namespace policy {
 namespace preg_parser {
@@ -147,7 +148,7 @@ void HandleRecord(const string16& key_name,
                   const string16& value,
                   uint32 type,
                   const std::vector<uint8>& data,
-                  base::DictionaryValue* dict) {
+                  RegistryDict* dict) {
   // Locate/create the dictionary to place the value in.
   std::vector<string16> path;
 
@@ -156,12 +157,11 @@ void HandleRecord(const string16& key_name,
        entry != path.end(); ++entry) {
     if (entry->empty())
       continue;
-    base::DictionaryValue* subdict = NULL;
     const std::string name = UTF16ToUTF8(*entry);
-    if (!dict->GetDictionaryWithoutPathExpansion(name, &subdict) ||
-        !subdict) {
-      subdict = new DictionaryValue();
-      dict->SetWithoutPathExpansion(name, subdict);
+    RegistryDict* subdict = dict->GetKey(name);
+    if (!subdict) {
+      subdict = new RegistryDict();
+      dict->SetKey(name, make_scoped_ptr(subdict));
     }
     dict = subdict;
   }
@@ -173,39 +173,33 @@ void HandleRecord(const string16& key_name,
   if (!StartsWithASCII(value_name, kActionTriggerPrefix, true)) {
     scoped_ptr<base::Value> value;
     if (DecodePRegValue(type, data, &value))
-      dict->Set(value_name, value.release());
+      dict->SetValue(value_name, value.Pass());
     return;
   }
 
   std::string action_trigger(StringToLowerASCII(value_name.substr(
       arraysize(kActionTriggerPrefix) - 1)));
-  if (action_trigger == kActionTriggerDeleteValues ||
-      StartsWithASCII(action_trigger, kActionTriggerDeleteKeys, true)) {
+  if (action_trigger == kActionTriggerDeleteValues) {
+    std::vector<std::string> values;
+    Tokenize(DecodePRegStringValue(data), ";", &values);
+    for (std::vector<std::string>::const_iterator value(values.begin());
+         value != values.end(); ++value) {
+      dict->RemoveValue(*value);
+    }
+  } else if (StartsWithASCII(action_trigger, kActionTriggerDeleteKeys, true)) {
     std::vector<std::string> keys;
     Tokenize(DecodePRegStringValue(data), ";", &keys);
     for (std::vector<std::string>::const_iterator key(keys.begin());
          key != keys.end(); ++key) {
-      dict->RemoveWithoutPathExpansion(*key, NULL);
+      dict->RemoveKey(*key);
     }
   } else if (StartsWithASCII(action_trigger, kActionTriggerDel, true)) {
-    dict->RemoveWithoutPathExpansion(
+    dict->RemoveValue(
         value_name.substr(arraysize(kActionTriggerPrefix) - 1 +
-                          arraysize(kActionTriggerDel) - 1),
-        NULL);
+                          arraysize(kActionTriggerDel) - 1));
   } else if (StartsWithASCII(action_trigger, kActionTriggerDelVals, true)) {
-    // Delete all values, but keep keys (i.e. retain dictionary entries).
-    base::DictionaryValue new_dict;
-    for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
-         it.Advance()) {
-      base::DictionaryValue* subdict = NULL;
-      if (dict->GetDictionaryWithoutPathExpansion(it.key(), &subdict)) {
-        scoped_ptr<base::DictionaryValue> new_subdict(
-            new base::DictionaryValue());
-        new_subdict->Swap(subdict);
-        new_dict.Set(it.key(), new_subdict.release());
-      }
-    }
-    dict->Swap(&new_dict);
+    // Delete all values.
+    dict->ClearValues();
   } else if (StartsWithASCII(action_trigger, kActionTriggerSecureKey, true) ||
              StartsWithASCII(action_trigger, kActionTriggerSoft, true)) {
     // Doesn't affect values.
@@ -216,7 +210,7 @@ void HandleRecord(const string16& key_name,
 
 bool ReadFile(const base::FilePath& file_path,
               const string16& root,
-              base::DictionaryValue* dict,
+              RegistryDict* dict,
               PolicyLoadStatusSample* status) {
   base::MemoryMappedFile mapped_file;
   if (!mapped_file.Initialize(file_path) || !mapped_file.IsValid()) {
