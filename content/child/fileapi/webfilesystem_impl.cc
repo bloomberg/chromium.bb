@@ -94,19 +94,6 @@ class CallbacksMap : public WorkerTaskRunner::Observer {
   DISALLOW_COPY_AND_ASSIGN(CallbacksMap);
 };
 
-void DidReadMetadataForCreateFileWriter(
-    const GURL& path,
-    WebKit::WebFileWriterClient* client,
-    WebKit::WebFileSystemCallbacks* callbacks,
-    const base::PlatformFileInfo& file_info) {
-  if (file_info.is_directory || file_info.size < 0) {
-    callbacks->didFail(WebKit::WebFileErrorInvalidState);
-    return;
-  }
-  callbacks->didCreateFileWriter(new WebFileWriterImpl(path, client),
-                                 file_info.size);
-}
-
 void DidReceiveSnapshotFile(int request_id) {
   if (ChildThread::current())
     ChildThread::current()->Send(
@@ -193,6 +180,37 @@ void ReadDirectoryCallbackAdapater(
       thread_id, callbacks_id,
       &WebFileSystemCallbacks::didReadDirectory,
       MakeTuple(file_system_entries, has_more));
+}
+
+void CreateFileWriterCallbackAdapter(
+    int thread_id, int callbacks_id,
+    base::MessageLoopProxy* main_thread_loop,
+    const GURL& path,
+    WebKit::WebFileWriterClient* client,
+    const base::PlatformFileInfo& file_info) {
+  if (thread_id != CurrentWorkerId()) {
+    WorkerTaskRunner::Instance()->PostTask(
+        thread_id,
+        base::Bind(&CreateFileWriterCallbackAdapter,
+                    thread_id, callbacks_id,
+                    make_scoped_refptr(main_thread_loop),
+                    path, client, file_info));
+    return;
+  }
+
+  if (!CallbacksMap::Get())
+    return;
+
+  WebFileSystemCallbacks* callbacks =
+      CallbacksMap::Get()->GetAndUnregisterCallbacks(callbacks_id);
+  DCHECK(callbacks);
+
+  if (file_info.is_directory || file_info.size < 0) {
+    callbacks->didFail(WebKit::WebFileErrorInvalidState);
+    return;
+  }
+  callbacks->didCreateFileWriter(
+      new WebFileWriterImpl(path, client, main_thread_loop), file_info.size);
 }
 
 void CreateSnapshotFileCallbackAdapter(
@@ -368,22 +386,23 @@ void WebFileSystemImpl::readDirectory(
 
 WebKit::WebFileWriter* WebFileSystemImpl::createFileWriter(
     const WebURL& path, WebKit::WebFileWriterClient* client) {
-  return new WebFileWriterImpl(GURL(path), client);
+  return new WebFileWriterImpl(GURL(path), client, main_thread_loop_.get());
 }
 
 void WebFileSystemImpl::createFileWriter(
     const WebURL& path,
     WebKit::WebFileWriterClient* client,
     WebKit::WebFileSystemCallbacks* callbacks) {
-  // TODO(kinuko): Convert this method to use bridge model. (crbug.com/257349)
-  DCHECK(main_thread_loop_->RunsTasksOnCurrentThread());
-  FileSystemDispatcher* dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  dispatcher->ReadMetadata(
-      GURL(path),
-      base::Bind(&DidReadMetadataForCreateFileWriter,
-                 GURL(path), client, callbacks),
-      base::Bind(&FileStatusCallbackAdapter, callbacks));
+  int callbacks_id = CallbacksMap::GetOrCreate()->RegisterCallbacks(callbacks);
+  CallDispatcherOnMainThread(
+      main_thread_loop_.get(),
+      &FileSystemDispatcher::ReadMetadata,
+      MakeTuple(GURL(path),
+                base::Bind(&CreateFileWriterCallbackAdapter,
+                           CurrentWorkerId(), callbacks_id, main_thread_loop_,
+                           GURL(path), client),
+                base::Bind(&StatusCallbackAdapter,
+                           CurrentWorkerId(), callbacks_id)));
 }
 
 void WebFileSystemImpl::createSnapshotFileAndReadMetadata(

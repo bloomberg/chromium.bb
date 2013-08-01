@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "webkit/renderer/fileapi/webfilewriter_base.h"
 
 namespace content {
@@ -15,7 +16,9 @@ namespace content {
 class WebFileWriterImpl : public fileapi::WebFileWriterBase,
                           public base::SupportsWeakPtr<WebFileWriterImpl> {
  public:
-  WebFileWriterImpl(const GURL& path, WebKit::WebFileWriterClient* client);
+  WebFileWriterImpl(const GURL& path,
+                    WebKit::WebFileWriterClient* client,
+                    base::MessageLoopProxy* main_thread_loop);
   virtual ~WebFileWriterImpl();
 
  protected:
@@ -26,8 +29,12 @@ class WebFileWriterImpl : public fileapi::WebFileWriterBase,
   virtual void DoCancel() OVERRIDE;
 
  private:
-  class CallbackDispatcher;
-  int request_id_;
+  class WriterBridge;
+
+  void RunOnMainThread(const base::Closure& closure);
+
+  scoped_refptr<base::MessageLoopProxy> main_thread_loop_;
+  scoped_refptr<WriterBridge> bridge_;
 };
 
 }  // namespace content
