@@ -47,6 +47,7 @@ class PPAPI_PROXY_EXPORT FileSystemResource
 
   PP_FileSystemType type_;
   bool called_open_;
+  uint32_t callback_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemResource);
 };

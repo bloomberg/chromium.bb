@@ -20,9 +20,13 @@ FileSystemResource::FileSystemResource(Connection connection,
                                        PP_FileSystemType type)
     : PluginResource(connection, instance),
       type_(type),
-      called_open_(false) {
+      called_open_(false),
+      callback_count_(0) {
   DCHECK(type_ != PP_FILESYSTEMTYPE_INVALID);
+  // TODO(teravest): Temporarily create hosts in both the browser and renderer
+  // while we move file related hosts to the browser.
   SendCreate(RENDERER, PpapiHostMsg_FileSystem_Create(type_));
+  SendCreate(BROWSER, PpapiHostMsg_FileSystem_Create(type_));
 }
 
 FileSystemResource::~FileSystemResource() {
@@ -43,6 +47,11 @@ int32_t FileSystemResource::Open(int64_t expected_size,
       base::Bind(&FileSystemResource::OpenComplete,
                  this,
                  callback));
+  Call<PpapiPluginMsg_FileSystem_OpenReply>(BROWSER,
+      PpapiHostMsg_FileSystem_Open(expected_size),
+      base::Bind(&FileSystemResource::OpenComplete,
+                 this,
+                 callback));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -53,12 +62,17 @@ PP_FileSystemType FileSystemResource::GetType() {
 void FileSystemResource::InitIsolatedFileSystem(const char* fsid) {
   Post(RENDERER,
        PpapiHostMsg_FileSystem_InitIsolatedFileSystem(std::string(fsid)));
+  Post(BROWSER,
+       PpapiHostMsg_FileSystem_InitIsolatedFileSystem(std::string(fsid)));
 }
 
 void FileSystemResource::OpenComplete(
     scoped_refptr<TrackedCallback> callback,
     const ResourceMessageReplyParams& params) {
-  callback->Run(params.result());
+  ++callback_count_;
+  // Received callback from browser and renderer.
+  if (callback_count_ == 2)
+    callback->Run(params.result());
 }
 
 }  // namespace proxy
