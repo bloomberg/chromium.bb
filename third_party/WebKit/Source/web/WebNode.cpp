@@ -49,7 +49,6 @@
 #include "core/editing/markup.h"
 #include "core/page/Frame.h"
 #include "core/platform/Widget.h"
-#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderWidget.h"
 #include "public/platform/WebString.h"
