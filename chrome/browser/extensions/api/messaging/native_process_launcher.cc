@@ -74,6 +74,10 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
     void DoLaunchOnThreadPool(const GURL& origin,
                               const std::string& native_host_name,
                               LaunchedCallback callback);
+    void PostErrorResult(const LaunchedCallback& callback, LaunchResult error);
+    void PostResult(const LaunchedCallback& callback,
+                    base::PlatformFile read_file,
+                    base::PlatformFile write_file);
     void CallCallbackOnIOThread(LaunchedCallback callback,
                                 LaunchResult result,
                                 base::PlatformFile read_file,
@@ -118,12 +122,7 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   if (!NativeMessagingHostManifest::IsValidName(native_host_name)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                   this, callback, RESULT_INVALID_NAME,
-                   base::kInvalidPlatformFileValue,
-                   base::kInvalidPlatformFileValue));
+    PostErrorResult(callback, RESULT_INVALID_NAME);
     return;
   }
 
@@ -131,57 +130,66 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
   scoped_ptr<NativeMessagingHostManifest> manifest;
 
   // First check if the manifest location is specified in the command line.
-  base::FilePath path = GetHostManifestPathFromCommandLine(native_host_name);
-  if (!path.empty()) {
-    manifest = NativeMessagingHostManifest::Load(path, &error_message);
-  } else {
-    // Try loading the manifest from the default location.
-    manifest = FindAndLoadManifest(native_host_name, &error_message);
+  base::FilePath manifest_path =
+      GetHostManifestPathFromCommandLine(native_host_name);
+  if (manifest_path.empty())
+    manifest_path = FindManifest(native_host_name, &error_message);
+
+  if (manifest_path.empty()) {
+    LOG(ERROR) << "Can't find manifest for native messaging host "
+               << native_host_name;
+    PostErrorResult(callback, RESULT_NOT_FOUND);
+    return;
   }
 
-  if (manifest && manifest->name() != native_host_name) {
-    error_message = "Name specified in the manifest does not match.";
-    manifest.reset();
-  }
+  manifest = NativeMessagingHostManifest::Load(manifest_path, &error_message);
 
   if (!manifest) {
     LOG(ERROR) << "Failed to load manifest for native messaging host "
                << native_host_name << ": " << error_message;
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                   this, callback, RESULT_NOT_FOUND,
-                   base::kInvalidPlatformFileValue,
-                   base::kInvalidPlatformFileValue));
+    PostErrorResult(callback, RESULT_NOT_FOUND);
+    return;
+  }
+
+  if (manifest->name() != native_host_name) {
+    LOG(ERROR) << "Failed to load manifest for native messaging host "
+               << native_host_name
+               << ": Invalid name specified in the manifest.";
+    PostErrorResult(callback, RESULT_NOT_FOUND);
     return;
   }
 
   if (!manifest->allowed_origins().MatchesSecurityOrigin(origin)) {
     // Not an allowed origin.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                   this, callback, RESULT_FORBIDDEN,
-                   base::kInvalidPlatformFileValue,
-                   base::kInvalidPlatformFileValue));
+    PostErrorResult(callback, RESULT_FORBIDDEN);
     return;
   }
 
-  CommandLine command_line(manifest->path());
+  base::FilePath host_path = manifest->path();
+  if (!host_path.IsAbsolute()) {
+    // On Windows host path is allowed to be relative to the location of the
+    // manifest file. On all other platforms the path must be absolute.
+#if defined(OS_WIN)
+    host_path = manifest_path.DirName().Append(host_path);
+#else  // defined(OS_WIN)
+    LOG(ERROR) << "Native messaging host path must be absolute for "
+               << native_host_name;
+    PostErrorResult(callback, RESULT_NOT_FOUND);
+    return;
+#endif  // !defined(OS_WIN)
+  }
+
+  CommandLine command_line(host_path);
   command_line.AppendArg(origin.spec());
 
   base::PlatformFile read_file;
   base::PlatformFile write_file;
-  LaunchResult result = RESULT_FAILED_TO_START;
   if (NativeProcessLauncher::LaunchNativeProcess(
           command_line, &read_file, &write_file)) {
-    result = RESULT_SUCCESS;
+    PostResult(callback, read_file, write_file);
+  } else {
+    PostErrorResult(callback, RESULT_FAILED_TO_START);
   }
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                 this, callback, result, read_file, write_file));
 }
 
 void NativeProcessLauncherImpl::Core::CallCallbackOnIOThread(
@@ -199,6 +207,27 @@ void NativeProcessLauncherImpl::Core::CallCallbackOnIOThread(
   }
 
   callback.Run(result, read_file, write_file);
+}
+
+void NativeProcessLauncherImpl::Core::PostErrorResult(
+    const LaunchedCallback& callback,
+    LaunchResult error) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
+                 this, callback, error,
+                 base::kInvalidPlatformFileValue,
+                 base::kInvalidPlatformFileValue));
+}
+
+void NativeProcessLauncherImpl::Core::PostResult(
+    const LaunchedCallback& callback,
+    base::PlatformFile read_file,
+    base::PlatformFile write_file) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
+                 this, callback, RESULT_SUCCESS, read_file, write_file));
 }
 
 NativeProcessLauncherImpl::NativeProcessLauncherImpl()

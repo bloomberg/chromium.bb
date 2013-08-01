@@ -102,16 +102,6 @@ TEST_F(NativeMessagingHostManifestTest, InvalidName) {
   EXPECT_FALSE(error_message.empty());
 }
 
-TEST_F(NativeMessagingHostManifestTest, RelativePath) {
-  ASSERT_TRUE(WriteManifest(kTestHostName, "host.exe", kTestOrigin));
-
-  std::string error_message;
-  scoped_ptr<NativeMessagingHostManifest> manifest =
-      NativeMessagingHostManifest::Load(manifest_path_, &error_message);
-  ASSERT_FALSE(manifest);
-  EXPECT_FALSE(error_message.empty());
-}
-
 // Verify that match-all origins are rejected.
 TEST_F(NativeMessagingHostManifestTest, MatchAllOrigin) {
   ASSERT_TRUE(WriteManifest(kTestHostName, kTestHostPath,

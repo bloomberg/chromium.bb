@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "crypto/random.h"
 
 namespace extensions {
@@ -46,26 +45,30 @@ string16 GetManifestPath(const string16& native_host_name, DWORD flags) {
 }  // namespace
 
 // static
-scoped_ptr<NativeMessagingHostManifest>
-NativeProcessLauncher::FindAndLoadManifest(
+base::FilePath NativeProcessLauncher::FindManifest(
     const std::string& native_host_name,
     std::string* error_message) {
   string16 native_host_name_wide = UTF8ToUTF16(native_host_name);
 
   // First check 32-bit registry and then try 64-bit.
-  string16 manifest_path =
+  string16 manifest_path_str =
       GetManifestPath(native_host_name_wide, KEY_WOW64_32KEY);
-  if (manifest_path.empty())
-    manifest_path = GetManifestPath(native_host_name_wide, KEY_WOW64_64KEY);
+  if (manifest_path_str.empty())
+    manifest_path_str = GetManifestPath(native_host_name_wide, KEY_WOW64_64KEY);
 
-  if (manifest_path.empty()) {
+  if (manifest_path_str.empty()) {
     *error_message = "Native messaging host " + native_host_name +
         " is not registered";
-    return scoped_ptr<NativeMessagingHostManifest>();
+    return base::FilePath();
   }
 
-  return NativeMessagingHostManifest::Load(
-      base::FilePath(manifest_path), error_message);
+  base::FilePath manifest_path(manifest_path_str);
+  if (!manifest_path.IsAbsolute()) {
+    *error_message = "Path to native messaging host manifest must be absolute.";
+    return base::FilePath();
+  }
+
+  return manifest_path;
 }
 
 // static

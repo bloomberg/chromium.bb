@@ -19,8 +19,6 @@ class FilePath;
 
 namespace extensions {
 
-class NativeMessagingHostManifest;
-
 class NativeProcessLauncher {
  public:
   enum LaunchResult {
@@ -57,10 +55,9 @@ class NativeProcessLauncher {
   // The following two methods are platform specific and are implemented in
   // platform-specific .cc files.
 
-  // Loads manifest for the native messaging host |name|.
-  static scoped_ptr<NativeMessagingHostManifest> FindAndLoadManifest(
-      const std::string& native_host_name,
-      std::string* error_message);
+  // Finds manifest file for the native messaging host |native_host_name|.
+  static base::FilePath FindManifest(const std::string& native_host_name,
+                                     std::string* error_message);
 
   // Launches native messaging process.
   static bool LaunchNativeProcess(

@@ -316,7 +316,9 @@ example of the manifest file:
   </tr>
   <tr>
     <td><code>path</code></td>
-    <td>Path to the native messaging host binary.</td>
+    <td>Path to the native messaging host binary. On Linux and OSX the path must
+    be absolute. On Windows it can be relative to the directory in which the
+    manifest file is located.</td>
   </tr>
   <tr>
     <td><code>type</code></td>

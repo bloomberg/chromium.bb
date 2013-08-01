@@ -93,8 +93,7 @@ bool NativeMessagingHostManifest::Parse(base::DictionaryValue* dictionary,
   std::string path;
   // JSON parsed checks that all strings are valid UTF8.
   if (!dictionary->GetString("path", &path) ||
-      (path_ = base::FilePath::FromUTF8Unsafe(path)).empty() ||
-      !path_.IsAbsolute()) {
+      (path_ = base::FilePath::FromUTF8Unsafe(path)).empty()) {
     *error_message = "Invalid value for path.";
     return false;
   }
