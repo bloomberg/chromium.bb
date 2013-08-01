@@ -40,7 +40,15 @@ namespace WTF {
 
 StringImpl* StringImpl::empty()
 {
-    DEFINE_STATIC_LOCAL(StringImpl, emptyString, (ConstructEmptyString));
+    // FIXME: This works around a bug in our port of PCRE, that a regular expression
+    // run on the empty string may still perform a read from the first element, and
+    // as such we need this to be a valid pointer. No code should ever be reading
+    // from a zero length string, so this should be able to be a non-null pointer
+    // into the zero-page.
+    // Replace this with 'reinterpret_cast<UChar*>(static_cast<intptr_t>(1))' once
+    // PCRE goes away.
+    static LChar emptyLCharData = 0;
+    DEFINE_STATIC_LOCAL(StringImpl, emptyString, (&emptyLCharData, 0, ConstructStaticString));
     WTF_ANNOTATE_BENIGN_RACE(&emptyString, "Benign race on StringImpl::emptyString reference counter");
     return &emptyString;
 }
@@ -57,9 +65,9 @@ WTF_EXPORT DEFINE_GLOBAL(AtomicString, xlinkAtom)
 NEVER_INLINE unsigned StringImpl::hashSlowCase() const
 {
     if (is8Bit())
-        setHash(StringHasher::computeHashAndMaskTop8Bits(characters8(), m_length));
+        setHash(StringHasher::computeHashAndMaskTop8Bits(m_data8, m_length));
     else
-        setHash(StringHasher::computeHashAndMaskTop8Bits(characters16(), m_length));
+        setHash(StringHasher::computeHashAndMaskTop8Bits(m_data16, m_length));
     return existingHash();
 }
 
