@@ -40,6 +40,7 @@
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCrypto.h"
+#include "public/platform/WebCryptoAlgorithmParams.h"
 #include "wtf/ArrayBufferView.h"
 
 namespace WebCore {
@@ -50,12 +51,54 @@ namespace WebCore {
 
 namespace {
 
-bool keyCanBeUsedForAlgorithm(const WebKit::WebCryptoKey& key, const WebKit::WebCryptoAlgorithm& algorithm, ExceptionState& es)
+WebKit::WebCryptoKeyUsageMask toKeyUsage(AlgorithmOperation operation)
 {
-    // FIXME: Need to enforce that the key's algorithm matches the operation,
-    // and that the key's usages allow it to be used with this operation.
-    notImplemented();
-    return true;
+    switch (operation) {
+    case Encrypt:
+        return WebKit::WebCryptoKeyUsageEncrypt;
+    case Decrypt:
+        return WebKit::WebCryptoKeyUsageDecrypt;
+    case Sign:
+        return WebKit::WebCryptoKeyUsageSign;
+    case Verify:
+        return WebKit::WebCryptoKeyUsageVerify;
+    case DeriveKey:
+        return WebKit::WebCryptoKeyUsageDeriveKey;
+    case WrapKey:
+        return WebKit::WebCryptoKeyUsageWrapKey;
+    case UnwrapKey:
+        return WebKit::WebCryptoKeyUsageUnwrapKey;
+    case Digest:
+    case GenerateKey:
+    case ImportKey:
+    case NumberOfAlgorithmOperations:
+        break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+bool keyCanBeUsedForAlgorithm(const WebKit::WebCryptoKey& key, const WebKit::WebCryptoAlgorithm& algorithm, AlgorithmOperation op)
+{
+    if (!(key.usages() & toKeyUsage(op)))
+        return false;
+
+    if (key.algorithm().id() != algorithm.id())
+        return false;
+
+    if (key.algorithm().paramsType() == WebKit::WebCryptoAlgorithmParamsTypeNone)
+        return true;
+
+    // Verify that the algorithm-specific parameters for the key conform to the
+    // algorithm.
+
+    if (key.algorithm().paramsType() == WebKit::WebCryptoAlgorithmParamsTypeHmacParams) {
+        return key.algorithm().hmacParams()->hash().id() == algorithm.hmacParams()->hash().id();
+    }
+
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 PassRefPtr<CryptoOperation> createCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ExceptionState& es)
@@ -77,7 +120,8 @@ PassRefPtr<CryptoOperation> createCryptoOperation(const Dictionary& rawAlgorithm
             return 0;
         }
 
-        if (!keyCanBeUsedForAlgorithm(key->key(), algorithm, es)) {
+        if (!keyCanBeUsedForAlgorithm(key->key(), algorithm, operationType)) {
+            es.throwDOMException(NotSupportedError);
             return 0;
         }
     }

@@ -37,6 +37,9 @@ PASS normalizeSign({name: 'hmac', hash: { name: 'AES-CBC', iv: originalIv }}) th
 PASS algorithm.name is 'HMAC'
 PASS algorithm.hash.name is 'SHA-1'
 PASS normalizeEncrypt(validHmacSha1) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS crypto.subtle.encrypt(algorithmIdentifier, aesCbcKeyNoEncrypt) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS crypto.subtle.encrypt(algorithmIdentifier, hmacSha1Key) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS crypto.subtle.sign(algorithmIdentifier, hmacSha1Key) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS successfullyParsed is true
 
 TEST COMPLETE
