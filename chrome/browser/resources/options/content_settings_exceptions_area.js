@@ -106,6 +106,8 @@ cr.define('options.contentSettings', function() {
 
       this.contentElement.appendChild(select);
       select.className = 'exception-setting';
+      select.setAttribute('aria-labelledby', 'exception-behavior-column');
+
       if (this.pattern)
         select.setAttribute('displaymode', 'edit');
 
