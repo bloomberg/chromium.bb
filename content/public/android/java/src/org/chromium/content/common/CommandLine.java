@@ -70,6 +70,9 @@ public abstract class CommandLine {
     // Native switch - chrome_switches::kEnableInstantExtendedAPI
     public static final String ENABLE_INSTANT_EXTENDED_API = "enable-instant-extended-api";
 
+    // Native switch - content_switches::kEnableSpeechRecognition
+    public static final String ENABLE_SPEECH_RECOGNITION = "enable-speech-recognition";
+
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
     /**
