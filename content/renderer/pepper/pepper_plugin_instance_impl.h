@@ -368,9 +368,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual bool IsFullPagePlugin() OVERRIDE;
   virtual void FlashSetFullscreen(bool fullscreen, bool delay_report) OVERRIDE;
   virtual bool IsRectTopmost(const gfx::Rect& rect) OVERRIDE;
-  virtual int32_t Navigate(const ::ppapi::URLRequestInfoData& request,
-                           const char* target,
-                           bool from_user_action) OVERRIDE;
+  virtual void Navigate(const ::ppapi::URLRequestInfoData& request,
+                        const char* target,
+                        bool from_user_action,
+                        const base::Callback<void(int32_t)>& callback) OVERRIDE;
 
   // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,
