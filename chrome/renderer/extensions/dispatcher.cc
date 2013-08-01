@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
@@ -1102,7 +1103,8 @@ void Dispatcher::DidCreateScriptContext(
     if (extension->HasAPIPermission(APIPermission::kWebView)) {
       module_system->Require("webView");
       bool includeExperimental =
-          Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV;
+          Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV ||
+          extension->id() == extension_misc::kIdentityApiUiAppId;
       if (!includeExperimental) {
         // TODO(asargent) We need a whitelist for webview experimental.
         // crbug.com/264852
