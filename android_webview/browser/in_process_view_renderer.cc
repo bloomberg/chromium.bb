@@ -16,7 +16,9 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -31,6 +33,7 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
+using content::BrowserThread;
 
 namespace android_webview {
 
@@ -125,7 +128,43 @@ bool g_is_skia_version_compatible = false;
 
 const int64 kFallbackTickTimeoutInMilliseconds = 500;
 
+class ScopedAllowGL {
+ public:
+  ScopedAllowGL();
+  ~ScopedAllowGL();
+
+  static bool IsAllowed() {
+    return BrowserThread::CurrentlyOn(BrowserThread::UI) && allow_gl;
+  }
+
+ private:
+  static bool allow_gl;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowGL);
+};
+
+ScopedAllowGL::ScopedAllowGL() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!allow_gl);
+  allow_gl = true;
+}
+
+ScopedAllowGL::~ScopedAllowGL() {
+  allow_gl = false;
+}
+
+bool ScopedAllowGL::allow_gl = false;
+
 }  // namespace
+
+// Called from different threads!
+static void ScheduleGpuWork() {
+  if (ScopedAllowGL::IsAllowed()) {
+    gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
+  } else {
+    // TODO: We need to request a callback with a GL context current here.
+  }
+}
 
 // static
 void BrowserViewRenderer::SetAwDrawSWFunctionTable(
@@ -135,6 +174,9 @@ void BrowserViewRenderer::SetAwDrawSWFunctionTable(
       g_sw_draw_functions->is_skia_version_compatible(&SkGraphics::GetVersion);
   LOG_IF(WARNING, !g_is_skia_version_compatible)
       << "Skia versions are not compatible, rendering performance will suffer.";
+
+  gpu::InProcessCommandBuffer::SetScheduleCallback(
+      base::Bind(&ScheduleGpuWork));
 }
 
 // static
@@ -229,6 +271,8 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   }
 
   ScopedAppGLStateRestore state_restore(ScopedAppGLStateRestore::MODE_DRAW);
+  gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
+  ScopedAllowGL allow_gl;
 
   if (attached_to_window_ && compositor_ && !hardware_initialized_) {
     TRACE_EVENT0("android_webview", "InitializeHwDraw");
@@ -462,6 +506,8 @@ void InProcessViewRenderer::OnDetachedFromWindow() {
 
     ScopedAppGLStateRestore state_restore(
         ScopedAppGLStateRestore::MODE_DETACH_FROM_WINDOW);
+    gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
+    ScopedAllowGL allow_gl;
     compositor_->ReleaseHwDraw();
     hardware_initialized_ = false;
   }

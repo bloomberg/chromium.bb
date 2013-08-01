@@ -1163,11 +1163,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::signalSyncPoint(
   // Take ownership of the callback.
   context_->SignalSyncPoint(
       sync_point, base::Bind(&OnSignalSyncPoint, base::Owned(callback)));
-  // Make sure we have something to flush, or shallowFlushCHROMIUM()
-  // doesn't do anything.
-  gl_->helper()->Noop(1);
-  // This fill force PumpCommands() to run which is what triggers the signal.
-  shallowFlushCHROMIUM();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::signalQuery(
@@ -1182,7 +1177,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::loseContextCHROMIUM(
     WGC3Denum current, WGC3Denum other) {
   gl_->LoseContextCHROMIUM(current, other);
   gl_->ShallowFlushCHROMIUM();
-  DCHECK(isContextLost());
 }
 
 DELEGATE_TO_GL_9(asyncTexImage2DCHROMIUM, AsyncTexImage2DCHROMIUM,

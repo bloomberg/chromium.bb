@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace android_webview {
@@ -45,9 +46,9 @@ AwMainDelegate::~AwMainDelegate() {
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
 
-  gpu::GLInProcessContext::EnableVirtualizedContext();
   gpu::GLInProcessContext::SetGpuMemoryBufferFactory(
       gpu_memory_buffer_factory_.get());
+  gpu::InProcessCommandBuffer::EnableVirtualizedContext();
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableBeginFrameScheduling);

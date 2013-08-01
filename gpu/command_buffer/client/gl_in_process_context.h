@@ -30,10 +30,6 @@ class GLES2_IMPL_EXPORT GLInProcessContext {
   // Must be called before any GLInProcessContext instances are created.
   static void SetGpuMemoryBufferFactory(GpuMemoryBufferFactory* factory);
 
-  // Must be called before any GLInProcessContext instances are created.
-  // Default value is false.
-  static void EnableVirtualizedContext();
-
   // GLInProcessContext configuration attributes. These are the same as used by
   // EGL. Attributes are matched using a closest fit algorithm.
   enum Attribute {

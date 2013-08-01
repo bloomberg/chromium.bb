@@ -83,6 +83,7 @@
         '../components/components.gyp:web_contents_delegate_android',
         '../content/content.gyp:content',
         '../skia/skia.gyp:skia',
+        '../gpu/gpu.gyp:command_buffer_service',
         '../gpu/gpu.gyp:gles2_implementation',
         '../ui/gl/gl.gyp:gl',
         '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
