@@ -56,16 +56,16 @@ class AutofillCreditCardBubbleController
   // Registers preferences this class cares about.
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Whether the generated card bubble should be shown.
-  static bool ShouldShowGeneratedCardBubble(Profile* profile);
+  // Shows a clickable icon in the omnibox that informs the user about generated
+  // (fronting) cards and how they are used to bill their original (backing)
+  // card. Additionally, if |ShouldDisplayBubbleInitially()| is true, the bubble
+  // will be shown initially (doesn't require being clicked).
+  static void ShowGeneratedCardUI(content::WebContents* contents,
+                                  const base::string16& backing_card_name,
+                                  const base::string16& fronting_card_name);
 
-  // Show a bubble to educate the user about generated (fronting) cards and how
-  // they are used to bill their original (backing) card.
-  static void ShowGeneratedCardBubble(content::WebContents* contents,
-                                      const base::string16& backing_card_name,
-                                      const base::string16& fronting_card_name);
-
-  // Show a bubble notifying the user that new credit card data has been saved.
+  // Show a bubble and clickable omnibox icon notifying the user that new credit
+  // card data has been saved. This bubble always shows initially.
   static void ShowNewCardSavedBubble(content::WebContents* contents,
                                      const base::string16& new_card_name);
 
@@ -115,8 +115,16 @@ class AutofillCreditCardBubbleController
   // Creates and returns an Autofill credit card bubble. Exposed for testing.
   virtual base::WeakPtr<AutofillCreditCardBubble> CreateBubble();
 
+  // Returns a weak reference to |bubble_|. May be invalid/NULL.
+  virtual base::WeakPtr<AutofillCreditCardBubble> bubble();
+
   // Whether the bubble can show currently.
   virtual bool CanShow() const;
+
+  // Whether the generated card bubble should be shown initially when showing
+  // the anchor icon. This does not affect whether the generated card's icon
+  // will show in the omnibox.
+  bool ShouldDisplayBubbleInitially() const;
 
   // Show a bubble to educate the user about generated (fronting) cards and how
   // they are used to bill their original (backing) card. Exposed for testing.

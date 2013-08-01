@@ -47,22 +47,24 @@ class TestAutofillCreditCardBubbleController
  public:
   explicit TestAutofillCreditCardBubbleController(
       content::WebContents* contents)
-      : AutofillCreditCardBubbleController(contents),
-        bubble_(GetWeakPtr()) {
+      : AutofillCreditCardBubbleController(contents) {
     contents->SetUserData(UserDataKey(), this);
     EXPECT_TRUE(IsInstalled());
   }
   virtual ~TestAutofillCreditCardBubbleController() {}
 
-  const TestAutofillCreditCardBubble* bubble() const { return &bubble_; }
-
   bool IsInstalled() const {
     return web_contents()->GetUserData(UserDataKey()) == this;
   }
 
+  TestAutofillCreditCardBubble* GetTestingBubble() {
+    return static_cast<TestAutofillCreditCardBubble*>(
+        AutofillCreditCardBubbleController::bubble().get());
+  }
+
  protected:
   virtual base::WeakPtr<AutofillCreditCardBubble> CreateBubble() OVERRIDE {
-    return bubble_.GetWeakPtr();
+    return TestAutofillCreditCardBubble::Create(GetWeakPtr());
   }
 
   virtual bool CanShow() const OVERRIDE {
@@ -70,8 +72,6 @@ class TestAutofillCreditCardBubbleController
   }
 
  private:
-  TestAutofillCreditCardBubble bubble_;
-
   DISALLOW_COPY_AND_ASSIGN(TestAutofillCreditCardBubbleController);
 };
 
@@ -100,26 +100,22 @@ class AutofillCreditCardBubbleControllerTest : public testing::Test {
         ::prefs::kAutofillGeneratedCardBubbleTimesShown);
   }
 
-  bool ShouldShow() {
-    return AutofillCreditCardBubbleController::ShouldShowGeneratedCardBubble(
-        profile());
-  }
-
   Profile* profile() { return &profile_; }
 
   content::WebContentsTester* test_web_contents() {
     return content::WebContentsTester::For(test_web_contents_.get());
   }
 
-  void ShowGeneratedCardBubble() {
-    EXPECT_TRUE(controller()->IsInstalled());
-    controller()->ShowGeneratedCardBubble(
+  void ShowGeneratedCardUI() {
+    ASSERT_TRUE(controller()->IsInstalled());
+    TestAutofillCreditCardBubbleController::ShowGeneratedCardUI(
         test_web_contents_.get(), BackingCard(), FrontingCard());
   }
 
   void ShowNewCardSavedBubble() {
     EXPECT_TRUE(controller()->IsInstalled());
-    controller()->ShowNewCardSavedBubble(test_web_contents_.get(), NewCard());
+    TestAutofillCreditCardBubbleController::ShowNewCardSavedBubble(
+        test_web_contents_.get(), NewCard());
   }
 
   void Navigate() {
@@ -149,24 +145,25 @@ class AutofillCreditCardBubbleControllerTest : public testing::Test {
 
 TEST_F(AutofillCreditCardBubbleControllerTest, ShouldShowGeneratedCardBubble) {
   ASSERT_EQ(0, GeneratedCardBubbleTimesShown());
-  EXPECT_TRUE(ShouldShow());
 
-  ShowGeneratedCardBubble();
+  ShowGeneratedCardUI();
   EXPECT_EQ(1, GeneratedCardBubbleTimesShown());
-  EXPECT_TRUE(ShouldShow());
+  EXPECT_TRUE(controller()->GetTestingBubble()->showing());
 
-  ShowGeneratedCardBubble();
-  ShowGeneratedCardBubble();
-  EXPECT_EQ(3, GeneratedCardBubbleTimesShown());
-  EXPECT_TRUE(ShouldShow());
+  ShowGeneratedCardUI();
+  ShowGeneratedCardUI();
+  ShowGeneratedCardUI();
+  ShowGeneratedCardUI();
+  EXPECT_EQ(5, GeneratedCardBubbleTimesShown());
+  EXPECT_TRUE(controller()->GetTestingBubble()->showing());
 
-  ShowGeneratedCardBubble();
-  EXPECT_EQ(4, GeneratedCardBubbleTimesShown());
-  EXPECT_FALSE(ShouldShow());
+  ShowGeneratedCardUI();
+  EXPECT_EQ(5, GeneratedCardBubbleTimesShown());
+  EXPECT_FALSE(controller()->GetTestingBubble());
 }
 
 TEST_F(AutofillCreditCardBubbleControllerTest, BubbleText) {
-  ShowGeneratedCardBubble();
+  ShowGeneratedCardUI();
   base::string16 generated_text = controller()->BubbleText();
   EXPECT_NE(generated_text.find(BackingCard()), base::string16::npos);
   EXPECT_NE(generated_text.find(FrontingCard()), base::string16::npos);
@@ -179,7 +176,7 @@ TEST_F(AutofillCreditCardBubbleControllerTest, BubbleText) {
   EXPECT_EQ(new_text.find(FrontingCard()), base::string16::npos);
   EXPECT_NE(new_text.find(NewCard()), base::string16::npos);
 
-  ShowGeneratedCardBubble();
+  ShowGeneratedCardUI();
   EXPECT_EQ(generated_text, controller()->BubbleText());
 
   ShowNewCardSavedBubble();
@@ -187,7 +184,7 @@ TEST_F(AutofillCreditCardBubbleControllerTest, BubbleText) {
 }
 
 TEST_F(AutofillCreditCardBubbleControllerTest, BubbleTextRanges) {
-  ShowGeneratedCardBubble();
+  ShowGeneratedCardUI();
   base::string16 text = controller()->BubbleText();
   std::vector<ui::Range> ranges = controller()->BubbleTextRanges();
 
@@ -204,39 +201,39 @@ TEST_F(AutofillCreditCardBubbleControllerTest, BubbleTextRanges) {
 }
 
 TEST_F(AutofillCreditCardBubbleControllerTest, HideOnNavigate) {
-  EXPECT_FALSE(controller()->bubble()->showing());
-  ShowGeneratedCardBubble();
-  EXPECT_TRUE(controller()->bubble()->showing());
+  EXPECT_FALSE(controller()->GetTestingBubble());
+  ShowGeneratedCardUI();
+  EXPECT_TRUE(controller()->GetTestingBubble()->showing());
 
   Navigate();
   EXPECT_FALSE(controller());
 
   SetUp();
 
-  EXPECT_FALSE(controller()->bubble()->showing());
+  EXPECT_FALSE(controller()->GetTestingBubble());
   ShowNewCardSavedBubble();
-  EXPECT_TRUE(controller()->bubble()->showing());
+  EXPECT_TRUE(controller()->GetTestingBubble()->showing());
 
   Navigate();
   EXPECT_FALSE(controller());
 }
 
 TEST_F(AutofillCreditCardBubbleControllerTest, StayOnRedirect) {
-  EXPECT_FALSE(controller()->bubble()->showing());
-  ShowGeneratedCardBubble();
-  EXPECT_TRUE(controller()->bubble()->showing());
+  EXPECT_FALSE(controller()->GetTestingBubble());
+  ShowGeneratedCardUI();
+  EXPECT_TRUE(controller()->GetTestingBubble()->showing());
 
   Redirect();
-  EXPECT_TRUE(controller()->bubble()->showing());
+  EXPECT_TRUE(controller()->GetTestingBubble()->showing());
 
   SetUp();
 
-  EXPECT_FALSE(controller()->bubble()->showing());
+  EXPECT_FALSE(controller()->GetTestingBubble());
   ShowNewCardSavedBubble();
-  EXPECT_TRUE(controller()->bubble()->showing());
+  EXPECT_TRUE(controller()->GetTestingBubble()->showing());
 
   Redirect();
-  EXPECT_TRUE(controller()->bubble()->showing());
+  EXPECT_TRUE(controller()->GetTestingBubble()->showing());
 }
 
 }  // namespace autofill

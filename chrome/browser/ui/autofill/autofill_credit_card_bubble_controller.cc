@@ -40,7 +40,7 @@ namespace autofill {
 
 namespace {
 
-static const int kMaxGeneratedCardTimesToShow = 4;
+static const int kMaxGeneratedCardTimesToShow = 5;
 static const char kWalletGeneratedCardLearnMoreLink[] =
     "http://support.google.com/wallet/bin/answer.py?hl=en&answer=2740044";
 
@@ -72,15 +72,7 @@ void AutofillCreditCardBubbleController::RegisterUserPrefs(
 }
 
 // static
-bool AutofillCreditCardBubbleController::ShouldShowGeneratedCardBubble(
-    Profile* profile) {
-  int times_shown = profile->GetPrefs()->GetInteger(
-      ::prefs::kAutofillGeneratedCardBubbleTimesShown);
-  return times_shown < kMaxGeneratedCardTimesToShow;
-}
-
-// static
-void AutofillCreditCardBubbleController::ShowGeneratedCardBubble(
+void AutofillCreditCardBubbleController::ShowGeneratedCardUI(
     content::WebContents* contents,
     const base::string16& fronting_card_name,
     const base::string16& backing_card_name) {
@@ -174,6 +166,11 @@ base::WeakPtr<AutofillCreditCardBubble> AutofillCreditCardBubbleController::
   return AutofillCreditCardBubble::Create(GetWeakPtr());
 }
 
+base::WeakPtr<AutofillCreditCardBubble> AutofillCreditCardBubbleController::
+    bubble() {
+  return bubble_;
+}
+
 bool AutofillCreditCardBubbleController::CanShow() const {
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
@@ -181,6 +178,14 @@ bool AutofillCreditCardBubbleController::CanShow() const {
 #else
   return true;
 #endif
+}
+
+bool AutofillCreditCardBubbleController::ShouldDisplayBubbleInitially() const {
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents_->GetBrowserContext());
+  int times_shown = profile->GetPrefs()->GetInteger(
+      ::prefs::kAutofillGeneratedCardBubbleTimesShown);
+  return times_shown < kMaxGeneratedCardTimesToShow;
 }
 
 void AutofillCreditCardBubbleController::ShowAsGeneratedCardBubble(
@@ -194,7 +199,9 @@ void AutofillCreditCardBubbleController::ShowAsGeneratedCardBubble(
   backing_card_name_ = backing_card_name;
 
   SetUp();
-  Show(false);
+
+  if (ShouldDisplayBubbleInitially())
+    Show(false);
 }
 
 void AutofillCreditCardBubbleController::ShowAsNewCardSavedBubble(

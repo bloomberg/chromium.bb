@@ -21,7 +21,8 @@ namespace autofill {
 ////////////////////////////////////////////////////////////////////////////////
 class TestAutofillCreditCardBubble : public AutofillCreditCardBubble {
  public:
-  explicit TestAutofillCreditCardBubble(
+  // Creates a bubble and returns a weak reference to it.
+  static base::WeakPtr<TestAutofillCreditCardBubble> Create(
       const base::WeakPtr<AutofillCreditCardBubbleController>& controller);
 
   virtual ~TestAutofillCreditCardBubble();
@@ -36,6 +37,9 @@ class TestAutofillCreditCardBubble : public AutofillCreditCardBubble {
   bool showing() const { return showing_; }
 
  private:
+  explicit TestAutofillCreditCardBubble(
+      const base::WeakPtr<AutofillCreditCardBubbleController>& controller);
+
   // Whether the bubble is currently showing or not.
   bool showing_;
 

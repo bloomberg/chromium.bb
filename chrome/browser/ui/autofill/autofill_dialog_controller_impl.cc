@@ -3452,13 +3452,8 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
     return;
   }
 
-  if (!full_wallet_ || !full_wallet_->billing_address() ||
-      !AutofillCreditCardBubbleController::ShouldShowGeneratedCardBubble(
-          profile())) {
-    // If this run of the dialog didn't result in a valid |full_wallet_| or the
-    // generated card bubble shouldn't be shown now, don't show it again.
+  if (!full_wallet_ || !full_wallet_->billing_address())
     return;
-  }
 
   // Don't show GeneratedCardBubble if Autocheckout failed.
   if (GetDialogType() == DIALOG_TYPE_AUTOCHECKOUT &&
@@ -3476,7 +3471,7 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
     GetBillingInfoFromOutputs(output, &card, NULL, NULL);
     backing_last_four = card.TypeAndLastFourDigits();
   }
-  AutofillCreditCardBubbleController::ShowGeneratedCardBubble(
+  AutofillCreditCardBubbleController::ShowGeneratedCardUI(
       web_contents(), backing_last_four, full_wallet_->TypeAndLastFourDigits());
 }
 

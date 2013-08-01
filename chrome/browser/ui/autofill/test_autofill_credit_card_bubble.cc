@@ -6,20 +6,21 @@
 
 namespace autofill {
 
-TestAutofillCreditCardBubble::TestAutofillCreditCardBubble(
-    const base::WeakPtr<AutofillCreditCardBubbleController>& controller)
-    : showing_(false),
-      weak_ptr_factory_(this) {}
+// static
+base::WeakPtr<TestAutofillCreditCardBubble>
+    TestAutofillCreditCardBubble::Create(
+        const base::WeakPtr<AutofillCreditCardBubbleController>& controller) {
+  return (new TestAutofillCreditCardBubble(controller))->GetWeakPtr();
+}
 
 TestAutofillCreditCardBubble::~TestAutofillCreditCardBubble() {}
 
-// AutofillCreditCardBubble:
 void TestAutofillCreditCardBubble::Show() {
   showing_ = true;
 }
 
 void TestAutofillCreditCardBubble::Hide() {
-  showing_ = false;
+  delete this;
 }
 
 bool TestAutofillCreditCardBubble::IsHiding() const {
@@ -30,5 +31,10 @@ base::WeakPtr<TestAutofillCreditCardBubble>
     TestAutofillCreditCardBubble::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
+
+TestAutofillCreditCardBubble::TestAutofillCreditCardBubble(
+    const base::WeakPtr<AutofillCreditCardBubbleController>& controller)
+    : showing_(false),
+      weak_ptr_factory_(this) {}
 
 }  // namespace autofill

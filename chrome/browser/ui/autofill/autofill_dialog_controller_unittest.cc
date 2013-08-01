@@ -285,11 +285,11 @@ class TestAutofillCreditCardBubbleController :
  public:
   explicit TestAutofillCreditCardBubbleController(
       content::WebContents* contents)
-      : AutofillCreditCardBubbleController(contents),
-        bubble_(GetWeakPtr()) {
+      : AutofillCreditCardBubbleController(contents) {
     contents->SetUserData(UserDataKey(), this);
-    EXPECT_EQ(contents->GetUserData(UserDataKey()), this);
+    CHECK_EQ(contents->GetUserData(UserDataKey()), this);
   }
+
   virtual ~TestAutofillCreditCardBubbleController() {}
 
   MOCK_METHOD2(ShowAsGeneratedCardBubble,
@@ -300,7 +300,7 @@ class TestAutofillCreditCardBubbleController :
 
  protected:
   virtual base::WeakPtr<AutofillCreditCardBubble> CreateBubble() OVERRIDE {
-    return bubble_.GetWeakPtr();
+    return TestAutofillCreditCardBubble::Create(GetWeakPtr());
   }
 
   virtual bool CanShow() const OVERRIDE {
@@ -308,8 +308,6 @@ class TestAutofillCreditCardBubbleController :
   }
 
  private:
-  TestAutofillCreditCardBubble bubble_;
-
   DISALLOW_COPY_AND_ASSIGN(TestAutofillCreditCardBubbleController);
 };
 
