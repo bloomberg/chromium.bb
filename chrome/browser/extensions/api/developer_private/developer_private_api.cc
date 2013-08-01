@@ -1169,14 +1169,19 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("extensionSettings", IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
 
   SET_STRING("appsDevtoolSearch", IDS_APPS_DEVTOOL_SEARCH);
-  SET_STRING("appsDevtoolNoApps", IDS_APPS_DEVTOOL_NO_APPS_INSTALLED);
   SET_STRING("appsDevtoolApps", IDS_APPS_DEVTOOL_APPS_INSTALLED);
   SET_STRING("appsDevtoolExtensions", IDS_APPS_DEVTOOL_EXTENSIONS_INSTALLED);
   SET_STRING("appsDevtoolNoExtensions", IDS_EXTENSIONS_NONE_INSTALLED);
   SET_STRING("appsDevtoolUnpacked", IDS_APPS_DEVTOOL_UNPACKED_INSTALLED);
   SET_STRING("appsDevtoolInstalled", IDS_APPS_DEVTOOL_INSTALLED);
-  SET_STRING("appsDevtoolNoUnpacked", IDS_APPS_DEVTOOL_NO_UNPACKED_INSTALLED);
+  SET_STRING("appsDevtoolNoPackedApps", IDS_APPS_DEVTOOL_NO_PACKED_APPS);
+  SET_STRING("appsDevtoolNoUnpackedApps", IDS_APPS_DEVTOOL_NO_UNPACKED_APPS);
+  SET_STRING("appsDevtoolNoPackedExtensions",
+      IDS_APPS_DEVTOOL_NO_PACKED_EXTENSIONS);
+  SET_STRING("appsDevtoolNoUnpackedExtensions",
+      IDS_APPS_DEVTOOL_NO_UNPACKED_EXTENSIONS);
   SET_STRING("appsDevtoolTitle", IDS_APPS_DEVTOOL_TITLE);
+  SET_STRING("appsDevtoolUpdating", IDS_APPS_DEVTOOL_UPDATING);
   SET_STRING("extensionSettingsGetMoreExtensions", IDS_GET_MORE_EXTENSIONS);
   SET_STRING("extensionSettingsExtensionId", IDS_EXTENSIONS_ID);
   SET_STRING("extensionSettingsExtensionPath", IDS_EXTENSIONS_PATH);

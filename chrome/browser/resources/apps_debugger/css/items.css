@@ -8,15 +8,14 @@ html {
   font-family: Arial, sans-serif;
   font-size: 90%;
   height: 100%;
+  overflow: hidden;
   width: 100%;
 }
 
-html {
-  overflow: hidden;
-}
-
-body {
+#container {
+  height: 100%;
   overflow-y: scroll;
+  width: 100%;
 }
 
 hr {
@@ -133,6 +132,35 @@ html[dir='rtl'] #search {
   font-weight: bold;
 }
 
+.update-items-container,
+.load-unpacked {
+  float: right;
+}
+
+html[dir='rtl'] .update-items-container,
+html[dir='rtl'] .load-unpacked {
+  float: left;
+}
+
+.update-items-progress {
+  display: none;
+}
+
+.update-items-progress.updating {
+  display: inline;
+}
+
+.packed-list:not(.empty-item-list) #no-packed-extensions,
+.unpacked-list:not(.empty-item-list) #no-unpacked-extensions,
+.packed-list:not(.empty-item-list) #no-packed-apps,
+.unpacked-list:not(.empty-item-list) #no-unpacked-apps,
+.loading #no-packed-extensions,
+.loading #no-unpacked-extensions,
+.loading #no-packed-apps,
+.loading #no-unpacked-apps {
+  display: none;
+}
+
 .empty-item-list {
   height: 3em;
 }
@@ -142,8 +170,8 @@ html[dir='rtl'] #search {
   margin: 10px;
 }
 
-#packed-list,
-#unpacked-list {
+.packed-list,
+.unpacked-list {
   margin-top: 30px;
 }
 
@@ -159,13 +187,13 @@ html[dir='rtl'] #search {
   margin-bottom: 20px;
 }
 
-#packed-list.empty-item-list,
-#unpacked-list.empty-item-list {
-  display: none;
-}
-
 .extension-list-item-wrapper {
   padding: 0 0 25px;
+}
+
+.extension-list-item-wrapper.highlighted {
+  background-color: rgba(255, 255, 128, 255);
+  transition: background-color 500ms;
 }
 
 .extension-list-item {
@@ -181,9 +209,15 @@ html[dir='rtl'] .extension-list-item {
 
 .extension-title {
   -webkit-padding-end: 20px;
+  -webkit-user-select: text;
   color: rgb(48, 57, 66);
   font-size: 14px;
   font-weight: 500;
+  text-decoration: none;
+}
+
+.extension-title:hover {
+  text-decoration: underline;
 }
 
 /**
@@ -196,12 +230,14 @@ html[dir='rtl'] .extension-list-item {
 
 .extension-version {
   -webkit-padding-end: 7px;
+  -webkit-user-select: text;
   font-size: 13px;
   font-weight: 400;
 }
 
 .extension-description {
   -webkit-padding-end: 5px;
+  -webkit-user-select: text;
   font-size: 13px;
   margin: 5px 0;
   white-space: normal;

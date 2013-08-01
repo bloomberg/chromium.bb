@@ -5541,23 +5541,32 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_APPS_DEVTOOL_SEARCH" desc="Placeholder text that appears inside the search box until the user inputs data.">
         Search
       </message>
-      <message name="IDS_APPS_DEVTOOL_NO_APPS_INSTALLED" desc="Text that lets the user know that no apps are installed.">
-        Boo... You have no apps :-(
-      </message>
       <message name="IDS_APPS_DEVTOOL_APPS_INSTALLED" desc="Text for the word 'Apps'.">
         Apps
       </message>
       <message name="IDS_APPS_DEVTOOL_EXTENSIONS_INSTALLED" desc="Text for the word 'Extensions'.">
         Extensions
       </message>
-      <message name="IDS_APPS_DEVTOOL_NO_UNPACKED_INSTALLED" desc="Text that lets the user know that no unpacked apps or extensions are installed.">
-        No unpacked applications or extensions.
+      <message name="IDS_APPS_DEVTOOL_NO_PACKED_APPS" desc="Text that lets the user know that no packed apps are installed.">
+        No installed applications.
+      </message>
+      <message name="IDS_APPS_DEVTOOL_NO_UNPACKED_APPS" desc="Text that lets the user know that no unpacked apps are installed.">
+        No unpacked applications.
+      </message>
+      <message name="IDS_APPS_DEVTOOL_NO_PACKED_EXTENSIONS" desc="Text that lets the user know that no packed extensions are installed.">
+        No installed extensions.
+      </message>
+      <message name="IDS_APPS_DEVTOOL_NO_UNPACKED_EXTENSIONS" desc="Text that lets the user know that no unpacked extensions are installed.">
+        No unpacked extensions.
       </message>
       <message name="IDS_APPS_DEVTOOL_UNPACKED_INSTALLED" desc="Text for the word 'Unpacked' (unpacked app or extension).">
         Unpacked
       </message>
       <message name="IDS_APPS_DEVTOOL_INSTALLED" desc="Text for the word 'Installed' (installed app or extension).">
         Installed
+      </message>
+      <message name="IDS_APPS_DEVTOOL_UPDATING" desc="Text for the word 'Updateing...' when the user clicked on 'Update Now'.">
+        Updating...
       </message>
       <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
         Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> instead?

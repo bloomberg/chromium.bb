@@ -20,72 +20,94 @@ found in the LICENSE file.
     <script src="js/main_scripts.js"></script>
   </head>
   <body>
-    <div id="overlay" class="overlay" hidden>
-      <include src="pack_item_overlay.html">
-      <include src="../../../../ui/webui/resources/html/alert_overlay.html">
-    </div>
-    <div class="page" id="extension-settings">
-      <tabbox id="tab-box">
-        <div id="header">
-          <div id="developer-controls">
-            <button id="load-unpacked"
-                i18n-content="appsDevtoolLoadUnpackedButton"></button>
-            <button id="update-items-now"
-                i18n-content="appsDevtoolUpdateButton">
-            </button>
-            <h1 id="header-title" i18n-content="appsDevtoolTitle"></h1>
-            <input id="search" type="text"
-                i18n-values=".placeholder:appsDevtoolSearch" spellcheck="false">
+    <div id="container">
+      <div id="overlay" class="overlay" hidden>
+        <include src="pack_item_overlay.html">
+        <include src="../../../../ui/webui/resources/html/alert_overlay.html">
+      </div>
+      <div class="page" id="extension-settings">
+        <tabbox id="tab-box">
+          <div id="header">
+            <div id="developer-controls">
+              <h1 id="header-title" i18n-content="appsDevtoolTitle"></h1>
+              <input id="search" type="text"
+                  i18n-values=".placeholder:appsDevtoolSearch"
+                  spellcheck="false">
+            </div>
+            <div id="tabs-header-container">
+              <tabs id="tabs" tabindex="0">
+                <tab i18n-content="appsDevtoolApps"></tab>
+                <tab i18n-content="appsDevtoolExtensions"></tab>
+              </tabs>
+            </div>
+            <div id="header-bottom-gradient"></div>
           </div>
-          <div id="tabs-header-container">
-            <tabs id="tabs" tabindex="0">
-              <tab i18n-content="appsDevtoolApps"></tab>
-              <tab i18n-content="appsDevtoolExtensions"></tab>
-            </tabs>
-          </div>
-          <div id="header-bottom-gradient"></div>
-        </div>
-        <tabpanels id="tab-panels">
-          <!-- Apps Tab -->
-          <tabpanel id="apps-tab">
-            <div id="unpacked-list">
-              <div class="list-header">
-                <span i18n-content="appsDevtoolUnpacked"></span>
+          <tabpanels id="tab-panels">
+            <!-- Apps Tab -->
+            <tabpanel id="apps-tab">
+              <div class="unpacked-list">
+                <div class="list-header">
+                  <span i18n-content="appsDevtoolUnpacked"></span>
+                  <button class="load-unpacked"
+                      i18n-content="appsDevtoolLoadUnpackedButton"></button>
+                </div>
+                <div class="items"></div>
+                <div id="no-unpacked-apps">
+                  <span id="no-unpacked-apps-message"
+                      i18n-content="appsDevtoolNoUnpackedApps"></span>
+                </div>
               </div>
-              <div class="items"></div>
-            </div>
-            <div id="packed-list">
-              <div class="list-header">
-                <span i18n-content="appsDevtoolInstalled"></span>
+              <div class="packed-list">
+                <div class="list-header">
+                  <span i18n-content="appsDevtoolInstalled"></span>
+                  <div class="update-items-container">
+                    <span class="update-items-progress"
+                        i18n-content="appsDevtoolUpdating"></span>
+                    <button class="update-items-now"
+                        i18n-content="appsDevtoolUpdateButton"></button>
+                  </div>
+                </div>
+                <div class="items"></div>
+                <div id="no-packed-apps">
+                  <span id="no-packed-apps-message"
+                      i18n-content="appsDevtoolNoPackedApps"></span>
+                </div>
               </div>
-              <div class="items"></div>
-            </div>
-            <div id="no-apps">
-              <span id="no-apps-message"
-                  i18n-content="appsDevtoolNoApps"></span>
-            </div>
-          </tabpanel>
-          <!-- Extensions Tab -->
-          <tabpanel id="extensions-tab">
-            <div id="unpacked-list">
-              <div class="list-header">
-                <span i18n-content="appsDevtoolUnpacked"></span>
+            </tabpanel>
+            <!-- Extensions Tab -->
+            <tabpanel id="extensions-tab">
+              <div class="unpacked-list">
+                <div class="list-header">
+                  <span i18n-content="appsDevtoolUnpacked"></span>
+                  <button class="load-unpacked"
+                      i18n-content="appsDevtoolLoadUnpackedButton"></button>
+                </div>
+                <div class="items"></div>
+                <div id="no-unpacked-extensions">
+                  <span id="no-unpacked-extensions-message"
+                      i18n-content="appsDevtoolNoUnpackedExtensions"></span>
+                </div>
               </div>
-              <div class="items"></div>
-            </div>
-            <div id="packed-list">
-              <div class="list-header">
-                <span i18n-content="appsDevtoolInstalled"></span>
+              <div class="packed-list">
+                <div class="list-header">
+                  <span i18n-content="appsDevtoolInstalled"></span>
+                  <div class="update-items-container">
+                    <span class="update-items-progress"
+                        i18n-content="appsDevtoolUpdating"></span>
+                    <button class="update-items-now"
+                        i18n-content="appsDevtoolUpdateButton"></button>
+                  </div>
+                </div>
+                <div class="items"></div>
+                <div id="no-packed-extensions">
+                  <span id="no-packed-extensions-message"
+                      i18n-content="appsDevtoolNoPackedExtensions"></span>
+                </div>
               </div>
-              <div class="items"></div>
-            </div>
-            <div id="no-extensions">
-              <span id="no-extensions-message"
-                  i18n-content="appsDevtoolNoExtensions"></span>
-            </div>
-          </tabpanel>
-        </tabpanels>
-      </tabbox>
+            </tabpanel>
+          </tabpanels>
+        </tabbox>
+      </div>
     </div>
     <div id="template-collection" hidden>
       <div class="extension-list-item-wrapper">
@@ -93,7 +115,7 @@ found in the LICENSE file.
           <div class="extension-details">
             <div class="extension-details-summary">
               <div>
-                <span class="extension-title"></span>
+                <a class="extension-title" href="#"></a>
                 <span class="extension-disabled"
                     i18n-content="extensionDisabled"></span>
               </div>

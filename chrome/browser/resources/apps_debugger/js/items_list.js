@@ -20,6 +20,13 @@ cr.define('apps_dev_tool', function() {
   // The list of all unpacked extensions.
   var unpackedExtensionList = [];
 
+  // Highlight animation is in progress in apps or extensions list.
+  var animating = false;
+
+  // If an update of the list of apps/extensions happened while animation was
+  // in progress, we'll need to update the list at the end of the animation.
+  var needsReloadAppDisplay = false;
+
   /** const*/ var AppsDevTool = apps_dev_tool.AppsDevTool;
 
   /**
@@ -132,9 +139,15 @@ cr.define('apps_dev_tool', function() {
      * Creates all items from scratch.
      */
     showItemNodes: function() {
-      var packedItemsList = this.tabNode_.querySelector('#packed-list .items');
+      // Don't reset the content until the animation is finished.
+      if (animating) {
+        needsReloadAppDisplay = true;
+        return;
+      }
+
+      var packedItemsList = this.tabNode_.querySelector('.packed-list .items');
       var unpackedItemsList = this.tabNode_.querySelector(
-          '#unpacked-list .items');
+          '.unpacked-list .items');
       packedItemsList.innerHTML = '';
       unpackedItemsList.innerHTML = '';
 
@@ -145,7 +158,7 @@ cr.define('apps_dev_tool', function() {
 
       // Iterate over the items in the packed items and add each item to the
       // list.
-      this.tabNode_.querySelector('#packed-list').classList.toggle(
+      this.tabNode_.querySelector('.packed-list').classList.toggle(
           'empty-item-list', this.packedItems_.length == 0);
       for (var i = 0; i < this.packedItems_.length; ++i) {
         packedItemsList.appendChild(this.createNode_(this.packedItems_[i]));
@@ -153,7 +166,7 @@ cr.define('apps_dev_tool', function() {
 
       // Iterate over the items in the unpacked items and add each item to the
       // list.
-      this.tabNode_.querySelector('#unpacked-list').classList.toggle(
+      this.tabNode_.querySelector('.unpacked-list').classList.toggle(
           'empty-item-list', this.unpackedItems_.length == 0);
       for (var i = 0; i < this.unpackedItems_.length; ++i) {
         unpackedItemsList.appendChild(this.createNode_(this.unpackedItems_[i]));
@@ -356,9 +369,7 @@ cr.define('apps_dev_tool', function() {
       var deleteLink = el.querySelector('.delete-link');
       deleteLink.addEventListener('click', function(e) {
         var options = {showConfirmDialog: false};
-        chrome.management.uninstall(item.id, options, function() {
-          ItemsList.loadItemsInfo();
-        });
+        chrome.management.uninstall(item.id, options);
       });
     },
 
@@ -497,17 +508,52 @@ cr.define('apps_dev_tool', function() {
    * @param {string} id Identifier of the app / extension.
    */
   ItemsList.makeUnpackedExtensionVisible = function(id) {
+    // Find which tab contains the item.
     var tabbox = document.querySelector('tabbox');
-    // Unpacked tab is the first tab.
-    tabbox.selectedIndex = 0;
 
-    var firstItem =
-        document.querySelector('#unpacked-list .extension-list-item-wrapper');
-    if (!firstItem)
-      return;
-    // Scroll relatively to the position of the first item.
+    // Select the correct tab.
     var node = $(id);
-    document.body.scrollTop = node.offsetTop - firstItem.offsetTop;
+    if (!node)
+      return;
+
+    var tabNode = findAncestor(node, function(el) {
+      return el.tagName == 'TABPANEL';
+    });
+    tabbox.selectedIndex = tabNode == $('apps-tab') ? 0 : 1;
+
+    // Highlights the item.
+    animating = true;
+    needsReloadAppDisplay = true;
+    node.classList.add('highlighted');
+    // Show highlighted item for 1 sec.
+    setTimeout(function() {
+      node.style.backgroundColor = 'rgba(255, 255, 128, 0)';
+      // Wait for fade animation to happen.
+      node.addEventListener('webkitTransitionEnd', function f(e) {
+        assert(e.propertyName == 'background-color');
+
+        animating = false;
+        if (needsReloadAppDisplay)
+          reloadAppDisplay();
+
+        node.removeEventListener('webkitTransitionEnd', f);
+      });
+    }, 1000);
+
+    // Scroll relatively to the position of the first item.
+    var header = tabNode.querySelector('.unpacked-list .list-header');
+    var container = $('container');
+    if (node.offsetTop - header.offsetTop < container.scrollTop) {
+      // Some padding between the top edge and the node is already provided
+      // by the HTML layout.
+      container.scrollTop = node.offsetTop - header.offsetTop;
+    } else if (node.offsetTop + node.offsetHeight > container.scrollTop +
+        container.offsetHeight + 20) {
+      // Adds padding of 20px between the bottom edge and the bottom of the
+      // node.
+      container.scrollTop = node.offsetTop + node.offsetHeight -
+          container.offsetHeight + 20;
+    }
   };
 
   return {
