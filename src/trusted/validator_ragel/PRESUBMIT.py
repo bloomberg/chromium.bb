@@ -77,7 +77,7 @@ def CheckChange(input_api, message_constructor):
             canonical_filename,
             protected_files['validator'][canonical_filename],
             sha512)))
-      need_dfacheckvalidator = True
+        need_dfacheckvalidator = True
     if canonical_filename in protected_files['generating']:
       for automaton_filename in protected_files['generated']:
         if (os.stat(os.path.join(root_path, filename)).st_mtime >
