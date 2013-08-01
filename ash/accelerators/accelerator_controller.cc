@@ -45,6 +45,7 @@
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_selector_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/bind.h"
@@ -95,7 +96,11 @@ bool HandleCycleWindowMRU(WindowCycleController::Direction direction,
 
 void HandleCycleWindowLinear(CycleDirection direction) {
   Shell::GetInstance()->
-        window_cycle_controller()->HandleLinearCycleWindow();
+      window_cycle_controller()->HandleLinearCycleWindow();
+}
+
+void ToggleOverviewMode() {
+  Shell::GetInstance()->window_selector_controller()->ToggleOverview();
 }
 
 bool HandleAccessibleFocusCycle(bool reverse) {
@@ -521,11 +526,23 @@ bool AcceleratorController::PerformAction(int action,
       return HandleCycleWindowMRU(WindowCycleController::FORWARD,
                                   accelerator.IsAltDown());
     case CYCLE_BACKWARD_LINEAR:
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAshEnableOverviewMode)) {
+        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_OVERVIEW_F5);
+        ToggleOverviewMode();
+        return true;
+      }
       if (key_code == ui::VKEY_MEDIA_LAUNCH_APP1)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_BACKWARD);
       return true;
     case CYCLE_FORWARD_LINEAR:
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAshEnableOverviewMode)) {
+        shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_OVERVIEW_F5);
+        ToggleOverviewMode();
+        return true;
+      }
       if (key_code == ui::VKEY_MEDIA_LAUNCH_APP1)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_FORWARD);

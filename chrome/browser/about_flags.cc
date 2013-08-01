@@ -1042,6 +1042,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableMinimizeOnSecondLauncherItemClick)
   },
   {
+    "enable-overview-mode",
+    IDS_FLAGS_OVERVIEW_MODE_NAME,
+    IDS_FLAGS_OVERVIEW_MODE_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableOverviewMode)
+  },
+  {
     "show-touch-hud",
     IDS_FLAGS_SHOW_TOUCH_HUD_NAME,
     IDS_FLAGS_SHOW_TOUCH_HUD_DESCRIPTION,

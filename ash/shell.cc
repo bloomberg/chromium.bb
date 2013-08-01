@@ -67,6 +67,7 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_selector_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
@@ -577,6 +578,7 @@ void Shell::Init() {
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController());
+  window_selector_controller_.reset(new WindowSelectorController());
 
   tooltip_controller_.reset(new views::corewm::TooltipController(
                                 gfx::SCREEN_TYPE_ALTERNATE));

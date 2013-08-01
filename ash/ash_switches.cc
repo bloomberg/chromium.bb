@@ -114,6 +114,9 @@ const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
+// Enables overview mode for window switching.
+const char kAshEnableOverviewMode[] = "ash-enable-overview-mode";
+
 // Enables "sticky" edges instead of "snap-to-edge"
 const char kAshEnableStickyEdges[] = "ash-enable-sticky-edges";
 

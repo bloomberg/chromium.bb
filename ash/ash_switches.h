@@ -51,6 +51,7 @@ ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreen[];
 ASH_EXPORT extern const char kAshEnableOak[];
+ASH_EXPORT extern const char kAshEnableOverviewMode[];
 ASH_EXPORT extern const char kAshEnableStickyEdges[];
 ASH_EXPORT extern const char kAshEnableTrayDragging[];
 ASH_EXPORT extern const char kAshForceMirrorMode[];

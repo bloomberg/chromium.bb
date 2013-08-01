@@ -314,6 +314,9 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_ACCEL_NEXTWINDOW_TAB:
       content::RecordAction(content::UserMetricsAction("Accel_NextWindow_Tab"));
       break;
+    case ash::UMA_ACCEL_OVERVIEW_F5:
+      content::RecordAction(content::UserMetricsAction("Accel_Overview_F5"));
+      break;
     case ash::UMA_ACCEL_PREVWINDOW_F5:
       content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_F5"));
       break;

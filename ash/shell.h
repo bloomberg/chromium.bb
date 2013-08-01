@@ -98,6 +98,7 @@ class UserWallpaperDelegate;
 class VideoDetector;
 class WebNotificationTray;
 class WindowCycleController;
+class WindowSelectorController;
 
 namespace internal {
 class AcceleratorFilter;
@@ -325,6 +326,9 @@ class ASH_EXPORT Shell
   }
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
+  }
+  WindowSelectorController* window_selector_controller() {
+    return window_selector_controller_.get();
   }
   internal::FocusCycler* focus_cycler() {
     return focus_cycler_.get();
@@ -560,6 +564,7 @@ class ASH_EXPORT Shell
   scoped_ptr<UserActivityDetector> user_activity_detector_;
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
+  scoped_ptr<WindowSelectorController> window_selector_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;
   scoped_ptr<DisplayController> display_controller_;
   scoped_ptr<HighContrastController> high_contrast_controller_;
