@@ -60,7 +60,6 @@ class Image : public RefCounted<Image> {
 public:
     virtual ~Image();
 
-    static PassRefPtr<Image> create(ImageObserver* = 0);
     static PassRefPtr<Image> loadPlatformResource(const char* name);
     static bool supportsType(const String&);
 

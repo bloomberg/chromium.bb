@@ -27,17 +27,24 @@
 #include "config.h"
 #include "core/platform/graphics/Image.h"
 
-#include <math.h>
 #include "core/platform/Length.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/SharedBuffer.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/IntRect.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebData.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
+
+#include <math.h>
 
 namespace WebCore {
 
@@ -55,6 +62,17 @@ Image* Image::nullImage()
     ASSERT(isMainThread());
     DEFINE_STATIC_LOCAL(RefPtr<Image>, nullImage, (BitmapImage::create()));;
     return nullImage.get();
+}
+
+PassRefPtr<Image> Image::loadPlatformResource(const char *name)
+{
+    const WebKit::WebData& resource = WebKit::Platform::current()->loadResource(name);
+    if (resource.isEmpty())
+        return Image::nullImage();
+
+    RefPtr<Image> image = BitmapImage::create();
+    image->setData(resource, true);
+    return image.release();
 }
 
 bool Image::supportsType(const String& type)
@@ -203,6 +221,14 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const Flo
     }
 
     startAnimation();
+}
+
+void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect, const FloatSize& scale,
+    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode)
+{
+    TRACE_EVENT0("skia", "Image::drawPattern");
+    if (RefPtr<NativeImageSkia> bitmap = nativeImageForCurrentFrame())
+        bitmap->drawPattern(context, adjustForNegativeSize(floatSrcRect), scale, phase, compositeOp, destRect, blendMode);
 }
 
 void Image::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
