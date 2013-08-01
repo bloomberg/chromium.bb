@@ -180,6 +180,10 @@
     "title": "Google Services",
     "items": [
       {
+        "title": "Analytics",
+        "href": "/apps/analytics.html"
+      },
+      {
         "title": "In-App Payments",
         "href": "/apps/in_app_payments.html"
       }
