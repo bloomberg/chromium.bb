@@ -554,6 +554,11 @@ void XMLHttpRequest::send(ExceptionCode& ec)
     send(String(), ec);
 }
 
+bool XMLHttpRequest::areMethodAndURLValidForSend()
+{
+    return m_method != "GET" && m_method != "HEAD" && m_url.protocolIsInHTTPFamily();
+}
+
 void XMLHttpRequest::send(Document* document, ExceptionCode& ec)
 {
     ASSERT(document);
@@ -561,7 +566,7 @@ void XMLHttpRequest::send(Document* document, ExceptionCode& ec)
     if (!initSend(ec))
         return;
 
-    if (m_method != "GET" && m_method != "HEAD" && m_url.protocolIsInHTTPFamily()) {
+    if (areMethodAndURLValidForSend()) {
         String contentType = getRequestHeader("Content-Type");
         if (contentType.isEmpty()) {
             // FIXME: this should include the charset used for encoding.
@@ -586,7 +591,7 @@ void XMLHttpRequest::send(const String& body, ExceptionCode& ec)
     if (!initSend(ec))
         return;
 
-    if (!body.isNull() && m_method != "GET" && m_method != "HEAD" && m_url.protocolIsInHTTPFamily()) {
+    if (!body.isNull() && areMethodAndURLValidForSend()) {
         String contentType = getRequestHeader("Content-Type");
         if (contentType.isEmpty()) {
             setRequestHeaderInternal("Content-Type", "application/xml");
@@ -608,7 +613,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionCode& ec)
     if (!initSend(ec))
         return;
 
-    if (m_method != "GET" && m_method != "HEAD" && m_url.protocolIsInHTTPFamily()) {
+    if (areMethodAndURLValidForSend()) {
         const String& contentType = getRequestHeader("Content-Type");
         if (contentType.isEmpty()) {
             const String& blobType = body->type();
@@ -636,7 +641,7 @@ void XMLHttpRequest::send(DOMFormData* body, ExceptionCode& ec)
     if (!initSend(ec))
         return;
 
-    if (m_method != "GET" && m_method != "HEAD" && m_url.protocolIsInHTTPFamily()) {
+    if (areMethodAndURLValidForSend()) {
         m_requestEntityBody = FormData::createMultiPart(*(static_cast<FormDataList*>(body)), body->encoding(), document());
 
         String contentType = getRequestHeader("Content-Type");
@@ -671,7 +676,7 @@ void XMLHttpRequest::sendBytesData(const void* data, size_t length, ExceptionCod
     if (!initSend(ec))
         return;
 
-    if (m_method != "GET" && m_method != "HEAD" && m_url.protocolIsInHTTPFamily()) {
+    if (areMethodAndURLValidForSend()) {
         m_requestEntityBody = FormData::create(data, length);
         if (m_upload)
             m_requestEntityBody->setAlwaysStream(true);

@@ -161,6 +161,8 @@ private:
     String responseMIMEType() const;
     bool responseIsXML() const;
 
+    bool areMethodAndURLValidForSend();
+
     bool initSend(ExceptionCode&);
     void sendBytesData(const void*, size_t, ExceptionCode&);
 
