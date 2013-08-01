@@ -1,8 +1,8 @@
-layer at (0,0) size 2066x2404
+layer at (0,0) size 2066x1878
   RenderView at (0,0) size 785x585
-layer at (0,0) size 785x2404
-  RenderBlock {HTML} at (0,0) size 785x2404.28
-    RenderBody {BODY} at (8,8) size 769x2388.28
+layer at (0,0) size 785x1878
+  RenderBlock {HTML} at (0,0) size 785x1878.06
+    RenderBody {BODY} at (8,8) size 769x1862.06
       RenderBlock {H2} at (0,0) size 769x28
         RenderText {#text} at (0,0) size 138x28
           text run at (0,0) width 138: "word-spacing"
@@ -144,9 +144,9 @@ layer at (0,0) size 785x2404
           RenderText {#text} at (596,105) size 512x15
             text run at (596,105) width 492: ". (with monospace font from elements to too)"
             text run at (1108,105) width 0: " "
-      RenderBlock (anonymous) at (0,47.91) size 769x193.41
-        RenderBR {BR} at (1224,0) size 0x18
-      RenderBlock {PRE} at (0,256.52) size 769x152.20
+      RenderBlock (anonymous) at (0,47.91) size 769x18
+        RenderBR {BR} at (0,0) size 0x18
+      RenderBlock {PRE} at (0,81.11) size 769x152.20
         RenderBlock {H3} at (0,0) size 769x17
           RenderText {#text} at (0,0) size 240x17
             text run at (0,0) width 240: "In an un-floated pre"
@@ -284,14 +284,14 @@ layer at (0,0) size 785x2404
           RenderText {#text} at (596,105) size 512x15
             text run at (596,105) width 492: ". (with monospace font from elements to too)"
             text run at (1108,105) width 0: " "
-      RenderBlock (anonymous) at (0,421.72) size 769x0
+      RenderBlock (anonymous) at (0,246.31) size 769x0
         RenderInline {SPAN} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
-      RenderBlock (anonymous) at (0,427.44) size 769x22
+      RenderBlock (anonymous) at (0,252.03) size 769x22
         RenderBlock {H3} at (0,0) size 769x22
           RenderText {#text} at (0,0) size 117x22
             text run at (0,0) width 117: "In a span"
-      RenderBlock (anonymous) at (0,468.16) size 769x270
+      RenderBlock (anonymous) at (0,292.75) size 769x270
         RenderInline {SPAN} at (0,0) size 753x234
           RenderText {#text} at (0,0) size 177x18
             text run at (0,0) width 60: "Word "
@@ -446,10 +446,10 @@ layer at (0,0) size 785x2404
         RenderBR {BR} at (0,0) size 0x0
         RenderBR {BR} at (0,234) size 0x18
         RenderBR {BR} at (0,252) size 0x18
-      RenderBlock {H2} at (0,758.06) size 769x28
+      RenderBlock {H2} at (0,582.66) size 769x28
         RenderText {#text} at (0,0) size 141x28
           text run at (0,0) width 141: "letter-spacing"
-      RenderBlock (floating) {PRE} at (0,818.97) size 1521x167.41
+      RenderBlock (floating) {PRE} at (0,643.56) size 1521x167.41
         RenderBlock {H3} at (0,15.20) size 1521x17
           RenderText {#text} at (0,0) size 224x17
             text run at (0,0) width 224: "In a floated pre"
@@ -587,9 +587,9 @@ layer at (0,0) size 785x2404
           RenderText {#text} at (702,105) size 572x15
             text run at (702,105) width 572: ". (with monospace font from elements to too)"
             text run at (1274,105) width 0: " "
-      RenderBlock (anonymous) at (0,805.97) size 769x193.41
-        RenderBR {BR} at (1521,0) size 0x18
-      RenderBlock {PRE} at (0,1014.58) size 769x152.20
+      RenderBlock (anonymous) at (0,630.56) size 769x18
+        RenderBR {BR} at (0,0) size 0x18
+      RenderBlock {PRE} at (0,663.77) size 769x152.20
         RenderBlock {H3} at (0,0) size 769x17
           RenderText {#text} at (0,0) size 280x17
             text run at (0,0) width 280: "In an un-floated pre"
@@ -727,15 +727,15 @@ layer at (0,0) size 785x2404
           RenderText {#text} at (702,105) size 572x15
             text run at (702,105) width 572: ". (with monospace font from elements to too)"
             text run at (1274,105) width 0: " "
-      RenderBlock (anonymous) at (0,1179.78) size 769x18
+      RenderBlock (anonymous) at (0,828.97) size 769x18
         RenderBR {BR} at (0,0) size 0x18
         RenderInline {SPAN} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
-      RenderBlock (anonymous) at (0,1216.50) size 769x22
+      RenderBlock (anonymous) at (0,865.69) size 769x22
         RenderBlock {H3} at (0,0) size 769x22
           RenderText {#text} at (0,0) size 122x22
             text run at (0,0) width 122: "In a span"
-      RenderBlock (anonymous) at (0,1257.22) size 769x270
+      RenderBlock (anonymous) at (0,906.41) size 769x270
         RenderInline {SPAN} at (0,0) size 727x234
           RenderText {#text} at (0,0) size 218x18
             text run at (0,0) width 76: "Letter "
@@ -890,10 +890,10 @@ layer at (0,0) size 785x2404
         RenderBR {BR} at (0,0) size 0x0
         RenderBR {BR} at (0,234) size 0x18
         RenderBR {BR} at (0,252) size 0x18
-      RenderBlock {H2} at (0,1547.13) size 769x28
+      RenderBlock {H2} at (0,1196.31) size 769x28
         RenderText {#text} at (0,0) size 131x28
           text run at (0,0) width 131: "both-spacing"
-      RenderBlock (floating) {PRE} at (0,1608.03) size 1978x167.41
+      RenderBlock (floating) {PRE} at (0,1257.22) size 1978x167.41
         RenderBlock {H3} at (0,15.20) size 1978x17
           RenderText {#text} at (0,0) size 284x17
             text run at (0,0) width 284: "In a floated pre"
@@ -1031,9 +1031,9 @@ layer at (0,0) size 785x2404
           RenderText {#text} at (1039,105) size 732x15
             text run at (1039,105) width 712: ". (with monospace font from elements to too)"
             text run at (1771,105) width 0: " "
-      RenderBlock (anonymous) at (0,1595.03) size 769x193.41
-        RenderBR {BR} at (1978,0) size 0x18
-      RenderBlock {PRE} at (0,1803.64) size 769x152.20
+      RenderBlock (anonymous) at (0,1244.22) size 769x18
+        RenderBR {BR} at (0,0) size 0x18
+      RenderBlock {PRE} at (0,1277.42) size 769x152.20
         RenderBlock {H3} at (0,0) size 769x17
           RenderText {#text} at (0,0) size 340x17
             text run at (0,0) width 340: "In an un-floated pre"
@@ -1171,15 +1171,15 @@ layer at (0,0) size 785x2404
           RenderText {#text} at (1039,105) size 732x15
             text run at (1039,105) width 712: ". (with monospace font from elements to too)"
             text run at (1771,105) width 0: " "
-      RenderBlock (anonymous) at (0,1968.84) size 769x18
+      RenderBlock (anonymous) at (0,1442.63) size 769x18
         RenderBR {BR} at (0,0) size 0x18
         RenderInline {SPAN} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
-      RenderBlock (anonymous) at (0,2005.56) size 769x22
+      RenderBlock (anonymous) at (0,1479.34) size 769x22
         RenderBlock {H3} at (0,0) size 769x22
           RenderText {#text} at (0,0) size 162x22
             text run at (0,0) width 162: "In a span"
-      RenderBlock (anonymous) at (0,2046.28) size 769x342
+      RenderBlock (anonymous) at (0,1520.06) size 769x342
         RenderInline {SPAN} at (0,0) size 779x342
           RenderText {#text} at (0,0) size 424x18
             text run at (0,0) width 242: "Word and letter "
