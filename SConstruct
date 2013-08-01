@@ -1190,6 +1190,11 @@ def SupportsSeccompBpfSandbox(env):
   if not (env.Bit('linux') and env.Bit('build_x86_64')):
     return False
 
+  # The gcov runtime does some extra calls (such as 'access') that
+  # are not permitted by the policy.
+  if env.Bit('coverage_enabled'):
+    return False
+
   # This is a lame detection if seccomp bpf filters are supported by the kernel.
   # We suppose that any Linux kernel v3.2+ supports it, but it is only true
   # for Ubuntu kernels. Seccomp BPF filters reached the mainline at 3.5,
