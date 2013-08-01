@@ -1,0 +1,23 @@
+Name: newlib-extras
+URL: ftp://sourceware.org/pub/newlib/newlib-2.0.0.tar.gz
+Version: 2.0.0
+Date: 2013-07-30
+License: BSD 3-Clause License
+License File: Embedded in headers.
+Security Critical: no
+
+This directory contains several socket-related header files taken from newlib.
+These files are not present in the version of newlib included in the NaCl
+toolchain. Using these files allows nacl_io to provide POSIX socket
+virtualization in the newlib and pnacl toolchains.
+
+Description: (from sourceware.org/newlib)
+
+Newlib is a C library intended for use on embedded systems. It is a
+conglomeration of several library parts, all under free software licenses
+that make them easily usable on embedded products.
+
+Local Modifications:
+* Removed the revoked third clause from the licenses in the header files.
+* Correctly wrapped netdb.h to allow it to be included in both C and C++ files.
+* Removed faulty _BSD_SIZE_T_ typedef in arpa/inet.h

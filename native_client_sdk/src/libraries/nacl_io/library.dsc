@@ -2,7 +2,8 @@
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'SEARCH': [
     '.',
-    'pepper'
+    'pepper',
+    '../third_party/newlib-extras'
   ],
   'TARGETS': [
     {
@@ -78,6 +79,26 @@
         "typed_mount_factory.h",
       ],
       'DEST': 'include/nacl_io',
+    },
+    {
+      'FILES': [
+        "arpa/inet.h",
+        "netdb.h",
+        "netinet/in.h",
+        "netinet6/in6.h",
+        "sys/socket.h",
+      ],
+      'DEST': 'include/newlib',
+    },
+    {
+      'FILES': [
+        "arpa/inet.h",
+        "netdb.h",
+        "netinet/in.h",
+        "netinet6/in6.h",
+        "sys/socket.h",
+      ],
+      'DEST': 'include/pnacl',
     },
     {
       'FILES': [

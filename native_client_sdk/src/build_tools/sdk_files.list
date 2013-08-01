@@ -342,6 +342,16 @@ include/nacl_io/pepper/undef_macros.h
 include/nacl_io/pepper_interface.h
 include/nacl_io/real_pepper_interface.h
 include/nacl_io/typed_mount_factory.h
+include/newlib/arpa/inet.h
+include/newlib/netdb.h
+include/newlib/netinet/in.h
+include/newlib/netinet6/in6.h
+include/newlib/sys/socket.h
+include/pnacl/arpa/inet.h
+include/pnacl/netdb.h
+include/pnacl/netinet/in.h
+include/pnacl/netinet6/in6.h
+include/pnacl/sys/socket.h
 include/ppapi/c/dev/deprecated_bool.h
 include/ppapi/c/dev/pp_cursor_type_dev.h
 include/ppapi/c/dev/pp_print_settings_dev.h
