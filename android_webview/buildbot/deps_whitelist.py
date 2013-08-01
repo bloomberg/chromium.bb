@@ -42,7 +42,7 @@ class DepsWhitelist(object):
       'third_party/freetype',
       'third_party/icu',
       'third_party/leveldatabase/src',
-      'third_party/libjingle/source',
+      'third_party/libjingle/source/talk',
       'third_party/libphonenumber/src/phonenumbers',
       'third_party/libphonenumber/src/resources',
       'third_party/openssl',
