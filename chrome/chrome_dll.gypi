@@ -291,6 +291,7 @@
                     'app/breakpad_mac.h',
                     'app/chrome_breakpad_client.cc',
                     'app/chrome_breakpad_client.h',
+                    'app/chrome_breakpad_client_mac.mm',
                   ],
                 }, {  # else: mac_breakpad_compiled_in!=1
                   # No Breakpad, put in the stubs.

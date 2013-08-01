@@ -110,4 +110,9 @@ int BreakpadClient::GetAndroidMinidumpDescriptor() {
 }
 #endif
 
+#if defined(OS_MACOSX)
+void BreakpadClient::InstallAdditionalFilters(BreakpadRef breakpad) {
+}
+#endif
+
 }  // namespace breakpad

@@ -60,6 +60,10 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
   virtual int GetAndroidMinidumpDescriptor() OVERRIDE;
 #endif
 
+#if defined(OS_MACOSX)
+  virtual void InstallAdditionalFilters(BreakpadRef breakpad) OVERRIDE;
+#endif
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBreakpadClient);
 };

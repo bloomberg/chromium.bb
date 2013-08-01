@@ -14,6 +14,17 @@ namespace base {
 class FilePath;
 }
 
+#if defined(OS_MACOSX)
+// We don't want to directly include
+// breakpad/src/client/mac/Framework/Breakpad.h here, so we repeat the
+// definition of BreakpadRef.
+//
+// On Mac, when compiling without breakpad support, a stub implementation is
+// compiled in. Not having any includes of the breakpad library allows for
+// reusing this header for the stub.
+typedef void* BreakpadRef;
+#endif
+
 namespace breakpad {
 
 class BreakpadClient;
@@ -107,6 +118,11 @@ class BreakpadClient {
 #if defined(OS_ANDROID)
   // Returns the descriptor key of the android minidump global descriptor.
   virtual int GetAndroidMinidumpDescriptor();
+#endif
+
+#if defined(OS_MACOSX)
+  // Install additional breakpad filter callbacks.
+  virtual void InstallAdditionalFilters(BreakpadRef breakpad);
 #endif
 };
 

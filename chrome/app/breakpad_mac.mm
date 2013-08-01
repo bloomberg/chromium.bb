@@ -26,8 +26,6 @@
 #include "chrome/common/child_process_logging.h"
 #include "content/public/common/content_switches.h"
 #include "components/breakpad/breakpad_client.h"
-#include "components/nacl/common/nacl_switches.h"
-#include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
 #include "policy/policy_constants.h"
 
 namespace {
@@ -97,15 +95,6 @@ bool FatalMessageHandler(int severity, const char* file, int line,
   // caller to do it.
   return false;
 }
-
-#if !defined(DISABLE_NACL)
-bool NaClBreakpadCrashFilter(int exception_type,
-                             int exception_code,
-                             mach_port_t crashing_thread,
-                             void* context) {
-  return !NaClMachThreadIsInUntrusted(crashing_thread);
-}
-#endif
 
 // BreakpadGenerateAndSendReport() does not report the current
 // thread.  This class can be used to spin up a thread to run it.
@@ -291,11 +280,7 @@ void InitCrashProcessInfo() {
     process_type = base::SysUTF8ToNSString(process_type_switch);
   }
 
-#if !defined(DISABLE_NACL)
-  if (process_type_switch == switches::kNaClLoaderProcess) {
-    BreakpadSetFilterCallback(gBreakpadRef, NaClBreakpadCrashFilter, NULL);
-  }
-#endif
+  breakpad::GetBreakpadClient()->InstallAdditionalFilters(gBreakpadRef);
 
   // Store process type in crash dump.
   SetCrashKeyValue(@"ptype", process_type);
