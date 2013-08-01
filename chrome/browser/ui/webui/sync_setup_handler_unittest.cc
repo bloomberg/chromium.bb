@@ -450,7 +450,11 @@ TEST_F(SyncSetupHandlerTest, ShowSyncSetupWhenNotSignedIn) {
       .WillRepeatedly(Return(false));
   handler_->HandleShowSetupUI(NULL);
 
-  ASSERT_EQ(0U, web_ui_.call_data().size());
+  // We expect a call to SyncSetupOverlay.showSyncSetupPage.
+  ASSERT_EQ(1U, web_ui_.call_data().size());
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name);
+
   ASSERT_FALSE(handler_->is_configuring_sync());
   EXPECT_EQ(NULL,
             LoginUIServiceFactory::GetForProfile(

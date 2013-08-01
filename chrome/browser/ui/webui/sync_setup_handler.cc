@@ -729,9 +729,12 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
     // on the settings page. So if we get here, it must be due to the user
     // cancelling signin (by reloading the sync settings page during initial
     // signin) or by directly navigating to settings/syncSetup
-    // (http://crbug.com/229836). So just exit.
+    // (http://crbug.com/229836). So just exit and go back to the settings page.
     DLOG(WARNING) << "Cannot display sync setup UI when not signed in";
     CloseSyncSetup();
+    StringValue page("done");
+    web_ui()->CallJavascriptFunction(
+        "SyncSetupOverlay.showSyncSetupPage", page);
     return;
   }
 
