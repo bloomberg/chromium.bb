@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "content/public/browser/browser_context.h"
@@ -124,13 +125,13 @@ std::set<std::string> GetUniqueMimeTypes(base::ListValue* mime_type_list) {
 
 }  // namespace
 
-ExecuteTasksFunction::ExecuteTasksFunction() {
+ExecuteTaskFunction::ExecuteTaskFunction() {
 }
 
-ExecuteTasksFunction::~ExecuteTasksFunction() {
+ExecuteTaskFunction::~ExecuteTaskFunction() {
 }
 
-bool ExecuteTasksFunction::RunImpl() {
+bool ExecuteTaskFunction::RunImpl() {
   // First param is task id that was to the extension with getFileTasks call.
   std::string task_id;
   if (!args_->GetString(0, &task_id) || !task_id.size())
@@ -187,10 +188,10 @@ bool ExecuteTasksFunction::RunImpl() {
       task_type,
       action_id,
       file_urls,
-      base::Bind(&ExecuteTasksFunction::OnTaskExecuted, this));
+      base::Bind(&ExecuteTaskFunction::OnTaskExecuted, this));
 }
 
-void ExecuteTasksFunction::OnTaskExecuted(bool success) {
+void ExecuteTaskFunction::OnTaskExecuted(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }
@@ -602,6 +603,53 @@ bool SetDefaultTaskFunction::RunImpl() {
 
   file_handler_util::UpdateDefaultTask(profile_, task_id, suffixes, mime_types);
 
+  return true;
+}
+
+ViewFilesFunction::ViewFilesFunction() {
+}
+
+ViewFilesFunction::~ViewFilesFunction() {
+}
+
+bool ViewFilesFunction::RunImpl() {
+  if (args_->GetSize() < 1) {
+    return false;
+  }
+
+  ListValue* path_list = NULL;
+  args_->GetList(0, &path_list);
+  DCHECK(path_list);
+
+  std::string internal_task_id;
+  args_->GetString(1, &internal_task_id);
+
+  std::vector<base::FilePath> files;
+  for (size_t i = 0; i < path_list->GetSize(); ++i) {
+    std::string url_as_string;
+    path_list->GetString(i, &url_as_string);
+    base::FilePath path = GetLocalPathFromURL(
+        render_view_host(), profile(), GURL(url_as_string));
+    if (path.empty())
+      return false;
+    files.push_back(path);
+  }
+
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      profile_, chrome::HOST_DESKTOP_TYPE_ASH);
+  bool success = browser;
+
+  if (browser) {
+    for (size_t i = 0; i < files.size(); ++i) {
+      bool handled = file_manager_util::ExecuteBuiltinHandler(
+          browser, files[i], internal_task_id);
+      if (!handled && files.size() == 1)
+        success = false;
+    }
+  }
+
+  SetResult(Value::CreateBooleanValue(success));
+  SendResponse(true);
   return true;
 }
 

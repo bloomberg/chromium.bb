@@ -166,21 +166,6 @@ class RemoveFileWatchFunction : public FileWatchFunctionBase {
       const std::string& extension_id) OVERRIDE;
 };
 
-// View multiple selected files.  Window stays open.
-class ViewFilesFunction : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.viewFiles",
-                             FILEBROWSERPRIVATE_VIEWFILES)
-
-  ViewFilesFunction();
-
- protected:
-  virtual ~ViewFilesFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
 // Formats Device given its mount path.
 class FormatDeviceFunction : public LoggedAsyncExtensionFunction {
  public:

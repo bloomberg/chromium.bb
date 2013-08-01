@@ -21,15 +21,15 @@ class DriveAppRegistry;
 namespace file_manager {
 
 // Implements the chrome.fileBrowserPrivate.executeTask method.
-class ExecuteTasksFunction : public LoggedAsyncExtensionFunction {
+class ExecuteTaskFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.executeTask",
                              FILEBROWSERPRIVATE_EXECUTETASK)
 
-  ExecuteTasksFunction();
+  ExecuteTaskFunction();
 
  protected:
-  virtual ~ExecuteTasksFunction();
+  virtual ~ExecuteTaskFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -109,6 +109,22 @@ class SetDefaultTaskFunction : public SyncExtensionFunction {
   virtual ~SetDefaultTaskFunction();
 
   // SyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
+// Implements the chrome.fileBrowserPrivate.viewFiles method.
+// Views multiple selected files.  Window stays open.
+class ViewFilesFunction : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.viewFiles",
+                             FILEBROWSERPRIVATE_VIEWFILES)
+
+  ViewFilesFunction();
+
+ protected:
+  virtual ~ViewFilesFunction();
+
+  // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
