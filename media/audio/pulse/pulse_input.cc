@@ -61,12 +61,14 @@ void PulseAudioInputStream::Start(AudioInputCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
   DCHECK(handle_);
+
+  // AGC needs to be started out of the lock.
+  StartAgc();
+
   AutoPulseLock auto_lock(pa_mainloop_);
 
   if (stream_started_)
     return;
-
-  StartAgc();
 
   // Clean up the old buffer.
   pa_stream_drop(handle_);

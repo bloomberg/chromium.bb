@@ -44,8 +44,8 @@
 // a state.
 //
 // Calling SetAutomaticGainControl(true) enables the AGC and StartAgc() starts
-// a periodic timer which calls OnTimer() approximately once every second.
-// OnTimer() calls the QueryAndStoreNewMicrophoneVolume() method which asks
+// a periodic timer which calls QueryAndStoreNewMicrophoneVolume()
+// approximately once every second. QueryAndStoreNewMicrophoneVolume() asks
 // the actual microphone about its current volume level. This value is
 // normalized and stored so it can be read by GetAgcVolume() when the real-time
 // audio thread needs the value. The main idea behind this scheme is to avoid
@@ -91,9 +91,15 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!agc_is_enabled_ || timer_.IsRunning())
       return;
+
+    // Query and cache the volume to avoid sending 0 as volume to AGC at the
+    // beginning of the audio stream, otherwise AGC will try to raise the
+    // volume from 0.
+    QueryAndStoreNewMicrophoneVolume();
+
     timer_.Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(kIntervalBetweenVolumeUpdatesMs),
-        this, &AgcAudioStream::OnTimer);
+        this, &AgcAudioStream::QueryAndStoreNewMicrophoneVolume);
   }
 
   // Stops the periodic timer which periodically checks and updates the
@@ -109,6 +115,9 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
   // Called on the audio manager thread.
   void UpdateAgcVolume() {
     DCHECK(thread_checker_.CalledOnValidThread());
+
+    if (!timer_.IsRunning())
+      return;
 
     // We take new volume samples once every second when the AGC is enabled.
     // To ensure that a new setting has an immediate effect, the new volume
@@ -147,12 +156,13 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
 
   // Takes a new microphone volume sample and stores it in |normalized_volume_|.
   // Range is normalized to [0.0,1.0] or [0.0, 1.5] on Linux.
+  // This method is called periodically when AGC is enabled and always on the
+  // audio manager thread. We use it to read the current microphone level and
+  // to store it so it can be read by the main capture thread. By using this
+  // approach, we can avoid accessing audio hardware from a real-time audio
+  // thread and it leads to a more stable capture performance.
   void QueryAndStoreNewMicrophoneVolume() {
     DCHECK(thread_checker_.CalledOnValidThread());
-
-    // Avoid updating the volume member if AGC is not running.
-    if (!timer_.IsRunning())
-      return;
 
     // Cach the maximum volume if this is the first time we ask for it.
     if (max_volume_ == 0.0)
@@ -166,16 +176,6 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
       base::AutoLock auto_lock(lock_);
       normalized_volume_ = normalized_volume;
     }
-  }
-
-  // This method is called periodically when AGC is enabled and always on the
-  // audio manager thread. We use it to read the current microphone level and
-  // to store it so it can be read by the main capture thread. By using this
-  // approach, we can avoid accessing audio hardware from a real-time audio
-  // thread and it leads to a more stable capture performance.
-  void OnTimer() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    QueryAndStoreNewMicrophoneVolume();
   }
 
   // Ensures that this class is created and destroyed on the same thread.
