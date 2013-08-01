@@ -44,6 +44,7 @@
         'pp_bool.h',
         'ppb_opengles2.h',
         'ppb_tcp_socket.h',
+        'ppb_text_input_controller.h',
         'ppb_udp_socket.h',
         'ppb_url_loader.h',
         'ppb_url_request_info.h',

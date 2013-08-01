@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/tests/test_case.h"
@@ -49,7 +48,7 @@ class TestImeInputEvent : public TestCase {
 
   const PPB_InputEvent* input_event_interface_;
   const PPB_KeyboardInputEvent* keyboard_input_event_interface_;
-  const PPB_IMEInputEvent_Dev* ime_input_event_interface_;
+  const PPB_IMEInputEvent* ime_input_event_interface_;
 
   pp::Rect view_rect_;
   bool received_unexpected_event_;

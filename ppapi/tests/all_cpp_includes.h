@@ -68,6 +68,7 @@
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/tcp_socket.h"
+#include "ppapi/cpp/text_input_controller.h"
 #include "ppapi/cpp/touch_point.h"
 #include "ppapi/cpp/udp_socket.h"
 #include "ppapi/cpp/url_loader.h"

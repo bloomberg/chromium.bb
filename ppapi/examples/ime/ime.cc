@@ -10,8 +10,6 @@
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/font_dev.h"
-#include "ppapi/cpp/dev/ime_input_event_dev.h"
-#include "ppapi/cpp/dev/text_input_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
@@ -19,6 +17,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
+#include "ppapi/cpp/text_input_controller.h"
 
 namespace {
 
@@ -90,7 +89,7 @@ size_t GetNthCharOffsetUtf8(const std::string& str, size_t n) {
 class TextFieldStatusHandler {
  public:
   virtual ~TextFieldStatusHandler() {}
-  virtual void FocusIn(const pp::Rect& caret, const pp::Rect& bounding_box) {}
+  virtual void FocusIn(const pp::Rect& caret) {}
   virtual void FocusOut() {}
   virtual void UpdateSelection(const std::string& text) {}
 };
@@ -103,30 +102,20 @@ class TextFieldStatusNotifyingHandler : public TextFieldStatusHandler {
 
  protected:
   // Implement TextFieldStatusHandler.
-  virtual void FocusIn(const pp::Rect& caret, const pp::Rect& bounding_box) {
+  virtual void FocusIn(const pp::Rect& caret) {
     textinput_control_.SetTextInputType(PP_TEXTINPUT_TYPE_TEXT);
-    textinput_control_.UpdateCaretPosition(caret, bounding_box);
+    textinput_control_.UpdateCaretPosition(caret);
   }
   virtual void FocusOut() {
     textinput_control_.CancelCompositionText();
     textinput_control_.SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
   }
   virtual void UpdateSelection(const std::string& text) {
-    textinput_control_.SetSelectionText(text);
-    textinput_control_.SelectionChanged();
+    textinput_control_.UpdateSurroundingText(text, 0, text.size());
   }
 
  private:
-  class MyTextInput : public pp::TextInput_Dev {
-   public:
-    MyTextInput(pp::Instance* instance) : pp::TextInput_Dev(instance) {}
-    virtual void RequestSurroundingText(uint32_t characters) {
-      UpdateSurroundingText(selection_text_, 0, selection_text_.size());
-    }
-    void SetSelectionText(const std::string& text) { selection_text_ = text; }
-    std::string selection_text_;
-  };
-  MyTextInput textinput_control_;
+  pp::TextInputController textinput_control_;
 };
 
 // Hand-made text field for demonstrating text input API.
@@ -374,7 +363,7 @@ class MyTextField {
         str += composition_.substr(0, composition_selection_.first);
       int px = font_.MeasureSimpleText(str);
       pp::Rect caret(area_.x() + px, area_.y(), 0, area_.height() + 2);
-      status_handler_->FocusIn(caret, area_);
+      status_handler_->FocusIn(caret);
       status_handler_->UpdateSelection(
           utf8_text_.substr(SelectionLeft(),
                             SelectionRight() - SelectionLeft()));
@@ -428,7 +417,8 @@ class MyInstance : public pp::Instance {
           //
           // When a plugin never wants to accept text input, at initialization
           // explicitly turn off the text input feature by calling:
-          pp::TextInput_Dev(this).SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
+          pp::TextInputController(this).SetTextInputType(
+              PP_TEXTINPUT_TYPE_NONE);
         } else if (argv[i] == std::string("unaware")) {
           // Demonstrating the behavior of IME-unaware plugins.
           // Never call any text input related APIs.
@@ -502,25 +492,25 @@ class MyInstance : public pp::Instance {
         break;
       }
       case PP_INPUTEVENT_TYPE_IME_COMPOSITION_START: {
-        const pp::IMEInputEvent_Dev imeEvent(event);
+        const pp::IMEInputEvent imeEvent(event);
         Log("CompositionStart [" + imeEvent.GetText().AsString() + "]");
         ret = true;
         break;
       }
       case PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE: {
-        const pp::IMEInputEvent_Dev imeEvent(event);
+        const pp::IMEInputEvent imeEvent(event);
         Log("CompositionUpdate [" + imeEvent.GetText().AsString() + "]");
         ret = OnCompositionUpdate(imeEvent);
         break;
       }
       case PP_INPUTEVENT_TYPE_IME_COMPOSITION_END: {
-        const pp::IMEInputEvent_Dev imeEvent(event);
+        const pp::IMEInputEvent imeEvent(event);
         Log("CompositionEnd [" + imeEvent.GetText().AsString() + "]");
         ret = OnCompositionEnd(imeEvent);
         break;
       }
       case PP_INPUTEVENT_TYPE_IME_TEXT: {
-        const pp::IMEInputEvent_Dev imeEvent(event);
+        const pp::IMEInputEvent imeEvent(event);
         Log("ImeText [" + imeEvent.GetText().AsString() + "]");
         ret = OnImeText(imeEvent);
         break;
@@ -541,7 +531,7 @@ class MyInstance : public pp::Instance {
   }
 
  private:
-  bool OnCompositionUpdate(const pp::IMEInputEvent_Dev& ev) {
+  bool OnCompositionUpdate(const pp::IMEInputEvent& ev) {
     for (std::vector<MyTextField>::iterator it = textfield_.begin();
          it != textfield_.end();
          ++it) {
@@ -550,17 +540,20 @@ class MyInstance : public pp::Instance {
         for (uint32_t i = 0; i < ev.GetSegmentNumber(); ++i)
           segs.push_back(std::make_pair(ev.GetSegmentOffset(i),
                                         ev.GetSegmentOffset(i + 1)));
+        uint32_t selection_start;
+        uint32_t selection_end;
+        ev.GetSelection(&selection_start, &selection_end);
         it->SetComposition(ev.GetText().AsString(),
                            segs,
                            ev.GetTargetSegment(),
-                           ev.GetSelection());
+                           std::make_pair(selection_start, selection_end));
         return true;
       }
     }
     return false;
   }
 
-  bool OnCompositionEnd(const pp::IMEInputEvent_Dev& ev) {
+  bool OnCompositionEnd(const pp::IMEInputEvent& ev) {
     for (std::vector<MyTextField>::iterator it = textfield_.begin();
          it != textfield_.end();
          ++it) {
@@ -667,7 +660,7 @@ class MyInstance : public pp::Instance {
     return false;
   }
 
-  bool OnImeText(const pp::IMEInputEvent_Dev ev) {
+  bool OnImeText(const pp::IMEInputEvent ev) {
     for (std::vector<MyTextField>::iterator it = textfield_.begin();
          it != textfield_.end();
          ++it) {

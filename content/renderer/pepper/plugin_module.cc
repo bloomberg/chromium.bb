@@ -79,6 +79,7 @@
 #include "ppapi/c/ppb_network_proxy.h"
 #include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/c/ppb_tcp_socket.h"
+#include "ppapi/c/ppb_text_input_controller.h"
 #include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"

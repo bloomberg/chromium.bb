@@ -4,11 +4,9 @@
 
 #include "ppapi/tests/test_ime_input_event.h"
 
-#include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_input_event.h"
-#include "ppapi/cpp/dev/ime_input_event_dev.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/tests/test_utils.h"
@@ -63,9 +61,9 @@ bool TestImeInputEvent::Init() {
       static_cast<const PPB_KeyboardInputEvent*>(
           pp::Module::Get()->GetBrowserInterface(
               PPB_KEYBOARD_INPUT_EVENT_INTERFACE));
-  ime_input_event_interface_ = static_cast<const PPB_IMEInputEvent_Dev*>(
+  ime_input_event_interface_ = static_cast<const PPB_IMEInputEvent*>(
       pp::Module::Get()->GetBrowserInterface(
-          PPB_IME_INPUT_EVENT_DEV_INTERFACE));
+          PPB_IME_INPUT_EVENT_INTERFACE));
 
   bool success =
       input_event_interface_ &&
@@ -136,7 +134,7 @@ void TestImeInputEvent::DidChangeView(const pp::View& view) {
 }
 
 pp::InputEvent TestImeInputEvent::CreateImeCompositionStartEvent() {
-  return pp::IMEInputEvent_Dev(
+  return pp::IMEInputEvent(
       instance_,
       PP_INPUTEVENT_TYPE_IME_COMPOSITION_START,
       100, // time_stamp
@@ -152,7 +150,7 @@ pp::InputEvent TestImeInputEvent::CreateImeCompositionUpdateEvent(
     const std::vector<uint32_t>& segments,
     int32_t target_segment,
     const std::pair<uint32_t, uint32_t>& selection) {
-  return pp::IMEInputEvent_Dev(
+  return pp::IMEInputEvent(
       instance_,
       PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE,
       100, // time_stamp
@@ -165,7 +163,7 @@ pp::InputEvent TestImeInputEvent::CreateImeCompositionUpdateEvent(
 
 pp::InputEvent TestImeInputEvent::CreateImeCompositionEndEvent(
     const std::string& text) {
-  return pp::IMEInputEvent_Dev(
+  return pp::IMEInputEvent(
       instance_,
       PP_INPUTEVENT_TYPE_IME_COMPOSITION_END,
       100, // time_stamp
@@ -177,7 +175,7 @@ pp::InputEvent TestImeInputEvent::CreateImeCompositionEndEvent(
 }
 
 pp::InputEvent TestImeInputEvent::CreateImeTextEvent(const std::string& text) {
-  return pp::IMEInputEvent_Dev(
+  return pp::IMEInputEvent(
       instance_,
       PP_INPUTEVENT_TYPE_IME_TEXT,
       100, // time_stamp

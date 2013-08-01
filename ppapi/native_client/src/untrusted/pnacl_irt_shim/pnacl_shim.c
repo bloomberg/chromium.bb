@@ -66,6 +66,7 @@
 #include "ppapi/c/ppb_net_address.h"
 #include "ppapi/c/ppb_network_proxy.h"
 #include "ppapi/c/ppb_tcp_socket.h"
+#include "ppapi/c/ppb_text_input_controller.h"
 #include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
@@ -149,12 +150,14 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseInputEvent_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WheelInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseLock_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkProxy_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInputController_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoader_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0;
@@ -860,6 +863,45 @@ static void Pnacl_M13_PPB_TouchInputEvent_GetTouchById(struct PP_TouchPoint* _st
 
 /* End wrapper methods for PPB_TouchInputEvent_1_0 */
 
+/* Begin wrapper methods for PPB_IMEInputEvent_1_0 */
+
+static PP_Resource Pnacl_M13_PPB_IMEInputEvent_Create(PP_Instance instance, PP_InputEvent_Type type, PP_TimeTicks time_stamp, struct PP_Var* text, uint32_t segment_number, const uint32_t segment_offsets[], int32_t target_segment, uint32_t selection_start, uint32_t selection_end) {
+  const struct PPB_IMEInputEvent_1_0 *iface = Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0.real_iface;
+  return iface->Create(instance, type, time_stamp, *text, segment_number, segment_offsets, target_segment, selection_start, selection_end);
+}
+
+static PP_Bool Pnacl_M13_PPB_IMEInputEvent_IsIMEInputEvent(PP_Resource resource) {
+  const struct PPB_IMEInputEvent_1_0 *iface = Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0.real_iface;
+  return iface->IsIMEInputEvent(resource);
+}
+
+static void Pnacl_M13_PPB_IMEInputEvent_GetText(struct PP_Var* _struct_result, PP_Resource ime_event) {
+  const struct PPB_IMEInputEvent_1_0 *iface = Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0.real_iface;
+  *_struct_result = iface->GetText(ime_event);
+}
+
+static uint32_t Pnacl_M13_PPB_IMEInputEvent_GetSegmentNumber(PP_Resource ime_event) {
+  const struct PPB_IMEInputEvent_1_0 *iface = Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0.real_iface;
+  return iface->GetSegmentNumber(ime_event);
+}
+
+static uint32_t Pnacl_M13_PPB_IMEInputEvent_GetSegmentOffset(PP_Resource ime_event, uint32_t index) {
+  const struct PPB_IMEInputEvent_1_0 *iface = Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0.real_iface;
+  return iface->GetSegmentOffset(ime_event, index);
+}
+
+static int32_t Pnacl_M13_PPB_IMEInputEvent_GetTargetSegment(PP_Resource ime_event) {
+  const struct PPB_IMEInputEvent_1_0 *iface = Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0.real_iface;
+  return iface->GetTargetSegment(ime_event);
+}
+
+static void Pnacl_M13_PPB_IMEInputEvent_GetSelection(PP_Resource ime_event, uint32_t* start, uint32_t* end) {
+  const struct PPB_IMEInputEvent_1_0 *iface = Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0.real_iface;
+  iface->GetSelection(ime_event, start, end);
+}
+
+/* End wrapper methods for PPB_IMEInputEvent_1_0 */
+
 /* Not generating wrapper methods for PPB_Instance_1_0 */
 
 /* Begin wrapper methods for PPB_MessageLoop_1_0 */
@@ -1022,6 +1064,30 @@ static int32_t Pnacl_M29_PPB_TCPSocket_SetOption(PP_Resource tcp_socket, PP_TCPS
 }
 
 /* End wrapper methods for PPB_TCPSocket_1_0 */
+
+/* Begin wrapper methods for PPB_TextInputController_1_0 */
+
+static void Pnacl_M30_PPB_TextInputController_SetTextInputType(PP_Instance instance, PP_TextInput_Type type) {
+  const struct PPB_TextInputController_1_0 *iface = Pnacl_WrapperInfo_PPB_TextInputController_1_0.real_iface;
+  iface->SetTextInputType(instance, type);
+}
+
+static void Pnacl_M30_PPB_TextInputController_UpdateCaretPosition(PP_Instance instance, const struct PP_Rect* caret) {
+  const struct PPB_TextInputController_1_0 *iface = Pnacl_WrapperInfo_PPB_TextInputController_1_0.real_iface;
+  iface->UpdateCaretPosition(instance, caret);
+}
+
+static void Pnacl_M30_PPB_TextInputController_CancelCompositionText(PP_Instance instance) {
+  const struct PPB_TextInputController_1_0 *iface = Pnacl_WrapperInfo_PPB_TextInputController_1_0.real_iface;
+  iface->CancelCompositionText(instance);
+}
+
+static void Pnacl_M30_PPB_TextInputController_UpdateSurroundingText(PP_Instance instance, struct PP_Var* text, uint32_t caret, uint32_t anchor) {
+  const struct PPB_TextInputController_1_0 *iface = Pnacl_WrapperInfo_PPB_TextInputController_1_0.real_iface;
+  iface->UpdateSurroundingText(instance, *text, caret, anchor);
+}
+
+/* End wrapper methods for PPB_TextInputController_1_0 */
 
 /* Begin wrapper methods for PPB_UDPSocket_1_0 */
 
@@ -1912,6 +1978,8 @@ static void Pnacl_M28_PPB_Testing_Dev_SetMinimumArrayBufferSizeForShmem(PP_Insta
 
 /* Not generating wrapper methods for PPB_TextInput_Dev_0_2 */
 
+/* Not generating wrapper methods for PPB_TextInput_Dev_None */
+
 /* Not generating wrapper methods for PPB_Trace_Event_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Trace_Event_Dev_0_2 */
@@ -2632,6 +2700,8 @@ static int32_t Pnacl_M21_PPB_Flash_DeviceID_GetDeviceID(PP_Resource device_id, s
 }
 
 /* End wrapper methods for PPB_Flash_DeviceID_1_0 */
+
+/* Not generating wrapper methods for PPB_Flash_DeviceID_1_1 */
 
 /* Begin wrapper methods for PPB_Flash_DRM_1_0 */
 
@@ -3994,6 +4064,16 @@ struct PPB_TouchInputEvent_1_0 Pnacl_Wrappers_PPB_TouchInputEvent_1_0 = {
     .GetTouchById = (struct PP_TouchPoint (*)(PP_Resource resource, PP_TouchListType list, uint32_t touch_id))&Pnacl_M13_PPB_TouchInputEvent_GetTouchById
 };
 
+struct PPB_IMEInputEvent_1_0 Pnacl_Wrappers_PPB_IMEInputEvent_1_0 = {
+    .Create = (PP_Resource (*)(PP_Instance instance, PP_InputEvent_Type type, PP_TimeTicks time_stamp, struct PP_Var text, uint32_t segment_number, const uint32_t segment_offsets[], int32_t target_segment, uint32_t selection_start, uint32_t selection_end))&Pnacl_M13_PPB_IMEInputEvent_Create,
+    .IsIMEInputEvent = (PP_Bool (*)(PP_Resource resource))&Pnacl_M13_PPB_IMEInputEvent_IsIMEInputEvent,
+    .GetText = (struct PP_Var (*)(PP_Resource ime_event))&Pnacl_M13_PPB_IMEInputEvent_GetText,
+    .GetSegmentNumber = (uint32_t (*)(PP_Resource ime_event))&Pnacl_M13_PPB_IMEInputEvent_GetSegmentNumber,
+    .GetSegmentOffset = (uint32_t (*)(PP_Resource ime_event, uint32_t index))&Pnacl_M13_PPB_IMEInputEvent_GetSegmentOffset,
+    .GetTargetSegment = (int32_t (*)(PP_Resource ime_event))&Pnacl_M13_PPB_IMEInputEvent_GetTargetSegment,
+    .GetSelection = (void (*)(PP_Resource ime_event, uint32_t* start, uint32_t* end))&Pnacl_M13_PPB_IMEInputEvent_GetSelection
+};
+
 /* Not generating wrapper interface for PPB_Instance_1_0 */
 
 struct PPB_MessageLoop_1_0 Pnacl_Wrappers_PPB_MessageLoop_1_0 = {
@@ -4041,6 +4121,13 @@ struct PPB_TCPSocket_1_0 Pnacl_Wrappers_PPB_TCPSocket_1_0 = {
     .Write = (int32_t (*)(PP_Resource tcp_socket, const char* buffer, int32_t bytes_to_write, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_TCPSocket_Write,
     .Close = (void (*)(PP_Resource tcp_socket))&Pnacl_M29_PPB_TCPSocket_Close,
     .SetOption = (int32_t (*)(PP_Resource tcp_socket, PP_TCPSocket_Option name, struct PP_Var value, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_TCPSocket_SetOption
+};
+
+struct PPB_TextInputController_1_0 Pnacl_Wrappers_PPB_TextInputController_1_0 = {
+    .SetTextInputType = (void (*)(PP_Instance instance, PP_TextInput_Type type))&Pnacl_M30_PPB_TextInputController_SetTextInputType,
+    .UpdateCaretPosition = (void (*)(PP_Instance instance, const struct PP_Rect* caret))&Pnacl_M30_PPB_TextInputController_UpdateCaretPosition,
+    .CancelCompositionText = (void (*)(PP_Instance instance))&Pnacl_M30_PPB_TextInputController_CancelCompositionText,
+    .UpdateSurroundingText = (void (*)(PP_Instance instance, struct PP_Var text, uint32_t caret, uint32_t anchor))&Pnacl_M30_PPB_TextInputController_UpdateSurroundingText
 };
 
 struct PPB_UDPSocket_1_0 Pnacl_Wrappers_PPB_UDPSocket_1_0 = {
@@ -4318,6 +4405,8 @@ struct PPB_Testing_Dev_0_92 Pnacl_Wrappers_PPB_Testing_Dev_0_92 = {
 
 /* Not generating wrapper interface for PPB_TextInput_Dev_0_2 */
 
+/* Not generating wrapper interface for PPB_TextInput_Dev_None */
+
 /* Not generating wrapper interface for PPB_Trace_Event_Dev_0_1 */
 
 /* Not generating wrapper interface for PPB_Trace_Event_Dev_0_2 */
@@ -4525,6 +4614,8 @@ struct PPB_Flash_DeviceID_1_0 Pnacl_Wrappers_PPB_Flash_DeviceID_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M21_PPB_Flash_DeviceID_Create,
     .GetDeviceID = (int32_t (*)(PP_Resource device_id, struct PP_Var* id, struct PP_CompletionCallback callback))&Pnacl_M21_PPB_Flash_DeviceID_GetDeviceID
 };
+
+/* Not generating wrapper interface for PPB_Flash_DeviceID_1_1 */
 
 struct PPB_Flash_DRM_1_0 Pnacl_Wrappers_PPB_Flash_DRM_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M29_PPB_Flash_DRM_Create,
@@ -4935,6 +5026,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0 = {
+  .iface_macro = PPB_IME_INPUT_EVENT_INTERFACE_1_0,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_IMEInputEvent_1_0,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0 = {
   .iface_macro = PPB_MESSAGELOOP_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_MessageLoop_1_0,
@@ -4968,6 +5065,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkProxy_1_0 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_1_0 = {
   .iface_macro = PPB_TCPSOCKET_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TCPSocket_1_0,
+  .real_iface = NULL
+};
+
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInputController_1_0 = {
+  .iface_macro = PPB_TEXTINPUTCONTROLLER_INTERFACE_1_0,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TextInputController_1_0,
   .real_iface = NULL
 };
 
@@ -5408,12 +5511,14 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_WheelInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0,
+  &Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_MessageLoop_1_0,
   &Pnacl_WrapperInfo_PPB_Messaging_1_0,
   &Pnacl_WrapperInfo_PPB_MouseLock_1_0,
   &Pnacl_WrapperInfo_PPB_NetAddress_1_0,
   &Pnacl_WrapperInfo_PPB_NetworkProxy_1_0,
   &Pnacl_WrapperInfo_PPB_TCPSocket_1_0,
+  &Pnacl_WrapperInfo_PPB_TextInputController_1_0,
   &Pnacl_WrapperInfo_PPB_UDPSocket_1_0,
   &Pnacl_WrapperInfo_PPB_URLLoader_1_0,
   &Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0,

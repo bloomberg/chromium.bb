@@ -411,6 +411,16 @@ const PPB_IMEInputEvent_Dev_0_2 g_ppb_ime_input_event_0_2_thunk = {
   &GetIMESelection
 };
 
+const PPB_IMEInputEvent_1_0 g_ppb_ime_input_event_1_0_thunk = {
+  &CreateIMEInputEvent,
+  &IsIMEInputEvent,
+  &GetIMEText,
+  &GetIMESegmentNumber,
+  &GetIMESegmentOffset,
+  &GetIMETargetSegment,
+  &GetIMESelection
+};
+
 // Touch -----------------------------------------------------------------------
 
 PP_Resource CreateTouchInputEvent(PP_Instance instance,
@@ -516,6 +526,10 @@ const PPB_IMEInputEvent_Dev_0_1* GetPPB_IMEInputEvent_Dev_0_1_Thunk() {
 
 const PPB_IMEInputEvent_Dev_0_2* GetPPB_IMEInputEvent_Dev_0_2_Thunk() {
   return &g_ppb_ime_input_event_0_2_thunk;
+}
+
+const PPB_IMEInputEvent_1_0* GetPPB_IMEInputEvent_1_0_Thunk() {
+  return &g_ppb_ime_input_event_1_0_thunk;
 }
 
 const PPB_TouchInputEvent_1_0* GetPPB_TouchInputEvent_1_0_Thunk() {
