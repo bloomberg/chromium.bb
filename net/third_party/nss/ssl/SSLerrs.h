@@ -404,20 +404,20 @@ ER3(SSL_ERROR_FEATURE_NOT_SUPPORTED_FOR_VERSION, (SSL_ERROR_BASE + 124),
 ER3(SSL_ERROR_RX_UNEXPECTED_CERT_STATUS,       (SSL_ERROR_BASE + 125),
 "SSL received an unexpected Certificate Status handshake message.")
 
-ER3(SSL_ERROR_BAD_CHANNEL_ID_DATA, (SSL_ERROR_BASE + 126),
-"SSL received a malformed TLS Channel ID extension.")
-
-ER3(SSL_ERROR_INVALID_CHANNEL_ID_KEY, (SSL_ERROR_BASE + 127),
-"The application provided an invalid TLS Channel ID key.")
-
-ER3(SSL_ERROR_GET_CHANNEL_ID_FAILED, (SSL_ERROR_BASE + 128),
-"The application could not get a TLS Channel ID.")
-
-ER3(SSL_ERROR_UNSUPPORTED_HASH_ALGORITHM, (SSL_ERROR_BASE + 129),
+ER3(SSL_ERROR_UNSUPPORTED_HASH_ALGORITHM, (SSL_ERROR_BASE + 126),
 "Unsupported hash algorithm used by TLS peer.")
 
-ER3(SSL_ERROR_DIGEST_FAILURE, (SSL_ERROR_BASE + 130),
+ER3(SSL_ERROR_DIGEST_FAILURE, (SSL_ERROR_BASE + 127),
 "Digest function failed.")
 
-ER3(SSL_ERROR_INCORRECT_SIGNATURE_ALGORITHM, (SSL_ERROR_BASE + 131),
+ER3(SSL_ERROR_INCORRECT_SIGNATURE_ALGORITHM, (SSL_ERROR_BASE + 128),
 "Incorrect signature algorithm specified in a digitally-signed element.")
+
+ER3(SSL_ERROR_BAD_CHANNEL_ID_DATA, (SSL_ERROR_BASE + 129),
+"SSL received a malformed TLS Channel ID extension.")
+
+ER3(SSL_ERROR_INVALID_CHANNEL_ID_KEY, (SSL_ERROR_BASE + 130),
+"The application provided an invalid TLS Channel ID key.")
+
+ER3(SSL_ERROR_GET_CHANNEL_ID_FAILED, (SSL_ERROR_BASE + 131),
+"The application could not get a TLS Channel ID.")

@@ -6,7 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* ECC code moved here from ssl3con.c */
-/* $Id$ */
 
 #include "nss.h"
 #include "cert.h"
@@ -174,7 +173,7 @@ typedef struct ECDHEKeyPairStr {
 static ECDHEKeyPair gECDHEKeyPairs[ec_pastLastName];
 
 SECStatus 
-ssl3_ECName2Params(PRArenaPool * arena, ECName curve, SECKEYECParams * params)
+ssl3_ECName2Params(PLArenaPool * arena, ECName curve, SECKEYECParams * params)
 {
     SECOidData *oidData = NULL;
 
@@ -602,7 +601,7 @@ ssl3_CreateECDHEphemeralKeys(sslSocket *ss, ECName ec_curve)
 SECStatus
 ssl3_HandleECDHServerKeyExchange(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
 {
-    PRArenaPool *    arena     = NULL;
+    PLArenaPool *    arena     = NULL;
     SECKEYPublicKey *peerKey   = NULL;
     PRBool           isTLS, isTLS12;
     SECStatus        rv;
@@ -1069,14 +1068,14 @@ static const PRUint8 tlsECList[56] = {
     BE(24), BE(25)
 };
 
-static const PRUint8 ECPtFmt[6] = {
+static const PRUint8 ecPtFmt[6] = {
     BE(11),         /* Extension type */
     BE( 2),         /* octets that follow */
              1,     /* octets that follow */
                  0  /* uncompressed type only */
 };
 
-/* This function already presumes we can do ECC, ssl_IsECCEnabled must be
+/* This function already presumes we can do ECC, ssl3_IsECCEnabled must be
  * called before this function. It looks to see if we have a token which
  * is capable of doing smaller than SuiteB curves. If the token can, we
  * presume the token can do the whole SSL suite of curves. If it can't we
@@ -1086,10 +1085,11 @@ static PRBool
 ssl3_SuiteBOnly(sslSocket *ss)
 {
 #if 0
-    /* look to see if we can handle certs less than 163 bits */
+    /* See if we can support small curves (like 163). If not, assume we can
+     * only support Suite-B curves (P-256, P-384, P-521). */
     PK11SlotInfo *slot =
 	PK11_GetBestSlotWithAttributes(CKM_ECDH1_DERIVE, 0, 163,
-					ss ? ss->pkcs11PinArg : NULL);
+				       ss ? ss->pkcs11PinArg : NULL);
 
     if (!slot) {
 	/* nope, presume we can only do suite B */
@@ -1112,22 +1112,22 @@ ssl3_SendSupportedCurvesXtn(
 			PRBool      append,
 			PRUint32    maxBytes)
 {
-    int ECListSize = 0;
-    const PRUint8 *ECList = NULL;
+    PRInt32 ecListSize = 0;
+    const PRUint8 *ecList = NULL;
 
     if (!ss || !ssl3_IsECCEnabled(ss))
     	return 0;
 
     if (ssl3_SuiteBOnly(ss)) {
-	ECListSize = sizeof (suiteBECList);
-	ECList = suiteBECList;
+	ecListSize = sizeof suiteBECList;
+	ecList = suiteBECList;
     } else {
-	ECListSize = sizeof (tlsECList);
-	ECList = tlsECList;
+	ecListSize = sizeof tlsECList;
+	ecList = tlsECList;
     }
  
-    if (append && maxBytes >= ECListSize) {
-	SECStatus rv = ssl3_AppendHandshake(ss, ECList, ECListSize);
+    if (append && maxBytes >= ecListSize) {
+	SECStatus rv = ssl3_AppendHandshake(ss, ecList, ecListSize);
 	if (rv != SECSuccess)
 	    return -1;
 	if (!ss->sec.isServer) {
@@ -1136,11 +1136,11 @@ ssl3_SendSupportedCurvesXtn(
 		ssl_elliptic_curves_xtn;
 	}
     }
-    return ECListSize;
+    return ecListSize;
 }
 
-PRInt32
-ssl3_GetSupportedECCCurveMask(sslSocket *ss)
+PRUint32
+ssl3_GetSupportedECCurveMask(sslSocket *ss)
 {
     if (ssl3_SuiteBOnly(ss)) {
 	return SSL3_SUITE_B_SUPPORTED_CURVES_MASK;
@@ -1159,8 +1159,8 @@ ssl3_SendSupportedPointFormatsXtn(
 {
     if (!ss || !ssl3_IsECCEnabled(ss))
     	return 0;
-    if (append && maxBytes >= (sizeof ECPtFmt)) {
-	SECStatus rv = ssl3_AppendHandshake(ss, ECPtFmt, (sizeof ECPtFmt));
+    if (append && maxBytes >= (sizeof ecPtFmt)) {
+	SECStatus rv = ssl3_AppendHandshake(ss, ecPtFmt, (sizeof ecPtFmt));
 	if (rv != SECSuccess)
 	    return -1;
 	if (!ss->sec.isServer) {
@@ -1169,7 +1169,7 @@ ssl3_SendSupportedPointFormatsXtn(
 		ssl_ec_point_formats_xtn;
 	}
     }
-    return (sizeof ECPtFmt);
+    return (sizeof ecPtFmt);
 }
 
 /* Just make sure that the remote client supports uncompressed points,

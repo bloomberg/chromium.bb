@@ -4,7 +4,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* $Id$ */
 
 #ifndef __ssl_h_
 #define __ssl_h_
@@ -219,7 +218,7 @@ typedef enum SSLNextProtoState {
   SSL_NEXT_PROTO_NO_SUPPORT = 0, /* No peer support                */
   SSL_NEXT_PROTO_NEGOTIATED = 1, /* Mutual agreement               */
   SSL_NEXT_PROTO_NO_OVERLAP = 2, /* No protocol overlap found      */
-  SSL_NEXT_PROTO_SELECTED   = 3, /* Server selected proto (ALPN)   */
+  SSL_NEXT_PROTO_SELECTED   = 3  /* Server selected proto (ALPN)   */
 } SSLNextProtoState;
 
 /* SSL_GetNextProto can be used in the HandshakeCallback or any time after
@@ -450,14 +449,13 @@ SSL_IMPORT const SECItemArray * SSL_PeerStapledOCSPResponses(PRFileDesc *fd);
 
 /* SSL_SetStapledOCSPResponses stores an array of one or multiple OCSP responses
  * in the fd's data, which may be sent as part of a server side cert_status
- * handshake message.
- * If takeOwnership is false, the function will duplicate the responses.
- * If takeOwnership is true, the ownership of responses is transfered into the
- * SSL library, and the caller must stop using it.
+ * handshake message. Parameter |responses| is for the server certificate of
+ * the key exchange type |kea|.
+ * The function will duplicate the responses array.
  */
 SSL_IMPORT SECStatus
-SSL_SetStapledOCSPResponses(PRFileDesc *fd, SECItemArray *responses,
-			    PRBool takeOwnership);
+SSL_SetStapledOCSPResponses(PRFileDesc *fd, const SECItemArray *responses,
+			    SSLKEAType kea);
 
 /*
 ** Return references to the certificates presented by the SSL peer.

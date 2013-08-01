@@ -44,18 +44,6 @@ patch -p4 < $patches_dir/suitebonly.patch
 
 patch -p4 < $patches_dir/secitemarray.patch
 
-patch -p4 < $patches_dir/unusedvariables.patch
-
-patch -p4 < $patches_dir/handlecertstatus.patch
-
-patch -p4 < $patches_dir/tls12.patch
-
 patch -p4 < $patches_dir/tls12chromium.patch
 
-patch -p4 < $patches_dir/tls12certrequest.patch
-
-patch -p4 < $patches_dir/tls12hmacsha256.patch
-
-patch -p4 < $patches_dir/tls12handshakehashes.patch
-
-patch -p5 < $patches_dir/alpn.patch
+patch -p4 < $patches_dir/alpn.patch

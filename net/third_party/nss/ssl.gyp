@@ -79,10 +79,6 @@
         'NSS_ENABLE_ECC',
         'USE_UTIL_DIRECTLY',
       ],
-      'defines!': [
-        # Regrettably, NSS can't be compiled with NO_NSPR_10_SUPPORT yet.
-        'NO_NSPR_10_SUPPORT',
-      ],
       'msvs_disabled_warnings': [4018, 4244, 4267],
       'conditions': [
         ['component == "shared_library"', {

@@ -5,17 +5,16 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* $Id$ */
 
 #ifndef __ssl3proto_h_
 #define __ssl3proto_h_
 
-typedef uint8 SSL3Opaque;
+typedef PRUint8 SSL3Opaque;
 
-typedef uint16 SSL3ProtocolVersion;
+typedef PRUint16 SSL3ProtocolVersion;
 /* version numbers are defined in sslproto.h */
 
-typedef uint16 ssl3CipherSuite;
+typedef PRUint16 ssl3CipherSuite;
 /* The cipher suites are defined in sslproto.h */
 
 #define MAX_CERT_TYPES			10
@@ -43,14 +42,14 @@ typedef enum {
 typedef struct {
     SSL3ContentType     type;
     SSL3ProtocolVersion version;
-    uint16              length;
+    PRUint16            length;
     SECItem             fragment;
 } SSL3Plaintext;
 
 typedef struct {
     SSL3ContentType     type;
     SSL3ProtocolVersion version;
-    uint16              length;
+    PRUint16            length;
     SECItem             fragment;
 } SSL3Compressed;
 
@@ -62,8 +61,8 @@ typedef struct {
 typedef struct {
     SECItem    content;
     SSL3Opaque MAC[MAX_MAC_LENGTH];
-    uint8      padding[MAX_PADDING_LENGTH];
-    uint8      padding_length;
+    PRUint8    padding[MAX_PADDING_LENGTH];
+    PRUint8    padding_length;
 } SSL3GenericBlockCipher;
 
 typedef enum { change_cipher_spec_choice = 1 } SSL3ChangeCipherSpecChoice;
@@ -135,7 +134,7 @@ typedef enum {
 } SSL3HandshakeType;
 
 typedef struct {
-    uint8 empty;
+    PRUint8 empty;
 } SSL3HelloRequest;
      
 typedef struct {
@@ -144,7 +143,7 @@ typedef struct {
      
 typedef struct {
     SSL3Opaque id[32];
-    uint8 length;
+    PRUint8 length;
 } SSL3SessionID;
      
 typedef struct {
@@ -152,7 +151,7 @@ typedef struct {
     SSL3Random            random;
     SSL3SessionID         session_id;
     SECItem               cipher_suites;
-    uint8                 cm_count;
+    PRUint8                 cm_count;
     SSLCompressionMethod  compression_methods[MAX_COMPRESSION_METHODS];
 } SSL3ClientHello;
      
@@ -241,8 +240,8 @@ typedef struct {
 /* SSL3HashesIndividually contains a combination MD5/SHA1 hash, as used in TLS
  * prior to 1.2. */
 typedef struct {
-    uint8 md5[16];
-    uint8 sha[20];
+    PRUint8 md5[16];
+    PRUint8 sha[20];
 } SSL3HashesIndividually;
 
 /* SSL3Hashes contains an SSL hash value. The digest is contained in |u.raw|
@@ -328,9 +327,9 @@ typedef struct {
 
 /* NewSessionTicket handshake message. */
 typedef struct {
-    uint32  received_timestamp;
-    uint32  ticket_lifetime_hint;
-    SECItem ticket;
+    PRUint32 received_timestamp;
+    PRUint32 ticket_lifetime_hint;
+    SECItem  ticket;
 } NewSessionTicket;
 
 typedef enum {

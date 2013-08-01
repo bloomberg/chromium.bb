@@ -59,7 +59,7 @@ CERTCertificateList*
 hack_NewCertificateListFromCertList(CERTCertList* list)
 {
     CERTCertificateList * chain = NULL;
-    PRArenaPool * arena = NULL;
+    PLArenaPool * arena = NULL;
     CERTCertListNode * node;
     int len;
 

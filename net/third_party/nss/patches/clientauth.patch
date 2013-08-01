@@ -1,7 +1,7 @@
-diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2013-04-27 09:20:13.658889025 -0700
-+++ b/nss/lib/ssl/ssl3con.c	2013-04-27 09:20:50.169405985 -0700
-@@ -2155,6 +2155,9 @@ ssl3_ClientAuthTokenPresent(sslSessionID
+diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
+--- a/nss/lib/ssl/ssl3con.c	2013-07-31 12:31:45.326118409 -0700
++++ b/nss/lib/ssl/ssl3con.c	2013-07-31 12:35:27.189373289 -0700
+@@ -2284,6 +2284,9 @@ ssl3_ClientAuthTokenPresent(sslSessionID
      PRBool isPresent = PR_TRUE;
  
      /* we only care if we are doing client auth */
@@ -11,24 +11,26 @@ diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      if (!sid || !sid->u.ssl3.clAuthValid) {
  	return PR_TRUE;
      }
-@@ -5348,24 +5351,35 @@ ssl3_SendCertificateVerify(sslSocket *ss
-     }
+@@ -5768,25 +5771,36 @@ ssl3_SendCertificateVerify(sslSocket *ss
  
      isTLS = (PRBool)(ss->ssl3.pwSpec->version > SSL_LIBRARY_VERSION_3_0);
+     isTLS12 = (PRBool)(ss->ssl3.pwSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
+-    keyType = ss->ssl3.clientPrivateKey->keyType;
 -    rv = ssl3_SignHashes(&hashes, ss->ssl3.clientPrivateKey, &buf, isTLS);
 -    if (rv == SECSuccess) {
 -	PK11SlotInfo * slot;
 -	sslSessionID * sid   = ss->sec.ci.sid;
 +    if (ss->ssl3.platformClientKey) {
 +#ifdef NSS_PLATFORM_CLIENT_AUTH
++	keyType = CERT_GetCertKeyType(
++	    &ss->ssl3.clientCertificate->subjectPublicKeyInfo);
 +	rv = ssl3_PlatformSignHashes(
-+	    &hashes, ss->ssl3.platformClientKey, &buf, isTLS,
-+	    CERT_GetCertKeyType(
-+		&ss->ssl3.clientCertificate->subjectPublicKeyInfo));
++	    &hashes, ss->ssl3.platformClientKey, &buf, isTLS, keyType);
 +	ssl_FreePlatformKey(ss->ssl3.platformClientKey);
 +	ss->ssl3.platformClientKey = (PlatformKey)NULL;
 +#endif /* NSS_PLATFORM_CLIENT_AUTH */
 +    } else {
++	keyType = ss->ssl3.clientPrivateKey->keyType;
 +	rv = ssl3_SignHashes(&hashes, ss->ssl3.clientPrivateKey, &buf, isTLS);
 +	if (rv == SECSuccess) {
 +	    PK11SlotInfo * slot;
@@ -63,7 +65,7 @@ diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      if (rv != SECSuccess) {
  	goto done;	/* err code was set by ssl3_SignHashes */
      }
-@@ -5433,6 +5447,12 @@ ssl3_HandleServerHello(sslSocket *ss, SS
+@@ -5870,6 +5884,12 @@ ssl3_HandleServerHello(sslSocket *ss, SS
         SECKEY_DestroyPrivateKey(ss->ssl3.clientPrivateKey);
         ss->ssl3.clientPrivateKey = NULL;
      }
@@ -76,9 +78,9 @@ diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  
      temp = ssl3_ConsumeHandshakeNumber(ss, 2, &b, &length);
      if (temp < 0) {
-@@ -6022,6 +6042,10 @@ ssl3_HandleCertificateRequest(sslSocket
-     SSL3AlertDescription desc        = illegal_parameter;
+@@ -6496,6 +6516,10 @@ ssl3_HandleCertificateRequest(sslSocket
      SECItem              cert_types  = {siBuffer, NULL, 0};
+     SECItem              algorithms  = {siBuffer, NULL, 0};
      CERTDistNames        ca_list;
 +#ifdef NSS_PLATFORM_CLIENT_AUTH
 +    CERTCertList *       platform_cert_list = NULL;
@@ -87,21 +89,21 @@ diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  
      SSL_TRC(3, ("%d: SSL3[%d]: handle certificate_request handshake",
  		SSL_GETPID(), ss->fd));
-@@ -6038,6 +6062,7 @@ ssl3_HandleCertificateRequest(sslSocket
+@@ -6512,6 +6536,7 @@ ssl3_HandleCertificateRequest(sslSocket
      PORT_Assert(ss->ssl3.clientCertChain == NULL);
      PORT_Assert(ss->ssl3.clientCertificate == NULL);
      PORT_Assert(ss->ssl3.clientPrivateKey == NULL);
 +    PORT_Assert(ss->ssl3.platformClientKey == (PlatformKey)NULL);
  
      isTLS = (PRBool)(ss->ssl3.prSpec->version > SSL_LIBRARY_VERSION_3_0);
-     rv = ssl3_ConsumeHandshakeVariable(ss, &cert_types, 1, &b, &length);
-@@ -6104,6 +6129,18 @@ ssl3_HandleCertificateRequest(sslSocket
+     isTLS12 = (PRBool)(ss->ssl3.prSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
+@@ -6591,6 +6616,18 @@ ssl3_HandleCertificateRequest(sslSocket
      desc = no_certificate;
      ss->ssl3.hs.ws = wait_hello_done;
  
 +#ifdef NSS_PLATFORM_CLIENT_AUTH
 +    if (ss->getPlatformClientAuthData != NULL) {
-+	/* XXX Should pass cert_types in this call!! */
++	/* XXX Should pass cert_types and algorithms in this call!! */
 +        rv = (SECStatus)(*ss->getPlatformClientAuthData)(
 +                                        ss->getPlatformClientAuthDataArg,
 +                                        ss->fd, &ca_list,
@@ -112,9 +114,9 @@ diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
 +    } else
 +#endif
      if (ss->getClientAuthData != NULL) {
- 	/* XXX Should pass cert_types in this call!! */
+ 	/* XXX Should pass cert_types and algorithms in this call!! */
  	rv = (SECStatus)(*ss->getClientAuthData)(ss->getClientAuthDataArg,
-@@ -6113,12 +6150,52 @@ ssl3_HandleCertificateRequest(sslSocket
+@@ -6600,12 +6637,52 @@ ssl3_HandleCertificateRequest(sslSocket
      } else {
  	rv = SECFailure; /* force it to send a no_certificate alert */
      }
@@ -167,7 +169,7 @@ diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
          /* check what the callback function returned */
          if ((!ss->ssl3.clientCertificate) || (!ss->ssl3.clientPrivateKey)) {
              /* we are missing either the key or cert */
-@@ -6181,6 +6258,10 @@ loser:
+@@ -6668,6 +6745,10 @@ loser:
  done:
      if (arena != NULL)
      	PORT_FreeArena(arena, PR_FALSE);
@@ -178,7 +180,7 @@ diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      return rv;
  }
  
-@@ -6262,7 +6343,8 @@ ssl3_SendClientSecondRound(sslSocket *ss
+@@ -6749,7 +6830,8 @@ ssl3_SendClientSecondRound(sslSocket *ss
  
      sendClientCert = !ss->ssl3.sendEmptyCert &&
  		     ss->ssl3.clientCertChain  != NULL &&
@@ -188,7 +190,7 @@ diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  
      /* We must wait for the server's certificate to be authenticated before
       * sending the client certificate in order to disclosing the client
-@@ -10815,6 +10897,10 @@ ssl3_DestroySSL3Info(sslSocket *ss)
+@@ -11465,6 +11547,10 @@ ssl3_DestroySSL3Info(sslSocket *ss)
  
      if (ss->ssl3.clientPrivateKey != NULL)
  	SECKEY_DestroyPrivateKey(ss->ssl3.clientPrivateKey);
@@ -199,10 +201,10 @@ diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  
      if (ss->ssl3.peerCertArena != NULL)
  	ssl3_CleanupPeerCerts(ss);
-diff -puN a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
---- a/nss/lib/ssl/ssl3ext.c	2013-04-27 09:17:17.216390477 -0700
-+++ b/nss/lib/ssl/ssl3ext.c	2013-04-27 09:20:50.169405985 -0700
-@@ -11,8 +11,8 @@
+diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
+--- a/nss/lib/ssl/ssl3ext.c	2013-07-31 12:07:10.964699464 -0700
++++ b/nss/lib/ssl/ssl3ext.c	2013-07-31 12:35:27.189373289 -0700
+@@ -10,8 +10,8 @@
  #include "nssrenam.h"
  #include "nss.h"
  #include "ssl.h"
@@ -212,10 +214,10 @@ diff -puN a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
  #include "pk11pub.h"
  #ifdef NO_PKCS11_BYPASS
  #include "blapit.h"
-diff -puN a/nss/lib/ssl/sslauth.c b/nss/lib/ssl/sslauth.c
---- a/nss/lib/ssl/sslauth.c	2013-04-27 09:20:36.319209880 -0700
-+++ b/nss/lib/ssl/sslauth.c	2013-04-27 09:20:50.359408673 -0700
-@@ -220,6 +220,28 @@ SSL_GetClientAuthDataHook(PRFileDesc *s,
+diff -pu a/nss/lib/ssl/sslauth.c b/nss/lib/ssl/sslauth.c
+--- a/nss/lib/ssl/sslauth.c	2013-07-31 12:32:29.076760372 -0700
++++ b/nss/lib/ssl/sslauth.c	2013-07-31 12:35:27.189373289 -0700
+@@ -219,6 +219,28 @@ SSL_GetClientAuthDataHook(PRFileDesc *s,
      return SECSuccess;
  }
  
@@ -244,10 +246,10 @@ diff -puN a/nss/lib/ssl/sslauth.c b/nss/lib/ssl/sslauth.c
  /* NEED LOCKS IN HERE.  */
  SECStatus 
  SSL_SetPKCS11PinArg(PRFileDesc *s, void *arg)
-diff -puN a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2013-04-27 09:20:36.319209880 -0700
-+++ b/nss/lib/ssl/ssl.h	2013-04-27 09:20:50.409409383 -0700
-@@ -505,6 +505,48 @@ typedef SECStatus (PR_CALLBACK *SSLGetCl
+diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
+--- a/nss/lib/ssl/ssl.h	2013-07-31 12:32:29.076760372 -0700
++++ b/nss/lib/ssl/ssl.h	2013-07-31 12:35:27.199373436 -0700
+@@ -503,6 +503,48 @@ typedef SECStatus (PR_CALLBACK *SSLGetCl
  SSL_IMPORT SECStatus SSL_GetClientAuthDataHook(PRFileDesc *fd, 
  			                       SSLGetClientAuthData f, void *a);
  
@@ -296,10 +298,10 @@ diff -puN a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
  
  /*
  ** SNI extension processing callback function.
-diff -puN a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2013-04-27 09:20:13.658889025 -0700
-+++ b/nss/lib/ssl/sslimpl.h	2013-04-27 09:20:50.409409383 -0700
-@@ -21,6 +21,7 @@
+diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
+--- a/nss/lib/ssl/sslimpl.h	2013-07-31 12:31:45.326118409 -0700
++++ b/nss/lib/ssl/sslimpl.h	2013-07-31 12:35:27.199373436 -0700
+@@ -20,6 +20,7 @@
  #include "sslerr.h"
  #include "ssl3prot.h"
  #include "hasht.h"
@@ -307,7 +309,7 @@ diff -puN a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  #include "nssilock.h"
  #include "pkcs11t.h"
  #if defined(XP_UNIX) || defined(XP_BEOS)
-@@ -32,6 +33,15 @@
+@@ -31,6 +32,15 @@
  
  #include "sslt.h" /* for some formerly private types, now public */
  
@@ -338,7 +340,7 @@ diff -puN a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  
  
  /*
-@@ -862,6 +880,10 @@ struct ssl3StateStr {
+@@ -896,6 +914,10 @@ struct ssl3StateStr {
  
      CERTCertificate *    clientCertificate;  /* used by client */
      SECKEYPrivateKey *   clientPrivateKey;   /* used by client */
@@ -349,7 +351,7 @@ diff -puN a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
      CERTCertificateList *clientCertChain;    /* used by client */
      PRBool               sendEmptyCert;      /* used by client */
  
-@@ -1119,6 +1141,10 @@ const unsigned char *  preferredCipher;
+@@ -1153,6 +1175,10 @@ const unsigned char *  preferredCipher;
      void                     *authCertificateArg;
      SSLGetClientAuthData      getClientAuthData;
      void                     *getClientAuthDataArg;
@@ -360,7 +362,7 @@ diff -puN a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
      SSLSNISocketConfig        sniSocketConfig;
      void                     *sniSocketConfigArg;
      SSLBadCertHandler         handleBadCert;
-@@ -1691,7 +1717,6 @@ extern void ssl_FreePRSocket(PRFileDesc
+@@ -1737,7 +1763,6 @@ extern void ssl_FreePRSocket(PRFileDesc
   * various ciphers */
  extern int ssl3_config_match_init(sslSocket *);
  
@@ -368,7 +370,7 @@ diff -puN a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  /* Create a new ref counted key pair object from two keys. */
  extern ssl3KeyPair * ssl3_NewKeyPair( SECKEYPrivateKey * privKey, 
                                        SECKEYPublicKey * pubKey);
-@@ -1731,6 +1756,26 @@ extern SECStatus ssl_InitSessionCacheLoc
+@@ -1777,6 +1802,26 @@ extern SECStatus ssl_InitSessionCacheLoc
  
  extern SECStatus ssl_FreeSessionCacheLocks(void);
  
@@ -395,597 +397,10 @@ diff -puN a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  
  /**************** DTLS-specific functions **************/
  extern void dtls_FreeQueuedMessage(DTLSQueuedMessage *msg);
-diff -puN a/nss/lib/ssl/sslplatf.c b/nss/lib/ssl/sslplatf.c
---- a/nss/lib/ssl/sslplatf.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/nss/lib/ssl/sslplatf.c	2013-04-27 09:20:50.409409383 -0700
-@@ -0,0 +1,583 @@
-+/*
-+ * Platform specific crypto wrappers
-+ *
-+ * ***** BEGIN LICENSE BLOCK *****
-+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
-+ *
-+ * The contents of this file are subject to the Mozilla Public License Version
-+ * 1.1 (the "License"); you may not use this file except in compliance with
-+ * the License. You may obtain a copy of the License at
-+ * http://www.mozilla.org/MPL/
-+ *
-+ * Software distributed under the License is distributed on an "AS IS" basis,
-+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-+ * for the specific language governing rights and limitations under the
-+ * License.
-+ *
-+ * The Original Code is the Netscape security libraries.
-+ *
-+ * The Initial Developer of the Original Code is
-+ * Netscape Communications Corporation.
-+ * Portions created by the Initial Developer are Copyright (C) 1994-2000
-+ * the Initial Developer. All Rights Reserved.
-+ *
-+ * Contributor(s):
-+ *   Ryan Sleevi <ryan.sleevi@gmail.com>
-+ *
-+ * Alternatively, the contents of this file may be used under the terms of
-+ * either the GNU General Public License Version 2 or later (the "GPL"), or
-+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-+ * in which case the provisions of the GPL or the LGPL are applicable instead
-+ * of those above. If you wish to allow use of your version of this file only
-+ * under the terms of either the GPL or the LGPL, and not to allow others to
-+ * use your version of this file under the terms of the MPL, indicate your
-+ * decision by deleting the provisions above and replace them with the notice
-+ * and other provisions required by the GPL or the LGPL. If you do not delete
-+ * the provisions above, a recipient may use your version of this file under
-+ * the terms of any one of the MPL, the GPL or the LGPL.
-+ *
-+ * ***** END LICENSE BLOCK ***** */
-+/* $Id$ */
-+#include "certt.h"
-+#include "cryptohi.h"
-+#include "keythi.h"
-+#include "nss.h"
-+#include "secitem.h"
-+#include "ssl.h"
-+#include "sslimpl.h"
-+#include "prerror.h"
-+#include "prinit.h"
-+
-+#ifdef NSS_PLATFORM_CLIENT_AUTH
-+#ifdef XP_WIN32
-+#include <NCrypt.h>
-+#endif
-+#endif
-+
-+#ifdef NSS_PLATFORM_CLIENT_AUTH
-+CERTCertificateList*
-+hack_NewCertificateListFromCertList(CERTCertList* list)
-+{
-+    CERTCertificateList * chain = NULL;
-+    PRArenaPool * arena = NULL;
-+    CERTCertListNode * node;
-+    int len;
-+
-+    if (CERT_LIST_EMPTY(list))
-+        goto loser;
-+
-+    arena = PORT_NewArena(4096);
-+    if (arena == NULL)
-+        goto loser;
-+
-+    for (len = 0, node = CERT_LIST_HEAD(list); !CERT_LIST_END(node, list);
-+        len++, node = CERT_LIST_NEXT(node)) {
-+    }
-+
-+    chain = PORT_ArenaNew(arena, CERTCertificateList);
-+    if (chain == NULL)
-+        goto loser;
-+
-+    chain->certs = PORT_ArenaNewArray(arena, SECItem, len);
-+    if (!chain->certs)
-+        goto loser;
-+    chain->len = len;
-+
-+    for (len = 0, node = CERT_LIST_HEAD(list); !CERT_LIST_END(node, list);
-+        len++, node = CERT_LIST_NEXT(node)) {
-+        // Check to see if the last cert to be sent is a self-signed cert,
-+        // and if so, omit it from the list of certificates. However, if
-+        // there is only one cert (len == 0), include the cert, as it means
-+        // the EE cert is self-signed.
-+        if (len > 0 && (len == chain->len - 1) && node->cert->isRoot) {
-+            chain->len = len;
-+            break;
-+        }
-+        SECITEM_CopyItem(arena, &chain->certs[len], &node->cert->derCert);
-+    }
-+
-+    chain->arena = arena;
-+    return chain;
-+
-+loser:
-+    if (arena) {
-+        PORT_FreeArena(arena, PR_FALSE);
-+    }
-+    return NULL;
-+}
-+
-+#if defined(XP_WIN32)
-+typedef SECURITY_STATUS (WINAPI *NCryptFreeObjectFunc)(NCRYPT_HANDLE);
-+typedef SECURITY_STATUS (WINAPI *NCryptSignHashFunc)(
-+    NCRYPT_KEY_HANDLE /* hKey */,
-+    VOID* /* pPaddingInfo */,
-+    PBYTE /* pbHashValue */,
-+    DWORD /* cbHashValue */,
-+    PBYTE /* pbSignature */,
-+    DWORD /* cbSignature */,
-+    DWORD* /* pcbResult */,
-+    DWORD /* dwFlags */);
-+
-+static PRCallOnceType cngFunctionsInitOnce;
-+static const PRCallOnceType pristineCallOnce;
-+
-+static PRLibrary *ncrypt_library = NULL;
-+static NCryptFreeObjectFunc pNCryptFreeObject = NULL;
-+static NCryptSignHashFunc pNCryptSignHash = NULL;
-+
-+static SECStatus
-+ssl_ShutdownCngFunctions(void *appData, void *nssData)
-+{
-+    pNCryptSignHash = NULL;
-+    pNCryptFreeObject = NULL;
-+    if (ncrypt_library) {
-+        PR_UnloadLibrary(ncrypt_library);
-+        ncrypt_library = NULL;
-+    }
-+
-+    cngFunctionsInitOnce = pristineCallOnce;
-+
-+    return SECSuccess;
-+}
-+
-+static PRStatus
-+ssl_InitCngFunctions(void)
-+{
-+    SECStatus rv;
-+
-+    ncrypt_library = PR_LoadLibrary("ncrypt.dll");
-+    if (ncrypt_library == NULL)
-+        goto loser;
-+
-+    pNCryptFreeObject = (NCryptFreeObjectFunc)PR_FindFunctionSymbol(
-+        ncrypt_library, "NCryptFreeObject");
-+    if (pNCryptFreeObject == NULL)
-+        goto loser;
-+
-+    pNCryptSignHash = (NCryptSignHashFunc)PR_FindFunctionSymbol(
-+        ncrypt_library, "NCryptSignHash");
-+    if (pNCryptSignHash == NULL)
-+        goto loser;
-+
-+    rv = NSS_RegisterShutdown(ssl_ShutdownCngFunctions, NULL);
-+    if (rv != SECSuccess)
-+        goto loser;
-+
-+    return PR_SUCCESS;
-+
-+loser:
-+    pNCryptSignHash = NULL;
-+    pNCryptFreeObject = NULL;
-+    if (ncrypt_library) {
-+        PR_UnloadLibrary(ncrypt_library);
-+        ncrypt_library = NULL;
-+    }
-+
-+    return PR_FAILURE;
-+}
-+
-+static SECStatus
-+ssl_InitCng(void)
-+{
-+    if (PR_CallOnce(&cngFunctionsInitOnce, ssl_InitCngFunctions) != PR_SUCCESS)
-+        return SECFailure;
-+    return SECSuccess;
-+}
-+
-+void
-+ssl_FreePlatformKey(PlatformKey key)
-+{
-+    if (!key)
-+        return;
-+
-+    if (key->dwKeySpec == CERT_NCRYPT_KEY_SPEC) {
-+        if (ssl_InitCng() == SECSuccess) {
-+            (*pNCryptFreeObject)(key->hNCryptKey);
-+        }
-+    } else {
-+        CryptReleaseContext(key->hCryptProv, 0);
-+    }
-+    PORT_Free(key);
-+}
-+
-+static SECStatus
-+ssl3_CngPlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
-+                           PRBool isTLS, KeyType keyType)
-+{
-+    SECStatus       rv                = SECFailure;
-+    SECURITY_STATUS ncrypt_status;
-+    PRBool          doDerEncode       = PR_FALSE;
-+    SECItem         hashItem;
-+    DWORD           signatureLen      = 0;
-+    DWORD           dwFlags           = 0;
-+    VOID           *pPaddingInfo      = NULL;
-+
-+    /* Always encode using PKCS#1 block type, with no OID/encoded DigestInfo */
-+    BCRYPT_PKCS1_PADDING_INFO rsaPaddingInfo;
-+    rsaPaddingInfo.pszAlgId = NULL;
-+
-+    if (key->dwKeySpec != CERT_NCRYPT_KEY_SPEC) {
-+        PR_SetError(SEC_ERROR_LIBRARY_FAILURE, 0);
-+        return SECFailure;
-+    }
-+    if (ssl_InitCng() != SECSuccess) {
-+        PR_SetError(SEC_ERROR_LIBRARY_FAILURE, 0);
-+        return SECFailure;
-+    }
-+
-+    switch (keyType) {
-+        case rsaKey:
-+            hashItem.data = hash->md5;
-+            hashItem.len  = sizeof(SSL3Hashes);
-+            dwFlags       = BCRYPT_PAD_PKCS1;
-+            pPaddingInfo  = &rsaPaddingInfo;
-+            break;
-+        case dsaKey:
-+        case ecKey:
-+            if (keyType == ecKey) {
-+                doDerEncode = PR_TRUE;
-+            } else {
-+                doDerEncode = isTLS;
-+            }
-+            hashItem.data = hash->sha;
-+            hashItem.len  = sizeof(hash->sha);
-+            break;
-+        default:
-+            PORT_SetError(SEC_ERROR_INVALID_KEY);
-+            goto done;
-+    }
-+    PRINT_BUF(60, (NULL, "hash(es) to be signed", hashItem.data, hashItem.len));
-+
-+    ncrypt_status = (*pNCryptSignHash)(key->hNCryptKey, pPaddingInfo,
-+                                       (PBYTE)hashItem.data, hashItem.len,
-+                                       NULL, 0, &signatureLen, dwFlags);
-+    if (FAILED(ncrypt_status) || signatureLen == 0) {
-+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, ncrypt_status);
-+        goto done;
-+    }
-+
-+    buf->data = (unsigned char *)PORT_Alloc(signatureLen);
-+    if (!buf->data) {
-+        goto done;    /* error code was set. */
-+    }
-+
-+    ncrypt_status = (*pNCryptSignHash)(key->hNCryptKey, pPaddingInfo,
-+                                       (PBYTE)hashItem.data, hashItem.len,
-+                                       (PBYTE)buf->data, signatureLen,
-+                                       &signatureLen, dwFlags);
-+    if (FAILED(ncrypt_status) || signatureLen == 0) {
-+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, ncrypt_status);
-+        goto done;
-+    }
-+
-+    buf->len = signatureLen;
-+
-+    if (doDerEncode) {
-+        SECItem   derSig = {siBuffer, NULL, 0};
-+
-+        /* This also works for an ECDSA signature */
-+        rv = DSAU_EncodeDerSigWithLen(&derSig, buf, buf->len);
-+        if (rv == SECSuccess) {
-+            PORT_Free(buf->data);     /* discard unencoded signature. */
-+            *buf = derSig;            /* give caller encoded signature. */
-+        } else if (derSig.data) {
-+            PORT_Free(derSig.data);
-+        }
-+    } else {
-+        rv = SECSuccess;
-+    }
-+
-+    PRINT_BUF(60, (NULL, "signed hashes", buf->data, buf->len));
-+
-+done:
-+    if (rv != SECSuccess && buf->data) {
-+        PORT_Free(buf->data);
-+        buf->data = NULL;
-+        buf->len = 0;
-+    }
-+
-+    return rv;
-+}
-+
-+static SECStatus
-+ssl3_CAPIPlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
-+                            PRBool isTLS, KeyType keyType)
-+{
-+    SECStatus    rv             = SECFailure;
-+    PRBool       doDerEncode    = PR_FALSE;
-+    SECItem      hashItem;
-+    DWORD        argLen         = 0;
-+    DWORD        signatureLen   = 0;
-+    ALG_ID       hashAlg        = 0;
-+    HCRYPTHASH   hHash          = 0;
-+    DWORD        hashLen        = 0;
-+    unsigned int i              = 0;
-+
-+    buf->data = NULL;
-+
-+    switch (keyType) {
-+        case rsaKey:
-+            hashAlg       = CALG_SSL3_SHAMD5;
-+            hashItem.data = hash->md5;
-+            hashItem.len  = sizeof(SSL3Hashes);
-+            break;
-+        case dsaKey:
-+        case ecKey:
-+            if (keyType == ecKey) {
-+                doDerEncode = PR_TRUE;
-+            } else {
-+                doDerEncode = isTLS;
-+            }
-+            hashAlg       = CALG_SHA1;
-+            hashItem.data = hash->sha;
-+            hashItem.len  = sizeof(hash->sha);
-+            break;
-+        default:
-+            PORT_SetError(SEC_ERROR_INVALID_KEY);
-+            goto done;
-+    }
-+    PRINT_BUF(60, (NULL, "hash(es) to be signed", hashItem.data, hashItem.len));
-+
-+    if (!CryptCreateHash(key->hCryptProv, hashAlg, 0, 0, &hHash)) {
-+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, GetLastError());
-+        goto done;
-+    }
-+    argLen = sizeof(hashLen);
-+    if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashLen, &argLen, 0)) {
-+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, GetLastError());
-+        goto done;
-+    }
-+    if (hashLen != hashItem.len) {
-+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, 0);
-+        goto done;
-+    }
-+    if (!CryptSetHashParam(hHash, HP_HASHVAL, (BYTE*)hashItem.data, 0)) {
-+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, GetLastError());
-+        goto done;
-+    }
-+    if (!CryptSignHash(hHash, key->dwKeySpec, NULL, 0,
-+                       NULL, &signatureLen) || signatureLen == 0) {
-+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, GetLastError());
-+        goto done;
-+    }
-+    buf->data = (unsigned char *)PORT_Alloc(signatureLen);
-+    if (!buf->data)
-+        goto done;    /* error code was set. */
-+
-+    if (!CryptSignHash(hHash, key->dwKeySpec, NULL, 0,
-+                       (BYTE*)buf->data, &signatureLen)) {
-+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, GetLastError());
-+        goto done;
-+    }
-+    buf->len = signatureLen;
-+
-+    /* CryptoAPI signs in little-endian, so reverse */
-+    for (i = 0; i < buf->len / 2; ++i) {
-+        unsigned char tmp = buf->data[i];
-+        buf->data[i] = buf->data[buf->len - 1 - i];
-+        buf->data[buf->len - 1 - i] = tmp;
-+    }
-+    if (doDerEncode) {
-+        SECItem   derSig = {siBuffer, NULL, 0};
-+
-+        /* This also works for an ECDSA signature */
-+        rv = DSAU_EncodeDerSigWithLen(&derSig, buf, buf->len);
-+        if (rv == SECSuccess) {
-+            PORT_Free(buf->data);     /* discard unencoded signature. */
-+            *buf = derSig;            /* give caller encoded signature. */
-+        } else if (derSig.data) {
-+            PORT_Free(derSig.data);
-+        }
-+    } else {
-+        rv = SECSuccess;
-+    }
-+
-+    PRINT_BUF(60, (NULL, "signed hashes", buf->data, buf->len));
-+done:
-+    if (hHash)
-+        CryptDestroyHash(hHash);
-+    if (rv != SECSuccess && buf->data) {
-+        PORT_Free(buf->data);
-+        buf->data = NULL;
-+    }
-+    return rv;
-+}
-+
-+SECStatus
-+ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
-+                        PRBool isTLS, KeyType keyType)
-+{
-+    if (key->dwKeySpec == CERT_NCRYPT_KEY_SPEC) {
-+        return ssl3_CngPlatformSignHashes(hash, key, buf, isTLS, keyType);
-+    }
-+    return ssl3_CAPIPlatformSignHashes(hash, key, buf, isTLS, keyType);
-+}
-+
-+#elif defined(XP_MACOSX)
-+#include <Security/cssm.h>
-+
-+void
-+ssl_FreePlatformKey(PlatformKey key)
-+{
-+    CFRelease(key);
-+}
-+
-+SECStatus
-+ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
-+                        PRBool isTLS, KeyType keyType)
-+{
-+    SECStatus       rv                  = SECFailure;
-+    PRBool          doDerEncode         = PR_FALSE;
-+    unsigned int    signatureLen;
-+    OSStatus        status              = noErr;
-+    CSSM_CSP_HANDLE cspHandle           = 0;
-+    const CSSM_KEY *cssmKey             = NULL;
-+    CSSM_ALGORITHMS sigAlg;
-+    const CSSM_ACCESS_CREDENTIALS * cssmCreds = NULL;
-+    CSSM_RETURN     cssmRv;
-+    CSSM_DATA       hashData;
-+    CSSM_DATA       signatureData;
-+    CSSM_CC_HANDLE  cssmSignature       = 0;
-+
-+    buf->data = NULL;
-+
-+    status = SecKeyGetCSPHandle(key, &cspHandle);
-+    if (status != noErr) {
-+        PORT_SetError(SEC_ERROR_INVALID_KEY);
-+        goto done;
-+    }
-+
-+    status = SecKeyGetCSSMKey(key, &cssmKey);
-+    if (status != noErr || !cssmKey) {
-+        PORT_SetError(SEC_ERROR_NO_KEY);
-+        goto done;
-+    }
-+
-+    /* SecKeyGetBlockSize wasn't addeded until OS X 10.6 - but the
-+     * needed information is readily available on the key itself.
-+     */
-+    signatureLen = (cssmKey->KeyHeader.LogicalKeySizeInBits + 7) / 8;
-+
-+    if (signatureLen == 0) {
-+        PORT_SetError(SEC_ERROR_INVALID_KEY);
-+        goto done;
-+    }
-+
-+    buf->data = (unsigned char *)PORT_Alloc(signatureLen);
-+    if (!buf->data)
-+        goto done;    /* error code was set. */
-+
-+    sigAlg = cssmKey->KeyHeader.AlgorithmId;
-+    switch (keyType) {
-+        case rsaKey:
-+            PORT_Assert(sigAlg == CSSM_ALGID_RSA);
-+            hashData.Data   = hash->md5;
-+            hashData.Length = sizeof(SSL3Hashes);
-+            break;
-+        case dsaKey:
-+        case ecKey:
-+            if (keyType == ecKey) {
-+                PORT_Assert(sigAlg == CSSM_ALGID_ECDSA);
-+                doDerEncode = PR_TRUE;
-+            } else {
-+                PORT_Assert(sigAlg == CSSM_ALGID_DSA);
-+                doDerEncode = isTLS;
-+            }
-+            hashData.Data   = hash->sha;
-+            hashData.Length = sizeof(hash->sha);
-+            break;
-+        default:
-+            PORT_SetError(SEC_ERROR_INVALID_KEY);
-+            goto done;
-+    }
-+    PRINT_BUF(60, (NULL, "hash(es) to be signed", hashData.Data, hashData.Length));
-+
-+    /* TODO(rsleevi): Should it be kSecCredentialTypeNoUI? In Win32, at least,
-+     * you can prevent the UI by setting the provider handle on the
-+     * certificate to be opened with CRYPT_SILENT, but is there an equivalent?
-+     */
-+    status = SecKeyGetCredentials(key, CSSM_ACL_AUTHORIZATION_SIGN,
-+                                  kSecCredentialTypeDefault, &cssmCreds);
-+    if (status != noErr) {
-+        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
-+        goto done;
-+    }
-+
-+    signatureData.Length = signatureLen;
-+    signatureData.Data   = (uint8*)buf->data;
-+
-+    cssmRv = CSSM_CSP_CreateSignatureContext(cspHandle, sigAlg, cssmCreds,
-+                                             cssmKey, &cssmSignature);
-+    if (cssmRv) {
-+        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
-+        goto done;
-+    }
-+
-+    /* See "Apple Cryptographic Service Provider Functional Specification" */
-+    if (cssmKey->KeyHeader.AlgorithmId == CSSM_ALGID_RSA) {
-+        /* To set RSA blinding for RSA keys */
-+        CSSM_CONTEXT_ATTRIBUTE blindingAttr;
-+        blindingAttr.AttributeType   = CSSM_ATTRIBUTE_RSA_BLINDING;
-+        blindingAttr.AttributeLength = sizeof(uint32);
-+        blindingAttr.Attribute.Uint32 = 1;
-+        cssmRv = CSSM_UpdateContextAttributes(cssmSignature, 1, &blindingAttr);
-+        if (cssmRv) {
-+            PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
-+            goto done;
-+        }
-+    }
-+
-+    cssmRv = CSSM_SignData(cssmSignature, &hashData, 1, CSSM_ALGID_NONE,
-+                           &signatureData);
-+    if (cssmRv) {
-+        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
-+        goto done;
-+    }
-+    buf->len = signatureData.Length;
-+
-+    if (doDerEncode) {
-+        SECItem derSig = {siBuffer, NULL, 0};
-+
-+        /* This also works for an ECDSA signature */
-+        rv = DSAU_EncodeDerSigWithLen(&derSig, buf, buf->len);
-+        if (rv == SECSuccess) {
-+            PORT_Free(buf->data);     /* discard unencoded signature. */
-+            *buf = derSig;            /* give caller encoded signature. */
-+        } else if (derSig.data) {
-+            PORT_Free(derSig.data);
-+        }
-+    } else {
-+        rv = SECSuccess;
-+    }
-+
-+    PRINT_BUF(60, (NULL, "signed hashes", buf->data, buf->len));
-+done:
-+    /* cspHandle, cssmKey, and cssmCreds are owned by the SecKeyRef and
-+     * should not be freed. When the PlatformKey is freed, they will be
-+     * released.
-+     */
-+    if (cssmSignature)
-+        CSSM_DeleteContext(cssmSignature);
-+
-+    if (rv != SECSuccess && buf->data) {
-+        PORT_Free(buf->data);
-+        buf->data = NULL;
-+    }
-+    return rv;
-+}
-+#else
-+void
-+ssl_FreePlatformKey(PlatformKey key)
-+{
-+}
-+
-+SECStatus
-+ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
-+                        PRBool isTLS, KeyType keyType)
-+{
-+    PORT_SetError(PR_NOT_IMPLEMENTED_ERROR);
-+    return SECFailure;
-+}
-+#endif
-+
-+#endif /* NSS_PLATFORM_CLIENT_AUTH */
-diff -puN a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
---- a/nss/lib/ssl/sslsock.c	2013-04-27 09:19:05.777927838 -0700
-+++ b/nss/lib/ssl/sslsock.c	2013-04-27 09:20:50.419409524 -0700
-@@ -337,6 +337,10 @@ ssl_DupSocket(sslSocket *os)
+diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
+--- a/nss/lib/ssl/sslsock.c	2013-07-31 12:28:39.283413269 -0700
++++ b/nss/lib/ssl/sslsock.c	2013-07-31 12:35:27.199373436 -0700
+@@ -343,6 +343,10 @@ ssl_DupSocket(sslSocket *os)
  	    ss->authCertificateArg    = os->authCertificateArg;
  	    ss->getClientAuthData     = os->getClientAuthData;
  	    ss->getClientAuthDataArg  = os->getClientAuthDataArg;
@@ -996,7 +411,7 @@ diff -puN a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
              ss->sniSocketConfig       = os->sniSocketConfig;
              ss->sniSocketConfigArg    = os->sniSocketConfigArg;
  	    ss->handleBadCert         = os->handleBadCert;
-@@ -1725,6 +1729,12 @@ SSL_ReconfigFD(PRFileDesc *model, PRFile
+@@ -1730,6 +1734,12 @@ SSL_ReconfigFD(PRFileDesc *model, PRFile
          ss->getClientAuthData     = sm->getClientAuthData;
      if (sm->getClientAuthDataArg)
          ss->getClientAuthDataArg  = sm->getClientAuthDataArg;
@@ -1009,7 +424,7 @@ diff -puN a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
      if (sm->sniSocketConfig)
          ss->sniSocketConfig       = sm->sniSocketConfig;
      if (sm->sniSocketConfigArg)
-@@ -2977,6 +2987,10 @@ ssl_NewSocket(PRBool makeLocks, SSLProto
+@@ -2980,6 +2990,10 @@ ssl_NewSocket(PRBool makeLocks, SSLProto
          ss->sniSocketConfig    = NULL;
          ss->sniSocketConfigArg = NULL;
  	ss->getClientAuthData  = NULL;

@@ -4,7 +4,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* $Id$ */
 
 #include "cert.h"
 #include "ssl.h"
@@ -78,17 +77,20 @@ SSL_HandshakeNegotiatedExtension(PRFileDesc * socket,
 {
   /* some decisions derived from SSL_GetChannelInfo */
   sslSocket * sslsocket = NULL;
-  SECStatus rv = SECFailure;
 
-  if (!pYes)
-    return rv;
+  if (!pYes) {
+    PORT_SetError(SEC_ERROR_INVALID_ARGS);
+    return SECFailure;
+  }
 
   sslsocket = ssl_FindSocket(socket);
   if (!sslsocket) {
     SSL_DBG(("%d: SSL[%d]: bad socket in HandshakeNegotiatedExtension",
              SSL_GETPID(), socket));
-    return rv;
+    return SECFailure;
   }
+
+  *pYes = PR_FALSE;
 
   /* according to public API SSL_GetChannelInfo, this doesn't need a lock */
   if (sslsocket->opt.useSecurity) {
@@ -103,9 +105,8 @@ SSL_HandshakeNegotiatedExtension(PRFileDesc * socket,
       ssl_GetSSL3HandshakeLock(sslsocket);
       *pYes = ssl3_ExtensionNegotiated(sslsocket, extId);
       ssl_ReleaseSSL3HandshakeLock(sslsocket);
-      rv = SECSuccess;
     }
   }
 
-  return rv;
+  return SECSuccess;
 }

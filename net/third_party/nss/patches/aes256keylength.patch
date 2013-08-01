@@ -1,7 +1,7 @@
 diff -pu a/nss/lib/ssl/sslsnce.c b/nss/lib/ssl/sslsnce.c
---- a/nss/lib/ssl/sslsnce.c	2013-04-27 09:17:17.216390477 -0700
-+++ b/nss/lib/ssl/sslsnce.c	2013-04-27 09:41:36.887048239 -0700
-@@ -87,6 +87,11 @@
+--- a/nss/lib/ssl/sslsnce.c	2013-07-31 12:07:10.974699609 -0700
++++ b/nss/lib/ssl/sslsnce.c	2013-07-31 14:12:33.185058439 -0700
+@@ -86,6 +86,11 @@
  #include "nspr.h"
  #include "sslmutex.h"
  

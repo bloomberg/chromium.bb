@@ -1,34 +1,7 @@
-diff --git a/net/third_party/nss/ssl/ssl.h b/net/third_party/nss/ssl/ssl.h
-index 8e9ba24..077874e 100644
---- a/net/third_party/nss/ssl/ssl.h
-+++ b/net/third_party/nss/ssl/ssl.h
-@@ -204,6 +204,11 @@ SSL_IMPORT SECStatus SSL_SetNextProtoCallback(PRFileDesc *fd,
-  * protocol in server-preference order. If no matching protocol is found it
-  * selects the first supported protocol.
-  *
-+ * Using this function also allows the client to transparently support ALPN.
-+ * The same set of protocols will be advertised via ALPN and, if the server
-+ * uses ALPN to select a protocol, SSL_GetNextProto will return
-+ * SSL_NEXT_PROTO_SELECTED as the state.
-+ *
-  * The supported protocols are specified in |data| in wire-format (8-bit
-  * length-prefixed). For example: "\010http/1.1\006spdy/2". */
- SSL_IMPORT SECStatus SSL_SetNextProtoNego(PRFileDesc *fd,
-@@ -213,7 +218,8 @@ SSL_IMPORT SECStatus SSL_SetNextProtoNego(PRFileDesc *fd,
- typedef enum SSLNextProtoState { 
-   SSL_NEXT_PROTO_NO_SUPPORT = 0, /* No peer support                */
-   SSL_NEXT_PROTO_NEGOTIATED = 1, /* Mutual agreement               */
--  SSL_NEXT_PROTO_NO_OVERLAP = 2  /* No protocol overlap found      */
-+  SSL_NEXT_PROTO_NO_OVERLAP = 2, /* No protocol overlap found      */
-+  SSL_NEXT_PROTO_SELECTED   = 3, /* Server selected proto (ALPN)   */
- } SSLNextProtoState;
- 
- /* SSL_GetNextProto can be used in the HandshakeCallback or any time after
-diff --git a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3con.c
-index 00c83db..4916dfc 100644
---- a/net/third_party/nss/ssl/ssl3con.c
-+++ b/net/third_party/nss/ssl/ssl3con.c
-@@ -9907,8 +9907,10 @@ ssl3_SendNextProto(sslSocket *ss)
+diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
+--- a/nss/lib/ssl/ssl3con.c	2013-07-31 14:17:20.669282120 -0700
++++ b/nss/lib/ssl/ssl3con.c	2013-07-31 14:28:56.549496061 -0700
+@@ -9912,8 +9912,10 @@ ssl3_SendNextProto(sslSocket *ss)
      int padding_len;
      static const unsigned char padding[32] = {0};
  
@@ -40,11 +13,10 @@ index 00c83db..4916dfc 100644
  
      PORT_Assert( ss->opt.noLocks || ssl_HaveXmitBufLock(ss));
      PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss));
-diff --git a/net/third_party/nss/ssl/ssl3ext.c b/net/third_party/nss/ssl/ssl3ext.c
-index c0ce548..a059ccb 100644
---- a/net/third_party/nss/ssl/ssl3ext.c
-+++ b/net/third_party/nss/ssl/ssl3ext.c
-@@ -53,8 +53,12 @@ static SECStatus ssl3_HandleRenegotiationInfoXtn(sslSocket *ss,
+diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
+--- a/nss/lib/ssl/ssl3ext.c	2013-07-31 14:10:00.342814862 -0700
++++ b/nss/lib/ssl/ssl3ext.c	2013-07-31 14:28:56.549496061 -0700
+@@ -52,8 +52,12 @@ static SECStatus ssl3_HandleRenegotiatio
      PRUint16 ex_type, SECItem *data);
  static SECStatus ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss,
  			PRUint16 ex_type, SECItem *data);
@@ -57,7 +29,7 @@ index c0ce548..a059ccb 100644
  static PRInt32 ssl3_ClientSendNextProtoNegoXtn(sslSocket *ss, PRBool append,
  					       PRUint32 maxBytes);
  static PRInt32 ssl3_SendUseSRTPXtn(sslSocket *ss, PRBool append,
-@@ -247,14 +251,15 @@ static const ssl3HelloExtensionHandler clientHelloHandlers[] = {
+@@ -246,14 +250,15 @@ static const ssl3HelloExtensionHandler c
  /* These two tables are used by the client, to handle server hello
   * extensions. */
  static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
@@ -80,7 +52,7 @@ index c0ce548..a059ccb 100644
      { -1, NULL }
  };
  
-@@ -271,17 +276,18 @@ static const ssl3HelloExtensionHandler serverHelloHandlersSSL3[] = {
+@@ -270,17 +275,18 @@ static const ssl3HelloExtensionHandler s
   */
  static const 
  ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
@@ -108,7 +80,7 @@ index c0ce548..a059ccb 100644
      { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn }
      /* any extra entries will appear as { 0, NULL }    */
  };
-@@ -606,6 +612,11 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
+@@ -605,6 +611,11 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSoc
  
      PORT_Assert(!ss->firstHsDone);
  
@@ -120,7 +92,7 @@ index c0ce548..a059ccb 100644
      rv = ssl3_ValidateNextProtoNego(data->data, data->len);
      if (rv != SECSuccess)
  	return rv;
-@@ -639,6 +650,44 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
+@@ -638,6 +649,44 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSoc
      return SECITEM_CopyItem(NULL, &ss->ssl3.nextProto, &result);
  }
  
@@ -165,10 +137,17 @@ index c0ce548..a059ccb 100644
  static PRInt32
  ssl3_ClientSendNextProtoNegoXtn(sslSocket * ss, PRBool append,
  				PRUint32 maxBytes)
-@@ -672,6 +721,44 @@ loser:
-     return -1;
- }
- 
+@@ -664,6 +713,44 @@ ssl3_ClientSendNextProtoNegoXtn(sslSocke
+     } else if (maxBytes < extension_length) {
+ 	return 0;
+     }
++
++    return extension_length;
++
++loser:
++    return -1;
++}
++
 +static PRInt32
 +ssl3_ClientSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
 +{
@@ -200,21 +179,38 @@ index c0ce548..a059ccb 100644
 +    } else if (maxBytes < extension_length) {
 +	return 0;
 +    }
-+
-+    return extension_length;
-+
-+loser:
-+    return -1;
-+}
-+
- static SECStatus
- ssl3_ClientHandleChannelIDXtn(sslSocket *ss, PRUint16 ex_type,
- 			     SECItem *data)
-diff --git a/net/third_party/nss/ssl/sslt.h b/net/third_party/nss/ssl/sslt.h
-index 109640c..96ec04e 100644
---- a/net/third_party/nss/ssl/sslt.h
-+++ b/net/third_party/nss/ssl/sslt.h
-@@ -196,12 +196,13 @@ typedef enum {
+ 
+     return extension_length;
+ 
+diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
+--- a/nss/lib/ssl/ssl.h	2013-07-31 14:10:35.113325316 -0700
++++ b/nss/lib/ssl/ssl.h	2013-07-31 14:28:56.589496647 -0700
+@@ -203,6 +203,11 @@ SSL_IMPORT SECStatus SSL_SetNextProtoCal
+  * protocol in server-preference order. If no matching protocol is found it
+  * selects the first supported protocol.
+  *
++ * Using this function also allows the client to transparently support ALPN.
++ * The same set of protocols will be advertised via ALPN and, if the server
++ * uses ALPN to select a protocol, SSL_GetNextProto will return
++ * SSL_NEXT_PROTO_SELECTED as the state.
++ *
+  * The supported protocols are specified in |data| in wire-format (8-bit
+  * length-prefixed). For example: "\010http/1.1\006spdy/2". */
+ SSL_IMPORT SECStatus SSL_SetNextProtoNego(PRFileDesc *fd,
+@@ -212,7 +217,8 @@ SSL_IMPORT SECStatus SSL_SetNextProtoNeg
+ typedef enum SSLNextProtoState { 
+   SSL_NEXT_PROTO_NO_SUPPORT = 0, /* No peer support                */
+   SSL_NEXT_PROTO_NEGOTIATED = 1, /* Mutual agreement               */
+-  SSL_NEXT_PROTO_NO_OVERLAP = 2  /* No protocol overlap found      */
++  SSL_NEXT_PROTO_NO_OVERLAP = 2, /* No protocol overlap found      */
++  SSL_NEXT_PROTO_SELECTED   = 3  /* Server selected proto (ALPN)   */
+ } SSLNextProtoState;
+ 
+ /* SSL_GetNextProto can be used in the HandshakeCallback or any time after
+diff -pu a/nss/lib/ssl/sslt.h b/nss/lib/ssl/sslt.h
+--- a/nss/lib/ssl/sslt.h	2013-07-31 14:13:43.806096237 -0700
++++ b/nss/lib/ssl/sslt.h	2013-07-31 14:28:56.609496941 -0700
+@@ -195,12 +195,13 @@ typedef enum {
  #endif
      ssl_signature_algorithms_xtn     = 13,
      ssl_use_srtp_xtn                 = 14,
