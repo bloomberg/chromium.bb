@@ -74,6 +74,8 @@ v8.log
 /chrome/browser/search_engines/prepopulated_engines.xml
 /chrome/browser/spellchecker/internal
 /chrome/browser_tests_run.xml
+/chrome/chrome_run.xml
+/chrome/chrome_user32_delay_imports.xml
 /chrome/chrome_version_resources.xml
 /chrome/common/extensions/api/api.xml
 /chrome/Hammer
@@ -85,6 +87,7 @@ v8.log
 /chrome/installer/mini_installer/support
 /chrome/installer/mini_installer_syzygy.xml
 /chrome/installer_util_strings.xml
+/chrome/interactive_ui_tests_run.xml
 /chrome/setup.xml
 /chrome/setup_unittests.xml
 /chrome/supplement.gypi
@@ -127,12 +130,14 @@ v8.log
 /gyp-mac-tool
 /hideout
 /llvm
+/media/media_asm.xml
 /media/test/data/content
 /media/test/data/security
 /media/yuv_convert_simd_x86.xml
 /metro_driver
 /native_client
 /net/Debug
+/net/net_unittests_run.xml
 /net/Release
 /net/testserver.log
 /out
@@ -147,10 +152,12 @@ v8.log
 /remoting/host/installer/linux/internal/
 /remoting/proto/chromotocol_proto_lib.xml
 /remoting/proto/trace_proto_lib.xml
+/remoting/remoting_core_resources.xml
 /remoting/remoting_elevated_controller.xml
 /remoting/remoting_host_event_logger.xml
 /remoting/remoting_host_installation.xml
 /remoting/remoting_host_installation_unittest.xml
+/remoting/remoting_host_messages.xml
 /remoting/remoting_lib_idl.xml
 /remoting/remoting_lib_rc.xml
 /remoting/remoting_me2me_host.xml
