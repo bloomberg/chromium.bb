@@ -26,6 +26,11 @@
 #include "ui/compositor/compositor_setup.h"
 #include "ui/gl/gl_switches.h"
 
+// For fine-grained suppression on flaky tests.
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using prerender::PrerenderLinkManager;
 using prerender::PrerenderLinkManagerFactory;
 
@@ -527,6 +532,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPartitionRaisesException) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
+#if defined(OS_WIN)
+  // Flaky on XP bot http://crbug.com/266185
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
+
   TestHelper("testExecuteScriptFail",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
@@ -940,8 +951,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
   EXPECT_EQ("persist2=true", cookie_value);
 }
 
-#if defined(OS_WIN)
-// This test is very flaky on Win Aura and XP. http://crbug.com/248873
+#if defined(OS_WIN) && defined(USE_AURA)
+// This test is very flaky on Win Aura. http://crbug.com/248873
 #define MAYBE_DOMStorageIsolation DISABLED_DOMStorageIsolation
 #else
 #define MAYBE_DOMStorageIsolation DOMStorageIsolation
@@ -952,6 +963,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
 // entries, which the test checks to ensure proper storage isolation is
 // enforced.
 IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DOMStorageIsolation) {
+#if defined(OS_WIN)
+  // This test is very flaky on Win XP. http://crbug.com/248873
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
+
   ASSERT_TRUE(StartEmbeddedTestServer());
   GURL regular_url = embedded_test_server()->GetURL("/title1.html");
 
