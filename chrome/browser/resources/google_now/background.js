@@ -120,8 +120,6 @@ var googleGeolocationAccessEnabledPref =
 var tasks = buildTaskManager(areTasksConflicting);
 
 // Add error processing to API calls.
-tasks.instrumentApiFunction(chrome.identity, 'getAuthToken', 1);
-tasks.instrumentApiFunction(chrome.identity, 'removeCachedAuthToken', 1);
 tasks.instrumentApiFunction(chrome.location.onLocationUpdate, 'addListener', 0);
 tasks.instrumentApiFunction(chrome.notifications, 'create', 2);
 tasks.instrumentApiFunction(chrome.notifications, 'update', 2);
@@ -150,6 +148,8 @@ var dismissalAttempts = buildAttemptManager(
     INITIAL_RETRY_DISMISS_PERIOD_SECONDS,
     MAXIMUM_RETRY_DISMISS_PERIOD_SECONDS);
 var cardSet = buildCardSet();
+
+var authenticationManager = buildAuthenticationManager();
 
 /**
  * Google Now UMA event identifier.
@@ -194,13 +194,9 @@ function recordEvent(event) {
  *     parameter.
  */
 function setAuthorization(request, callbackBoolean) {
-  tasks.debugSetStepName('setAuthorization-getAuthToken');
-  chrome.identity.getAuthToken({interactive: false}, function(token) {
-    var errorMessage =
-        chrome.runtime.lastError && chrome.runtime.lastError.message;
-    console.log('setAuthorization: error=' + errorMessage +
-                ', token=' + (token && 'non-empty'));
-    if (chrome.runtime.lastError || !token) {
+  tasks.debugSetStepName('setAuthorization-isSignedIn');
+  authenticationManager.isSignedIn(function(token) {
+    if (!token) {
       callbackBoolean(false);
       return;
     }
@@ -212,11 +208,8 @@ function setAuthorization(request, callbackBoolean) {
     request.onloadend = tasks.wrapCallback(function(event) {
       if (request.status == HTTP_FORBIDDEN ||
           request.status == HTTP_UNAUTHORIZED) {
-        tasks.debugSetStepName('setAuthorization-removeCachedAuthToken');
-        chrome.identity.removeCachedAuthToken({token: token}, function() {
-          // After purging the token cache, call getAuthToken() again to let
-          // Chrome know about the problem with the token.
-          chrome.identity.getAuthToken({interactive: false}, function() {});
+        tasks.debugSetStepName('setAuthorization-removeToken');
+        authenticationManager.removeToken(token, function() {
           originalOnLoadEnd(event);
         });
       } else {
@@ -796,12 +789,9 @@ function updateRunningState(
  */
 function onStateChange() {
   tasks.add(STATE_CHANGED_TASK_NAME, function(callback) {
-    tasks.debugSetStepName('onStateChange-getAuthToken');
-    chrome.identity.getAuthToken({interactive: false}, function(token) {
-      var signedIn =
-          !chrome.runtime.lastError &&
-          token &&
-          !!NOTIFICATION_CARDS_URL;
+    tasks.debugSetStepName('onStateChange-isSignedIn');
+    authenticationManager.isSignedIn(function(token) {
+      var signedIn = !!token && !!NOTIFICATION_CARDS_URL;
       tasks.debugSetStepName(
           'onStateChange-get-googleGeolocationAccessEnabledPref');
       googleGeolocationAccessEnabledPref.get({}, function(prefValue) {
@@ -866,6 +856,11 @@ chrome.runtime.onStartup.addListener(function() {
 
 googleGeolocationAccessEnabledPref.onChange.addListener(function(prefValue) {
   console.log('googleGeolocationAccessEnabledPref onChange ' + prefValue.value);
+  onStateChange();
+});
+
+authenticationManager.addListener(function() {
+  console.log('signIn State Change');
   onStateChange();
 });
 

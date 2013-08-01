@@ -59,7 +59,7 @@ function mockInitializeDependencies(fixture) {
     'startPollingCards'
   ]);
   fixture.makeAndRegisterMockApis([
-    'chrome.identity.getAuthToken',
+    'authenticationManager.isSignedIn',
     'chrome.location.clearWatch',
     'chrome.notifications.getAll',
     'chrome.preferencesPrivate.googleGeolocationAccessEnabled.get',
@@ -88,14 +88,14 @@ function expectStateMachineCalls(
     testIdentityToken,
     testGeolocationPref,
     testUserRespondedToToast) {
-  var chromeIdentityGetAuthTokenSavedArgs = new SaveMockArguments();
+  var authenticationManagerIsSignedInSavedArgs = new SaveMockArguments();
   mockApisObj.expects(once()).
-      chrome_identity_getAuthToken(
-          chromeIdentityGetAuthTokenSavedArgs.match(
-              eqJSON({interactive: false})),
-          chromeIdentityGetAuthTokenSavedArgs.match(ANYTHING)).
+      authenticationManager_isSignedIn(
+          authenticationManagerIsSignedInSavedArgs.match(ANYTHING)).
       will(invokeCallback(
-          chromeIdentityGetAuthTokenSavedArgs, 1, testIdentityToken));
+          authenticationManagerIsSignedInSavedArgs,
+          0,
+          testIdentityToken));
 
   var googleGeolocationPrefGetSavedArgs = new SaveMockArguments();
   mockApisObj.expects(once()).

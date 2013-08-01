@@ -5,12 +5,20 @@
 // Mocks for globals needed for loading background.js.
 
 function emptyMock() {}
+
 function buildTaskManager() {
   return {
     debugSetStepName: emptyMock,
     instrumentApiFunction: emptyMock,
   };
 }
+
+function buildAuthenticationManager() {
+  return {
+    addListener: emptyMock
+  };
+}
+
 var instrumentApiFunction = emptyMock;
 var buildAttemptManager = emptyMock;
 var buildCardSet = emptyMock;

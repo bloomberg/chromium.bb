@@ -413,3 +413,84 @@ function buildAttemptManager(
   };
 }
 
+// TODO(robliao): Ideally, the authentication watcher infrastructure
+// below would be an API change to chrome.identity.
+// When this happens, remove the code below.
+
+/**
+ * Wraps chrome.identity to provide limited listening support for
+ * the sign in state by polling periodically for the auth token.
+ * @return {Object} The Authentication Manager interface.
+ */
+function buildAuthenticationManager() {
+  var alarmName = 'sign-in-alarm';
+
+  /**
+   * Determines if the user is signed in and provides a token if signed in.
+   * @param {function(string=)} callback Called on completion.
+   *     If the user is signed in, the string contains the token.
+   */
+  function isSignedIn(callback) {
+    chrome.identity.getAuthToken({interactive: false}, function(token) {
+      token = chrome.runtime.lastError ? undefined : token;
+      callback(token);
+      checkAndNotifyListeners(!!token);
+    });
+  }
+
+  /**
+   * Removes the specified cached token.
+   * @param {string} token Authentication Token to remove from the cache.
+   * @param {function} onSuccess Called on completion.
+   */
+  function removeToken(token, onSuccess) {
+    chrome.identity.removeCachedAuthToken({token: token}, function() {
+      // Removing the token from the cache will change the sign in state.
+      // Repoll now to check the state and notify listeners.
+      // This also lets Chrome now about a possible problem with the token.
+      isSignedIn(function() {});
+      onSuccess();
+    });
+  }
+
+  var listeners = [];
+
+  /**
+   * Registers a listener that gets called back when the signed in state
+   * is found to be changed.
+   * @param {function} callback Called when the answer to isSignedIn changes.
+   */
+  function addListener(callback) {
+    listeners.push(callback);
+  }
+
+  // Tracks the last answer of isSignedIn. checkAndNotifyListeners will not
+  // notify the listeners if this is null because technically, no sign in
+  // state change occurred.
+  var lastReturnedSignedInState = null;
+
+  function checkAndNotifyListeners(currentSignedInState) {
+    if ((lastReturnedSignedInState !== currentSignedInState) &&
+        (lastReturnedSignedInState !== null)) {
+      for (var listenerIndex in listeners) {
+        listeners[listenerIndex]();
+      }
+    }
+    lastReturnedSignedInState = currentSignedInState;
+  }
+
+  chrome.alarms.onAlarm.addListener(function(alarm) {
+    if (alarm.name == alarmName)
+      isSignedIn(function() {});
+  });
+
+  // Poll for the sign in state every hour.
+  // One hour is just an arbitrary amount of time chosen.
+  chrome.alarms.create(alarmName, {periodInMinutes: 60});
+
+  return {
+    addListener: addListener,
+    isSignedIn: isSignedIn,
+    removeToken: removeToken
+  };
+}
