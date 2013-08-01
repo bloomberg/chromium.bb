@@ -12,7 +12,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/view.h"
 
 struct AutocompleteMatch;
@@ -29,7 +29,7 @@ class OmniboxPopupContentsView : public views::View,
                                  public ui::AnimationDelegate {
  public:
   // Factory method for creating the AutocompletePopupView.
-  static OmniboxPopupView* Create(const gfx::Font& font,
+  static OmniboxPopupView* Create(const gfx::FontList& font_list,
                                   OmniboxView* omnibox_view,
                                   OmniboxEditModel* edit_model,
                                   LocationBarView* location_bar_view);
@@ -74,7 +74,7 @@ class OmniboxPopupContentsView : public views::View,
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  protected:
-  OmniboxPopupContentsView(const gfx::Font& font,
+  OmniboxPopupContentsView(const gfx::FontList& font_list,
                            OmniboxView* omnibox_view,
                            OmniboxEditModel* edit_model,
                            LocationBarView* location_bar_view);
@@ -88,7 +88,7 @@ class OmniboxPopupContentsView : public views::View,
   virtual int CalculatePopupHeight();
   virtual OmniboxResultView* CreateResultView(OmniboxResultViewModel* model,
                                               int model_index,
-                                              const gfx::Font& font);
+                                              const gfx::FontList& font_list);
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -144,8 +144,8 @@ class OmniboxPopupContentsView : public views::View,
 
   LocationBarView* location_bar_view_;
 
-  // The font used for result rows, based on the omnibox font.
-  gfx::Font font_;
+  // The font list used for result rows, based on the omnibox font list.
+  gfx::FontList font_list_;
 
   // If the user cancels a dragging action (i.e. by pressing ESC), we don't have
   // a convenient way to release mouse capture. Instead we use this flag to

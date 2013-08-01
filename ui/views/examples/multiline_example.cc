@@ -31,7 +31,7 @@ class MultilineExample::RenderTextView : public View {
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(0,
-        render_text_->GetFont().GetHeight() + GetInsets().height());
+        render_text_->font_list().GetHeight() + GetInsets().height());
   }
 
   void SetText(const string16& new_contents) {

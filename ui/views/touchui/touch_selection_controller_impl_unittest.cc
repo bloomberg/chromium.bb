@@ -284,7 +284,8 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
   VERIFY_HANDLE_POSITIONS(false);
 
   // Drag selection handle 2 to right by 3 chars.
-  int x = textfield_->font().GetStringWidth(ASCIIToUTF16("ld "));
+  const gfx::Font& font = textfield_->GetPrimaryFont();
+  int x = font.GetStringWidth(ASCIIToUTF16("ld "));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
   EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "tfield ");
   VERIFY_HANDLE_POSITIONS(false);
@@ -296,13 +297,13 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
   VERIFY_HANDLE_POSITIONS(true);
 
   // Drag selection handle 1 across selection handle 2.
-  x = textfield_->font().GetStringWidth(ASCIIToUTF16("textfield with "));
+  x = font.GetStringWidth(ASCIIToUTF16("textfield with "));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
   EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "with ");
   VERIFY_HANDLE_POSITIONS(true);
 
   // Drag selection handle 2 across selection handle 1.
-  x = textfield_->font().GetStringWidth(ASCIIToUTF16("with selected "));
+  x = font.GetStringWidth(ASCIIToUTF16("with selected "));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
   EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "selected ");
   VERIFY_HANDLE_POSITIONS(false);
@@ -322,13 +323,14 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   VERIFY_HANDLE_POSITIONS(false);
 
   // Drag selection handle 2 to right by 1 char.
-  int x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e3"));
+  const gfx::Font& font = textfield_->GetPrimaryFont();
+  int x = font.GetStringWidth(WideToUTF16(L"\x05e3"));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
 
   // Drag selection handle 1 to left by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"b"));
+  x = font.GetStringWidth(WideToUTF16(L"b"));
   SimulateSelectionHandleDrag(gfx::Point(-x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"bc\x05e1\x05e2"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(true);
@@ -339,13 +341,13 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   VERIFY_HANDLE_POSITIONS(false);
 
   // Drag selection handle 1 to right by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e3"));
+  x = font.GetStringWidth(WideToUTF16(L"\x05e3"));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(true);
 
   // Drag selection handle 2 to left by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"b"));
+  x = font.GetStringWidth(WideToUTF16(L"b"));
   SimulateSelectionHandleDrag(gfx::Point(-x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"bc\x05e1\x05e2"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
@@ -364,14 +366,14 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
      Need further investigation on whether this is a bug in Pango and how to
      work around it.
   // Drag selection handle 2 to left by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e2"));
+  x = font.GetStringWidth(WideToUTF16(L"\x05e2"));
   SimulateSelectionHandleDrag(gfx::Point(-x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"\x05e1\x05e2"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
   */
 
   // Drag selection handle 1 to right by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"d"));
+  x = font.GetStringWidth(WideToUTF16(L"d"));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3" L"d"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(true);
@@ -383,14 +385,14 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
 
   /* TODO(xji): see detail of above commented out test case.
   // Drag selection handle 1 to left by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e2"));
+  x = font.GetStringWidth(WideToUTF16(L"\x05e2"));
   SimulateSelectionHandleDrag(gfx::Point(-x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"\x05e1\x05e2"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(true);
   */
 
   // Drag selection handle 2 to right by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"d"));
+  x = font.GetStringWidth(WideToUTF16(L"d"));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3" L"d"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
@@ -401,13 +403,13 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   VERIFY_HANDLE_POSITIONS(false);
 
   // Drag selection handle 2 to left by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"c"));
+  x = font.GetStringWidth(WideToUTF16(L"c"));
   SimulateSelectionHandleDrag(gfx::Point(-x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
 
   // Drag selection handle 1 to right by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e2"));
+  x = font.GetStringWidth(WideToUTF16(L"\x05e2"));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"c\x05e1"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(true);
@@ -418,13 +420,13 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   VERIFY_HANDLE_POSITIONS(false);
 
   // Drag selection handle 1 to left by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"c"));
+  x = font.GetStringWidth(WideToUTF16(L"c"));
   SimulateSelectionHandleDrag(gfx::Point(-x, 0), 1);
   EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(true);
 
   // Drag selection handle 2 to right by 1 char.
-  x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e2"));
+  x = font.GetStringWidth(WideToUTF16(L"\x05e2"));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
   EXPECT_EQ(WideToUTF16(L"c\x05e1"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);

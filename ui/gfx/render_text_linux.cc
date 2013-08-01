@@ -235,8 +235,7 @@ std::vector<Rect> RenderTextLinux::GetSubstringBounds(const ui::Range& range) {
                                  &ranges,
                                  &n_ranges);
 
-  int height = 0;
-  pango_layout_get_pixel_size(layout_, NULL, &height);
+  const int height = GetStringSize().height();
 
   std::vector<Rect> bounds;
   for (int i = 0; i < n_ranges; ++i) {

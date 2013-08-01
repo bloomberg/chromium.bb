@@ -251,7 +251,8 @@ void NativeTextfieldWin::UpdateReadOnly() {
 
 void NativeTextfieldWin::UpdateFont() {
   SendMessage(m_hWnd, WM_SETFONT,
-              reinterpret_cast<WPARAM>(textfield_->font().GetNativeFont()),
+              reinterpret_cast<WPARAM>(
+                  textfield_->GetPrimaryFont().GetNativeFont()),
               TRUE);
   // Setting the font blows away any text color we've set, so reset it.
   UpdateTextColor();
@@ -419,11 +420,11 @@ void NativeTextfieldWin::ClearEditHistory() {
 }
 
 int NativeTextfieldWin::GetFontHeight() {
-  return textfield_->font().GetHeight();
+  return textfield_->font_list().GetHeight();
 }
 
 int NativeTextfieldWin::GetTextfieldBaseline() const {
-  return textfield_->font().GetBaseline();
+  return textfield_->font_list().GetBaseline();
 }
 
 int NativeTextfieldWin::GetWidthNeededForText() const {

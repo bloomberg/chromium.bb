@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
+#include "grit/app_locale_settings.h"
 #include "net/base/big_endian.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -457,34 +458,38 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   return msg;
 }
 
-const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
+const gfx::FontList& ResourceBundle::GetFontList(FontStyle style) {
   {
     base::AutoLock lock_scope(*images_and_fonts_lock_);
     LoadFontsIfNecessary();
   }
   switch (style) {
     case BoldFont:
-      return *bold_font_;
+      return *bold_font_list_;
     case SmallFont:
-      return *small_font_;
+      return *small_font_list_;
     case MediumFont:
-      return *medium_font_;
+      return *medium_font_list_;
     case SmallBoldFont:
-      return *small_bold_font_;
+      return *small_bold_font_list_;
     case MediumBoldFont:
-      return *medium_bold_font_;
+      return *medium_bold_font_list_;
     case LargeFont:
-      return *large_font_;
+      return *large_font_list_;
     case LargeBoldFont:
-      return *large_bold_font_;
+      return *large_bold_font_list_;
     default:
-      return *base_font_;
+      return *base_font_list_;
   }
+}
+
+const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
+  return GetFontList(style).GetPrimaryFont();
 }
 
 void ResourceBundle::ReloadFonts() {
   base::AutoLock lock_scope(*images_and_fonts_lock_);
-  base_font_.reset();
+  base_font_list_.reset();
   LoadFontsIfNecessary();
 }
 
@@ -539,62 +544,79 @@ void ResourceBundle::AddDataPack(DataPack* data_pack) {
 
 void ResourceBundle::LoadFontsIfNecessary() {
   images_and_fonts_lock_->AssertAcquired();
-  if (!base_font_.get()) {
+  if (!base_font_list_.get()) {
     if (delegate_) {
-      base_font_.reset(delegate_->GetFont(BaseFont).release());
-      bold_font_.reset(delegate_->GetFont(BoldFont).release());
-      small_font_.reset(delegate_->GetFont(SmallFont).release());
-      small_bold_font_.reset(delegate_->GetFont(SmallBoldFont).release());
-      medium_font_.reset(delegate_->GetFont(MediumFont).release());
-      medium_bold_font_.reset(delegate_->GetFont(MediumBoldFont).release());
-      large_font_.reset(delegate_->GetFont(LargeFont).release());
-      large_bold_font_.reset(delegate_->GetFont(LargeBoldFont).release());
+      base_font_list_ = GetFontListFromDelegate(BaseFont);
+      bold_font_list_ = GetFontListFromDelegate(BoldFont);
+      small_font_list_ = GetFontListFromDelegate(SmallFont);
+      small_bold_font_list_ = GetFontListFromDelegate(SmallBoldFont);
+      medium_font_list_ = GetFontListFromDelegate(MediumFont);
+      medium_bold_font_list_ = GetFontListFromDelegate(MediumBoldFont);
+      large_font_list_ = GetFontListFromDelegate(LargeFont);
+      large_bold_font_list_ = GetFontListFromDelegate(LargeBoldFont);
     }
 
-    if (!base_font_.get())
-      base_font_.reset(new gfx::Font());
-
-    if (!bold_font_.get()) {
-      bold_font_.reset(new gfx::Font());
-      *bold_font_ =
-          base_font_->DeriveFont(0, base_font_->GetStyle() | gfx::Font::BOLD);
+    if (!base_font_list_.get()) {
+#if defined(OS_CHROMEOS)
+      base_font_list_.reset(new gfx::FontList(
+          l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS)));
+#else
+      base_font_list_.reset(new gfx::FontList());
+#endif
     }
 
-    if (!small_font_.get()) {
-      small_font_.reset(new gfx::Font());
-      *small_font_ = base_font_->DeriveFont(kSmallFontSizeDelta);
+    if (!bold_font_list_.get()) {
+      bold_font_list_.reset(new gfx::FontList());
+      *bold_font_list_ = base_font_list_->DeriveFontList(
+          base_font_list_->GetFontStyle() | gfx::Font::BOLD);
     }
 
-    if (!small_bold_font_.get()) {
-      small_bold_font_.reset(new gfx::Font());
-      *small_bold_font_ = base_font_->DeriveFont(
-          kSmallFontSizeDelta, base_font_->GetStyle() | gfx::Font::BOLD);
+    if (!small_font_list_.get()) {
+      small_font_list_.reset(new gfx::FontList());
+      *small_font_list_ = base_font_list_->DeriveFontListWithSize(
+          base_font_list_->GetFontSize() + kSmallFontSizeDelta);
     }
 
-    if (!medium_font_.get()) {
-      medium_font_.reset(new gfx::Font());
-      *medium_font_ = base_font_->DeriveFont(kMediumFontSizeDelta);
+    if (!small_bold_font_list_.get()) {
+      small_bold_font_list_.reset(new gfx::FontList());
+      *small_bold_font_list_ = small_font_list_->DeriveFontList(
+          small_font_list_->GetFontStyle() | gfx::Font::BOLD);
     }
 
-    if (!medium_bold_font_.get()) {
-      medium_bold_font_.reset(new gfx::Font());
-      *medium_bold_font_ =
-          base_font_->DeriveFont(kMediumFontSizeDelta,
-                                 base_font_->GetStyle() | gfx::Font::BOLD);
+    if (!medium_font_list_.get()) {
+      medium_font_list_.reset(new gfx::FontList());
+      *medium_font_list_ = base_font_list_->DeriveFontListWithSize(
+          base_font_list_->GetFontSize() + kMediumFontSizeDelta);
     }
 
-    if (!large_font_.get()) {
-      large_font_.reset(new gfx::Font());
-      *large_font_ = base_font_->DeriveFont(kLargeFontSizeDelta);
+    if (!medium_bold_font_list_.get()) {
+      medium_bold_font_list_.reset(new gfx::FontList());
+      *medium_bold_font_list_ = medium_font_list_->DeriveFontList(
+          medium_font_list_->GetFontStyle() | gfx::Font::BOLD);
     }
 
-    if (!large_bold_font_.get()) {
-       large_bold_font_.reset(new gfx::Font());
-      *large_bold_font_ =
-          base_font_->DeriveFont(kLargeFontSizeDelta,
-                                 base_font_->GetStyle() | gfx::Font::BOLD);
+    if (!large_font_list_.get()) {
+      large_font_list_.reset(new gfx::FontList());
+      *large_font_list_ = base_font_list_->DeriveFontListWithSize(
+          base_font_list_->GetFontSize() + kLargeFontSizeDelta);
+    }
+
+    if (!large_bold_font_list_.get()) {
+      large_bold_font_list_.reset(new gfx::FontList());
+      *large_bold_font_list_ = large_font_list_->DeriveFontList(
+          large_font_list_->GetFontStyle() | gfx::Font::BOLD);
     }
   }
+}
+
+scoped_ptr<gfx::FontList> ResourceBundle::GetFontListFromDelegate(
+    FontStyle style) {
+  DCHECK(delegate_);
+  scoped_ptr<gfx::Font> font = delegate_->GetFont(style);
+  if (font.get())
+    return scoped_ptr<gfx::FontList>(new gfx::FontList(*font));
+  else
+    return scoped_ptr<gfx::FontList>();
 }
 
 bool ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,

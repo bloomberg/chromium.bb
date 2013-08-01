@@ -14,6 +14,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/range/range.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/insets.h"
@@ -38,6 +39,11 @@ namespace {
 
 // Default placeholder text color.
 const SkColor kDefaultPlaceholderTextColor = SK_ColorLTGRAY;
+
+gfx::FontList GetDefaultFontList() {
+  return ResourceBundle::GetSharedInstance().GetFontList(
+      ResourceBundle::BaseFont);
+}
 
 }  // namespace
 
@@ -79,6 +85,7 @@ Textfield::Textfield()
     : native_wrapper_(NULL),
       controller_(NULL),
       style_(STYLE_DEFAULT),
+      font_list_(GetDefaultFontList()),
       read_only_(false),
       default_width_in_chars_(0),
       draw_border_(true),
@@ -103,6 +110,7 @@ Textfield::Textfield(StyleFlags style)
     : native_wrapper_(NULL),
       controller_(NULL),
       style_(style),
+      font_list_(GetDefaultFontList()),
       read_only_(false),
       default_width_in_chars_(0),
       draw_border_(true),
@@ -270,11 +278,19 @@ void Textfield::SetCursorEnabled(bool enabled) {
     native_wrapper_->SetCursorEnabled(enabled);
 }
 
-void Textfield::SetFont(const gfx::Font& font) {
-  font_ = font;
+void Textfield::SetFontList(const gfx::FontList& font_list) {
+  font_list_ = font_list;
   if (native_wrapper_)
     native_wrapper_->UpdateFont();
   PreferredSizeChanged();
+}
+
+const gfx::Font& Textfield::GetPrimaryFont() const {
+  return font_list_.GetPrimaryFont();
+}
+
+void Textfield::SetFont(const gfx::Font& font) {
+  SetFontList(gfx::FontList(font));
 }
 
 void Textfield::SetHorizontalMargins(int left, int right) {
@@ -424,22 +440,19 @@ void Textfield::Layout() {
 int Textfield::GetBaseline() const {
   gfx::Insets insets = GetTextInsets();
   const int baseline = native_wrapper_ ?
-      native_wrapper_->GetTextfieldBaseline() : font_.GetBaseline();
+      native_wrapper_->GetTextfieldBaseline() : font_list_.GetBaseline();
   return insets.top() + baseline;
 }
 
 gfx::Size Textfield::GetPreferredSize() {
   gfx::Insets insets = GetTextInsets();
 
-  // For NativeTextfieldViews, we might use a pre-defined font list (defined in
-  // IDS_UI_FONT_FAMILY_CROS) as the fonts to render text. The fonts in the
-  // list might be different (in name or in size) from |font_|, so we need to
-  // use GetFontHeight() to get the height of the first font in the list to
-  // guide textfield's height.
   const int font_height = native_wrapper_ ? native_wrapper_->GetFontHeight() :
-                                            font_.GetHeight();
-  return gfx::Size(font_.GetExpectedTextWidth(default_width_in_chars_) +
-                       insets.width(), font_height + insets.height());
+                                            font_list_.GetHeight();
+  return gfx::Size(
+      GetPrimaryFont().GetExpectedTextWidth(default_width_in_chars_)
+      + insets.width(),
+      font_height + insets.height());
 }
 
 void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {

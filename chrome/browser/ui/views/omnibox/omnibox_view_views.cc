@@ -39,7 +39,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
@@ -104,7 +104,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    CommandUpdater* command_updater,
                                    bool popup_window_mode,
                                    LocationBarView* location_bar,
-                                   const gfx::Font& font,
+                                   const gfx::FontList& font_list,
                                    int font_y_offset)
     : OmniboxView(profile, controller, toolbar_model, command_updater),
       popup_window_mode_(popup_window_mode),
@@ -117,7 +117,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       select_all_on_gesture_tap_(false) {
   RemoveBorder();
   set_id(VIEW_ID_OMNIBOX);
-  SetFont(font);
+  SetFontList(font_list);
   SetVerticalMargins(font_y_offset, 0);
   SetVerticalAlignment(gfx::ALIGN_TOP);
 }
@@ -147,7 +147,7 @@ void OmniboxViewViews::Init() {
 
   // Initialize the popup view using the same font.
   popup_view_.reset(OmniboxPopupContentsView::Create(
-      font(), this, model(), location_bar_view_));
+      font_list(), this, model(), location_bar_view_));
 
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InputMethodManager::Get()->

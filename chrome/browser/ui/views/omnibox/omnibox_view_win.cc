@@ -464,12 +464,12 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
                                LocationBarView* location_bar,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
-                               const gfx::Font& font,
+                               const gfx::FontList& font_list,
                                int font_y_offset)
     : OmniboxView(location_bar->profile(), controller, toolbar_model,
                   command_updater),
-      popup_view_(
-          OmniboxPopupContentsView::Create(font, this, model(), location_bar)),
+      popup_view_(OmniboxPopupContentsView::Create(
+          font_list, this, model(), location_bar)),
       location_bar_(location_bar),
       popup_window_mode_(popup_window_mode),
       force_hidden_(false),
@@ -479,7 +479,7 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
       can_discard_mousemove_(false),
       ignore_ime_messages_(false),
       delete_at_end_pressed_(false),
-      font_(font),
+      font_list_(font_list),
       font_y_adjustment_(font_y_offset),
       possible_drag_(false),
       in_drag_(false),
@@ -504,7 +504,7 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
   Create(location_bar->GetWidget()->GetNativeView(), 0, 0, 0,
          l10n_util::GetExtendedStyles());
   SetReadOnly(popup_window_mode_);
-  gfx::NativeFont native_font(font_.GetNativeFont());
+  gfx::NativeFont native_font(font_list_.GetPrimaryFont().GetNativeFont());
   SetFont(native_font);
 
   // IMF_DUALFONT (on by default) is supposed to use one font for ASCII text
@@ -531,7 +531,7 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
   base::win::ScopedSelectObject font_in_dc(screen_dc, native_font);
   TEXTMETRIC tm = {0};
   GetTextMetrics(screen_dc, &tm);
-  int cap_height = font_.GetBaseline() - tm.tmInternalLeading;
+  int cap_height = font_list_.GetBaseline() - tm.tmInternalLeading;
   // The ratio of a font's x-height to its cap height.  Sadly, Windows
   // doesn't provide a true value for a font's x-height in its text
   // metrics, so we approximate.
@@ -814,7 +814,7 @@ void OmniboxViewWin::ApplyCaretVisibility() {
   // internally in Windows, as well.
   ::DestroyCaret();
   if (model()->is_caret_visible()) {
-    ::CreateCaret(m_hWnd, (HBITMAP) NULL, 1, font_.GetHeight());
+    ::CreateCaret(m_hWnd, (HBITMAP) NULL, 1, font_list_.GetHeight());
     // According to the Windows API documentation, a newly created caret needs
     // ShowCaret to be visible.
     ShowCaret();
@@ -2519,7 +2519,7 @@ void OmniboxViewWin::DrawSlashForInsecureScheme(HDC hdc,
   const SkScalar kStrokeWidthPixels = SkIntToScalar(2);
   const int kAdditionalSpaceOutsideFont =
       static_cast<int>(ceil(kStrokeWidthPixels * 1.5f));
-  const int font_ascent = font_.GetBaseline();
+  const int font_ascent = font_list_.GetBaseline();
   const CRect scheme_rect(
       PosFromChar(insecure_scheme_component_.begin).x,
       font_top + font_ascent - font_x_height_ - kAdditionalSpaceOutsideFont,
@@ -2607,7 +2607,7 @@ void OmniboxViewWin::DrawDropHighlight(HDC hdc,
   const CRect highlight_rect(highlight_x,
                              highlight_y,
                              highlight_x + 1,
-                             highlight_y + font_.GetHeight());
+                             highlight_y + font_list_.GetHeight());
 
   // Clip the highlight to the region being painted.
   CRect clip_rect;
@@ -2762,7 +2762,7 @@ void OmniboxViewWin::RepaintDropHighlight(int position) {
   if ((position != -1) && (position <= GetTextLength())) {
     const POINT min_loc(PosFromChar(position));
     const RECT highlight_bounds = {min_loc.x - 1, font_y_adjustment_,
-        min_loc.x + 2, font_.GetHeight() + font_y_adjustment_};
+        min_loc.x + 2, font_list_.GetHeight() + font_y_adjustment_};
     InvalidateRect(&highlight_bounds, false);
   }
 }
@@ -2827,9 +2827,10 @@ int OmniboxViewWin::GetHorizontalMargin() const {
 }
 
 int OmniboxViewWin::WidthNeededToDisplay(const string16& text) const {
-  // Use font_.GetStringWidth() instead of PosFromChar(GetTextLength()) because
-  // PosFromChar() is apparently buggy. In both LTR UI and RTL UI with
-  // left-to-right layout, PosFromChar(i) might return 0 when i is greater than
-  // 1.
-  return font_.GetStringWidth(text) + GetHorizontalMargin();
+  // Use font_list_.GetPrimaryFont().GetStringWidth() instead of
+  // PosFromChar(GetTextLength()) because PosFromChar() is apparently buggy.
+  // In both LTR UI and RTL UI with left-to-right layout, PosFromChar(i) might
+  // return 0 when i is greater than 1.
+  return font_list_.GetPrimaryFont().GetStringWidth(text) +
+      GetHorizontalMargin();
 }

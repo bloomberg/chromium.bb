@@ -578,7 +578,7 @@ void RenderTextWin::ItemizeLogicalText() {
   for (size_t run_break = 0; run_break < layout_text_length;) {
     internal::TextRun* run = new internal::TextRun();
     run->range.set_start(run_break);
-    run->font = GetFont();
+    run->font = GetPrimaryFont();
     run->font_style = (style.style(BOLD) ? Font::BOLD : 0) |
                       (style.style(ITALIC) ? Font::ITALIC : 0);
     DeriveFontIfNecessary(run->font.GetFontSize(), run->font.GetHeight(),

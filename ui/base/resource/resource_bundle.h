@@ -20,7 +20,7 @@
 #include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_export.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -107,8 +107,7 @@ class UI_EXPORT ResourceBundle {
     // false to attempt retrieval of the default string.
     virtual bool GetLocalizedString(int message_id, string16* value) = 0;
 
-    // Return a font resource or NULL to attempt retrieval of the default
-    // resource.
+    // Returns a font or NULL to attempt retrieval of the default resource.
     virtual scoped_ptr<gfx::Font> GetFont(FontStyle style) = 0;
 
    protected:
@@ -233,6 +232,9 @@ class UI_EXPORT ResourceBundle {
   // string if the message_id is not found.
   string16 GetLocalizedString(int message_id);
 
+  // Returns the font list for the specified style.
+  const gfx::FontList& GetFontList(FontStyle style);
+
   // Returns the font for the specified style.
   const gfx::Font& GetFont(FontStyle style);
 
@@ -301,8 +303,13 @@ class UI_EXPORT ResourceBundle {
   // comments for ReloadLocaleResources().
   void UnloadLocaleResources();
 
-  // Initialize all the gfx::Font members if they haven't yet been initialized.
+  // Initializes all the gfx::FontList members if they haven't yet been
+  // initialized.
   void LoadFontsIfNecessary();
+
+  // Returns a FontList or NULL by calling Delegate::GetFont and converting
+  // scoped_ptr<gfx::Font> to scoped_ptr<gfx::FontList>.
+  scoped_ptr<gfx::FontList> GetFontListFromDelegate(FontStyle style);
 
   // Fills the |bitmap| given the data file to look in and the |resource_id|.
   // Returns false if the resource does not exist.
@@ -370,16 +377,17 @@ class UI_EXPORT ResourceBundle {
 
   gfx::Image empty_image_;
 
-  // The various fonts used. Cached to avoid repeated GDI creation/destruction.
-  scoped_ptr<gfx::Font> base_font_;
-  scoped_ptr<gfx::Font> bold_font_;
-  scoped_ptr<gfx::Font> small_font_;
-  scoped_ptr<gfx::Font> small_bold_font_;
-  scoped_ptr<gfx::Font> medium_font_;
-  scoped_ptr<gfx::Font> medium_bold_font_;
-  scoped_ptr<gfx::Font> large_font_;
-  scoped_ptr<gfx::Font> large_bold_font_;
-  scoped_ptr<gfx::Font> web_font_;
+  // The various font lists used. Cached to avoid repeated GDI
+  // creation/destruction.
+  scoped_ptr<gfx::FontList> base_font_list_;
+  scoped_ptr<gfx::FontList> bold_font_list_;
+  scoped_ptr<gfx::FontList> small_font_list_;
+  scoped_ptr<gfx::FontList> small_bold_font_list_;
+  scoped_ptr<gfx::FontList> medium_font_list_;
+  scoped_ptr<gfx::FontList> medium_bold_font_list_;
+  scoped_ptr<gfx::FontList> large_font_list_;
+  scoped_ptr<gfx::FontList> large_bold_font_list_;
+  scoped_ptr<gfx::FontList> web_font_list_;
 
   base::FilePath overridden_pak_path_;
 

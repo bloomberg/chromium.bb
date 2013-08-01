@@ -15,7 +15,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
@@ -138,8 +138,10 @@ class VIEWS_EXPORT Textfield : public View {
   bool GetCursorEnabled() const;
   void SetCursorEnabled(bool enabled);
 
-  // Gets/Sets the font used when rendering the text within the Textfield.
-  const gfx::Font& font() const { return font_; }
+  // Gets/Sets the fonts used when rendering the text within the Textfield.
+  const gfx::FontList& font_list() const { return font_list_; }
+  void SetFontList(const gfx::FontList& font_list);
+  const gfx::Font& GetPrimaryFont() const;
   void SetFont(const gfx::Font& font);
 
   // Sets the left and right margin (in pixels) within the text box. On Windows
@@ -292,8 +294,8 @@ class VIEWS_EXPORT Textfield : public View {
   // The mask of style options for this Textfield.
   StyleFlags style_;
 
-  // The font used to render the text in the Textfield.
-  gfx::Font font_;
+  // The fonts used to render the text in the Textfield.
+  gfx::FontList font_list_;
 
   // The text displayed in the Textfield.
   string16 text_;

@@ -1198,8 +1198,8 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
 TEST_F(RenderTextTest, SetFont) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFont(Font("Arial", 12));
-  EXPECT_EQ("Arial", render_text->GetFont().GetFontName());
-  EXPECT_EQ(12, render_text->GetFont().GetFontSize());
+  EXPECT_EQ("Arial", render_text->GetPrimaryFont().GetFontName());
+  EXPECT_EQ(12, render_text->GetPrimaryFont().GetFontSize());
 }
 
 TEST_F(RenderTextTest, SetFontList) {
@@ -1209,7 +1209,7 @@ TEST_F(RenderTextTest, SetFontList) {
   ASSERT_EQ(2U, fonts.size());
   EXPECT_EQ("Arial", fonts[0].GetFontName());
   EXPECT_EQ("Symbol", fonts[1].GetFontName());
-  EXPECT_EQ(13, render_text->GetFont().GetFontSize());
+  EXPECT_EQ(13, render_text->GetPrimaryFont().GetFontSize());
 }
 
 TEST_F(RenderTextTest, StringSizeBoldWidth) {

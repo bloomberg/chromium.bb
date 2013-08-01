@@ -114,11 +114,12 @@ Browser* GetBrowserFromDelegate(LocationBarView::Delegate* delegate) {
   return contents ? chrome::FindBrowserWithWebContents(contents) : NULL;
 }
 
-// Given a containing |height| and a base |font|, shrinks the font until it will
-// fit within |height| while having its cap height vertically centered.  Returns
-// the |font_y_offset| needed to produce this centering.
+// Given a containing |height| and a base |font_list|, shrinks the fonts until
+// the primary font will fit within |height| while having its cap height
+// vertically centered.  Returns the |font_y_offset| needed to produce this
+// centering.
 void CalculateFontAndOffsetForHeight(int height,
-                                     gfx::Font* font,
+                                     gfx::FontList* font_list,
                                      int* font_y_offset) {
 #if defined(OS_WIN)
   base::win::ScopedGetDC screen_dc(NULL);
@@ -128,21 +129,23 @@ void CalculateFontAndOffsetForHeight(int height,
     // TODO(pkasting): Expand the gfx::Font metrics (and underlying Skia
     // metrics) enough to expose the cap height directly.
 #if defined(OS_WIN)
-    base::win::ScopedSelectObject font_in_dc(screen_dc, font->GetNativeFont());
+    const gfx::Font& font = font_list->GetPrimaryFont();
+    base::win::ScopedSelectObject font_in_dc(screen_dc, font.GetNativeFont());
     TEXTMETRIC tm = {0};
     GetTextMetrics(screen_dc, &tm);
-    int cap_height = font->GetBaseline() - tm.tmInternalLeading;
+    int cap_height = font.GetBaseline() - tm.tmInternalLeading;
     *font_y_offset = ((height - cap_height) / 2) - tm.tmInternalLeading;
 #else
     // Without cap height available, we fall back to centering the full height.
-    *font_y_offset = (height - font->GetHeight()) / 2;
+    *font_y_offset = (height - font_list->GetHeight()) / 2;
 #endif
 
+    const int font_size = font_list->GetFontSize();
     if (((*font_y_offset >= 0) &&
-         ((*font_y_offset + font->GetHeight()) <= height)) ||
-        (font->GetFontSize() <= 1))
+         ((*font_y_offset + font_list->GetHeight()) <= height)) ||
+        (font_size <= 1))
       return;
-    *font = font->DeriveFont(-1);
+    *font_list = font_list->DeriveFontListWithSize(font_size - 1);
   }
 }
 
@@ -234,28 +237,30 @@ void LocationBarView::Init() {
   AddChildView(location_icon_view_);
 
   // Determine the main font.
-  gfx::Font font(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont));
-  const int current_font_size = font.GetFontSize();
+  gfx::FontList font_list = ResourceBundle::GetSharedInstance().GetFontList(
+      ResourceBundle::BaseFont);
+  const int current_font_size = font_list.GetFontSize();
   const int desired_font_size = browser_defaults::kOmniboxFontPixelSize;
   if (current_font_size < desired_font_size)
-    font = font.DeriveFont(desired_font_size - current_font_size);
+    font_list = font_list.DeriveFontListWithSize(desired_font_size);
   // Shrink large fonts to make them fit.
   // TODO(pkasting): Stretch the location bar instead in this case.
   int location_height = GetInternalHeight(true);
   int font_y_offset;
-  CalculateFontAndOffsetForHeight(location_height, &font, &font_y_offset);
+  CalculateFontAndOffsetForHeight(location_height, &font_list, &font_y_offset);
+  const gfx::Font& font = font_list.GetPrimaryFont();
 
   // Determine the font for use inside the bubbles.
-  gfx::Font bubble_font(font);
+  gfx::FontList bubble_font_list(font_list);
   int bubble_font_y_offset;
   // The bubble background images have 1 px thick edges, which we don't want to
   // overlap.
   const int kBubbleInteriorVerticalPadding = 1;
   CalculateFontAndOffsetForHeight(
       location_height - ((kBubblePadding + kBubbleInteriorVerticalPadding) * 2),
-      &bubble_font, &bubble_font_y_offset);
+      &bubble_font_list, &bubble_font_y_offset);
   bubble_font_y_offset += kBubbleInteriorVerticalPadding;
+  const gfx::Font& bubble_font = font_list.GetPrimaryFont();
 
   const SkColor background_color =
       GetColor(ToolbarModel::NONE, LocationBarView::BACKGROUND);
@@ -267,7 +272,7 @@ void LocationBarView::Init() {
 
   // Initialize the Omnibox view.
   location_entry_.reset(CreateOmniboxView(this, model_, profile_,
-      command_updater_, is_popup_mode_, this, font, font_y_offset));
+      command_updater_, is_popup_mode_, this, font_list, font_y_offset));
   SetLocationEntryFocusable(true);
   location_entry_view_ = location_entry_->AddToView(this);
 

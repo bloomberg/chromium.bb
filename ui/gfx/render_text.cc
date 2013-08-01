@@ -360,13 +360,13 @@ void RenderText::SetFontSize(int size) {
   SetFontList(font_list_.DeriveFontListWithSize(size));
 }
 
+const Font& RenderText::GetPrimaryFont() const {
+  return font_list_.GetPrimaryFont();
+}
+
 void RenderText::SetCursorEnabled(bool cursor_enabled) {
   cursor_enabled_ = cursor_enabled;
   cached_bounds_and_offset_valid_ = false;
-}
-
-const Font& RenderText::GetFont() const {
-  return font_list_.GetFonts()[0];
 }
 
 void RenderText::ToggleInsertMode() {
@@ -873,7 +873,8 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   if (text_width <= display_width)
     return;
 
-  int gradient_width = CalculateFadeGradientWidth(GetFont(), display_width);
+  int gradient_width = CalculateFadeGradientWidth(GetPrimaryFont(),
+                                                  display_width);
   if (gradient_width == 0)
     return;
 

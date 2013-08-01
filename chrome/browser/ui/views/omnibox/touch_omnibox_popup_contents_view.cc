@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -20,8 +20,8 @@ TouchOmniboxResultView::TouchOmniboxResultView(
     OmniboxResultViewModel* model,
     int model_index,
     LocationBarView* location_bar_view,
-    const gfx::Font& font)
-    : OmniboxResultView(model, model_index, location_bar_view, font) {
+    const gfx::FontList& font_list)
+    : OmniboxResultView(model, model_index, location_bar_view, font_list) {
   set_edge_item_padding(8);
   set_item_padding(8);
   set_minimum_text_vertical_padding(10);
@@ -56,11 +56,11 @@ int TouchOmniboxResultView::GetTextHeight() const {
 // TouchOmniboxPopupContentsView -----------------------------------------
 
 TouchOmniboxPopupContentsView::TouchOmniboxPopupContentsView(
-    const gfx::Font& font,
+    const gfx::FontList& font_list,
     OmniboxView* omnibox_view,
     OmniboxEditModel* edit_model,
     LocationBarView* location_bar_view)
-    : OmniboxPopupContentsView(font, omnibox_view, edit_model,
+    : OmniboxPopupContentsView(font_list, omnibox_view, edit_model,
                                location_bar_view) {
 }
 
@@ -102,9 +102,9 @@ void TouchOmniboxPopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
 OmniboxResultView* TouchOmniboxPopupContentsView::CreateResultView(
     OmniboxResultViewModel* model,
     int model_index,
-    const gfx::Font& font) {
+    const gfx::FontList& font_list) {
   return new TouchOmniboxResultView(model, model_index, location_bar_view(),
-                                    font);
+                                    font_list);
 }
 
 std::vector<views::View*> TouchOmniboxPopupContentsView::GetVisibleChildren() {

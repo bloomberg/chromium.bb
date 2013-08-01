@@ -53,7 +53,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 // OmniboxPopupContentsView, public:
 
 OmniboxPopupView* OmniboxPopupContentsView::Create(
-    const gfx::Font& font,
+    const gfx::FontList& font_list,
     OmniboxView* omnibox_view,
     OmniboxEditModel* edit_model,
     LocationBarView* location_bar_view) {
@@ -65,10 +65,10 @@ OmniboxPopupView* OmniboxPopupContentsView::Create(
   OmniboxPopupContentsView* view = NULL;
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     view = new TouchOmniboxPopupContentsView(
-        font, omnibox_view, edit_model, location_bar_view);
+        font_list, omnibox_view, edit_model, location_bar_view);
   } else {
     view = new OmniboxPopupContentsView(
-        font, omnibox_view, edit_model, location_bar_view);
+        font_list, omnibox_view, edit_model, location_bar_view);
   }
 
   view->Init();
@@ -76,14 +76,14 @@ OmniboxPopupView* OmniboxPopupContentsView::Create(
 }
 
 OmniboxPopupContentsView::OmniboxPopupContentsView(
-    const gfx::Font& font,
+    const gfx::FontList& font_list,
     OmniboxView* omnibox_view,
     OmniboxEditModel* edit_model,
     LocationBarView* location_bar_view)
     : model_(new OmniboxPopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),
       location_bar_view_(location_bar_view),
-      font_(font),
+      font_list_(font_list),
       ignore_mouse_drag_(false),
       size_animation_(this),
       left_margin_(0),
@@ -101,7 +101,7 @@ void OmniboxPopupContentsView::Init() {
   // necessarily our final class yet, and we may have subclasses
   // overriding CreateResultView.
   for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
-    OmniboxResultView* result_view = CreateResultView(this, i, font_);
+    OmniboxResultView* result_view = CreateResultView(this, i, font_list_);
     result_view->SetVisible(false);
     AddChildViewAt(result_view, static_cast<int>(i));
   }
@@ -417,8 +417,9 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
 OmniboxResultView* OmniboxPopupContentsView::CreateResultView(
     OmniboxResultViewModel* model,
     int model_index,
-    const gfx::Font& font) {
-  return new OmniboxResultView(model, model_index, location_bar_view_, font);
+    const gfx::FontList& font_list) {
+  return new OmniboxResultView(model, model_index, location_bar_view_,
+                               font_list);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

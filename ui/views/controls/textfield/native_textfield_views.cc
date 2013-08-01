@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/app_locale_settings.h"
 #include "grit/ui_strings.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -82,14 +81,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       cursor_timer_(this),
       aggregated_clicks_(0) {
   set_border(text_border_);
-
-#if defined(OS_CHROMEOS)
-  GetRenderText()->SetFontList(gfx::FontList(l10n_util::GetStringUTF8(
-      IDS_UI_FONT_FAMILY_CROS)));
-#else
-  GetRenderText()->SetFont(textfield_->font());
-#endif
-
+  GetRenderText()->SetFontList(textfield_->font_list());
   UpdateColorsFromTheme(GetNativeTheme());
   set_context_menu_controller(this);
   set_drag_controller(this);
@@ -575,13 +567,7 @@ void NativeTextfieldViews::UpdateReadOnly() {
 }
 
 void NativeTextfieldViews::UpdateFont() {
-#if defined(OS_CHROMEOS)
-  // For ChromeOS, we support a pre-defined font list per locale. UpdateFont()
-  // only changes the font size, not the font family names.
-  GetRenderText()->SetFontSize(textfield_->font().GetFontSize());
-#else
-  GetRenderText()->SetFont(textfield_->font());
-#endif
+  GetRenderText()->SetFontList(textfield_->font_list());
   OnCaretBoundsChanged();
 }
 
@@ -726,11 +712,11 @@ void NativeTextfieldViews::ClearEditHistory() {
 }
 
 int NativeTextfieldViews::GetFontHeight() {
-  return GetRenderText()->GetFont().GetHeight();
+  return GetRenderText()->font_list().GetHeight();
 }
 
 int NativeTextfieldViews::GetTextfieldBaseline() const {
-  return GetRenderText()->GetFont().GetBaseline();
+  return GetRenderText()->font_list().GetBaseline();
 }
 
 int NativeTextfieldViews::GetWidthNeededForText() const {
@@ -1166,7 +1152,7 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
       !textfield_->placeholder_text().empty()) {
     canvas->DrawStringInt(
         textfield_->placeholder_text(),
-        GetRenderText()->GetFont(),
+        GetRenderText()->GetPrimaryFont(),
         textfield_->placeholder_text_color(),
         GetRenderText()->display_rect());
   }

@@ -145,7 +145,7 @@ class UI_EXPORT RenderText {
   void SetFontSize(int size);
 
   // Get the first font in |font_list_|.
-  const Font& GetFont() const;
+  const Font& GetPrimaryFont() const;
 
   bool cursor_enabled() const { return cursor_enabled_; }
   void SetCursorEnabled(bool cursor_enabled);

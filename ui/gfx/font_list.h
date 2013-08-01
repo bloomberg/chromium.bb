@@ -73,8 +73,14 @@ class UI_EXPORT FontList {
   // for the description.
   const std::string& GetFontDescriptionString() const;
 
+  // Returns the font size in pixels.
+  int GetFontSize() const;
+
   // Returns the Font vector.
   const std::vector<Font>& GetFonts() const;
+
+  // Returns the first font in the list.
+  const Font& GetPrimaryFont() const;
 
  private:
   // A vector of Font. If FontList is constructed with font description string,

@@ -208,6 +208,18 @@ const std::string& FontList::GetFontDescriptionString() const {
   return font_description_string_;
 }
 
+int FontList::GetFontSize() const {
+  if (!fonts_.empty())
+    return fonts_[0].GetFontSize();
+
+  std::vector<std::string> font_names;
+  int font_style;
+  int font_size;
+  ParseFontDescriptionString(font_description_string_, &font_names,
+                             &font_style, &font_size);
+  return font_size;
+}
+
 const std::vector<Font>& FontList::GetFonts() const {
   if (fonts_.empty()) {
     DCHECK(!font_description_string_.empty());
@@ -228,6 +240,10 @@ const std::vector<Font>& FontList::GetFonts() const {
     }
   }
   return fonts_;
+}
+
+const Font& FontList::GetPrimaryFont() const {
+  return GetFonts()[0];
 }
 
 }  // namespace gfx

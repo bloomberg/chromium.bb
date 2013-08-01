@@ -11,7 +11,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
@@ -48,7 +48,7 @@ class OmniboxResultView : public views::View,
   OmniboxResultView(OmniboxResultViewModel* model,
                     int model_index,
                     LocationBarView* location_bar_view,
-                    const gfx::Font& font);
+                    const gfx::FontList& font_list);
   virtual ~OmniboxResultView();
 
   SkColor GetColor(ResultViewState state, ColorKind kind) const;
@@ -148,7 +148,7 @@ class OmniboxResultView : public views::View,
 
   LocationBarView* location_bar_view_;
 
-  const gfx::Font font_;
+  const gfx::FontList font_list_;
   int font_height_;
 
   // Width of the ellipsis in the normal font.

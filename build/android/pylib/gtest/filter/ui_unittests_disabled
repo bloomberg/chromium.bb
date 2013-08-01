@@ -25,7 +25,7 @@ FontTest.Height
 FontTest.LoadArial
 FontTest.LoadArialBold
 FontTest.Widths
-ResourceBundleTest.DelegateGetFont
+ResourceBundleTest.DelegateGetFontList
 TextEliderTest.ElideEmail
 TextEliderTest.ElideEmailMoreSpace
 TextEliderTest.ElideRectangleText
