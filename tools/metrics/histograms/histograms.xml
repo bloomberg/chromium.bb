@@ -19381,6 +19381,8 @@ other types of suffix sets.
   <int value="353" label="PIPELINE_EVICTION"/>
   <int value="354" label="CONTENT_LENGTH_MISMATCH"/>
   <int value="355" label="INCOMPLETE_CHUNKED_ENCODING"/>
+  <int value="356" label="QUIC_PROTOCOL_ERROR"/>
+  <int value="357" label="RESPONSE_HEADERS_TRUNCATED"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>
