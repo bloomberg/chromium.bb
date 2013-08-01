@@ -1011,7 +1011,7 @@ const char kNoServiceAutorun[]              = "no-service-autorun";
 // launching Chrome for the purpose of hosting background apps).
 const char kNoStartupWindow[]               = "no-startup-window";
 
-// Disables checking whether we received an acknowledgement when registering
+// Disables checking whether we received an acknowledgment when registering
 // a supervised user. Also disables the timeout during registration that waits
 // for the ack. Useful when debugging against a server that does not
 // support notifications.
