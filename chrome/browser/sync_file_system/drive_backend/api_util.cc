@@ -185,6 +185,7 @@ APIUtil::APIUtil(Profile* profile,
         content::BrowserThread::GetBlockingPool(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
+        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         std::string() /* custom_user_agent */));
   }
 

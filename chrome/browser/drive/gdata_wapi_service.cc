@@ -67,10 +67,8 @@ namespace drive {
 namespace {
 
 // OAuth2 scopes for the documents API.
-const char kDocsListScope[] = "https://docs.google.com/feeds/";
 const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
 const char kUserContentScope[] = "https://docs.googleusercontent.com/";
-const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 
 // The resource ID for the root directory for WAPI is defined in the spec:
 // https://developers.google.com/google-apps/documents-list/
@@ -96,30 +94,6 @@ void ParseResourceEntryAndRun(const GetResourceEntryCallback& callback,
   }
 
   callback.Run(error, entry.Pass());
-}
-
-// Extracts an url to the sharing dialog and returns it via |callback|. If
-// the share url doesn't exist, then an empty url is returned.
-void ParseShareUrlAndRun(const GetShareUrlCallback& callback,
-                         GDataErrorCode error,
-                         scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!value) {
-    callback.Run(error, GURL());
-    return;
-  }
-
-  // Parsing ResourceEntry is cheap enough to do on UI thread.
-  scoped_ptr<ResourceEntry> entry =
-      google_apis::ResourceEntry::ExtractAndParse(*value);
-  if (!entry) {
-    callback.Run(GDATA_PARSE_ERROR, GURL());
-    return;
-  }
-
-  const Link* share_link = entry->GetLinkByType(Link::LINK_SHARE);
-  callback.Run(error, share_link ? share_link->href() : GURL());
 }
 
 void ParseAboutResourceAndRun(
@@ -180,11 +154,11 @@ void GDataWapiService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<std::string> scopes;
-  scopes.push_back(kDocsListScope);
+  scopes.push_back(util::kDocsListScope);
   scopes.push_back(kSpreadsheetsScope);
   scopes.push_back(kUserContentScope);
   // Drive App scope is required for even WAPI v3 apps access.
-  scopes.push_back(kDriveAppsScope);
+  scopes.push_back(util::kDriveAppsScope);
   sender_.reset(new RequestSender(
       new AuthService(
           oauth2_token_service_, url_request_context_getter_, scopes),
@@ -347,7 +321,7 @@ CancelCallback GDataWapiService::GetShareUrl(
                                   url_generator_,
                                   resource_id,
                                   embed_origin,
-                                  base::Bind(&ParseShareUrlAndRun,
+                                  base::Bind(&util::ParseShareUrlAndRun,
                                              callback)));
 }
 

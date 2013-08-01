@@ -12,7 +12,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/drive/drive_switches.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
@@ -126,6 +129,32 @@ std::string CanonicalizeResourceId(const std::string& resource_id) {
                      &stripped_resource_id))
     return stripped_resource_id;
   return resource_id;
+}
+
+const char kDocsListScope[] = "https://docs.google.com/feeds/";
+const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
+
+void ParseShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
+                         google_apis::GDataErrorCode error,
+                         scoped_ptr<base::Value> value) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (!value) {
+    callback.Run(error, GURL());
+    return;
+  }
+
+  // Parsing ResourceEntry is cheap enough to do on UI thread.
+  scoped_ptr<google_apis::ResourceEntry> entry =
+      google_apis::ResourceEntry::ExtractAndParse(*value);
+  if (!entry) {
+    callback.Run(google_apis::GDATA_PARSE_ERROR, GURL());
+    return;
+  }
+
+  const google_apis::Link* share_link =
+      entry->GetLinkByType(google_apis::Link::LINK_SHARE);
+  callback.Run(error, share_link ? share_link->href() : GURL());
 }
 
 }  // namespace util

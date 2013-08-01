@@ -17,6 +17,7 @@
 #include "chrome/browser/google_apis/drive_api_requests.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_requests.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -42,11 +43,13 @@ using google_apis::GetContentCallback;
 using google_apis::GetFileRequest;
 using google_apis::GetFilelistRequest;
 using google_apis::GetResourceEntryCallback;
+using google_apis::GetResourceEntryRequest;
 using google_apis::GetResourceListCallback;
 using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_NOT_IMPLEMENTED;
 using google_apis::HTTP_SUCCESS;
 using google_apis::InitiateUploadCallback;
+using google_apis::Link;
 using google_apis::ProgressCallback;
 using google_apis::RequestSender;
 using google_apis::ResourceEntry;
@@ -268,11 +271,13 @@ DriveAPIService::DriveAPIService(
     base::TaskRunner* blocking_task_runner,
     const GURL& base_url,
     const GURL& base_download_url,
+    const GURL& wapi_base_url,
     const std::string& custom_user_agent)
     : oauth2_token_service_(oauth2_token_service),
       url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
       url_generator_(base_url, base_download_url),
+      wapi_url_generator_(wapi_base_url, base_download_url),
       custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -289,6 +294,11 @@ void DriveAPIService::Initialize() {
   std::vector<std::string> scopes;
   scopes.push_back(kDriveScope);
   scopes.push_back(kDriveAppsReadonlyScope);
+
+  // GData WAPI token. These are for GetShareUrl().
+  scopes.push_back(util::kDocsListScope);
+  scopes.push_back(util::kDriveAppsScope);
+
   sender_.reset(new RequestSender(
      new google_apis::AuthService(
          oauth2_token_service_, url_request_context_getter_, scopes),
@@ -470,11 +480,17 @@ CancelCallback DriveAPIService::GetShareUrl(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(mtomasz): Implement this, once it is supported by the Drive API.
-  NOTIMPLEMENTED();
-  callback.Run(HTTP_NOT_IMPLEMENTED, GURL());
-
-  return CancelCallback();
+  // Unfortunately "share url" is not yet supported on Drive API v2.
+  // So, as a fallback, we use GData WAPI protocol for this method.
+  // TODO(hidehiko): Get rid of this implementation when share url is
+  // supported on Drive API v2.
+  return sender_->StartRequestWithRetry(
+      new GetResourceEntryRequest(sender_.get(),
+                                  wapi_url_generator_,
+                                  resource_id,
+                                  embed_origin,
+                                  base::Bind(&util::ParseShareUrlAndRun,
+                                             callback)));
 }
 
 CancelCallback DriveAPIService::GetAboutResource(
