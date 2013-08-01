@@ -135,15 +135,6 @@ bool MoveRect(const gfx::Rect& work_area,
   return false;
 }
 
-// Adjust the |target_in_screen| rectangle so it moves as much as possible into
-// the |work_area| .
-void AdjustTargetRectVerticallyAgainstWorkspace(const gfx::Rect& work_area,
-                                                gfx::Rect* target_in_screen) {
-  if (target_in_screen->bottom() > work_area.bottom())
-    target_in_screen->set_y(std::max(work_area.y(),
-        work_area.bottom() - target_in_screen->height()));
-}
-
 }  // namespace
 
 // static
@@ -205,8 +196,7 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
     if ((!count || !top_window)) {
       if (has_saved_bounds) {
         // Restore to previous state - if there is one.
-        AdjustTargetRectVerticallyAgainstWorkspace(work_area,
-                                                     bounds_in_screen);
+        bounds_in_screen->AdjustToFit(work_area);
         return true;
       }
       // When using "small screens" we want to always open in full screen mode.
@@ -239,7 +229,7 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
         bounds_in_screen->CenterPoint().x() < work_area.CenterPoint().x();
 
     MoveRect(work_area, *bounds_in_screen, move_right);
-    AdjustTargetRectVerticallyAgainstWorkspace(work_area, bounds_in_screen);
+    bounds_in_screen->AdjustToFit(work_area);
     return true;
   }
 

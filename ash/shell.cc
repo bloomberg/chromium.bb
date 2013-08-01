@@ -201,7 +201,8 @@ bool Shell::initially_hide_cursor_ = false;
 
 Shell::Shell(ShellDelegate* delegate)
     : screen_(new ScreenAsh),
-      active_root_window_(NULL),
+      target_root_window_(NULL),
+      scoped_target_root_window_(NULL),
       delegate_(delegate),
       activation_client_(NULL),
 #if defined(OS_CHROMEOS) && defined(USE_X11)
@@ -249,8 +250,7 @@ Shell::~Shell() {
   // Remove the focus from any window. This will prevent overhead and side
   // effects (e.g. crashes) from changing focus during shutdown.
   // See bug crbug.com/134502.
-  if (active_root_window_)
-    aura::client::GetFocusClient(active_root_window_)->FocusWindow(NULL);
+  aura::client::GetFocusClient(GetPrimaryRootWindow())->FocusWindow(NULL);
 
   // Please keep in same order as in Init() because it's easy to miss one.
   RemovePreTargetHandler(event_rewriter_filter_.get());
@@ -386,7 +386,10 @@ aura::RootWindow* Shell::GetPrimaryRootWindow() {
 
 // static
 aura::RootWindow* Shell::GetActiveRootWindow() {
-  return GetInstance()->active_root_window_;
+  Shell* shell = GetInstance();
+  if (shell->scoped_target_root_window_)
+    return shell->scoped_target_root_window_;
+  return shell->target_root_window_;
 }
 
 // static
@@ -499,7 +502,7 @@ void Shell::Init() {
   display_controller_->Start();
   display_controller_->InitPrimaryDisplay();
   aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
-  active_root_window_ = root_window;
+  target_root_window_ = root_window;
 
   cursor_manager_.SetDisplay(DisplayController::GetPrimaryDisplay());
 
@@ -883,7 +886,8 @@ void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
   high_contrast_controller_->OnRootWindowAdded(root);
   root->ShowRootWindow();
   // Activate new root for testing.
-  active_root_window_ = root;
+  // TODO(oshima): remove this.
+  target_root_window_ = root;
 
   // Create a launcher if a user is already logged.
   if (Shell::GetInstance()->session_state_delegate()->NumberOfLoggedInUsers())
@@ -970,7 +974,7 @@ void Shell::OnEvent(ui::Event* event) {
 void Shell::OnWindowActivated(aura::Window* gained_active,
                               aura::Window* lost_active) {
   if (gained_active)
-    active_root_window_ = gained_active->GetRootWindow();
+    target_root_window_ = gained_active->GetRootWindow();
 }
 
 }  // namespace ash

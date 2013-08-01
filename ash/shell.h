@@ -119,6 +119,7 @@ class OverlayEventFilter;
 class ResizeShadowController;
 class RootWindowController;
 class RootWindowLayoutManager;
+class ScopedTargetRootWindow;
 class ScreenPositionController;
 class SlowAnimationEventFilter;
 class StatusAreaWidget;
@@ -178,10 +179,12 @@ class ASH_EXPORT Shell
   // that has a launcher.
   static aura::RootWindow* GetPrimaryRootWindow();
 
-  // Returns the active RootWindow. The active RootWindow is the one that
-  // contains the current active window as a decendant child. The active
-  // RootWindow remains the same even when the active window becomes NULL,
-  // until the another window who has a different root window becomes active.
+  // Returns a RootWindow when used as a target when creating a new window.
+  // The root window of the active window is used in most cases, but can
+  // be overridden by using ScopedTargetRootWindow().
+  // If you want to get a RootWindow of the active window, just use
+  // |wm::GetActiveWindow()->GetRootWindow()|.
+  // TODO(oshima): Rename to GetTargetRootWindow() crbug.com/266378.
   static aura::RootWindow* GetActiveRootWindow();
 
   // Returns the global Screen object that's always active in ash.
@@ -206,8 +209,8 @@ class ASH_EXPORT Shell
   // application windows to be maximized only.
   static bool IsForcedMaximizeMode();
 
-  void set_active_root_window(aura::RootWindow* active_root_window) {
-    active_root_window_ = active_root_window;
+  void set_active_root_window(aura::RootWindow* target_root_window) {
+    target_root_window_ = target_root_window;
   }
 
   // Shows the context menu for the background and launcher at
@@ -473,6 +476,7 @@ class ASH_EXPORT Shell
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, TransformActivate);
   friend class internal::RootWindowController;
+  friend class internal::ScopedTargetRootWindow;
   friend class test::ShellTestApi;
   friend class shell::WindowWatcher;
 
@@ -510,8 +514,12 @@ class ASH_EXPORT Shell
 
   ScreenAsh* screen_;
 
-  // Active root window. Never becomes NULL during the session.
-  aura::RootWindow* active_root_window_;
+  // When no explicit target display/RootWindow is given, new windows are
+  // created on |scoped_target_root_window_| , unless NULL in
+  // which case they are created on |target_root_window_|.
+  // |target_root_window_| never becomes NULL during the session.
+  aura::RootWindow* target_root_window_;
+  aura::RootWindow* scoped_target_root_window_;
 
   // The CompoundEventFilter owned by aura::Env object.
   scoped_ptr<views::corewm::CompoundEventFilter> env_filter_;

@@ -20,6 +20,7 @@
 #include "ash/launcher/overflow_button.h"
 #include "ash/launcher/tabbed_launcher_button.h"
 #include "ash/root_window_controller.h"
+#include "ash/scoped_target_root_window.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
@@ -1496,6 +1497,8 @@ void LauncherView::ButtonPressed(views::Button* sender,
     return;
 
   {
+    ScopedTargetRootWindow scoped_target(
+        sender->GetWidget()->GetNativeView()->GetRootWindow());
     // Slow down activation animations if shift key is pressed.
     scoped_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
     if (event.IsShiftDown()) {
@@ -1595,6 +1598,9 @@ void LauncherView::ShowMenu(
   closing_event_time_ = base::TimeDelta();
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter->CreateMenu()));
+
+  ScopedTargetRootWindow scoped_target(
+      source->GetWidget()->GetNativeView()->GetRootWindow());
 
   // Determine the menu alignment dependent on the shelf.
   views::MenuItemView::AnchorPosition menu_alignment =

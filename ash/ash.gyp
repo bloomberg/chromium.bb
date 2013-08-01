@@ -175,6 +175,8 @@
         'root_window_controller.h',
         'rotator/screen_rotation.cc',
         'rotator/screen_rotation.h',
+        'scoped_target_root_window.cc',
+        'scoped_target_root_window.h',
         'screen_ash.cc',
         'screen_ash.h',
         'screensaver/screensaver_view.cc',
