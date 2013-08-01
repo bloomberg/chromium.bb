@@ -201,6 +201,10 @@ cr.define('cr.ui', function() {
           type == 'radio' || type == 'checkbox') {
         if (document.activeElement != node)
           document.activeElement.blur();
+
+        // Focus the current window so that if the active element is in another
+        // window, it is deactivated.
+        window.focus();
         event.preventDefault();
       }
     }, false);
