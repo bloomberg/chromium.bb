@@ -952,6 +952,7 @@
         'browser/managed_mode/managed_user_theme.h',
         'browser/media/audio_stream_indicator.cc',
         'browser/media/audio_stream_indicator.h',
+        'browser/media/desktop_media_picker.h',
         'browser/media/desktop_media_picker_model.cc',
         'browser/media/desktop_media_picker_model.h',
         'browser/media/media_capture_devices_dispatcher.cc',
