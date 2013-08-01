@@ -24,6 +24,7 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/cursor_utils.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/compositor_software_output_device.h"
 #include "content/renderer/gpu/delegated_compositor_output_surface.h"
@@ -59,7 +60,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
-#include "webkit/renderer/cursor_utils.h"
 
 #if defined(OS_ANDROID)
 #include "content/renderer/android/synchronous_compositor_factory.h"
@@ -1667,7 +1667,7 @@ void RenderWidget::scheduleAnimation() {
 void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {
   // TODO(darin): Eliminate this temporary.
   WebCursor cursor;
-  webkit_glue::InitializeCursorFromWebKitCursorInfo(&cursor, cursor_info);
+  InitializeCursorFromWebKitCursorInfo(&cursor, cursor_info);
   // Only send a SetCursor message if we need to make a change.
   if (!current_cursor_.IsEqual(cursor)) {
     current_cursor_ = cursor;

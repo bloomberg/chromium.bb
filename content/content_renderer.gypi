@@ -82,6 +82,8 @@
     'renderer/android/phone_number_detector.h',
     'renderer/android/synchronous_compositor_factory.cc',
     'renderer/android/synchronous_compositor_factory.h',
+    'renderer/cursor_utils.cc',
+    'renderer/cursor_utils.h',
     'renderer/device_orientation_dispatcher.cc',
     'renderer/device_orientation_dispatcher.h',
     'renderer/device_orientation/device_motion_event_pump.cc',

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/cursor_utils.h"
+#include "content/renderer/cursor_utils.h"
 
+#include "build/build_config.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "webkit/common/cursors/webcursor.h"
 
 using WebKit::WebCursorInfo;
 
-namespace webkit_glue {
+namespace content {
 
 bool GetWebKitCursorInfo(const WebCursor& cursor,
                          WebCursorInfo* webkit_cursor_info) {
@@ -39,5 +41,4 @@ void InitializeCursorFromWebKitCursorInfo(
   cursor->InitFromCursorInfo(web_cursor_info);
 }
 
-}  // namespce webkit_glue
-
+}  // namespce content

@@ -19,6 +19,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/browser_plugin/browser_plugin_compositing_helper.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
+#include "content/renderer/cursor_utils.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -37,7 +38,6 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/plugins/sad_plugin.h"
-#include "webkit/renderer/cursor_utils.h"
 
 #if defined (OS_WIN)
 #include "base/sys_info.h"
@@ -1364,7 +1364,7 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
                                                 guest_instance_id_,
                                                 plugin_rect_,
                                                 modified_event));
-  webkit_glue::GetWebKitCursorInfo(cursor_, &cursor_info);
+  GetWebKitCursorInfo(cursor_, &cursor_info);
   return true;
 }
 

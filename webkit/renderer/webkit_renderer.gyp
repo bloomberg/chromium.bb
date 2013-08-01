@@ -29,8 +29,6 @@
         'cpp_variant.h',
         'clipboard_utils.cc',
         'clipboard_utils.h',
-        'cursor_utils.cc',
-        'cursor_utils.h',
         'webkit_renderer_export.h',
         'webpreferences_renderer.cc',
         'webpreferences_renderer.h',
