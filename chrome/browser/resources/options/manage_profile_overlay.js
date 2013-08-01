@@ -58,15 +58,16 @@ cr.define('options', function() {
         CreateProfileOverlay.cancelCreateProfile();
       };
 
-      if (loadTimeData.getBoolean('managedUsersEnabled')) {
-        $('create-profile-managed-container').hidden = false;
-      }
+      $('create-profile-managed-container').hidden =
+          !loadTimeData.getBoolean('managedUsersEnabled');
 
       $('manage-profile-cancel').onclick =
           $('delete-profile-cancel').onclick = function(event) {
         OptionsPage.closeOverlay();
       };
       $('delete-profile-ok').onclick = function(event) {
+        if (self.profileInfo_ && self.profileInfo_.isManaged)
+          return;
         OptionsPage.closeOverlay();
         chrome.send('deleteProfile', [self.profileInfo_.filePath]);
       };
@@ -171,6 +172,7 @@ cr.define('options', function() {
     },
 
     /**
+     * Set an array of default icon URLs. These will be added to the grid that
      * the user will use to choose their profile icon.
      * @param {Array.<string>} iconURLs An array of icon URLs.
      * @private
@@ -302,6 +304,11 @@ cr.define('options', function() {
      * @private
      */
     submitCreateProfile_: function() {
+      // This is visual polish: the UI to access this should be disabled for
+      // managed users, and the back end will prevent user creation anyway.
+      if (this.profileInfo_ && this.profileInfo_.isManaged)
+        return;
+
       this.hideErrorBubble_('create');
       CreateProfileOverlay.updateCreateInProgress(true);
 
@@ -365,6 +372,10 @@ cr.define('options', function() {
      * @private
      */
     showDeleteDialog_: function(profileInfo) {
+      var currentProfile = BrowserOptions.getCurrentProfile();
+      if (currentProfile.isManaged)
+        return;
+
       ManageProfileOverlay.setProfileInfo(profileInfo, 'manage');
       $('manage-profile-overlay-create').hidden = true;
       $('manage-profile-overlay-manage').hidden = true;
@@ -422,6 +433,12 @@ cr.define('options', function() {
     // The signed-in email address of the current profile, or empty if they're
     // not signed in.
     signedInEmail_: '',
+
+    /** @override */
+    canShowPage: function() {
+      var profileInfo = BrowserOptions.getCurrentProfile();
+      return !profileInfo.isManaged;
+    },
 
     /**
      * Configures the overlay to the "create user" mode.
@@ -545,6 +562,8 @@ cr.define('options', function() {
     /**
      * Updates the signed-in or not-signed-in UI when in create mode. Called by
      * the handler in response to the 'requestCreateProfileUpdate' message.
+     * updateManagedUsersAllowed_ is expected to be called after this is, and
+     * will update additional UI elements.
      * @param {string} email The email address of the currently signed-in user.
      *     An empty string indicates that the user is not signed in.
      * @private
