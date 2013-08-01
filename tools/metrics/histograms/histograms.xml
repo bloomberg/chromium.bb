@@ -17773,6 +17773,8 @@ other types of suffix sets.
   <int value="6" label="LOCATION_UPDATE"/>
   <int value="7" label="EXTENSION_START"/>
   <int value="8" label="SHOW_WELCOME_TOAST"/>
+  <int value="9" label="STOPPED"/>
+  <int value="10" label="USER_SUPPRESSED"/>
 </enum>
 
 <enum name="HttpAuthCount" type="int">

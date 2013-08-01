@@ -165,8 +165,10 @@ var GoogleNowEvent = {
   LOCATION_UPDATE: 6,
   EXTENSION_START: 7,
   SHOW_WELCOME_TOAST: 8,
-  EVENTS_TOTAL: 9  // EVENTS_TOTAL is not an event; all new events need to be
-                   // added before it.
+  STOPPED: 9,
+  USER_SUPPRESSED: 10,
+  EVENTS_TOTAL: 11  // EVENTS_TOTAL is not an event; all new events need to be
+                    // added before it.
 };
 
 /**
@@ -769,9 +771,14 @@ function updateRunningState(
 
       shouldPollCards = true;
     } else {
-      if (!userRespondedToToast)
+      if (userRespondedToToast) {
+        recordEvent(GoogleNowEvent.USER_SUPPRESSED);
+      } else {
         shouldSetToastVisible = true;
+      }
     }
+  } else {
+    recordEvent(GoogleNowEvent.STOPPED);
   }
 
   setToastVisible(shouldSetToastVisible, function() {

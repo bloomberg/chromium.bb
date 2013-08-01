@@ -161,6 +161,9 @@ TEST_F(
       this.mockGlobals.expects(once()).recordEvent(
           GoogleNowEvent.EXTENSION_START);
 
+      this.mockGlobals.expects(once()).recordEvent(
+          GoogleNowEvent.STOPPED);
+
       expectInitialization(this.mockApis);
 
       expectStateMachineCalls(
@@ -201,6 +204,9 @@ TEST_F(
 
       this.mockGlobals.expects(once()).recordEvent(
           GoogleNowEvent.EXTENSION_START);
+
+      this.mockGlobals.expects(once()).recordEvent(
+          GoogleNowEvent.STOPPED);
 
       expectInitialization(this.mockApis);
 
@@ -314,6 +320,9 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_NoGeolocation', function() {
 
   this.mockGlobals.expects(once()).recordEvent(
         GoogleNowEvent.EXTENSION_START);
+
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.USER_SUPPRESSED);
 
   expectInitialization(this.mockApis);
 
