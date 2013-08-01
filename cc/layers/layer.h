@@ -363,8 +363,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // Constructs a LayerImpl of the correct runtime type for this Layer type.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
 
-  bool NeedsDisplayForTesting() const { return needs_display_; }
-  void ResetNeedsDisplayForTesting() { needs_display_ = false; }
+  bool NeedsDisplayForTesting() const { return !update_rect_.IsEmpty(); }
+  void ResetNeedsDisplayForTesting() { update_rect_ = gfx::RectF(); }
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation() const;
 
@@ -417,10 +417,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   }
 
   void reset_raster_scale_to_unknown() { raster_scale_ = 0.f; }
-
-  // This flag is set when layer need repainting/updating.
-  // TODO(enne): Remove this flag and just check update_rect_.
-  bool needs_display_;
 
   // This flag is set when the layer needs to push properties to the impl
   // side.

@@ -92,7 +92,6 @@ bool ContentLayer::Update(ResourceUpdateQueue* queue,
   }
 
   bool updated = TiledLayer::Update(queue, occlusion);
-  needs_display_ = false;
   return updated;
 }
 

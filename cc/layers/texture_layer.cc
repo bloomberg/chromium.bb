@@ -198,8 +198,6 @@ bool TextureLayer::Update(ResourceUpdateQueue* queue,
     }
   }
 
-  needs_display_ = false;
-
   // SetTextureMailbox could be called externally and the same mailbox used for
   // different textures.  Such callers notify this layer that the texture has
   // changed by calling SetNeedsDisplay, so check for that here.

@@ -22,10 +22,6 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
     ContentsScalingLayer::SetNeedsDisplayRect(dirty_rect);
   }
 
-  void ResetNeedsDisplay() {
-    needs_display_ = false;
-  }
-
   const gfx::RectF& LastNeedsDisplayRect() const {
     return last_needs_display_rect_;
   }

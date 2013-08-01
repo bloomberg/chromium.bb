@@ -29,8 +29,7 @@ scoped_refptr<Layer> Layer::Create() {
 }
 
 Layer::Layer()
-    : needs_display_(false),
-      needs_push_properties_(false),
+    : needs_push_properties_(false),
       num_dependents_need_push_properties_(false),
       stacking_order_changed_(false),
       layer_id_(s_next_layer_id++),
@@ -676,7 +675,6 @@ void Layer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
 
   SetNeedsPushProperties();
   update_rect_.Union(dirty_rect);
-  needs_display_ = true;
 
   if (DrawsContent())
     SetNeedsUpdate();
