@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--Action bar buttons for the Android app-->
+<!--Action bar buttons for the Android app's remote desktop viewer-->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/actionbar_keyboard"
             android:title="@string/actionbar_keyboard"

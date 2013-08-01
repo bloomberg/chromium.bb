@@ -7,14 +7,17 @@
 
     <!--Instructional blurbs-->
     <string name="inst_host_list">My computers:</string>
+    <string name="inst_empty_list">There are no computers to display</string>
 
     <!--Dialog box messages-->
+    <string name="progress_title">Starting remote desktop session</string>
     <string name="pin_entry_title">Authenticate to host</string>
     <string name="pin_entry_message">Enter the host\'s PIN</string>
     <string name="pin_entry_connect">Connect</string>
     <string name="pin_entry_cancel">Cancel</string>
 
     <!--Action bar buttons-->
+    <string name="actionbar_accountswitcher">Accounts</string>
     <string name="actionbar_hide">Hide</string>
     <string name="actionbar_keyboard">Keyboard</string>
 

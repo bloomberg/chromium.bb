@@ -1848,7 +1848,8 @@
             {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/menu',
               'files': [
-                'resources/actionbar.xml',
+                'resources/menu/chromoting_actionbar.xml',
+                'resources/menu/desktop_actionbar.xml',
               ],
             },
             {

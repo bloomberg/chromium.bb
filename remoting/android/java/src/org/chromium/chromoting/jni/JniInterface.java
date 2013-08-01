@@ -6,13 +6,17 @@ package org.chromium.chromoting.jni;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Looper;
 import android.text.InputType;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.chromium.chromoting.R;
@@ -70,14 +74,18 @@ public class JniInterface {
     /** Whether the native code is attempting a connection. */
     private static boolean sConnected = false;
 
-    /** The callback to signal upon successful connection. */
+    /** Callback to signal upon successful connection. */
     private static Runnable sSuccessCallback = null;
+
+    /** Dialog for reporting connection progress. */
+    private static ProgressDialog sProgressIndicator = null;
 
     /** Attempts to form a connection to the user-selected host. */
     public static void connectToHost(String username, String authToken,
             String hostJid, String hostId, String hostPubkey, Runnable successCallback) {
         synchronized(JniInterface.class) {
             if (!sLoaded) return;
+
             if (sConnected) {
                 disconnectFromHost();
             }
@@ -92,6 +100,11 @@ public class JniInterface {
     public static void disconnectFromHost() {
         synchronized(JniInterface.class) {
             if (!sLoaded || !sConnected) return;
+
+            if (sProgressIndicator != null) {
+                sProgressIndicator.dismiss();
+                sProgressIndicator = null;
+            }
         }
 
         disconnectNative();
@@ -109,7 +122,7 @@ public class JniInterface {
     /*
      * Entry points *from* the native code.
      */
-    /** The callback to signal whenever we need to redraw. */
+    /** Callback to signal whenever we need to redraw. */
     private static Runnable sRedrawCallback = null;
 
     /** Screen width of the video feed. */
@@ -123,14 +136,49 @@ public class JniInterface {
 
     /** Reports whenever the connection status changes. */
     private static void reportConnectionStatus(int state, int error) {
-        if (state == SUCCESSFUL_CONNECTION) {
-            sSuccessCallback.run();
+        if (state < SUCCESSFUL_CONNECTION && error == 0) {
+            // The connection is still being established, so we'll report the current progress.
+            synchronized (JniInterface.class) {
+                if (sProgressIndicator == null) {
+                    sProgressIndicator = ProgressDialog.show(sContext, sContext.
+                            getString(R.string.progress_title), sContext.getResources().
+                            getStringArray(R.array.protoc_states)[state], true, true,
+                            new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialog) {
+                                    Log.i("jniiface", "User canceled connection initiation");
+                                    disconnectFromHost();
+                                }
+                            });
+                }
+                else {
+                    sProgressIndicator.setMessage(
+                            sContext.getResources().getStringArray(R.array.protoc_states)[state]);
+                }
+            }
         }
+        else {
+            // The connection is complete or has failed, so we can lose the progress indicator.
+            synchronized (JniInterface.class) {
+                if (sProgressIndicator != null) {
+                    sProgressIndicator.dismiss();
+                    sProgressIndicator = null;
+                }
+            }
 
-        Toast.makeText(sContext, sContext.getResources().getStringArray(
-                R.array.protoc_states)[state] + (error != 0 ? ": " +
-                        sContext.getResources().getStringArray(R.array.protoc_errors)[error] : ""),
-                Toast.LENGTH_SHORT).show();
+            if (state == SUCCESSFUL_CONNECTION) {
+                Toast.makeText(sContext, sContext.getResources().
+                        getStringArray(R.array.protoc_states)[state], Toast.LENGTH_SHORT).show();
+
+                // Actually display the remote desktop.
+                sSuccessCallback.run();
+            } else {
+                Toast.makeText(sContext, sContext.getResources().getStringArray(
+                        R.array.protoc_states)[state] + (error == 0 ? "" : ": " +
+                        sContext.getResources().getStringArray(R.array.protoc_errors)[error]),
+                        Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     /** Prompts the user to enter a PIN. */
@@ -138,34 +186,58 @@ public class JniInterface {
         AlertDialog.Builder pinPrompt = new AlertDialog.Builder(sContext);
         pinPrompt.setTitle(sContext.getString(R.string.pin_entry_title));
         pinPrompt.setMessage(sContext.getString(R.string.pin_entry_message));
+        pinPrompt.setIcon(android.R.drawable.ic_lock_lock);
 
         final EditText pinEntry = new EditText(sContext);
         pinEntry.setInputType(
                 InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+        pinEntry.setImeOptions(EditorInfo.IME_ACTION_DONE);
         pinPrompt.setView(pinEntry);
 
         pinPrompt.setPositiveButton(
                 R.string.pin_entry_connect, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.i("jniiface", "User provided a PIN code");
-                    authenticationResponse(String.valueOf(pinEntry.getText()));
-                }
-            });
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.i("jniiface", "User provided a PIN code");
+                        authenticationResponse(String.valueOf(pinEntry.getText()));
+                    }
+                });
 
         pinPrompt.setNegativeButton(
                 R.string.pin_entry_cancel, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.i("jniiface", "User canceled pin entry prompt");
-                    Toast.makeText(sContext,
-                            sContext.getString(R.string.msg_pin_canceled),
-                            Toast.LENGTH_LONG).show();
-                    disconnectFromHost();
-                }
-            });
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.i("jniiface", "User canceled pin entry prompt");
+                        Toast.makeText(sContext,
+                                sContext.getString(R.string.msg_pin_canceled),
+                                Toast.LENGTH_LONG).show();
+                        disconnectFromHost();
+                    }
+                });
 
-        pinPrompt.show();
+        final AlertDialog pinDialog = pinPrompt.create();
+
+        pinEntry.setOnEditorActionListener(
+                new TextView.OnEditorActionListener() {
+                    @Override
+                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                        // The user pressed enter on the keypad (equivalent to the connect button).
+                        pinDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+                        pinDialog.dismiss();
+                        return true;
+                    }
+                });
+
+        pinDialog.setOnCancelListener(
+                new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        // The user backed out of the dialog (equivalent to the cancel button).
+                        pinDialog.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
+                    }
+                });
+
+        pinDialog.show();
     }
 
     /**

@@ -48,7 +48,7 @@ public class Desktop extends Activity {
     /** Called to initialize the action bar. */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.actionbar, menu);
+        getMenuInflater().inflate(R.menu.desktop_actionbar, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
