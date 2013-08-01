@@ -19,6 +19,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
@@ -96,10 +97,27 @@ void SetupProgressiveScanFieldTrial() {
   }
 }
 
+// Finds out if we're on a 2GB Parrot.
+//
+// This code reads and parses /etc/lsb-release. There are at least four other
+// places that open and parse /etc/lsb-release, and I wish I could fix the
+// mess.  At least this code is temporary.
+
+bool Is2GBParrot() {
+  base::FilePath path("/etc/lsb-release");
+  std::string contents;
+  if (!file_util::ReadFileToString(path, &contents))
+    return false;
+  if (contents.find("CHROMEOS_RELEASE_BOARD=parrot") == std::string::npos)
+    return false;
+  // There are 2GB and 4GB models.
+  return base::SysInfo::AmountOfPhysicalMemory() <= 2LL * 1024 * 1024 * 1024;
+}
+
 // Sets up field trial for measuring swap and CPU metrics after tab switch
 // and scroll events. crbug.com/253994
 void SetupSwapJankFieldTrial() {
-  const char name_of_experiment[] = "SwapJank64vs32";
+  const char name_of_experiment[] = "SwapJank64vs32Parrot";
 
   // Determine if this is a 32 or 64 bit build of Chrome.
   bool is_chrome_64 = sizeof(void*) == 8;
@@ -109,6 +127,9 @@ void SetupSwapJankFieldTrial() {
 
   // A 32 bit kernel requires 32 bit Chrome.
   DCHECK(is_kernel_64 || !is_chrome_64);
+
+  // Find out if we're on a 2GB Parrot.
+  bool is_parrot = Is2GBParrot();
 
   // All groups are either on or off.
   const base::FieldTrial::Probability kTotalProbability = 1;
@@ -120,11 +141,16 @@ void SetupSwapJankFieldTrial() {
   // Assign probability of 1 to this Chrome's group.  Assign 0 to all other
   // choices.
   trial->AppendGroup("kernel_64_chrome_64",
-                     is_kernel_64 && is_chrome_64 ? kTotalProbability : 0);
+                     is_parrot && is_kernel_64 && is_chrome_64 ?
+                     kTotalProbability : 0);
   trial->AppendGroup("kernel_64_chrome_32",
-                     is_kernel_64 && !is_chrome_64 ? kTotalProbability : 0);
+                     is_parrot && is_kernel_64 && !is_chrome_64 ?
+                     kTotalProbability : 0);
   trial->AppendGroup("kernel_32_chrome_32",
-                     !is_kernel_64 && !is_chrome_64 ? kTotalProbability : 0);
+                     is_parrot && !is_kernel_64 && !is_chrome_64 ?
+                     kTotalProbability : 0);
+  trial->AppendGroup("not_parrot",
+                     !is_parrot ? kTotalProbability : 0);
 
   // Announce the experiment to any listeners (especially important is the UMA
   // software, which will append the group names to UMA statistics).
@@ -152,8 +178,8 @@ void ExternalMetrics::Start() {
   valid_user_actions_.insert("Updater.ServerCertificateChanged");
   valid_user_actions_.insert("Updater.ServerCertificateFailed");
 
-  // Initialize field trials that don't need to read from files.
-  SetupSwapJankFieldTrial();
+  // Initialize here field trials that don't need to read from files.
+  // (None for the moment.)
 
   // Initialize any chromeos field trials that need to read from a file (e.g.,
   // those that have an upstart script determine their experimental group for
@@ -388,6 +414,7 @@ void ExternalMetrics::SetupFieldTrialsOnFileThread() {
   // Field trials that do not read from files can be initialized in
   // ExternalMetrics::Start() above.
   SetupProgressiveScanFieldTrial();
+  SetupSwapJankFieldTrial();
 
   ScheduleCollector();
 }
