@@ -43,17 +43,17 @@ namespace {
 
 class ScriptPromiseResolverTest : public testing::Test {
 public:
-    ScriptPromiseResolverTest() : m_scope(v8::Isolate::GetCurrent())
+    ScriptPromiseResolverTest()
+        : m_isolate(v8::Isolate::GetCurrent())
+        , m_handleScope(m_isolate)
+        , m_context(v8::Context::New(m_isolate))
+        , m_contextScope(m_context.newLocal(m_isolate))
     {
     }
 
     void SetUp()
     {
-        m_isolate = v8::Isolate::GetCurrent();
-        v8::Local<v8::Context> context = v8::Context::New(m_isolate);
-        m_context.set(m_isolate, context);
-        context->Enter();
-        m_perContextData = V8PerContextData::create(context);
+        m_perContextData = V8PerContextData::create(m_context.newLocal(m_isolate));
         m_perContextData->init();
         m_resolver = ScriptPromiseResolver::create();
         m_promise = m_resolver->promise();
@@ -64,7 +64,6 @@ public:
         m_resolver = 0;
         m_promise.clear();
         m_perContextData.clear();
-        m_context.newLocal(m_isolate)->Exit();
     }
 
     V8PromiseCustom::PromiseState state()
@@ -84,12 +83,13 @@ public:
     }
 
 protected:
+    v8::Isolate* m_isolate;
+    v8::HandleScope m_handleScope;
+    ScopedPersistent<v8::Context> m_context;
+    v8::Context::Scope m_contextScope;
     RefPtr<ScriptPromiseResolver> m_resolver;
     ScriptObject m_promise;
-    v8::HandleScope m_scope;
     OwnPtr<V8PerContextData> m_perContextData;
-    ScopedPersistent<v8::Context> m_context;
-    v8::Isolate* m_isolate;
 };
 
 TEST_F(ScriptPromiseResolverTest, initialState)
