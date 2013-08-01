@@ -1383,6 +1383,14 @@ crbug.com/261998 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
+crbug.com/266798 [ Win ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ ImageOnlyFailure ]
+crbug.com/266798 [ Win ] transforms/3d/point-mapping/3d-point-mapping-origins.html [ ImageOnlyFailure ]
+crbug.com/266798 [ Win ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ ImageOnlyFailure ]
+crbug.com/266798 [ Win ] transforms/3d/point-mapping/3d-point-mapping.html [ ImageOnlyFailure ]
+crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ ImageOnlyFailure ]
+crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/canvas-text-alignment.html [ ImageOnlyFailure ]
+crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
+
 Bug(ccameron) [ Mac ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ NeedsRebaseline ]
 Bug(ccameron) [ Mac ] compositing/overflow/nested-scrolling.html [ NeedsRebaseline ]
 Bug(ccameron) [ Mac ] compositing/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ NeedsRebaseline ]
