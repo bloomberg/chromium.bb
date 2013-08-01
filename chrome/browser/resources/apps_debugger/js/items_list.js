@@ -258,8 +258,8 @@ cr.define('apps_dev_tool', function() {
       else
         this.setTerminatedReloadLink_(item, node);
 
-      // Set remove button handler.
-      this.setRemoveButton_(item, node);
+      // Set delete button handler.
+      this.setDeleteButton_(item, node);
 
       // First get the item id.
       var idLabel = node.querySelector('.extension-id');
@@ -360,17 +360,46 @@ cr.define('apps_dev_tool', function() {
     },
 
     /**
-     * Sets the remove button handler.
+     * Shows the delete confirmation dialog and will trigger the deletion
+     * if the user confirms deletion.
+     * @param {!Object} item Information about the item being deleted.
+     * @private
+     */
+    showDeleteConfirmationDialog: function(item) {
+      var message;
+      if (item.isApp)
+        message = loadTimeData.getString('deleteConfirmationMessageApp');
+      else
+        message = loadTimeData.getString('deleteConfirmationMessageExtension');
+
+      alertOverlay.setValues(
+          loadTimeData.getString('deleteConfirmationTitle'),
+          message,
+          loadTimeData.getString('deleteConfirmationDeleteButton'),
+          loadTimeData.getString('cancel'),
+          function() {
+            AppsDevTool.showOverlay(null);
+            var options = {showConfirmDialog: false};
+            chrome.management.uninstall(item.id, options);
+          },
+          function() {
+            AppsDevTool.showOverlay(null);
+          });
+
+      AppsDevTool.showOverlay($('alertOverlay'));
+    },
+
+    /**
+     * Sets the delete button handler.
      * @param {!Object} item A dictionary of item metadata.
      * @param {!HTMLElement} el HTML element containing all items.
      * @private
      */
-    setRemoveButton_: function(item, el) {
+    setDeleteButton_: function(item, el) {
       var deleteLink = el.querySelector('.delete-link');
       deleteLink.addEventListener('click', function(e) {
-        var options = {showConfirmDialog: false};
-        chrome.management.uninstall(item.id, options);
-      });
+        this.showDeleteConfirmationDialog(item);
+      }.bind(this));
     },
 
     /**

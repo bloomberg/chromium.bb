@@ -5568,6 +5568,18 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_APPS_DEVTOOL_UPDATING" desc="Text for the word 'Updateing...' when the user clicked on 'Update Now'.">
         Updating...
       </message>
+      <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_BUTTON" desc="Text of  the delete button in the apps/extension delete confirmation dialog.">
+        Delete
+      </message>
+      <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_TITLE" desc="Text of the title of the apps/extension delete confirmation dialog.">
+        Delete
+      </message>
+      <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_APP" desc="Text of the message of the apps/extension delete confirmation dialog in case the user is deleting an app.">
+        Do you really want to delete this application?
+      </message>
+      <message name="IDS_APPS_DEVTOOL_DELETE_CONFIRMATION_MESSAGE_EXTENSION" desc="Text of the message of the apps/extension delete confirmation dialog in case the user is deleting an extension.">
+        Do you really want to delete this extension?
+      </message>
       <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
         Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> instead?
       </message>
