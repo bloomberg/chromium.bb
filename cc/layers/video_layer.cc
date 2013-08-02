@@ -22,4 +22,14 @@ scoped_ptr<LayerImpl> VideoLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
   return VideoLayerImpl::Create(tree_impl, id(), provider_).PassAs<LayerImpl>();
 }
 
+bool VideoLayer::Update(ResourceUpdateQueue* queue,
+                        const OcclusionTracker* occlusion) {
+  // Video layer doesn't update any resources from the main thread side,
+  // but repaint rects need to be sent to the VideoLayerImpl via commit.
+  //
+  // This is the inefficient legacy redraw path for videos.  It's better to
+  // communicate this directly to the VideoLayerImpl.
+  return !update_rect_.IsEmpty();
+}
+
 }  // namespace cc

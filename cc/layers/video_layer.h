@@ -24,6 +24,8 @@ class CC_EXPORT VideoLayer : public Layer {
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
 
+  virtual bool Update(ResourceUpdateQueue* queue,
+                      const OcclusionTracker* occlusion) OVERRIDE;
  private:
   explicit VideoLayer(VideoFrameProvider* provider);
   virtual ~VideoLayer();

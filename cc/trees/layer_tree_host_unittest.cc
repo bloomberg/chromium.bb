@@ -16,6 +16,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer.h"
+#include "cc/layers/video_layer.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -33,6 +34,7 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_scrollbar_layer.h"
+#include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/occlusion_tracker_test_common.h"
@@ -4020,6 +4022,56 @@ TEST_F(LayerTreeHostTestTreeActivationCallback, DirectRenderer) {
 TEST_F(LayerTreeHostTestTreeActivationCallback, DelegatingRenderer) {
   RunTest(true, true, true);
 }
+
+// VideoLayer must support being invalidated and then passing that along
+// to the compositor thread, even though no resources are updated in
+// response to that invalidation.
+class LayerTreeHostTestVideoLayerInvalidate : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestVideoLayerInvalidate() : num_commits_(0), num_draws_(0) {}
+
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostTest::SetupTree();
+    video_layer_ = VideoLayer::Create(&provider_);
+    video_layer_->SetBounds(gfx::Size(10, 10));
+    video_layer_->SetIsDrawable(true);
+    layer_tree_host()->root_layer()->AddChild(video_layer_);
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    // One initial commit.
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    // After commit, invalidate the video layer.  This should cause a commit.
+    if (layer_tree_host()->source_frame_number() == 1)
+     video_layer_->SetNeedsDisplay();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    num_draws_++;
+    if (impl->active_tree()->source_frame_number() == 1)
+      EndTest();
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    num_commits_++;
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_GE(2, num_commits_);
+    EXPECT_GE(2, num_draws_);
+  }
+
+ private:
+  FakeVideoFrameProvider provider_;
+  scoped_refptr<VideoLayer> video_layer_;
+  int num_commits_;
+  int num_draws_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestVideoLayerInvalidate);
 
 }  // namespace
 }  // namespace cc
