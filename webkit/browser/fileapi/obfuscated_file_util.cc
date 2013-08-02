@@ -27,7 +27,6 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/sandbox_isolated_origin_database.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/browser/fileapi/timed_task_helper.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/database/database_identifier.h"
@@ -342,15 +341,6 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
       url.origin(), url.type(), true);
   if (!db)
     return base::PLATFORM_FILE_ERROR_FAILED;
-
-  // TODO(kinuko): Remove this dirty hack when we fully support directory
-  // operations or clean up the code if we decided not to support directory
-  // operations. (http://crbug.com/161442)
-  if ((url.type() == kFileSystemTypeSyncable ||
-       url.type() == kFileSystemTypeSyncableForInternalSync) &&
-      !sync_file_system::IsSyncFSDirectoryOperationEnabled()) {
-    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  }
 
   FileId file_id;
   if (db->GetFileWithPath(url.path(), &file_id)) {
