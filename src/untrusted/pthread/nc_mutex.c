@@ -211,6 +211,11 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
      * modification of mutex_state.  The full memory barrier from the
      * atomic decrement acts as a release memory barrier for the
      * following modification.
+     *
+     * TODO(mseaborn): Change the following store to use an atomic
+     * store builtin when this is available in all the NaCl
+     * toolchains.  For now, PNaCl converts the volatile store to an
+     * atomic store.
      */
     mutex->mutex_state = UNLOCKED;
     int woken;

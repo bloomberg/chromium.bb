@@ -66,7 +66,7 @@ typedef struct {
    * mutex_state is either UNLOCKED (0), LOCKED_WITHOUT_WAITERS (1) or
    * LOCKED_WITH_WAITERS (2).  See "enum MutexState".
    */
-  int mutex_state;
+  volatile int mutex_state;
 
   /**
    * The kind of mutex:
