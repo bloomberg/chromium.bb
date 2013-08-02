@@ -538,9 +538,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoLeakFromOffTheRecord) {
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-// crbug.com/176291
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       DISABLED_IFramesWithFreshPosition) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   set_html_for_tests("/geolocation/iframes_different_origin.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
@@ -622,9 +620,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckGeoposition(cached_position_latitude, cached_position_lognitude);
 }
 
-// crbug.com/176291
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       DISABLED_CancelPermissionForFrame) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, CancelPermissionForFrame) {
   set_html_for_tests("/geolocation/iframes_different_origin.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
@@ -718,8 +714,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   CheckGeoposition(final_position_latitude, final_position_longitude);
 }
 
-// crbug.com/176291
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_TabDestroyed) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
   set_html_for_tests("/geolocation/tab_destroyed.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(3);
