@@ -104,20 +104,6 @@ base::DictionaryValue* ReadManifest(const base::FilePath& unpack_path) {
   return static_cast<base::DictionaryValue*>(root.release());
 }
 
-// Deletes a path if it exists, and then creates a directory there.
-// Returns true if and only if these operations were successful.
-// This method doesn't take any special steps to prevent files from
-// being inserted into the target directory by another process or thread.
-bool MakeEmptyDirectory(const base::FilePath& path) {
-  if (base::PathExists(path)) {
-    if (!base::DeleteFile(path, true))
-      return false;
-  }
-  if (!file_util::CreateDirectory(path))
-    return false;
-  return true;
-}
-
 }  // namespace.
 
 ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
@@ -157,23 +143,17 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
     error_ = kInvalidId;
     return;
   }
-  // We want the temporary directory to be unique and yet predictable, so
-  // we can easily find the package in an end user machine.
-  const std::string dir(
-      base::StringPrintf("CRX_%s", base::HexEncode(hash, 6).c_str()));
-  unpack_path_ = path.DirName().AppendASCII(dir.c_str());
-  if (!MakeEmptyDirectory(unpack_path_)) {
-    unpack_path_.clear();
+  if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""),
+                                         &unpack_path_)) {
     error_ = kUnzipPathError;
     return;
   }
   if (validator.delta()) {  // Package is a diff package.
     // We want a different temp directory for the delta files; we'll put the
     // patch output into unpack_path_.
-    std::string dir(
-        base::StringPrintf("CRX_%s_diff", base::HexEncode(hash, 6).c_str()));
-    base::FilePath unpack_diff_path = path.DirName().AppendASCII(dir.c_str());
-    if (!MakeEmptyDirectory(unpack_diff_path)) {
+    base::FilePath unpack_diff_path;
+    if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""),
+                                           &unpack_diff_path)) {
       error_ = kUnzipPathError;
       return;
     }
