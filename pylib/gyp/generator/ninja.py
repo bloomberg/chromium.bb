@@ -908,8 +908,7 @@ class NinjaWriter:
     extra_bindings = []
     output = self.ComputeOutput(spec)
     if not self.is_mac_bundle:
-      extra_bindings.append(('postbuilds',
-                             self.GetPostbuildCommand(spec, output, output)))
+      self.AppendPostbuildVariable(extra_bindings, spec, output, output)
 
     is_executable = spec['type'] == 'executable'
     if self.flavor == 'mac':
@@ -992,10 +991,8 @@ class NinjaWriter:
     elif spec['type'] == 'static_library':
       self.target.binary = self.ComputeOutput(spec)
       variables = []
-      postbuild = self.GetPostbuildCommand(
-          spec, self.target.binary, self.target.binary)
-      if postbuild:
-        variables.append(('postbuilds', postbuild))
+      self.AppendPostbuildVariable(variables, spec, self.target.binary,
+                                   self.target.binary)
       if self.xcode_settings:
         libtool_flags = self.xcode_settings.GetLibtoolflags(config_name)
         if libtool_flags:
@@ -1019,11 +1016,9 @@ class NinjaWriter:
     assert self.is_mac_bundle
     package_framework = spec['type'] in ('shared_library', 'loadable_module')
     output = self.ComputeMacBundleOutput()
-    postbuild = self.GetPostbuildCommand(spec, output, self.target.binary,
-                                         is_command_start=not package_framework)
     variables = []
-    if postbuild:
-      variables.append(('postbuilds', postbuild))
+    self.AppendPostbuildVariable(variables, spec, output, self.target.binary,
+                                 is_command_start=not package_framework)
     if package_framework:
       variables.append(('version', self.xcode_settings.GetFrameworkVersion()))
       self.ninja.build(output, 'package_framework', mac_bundle_depends,
@@ -1054,8 +1049,14 @@ class NinjaWriter:
       postbuild_settings['CHROMIUM_STRIP_SAVE_FILE'] = strip_save_file
     return self.GetSortedXcodeEnv(additional_settings=postbuild_settings)
 
-  def GetPostbuildCommand(self, spec, output, output_binary,
-                          is_command_start=False):
+  def AppendPostbuildVariable(self, variables, spec, output, binary,
+                              is_command_start=False):
+    """Adds a 'postbuild' variable if there is a postbuild for |output|."""
+    postbuild = self.GetPostbuildCommand(spec, output, binary, is_command_start)
+    if postbuild:
+      variables.append(('postbuilds', postbuild))
+
+  def GetPostbuildCommand(self, spec, output, output_binary, is_command_start):
     """Returns a shell command that runs all the postbuilds, and removes
     |output| if any of them fails. If |is_command_start| is False, then the
     returned string will start with ' && '."""
