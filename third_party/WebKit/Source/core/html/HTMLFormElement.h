@@ -140,6 +140,8 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 
+    virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
+
     virtual void copyNonAttributePropertiesFromElement(const Element&) OVERRIDE;
 
     void submit(Event*, bool activateSubmitButton, bool processingUserGesture, FormSubmissionTrigger);

@@ -427,23 +427,14 @@ void HTMLObjectElement::updateDocNamedItem()
             isNamedItem = false;
         child = child->nextSibling();
     }
-    if (isNamedItem != wasNamedItem && inDocument() && !isInShadowTree() && document()->isHTMLDocument()) {
+    if (isNamedItem != wasNamedItem && document()->isHTMLDocument()) {
         HTMLDocument* document = toHTMLDocument(this->document());
-
-        const AtomicString& id = getIdAttribute();
-        if (!id.isEmpty()) {
-            if (isNamedItem)
-                document->addNamedDocumentItem(id, this);
-            else
-                document->removeNamedDocumentItem(id, this);
-        }
-
-        const AtomicString& name = getNameAttribute();
-        if (!name.isEmpty()) {
-            if (isNamedItem)
-                document->addNamedDocumentItem(name, this);
-            else
-                document->removeNamedDocumentItem(name, this);
+        if (isNamedItem) {
+            document->addNamedItem(getNameAttribute());
+            document->addExtraNamedItem(getIdAttribute());
+        } else {
+            document->removeNamedItem(getNameAttribute());
+            document->removeExtraNamedItem(getIdAttribute());
         }
     }
     m_docNamedItem = isNamedItem;

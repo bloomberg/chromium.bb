@@ -41,6 +41,9 @@ private:
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+    virtual void removedFrom(ContainerNode*) OVERRIDE;
+
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
     virtual RenderObject* createRenderer(RenderStyle*);
 
@@ -49,6 +52,7 @@ private:
     virtual bool loadedNonEmptyDocument() const OVERRIDE { return m_didLoadNonEmptyDocument; }
     virtual void didLoadNonEmptyDocument() OVERRIDE { m_didLoadNonEmptyDocument = true; }
 
+    AtomicString m_name;
     bool m_didLoadNonEmptyDocument;
 };
 
