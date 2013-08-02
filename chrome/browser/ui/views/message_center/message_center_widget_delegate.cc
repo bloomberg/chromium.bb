@@ -115,8 +115,8 @@ gfx::Size MessageCenterWidgetDelegate::GetMaximumSize() {
 
 int MessageCenterWidgetDelegate::GetHeightForWidth(int width) {
   int height = MessageCenterView::GetHeightForWidth(width);
-  return (pos_info_.max_height != 0) ? std::min(height, pos_info_.max_height)
-                                     : height;
+  return (pos_info_.max_height != 0) ?
+    std::min(height, pos_info_.max_height - border_insets_.height()) : height;
 }
 
 bool MessageCenterWidgetDelegate::AcceleratorPressed(

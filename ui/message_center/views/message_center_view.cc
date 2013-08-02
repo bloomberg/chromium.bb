@@ -376,7 +376,8 @@ void NoNotificationMessageView::Layout() {
 class MessageListView : public views::View,
                         public views::BoundsAnimatorObserver {
  public:
-  explicit MessageListView(MessageCenterView* message_center_view);
+  explicit MessageListView(MessageCenterView* message_center_view,
+                           bool top_down);
   virtual ~MessageListView();
 
   void AddNotificationAt(views::View* view, int i);
@@ -402,12 +403,20 @@ class MessageListView : public views::View,
  private:
   // Returns the actual index for child of |index|.
   // MessageListView allows to slide down upper notifications, which means
-  // that the upper ones should come above the lower ones. To achieve this,
-  // inversed order is adopted. The top most notification is the last child,
-  // and the bottom most notification is the first child.
+  // that the upper ones should come above the lower ones if top_down is not
+  // enabled. To achieve this, inversed order is adopted. The top most
+  // notification is the last child, and the bottom most notification is the
+  // first child.
   int GetActualIndex(int index);
   bool IsValidChild(views::View* child);
   void DoUpdateIfPossible();
+
+  // Animates all notifications below target upwards to align with the top of
+  // the last closed notification.
+  void AnimateNotificationsBelowTarget();
+  // Animates all notifications above target downwards to align with the top of
+  // the last closed notification.
+  void AnimateNotificationsAboveTarget();
 
   // Schedules animation for a child to the specified position. Returns false
   // if |child| will disappear after the animation.
@@ -425,6 +434,7 @@ class MessageListView : public views::View,
   int fixed_height_;
   bool has_deferred_task_;
   bool clear_all_started_;
+  bool top_down_;
   std::set<views::View*> adding_views_;
   std::set<views::View*> deleting_views_;
   std::set<views::View*> deleted_when_done_;
@@ -435,12 +445,14 @@ class MessageListView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(MessageListView);
 };
 
-MessageListView::MessageListView(MessageCenterView* message_center_view)
+MessageListView::MessageListView(MessageCenterView* message_center_view,
+                                 bool top_down)
     : message_center_view_(message_center_view),
       reposition_top_(-1),
       fixed_height_(0),
       has_deferred_task_(false),
       clear_all_started_(false),
+      top_down_(top_down),
       weak_ptr_factory_(this) {
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
@@ -673,30 +685,68 @@ void MessageListView::DoUpdateIfPossible() {
     return;
   }
 
+  if (top_down_)
+    AnimateNotificationsBelowTarget();
+  else
+    AnimateNotificationsAboveTarget();
+
+  adding_views_.clear();
+  deleting_views_.clear();
+}
+
+void MessageListView::AnimateNotificationsBelowTarget() {
+  int last_index = -1;
+  for (int i = 0; i < child_count(); ++i) {
+    views::View* child = child_at(i);
+    if (!IsValidChild(child)) {
+      AnimateChild(child, child->y(), child->height());
+    } else if (reposition_top_ < 0 || child->y() > reposition_top_) {
+      // Find first notification below target (or all notifications if no
+      // target).
+      last_index = i;
+      break;
+    }
+  }
+  if (last_index > 0) {
+    int between_items =
+        kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
+    int top = (reposition_top_ > 0) ? reposition_top_ : GetInsets().top();
+
+    for (int i = last_index; i < child_count(); ++i) {
+      // Animate notifications below target upwards.
+      views::View* child = child_at(i);
+      if (AnimateChild(child, top, child->height()))
+        top += child->height() + between_items;
+    }
+  }
+}
+
+void MessageListView::AnimateNotificationsAboveTarget() {
   int last_index = -1;
   for (int i = child_count() - 1; i >= 0; --i) {
     views::View* child = child_at(i);
     if (!IsValidChild(child)) {
       AnimateChild(child, child->y(), child->height());
     } else if (reposition_top_ < 0 || child->y() < reposition_top_) {
+      // Find first notification above target (or all notifications if no
+      // target).
       last_index = i;
       break;
     }
   }
   if (last_index > 0) {
-    int bottom = (reposition_top_ > 0) ?
-        reposition_top_ + child_at(last_index)->height() :
-        GetHeightForWidth(width()) - GetInsets().bottom();
     int between_items =
         kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
+    int bottom = (reposition_top_ > 0)
+                     ? reposition_top_ + child_at(last_index)->height()
+                     : GetHeightForWidth(width()) - GetInsets().bottom();
     for (int i = last_index; i >= 0; --i) {
+      // Animate notifications above target downwards.
       views::View* child = child_at(i);
       if (AnimateChild(child, bottom - child->height(), child->height()))
         bottom -= child->height() + between_items;
     }
   }
-  adding_views_.clear();
-  deleting_views_.clear();
 }
 
 bool MessageListView::AnimateChild(views::View* child, int top, int height) {
@@ -751,10 +801,10 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
                                      MessageCenterTray* tray,
                                      int max_height,
                                      bool initially_settings_visible,
-                                     bool buttons_on_top)
+                                     bool top_down)
     : message_center_(message_center),
       tray_(tray),
-      buttons_on_top_(buttons_on_top),
+      top_down_(top_down),
       settings_visible_(initially_settings_visible) {
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
@@ -773,7 +823,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
     scroller_->layer()->SetMasksToBounds(true);
   }
 
-  message_list_view_ = new MessageListView(this);
+  message_list_view_ = new MessageListView(this, top_down);
   no_notifications_message_view_ = new NoNotificationMessageView();
   // Set the default visibility to false, otherwise the notification has slide
   // in animation when the center is shown.
@@ -879,18 +929,18 @@ void MessageCenterView::Layout() {
   if (settings_transition_animation_ &&
       settings_transition_animation_->is_animating() &&
       settings_transition_animation_->current_part_index() == 0) {
-    if (!buttons_on_top_)
+    if (!top_down_)
       button_bar_->SetBounds(
           0, height() - button_height, width(), button_height);
     return;
   }
 
   scroller_->SetBounds(0,
-                       buttons_on_top_ ? button_height : 0,
+                       top_down_ ? button_height : 0,
                        width(),
                        height() - button_height);
   settings_view_->SetBounds(0,
-                            buttons_on_top_ ? button_height : 0,
+                            top_down_ ? button_height : 0,
                             width(),
                             height() - button_height);
 
@@ -901,8 +951,14 @@ void MessageCenterView::Layout() {
     is_scrollable = settings_view_->IsScrollable();
 
   if (is_scrollable && !button_bar_->border()) {
+    // Draw separator line on the top of the button bar if it is on the bottom
+    // or draw it at the bottom if the bar is on the top.
     button_bar_->set_border(views::Border::CreateSolidSidedBorder(
-        1, 0, 0, 0, kFooterDelimiterColor));
+        top_down_ ? 0 : 1,
+        0,
+        top_down_ ? 1 : 0,
+        0,
+        kFooterDelimiterColor));
     button_bar_->SchedulePaint();
   } else if (!is_scrollable && button_bar_->border()) {
     button_bar_->set_border(NULL);
@@ -910,7 +966,7 @@ void MessageCenterView::Layout() {
   }
 
   button_bar_->SetBounds(0,
-                         buttons_on_top_ ? 0 : height() - button_height,
+                         top_down_ ? 0 : height() - button_height,
                          width(),
                          button_height);
   if (GetWidget())

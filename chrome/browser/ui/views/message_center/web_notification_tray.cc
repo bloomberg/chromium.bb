@@ -35,6 +35,9 @@ const int kSystemTrayWidth = 16;
 const int kSystemTrayHeight = 16;
 const int kNumberOfSystemTraySprites = 10;
 
+// Number of pixels the message center is offset from the mouse.
+const int kMouseOffset = 5;
+
 gfx::ImageSkia* GetIcon(int unread_count, bool is_quiet_mode) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int resource_id = IDR_NOTIFICATION_TRAY_EMPTY;
@@ -268,14 +271,20 @@ PositionInfo WebNotificationTray::GetPositionInfo() {
   pos_info.max_height = work_area.height();
 
   if (work_area.Contains(mouse_click_point_)) {
-    pos_info.max_height -= std::abs(mouse_click_point_.y() - corner.y());
-
     // Message center is in the work area. So position it few pixels above the
     // mouse click point if alignemnt is towards bottom and few pixels below if
     // alignment is towards top.
-    pos_info.inital_anchor_point
-        .set_y(mouse_click_point_.y() +
-               (pos_info.message_center_alignment & ALIGNMENT_BOTTOM ? -5 : 5));
+    pos_info.inital_anchor_point.set_y(
+        mouse_click_point_.y() +
+        (pos_info.message_center_alignment & ALIGNMENT_BOTTOM ? -kMouseOffset
+                                                              : kMouseOffset));
+
+    // Subtract the distance between mouse click point and the closest
+    // (insetted) edge from the max height to show the message center within the
+    // (insetted) work area bounds. Also subtract the offset from the mouse
+    // click point we added earlier.
+    pos_info.max_height -=
+        std::abs(mouse_click_point_.y() - corner.y()) + kMouseOffset;
   }
   return pos_info;
 }
