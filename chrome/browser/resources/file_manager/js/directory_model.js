@@ -89,7 +89,6 @@ function DirectoryModel(root, singleSelection, fileFilter, fileWatcher,
   this.scanFailures_ = 0;
   this.driveEnabled_ = isDriveEnabled;
   this.showSpecialSearchRoots_ = showSpecialSearchRoots;
-  this.closureQueue_ = [];
 
   this.fileFilter_ = fileFilter;
   this.fileFilter_.addEventListener('changed',
@@ -102,6 +101,7 @@ function DirectoryModel(root, singleSelection, fileFilter, fileWatcher,
 
   // TODO(hidehiko): Move this variable to VolumeManager.
   this.rootsList_ = new cr.ui.ArrayDataModel([]);
+  this.taskQueue_ = new AsyncUtil.Queue();
   this.volumeManager_ = volumeManager;
 
   this.fileWatcher_ = fileWatcher;
@@ -181,42 +181,19 @@ DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES = [
 DirectoryModel.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
- * Enqueues an asynchronous closure. Guarantees that the closured are called
- * sequentially in order they are enqueued. Each of the closures added to the
- * queue must call a callback once handling is completed.
- *
- * @param {function(function())} handler Closure.
- * @private
- */
-DirectoryModel.prototype.enqueueClosure_ = function(handler) {
-  var processQueue = function() {
-    if (this.closureQueue_.length == 0) {
-      this.closureQueueBusy_ = false;
-      return;
-    }
-    var handler = this.closureQueue_.shift();
-    this.closureQueueBusy_ = true;
-    handler(function() {
-      setTimeout(function() {
-        processQueue();
-      }.bind(this), 0);
-    }.bind(this));
-  }.bind(this);
-  this.closureQueue_.push(handler.bind(this));
-  if (!this.closureQueueBusy_)
-    processQueue();
-};
-
-/**
  * Fills the root list and starts tracking changes.
  */
 DirectoryModel.prototype.start = function() {
-  this.volumeManager_.addEventListener('change',
-      this.enqueueClosure_.bind(this, this.onMountChanged_));
-  this.volumeManager_.addEventListener('drive-status-changed',
-      this.enqueueClosure_.bind(this, this.onDriveStatusChanged_));
-
-  this.enqueueClosure_(this.updateRoots_);
+  // TODO(hidehiko): Integrate these callback into VolumeManager.
+  this.volumeManager_.addEventListener(
+      'change',
+      this.taskQueue_.run.bind(
+          this.taskQueue_, this.onMountChanged_.bind(this)));
+  this.volumeManager_.addEventListener(
+      'drive-status-changed',
+      this.taskQueue_.run.bind(
+          this.taskQueue_, this.onDriveStatusChanged_.bind(this)));
+  this.taskQueue_.run(this.updateRoots_.bind(this));
 };
 
 /**
@@ -246,7 +223,7 @@ DirectoryModel.prototype.setDriveEnabled = function(enabled) {
     this.volumeManager_.mountDrive(function() {}, function() {});
 
   this.driveEnabled_ = enabled;
-  this.enqueueClosure_(this.updateRoots_);
+  this.taskQueue_.run(this.updateRoots_.bind(this));
   if (!enabled && (this.getCurrentRootType() == RootType.DRIVE ||
                    this.getCurrentRootType() == RootType.DRIVE_OFFLINE))
     this.changeDirectory(this.getDefaultDirectory());
