@@ -40,30 +40,11 @@ __FBSDID("$FreeBSD$");
 #define __SCTP_SHA1_h__
 
 #include <sys/types.h>
-
-#if !defined(SSL_USE_OPENSSL) && !defined(SSL_USE_NSS)
-#if defined(WIN32)
-
-#define SCTP_USE_SCTP_SHA1 1
-
-#else  // defined(WIN32)
-
-#if defined(HAVE_OPENSSL_SSL_H)
-#define SSL_USE_OPENSSL 1
-#elif defined(HAVE_NSS_SSL_H)
-#define SSL_USE_NSS 1
-#else
-#define SCTP_USE_SCTP_SHA1
-#endif
-
-#endif  // !defined(WIN32)
-#endif
-
-#if defined(SSL_USE_NSS)
+#ifdef SCTP_USE_NSS_SHA1
 #include <netinet/sctp_nss_sha1.h>
-#elif defined(SSL_USE_OPENSSL)
+#elif SCTP_USE_OPENSSL_SHA1
 #include <netinet/sctp_openssl_sha1.h>
-#else  // SCTP_USE_SCTP_SHA1
+#else  // USE_SCTP_SHA1
 struct sha1_context {
 	unsigned int A;
 	unsigned int B;
@@ -118,5 +99,5 @@ void SHA1_Update(struct sha1_context *, const unsigned char *, int);
 void SHA1_Final(unsigned char *, struct sha1_context *);
 
 #endif				/* _KERNEL */
-#endif        /* !defined(SSL_USE_OPENSSL) && !defined(SSL_USE_NSS) */
-#endif        /* __SCTP_SHA1_h__ */
+#endif
+#endif

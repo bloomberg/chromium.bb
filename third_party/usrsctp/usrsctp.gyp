@@ -7,6 +7,7 @@
   },
   'target_defaults': {
     'defines': [
+      'INET',
       'SCTP_PROCESS_LEVEL_LOCKS',
       'SCTP_SIMPLE_ALLOCATOR',
       '__Userspace__',
@@ -31,27 +32,19 @@
     'conditions': [
       ['use_openssl==1', {
         'defines': [
-          'SSL_USE_OPENSSL',
+          'SCTP_USE_OPENSSL_SHA1',
         ],
         'dependencies': [
-          '<(DEPTH)/third_party/openssl/openssl.gyp:openssl',
-        ],
-        'sources': [
-          'overrides/usrsctplib/netinet/sctp_openssl_sha1.h',
+          '../../third_party/openssl/openssl.gyp:openssl',
         ],
       },
       {  # else use_openssl==0, use NSS.
         'defines' : [
-          'SSL_USE_NSS',
           'SCTP_USE_NSS_SHA1',
-        ],
-        'sources': [
-          'overrides/usrsctplib/netinet/sctp_nss_sha1.c',
-          'overrides/usrsctplib/netinet/sctp_nss_sha1.h',
         ],
         'conditions': [
           ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
-            'dependencies': [  # The system.gyp:ssl dependency includes nss
+            'dependencies': [
               '<(DEPTH)/build/linux/system.gyp:ssl',
             ],
           }],
@@ -73,7 +66,9 @@
         'overrides/usrsctplib/netinet/sctp_auth.h',
         'overrides/usrsctplib/netinet/sctp_os.h',
         'overrides/usrsctplib/netinet/sctp_os_userspace.h',
-        'overrides/usrsctplib/netinet/sctp_sha1.h',
+        'overrides/usrsctplib/netinet/sctp_nss_sha1.c',
+        'overrides/usrsctplib/netinet/sctp_nss_sha1.h',
+
         'usrsctplib/usrsctp.h',
         'usrsctplib/user_atomic.h',
         'usrsctplib/user_environment.c',
@@ -102,6 +97,8 @@
         'usrsctplib/netinet/sctp_constants.h',
         'usrsctplib/netinet/sctp_crc32.c',
         'usrsctplib/netinet/sctp_crc32.h',
+        'usrsctplib/netinet/sctp_hashdriver.h',
+        'usrsctplib/netinet/sctp_hashdriver.c',
         'usrsctplib/netinet/sctp_header.h',
         'usrsctplib/netinet/sctp_indata.c',
         'usrsctplib/netinet/sctp_indata.h',
@@ -126,10 +123,23 @@
         'usrsctplib/netinet/sctputil.c',
         'usrsctplib/netinet/sctputil.h',
         'usrsctplib/netinet/sctp_var.h',
+        'usrsctplib/netinet6/sctp6_usrreq.c',
+        'usrsctplib/netinet6/sctp6_var.h',
       ],  # sources
       'conditions': [
+        ['use_openssl==1', {
+          'sources!': [
+            'overrides/usrsctplib/netinet/sctp_nss_sha1.c',
+            'overrides/usrsctplib/netinet/sctp_nss_sha1.h',
+          ],
+          'sources': [
+            'overrides/usrsctplib/netinet/sctp_openssl_sha1.h',
+          ],
+        }],
         ['OS=="linux"', {
           'defines': [
+            'HAVE_INET_ADDR',
+            'HAVE_SOCKET',
             '__Userspace_os_Linux',
           ],
           'cflags!': [ '-Werror', '-Wall' ],
@@ -137,8 +147,13 @@
         }],
         ['OS=="mac"', {
           'defines': [
+            'HAVE_INET_ADDR',
             'HAVE_SA_LEN',
             'HAVE_SCONN_LEN',
+            'HAVE_SIN6_LEN',
+            'HAVE_SIN_LEN',
+            'HAVE_SOCKET',
+            'INET6',
             '__APPLE_USE_RFC_2292',
             '__Userspace_os_Darwin',
           ],
@@ -150,12 +165,12 @@
         }],
         ['OS=="win"', {
           'defines': [
+            'INET6',
             '__Userspace_os_Windows',
           ],
           'cflags!': [ '/W3', '/WX' ],
           'cflags': [ '/w' ],
-          # TODO(ldixon) : Remove this disabling of warnings by pushing a
-          # fix upstream to usrsctp
+          # TODO(ldixon) : Remove this disable.
           'msvs_disabled_warnings': [ 4700, 4013, 4018, 4133, 4267 ],
         }, {  # OS != "win",
           'defines': [
