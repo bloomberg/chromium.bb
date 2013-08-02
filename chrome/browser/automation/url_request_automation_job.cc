@@ -197,6 +197,7 @@ void URLRequestAutomationJob::Kill() {
     }
   }
   DisconnectFromMessageFilter();
+  receive_headers_end_ = base::TimeTicks();
   net::URLRequestJob::Kill();
 }
 
@@ -256,6 +257,18 @@ void URLRequestAutomationJob::GetResponseInfo(net::HttpResponseInfo* info) {
                                      TimeDelta::FromDays(kLifetimeDays));
     info->ssl_info.cert_status = 0;
     info->ssl_info.security_bits = -1;
+  }
+}
+
+void URLRequestAutomationJob::GetLoadTimingInfo(
+    net::LoadTimingInfo* load_timing_info) const {
+  if (!receive_headers_end_.is_null()) {
+    load_timing_info->send_start = request_start_;
+    // The send ended some time ago, but that information is not available on
+    // this side of the automation channel. Consider the send to have ended at
+    // the same time we received the response headers.
+    load_timing_info->send_end = receive_headers_end_;
+    load_timing_info->receive_headers_end = receive_headers_end_;
   }
 }
 
@@ -336,6 +349,8 @@ void URLRequestAutomationJob::OnRequestStarted(
            << " - response started.";
   set_expected_content_size(response.content_length);
   mime_type_ = response.mime_type;
+
+  receive_headers_end_ = base::TimeTicks::Now();
 
   redirect_url_ = response.redirect_url;
   redirect_status_ = response.redirect_status;
@@ -498,6 +513,8 @@ void URLRequestAutomationJob::StartAsync() {
   scoped_refptr<net::UploadData> upload_data;
   if (request_->get_upload())
     upload_data = CreateUploadData(request_->get_upload());
+
+  request_start_ = base::TimeTicks::Now();
 
   // Ask automation to start this request.
   AutomationURLRequest automation_request;

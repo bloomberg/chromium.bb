@@ -49,6 +49,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   virtual bool GetMimeType(std::string* mime_type) const;
   virtual bool GetCharset(std::string* charset);
   virtual void GetResponseInfo(net::HttpResponseInfo* info);
+  virtual void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const;
   virtual int GetResponseCode() const;
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
   virtual net::UploadProgress GetUploadProgress() const;
@@ -136,6 +137,12 @@ class URLRequestAutomationJob : public net::URLRequestJob {
 
   // Size of the upload data appended to the request.
   uint64 upload_size_;
+
+  // When the request was sent out over automation.
+  base::TimeTicks request_start_;
+
+  // When the response headers arrived from automation.
+  base::TimeTicks receive_headers_end_;
 
   base::WeakPtrFactory<URLRequestAutomationJob> weak_factory_;
 
