@@ -55,7 +55,7 @@ public class PersonalDataManagerTest extends ChromiumTestShellTestBase {
         AutofillProfile storedProfile = mHelper.getProfile(profileOneGUID);
         assertEquals(profileOneGUID, storedProfile.getGUID());
         assertEquals("https://www.example.com", storedProfile.getOrigin());
-        assertEquals("Canada", storedProfile.getCountry());
+        assertEquals("CA", storedProfile.getCountryCode());
         assertEquals("San Francisco", storedProfile.getCity());
         assertNotNull(mHelper.getProfile(profileTwoGUID));
     }
@@ -117,4 +117,31 @@ public class PersonalDataManagerTest extends ChromiumTestShellTestBase {
         mHelper.deleteCreditCard(cardOneGUID);
         assertEquals(0, mHelper.getNumberOfCreditCards());
     }
+
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testRespectCountryCodes() throws InterruptedException, ExecutionException {
+        // The constructor should accept country names and ISO 3166-1-alpha-2 country codes.
+        // getCountryCode() should return a country code.
+        AutofillProfile profile1 = new AutofillProfile(
+                "" /* guid */, "https://www.example.com" /* origin */,
+                "John Smith", "Acme Inc.", "1 Main", "Apt A", "Montreal", "Quebec",
+                "H3B 2Y5", "Canada", "514-670-1234", "john@acme.inc");
+        String profileGuid1 = mHelper.setProfile(profile1);
+
+        AutofillProfile profile2 = new AutofillProfile(
+                "" /* guid */, "https://www.example.com" /* origin */,
+                "Greg Smith", "Ucme Inc.", "123 Bush", "Apt 125", "Montreal", "Quebec",
+                "H3B 2Y5", "CA", "514-670-4321", "greg@ucme.inc");
+        String profileGuid2 = mHelper.setProfile(profile2);
+
+        assertEquals(2, mHelper.getNumberOfProfiles());
+
+        AutofillProfile storedProfile1 = mHelper.getProfile(profileGuid1);
+        assertEquals("CA", storedProfile1.getCountryCode());
+
+        AutofillProfile storedProfile2 = mHelper.getProfile(profileGuid2);
+        assertEquals("CA", storedProfile2.getCountryCode());
+    }
+
 }

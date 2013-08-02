@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "jni/PersonalDataManager_jni.h"
@@ -213,7 +214,6 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
   return ConvertUTF8ToJavaString(env, profile.guid());
 }
 
-
 jint PersonalDataManagerAndroid::GetCreditCardCount(JNIEnv* unused_env,
                                                     jobject unused_obj) {
   return personal_data_manager_->GetCreditCards().size();
@@ -280,6 +280,16 @@ void PersonalDataManagerAndroid::OnPersonalDataChanged() {
 // static
 bool PersonalDataManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+// Returns an ISO 3166-1-alpha-2 country code for a |jcountry_name| using
+// the application locale, or an empty string.
+static jstring ToCountryCode(JNIEnv* env, jclass clazz, jstring jcountry_name) {
+  return ConvertUTF8ToJavaString(
+      env,
+      AutofillCountry::GetCountryCode(
+          base::android::ConvertJavaStringToUTF16(env, jcountry_name),
+          g_browser_process->GetApplicationLocale())).Release();
 }
 
 static jint Init(JNIEnv* env, jobject obj) {

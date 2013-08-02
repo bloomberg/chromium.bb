@@ -116,6 +116,10 @@ public class PersonalDataManager {
             return mCountry;
         }
 
+        public String getCountryCode() {
+            return nativeToCountryCode(mCountry);
+        }
+
         @CalledByNative("AutofillProfile")
         public String getPhoneNumber() {
             return mPhoneNumber;
@@ -382,4 +386,5 @@ public class PersonalDataManager {
     private native String nativeSetCreditCard(int nativePersonalDataManagerAndroid,
             CreditCard card);
     private native void nativeRemoveByGUID(int nativePersonalDataManagerAndroid, String guid);
+    private static native String nativeToCountryCode(String countryName);
 }
