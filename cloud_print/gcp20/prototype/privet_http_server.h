@@ -22,8 +22,8 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
   // TODO(maksymb): Move this enum to some namespace instead of this class.
   enum RegistrationErrorStatus {
     REG_ERROR_OK,
-    REG_ERROR_NO_RESULT,  // default value, never set.
 
+    REG_ERROR_INVALID_PARAMS,
     REG_ERROR_DEVICE_BUSY,
     REG_ERROR_PENDING_USER_ACTION,
     REG_ERROR_USER_CANCEL,
@@ -146,7 +146,6 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
   // |current_response| with error or empty response.
   void ProcessRegistrationStatus(
       RegistrationErrorStatus status,
-      net::HttpStatusCode *status_code,
       scoped_ptr<base::DictionaryValue>* current_response) const;
 
   // Port for listening.

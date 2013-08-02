@@ -117,7 +117,7 @@ void PrivetHttpServer::OnHttpRequest(int connection_id,
 
     if (url.path() != "/privet/info" &&
         !delegate_->CheckXPrivetTokenHeader(iter->second)) {
-      server_->Send(connection_id, net::HTTP_BAD_REQUEST,
+      server_->Send(connection_id, net::HTTP_OK,
                     "{\"error\":\"invalid_x_privet_token\"}",
                     "application/json");
       return;
@@ -127,7 +127,6 @@ void PrivetHttpServer::OnHttpRequest(int connection_id,
   std::string response;
   net::HttpStatusCode status_code =
       ProcessHttpRequest(url, info.data, &response);
-  // TODO(maksymb): Add checking for right |info.method| in query.
 
   server_->Send(connection_id, status_code, response, "application/json");
 }
@@ -243,86 +242,75 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessRegister(
   }
 
   std::string action;
-  if (!net::GetValueForKeyInQuery(url, "action", &action)) {
-    *status_code = net::HTTP_BAD_REQUEST;
-    return scoped_ptr<base::DictionaryValue>();
-  }
-
-  // TODO(maksymb): Is there a possibility |user| to be empty?
   std::string user;
-  if (!net::GetValueForKeyInQuery(url, "user", &user) || user.empty()) {
-    *status_code = net::HTTP_BAD_REQUEST;
-    return scoped_ptr<base::DictionaryValue>();
-  }
+  bool params_present =
+      net::GetValueForKeyInQuery(url, "action", &action) &&
+      net::GetValueForKeyInQuery(url, "user", &user) &&
+      !user.empty();
 
-  RegistrationErrorStatus status = REG_ERROR_NO_RESULT;
+  RegistrationErrorStatus status = REG_ERROR_INVALID_PARAMS;
   scoped_ptr<base::DictionaryValue> response(new DictionaryValue);
-  response->SetString("action", action);
-  response->SetString("user", user);
 
-  if (action == "start")
-    status = delegate_->RegistrationStart(user);
+  if (params_present) {
+    response->SetString("action", action);
+    response->SetString("user", user);
 
-  if (action == "getClaimToken") {
-    std::string token;
-    std::string claim_url;
-    status = delegate_->RegistrationGetClaimToken(user, &token, &claim_url);
-    response->SetString("token", token);
-    response->SetString("claim_url", claim_url);
+    if (action == "start")
+      status = delegate_->RegistrationStart(user);
+
+    if (action == "getClaimToken") {
+      std::string token;
+      std::string claim_url;
+      status = delegate_->RegistrationGetClaimToken(user, &token, &claim_url);
+      response->SetString("token", token);
+      response->SetString("claim_url", claim_url);
+    }
+
+    if (action == "complete") {
+      std::string device_id;
+      status = delegate_->RegistrationComplete(user, &device_id);
+      response->SetString("device_id", device_id);
+    }
+
+    if (action == "cancel")
+      status = delegate_->RegistrationCancel(user);
   }
-
-  if (action == "complete") {
-    std::string device_id;
-    status = delegate_->RegistrationComplete(user, &device_id);
-    response->SetString("device_id", device_id);
-  }
-
-  if (action == "cancel")
-    status = delegate_->RegistrationCancel(user);
 
   if (status != REG_ERROR_OK)
     response.reset();
 
-  ProcessRegistrationStatus(status, status_code, &response);
+  ProcessRegistrationStatus(status, &response);
+  *status_code = net::HTTP_OK;
   return response.Pass();
 }
 
 void PrivetHttpServer::ProcessRegistrationStatus(
     RegistrationErrorStatus status,
-    net::HttpStatusCode *status_code,
     scoped_ptr<base::DictionaryValue>* current_response) const {
   switch (status) {
     case REG_ERROR_OK:
-      *status_code = net::HTTP_OK;
       DCHECK(*current_response) << "Response shouldn't be empty.";
       break;
-    case REG_ERROR_NO_RESULT:
-      *status_code = net::HTTP_BAD_REQUEST;
-      current_response->reset();
-      break;
 
+    case REG_ERROR_INVALID_PARAMS:
+      *current_response = CreateError("invalid_params");
+      break;
     case REG_ERROR_DEVICE_BUSY:
-      *status_code = net::HTTP_OK;
       *current_response = CreateErrorWithTimeout("device_busy", 30);
       break;
     case REG_ERROR_PENDING_USER_ACTION:
-      *status_code = net::HTTP_OK;
       *current_response = CreateErrorWithTimeout("pending_user_action", 30);
       break;
     case REG_ERROR_USER_CANCEL:
-      *status_code = net::HTTP_OK;
       *current_response = CreateError("user_cancel");
       break;
     case REG_ERROR_CONFIRMATION_TIMEOUT:
-      *status_code = net::HTTP_OK;
       *current_response = CreateError("confirmation_timeout");
       break;
     case REG_ERROR_INVALID_ACTION:
-      *status_code = net::HTTP_OK;
       *current_response = CreateError("invalid_action");
       break;
     case REG_ERROR_SERVER_ERROR: {
-      *status_code = net::HTTP_OK;
       std::string description;
       delegate_->GetRegistrationServerError(&description);
       *current_response = CreateErrorWithDescription("server_error",
