@@ -116,6 +116,36 @@ bool DeleteReparsePoint(HANDLE source) {
   }
   return true;
 }
+
+// Manages a reparse point for a test.
+class ReparsePoint {
+ public:
+  // Creates a reparse point from |source| (an empty directory) to |target|.
+  ReparsePoint(const FilePath& source, const FilePath& target) {
+    dir_.Set(
+      ::CreateFile(source.value().c_str(),
+                   FILE_ALL_ACCESS,
+                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                   NULL,
+                   OPEN_EXISTING,
+                   FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
+                   NULL));
+    created_ = dir_.IsValid() && SetReparsePoint(dir_, target);
+  }
+
+  ~ReparsePoint() {
+    if (created_)
+      DeleteReparsePoint(dir_);
+  }
+
+  bool IsValid() { return created_; }
+
+ private:
+  base::win::ScopedHandle dir_;
+  bool created_;
+  DISALLOW_COPY_AND_ASSIGN(ReparsePoint);
+};
+
 #endif
 
 #if defined(OS_POSIX)
@@ -431,86 +461,61 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
 
   FilePath to_sub_a = base_b.Append(FPL("to_sub_a"));
   ASSERT_TRUE(file_util::CreateDirectory(to_sub_a));
-  base::win::ScopedHandle reparse_to_sub_a(
-      ::CreateFile(to_sub_a.value().c_str(),
-                   FILE_ALL_ACCESS,
-                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                   NULL,
-                   OPEN_EXISTING,
-                   FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
-                   NULL));
-  ASSERT_TRUE(reparse_to_sub_a.IsValid());
-  ASSERT_TRUE(SetReparsePoint(reparse_to_sub_a, sub_a));
-
-  FilePath to_base_b = base_b.Append(FPL("to_base_b"));
-  ASSERT_TRUE(file_util::CreateDirectory(to_base_b));
-  base::win::ScopedHandle reparse_to_base_b(
-      ::CreateFile(to_base_b.value().c_str(),
-                   FILE_ALL_ACCESS,
-                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                   NULL,
-                   OPEN_EXISTING,
-                   FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
-                   NULL));
-  ASSERT_TRUE(reparse_to_base_b.IsValid());
-  ASSERT_TRUE(SetReparsePoint(reparse_to_base_b, base_b));
-
-  FilePath to_sub_long = base_b.Append(FPL("to_sub_long"));
-  ASSERT_TRUE(file_util::CreateDirectory(to_sub_long));
-  base::win::ScopedHandle reparse_to_sub_long(
-      ::CreateFile(to_sub_long.value().c_str(),
-                   FILE_ALL_ACCESS,
-                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                   NULL,
-                   OPEN_EXISTING,
-                   FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
-                   NULL));
-  ASSERT_TRUE(reparse_to_sub_long.IsValid());
-  ASSERT_TRUE(SetReparsePoint(reparse_to_sub_long, sub_long));
-
-  // Normalize a junction free path: base_a\sub_a\file.txt .
   FilePath normalized_path;
-  ASSERT_TRUE(file_util::NormalizeFilePath(file_txt, &normalized_path));
-  ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+  {
+    ReparsePoint reparse_to_sub_a(to_sub_a, sub_a);
+    ASSERT_TRUE(reparse_to_sub_a.IsValid());
 
-  // Check that the path base_b\to_sub_a\file.txt can be normalized to exclude
-  // the junction to_sub_a.
-  ASSERT_TRUE(file_util::NormalizeFilePath(to_sub_a.Append(FPL("file.txt")),
-                                           &normalized_path));
-  ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+    FilePath to_base_b = base_b.Append(FPL("to_base_b"));
+    ASSERT_TRUE(file_util::CreateDirectory(to_base_b));
+    ReparsePoint reparse_to_base_b(to_base_b, base_b);
+    ASSERT_TRUE(reparse_to_base_b.IsValid());
 
-  // Check that the path base_b\to_base_b\to_base_b\to_sub_a\file.txt can be
-  // normalized to exclude junctions to_base_b and to_sub_a .
-  ASSERT_TRUE(file_util::NormalizeFilePath(base_b.Append(FPL("to_base_b"))
-                                                 .Append(FPL("to_base_b"))
-                                                 .Append(FPL("to_sub_a"))
-                                                 .Append(FPL("file.txt")),
-                                           &normalized_path));
-  ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+    FilePath to_sub_long = base_b.Append(FPL("to_sub_long"));
+    ASSERT_TRUE(file_util::CreateDirectory(to_sub_long));
+    ReparsePoint reparse_to_sub_long(to_sub_long, sub_long);
+    ASSERT_TRUE(reparse_to_sub_long.IsValid());
 
-  // A long enough path will cause NormalizeFilePath() to fail.  Make a long
-  // path using to_base_b many times, and check that paths long enough to fail
-  // do not cause a crash.
-  FilePath long_path = base_b;
-  const int kLengthLimit = MAX_PATH + 200;
-  while (long_path.value().length() <= kLengthLimit) {
-    long_path = long_path.Append(FPL("to_base_b"));
+    // Normalize a junction free path: base_a\sub_a\file.txt .
+    ASSERT_TRUE(file_util::NormalizeFilePath(file_txt, &normalized_path));
+    ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+
+    // Check that the path base_b\to_sub_a\file.txt can be normalized to exclude
+    // the junction to_sub_a.
+    ASSERT_TRUE(file_util::NormalizeFilePath(to_sub_a.Append(FPL("file.txt")),
+                                             &normalized_path));
+    ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+
+    // Check that the path base_b\to_base_b\to_base_b\to_sub_a\file.txt can be
+    // normalized to exclude junctions to_base_b and to_sub_a .
+    ASSERT_TRUE(file_util::NormalizeFilePath(base_b.Append(FPL("to_base_b"))
+                                                   .Append(FPL("to_base_b"))
+                                                   .Append(FPL("to_sub_a"))
+                                                   .Append(FPL("file.txt")),
+                                             &normalized_path));
+    ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+
+    // A long enough path will cause NormalizeFilePath() to fail.  Make a long
+    // path using to_base_b many times, and check that paths long enough to fail
+    // do not cause a crash.
+    FilePath long_path = base_b;
+    const int kLengthLimit = MAX_PATH + 200;
+    while (long_path.value().length() <= kLengthLimit) {
+      long_path = long_path.Append(FPL("to_base_b"));
+    }
+    long_path = long_path.Append(FPL("to_sub_a"))
+                         .Append(FPL("file.txt"));
+
+    ASSERT_FALSE(file_util::NormalizeFilePath(long_path, &normalized_path));
+
+    // Normalizing the junction to deep.txt should fail, because the expanded
+    // path to deep.txt is longer than MAX_PATH.
+    ASSERT_FALSE(file_util::NormalizeFilePath(to_sub_long.Append(deep_txt),
+                                              &normalized_path));
+
+    // Delete the reparse points, and see that NormalizeFilePath() fails
+    // to traverse them.
   }
-  long_path = long_path.Append(FPL("to_sub_a"))
-                       .Append(FPL("file.txt"));
-
-  ASSERT_FALSE(file_util::NormalizeFilePath(long_path, &normalized_path));
-
-  // Normalizing the junction to deep.txt should fail, because the expanded
-  // path to deep.txt is longer than MAX_PATH.
-  ASSERT_FALSE(file_util::NormalizeFilePath(to_sub_long.Append(deep_txt),
-                                            &normalized_path));
-
-  // Delete the reparse points, and see that NormalizeFilePath() fails
-  // to traverse them.
-  ASSERT_TRUE(DeleteReparsePoint(reparse_to_sub_a));
-  ASSERT_TRUE(DeleteReparsePoint(reparse_to_base_b));
-  ASSERT_TRUE(DeleteReparsePoint(reparse_to_sub_long));
 
   ASSERT_FALSE(file_util::NormalizeFilePath(to_sub_a.Append(FPL("file.txt")),
                                             &normalized_path));
@@ -1821,36 +1826,35 @@ TEST_F(FileUtilTest, DetectDirectoryTest) {
 TEST_F(FileUtilTest, FileEnumeratorTest) {
   // Test an empty directory.
   FileEnumerator f0(temp_dir_.path(), true, FILES_AND_DIRECTORIES);
-  EXPECT_EQ(f0.Next().value(), FILE_PATH_LITERAL(""));
-  EXPECT_EQ(f0.Next().value(), FILE_PATH_LITERAL(""));
+  EXPECT_EQ(f0.Next().value(), FPL(""));
+  EXPECT_EQ(f0.Next().value(), FPL(""));
 
   // Test an empty directory, non-recursively, including "..".
   FileEnumerator f0_dotdot(temp_dir_.path(), false,
       FILES_AND_DIRECTORIES | FileEnumerator::INCLUDE_DOT_DOT);
-  EXPECT_EQ(temp_dir_.path().Append(FILE_PATH_LITERAL("..")).value(),
+  EXPECT_EQ(temp_dir_.path().Append(FPL("..")).value(),
             f0_dotdot.Next().value());
-  EXPECT_EQ(FILE_PATH_LITERAL(""),
-            f0_dotdot.Next().value());
+  EXPECT_EQ(FPL(""), f0_dotdot.Next().value());
 
   // create the directories
-  FilePath dir1 = temp_dir_.path().Append(FILE_PATH_LITERAL("dir1"));
+  FilePath dir1 = temp_dir_.path().Append(FPL("dir1"));
   EXPECT_TRUE(file_util::CreateDirectory(dir1));
-  FilePath dir2 = temp_dir_.path().Append(FILE_PATH_LITERAL("dir2"));
+  FilePath dir2 = temp_dir_.path().Append(FPL("dir2"));
   EXPECT_TRUE(file_util::CreateDirectory(dir2));
-  FilePath dir2inner = dir2.Append(FILE_PATH_LITERAL("inner"));
+  FilePath dir2inner = dir2.Append(FPL("inner"));
   EXPECT_TRUE(file_util::CreateDirectory(dir2inner));
 
   // create the files
-  FilePath dir2file = dir2.Append(FILE_PATH_LITERAL("dir2file.txt"));
+  FilePath dir2file = dir2.Append(FPL("dir2file.txt"));
   CreateTextFile(dir2file, std::wstring());
-  FilePath dir2innerfile = dir2inner.Append(FILE_PATH_LITERAL("innerfile.txt"));
+  FilePath dir2innerfile = dir2inner.Append(FPL("innerfile.txt"));
   CreateTextFile(dir2innerfile, std::wstring());
-  FilePath file1 = temp_dir_.path().Append(FILE_PATH_LITERAL("file1.txt"));
+  FilePath file1 = temp_dir_.path().Append(FPL("file1.txt"));
   CreateTextFile(file1, std::wstring());
   FilePath file2_rel = dir2.Append(FilePath::kParentDirectory)
-      .Append(FILE_PATH_LITERAL("file2.txt"));
+      .Append(FPL("file2.txt"));
   CreateTextFile(file2_rel, std::wstring());
-  FilePath file2_abs = temp_dir_.path().Append(FILE_PATH_LITERAL("file2.txt"));
+  FilePath file2_abs = temp_dir_.path().Append(FPL("file2.txt"));
 
   // Only enumerate files.
   FileEnumerator f1(temp_dir_.path(), true, FileEnumerator::FILES);
@@ -1884,8 +1888,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   FindResultCollector c2_dotdot(f2_dotdot);
   EXPECT_TRUE(c2_dotdot.HasFile(dir1));
   EXPECT_TRUE(c2_dotdot.HasFile(dir2));
-  EXPECT_TRUE(c2_dotdot.HasFile(
-      temp_dir_.path().Append(FILE_PATH_LITERAL(".."))));
+  EXPECT_TRUE(c2_dotdot.HasFile(temp_dir_.path().Append(FPL(".."))));
   EXPECT_EQ(c2_dotdot.size(), 3);
 
   // Enumerate files and directories.
@@ -1910,8 +1913,7 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   EXPECT_EQ(c4.size(), 4);
 
   // Enumerate with a pattern.
-  FileEnumerator f5(temp_dir_.path(), true, FILES_AND_DIRECTORIES,
-      FILE_PATH_LITERAL("dir*"));
+  FileEnumerator f5(temp_dir_.path(), true, FILES_AND_DIRECTORIES, FPL("dir*"));
   FindResultCollector c5(f5);
   EXPECT_TRUE(c5.HasFile(dir1));
   EXPECT_TRUE(c5.HasFile(dir2));
@@ -1920,10 +1922,48 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
   EXPECT_TRUE(c5.HasFile(dir2innerfile));
   EXPECT_EQ(c5.size(), 5);
 
+#if defined(OS_WIN)
+  {
+    // Make dir1 point to dir2.
+    ReparsePoint reparse_point(dir1, dir2);
+    EXPECT_TRUE(reparse_point.IsValid());
+
+    // Enumerate the reparse point.
+    FileEnumerator f6(dir1, true, FILES_AND_DIRECTORIES);
+    FindResultCollector c6(f6);
+    FilePath inner2 = dir1.Append(FPL("inner"));
+    EXPECT_TRUE(c6.HasFile(inner2));
+    EXPECT_TRUE(c6.HasFile(inner2.Append(FPL("innerfile.txt"))));
+    EXPECT_TRUE(c6.HasFile(dir1.Append(FPL("dir2file.txt"))));
+    EXPECT_EQ(c6.size(), 3);
+
+    // No changes for non recursive operation.
+    FileEnumerator f7(temp_dir_.path(), false, FILES_AND_DIRECTORIES);
+    FindResultCollector c7(f7);
+    EXPECT_TRUE(c7.HasFile(dir2));
+    EXPECT_TRUE(c7.HasFile(dir2));
+    EXPECT_TRUE(c7.HasFile(file1));
+    EXPECT_TRUE(c7.HasFile(file2_abs));
+    EXPECT_EQ(c7.size(), 4);
+
+    // Should not enumerate inside dir1 when using recursion.
+    FileEnumerator f8(temp_dir_.path(), true, FILES_AND_DIRECTORIES);
+    FindResultCollector c8(f8);
+    EXPECT_TRUE(c8.HasFile(dir1));
+    EXPECT_TRUE(c8.HasFile(dir2));
+    EXPECT_TRUE(c8.HasFile(file1));
+    EXPECT_TRUE(c8.HasFile(file2_abs));
+    EXPECT_TRUE(c8.HasFile(dir2file));
+    EXPECT_TRUE(c8.HasFile(dir2inner));
+    EXPECT_TRUE(c8.HasFile(dir2innerfile));
+    EXPECT_EQ(c8.size(), 7);
+  }
+#endif
+
   // Make sure the destructor closes the find handle while in the middle of a
   // query to allow TearDown to delete the directory.
-  FileEnumerator f6(temp_dir_.path(), true, FILES_AND_DIRECTORIES);
-  EXPECT_FALSE(f6.Next().value().empty());  // Should have found something
+  FileEnumerator f9(temp_dir_.path(), true, FILES_AND_DIRECTORIES);
+  EXPECT_FALSE(f9.Next().value().empty());  // Should have found something
                                             // (we don't care what).
 }
 
