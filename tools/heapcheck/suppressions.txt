@@ -783,10 +783,13 @@
    bug_251034_b
    Heapcheck:Leak
    ...
-   fun:Initialize
-   fun:gpu::GLInProcessContext::CreateContext
-   fun:webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL
-   fun:webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::makeContextCurrent
+   fun:InitThread
+   fun:ShConstructCompiler
+   fun:gpu::gles2::ShaderTranslator::Init
+   fun:gpu::gles2::ShaderTranslatorCache::GetTranslator
+   fun:gpu::gles2::GLES2DecoderImpl::InitializeShaderTranslator
+   fun:gpu::gles2::GLES2DecoderImpl::Initialize
+   fun:gpu::InProcessCommandBuffer::InitializeOnGpuThread
 }
 {
    bug_251034_c
