@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -27,7 +29,6 @@ class ScopedAppGLStateRestore {
  private:
   const CallMode mode_;
 
-  GLint texture_external_oes_binding_;
   GLint pack_alignment_;
   GLint unpack_alignment_;
 
@@ -81,6 +82,15 @@ class ScopedAppGLStateRestore {
   GLint stencil_func_;
   GLint stencil_mask_;
   GLint stencil_ref_;
+
+  struct TextureBindings {
+    GLint texture_2d;
+    GLint texture_cube_map;
+    GLint texture_external_oes;
+    // TODO(boliu): TEXTURE_RECTANGLE_ARB
+  };
+
+  std::vector<TextureBindings> texture_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAppGLStateRestore);
 };

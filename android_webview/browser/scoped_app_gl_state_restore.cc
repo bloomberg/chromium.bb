@@ -48,6 +48,8 @@ void GLEnableDisable(GLenum cap, bool enable) {
     glDisable(cap);
 }
 
+GLint g_gl_max_texture_units = 0;
+
 }  // namespace
 
 ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
@@ -84,9 +86,6 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
       break;
   }
 
-  glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture_);
-  glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES,
-                &texture_external_oes_binding_);
   glGetIntegerv(GL_PACK_ALIGNMENT, &pack_alignment_);
   glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpack_alignment_);
 
@@ -132,6 +131,24 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
   glGetIntegerv(GL_STENCIL_FUNC, &stencil_func_);
   glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencil_mask_);
   glGetIntegerv(GL_STENCIL_REF, &stencil_ref_);
+
+
+  if (!g_gl_max_texture_units) {
+    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &g_gl_max_texture_units);
+    DCHECK_GT(g_gl_max_texture_units, 0);
+  }
+
+  glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture_);
+
+  texture_bindings_.resize(g_gl_max_texture_units);
+  for (int ii = 0; ii < g_gl_max_texture_units; ++ii) {
+    glActiveTexture(GL_TEXTURE0 + ii);
+    TextureBindings& bindings = texture_bindings_[ii];
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &bindings.texture_2d);
+    glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &bindings.texture_cube_map);
+    glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES,
+                  &bindings.texture_external_oes);
+  }
 }
 
 ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
@@ -141,8 +158,15 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
   glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding_);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_buffer_binding_);
 
+  for (int ii = 0; ii < g_gl_max_texture_units; ++ii) {
+    glActiveTexture(GL_TEXTURE0 + ii);
+    TextureBindings& bindings = texture_bindings_[ii];
+    glBindTexture(GL_TEXTURE_2D, bindings.texture_2d);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, bindings.texture_cube_map);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, bindings.texture_external_oes);
+  }
   glActiveTexture(active_texture_);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_external_oes_binding_);
+
   glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment_);
   glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment_);
 
