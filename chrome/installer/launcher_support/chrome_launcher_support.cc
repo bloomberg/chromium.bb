@@ -45,18 +45,6 @@ const wchar_t kChromeExe[] = L"chrome.exe";
 const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";
 const wchar_t kUninstallStringField[] = L"UninstallString";
 
-#ifndef OFFICIAL_BUILD
-base::FilePath GetDevelopmentExe(const wchar_t* exe_file) {
-  base::FilePath current_directory;
-  if (PathService::Get(base::DIR_EXE, &current_directory)) {
-    base::FilePath chrome_exe_path(current_directory.Append(exe_file));
-    if (base::PathExists(chrome_exe_path))
-      return chrome_exe_path;
-  }
-  return base::FilePath();
-}
-#endif
-
 // Reads a string value from the specified product's "ClientState" registry key.
 // Returns true iff the value is present and successfully read.
 bool GetClientStateValue(InstallationLevel level,
@@ -184,10 +172,6 @@ base::FilePath GetAppHostPathForInstallationLevel(InstallationLevel level) {
 
 base::FilePath GetAnyChromePath() {
   base::FilePath chrome_path;
-#ifndef OFFICIAL_BUILD
-  // For development mode, chrome.exe should be in same dir as the stub.
-  chrome_path = GetDevelopmentExe(kChromeExe);
-#endif
   if (chrome_path.empty())
     chrome_path = GetChromePathForInstallationLevel(SYSTEM_LEVEL_INSTALLATION);
   if (chrome_path.empty())
@@ -197,10 +181,6 @@ base::FilePath GetAnyChromePath() {
 
 base::FilePath GetAnyAppHostPath() {
   base::FilePath app_host_path;
-#ifndef OFFICIAL_BUILD
-  // For development mode, app_host.exe should be in same dir as chrome.exe.
-  app_host_path = GetDevelopmentExe(kChromeAppHostExe);
-#endif
   if (app_host_path.empty()) {
     app_host_path = GetAppHostPathForInstallationLevel(
         SYSTEM_LEVEL_INSTALLATION);
