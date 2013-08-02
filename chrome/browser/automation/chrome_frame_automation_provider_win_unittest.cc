@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/automation/chrome_frame_automation_provider_win.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,7 +23,13 @@ class MockChromeFrameAutomationProvider
                void (const IPC::Message& message));  // NOLINT
 };
 
-typedef testing::Test AutomationProviderTest;
+class AutomationProviderTest : public testing::Test {
+ protected:
+  virtual void TearDown() OVERRIDE {
+    // Don't leak state into other tests.
+    browser_shutdown::SetTryingToQuit(false);
+  }
+};
 
 TEST_F(AutomationProviderTest, TestInvalidChromeFrameMessage) {
   base::MessageLoop message_loop;
