@@ -194,10 +194,6 @@ bool ZeroSuggestProvider::ShouldRunZeroSuggest(const GURL& url) const {
   if (url.scheme() != chrome::kHttpScheme)
     return false;
 
-  // Don't enable ZeroSuggest until InstantExtended works with ZeroSuggest.
-  if (chrome::IsInstantExtendedAPIEnabled())
-    return false;
-
   // Don't run if there's no profile or in incognito mode.
   if (profile_ == NULL || profile_->IsOffTheRecord())
     return false;
