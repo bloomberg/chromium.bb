@@ -28,6 +28,7 @@
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
+#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
@@ -122,8 +123,22 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         BlendMode blendOp = BlendModeNormal;
         if (!parseCompositeAndBlendOperator(value, m_compositeOperator, blendOp))
             m_compositeOperator = CompositeSourceOver;
-    } else
+    } else {
+        if (name == nameAttr) {
+            bool willHaveName = !value.isNull();
+            if (hasName() != willHaveName && inDocument() && !isInShadowTree() && document()->isHTMLDocument()) {
+                HTMLDocument* document = toHTMLDocument(this->document());
+                const AtomicString& id = getIdAttribute();
+                if (!id.isEmpty()) {
+                    if (willHaveName)
+                        document->addNamedDocumentItem(id, this);
+                    else
+                        document->removeNamedDocumentItem(id, this);
+                }
+            }
+        }
         HTMLElement::parseAttribute(name, value);
+    }
 }
 
 String HTMLImageElement::altText() const

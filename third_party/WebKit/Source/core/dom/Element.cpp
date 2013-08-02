@@ -75,6 +75,7 @@
 #include "core/html/HTMLFormControlsCollection.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLLabelElement.h"
+#include "core/html/HTMLNameCollection.h"
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -1248,7 +1249,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
 
     const AtomicString& nameValue = getNameAttribute();
     if (!nameValue.isNull())
-        updateName(nullAtom, nameValue);
+        updateName(scope, nullAtom, nameValue);
 
     if (hasTagName(labelTag)) {
         if (scope->shouldCacheLabelsByForAttribute())
@@ -1287,7 +1288,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
         const AtomicString& nameValue = getNameAttribute();
         if (!nameValue.isNull())
-            updateName(nameValue, nullAtom);
+            updateName(insertionPoint->treeScope(), nameValue, nullAtom);
 
         if (hasTagName(labelTag)) {
             TreeScope* treeScope = insertionPoint->treeScope();
@@ -2745,17 +2746,48 @@ bool Element::hasNamedNodeMap() const
 
 inline void Element::updateName(const AtomicString& oldName, const AtomicString& newName)
 {
-    if (!inDocument() || isInShadowTree())
+    if (!isInTreeScope())
         return;
 
     if (oldName == newName)
         return;
 
-    if (shouldRegisterAsNamedItem())
-        updateNamedItemRegistration(oldName, newName);
+    updateName(treeScope(), oldName, newName);
 }
 
-inline void Element::updateId(const AtomicString& oldId, const AtomicString& newId)
+void Element::updateName(TreeScope* scope, const AtomicString& oldName, const AtomicString& newName)
+{
+    ASSERT(isInTreeScope());
+    ASSERT(oldName != newName);
+
+    if (!oldName.isEmpty())
+        scope->removeElementByName(oldName, this);
+    if (!newName.isEmpty())
+        scope->addElementByName(newName, this);
+
+    if (!inDocument() || isInShadowTree())
+        return;
+
+    Document* ownerDocument = document();
+    if (!ownerDocument->isHTMLDocument())
+        return;
+
+    if (WindowNameCollection::nodeMatchesIfNameAttributeMatch(this)) {
+        if (!oldName.isEmpty())
+            toHTMLDocument(ownerDocument)->windowNamedItemMap().remove(oldName.impl(), this);
+        if (!newName.isEmpty())
+            toHTMLDocument(ownerDocument)->windowNamedItemMap().add(newName.impl(), this);
+    }
+
+    if (DocumentNameCollection::nodeMatchesIfNameAttributeMatch(this)) {
+        if (!oldName.isEmpty())
+            toHTMLDocument(ownerDocument)->removeNamedDocumentItem(oldName, this);
+        if (!newName.isEmpty())
+            toHTMLDocument(ownerDocument)->addNamedDocumentItem(newName, this);
+    }
+}
+
+void Element::updateId(const AtomicString& oldId, const AtomicString& newId)
 {
     if (!isInTreeScope())
         return;
@@ -2776,8 +2808,26 @@ inline void Element::updateId(TreeScope* scope, const AtomicString& oldId, const
     if (!newId.isEmpty())
         scope->addElementById(newId, this);
 
-    if (shouldRegisterAsExtraNamedItem())
-        updateExtraNamedItemRegistration(oldId, newId);
+    if (!inDocument() || isInShadowTree())
+        return;
+
+    Document* ownerDocument = document();
+    if (!ownerDocument->isHTMLDocument())
+        return;
+
+    if (WindowNameCollection::nodeMatchesIfIdAttributeMatch(this)) {
+        if (!oldId.isEmpty())
+            toHTMLDocument(ownerDocument)->windowNamedItemMap().remove(oldId.impl(), this);
+        if (!newId.isEmpty())
+            toHTMLDocument(ownerDocument)->windowNamedItemMap().add(newId.impl(), this);
+    }
+
+    if (DocumentNameCollection::nodeMatchesIfIdAttributeMatch(this)) {
+        if (!oldId.isEmpty())
+            toHTMLDocument(ownerDocument)->removeNamedDocumentItem(oldId, this);
+        if (!newId.isEmpty())
+            toHTMLDocument(ownerDocument)->addNamedDocumentItem(newId, this);
+    }
 }
 
 void Element::updateLabel(TreeScope* scope, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue)
@@ -2861,30 +2911,6 @@ void Element::didMoveToNewDocument(Document* oldDocument)
         if (hasClass())
             setAttribute(HTMLNames::classAttr, getClassAttribute());
     }
-}
-
-void Element::updateNamedItemRegistration(const AtomicString& oldName, const AtomicString& newName)
-{
-    if (!document()->isHTMLDocument())
-        return;
-
-    if (!oldName.isEmpty())
-        toHTMLDocument(document())->removeNamedItem(oldName);
-
-    if (!newName.isEmpty())
-        toHTMLDocument(document())->addNamedItem(newName);
-}
-
-void Element::updateExtraNamedItemRegistration(const AtomicString& oldId, const AtomicString& newId)
-{
-    if (!document()->isHTMLDocument())
-        return;
-
-    if (!oldId.isEmpty())
-        toHTMLDocument(document())->removeExtraNamedItem(oldId);
-
-    if (!newId.isEmpty())
-        toHTMLDocument(document())->addExtraNamedItem(newId);
 }
 
 PassRefPtr<HTMLCollection> Element::ensureCachedHTMLCollection(CollectionType type)

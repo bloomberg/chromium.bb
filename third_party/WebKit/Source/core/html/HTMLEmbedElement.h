@@ -50,8 +50,6 @@ private:
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 
     void parametersForPlugin(Vector<String>& paramNames, Vector<String>& paramValues);
-
-    virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
 };
 
 }
