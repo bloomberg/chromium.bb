@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/browser/autocheckout_request_manager.h"
+#include "components/autofill/content/browser/autocheckout_statistic.h"
 #include "components/autofill/content/browser/autocheckout_steps.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -198,6 +199,8 @@ void AutocheckoutManager::FillForms() {
       page_meta_data_->click_elements_before_form_fill,
       page_meta_data_->click_elements_after_form_fill,
       page_meta_data_->proceed_element_descriptor));
+  // Record time taken for navigating current page.
+  RecordTimeTaken(page_meta_data_->current_page_number);
 }
 
 void AutocheckoutManager::OnAutocheckoutPageCompleted(
@@ -338,6 +341,8 @@ void AutocheckoutManager::ReturnAutocheckoutData(
     return;
   }
 
+  latency_statistics_.clear();
+  last_step_completion_timestamp_ = base::TimeTicks().Now();
   google_transaction_id_ = google_transaction_id;
   in_autocheckout_flow_ = true;
   should_preserve_dialog_ = true;
@@ -516,6 +521,7 @@ void AutocheckoutManager::SendAutocheckoutStatus(AutocheckoutStatus status) {
   autocheckout_request_manager->SendAutocheckoutStatus(
       status,
       autofill_manager_->GetWebContents()->GetURL(),
+      latency_statistics_,
       google_transaction_id_);
 
   // Log the result of this Autocheckout flow to UMA.
@@ -534,6 +540,23 @@ void AutocheckoutManager::SetStepProgressForPage(
           page_types_[page_number][i], status);
     }
   }
+}
+
+void AutocheckoutManager::RecordTimeTaken(int page_number) {
+  AutocheckoutStatistic statistic;
+  statistic.page_number = page_number;
+  if (page_types_.count(page_number) == 1) {
+    for (size_t i = 0; i < page_types_[page_number].size(); ++i) {
+      statistic.steps.push_back(page_types_[page_number][i]);
+    }
+  }
+
+  statistic.time_taken =
+      base::TimeTicks().Now() - last_step_completion_timestamp_;
+  latency_statistics_.push_back(statistic);
+
+  // Reset timestamp.
+  last_step_completion_timestamp_ = base::TimeTicks().Now();
 }
 
 void AutocheckoutManager::EndAutocheckout(AutocheckoutStatus status) {

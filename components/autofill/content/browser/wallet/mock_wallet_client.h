@@ -51,9 +51,10 @@ class MockWalletClient : public WalletClient {
            Address* address,
            const GURL& source_url));
 
-  MOCK_METHOD3(SendAutocheckoutStatus,
+  MOCK_METHOD4(SendAutocheckoutStatus,
       void(autofill::AutocheckoutStatus status,
            const GURL& source_url,
+           const std::vector<AutocheckoutStatistic>& latency_statistics,
            const std::string& google_transaction_id));
 
  private:
