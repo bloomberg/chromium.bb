@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="resources/shared.js"></script>
+<script>
+
+description("Non-UTF encodings supported only for decode, not encode");
+
+utf_encodings.forEach(function(encoding) {
+    shouldBeEqualToString("new TextDecoder('"+encoding+"').encoding", encoding);
+    shouldBeEqualToString("new TextEncoder('"+encoding+"').encoding", encoding);
+});
+
+legacy_encodings.forEach(function(encoding) {
+    shouldBeEqualToString("new TextDecoder('"+encoding+"').encoding", encoding);
+    shouldThrow("new TextEncoder('"+encoding+"').encoding");
+});
+
+</script>
+<script src="../../js/resources/js-test-post.js"></script>

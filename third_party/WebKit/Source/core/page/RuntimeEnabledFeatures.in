@@ -34,6 +34,7 @@ DeviceMotion status=test
 DeviceOrientation status=stable
 DialogElement status=experimental
 DirectoryUpload status=stable
+EncodingAPI status=experimental
 EncryptedMedia status=experimental
 EncryptedMediaAnyVersion status=stable
 ExperimentalCanvasFeatures status=test

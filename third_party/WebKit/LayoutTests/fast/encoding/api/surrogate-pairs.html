@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script>
+
+description("Test invalid UTF-16 surrogate pairs with UTF-8 encoding");
+
+var badStrings = [
+    { input: 'abc123', expected: 'abc123' }, // Sanity check.
+    { input: '\ud800', expected: '\ufffd' }, // Surrogate half.
+    { input: '\udc00', expected: '\ufffd' }, // Surrogate half.
+    { input: 'abc\ud800def', expected: 'abc\ufffddef' }, // Surrogate half.
+    { input: 'abc\udc00def', expected: 'abc\ufffddef' }, // Surrogate half.
+    { input: '\udc00\ud800', expected: '\ufffd\ufffd' } // Wrong order.
+];
+
+badStrings.forEach(
+    function(t) {
+        evalAndLog("encoded = new TextEncoder('utf-8').encode(" + JSON.stringify(t.input) + ")");
+        evalAndLog("decoded = new TextDecoder('utf-8').decode(encoded)");
+        shouldBeEqualToString("decoded", t.expected);
+        debug("");
+    });
+
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
