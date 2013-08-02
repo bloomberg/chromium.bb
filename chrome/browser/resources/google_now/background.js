@@ -704,6 +704,7 @@ function setShouldPollCards(shouldPollCardsRequest, onSuccess) {
         'setShouldRun-shouldRun-updateCardsAttemptsIsRunning');
   updateCardsAttempts.isRunning(function(currentValue) {
     if (shouldPollCardsRequest != currentValue) {
+      console.log('Action Taken setShouldPollCards=' + shouldPollCardsRequest);
       if (shouldPollCardsRequest)
         startPollingCards();
       else
@@ -728,6 +729,7 @@ function setToastVisible(visibleRequest, onSuccess) {
     notifications = notifications || {};
 
     if (visibleRequest != !!notifications[WELCOME_TOAST_NOTIFICATION_ID]) {
+      console.log('Action Taken setToastVisible=' + visibleRequest);
       if (visibleRequest)
         showWelcomeToast();
       else
@@ -754,6 +756,11 @@ function updateRunningState(
     userRespondedToToast,
     callback) {
 
+  console.log(
+      'State Update signedIn=' + signedIn + ' ' +
+      'geolocationEnabled=' + geolocationEnabled + ' ' +
+      'userRespondedToToast=' + userRespondedToToast);
+
   var shouldSetToastVisible = false;
   var shouldPollCards = false;
 
@@ -777,6 +784,10 @@ function updateRunningState(
   } else {
     recordEvent(GoogleNowEvent.STOPPED);
   }
+
+  console.log(
+      'Requested Actions setToastVisible=' + shouldSetToastVisible + ' ' +
+      'setShouldPollCards=' + shouldPollCards);
 
   setToastVisible(shouldSetToastVisible, function() {
     setShouldPollCards(shouldPollCards, callback);
