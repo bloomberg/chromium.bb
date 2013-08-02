@@ -13034,6 +13034,30 @@ other types of suffix sets.
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
+<histogram name="SimpleCache.FileDescriptorLimitHard">
+  <summary>
+    The maximum limit of how many file descriptors a process can open.  Emitted
+    each time the browser is launched, if the limit could be retrieved.  (This
+    is the highest value we could raise the current limit to if we liked.)
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.FileDescriptorLimitSoft">
+  <summary>
+    The current limit of how many file descriptors a process can open.  Emitted
+    each time the browser is launched, if the limit could be retrieved.  (We can
+    raise this to the maximum limit if we like, without root access.)
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.FileDescriptorLimitStatus"
+    enum="SimpleCache.FileDescriptorLimitStatus">
+  <summary>
+    The result of trying to get the file descriptor limit.  Emitted each time
+    the browser is launched.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.GlobalOpenEntryCount">
   <summary>
     The number of open entries across all caches backed by the Simple Cache. An
@@ -20808,6 +20832,12 @@ other types of suffix sets.
   <int value="2" label="Rewritten with larger size"/>
   <int value="3" label="Rewritten with smaller size"/>
   <int value="4" label="Unexpected header stream write"/>
+</enum>
+
+<enum name="SimpleCache.FileDescriptorLimitStatus" type="int">
+  <int value="0" label="Unsupported"/>
+  <int value="1" label="Supported but failed"/>
+  <int value="2" label="Succeeded"/>
 </enum>
 
 <enum name="SimpleCacheIndexInitializeMethod" type="int">

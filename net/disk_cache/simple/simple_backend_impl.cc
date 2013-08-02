@@ -7,6 +7,10 @@
 #include <algorithm>
 #include <cstdlib>
 
+#if defined(OS_POSIX)
+#include <sys/resource.h>
+#endif
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -14,6 +18,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
@@ -69,6 +74,46 @@ void MaybeCreateSequencedWorkerPool() {
                                                       kThreadNamePrefix);
     g_sequenced_worker_pool->AddRef();  // Leak it.
   }
+}
+
+bool g_fd_limit_histogram_has_been_populated = false;
+
+void MaybeHistogramFdLimit() {
+  if (g_fd_limit_histogram_has_been_populated)
+    return;
+
+  // Used in histograms; add new entries at end.
+  enum FdLimitStatus {
+    FD_LIMIT_STATUS_UNSUPPORTED = 0,
+    FD_LIMIT_STATUS_FAILED      = 1,
+    FD_LIMIT_STATUS_SUCCEEDED   = 2,
+    FD_LIMIT_STATUS_MAX         = 3
+  };
+  FdLimitStatus fd_limit_status = FD_LIMIT_STATUS_UNSUPPORTED;
+  int soft_fd_limit = 0;
+  int hard_fd_limit = 0;
+
+#if defined(OS_POSIX)
+  struct rlimit nofile;
+  if (!getrlimit(RLIMIT_NOFILE, &nofile)) {
+    soft_fd_limit = nofile.rlim_cur;
+    hard_fd_limit = nofile.rlim_max;
+    fd_limit_status = FD_LIMIT_STATUS_SUCCEEDED;
+  } else {
+    fd_limit_status = FD_LIMIT_STATUS_FAILED;
+  }
+#endif
+
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.FileDescriptorLimitStatus",
+                            fd_limit_status, FD_LIMIT_STATUS_MAX);
+  if (fd_limit_status == FD_LIMIT_STATUS_SUCCEEDED) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("SimpleCache.FileDescriptorLimitSoft",
+                                soft_fd_limit);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("SimpleCache.FileDescriptorLimitHard",
+                                hard_fd_limit);
+  }
+
+  g_fd_limit_histogram_has_been_populated = true;
 }
 
 // Must run on IO Thread.
@@ -177,6 +222,7 @@ SimpleBackendImpl::SimpleBackendImpl(const FilePath& path,
               SimpleEntryImpl::OPTIMISTIC_OPERATIONS :
               SimpleEntryImpl::NON_OPTIMISTIC_OPERATIONS),
       net_log_(net_log) {
+  MaybeHistogramFdLimit();
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
