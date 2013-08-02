@@ -306,34 +306,32 @@ def GenerateTestReport(options):
     os.remove(report)
 
 
-def GetPostTestStepCmds():
-  return [
-      ('logcat_dump', LogcatDump),
-      ('test_report', GenerateTestReport)
-  ]
-
-
 def MainTestWrapper(options):
-  # Spawn logcat monitor
-  SpawnLogcatMonitor()
+  try:
+    # Spawn logcat monitor
+    SpawnLogcatMonitor()
 
-  # Run all device setup steps
-  for _, cmd in GetDeviceSetupStepCmds():
-    cmd(options)
+    # Run all device setup steps
+    for _, cmd in GetDeviceSetupStepCmds():
+      cmd(options)
 
-  if options.install:
-    test_obj = INSTRUMENTATION_TESTS[options.install]
-    InstallApk(options, test_obj, print_step=True)
+    if options.install:
+      test_obj = INSTRUMENTATION_TESTS[options.install]
+      InstallApk(options, test_obj, print_step=True)
 
-  if options.test_filter:
-    bb_utils.RunSteps(options.test_filter, GetTestStepCmds(), options)
+    if options.test_filter:
+      bb_utils.RunSteps(options.test_filter, GetTestStepCmds(), options)
 
-  if options.experimental:
-    RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
+    if options.experimental:
+      RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
 
-  # Run all post test steps
-  for _, cmd in GetPostTestStepCmds():
-    cmd(options)
+  finally:
+    # Run all post test steps
+    LogcatDump(options)
+    GenerateTestReport(options)
+    # KillHostHeartbeat() has logic to check if heartbeat process is running,
+    # and kills only if it finds the process is running on the host.
+    provision_devices.KillHostHeartbeat()
 
 
 def GetDeviceStepsOptParser():
@@ -377,7 +375,6 @@ def main(argv):
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
 
   MainTestWrapper(options)
-  provision_devices.KillHostHeartbeat()
 
 
 if __name__ == '__main__':
