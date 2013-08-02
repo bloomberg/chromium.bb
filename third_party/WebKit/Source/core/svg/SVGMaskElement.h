@@ -20,6 +20,7 @@
 #ifndef SVGMaskElement_h
 #define SVGMaskElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
@@ -66,6 +67,12 @@ private:
     virtual void synchronizeRequiredExtensions() { SVGTests::synchronizeRequiredExtensions(this); }
     virtual void synchronizeSystemLanguage() { SVGTests::synchronizeSystemLanguage(this); }
 };
+
+inline SVGMaskElement* toSVGMaskElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::maskTag));
+    return static_cast<SVGMaskElement*>(node);
+}
 
 }
 
