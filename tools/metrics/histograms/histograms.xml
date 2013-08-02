@@ -13043,6 +13043,50 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.HeaderSize" units="bytes">
+  <summary>
+    The size of the header stream of a Simple Cache entry, emitted every time
+    the headers are written or rewritten.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.HeaderSizeChange"
+    enum="SimpleCacheHeaderSizeChange">
+  <summary>
+    How the header size has changed in a Simple Cache entry, emitted every time
+    a write operation occurs on the header stream.  (This includes the initial
+    write, rewrites, and other writes that we couldn't classify.)
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.HeaderSizeDecreaseAbsolute" units="bytes">
+  <summary>
+    The absolute size decrease of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a smaller size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.HeaderSizeDecreasePercentage" units="percent">
+  <summary>
+    The relative size decrease of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a smaller size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.HeaderSizeIncreaseAbsolute" units="bytes">
+  <summary>
+    The absolute size increase of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a larger size.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.HeaderSizeIncreasePercentage" units="percent">
+  <summary>
+    The relative size increase of the header stream of a Simple Cache entry,
+    emitted every time the headers are rewritten with a larger size.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.IndexCorrupt" enum="BooleanCorrupt">
   <summary>For each index load, whether the index file was corrupt.</summary>
 </histogram>
@@ -20690,6 +20734,14 @@ other types of suffix sets.
   <int value="0" label="Learn more"/>
   <int value="1" label="Settings page"/>
   <int value="2" label="Dismiss"/>
+</enum>
+
+<enum name="SimpleCacheHeaderSizeChange" type="int">
+  <int value="0" label="Written for the first time"/>
+  <int value="1" label="Rewritten with same size"/>
+  <int value="2" label="Rewritten with larger size"/>
+  <int value="3" label="Rewritten with smaller size"/>
+  <int value="4" label="Unexpected header stream write"/>
 </enum>
 
 <enum name="SimpleCacheIndexInitializeMethod" type="int">

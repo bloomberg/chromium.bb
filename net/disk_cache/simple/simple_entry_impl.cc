@@ -51,6 +51,16 @@ enum WriteResult {
   WRITE_RESULT_MAX = 5,
 };
 
+// Used in histograms, please only add entries at the end.
+enum HeaderSizeChange {
+  HEADER_SIZE_CHANGE_INITIAL,
+  HEADER_SIZE_CHANGE_SAME,
+  HEADER_SIZE_CHANGE_INCREASE,
+  HEADER_SIZE_CHANGE_DECREASE,
+  HEADER_SIZE_CHANGE_UNEXPECTED_WRITE,
+  HEADER_SIZE_CHANGE_MAX
+};
+
 void RecordReadResult(ReadResult result) {
   UMA_HISTOGRAM_ENUMERATION("SimpleCache.ReadResult", result, READ_RESULT_MAX);
 };
@@ -59,6 +69,44 @@ void RecordWriteResult(WriteResult result) {
   UMA_HISTOGRAM_ENUMERATION("SimpleCache.WriteResult",
                             result, WRITE_RESULT_MAX);
 };
+
+// TODO(ttuttle): Consider removing this once we have a good handle on header
+// size changes.
+void RecordHeaderSizeChange(int old_size, int new_size) {
+  HeaderSizeChange size_change;
+
+  UMA_HISTOGRAM_COUNTS_10000("SimpleCache.HeaderSize", new_size);
+
+  if (old_size == 0) {
+    size_change = HEADER_SIZE_CHANGE_INITIAL;
+  } else if (new_size == old_size) {
+    size_change = HEADER_SIZE_CHANGE_SAME;
+  } else if (new_size > old_size) {
+    int delta = new_size - old_size;
+    UMA_HISTOGRAM_COUNTS_10000("SimpleCache.HeaderSizeIncreaseAbsolute",
+                               delta);
+    UMA_HISTOGRAM_PERCENTAGE("SimpleCache.HeaderSizeIncreasePercentage",
+                             delta * 100 / old_size);
+    size_change = HEADER_SIZE_CHANGE_INCREASE;
+  } else {  // new_size < old_size
+    int delta = old_size - new_size;
+    UMA_HISTOGRAM_COUNTS_10000("SimpleCache.HeaderSizeDecreaseAbsolute",
+                               delta);
+    UMA_HISTOGRAM_PERCENTAGE("SimpleCache.HeaderSizeDecreasePercentage",
+                             delta * 100 / old_size);
+    size_change = HEADER_SIZE_CHANGE_DECREASE;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.HeaderSizeChange",
+                            size_change,
+                            HEADER_SIZE_CHANGE_MAX);
+}
+
+void RecordUnexpectedStream0Write() {
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.HeaderSizeChange",
+                            HEADER_SIZE_CHANGE_UNEXPECTED_WRITE,
+                            HEADER_SIZE_CHANGE_MAX);
+}
 
 // Short trampoline to take an owned input parameter and call a net completion
 // callback with its value.
@@ -307,6 +355,17 @@ int SimpleEntryImpl::WriteData(int stream_index,
     return net::ERR_FAILED;
   }
   ScopedOperationRunner operation_runner(this);
+
+  // Currently, Simple Cache is only used for HTTP, which stores the headers in
+  // stream 0 and always writes them with a single, truncating write.  Detect
+  // these writes and record the size and size changes of the headers.  Also,
+  // note writes to stream 0 that violate those assumptions.
+  if (stream_index == 0) {
+    if (offset == 0 && truncate)
+      RecordHeaderSizeChange(data_size_[0], buf_len);
+    else
+      RecordUnexpectedStream0Write();
+  }
 
   // We can only do optimistic Write if there is no pending operations, so
   // that we are sure that the next call to RunNextOperationIfNeeded will
