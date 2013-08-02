@@ -1614,7 +1614,7 @@
         'browser/upload_list_unittest.cc',
         'browser/chrome_content_browser_client_unittest.cc',
         'browser/undo/undo_manager_test.cc',
-        'browser/usb/usb_service_unittest.cc',
+        'browser/usb/usb_context_unittest.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
         'browser/value_store/leveldb_value_store_unittest.cc',
         'browser/value_store/testing_value_store_unittest.cc',
@@ -2476,7 +2476,7 @@
             'common/importer/firefox_importer_utils_unittest.cc',
 
             # USB service is not supported on Android.
-            'browser/usb/usb_service_unittest.cc',
+            'browser/usb/usb_context_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],

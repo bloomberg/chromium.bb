@@ -2321,6 +2321,8 @@
         'browser/usb/usb_device_handle.h',
         'browser/usb/usb_interface.cc',
         'browser/usb/usb_interface.h',
+        'browser/usb/usb_context.cc',
+        'browser/usb/usb_context.h',
         'browser/usb/usb_service.cc',
         'browser/usb/usb_service.h',
         'browser/user_data_dir_extractor.cc',
