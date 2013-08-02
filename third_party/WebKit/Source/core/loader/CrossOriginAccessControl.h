@@ -49,6 +49,7 @@ void updateRequestForAccessControl(ResourceRequest&, SecurityOrigin*, StoredCred
 ResourceRequest createAccessControlPreflightRequest(const ResourceRequest&, SecurityOrigin*);
 
 bool passesAccessControlCheck(const ResourceResponse&, StoredCredentials, SecurityOrigin*, String& errorDescription);
+bool passesPreflightStatusCheck(const ResourceResponse&, String& errorDescription);
 void parseAccessControlExposeHeadersAllowList(const String& headerValue, HTTPHeaderSet&);
 
 } // namespace WebCore

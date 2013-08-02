@@ -166,6 +166,16 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
     return true;
 }
 
+bool passesPreflightStatusCheck(const ResourceResponse& response, String& errorDescription)
+{
+    if (response.httpStatusCode() < 200 || response.httpStatusCode() >= 400) {
+        errorDescription = "Invalid HTTP status code " + String::number(response.httpStatusCode());
+        return false;
+    }
+
+    return true;
+}
+
 void parseAccessControlExposeHeadersAllowList(const String& headerValue, HTTPHeaderSet& headerSet)
 {
     Vector<String> headers;

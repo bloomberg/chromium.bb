@@ -286,6 +286,11 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
             return;
         }
 
+        if (!passesPreflightStatusCheck(response, accessControlErrorDescription)) {
+            preflightFailure(identifier, response.url().string(), accessControlErrorDescription);
+            return;
+        }
+
         OwnPtr<CrossOriginPreflightResultCacheItem> preflightResult = adoptPtr(new CrossOriginPreflightResultCacheItem(m_options.allowCredentials));
         if (!preflightResult->parse(response, accessControlErrorDescription)
             || !preflightResult->allowsCrossOriginMethod(m_actualRequest->httpMethod(), accessControlErrorDescription)
