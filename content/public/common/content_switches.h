@@ -111,6 +111,9 @@ CONTENT_EXPORT extern const char kEnableCssShaders[];
 CONTENT_EXPORT extern const char kDisableDelegatedRenderer[];
 CONTENT_EXPORT extern const char kEnableDelegatedRenderer[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
+#if defined(OS_ANDROID)
+CONTENT_EXPORT extern const char kDisableDeviceMotion[];
+#endif
 CONTENT_EXPORT extern const char kEnableDownloadResumption[];
 CONTENT_EXPORT extern const char kEnableExperimentalWebPlatformFeatures[];
 CONTENT_EXPORT extern const char kEnableRegionBasedColumns[];

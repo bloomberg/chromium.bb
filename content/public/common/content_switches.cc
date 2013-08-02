@@ -327,6 +327,11 @@ const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 
+#if defined(OS_ANDROID)
+// Disables device motion events.
+const char kDisableDeviceMotion[]           = "disable-device-motion";
+#endif
+
 // Enables restarting interrupted downloads.
 const char kEnableDownloadResumption[]      = "enable-download-resumption";
 

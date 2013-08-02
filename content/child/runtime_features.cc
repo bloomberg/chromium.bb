@@ -97,8 +97,14 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableWebMIDI))
     WebRuntimeFeatures::enableWebMIDI(true);
 
+#if defined(OS_ANDROID)
+  // Enable Device Motion on Android by default.
+  WebRuntimeFeatures::enableDeviceMotion(
+      !command_line.HasSwitch(switches::kDisableDeviceMotion));
+#else
   if (command_line.HasSwitch(switches::kEnableDeviceMotion))
       WebRuntimeFeatures::enableDeviceMotion(true);
+#endif
 
   if (command_line.HasSwitch(switches::kDisableDeviceOrientation))
     WebRuntimeFeatures::enableDeviceOrientation(false);

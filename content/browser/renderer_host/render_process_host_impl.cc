@@ -1029,6 +1029,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebGLDraftExtensions,
     switches::kTraceToConsole,
     switches::kEnableDeviceMotion,
+#if defined(OS_ANDROID)
+    switches::kDisableDeviceMotion,
+#endif
     // Please keep these in alphabetical order. Compositor switches here should
     // also be added to chrome/browser/chromeos/login/chrome_restart_request.cc.
     cc::switches::kBackgroundColorInsteadOfCheckerboard,
