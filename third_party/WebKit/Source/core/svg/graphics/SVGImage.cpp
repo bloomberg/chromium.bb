@@ -341,6 +341,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         m_page->settings()->setMediaEnabled(false);
         m_page->settings()->setScriptEnabled(false);
         m_page->settings()->setPluginsEnabled(false);
+        m_page->settings()->setAcceleratedCompositingEnabled(false);
 
         RefPtr<Frame> frame = Frame::create(m_page.get(), 0, dummyFrameLoaderClient);
         frame->setView(FrameView::create(frame.get()));
