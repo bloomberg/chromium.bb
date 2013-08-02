@@ -309,10 +309,6 @@ Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
                                                 const Extension* extension,
                                                 Feature::Context context,
                                                 const GURL& url) {
-  std::string feature_type;
-  std::string feature_name;
-  SplitDependencyName(full_name, &feature_type, &feature_name);
-
   Feature* feature = GetFeatureDependency(full_name);
   CHECK(feature) << full_name;
 

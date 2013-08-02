@@ -44,6 +44,26 @@
     "channel": "stable",
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
+  "app.getDetails": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
+    "matches": []
+  },
+  "app.getDetailsForFrame": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
+    "matches": []
+  },
+  "app.getIsInstalled": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
+    "matches": []
+  },
+  "app.installState": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
+    "matches": []
+  },
+  "app.runningState": {
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
+    "matches": []
+  },
   "audio": {
     "dependencies": ["permission:audio"],
     "contexts": ["blessed_extension"]
@@ -299,6 +319,16 @@
   "management": {
     "dependencies": ["permission:management"],
     "contexts": ["blessed_extension"]
+  },
+  "management.getPermissionWarningsByManifest": {
+    "dependencies": [],
+    "channel": "stable",
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "management.uninstallSelf": {
+    "dependencies": [],
+    "channel": "stable",
+    "extension_types": ["extension", "packaged_app", "platform_app"]
   },
   "mediaGalleries": {
     "dependencies": ["permission:mediaGalleries"],

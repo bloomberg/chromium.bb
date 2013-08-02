@@ -335,8 +335,8 @@ bool Extension::HasAPIPermission(APIPermission::ID permission) const {
   return PermissionsData::HasAPIPermission(this, permission);
 }
 
-bool Extension::HasAPIPermission(const std::string& function_name) const {
-  return PermissionsData::HasAPIPermission(this, function_name);
+bool Extension::HasAPIPermission(const std::string& permission_name) const {
+  return PermissionsData::HasAPIPermission(this, permission_name);
 }
 
 scoped_refptr<const PermissionSet> Extension::GetActivePermissions() const {
@@ -480,7 +480,7 @@ bool Extension::can_be_incognito_enabled() const {
 }
 
 bool Extension::force_incognito_enabled() const {
-  return GetActivePermissions()->HasAnyAccessToAPI("proxy");
+  return PermissionsData::HasAPIPermission(this, APIPermission::kProxy);
 }
 
 void Extension::AddWebExtentPattern(const URLPattern& pattern) {

@@ -93,10 +93,13 @@ class PermissionsData {
   // Returns true if the |extension| has the given |permission|. Prefer
   // IsExtensionWithPermissionOrSuggestInConsole when developers may be using an
   // api that requires a permission they didn't know about, e.g. open web apis.
+  // Note this does not include APIs with no corresponding permission, like
+  // "runtime" or "browserAction".
+  // TODO(mpcomplete): drop the "API" from these names, it's confusing.
   static bool HasAPIPermission(const Extension* extension,
                                APIPermission::ID permission);
   static bool HasAPIPermission(const Extension* extension,
-                               const std::string& function_name);
+                               const std::string& permission_name);
   static bool HasAPIPermissionForTab(const Extension* extension,
                                      int tab_id,
                                      APIPermission::ID permission);

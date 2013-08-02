@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/features/api_feature.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/simple_feature.h"
@@ -26,6 +27,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
+
+using extension_test_util::BuildExtension;
 
 SimpleFeature* CreateAPIFeature() {
   return new APIFeature();
@@ -480,7 +483,7 @@ TEST(ExtensionAPITest, HostedAppPermissions) {
   scoped_ptr<ExtensionAPI> extension_api(
       ExtensionAPI::CreateWithDefaultConfiguration());
 
-  // "runtime" should not be available in hosted apps.
+  // "runtime" and "tabs" should not be available in hosted apps.
   EXPECT_FALSE(extension_api->IsAvailable("runtime",
                                           extension.get(),
                                           Feature::BLESSED_EXTENSION_CONTEXT,
@@ -494,6 +497,10 @@ TEST(ExtensionAPITest, HostedAppPermissions) {
                                           Feature::BLESSED_EXTENSION_CONTEXT,
                                           GURL()).is_available());
   EXPECT_FALSE(extension_api->IsAvailable("runtime.sendNativeMessage",
+                                          extension.get(),
+                                          Feature::BLESSED_EXTENSION_CONTEXT,
+                                          GURL()).is_available());
+  EXPECT_FALSE(extension_api->IsAvailable("tabs.create",
                                           extension.get(),
                                           Feature::BLESSED_EXTENSION_CONTEXT,
                                           GURL()).is_available());
@@ -781,6 +788,85 @@ TEST(ExtensionAPITest, TypesHaveNamespace) {
   GetDictionaryFromList(dict, "parameters", 1, &sub_dict);
   EXPECT_TRUE(sub_dict->GetString("$ref", &type));
   EXPECT_EQ("fully.qualified.Type", type);
+}
+
+// Tests API availability with an empty manifest.
+TEST(ExtensionAPITest, NoPermissions) {
+  const struct {
+    const char* permission_name;
+    bool expect_success;
+  } kTests[] = {
+    // Test default module/package permission.
+    { "extension",      true },
+    { "i18n",           true },
+    { "permissions",    true },
+    { "runtime",        true },
+    { "test",           true },
+    // These require manifest keys.
+    { "browserAction",  false },
+    { "pageAction",     false },
+    { "pageActions",    false },
+    // Some negative tests.
+    { "bookmarks",      false },
+    { "cookies",        false },
+    { "history",        false },
+    // Make sure we find the module name after stripping '.'
+    { "runtime.abcd.onStartup",  true },
+    // Test Tabs functions.
+    { "tabs.create",      true },
+    { "tabs.duplicate",   true },
+    { "tabs.onRemoved",   true },
+    { "tabs.remove",      true },
+    { "tabs.update",      true },
+    { "tabs.getSelected", true },
+    { "tabs.onUpdated",   true },
+    // Test some whitelisted functions. These require no permissions.
+    { "app.getDetails",           true },
+    { "app.getDetailsForFrame",   true },
+    { "app.getIsInstalled",       true },
+    { "app.installState",         true },
+    { "app.runningState",         true },
+    { "management.getPermissionWarningsByManifest", true },
+    { "management.uninstallSelf", true },
+    // But other functions in those modules do.
+    { "management.getPermissionWarningsById", false },
+  };
+
+  scoped_ptr<ExtensionAPI> extension_api(
+      ExtensionAPI::CreateWithDefaultConfiguration());
+  scoped_refptr<Extension> extension =
+      BuildExtension(ExtensionBuilder().Pass()).Build();
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+    EXPECT_EQ(kTests[i].expect_success,
+              extension_api->IsAvailable(kTests[i].permission_name,
+                                         extension.get(),
+                                         Feature::BLESSED_EXTENSION_CONTEXT,
+                                         GURL()).is_available())
+        << "Permission being tested: " << kTests[i].permission_name;
+  }
+}
+
+// Tests that permissions that require manifest keys are available when those
+// keys are present.
+TEST(ExtensionAPITest, ManifestKeys) {
+  scoped_ptr<ExtensionAPI> extension_api(
+      ExtensionAPI::CreateWithDefaultConfiguration());
+
+  scoped_refptr<Extension> extension =
+      BuildExtension(ExtensionBuilder().Pass())
+      .MergeManifest(DictionaryBuilder().Set("browser_action",
+                                             DictionaryBuilder().Pass()))
+      .Build();
+
+  EXPECT_TRUE(extension_api->IsAvailable("browserAction",
+                                         extension.get(),
+                                         Feature::BLESSED_EXTENSION_CONTEXT,
+                                         GURL()).is_available());
+  EXPECT_FALSE(extension_api->IsAvailable("pageAction",
+                                          extension.get(),
+                                          Feature::BLESSED_EXTENSION_CONTEXT,
+                                          GURL()).is_available());
 }
 
 }  // namespace extensions

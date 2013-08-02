@@ -37,44 +37,6 @@ bool RcdBetterThan(const std::string& a, const std::string& b) {
   return false;
 }
 
-// Names of API modules that can be used without listing it in the
-// permissions section of the manifest.
-const char* kNonPermissionModuleNames[] = {
-  "browserAction",
-  "commands",
-  "devtools",
-  "events",
-  "extension",
-  "i18n",
-  "omnibox",
-  "pageAction",
-  "pageActions",
-  "permissions",
-  "runtime",
-  "scriptBadge",
-  "tabs",
-  "test",
-  "types",
-  "windows"
-};
-const size_t kNumNonPermissionModuleNames =
-    arraysize(kNonPermissionModuleNames);
-
-// Names of functions (within modules requiring permissions) that can be used
-// without asking for the module permission. In other words, functions you can
-// use with no permissions specified.
-const char* kNonPermissionFunctionNames[] = {
-  "app.getDetails",
-  "app.getDetailsForFrame",
-  "app.getIsInstalled",
-  "app.installState",
-  "app.runningState",
-  "management.getPermissionWarningsByManifest",
-  "management.uninstallSelf",
-};
-const size_t kNumNonPermissionFunctionNames =
-    arraysize(kNonPermissionFunctionNames);
-
 void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
   DCHECK(out);
   for (URLPatternSet::const_iterator i = set.begin(); i != set.end(); ++i) {
@@ -83,19 +45,6 @@ void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
     out->AddPattern(p);
   }
 }
-
-// Strips out the API name from a function or event name.
-// Functions will be of the form api_name.function
-// Events will be of the form api_name/id or api_name.optional.stuff
-std::string GetPermissionName(const std::string& function_name) {
-  size_t separator = function_name.find_first_of("./");
-  if (separator != std::string::npos)
-    return function_name.substr(0, separator);
-  else
-    return function_name;
-}
-
-
 
 }  // namespace
 
@@ -229,21 +178,7 @@ std::set<std::string> PermissionSet::GetAPIsAsStrings() const {
   return apis_str;
 }
 
-bool PermissionSet::HasAnyAccessToAPI(
-    const std::string& api_name) const {
-  if (HasAccessToFunction(api_name, true))
-    return true;
-
-  for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i) {
-    if (api_name == GetPermissionName(kNonPermissionFunctionNames[i]))
-      return true;
-  }
-
-  return false;
-}
-
-std::set<std::string>
-    PermissionSet::GetDistinctHostsForDisplay() const {
+std::set<std::string> PermissionSet::GetDistinctHostsForDisplay() const {
   URLPatternSet hosts_displayed_as_url;
   // Filters out every URL pattern that matches chrome:// scheme.
   for (URLPatternSet::const_iterator i = effective_hosts_.begin();
@@ -360,6 +295,13 @@ bool PermissionSet::HasAPIPermission(
   return apis().find(id) != apis().end();
 }
 
+bool PermissionSet::HasAPIPermission(const std::string& permission_name) const {
+  const APIPermissionInfo* permission =
+      PermissionsInfo::GetInstance()->GetByName(permission_name);
+  CHECK(permission) << permission_name;
+  return (permission && apis_.count(permission->id()));
+}
+
 bool PermissionSet::CheckAPIPermission(APIPermission::ID permission) const {
   return CheckAPIPermissionWithParam(permission, NULL);
 }
@@ -371,45 +313,6 @@ bool PermissionSet::CheckAPIPermissionWithParam(
   if (iter == apis().end())
     return false;
   return iter->Check(param);
-}
-
-bool PermissionSet::HasAccessToFunction(
-    const std::string& function_name, bool allow_implicit) const {
-  // TODO(jstritar): Embed this information in each permission and add a method
-  // like GrantsAccess(function_name) to APIPermission. A "default"
-  // permission can then handle the modules and functions that everyone can
-  // access.
-  if (allow_implicit) {
-    for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i) {
-      if (function_name == kNonPermissionFunctionNames[i])
-        return true;
-    }
-  }
-
-  // Search for increasingly smaller substrings of |function_name| to see if we
-  // find a matching permission or non-permission module name. E.g. for
-  // "a.b.c", we'll search on "a.b.c", then "a.b", and finally "a".
-  std::string name = function_name;
-  size_t lastdot;
-  do {
-    const APIPermissionInfo* permission =
-        PermissionsInfo::GetInstance()->GetByName(name);
-    if (permission && apis_.count(permission->id()))
-      return true;
-
-    if (allow_implicit) {
-      for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i) {
-        if (name == kNonPermissionModuleNames[i]) {
-          return true;
-        }
-      }
-    }
-    lastdot = name.find_last_of("./");
-    if (lastdot != std::string::npos)
-      name = std::string(name, 0, lastdot);
-  } while (lastdot != std::string::npos);
-
-  return false;
 }
 
 bool PermissionSet::HasExplicitAccessToOrigin(

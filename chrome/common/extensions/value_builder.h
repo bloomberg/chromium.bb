@@ -20,8 +20,8 @@
 //                         .Append("foo").Append("bar") /* No .Build() */);
 //
 // Because of limitations in C++03, and to avoid extra copies, you can't pass a
-// just-constructed Builder into another Builder's method without setting at
-// least 1 field.
+// just-constructed Builder into another Builder's method directly. Use the
+// Pass() method.
 //
 // The Build() method invalidates its builder, and returns ownership of the
 // built value.
@@ -49,6 +49,10 @@ class DictionaryBuilder {
   explicit DictionaryBuilder(const base::DictionaryValue& init);
   ~DictionaryBuilder();
 
+  // Workaround to allow you to pass rvalue ExtensionBuilders by reference to
+  // other functions.
+  DictionaryBuilder& Pass() { return *this; }
+
   // Can only be called once, after which it's invalid to use the builder.
   scoped_ptr<base::DictionaryValue> Build() { return dict_.Pass(); }
 
@@ -72,6 +76,10 @@ class ListBuilder {
   ListBuilder();
   explicit ListBuilder(const base::ListValue& init);
   ~ListBuilder();
+
+  // Workaround to allow you to pass rvalue ExtensionBuilders by reference to
+  // other functions.
+  ListBuilder& Pass() { return *this; }
 
   // Can only be called once, after which it's invalid to use the builder.
   scoped_ptr<base::ListValue> Build() { return list_.Pass(); }

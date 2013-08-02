@@ -87,6 +87,7 @@ class APIPermission {
     kIdentity,
     kIdentityPrivate,
     kIdle,
+    kInfobars,
     kInput,
     kInputMethodPrivate,
     kLocation,

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/events.h"
+#include "chrome/common/extensions/api/extension_api.h"
 #include "content/public/browser/browser_thread.h"
 
 using extensions::api::events::Rule;
@@ -29,7 +30,11 @@ RulesFunction::~RulesFunction() {}
 bool RulesFunction::HasPermission() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
-  return extension_->HasAPIPermission(event_name);
+  Feature::Availability availability =
+      ExtensionAPI::GetSharedInstance()->IsAvailable(
+          event_name, extension_, Feature::BLESSED_EXTENSION_CONTEXT,
+          source_url());
+  return availability.is_available();
 }
 
 bool RulesFunction::RunImpl() {

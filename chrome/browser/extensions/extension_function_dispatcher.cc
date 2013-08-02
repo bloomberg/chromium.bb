@@ -41,6 +41,7 @@
 using extensions::api::activity_log_private::BlockedChromeActivityDetail;
 using extensions::Extension;
 using extensions::ExtensionAPI;
+using extensions::Feature;
 using content::RenderViewHost;
 
 namespace {
@@ -473,8 +474,8 @@ namespace {
 // to just the permissions they explicitly request. They should not have access
 // to extension APIs like eg chrome.runtime, chrome.windows, etc. that normally
 // are available without permission.
-// TODO(asargent/kalman) - get rid of this when the features system can express
-// the "non permission" permissions.
+// TODO(mpcomplete): move this to ExtensionFunction::HasPermission (or remove
+// it altogether).
 bool AllowHostedAppAPICall(const Extension& extension,
                            const GURL& source_url,
                            const std::string& function_name) {
@@ -484,11 +485,11 @@ bool AllowHostedAppAPICall(const Extension& extension,
   if (!extension.web_extent().MatchesURL(source_url))
     return false;
 
-  // We just allow the hosted app's explicit permissions, plus chrome.test.
-  scoped_refptr<const extensions::PermissionSet> permissions =
-      extension.GetActivePermissions();
-  return (permissions->HasAccessToFunction(function_name, false) ||
-          StartsWithASCII(function_name, "test.", true /*case_sensitive*/));
+  Feature::Availability availability =
+      ExtensionAPI::GetSharedInstance()->IsAvailable(
+          function_name, &extension, Feature::BLESSED_EXTENSION_CONTEXT,
+          source_url);
+  return availability.is_available();
 }
 
 }  // namespace

@@ -10,11 +10,37 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::DictionaryBuilder;
 using extensions::Extension;
+using extensions::ExtensionBuilder;
+using extensions::ListBuilder;
 using extensions::Manifest;
+
+namespace extensions {
+namespace extension_test_util {
+
+ExtensionBuilder& BuildExtension(ExtensionBuilder& builder) {
+  return builder
+         .SetManifest(DictionaryBuilder()
+                      .Set("name", "Test extension")
+                      .Set("version", "1.0")
+                      .Set("manifest_version", 2));
+}
+
+ExtensionBuilder& BuildExtensionWithPermissions(ExtensionBuilder& builder,
+                                                ListBuilder& permissions) {
+  return
+      BuildExtension(builder)
+      .MergeManifest(
+           DictionaryBuilder().Set("permissions", permissions));
+}
+
+}  // namespace extension_test_util
+}  // namespace extensions
 
 namespace extension_test_util {
 

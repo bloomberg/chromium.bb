@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -23,6 +24,8 @@
 
 using content::BrowserThread;
 using content::RenderViewHost;
+using extensions::ExtensionAPI;
+using extensions::Feature;
 
 // static
 void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {
@@ -70,7 +73,10 @@ IOThreadExtensionFunction* ExtensionFunction::AsIOThreadExtensionFunction() {
 }
 
 bool ExtensionFunction::HasPermission() {
-  return extension_->HasAPIPermission(name_);
+  Feature::Availability availability =
+      ExtensionAPI::GetSharedInstance()->IsAvailable(
+          name_, extension_, Feature::BLESSED_EXTENSION_CONTEXT, source_url());
+  return availability.is_available();
 }
 
 void ExtensionFunction::OnQuotaExceeded(const std::string& violation_error) {

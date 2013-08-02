@@ -95,6 +95,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
+                       SelfUninstallNoPermissions) {
+  ExtensionTestMessageListener listener1("success", false);
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/self_uninstall_helper")));
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/self_uninstall_noperm")));
+  ASSERT_TRUE(listener1.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
                        UninstallWithConfirmDialog) {
   ExtensionService* service = ExtensionSystem::Get(browser()->profile())->
       extension_service();

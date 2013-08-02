@@ -8,11 +8,22 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
 class Extension;
-}
+
+// Newer functions go here.
+// TODO(mpcomplete): migrate older functions over.
+namespace extension_test_util {
+
+ExtensionBuilder& BuildExtension(ExtensionBuilder& builder);
+ExtensionBuilder& BuildExtensionWithPermissions(ExtensionBuilder& builder,
+                                                ListBuilder& permissions);
+
+}  // namespace extension_test_util
+}  // namespace extensions
 
 namespace extension_test_util {
 

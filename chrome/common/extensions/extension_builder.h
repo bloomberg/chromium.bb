@@ -26,6 +26,10 @@ class ExtensionBuilder {
   // CHECKs that the extension was created successfully.
   scoped_refptr<Extension> Build();
 
+  // Workaround to allow you to pass rvalue ExtensionBuilders by reference to
+  // other functions, e.g. UseBuilder(ExtensionBuilder().Pass())
+  ExtensionBuilder& Pass() { return *this; }
+
   // Defaults to FilePath().
   ExtensionBuilder& SetPath(const base::FilePath& path);
 
@@ -36,6 +40,10 @@ class ExtensionBuilder {
   ExtensionBuilder& SetManifest(DictionaryBuilder& manifest_builder) {
     return SetManifest(manifest_builder.Build());
   }
+
+  // Adds the keys from the DictionaryBuilder to the manifest, with new keys
+  // taking precedence.
+  ExtensionBuilder& MergeManifest(DictionaryBuilder& builder);
 
   ExtensionBuilder& AddFlags(int init_from_value_flags);
 

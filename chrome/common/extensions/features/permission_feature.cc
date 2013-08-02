@@ -27,7 +27,7 @@ Feature::Availability PermissionFeature::IsAvailableToContext(
   if (!availability.is_available())
     return availability;
 
-  if (extension && !extension->HasAPIPermission(name()))
+  if (extension && !PermissionsData::HasAPIPermission(extension, name()))
     return CreateAvailability(NOT_PRESENT, extension->GetType());
 
   return CreateAvailability(IS_AVAILABLE);
@@ -49,4 +49,4 @@ std::string PermissionFeature::Parse(const base::DictionaryValue* value) {
   return std::string();
 }
 
-}  // namespace
+}  // namespace extensions

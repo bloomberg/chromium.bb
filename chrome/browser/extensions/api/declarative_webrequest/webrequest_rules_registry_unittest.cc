@@ -33,11 +33,12 @@ const char kRuleId3[] = "rule3";
 const char kRuleId4[] = "rule4";
 }  // namespace
 
+using extension_test_util::LoadManifest;
+using extension_test_util::LoadManifestUnchecked;
+
 namespace extensions {
 
 using base::Value;
-using extension_test_util::LoadManifest;
-using extension_test_util::LoadManifestUnchecked;
 using testing::HasSubstr;
 
 namespace helpers = extension_web_request_api_helpers;

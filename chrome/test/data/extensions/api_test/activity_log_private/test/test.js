@@ -45,9 +45,9 @@ testCases.push({
                                'blocked_call', function response() { });
    },
    // Blocked api calls only log the api module name and not the
-   // function, so this is intentionally 'management' rather than
-   // 'management.getAll'.
-   expected_activity: ['management']
+   // function, so this is intentionally 'bookmarks' rather than
+   // 'bookmarks.getTree'.
+   expected_activity: ['bookmarks']
 });
 testCases.push({
   func: function triggerObjectMethods() {

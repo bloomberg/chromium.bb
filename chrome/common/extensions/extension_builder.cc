@@ -43,6 +43,11 @@ ExtensionBuilder& ExtensionBuilder::SetManifest(
   return *this;
 }
 
+ExtensionBuilder& ExtensionBuilder::MergeManifest(DictionaryBuilder& builder) {
+  manifest_->MergeDictionary(builder.Build().get());
+  return *this;
+}
+
 ExtensionBuilder& ExtensionBuilder::AddFlags(int init_from_value_flags) {
   flags_ |= init_from_value_flags;
   return *this;

@@ -151,53 +151,6 @@ TEST(ExtensionPermissionsTest, SocketPermissions) {
         "239.255.255.250", 1900));
 }
 
-// This tests the API permissions with an empty manifest (one that just
-// specifies a name and a version and nothing else).
-TEST(ExtensionPermissionsTest, ApiPermissions) {
-  const struct {
-    const char* permission_name;
-    bool expect_success;
-  } kTests[] = {
-    // Negative test.
-    { "non_existing_permission", false },
-    // Test default module/package permission.
-    { "browserAction",  true },
-    { "devtools",       true },
-    { "extension",      true },
-    { "i18n",           true },
-    { "pageAction",     true },
-    { "pageActions",    true },
-    { "test",           true },
-    // Some negative tests.
-    { "bookmarks",      false },
-    { "cookies",        false },
-    { "history",        false },
-    // Make sure we find the module name after stripping '.' and '/'.
-    { "browserAction/abcd/onClick",  true },
-    { "browserAction.abcd.onClick",  true },
-    // Test Tabs functions.
-    { "tabs.create",      true},
-    { "tabs.duplicate",   true},
-    { "tabs.onRemoved",   true},
-    { "tabs.remove",      true},
-    { "tabs.update",      true},
-    { "tabs.getSelected", true},
-    { "tabs.onUpdated",   true },
-    // Test getPermissionWarnings functions. Only one requires permissions.
-    { "management.getPermissionWarningsById", false },
-    { "management.getPermissionWarningsByManifest", true },
-  };
-
-  scoped_refptr<Extension> extension;
-  extension = LoadManifest("empty_manifest", "empty.json");
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
-    EXPECT_EQ(kTests[i].expect_success,
-              extension->HasAPIPermission(kTests[i].permission_name))
-                  << "Permission being tested: " << kTests[i].permission_name;
-  }
-}
-
 TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-apis.json");

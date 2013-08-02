@@ -58,11 +58,11 @@ function checkAppCalls() {
 }
 
 // Makes an API call that the extension doesn't have permission for.
-// Don't add the management permission or this test won't test the code path.
+// Don't add the bookmarks permission or this test won't test the code path.
 function makeBlockedApiCall() {
   resetStatus();
   try {
-    var allExtensions = chrome.management.getAll();
+    var allExtensions = chrome.bookmarks.getTree();
   } catch (err) { }
   appendCompleted('makeBlockedApiCall');
 }

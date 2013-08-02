@@ -356,11 +356,11 @@ bool PermissionsData::HasAPIPermission(const Extension* extension,
 }
 
 // static
-bool PermissionsData::HasAPIPermission(const Extension* extension,
-                                       const std::string& function_name) {
+bool PermissionsData::HasAPIPermission(
+    const Extension* extension,
+    const std::string& permission_name) {
   base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
-  return GetActivePermissions(extension)->HasAccessToFunction(
-      function_name, true);  // include implicit
+  return GetActivePermissions(extension)->HasAPIPermission(permission_name);
 }
 
 // static

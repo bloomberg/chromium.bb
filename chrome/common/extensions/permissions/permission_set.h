@@ -70,12 +70,6 @@ class PermissionSet
   // Gets the API permissions in this set as a set of strings.
   std::set<std::string> GetAPIsAsStrings() const;
 
-  // Returns whether this namespace has any functions which the extension has
-  // permission to use.  For example, even though the extension may not have
-  // the "tabs" permission, "tabs.create" requires no permissions so
-  // HasAnyAccessToAPI("tabs") will return true.
-  bool HasAnyAccessToAPI(const std::string& api_name) const;
-
   // Gets the localized permission messages that represent this set.
   // The set of permission messages shown varies by extension type.
   PermissionMessages GetPermissionMessages(Manifest::Type extension_type) const;
@@ -96,6 +90,11 @@ class PermissionSet
   // Returns true if the set has the specified API permission.
   bool HasAPIPermission(APIPermission::ID permission) const;
 
+  // Returns true if the |extension| explicitly requests access to the given
+  // |permission_name|. Note this does not include APIs without no corresponding
+  // permission, like "runtime" or "browserAction".
+  bool HasAPIPermission(const std::string& permission_name) const;
+
   // Returns true if the set allows the given permission with the default
   // permission detal.
   bool CheckAPIPermission(APIPermission::ID permission) const;
@@ -103,13 +102,6 @@ class PermissionSet
   // Returns true if the set allows the given permission and permission param.
   bool CheckAPIPermissionWithParam(APIPermission::ID permission,
       const APIPermission::CheckParam* param) const;
-
-  // Returns true if the permissions in this set grant access to the specified
-  // |function_name|. The |allow_implicit| flag controls whether we
-  // want to strictly check against just the explicit permissions, or also
-  // include implicit "no permission needed" namespaces/functions.
-  bool HasAccessToFunction(const std::string& function_name,
-                           bool allow_implicit) const;
 
   // Returns true if this includes permission to access |origin|.
   bool HasExplicitAccessToOrigin(const GURL& origin) const;

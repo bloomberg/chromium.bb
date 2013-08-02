@@ -108,6 +108,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Basics) {
   ASSERT_TRUE(RunExtensionSubtest("management/test", "basics.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, NoPermission) {
+  LoadExtensions();
+  ASSERT_TRUE(RunExtensionSubtest("management/no_permission", "test.html"));
+}
+
 // Disabled: http://crbug.com/174411
 #if defined(OS_WIN)
 #define MAYBE_Uninstall DISABLED_Uninstall
