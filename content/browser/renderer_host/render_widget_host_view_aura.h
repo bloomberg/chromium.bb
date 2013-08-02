@@ -222,7 +222,8 @@ class RenderWidgetHostViewAura
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
-  virtual void GestureEventAck(int gesture_event_type) OVERRIDE;
+  virtual void GestureEventAck(int gesture_event_type,
+                               InputEventAckState ack_result) OVERRIDE;
   virtual void ProcessAckedTouchEvent(
       const TouchEventWithLatencyInfo& touch,
       InputEventAckState ack_result) OVERRIDE;

@@ -585,7 +585,11 @@ void InProcessViewRenderer::ScrollTo(gfx::Vector2d new_value) {
   gfx::Vector2dF new_value_css = gfx::ToRoundedVector2d(
       gfx::ScaleVector2d(new_value, 1.0f / (dip_scale_ * page_scale_factor_)));
 
-  DCHECK(scroll_offset_css_ != new_value_css);
+  // It's possible that more than one set of unique physical coordinates maps
+  // to the same set of CSS coordinates which means we can't reliably early-out
+  // earlier in the call stack.
+  if (scroll_offset_css_ == new_value_css)
+    return;
 
   scroll_offset_css_ = new_value_css;
 

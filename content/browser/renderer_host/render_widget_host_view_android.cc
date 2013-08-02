@@ -875,6 +875,15 @@ void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
   // intentionally empty, like RenderWidgetHostViewViews
 }
 
+void RenderWidgetHostViewAndroid::GestureEventAck(
+    int gesture_event_type,
+    InputEventAckState ack_result) {
+  if (gesture_event_type == WebKit::WebInputEvent::GestureFlingStart &&
+      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
+    content_view_core_->UnhandledFlingStartEvent();
+  }
+}
+
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const WebKit::WebInputEvent& input_event) {
   if (host_) {

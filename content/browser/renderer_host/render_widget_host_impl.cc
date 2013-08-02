@@ -2107,7 +2107,7 @@ void RenderWidgetHostImpl::OnGestureEventAck(
     overscroll_controller_->ReceivedEventACK(event, processed);
 
   if (view_)
-    view_->GestureEventAck(event.type);
+    view_->GestureEventAck(event.type, ack_result);
 }
 
 void RenderWidgetHostImpl::OnTouchEventAck(

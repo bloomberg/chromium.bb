@@ -182,15 +182,31 @@ import java.util.Map;
      * An interface that allows the embedder to be notified when the pinch gesture starts and
      * stops.
      */
-    public interface PinchGestureStateListener {
+    public interface GestureStateListener {
         /**
          * Called when the pinch gesture starts.
          */
         void onPinchGestureStart();
+
         /**
          * Called when the pinch gesture ends.
          */
         void onPinchGestureEnd();
+
+        /**
+         * Called when the fling gesture is sent.
+         */
+        void onFlingStartGesture(int vx, int vy);
+
+        /**
+         * Called when the fling cancel gesture is sent.
+         */
+        void onFlingCancelGesture();
+
+        /**
+         * Called when a fling event was not handled by the renderer.
+         */
+        void onUnhandledFlingStartEvent();
     }
 
     /**
@@ -201,10 +217,12 @@ import java.util.Map;
          * Called when it's reasonable to show zoom controls.
          */
         void invokeZoomPicker();
+
         /**
          * Called when zoom controls need to be hidden (e.g. when the view hides).
          */
         void dismissZoomPicker();
+
         /**
          * Called when page scale has been changed, so the controls can update their state.
          */
@@ -335,7 +353,7 @@ import java.util.Map;
     private int mPid = 0;
 
     private ContentViewGestureHandler mContentViewGestureHandler;
-    private PinchGestureStateListener mPinchGestureStateListener;
+    private GestureStateListener mGestureStateListener;
     private UpdateFrameInfoListener mUpdateFrameInfoListener;
     private ZoomManager mZoomManager;
     private ZoomControlsDelegate mZoomControlsDelegate;
@@ -1216,13 +1234,21 @@ import java.util.Map;
         mContentViewGestureHandler.confirmTouchEvent(ackResult);
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void unhandledFlingStartEvent() {
+        if (mGestureStateListener != null) {
+            mGestureStateListener.onUnhandledFlingStartEvent();
+        }
+    }
+
     @Override
     public boolean sendGesture(int type, long timeMs, int x, int y, boolean lastInputEventForVSync,
                                Bundle b) {
         if (offerGestureToEmbedder(type)) return false;
         if (mNativeContentViewCore == 0) return false;
         updateTextHandlesForGesture(type);
-        updatePinchGestureStateListener(type);
+        updateGestureStateListener(type, b);
         if (lastInputEventForVSync && isVSyncNotificationEnabled()) {
             assert type == ContentViewGestureHandler.GESTURE_SCROLL_BY ||
                     type == ContentViewGestureHandler.GESTURE_PINCH_BY;
@@ -1291,19 +1317,27 @@ import java.util.Map;
         }
     }
 
-    public void setPinchGestureStateListener(PinchGestureStateListener pinchGestureStateListener) {
-        mPinchGestureStateListener = pinchGestureStateListener;
+    public void setGestureStateListener(GestureStateListener pinchGestureStateListener) {
+        mGestureStateListener = pinchGestureStateListener;
     }
 
-    void updatePinchGestureStateListener(int gestureType) {
-        if (mPinchGestureStateListener == null) return;
+    void updateGestureStateListener(int gestureType, Bundle b) {
+        if (mGestureStateListener == null) return;
 
         switch (gestureType) {
             case ContentViewGestureHandler.GESTURE_PINCH_BEGIN:
-                mPinchGestureStateListener.onPinchGestureStart();
+                mGestureStateListener.onPinchGestureStart();
                 break;
             case ContentViewGestureHandler.GESTURE_PINCH_END:
-                mPinchGestureStateListener.onPinchGestureEnd();
+                mGestureStateListener.onPinchGestureEnd();
+                break;
+            case ContentViewGestureHandler.GESTURE_FLING_START:
+                mGestureStateListener.onFlingStartGesture(
+                        b.getInt(ContentViewGestureHandler.VELOCITY_X, 0),
+                        b.getInt(ContentViewGestureHandler.VELOCITY_Y, 0));
+                break;
+            case ContentViewGestureHandler.GESTURE_FLING_CANCEL:
+                mGestureStateListener.onFlingCancelGesture();
                 break;
             default:
                 break;

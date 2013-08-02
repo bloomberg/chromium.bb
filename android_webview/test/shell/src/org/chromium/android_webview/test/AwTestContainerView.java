@@ -119,6 +119,11 @@ public class AwTestContainerView extends FrameLayout {
     }
 
     @Override
+    public void computeScroll() {
+        mAwContents.computeScroll();
+    }
+
+    @Override
     public void onVisibilityChanged(View changedView, int visibility) {
         super.onVisibilityChanged(changedView, visibility);
         mAwContents.onVisibilityChanged(changedView, visibility);

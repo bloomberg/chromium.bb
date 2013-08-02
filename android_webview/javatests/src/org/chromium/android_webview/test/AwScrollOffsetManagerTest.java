@@ -4,8 +4,10 @@
 
 package org.chromium.android_webview.test;
 
+import android.content.Context;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.widget.OverScroller;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -21,6 +23,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         private int mScrollY;
         private int mNativeScrollX;
         private int mNativeScrollY;
+        private int mInvalidateCount;
 
         public int getOverScrollDeltaX() {
             return mOverScrollDeltaX;
@@ -48,6 +51,10 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
 
         public int getNativeScrollY() {
             return mNativeScrollY;
+        }
+
+        public int getInvalidateCount() {
+            return mInvalidateCount;
         }
 
         @Override
@@ -79,6 +86,11 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         public int getContainerViewScrollY() {
             return mScrollY;
         }
+
+        @Override
+        public void invalidate() {
+            mInvalidateCount += 1;
+        }
     }
 
     private void simulateScrolling(AwScrollOffsetManager offsetManager,
@@ -98,7 +110,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testWhenContentSizeMatchesView() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
+        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
         final int width = 132;
         final int height = 212;
@@ -150,7 +163,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testScrollRangeAndMaxOffset() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
+        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
         offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
@@ -207,7 +221,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
                 return overrideScrollY;
             }
         };
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
+        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
         offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
@@ -233,7 +248,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
                 return overrideScrollY;
             }
         };
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
+        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
         offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
@@ -247,7 +263,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testScrollContainerViewTo() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
+        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
         final int scrollX = 31;
         final int scrollY = 41;
@@ -269,7 +286,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testOnContainerViewOverScrolled() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
+        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
         final int scrollX = 31;
         final int scrollY = 41;
@@ -293,7 +311,8 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
     @Feature({"AndroidWebView"})
     public void testDefersScrollUntilTouchEnd() {
         TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate);
+        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
         final int scrollX = 31;
         final int scrollY = 41;
@@ -313,5 +332,23 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         assertEquals(scrollY, delegate.getScrollY());
         assertEquals(scrollX, delegate.getNativeScrollX());
         assertEquals(scrollY, delegate.getNativeScrollY());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testFlingScroll() {
+        TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
+        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
+        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
+
+        offsetManager.flingScroll(0, 101);
+        assertTrue(!scroller.isFinished());
+        assertTrue(delegate.getInvalidateCount() == 1);
+        assertEquals(101, (int) scroller.getCurrVelocity());
+
+        offsetManager.flingScroll(111, 0);
+        assertTrue(!scroller.isFinished());
+        assertTrue(delegate.getInvalidateCount() == 2);
+        assertEquals(111, (int) scroller.getCurrVelocity());
     }
 }

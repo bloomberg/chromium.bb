@@ -471,6 +471,14 @@ void ContentViewCoreImpl::ConfirmTouchEvent(InputEventAckState ack_result) {
                                          static_cast<jint>(ack_result));
 }
 
+void ContentViewCoreImpl::UnhandledFlingStartEvent() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return;
+  Java_ContentViewCore_unhandledFlingStartEvent(env, j_obj.obj());
+}
+
 void ContentViewCoreImpl::HasTouchEventHandlers(bool need_touch_events) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);

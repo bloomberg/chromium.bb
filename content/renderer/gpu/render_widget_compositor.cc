@@ -274,6 +274,9 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
           : SkColorSetARGB(128, 128, 128, 128);
   settings.solid_color_scrollbar_thickness_dip = 3;
   settings.highp_threshold_min = 2048;
+  // Android WebView handles root layer flings itself.
+  settings.ignore_root_layer_flings =
+      widget->UsingSynchronousRendererCompositor();
 #endif
 
   if (!compositor->initialize(settings))

@@ -63,6 +63,7 @@ class CC_EXPORT LayerTreeSettings {
   bool strict_layer_property_change_checking;
   bool use_map_image;
   std::string compositor_name;
+  bool ignore_root_layer_flings;
 
   LayerTreeDebugState initial_debug_state;
 };

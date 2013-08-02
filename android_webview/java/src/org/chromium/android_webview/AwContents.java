@@ -31,6 +31,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
+import android.widget.OverScroller;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -372,10 +373,15 @@ public class AwContents {
         public int getContainerViewScrollY() {
             return mContainerView.getScrollY();
         }
+
+        @Override
+        public void invalidate() {
+            mContainerView.invalidate();
+        }
     }
 
     //--------------------------------------------------------------------------------------------
-    private class AwPinchGestureStateListener implements ContentViewCore.PinchGestureStateListener {
+    private class AwGestureStateListener implements ContentViewCore.GestureStateListener {
         @Override
         public void onPinchGestureStart() {
             // While it's possible to re-layout the view during a pinch gesture, the effect is very
@@ -387,8 +393,25 @@ public class AwContents {
             mLayoutSizer.freezeLayoutRequests();
         }
 
+        @Override
         public void onPinchGestureEnd() {
             mLayoutSizer.unfreezeLayoutRequests();
+        }
+
+        @Override
+        public void onFlingStartGesture(int velocityX, int velocityY) {
+            mScrollOffsetManager.onFlingStartGesture(velocityX, velocityY);
+        }
+
+
+        @Override
+        public void onFlingCancelGesture() {
+            mScrollOffsetManager.onFlingCancelGesture();
+        }
+
+        @Override
+        public void onUnhandledFlingStartEvent() {
+            mScrollOffsetManager.onUnhandledFlingStartEvent();
         }
     }
 
@@ -424,7 +447,7 @@ public class AwContents {
 
     private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
             InternalAccessDelegate internalDispatcher, int nativeWebContents,
-            ContentViewCore.PinchGestureStateListener pinchGestureStateListener,
+            ContentViewCore.GestureStateListener pinchGestureStateListener,
             ContentViewClient contentViewClient,
             ContentViewCore.ZoomControlsDelegate zoomControlsDelegate) {
       ContentViewCore contentViewCore = new ContentViewCore(containerView.getContext());
@@ -432,7 +455,7 @@ public class AwContents {
       // compositor, not because input events are delivered immediately.
       contentViewCore.initialize(containerView, internalDispatcher, nativeWebContents, null,
                 ContentViewCore.INPUT_EVENTS_DELIVERED_IMMEDIATELY);
-      contentViewCore.setPinchGestureStateListener(pinchGestureStateListener);
+      contentViewCore.setGestureStateListener(pinchGestureStateListener);
       contentViewCore.setContentViewClient(contentViewClient);
       contentViewCore.setZoomControlsDelegate(zoomControlsDelegate);
       return contentViewCore;
@@ -479,7 +502,8 @@ public class AwContents {
         mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
         mContentsClient.setDIPScale(mDIPScale);
-        mScrollOffsetManager = new AwScrollOffsetManager(new AwScrollOffsetManagerDelegate());
+        mScrollOffsetManager = new AwScrollOffsetManager(new AwScrollOffsetManagerDelegate(),
+                new OverScroller(mContainerView.getContext()));
 
         setOverScrollMode(mContainerView.getOverScrollMode());
 
@@ -513,7 +537,7 @@ public class AwContents {
         int nativeWebContents = nativeGetWebContents(mNativeAwContents);
         mContentViewCore = createAndInitializeContentViewCore(
                 mContainerView, mInternalAccessAdapter, nativeWebContents,
-                new AwPinchGestureStateListener(), mContentsClient.getContentViewClient(),
+                new AwGestureStateListener(), mContentsClient.getContentViewClient(),
                 mZoomControls);
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
@@ -870,6 +894,13 @@ public class AwContents {
     }
 
     /**
+     * @see View.computeScroll()
+     */
+    public void computeScroll() {
+        mScrollOffsetManager.computeScrollAndAbsorbGlow(mOverScrollGlow);
+    }
+
+    /**
      * @see View#computeHorizontalScrollRange()
      */
     public int computeHorizontalScrollRange() {
@@ -1174,8 +1205,8 @@ public class AwContents {
     /**
      * @see android.webkit.WebView#flingScroll(int, int)
      */
-    public void flingScroll(int vx, int vy) {
-        mContentViewCore.flingScroll(vx, vy);
+    public void flingScroll(int velocityX, int velocityY) {
+        mContentViewCore.flingScroll(velocityX, velocityY);
     }
 
     /**
@@ -1656,7 +1687,7 @@ public class AwContents {
             mOverScrollGlow.setOverScrollDeltas(deltaX, deltaY);
         }
 
-        mScrollOffsetManager.overscrollBy(deltaX, deltaY);
+        mScrollOffsetManager.overScrollBy(deltaX, deltaY);
 
         if (mOverScrollGlow != null && mOverScrollGlow.isAnimating()) {
             mContainerView.invalidate();

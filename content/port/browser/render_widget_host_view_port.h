@@ -283,7 +283,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual InputEventAckState FilterInputEvent(
       const WebKit::WebInputEvent& input_event) = 0;
 
-  virtual void GestureEventAck(int gesture_event_type) = 0;
+  virtual void GestureEventAck(int gesture_event_type,
+                               InputEventAckState ack_result) = 0;
 
   virtual void OnOverscrolled(gfx::Vector2dF accumulated_overscroll,
                               gfx::Vector2dF current_fling_velocity) = 0;

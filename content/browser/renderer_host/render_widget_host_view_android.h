@@ -149,6 +149,8 @@ class RenderWidgetHostViewAndroid
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual InputEventAckState FilterInputEvent(
       const WebKit::WebInputEvent& input_event) OVERRIDE;
+  virtual void GestureEventAck(int gesture_event_type,
+                               InputEventAckState ack_result) OVERRIDE;
   virtual void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>&
           params) OVERRIDE;

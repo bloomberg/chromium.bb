@@ -2117,10 +2117,17 @@ void LayerTreeHostImpl::ScrollEnd() {
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
-  if (active_tree_->CurrentlyScrollingLayer())
-    return ScrollStarted;
+  if (!active_tree_->CurrentlyScrollingLayer())
+    return ScrollIgnored;
 
-  return ScrollIgnored;
+  if (settings_.ignore_root_layer_flings &&
+      active_tree_->CurrentlyScrollingLayer() ==
+          active_tree_->RootScrollLayer()) {
+    ClearCurrentlyScrollingLayer();
+    return ScrollIgnored;
+  }
+
+  return ScrollStarted;
 }
 
 void LayerTreeHostImpl::NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) {

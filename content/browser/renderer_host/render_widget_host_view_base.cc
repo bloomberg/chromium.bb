@@ -432,8 +432,8 @@ InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
-void RenderWidgetHostViewBase::GestureEventAck(int gesture_event_type) {
-}
+void RenderWidgetHostViewBase::GestureEventAck(int gesture_event_type,
+                                               InputEventAckState ack_result) {}
 
 void RenderWidgetHostViewBase::SetPopupType(WebKit::WebPopupType popup_type) {
   popup_type_ = popup_type;
