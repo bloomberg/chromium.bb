@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/autofill/autofill_credit_card_bubble_controller.h"
 
-#include <limits>
 #include <string>
 
 #include "base/bind.h"
@@ -41,9 +40,7 @@ namespace autofill {
 
 namespace {
 
-// TODO(dbeam): add back a sensible limit once it's decided or remove
-// kMaxGeneratedCardTimesToShow if this behavior is finalized.
-static const int kMaxGeneratedCardTimesToShow = std::numeric_limits<int>::max();
+static const int kMaxGeneratedCardTimesToShow = 5;
 static const char kWalletGeneratedCardLearnMoreLink[] =
     "http://support.google.com/wallet/bin/answer.py?hl=en&answer=2740044";
 
