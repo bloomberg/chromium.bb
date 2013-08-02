@@ -184,6 +184,19 @@ std::string FormatEntry(const base::FilePath& path,
   return out;
 }
 
+std::string SeverityToString(logging::LogSeverity severity) {
+  switch (severity) {
+    case logging::LOG_INFO:
+      return "info";
+    case logging::LOG_WARNING:
+      return "warning";
+    case logging::LOG_ERROR:
+      return "error";
+    default:  // Treat all other higher severities as ERROR.
+      return "error";
+  }
+}
+
 // Class to handle messages from chrome://drive-internals.
 class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
  public:
@@ -682,10 +695,13 @@ void DriveInternalsWebUIHandler::UpdateEventLogSection() {
     if (log[i].id <= last_sent_event_id_)
       continue;
 
+    std::string severity = SeverityToString(log[i].severity);
+
     base::DictionaryValue* dict = new DictionaryValue;
     dict->SetString("key",
         google_apis::util::FormatTimeAsStringLocaltime(log[i].when));
-    dict->SetString("value", log[i].what);
+    dict->SetString("value", "[" + severity + "] " + log[i].what);
+    dict->SetString("class", "log-" + severity);
     list.Append(dict);
     last_sent_event_id_ = log[i].id;
   }

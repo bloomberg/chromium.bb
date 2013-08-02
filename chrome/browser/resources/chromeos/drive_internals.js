@@ -218,16 +218,20 @@ function createElementFromText(elementName, text) {
 /**
  * Updates <ul> element with the given key-value list.
  * @param {HTMLElement} ul <ul> element to be modified.
- * @param {Array} list List of dictionaries containing 'key' and 'value'.
+ * @param {Array} list List of dictionaries containing 'key', 'value' (optional)
+ * and 'class' (optional). For each element <li> element with specified class is
+ * created.
  */
 function updateKeyValueList(ul, list) {
   for (var i = 0; i < list.length; i++) {
-    var flag = list[i];
-    var text = flag.key;
-    if (list.value != '')
-      text += ': ' + flag.value;
+    var item = list[i];
+    var text = item.key;
+    if (item.value != '')
+      text += ': ' + item.value;
 
     var li = createElementFromText('li', text);
+    if (item.class)
+      li.classList.add(item.class);
     ul.appendChild(li);
   }
 }

@@ -14,3 +14,15 @@
 #cache-contents {
   font-size: small;
 }
+
+.log-error {
+  color: red;
+  font-weight: bolder;
+}
+
+.log-warning {
+  color: red;
+}
+
+.log-info {
+}
