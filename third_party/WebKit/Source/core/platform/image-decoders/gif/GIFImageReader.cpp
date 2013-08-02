@@ -107,7 +107,7 @@ bool GIFLZWContext::outputRow()
     // displaying to diminish the "venetian-blind" effect as the image is
     // loaded. Adjust pixel vertical positions to avoid the appearance of the
     // image crawling up the screen as successive passes are drawn.
-    if (m_frameContext->progressiveDisplay && m_frameContext->interlaced && ipass < 4) {
+    if (m_frameContext->progressiveDisplay() && m_frameContext->interlaced() && ipass < 4) {
         unsigned rowDup = 0;
         unsigned rowShift = 0;
 
@@ -132,34 +132,34 @@ bool GIFLZWContext::outputRow()
         drowEnd = drowStart + rowDup;
 
         // Extend if bottom edge isn't covered because of the shift upward.
-        if (((m_frameContext->height - 1) - drowEnd) <= rowShift)
-            drowEnd = m_frameContext->height - 1;
+        if (((m_frameContext->height() - 1) - drowEnd) <= rowShift)
+            drowEnd = m_frameContext->height() - 1;
 
         // Clamp first and last rows to upper and lower edge of image.
         if (drowStart < 0)
             drowStart = 0;
 
-        if ((unsigned)drowEnd >= m_frameContext->height)
-            drowEnd = m_frameContext->height - 1;
+        if ((unsigned)drowEnd >= m_frameContext->height())
+            drowEnd = m_frameContext->height() - 1;
     }
 
     // Protect against too much image data.
-    if ((unsigned)drowStart >= m_frameContext->height)
+    if ((unsigned)drowStart >= m_frameContext->height())
         return true;
 
     // CALLBACK: Let the client know we have decoded a row.
-    if (!m_client->haveDecodedRow(m_frameContext->frameId, rowBuffer, m_frameContext->width,
-        drowStart, drowEnd - drowStart + 1, m_frameContext->progressiveDisplay && m_frameContext->interlaced && ipass > 1))
+    if (!m_client->haveDecodedRow(m_frameContext->frameId(), rowBuffer, m_frameContext->width(),
+        drowStart, drowEnd - drowStart + 1, m_frameContext->progressiveDisplay() && m_frameContext->interlaced() && ipass > 1))
         return false;
 
-    if (!m_frameContext->interlaced)
+    if (!m_frameContext->interlaced())
         irow++;
     else {
         do {
             switch (ipass) {
             case 1:
                 irow += 8;
-                if (irow >= m_frameContext->height) {
+                if (irow >= m_frameContext->height()) {
                     ipass++;
                     irow = 4;
                 }
@@ -167,7 +167,7 @@ bool GIFLZWContext::outputRow()
 
             case 2:
                 irow += 8;
-                if (irow >= m_frameContext->height) {
+                if (irow >= m_frameContext->height()) {
                     ipass++;
                     irow = 2;
                 }
@@ -175,7 +175,7 @@ bool GIFLZWContext::outputRow()
 
             case 3:
                 irow += 4;
-                if (irow >= m_frameContext->height) {
+                if (irow >= m_frameContext->height()) {
                     ipass++;
                     irow = 1;
                 }
@@ -183,7 +183,7 @@ bool GIFLZWContext::outputRow()
 
             case 4:
                 irow += 2;
-                if (irow >= m_frameContext->height) {
+                if (irow >= m_frameContext->height()) {
                     ipass++;
                     irow = 0;
                 }
@@ -192,7 +192,7 @@ bool GIFLZWContext::outputRow()
             default:
                 break;
             }
-        } while (irow > (m_frameContext->height - 1));
+        } while (irow > (m_frameContext->height() - 1));
     }
     return true;
 }
@@ -233,7 +233,7 @@ bool GIFLZWContext::doLZW(const unsigned char* block, size_t bytesInBlock)
 
             // Reset the dictionary to its original state, if requested.
             if (code == clearCode) {
-                codesize = m_frameContext->datasize + 1;
+                codesize = m_frameContext->dataSize() + 1;
                 codemask = (1 << codesize) - 1;
                 avail = clearCode + 2;
                 oldcode = -1;
@@ -311,11 +311,27 @@ bool GIFLZWContext::doLZW(const unsigned char* block, size_t bytesInBlock)
     return true;
 }
 
+void GIFColorMap::buildTable(const unsigned char* data, size_t length)
+{
+    if (!m_isDefined || !m_table.isEmpty())
+        return;
+
+    RELEASE_ASSERT(m_position + m_colors * GIF_COLORS <= length);
+    const unsigned char* srcColormap = data + m_position;
+    m_table.resize(m_colors);
+    for (Table::iterator iter = m_table.begin(); iter != m_table.end(); ++iter) {
+        *iter = SkPackARGB32NoCheck(255, srcColormap[0], srcColormap[1], srcColormap[2]);
+        srcColormap += GIF_COLORS;
+    }
+}
+
 // Perform decoding for this frame. frameDecoded will be true if the entire frame is decoded.
 // Returns false if a decoding error occurred. This is a fatal error and causes the GIFImageReader to set the "decode failed" flag.
 // Otherwise, either not enough data is available to decode further than before, or the new data has been decoded successfully; returns true in this case.
 bool GIFFrameContext::decode(const unsigned char* data, size_t length, WebCore::GIFImageDecoder* client, bool* frameDecoded)
 {
+    m_localColorMap.buildTable(data, length);
+
     *frameDecoded = false;
     if (!m_lzwContext) {
         // Wait for more data to properly initialize GIFLZWContext.
@@ -356,6 +372,8 @@ bool GIFFrameContext::decode(const unsigned char* data, size_t length, WebCore::
 // Return true if decoding has progressed. Return false if an error has occurred.
 bool GIFImageReader::decode(size_t frameIndex)
 {
+    m_globalColorMap.buildTable(data(0), m_data->size());
+
     bool frameDecoded = false;
     GIFFrameContext* currentFrame = m_frames[frameIndex].get();
 
@@ -434,34 +452,20 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
             if (m_client && !m_client->setSize(m_screenWidth, m_screenHeight))
                 return false;
 
-            m_globalColormapSize = 2 << (currentComponent[4] & 0x07);
+            const size_t globalColorMapColors = 2 << (currentComponent[4] & 0x07);
 
-            if ((currentComponent[4] & 0x80) && m_globalColormapSize > 0) { /* global map */
-                // Get the global colormap
-                const size_t globalColormapBytes = 3 * m_globalColormapSize;
-                m_globalColormapPosition = dataPosition;
-
-                if (len < globalColormapBytes) {
-                    // Wait until we have enough bytes to consume the entire colormap at once.
-                    GETN(globalColormapBytes, GIFGlobalColormap);
-                    break;
-                }
-
-                m_isGlobalColormapDefined = true;
-                dataPosition += globalColormapBytes;
-                len -= globalColormapBytes;
+            if ((currentComponent[4] & 0x80) && globalColorMapColors > 0) { /* global map */
+                m_globalColorMap.setTablePositionAndSize(dataPosition, globalColorMapColors);
+                GETN(GIF_COLORS * globalColorMapColors, GIFGlobalColormap);
+                break;
             }
 
             GETN(1, GIFImageStart);
-
-            // currentComponent[6] = Pixel Aspect Ratio
-            //   Not used
-            //   float aspect = (float)((currentComponent[6] + 15) / 64.0);
             break;
         }
 
         case GIFGlobalColormap: {
-            m_isGlobalColormapDefined = true;
+            m_globalColorMap.setDefined();
             GETN(1, GIFImageStart);
             break;
         }
@@ -544,21 +548,20 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
         case GIFControlExtension: {
             addFrameIfNecessary();
             GIFFrameContext* currentFrame = m_frames.last().get();
-            currentFrame->isTransparent = *currentComponent & 0x1;
-            if (currentFrame->isTransparent)
-                currentFrame->tpixel = currentComponent[3];
+            if (*currentComponent & 0x1)
+                currentFrame->setTransparentPixel(currentComponent[3]);
 
             // We ignore the "user input" bit.
 
             // NOTE: This relies on the values in the FrameDisposalMethod enum
             // matching those in the GIF spec!
             int disposalMethod = ((*currentComponent) >> 2) & 0x7;
-            currentFrame->disposalMethod = static_cast<WebCore::ImageFrame::FrameDisposalMethod>(disposalMethod);
+            currentFrame->setDisposalMethod(static_cast<WebCore::ImageFrame::FrameDisposalMethod>(disposalMethod));
             // Some specs say that disposal method 3 is "overwrite previous", others that setting
             // the third bit of the field (i.e. method 4) is. We map both to the same value.
             if (disposalMethod == 4)
-                currentFrame->disposalMethod = WebCore::ImageFrame::DisposeOverwritePrevious;
-            currentFrame->delayTime = GETINT16(currentComponent + 1) * 10;
+                currentFrame->setDisposalMethod(WebCore::ImageFrame::DisposeOverwritePrevious);
+            currentFrame->setDelayTime(GETINT16(currentComponent + 1) * 10);
             GETN(1, GIFConsumeBlock);
             break;
         }
@@ -670,13 +673,10 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
             GIFFrameContext* currentFrame = m_frames.last().get();
 
             currentFrame->setHeaderDefined();
-            currentFrame->xOffset = xOffset;
-            currentFrame->yOffset = yOffset;
-            currentFrame->height = height;
-            currentFrame->width = width;
+            currentFrame->setRect(xOffset, yOffset, width, height);
             m_screenWidth = std::max(m_screenWidth, width);
             m_screenHeight = std::max(m_screenHeight, height);
-            currentFrame->interlaced = currentComponent[8] & 0x40;
+            currentFrame->setInterlaced(currentComponent[8] & 0x40);
 
             // Overlaying interlaced, transparent GIFs over
             // existing image data using the Haeberli display hack
@@ -687,38 +687,24 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
             // frame can be progressively displayed.
             // FIXME: It is possible that a non-transparent frame
             // can be interlaced and progressively displayed.
-            currentFrame->progressiveDisplay = currentFrameIsFirstFrame();
+            currentFrame->setProgressiveDisplay(currentFrameIsFirstFrame());
 
             const bool isLocalColormapDefined = currentComponent[8] & 0x80;
             if (isLocalColormapDefined) {
                 // The three low-order bits of currentComponent[8] specify the bits per pixel.
-                int numColors = 2 << (currentComponent[8] & 0x7);
-                const size_t localColormapBytes = 3 * numColors;
-
-                // Switch to the new local palette after it loads
-                currentFrame->localColormapPosition = dataPosition;
-                currentFrame->localColormapSize = numColors;
-
-                if (len < localColormapBytes) {
-                    // Wait until we have enough bytes to consume the entire colormap at once.
-                    GETN(localColormapBytes, GIFImageColormap);
-                    break;
-                }
-
-                currentFrame->isLocalColormapDefined = true;
-                dataPosition += localColormapBytes;
-                len -= localColormapBytes;
-            } else {
-                // Switch back to the global palette
-                currentFrame->isLocalColormapDefined = false;
+                const size_t numColors = 2 << (currentComponent[8] & 0x7);
+                currentFrame->localColorMap().setTablePositionAndSize(dataPosition, numColors);
+                GETN(GIF_COLORS * numColors, GIFImageColormap);
+                break;
             }
+
             GETN(1, GIFLZWStart);
             break;
         }
 
         case GIFImageColormap: {
             ASSERT(!m_frames.isEmpty());
-            m_frames.last()->isLocalColormapDefined = true;
+            m_frames.last()->localColorMap().setDefined();
             GETN(1, GIFLZWStart);
             break;
         }
@@ -774,24 +760,24 @@ bool GIFLZWContext::prepareToDecode()
     // Since we use a codesize of 1 more than the datasize, we need to ensure
     // that our datasize is strictly less than the MAX_LZW_BITS value (12).
     // This sets the largest possible codemask correctly at 4095.
-    if (m_frameContext->datasize >= MAX_LZW_BITS)
+    if (m_frameContext->dataSize() >= MAX_LZW_BITS)
         return false;
-    clearCode = 1 << m_frameContext->datasize;
+    clearCode = 1 << m_frameContext->dataSize();
     if (clearCode >= MAX_BYTES)
         return false;
 
     avail = clearCode + 2;
     oldcode = -1;
-    codesize = m_frameContext->datasize + 1;
+    codesize = m_frameContext->dataSize() + 1;
     codemask = (1 << codesize) - 1;
     datum = bits = 0;
-    ipass = m_frameContext->interlaced ? 1 : 0;
+    ipass = m_frameContext->interlaced() ? 1 : 0;
     irow = 0;
 
     // Initialize output row buffer.
-    rowBuffer.resize(m_frameContext->width);
+    rowBuffer.resize(m_frameContext->width());
     rowIter = rowBuffer.begin();
-    rowsRemaining = m_frameContext->height;
+    rowsRemaining = m_frameContext->height();
 
     // Clearing the whole suffix table lets us be more tolerant of bad data.
     memset(suffix, 0, sizeof(suffix));
