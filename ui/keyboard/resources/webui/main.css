@@ -111,7 +111,7 @@ kb-row.top {
 .com,
 .comma,
 .hide,
-.mic,
+.microphone,
 .period,
 .tab {
   -webkit-box-flex: 1.3 !important;
@@ -153,12 +153,12 @@ kb-row.top {
   font-weight: 200;
 }
 
-.mic {
-  background-image: url('images/mic.svg');
+.microphone {
+  background-image: url('images/microphone.svg');
 }
 
-.audio .mic {
-  background-image: url('images/mic-green.svg');
+.audio .microphone {
+  background-image: url('images/microphone-green.svg');
 }
 
 .half-key-spacer {
