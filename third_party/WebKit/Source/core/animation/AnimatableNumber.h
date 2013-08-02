@@ -42,8 +42,18 @@ namespace WebCore {
 // If created from a CSSPrimitiveValue this class will cache it to be returned in toCSSValue().
 class AnimatableNumber : public AnimatableValue {
 public:
+    virtual ~AnimatableNumber() { }
+    static bool canCreateFrom(const CSSValue*);
+    static PassRefPtr<AnimatableNumber> create(CSSValue*);
+    virtual PassRefPtr<CSSValue> toCSSValue() const OVERRIDE;
+
+protected:
+    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+
+private:
     enum NumberUnitType {
-        UnitTypeNumber,
+        UnitTypeNone,
         UnitTypeLength,
         UnitTypeFontSize,
         UnitTypeFontXSize,
@@ -60,20 +70,6 @@ public:
         UnitTypeInvalid,
     };
 
-    virtual ~AnimatableNumber() { }
-    static bool canCreateFrom(const CSSValue*);
-    static PassRefPtr<AnimatableNumber> create(CSSValue*);
-    static PassRefPtr<AnimatableNumber> create(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue = 0)
-    {
-        return adoptRef(new AnimatableNumber(number, unitType, cssPrimitiveValue));
-    }
-    virtual PassRefPtr<CSSValue> toCSSValue() const OVERRIDE;
-
-protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
-
-private:
     AnimatableNumber(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue)
         : AnimatableValue(TypeNumber)
         , m_number(number)
@@ -92,6 +88,10 @@ private:
         ASSERT(m_calcExpression);
     }
 
+    static PassRefPtr<AnimatableNumber> create(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue = 0)
+    {
+        return adoptRef(new AnimatableNumber(number, unitType, cssPrimitiveValue));
+    }
     static PassRefPtr<AnimatableNumber> create(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
     {
         return adoptRef(new AnimatableNumber(calcExpression, cssPrimitiveValue));

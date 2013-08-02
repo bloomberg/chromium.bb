@@ -139,7 +139,7 @@ AnimatableNumber::NumberUnitType AnimatableNumber::primitiveUnitToNumberType(uns
 {
     switch (primitiveUnit) {
     case CSSPrimitiveValue::CSS_NUMBER:
-        return UnitTypeNumber;
+        return UnitTypeNone;
     case CSSPrimitiveValue::CSS_PX:
     case CSSPrimitiveValue::CSS_CM:
     case CSSPrimitiveValue::CSS_MM:
@@ -186,7 +186,7 @@ AnimatableNumber::NumberUnitType AnimatableNumber::primitiveUnitToNumberType(uns
 unsigned short AnimatableNumber::numberTypeToPrimitiveUnit(NumberUnitType numberType)
 {
     switch (numberType) {
-    case UnitTypeNumber:
+    case UnitTypeNone:
         return CSSPrimitiveValue::CSS_NUMBER;
     case UnitTypeLength:
         return CSSPrimitiveValue::CSS_PX;

@@ -30,11 +30,24 @@
 
 #include "config.h"
 #include "core/animation/AnimatableValue.h"
+
 #include "core/animation/AnimatableNeutral.h"
+#include "core/animation/AnimatableNumber.h"
+#include "core/animation/AnimatableUnknown.h"
 #include "core/animation/DeferredAnimatableValue.h"
+
 #include <algorithm>
 
 namespace WebCore {
+
+PassRefPtr<AnimatableValue> AnimatableValue::create(CSSValue* value)
+{
+    // FIXME: Move this logic to a separate factory class.
+    // FIXME: Handle all animatable CSSValue types.
+    if (AnimatableNumber::canCreateFrom(value))
+        return AnimatableNumber::create(value);
+    return AnimatableUnknown::create(value);
+}
 
 const AnimatableValue* AnimatableValue::neutralValue()
 {
