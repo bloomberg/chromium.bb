@@ -615,8 +615,7 @@ scoped_ptr<gfx::FontList> ResourceBundle::GetFontListFromDelegate(
   scoped_ptr<gfx::Font> font = delegate_->GetFont(style);
   if (font.get())
     return scoped_ptr<gfx::FontList>(new gfx::FontList(*font));
-  else
-    return scoped_ptr<gfx::FontList>();
+  return scoped_ptr<gfx::FontList>();
 }
 
 bool ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
