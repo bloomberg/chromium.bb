@@ -843,8 +843,6 @@
             'browser/chromeos/extensions/file_manager/private_api_dialog.h',
             'browser/chromeos/extensions/file_manager/private_api_drive.cc',
             'browser/chromeos/extensions/file_manager/private_api_drive.h',
-            'browser/chromeos/extensions/file_manager/private_api_file_system.cc',
-            'browser/chromeos/extensions/file_manager/private_api_file_system.h',
             'browser/chromeos/extensions/file_manager/private_api_mount.cc',
             'browser/chromeos/extensions/file_manager/private_api_mount.h',
             'browser/chromeos/extensions/file_manager/private_api_strings.cc',
