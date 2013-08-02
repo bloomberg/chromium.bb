@@ -39,7 +39,7 @@ TEST(AACTest, ExtensionTest) {
 // Mono channel layout should only be reported if SBR is not
 // specified. Otherwise stereo should be reported.
 // See ISO-14496-3 Section 1.6.6.1.2 for details about this special casing.
-TEST(AACTest, TestImplicitSBR_ChannelConfig0) {
+TEST(AACTest, ImplicitSBR_ChannelConfig0) {
   AAC aac;
   uint8 buffer[] = {0x13, 0x08};
   std::vector<uint8> data;
@@ -58,7 +58,7 @@ TEST(AACTest, TestImplicitSBR_ChannelConfig0) {
 }
 
 // Tests implicit SBR with a stereo channel config.
-TEST(AACTest, TestImplicitSBR_ChannelConfig1) {
+TEST(AACTest, ImplicitSBR_ChannelConfig1) {
   AAC aac;
   uint8 buffer[] = {0x13, 0x10};
   std::vector<uint8> data;

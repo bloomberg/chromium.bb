@@ -142,24 +142,24 @@ class MP4StreamParserTest : public testing::Test {
   }
 };
 
-TEST_F(MP4StreamParserTest, TestUnalignedAppend) {
+TEST_F(MP4StreamParserTest, UnalignedAppend) {
   // Test small, non-segment-aligned appends (small enough to exercise
   // incremental append system)
   ParseMP4File("bear-1280x720-av_frag.mp4", 512);
 }
 
-TEST_F(MP4StreamParserTest, TestBytewiseAppend) {
+TEST_F(MP4StreamParserTest, BytewiseAppend) {
   // Ensure no incremental errors occur when parsing
   ParseMP4File("bear-1280x720-av_frag.mp4", 1);
 }
 
-TEST_F(MP4StreamParserTest, TestMultiFragmentAppend) {
+TEST_F(MP4StreamParserTest, MultiFragmentAppend) {
   // Large size ensures multiple fragments are appended in one call (size is
   // larger than this particular test file)
   ParseMP4File("bear-1280x720-av_frag.mp4", 768432);
 }
 
-TEST_F(MP4StreamParserTest, TestFlush) {
+TEST_F(MP4StreamParserTest, Flush) {
   // Flush while reading sample data, then start a new stream.
   InitializeParser();
 
@@ -172,7 +172,7 @@ TEST_F(MP4StreamParserTest, TestFlush) {
                                  512));
 }
 
-TEST_F(MP4StreamParserTest, TestReinitialization) {
+TEST_F(MP4StreamParserTest, Reinitialization) {
   InitializeParser();
 
   scoped_refptr<DecoderBuffer> buffer =
@@ -185,7 +185,7 @@ TEST_F(MP4StreamParserTest, TestReinitialization) {
                                  512));
 }
 
-TEST_F(MP4StreamParserTest, TestMPEG2_AAC_LC) {
+TEST_F(MP4StreamParserTest, MPEG2_AAC_LC) {
   std::set<int> audio_object_types;
   audio_object_types.insert(kISO_13818_7_AAC_LC);
   parser_.reset(new MP4StreamParser(audio_object_types, false));
@@ -193,7 +193,7 @@ TEST_F(MP4StreamParserTest, TestMPEG2_AAC_LC) {
 }
 
 // Test that a moov box is not always required after Flush() is called.
-TEST_F(MP4StreamParserTest, TestNoMoovAfterFlush) {
+TEST_F(MP4StreamParserTest, NoMoovAfterFlush) {
   InitializeParser();
 
   scoped_refptr<DecoderBuffer> buffer =

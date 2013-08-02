@@ -46,7 +46,7 @@ static void VerifyTextTrackInfo(const uint8* buffer,
   EXPECT_TRUE(info.language == language);
 }
 
-TEST_F(WebMTracksParserTest, TestSubtitleNoNameNoLang) {
+TEST_F(WebMTracksParserTest, SubtitleNoNameNoLang) {
   InSequence s;
 
   TracksBuilder tb;
@@ -57,7 +57,7 @@ TEST_F(WebMTracksParserTest, TestSubtitleNoNameNoLang) {
   VerifyTextTrackInfo(&buf[0], buf.size(), kTextSubtitles, "", "");
 }
 
-TEST_F(WebMTracksParserTest, TestSubtitleYesNameNoLang) {
+TEST_F(WebMTracksParserTest, SubtitleYesNameNoLang) {
   InSequence s;
 
   TracksBuilder tb;
@@ -68,7 +68,7 @@ TEST_F(WebMTracksParserTest, TestSubtitleYesNameNoLang) {
   VerifyTextTrackInfo(&buf[0], buf.size(), kTextSubtitles, "Spock", "");
 }
 
-TEST_F(WebMTracksParserTest, TestSubtitleNoNameYesLang) {
+TEST_F(WebMTracksParserTest, SubtitleNoNameYesLang) {
   InSequence s;
 
   TracksBuilder tb;
@@ -79,7 +79,7 @@ TEST_F(WebMTracksParserTest, TestSubtitleNoNameYesLang) {
   VerifyTextTrackInfo(&buf[0], buf.size(), kTextSubtitles, "", "eng");
 }
 
-TEST_F(WebMTracksParserTest, TestSubtitleYesNameYesLang) {
+TEST_F(WebMTracksParserTest, SubtitleYesNameYesLang) {
   InSequence s;
 
   TracksBuilder tb;
@@ -90,7 +90,7 @@ TEST_F(WebMTracksParserTest, TestSubtitleYesNameYesLang) {
   VerifyTextTrackInfo(&buf[0], buf.size(), kTextSubtitles, "Picard", "fre");
 }
 
-TEST_F(WebMTracksParserTest, TestIgnoringTextTracks) {
+TEST_F(WebMTracksParserTest, IgnoringTextTracks) {
   InSequence s;
 
   TracksBuilder tb;

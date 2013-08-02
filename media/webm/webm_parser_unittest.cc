@@ -233,7 +233,7 @@ TEST_F(WebMParserTest, ParseListElementWithMultipleCalls) {
   EXPECT_TRUE(parser.IsParsingComplete());
 }
 
-TEST_F(WebMParserTest, TestReset) {
+TEST_F(WebMParserTest, Reset) {
   InSequence s;
   scoped_ptr<Cluster> cluster(CreateCluster(kBlockCount));
 

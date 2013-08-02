@@ -58,7 +58,7 @@ FFmpegCommonTest::FFmpegCommonTest() {
 
 FFmpegCommonTest::~FFmpegCommonTest() {}
 
-TEST_F(FFmpegCommonTest, TestTimeBaseConversions) {
+TEST_F(FFmpegCommonTest, TimeBaseConversions) {
   int64 test_data[][5] = {
     {1, 2, 1, 500000, 1 },
     {1, 3, 1, 333333, 1 },

@@ -31,7 +31,7 @@ class OffsetByteQueueTest : public testing::Test {
   scoped_ptr<OffsetByteQueue> queue_;
 };
 
-TEST_F(OffsetByteQueueTest, TestSetUp) {
+TEST_F(OffsetByteQueueTest, SetUp) {
   EXPECT_EQ(384, queue_->head());
   EXPECT_EQ(512, queue_->tail());
 
@@ -44,7 +44,7 @@ TEST_F(OffsetByteQueueTest, TestSetUp) {
   EXPECT_EQ(255, buf[size-1]);
 }
 
-TEST_F(OffsetByteQueueTest, TestPeekAt) {
+TEST_F(OffsetByteQueueTest, PeekAt) {
   const uint8* buf;
   int size;
 
@@ -57,7 +57,7 @@ TEST_F(OffsetByteQueueTest, TestPeekAt) {
   EXPECT_EQ(0, size);
 }
 
-TEST_F(OffsetByteQueueTest, TestTrim) {
+TEST_F(OffsetByteQueueTest, Trim) {
   EXPECT_TRUE(queue_->Trim(128));
   EXPECT_TRUE(queue_->Trim(384));
   EXPECT_EQ(384, queue_->head());

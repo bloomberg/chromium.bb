@@ -33,7 +33,7 @@ class WebMWebVTTParserTest : public testing::Test {
   WebMWebVTTParserTest() {}
 };
 
-TEST_F(WebMWebVTTParserTest, TestBlank) {
+TEST_F(WebMWebVTTParserTest, Blank) {
   InSequence s;
 
   const Cue cue = EncodeCue("", "", "Subtitle");
@@ -45,7 +45,7 @@ TEST_F(WebMWebVTTParserTest, TestBlank) {
   EXPECT_EQ(content, "Subtitle");
 }
 
-TEST_F(WebMWebVTTParserTest, TestId) {
+TEST_F(WebMWebVTTParserTest, Id) {
   InSequence s;
 
   for (int i = 1; i <= 9; ++i) {
@@ -60,7 +60,7 @@ TEST_F(WebMWebVTTParserTest, TestId) {
   }
 }
 
-TEST_F(WebMWebVTTParserTest, TestSettings) {
+TEST_F(WebMWebVTTParserTest, Settings) {
   InSequence s;
 
   enum { kSettingsCount = 4 };
@@ -81,7 +81,7 @@ TEST_F(WebMWebVTTParserTest, TestSettings) {
   }
 }
 
-TEST_F(WebMWebVTTParserTest, TestContent) {
+TEST_F(WebMWebVTTParserTest, Content) {
   InSequence s;
 
   enum { kContentCount = 4 };

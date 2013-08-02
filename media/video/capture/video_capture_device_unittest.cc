@@ -337,7 +337,7 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
   device->DeAllocate();
 }
 
-TEST_F(VideoCaptureDeviceTest, TestFakeCapture) {
+TEST_F(VideoCaptureDeviceTest, FakeCapture) {
   VideoCaptureDevice::Names names;
 
   FakeVideoCaptureDevice::GetDeviceNames(&names);
@@ -410,7 +410,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   device->DeAllocate();
 }
 
-TEST_F(VideoCaptureDeviceTest, TestFakeCaptureVariableResolution) {
+TEST_F(VideoCaptureDeviceTest, FakeCaptureVariableResolution) {
   VideoCaptureDevice::Names names;
 
   FakeVideoCaptureDevice::GetDeviceNames(&names);

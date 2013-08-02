@@ -181,7 +181,7 @@ TEST_F(BoxReaderTest, ReadAllChildrenTest) {
   EXPECT_EQ(kids[0].val, 0xdeadbeef);   // Ensure order is preserved
 }
 
-TEST_F(BoxReaderTest, TestSkippingBloc) {
+TEST_F(BoxReaderTest, SkippingBloc) {
   static const uint8 kData[] = {
     0x00, 0x00, 0x00, 0x09,  'b',  'l',  'o',  'c', 0x00
   };

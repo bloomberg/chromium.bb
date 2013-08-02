@@ -216,7 +216,7 @@ class WebMClusterParserTest : public testing::Test {
   scoped_ptr<WebMClusterParser> parser_;
 };
 
-TEST_F(WebMClusterParserTest, TestReset) {
+TEST_F(WebMClusterParserTest, Reset) {
   InSequence s;
 
   int block_count = arraysize(kDefaultBlockInfo);
