@@ -5,31 +5,24 @@
 #include "chrome/browser/extensions/api/system_storage/test_storage_info_provider.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 
 namespace extensions {
+namespace test {
 
 using api::system_storage::ParseStorageUnitType;
 using api::system_storage::StorageUnitInfo;
-using systeminfo::kStorageTypeFixed;
-using systeminfo::kStorageTypeRemovable;
-using systeminfo::kStorageTypeUnknown;
 
 // Watching interval for testing.
 const size_t kTestingIntervalMS = 10;
 
-TestStorageInfoProvider::TestStorageInfoProvider(
-    const struct TestStorageUnitInfo* testing_data, size_t n)
-      : testing_data_(testing_data, testing_data + n) {
-    SetWatchingIntervalForTesting(kTestingIntervalMS);
-}
+const struct TestStorageUnitInfo kRemovableStorageData = {
+    "dcim:device:001", "/media/usb1", 4098, 1000, 1
+};
 
-TestStorageInfoProvider::~TestStorageInfoProvider() {
-}
-
-// static
-chrome::StorageInfo TestStorageInfoProvider::BuildStorageInfo(
+chrome::StorageInfo BuildStorageInfoFromTestStorageUnitInfo(
     const TestStorageUnitInfo& unit) {
-  chrome::StorageInfo info(
+  return chrome::StorageInfo(
       unit.device_id,
       UTF8ToUTF16(unit.name),
       base::FilePath::StringType(), /* no location */
@@ -37,35 +30,25 @@ chrome::StorageInfo TestStorageInfoProvider::BuildStorageInfo(
       string16(), /* no storage vendor */
       string16(), /* no storage model */
       unit.capacity);
-  return info;
 }
 
-void TestStorageInfoProvider::GetAllStoragesIntoInfoList() {
-  info_.clear();
-  for (size_t i = 0; i < testing_data_.size(); ++i) {
-    linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
-    unit->id = testing_data_[i].transient_id;
-    unit->name = testing_data_[i].name;
-    unit->type = ParseStorageUnitType(testing_data_[i].type);
-    unit->capacity = testing_data_[i].capacity;
-    info_.push_back(unit);
-  }
+TestStorageInfoProvider::TestStorageInfoProvider(
+    const struct TestStorageUnitInfo* testing_data, size_t n)
+        : StorageInfoProvider(kTestingIntervalMS),
+          testing_data_(testing_data, testing_data + n) {
 }
 
-std::vector<chrome::StorageInfo>
-TestStorageInfoProvider::GetAllStorages() const {
-  std::vector<chrome::StorageInfo> results;
-  for (size_t i = 0; i < testing_data_.size(); ++i)
-    results.push_back(BuildStorageInfo(testing_data_[i]));
-
-  return results;
+TestStorageInfoProvider::~TestStorageInfoProvider() {
 }
 
 int64 TestStorageInfoProvider::GetStorageFreeSpaceFromTransientId(
     const std::string& transient_id) {
   int64 available_capacity = -1;
+  std::string device_id =
+      chrome::StorageMonitor::GetInstance()->GetDeviceIdForTransientId(
+          transient_id);
   for (size_t i = 0; i < testing_data_.size(); ++i) {
-    if (testing_data_[i].transient_id == transient_id) {
+    if (testing_data_[i].device_id == device_id) {
       available_capacity = testing_data_[i].available_capacity;
       // We simulate free space change by increasing the |available_capacity|
       // with a fixed change step.
@@ -76,22 +59,5 @@ int64 TestStorageInfoProvider::GetStorageFreeSpaceFromTransientId(
   return available_capacity;
 }
 
-std::string TestStorageInfoProvider::GetTransientIdForDeviceId(
-    const std::string& device_id) const {
-  for (size_t i = 0; i < testing_data_.size(); ++i) {
-    if (testing_data_[i].device_id == device_id)
-      return testing_data_[i].transient_id;
-  }
-  return std::string();
-}
-
-std::string TestStorageInfoProvider::GetDeviceIdForTransientId(
-    const std::string& transient_id) const {
-  for (size_t i = 0; i < testing_data_.size(); ++i) {
-    if (testing_data_[i].transient_id == transient_id)
-      return testing_data_[i].device_id;
-  }
-  return std::string();
-}
-
+}  // namespace test
 }  // namespace extensions

@@ -6,7 +6,7 @@
 // browser_tests --gtest_filter=SystemStorageApiTest.Storage
 
 // Testing data should be the same as |kRemovableStorageData| in
-// system_storage_apitest.cc.
+// test_storage_info_provider.cc.
 var testData = {
   id: "transient:0004",
   name: "/media/usb1",
@@ -14,12 +14,15 @@ var testData = {
   capacity: 4098
 };
 
+var device_id;
+
 chrome.test.runTests([
   function testAttachedEvent() {
     chrome.test.listenOnce(
       chrome.system.storage.onAttached,
       function listener(info) {
-        chrome.test.assertEq(testData.id, info.id);
+        // Record the transient id.
+        device_id = info.id;
         chrome.test.assertEq(testData.name, info.name);
         chrome.test.assertEq(testData.type, info.type);
         chrome.test.assertEq(testData.capacity, info.capacity);
@@ -34,7 +37,8 @@ chrome.test.runTests([
     chrome.test.listenOnce(
       chrome.system.storage.onDetached,
       function listener(id) {
-        chrome.test.assertEq(testData.id, id);
+        chrome.test.assertEq(device_id, id);
+        chrome.test.sendMessage(id);
       }
     );
     // Tell browser process to detach a storage.

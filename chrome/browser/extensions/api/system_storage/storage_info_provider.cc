@@ -21,13 +21,9 @@ using api::system_storage::STORAGE_UNIT_TYPE_REMOVABLE;
 
 namespace systeminfo {
 
-const char kStorageTypeUnknown[] = "unknown";
-const char kStorageTypeFixed[] = "fixed";
-const char kStorageTypeRemovable[] = "removable";
-
 void BuildStorageUnitInfo(const chrome::StorageInfo& info,
                           StorageUnitInfo* unit) {
-  unit->id = StorageInfoProvider::Get()->GetTransientIdForDeviceId(
+  unit->id = StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
                  info.device_id());
   unit->name = UTF16ToUTF8(info.name());
   // TODO(hmin): Might need to take MTP device into consideration.
@@ -50,6 +46,11 @@ base::LazyInstance<scoped_refptr<SystemInfoProvider<StorageUnitInfoList> > >
 StorageInfoProvider::StorageInfoProvider()
     : observers_(new ObserverListThreadSafe<StorageFreeSpaceObserver>()),
       watching_interval_(kDefaultPollingIntervalMs) {
+}
+
+StorageInfoProvider::StorageInfoProvider(size_t watching_interval)
+    : observers_(new ObserverListThreadSafe<StorageFreeSpaceObserver>()),
+      watching_interval_(watching_interval) {
 }
 
 StorageInfoProvider::~StorageInfoProvider() {
@@ -80,13 +81,11 @@ bool StorageInfoProvider::QueryInfo() {
   return true;
 }
 
-std::vector<chrome::StorageInfo> StorageInfoProvider::GetAllStorages() const {
-  return StorageMonitor::GetInstance()->GetAllAvailableStorages();
-}
-
 void StorageInfoProvider::GetAllStoragesIntoInfoList() {
   info_.clear();
-  std::vector<chrome::StorageInfo> storage_list = GetAllStorages();
+  std::vector<chrome::StorageInfo> storage_list =
+      StorageMonitor::GetInstance()->GetAllAvailableStorages();
+
   std::vector<chrome::StorageInfo>::const_iterator it = storage_list.begin();
   for (; it != storage_list.end(); ++it) {
     linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
@@ -138,8 +137,12 @@ void StorageInfoProvider::StopWatchingAllStorages() {
 
 int64 StorageInfoProvider::GetStorageFreeSpaceFromTransientId(
     const std::string& transient_id) {
-  std::vector<chrome::StorageInfo> storage_list = GetAllStorages();
-  std::string device_id = GetDeviceIdForTransientId(transient_id);
+  std::vector<chrome::StorageInfo> storage_list =
+      StorageMonitor::GetInstance()->GetAllAvailableStorages();
+
+  std::string device_id =
+      StorageMonitor::GetInstance()->GetDeviceIdForTransientId(
+          transient_id);
 
   // Lookup the matched storage info by |device_id|.
   for (std::vector<chrome::StorageInfo>::const_iterator it =
@@ -189,7 +192,8 @@ void StorageInfoProvider::RemoveWatchedStorageOnBlockingPool(
 
 void StorageInfoProvider::CheckWatchedStorages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::vector<chrome::StorageInfo> storage_list = GetAllStorages();
+  std::vector<chrome::StorageInfo> storage_list =
+      StorageMonitor::GetInstance()->GetAllAvailableStorages();
 
   for (std::vector<chrome::StorageInfo>::iterator it = storage_list.begin();
        it != storage_list.end(); ++it) {
@@ -197,7 +201,9 @@ void StorageInfoProvider::CheckWatchedStorages() {
         kWatchingTokenName,
         FROM_HERE,
         base::Bind(&StorageInfoProvider::CheckWatchedStorageOnBlockingPool,
-                   this, GetTransientIdForDeviceId(it->device_id())));
+                   this,
+                   StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+                       it->device_id())));
   }
 }
 
@@ -250,16 +256,6 @@ void StorageInfoProvider::StartWatchingTimerOnUIThread() {
 void StorageInfoProvider::StopWatchingTimerOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   watching_timer_.Stop();
-}
-
-std::string StorageInfoProvider::GetTransientIdForDeviceId(
-    const std::string& device_id) const {
-  return StorageMonitor::GetInstance()->GetTransientIdForDeviceId(device_id);
-}
-
-std::string StorageInfoProvider::GetDeviceIdForTransientId(
-    const std::string& transient_id) const {
-  return StorageMonitor::GetInstance()->GetDeviceIdForTransientId(transient_id);
 }
 
 // static

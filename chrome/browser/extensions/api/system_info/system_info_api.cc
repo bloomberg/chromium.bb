@@ -206,7 +206,7 @@ void SystemInfoEventRouter::OnRemovableStorageAttached(
 void SystemInfoEventRouter::OnRemovableStorageDetached(
     const chrome::StorageInfo& info) {
   scoped_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(new base::StringValue(StorageInfoProvider::Get()->
+  args->Append(new base::StringValue(chrome::StorageMonitor::GetInstance()->
                    GetTransientIdForDeviceId(info.device_id())));
 
   DispatchEvent(event_names::kOnStorageDetached, args.Pass());

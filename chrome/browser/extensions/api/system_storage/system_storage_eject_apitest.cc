@@ -19,17 +19,12 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/common/switches.h"
 
 namespace {
 
-using extensions::TestStorageUnitInfo;
-using extensions::TestStorageInfoProvider;
-
-struct TestStorageUnitInfo kRemovableStorageData[] = {
-  { "dcim:device:0004", "transient:0004", "/media/usb1",
-    extensions::systeminfo::kStorageTypeRemovable, 0, 0, 0}
-};
+using extensions::test::TestStorageUnitInfo;
+using extensions::test::TestStorageInfoProvider;
+using extensions::test::kRemovableStorageData;
 
 }  // namespace
 
@@ -39,13 +34,6 @@ class SystemStorageEjectApiTest : public ExtensionApiTest {
   virtual ~SystemStorageEjectApiTest() {}
 
  protected:
-  // ExtensionApiTest overrides.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        extensions::switches::kEnableExperimentalExtensionApis);
-  }
-
   virtual void SetUpOnMainThread() OVERRIDE {
     monitor_ = chrome::test::TestStorageMonitor::CreateForBrowserTests();
     ExtensionApiTest::SetUpOnMainThread();
@@ -70,14 +58,15 @@ class SystemStorageEjectApiTest : public ExtensionApiTest {
   void Attach() {
     DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
     chrome::StorageMonitor::GetInstance()->receiver()->ProcessAttach(
-        TestStorageInfoProvider::BuildStorageInfo(kRemovableStorageData[0]));
+        extensions::test::BuildStorageInfoFromTestStorageUnitInfo(
+            kRemovableStorageData));
     content::RunAllPendingInMessageLoop();
   }
 
   void Detach() {
     DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
     chrome::StorageMonitor::GetInstance()->receiver()->ProcessDetach(
-        kRemovableStorageData[0].device_id);
+        kRemovableStorageData.device_id);
     content::RunAllPendingInMessageLoop();
   }
 
@@ -90,35 +79,25 @@ class SystemStorageEjectApiTest : public ExtensionApiTest {
 
 
 IN_PROC_BROWSER_TEST_F(SystemStorageEjectApiTest, EjectTest) {
-  TestStorageInfoProvider* provider =
-      new TestStorageInfoProvider(kRemovableStorageData,
-                                  arraysize(kRemovableStorageData));
-  extensions::StorageInfoProvider::InitializeForTesting(provider);
-
   content::RenderViewHost* host = GetHost();
   ExecuteCmdAndCheckReply(host, "addAttachListener()", "add_attach_ok");
 
   // Attach / detach
   const std::string expect_attach_msg =
       base::StringPrintf("%s,%s", "attach_test_ok",
-                         kRemovableStorageData[0].name);
+                         kRemovableStorageData.name);
   ExtensionTestMessageListener attach_finished_listener(expect_attach_msg,
                                                         false  /* no reply */);
   Attach();
   EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
 
   ExecuteCmdAndCheckReply(host, "ejectTest()", "eject_ok");
-  EXPECT_EQ(kRemovableStorageData[0].device_id, monitor_->ejected_device());
+  EXPECT_EQ(kRemovableStorageData.device_id, monitor_->ejected_device());
 
   Detach();
 }
 
 IN_PROC_BROWSER_TEST_F(SystemStorageEjectApiTest, EjectBadDeviceTest) {
-  TestStorageInfoProvider* provider =
-      new TestStorageInfoProvider(kRemovableStorageData,
-                                  arraysize(kRemovableStorageData));
-  extensions::StorageInfoProvider::InitializeForTesting(provider);
-
   ExecuteCmdAndCheckReply(GetHost(), "ejectFailTest()", "eject_no_such_device");
 
   EXPECT_EQ("", monitor_->ejected_device());

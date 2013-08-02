@@ -29,6 +29,10 @@ namespace device {
 class MediaTransferProtocolManager;
 }
 
+namespace extensions {
+class StorageInfoProviderTest;
+}
+
 namespace chrome {
 
 class MediaFileSystemRegistryTest;
@@ -141,6 +145,7 @@ class StorageMonitor {
   friend class MediaFileSystemRegistryTest;
   friend class ::SystemStorageApiTest;
   friend class ::SystemStorageEjectApiTest;
+  friend class extensions::StorageInfoProviderTest;
 
   StorageMonitor();
 

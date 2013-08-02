@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/api/system_storage/test_storage_info_provider.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -21,21 +22,19 @@ using api::system_storage::StorageUnitInfo;
 using api::system_storage::StorageUnitType;
 using base::MessageLoop;
 using chrome::test::TestStorageMonitor;
+using chrome::StorageMonitor;
 using content::BrowserThread;
 using content::RunAllPendingInMessageLoop;
 using content::RunMessageLoop;
+using test::TestStorageUnitInfo;
 using testing::Return;
 using testing::_;
 
 const struct TestStorageUnitInfo kTestingData[] = {
-  {"device:001", "transient:01", "C:", systeminfo::kStorageTypeUnknown,
-    1000, 10, 0},
-  {"device:002", "transient:02", "d:", systeminfo::kStorageTypeRemovable,
-    2000, 10, 1},
-  {"device:003", "transient:03", "/home", systeminfo::kStorageTypeFixed,
-    3000, 10, 2},
-  {"device:004", "transient:04", "/", systeminfo::kStorageTypeRemovable,
-    4000, 10, 3}
+  {"path:device:001", "C:", 1000, 10, 0},
+  {"path:device:002", "d:", 2000, 10, 1},
+  {"path:device:003", "/home", 3000, 10, 2},
+  {"path:device:004", "/", 4000, 10, 3}
 };
 
 // The watching interval for unit test is 1 milliseconds.
@@ -75,9 +74,11 @@ class TestStorageObserver : public StorageFreeSpaceObserver {
     // The observer is added on UI thread, so the callback should be also
     // called on UI thread.
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    std::string device_id =
+        StorageMonitor::GetInstance()->GetDeviceIdForTransientId(transient_id);
     size_t i = 0;
     for (; i < testing_data_.size(); ++i) {
-      if (testing_data_[i].transient_id == transient_id) {
+      if (testing_data_[i].device_id == device_id) {
         EXPECT_DOUBLE_EQ(new_value-old_value, testing_data_[i].change_step);
         ++change_times_;
         break;
@@ -93,7 +94,7 @@ class TestStorageObserver : public StorageFreeSpaceObserver {
   int change_times_;
 };
 
-class UnitTestStorageInfoProvider : public TestStorageInfoProvider {
+class UnitTestStorageInfoProvider : public test::TestStorageInfoProvider {
  public :
   UnitTestStorageInfoProvider(const struct TestStorageUnitInfo* testing_data,
                               size_t n)
@@ -107,8 +108,10 @@ class UnitTestStorageInfoProvider : public TestStorageInfoProvider {
   virtual int64 GetStorageFreeSpaceFromTransientId(
       const std::string& transient_id) OVERRIDE {
     int64 available_capacity = -1;
+    std::string device_id =
+        StorageMonitor::GetInstance()->GetDeviceIdForTransientId(transient_id);
     for (size_t i = 0; i < testing_data_.size(); ++i) {
-      if (testing_data_[i].transient_id == transient_id) {
+      if (testing_data_[i].device_id == device_id) {
         available_capacity = testing_data_[i].available_capacity;
         // We simulate free space change by increasing the |available_capacity|
         // with a fixed change step.
@@ -144,6 +147,14 @@ class StorageInfoProviderTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  void SetUpAllMockStorageDevices() {
+    for (size_t i = 0; i < arraysize(kTestingData); ++i) {
+      StorageMonitor::GetInstance()->receiver()->ProcessAttach(
+          extensions::test::BuildStorageInfoFromTestStorageUnitInfo(
+              kTestingData[i]));
+    }
+  }
+
   // Run message loop and flush blocking pool to make sure there is no pending
   // tasks on blocking pool.
   static void RunLoopAndFlushBlockingPool();
@@ -152,7 +163,6 @@ class StorageInfoProviderTest : public testing::Test {
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<UnitTestStorageInfoProvider> storage_info_provider_;
-  scoped_ptr<TestStorageMonitor> storage_test_notifications_;
 };
 
 StorageInfoProviderTest::StorageInfoProviderTest()
@@ -165,7 +175,8 @@ StorageInfoProviderTest::~StorageInfoProviderTest() {
 
 void StorageInfoProviderTest::SetUp() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  storage_test_notifications_.reset(new TestStorageMonitor);
+  chrome::test::TestStorageMonitor::CreateAndInstall();
+  SetUpAllMockStorageDevices();
   storage_info_provider_ = new UnitTestStorageInfoProvider(
       kTestingData, arraysize(kTestingData));
 }
@@ -188,14 +199,17 @@ TEST_F(StorageInfoProviderTest, WatchingNoChangedStorage) {
   // Case 1: watching a storage that the free space is not changed.
   MockStorageObserver observer;
   storage_info_provider_->AddObserver(&observer);
-  storage_info_provider_->StartWatching(kTestingData[0].transient_id);
-  EXPECT_CALL(observer, OnFreeSpaceChanged(kTestingData[0].transient_id, _, _))
+  std::string transient_id =
+      StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+          kTestingData[0].device_id);
+  storage_info_provider_->StartWatching(transient_id);
+  EXPECT_CALL(observer, OnFreeSpaceChanged(transient_id, _, _))
       .Times(0);
 
   RunLoopAndFlushBlockingPool();
 
   storage_info_provider_->RemoveObserver(&observer);
-  storage_info_provider_->StopWatching(kTestingData[0].device_id);
+  storage_info_provider_->StopWatching(transient_id);
   RunAllPendingAndFlushBlockingPool();
 }
 
@@ -203,10 +217,13 @@ TEST_F(StorageInfoProviderTest, WatchingOneStorage) {
   // Case 2: only watching one storage.
   TestStorageObserver observer;
   storage_info_provider_->AddObserver(&observer);
-  storage_info_provider_->StartWatching(kTestingData[1].transient_id);
+  std::string transient_id =
+    StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+        kTestingData[1].device_id);
+  storage_info_provider_->StartWatching(transient_id);
   RunLoopAndFlushBlockingPool();
 
-  storage_info_provider_->StopWatching(kTestingData[1].transient_id);
+  storage_info_provider_->StopWatching(transient_id);
   // Give a chance to run StopWatching task on the blocking pool.
   RunAllPendingAndFlushBlockingPool();
 
@@ -214,7 +231,7 @@ TEST_F(StorageInfoProviderTest, WatchingOneStorage) {
   storage_info_provider_->AddObserver(&mock_observer);
   // The watched storage won't get free space change notification.
   EXPECT_CALL(mock_observer,
-      OnFreeSpaceChanged(kTestingData[1].transient_id, _, _)).Times(0);
+      OnFreeSpaceChanged(transient_id, _, _)).Times(0);
   RunAllPendingAndFlushBlockingPool();
 
   storage_info_provider_->RemoveObserver(&observer);
@@ -228,29 +245,44 @@ TEST_F(StorageInfoProviderTest, WatchingMultipleStorages) {
   storage_info_provider_->AddObserver(&observer);
 
   for (size_t k = 1; k < arraysize(kTestingData); ++k) {
-    storage_info_provider_->StartWatching(kTestingData[k].transient_id);
+    std::string transient_id =
+        StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+            kTestingData[k].device_id);
+    storage_info_provider_->StartWatching(transient_id);
   }
   RunLoopAndFlushBlockingPool();
 
   // Stop watching the first storage.
-  storage_info_provider_->StopWatching(kTestingData[1].transient_id);
+  storage_info_provider_->StopWatching(
+      StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+          kTestingData[1].device_id));
   RunAllPendingAndFlushBlockingPool();
 
   MockStorageObserver mock_observer;
   storage_info_provider_->AddObserver(&mock_observer);
   for (size_t k = 2; k < arraysize(kTestingData); ++k) {
+    std::string transient_id =
+        StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+            kTestingData[k].device_id);
     EXPECT_CALL(mock_observer,
-        OnFreeSpaceChanged(kTestingData[k].transient_id,  _, _))
+        OnFreeSpaceChanged(transient_id,  _, _))
         .WillRepeatedly(Return());
   }
 
   // After stopping watching, the observer won't get change notification.
   EXPECT_CALL(mock_observer,
-      OnFreeSpaceChanged(kTestingData[1].transient_id, _, _)).Times(0);
+      OnFreeSpaceChanged(
+          StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+              kTestingData[1].device_id),
+          _, _))
+          .Times(0);
   RunLoopAndFlushBlockingPool();
 
   for (size_t k = 1; k < arraysize(kTestingData); ++k) {
-    storage_info_provider_->StopWatching(kTestingData[k].transient_id);
+    std::string transient_id =
+        StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+            kTestingData[k].device_id);
+    storage_info_provider_->StopWatching(transient_id);
   }
   RunAllPendingAndFlushBlockingPool();
   storage_info_provider_->RemoveObserver(&observer);
@@ -259,12 +291,12 @@ TEST_F(StorageInfoProviderTest, WatchingMultipleStorages) {
 
 TEST_F(StorageInfoProviderTest, WatchingInvalidStorage) {
   // Case 3: watching an invalid storage.
-  std::string invalid_id("invalid_id");
+  std::string invalid_device_id("invalid_id");
   MockStorageObserver mock_observer;
   storage_info_provider_->AddObserver(&mock_observer);
-  storage_info_provider_->StartWatching(invalid_id);
+  storage_info_provider_->StartWatching(invalid_device_id);
   EXPECT_CALL(mock_observer,
-      OnFreeSpaceChanged(invalid_id, _, _)).Times(0);
+      OnFreeSpaceChanged(invalid_device_id, _, _)).Times(0);
   RunAllPendingAndFlushBlockingPool();
   storage_info_provider_->RemoveObserver(&mock_observer);
 }

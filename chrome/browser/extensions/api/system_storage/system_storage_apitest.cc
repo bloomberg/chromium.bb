@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
+#include <vector>
+
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
@@ -11,8 +12,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
-#include "chrome/test/base/ui_test_utils.h"
-#include "extensions/common/switches.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 
 namespace {
 
@@ -21,24 +21,14 @@ using extensions::api::system_storage::ParseStorageUnitType;
 using extensions::api::system_storage::StorageUnitInfo;
 using extensions::StorageInfoProvider;
 using extensions::StorageUnitInfoList;
-using extensions::systeminfo::kStorageTypeFixed;
-using extensions::systeminfo::kStorageTypeRemovable;
-using extensions::systeminfo::kStorageTypeUnknown;
-using extensions::TestStorageUnitInfo;
-using extensions::TestStorageInfoProvider;
+using extensions::test::TestStorageUnitInfo;
+using extensions::test::TestStorageInfoProvider;
+using extensions::test::kRemovableStorageData;
 
 const struct TestStorageUnitInfo kTestingData[] = {
-  {"dcim:device:0004", "transient:0004", "0xbeaf", kStorageTypeUnknown,
-    4098, 1000, 0},
-  {"path:device:002", "transient:002", "/home", kStorageTypeFixed,
-    4098, 1000, 10},
-  {"path:device:003", "transient:003", "/data", kStorageTypeFixed,
-    10000, 1000, 4097}
-};
-
-const struct TestStorageUnitInfo kRemovableStorageData[] = {
-  {"dcim:device:0004", "transient:0004", "/media/usb1",
-    kStorageTypeRemovable, 4098, 1000, 1}
+  {"dcim:device:001", "0xbeaf", 4098, 1000, 0},
+  {"path:device:002", "/home", 4098, 1000, 10},
+  {"path:device:003", "/data", 10000, 1000, 4097}
 };
 
 }  // namespace
@@ -48,10 +38,8 @@ class SystemStorageApiTest : public ExtensionApiTest {
   SystemStorageApiTest() {}
   virtual ~SystemStorageApiTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        extensions::switches::kEnableExperimentalExtensionApis);
+  virtual void SetUpOnMainThread() OVERRIDE {
+    chrome::test::TestStorageMonitor::CreateForBrowserTests();
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -59,14 +47,17 @@ class SystemStorageApiTest : public ExtensionApiTest {
     message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
   }
 
-  void AttachRemovableStorage(const std::string& device_id) {
-    for (size_t i = 0; i < arraysize(kRemovableStorageData); ++i) {
-      if (kRemovableStorageData[i].device_id != device_id)
-        continue;
-
-      StorageMonitor::GetInstance()->receiver()->ProcessAttach(
-          TestStorageInfoProvider::BuildStorageInfo(kRemovableStorageData[i]));
+  void SetUpAllMockStorageDevices() {
+    for (size_t i = 0; i < arraysize(kTestingData); ++i) {
+      AttachRemovableStorage(kTestingData[i]);
     }
+  }
+
+  void AttachRemovableStorage(
+      const struct TestStorageUnitInfo& removable_storage_info) {
+    StorageMonitor::GetInstance()->receiver()->ProcessAttach(
+        extensions::test::BuildStorageInfoFromTestStorageUnitInfo(
+            removable_storage_info));
   }
 
   void DetachRemovableStorage(const std::string& id) {
@@ -78,31 +69,48 @@ class SystemStorageApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, Storage) {
+  SetUpAllMockStorageDevices();
   TestStorageInfoProvider* provider =
-      new TestStorageInfoProvider(kTestingData, arraysize(kTestingData));
+      new TestStorageInfoProvider(kTestingData,
+                                  arraysize(kTestingData));
   StorageInfoProvider::InitializeForTesting(provider);
+  std::vector<linked_ptr<ExtensionTestMessageListener> > device_ids_listeners;
+  for (size_t i = 0; i < arraysize(kTestingData); ++i) {
+    linked_ptr<ExtensionTestMessageListener> listener(
+        new ExtensionTestMessageListener(
+            StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+                kTestingData[i].device_id),
+            false));
+    device_ids_listeners.push_back(listener);
+  }
   ASSERT_TRUE(RunPlatformAppTest("system/storage")) << message_;
+  for (size_t i = 0; i < device_ids_listeners.size(); ++i)
+    EXPECT_TRUE(device_ids_listeners[i]->WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, StorageAttachment) {
-  TestStorageInfoProvider* provider =
-      new TestStorageInfoProvider(kRemovableStorageData,
-                                  arraysize(kRemovableStorageData));
-  StorageInfoProvider::InitializeForTesting(provider);
-
   ResultCatcher catcher;
   ExtensionTestMessageListener attach_listener("attach", false);
   ExtensionTestMessageListener detach_listener("detach", false);
 
   EXPECT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("system/storage_attachment")));
-
   // Simulate triggering onAttached event.
   ASSERT_TRUE(attach_listener.WaitUntilSatisfied());
-  AttachRemovableStorage(kRemovableStorageData[0].device_id);
+
+  AttachRemovableStorage(kRemovableStorageData);
+
+  std::string removable_storage_transient_id =
+      StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+          kRemovableStorageData.device_id);
+  ExtensionTestMessageListener detach_device_id_listener(
+      removable_storage_transient_id, false);
+
   // Simulate triggering onDetached event.
   ASSERT_TRUE(detach_listener.WaitUntilSatisfied());
-  DetachRemovableStorage(kRemovableStorageData[0].device_id);
+  DetachRemovableStorage(kRemovableStorageData.device_id);
+
+  ASSERT_TRUE(detach_device_id_listener.WaitUntilSatisfied());
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

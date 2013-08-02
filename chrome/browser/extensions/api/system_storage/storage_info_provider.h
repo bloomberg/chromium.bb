@@ -1,6 +1,7 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_
 
@@ -21,10 +22,6 @@ namespace extensions {
 
 namespace systeminfo {
 
-extern const char kStorageTypeUnknown[];
-extern const char kStorageTypeFixed[];
-extern const char kStorageTypeRemovable[];
-
 // Build StorageUnitInfo struct from chrome::StorageInfo instance. The |unit|
 // parameter is the output value.
 void BuildStorageUnitInfo(const chrome::StorageInfo& info,
@@ -39,6 +36,8 @@ typedef std::vector<linked_ptr<
 class StorageInfoProvider : public SystemInfoProvider<StorageUnitInfoList> {
  public:
   StorageInfoProvider();
+
+  explicit StorageInfoProvider(size_t watching_interval);
 
   // Get the single shared instance of StorageInfoProvider.
   static StorageInfoProvider* Get();
@@ -55,9 +54,6 @@ class StorageInfoProvider : public SystemInfoProvider<StorageUnitInfoList> {
   void StartWatchingAllStorages();
   void StopWatchingAllStorages();
 
-  // Returns all available storages, including fixed and removable.
-  virtual std::vector<chrome::StorageInfo> GetAllStorages() const;
-
   // SystemInfoProvider implementations
   virtual void PrepareQueryOnUIThread() OVERRIDE;
   virtual void InitializeProvider(const base::Closure& do_query_info_callback)
@@ -67,21 +63,13 @@ class StorageInfoProvider : public SystemInfoProvider<StorageUnitInfoList> {
   virtual int64 GetStorageFreeSpaceFromTransientId(
       const std::string& transient_id);
 
-  virtual std::string GetTransientIdForDeviceId(
-      const std::string& device_id) const;
-  virtual std::string GetDeviceIdForTransientId(
-      const std::string& transient_id) const;
-
   const StorageUnitInfoList& storage_unit_info_list() const;
 
  protected:
   virtual ~StorageInfoProvider();
 
-  // TODO(Haojian): Put this method in a testing subclass rather than here.
-  void SetWatchingIntervalForTesting(size_t ms) { watching_interval_ = ms; }
-
   // Put all available storages' information into |info_|.
-  virtual void GetAllStoragesIntoInfoList();
+  void GetAllStoragesIntoInfoList();
 
  private:
   typedef std::map<std::string, double> StorageTransientIdToSizeMap;

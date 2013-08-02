@@ -54,7 +54,7 @@ void SystemStorageEjectDeviceFunction::OnStorageMonitorInit(
   DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
   chrome::StorageMonitor* monitor = chrome::StorageMonitor::GetInstance();
   std::string device_id_str =
-      StorageInfoProvider::Get()->GetDeviceIdForTransientId(
+      chrome::StorageMonitor::GetInstance()->GetDeviceIdForTransientId(
           transient_device_id);
 
   if (device_id_str == "") {
