@@ -143,7 +143,7 @@ class AutofillCreditCardBubbleControllerTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(AutofillCreditCardBubbleControllerTest, ShouldShowGeneratedCardBubble) {
+TEST_F(AutofillCreditCardBubbleControllerTest, GeneratedCardBubbleTimesShown) {
   ASSERT_EQ(0, GeneratedCardBubbleTimesShown());
 
   ShowGeneratedCardUI();
@@ -152,14 +152,8 @@ TEST_F(AutofillCreditCardBubbleControllerTest, ShouldShowGeneratedCardBubble) {
 
   ShowGeneratedCardUI();
   ShowGeneratedCardUI();
-  ShowGeneratedCardUI();
-  ShowGeneratedCardUI();
-  EXPECT_EQ(5, GeneratedCardBubbleTimesShown());
+  EXPECT_EQ(3, GeneratedCardBubbleTimesShown());
   EXPECT_TRUE(controller()->GetTestingBubble()->showing());
-
-  ShowGeneratedCardUI();
-  EXPECT_EQ(5, GeneratedCardBubbleTimesShown());
-  EXPECT_FALSE(controller()->GetTestingBubble());
 }
 
 TEST_F(AutofillCreditCardBubbleControllerTest, BubbleText) {
