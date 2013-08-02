@@ -118,7 +118,7 @@ int NaClClockGetTime(nacl_clockid_t           clk_id,
             + g_nacl_clock_tv.nacl_abi_tv_usec;
         t_mono_cur_us  = tv.nacl_abi_tv_sec * 1000000
             + tv.nacl_abi_tv_usec;
-        if (t_mono_cur_us >= t_mono_cur_us) {
+        if (t_mono_cur_us > t_mono_prev_us) {
           g_nacl_clock_tv = tv;
         }
         tp->tv_sec = g_nacl_clock_tv.nacl_abi_tv_sec + MAGIC_OFFSET;
