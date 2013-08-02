@@ -491,7 +491,9 @@ def type_node_to_type(node):
 
 def type_node_inner_to_type(node):
     node_class = node.GetClass()
-    # FIXME: Typedef is misspelled as Type*r*ef in base parser.
+    # Note Type*r*ef, not Typedef, meaning the type is an identifier, thus
+    # either a typedef shorthand (but not a Typedef declaration itself) or an
+    # interface type. We do not distinguish these, and just use the type name.
     if node_class in ['PrimitiveType', 'Typeref']:
         return node.GetName()
     elif node_class == 'Any':
