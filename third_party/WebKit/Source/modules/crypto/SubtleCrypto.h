@@ -55,6 +55,7 @@ public:
     PassRefPtr<CryptoOperation> verifySignature(const Dictionary&, Key*, ArrayBufferView* signature, ExceptionState&);
     PassRefPtr<CryptoOperation> digest(const Dictionary&, ExceptionState&);
 
+    ScriptObject generateKey(const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);
     ScriptObject importKey(const String&, ArrayBufferView*, const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);
 
 private:

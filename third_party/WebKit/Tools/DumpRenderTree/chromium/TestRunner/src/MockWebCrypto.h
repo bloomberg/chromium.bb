@@ -45,6 +45,7 @@ public:
     virtual void sign(const WebKit::WebCryptoAlgorithm&, const WebKit::WebCryptoKey&, WebKit::WebCryptoOperationResult&) OVERRIDE;
     virtual void verifySignature(const WebKit::WebCryptoAlgorithm&, const WebKit::WebCryptoKey&, const unsigned char*, size_t, WebKit::WebCryptoOperationResult&) OVERRIDE;
     virtual void digest(const WebKit::WebCryptoAlgorithm&, WebKit::WebCryptoOperationResult&) OVERRIDE;
+    virtual void generateKey(const WebKit::WebCryptoAlgorithm&, bool extractable, WebKit::WebCryptoKeyUsageMask, WebKit::WebCryptoKeyOperationResult&) OVERRIDE;
     virtual void importKey(WebKit::WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebKit::WebCryptoAlgorithm&, bool extractable, WebKit::WebCryptoKeyUsageMask, WebKit::WebCryptoKeyOperationResult&) OVERRIDE;
 };
 

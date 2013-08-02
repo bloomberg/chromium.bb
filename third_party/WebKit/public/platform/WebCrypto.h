@@ -122,6 +122,7 @@ public:
     //
     // Once the keyOperation is no longer "in progress" the embedder is
     // responsible for freeing the cryptoOperation.
+    virtual void generateKey(const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoKeyOperationResult&) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void importKey(WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoKeyOperationResult&) { WEBKIT_ASSERT_NOT_REACHED(); }
 
 protected:

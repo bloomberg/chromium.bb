@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests cypto.subtle.generateKey.");
+
+jsTestIsAsync = true;
+
+// Note that fractional numbers are truncated, so this length should be
+// interpreted as 1024.
+aesCbc = { name: 'aes-cbc', length: 1024.9 };
+extractable = true;
+keyUsages = ['encrypt', 'decrypt'];
+
+// length property is missing.
+invalidAesKeyGen = { name: 'aes-cbc' };
+shouldThrow("crypto.subtle.generateKey(invalidAesKeyGen, extractable, keyUsages)");
+
+// length is invalid (outside of range of "unsigned short")
+invalidAesKeyGen = { name: 'aes-cbc', length: 70000 };
+shouldThrow("crypto.subtle.generateKey(invalidAesKeyGen, extractable, keyUsages)");
+
+// length is invalid (outside of range of "unsigned short")
+invalidAesKeyGen = { name: 'aes-cbc', length: -3 };
+shouldThrow("crypto.subtle.generateKey(invalidAesKeyGen, extractable, keyUsages)");
+
+// keyUsages is invalid.
+shouldThrow("crypto.subtle.generateKey(aesCbc, extractable, -1)");
+
+crypto.subtle.generateKey(aesCbc, extractable, keyUsages).then(function(newKey)
+{
+    key = newKey;
+    shouldBe("key.type", "'private'")
+    shouldBe("key.extractable", "true")
+    shouldBe("key.algorithm.name", "'AES-CBC'")
+    shouldBe("key.algorithm.length", "1024")
+    shouldBe("key.usages.join(',')", "'encrypt,decrypt'")
+
+    finishJSTest();
+});
+
+</script>
+
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

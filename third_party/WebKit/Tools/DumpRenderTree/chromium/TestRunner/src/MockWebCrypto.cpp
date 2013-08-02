@@ -156,6 +156,11 @@ void MockWebCrypto::digest(const WebKit::WebCryptoAlgorithm& algorithm, WebKit::
     result.initializationSucceeded(new MockCryptoOperation(algorithm, Digest, result));
 }
 
+void MockWebCrypto::generateKey(const WebKit::WebCryptoAlgorithm& algorithm, bool extractable, WebKit::WebCryptoKeyUsageMask usages, WebKit::WebCryptoKeyOperationResult& result)
+{
+    result.completeWithKey(WebKit::WebCryptoKey::create(0, WebKit::WebCryptoKeyTypePrivate, extractable, algorithm, usages));
+}
+
 void MockWebCrypto::importKey(WebKit::WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebKit::WebCryptoAlgorithm& algorithm, bool extractable, WebKit::WebCryptoKeyUsageMask usages, WebKit::WebCryptoKeyOperationResult& result)
 {
     std::string keyDataString(reinterpret_cast<const char*>(keyData), keyDataSize);

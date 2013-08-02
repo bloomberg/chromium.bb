@@ -193,6 +193,30 @@ PassRefPtr<CryptoOperation> SubtleCrypto::digest(const Dictionary& rawAlgorithm,
     return createCryptoOperation(rawAlgorithm, 0, Digest, 0, es);
 }
 
+ScriptObject SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
+{
+    WebKit::WebCrypto* platformCrypto = WebKit::Platform::current()->crypto();
+    if (!platformCrypto) {
+        es.throwDOMException(NotSupportedError);
+        return ScriptObject();
+    }
+
+    WebKit::WebCryptoKeyUsageMask keyUsages;
+    if (!Key::parseUsageMask(rawKeyUsages, keyUsages)) {
+        es.throwDOMException(TypeError);
+        return ScriptObject();
+    }
+
+    WebKit::WebCryptoAlgorithm algorithm;
+    if (!normalizeAlgorithm(rawAlgorithm, GenerateKey, algorithm, es))
+        return ScriptObject();
+
+    RefPtr<KeyOperation> keyOp = KeyOperation::create();
+    WebKit::WebCryptoKeyOperationResult result(keyOp.get());
+    platformCrypto->generateKey(algorithm, extractable, keyUsages, result);
+    return keyOp->returnValue(es);
+}
+
 ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
 {
     WebKit::WebCrypto* platformCrypto = WebKit::Platform::current()->crypto();
