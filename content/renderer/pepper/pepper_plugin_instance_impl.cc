@@ -2704,46 +2704,13 @@ void PepperPluginInstanceImpl::Navigate(
     return;
   }
 
-  ::ppapi::URLRequestInfoData completed_request = request;
+  scoped_ptr<ppapi::URLRequestInfoData> completed_request(
+      new ppapi::URLRequestInfoData(request));
 
-  WebURLRequest web_request;
-  if (!CreateWebURLRequest(&completed_request, frame, &web_request)) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, static_cast<int32_t>(PP_ERROR_FAILED)));
-    return;
-  }
-  web_request.setFirstPartyForCookies(document.firstPartyForCookies());
-  web_request.setHasUserGesture(from_user_action);
-
-  GURL gurl(web_request.url());
-
-  int32_t rc = PP_ERROR_FAILED;
-  if (gurl.SchemeIs("javascript")) {
-    // In imitation of the NPAPI implementation, only |target_frame == frame| is
-    // allowed for security reasons.
-    WebFrame* target_frame =
-        frame->view()->findFrameByName(WebString::fromUTF8(target), frame);
-    if (target_frame != frame) {
-      rc = PP_ERROR_NOACCESS;
-    } else {
-      // TODO(viettrungluu): NPAPI sends the result back to the plugin -- do we
-      // need that?
-      WebString result = container_->executeScriptURL(gurl, from_user_action);
-      rc = result.isNull() ? PP_ERROR_FAILED : PP_OK;
-    }
-  } else {
-    // Only GETs and POSTs are supported.
-    if (web_request.httpMethod() != "GET" &&
-        web_request.httpMethod() != "POST") {
-      rc = PP_ERROR_BADARGUMENT;
-    } else {
-      WebString target_str = WebString::fromUTF8(target);
-      container_->loadFrameRequest(web_request, target_str, false, NULL);
-      rc = PP_OK;
-    }
-  }
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, static_cast<int32_t>(rc)));
+  std::string target_string(target);
+  CreateWebURLRequest(completed_request.Pass(), frame,
+      base::Bind(&PepperPluginInstanceImpl::DidCreateWebURLRequest,
+          AsWeakPtr(), target_string, from_user_action, callback));
 }
 
 bool PepperPluginInstanceImpl::CanAccessMainFrame() const {
@@ -2838,6 +2805,54 @@ void PepperPluginInstanceImpl::UnSetAndDeleteLockTargetAdapter() {
     GetMouseLockDispatcher()->OnLockTargetDestroyed(lock_target_.get());
     lock_target_.reset();
   }
+}
+
+void PepperPluginInstanceImpl::DidCreateWebURLRequest(
+    const std::string& target,
+    bool from_user_action,
+    const base::Callback<void(int32_t)>& callback,
+    scoped_ptr<ppapi::URLRequestInfoData> data,
+    bool success,
+    scoped_ptr<WebURLRequest> web_request) {
+  WebDocument document = container_->element().document();
+  WebFrame* frame = document.frame();
+  if (!success || !frame) {
+    callback.Run(PP_ERROR_FAILED);
+    return;
+  }
+
+  web_request->setFirstPartyForCookies(document.firstPartyForCookies());
+  web_request->setHasUserGesture(from_user_action);
+
+  GURL gurl(web_request->url());
+
+  int32_t rc = PP_ERROR_FAILED;
+  if (gurl.SchemeIs("javascript")) {
+    // In imitation of the NPAPI implementation, only |target_frame == frame| is
+    // allowed for security reasons.
+    WebFrame* target_frame =
+        frame->view()->findFrameByName(WebString::fromUTF8(target), frame);
+    if (target_frame != frame) {
+      rc = PP_ERROR_NOACCESS;
+    } else {
+      // TODO(viettrungluu): NPAPI sends the result back to the plugin -- do we
+      // need that?
+      WebString result = container_->executeScriptURL(gurl, from_user_action);
+      rc = result.isNull() ? PP_ERROR_FAILED : PP_OK;
+    }
+  } else {
+    // Only GETs and POSTs are supported.
+    if (web_request->httpMethod() != "GET" &&
+        web_request->httpMethod() != "POST") {
+      rc = PP_ERROR_BADARGUMENT;
+    } else {
+      WebString target_str = WebString::fromUTF8(target);
+      container_->loadFrameRequest(
+          *web_request.release(), target_str, false, NULL);
+      rc = PP_OK;
+    }
+  }
+  callback.Run(rc);
 }
 
 }  // namespace content

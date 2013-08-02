@@ -49,6 +49,7 @@
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebUserGestureToken.h"
@@ -646,6 +647,14 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   MouseLockDispatcher* GetMouseLockDispatcher();
   MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter();
   void UnSetAndDeleteLockTargetAdapter();
+
+  void DidCreateWebURLRequest(
+      const std::string& target,
+      bool from_user_action,
+      const base::Callback<void(int32_t)>& callback,
+      scoped_ptr<ppapi::URLRequestInfoData> data,
+      bool success,
+      scoped_ptr<WebKit::WebURLRequest> web_request);
 
   PepperHelperImpl* helper_;
   RenderViewImpl* render_view_;

@@ -230,9 +230,10 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
 
   // Create a copy of the request data since CreateWebURLRequest will populate
   // the file refs.
-  ppapi::URLRequestInfoData filled_in_request_data = request_data;
+  scoped_ptr<ppapi::URLRequestInfoData> filled_in_request_data(
+      new ppapi::URLRequestInfoData(request_data));
 
-  if (URLRequestRequiresUniversalAccess(filled_in_request_data) &&
+  if (URLRequestRequiresUniversalAccess(*filled_in_request_data) &&
       !has_universal_access_) {
     ppapi::PpapiGlobals::Get()->LogWithSource(
         pp_instance(), PP_LOGLEVEL_ERROR, std::string(),
@@ -249,10 +250,36 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   WebFrame* frame = GetFrame();
   if (!frame)
     return PP_ERROR_FAILED;
-  WebURLRequest web_request;
-  if (!CreateWebURLRequest(&filled_in_request_data, frame, &web_request))
-    return PP_ERROR_FAILED;
-  web_request.setRequestorProcessID(renderer_ppapi_host_->GetPluginPID());
+
+  CreateWebURLRequest(filled_in_request_data.Pass(), frame,
+      base::Bind(&PepperURLLoaderHost::DidCreateWebURLRequest,
+          weak_factory_.GetWeakPtr()));
+
+  // Although the request is technically pending, this is not a "Call" message
+  // so we don't return COMPLETIONPENDING.
+  return PP_OK;
+}
+
+void PepperURLLoaderHost::DidCreateWebURLRequest(
+    scoped_ptr<ppapi::URLRequestInfoData> filled_in_request_data,
+    bool success,
+    scoped_ptr<WebURLRequest> web_request) {
+  WebFrame* frame = GetFrame();
+  if (!success || !frame) {
+    SendUpdateToPlugin(
+        new PpapiPluginMsg_URLLoader_FinishedLoading(PP_ERROR_FAILED));
+    return;
+  }
+
+  // Ensure again that we're not in progress.
+  if (loader_.get()) {
+    NOTREACHED();
+    SendUpdateToPlugin(
+        new PpapiPluginMsg_URLLoader_FinishedLoading(PP_ERROR_INPROGRESS));
+    return;
+  }
+
+  web_request->setRequestorProcessID(renderer_ppapi_host_->GetPluginPID());
 
   WebURLLoaderOptions options;
   if (has_universal_access_) {
@@ -262,10 +289,10 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   } else {
     // All other HTTP requests are untrusted.
     options.untrustedHTTP = true;
-    if (filled_in_request_data.allow_cross_origin_requests) {
+    if (filled_in_request_data->allow_cross_origin_requests) {
       // Allow cross-origin requests with access control. The request specifies
       // if credentials are to be sent.
-      options.allowCredentials = filled_in_request_data.allow_credentials;
+      options.allowCredentials = filled_in_request_data->allow_credentials;
       options.crossOriginRequestPolicy =
           WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
     } else {
@@ -275,16 +302,14 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   }
 
   loader_.reset(frame->createAssociatedURLLoader(options));
-  if (!loader_.get())
-    return PP_ERROR_FAILED;
+  if (!loader_.get()) {
+    SendUpdateToPlugin(
+        new PpapiPluginMsg_URLLoader_FinishedLoading(PP_ERROR_FAILED));
+  }
 
   // Don't actually save the request until we know we're going to load.
-  request_data_ = filled_in_request_data;
-  loader_->loadAsynchronously(web_request, this);
-
-  // Although the request is technically pending, this is not a "Call" message
-  // so we don't return COMPLETIONPENDING.
-  return PP_OK;
+  request_data_ = *filled_in_request_data;
+  loader_->loadAsynchronously(*web_request, this);
 }
 
 int32_t PepperURLLoaderHost::OnHostMsgSetDeferLoading(

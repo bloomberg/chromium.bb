@@ -55,7 +55,8 @@ namespace content {
 
 class URLRequestInfoTest : public RenderViewTest {
  public:
-  URLRequestInfoTest() : pp_instance_(1234) {
+  URLRequestInfoTest() : pp_instance_(1234),
+                         get_download_to_file_result_(false) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -75,35 +76,85 @@ class URLRequestInfoTest : public RenderViewTest {
   }
 
   bool GetDownloadToFile() {
-    WebURLRequest web_request;
-    URLRequestInfoData data = info_->GetData();
-    if (!CreateWebURLRequest(&data, GetMainFrame(), &web_request))
-      return false;
-    return web_request.downloadToFile();
+    get_download_to_file_result_ = false;
+
+    scoped_ptr<URLRequestInfoData> data(
+        new URLRequestInfoData(info_->GetData()));
+    CreateWebURLRequest(data.Pass(), GetMainFrame(),
+        base::Bind(&URLRequestInfoTest::GetDownloadToFileCallback,
+                   base::Unretained(this)));
+    base::MessageLoop::current()->RunUntilIdle();
+
+    return get_download_to_file_result_;
+  }
+
+  void GetDownloadToFileCallback(scoped_ptr<URLRequestInfoData> data,
+                                 bool success,
+                                 scoped_ptr<WebURLRequest> web_request) {
+    EXPECT_TRUE(success);
+    get_download_to_file_result_ = web_request->downloadToFile();
   }
 
   WebCString GetURL() {
-    WebURLRequest web_request;
-    URLRequestInfoData data = info_->GetData();
-    if (!CreateWebURLRequest(&data, GetMainFrame(), &web_request))
-      return WebCString();
-    return web_request.url().spec();
+    get_url_result_ = WebCString();
+
+    scoped_ptr<URLRequestInfoData> data(
+        new URLRequestInfoData(info_->GetData()));
+    CreateWebURLRequest(data.Pass(), GetMainFrame(),
+        base::Bind(&URLRequestInfoTest::GetURLCallback,
+                   base::Unretained(this)));
+    base::MessageLoop::current()->RunUntilIdle();
+
+    return get_url_result_;
+  }
+
+  void GetURLCallback(scoped_ptr<URLRequestInfoData> data,
+                      bool success,
+                      scoped_ptr<WebURLRequest> web_request) {
+    EXPECT_TRUE(success);
+    get_url_result_ = web_request->url().spec();
   }
 
   WebString GetMethod() {
-    WebURLRequest web_request;
-    URLRequestInfoData data = info_->GetData();
-    if (!CreateWebURLRequest(&data, GetMainFrame(), &web_request))
-      return WebString();
-    return web_request.httpMethod();
+    get_method_result_ = WebString();
+
+    scoped_ptr<URLRequestInfoData> data(
+        new URLRequestInfoData(info_->GetData()));
+    CreateWebURLRequest(data.Pass(), GetMainFrame(),
+        base::Bind(&URLRequestInfoTest::GetMethodCallback,
+            base::Unretained(this)));
+    base::MessageLoop::current()->RunUntilIdle();
+
+    return get_method_result_;
+  }
+
+  void GetMethodCallback(scoped_ptr<URLRequestInfoData> data,
+                         bool success,
+                         scoped_ptr<WebURLRequest> web_request) {
+    EXPECT_TRUE(success);
+    get_method_result_ = web_request->httpMethod();
   }
 
   WebString GetHeaderValue(const char* field) {
-    WebURLRequest web_request;
-    URLRequestInfoData data = info_->GetData();
-    if (!CreateWebURLRequest(&data, GetMainFrame(), &web_request))
-      return WebString();
-    return web_request.httpHeaderField(WebString::fromUTF8(field));
+    get_header_value_result_ = WebString();
+
+    scoped_ptr<URLRequestInfoData> data(
+        new URLRequestInfoData(info_->GetData()));
+    CreateWebURLRequest(data.Pass(), GetMainFrame(),
+        base::Bind(&URLRequestInfoTest::GetHeaderValueCallback,
+            base::Unretained(this), field));
+    base::MessageLoop::current()->RunUntilIdle();
+
+    return get_header_value_result_;
+  }
+
+  void GetHeaderValueCallback(const char* field,
+                              scoped_ptr<URLRequestInfoData> data,
+                              bool success,
+                              scoped_ptr<WebURLRequest> web_request) {
+    EXPECT_TRUE(success);
+    get_header_value_result_ = web_request->httpHeaderField(
+        WebString::fromUTF8(field));
   }
 
   bool SetBooleanProperty(PP_URLRequestProperty prop, bool b) {
@@ -119,6 +170,12 @@ class URLRequestInfoTest : public RenderViewTest {
   ::ppapi::TestGlobals test_globals_;
 
   scoped_refptr<URLRequestInfoResource> info_;
+
+  // Result fields for getting responses from asynchronous operations.
+  bool get_download_to_file_result_;
+  WebCString get_url_result_;
+  WebString get_method_result_;
+  WebString get_header_value_result_;
 };
 
 TEST_F(URLRequestInfoTest, GetInterface) {
