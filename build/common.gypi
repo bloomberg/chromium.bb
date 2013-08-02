@@ -976,6 +976,8 @@
     # Profile without optimizing out stack frames when profiling==1.
     'profiling_full_stack_frames%': '0',
 
+    # Enable strict glibc debug mode.
+    'glibcxx_debug%': 0,
     # And if we want to dump symbols for Breakpad-enabled builds.
     'linux_dump_symbols%': 0,
     # And if we want to strip the binary after dumping symbols.
@@ -1964,6 +1966,10 @@
       ['profiling==1', {
         'defines': ['ENABLE_PROFILING=1'],
       }],
+      ['OS=="linux" and glibcxx_debug==1', {
+        'defines': ['_GLIBCXX_DEBUG=1',],
+        'cflags_cc+': ['-g'],
+      }],
       ['remoting==1', {
         'defines': ['ENABLE_REMOTING=1'],
       }],
@@ -2546,13 +2552,6 @@
                 ],
               }],
             ],
-          }],
-          ['OS=="linux" and clang!=1 and target_arch!="ia32"', {
-            # Enable libstdc++ debugging facilities to help catch problems
-            # early, see http://crbug.com/65151 .
-            # TODO(phajdan.jr): Should we enable this for all of POSIX?
-            'defines': ['_GLIBCXX_DEBUG=1',],
-            'cflags_cc+': ['-g'],
           }],
           # Disabled on iOS because it was causing a crash on startup.
           # TODO(michelea): investigate, create a reduced test and possibly
