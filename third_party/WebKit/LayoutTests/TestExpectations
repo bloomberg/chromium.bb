@@ -103,10 +103,10 @@ crbug.com/24197 fast/css/disabled-author-styles.html [ Skip ]
 # Test itself passes, but causes subsequent tests to fail.
 webkit.org/b/83260 fast/text/international/embed-bidi-style-in-isolate-crash.html [ Skip ]
 
-crbug.com/266213 fast/frames/invalid-frameset.html [ Crash Pass ]
-crbug.com/266213 tables/table-section-overflow-clip-crash.html [ Crash Pass ]
-crbug.com/266213 fast/forms/searchfield-heights.html [ Crash Pass ]
-crbug.com/266213 fast/forms/search-vertical-alignment.html [ Crash Pass ]
+crbug.com/266213 [ Debug ] fast/frames/invalid-frameset.html [ Crash ]
+crbug.com/266213 [ Debug ] tables/table-section-overflow-clip-crash.html [ Crash ]
+crbug.com/266213 [ Debug ] fast/forms/searchfield-heights.html [ Crash ]
+crbug.com/266213 [ Debug ] fast/forms/search-vertical-alignment.html [ Crash ]
 
 # -----------------------------------------------------------------
 # Inspector tests
@@ -258,8 +258,8 @@ crbug.com/264211 svg/text/text-layout-crash.html [ Crash ]
 
 webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Crash Pass ]
 
-crbug.com/266213 svg/custom/bug86392.html [ Crash Pass ]
-crbug.com/266213 svg/custom/unicode-in-tspan-multi-svg-crash.html [ Crash Pass ]
+crbug.com/266213 [ Debug ] svg/custom/bug86392.html [ Crash ]
+crbug.com/266213 [ Debug ] svg/custom/unicode-in-tspan-multi-svg-crash.html [ Crash ]
 
 # -----------------------------------------------------------------
 # End SVG TESTS
