@@ -4,7 +4,6 @@
 namespace WebCore {
 
 class CSSValue;
-class StyleResolver;
 class StyleResolverState;
 
 class StyleBuilderFunctions {
@@ -12,9 +11,9 @@ public:
 
 {%- for property_id, property in properties.items() if not property.use_handlers_for %}
 {% call wrap_with_condition(property.condition) %}
-    static void applyInitial{{property_id}}(StyleResolver*, StyleResolverState&);
-    static void applyInherit{{property_id}}(StyleResolver*, StyleResolverState&);
-    static void applyValue{{property_id}}(StyleResolver*, StyleResolverState&, CSSValue*);
+    static void applyInitial{{property_id}}(StyleResolverState&);
+    static void applyInherit{{property_id}}(StyleResolverState&);
+    static void applyValue{{property_id}}(StyleResolverState&, CSSValue*);
 {%- endcall %}
 {%- endfor %}
 

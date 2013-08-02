@@ -311,7 +311,6 @@ private:
     void applyProperties(StyleResolverState&, const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <StyleApplicationPass pass>
     void applyAnimatedProperties(StyleResolverState&, const Element*, const DocumentTimeline*, const CSSAnimationUpdate*);
-    void resolveVariables(StyleResolverState&, CSSPropertyID, CSSValue*, Vector<std::pair<CSSPropertyID, String> >& knownExpressions);
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
     void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>&, bool isLeftPage, bool isFirstPage, const String& pageName);
     void collectViewportRules();
@@ -331,8 +330,6 @@ private:
     static RenderStyle* s_styleNotYetAvailable;
 
     void cacheBorderAndBackground();
-
-    void applyProperty(StyleResolverState&, CSSPropertyID, CSSValue*);
 
     MatchedPropertiesCache m_matchedPropertiesCache;
 
@@ -364,9 +361,6 @@ private:
 #ifdef STYLE_STATS
     static StyleSharingStats m_styleSharingStats;
 #endif
-
-    friend void StyleBuilder::oldApplyProperty(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);
-
 };
 
 inline bool checkRegionSelector(const CSSSelector* regionSelector, Element* regionElement)

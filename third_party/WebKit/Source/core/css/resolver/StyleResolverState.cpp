@@ -29,18 +29,20 @@
 
 namespace WebCore {
 
-StyleResolverState::StyleResolverState(const Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
+StyleResolverState::StyleResolverState(Document* document, Element* element, RenderStyle* parentStyle, RenderRegion* regionForStyling)
     : m_regionForStyling(0)
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_lineHeightValue(0)
     , m_styleMap(*this, m_elementStyleResources)
 {
-    ASSERT(!element() || document() == newDocument);
-    if (newElement)
-        m_elementContext = ElementResolveContext(newElement);
-    else
+    if (element) {
+        m_elementContext = ElementResolveContext(element);
+        m_document = m_elementContext.document();
+    } else {
         m_elementContext = ElementResolveContext();
+        m_document = document;
+    }
 
     m_regionForStyling = regionForStyling;
 
@@ -60,7 +62,7 @@ StyleResolverState::StyleResolverState(const Document* newDocument, Element* new
     // FIXME: StyleResolverState is never passed between documents
     // so we should be able to do this initialization at StyleResolverState
     // createion time instead of now, correct?
-    if (Page* page = newDocument->page())
+    if (Page* page = document->page())
         m_elementStyleResources.setDeviceScaleFactor(page->deviceScaleFactor());
 }
 

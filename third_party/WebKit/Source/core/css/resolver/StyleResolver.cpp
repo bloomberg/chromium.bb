@@ -665,7 +665,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
 
     // Line-height is set when we are sure we decided on the font-size
     if (state.lineHeightValue())
-        applyProperty(state, CSSPropertyLineHeight, state.lineHeightValue());
+        StyleBuilder::applyProperty(CSSPropertyLineHeight, state, state.lineHeightValue());
 
     // Now do rest of the properties.
     if (keyframe->properties())
@@ -916,7 +916,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     // Line-height is set when we are sure we decided on the font-size.
     if (state.lineHeightValue())
-        applyProperty(state, CSSPropertyLineHeight, state.lineHeightValue());
+        StyleBuilder::applyProperty(CSSPropertyLineHeight, state, state.lineHeightValue());
 
     applyMatchedProperties<LowPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
 
@@ -1079,34 +1079,9 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
             if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
                 state.setLineHeightValue(cssValue.get());
             else
-                applyProperty(state, property, cssValue.get());
+                StyleBuilder::applyProperty(property, state, cssValue.get());
         }
     }
-}
-
-static inline bool isValidVisitedLinkProperty(CSSPropertyID id)
-{
-    switch (id) {
-    case CSSPropertyBackgroundColor:
-    case CSSPropertyBorderLeftColor:
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderTopColor:
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyColor:
-    case CSSPropertyFill:
-    case CSSPropertyOutlineColor:
-    case CSSPropertyStroke:
-    case CSSPropertyTextDecorationColor:
-    case CSSPropertyWebkitColumnRuleColor:
-    case CSSPropertyWebkitTextEmphasisColor:
-    case CSSPropertyWebkitTextFillColor:
-    case CSSPropertyWebkitTextStrokeColor:
-        return true;
-    default:
-        break;
-    }
-
-    return false;
 }
 
 // http://dev.w3.org/csswg/css3-regions/#the-at-region-style-rule
@@ -1226,7 +1201,7 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
         if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
             state.setLineHeightValue(current.value());
         else
-            applyProperty(state, current.id(), current.value());
+            StyleBuilder::applyProperty(current.id(), state, current.value());
     }
 }
 
@@ -1353,7 +1328,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     // Line-height is set when we are sure we decided on the font-size.
     if (state.lineHeightValue())
-        applyProperty(state, CSSPropertyLineHeight, state.lineHeightValue());
+        StyleBuilder::applyProperty(CSSPropertyLineHeight, state, state.lineHeightValue());
 
     // Many properties depend on the font. If it changes we just apply all properties.
     if (cachedMatchedProperties && cachedMatchedProperties->renderStyle->fontDescription() != state.style()->fontDescription())
@@ -1415,102 +1390,9 @@ void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, s
             default:
                 break;
             }
-            applyProperty(state, properties[i].property, properties[i].value);
+            StyleBuilder::applyProperty(properties[i].property, state, properties[i].value);
         }
     }
-}
-
-static bool hasVariableReference(CSSValue* value)
-{
-    if (value->isPrimitiveValue()) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        return primitiveValue->hasVariableReference();
-    }
-
-    if (value->isCalculationValue())
-        return static_cast<CSSCalcValue*>(value)->hasVariableReference();
-
-    if (value->isReflectValue()) {
-        CSSReflectValue* reflectValue = static_cast<CSSReflectValue*>(value);
-        CSSPrimitiveValue* direction = reflectValue->direction();
-        CSSPrimitiveValue* offset = reflectValue->offset();
-        CSSValue* mask = reflectValue->mask();
-        return (direction && hasVariableReference(direction)) || (offset && hasVariableReference(offset)) || (mask && hasVariableReference(mask));
-    }
-
-    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-        if (hasVariableReference(i.value()))
-            return true;
-    }
-
-    return false;
-}
-
-void StyleResolver::resolveVariables(StyleResolverState& state, CSSPropertyID id, CSSValue* value, Vector<std::pair<CSSPropertyID, String> >& knownExpressions)
-{
-    std::pair<CSSPropertyID, String> expression(id, value->serializeResolvingVariables(*state.style()->variables()));
-
-    if (knownExpressions.contains(expression))
-        return; // cycle detected.
-
-    knownExpressions.append(expression);
-
-    // FIXME: It would be faster not to re-parse from strings, but for now CSS property validation lives inside the parser so we do it there.
-    RefPtr<MutableStylePropertySet> resultSet = MutableStylePropertySet::create();
-    if (!CSSParser::parseValue(resultSet.get(), id, expression.second, false, document()))
-        return; // expression failed to parse.
-
-    for (unsigned i = 0; i < resultSet->propertyCount(); i++) {
-        StylePropertySet::PropertyReference property = resultSet->propertyAt(i);
-        if (property.id() != CSSPropertyVariable && hasVariableReference(property.value())) {
-            resolveVariables(state, property.id(), property.value(), knownExpressions);
-        } else {
-            applyProperty(state, property.id(), property.value());
-            // All properties become dependent on their parent style when they use variables.
-            state.style()->setHasExplicitlyInheritedProperties();
-        }
-    }
-}
-
-void StyleResolver::applyProperty(StyleResolverState& state, CSSPropertyID id, CSSValue* value)
-{
-    if (id != CSSPropertyVariable && hasVariableReference(value)) {
-        Vector<std::pair<CSSPropertyID, String> > knownExpressions;
-        resolveVariables(state, id, value, knownExpressions);
-        return;
-    }
-
-    // CSS variables don't resolve shorthands at parsing time, so this should be *after* handling variables.
-    ASSERT_WITH_MESSAGE(!isExpandedShorthand(id), "Shorthand property id = %d wasn't expanded at parsing time", id);
-
-    bool isInherit = state.parentNode() && value->isInheritedValue();
-    bool isInitial = value->isInitialValue() || (!state.parentNode() && value->isInheritedValue());
-
-    ASSERT(!isInherit || !isInitial); // isInherit -> !isInitial && isInitial -> !isInherit
-    ASSERT(!isInherit || (state.parentNode() && state.parentStyle())); // isInherit -> (state.parentNode() && state.parentStyle())
-
-    if (!state.applyPropertyToRegularStyle() && (!state.applyPropertyToVisitedLinkStyle() || !isValidVisitedLinkProperty(id))) {
-        // Limit the properties that can be applied to only the ones honored by :visited.
-        return;
-    }
-
-    if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSProperty::isInheritedProperty(id))
-        state.parentStyle()->setHasExplicitlyInheritedProperties();
-
-    if (id == CSSPropertyVariable) {
-        ASSERT_WITH_SECURITY_IMPLICATION(value->isVariableValue());
-        CSSVariableValue* variable = toCSSVariableValue(value);
-        ASSERT(!variable->name().isEmpty());
-        ASSERT(!variable->value().isEmpty());
-        state.style()->setVariable(variable->name(), variable->value());
-        return;
-    }
-
-    if (StyleBuilder::applyProperty(id, this, state, value, isInitial, isInherit))
-        return;
-
-    // Fall back to the old switch statement, which is now in StyleBuilderCustom.cpp
-    StyleBuilder::oldApplyProperty(id, this, state, value, isInitial, isInherit);
 }
 
 void StyleResolver::addViewportDependentMediaQueryResult(const MediaQueryExp* expr, bool result)

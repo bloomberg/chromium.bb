@@ -6,7 +6,7 @@
 
 #include "StyleBuilderFunctions.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverState.h"
 
 // FIXME: currently we're just generating a switch statement, but we should
 //   test other variations for performance once we have more properties here.
@@ -76,7 +76,7 @@ namespace WebCore {
 {%- set apply_type = property.apply_type %}
 
 {%- if not property.custom_initial %}
-void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state)
+void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolverState& state)
 {
 {%- if property.svg %}
     {{ set_value(property) }}(SVGRenderStyle::{{property.initial}}());
@@ -87,7 +87,7 @@ void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolver* styleReso
 {% endif %}
 
 {%- if not property.custom_inherit %}
-void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state)
+void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolverState& state)
 {
 {%- if property.svg %}
     {{ set_value(property) }}(state.parentStyle()->svgStyle()->{{property.getter}}());
@@ -98,7 +98,7 @@ void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleReso
 {% endif %}
 
 {%- if not property.custom_value %}
-void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolverState& state, CSSValue* value)
 {
 {%- if apply_type == "length" %}
     {{ apply_value_length(property) }}
@@ -111,7 +111,7 @@ void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolv
 {%- endcall %}
 {%- endfor %}
 
-bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit) {
+bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit) {
     switch(property) {
 {%- for property_id, property in properties.items() %}
 {%- set used_property = properties[property.use_handlers_for] or property %}
@@ -119,11 +119,11 @@ bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolver* styleRes
 {%- call wrap_with_condition(used_property.condition) %}
     case {{ property_id }}:
         if (isInitial)
-            StyleBuilderFunctions::applyInitial{{ used_property_id }}(styleResolver, state);
+            StyleBuilderFunctions::applyInitial{{ used_property_id }}(state);
         else if (isInherit)
-            StyleBuilderFunctions::applyInherit{{ used_property_id }}(styleResolver, state);
+            StyleBuilderFunctions::applyInherit{{ used_property_id }}(state);
         else
-            StyleBuilderFunctions::applyValue{{ used_property_id }}(styleResolver, state, value);
+            StyleBuilderFunctions::applyValue{{ used_property_id }}(state, value);
         return true;
 {%- endcall %}
 {% endfor %}
