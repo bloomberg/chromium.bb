@@ -105,13 +105,18 @@ shouldBe("new ErrorEvent('eventType', { colno: {} }).colno", "0");
 shouldBe("new ErrorEvent('eventType', { colno: {moemoe: 12345} }).colno", "0");
 shouldBe("new ErrorEvent('eventType', { colno: {valueOf: function () { return 12345; }} }).colno", "12345");
 
+// error is passed.
+shouldBe("new ErrorEvent('eventType', { error: { moemoe: 12345 } }).error.moemoe", "12345");
+shouldBeEqualToString("new ErrorEvent('eventType', { error: { message: 'Message' } }).error.message", "Message");
+
 // All initializers are passed.
-shouldBe("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).bubbles", "true");
-shouldBe("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).cancelable", "true");
-shouldBeEqualToString("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).message", "sakuranbo");
-shouldBeEqualToString("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).filename", "amaenbo");
-shouldBe("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).lineno", "12345");
-shouldBe("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).colno", "23456");
+shouldBe("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).bubbles", "true");
+shouldBe("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).cancelable", "true");
+shouldBeEqualToString("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).message", "sakuranbo");
+shouldBeEqualToString("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).filename", "amaenbo");
+shouldBe("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).lineno", "12345");
+shouldBe("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).colno", "23456");
+shouldBeEqualToString("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).error.message", "hi");
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </body>

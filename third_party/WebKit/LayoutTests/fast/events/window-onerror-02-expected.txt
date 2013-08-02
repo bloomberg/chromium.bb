@@ -4,7 +4,14 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 window.onerror: "Uncaught ReferenceError: unknownObject is not defined" at window-onerror-02.html (Line: 14, Column: 8)
+Stack Trace:
+ReferenceError: unknownObject is not defined
+    at window-onerror-02.html:14:9
+
 Returning 'true': the error should not be reported in the console as an unhandled exception.
+
+
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -82,12 +82,15 @@ PASS new ErrorEvent('eventType', { colno: [12345, 67890] }).colno is 0
 PASS new ErrorEvent('eventType', { colno: {} }).colno is 0
 PASS new ErrorEvent('eventType', { colno: {moemoe: 12345} }).colno is 0
 PASS new ErrorEvent('eventType', { colno: {valueOf: function () { return 12345; }} }).colno is 12345
-PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).bubbles is true
-PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).cancelable is true
-PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).message is "sakuranbo"
-PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).filename is "amaenbo"
-PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).lineno is 12345
-PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456 }).colno is 23456
+PASS new ErrorEvent('eventType', { error: { moemoe: 12345 } }).error.moemoe is 12345
+PASS new ErrorEvent('eventType', { error: { message: 'Message' } }).error.message is "Message"
+PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).bubbles is true
+PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).cancelable is true
+PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).message is "sakuranbo"
+PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).filename is "amaenbo"
+PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).lineno is 12345
+PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).colno is 23456
+PASS new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).error.message is "hi"
 PASS successfullyParsed is true
 
 TEST COMPLETE

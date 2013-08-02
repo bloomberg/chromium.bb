@@ -4,7 +4,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 window.onerror: "[object Event]" at undefined (Line: undefined, Column: undefined)
+No stack trace.
 Returning 'true': the error should not be reported in the console as an unhandled exception.
+
+
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,13 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    ConstructorTemplate=Event
-] interface ErrorEvent : Event {
-    [InitializedByEventConstructor] readonly attribute DOMString message;
-    [InitializedByEventConstructor] readonly attribute DOMString filename;
-    [InitializedByEventConstructor] readonly attribute unsigned long lineno;
-    [InitializedByEventConstructor] readonly attribute unsigned long colno;
-    [InitializedByEventConstructor, Custom, Unserializable] readonly attribute any error;
-};
+#include "config.h"
+#include "V8ErrorEvent.h"
 
+#include "RuntimeEnabledFeatures.h"
+#include "V8Event.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/page/Frame.h"
+
+namespace WebCore {
+
+void V8ErrorEvent::errorAttrGetterCustom(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Value> error = info.Holder()->GetHiddenValue(V8HiddenPropertyName::error());
+
+    if (!error.IsEmpty()) {
+        v8SetReturnValue(info, error);
+        return;
+    }
+
+    v8SetReturnValueNull(info);
+}
+
+} // namespace WebCore

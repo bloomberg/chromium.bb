@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventNames.h"
@@ -56,7 +57,12 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptExecutionContext
     if (!listener.IsEmpty() && listener->IsFunction()) {
         v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);
         v8::Local<v8::Object> thisValue = v8::Context::GetCurrent()->Global();
-        v8::Handle<v8::Value> parameters[4] = { v8String(errorEvent->message(), isolate), v8String(errorEvent->filename(), isolate), v8::Integer::New(errorEvent->lineno(), isolate), v8::Integer::New(errorEvent->colno(), isolate) };
+
+        v8::Local<v8::Value> error = jsEvent->ToObject()->GetHiddenValue(V8HiddenPropertyName::error());
+        if (error.IsEmpty())
+            error = v8::Null(isolate);
+
+        v8::Handle<v8::Value> parameters[5] = { v8String(errorEvent->message(), isolate), v8String(errorEvent->filename(), isolate), v8::Integer::New(errorEvent->lineno(), isolate), v8::Integer::New(errorEvent->colno(), isolate), error };
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
         if (worldType(isolate) == WorkerWorld)

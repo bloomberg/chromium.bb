@@ -190,10 +190,12 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, Script
     WorkerGlobalScopeExecutionState state;
     evaluate(sourceCode.source(), sourceCode.url().string(), sourceCode.startPosition(), &state);
     if (state.hadException) {
-        if (exception)
+        if (exception) {
             *exception = state.exception;
-        else
-            m_workerGlobalScope->reportException(state.errorMessage, state.lineNumber, state.columnNumber, state.sourceURL, 0);
+        } else {
+            RefPtr<ErrorEvent> event = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber);
+            m_workerGlobalScope->reportException(event, 0);
+        }
     }
 }
 

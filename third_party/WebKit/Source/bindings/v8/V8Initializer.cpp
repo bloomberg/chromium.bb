@@ -26,6 +26,7 @@
 #include "config.h"
 #include "bindings/v8/V8Initializer.h"
 
+#include "V8ErrorEvent.h"
 #include "V8History.h"
 #include "V8Location.h"
 #include "V8Window.h"
@@ -33,6 +34,7 @@
 #include "bindings/v8/ScriptProfiler.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCController.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -94,7 +96,13 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     v8::Handle<v8::Value> resourceName = message->GetScriptResourceName();
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();
     String resource = shouldUseDocumentURL ? firstWindow->document()->url() : toWebCoreString(resourceName);
-    firstWindow->document()->reportException(errorMessage, message->GetLineNumber(), message->GetStartColumn(), resource, callStack);
+    RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resource, message->GetLineNumber(), message->GetStartColumn());
+    v8::Local<v8::Value> wrappedEvent = toV8(event.get(), v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
+    if (!wrappedEvent.IsEmpty()) {
+        ASSERT(wrappedEvent->IsObject());
+        v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(), data);
+    }
+    firstWindow->document()->reportException(event.release(), callStack);
 }
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
@@ -162,10 +170,14 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
     // During the frame teardown, there may not be a valid context.
     if (ScriptExecutionContext* context = getScriptExecutionContext()) {
         String errorMessage = toWebCoreString(message->Get());
-        int lineNumber = message->GetLineNumber();
-        int columnNumber = message->GetStartColumn();
         String sourceURL = toWebCoreString(message->GetScriptResourceName());
-        context->reportException(errorMessage, lineNumber, columnNumber, sourceURL, 0);
+        RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn());
+        v8::Local<v8::Value> wrappedEvent = toV8(event.get(), v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
+        if (!wrappedEvent.IsEmpty()) {
+            ASSERT(wrappedEvent->IsObject());
+            v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(), data);
+        }
+        context->reportException(event.release(), 0);
     }
 
     isReportingException = false;

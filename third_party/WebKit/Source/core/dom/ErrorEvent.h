@@ -59,6 +59,10 @@ public:
     {
         return adoptRef(new ErrorEvent(type, initializer));
     }
+    static PassRefPtr<ErrorEvent> createSanitizedError()
+    {
+        return adoptRef(new ErrorEvent("Script error.", String(), 0, 0));
+    }
     virtual ~ErrorEvent();
 
     const String& message() const { return m_message; }

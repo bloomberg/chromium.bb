@@ -194,10 +194,14 @@ void ScriptExecutionContext::closeMessagePorts() {
     }
 }
 
+bool ScriptExecutionContext::shouldSanitizeScriptError(const String& sourceURL)
+{
+    return !securityOrigin()->canRequest(completeURL(sourceURL));
+}
+
 bool ScriptExecutionContext::sanitizeScriptError(String& errorMessage, int& lineNumber, int& columnNumber, String& sourceURL)
 {
-    KURL targetURL = completeURL(sourceURL);
-    if (securityOrigin()->canRequest(targetURL))
+    if (!shouldSanitizeScriptError(sourceURL))
         return false;
     errorMessage = "Script error.";
     sourceURL = String();
@@ -206,18 +210,19 @@ bool ScriptExecutionContext::sanitizeScriptError(String& errorMessage, int& line
     return true;
 }
 
-void ScriptExecutionContext::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, PassRefPtr<ScriptCallStack> callStack)
+void ScriptExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassRefPtr<ScriptCallStack> callStack)
 {
+    RefPtr<ErrorEvent> errorEvent = event;
     if (m_inDispatchErrorEvent) {
         if (!m_pendingExceptions)
             m_pendingExceptions = adoptPtr(new Vector<OwnPtr<PendingException> >());
-        m_pendingExceptions->append(adoptPtr(new PendingException(errorMessage, lineNumber, columnNumber, sourceURL, callStack)));
+        m_pendingExceptions->append(adoptPtr(new PendingException(errorEvent->message(), errorEvent->lineno(), errorEvent->colno(), errorEvent->filename(), callStack)));
         return;
     }
 
     // First report the original exception and only then all the nested ones.
-    if (!dispatchErrorEvent(errorMessage, lineNumber, columnNumber, sourceURL))
-        logExceptionToConsole(errorMessage, sourceURL, lineNumber, columnNumber, callStack);
+    if (!dispatchErrorEvent(errorEvent))
+        logExceptionToConsole(errorEvent->message(), errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
 
     if (!m_pendingExceptions)
         return;
@@ -234,21 +239,18 @@ void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLeve
     addMessage(source, level, message, sourceURL, lineNumber, 0, state, requestIdentifier);
 }
 
-bool ScriptExecutionContext::dispatchErrorEvent(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)
+bool ScriptExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event)
 {
     EventTarget* target = errorEventTarget();
     if (!target)
         return false;
 
-    String message = errorMessage;
-    int line = lineNumber;
-    int column = columnNumber;
-    String sourceName = sourceURL;
-    sanitizeScriptError(message, line, column, sourceName);
+    RefPtr<ErrorEvent> errorEvent = event;
+    if (shouldSanitizeScriptError(errorEvent->filename()))
+        errorEvent = ErrorEvent::createSanitizedError();
 
     ASSERT(!m_inDispatchErrorEvent);
     m_inDispatchErrorEvent = true;
-    RefPtr<ErrorEvent> errorEvent = ErrorEvent::create(message, sourceName, line, column);
     target->dispatchEvent(errorEvent);
     m_inDispatchErrorEvent = false;
     return errorEvent->defaultPrevented();
