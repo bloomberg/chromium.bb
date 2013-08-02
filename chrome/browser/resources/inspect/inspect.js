@@ -75,76 +75,70 @@ function populateWorkersList(data) {
     addToWorkersList(data[i]);
 }
 
-function populateDeviceLists(pages) {
-  var pagesDigest = JSON.stringify(pages);
-  if (!pages || pagesDigest == window.pagesDigest)
+function populateDeviceLists(devices) {
+  var devicesDigest = JSON.stringify(devices);
+  if (!devices || devicesDigest == window.devicesDigest)
     return;
 
-  window.pagesDigest = pagesDigest;
+  window.devicesDigest = devicesDigest;
 
-  // Clear existing entries
-  var deviceElements = document.querySelectorAll('.device');
-  for (var i = 0; i < deviceElements.length; i++)
-    deviceElements[i].remove();
   var containerElement = $('devices');
+  containerElement.textContent = '';
 
   // Populate with new entries
-  for (var i = 0; pages && i < pages.length; i++) {
-    var page = pages[i];
+  for (var d = 0; d < devices.length; d++) {
+    var device = devices[d];
 
-    var listId = 'device-' + page.adbSerial;
-    var listElement = $(listId);
-    if (!listElement) {
-      var sectionElement = document.createElement('div');
-      sectionElement.className = 'section device';
-      sectionElement.textContent = page.adbModel;
+    var deviceHeader = document.createElement('div');
+    deviceHeader.className = 'section';
+    deviceHeader.textContent = device.adbModel;
+    containerElement.appendChild(deviceHeader);
 
-      listElement = document.createElement('div');
-      listElement.className = 'list device';
-      listElement.id = listId;
-      containerElement.appendChild(sectionElement);
-      containerElement.appendChild(listElement);
+    var deviceContent = document.createElement('div');
+    deviceContent.className = 'list';
+    containerElement.appendChild(deviceContent);
+
+    for (var b = 0; b < device.browsers.length; b++) {
+      var browser = device.browsers[b];
+
+      var browserHeader = document.createElement('div');
+      browserHeader.className = 'small-section';
+      browserHeader.textContent = browser.adbBrowserName;
+      deviceContent.appendChild(browserHeader);
+
+      var browserPages = document.createElement('div');
+      browserPages.className = 'list package';
+      deviceContent.appendChild(browserPages);
+
+      for (var p = 0; p < browser.pages.length; p++) {
+        addTargetToList(
+            browser.pages[p], browserPages, ['faviconUrl', 'name', 'url']);
+      }
     }
-
-    var packageId = 'package-' + page.adbModel + '-' + page.adbPackage;
-    var packageElement = $(packageId);
-    if (!packageElement) {
-      var sectionElement = document.createElement('div');
-      sectionElement.className = 'small-section package';
-      sectionElement.textContent = page.adbPackage;
-
-      packageElement = document.createElement('div');
-      packageElement.className = 'list package';
-      packageElement.id = packageId;
-      listElement.appendChild(sectionElement);
-      listElement.appendChild(packageElement);
-    }
-
-    addTargetToList(page, packageId, ['faviconUrl', 'name', 'url']);
   }
 }
 
 function addToPagesList(data) {
-  addTargetToList(data, 'pages', ['faviconUrl', 'name', 'url']);
+  addTargetToList(data, $('pages'), ['faviconUrl', 'name', 'url']);
 }
 
 function addToExtensionsList(data) {
-  addTargetToList(data, 'extensions', ['name', 'url']);
+  addTargetToList(data, $('extensions'), ['name', 'url']);
 }
 
 function addToAppsList(data) {
-  addTargetToList(data, 'apps', ['name', 'url']);
+  addTargetToList(data, $('apps'), ['name', 'url']);
 }
 
 function addToWorkersList(data) {
   addTargetToList(data,
-                  'workers',
+                  $('workers'),
                   ['name', 'url', 'pid'],
                   true);
 }
 
 function addToOthersList(data) {
-  addTargetToList(data, 'others', ['url']);
+  addTargetToList(data, $('others'), ['url']);
 }
 
 function formatValue(data, property) {
@@ -170,8 +164,7 @@ function formatValue(data, property) {
   return span;
 }
 
-function addTargetToList(data, listId, properties, canTerminate) {
-  var list = $(listId);
+function addTargetToList(data, list, properties, canTerminate) {
   var row = document.createElement('div');
   row.className = 'row';
   for (var j = 0; j < properties.length; j++)

@@ -83,8 +83,10 @@ static const char kFaviconUrlField[] = "faviconUrl";
 static const char kPidField[]  = "pid";
 static const char kAdbSerialField[] = "adbSerial";
 static const char kAdbModelField[] = "adbModel";
-static const char kAdbPackageField[] = "adbPackage";
+static const char kAdbBrowserNameField[] = "adbBrowserName";
 static const char kAdbPageIdField[] = "adbPageId";
+static const char kAdbBrowsersField[] = "browsers";
+static const char kAdbPagesField[] = "pages";
 
 DictionaryValue* BuildTargetDescriptor(
     const std::string& target_type,
@@ -211,10 +213,7 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
     std::string page_id;
     if (args->GetSize() == 1 && args->GetDictionary(0, &data) &&
         data->GetString(kAdbPageIdField, &page_id)) {
-      scoped_refptr<DevToolsAdbBridge> adb_bridge =
-          DevToolsAdbBridge::Factory::GetForProfile(profile);
-      if (adb_bridge)
-        adb_bridge->Attach(page_id);
+      inspect_ui_->InspectRemotePage(page_id);
     }
     return;
   }
@@ -369,6 +368,14 @@ void InspectUI::InitUI() {
   observer_->InitUI();
 }
 
+void InspectUI::InspectRemotePage(const std::string& id) {
+  RemotePages::iterator it = remote_pages_.find(id);
+  if (it != remote_pages_.end()) {
+    Profile* profile = Profile::FromWebUI(web_ui());
+    it->second->Inspect(profile);
+  }
+}
+
 void InspectUI::PopulateLists() {
   std::set<RenderViewHost*> tab_rvhs;
   for (TabContentsIterator it; !it.done(); it.Next())
@@ -443,19 +450,42 @@ content::WebUIDataSource* InspectUI::CreateInspectUIHTMLSource() {
   return source;
 }
 
-void InspectUI::RemotePagesChanged(DevToolsAdbBridge::RemotePages* pages) {
-  ListValue targets;
-  for (DevToolsAdbBridge::RemotePages::iterator it = pages->begin();
-       it != pages->end(); ++it) {
-    DevToolsAdbBridge::RemotePage* page = it->get();
-    DictionaryValue* target_data = BuildTargetDescriptor(kAdbTargetType,
-        false, GURL(page->url()), page->title(), GURL(page->favicon_url()), 0,
-        0);
-    target_data->SetString(kAdbSerialField, page->serial());
-    target_data->SetString(kAdbModelField, page->model());
-    target_data->SetString(kAdbPackageField, page->package());
-    target_data->SetString(kAdbPageIdField, page->id());
-    targets.Append(target_data);
+void InspectUI::RemoteDevicesChanged(
+    DevToolsAdbBridge::RemoteDevices* devices) {
+  remote_pages_.clear();
+  ListValue device_list;
+  for (DevToolsAdbBridge::RemoteDevices::iterator dit = devices->begin();
+       dit != devices->end(); ++dit) {
+    DevToolsAdbBridge::RemoteDevice& device = *(dit->get());
+    DictionaryValue* device_data = new DictionaryValue();
+    device_data->SetString(kAdbModelField, device.model());
+    device_data->SetString(kAdbSerialField, device.serial());
+    ListValue* browser_list = new ListValue();
+    device_data->Set(kAdbBrowsersField, browser_list);
+
+    DevToolsAdbBridge::RemoteBrowsers& browsers = device.browsers();
+    for (DevToolsAdbBridge::RemoteBrowsers::iterator bit =
+        browsers.begin(); bit != browsers.end(); ++bit) {
+      DevToolsAdbBridge::RemoteBrowser& browser = *(bit->get());
+      DictionaryValue* browser_data = new DictionaryValue();
+      browser_data->SetString(kAdbBrowserNameField, browser.name());
+      ListValue* page_list = new ListValue();
+      browser_data->Set(kAdbPagesField, page_list);
+
+      DevToolsAdbBridge::RemotePages& pages = browser.pages();
+      for (DevToolsAdbBridge::RemotePages::iterator it =
+          pages.begin(); it != pages.end(); ++it) {
+        DevToolsAdbBridge::RemotePage* page =  it->get();
+        DictionaryValue* page_data = BuildTargetDescriptor(kAdbTargetType,
+            false, GURL(page->url()), page->title(), GURL(page->favicon_url()),
+            0, 0);
+        page_data->SetString(kAdbPageIdField, page->global_id());
+        page_list->Append(page_data);
+        remote_pages_[page->global_id()] = page;
+      }
+      browser_list->Append(browser_data);
+    }
+    device_list.Append(device_data);
   }
-  web_ui()->CallJavascriptFunction("populateDeviceLists", targets);
+  web_ui()->CallJavascriptFunction("populateDeviceLists", device_list);
 }

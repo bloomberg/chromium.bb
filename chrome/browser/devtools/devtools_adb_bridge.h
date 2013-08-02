@@ -84,29 +84,26 @@ class DevToolsAdbBridge
 
   class RemotePage : public base::RefCounted<RemotePage> {
    public:
-    RemotePage(scoped_refptr<AndroidDevice> device,
-               const std::string& package,
+    RemotePage(scoped_refptr<DevToolsAdbBridge> bridge,
+               scoped_refptr<AndroidDevice> device,
                const std::string& socket,
                const base::DictionaryValue& value);
 
-    scoped_refptr<AndroidDevice> device() { return device_; }
-    std::string serial() { return device_->serial(); }
-    std::string model() { return device_->model(); }
-    std::string package() { return package_; }
-    std::string socket() { return socket_; }
     std::string id() { return id_; }
     std::string url() { return url_; }
     std::string title() { return title_; }
     std::string description() { return description_; }
     std::string favicon_url() { return favicon_url_; }
-    std::string debug_url() { return debug_url_; }
-    std::string frontend_url() { return frontend_url_; }
+    std::string global_id() { return global_id_; }
+
+    void Inspect(Profile* profile);
 
    private:
     friend class base::RefCounted<RemotePage>;
     virtual ~RemotePage();
+
+    scoped_refptr<DevToolsAdbBridge> bridge_;
     scoped_refptr<AndroidDevice> device_;
-    std::string package_;
     std::string socket_;
     std::string id_;
     std::string url_;
@@ -115,11 +112,66 @@ class DevToolsAdbBridge
     std::string favicon_url_;
     std::string debug_url_;
     std::string frontend_url_;
+    std::string global_id_;
     DISALLOW_COPY_AND_ASSIGN(RemotePage);
   };
 
   typedef std::vector<scoped_refptr<RemotePage> > RemotePages;
-  typedef base::Callback<void(int, RemotePages*)> PagesCallback;
+
+  class RemoteBrowser : public base::RefCounted<RemoteBrowser> {
+   public:
+    RemoteBrowser(scoped_refptr<DevToolsAdbBridge> bridge,
+                  scoped_refptr<AndroidDevice> device,
+                  const std::string& socket,
+                  const std::string& name);
+
+    scoped_refptr<AndroidDevice> device() { return device_; }
+    std::string socket() { return socket_; }
+    std::string name() { return name_; }
+
+    RemotePages& pages() { return pages_; }
+    void AddPage(scoped_refptr<RemotePage> page) { pages_.push_back(page); }
+
+   private:
+    friend class base::RefCounted<RemoteBrowser>;
+    virtual ~RemoteBrowser();
+
+    scoped_refptr<DevToolsAdbBridge> bridge_;
+    scoped_refptr<AndroidDevice> device_;
+    const std::string socket_;
+    const std::string name_;
+    RemotePages pages_;
+
+    DISALLOW_COPY_AND_ASSIGN(RemoteBrowser);
+  };
+
+  typedef std::vector<scoped_refptr<RemoteBrowser> > RemoteBrowsers;
+
+  class RemoteDevice : public base::RefCounted<RemoteDevice> {
+   public:
+    explicit RemoteDevice(scoped_refptr<DevToolsAdbBridge> bridge,
+                          scoped_refptr<AndroidDevice> device);
+
+    std::string serial() { return device_->serial(); }
+    std::string model() { return device_->model(); }
+
+    RemoteBrowsers& browsers() { return browsers_; }
+    void AddBrowser(scoped_refptr<RemoteBrowser> browser) {
+      browsers_.push_back(browser);
+    }
+
+   private:
+    friend class base::RefCounted<RemoteDevice>;
+    virtual ~RemoteDevice();
+
+    scoped_refptr<DevToolsAdbBridge> bridge_;
+    scoped_refptr<AndroidDevice> device_;
+    RemoteBrowsers browsers_;
+
+    DISALLOW_COPY_AND_ASSIGN(RemoteDevice);
+  };
+
+  typedef std::vector<scoped_refptr<RemoteDevice> > RemoteDevices;
 
   class AndroidDevice : public base::RefCounted<AndroidDevice> {
    public:
@@ -166,7 +218,7 @@ class DevToolsAdbBridge
 
   class Listener {
    public:
-    virtual void RemotePagesChanged(RemotePages* pages) = 0;
+    virtual void RemoteDevicesChanged(RemoteDevices* devices) = 0;
    protected:
     virtual ~Listener() {}
   };
@@ -175,8 +227,6 @@ class DevToolsAdbBridge
 
   void EnumerateUsbDevices(const AndroidDevicesCallback& callback);
   void EnumerateAdbDevices(const AndroidDevicesCallback& callback);
-
-  void Attach(const std::string& page_id);
 
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
@@ -210,14 +260,13 @@ class DevToolsAdbBridge
                           int result,
                           const std::string& response);
 
-  void RequestPages();
-  void ReceivedPages(int result, RemotePages* pages);
+  void RequestRemoteDevices();
+  void ReceivedRemoteDevices(RemoteDevices* devices);
 
   Profile* profile_;
   scoped_refptr<RefCountedAdbThread> adb_thread_;
   bool has_message_loop_;
   scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
-  scoped_ptr<RemotePages> pages_;
   typedef std::vector<Listener*> Listeners;
   Listeners listeners_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);

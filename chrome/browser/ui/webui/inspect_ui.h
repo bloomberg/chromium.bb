@@ -23,6 +23,7 @@ class InspectUI : public content::WebUIController,
   virtual ~InspectUI();
 
   void InitUI();
+  void InspectRemotePage(const std::string& id);
 
  private:
   class WorkerCreationDestructionListener;
@@ -40,13 +41,17 @@ class InspectUI : public content::WebUIController,
   content::WebUIDataSource* CreateInspectUIHTMLSource();
 
   // DevToolsAdbBridge::Listener overrides.
-  virtual void RemotePagesChanged(
-      DevToolsAdbBridge::RemotePages* pages) OVERRIDE;
+  virtual void RemoteDevicesChanged(
+      DevToolsAdbBridge::RemoteDevices* devices) OVERRIDE;
 
   scoped_refptr<WorkerCreationDestructionListener> observer_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
+
+  typedef std::map<std::string, scoped_refptr<DevToolsAdbBridge::RemotePage> >
+      RemotePages;
+  RemotePages remote_pages_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectUI);
 };
