@@ -326,14 +326,6 @@ static base::Value* PopulateInterfaceDescriptor(int interface_number,
   return descriptor.ToValue().release();
 }
 
-void GetUsbService(base::Callback<void(UsbService* service)> callback) {
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(UsbService::GetInstance),
-      callback);
-}
-
 }  // namespace
 
 namespace extensions {
@@ -448,48 +440,21 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
     return;
   }
 
-  GetUsbService(base::Bind(&UsbFindDevicesFunction::EnumerateDevices,
-                           this,
-                           vendor_id,
-                           product_id,
-                           interface_id));
+  UsbService::GetInstance()->FindDevices(
+      vendor_id,
+      product_id,
+      interface_id,
+      &devices_,
+      base::Bind(&UsbFindDevicesFunction::OnCompleted, this));
 }
 
-void UsbFindDevicesFunction::EnumerateDevices(
-    uint16_t vendor_id,
-    uint16_t product_id,
-    int interface_id,
-    UsbService* service) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&UsbService::FindDevices,
-                 base::Unretained(service),
-                 vendor_id,
-                 product_id,
-                 interface_id,
-                 base::Bind(&UsbFindDevicesFunction::OnEnumerationCompleted,
-                            this)));
-}
-
-
-void UsbFindDevicesFunction::OnEnumerationCompleted(
-    ScopedDeviceVector devices) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&UsbFindDevicesFunction::OnCompleted,
-                 this,
-                 base::Passed(devices.Pass())));
-}
-
-void UsbFindDevicesFunction::OnCompleted(
-    ScopedDeviceVector devices) {
-  for (size_t i = 0; i < devices->size(); ++i) {
-    UsbDeviceHandle* const device = devices->at(i).get();
+void UsbFindDevicesFunction::OnCompleted() {
+  for (size_t i = 0; i < devices_.size(); ++i) {
+    UsbDeviceHandle* const device = devices_[i].get();
     UsbDeviceResource* const resource =
         new UsbDeviceResource(extension_->id(), device);
 
+    Device js_device;
     result_->Append(PopulateDevice(manager_->Add(resource),
                                    parameters_->options.vendor_id,
                                    parameters_->options.product_id));
