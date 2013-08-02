@@ -197,8 +197,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kWallpaperPrivate, "wallpaperPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kWebRequestInternal, "webRequestInternal" },
-    { APIPermission::kWebSocketProxyPrivate, "webSocketProxyPrivate",
-      APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kWebstorePrivate, "webstorePrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kMediaGalleriesPrivate, "mediaGalleriesPrivate",

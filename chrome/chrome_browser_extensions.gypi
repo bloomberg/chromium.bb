@@ -518,8 +518,6 @@
         'browser/extensions/api/web_request/web_request_permissions.h',
         'browser/extensions/api/web_request/web_request_time_tracker.cc',
         'browser/extensions/api/web_request/web_request_time_tracker.h',
-        'browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.cc',
-        'browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h',
         'browser/extensions/api/webstore_private/webstore_private_api.cc',
         'browser/extensions/api/webstore_private/webstore_private_api.h',
         'browser/extensions/api/webview/webview_api.cc',

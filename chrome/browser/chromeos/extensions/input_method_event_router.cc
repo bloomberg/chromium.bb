@@ -9,7 +9,6 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
-#include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"

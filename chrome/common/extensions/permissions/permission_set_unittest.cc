@@ -724,7 +724,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kTerminalPrivate);
   skip.insert(APIPermission::kWallpaperPrivate);
   skip.insert(APIPermission::kWebRequestInternal);
-  skip.insert(APIPermission::kWebSocketProxyPrivate);
   skip.insert(APIPermission::kWebstorePrivate);
 
   // Warned as part of host permissions.

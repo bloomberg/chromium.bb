@@ -1348,7 +1348,6 @@
         'browser/extensions/api/usb/usb_manual_apitest.cc',
         'browser/extensions/api/web_navigation/web_navigation_apitest.cc',
         'browser/extensions/api/web_request/web_request_apitest.cc',
-        'browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_apitest.cc',
         'browser/extensions/api/webstore_private/webstore_private_apitest.cc',
         'browser/extensions/app_background_page_apitest.cc',
         'browser/extensions/app_process_apitest.cc',

@@ -696,7 +696,6 @@
         'browser/chromeos/system/automatic_reboot_manager_unittest.cc',
         'browser/chromeos/system_logs/lsb_release_log_source_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',
-        'browser/chromeos/web_socket_proxy_helper_unittest.cc',
         'browser/command_updater_unittest.cc',
         'browser/component_updater/test/component_installers_unittest.cc',
         'browser/component_updater/test/component_patcher_mock.h',

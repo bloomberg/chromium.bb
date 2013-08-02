@@ -583,10 +583,6 @@
     "channel": "stable",
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
-  "webSocketProxyPrivate": {
-    "dependencies": ["permission:webSocketProxyPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "webstore": {
     // Hosted apps can use the webstore API from within a blessed context.
     "channel": "stable",

@@ -11,11 +11,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 
-namespace extensions {
-class WebSocketProxyPrivateGetPassportForTCPFunction;
-class WebSocketProxyPrivateGetURLForTCPFunction;
-}
-
 namespace chrome {
 
 // Call InternalAuthVerification methods on any thread.
@@ -54,9 +49,6 @@ class InternalAuthVerification {
 // Not thread-safe. Make all calls on the same thread (UI thread).
 class InternalAuthGeneration {
  private:
-  friend class extensions::WebSocketProxyPrivateGetPassportForTCPFunction;
-  friend class extensions::WebSocketProxyPrivateGetURLForTCPFunction;
-
   FRIEND_TEST_ALL_PREFIXES(InternalAuthTest, BasicGeneration);
   FRIEND_TEST_ALL_PREFIXES(InternalAuthTest, DoubleGeneration);
   FRIEND_TEST_ALL_PREFIXES(InternalAuthTest, BadGeneration);

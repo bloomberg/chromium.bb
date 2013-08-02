@@ -641,17 +641,6 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
-  "webSocketProxyPrivate": {
-    "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
-    "whitelist": [
-      "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver
-      "gnedhmakppccajfpfiihfcdlnpgomkcf",  // Citrix Receiver Beta
-      "fjcibdnjlbfnbfdjneajpipnlcppleek",  // Citrix Receiver Dev
-      "pnhechapfaindjhompbnflcldabbghjo",  // HTerm
-      "okddffdblfhhnmhodogpojmfkjmhinfp"   // HTerm dev
-    ]
-  },
   "webstorePrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],

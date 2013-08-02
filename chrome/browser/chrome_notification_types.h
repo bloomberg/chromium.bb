@@ -1138,12 +1138,6 @@ enum NotificationType {
   NOTIFICATION_ASH_SESSION_ENDED,
 #endif
 
-#if defined(OS_CHROMEOS)
-  // Sent when WebSocketProxy started accepting connections; details is integer
-  // port on which proxy is listening.
-  NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
-#endif
-
   // Sent when a new web store promo has been loaded.
   NOTIFICATION_WEB_STORE_PROMO_LOADED,
 

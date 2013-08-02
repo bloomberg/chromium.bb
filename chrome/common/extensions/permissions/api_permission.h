@@ -137,7 +137,6 @@ class APIPermission {
     kWebRequest,
     kWebRequestBlocking,
     kWebRequestInternal,
-    kWebSocketProxyPrivate,
     kWebstorePrivate,
     kWebView,
     kSystemCpu,
