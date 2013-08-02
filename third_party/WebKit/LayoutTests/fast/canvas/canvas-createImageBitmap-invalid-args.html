@@ -5,7 +5,6 @@
 </head>
 <body>
 <script>
-
 description("Ensure correct behavior of createImageBitmap for invalid inputs.");
 window.jsTestIsAsync = true;
 
@@ -31,14 +30,14 @@ image = new Image();
 image.onload = imageLoaded;
 
 // Before image loads
-shouldThrow("createImageBitmap(image, shouldNotBeCalled)", "InvalidStateError");
+shouldThrow("createImageBitmap(image)", "InvalidStateError");
 image.src = aCanvas.toDataURL(); // set a data URI of the base64 enconded image as the source
 
 video = document.createElement("video");
 video.addEventListener("canplaythrough", videoLoaded, false);
 
 // Before video loads
-shouldThrow("createImageBitmap(video, shouldNotBeCalled)", "InvalidStateError");
+shouldThrow("createImageBitmap(video)", "InvalidStateError");
 video.src = "../../compositing/resources/video.ogv";
 
 var imageLoaded = false;
@@ -46,7 +45,10 @@ var videoLoaded = false;
 var imageBitmapLoaded = false;
 
 function imageLoaded() {
-    createImageBitmap(image, imageBitmapLoadedCallback);
+    createImageBitmap(image).then(imageBitmapLoadedCallback, function() {
+        testFailed("Promise was rejected.");
+        finishJSTest();
+    });
     d = aCtx.getImageData(0, 0, 200, 200);
     imageLoaded = true;
     loaded();
@@ -67,29 +69,23 @@ function loaded() {
     if (imageLoaded && videoLoaded && imageBitmapLoaded) {
         shouldThrow("createImageBitmap(undefined, shouldNotBeCalled)", "TypeError");
 
-        shouldThrow("createImageBitmap(image, undefined)", "TypeError");
-        shouldThrow("createImageBitmap(image, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
-        shouldThrow("createImageBitmap(image, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
+        shouldThrow("createImageBitmap(image, 0, 0, 10, 0)", "IndexSizeError");
+        shouldThrow("createImageBitmap(image, 0, 0, 0, 10)", "IndexSizeError");
 
-        shouldThrow("createImageBitmap(video, undefined)", "TypeError");
-        shouldThrow("createImageBitmap(video, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
-        shouldThrow("createImageBitmap(video, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
+        shouldThrow("createImageBitmap(video, 0, 0, 10, 0)", "IndexSizeError");
+        shouldThrow("createImageBitmap(video, 0, 0, 0, 10)", "IndexSizeError");
 
-        shouldThrow("createImageBitmap(aCanvas, undefined)", "TypeError");
-        shouldThrow("createImageBitmap(aCanvas, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
-        shouldThrow("createImageBitmap(aCanvas, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
+        shouldThrow("createImageBitmap(aCanvas, 0, 0, 10, 0)", "IndexSizeError");
+        shouldThrow("createImageBitmap(aCanvas, 0, 0, 0, 10)", "IndexSizeError");
 
-        shouldThrow("createImageBitmap(d, undefined)", "TypeError");
-        shouldThrow("createImageBitmap(d, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
-        shouldThrow("createImageBitmap(d, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
+        shouldThrow("createImageBitmap(d, 0, 0, 10, 0)", "IndexSizeError");
+        shouldThrow("createImageBitmap(d, 0, 0, 0, 10)", "IndexSizeError");
 
-        shouldThrow("createImageBitmap(aCtx, undefined)", "TypeError");
-        shouldThrow("createImageBitmap(aCtx, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
-        shouldThrow("createImageBitmap(aCtx, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
+        shouldThrow("createImageBitmap(aCtx, 0, 0, 10, 0)", "IndexSizeError");
+        shouldThrow("createImageBitmap(aCtx, 0, 0, 0, 10)", "IndexSizeError");
 
-        shouldThrow("createImageBitmap(testBitmap, undefined)", "TypeError");
-        shouldThrow("createImageBitmap(testBitmap, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
-        shouldThrow("createImageBitmap(testBitmap, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
+        shouldThrow("createImageBitmap(testBitmap, 0, 0, 10, 0)", "IndexSizeError");
+        shouldThrow("createImageBitmap(testBitmap, 0, 0, 0, 10)", "IndexSizeError");
 
         finishJSTest();
     }

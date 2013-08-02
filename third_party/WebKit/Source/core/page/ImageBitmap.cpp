@@ -9,7 +9,6 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
-#include "core/page/ImageBitmapCallback.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "wtf/RefPtr.h"
 

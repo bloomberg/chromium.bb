@@ -87,7 +87,6 @@ var bitmap;
 var image;
 var testBitmap; // this is an ImageBitmap that is uncropped. We use this to test createImageBitmap(testBitmap)
 var d;          // image.imageData
-var checks;
 var elements;
 
 var imageWidth = 20;
@@ -113,7 +112,7 @@ var imageLoaded = false;
 var imageBitmapLoaded = false;
 
 function imageLoaded() {
-    createImageBitmap(image, imageBitmapLoadedCallback);
+    createImageBitmap(image).then(imageBitmapLoadedCallback);
     d = aCtx.getImageData(0, 0, 20, 20);
     imageLoaded = true;
     loaded();
@@ -139,76 +138,50 @@ function loaded() {
     if (imageLoaded && imageBitmapLoaded) {
         // check all of these elements
         elements = [image, aCanvas, d, aCtx, testBitmap];
-
-        // with all of these checks
-        checks = [checkNoCrop, checkCrop, checkCropRight, checkOverCrop, checkOverCropRight, checkNegativeCrop, checkEmpty, checkEmpty2, checkImmutable];
-
         // wait for callback to finish before each check to ensure synchronous behavior
-        nextCheck();
+        nextCheck(0);
     }
 }
 
-// these counters are incremented after every check
-var i = 0;
-var j = 0;
-var callbackCount = 0;
-
-function nextCheck() {
-    checks[j](elements[i]);
+function nextCheck(elementIndex) {
+    if (elementIndex == elements.length) {
+        finishJSTest();
+        return;
+    }
+    var element = elements[elementIndex];
+    imageBitmaps = {};
+    debug("Checking " + jsWrapperClass(element) + ".");
+    var p1 = createImageBitmap(element).then(function (image) { imageBitmaps.noCrop = image });
+    var p2 = createImageBitmap(element, 0, 0, 10, 10).then(function (image) { imageBitmaps.crop = image });
+    var p3 = createImageBitmap(element, 5, 5, 10, 10).then(function (image) { imageBitmaps.cropCenter = image });
+    var p4 = createImageBitmap(element, 10, 10, 10, 10).then(function (image) { imageBitmaps.cropRight = image });
+    var p5 = createImageBitmap(element, -10, -10, 60, 60).then(function (image) { imageBitmaps.overCrop = image });
+    var p6 = createImageBitmap(element, 10, 10, 50, 50).then(function (image) { imageBitmaps.overCropRight = image });
+    var p7 = createImageBitmap(element, 10, 10, -10, -10).then(function (image) { imageBitmaps.negativeCrop = image });
+    var p8 = createImageBitmap(element, -30, -30, 30, 30).then(function (image) { imageBitmaps.empty = image });
+    var p9 = createImageBitmap(element, 40, 30, 30, 30).then(function (image) { imageBitmaps.emptyTwo = image });
+    Promise.every(p1, p2, p3, p4, p5, p6, p7, p8, p9).then(function() {
+        checkNoCrop(imageBitmaps.noCrop);
+        checkCrop(imageBitmaps.crop);
+        checkCropCenter(imageBitmaps.cropCenter);
+        checkCropRight(imageBitmaps.cropRight);
+        checkOverCrop(imageBitmaps.overCrop);
+        checkOverCropRight(imageBitmaps.overCropRight);
+        checkCrop(imageBitmaps.negativeCrop);
+        checkEmpty(imageBitmaps.empty);
+        checkEmpty(imageBitmaps.emptyTwo);
+        checkImmutable(imageBitmaps.noCrop, elementIndex);
+        nextCheck(elementIndex + 1);
+    }, function() {
+        testFailed("createImageBitmap promise rejected.");
+        finishJSTest();
+    });
 }
 
-function checkNoCrop(element) {
-    debug("checkNoCrop with ".concat(jsWrapperClass(element)));
-    createImageBitmap(element, callbackNoCrop);
-}
-
-function checkCrop(element) {
-    debug("checkCrop with ".concat(jsWrapperClass(element)));
-    createImageBitmap(element, callbackCrop, 0, 0, 10, 10);
-}
-
-function checkCropCenter(element) {
-    debug("checkCropCenter with ".concat(jsWrapperClass(element)));
-    createImageBitmap(element, callbackCropCenter, 5, 5, 15, 15);
-}
-
-function checkCropRight(element) {
-    debug("checkCropRight with ".concat(jsWrapperClass(element)));
-    createImageBitmap(element, callbackCropRight, 10, 10, 10, 10);
-}
-
-function checkOverCrop(element) {
-    debug("checkOverCrop with ".concat(jsWrapperClass(element)));
-    createImageBitmap(element, callbackOverCrop, -10, -10, 60, 60);
-}
-
-function checkOverCropRight(element) {
-    debug("checkOverCropRight with ".concat(jsWrapperClass(element)));
-    createImageBitmap(element, callbackOverCropRight, 10, 10, 50, 50);
-}
-
-function checkNegativeCrop(element) {
-    debug("checkNegativeCrop with ".concat(jsWrapperClass(element)));
-    createImageBitmap(element, callbackCrop, 10, 10, -10, -10);
-}
-
-function checkEmpty(element) {
-    debug("checkEmpty with ".concat(jsWrapperClass(element)));
-    createImageBitmap(element, callbackEmpty, -30, -30, 30, 30);
-}
-
-function checkEmpty2(element) {
-    debug("checkEmpty2 with ".concat(jsWrapperClass(element)));
-    createImageBitmap(element, callbackEmpty, 40, 30, 30, 30);
-}
-
-function checkImmutable(element) {
-    debug("checkImmutable with ".concat(jsWrapperClass(element)));
-    createImageBitmap(element, callbackImmutable);
-}
-
-function callbackNoCrop(imageBitmap) {
+function checkNoCrop(imageBitmap) {
+    debug("Check no crop.");
     bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
     shouldBe("bitmap.width", "imageWidth");
     shouldBe("bitmap.height", "imageHeight");
 
@@ -257,12 +230,12 @@ function callbackNoCrop(imageBitmap) {
     shouldBeClear(1, 21);
     shouldBeClear(21, 1);
     shouldBeClear(21, 21);
-
-    commonCallback(imageBitmap);
 }
 
-function callbackCrop(imageBitmap) {
+function checkCrop(imageBitmap) {
+    debug("Check crop.");
     bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
     shouldBe("bitmap.width", "10");
     shouldBe("bitmap.height", "10");
 
@@ -283,12 +256,12 @@ function callbackCrop(imageBitmap) {
     shouldBeClear(22, 22);
     shouldBeClear(1, 22);
     shouldBeClear(22, 1);
-
-    commonCallback(imageBitmap);
 }
 
-function callbackCropCenter(imageBitmap) {
+function checkCropCenter(imageBitmap) {
+    debug("Check crop center.");
     bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
     shouldBe("bitmap.width", "10");
     shouldBe("bitmap.height", "10");
 
@@ -307,20 +280,20 @@ function callbackCropCenter(imageBitmap) {
     // should be drawn to (0, 0), (20, 20) with all four colors
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0, 20, 20);
-    shouldBeRed(9, 9);
-    shouldBeGreen(11, 9);
-    shouldBeBlue(9, 11);
+    shouldBeRed(8, 8);
+    shouldBeGreen(11, 8);
+    shouldBeBlue(8, 11);
     shouldBeBlack(11, 11);
-    shouldBeBlack(19, 19);
+    shouldBeBlack(18, 18);
     shouldBeClear(22, 22);
     shouldBeClear(1, 21);
     shouldBeClear(21, 1);
-
-    commonCallback(imageBitmap);
 }
 
-function callbackCropRight(imageBitmap) {
+function checkCropRight(imageBitmap) {
+    debug("Check crop right.");
     bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
     shouldBe("bitmap.width", "10");
     shouldBe("bitmap.height", "10");
 
@@ -332,12 +305,12 @@ function callbackCropRight(imageBitmap) {
     shouldBeClear(11, 11);
     shouldBeClear(1, 11);
     shouldBeClear(11, 1);
-
-    commonCallback(imageBitmap);
 }
 
-function callbackOverCrop(imageBitmap) {
+function checkOverCrop(imageBitmap) {
+    debug("Check over crop.");
     bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
     shouldBe("bitmap.width", "60");
     shouldBe("bitmap.height", "60");
 
@@ -370,11 +343,10 @@ function callbackOverCrop(imageBitmap) {
     shouldBeClear(16, 1);
     shouldBeClear(1, 16);
     shouldBeClear(16, 16);
-
-    commonCallback(imageBitmap);
 }
 
-function callbackOverCropRight(imageBitmap) {
+function checkOverCropRight(imageBitmap) {
+    debug("Check over crop right.");
     bitmap = imageBitmap;
     shouldBe("bitmap.width", "50");
     shouldBe("bitmap.height", "50");
@@ -405,12 +377,12 @@ function callbackOverCropRight(imageBitmap) {
     shouldBeClear(5, 5);
     shouldBeClear(1, 5);
     shouldBeClear(5, 1);
-
-    commonCallback(imageBitmap);
 }
 
-function callbackEmpty(imageBitmap) {
+function checkEmpty(imageBitmap) {
+    debug("Check empty.");
     bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
     shouldBe("bitmap.width", "30");
     shouldBe("bitmap.height", "30");
 
@@ -421,13 +393,12 @@ function callbackEmpty(imageBitmap) {
     shouldBeClear(9, 9);
     shouldBeClear(11, 11);
     shouldBeClear(22, 22);
-
-    commonCallback(imageBitmap);
 }
 
-function callbackImmutable(imageBitmap) {
+function checkImmutable(imageBitmap, elementIndex) {
+    debug("Check immutable.");
     // change the underlying element to ensure that it does not change the imageBitmap
-    switch(i) {
+    switch(elementIndex) {
     case 0: // image
         image = new Image();
         break;
@@ -447,29 +418,8 @@ function callbackImmutable(imageBitmap) {
         testFailed("Default should not be called.");
     }
     // should be drawn to (0, 0), (20, 20)
-    callbackNoCrop(imageBitmap);
-
-    // we potentially cleared our auxillary context, so redraw the image
+    checkNoCrop(imageBitmap);
     drawPattern(aCtx);
-}
-
-function commonCallback(imageBitmap) {
-    bitmap = imageBitmap;
-    shouldBeType("bitmap", "ImageBitmap");
-
-    callbackCount += 1;
-
-    if (callbackCount < elements.length * checks.length) {
-        ++j;
-        if(j == checks.length) {
-            // completed all the checks for the ith element
-            j = 0;
-            ++i;
-        }
-        nextCheck();
-    } else {
-        finishJSTest();
-    }
 }
 
 </script>

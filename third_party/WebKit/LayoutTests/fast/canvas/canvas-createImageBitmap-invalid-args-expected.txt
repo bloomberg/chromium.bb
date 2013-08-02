@@ -3,27 +3,21 @@ Ensure correct behavior of createImageBitmap for invalid inputs.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS createImageBitmap(image, shouldNotBeCalled) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS createImageBitmap(video, shouldNotBeCalled) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS createImageBitmap(image) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS createImageBitmap(video) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 PASS createImageBitmap(undefined, shouldNotBeCalled) threw exception TypeError: Type error.
-PASS createImageBitmap(image, undefined) threw exception TypeError: Type error.
-PASS createImageBitmap(image, shouldNotBeCalled, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(image, shouldNotBeCalled, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(video, undefined) threw exception TypeError: Type error.
-PASS createImageBitmap(video, shouldNotBeCalled, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(video, shouldNotBeCalled, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(aCanvas, undefined) threw exception TypeError: Type error.
-PASS createImageBitmap(aCanvas, shouldNotBeCalled, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(aCanvas, shouldNotBeCalled, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(d, undefined) threw exception TypeError: Type error.
-PASS createImageBitmap(d, shouldNotBeCalled, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(d, shouldNotBeCalled, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(aCtx, undefined) threw exception TypeError: Type error.
-PASS createImageBitmap(aCtx, shouldNotBeCalled, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(aCtx, shouldNotBeCalled, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(testBitmap, undefined) threw exception TypeError: Type error.
-PASS createImageBitmap(testBitmap, shouldNotBeCalled, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(testBitmap, shouldNotBeCalled, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(image, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(image, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(video, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(video, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(aCanvas, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(aCanvas, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(d, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(d, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(aCtx, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(aCtx, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(testBitmap, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(testBitmap, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS successfullyParsed is true
 
 TEST COMPLETE

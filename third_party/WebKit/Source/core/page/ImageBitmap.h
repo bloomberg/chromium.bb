@@ -19,7 +19,6 @@ class HTMLCanvasElement;
 class HTMLImageElement;
 class HTMLVideoElement;
 class ImageData;
-class ImageBitmapCallback;
 
 class ImageBitmap : public RefCounted<ImageBitmap>, public ScriptWrappable {
 

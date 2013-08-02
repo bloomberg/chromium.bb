@@ -69,7 +69,10 @@ function videoLoaded() {
     ctx3.drawImage(video, 0,  0,  2*w, 2*h, 175, 175, 100, 100);
 
     if (window.createImageBitmap) {
-        window.createImageBitmap(img, imageReady);
+        window.createImageBitmap(img).then(imageReady, function() {
+            testFailed("Promise was rejected.");
+            finishJSTest();
+        });
     } else {
         if (window.testRunner) {
             testRunner.notifyDone();

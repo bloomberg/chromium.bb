@@ -38,7 +38,6 @@ namespace WebCore {
     class BarProp;
     class CSSRuleList;
     class CSSStyleDeclaration;
-    class CanvasRenderingContext2D;
     class Console;
     class DOMApplicationCache;
     class DOMPoint;
@@ -53,14 +52,8 @@ namespace WebCore {
     class ExceptionState;
     class FloatRect;
     class Frame;
-    class HTMLCanvasElement;
-    class HTMLImageElement;
-    class HTMLVideoElement;
     class History;
     class IDBFactory;
-    class ImageBitmap;
-    class ImageBitmapCallback;
-    class ImageData;
     class Location;
     class MediaQueryList;
     class MessageEvent;
@@ -243,20 +236,6 @@ namespace WebCore {
 
         void resizeBy(float x, float y) const;
         void resizeTo(float width, float height) const;
-
-        // Images
-        void createImageBitmap(HTMLImageElement*, PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
-        void createImageBitmap(HTMLImageElement*, PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
-        void createImageBitmap(HTMLVideoElement*, PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
-        void createImageBitmap(HTMLVideoElement*, PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
-        void createImageBitmap(CanvasRenderingContext2D*, PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
-        void createImageBitmap(CanvasRenderingContext2D*, PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
-        void createImageBitmap(HTMLCanvasElement*, PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
-        void createImageBitmap(HTMLCanvasElement*, PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
-        void createImageBitmap(ImageData*, PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
-        void createImageBitmap(ImageData*, PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
-        void createImageBitmap(ImageBitmap*, PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
-        void createImageBitmap(ImageBitmap*, PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);
 
         // WebKit animation extensions
         int requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback>);

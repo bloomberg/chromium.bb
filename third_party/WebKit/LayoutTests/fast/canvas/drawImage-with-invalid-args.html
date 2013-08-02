@@ -181,7 +181,10 @@
         ctx.fillStyle = 'green';
         ctx.fillRect(0,0,150,150);
 
-        createImageBitmap(myImage, drawBitmap);
+        createImageBitmap(myImage).then(drawBitmap, function() {
+            testFailed("Promise was rejected.");
+            finishJSTest();
+        });
     }
 
     function drawBitmap(imageBitmap) {
