@@ -16,6 +16,7 @@
           '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.pak',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
         ],
       }],
       ['enable_extensions==1', {

@@ -66,6 +66,9 @@
   "chrome_frame/resources/chrome_frame_resources.grd": {
     "includes": [8000],
   },
+  "third_party/WebKit/Source/WebKit/chromium/WebKit.grd": {
+    "includes": [8500],
+  },
   "ui/base/strings/app_locale_settings.grd": {
     "messages": [9000],
   },
