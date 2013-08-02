@@ -100,5 +100,13 @@ TEST(UrlUtilTest, GetValueForKeyInQuery) {
   EXPECT_EQ("http://test.com/q?n1=v1&n2", value);
 }
 
+TEST(UrlUtilTest, GetValueForKeyInQueryInvalidURL) {
+  GURL url("http://%01/?test");
+  std::string value;
+
+  // Always false when parsing an invalid URL.
+  EXPECT_FALSE(GetValueForKeyInQuery(url, "test", &value));
+}
+
 }  // namespace
 }  // namespace net
