@@ -39,12 +39,12 @@ class ClientMalwareRequest;
 class ClientPhishingRequest;
 class ClientSideDetectionService;
 
-typedef std::map<std::string, std::set<std::string> > IPHostMap;
+typedef std::map<std::string, std::set<std::string> > IPUrlMap;
 
 struct BrowseInfo {
   // List of IPv4 and IPv6 addresses from which content was requested
   // together with the hosts on it, while browsing to the |url|.
-  IPHostMap ips;
+  IPUrlMap ips;
 
   // If a SafeBrowsing interstitial was shown for the current URL
   // this will contain the UnsafeResource struct for that URL.
@@ -171,6 +171,9 @@ class BrowserFeatureExtractor {
   // Set of pending queries (i.e., where history->Query...() was called but
   // the history callback hasn't been invoked yet).
   PendingQueriesMap pending_queries_;
+
+  // Max number of malware IPs can be sent in one malware request
+  static const int kMaxMalwareIPPerRequest;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFeatureExtractor);
 };

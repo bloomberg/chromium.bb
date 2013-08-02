@@ -480,10 +480,10 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
                     GURL("https://bankofamerica.com"),
                     content::PAGE_TRANSITION_GENERATED);
 
-  std::set<std::string> hosts;
-  hosts.insert("test.com");
-  browse_info_->ips.insert(std::make_pair("193.5.163.8", hosts));
-  browse_info_->ips.insert(std::make_pair("23.94.78.1", hosts));
+  std::set<std::string> urls;
+  urls.insert("http://test.com");
+  browse_info_->ips.insert(std::make_pair("193.5.163.8", urls));
+  browse_info_->ips.insert(std::make_pair("23.94.78.1", urls));
   EXPECT_CALL(*service_, IsBadIpAddress("193.5.163.8")).WillOnce(Return(true));
   EXPECT_CALL(*service_, IsBadIpAddress("23.94.78.1")).WillOnce(Return(false));
 
@@ -544,14 +544,14 @@ TEST_F(BrowserFeatureExtractorTest, MalwareFeatures) {
   ClientMalwareRequest request;
   request.set_url("http://www.foo.com/");
 
-  std::set<std::string> bad_hosts;
-  bad_hosts.insert("bad.com");
-  bad_hosts.insert("evil.com");
-  browse_info_->ips.insert(std::make_pair("193.5.163.8", bad_hosts));
-  browse_info_->ips.insert(std::make_pair("92.92.92.92", bad_hosts));
-  std::set<std::string> good_hosts;
-  good_hosts.insert("ok.com");
-  browse_info_->ips.insert(std::make_pair("23.94.78.1", good_hosts));
+  std::set<std::string> bad_urls;
+  bad_urls.insert("http://bad.com");
+  bad_urls.insert("http://evil.com");
+  browse_info_->ips.insert(std::make_pair("193.5.163.8", bad_urls));
+  browse_info_->ips.insert(std::make_pair("92.92.92.92", bad_urls));
+  std::set<std::string> good_urls;
+  good_urls.insert("http://ok.com");
+  browse_info_->ips.insert(std::make_pair("23.94.78.1", good_urls));
   EXPECT_CALL(*service_, IsBadIpAddress("193.5.163.8")).WillOnce(Return(true));
   EXPECT_CALL(*service_, IsBadIpAddress("92.92.92.92")).WillOnce(Return(true));
   EXPECT_CALL(*service_, IsBadIpAddress("23.94.78.1")).WillOnce(Return(false));
@@ -564,16 +564,45 @@ TEST_F(BrowserFeatureExtractorTest, MalwareFeatures) {
   std::string feature_name = base::StringPrintf("%s%s", features::kBadIpFetch,
                                                 "193.5.163.8");
   EXPECT_TRUE(features.count(feature_name));
-  std::set<std::string> hosts = features[feature_name];
-  EXPECT_EQ(2U, hosts.size());
-  EXPECT_TRUE(hosts.find("bad.com") != hosts.end());
-  EXPECT_TRUE(hosts.find("evil.com") != hosts.end());
+  std::set<std::string> urls = features[feature_name];
+  EXPECT_EQ(2U, urls.size());
+  EXPECT_TRUE(urls.find("http://bad.com") != urls.end());
+  EXPECT_TRUE(urls.find("http://evil.com") != urls.end());
   feature_name = base::StringPrintf("%s%s", features::kBadIpFetch,
                                     "92.92.92.92");
   EXPECT_TRUE(features.count(feature_name));
-  hosts = features[feature_name];
-  EXPECT_EQ(2U, hosts.size());
-  EXPECT_TRUE(hosts.find("bad.com") != hosts.end());
-  EXPECT_TRUE(hosts.find("evil.com") != hosts.end());
+  urls = features[feature_name];
+  EXPECT_EQ(2U, urls.size());
+  EXPECT_TRUE(urls.find("http://bad.com") != urls.end());
+  EXPECT_TRUE(urls.find("http://evil.com") != urls.end());
 }
+
+TEST_F(BrowserFeatureExtractorTest, MalwareFeatures_ExceedLimit) {
+  ClientMalwareRequest request;
+  request.set_url("http://www.foo.com/");
+
+  std::set<std::string> bad_urls;
+  bad_urls.insert("http://bad.com");
+  std::vector<std::string> ips;
+  for (int i = 0; i < 7; ++i) {  // Add 7 ips
+    std::string ip = base::StringPrintf("%d.%d.%d.%d", i, i, i, i);
+    ips.push_back(ip);
+    browse_info_->ips.insert(std::make_pair(ip, bad_urls));
+  }
+
+  // First ip is good, then check the next 5 bad ips.
+  // Not check the 7th as reached limit.
+  EXPECT_CALL(*service_, IsBadIpAddress(ips[0])).WillOnce(Return(false));
+  for (int i = 1; i < 6; ++i) {
+    EXPECT_CALL(*service_, IsBadIpAddress(ips[i])).WillOnce(Return(true));
+  }
+
+  ExtractMalwareFeatures(&request);
+  std::map<std::string, std::set<std::string> > features;
+  GetMalwareFeatureMap(request, &features);
+
+  // Only keep 5 ips.
+  EXPECT_EQ(5U, features.size());
+}
+
 }  // namespace safe_browsing

@@ -227,8 +227,8 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     csd_host_->OnPhishingDetectionDone(verdict_str);
   }
 
-  void UpdateIPHostMap(const std::string& ip, const std::string& host) {
-    csd_host_->UpdateIPHostMap(ip, host);
+  void UpdateIPUrlMap(const std::string& ip, const std::string& host) {
+    csd_host_->UpdateIPUrlMap(ip, host);
   }
 
   BrowseInfo* GetBrowseInfo() {
@@ -582,57 +582,57 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
 }
 
-TEST_F(ClientSideDetectionHostTest, UpdateIPHostMap) {
+TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
   BrowseInfo* browse_info = GetBrowseInfo();
 
   // Empty IP or host are skipped
-  UpdateIPHostMap("250.10.10.10", std::string());
+  UpdateIPUrlMap("250.10.10.10", std::string());
   ASSERT_EQ(0U, browse_info->ips.size());
-  UpdateIPHostMap(std::string(), "google.com/");
+  UpdateIPUrlMap(std::string(), "http://google.com/a");
   ASSERT_EQ(0U, browse_info->ips.size());
-  UpdateIPHostMap(std::string(), std::string());
+  UpdateIPUrlMap(std::string(), std::string());
   ASSERT_EQ(0U, browse_info->ips.size());
 
-  std::set<std::string> expected_hosts;
+  std::set<std::string> expected_urls;
   for (int i = 0; i < 20; i++) {
-    std::string host = base::StringPrintf("%d.com/", i);
-    expected_hosts.insert(host);
-    UpdateIPHostMap("250.10.10.10", host);
+    std::string url = base::StringPrintf("http://%d.com/", i);
+    expected_urls.insert(url);
+    UpdateIPUrlMap("250.10.10.10", url);
   }
   ASSERT_EQ(1U, browse_info->ips.size());
   ASSERT_EQ(20U, browse_info->ips["250.10.10.10"].size());
-  EXPECT_EQ(expected_hosts, browse_info->ips["250.10.10.10"]);
+  EXPECT_EQ(expected_urls, browse_info->ips["250.10.10.10"]);
 
-  // Add more hosts for this ip, it exceeds max limit and won't be added
-  UpdateIPHostMap("250.10.10.10", "21.com/");
+  // Add more urls for this ip, it exceeds max limit and won't be added
+  UpdateIPUrlMap("250.10.10.10", "http://21.com/");
   ASSERT_EQ(1U, browse_info->ips.size());
   ASSERT_EQ(20U, browse_info->ips["250.10.10.10"].size());
-  EXPECT_EQ(expected_hosts, browse_info->ips["250.10.10.10"]);
+  EXPECT_EQ(expected_urls, browse_info->ips["250.10.10.10"]);
 
   // Add 199 more IPs
   for (int i = 0; i < 199; i++) {
     std::string ip = base::StringPrintf("%d.%d.%d.256", i, i, i);
-    expected_hosts.clear();
-    expected_hosts.insert("test.com/");
-    UpdateIPHostMap(ip, "test.com/");
+    expected_urls.clear();
+    expected_urls.insert("test.com/");
+    UpdateIPUrlMap(ip, "test.com/");
     ASSERT_EQ(1U, browse_info->ips[ip].size());
-    EXPECT_EQ(expected_hosts, browse_info->ips[ip]);
+    EXPECT_EQ(expected_urls, browse_info->ips[ip]);
   }
   ASSERT_EQ(200U, browse_info->ips.size());
 
   // Exceeding max ip limit 200, these won't be added
-  UpdateIPHostMap("250.250.250.250", "goo.com/");
-  UpdateIPHostMap("250.250.250.250", "bar.com/");
-  UpdateIPHostMap("250.250.0.250", "foo.com/");
+  UpdateIPUrlMap("250.250.250.250", "goo.com/");
+  UpdateIPUrlMap("250.250.250.250", "bar.com/");
+  UpdateIPUrlMap("250.250.0.250", "foo.com/");
   ASSERT_EQ(200U, browse_info->ips.size());
 
-  // Add host to existing IPs succeed
-  UpdateIPHostMap("100.100.100.256", "more.com/");
+  // Add url to existing IPs succeed
+  UpdateIPUrlMap("100.100.100.256", "more.com/");
   ASSERT_EQ(2U, browse_info->ips["100.100.100.256"].size());
-  expected_hosts.clear();
-  expected_hosts.insert("test.com/");
-  expected_hosts.insert("more.com/");
-  EXPECT_EQ(expected_hosts, browse_info->ips["100.100.100.256"]);
+  expected_urls.clear();
+  expected_urls.insert("test.com/");
+  expected_urls.insert("more.com/");
+  EXPECT_EQ(expected_urls, browse_info->ips["100.100.100.256"]);
 }
 
 TEST_F(ClientSideDetectionHostTest,

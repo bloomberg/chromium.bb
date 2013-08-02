@@ -44,7 +44,7 @@ using content::WebContents;
 
 namespace safe_browsing {
 
-const int ClientSideDetectionHost::kMaxHostsPerIP = 20;
+const int ClientSideDetectionHost::kMaxUrlsPerIP = 20;
 const int ClientSideDetectionHost::kMaxIPsPerBrowse = 200;
 
 namespace {
@@ -493,20 +493,20 @@ void ClientSideDetectionHost::MalwareFeatureExtractionDone(
   }
 }
 
-void ClientSideDetectionHost::UpdateIPHostMap(const std::string& ip,
-                                              const std::string& host) {
-  if (ip.empty() || host.empty())
+void ClientSideDetectionHost::UpdateIPUrlMap(const std::string& ip,
+                                             const std::string& url) {
+  if (ip.empty() || url.empty())
     return;
 
-  IPHostMap::iterator it = browse_info_->ips.find(ip);
+  IPUrlMap::iterator it = browse_info_->ips.find(ip);
   if (it == browse_info_->ips.end()) {
     if (int(browse_info_->ips.size()) < kMaxIPsPerBrowse) {
-      std::set<std::string> hosts;
-      hosts.insert(host);
-      browse_info_->ips.insert(make_pair(ip, hosts));
+      std::set<std::string> urls;
+      urls.insert(url);
+      browse_info_->ips.insert(make_pair(ip, urls));
     }
-  } else if (int(it->second.size()) < kMaxHostsPerIP) {
-    it->second.insert(host);
+  } else if (int(it->second.size()) < kMaxUrlsPerIP) {
+    it->second.insert(url);
   }
 }
 
@@ -520,8 +520,10 @@ void ClientSideDetectionHost::Observe(
       details).ptr();
   if (req && browse_info_.get() && malware_report_enabled_ &&
       !MalwareKillSwitchIsOn()) {
-    UpdateIPHostMap(req->socket_address.host() /* ip */,
-                    req->url.host()  /* url host */);
+    if (req->url.is_valid()) {
+      UpdateIPUrlMap(req->socket_address.host() /* ip */,
+                     req->url.spec()  /* url */);
+    }
   }
 }
 
