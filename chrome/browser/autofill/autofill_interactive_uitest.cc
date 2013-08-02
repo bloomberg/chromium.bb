@@ -281,12 +281,6 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   }
 
   void FocusFirstNameField() {
-    LOG(WARNING) << "Clicking on the tab.";
-    content::SimulateMouseClick(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        0,
-        WebKit::WebMouseEvent::ButtonLeft);
-
     LOG(WARNING) << "Focusing the first name field.";
     bool result = false;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -334,8 +328,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   AutofillManagerTestDelegateImpl test_delegate_;
 };
 
-// http://crbug.com/150084
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DISABLED_AutofillSelectViaTab) {
+// Potentially flaky, see http://crbug.com/150084
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
   CreateTestProfile();
 
   // Load the test page.
