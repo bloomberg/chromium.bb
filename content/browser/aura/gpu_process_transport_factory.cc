@@ -197,6 +197,11 @@ scoped_ptr<cc::OutputSurface> CreateSoftwareOutputSurface(
     ui::Compositor* compositor) {
   scoped_ptr<cc::OutputSurface> output_surface;
 
+  if (ui::Compositor::WasInitializedWithThread()) {
+    LOG(FATAL) << "Can't use software compositing with browser threaded"
+        " compositing.";
+  }
+
 #if defined(OS_WIN)
   scoped_ptr<SoftwareOutputDeviceWin> software_device(
       new SoftwareOutputDeviceWin(compositor));
