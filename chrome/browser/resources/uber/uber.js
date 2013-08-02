@@ -44,6 +44,8 @@ cr.define('uber', function() {
         params.path.indexOf('search') != 0) {
       backgroundNavigation();
     }
+
+    ensureNonSelectedFrameContainersAreHidden();
   }
 
   /**
@@ -267,8 +269,23 @@ cr.define('uber', function() {
     if (lastSelected === container)
       return;
 
-    if (lastSelected)
+    if (lastSelected) {
       lastSelected.classList.remove('selected');
+      // Setting aria-hidden hides the container from assistive technology
+      // immediately. The 'hidden' attribute is set after the transition
+      // finishes - that ensures it's not possible to accidentally focus
+      // an element in an unselected container.
+      lastSelected.setAttribute('aria-hidden', 'true');
+    }
+
+    // Containers that aren't selected have to be hidden so that their
+    // content isn't focusable.
+    container.hidden = false;
+    container.setAttribute('aria-hidden', 'false');
+
+    // Trigger a layout after making it visible and before setting
+    // the class to 'selected', so that it animates in.
+    container.offsetTop;
     container.classList.add('selected');
 
     setContentChanging(true);
@@ -331,6 +348,29 @@ cr.define('uber', function() {
   function forwardMouseWheel(params) {
     var iframe = getSelectedIframe().querySelector('iframe');
     uber.invokeMethodOnWindow(iframe.contentWindow, 'mouseWheel', params);
+  }
+
+  /**
+   * Make sure that iframe containers that are not selected are
+   * hidden, so that elements in those frames aren't part of the
+   * focus order. Containers that are unselected later get hidden
+   * when the transition ends. We also set the aria-hidden attribute
+   * because that hides the container from assistive technology
+   * immediately, rather than only after the transition ends.
+   */
+  function ensureNonSelectedFrameContainersAreHidden() {
+    var containers = document.querySelectorAll('.iframe-container');
+    for (var i = 0; i < containers.length; i++) {
+      var container = containers[i];
+      if (!container.classList.contains('selected')) {
+        container.hidden = true;
+        container.setAttribute('aria-hidden', 'true');
+      }
+      container.addEventListener('webkitTransitionEnd', function(event) {
+        if (!event.target.classList.contains('selected'))
+          event.target.hidden = true;
+      });
+    }
   }
 
   return {
