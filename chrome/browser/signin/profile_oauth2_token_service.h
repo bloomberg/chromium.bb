@@ -11,6 +11,7 @@
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -40,7 +41,8 @@ class SigninGlobalError;
 class ProfileOAuth2TokenService : public OAuth2TokenService,
                                   public content::NotificationObserver,
                                   public SigninGlobalError::AuthStatusProvider,
-                                  public BrowserContextKeyedService {
+                                  public BrowserContextKeyedService,
+                                  public WebDataServiceConsumer {
  public:
   // content::NotificationObserver listening for TokenService updates.
   virtual void Observe(int type,
@@ -62,6 +64,17 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // Takes injected TokenService for testing.
   bool ShouldCacheForRefreshToken(TokenService *token_service,
                                   const std::string& refresh_token);
+
+  // Updates a |refresh_token| for an |account_id|. Credentials are persisted,
+  // and avialable through |LoadCredentials| after service is restarted.
+  void UpdateCredentials(const std::string& account_id,
+                         const std::string& refresh_token);
+
+  // Revokes credentials related to |account_id|.
+  void RevokeCredentials(const std::string& account_id);
+
+  // Revokes all credentials handled by the object.
+  void RevokeAllCredentials();
 
   SigninGlobalError* signin_global_error() {
     return signin_global_error_.get();
@@ -100,9 +113,36 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
                            StaleRefreshTokensNotCached);
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
                            TokenServiceUpdateClearsCache);
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
+                           PersistenceDBUpgrade);
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
+                           PersistenceLoadCredentials);
+
+  // WebDataServiceConsumer implementation:
+  virtual void OnWebDataServiceRequestDone(
+      WebDataServiceBase::Handle handle,
+      const WDTypedResult* result) OVERRIDE;
+
+  // Loads credentials from a backing persistent store to make them available
+  // after service is used between profile restarts.
+  void LoadCredentials();
+
+  // Loads credentials into in memory stucture.
+  void LoadAllCredentialsIntoMemory(
+      const std::map<std::string, std::string>& db_tokens);
+
+  // Loads a single pair of |account_id|, |refresh_token| into memory.
+  void LoadCredentialsIntoMemory(const std::string& account_id,
+                                 const std::string& refresh_token);
 
   // The profile with which this instance was initialized, or NULL.
   Profile* profile_;
+
+  // Handle to the request reading tokens from database.
+  WebDataServiceBase::Handle web_data_service_request_;
+
+  // In memory refresh token store mapping account_id to refresh_token.
+  std::map<std::string, std::string> refresh_tokens_;
 
   // Used to show auth errors in the wrench menu. The SigninGlobalError is
   // different than most GlobalErrors in that its lifetime is controlled by

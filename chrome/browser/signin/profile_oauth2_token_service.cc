@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/webdata/token_web_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -25,6 +26,25 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
+
+const char kAccountIdPrefix[] = "AccountId-";
+const size_t kAccountIdPrefixLength = 10;
+
+bool IsLegacyServiceId(const std::string& account_id) {
+  return account_id.compare(0u, kAccountIdPrefixLength, kAccountIdPrefix) != 0;
+}
+
+bool IsLegacyRefreshTokenId(const std::string& service_id) {
+  return service_id == GaiaConstants::kGaiaOAuth2LoginRefreshToken;
+}
+
+std::string ApplyAccountIdPrefix(const std::string& account_id) {
+  return kAccountIdPrefix + account_id;
+}
+
+std::string RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
+  return prefixed_account_id.substr(kAccountIdPrefixLength);
+}
 
 std::string GetAccountId(Profile* profile) {
   SigninManagerBase* signin_manager =
@@ -37,6 +57,7 @@ std::string GetAccountId(Profile* profile) {
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService()
     : profile_(NULL),
+      web_data_service_request_(0),
       last_auth_error_(GoogleServiceAuthError::NONE) {
 }
 
@@ -194,4 +215,134 @@ bool ProfileOAuth2TokenService::ShouldCacheForRefreshToken(
     return false;
   }
   return true;
+}
+
+void ProfileOAuth2TokenService::UpdateCredentials(
+    const std::string& account_id,
+    const std::string& refresh_token) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!refresh_token.empty());
+
+  bool refresh_token_present = refresh_tokens_.count(account_id) > 0;
+  if (!refresh_token_present ||
+      refresh_tokens_[account_id] != refresh_token) {
+    // If token present, and different from the new one, cancel its requests.
+    if (refresh_token_present)
+      CancelRequestsForToken(refresh_tokens_[account_id]);
+
+    // Save the token in memory and in persistent store.
+    refresh_tokens_[account_id] = refresh_token;
+    scoped_refptr<TokenWebData> token_web_data =
+        TokenWebData::FromBrowserContext(profile_);
+    if (token_web_data.get())
+      token_web_data->SetTokenForService(ApplyAccountIdPrefix(account_id),
+                                         refresh_token);
+
+    FireRefreshTokenAvailable(account_id);
+    // TODO(fgorski): Notify diagnostic observers.
+  }
+}
+
+void ProfileOAuth2TokenService::RevokeCredentials(
+    const std::string& account_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (refresh_tokens_.count(account_id) > 0) {
+    CancelRequestsForToken(refresh_tokens_[account_id]);
+    refresh_tokens_.erase(account_id);
+    scoped_refptr<TokenWebData> token_web_data =
+        TokenWebData::FromBrowserContext(profile_);
+    if (token_web_data.get())
+      token_web_data->RemoveTokenForService(ApplyAccountIdPrefix(account_id));
+    FireRefreshTokenRevoked(account_id,
+        GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+
+    // TODO(fgorski): Notify diagnostic observers.
+  }
+}
+
+void ProfileOAuth2TokenService::RevokeAllCredentials() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  CancelAllRequests();
+  GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
+  for (std::map<std::string, std::string>::const_iterator iter =
+           refresh_tokens_.begin();
+       iter != refresh_tokens_.end();
+       ++iter) {
+    FireRefreshTokenRevoked(iter->first, error);
+  }
+  refresh_tokens_.clear();
+
+  scoped_refptr<TokenWebData> token_web_data =
+      TokenWebData::FromBrowserContext(profile_);
+  if (token_web_data.get())
+    token_web_data->RemoveAllTokens();
+  FireRefreshTokensCleared();
+
+  // TODO(fgorski): Notify diagnostic observers.
+}
+
+void ProfileOAuth2TokenService::LoadCredentials() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(0, web_data_service_request_);
+
+  CancelAllRequests();
+  refresh_tokens_.clear();
+  scoped_refptr<TokenWebData> token_web_data =
+      TokenWebData::FromBrowserContext(profile_);
+  if (token_web_data.get())
+    web_data_service_request_ = token_web_data->GetAllTokens(this);
+}
+
+void ProfileOAuth2TokenService::OnWebDataServiceRequestDone(
+    WebDataServiceBase::Handle handle,
+    const WDTypedResult* result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(web_data_service_request_, handle);
+  web_data_service_request_ = 0;
+
+  if (result) {
+    DCHECK(result->GetType() == TOKEN_RESULT);
+    const WDResult<std::map<std::string, std::string> > * token_result =
+        static_cast<const WDResult<std::map<std::string, std::string> > * > (
+            result);
+    LoadAllCredentialsIntoMemory(token_result->GetValue());
+  }
+}
+
+void ProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
+    const std::map<std::string, std::string>& db_tokens) {
+  std::string old_login_token;
+
+  for (std::map<std::string, std::string>::const_iterator iter =
+           db_tokens.begin();
+       iter != db_tokens.end();
+       ++iter) {
+    std::string prefixed_account_id = iter->first;
+    std::string refresh_token = iter->second;
+
+    if (IsLegacyRefreshTokenId(prefixed_account_id) && !refresh_token.empty())
+      old_login_token = refresh_token;
+
+    if (IsLegacyServiceId(prefixed_account_id)) {
+      scoped_refptr<TokenWebData> token_web_data =
+          TokenWebData::FromBrowserContext(profile_);
+      if (token_web_data.get())
+        token_web_data->RemoveTokenForService(prefixed_account_id);
+    } else {
+      DCHECK(!refresh_token.empty());
+      std::string account_id = RemoveAccountIdPrefix(prefixed_account_id);
+      refresh_tokens_[account_id] = refresh_token;
+      FireRefreshTokenAvailable(account_id);
+      // TODO(fgorski): Notify diagnostic observers.
+    }
+  }
+
+  if (!old_login_token.empty() &&
+      refresh_tokens_.count(GetAccountId(profile_)) == 0) {
+    UpdateCredentials(GetAccountId(profile_), old_login_token);
+  }
+
+  FireRefreshTokensLoaded();
 }
