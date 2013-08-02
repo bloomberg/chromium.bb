@@ -1111,7 +1111,7 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
 
     if (oldActiveState == Active && m_activeState != Active) {
         endedActiveInterval();
-        if (m_activeState != Frozen)
+        if (m_activeState != Frozen && this == resultElement)
             clearAnimatedType(m_targetElement);
     }
 
