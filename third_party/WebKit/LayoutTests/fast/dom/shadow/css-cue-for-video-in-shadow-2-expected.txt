@@ -1,0 +1,8 @@
+Test that the cue is styled when video and style is in the same shadow tree.
+EVENT(canplaythrough)
+EVENT(seeked)
+EXPECTED (getComputedStyle(cueNode).color == 'rgb(255, 0, 0)') OK
+EXPECTED (getComputedStyle(cueNode).color == 'rgb(0, 128, 0)') OK
+EXPECTED (getComputedStyle(cueNode).color == 'rgb(255, 0, 0)') OK
+END OF TEST
+

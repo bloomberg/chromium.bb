@@ -53,7 +53,6 @@ sandbox.appendChild(
                     createDOM('div', {'id': 'target', 'part': 'header'},
                         document.createTextNode('Hello')))))));
 
-// Currently ::part cannot match elements in deep shadow trees.
 backgroundColorShouldBe('host1/host2/target', 'rgba(0, 0, 0, 0)');
 
 cleanUp();

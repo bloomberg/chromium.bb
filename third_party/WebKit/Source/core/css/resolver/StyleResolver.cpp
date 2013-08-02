@@ -318,8 +318,7 @@ void StyleResolver::matchScopedAuthorRules(Element* element, ElementRuleCollecto
 {
     // fast path
     if (m_styleTree.hasOnlyScopedResolverForDocument()) {
-        // FIXME: should use element->treeScope()->applyAuthorStyles(), instead of true.
-        m_styleTree.scopedStyleResolverForDocument()->matchAuthorRules(collector, includeEmptyRules, true);
+        m_styleTree.scopedStyleResolverForDocument()->matchAuthorRules(collector, includeEmptyRules, element->treeScope()->applyAuthorStyles());
         return;
     }
 
