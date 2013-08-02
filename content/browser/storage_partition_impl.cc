@@ -455,7 +455,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
       &QuotaManagedDataDeletionHelper::DecrementTaskCountOnIO,
       base::Unretained(this));
 
-  if (quota_storage_remove_mask & kQuotaManagedPersistentStorage) {
+  if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_PERSISTENT) {
     IncrementTaskCountOnIO();
     if (origins.empty()) {  // Remove for all origins.
       // Ask the QuotaManager for all origins with temporary quota modified
@@ -473,7 +473,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
   }
 
   // Do the same for temporary quota.
-  if (quota_storage_remove_mask & kQuotaManagedTemporaryStorage) {
+  if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_TEMPORARY) {
     IncrementTaskCountOnIO();
     if (origins.empty()) {  // Remove for all origins.
       quota_manager->GetOriginsModifiedSince(
@@ -488,7 +488,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
   }
 
   // Do the same for syncable quota.
-  if (quota_storage_remove_mask & kQuotaManagedSyncableStorage) {
+  if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_SYNCABLE) {
     IncrementTaskCountOnIO();
     if (origins.empty()) {  // Remove for all origins.
       quota_manager->GetOriginsModifiedSince(

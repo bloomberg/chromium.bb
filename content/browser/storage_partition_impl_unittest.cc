@@ -100,7 +100,7 @@ void ClearData(content::StoragePartitionImpl* sp,
   base::Time time;
   sp->ClearDataForRange(
       StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
-      StoragePartition::kAllStorage,
+      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
       time, time, cb);
 }
 

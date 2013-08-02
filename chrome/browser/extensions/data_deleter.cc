@@ -45,7 +45,7 @@ void DataDeleter::StartDeleting(Profile* profile,
     partition->ClearDataForOrigin(
         StoragePartition::REMOVE_DATA_MASK_ALL &
             (~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE),
-        StoragePartition::kAllStorage,
+        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
         storage_origin,
         profile->GetRequestContextForExtensions());
   } else {
@@ -54,7 +54,7 @@ void DataDeleter::StartDeleting(Profile* profile,
     partition->ClearDataForOrigin(
         StoragePartition::REMOVE_DATA_MASK_ALL &
             (~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE),
-        StoragePartition::kAllStorage,
+        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
         storage_origin,
         partition->GetURLRequestContext());
   }

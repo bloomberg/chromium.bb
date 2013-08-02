@@ -500,7 +500,7 @@ void StoragePartitionImplMap::AsyncObliterate(
           // All except shader cache.
           StoragePartition::REMOVE_DATA_MASK_ALL &
             (~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE),
-          StoragePartition::kAllStorage);
+          StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
       if (!config.in_memory) {
         paths_to_keep.push_back(it->second->GetPath());
       }

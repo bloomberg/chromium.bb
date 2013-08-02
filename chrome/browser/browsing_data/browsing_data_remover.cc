@@ -851,7 +851,7 @@ void BrowsingDataRemover::ClearShaderCacheOnUIThread() {
 
   BrowserContext::GetDefaultStoragePartition(profile_)->ClearDataForRange(
       content::StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
-      content::StoragePartition::kAllStorage,
+      content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
       delete_begin_, delete_end_,
       base::Bind(&BrowsingDataRemover::ClearedShaderCache,
                  base::Unretained(this)));

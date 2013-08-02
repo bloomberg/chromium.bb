@@ -68,19 +68,17 @@ class StoragePartition {
     REMOVE_DATA_MASK_ALL = -1
   };
 
-  // TODO(lazyboy): Value in the enum should start with the enum prefix
-  // (QUOTA_MANAGED_STORAGE_MASK_*).
   enum QuotaManagedStorageMask {
     // Corresponds to quota::kStorageTypeTemporary.
-    kQuotaManagedTemporaryStorage = 1 << 0,
+    QUOTA_MANAGED_STORAGE_MASK_TEMPORARY = 1 << 0,
 
     // Corresponds to quota::kStorageTypePersistent.
-    kQuotaManagedPersistentStorage = 1 << 1,
+    QUOTA_MANAGED_STORAGE_MASK_PERSISTENT = 1 << 1,
 
     // Corresponds to quota::kStorageTypeSyncable.
-    kQuotaManagedSyncableStorage = 1 << 2,
+    QUOTA_MANAGED_STORAGE_MASK_SYNCABLE = 1 << 2,
 
-    kAllStorage = -1
+    QUOTA_MANAGED_STORAGE_MASK_ALL = -1
   };
 
   // Starts an asynchronous task that does a best-effort clear the data

@@ -194,7 +194,7 @@ void AwQuotaManagerBridgeImpl::DeleteAllData(JNIEnv* env, jobject object) {
           StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
           StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE |
           StoragePartition::REMOVE_DATA_MASK_WEBSQL,
-      StoragePartition::kQuotaManagedTemporaryStorage);
+      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_TEMPORARY);
 }
 
 void AwQuotaManagerBridgeImpl::DeleteOrigin(
@@ -207,7 +207,7 @@ void AwQuotaManagerBridgeImpl::DeleteOrigin(
           StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
           StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
           StoragePartition::REMOVE_DATA_MASK_WEBSQL,
-      StoragePartition::kQuotaManagedTemporaryStorage,
+      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_TEMPORARY,
       GURL(base::android::ConvertJavaStringToUTF16(env, origin)),
       storage_partition->GetURLRequestContext());
 }
