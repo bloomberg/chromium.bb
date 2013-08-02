@@ -176,7 +176,9 @@ void PopupTimersController::OnNotificationUpdated(const std::string& id) {
     return;
   }
 
-  ResetTimer(id, GetTimeoutForPriority((*iter)->priority()));
+  // Start the timer if not yet.
+  if (popup_timers_.find(id) == popup_timers_.end())
+    StartTimer(id, GetTimeoutForPriority((*iter)->priority()));
 }
 
 void PopupTimersController::OnNotificationRemoved(const std::string& id,

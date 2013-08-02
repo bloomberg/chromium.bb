@@ -34,6 +34,8 @@ class NotificationUIManagerImpl
   // NotificationUIManager:
   virtual void Add(const Notification& notification,
                    Profile* profile) OVERRIDE;
+  virtual bool Update(const Notification& notification,
+                      Profile* profile) OVERRIDE;
   virtual const Notification* FindById(
       const std::string& notification_id) const OVERRIDE;
   virtual bool CancelById(const std::string& notification_id) OVERRIDE;
@@ -55,17 +57,17 @@ class NotificationUIManagerImpl
   virtual bool ShowNotification(const Notification& notification,
                                 Profile* profile) = 0;
 
- // Replace an existing notification of the same id with this one if applicable;
- // subclass returns 'true' if the replacement happened.
- virtual bool UpdateNotification(const Notification& notification,
-                                 Profile* profile) = 0;
+  // Replace an existing notification of the same id with this one if
+  // applicable; subclass returns 'true' if the replacement happened.
+  virtual bool UpdateNotification(const Notification& notification,
+                                  Profile* profile) = 0;
 
- // Attempts to display notifications from the show_queue. Invoked by subclasses
- // if they previously returned 'false' from ShowNotifications, which may happen
- // when there is no room to show another notification. When room appears, the
- // subclass should call this method to cause an attempt to show more
- // notifications from the waiting queue.
- void CheckAndShowNotifications();
+  // Attempts to display notifications from the show_queue. Invoked by subclass
+  // if it previously returned 'false' from ShowNotifications, which may happen
+  // when there is no room to show another notification. When room appears, the
+  // subclass should call this method to cause an attempt to show more
+  // notifications from the waiting queue.
+  void CheckAndShowNotifications();
 
  private:
   // content::NotificationObserver override.
@@ -75,10 +77,6 @@ class NotificationUIManagerImpl
 
   // Attempts to display notifications from the show_queue.
   void ShowNotifications();
-
-  // Replace an existing notification with this one if applicable;
-  // returns true if the replacement happened.
-  bool TryReplacement(const Notification& notification, Profile* profile);
 
   // Checks the user state to decide if we want to show the notification.
   void CheckUserState();

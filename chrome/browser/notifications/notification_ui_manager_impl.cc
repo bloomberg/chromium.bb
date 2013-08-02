@@ -63,7 +63,7 @@ NotificationUIManagerImpl::~NotificationUIManagerImpl() {
 
 void NotificationUIManagerImpl::Add(const Notification& notification,
                                     Profile* profile) {
-  if (TryReplacement(notification, profile)) {
+  if (Update(notification, profile)) {
     return;
   }
 
@@ -72,6 +72,30 @@ void NotificationUIManagerImpl::Add(const Notification& notification,
   show_queue_.push_back(linked_ptr<QueuedNotification>(
       new QueuedNotification(notification, profile)));
   CheckAndShowNotifications();
+}
+
+bool NotificationUIManagerImpl::Update(const Notification& notification,
+                                       Profile* profile) {
+  const GURL& origin = notification.origin_url();
+  const string16& replace_id = notification.replace_id();
+
+  if (replace_id.empty())
+    return false;
+
+  // First check the queue of pending notifications for replacement.
+  // Then check the list of notifications already being shown.
+  for (NotificationDeque::const_iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); ++iter) {
+    if (profile == (*iter)->profile() &&
+        origin == (*iter)->notification().origin_url() &&
+        replace_id == (*iter)->notification().replace_id()) {
+      (*iter)->Replace(notification);
+      return true;
+    }
+  }
+
+  // Give the subclass the opportunity to update existing notification.
+  return UpdateNotification(notification, profile);
 }
 
 const Notification* NotificationUIManagerImpl::FindById(
@@ -187,30 +211,6 @@ void NotificationUIManagerImpl::ShowNotifications() {
       return;
     }
   }
-}
-
-bool NotificationUIManagerImpl::TryReplacement(
-    const Notification& notification, Profile* profile) {
-  const GURL& origin = notification.origin_url();
-  const string16& replace_id = notification.replace_id();
-
-  if (replace_id.empty())
-    return false;
-
-  // First check the queue of pending notifications for replacement.
-  // Then check the list of notifications already being shown.
-  for (NotificationDeque::const_iterator iter = show_queue_.begin();
-       iter != show_queue_.end(); ++iter) {
-    if (profile == (*iter)->profile() &&
-        origin == (*iter)->notification().origin_url() &&
-        replace_id == (*iter)->notification().replace_id()) {
-      (*iter)->Replace(notification);
-      return true;
-    }
-  }
-
-  // Give the subclass the opportunity to update existing notification.
-  return UpdateNotification(notification, profile);
 }
 
 void NotificationUIManagerImpl::GetQueuedNotificationsForTesting(

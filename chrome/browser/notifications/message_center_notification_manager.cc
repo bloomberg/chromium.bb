@@ -164,7 +164,12 @@ bool MessageCenterNotificationManager::ShowNotification(
 
 bool MessageCenterNotificationManager::UpdateNotification(
     const Notification& notification, Profile* profile) {
-  if (message_center_->IsMessageCenterVisible())
+  // Only progress notification update can be reflected immediately in the
+  // message center.
+  bool update_progress_notification =
+      notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS;
+  bool is_message_center_visible = message_center_->IsMessageCenterVisible();
+  if (!update_progress_notification && is_message_center_visible)
     return false;
 
   const string16& replace_id = notification.replace_id();
@@ -183,13 +188,20 @@ bool MessageCenterNotificationManager::UpdateNotification(
     if (old_notification->notification().replace_id() == replace_id &&
         old_notification->notification().origin_url() == origin_url &&
         old_notification->profile() == profile) {
+      // Changing the type from non-progress to progress does not count towards
+      // the immediate update allowed in the message center.
+      if (update_progress_notification && is_message_center_visible &&
+          old_notification->notification().type() !=
+              message_center::NOTIFICATION_TYPE_PROGRESS) {
+        return false;
+      }
+
       std::string old_id =
           old_notification->notification().notification_id();
       DCHECK(message_center_->HasNotification(old_id));
 
       // Add/remove notification in the local list but just update the same
       // one in MessageCenter.
-      old_notification->notification().Close(false); // Not by user.
       delete old_notification;
       profile_notifications_.erase(old_id);
       ProfileNotification* new_notification =

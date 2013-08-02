@@ -424,7 +424,8 @@ bool NotificationsApiFunction::UpdateNotification(
     }
   }
 
-  g_browser_process->notification_ui_manager()->Add(*notification, profile());
+  g_browser_process->notification_ui_manager()->Update(
+      *notification, profile());
   return true;
 }
 

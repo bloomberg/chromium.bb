@@ -64,6 +64,14 @@ class StubNotificationUIManager : public NotificationUIManager {
     profile_ = profile;
   }
 
+  virtual bool Update(const Notification& notification, Profile* profile)
+      OVERRIDE {
+    // Make a deep copy of the notification that we can inspect.
+    notification_ = notification;
+    profile_ = profile;
+    return true;
+  }
+
   // Returns true if any notifications match the supplied ID, either currently
   // displayed or in the queue.
   virtual const Notification* FindById(const std::string& id) const OVERRIDE {
