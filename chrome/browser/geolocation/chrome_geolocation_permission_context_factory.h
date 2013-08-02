@@ -28,7 +28,7 @@ class ChromeGeolocationPermissionContextFactory
   ChromeGeolocationPermissionContextFactory();
   virtual ~ChromeGeolocationPermissionContextFactory();
 
-  // |BrowserContextKeyedBaseFactory| methods:
+  // BrowserContextKeyedBaseFactory methods:
   virtual BrowserContextKeyedService*
       BuildServiceInstanceFor(content::BrowserContext* profile) const OVERRIDE;
   virtual void RegisterProfilePrefs(

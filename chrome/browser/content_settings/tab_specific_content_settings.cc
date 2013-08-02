@@ -80,6 +80,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       allowed_local_shared_objects_(profile_),
       blocked_local_shared_objects_(profile_),
       geolocation_usages_state_(profile_, CONTENT_SETTINGS_TYPE_GEOLOCATION),
+      midi_usages_state_(profile_, CONTENT_SETTINGS_TYPE_MIDI_SYSEX),
       pending_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),
@@ -211,7 +212,8 @@ bool TabSpecificContentSettings::IsContentBlocked(
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
       content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER ||
-      content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {
+      content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS ||
+      content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
     return content_blocked_[content_type];
   }
 
@@ -237,7 +239,8 @@ bool TabSpecificContentSettings::IsContentAllowed(
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA &&
       content_type != CONTENT_SETTINGS_TYPE_PPAPI_BROKER &&
-      content_type != CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {
+      content_type != CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS &&
+      content_type != CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
     return false;
   }
 
@@ -496,6 +499,22 @@ void TabSpecificContentSettings::OnCameraAccessBlocked() {
   OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string());
 }
 
+void TabSpecificContentSettings::OnMIDISysExAccessed(
+    const GURL& requesting_origin) {
+  midi_usages_state_.OnPermissionSet(requesting_origin, true);
+  // TODO(toyoshim): Bubble icon for MIDI is disabled for now.
+  // http://crbug.com/257618
+  // OnContentAllowed(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+}
+
+void TabSpecificContentSettings::OnMIDISysExAccessBlocked(
+    const GURL& requesting_origin) {
+  midi_usages_state_.OnPermissionSet(requesting_origin, false);
+  // TODO(toyoshim): Bubble icon for MIDI is disabled for now.
+  // http://crbug.com/257618
+  // OnContentBlocked(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string());
+}
+
 void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i) {
     if (i == CONTENT_SETTINGS_TYPE_COOKIES)
@@ -549,8 +568,17 @@ void TabSpecificContentSettings::GeolocationDidNavigate(
   geolocation_usages_state_.DidNavigate(details);
 }
 
+void TabSpecificContentSettings::MIDIDidNavigate(
+    const content::LoadCommittedDetails& details) {
+  midi_usages_state_.DidNavigate(details);
+}
+
 void TabSpecificContentSettings::ClearGeolocationContentSettings() {
   geolocation_usages_state_.ClearStateMap();
+}
+
+void TabSpecificContentSettings::ClearMIDIContentSettings() {
+  midi_usages_state_.ClearStateMap();
 }
 
 void TabSpecificContentSettings::SetPepperBrokerAllowed(bool allowed) {
@@ -585,6 +613,7 @@ void TabSpecificContentSettings::DidNavigateMainFrame(
     // Clear "blocked" flags.
     ClearBlockedContentSettingsExceptForCookies();
     GeolocationDidNavigate(details);
+    MIDIDidNavigate(details);
   }
 }
 
@@ -605,6 +634,7 @@ void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
   if (!is_error_page)
     ClearCookieSpecificContentSettings();
   ClearGeolocationContentSettings();
+  ClearMIDIContentSettings();
 }
 
 void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,

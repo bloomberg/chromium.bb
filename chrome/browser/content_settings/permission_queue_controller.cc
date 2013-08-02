@@ -10,6 +10,7 @@
 #include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/media/midi_permission_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/content_settings.h"
@@ -34,7 +35,8 @@ InfoBarService* GetInfoBarService(const PermissionRequestID& id) {
 
 class PermissionQueueController::PendingInfoBarRequest {
  public:
-  PendingInfoBarRequest(const PermissionRequestID& id,
+  PendingInfoBarRequest(ContentSettingsType type,
+                        const PermissionRequestID& id,
                         const GURL& requesting_frame,
                         const GURL& embedder,
                         PermissionDecidedCallback callback);
@@ -53,6 +55,7 @@ class PermissionQueueController::PendingInfoBarRequest {
                      const std::string& display_languages);
 
  private:
+  ContentSettingsType type_;
   PermissionRequestID id_;
   GURL requesting_frame_;
   GURL embedder_;
@@ -63,11 +66,13 @@ class PermissionQueueController::PendingInfoBarRequest {
 };
 
 PermissionQueueController::PendingInfoBarRequest::PendingInfoBarRequest(
+    ContentSettingsType type,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     PermissionDecidedCallback callback)
-    : id_(id),
+    : type_(type),
+      id_(id),
       requesting_frame_(requesting_frame),
       embedder_(embedder),
       callback_(callback),
@@ -91,10 +96,24 @@ void PermissionQueueController::PendingInfoBarRequest::RunCallback(
 void PermissionQueueController::PendingInfoBarRequest::CreateInfoBar(
     PermissionQueueController* controller,
     const std::string& display_languages) {
-  // TODO(toyoshim): Remove following dependency on geolocation.
-  infobar_ = GeolocationInfoBarDelegate::Create(
-      GetInfoBarService(id_), controller, id_, requesting_frame_,
-      display_languages);
+  // TODO(toyoshim): Remove following ContentType dependent code.
+  // Also these InfoBarDelegate can share much more code each other.
+  // http://crbug.com/266743
+  switch (type_) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      infobar_ = GeolocationInfoBarDelegate::Create(
+          GetInfoBarService(id_), controller, id_, requesting_frame_,
+          display_languages);
+      break;
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+      infobar_ = MIDIPermissionInfoBarDelegate::Create(
+          GetInfoBarService(id_), controller, id_, requesting_frame_,
+          display_languages);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 
@@ -126,7 +145,7 @@ void PermissionQueueController::CreateInfoBarRequest(
     DCHECK(!i->id().Equals(id));
 
   pending_infobar_requests_.push_back(PendingInfoBarRequest(
-      id, requesting_frame, embedder, callback));
+      type_, id, requesting_frame, embedder, callback));
   if (!AlreadyShowingInfoBarForTab(id))
     ShowQueuedInfoBarForTab(id);
 }

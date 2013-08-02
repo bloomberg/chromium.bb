@@ -159,6 +159,9 @@ class TabSpecificContentSettings
   // Clears the Geolocation settings.
   void ClearGeolocationContentSettings();
 
+  // Clears the MIDI settings.
+  void ClearMIDIContentSettings();
+
   // Changes the |content_blocked_| entry for popups.
   void SetPopupsBlocked(bool blocked);
 
@@ -168,6 +171,9 @@ class TabSpecificContentSettings
   // Updates Geolocation settings on navigation.
   void GeolocationDidNavigate(
       const content::LoadCommittedDetails& details);
+
+  // Updates MIDI settings on navigation.
+  void MIDIDidNavigate(const content::LoadCommittedDetails& details);
 
   // Returns whether a particular kind of content has been blocked for this
   // page.
@@ -192,6 +198,12 @@ class TabSpecificContentSettings
   // geolocation API usage on this page.
   const ContentSettingsUsagesState& geolocation_usages_state() const {
     return geolocation_usages_state_;
+  }
+
+  // Returns the ContentSettingsUsageState that controls the MIDI usage on
+  // this page.
+  const ContentSettingsUsagesState& midi_usages_state() const {
+    return midi_usages_state_;
   }
 
   // Call to indicate that there is a protocol handler pending user approval.
@@ -298,13 +310,16 @@ class TabSpecificContentSettings
   void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                   bool allowed);
 
-
   // These methods are called to update the status about the microphone and
   // camera stream access.
   void OnMicrophoneAccessed();
   void OnMicrophoneAccessBlocked();
   void OnCameraAccessed();
   void OnCameraAccessBlocked();
+
+  // There methods are called to update the status about MIDI access.
+  void OnMIDISysExAccessed(const GURL& reqesting_origin);
+  void OnMIDISysExAccessBlocked(const GURL& requesting_origin);
 
   // Adds the given |SiteDataObserver|. The |observer| is notified when a
   // locale shared object, like for example a cookie, is accessed.
@@ -354,6 +369,9 @@ class TabSpecificContentSettings
 
   // Manages information about Geolocation API usage in this page.
   ContentSettingsUsagesState geolocation_usages_state_;
+
+  // Manages information about MIDI usages in this page.
+  ContentSettingsUsagesState midi_usages_state_;
 
   // The pending protocol handler, if any. This can be set if
   // registerProtocolHandler was invoked without user gesture.

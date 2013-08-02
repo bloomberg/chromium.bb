@@ -8,6 +8,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/media/midi_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -32,9 +33,17 @@ bool MIDIDispatcherHost::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
+void MIDIDispatcherHost::OverrideThreadForMessage(
+    const IPC::Message& message, BrowserThread::ID* thread) {
+  if (message.type() == MIDIHostMsg_RequestSysExPermission::ID)
+    *thread = BrowserThread::UI;
+}
+
 void MIDIDispatcherHost::OnRequestSysExPermission(int render_view_id,
                                                   int client_id,
                                                   const GURL& origin) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   browser_context_->RequestMIDISysExPermission(
       render_process_id_,
       render_view_id,

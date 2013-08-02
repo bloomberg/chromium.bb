@@ -14682,6 +14682,19 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Ask me when a site wants to use system exclusive messages to access MIDI devices (recommended)
     </message>
 
+    <!-- Web MIDI messages -->
+    <message name="IDS_MIDI_SYSEX_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access MIDI devices with system exclusive messages.">
+      <ph name="URL">
+        $1<ex>www.google.com</ex>
+      </ph> wants to get full control of your MIDI devices.
+    </message>
+    <message name="IDS_MIDI_SYSEX_ALLOW_BUTTON" desc="A button in MIDI access infobar for allowing full access to MIDI devices for a given domain.">
+      Allow
+    </message>
+    <message name="IDS_MIDI_SYSEX_DENY_BUTTON" desc="A button in MIDI access infobar for denying full access to MIDI devices for a given domain.">
+      Deny
+    </message>
+
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP" desc="Location bar icon tooltip text when a page wants to use registerProtocolHandler.">
       This page wants to install a service handler.
     </message>
