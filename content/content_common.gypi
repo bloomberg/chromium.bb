@@ -298,6 +298,7 @@
     'common/plugin_list_posix.cc',
     'common/plugin_list_win.cc',
     'common/plugin_process_messages.h',
+    'common/power_monitor_messages.h',
     'common/process_type.cc',
     'common/quota_messages.h',
     'common/resource_messages.cc',

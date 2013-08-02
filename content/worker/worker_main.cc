@@ -5,7 +5,6 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/timer/hi_res_timer_manager.h"
@@ -30,9 +29,6 @@ int WorkerMain(const MainFunctionParams& parameters) {
   // The main message loop of the worker process.
   base::MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrWorkerMain");
-
-  base::PowerMonitor power_monitor;
-  base::HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN)
   sandbox::TargetServices* target_services =
@@ -59,6 +55,8 @@ int WorkerMain(const MainFunctionParams& parameters) {
 
   ChildProcess worker_process;
   worker_process.set_main_thread(new WorkerThread());
+
+  base::HighResolutionTimerManager hi_res_timer_manager;
 
   const CommandLine& parsed_command_line = parameters.command_line;
   if (parsed_command_line.HasSwitch(switches::kWaitForDebugger)) {

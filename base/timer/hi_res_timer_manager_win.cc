@@ -12,8 +12,9 @@ namespace base {
 HighResolutionTimerManager::HighResolutionTimerManager()
     : hi_res_clock_available_(false) {
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  DCHECK(power_monitor != NULL);
   power_monitor->AddObserver(this);
-  UseHiResClock(!power_monitor->BatteryPower());
+  UseHiResClock(!power_monitor->IsOnBatteryPower());
 }
 
 HighResolutionTimerManager::~HighResolutionTimerManager() {

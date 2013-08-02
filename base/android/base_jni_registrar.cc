@@ -18,7 +18,7 @@
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_pump_android.h"
-#include "base/power_monitor/power_monitor_android.h"
+#include "base/power_monitor/power_monitor_device_source_android.h"
 
 #if defined(GOOGLE_TV)
 #include "base/android/context_types.h"

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/tracked_objects.h"
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
@@ -200,6 +201,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // Observes the trace event system. When tracing is enabled, optionally
   // starts profiling the tcmalloc heap.
   scoped_ptr<base::debug::TraceMemoryController> trace_memory_controller_;
+
+  scoped_ptr<base::PowerMonitor> power_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThread);
 };

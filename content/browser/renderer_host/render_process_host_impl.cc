@@ -410,7 +410,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           ignore_input_events_(false),
           supports_browser_plugin_(supports_browser_plugin),
           is_guest_(is_guest),
-          gpu_observer_registered_(false) {
+          gpu_observer_registered_(false),
+          power_monitor_broadcaster_(this) {
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());

@@ -95,7 +95,8 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     int process_type,
     BrowserChildProcessHostDelegate* delegate)
     : data_(process_type),
-      delegate_(delegate) {
+      delegate_(delegate),
+      power_monitor_message_broadcaster_(this) {
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
   child_process_host_.reset(ChildProcessHost::Create(this));

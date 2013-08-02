@@ -5,17 +5,18 @@
 // Implementation based on sample code from
 // http://developer.apple.com/library/mac/#qa/qa1340/_index.html.
 
+#include "base/power_monitor/power_monitor_device_source.h"
+
 #include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_source.h"
 
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <IOKit/IOMessage.h>
 
 namespace base {
 
-void ProcessPowerEventHelper(PowerMonitor::PowerEvent event) {
-  DCHECK(PowerMonitor::Get());
-  if (PowerMonitor::Get())
-    PowerMonitor::Get()->ProcessPowerEvent(event);
+void ProcessPowerEventHelper(PowerMonitorSource::PowerEvent event) {
+  PowerMonitorSource::ProcessPowerEvent(event);
 }
 
 namespace {
@@ -29,14 +30,19 @@ void SystemPowerEventCallback(void*,
                               natural_t message_type,
                               void* message_argument) {
   switch (message_type) {
+    // If this message is not handled the system may delay sleep for 30 seconds.
+    case kIOMessageCanSystemSleep:
+      IOAllowPowerChange(g_system_power_io_port,
+          reinterpret_cast<intptr_t>(message_argument));
+      break;
     case kIOMessageSystemWillSleep:
-      ProcessPowerEventHelper(base::PowerMonitor::SUSPEND_EVENT);
+      ProcessPowerEventHelper(base::PowerMonitorSource::SUSPEND_EVENT);
       IOAllowPowerChange(g_system_power_io_port,
           reinterpret_cast<intptr_t>(message_argument));
       break;
 
     case kIOMessageSystemWillPowerOn:
-      ProcessPowerEventHelper(PowerMonitor::RESUME_EVENT);
+      ProcessPowerEventHelper(PowerMonitorSource::RESUME_EVENT);
       break;
   }
 }
@@ -49,7 +55,7 @@ void SystemPowerEventCallback(void*,
 // See crbug.com/83783 .
 
 // static
-void PowerMonitor::AllocateSystemIOPorts() {
+void PowerMonitorDeviceSource::AllocateSystemIOPorts() {
   DCHECK_EQ(g_system_power_io_port, 0u);
 
   // Notification port allocated by IORegisterForSystemPower.
@@ -60,7 +66,7 @@ void PowerMonitor::AllocateSystemIOPorts() {
   DCHECK_NE(g_system_power_io_port, 0u);
 }
 
-void PowerMonitor::PlatformInit() {
+void PowerMonitorDeviceSource::PlatformInit() {
   // Need to call AllocateSystemIOPorts() before creating a PowerMonitor
   // object.
   DCHECK_NE(g_system_power_io_port, 0u);
@@ -74,7 +80,7 @@ void PowerMonitor::PlatformInit() {
       kCFRunLoopCommonModes);
 }
 
-void PowerMonitor::PlatformDestroy() {
+void PowerMonitorDeviceSource::PlatformDestroy() {
   DCHECK_NE(g_system_power_io_port, 0u);
   if (g_system_power_io_port == 0)
     return;

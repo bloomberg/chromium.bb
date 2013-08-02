@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/strings/string_util.h"
@@ -44,7 +45,9 @@ int NaClBrokerMain(const content::MainFunctionParams& parameters) {
   base::MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
-  base::PowerMonitor power_monitor;
+  scoped_ptr<base::PowerMonitorSource> power_monitor_source(
+      new base::PowerMonitorDeviceSource());
+  base::PowerMonitor power_monitor(power_monitor_source.Pass());
   base::HighResolutionTimerManager hi_res_timer_manager;
 
   NaClBrokerListener listener;

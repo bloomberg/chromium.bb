@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +17,10 @@ namespace base {
 // http://crbug.com/114048
 TEST(HiResTimerManagerTest, DISABLED_ToggleOnOff) {
   base::MessageLoop loop;
-  scoped_ptr<base::PowerMonitor> power_monitor(new base::PowerMonitor());
+  scoped_ptr<base::PowerMonitorSource> power_monitor_source(
+      new base::PowerMonitorDeviceSource());
+  scoped_ptr<base::PowerMonitor> power_monitor(
+      new base::PowerMonitor(power_monitor_source.Pass()));
   HighResolutionTimerManager manager;
 
   // At this point, we don't know if the high resolution timers are on or off,

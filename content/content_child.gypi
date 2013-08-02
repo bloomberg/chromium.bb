@@ -102,6 +102,8 @@
     'child/plugin_messages.h',
     'child/plugin_param_traits.cc',
     'child/plugin_param_traits.h',
+    'child/power_monitor_broadcast_source.cc',
+    'child/power_monitor_broadcast_source.h',
     'child/quota_dispatcher.cc',
     'child/quota_dispatcher.h',
     'child/quota_message_filter.cc',

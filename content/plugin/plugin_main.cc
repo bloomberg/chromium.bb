@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/timer/hi_res_timer_manager.h"
@@ -59,9 +58,6 @@ int PluginMain(const MainFunctionParams& parameters) {
   base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventPluginProcessSortIndex);
 
-  base::PowerMonitor power_monitor;
-  base::HighResolutionTimerManager high_resolution_timer_manager;
-
   const CommandLine& parsed_command_line = parameters.command_line;
 
 #if defined(OS_LINUX)
@@ -81,6 +77,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   {
     ChildProcess plugin_process;
     plugin_process.set_main_thread(new PluginThread());
+    base::HighResolutionTimerManager hi_res_timer_manager;
     base::MessageLoop::current()->Run();
   }
 

@@ -44,6 +44,7 @@
 #include "content/common/p2p_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/plugin_process_messages.h"
+#include "content/common/power_monitor_messages.h"
 #include "content/common/quota_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/socket_stream_messages.h"

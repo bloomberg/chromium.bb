@@ -68,7 +68,7 @@
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #if !defined(OS_IOS)
-#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 #include "content/browser/mach_broker_mac.h"
 #include "content/common/sandbox_init_mac.h"
 #endif  // !OS_IOS
@@ -665,7 +665,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
         process_type == switches::kWorkerProcess ||
         (delegate &&
          delegate->ProcessRegistersWithSystemProcess(process_type))) {
-      base::PowerMonitor::AllocateSystemIOPorts();
+      base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
     }
 
     if (!process_type.empty() &&

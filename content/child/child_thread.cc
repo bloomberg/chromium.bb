@@ -19,6 +19,7 @@
 #include "content/child/child_process.h"
 #include "content/child/child_resource_message_filter.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
+#include "content/child/power_monitor_broadcast_source.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/resource_dispatcher.h"
@@ -156,6 +157,16 @@ void ChildThread::Init() {
       ChildProcess::current()->io_message_loop_proxy()));
   channel_->AddFilter(resource_message_filter_.get());
   channel_->AddFilter(quota_message_filter_.get());
+
+  // In single process mode we may already have a power monitor
+  if (!base::PowerMonitor::Get()) {
+    scoped_ptr<PowerMonitorBroadcastSource> power_monitor_source(
+      new PowerMonitorBroadcastSource());
+    channel_->AddFilter(power_monitor_source->GetMessageFilter());
+
+    power_monitor_.reset(new base::PowerMonitor(
+        power_monitor_source.PassAs<base::PowerMonitorSource>()));
+  }
 
 #if defined(OS_POSIX)
   // Check that --process-type is specified so we don't do this in unit tests

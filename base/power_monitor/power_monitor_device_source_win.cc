@@ -3,10 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/power_monitor/power_monitor.h"
-
+#include "base/power_monitor/power_monitor_device_source.h"
+#include "base/power_monitor/power_monitor_source.h"
 #include "base/win/wrapped_window_proc.h"
 
 namespace base {
+
+void ProcessPowerEventHelper(PowerMonitorSource::PowerEvent event) {
+  PowerMonitorSource::ProcessPowerEvent(event);
+}
 
 namespace {
 
@@ -16,7 +21,7 @@ const wchar_t kWindowClassName[] = L"Base_PowerMessageWindow";
 
 // Function to query the system to see if it is currently running on
 // battery power.  Returns true if running on battery.
-bool PowerMonitor::IsBatteryPower() {
+bool PowerMonitorDeviceSource::IsOnBatteryPowerImpl() {
   SYSTEM_POWER_STATUS status;
   if (!GetSystemPowerStatus(&status)) {
     DLOG_GETLASTERROR(ERROR) << "GetSystemPowerStatus failed";
@@ -25,7 +30,7 @@ bool PowerMonitor::IsBatteryPower() {
   return (status.ACLineStatus == 0);
 }
 
-PowerMonitor::PowerMessageWindow::PowerMessageWindow()
+PowerMonitorDeviceSource::PowerMessageWindow::PowerMessageWindow()
     : instance_(NULL), message_hwnd_(NULL) {
   if (MessageLoop::current()->type() != MessageLoop::TYPE_UI) {
     // Creating this window in (e.g.) a renderer inhibits shutdown on Windows.
@@ -38,7 +43,7 @@ PowerMonitor::PowerMessageWindow::PowerMessageWindow()
   base::win::InitializeWindowClass(
       kWindowClassName,
       &base::win::WrappedWindowProc<
-          PowerMonitor::PowerMessageWindow::WndProcThunk>,
+          PowerMonitorDeviceSource::PowerMessageWindow::WndProcThunk>,
       0, 0, 0, NULL, NULL, NULL, NULL, NULL,
       &window_class);
   instance_ = window_class.hInstance;
@@ -51,29 +56,30 @@ PowerMonitor::PowerMessageWindow::PowerMessageWindow()
                    reinterpret_cast<LONG_PTR>(this));
 }
 
-PowerMonitor::PowerMessageWindow::~PowerMessageWindow() {
+PowerMonitorDeviceSource::PowerMessageWindow::~PowerMessageWindow() {
   if (message_hwnd_) {
     DestroyWindow(message_hwnd_);
     UnregisterClass(kWindowClassName, instance_);
   }
 }
 
-void PowerMonitor::PowerMessageWindow::ProcessWmPowerBroadcastMessage(
+void
+PowerMonitorDeviceSource::PowerMessageWindow::ProcessWmPowerBroadcastMessage(
     int event_id) {
-  PowerMonitor::PowerEvent power_event;
+  PowerMonitorSource::PowerEvent power_event;
   switch (event_id) {
     case PBT_APMPOWERSTATUSCHANGE:  // The power status changed.
-      power_event = PowerMonitor::POWER_STATE_EVENT;
+      power_event = PowerMonitorSource::POWER_STATE_EVENT;
       break;
     case PBT_APMRESUMEAUTOMATIC:  // Resume from suspend.
     //case PBT_APMRESUMESUSPEND:  // User-initiated resume from suspend.
                                   // We don't notify for this latter event
                                   // because if it occurs it is always sent as a
                                   // second event after PBT_APMRESUMEAUTOMATIC.
-      power_event = PowerMonitor::RESUME_EVENT;
+      power_event = PowerMonitorSource::RESUME_EVENT;
       break;
     case PBT_APMSUSPEND:  // System has been suspended.
-      power_event = PowerMonitor::SUSPEND_EVENT;
+      power_event = PowerMonitorSource::SUSPEND_EVENT;
       break;
     default:
       return;
@@ -87,11 +93,14 @@ void PowerMonitor::PowerMessageWindow::ProcessWmPowerBroadcastMessage(
     // PBT_POWERSETTINGCHANGE - user changed the power settings.
   }
 
-  PowerMonitor::Get()->ProcessPowerEvent(power_event);
+  ProcessPowerEventHelper(power_event);
 }
 
-LRESULT CALLBACK PowerMonitor::PowerMessageWindow::WndProc(
-    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+LRESULT CALLBACK PowerMonitorDeviceSource::PowerMessageWindow::WndProc(
+    HWND hwnd,
+    UINT message,
+    WPARAM wparam,
+    LPARAM lparam) {
   switch (message) {
     case WM_POWERBROADCAST: {
       DWORD power_event = static_cast<DWORD>(message);
@@ -105,10 +114,13 @@ LRESULT CALLBACK PowerMonitor::PowerMessageWindow::WndProc(
 }
 
 // static
-LRESULT CALLBACK PowerMonitor::PowerMessageWindow::WndProcThunk(
-    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
-  PowerMonitor::PowerMessageWindow* message_hwnd =
-      reinterpret_cast<PowerMonitor::PowerMessageWindow*>(
+LRESULT CALLBACK PowerMonitorDeviceSource::PowerMessageWindow::WndProcThunk(
+    HWND hwnd,
+    UINT message,
+    WPARAM wparam,
+    LPARAM lparam) {
+  PowerMonitorDeviceSource::PowerMessageWindow* message_hwnd =
+      reinterpret_cast<PowerMonitorDeviceSource::PowerMessageWindow*>(
           GetWindowLongPtr(hwnd, GWLP_USERDATA));
   if (message_hwnd)
     return message_hwnd->WndProc(hwnd, message, wparam, lparam);

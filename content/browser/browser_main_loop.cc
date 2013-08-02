@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/pending_task.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -397,7 +398,9 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PowerMonitor")
-    power_monitor_.reset(new base::PowerMonitor);
+    scoped_ptr<base::PowerMonitorSource> power_monitor_source(
+      new base::PowerMonitorDeviceSource());
+    power_monitor_.reset(new base::PowerMonitor(power_monitor_source.Pass()));
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:HighResTimerManager")

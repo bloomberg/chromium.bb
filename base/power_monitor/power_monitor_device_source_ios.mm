@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 
 #import <UIKit/UIKit.h>
 
 namespace base {
 
-void PowerMonitor::PlatformInit() {
+void PowerMonitorDeviceSource::PlatformInit() {
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   id foreground =
       [nc addObserverForName:UIApplicationWillEnterForegroundNotification
@@ -28,7 +28,7 @@ void PowerMonitor::PlatformInit() {
   notification_observers_.push_back(background);
 }
 
-void PowerMonitor::PlatformDestroy() {
+void PowerMonitorDeviceSource::PlatformDestroy() {
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   for (std::vector<id>::iterator it = notification_observers_.begin();
        it != notification_observers_.end(); ++it) {

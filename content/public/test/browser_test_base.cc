@@ -20,7 +20,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -67,7 +67,7 @@ BrowserTestBase::BrowserTestBase()
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
-  base::PowerMonitor::AllocateSystemIOPorts();
+  base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
 #endif
 
 #if defined(OS_POSIX)

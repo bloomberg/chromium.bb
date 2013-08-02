@@ -711,6 +711,8 @@
     'browser/plugin_process_host_mac.cc',
     'browser/plugin_service_impl.cc',
     'browser/plugin_service_impl.h',
+    'browser/power_monitor_message_broadcaster.cc',
+    'browser/power_monitor_message_broadcaster.h',
     'browser/power_save_blocker_android.cc',
     'browser/power_save_blocker_android.h',
     'browser/power_save_blocker_chromeos.cc',

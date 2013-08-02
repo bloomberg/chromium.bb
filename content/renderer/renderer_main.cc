@@ -16,7 +16,6 @@
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/pending_task.h"
-#include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -168,9 +167,6 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrRendererMain");
 
-  base::PowerMonitor power_monitor;
-  base::HighResolutionTimerManager hi_res_timer_manager;
-
   platform.PlatformInitialize();
 
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
@@ -230,6 +226,8 @@ int RendererMain(const MainFunctionParams& parameters) {
     RenderProcessImpl render_process;
     new RenderThreadImpl();
 #endif
+
+    base::HighResolutionTimerManager hi_res_timer_manager;
 
     platform.RunSandboxTests(no_sandbox);
 
