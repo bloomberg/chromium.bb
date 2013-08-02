@@ -2529,6 +2529,9 @@
           'sources/': [
              ['exclude', '^browser/spellchecker/'],
           ],
+          'dependencies!': [
+            '../third_party/hunspell/hunspell.gyp:hunspell',
+          ],
         }],
         ['disable_nacl==0', {
           'sources': [

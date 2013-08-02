@@ -375,8 +375,11 @@
         }],
         ['enable_spellcheck==0', {
           'sources/': [
-            ['exclude', '^render/spellchecker/']
-          ]
+            ['exclude', '^renderer/spellchecker/']
+          ],
+          'dependencies!': [
+            '../third_party/hunspell/hunspell.gyp:hunspell',
+          ],
         }],
         ['OS=="mac"', {
           'dependencies': [

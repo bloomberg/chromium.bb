@@ -1983,6 +1983,9 @@
              ['exclude', '^browser/spellchecker/'],
              ['exclude', '^renderer/spellchecker/'],
           ],
+          'dependencies!': [
+             '../third_party/hunspell/hunspell.gyp:hunspell',
+          ],
         }],
         ['enable_one_click_signin==0', {
           'sources!': [
