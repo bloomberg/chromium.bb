@@ -85,9 +85,6 @@ public:
     virtual int maximum() const { return m_totalSize - m_visibleSize; }
     virtual ScrollbarControlSize controlSize() const { return m_controlSize; }
 
-    virtual int lineStep() const { return m_lineStep; }
-    virtual int pageStep() const { return m_pageStep; }
-
     virtual ScrollbarPart pressedPart() const { return m_pressedPart; }
     virtual ScrollbarPart hoveredPart() const { return m_hoveredPart; }
 
@@ -99,21 +96,14 @@ public:
     // Called by the ScrollableArea when the scroll offset changes.
     void offsetDidChange();
 
-    static int pixelsPerLineStep() { return 40; }
-    static float minFractionToStepWhenPaging() { return 0.875f; }
-    static int maxOverlapBetweenPages();
-
     void disconnectFromScrollableArea() { m_scrollableArea = 0; }
     ScrollableArea* scrollableArea() const { return m_scrollableArea; }
 
     int pressedPos() const { return m_pressedPos; }
 
-    float pixelStep() const { return m_pixelStep; }
-
     virtual void setHoveredPart(ScrollbarPart);
     virtual void setPressedPart(ScrollbarPart);
 
-    void setSteps(int lineStep, int pageStep, int pixelsPerStep = 1);
     void setProportion(int visibleSize, int totalSize);
     void setPressedPos(int p) { m_pressedPos = p; }
 
@@ -178,9 +168,6 @@ protected:
     int m_totalSize;
     float m_currentPos;
     float m_dragOrigin;
-    int m_lineStep;
-    int m_pageStep;
-    float m_pixelStep;
 
     ScrollbarPart m_hoveredPart;
     ScrollbarPart m_pressedPart;
@@ -201,6 +188,8 @@ protected:
 private:
     virtual bool isScrollbar() const { return true; }
     virtual AXObjectCache* existingAXObjectCache() const;
+
+    float scrollableAreaCurrentPos() const;
 };
 
 } // namespace WebCore

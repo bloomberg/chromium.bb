@@ -52,7 +52,6 @@ public:
 
     MOCK_CONST_METHOD0(isActive, bool());
     MOCK_CONST_METHOD1(scrollSize, int(ScrollbarOrientation));
-    MOCK_CONST_METHOD1(scrollPosition, int(Scrollbar*));
     MOCK_METHOD2(invalidateScrollbar, void(Scrollbar*, const IntRect&));
     MOCK_CONST_METHOD0(isScrollCornerVisible, bool());
     MOCK_CONST_METHOD0(scrollCornerRect, IntRect());
@@ -69,10 +68,12 @@ public:
     MOCK_CONST_METHOD0(scrollbarsCanBeActive, bool());
     MOCK_CONST_METHOD0(scrollableAreaBoundingBox, IntRect());
 
+    virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE { return true; }
     virtual IntPoint scrollPosition() const OVERRIDE { return IntPoint(); }
     virtual int visibleHeight() const OVERRIDE { return 768; }
     virtual int visibleWidth() const OVERRIDE { return 1024; }
     virtual bool scrollAnimatorEnabled() const OVERRIDE { return m_scrollAnimatorEnabled; }
+    virtual int pageStep(ScrollbarOrientation) const OVERRIDE { return 0; }
 
 private:
     bool m_scrollAnimatorEnabled;

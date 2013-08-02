@@ -46,10 +46,10 @@ public:
 
     // ScrollableArea functions.
     virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
-    virtual int scrollPosition(Scrollbar*) const OVERRIDE;
     virtual void setScrollOffset(const IntPoint&) OVERRIDE;
     virtual bool isScrollCornerVisible() const OVERRIDE;
     virtual void scrollbarStyleChanged(int newStyle, bool forceUpdate) OVERRIDE;
+    virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE;
 
     virtual void notifyPageThatContentAreaWillPaint() const;
 
@@ -110,10 +110,6 @@ public:
 
     // Overridden by FrameView to create custom CSS scrollbars if applicable.
     virtual PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
-
-    // If the prohibits scrolling flag is set, then all scrolling in the view (even programmatic scrolling) is turned off.
-    void setProhibitsScrolling(bool b) { m_prohibitsScrolling = b; }
-    bool prohibitsScrolling() const { return m_prohibitsScrolling; }
 
     // Whether or not a scroll view will blit visible contents when it is scrolled. Blitting is disabled in situations
     // where it would cause rendering glitches (such as with fixed backgrounds or when the view is partially transparent).
@@ -308,8 +304,6 @@ private:
     bool m_horizontalScrollbarLock;
     bool m_verticalScrollbarLock;
 
-    bool m_prohibitsScrolling;
-
     HashSet<RefPtr<Widget> > m_children;
 
     // This bool is unused on Mac OS because we directly ask the platform widget
@@ -345,6 +339,8 @@ private:
 
     void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
     void updateOverhangAreas();
+
+    int pageStep(ScrollbarOrientation) const;
 }; // class ScrollView
 
 inline ScrollView* toScrollView(Widget* widget)

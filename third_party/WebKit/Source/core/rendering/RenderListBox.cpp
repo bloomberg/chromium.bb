@@ -176,7 +176,6 @@ void RenderListBox::layout()
     if (m_vBar) {
         bool enabled = numVisibleItems() < numItems();
         m_vBar->setEnabled(enabled);
-        m_vBar->setSteps(1, max(1, numVisibleItems() - 1), itemHeight());
         m_vBar->setProportion(numVisibleItems(), numItems());
         if (!enabled) {
             scrollToOffsetWithoutAnimation(VerticalScrollbar, 0);
@@ -625,12 +624,12 @@ void RenderListBox::valueChanged(unsigned listIndex)
 
 int RenderListBox::scrollSize(ScrollbarOrientation orientation) const
 {
-    return ((orientation == VerticalScrollbar) && m_vBar) ? (m_vBar->totalSize() - m_vBar->visibleSize()) : 0;
+    return orientation == VerticalScrollbar ? (numItems() - numVisibleItems()) : 0;
 }
 
-int RenderListBox::scrollPosition(Scrollbar*) const
+IntPoint RenderListBox::scrollPosition() const
 {
-    return m_indexOffset;
+    return IntPoint(0, m_indexOffset);
 }
 
 void RenderListBox::setScrollOffset(const IntPoint& offset)
@@ -835,9 +834,34 @@ bool RenderListBox::scrollbarsCanBeActive() const
     return view->frameView()->scrollbarsCanBeActive();
 }
 
+IntPoint RenderListBox::minimumScrollPosition() const
+{
+    return IntPoint();
+}
+
 IntPoint RenderListBox::maximumScrollPosition() const
 {
     return IntPoint(0, numItems() - numVisibleItems());
+}
+
+bool RenderListBox::userInputScrollable(ScrollbarOrientation orientation) const
+{
+    return orientation == VerticalScrollbar;
+}
+
+int RenderListBox::lineStep(ScrollbarOrientation) const
+{
+    return 1;
+}
+
+int RenderListBox::pageStep(ScrollbarOrientation orientation) const
+{
+    return max(1, numVisibleItems() - 1);
+}
+
+float RenderListBox::pixelStep(ScrollbarOrientation) const
+{
+    return 1.0f / itemHeight();
 }
 
 ScrollableArea* RenderListBox::enclosingScrollableArea() const

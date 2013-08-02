@@ -1318,6 +1318,29 @@ IntRect RenderLayer::scrollableAreaBoundingBox() const
     return renderer()->absoluteBoundingBoxRect();
 }
 
+bool RenderLayer::userInputScrollable(ScrollbarOrientation orientation) const
+{
+    RenderBox* box = renderBox();
+    ASSERT(box);
+
+    EOverflow overflowStyle = (orientation == HorizontalScrollbar) ?
+        renderer()->style()->overflowX() : renderer()->style()->overflowY();
+    return (overflowStyle == OSCROLL || overflowStyle == OAUTO);
+}
+
+int RenderLayer::pageStep(ScrollbarOrientation orientation) const
+{
+    RenderBox* box = renderBox();
+    ASSERT(box);
+
+    int length = (orientation == HorizontalScrollbar) ?
+        box->pixelSnappedClientWidth() : box->pixelSnappedClientHeight();
+    int minPageStep = static_cast<float>(length) * ScrollableArea::minFractionToStepWhenPaging();
+    int pageStep = max(minPageStep, length - ScrollableArea::maxOverlapBetweenPages());
+
+    return max(pageStep, 1);
+}
+
 RenderLayer* RenderLayer::enclosingTransformedAncestor() const
 {
     RenderLayer* curr = parent();
@@ -2463,17 +2486,8 @@ void RenderLayer::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
 
 int RenderLayer::scrollSize(ScrollbarOrientation orientation) const
 {
-    Scrollbar* scrollbar = ((orientation == HorizontalScrollbar) ? m_hBar : m_vBar).get();
-    return scrollbar ? (scrollbar->totalSize() - scrollbar->visibleSize()) : 0;
-}
-
-int RenderLayer::scrollPosition(Scrollbar* scrollbar) const
-{
-    if (scrollbar->orientation() == HorizontalScrollbar)
-        return scrollXOffset();
-    if (scrollbar->orientation() == VerticalScrollbar)
-        return scrollYOffset();
-    return 0;
+    IntSize scrollDimensions = maximumScrollPosition() - minimumScrollPosition();
+    return (orientation == HorizontalScrollbar) ? scrollDimensions.width() : scrollDimensions.height();
 }
 
 IntPoint RenderLayer::scrollPosition() const
@@ -2492,9 +2506,7 @@ IntPoint RenderLayer::maximumScrollPosition() const
     if (!box || !box->hasOverflowClip())
         return -scrollOrigin();
 
-    LayoutRect overflowRect(box->layoutOverflowRect());
-    box->flipForWritingMode(overflowRect);
-    return -scrollOrigin() + enclosingIntRect(overflowRect).size() - enclosingIntRect(box->clientBoxRect()).size();
+    return -scrollOrigin() + enclosingIntRect(m_overflowRect).size() - enclosingIntRect(box->clientBoxRect()).size();
 }
 
 IntRect RenderLayer::visibleContentRect(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
@@ -2834,14 +2846,6 @@ void RenderLayer::destroyScrollbar(ScrollbarOrientation orientation)
     scrollbar = 0;
 }
 
-bool RenderLayer::scrollsOverflow() const
-{
-    if (!renderer()->isBox())
-        return false;
-
-    return toRenderBox(renderer())->scrollsOverflow();
-}
-
 void RenderLayer::setHasHorizontalScrollbar(bool hasScrollbar)
 {
     if (hasScrollbar == hasHorizontalScrollbar())
@@ -2963,7 +2967,7 @@ int RenderLayer::scrollWidth() const
     ASSERT(renderBox());
     if (m_scrollDimensionsDirty)
         const_cast<RenderLayer*>(this)->computeScrollDimensions();
-    return snapSizeToPixel(m_scrollSize.width(), renderBox()->clientLeft() + renderBox()->x());
+    return snapSizeToPixel(m_overflowRect.width(), renderBox()->clientLeft() + renderBox()->x());
 }
 
 int RenderLayer::scrollHeight() const
@@ -2971,39 +2975,7 @@ int RenderLayer::scrollHeight() const
     ASSERT(renderBox());
     if (m_scrollDimensionsDirty)
         const_cast<RenderLayer*>(this)->computeScrollDimensions();
-    return snapSizeToPixel(m_scrollSize.height(), renderBox()->clientTop() + renderBox()->y());
-}
-
-LayoutUnit RenderLayer::overflowTop() const
-{
-    RenderBox* box = renderBox();
-    LayoutRect overflowRect(box->layoutOverflowRect());
-    box->flipForWritingMode(overflowRect);
-    return overflowRect.y();
-}
-
-LayoutUnit RenderLayer::overflowBottom() const
-{
-    RenderBox* box = renderBox();
-    LayoutRect overflowRect(box->layoutOverflowRect());
-    box->flipForWritingMode(overflowRect);
-    return overflowRect.maxY();
-}
-
-LayoutUnit RenderLayer::overflowLeft() const
-{
-    RenderBox* box = renderBox();
-    LayoutRect overflowRect(box->layoutOverflowRect());
-    box->flipForWritingMode(overflowRect);
-    return overflowRect.x();
-}
-
-LayoutUnit RenderLayer::overflowRight() const
-{
-    RenderBox* box = renderBox();
-    LayoutRect overflowRect(box->layoutOverflowRect());
-    box->flipForWritingMode(overflowRect);
-    return overflowRect.maxX();
+    return snapSizeToPixel(m_overflowRect.height(), renderBox()->clientTop() + renderBox()->y());
 }
 
 void RenderLayer::computeScrollDimensions()
@@ -3013,11 +2985,11 @@ void RenderLayer::computeScrollDimensions()
 
     m_scrollDimensionsDirty = false;
 
-    m_scrollSize.setWidth(overflowRight() - overflowLeft());
-    m_scrollSize.setHeight(overflowBottom() - overflowTop());
+    m_overflowRect = box->layoutOverflowRect();
+    box->flipForWritingMode(m_overflowRect);
 
-    int scrollableLeftOverflow = overflowLeft() - box->borderLeft();
-    int scrollableTopOverflow = overflowTop() - box->borderTop();
+    int scrollableLeftOverflow = m_overflowRect.x() - box->borderLeft();
+    int scrollableTopOverflow = m_overflowRect.y() - box->borderTop();
     setScrollOrigin(IntPoint(-scrollableLeftOverflow, -scrollableTopOverflow));
 }
 
@@ -3100,15 +3072,11 @@ void RenderLayer::updateScrollbarsAfterLayout()
     // Set up the range (and page step/line step).
     if (m_hBar) {
         int clientWidth = box->pixelSnappedClientWidth();
-        int pageStep = max(max<int>(clientWidth * Scrollbar::minFractionToStepWhenPaging(), clientWidth - Scrollbar::maxOverlapBetweenPages()), 1);
-        m_hBar->setSteps(Scrollbar::pixelsPerLineStep(), pageStep);
-        m_hBar->setProportion(clientWidth, m_scrollSize.width());
+        m_hBar->setProportion(clientWidth, m_overflowRect.width());
     }
     if (m_vBar) {
         int clientHeight = box->pixelSnappedClientHeight();
-        int pageStep = max(max<int>(clientHeight * Scrollbar::minFractionToStepWhenPaging(), clientHeight - Scrollbar::maxOverlapBetweenPages()), 1);
-        m_vBar->setSteps(Scrollbar::pixelsPerLineStep(), pageStep);
-        m_vBar->setProportion(clientHeight, m_scrollSize.height());
+        m_vBar->setProportion(clientHeight, m_overflowRect.height());
     }
 
     updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());

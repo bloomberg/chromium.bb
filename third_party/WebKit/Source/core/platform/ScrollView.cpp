@@ -43,7 +43,6 @@ ScrollView::ScrollView()
     , m_verticalScrollbarMode(ScrollbarAuto)
     , m_horizontalScrollbarLock(false)
     , m_verticalScrollbarLock(false)
-    , m_prohibitsScrolling(false)
     , m_canBlitOnScroll(true)
     , m_scrollbarsAvoidingResizer(0)
     , m_scrollbarsSuppressed(false)
@@ -282,15 +281,16 @@ IntPoint ScrollView::adjustScrollPositionWithinRange(const IntPoint& scrollPoint
 
 int ScrollView::scrollSize(ScrollbarOrientation orientation) const
 {
-    // If no scrollbars are present, it does not indicate content is not be scrollable.
-    if (!m_horizontalScrollbar && !m_verticalScrollbar && !prohibitsScrolling()) {
+    Scrollbar* scrollbar = ((orientation == HorizontalScrollbar) ? m_horizontalScrollbar : m_verticalScrollbar).get();
+
+    // If no scrollbars are present, the content may still be scrollable.
+    if (!scrollbar) {
         IntSize scrollSize = m_contentsSize - visibleContentRect().size();
         scrollSize.clampNegativeToZero();
         return orientation == HorizontalScrollbar ? scrollSize.width() : scrollSize.height();
     }
 
-    Scrollbar* scrollbar = ((orientation == HorizontalScrollbar) ? m_horizontalScrollbar : m_verticalScrollbar).get();
-    return scrollbar ? (scrollbar->totalSize() - scrollbar->visibleSize()) : 0;
+    return scrollbar->totalSize() - scrollbar->visibleSize();
 }
 
 void ScrollView::notifyPageThatContentAreaWillPaint() const
@@ -317,20 +317,8 @@ void ScrollView::scrollTo(const IntSize& newOffset)
     updateFixedElementsAfterScrolling();
 }
 
-int ScrollView::scrollPosition(Scrollbar* scrollbar) const
-{
-    if (scrollbar->orientation() == HorizontalScrollbar)
-        return scrollPosition().x() + scrollOrigin().x();
-    if (scrollbar->orientation() == VerticalScrollbar)
-        return scrollPosition().y() + scrollOrigin().y();
-    return 0;
-}
-
 void ScrollView::setScrollPosition(const IntPoint& scrollPoint)
 {
-    if (prohibitsScrolling())
-        return;
-
     IntPoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
 
     if (newScrollPosition == scrollPosition())
@@ -372,7 +360,7 @@ static const unsigned cMaxUpdateScrollbarsPass = 2;
 
 void ScrollView::updateScrollbars(const IntSize& desiredOffset)
 {
-    if (m_inUpdateScrollbars || prohibitsScrolling())
+    if (m_inUpdateScrollbars)
         return;
 
     // If we came in here with the view already needing a layout, then go ahead and do that
@@ -473,7 +461,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
         }
     }
 
-    // Set up the range (and page step/line step), but only do this if we're not in a nested call (to avoid
+    // Set up the range, but only do this if we're not in a nested call (to avoid
     // doing it multiple times).
     if (m_updateScrollbarsPass)
         return;
@@ -482,7 +470,6 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
 
     if (m_horizontalScrollbar) {
         int clientWidth = visibleWidth();
-        int pageStep = max(max<int>(clientWidth * Scrollbar::minFractionToStepWhenPaging(), clientWidth - Scrollbar::maxOverlapBetweenPages()), 1);
         IntRect oldRect(m_horizontalScrollbar->frameRect());
         IntRect hBarRect(0,
                         height() - m_horizontalScrollbar->height(),
@@ -495,7 +482,6 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
         if (m_scrollbarsSuppressed)
             m_horizontalScrollbar->setSuppressInvalidation(true);
         m_horizontalScrollbar->setEnabled(contentsWidth() > clientWidth);
-        m_horizontalScrollbar->setSteps(Scrollbar::pixelsPerLineStep(), pageStep);
         m_horizontalScrollbar->setProportion(clientWidth, contentsWidth());
         if (m_scrollbarsSuppressed)
             m_horizontalScrollbar->setSuppressInvalidation(false);
@@ -503,7 +489,6 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
 
     if (m_verticalScrollbar) {
         int clientHeight = visibleHeight();
-        int pageStep = max(max<int>(clientHeight * Scrollbar::minFractionToStepWhenPaging(), clientHeight - Scrollbar::maxOverlapBetweenPages()), 1);
         IntRect oldRect(m_verticalScrollbar->frameRect());
         IntRect vBarRect(width() - m_verticalScrollbar->width(),
                          0,
@@ -516,7 +501,6 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
         if (m_scrollbarsSuppressed)
             m_verticalScrollbar->setSuppressInvalidation(true);
         m_verticalScrollbar->setEnabled(contentsHeight() > clientHeight);
-        m_verticalScrollbar->setSteps(Scrollbar::pixelsPerLineStep(), pageStep);
         m_verticalScrollbar->setProportion(clientHeight, contentsHeight());
         if (m_scrollbarsSuppressed)
             m_verticalScrollbar->setSuppressInvalidation(false);
@@ -812,6 +796,14 @@ void ScrollView::positionScrollbarLayers()
     positionScrollbarLayer(layerForHorizontalScrollbar(), horizontalScrollbar());
     positionScrollbarLayer(layerForVerticalScrollbar(), verticalScrollbar());
     positionScrollCornerLayer(layerForScrollCorner(), scrollCornerRect());
+}
+
+bool ScrollView::userInputScrollable(ScrollbarOrientation orientation) const
+{
+    ScrollbarMode mode = (orientation == HorizontalScrollbar) ?
+        m_horizontalScrollbarMode : m_verticalScrollbarMode;
+
+    return mode == ScrollbarAuto || mode == ScrollbarAlwaysOn;
 }
 
 void ScrollView::repaintContentRectangle(const IntRect& rect)
@@ -1175,4 +1167,13 @@ void ScrollView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAl
         updateScrollbars(scrollOffset());
 }
 
+int ScrollView::pageStep(ScrollbarOrientation orientation) const
+{
+    int length = (orientation == HorizontalScrollbar) ? visibleWidth() : visibleHeight();
+    int minPageStep = static_cast<float>(length) * minFractionToStepWhenPaging();
+    int pageStep = std::max(minPageStep, length - maxOverlapBetweenPages());
+
+    return std::max(pageStep, 1);
 }
+
+} // namespace WebCore

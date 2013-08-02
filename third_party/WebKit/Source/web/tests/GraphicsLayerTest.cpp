@@ -118,7 +118,6 @@ class FakeScrollableArea : public ScrollableArea {
 public:
     virtual bool isActive() const OVERRIDE { return false; }
     virtual int scrollSize(ScrollbarOrientation) const OVERRIDE { return 100; }
-    virtual int scrollPosition(Scrollbar*) const OVERRIDE { return 0; }
     virtual bool isScrollCornerVisible() const OVERRIDE { return false; }
     virtual IntRect scrollCornerRect() const OVERRIDE { return IntRect(); }
     virtual int visibleWidth() const OVERRIDE { return 10; }
@@ -129,6 +128,13 @@ public:
     virtual IntRect scrollableAreaBoundingBox() const OVERRIDE { return IntRect(); }
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE { }
     virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE { }
+    virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE { return true; }
+    virtual int pageStep(ScrollbarOrientation) const OVERRIDE { return 0; }
+    virtual IntPoint minimumScrollPosition() const OVERRIDE { return IntPoint(); }
+    virtual IntPoint maximumScrollPosition() const OVERRIDE
+    {
+        return IntPoint(contentsSize().width() - visibleWidth(), contentsSize().height() - visibleHeight());
+    }
 
     virtual void setScrollOffset(const IntPoint& scrollOffset) OVERRIDE { m_scrollPosition = scrollOffset; }
     virtual IntPoint scrollPosition() const OVERRIDE { return m_scrollPosition; }

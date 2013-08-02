@@ -100,14 +100,6 @@ int ScrollbarGroup::scrollSize(WebCore::ScrollbarOrientation orientation) const
     return scrollbar->totalSize() - scrollbar->visibleSize();
 }
 
-int ScrollbarGroup::scrollPosition(Scrollbar* scrollbar) const
-{
-    WebPluginScrollbarImpl* webScrollbar = scrollbar->orientation() == HorizontalScrollbar ? m_horizontalScrollbar : m_verticalScrollbar;
-    if (!webScrollbar)
-        return 0;
-    return webScrollbar->scrollOffset();
-}
-
 void ScrollbarGroup::setScrollOffset(const IntPoint& offset)
 {
     if (m_horizontalScrollbar && m_horizontalScrollbar->scrollOffset() != offset.x())
@@ -266,6 +258,33 @@ void ScrollbarGroup::scrollbarStyleChanged(int, bool forceUpdate)
 bool ScrollbarGroup::scrollbarsCanBeActive() const
 {
     return true;
+}
+
+bool ScrollbarGroup::userInputScrollable(ScrollbarOrientation orientation) const
+{
+    return orientation == HorizontalScrollbar ? horizontalScrollbar() : verticalScrollbar();
+}
+
+int ScrollbarGroup::pageStep(ScrollbarOrientation orientation) const
+{
+    int length;
+    if (orientation == VerticalScrollbar) {
+        if (!m_verticalScrollbar)
+            return 0;
+
+        length = m_verticalScrollbar->scrollbar()->height();
+    } else {
+        if (!m_horizontalScrollbar)
+            return 0;
+
+        length = m_horizontalScrollbar->scrollbar()->width();
+    }
+
+    int pageStep = std::max(
+        static_cast<int>(static_cast<float>(length) * ScrollableArea::minFractionToStepWhenPaging()),
+        length - ScrollableArea::maxOverlapBetweenPages());
+
+    return std::max(pageStep, 1);
 }
 
 } // namespace WebKit

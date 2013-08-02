@@ -76,13 +76,13 @@ void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
 
 bool ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
 {
-    Scrollbar* horizontalScrollbar = m_scrollableArea->horizontalScrollbar();
-    Scrollbar* verticalScrollbar = m_scrollableArea->verticalScrollbar();
+    bool canScrollX = m_scrollableArea->userInputScrollable(HorizontalScrollbar);
+    bool canScrollY = m_scrollableArea->userInputScrollable(VerticalScrollbar);
 
-    // Accept the event if we have a scrollbar in that direction and can still
+    // Accept the event if we are scrollable in that direction and can still
     // scroll any further.
-    float deltaX = horizontalScrollbar ? e.deltaX() : 0;
-    float deltaY = verticalScrollbar ? e.deltaY() : 0;
+    float deltaX = canScrollX ? e.deltaX() : 0;
+    float deltaY = canScrollY ? e.deltaY() : 0;
 
     bool handled = false;
 
@@ -103,21 +103,23 @@ bool ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
         if (deltaY) {
             if (e.granularity() == ScrollByPageWheelEvent) {
                 bool negative = deltaY < 0;
-                deltaY = max(max(static_cast<float>(m_scrollableArea->visibleHeight()) * Scrollbar::minFractionToStepWhenPaging(), static_cast<float>(m_scrollableArea->visibleHeight() - Scrollbar::maxOverlapBetweenPages())), 1.0f);
+                deltaY = m_scrollableArea->pageStep(VerticalScrollbar);
                 if (negative)
                     deltaY = -deltaY;
             }
-            scroll(VerticalScrollbar, granularity, verticalScrollbar->pixelStep(), -deltaY);
+
+            scroll(VerticalScrollbar, granularity, m_scrollableArea->pixelStep(VerticalScrollbar), -deltaY);
         }
 
         if (deltaX) {
             if (e.granularity() == ScrollByPageWheelEvent) {
                 bool negative = deltaX < 0;
-                deltaX = max(max(static_cast<float>(m_scrollableArea->visibleWidth()) * Scrollbar::minFractionToStepWhenPaging(), static_cast<float>(m_scrollableArea->visibleWidth() - Scrollbar::maxOverlapBetweenPages())), 1.0f);
+                deltaX = m_scrollableArea->pageStep(HorizontalScrollbar);
                 if (negative)
                     deltaX = -deltaX;
             }
-            scroll(HorizontalScrollbar, granularity, horizontalScrollbar->pixelStep(), -deltaX);
+
+            scroll(HorizontalScrollbar, granularity, m_scrollableArea->pixelStep(HorizontalScrollbar), -deltaX);
         }
     }
     return handled;

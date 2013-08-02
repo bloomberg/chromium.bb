@@ -55,12 +55,6 @@ PassRefPtr<Scrollbar> Scrollbar::createNativeScrollbar(ScrollableArea* scrollabl
     return adoptRef(new Scrollbar(scrollableArea, orientation, size));
 }
 
-int Scrollbar::maxOverlapBetweenPages()
-{
-    static int maxOverlapBetweenPages = ScrollbarTheme::theme()->maxOverlapBetweenPages();
-    return maxOverlapBetweenPages;
-}
-
 Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize controlSize,
                      ScrollbarTheme* theme)
     : m_scrollableArea(scrollableArea)
@@ -71,9 +65,6 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orient
     , m_totalSize(0)
     , m_currentPos(0)
     , m_dragOrigin(0)
-    , m_lineStep(0)
-    , m_pageStep(0)
-    , m_pixelStep(1)
     , m_hoveredPart(NoPart)
     , m_pressedPart(NoPart)
     , m_pressedPos(0)
@@ -97,8 +88,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orient
     int thickness = m_theme->scrollbarThickness(controlSize);
     Widget::setFrameRect(IntRect(0, 0, thickness, thickness));
 
-    if (m_scrollableArea)
-        m_currentPos = static_cast<float>(m_scrollableArea->scrollPosition(this));
+    m_currentPos = scrollableAreaCurrentPos();
 }
 
 Scrollbar::~Scrollbar()
@@ -136,7 +126,7 @@ void Scrollbar::offsetDidChange()
 {
     ASSERT(m_scrollableArea);
 
-    float position = static_cast<float>(m_scrollableArea->scrollPosition(this));
+    float position = scrollableAreaCurrentPos();
     if (position == m_currentPos)
         return;
 
@@ -156,13 +146,6 @@ void Scrollbar::setProportion(int visibleSize, int totalSize)
     m_totalSize = totalSize;
 
     updateThumbProportion();
-}
-
-void Scrollbar::setSteps(int lineStep, int pageStep, int pixelsPerStep)
-{
-    m_lineStep = lineStep;
-    m_pageStep = pageStep;
-    m_pixelStep = 1.0f / pixelsPerStep;
 }
 
 void Scrollbar::updateThumb()
@@ -599,6 +582,17 @@ IntPoint Scrollbar::convertFromContainingView(const IntPoint& parentPoint) const
         return m_scrollableArea->convertFromContainingViewToScrollbar(this, parentPoint);
 
     return Widget::convertFromContainingView(parentPoint);
+}
+
+float Scrollbar::scrollableAreaCurrentPos() const
+{
+    if (!m_scrollableArea)
+        return 0;
+
+    if (m_orientation == HorizontalScrollbar)
+        return m_scrollableArea->scrollPosition().x() - m_scrollableArea->minimumScrollPosition().x();
+
+    return m_scrollableArea->scrollPosition().y() - m_scrollableArea->minimumScrollPosition().y();
 }
 
 } // namespace WebCore

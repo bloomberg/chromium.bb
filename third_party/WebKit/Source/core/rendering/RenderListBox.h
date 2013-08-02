@@ -103,7 +103,7 @@ private:
 
     // ScrollableArea interface.
     virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
-    virtual int scrollPosition(Scrollbar*) const OVERRIDE;
+    virtual IntPoint scrollPosition() const OVERRIDE;
     virtual void setScrollOffset(const IntPoint&) OVERRIDE;
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
     virtual bool isActive() const OVERRIDE;
@@ -121,7 +121,13 @@ private:
     virtual IntPoint lastKnownMousePosition() const OVERRIDE;
     virtual bool shouldSuspendScrollAnimations() const OVERRIDE;
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
+    virtual IntPoint minimumScrollPosition() const OVERRIDE;
     virtual IntPoint maximumScrollPosition() const OVERRIDE;
+    virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE;
+    virtual int lineStep(ScrollbarOrientation) const;
+    virtual int pageStep(ScrollbarOrientation) const;
+    virtual float pixelStep(ScrollbarOrientation) const;
+
 
     virtual ScrollableArea* enclosingScrollableArea() const OVERRIDE;
     virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;

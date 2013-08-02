@@ -127,7 +127,6 @@ public:
     bool isSoftwareRenderable() const;
 
     void resetScrollbars();
-    void resetScrollbarsAndClearContentsSize();
     void prepareForDetach();
     void detachCustomScrollbars();
     virtual void recalculateScrollbarOverlayStyle();

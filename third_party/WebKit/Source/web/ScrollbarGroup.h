@@ -50,7 +50,6 @@ public:
 
     // WebCore::ScrollableArea methods
     virtual int scrollSize(WebCore::ScrollbarOrientation) const OVERRIDE;
-    virtual int scrollPosition(WebCore::Scrollbar*) const OVERRIDE;
     virtual void setScrollOffset(const WebCore::IntPoint&) OVERRIDE;
     virtual void invalidateScrollbarRect(WebCore::Scrollbar*, const WebCore::IntRect&) OVERRIDE;
     virtual void invalidateScrollCornerRect(const WebCore::IntRect&) OVERRIDE;
@@ -74,6 +73,8 @@ public:
     virtual void scrollbarStyleChanged(int newStyle, bool forceUpdate) OVERRIDE;
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
     virtual WebCore::IntRect scrollableAreaBoundingBox() const OVERRIDE;
+    virtual bool userInputScrollable(WebCore::ScrollbarOrientation) const OVERRIDE;
+    virtual int pageStep(WebCore::ScrollbarOrientation) const OVERRIDE;
 
 private:
     WebCore::FrameView* m_frameView;

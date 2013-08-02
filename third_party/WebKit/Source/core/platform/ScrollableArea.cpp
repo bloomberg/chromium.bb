@@ -40,6 +40,9 @@
 
 #include "core/platform/chromium/TraceEvent.h"
 
+static const int kPixelsPerLineStep = 40;
+static const float kMinFractionToStepWhenPaging = 0.875f;
+
 namespace WebCore {
 
 struct SameSizeAsScrollableArea {
@@ -50,6 +53,22 @@ struct SameSizeAsScrollableArea {
 };
 
 COMPILE_ASSERT(sizeof(ScrollableArea) == sizeof(SameSizeAsScrollableArea), ScrollableArea_should_stay_small);
+
+int ScrollableArea::pixelsPerLineStep()
+{
+    return kPixelsPerLineStep;
+}
+
+float ScrollableArea::minFractionToStepWhenPaging()
+{
+    return kMinFractionToStepWhenPaging;
+}
+
+int ScrollableArea::maxOverlapBetweenPages()
+{
+    static int maxOverlapBetweenPages = ScrollbarTheme::theme()->maxOverlapBetweenPages();
+    return maxOverlapBetweenPages;
+}
 
 ScrollableArea::ScrollableArea()
     : m_constrainsScrollingToContentEdge(true)
@@ -84,32 +103,29 @@ void ScrollableArea::setScrollOrigin(const IntPoint& origin)
 bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
 {
     ScrollbarOrientation orientation;
-    Scrollbar* scrollbar;
-    if (direction == ScrollUp || direction == ScrollDown) {
-        orientation = VerticalScrollbar;
-        scrollbar = verticalScrollbar();
-    } else {
-        orientation = HorizontalScrollbar;
-        scrollbar = horizontalScrollbar();
-    }
 
-    if (!scrollbar)
+    if (direction == ScrollUp || direction == ScrollDown)
+        orientation = VerticalScrollbar;
+    else
+        orientation = HorizontalScrollbar;
+
+    if (!userInputScrollable(orientation))
         return false;
 
     float step = 0;
     switch (granularity) {
     case ScrollByLine:
-        step = scrollbar->lineStep();
+        step = lineStep(orientation);
         break;
     case ScrollByPage:
-        step = scrollbar->pageStep();
+        step = pageStep(orientation);
         break;
     case ScrollByDocument:
-        step = scrollbar->totalSize();
+        step = documentStep(orientation);
         break;
     case ScrollByPixel:
     case ScrollByPrecisePixel:
-        step = scrollbar->pixelStep();
+        step = pixelStep(orientation);
         break;
     }
 
@@ -363,23 +379,6 @@ void ScrollableArea::serviceScrollAnimations()
         scrollAnimator->serviceScrollAnimations();
 }
 
-IntPoint ScrollableArea::scrollPosition() const
-{
-    int x = horizontalScrollbar() ? horizontalScrollbar()->value() : 0;
-    int y = verticalScrollbar() ? verticalScrollbar()->value() : 0;
-    return IntPoint(x, y);
-}
-
-IntPoint ScrollableArea::minimumScrollPosition() const
-{
-    return IntPoint();
-}
-
-IntPoint ScrollableArea::maximumScrollPosition() const
-{
-    return IntPoint(contentsSize().width() - visibleWidth(), contentsSize().height() - visibleHeight());
-}
-
 IntRect ScrollableArea::visibleContentRect(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
 {
     int verticalScrollbarWidth = 0;
@@ -401,6 +400,21 @@ IntRect ScrollableArea::visibleContentRect(VisibleContentRectIncludesScrollbars 
 IntPoint ScrollableArea::clampScrollPosition(const IntPoint& scrollPosition) const
 {
     return scrollPosition.shrunkTo(maximumScrollPosition()).expandedTo(minimumScrollPosition());
+}
+
+int ScrollableArea::lineStep(ScrollbarOrientation) const
+{
+    return pixelsPerLineStep();
+}
+
+int ScrollableArea::documentStep(ScrollbarOrientation orientation) const
+{
+    return scrollSize(orientation);
+}
+
+float ScrollableArea::pixelStep(ScrollbarOrientation) const
+{
+    return 1;
 }
 
 } // namespace WebCore

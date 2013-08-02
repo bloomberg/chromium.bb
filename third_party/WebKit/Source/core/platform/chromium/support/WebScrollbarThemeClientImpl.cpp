@@ -183,18 +183,6 @@ WebCore::ScrollbarControlSize WebScrollbarThemeClientImpl::controlSize() const
     return static_cast<WebCore::ScrollbarControlSize>(m_scrollbar->controlSize());
 }
 
-int WebScrollbarThemeClientImpl::lineStep() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-int WebScrollbarThemeClientImpl::pageStep() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 WebCore::ScrollbarPart WebScrollbarThemeClientImpl::pressedPart() const
 {
     return static_cast<WebCore::ScrollbarPart>(m_scrollbar->pressedPart());

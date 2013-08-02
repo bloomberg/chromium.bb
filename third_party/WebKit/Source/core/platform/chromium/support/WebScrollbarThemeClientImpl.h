@@ -68,8 +68,6 @@ public:
     virtual int totalSize() const OVERRIDE;
     virtual int maximum() const OVERRIDE;
     virtual ScrollbarControlSize controlSize() const OVERRIDE;
-    virtual int lineStep() const OVERRIDE;
-    virtual int pageStep() const OVERRIDE;
     virtual ScrollbarPart pressedPart() const OVERRIDE;
     virtual ScrollbarPart hoveredPart() const OVERRIDE;
     virtual void styleChanged() OVERRIDE;

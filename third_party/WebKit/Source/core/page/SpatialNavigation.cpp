@@ -305,18 +305,18 @@ bool hasOffscreenRect(Node* node, FocusDirection direction)
     // and we do not adjust for scrolling.
     switch (direction) {
     case FocusDirectionLeft:
-        containerViewportRect.setX(containerViewportRect.x() - Scrollbar::pixelsPerLineStep());
-        containerViewportRect.setWidth(containerViewportRect.width() + Scrollbar::pixelsPerLineStep());
+        containerViewportRect.setX(containerViewportRect.x() - ScrollableArea::pixelsPerLineStep());
+        containerViewportRect.setWidth(containerViewportRect.width() + ScrollableArea::pixelsPerLineStep());
         break;
     case FocusDirectionRight:
-        containerViewportRect.setWidth(containerViewportRect.width() + Scrollbar::pixelsPerLineStep());
+        containerViewportRect.setWidth(containerViewportRect.width() + ScrollableArea::pixelsPerLineStep());
         break;
     case FocusDirectionUp:
-        containerViewportRect.setY(containerViewportRect.y() - Scrollbar::pixelsPerLineStep());
-        containerViewportRect.setHeight(containerViewportRect.height() + Scrollbar::pixelsPerLineStep());
+        containerViewportRect.setY(containerViewportRect.y() - ScrollableArea::pixelsPerLineStep());
+        containerViewportRect.setHeight(containerViewportRect.height() + ScrollableArea::pixelsPerLineStep());
         break;
     case FocusDirectionDown:
-        containerViewportRect.setHeight(containerViewportRect.height() + Scrollbar::pixelsPerLineStep());
+        containerViewportRect.setHeight(containerViewportRect.height() + ScrollableArea::pixelsPerLineStep());
         break;
     default:
         break;
@@ -342,16 +342,16 @@ bool scrollInDirection(Frame* frame, FocusDirection direction)
         LayoutUnit dy = 0;
         switch (direction) {
         case FocusDirectionLeft:
-            dx = - Scrollbar::pixelsPerLineStep();
+            dx = - ScrollableArea::pixelsPerLineStep();
             break;
         case FocusDirectionRight:
-            dx = Scrollbar::pixelsPerLineStep();
+            dx = ScrollableArea::pixelsPerLineStep();
             break;
         case FocusDirectionUp:
-            dy = - Scrollbar::pixelsPerLineStep();
+            dy = - ScrollableArea::pixelsPerLineStep();
             break;
         case FocusDirectionDown:
-            dy = Scrollbar::pixelsPerLineStep();
+            dy = ScrollableArea::pixelsPerLineStep();
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -378,18 +378,18 @@ bool scrollInDirection(Node* container, FocusDirection direction)
         LayoutUnit dy = 0;
         switch (direction) {
         case FocusDirectionLeft:
-            dx = - min<LayoutUnit>(Scrollbar::pixelsPerLineStep(), container->renderBox()->scrollLeft());
+            dx = - min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->renderBox()->scrollLeft());
             break;
         case FocusDirectionRight:
             ASSERT(container->renderBox()->scrollWidth() > (container->renderBox()->scrollLeft() + container->renderBox()->clientWidth()));
-            dx = min<LayoutUnit>(Scrollbar::pixelsPerLineStep(), container->renderBox()->scrollWidth() - (container->renderBox()->scrollLeft() + container->renderBox()->clientWidth()));
+            dx = min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->renderBox()->scrollWidth() - (container->renderBox()->scrollLeft() + container->renderBox()->clientWidth()));
             break;
         case FocusDirectionUp:
-            dy = - min<LayoutUnit>(Scrollbar::pixelsPerLineStep(), container->renderBox()->scrollTop());
+            dy = - min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->renderBox()->scrollTop());
             break;
         case FocusDirectionDown:
             ASSERT(container->renderBox()->scrollHeight() - (container->renderBox()->scrollTop() + container->renderBox()->clientHeight()));
-            dy = min<LayoutUnit>(Scrollbar::pixelsPerLineStep(), container->renderBox()->scrollHeight() - (container->renderBox()->scrollTop() + container->renderBox()->clientHeight()));
+            dy = min<LayoutUnit>(ScrollableArea::pixelsPerLineStep(), container->renderBox()->scrollHeight() - (container->renderBox()->scrollTop() + container->renderBox()->clientHeight()));
             break;
         default:
             ASSERT_NOT_REACHED();

@@ -305,15 +305,6 @@ void FrameView::resetScrollbars()
     setScrollbarsSuppressed(false);
 }
 
-void FrameView::resetScrollbarsAndClearContentsSize()
-{
-    resetScrollbars();
-
-    setScrollbarsSuppressed(true);
-    setContentsSize(IntSize());
-    setScrollbarsSuppressed(false);
-}
-
 void FrameView::init()
 {
     reset();

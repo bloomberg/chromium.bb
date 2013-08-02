@@ -40,6 +40,10 @@ class ScrollAnimator;
 
 class ScrollableArea {
 public:
+    static int pixelsPerLineStep();
+    static float minFractionToStepWhenPaging();
+    static int maxOverlapBetweenPages();
+
     bool scroll(ScrollDirection, ScrollGranularity, float multiplier = 1);
     void scrollToOffsetWithoutAnimation(const FloatPoint&);
     void scrollToOffsetWithoutAnimation(ScrollbarOrientation, float offset);
@@ -102,7 +106,6 @@ public:
 
     virtual bool isActive() const = 0;
     virtual int scrollSize(ScrollbarOrientation) const = 0;
-    virtual int scrollPosition(Scrollbar*) const = 0;
     virtual void invalidateScrollbar(Scrollbar*, const IntRect&);
     virtual bool isScrollCornerVisible() const = 0;
     virtual IntRect scrollCornerRect() const = 0;
@@ -132,9 +135,11 @@ public:
     virtual Scrollbar* horizontalScrollbar() const { return 0; }
     virtual Scrollbar* verticalScrollbar() const { return 0; }
 
-    virtual IntPoint scrollPosition() const;
-    virtual IntPoint minimumScrollPosition() const;
-    virtual IntPoint maximumScrollPosition() const;
+    // scrollPosition is relative to the scrollOrigin. i.e. If the page is RTL
+    // then scrollPosition will be negative.
+    virtual IntPoint scrollPosition() const = 0;
+    virtual IntPoint minimumScrollPosition() const = 0;
+    virtual IntPoint maximumScrollPosition() const = 0;
 
     enum VisibleContentRectIncludesScrollbars { ExcludeScrollbars, IncludeScrollbars };
     virtual IntRect visibleContentRect(VisibleContentRectIncludesScrollbars = ExcludeScrollbars) const;
@@ -172,6 +177,8 @@ public:
 
     virtual bool usesCompositedScrolling() const { return false; }
     virtual void updateNeedsCompositedScrolling() { }
+
+    virtual bool userInputScrollable(ScrollbarOrientation) const = 0;
 
     // Convenience functions
     int scrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? scrollPosition().x() : scrollPosition().y(); }
@@ -211,6 +218,11 @@ private:
     // This function should be overriden by subclasses to perform the actual
     // scroll of the content.
     virtual void setScrollOffset(const IntPoint&) = 0;
+
+    virtual int lineStep(ScrollbarOrientation) const;
+    virtual int pageStep(ScrollbarOrientation) const = 0;
+    virtual int documentStep(ScrollbarOrientation) const;
+    virtual float pixelStep(ScrollbarOrientation) const;
 
     mutable OwnPtr<ScrollAnimator> m_scrollAnimator;
     unsigned m_constrainsScrollingToContentEdge : 1;

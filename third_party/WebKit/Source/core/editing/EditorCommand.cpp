@@ -259,7 +259,7 @@ static unsigned verticalScrollDistance(Frame* frame)
     if (!(style->overflowY() == OSCROLL || style->overflowY() == OAUTO || focusedElement->rendererIsEditable()))
         return 0;
     int height = std::min<int>(toRenderBox(renderer)->clientHeight(), frame->view()->visibleHeight());
-    return static_cast<unsigned>(max(max<int>(height * Scrollbar::minFractionToStepWhenPaging(), height - Scrollbar::maxOverlapBetweenPages()), 1));
+    return static_cast<unsigned>(max(max<int>(height * ScrollableArea::minFractionToStepWhenPaging(), height - ScrollableArea::maxOverlapBetweenPages()), 1));
 }
 
 static RefPtr<Range> unionDOMRanges(Range* a, Range* b)
