@@ -49,6 +49,7 @@ extern const char kText4[];
 extern const char kText5[];
 extern const char kText6[];
 extern const char kText7[];
+extern const char kText1And1[];
 extern const char kImageUrl1[];
 extern const char kImageUrl2[];
 extern const char kImageUrl3[];

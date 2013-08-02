@@ -327,7 +327,7 @@ TEST_F(SyncedNotificationTest, ShowTest) {
   // Check the base fields of the notification.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE, notification.type());
   EXPECT_EQ(std::string(kTitle1), UTF16ToUTF8(notification.title()));
-  EXPECT_EQ(std::string(kText1), UTF16ToUTF8(notification.message()));
+  EXPECT_EQ(std::string(kText1And1), UTF16ToUTF8(notification.message()));
   EXPECT_EQ(std::string(kExpectedOriginUrl), notification.origin_url().spec());
   EXPECT_EQ(std::string(kKey1), UTF16ToUTF8(notification.replace_id()));
 
@@ -406,7 +406,7 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
             notification_manager.notification().type());
   EXPECT_EQ(std::string(kTitle1),
             UTF16ToUTF8(notification_manager.notification().title()));
-  EXPECT_EQ(std::string(kText1),
+  EXPECT_EQ(std::string(kText1And1),
             UTF16ToUTF8(notification_manager.notification().message()));
 
   // TODO(petewil): Check that the bitmap in the notification is what we expect.
