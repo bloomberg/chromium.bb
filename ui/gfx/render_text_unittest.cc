@@ -1529,16 +1529,13 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
 
   // Ensure that shrinking the display rectangle keeps the cursor in view.
   render_text->SetDisplayRect(Rect(width - 10, 1));
-  EXPECT_EQ(render_text->display_rect().width() - 1,
+  EXPECT_EQ(render_text->display_rect().width(),
             render_text->GetUpdatedCursorBounds().right());
 
-  // TODO(msw): Investigate why this test passes with
-  // |GetUpdateCursorBounds().x()|, while the above have to use
-  // |.right()|.
   // Ensure that the text will pan to fill its expanding display rectangle.
   render_text->SetDisplayRect(Rect(width - 5, 1));
-  EXPECT_EQ(render_text->display_rect().width() - 1,
-            render_text->GetUpdatedCursorBounds().x());
+  EXPECT_EQ(render_text->display_rect().width(),
+            render_text->GetUpdatedCursorBounds().right());
 
   // Ensure that a sufficiently large display rectangle shows all the text.
   render_text->SetDisplayRect(Rect(width + 10, 1));
@@ -1557,13 +1554,13 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
 
   // Ensure that shrinking the display rectangle keeps the cursor in view.
   render_text->SetDisplayRect(Rect(width - 10, 1));
-  EXPECT_EQ(render_text->display_rect().width() - 1,
+  EXPECT_EQ(render_text->display_rect().width(),
             render_text->GetUpdatedCursorBounds().right());
 
   // Ensure that the text will pan to fill its expanding display rectangle.
   render_text->SetDisplayRect(Rect(width - 5, 1));
-  EXPECT_EQ(render_text->display_rect().width() - 1,
-            render_text->GetUpdatedCursorBounds().x());
+  EXPECT_EQ(render_text->display_rect().width(),
+            render_text->GetUpdatedCursorBounds().right());
 
   // Ensure that a sufficiently large display rectangle shows all the text.
   render_text->SetDisplayRect(Rect(width + 10, 1));

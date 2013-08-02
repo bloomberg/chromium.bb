@@ -987,13 +987,13 @@ void RenderText::UpdateCachedBoundsAndOffset() {
     // Don't pan if the text fits in the display width or when the cursor is
     // disabled.
     delta_x = -display_offset_.x();
-  } else if (cursor_bounds_.right() >= display_rect_.right()) {
+  } else if (cursor_bounds_.right() > display_rect_.right()) {
     // TODO(xji): when the character overflow is a RTL character, currently, if
     // we pan cursor at the rightmost position, the entered RTL character is not
     // displayed. Should pan cursor to show the last logical characters.
     //
-    // Pan to show the cursor when it overflows to the right,
-    delta_x = display_rect_.right() - cursor_bounds_.right() - 1;
+    // Pan to show the cursor when it overflows to the right.
+    delta_x = display_rect_.right() - cursor_bounds_.right();
   } else if (cursor_bounds_.x() < display_rect_.x()) {
     // TODO(xji): have similar problem as above when overflow character is a
     // LTR character.

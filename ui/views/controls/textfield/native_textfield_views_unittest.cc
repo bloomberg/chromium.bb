@@ -1680,16 +1680,6 @@ TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaInRTLTest) {
   base::i18n::SetICUDefaultLocale(locale);
 }
 
-// This verifies that |bound| is contained by |display|. |bound|'s right edge
-// must be less than |diaplay|'s right edge.
-void OverflowCursorBoundTestVerifier(const gfx::Rect& display,
-                                     const gfx::Rect& bound) {
-  EXPECT_LE(display.x(), bound.x());
-  EXPECT_GT(display.right(), bound.right());
-  EXPECT_LE(display.y(), bound.y());
-  EXPECT_GE(display.bottom(), bound.bottom());
-}
-
 TEST_F(NativeTextfieldViewsTest, OverflowTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
@@ -1697,12 +1687,10 @@ TEST_F(NativeTextfieldViewsTest, OverflowTest) {
   for (int i = 0; i < 500; ++i)
     SendKeyEvent('a');
   SendKeyEvent(kHebrewLetterSamekh);
-  gfx::Rect bound = GetCursorBounds();
-  gfx::Rect display = GetDisplayRect();
-  OverflowCursorBoundTestVerifier(display, bound);
+  EXPECT_TRUE(GetDisplayRect().Contains(GetCursorBounds()));
 
   // Test mouse pointing.
-  MouseClick(bound, -1);
+  MouseClick(GetCursorBounds(), -1);
   EXPECT_EQ(500U, textfield_->GetCursorPosition());
 
   // Clear text.
@@ -1712,11 +1700,9 @@ TEST_F(NativeTextfieldViewsTest, OverflowTest) {
   for (int i = 0; i < 500; ++i)
     SendKeyEvent(kHebrewLetterSamekh);
   SendKeyEvent('a');
-  bound = GetCursorBounds();
-  display = GetDisplayRect();
-  OverflowCursorBoundTestVerifier(display, bound);
+  EXPECT_TRUE(GetDisplayRect().Contains(GetCursorBounds()));
 
-  MouseClick(bound, -1);
+  MouseClick(GetCursorBounds(), -1);
   EXPECT_EQ(501U, textfield_->GetCursorPosition());
 }
 
@@ -1730,11 +1716,9 @@ TEST_F(NativeTextfieldViewsTest, OverflowInRTLTest) {
   for (int i = 0; i < 500; ++i)
     SendKeyEvent('a');
   SendKeyEvent(kHebrewLetterSamekh);
-  gfx::Rect bound = GetCursorBounds();
-  gfx::Rect display = GetDisplayRect();
-  OverflowCursorBoundTestVerifier(display, bound);
+  EXPECT_TRUE(GetDisplayRect().Contains(GetCursorBounds()));
 
-  MouseClick(bound, 1);
+  MouseClick(GetCursorBounds(), 1);
   EXPECT_EQ(501U, textfield_->GetCursorPosition());
 
   // Clear text.
@@ -1744,21 +1728,10 @@ TEST_F(NativeTextfieldViewsTest, OverflowInRTLTest) {
   for (int i = 0; i < 500; ++i)
     SendKeyEvent(kHebrewLetterSamekh);
   SendKeyEvent('a');
-  bound = GetCursorBounds();
-  display = GetDisplayRect();
-  OverflowCursorBoundTestVerifier(display, bound);
+  EXPECT_TRUE(GetDisplayRect().Contains(GetCursorBounds()));
 
-
-#if !defined(OS_WIN)
-  // TODO(jennyz): NonClientMouseClick() does not work for os_win builds;
-  // see crbug.com/104150. The mouse click in the next test will be confused
-  // as a double click, which breaks the test. Disable the test until the
-  // issue is fixed.
-  NonClientMouseClick();
-
-  MouseClick(bound, 1);
+  MouseClick(GetCursorBounds(), 1);
   EXPECT_EQ(500U, textfield_->GetCursorPosition());
-#endif  // !defined(OS_WIN)
 
   // Reset locale.
   base::i18n::SetICUDefaultLocale(locale);
