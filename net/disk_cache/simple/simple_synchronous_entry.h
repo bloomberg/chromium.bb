@@ -62,6 +62,7 @@ class SimpleSynchronousEntry {
 
   static void OpenEntry(const base::FilePath& path,
                         uint64 entry_hash,
+                        bool had_index,
                         SimpleSynchronousEntry** out_entry,
                         SimpleEntryStat* out_entry_stat,
                         int* out_result);
@@ -69,6 +70,7 @@ class SimpleSynchronousEntry {
   static void CreateEntry(const base::FilePath& path,
                           const std::string& key,
                           uint64 entry_hash,
+                          bool had_index,
                           SimpleSynchronousEntry** out_entry,
                           SimpleEntryStat* out_entry_stat,
                           int* out_result);
@@ -121,15 +123,21 @@ class SimpleSynchronousEntry {
   // called.
   ~SimpleSynchronousEntry();
 
-  bool OpenOrCreateFiles(bool create, SimpleEntryStat* out_entry_stat);
+  bool OpenOrCreateFiles(bool create,
+                         bool had_index,
+                         SimpleEntryStat* out_entry_stat);
   void CloseFiles();
 
-  // Returns a net::Error, i.e. net::OK on success.
-  int InitializeForOpen(SimpleEntryStat* out_entry_stat);
+  // Returns a net error, i.e. net::OK on success.  |had_index| is passed
+  // from the main entry for metrics purposes, and is true if the index was
+  // initialized when the open operation began.
+  int InitializeForOpen(bool had_index, SimpleEntryStat* out_entry_stat);
 
-  // Returns a net::Error, including net::OK on success and net::FILE_EXISTS
-  // when the entry already exists.
-  int InitializeForCreate(SimpleEntryStat* out_entry_stat);
+  // Returns a net error, including net::OK on success and net::FILE_EXISTS
+  // when the entry already exists.  |had_index| is passed from the main entry
+  // for metrics purposes, and is true if the index was initialized when the
+  // create operation began.
+  int InitializeForCreate(bool had_index, SimpleEntryStat* out_entry_stat);
 
   void Doom() const;
 

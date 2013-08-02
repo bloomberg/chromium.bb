@@ -122,6 +122,9 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // Returns number of indexed entries.
   int32 GetEntryCount() const;
 
+  // Returns whether the index has been initialized yet.
+  bool initialized() const { return initialized_; }
+
  private:
   friend class SimpleIndexTest;
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, IndexSizeCorrectOnMerge);

@@ -186,9 +186,12 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
                              bool truncate,
                              const CompletionCallback& callback);
 
-  void OpenEntryInternal(const CompletionCallback& callback, Entry** out_entry);
+  void OpenEntryInternal(bool have_index,
+                         const CompletionCallback& callback,
+                         Entry** out_entry);
 
-  void CreateEntryInternal(const CompletionCallback& callback,
+  void CreateEntryInternal(bool have_index,
+                           const CompletionCallback& callback,
                            Entry** out_entry);
 
   void CloseInternal();

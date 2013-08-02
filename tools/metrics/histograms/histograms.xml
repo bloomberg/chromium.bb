@@ -13257,29 +13257,95 @@ other types of suffix sets.
 <histogram name="SimpleCache.SyncCreatePlatformFileError"
     enum="PlatformFileError">
   <summary>
-    The platform error of attempting to create a new cache entry.
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncCreatePlatformFileError_WithIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncCreatePlatformFileError_WithoutIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has not yet initialized.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.SyncCreateResult"
     enum="SimpleCacheSyncCreateResult">
   <summary>
-    The result, at the synchronous layer, of attempting to create a new cache
-    entry.
+    The result, at the synchronous layer, reported when attempting to create a
+    new cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncCreateResult_WithIndex"
+    enum="SimpleCacheSyncCreateResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to create a
+    new cache entry when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncCreateResult_WithoutIndex"
+    enum="SimpleCacheSyncCreateResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to create a
+    new cache entry when the index has not yet initialized.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.SyncOpenPlatformFileError"
     enum="PlatformFileError">
   <summary>
-    The platform error of attempting to create a new cache entry.
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncOpenPlatformFileError_WithIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncOpenPlatformFileError_WithoutIndex"
+    enum="PlatformFileError">
+  <summary>
+    The platform error reported when attempting to create a new cache entry at
+    the synchronous layer when the index has not initialized.
   </summary>
 </histogram>
 
 <histogram name="SimpleCache.SyncOpenResult" enum="SimpleCacheSyncOpenResult">
   <summary>
-    The result, at the synchronous layer, of attempting to open a new cache
-    entry.
+    The result, at the synchronous layer, reported when attempting to open a new
+    cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncOpenResult_WithIndex"
+    enum="SimpleCacheSyncOpenResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to open a new
+    cache entry when the index has already initialized.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncOpenResult_WithoutIndex"
+    enum="SimpleCacheSyncOpenResult">
+  <summary>
+    The result, at the synchronous layer, reported when attempting to open a new
+    cache entry when the index has not yet initialized.
   </summary>
 </histogram>
 

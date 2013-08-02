@@ -192,6 +192,7 @@ SimpleEntryImpl::SimpleEntryImpl(const FilePath& path,
 int SimpleEntryImpl::OpenEntry(Entry** out_entry,
                                const CompletionCallback& callback) {
   DCHECK(backend_.get());
+  bool have_index = backend_->index()->initialized();
   // This enumeration is used in histograms, add entries only at end.
   enum OpenEntryIndexEnum {
     INDEX_NOEXIST = 0,
@@ -200,7 +201,7 @@ int SimpleEntryImpl::OpenEntry(Entry** out_entry,
     INDEX_MAX = 3,
   };
   OpenEntryIndexEnum open_entry_index_enum = INDEX_NOEXIST;
-  if (backend_.get()) {
+  if (have_index) {
     if (backend_->index()->Has(entry_hash_))
       open_entry_index_enum = INDEX_HIT;
     else
@@ -215,6 +216,7 @@ int SimpleEntryImpl::OpenEntry(Entry** out_entry,
 
   EnqueueOperation(base::Bind(&SimpleEntryImpl::OpenEntryInternal,
                               this,
+                              have_index,
                               callback,
                               out_entry));
   RunNextOperationIfNeeded();
@@ -225,18 +227,21 @@ int SimpleEntryImpl::CreateEntry(Entry** out_entry,
                                  const CompletionCallback& callback) {
   DCHECK(backend_.get());
   DCHECK_EQ(entry_hash_, simple_util::GetEntryHashKey(key_));
+  bool have_index = backend_->index()->initialized();
   int ret_value = net::ERR_FAILED;
   if (use_optimistic_operations_ &&
       state_ == STATE_UNINITIALIZED && pending_operations_.size() == 0) {
     ReturnEntryToCaller(out_entry);
     EnqueueOperation(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
                                 this,
+                                have_index,
                                 CompletionCallback(),
                                 static_cast<Entry**>(NULL)));
     ret_value = net::OK;
   } else {
     EnqueueOperation(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
                                 this,
+                                have_index,
                                 callback,
                                 out_entry));
     ret_value = net::ERR_IO_PENDING;
@@ -596,7 +601,8 @@ void SimpleEntryImpl::EnqueueWriteOperation(
                                       truncate));
 }
 
-void SimpleEntryImpl::OpenEntryInternal(const CompletionCallback& callback,
+void SimpleEntryImpl::OpenEntryInternal(bool have_index,
+                                        const CompletionCallback& callback,
                                         Entry** out_entry) {
   ScopedOperationRunner operation_runner(this);
   if (state_ == STATE_READY) {
@@ -624,6 +630,7 @@ void SimpleEntryImpl::OpenEntryInternal(const CompletionCallback& callback,
   Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry,
                             path_,
                             entry_hash_,
+                            have_index,
                             sync_entry.get(),
                             entry_stat.get(),
                             result.get());
@@ -638,7 +645,8 @@ void SimpleEntryImpl::OpenEntryInternal(const CompletionCallback& callback,
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
-void SimpleEntryImpl::CreateEntryInternal(const CompletionCallback& callback,
+void SimpleEntryImpl::CreateEntryInternal(bool have_index,
+                                          const CompletionCallback& callback,
                                           Entry** out_entry) {
   ScopedOperationRunner operation_runner(this);
   if (state_ != STATE_UNINITIALIZED) {
@@ -673,6 +681,7 @@ void SimpleEntryImpl::CreateEntryInternal(const CompletionCallback& callback,
                             path_,
                             key_,
                             entry_hash_,
+                            have_index,
                             sync_entry.get(),
                             entry_stat.get(),
                             result.get());
