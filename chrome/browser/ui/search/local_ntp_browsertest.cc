@@ -30,7 +30,8 @@ class LocalNTPTest : public InProcessBrowserTest,
   }
 };
 
-IN_PROC_BROWSER_TEST_F(LocalNTPTest, LocalNTPJavascriptTest) {
+// Flaky: crbug.com/267117
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, DISABLED_LocalNTPJavascriptTest) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
 

@@ -1493,14 +1493,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NavigateBackToNTP) {
   EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
 }
 
-// Flaky on Windows and Mac try bots.
-#if defined(OS_CHROMEOS)
-#define MAYBE_DispatchMVChangeEventWhileNavigatingBackToNTP DispatchMVChangeEventWhileNavigatingBackToNTP
-#else
-#define MAYBE_DispatchMVChangeEventWhileNavigatingBackToNTP DISABLED_DispatchMVChangeEventWhileNavigatingBackToNTP
-#endif
+// Flaky: crbug.com/267119
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       MAYBE_DispatchMVChangeEventWhileNavigatingBackToNTP) {
+                       DISABLED_DispatchMVChangeEventWhileNavigatingBackToNTP) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
@@ -1542,7 +1537,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(1, on_most_visited_change_calls_);
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OnDefaultSearchProviderChanged) {
+// Flaky: crbug.com/267096
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       DISABLED_OnDefaultSearchProviderChanged) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(browser()->profile());
   ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
