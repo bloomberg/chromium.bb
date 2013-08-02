@@ -1,11 +1,11 @@
-layer at (0,0) size 785x1708
+layer at (0,0) size 785x1721
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1708
-  RenderBlock {HTML} at (0,0) size 785x1707.63
-    RenderBody {BODY} at (8,20) size 769x1667.63 [bgcolor=#A6A972]
-      RenderBlock {DIV} at (83.50,0) size 602x1667.63 [bgcolor=#FDFDE9] [border: (1px solid #000000)]
+layer at (0,0) size 785x1721
+  RenderBlock {HTML} at (0,0) size 785x1720.95
+    RenderBody {BODY} at (8,20) size 769x1680.95 [bgcolor=#A6A972]
+      RenderBlock {DIV} at (83.50,0) size 602x1680.95 [bgcolor=#FDFDE9] [border: (1px solid #000000)]
         RenderBlock {DIV} at (1,31) size 600x70
-        RenderBlock {DIV} at (1,114.33) size 600x1481.30
+        RenderBlock {DIV} at (1,114.33) size 600x1494.63
           RenderBlock {P} at (20,0) size 560x80 [color=#333333]
             RenderText {#text} at (0,2) size 520x35
               text run at (0,2) width 520: "We are trying to understand how UVic students perform Shakespeare related research for"
@@ -22,7 +22,7 @@ layer at (0,0) size 785x1708
           RenderBlock {P} at (20,93.33) size 560x20 [color=#333333]
             RenderText {#text} at (0,2) size 463x15
               text run at (0,2) width 463: "Please take the time to carefully review and complete the following questions."
-          RenderBlock {FORM} at (20,138.33) size 560x1309.64
+          RenderBlock {FORM} at (20,138.33) size 560x1322.97
             RenderBlock {H2} at (0,0) size 560x16 [color=#333333]
               RenderText {#text} at (0,0) size 201x16
                 text run at (0,0) width 201: "PERSONAL INFORMATION"
@@ -142,22 +142,22 @@ layer at (0,0) size 785x1708
             RenderBlock (floating) {SPAN} at (0,757.97) size 325x20 [color=#333333]
               RenderText {#text} at (0,2) size 145x15
                 text run at (0,2) width 145: "Your comments on Fig. 1"
-            RenderBlock (floating) {SPAN} at (0,880.64) size 325x20 [color=#333333]
+            RenderBlock (floating) {SPAN} at (0,888.97) size 325x20 [color=#333333]
               RenderText {#text} at (0,2) size 145x15
                 text run at (0,2) width 145: "Your comments on Fig. 2"
-            RenderBlock (floating) {SPAN} at (0,1011.64) size 325x20 [color=#333333]
+            RenderBlock (floating) {SPAN} at (0,1019.97) size 325x20 [color=#333333]
               RenderText {#text} at (0,2) size 145x15
                 text run at (0,2) width 145: "Your comments on Fig. 3"
-            RenderBlock {H2} at (0,1162.64) size 560x16 [color=#333333]
+            RenderBlock {H2} at (0,1170.97) size 560x16 [color=#333333]
               RenderText {#text} at (0,0) size 143x16
                 text run at (0,0) width 143: "OTHER FEEDBACK"
-            RenderBlock (floating) {SPAN} at (0,1188.64) size 325x20 [color=#333333]
+            RenderBlock (floating) {SPAN} at (0,1196.97) size 325x20 [color=#333333]
               RenderText {#text} at (0,2) size 220x15
                 text run at (0,2) width 220: "Please enter any other thoughts here."
-          RenderBlock {P} at (20,1461.30) size 560x20 [color=#333333]
+          RenderBlock {P} at (20,1474.63) size 560x20 [color=#333333]
             RenderText {#text} at (0,2) size 233x15
               text run at (0,2) width 233: "Thank you for your time filling this out."
-        RenderBlock {DIV} at (1,1615.63) size 600x51 [border: (1px dashed #A6A972) none]
+        RenderBlock {DIV} at (1,1628.95) size 600x51 [border: (1px dashed #A6A972) none]
           RenderBlock {SPAN} at (0,16) size 600x20 [color=#333333]
             RenderText {#text} at (247,2) size 106x15
               text run at (247,2) width 106: "\x{A9}2003 Kevin Davis"
@@ -168,15 +168,15 @@ layer at (441,323) size 180x13
 layer at (113,764) size 506x106 clip at (114,765) size 504x104
   RenderTextControl {TEXTAREA} at (0,490.98) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 500x13
-layer at (113,1042) size 506x106 clip at (114,1043) size 504x104
-  RenderTextControl {TEXTAREA} at (0,769.64) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (113,1051) size 506x106 clip at (114,1052) size 504x104
+  RenderTextControl {TEXTAREA} at (0,777.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 500x13
-layer at (113,1173) size 506x106 clip at (114,1174) size 504x104
-  RenderTextControl {TEXTAREA} at (0,900.64) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (113,1182) size 506x106 clip at (114,1183) size 504x104
+  RenderTextControl {TEXTAREA} at (0,908.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 500x13
-layer at (113,1304) size 506x106 clip at (114,1305) size 504x104
-  RenderTextControl {TEXTAREA} at (0,1031.64) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (113,1313) size 506x106 clip at (114,1314) size 504x104
+  RenderTextControl {TEXTAREA} at (0,1039.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 500x13
-layer at (113,1476) size 506x106 clip at (114,1477) size 504x104
-  RenderTextControl {TEXTAREA} at (0,1203.64) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (113,1490) size 506x106 clip at (114,1491) size 504x104
+  RenderTextControl {TEXTAREA} at (0,1216.97) size 506x106 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 500x13

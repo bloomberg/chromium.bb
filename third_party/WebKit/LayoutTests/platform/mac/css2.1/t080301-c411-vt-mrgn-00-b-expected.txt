@@ -9,7 +9,7 @@ layer at (0,0) size 785x869
       RenderTable {TABLE} at (0,34) size 178x811
         RenderTableSection {TBODY} at (0,0) size 178x811
           RenderTableRow {TR} at (0,2) size 178x807
-            RenderTableCell {TD} at (2,21) size 86x769 [bgcolor=#008080] [border: (3px solid #000000)] [r=0 c=0 rs=1 cs=1]
+            RenderTableCell {TD} at (2,2) size 86x806.78 [bgcolor=#008080] [border: (3px solid #000000)] [r=0 c=0 rs=1 cs=1]
               RenderBlock {P} at (3,3) size 80x18 [bgcolor=#FFFF00]
                 RenderText {#text} at (0,0) size 5x18
                   text run at (0,0) width 5: "-"
@@ -45,12 +45,12 @@ layer at (0,0) size 785x869
                 RenderText {#text} at (0,0) size 5x18
                   text run at (0,0) width 5: "-"
               RenderBlock {P} at (3,636.44) size 80x18 [bgcolor=#00FFFF]
+                RenderText {#text} at (40,0) size 5x18
+                  text run at (40,0) width 5: "-"
+              RenderBlock {P} at (3,692.22) size 80x55.78 [bgcolor=#FFA500]
                 RenderText {#text} at (0,0) size 5x18
                   text run at (0,0) width 5: "-"
-              RenderBlock {P} at (3,654.44) size 80x55.78 [bgcolor=#FFA500]
-                RenderText {#text} at (0,0) size 5x18
-                  text run at (0,0) width 5: "-"
-              RenderBlock {P} at (3,710.22) size 80x55.78 [bgcolor=#FFFF00]
+              RenderBlock {P} at (3,748) size 80x55.78 [bgcolor=#FFFF00]
                 RenderText {#text} at (0,38) size 5x18
                   text run at (0,38) width 5: "-"
             RenderTableCell {TD} at (90,2) size 86x806.77 [border: (3px solid #000000)] [r=0 c=1 rs=1 cs=1]
