@@ -573,6 +573,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveSrcAttribute) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestBrowserPluginNotAllowed) {
+#if defined(OS_WIN)
+  // Flaky on XP bots. http://crbug.com/267300
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
+
   TestHelper("testBrowserPluginNotAllowed",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
