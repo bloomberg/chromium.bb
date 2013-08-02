@@ -497,9 +497,6 @@ void HTMLInputElement::updateType()
             document()->updateFocusAppearanceSoon(true /* restore selection */);
     }
 
-    if (ElementShadow* elementShadow = shadowOfParentForDistribution(this))
-        elementShadow->invalidateDistribution();
-
     setChangedSinceLastFormControlChangeEvent(false);
 
     addToRadioButtonGroup();

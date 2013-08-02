@@ -489,6 +489,8 @@ public:
     PassRefPtr<RenderStyle> styleForElementIgnoringPendingStylesheets(Element*);
     PassRefPtr<RenderStyle> styleForPage(int pageIndex);
 
+    void updateDistributionForNodeIfNeeded(Node*);
+
     // Returns true if page box (margin boxes and page borders) is visible.
     bool isPageBoxVisible(int pageIndex);
 
@@ -1042,6 +1044,8 @@ protected:
 private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
+
+    void updateDistributionIfNeeded();
 
     void detachParser();
 

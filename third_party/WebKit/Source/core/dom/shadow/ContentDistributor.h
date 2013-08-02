@@ -102,13 +102,6 @@ private:
 class ContentDistributor {
     WTF_MAKE_NONCOPYABLE(ContentDistributor);
 public:
-    enum Validity {
-        Valid = 0,
-        Invalidated = 1,
-        Invalidating = 2,
-        Undetermined = 3
-    };
-
     ContentDistributor();
     ~ContentDistributor();
 
@@ -118,38 +111,23 @@ public:
     void distributeSelectionsTo(InsertionPoint*, const Vector<Node*>& pool, Vector<bool>& distributed);
     void distributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
 
-    void invalidateDistribution(Element* host);
-    void didShadowBoundaryChange(Element* host);
     void didAffectSelector(Element* host, AffectedSelectorMask);
     void willAffectSelector(Element* host);
 
-    bool needsDistribution() const;
     void distribute(Element* host);
 
 private:
-    bool invalidate(Element* host, Vector<Node*, 8>& nodesNeedingReattach);
     void populate(Node*, Vector<Node*>&);
 
     void collectSelectFeatureSetFrom(ShadowRoot*);
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
     void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
 
-    void setValidity(Validity validity) { m_validity = validity; }
-    bool isValid() const { return m_validity == Valid; }
-    bool needsInvalidation() const { return m_validity != Invalidated; }
-
     typedef HashMap<const Node*, RefPtr<InsertionPoint> > NodeInsertionPointMap;
     NodeInsertionPointMap m_nodeToInsertionPoint;
     SelectRuleFeatureSet m_selectFeatures;
-    unsigned m_needsSelectFeatureSet : 1;
-    unsigned m_validity : 2;
+    bool m_needsSelectFeatureSet;
 };
-
-inline bool ContentDistributor::needsDistribution() const
-{
-    // During the invalidation, re-distribution should be supressed.
-    return m_validity != Valid && m_validity != Invalidating;
-}
 
 }
 

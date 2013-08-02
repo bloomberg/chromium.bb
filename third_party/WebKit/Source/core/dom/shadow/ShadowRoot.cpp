@@ -273,11 +273,11 @@ void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
 
 void ShadowRoot::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
-    if (isOrphan())
-        return;
-
     ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-    owner()->invalidateDistribution();
+    if (InsertionPoint* point = insertionPoint()) {
+        if (ShadowRoot* root = point->containingShadowRoot())
+            root->owner()->setNeedsDistributionRecalc();
+    }
 }
 
 void ShadowRoot::registerScopedHTMLStyleChild()

@@ -38,8 +38,8 @@ ShadowRoot* ElementShadow::addShadowRoot(Element* shadowHost, ShadowRoot::Shadow
     shadowRoot->setParentOrShadowHostNode(shadowHost);
     shadowRoot->setParentTreeScope(shadowHost->treeScope());
     m_shadowRoots.push(shadowRoot.get());
-    m_distributor.didShadowBoundaryChange(shadowHost);
     ChildNodeInsertionNotifier(shadowHost).notify(shadowRoot.get());
+    setNeedsDistributionRecalc();
 
     if (shadowHost->attached())
         shadowHost->lazyReattach();
@@ -68,14 +68,10 @@ void ElementShadow::removeAllShadowRoots()
         oldRoot->setNext(0);
         ChildNodeRemovalNotifier(shadowHost).notify(oldRoot.get());
     }
-
-    m_distributor.invalidateDistribution(shadowHost);
 }
 
 void ElementShadow::attach(const Node::AttachContext& context)
 {
-    host()->ensureDistribution();
-
     Node::AttachContext childrenContext(context);
     childrenContext.resolvedStyle = 0;
 
@@ -102,6 +98,12 @@ void ElementShadow::removeAllEventListeners()
         for (Node* node = root; node; node = NodeTraversal::next(node))
             node->removeAllEventListeners();
     }
+}
+
+void ElementShadow::setNeedsDistributionRecalc()
+{
+    m_needsDistributionRecalc = true;
+    host()->markAncestorsWithChildNeedsDistributionRecalc();
 }
 
 } // namespace

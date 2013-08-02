@@ -899,7 +899,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
 {
     if (ElementShadow* parentElementShadow = shadowOfParentForDistribution(this)) {
         if (shouldInvalidateDistributionWhenAttributeChanged(parentElementShadow, name, newValue))
-            parentElementShadow->invalidateDistribution();
+            parentElementShadow->setNeedsDistributionRecalc();
     }
 
     parseAttribute(name, newValue);
@@ -1739,7 +1739,7 @@ void Element::childrenChanged(bool changedByParser, Node* beforeChange, Node* af
         checkForSiblingStyleChanges(this, renderStyle(), false, beforeChange, afterChange, childCountDelta);
 
     if (ElementShadow* shadow = this->shadow())
-        shadow->invalidateDistribution();
+        shadow->setNeedsDistributionRecalc();
 }
 
 void Element::removeAllEventListeners()

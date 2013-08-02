@@ -54,7 +54,7 @@ public:
     void clearDistribution() { m_distribution.clear(); }
     bool isActive() const;
 
-    PassRefPtr<NodeList> getDistributedNodes() const;
+    PassRefPtr<NodeList> getDistributedNodes();
 
     virtual MatchType matchTypeFor(Node*) { return AlwaysMatches; }
     virtual const CSSSelectorList& selectorList() { return emptySelectorList(); }
@@ -76,6 +76,8 @@ public:
     Node* previousTo(const Node* node) const { return m_distribution.previousTo(node); }
 
     static const CSSSelectorList& emptySelectorList();
+
+    void lazyAttachDistribution(ShouldSetAttached);
 
 protected:
     InsertionPoint(const QualifiedName&, Document*);

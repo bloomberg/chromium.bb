@@ -504,7 +504,6 @@ Document::~Document()
 {
     ASSERT(!renderer());
     ASSERT(m_ranges.isEmpty());
-    ASSERT(!m_styleRecalcTimer.isActive());
     ASSERT(!m_parentTreeScope);
     ASSERT(!hasGuardRefCount());
 
@@ -1538,7 +1537,7 @@ void Document::scheduleStyleRecalc()
     if (m_styleRecalcTimer.isActive())
         return;
 
-    ASSERT(needsStyleRecalc() || childNeedsStyleRecalc());
+    ASSERT(needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc());
 
     m_styleRecalcTimer.startOneShot(0);
 
@@ -1566,6 +1565,29 @@ void Document::styleRecalcTimerFired(Timer<Document>*)
     updateStyleIfNeeded();
 }
 
+void Document::updateDistributionIfNeeded()
+{
+    if (!childNeedsDistributionRecalc())
+        return;
+    TRACE_EVENT0("webkit", "Document::recalcDistribution");
+    recalcDistribution();
+}
+
+void Document::updateDistributionForNodeIfNeeded(Node* node)
+{
+    if (node->inDocument()) {
+        updateDistributionIfNeeded();
+        return;
+    }
+    Node* root = node;
+    while (Node* host = root->shadowHost())
+        root = host;
+    while (Node* ancestor = root->parentOrShadowHostNode())
+        root = ancestor;
+    if (root->childNeedsDistributionRecalc())
+        root->recalcDistribution();
+}
+
 void Document::recalcStyle(StyleChange change)
 {
     // we should not enter style recalc while painting
@@ -1578,6 +1600,8 @@ void Document::recalcStyle(StyleChange change)
 
     TRACE_EVENT0("webkit", "Document::recalcStyle");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "RecalcStyle");
+
+    updateDistributionIfNeeded();
 
     // FIXME: We should update style on our ancestor chain before proceeding (especially for seamless),
     // however doing so currently causes several tests to crash, as Frame::setDocument calls Document::attach
@@ -1678,7 +1702,7 @@ void Document::updateStyleIfNeeded()
     ASSERT(isMainThread());
     ASSERT(!view() || (!view()->isInLayout() && !view()->isPainting()));
 
-    if (!needsStyleRecalc() && !childNeedsStyleRecalc())
+    if (!needsStyleRecalc() && !childNeedsStyleRecalc() && !childNeedsDistributionRecalc())
         return;
 
     AnimationUpdateBlock animationUpdateBlock(m_frame ? m_frame->animation() : 0);

@@ -391,6 +391,13 @@ public:
         clearFlag(NotifyRendererWithIdenticalStyles);
     }
 
+    bool childNeedsDistributionRecalc() const { return getFlag(ChildNeedsDistributionRecalc); }
+    void setChildNeedsDistributionRecalc()  { setFlag(ChildNeedsDistributionRecalc); }
+    void clearChildNeedsDistributionRecalc()  { clearFlag(ChildNeedsDistributionRecalc); }
+    void markAncestorsWithChildNeedsDistributionRecalc();
+
+    void recalcDistribution();
+
     bool shouldNotifyRendererWithIdenticalStyles() const { return getFlag(NotifyRendererWithIdenticalStyles); }
 
     void setIsLink(bool f) { setFlag(f, IsLinkFlag); }
@@ -753,10 +760,12 @@ private:
         CustomElementIsUpgradeCandidateOrUpgraded = 1 << 27,
         CustomElementHasDefinitionOrIsUpgraded = 1 << 28,
 
+        ChildNeedsDistributionRecalc = 1 << 29,
+
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };
 
-    // 3 bits remaining
+    // 2 bits remaining
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }

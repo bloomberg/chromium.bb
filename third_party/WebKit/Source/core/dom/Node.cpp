@@ -67,6 +67,7 @@
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/WheelEvent.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -762,6 +763,34 @@ inline static ShadowRoot* oldestShadowRootFor(const Node* node)
     return 0;
 }
 
+void Node::recalcDistribution()
+{
+    if (isElementNode()) {
+        if (ElementShadow* shadow = toElement(this)->shadow())
+            shadow->distributeIfNeeded();
+    }
+
+    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+        if (child->childNeedsDistributionRecalc())
+            child->recalcDistribution();
+    }
+
+    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+        if (root->childNeedsDistributionRecalc())
+            root->recalcDistribution();
+    }
+
+    clearChildNeedsDistributionRecalc();
+}
+
+void Node::markAncestorsWithChildNeedsDistributionRecalc()
+{
+    for (Node* node = this; node && !node->childNeedsDistributionRecalc(); node = node->parentOrShadowHostNode())
+        node->setChildNeedsDistributionRecalc();
+    if (document()->childNeedsDistributionRecalc())
+        document()->scheduleStyleRecalc();
+}
+
 inline void Node::setStyleChange(StyleChangeType changeType)
 {
     m_nodeFlags = (m_nodeFlags & ~StyleChangeMask) | changeType;
@@ -815,12 +844,18 @@ void Node::lazyAttach(ShouldSetAttached shouldSetAttached)
         attach();
         return;
     }
-    setStyleChange(SubtreeStyleChange);
     markAncestorsWithChildNeedsStyleRecalc();
-    if (shouldSetAttached == DoNotSetAttached)
-        return;
-    for (Node* node = this; node; node = NodeTraversal::next(node, this))
-        node->setAttached();
+    for (Node* node = this; node; node = NodeTraversal::next(node, this)) {
+        node->setStyleChange(SubtreeStyleChange);
+        node->setChildNeedsStyleRecalc();
+        // FIXME: This flag is only used by HTMLFrameElementBase and doesn't look needed.
+        if (shouldSetAttached == SetAttached)
+            node->setAttached();
+        if (isActiveInsertionPoint(node))
+            toInsertionPoint(node)->lazyAttachDistribution(shouldSetAttached);
+        for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
+            root->lazyAttach(shouldSetAttached);
+    }
 }
 
 bool Node::supportsFocus() const

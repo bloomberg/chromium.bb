@@ -49,8 +49,7 @@ void ParentDetails::didTraverseShadowRoot(const ShadowRoot* root)
 
 ContainerNode* parent(const Node* node, ParentDetails* details)
 {
-    // FIXME(morrita): We should ensure shadow tree distribution to be valid here through ContentDistributor::ensureDistribution().
-    // Currently we rely on the caller side since doing it here is expensive.
+    // FIXME: Once everything lazy attaches we should assert that we don't need a distribution recalc here.
     ComposedShadowTreeWalker walker(node, ComposedShadowTreeWalker::CrossUpperBoundary, ComposedShadowTreeWalker::CanStartFromShadowBoundary);
     ContainerNode* found = toContainerNode(walker.traverseParent(walker.get(), details));
     return details->outOfComposition() ? 0 : found;

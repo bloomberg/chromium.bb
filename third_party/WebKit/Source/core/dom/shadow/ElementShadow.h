@@ -61,24 +61,33 @@ public:
 
     void removeAllEventListeners();
 
-    void invalidateDistribution() { m_distributor.invalidateDistribution(host()); }
     void didAffectSelector(AffectedSelectorMask mask) { m_distributor.didAffectSelector(host(), mask); }
     void willAffectSelector() { m_distributor.willAffectSelector(host()); }
     const SelectRuleFeatureSet& ensureSelectFeatureSet() { return m_distributor.ensureSelectFeatureSet(this); }
 
+    // FIXME: Move all callers of this to APIs on ElementShadow and remove it.
     ContentDistributor& distributor() { return m_distributor; }
     const ContentDistributor& distributor() const { return m_distributor; }
 
-    bool needsDistribution() const { return m_distributor.needsDistribution(); }
-    void distribute() { m_distributor.distribute(host()); }
+    void distributeIfNeeded()
+    {
+        if (m_needsDistributionRecalc)
+            m_distributor.distribute(host());
+        m_needsDistributionRecalc = false;
+    }
+
+    void setNeedsDistributionRecalc();
 
 private:
-    ElementShadow() { }
+    ElementShadow()
+        : m_needsDistributionRecalc(false)
+    { }
 
     void removeAllShadowRoots();
 
     DoublyLinkedList<ShadowRoot> m_shadowRoots;
     ContentDistributor m_distributor;
+    bool m_needsDistributionRecalc;
 };
 
 inline Element* ElementShadow::host() const
@@ -94,18 +103,6 @@ inline ShadowRoot* Node::youngestShadowRoot() const
     if (ElementShadow* shadow = toElement(this)->shadow())
         return shadow->youngestShadowRoot();
     return 0;
-}
-
-inline void Element::ensureDistribution()
-{
-    // FIXME: This is effectively a walk down the tree, we should switch it to
-    // be a top down operation like recalcStyle.
-    ElementShadow* shadow = this->shadow();
-    if (!shadow || !shadow->needsDistribution())
-        return;
-    if (Element* host = shadowHost())
-        host->ensureDistribution();
-    shadow->distribute();
 }
 
 inline ElementShadow* ElementShadow::containingShadow() const

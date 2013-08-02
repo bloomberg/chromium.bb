@@ -54,8 +54,6 @@ InsertionPoint::~InsertionPoint()
 
 void InsertionPoint::attach(const AttachContext& context)
 {
-    if (ShadowRoot* shadowRoot = containingShadowRoot())
-        shadowRoot->host()->ensureDistribution();
     for (size_t i = 0; i < m_distribution.size(); ++i) {
         if (!m_distribution.at(i)->attached())
             m_distribution.at(i)->attach(context);
@@ -66,21 +64,24 @@ void InsertionPoint::attach(const AttachContext& context)
 
 void InsertionPoint::detach(const AttachContext& context)
 {
-    if (ShadowRoot* shadowRoot = containingShadowRoot())
-        shadowRoot->host()->ensureDistribution();
-
-    for (size_t i = 0; i < m_distribution.size(); ++i)
-        m_distribution.at(i)->detach(context);
+    for (size_t i = 0; i < m_distribution.size(); ++i) {
+        if (m_distribution.at(i)->attached())
+            m_distribution.at(i)->detach(context);
+    }
 
     HTMLElement::detach(context);
+}
+
+void InsertionPoint::lazyAttachDistribution(ShouldSetAttached shouldSetAttached)
+{
+    for (size_t i = 0; i < m_distribution.size(); ++i)
+        m_distribution.at(i)->lazyAttach(shouldSetAttached);
 }
 
 void InsertionPoint::willRecalcStyle(StyleChange change)
 {
     if (change < Inherit)
         return;
-    if (ShadowRoot* shadowRoot = containingShadowRoot())
-        shadowRoot->host()->ensureDistribution();
     for (size_t i = 0; i < m_distribution.size(); ++i)
         m_distribution.at(i)->setNeedsStyleRecalc(LocalStyleChange);
 }
@@ -104,13 +105,11 @@ bool InsertionPoint::isActive() const
     return true;
 }
 
-PassRefPtr<NodeList> InsertionPoint::getDistributedNodes() const
+PassRefPtr<NodeList> InsertionPoint::getDistributedNodes()
 {
-    if (ShadowRoot* shadowRoot = containingShadowRoot())
-        shadowRoot->host()->ensureDistribution();
+    document()->updateDistributionForNodeIfNeeded(this);
 
     Vector<RefPtr<Node> > nodes;
-
     for (size_t i = 0; i < m_distribution.size(); ++i)
         nodes.append(m_distribution.at(i));
 
@@ -125,9 +124,10 @@ bool InsertionPoint::rendererIsNeeded(const NodeRenderingContext& context)
 void InsertionPoint::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-    if (ShadowRoot* root = containingShadowRoot())
+    if (ShadowRoot* root = containingShadowRoot()) {
         if (ElementShadow* rootOwner = root->owner())
-            rootOwner->invalidateDistribution();
+            rootOwner->setNeedsDistributionRecalc();
+    }
 }
 
 Node::InsertionNotificationRequest InsertionPoint::insertedInto(ContainerNode* insertionPoint)
@@ -136,7 +136,7 @@ Node::InsertionNotificationRequest InsertionPoint::insertedInto(ContainerNode* i
 
     if (ShadowRoot* root = containingShadowRoot()) {
         if (ElementShadow* rootOwner = root->owner()) {
-            rootOwner->distributor().didShadowBoundaryChange(root->host());
+            rootOwner->setNeedsDistributionRecalc();
             if (isActive() && !m_registeredWithShadowRoot && insertionPoint->treeScope()->rootNode() == root) {
                 m_registeredWithShadowRoot = true;
                 root->ensureScopeDistribution()->registerInsertionPoint(this);
@@ -155,10 +155,13 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
     if (!root)
         root = insertionPoint->containingShadowRoot();
 
+    if (root) {
+        if (ElementShadow* rootOwner = root->owner())
+            rootOwner->setNeedsDistributionRecalc();
+    }
+
     // host can be null when removedFrom() is called from ElementShadow destructor.
     ElementShadow* rootOwner = root ? root->owner() : 0;
-    if (rootOwner)
-        rootOwner->invalidateDistribution();
 
     // Since this insertion point is no longer visible from the shadow subtree, it need to clean itself up.
     clearDistribution();
@@ -207,9 +210,6 @@ InsertionPoint* resolveReprojection(const Node* projectedNode)
 
     while (current) {
         if (ElementShadow* shadow = shadowOfParentForDistribution(current)) {
-            shadow->host()->ensureDistribution();
-            if (ShadowRoot* root = current->containingShadowRoot())
-                root->host()->ensureDistribution();
             if (InsertionPoint* insertedTo = shadow->distributor().findInsertionPointFor(projectedNode)) {
                 current = insertedTo;
                 insertionPoint = insertedTo;
@@ -236,8 +236,6 @@ void collectInsertionPointsWhereNodeIsDistributed(const Node* node, Vector<Inser
     const Node* current = node;
     while (true) {
         if (ElementShadow* shadow = shadowOfParentForDistribution(current)) {
-            if (ShadowRoot* root = current->containingShadowRoot())
-                root->host()->ensureDistribution();
             if (InsertionPoint* insertedTo = shadow->distributor().findInsertionPointFor(node)) {
                 current = insertedTo;
                 results.append(insertedTo);

@@ -443,7 +443,6 @@ public:
     ElementShadow* ensureShadow();
     PassRefPtr<ShadowRoot> createShadowRoot(ExceptionCode&);
     ShadowRoot* shadowRoot() const;
-    void ensureDistribution();
 
     bool hasAuthorShadowRoot() const { return shadowRoot(); }
 
@@ -963,6 +962,8 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
         setFlag(InDocumentFlag);
     if (parentOrShadowHostNode()->isInShadowTree())
         setFlag(IsInShadowTreeFlag);
+    if (childNeedsDistributionRecalc() && !insertionPoint->childNeedsDistributionRecalc())
+        insertionPoint->markAncestorsWithChildNeedsDistributionRecalc();
     return InsertionDone;
 }
 
