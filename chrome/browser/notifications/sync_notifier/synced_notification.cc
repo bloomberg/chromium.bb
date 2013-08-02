@@ -21,7 +21,7 @@
 #include "ui/message_center/notification_types.h"
 
 namespace {
-const char kExtensionScheme[] = "chrome-extension://";
+const char kExtensionScheme[] = "synced-notification://";
 const char kDefaultSyncedNotificationScheme[] = "https:";
 
 // The name of our first synced notification service.
@@ -203,7 +203,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
   string16 description = UTF8ToUTF16(GetDescription());
   string16 annotation = UTF8ToUTF16(GetAnnotation());
   // TODO(petewil): Eventually put the display name of the sending service here.
-  string16 display_source = UTF8ToUTF16(GetOriginUrl().spec());
+  string16 display_source = UTF8ToUTF16(GetAppId());
   string16 replace_key = UTF8ToUTF16(GetKey());
   string16 notification_heading = heading;
   string16 notification_text = text;

@@ -49,7 +49,7 @@ const char kImageUrl5[] = "http://www.google.com/image5.jpg";
 const char kImageUrl6[] = "http://www.google.com/image6.jpg";
 const char kImageUrl7[] = "http://www.google.com/image7.jpg";
 const char kExpectedOriginUrl[] =
-    "chrome-extension://fboilmbenheemaomgaeehigklolhkhnf/";
+    "synced-notification://fboilmbenheemaomgaeehigklolhkhnf";
 const char kDefaultDestinationTitle[] = "Open web page";
 const char kDefaultDestinationIconUrl[] = "http://www.google.com/image4.jpg";
 const char kDefaultDestinationUrl[] = "chrome://flags";
