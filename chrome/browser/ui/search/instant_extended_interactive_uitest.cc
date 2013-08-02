@@ -330,7 +330,7 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ExtendedModeIsOn) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  EXPECT_TRUE(instant()->extended_enabled_);
+  EXPECT_TRUE(chrome::IsInstantExtendedAPIEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NTPIsPreloaded) {

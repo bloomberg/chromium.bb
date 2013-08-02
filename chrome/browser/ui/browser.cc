@@ -404,7 +404,7 @@ Browser::Browser(const CreateParams& params)
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs());
 
-  if (is_type_tabbed())
+  if (chrome::IsInstantExtendedAPIEnabled() && is_type_tabbed())
     instant_controller_.reset(new BrowserInstantController(this));
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);

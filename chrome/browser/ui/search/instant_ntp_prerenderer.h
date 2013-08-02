@@ -75,7 +75,6 @@ class InstantNTPPrerenderer
 
   // Accessors are made protected for testing purposes.
   virtual InstantNTP* ntp() const;
-  virtual bool extended_enabled() const;
 
   Profile* profile() const {
     return profile_;
@@ -154,9 +153,6 @@ class InstantNTPPrerenderer
   bool ShouldSwitchToLocalNTP() const;
 
   Profile* profile_;
-
-  // Whether the extended API is enabled.
-  const bool extended_enabled_;
 
   // Preloaded InstantNTP.
   scoped_ptr<InstantNTP> ntp_;

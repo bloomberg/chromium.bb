@@ -103,10 +103,8 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
 
 }  // namespace
 
-InstantController::InstantController(BrowserInstantController* browser,
-                                     bool extended_enabled)
+InstantController::InstantController(BrowserInstantController* browser)
     : browser_(browser),
-      extended_enabled_(extended_enabled),
       omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
       omnibox_focus_change_reason_(OMNIBOX_FOCUS_CHANGE_EXPLICIT),
       omnibox_bounds_(-1, -1, 0, 0) {
@@ -116,7 +114,7 @@ InstantController::~InstantController() {
 }
 
 void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
-  if (!extended_enabled() || omnibox_bounds_ == bounds)
+  if (omnibox_bounds_ == bounds)
     return;
 
   omnibox_bounds_ = bounds;
@@ -130,7 +128,7 @@ void InstantController::ToggleVoiceSearch() {
 }
 
 void InstantController::InstantPageLoadFailed(content::WebContents* contents) {
-  if (!chrome::ShouldPreferRemoteNTPOnStartup() || !extended_enabled()) {
+  if (!chrome::ShouldPreferRemoteNTPOnStartup()) {
     // We only need to fall back on errors if we're showing the online page
     // at startup, as otherwise we fall back correctly when trying to show
     // a page that hasn't yet indicated that it supports the InstantExtended
@@ -161,7 +159,7 @@ void InstantController::InstantPageLoadFailed(content::WebContents* contents) {
 }
 
 bool InstantController::SubmitQuery(const string16& search_terms) {
-  if (extended_enabled() && instant_tab_ && instant_tab_->supports_instant() &&
+  if (instant_tab_ && instant_tab_->supports_instant() &&
       search_mode_.is_origin_search()) {
     // Use |instant_tab_| to run the query if we're already on a search results
     // page. (NOTE: in particular, we do not send the query to NTPs.)
@@ -182,7 +180,7 @@ void InstantController::OmniboxFocusChanged(
       state, reason));
 
   omnibox_focus_state_ = state;
-  if (!extended_enabled() || !instant_tab_)
+  if (!instant_tab_)
     return;
 
   content::NotificationService::current()->Notify(
@@ -200,9 +198,6 @@ void InstantController::OmniboxFocusChanged(
 
 void InstantController::SearchModeChanged(const SearchMode& old_mode,
                                           const SearchMode& new_mode) {
-  if (!extended_enabled())
-    return;
-
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
       "SearchModeChanged: [origin:mode] %d:%d to %d:%d", old_mode.origin,
       old_mode.mode, new_mode.origin, new_mode.mode));
@@ -215,9 +210,6 @@ void InstantController::SearchModeChanged(const SearchMode& old_mode,
 }
 
 void InstantController::ActiveTabChanged() {
-  if (!extended_enabled())
-    return;
-
   LOG_INSTANT_DEBUG_EVENT(this, "ActiveTabChanged");
   ResetInstantTab();
 }
@@ -314,9 +306,6 @@ void InstantController::InstantPageAboutToNavigateMainFrame(
 
 void InstantController::FocusOmnibox(const content::WebContents* contents,
                                      OmniboxFocusState state) {
-  if (!extended_enabled())
-    return;
-
   DCHECK(IsContentsFrom(instant_tab(), contents));
 
   // Do not add a default case in the switch block for the following reasons:
@@ -351,9 +340,6 @@ void InstantController::NavigateToURL(const content::WebContents* contents,
 
   // TODO(samarth): handle case where contents are no longer "active" (e.g. user
   // has switched tabs).
-  if (!extended_enabled())
-    return;
-
   if (transition == content::PAGE_TRANSITION_AUTO_BOOKMARK) {
     content::RecordAction(
         content::UserMetricsAction("InstantExtended.MostVisitedClicked"));
@@ -363,10 +349,6 @@ void InstantController::NavigateToURL(const content::WebContents* contents,
       RecordNavigationHistogram(UsingLocalPage(), true, true);
   }
   browser_->OpenURL(url, transition, disposition);
-}
-
-bool InstantController::extended_enabled() const {
-  return extended_enabled_;
 }
 
 void InstantController::ResetInstantTab() {

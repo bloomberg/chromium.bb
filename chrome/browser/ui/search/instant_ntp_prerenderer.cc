@@ -46,8 +46,7 @@ void DeleteNTPSoon(scoped_ptr<InstantNTP> ntp) {
 
 InstantNTPPrerenderer::InstantNTPPrerenderer(Profile* profile,
                                              PrefService* prefs)
-    : profile_(profile),
-      extended_enabled_(chrome::IsInstantExtendedAPIEnabled()) {
+    : profile_(profile) {
   DCHECK(profile);
 
   // In unit tests, prefs may be NULL.
@@ -75,7 +74,7 @@ void InstantNTPPrerenderer::PreloadInstantNTP() {
 }
 
 scoped_ptr<content::WebContents> InstantNTPPrerenderer::ReleaseNTPContents() {
-  if (!extended_enabled() || !profile_ || profile_->IsOffTheRecord() ||
+  if (!profile_ || profile_->IsOffTheRecord() ||
       !chrome::ShouldShowInstantNTP())
     return scoped_ptr<content::WebContents>();
 
@@ -169,17 +168,10 @@ InstantNTP* InstantNTPPrerenderer::ntp() const {
   return ntp_.get();
 }
 
-bool InstantNTPPrerenderer::extended_enabled() const {
-  return extended_enabled_;
-}
-
 void InstantNTPPrerenderer::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   // Not interested in events conveying change to offline.
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
-    return;
-
-  if (!extended_enabled())
     return;
 
   if (!ntp() || ntp()->IsLocal())
@@ -248,7 +240,7 @@ void InstantNTPPrerenderer::InstantPageLoadFailed(
 void InstantNTPPrerenderer::OnDefaultSearchProviderChanged(
     const std::string& pref_name) {
   DCHECK_EQ(pref_name, std::string(prefs::kDefaultSearchProviderID));
-  if (!extended_enabled() || !ntp())
+  if (!ntp())
     return;
 
   ResetNTP(GetInstantURL());
@@ -264,9 +256,6 @@ void InstantNTPPrerenderer::ResetNTP(const std::string& instant_url) {
 }
 
 void InstantNTPPrerenderer::ReloadStaleNTP() {
-  if (!extended_enabled())
-    return;
-
   ResetNTP(GetInstantURL());
 }
 
@@ -290,7 +279,7 @@ bool InstantNTPPrerenderer::ShouldSwitchToLocalNTP() const {
 
   // Already a local page. Not calling IsLocal() because we want to distinguish
   // between the Google-specific and generic local NTP.
-  if (extended_enabled() && ntp()->instant_url() == GetLocalInstantURL())
+  if (ntp()->instant_url() == GetLocalInstantURL())
     return false;
 
   if (PageIsCurrent())

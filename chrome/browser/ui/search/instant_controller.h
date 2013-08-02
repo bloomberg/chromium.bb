@@ -48,8 +48,7 @@ class WebContents;
 // InstantController is owned by Browser via BrowserInstantController.
 class InstantController : public InstantPage::Delegate {
  public:
-  InstantController(BrowserInstantController* browser,
-                    bool extended_enabled);
+  explicit InstantController(BrowserInstantController* browser);
   virtual ~InstantController();
 
   // Sets the stored start-edge margin and width of the omnibox.
@@ -100,8 +99,6 @@ class InstantController : public InstantPage::Delegate {
 
  protected:
   // Accessors are made protected for testing purposes.
-  virtual bool extended_enabled() const;
-
   virtual InstantTab* instant_tab() const;
 
   virtual Profile* profile() const;
@@ -197,10 +194,6 @@ class InstantController : public InstantPage::Delegate {
   InstantService* GetInstantService() const;
 
   BrowserInstantController* const browser_;
-
-  // Whether the extended API and regular API are enabled. If both are false,
-  // Instant is effectively disabled.
-  const bool extended_enabled_;
 
   // The instance of InstantPage maintained by InstantController.
   scoped_ptr<InstantTab> instant_tab_;

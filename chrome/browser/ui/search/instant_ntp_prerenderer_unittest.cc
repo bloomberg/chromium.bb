@@ -65,7 +65,6 @@ class TestableInstantNTPPrerenderer : public InstantNTPPrerenderer {
   explicit TestableInstantNTPPrerenderer(TestingProfile* profile)
       : InstantNTPPrerenderer(profile, NULL),
         test_instant_url_("http://test_url"),
-        test_extended_enabled_(true),
         override_javascript_enabled_(true),
         test_javascript_enabled_(true),
         test_in_startup_(false),
@@ -78,10 +77,6 @@ class TestableInstantNTPPrerenderer : public InstantNTPPrerenderer {
 
   virtual std::string GetLocalInstantURL() const OVERRIDE {
     return "http://local_instant_url";
-  }
-
-  virtual bool extended_enabled() const OVERRIDE {
-    return test_extended_enabled_;
   }
 
   virtual InstantNTP* ntp() const OVERRIDE {
@@ -103,10 +98,6 @@ class TestableInstantNTPPrerenderer : public InstantNTPPrerenderer {
     test_instant_url_ = instant_url;
   }
 
-  void set_extended_enabled(bool extended_enabled) {
-    test_extended_enabled_ = extended_enabled;
-  }
-
   void set_ntp(InstantNTP* ntp) {
     test_ntp_ = ntp;
   }
@@ -126,7 +117,6 @@ class TestableInstantNTPPrerenderer : public InstantNTPPrerenderer {
 
 private:
   std::string test_instant_url_;
-  bool test_extended_enabled_;
   bool override_javascript_enabled_;
   bool test_javascript_enabled_;
   bool test_in_startup_;
@@ -138,6 +128,7 @@ class InstantNTPPrerendererTest : public testing::Test {
   InstantNTPPrerendererTest()
       : instant_ntp_prerenderer_(new TestableInstantNTPPrerenderer(&profile_)) {
     base::StatisticsRecorder::Initialize();
+    chrome::EnableInstantExtendedAPIForTesting();
   }
 
   TestableInstantNTPPrerenderer* instant_ntp_prerenderer() {
@@ -161,7 +152,6 @@ TEST_F(InstantNTPPrerendererTest, PrefersRemoteNTPOnStartup) {
   ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
   instant_ntp_prerenderer()->set_javascript_enabled(true);
-  instant_ntp_prerenderer()->set_extended_enabled(true);
   instant_ntp_prerenderer()->set_instant_url(instant_url);
   ntp->set_instant_url(instant_url);
   ntp->set_supports_instant(false);
@@ -179,7 +169,6 @@ TEST_F(InstantNTPPrerendererTest, SwitchesToLocalNTPIfNoInstantSupport) {
   ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
   instant_ntp_prerenderer()->set_javascript_enabled(true);
-  instant_ntp_prerenderer()->set_extended_enabled(true);
   instant_ntp_prerenderer()->set_instant_url(instant_url);
   ntp->set_instant_url(instant_url);
   ntp->set_supports_instant(false);
@@ -196,7 +185,6 @@ TEST_F(InstantNTPPrerendererTest, SwitchesToLocalNTPIfPathBad) {
   ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
   instant_ntp_prerenderer()->set_javascript_enabled(true);
-  instant_ntp_prerenderer()->set_extended_enabled(true);
   instant_ntp_prerenderer()->set_instant_url("http://bogus_url");
   ntp->set_instant_url(instant_url);
   ntp->set_supports_instant(true);
@@ -213,7 +201,6 @@ TEST_F(InstantNTPPrerendererTest, DoesNotSwitchToLocalNTPIfOnCurrentNTP) {
   ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
   instant_ntp_prerenderer()->set_javascript_enabled(true);
-  instant_ntp_prerenderer()->set_extended_enabled(true);
   instant_ntp_prerenderer()->set_instant_url(instant_url);
   ntp->set_instant_url(instant_url);
   ntp->set_supports_instant(true);
@@ -230,7 +217,6 @@ TEST_F(InstantNTPPrerendererTest, DoesNotSwitchToLocalNTPIfOnLocalNTP) {
   ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
   instant_ntp_prerenderer()->set_javascript_enabled(true);
-  instant_ntp_prerenderer()->set_extended_enabled(true);
   instant_ntp_prerenderer()->set_instant_url(instant_url);
   ntp->set_instant_url("http://local_instant_url");
   ntp->set_supports_instant(true);
@@ -247,7 +233,6 @@ TEST_F(InstantNTPPrerendererTest, SwitchesToLocalNTPIfJSDisabled) {
   ntp->set_is_local(false);
   instant_ntp_prerenderer()->set_ntp(ntp.get());
   instant_ntp_prerenderer()->set_javascript_enabled(false);
-  instant_ntp_prerenderer()->set_extended_enabled(true);
   instant_ntp_prerenderer()->set_instant_url(instant_url);
   ntp->set_instant_url("http://local_instant_url");
   ntp->set_supports_instant(true);

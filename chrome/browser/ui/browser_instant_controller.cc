@@ -38,7 +38,7 @@ using content::UserMetricsAction;
 
 BrowserInstantController::BrowserInstantController(Browser* browser)
     : browser_(browser),
-      instant_(this, chrome::IsInstantExtendedAPIEnabled()),
+      instant_(this),
       instant_unload_handler_(browser) {
   profile_pref_registrar_.Init(profile()->GetPrefs());
   profile_pref_registrar_.Add(
@@ -206,15 +206,13 @@ void BrowserInstantController::ModelChanged(
   if (old_state.mode != new_state.mode) {
     const SearchMode& new_mode = new_state.mode;
 
-    if (chrome::IsInstantExtendedAPIEnabled()) {
-      // Record some actions corresponding to the mode change. Note that to get
-      // the full story, it's necessary to look at other UMA actions as well,
-      // such as tab switches.
-      if (new_mode.is_search_results())
-        content::RecordAction(UserMetricsAction("InstantExtended.ShowSRP"));
-      else if (new_mode.is_ntp())
-        content::RecordAction(UserMetricsAction("InstantExtended.ShowNTP"));
-    }
+    // Record some actions corresponding to the mode change. Note that to get
+    // the full story, it's necessary to look at other UMA actions as well,
+    // such as tab switches.
+    if (new_mode.is_search_results())
+      content::RecordAction(UserMetricsAction("InstantExtended.ShowSRP"));
+    else if (new_mode.is_ntp())
+      content::RecordAction(UserMetricsAction("InstantExtended.ShowNTP"));
 
     instant_.SearchModeChanged(old_state.mode, new_mode);
   }

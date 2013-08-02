@@ -2435,7 +2435,7 @@
             'browser/ui/browser_iterator_unittest.cc',
             'browser/ui/fullscreen/fullscreen_controller_state_unittest.cc',
             'browser/ui/fullscreen/fullscreen_controller_unittest.cc',
-            'browser/ui/search/instant_controller_unittest.cc',
+            'browser/ui/search/instant_ntp_prerenderer_unittest.cc',
             'browser/ui/search/instant_page_unittest.cc',
             'browser/ui/search/search_delegate_unittest.cc',
             'browser/ui/search/search_model_unittest.cc',

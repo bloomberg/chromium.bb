@@ -480,6 +480,9 @@ int GetInstantLoaderStalenessTimeoutSec() {
 }
 
 bool IsPreloadedInstantExtendedNTP(const content::WebContents* contents) {
+  if (!IsInstantExtendedAPIEnabled())
+    return false;
+
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager)
     return false;  // The profile manager can be NULL while testing.
