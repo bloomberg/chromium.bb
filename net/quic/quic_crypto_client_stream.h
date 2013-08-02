@@ -106,10 +106,14 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   ProofVerifierCallbackImpl* proof_verify_callback_;
 
   // These members are used to store the result of an asynchronous proof
-  // verification.
+  // verification. These members must not be used after
+  // STATE_VERIFY_PROOF_COMPLETE.
   bool verify_ok_;
   string verify_error_details_;
   scoped_ptr<ProofVerifyDetails> verify_details_;
+
+  // The result of certificate verification.
+  scoped_ptr<CertVerifyResult> cert_verify_result_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);
 };

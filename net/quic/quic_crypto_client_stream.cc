@@ -18,6 +18,22 @@
 
 namespace net {
 
+namespace {
+
+// Copies CertVerifyResult from |verify_details| to |cert_verify_result|.
+void CopyCertVerifyResult(
+    const ProofVerifyDetails* verify_details,
+    scoped_ptr<CertVerifyResult>* cert_verify_result) {
+  const CertVerifyResult* cert_verify_result_other =
+      &(reinterpret_cast<const ProofVerifyDetailsChromium*>(
+          verify_details))->cert_verify_result;
+  CertVerifyResult* result_copy = new CertVerifyResult;
+  result_copy->CopyFrom(*cert_verify_result_other);
+  cert_verify_result->reset(result_copy);
+}
+
+}  // namespace
+
 QuicCryptoClientStream::ProofVerifierCallbackImpl::ProofVerifierCallbackImpl(
     QuicCryptoClientStream* stream)
     : stream_(stream) {}
@@ -82,20 +98,16 @@ int QuicCryptoClientStream::num_sent_client_hellos() const {
   return num_client_hellos_;
 }
 
+// TODO(rtenneti): Add unittests for GetSSLInfo which exercise the various ways
+// we learn about SSL info (sync vs async vs cached).
 bool QuicCryptoClientStream::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->Reset();
-  QuicCryptoClientConfig::CachedState* cached =
-      crypto_config_->LookupOrCreate(server_hostname_);
-  DCHECK(cached);
-  if (!cached) {
+  if (!cert_verify_result_) {
     return false;
   }
-  const CertVerifyResult* cert_verify_result =
-      &(reinterpret_cast<const ProofVerifyDetailsChromium*>(
-            cached->proof_verify_details()))->cert_verify_result;
 
-  ssl_info->cert_status = cert_verify_result->cert_status;
-  ssl_info->cert = cert_verify_result->verified_cert;
+  ssl_info->cert_status = cert_verify_result_->cert_status;
+  ssl_info->cert = cert_verify_result_->verified_cert;
 
   // TODO(rtenneti): Figure out what to set for the following.
   // Temporarily hard coded cipher_suite as 0xc031 to represent
@@ -110,9 +122,9 @@ bool QuicCryptoClientStream::GetSSLInfo(SSLInfo* ssl_info) {
       (SSL_CONNECTION_VERSION_TLS1_2 & SSL_CONNECTION_VERSION_MASK) <<
        SSL_CONNECTION_VERSION_SHIFT;
 
-  ssl_info->public_key_hashes = cert_verify_result->public_key_hashes;
+  ssl_info->public_key_hashes = cert_verify_result_->public_key_hashes;
   ssl_info->is_issued_by_known_root =
-      cert_verify_result->is_issued_by_known_root;
+      cert_verify_result_->is_issued_by_known_root;
 
   ssl_info->connection_status = ssl_connection_status;
   ssl_info->client_cert_sent = false;
@@ -178,6 +190,12 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           cached->InvalidateServerConfig();
           CloseConnectionWithDetails(error, error_details);
           return;
+        }
+        if (cached->proof_verify_details()) {
+          CopyCertVerifyResult(cached->proof_verify_details(),
+                               &cert_verify_result_);
+        } else {
+          cert_verify_result_.reset();
         }
         next_state_ = STATE_RECV_SHLO;
         DVLOG(1) << "Client Sending: " << out.DebugString();
@@ -248,7 +266,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             cached->server_config(),
             cached->certs(),
             cached->signature(),
-            &error_details,
+            &verify_error_details_,
             &verify_details_,
             proof_verify_callback);
 
@@ -258,9 +276,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             DVLOG(1) << "Doing VerifyProof";
             return;
           case ProofVerifier::FAILURE:
-            CloseConnectionWithDetails(
-                QUIC_PROOF_INVALID, "Proof invalid: " + error_details);
-            return;
+            break;
           case ProofVerifier::SUCCESS:
             verify_ok_ = true;
             break;
@@ -269,9 +285,10 @@ void QuicCryptoClientStream::DoHandshakeLoop(
       }
       case STATE_VERIFY_PROOF_COMPLETE:
         if (!verify_ok_) {
-            CloseConnectionWithDetails(
-                QUIC_PROOF_INVALID, "Proof invalid: " + verify_error_details_);
-            return;
+          CopyCertVerifyResult(verify_details_.get(), &cert_verify_result_);
+          CloseConnectionWithDetails(
+              QUIC_PROOF_INVALID, "Proof invalid: " + verify_error_details_);
+          return;
         }
         // Check if generation_counter has changed between STATE_VERIFY_PROOF
         // and STATE_VERIFY_PROOF_COMPLETE state changes.
