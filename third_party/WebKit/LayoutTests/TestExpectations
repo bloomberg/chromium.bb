@@ -1397,3 +1397,10 @@ crbug.com/267206 [ Lion MountainLion ] fast/scrolling/scrollbar-tickmarks-hittes
 
 crbug.com/267296 [ Win ] http/tests/htmlimports/import-script-nosniff.html  [ Pass Crash ]
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
+
+
+
+Bug(morrita) compositing/iframes/become-overlapped-iframe.html [ NeedsRebaseline ]
+Bug(morrita) fast/multicol/vertical-rl/float-multicol.html [ NeedsRebaseline ]
+Bug(morrita) fast/multicol/vertical-rl/float-paginate-complex.html [ NeedsRebaseline ]
+Bug(morrita) fast/multicol/vertical-rl/float-paginate.html [ NeedsRebaseline ]
