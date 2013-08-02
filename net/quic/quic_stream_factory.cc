@@ -337,8 +337,7 @@ scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateIfSessionExists(
 
   QuicClientSession* session = active_sessions_[host_port_proxy_pair];
   DCHECK(session);
-  return scoped_ptr<QuicHttpStream>(
-      new QuicHttpStream(session->CreateOutgoingReliableStream()));
+  return scoped_ptr<QuicHttpStream>(new QuicHttpStream(session->GetWeakPtr()));
 }
 
 void QuicStreamFactory::OnIdleSession(QuicClientSession* session) {

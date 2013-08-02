@@ -40,6 +40,45 @@ void RecordHandshakeState(HandshakeState state) {
 
 }  // namespace
 
+QuicClientSession::StreamRequest::StreamRequest() : stream_(NULL) {}
+
+QuicClientSession::StreamRequest::~StreamRequest() {
+  CancelRequest();
+}
+
+int QuicClientSession::StreamRequest::StartRequest(
+    const base::WeakPtr<QuicClientSession> session,
+    QuicReliableClientStream** stream,
+    const CompletionCallback& callback) {
+  session_ = session;
+  stream_ = stream;
+  int rv = session_->TryCreateStream(this, stream_);
+  if (rv == ERR_IO_PENDING) {
+    callback_ = callback;
+  }
+
+  return rv;
+}
+
+void QuicClientSession::StreamRequest::CancelRequest() {
+  if (session_)
+    session_->CancelRequest(this);
+  session_.reset();
+  callback_.Reset();
+}
+
+void QuicClientSession::StreamRequest::OnRequestCompleteSuccess(
+    QuicReliableClientStream* stream) {
+  session_.reset();
+  *stream_ = stream;
+  ResetAndReturn(&callback_).Run(OK);
+}
+
+void QuicClientSession::StreamRequest::OnRequestCompleteFailure(int rv) {
+  session_.reset();
+  ResetAndReturn(&callback_).Run(rv);
+}
+
 QuicClientSession::QuicClientSession(
     QuicConnection* connection,
     DatagramClientSocket* socket,
@@ -75,6 +114,12 @@ QuicClientSession::~QuicClientSession() {
   connection()->set_debug_visitor(NULL);
   net_log_.EndEvent(NetLog::TYPE_QUIC_SESSION);
 
+  while (!stream_requests_.empty()) {
+    StreamRequest* request = stream_requests_.front();
+    stream_requests_.pop_front();
+    request->OnRequestCompleteFailure(ERR_ABORTED);
+  }
+
   if (IsEncryptionEstablished())
     RecordHandshakeState(STATE_ENCRYPTION_ESTABLISHED);
   if (IsCryptoHandshakeConfirmed())
@@ -87,6 +132,42 @@ QuicClientSession::~QuicClientSession() {
   if (IsCryptoHandshakeConfirmed()) {
     UMA_HISTOGRAM_COUNTS("Net.QuicNumSentClientHellosCryptoHandshakeConfirmed",
                          crypto_stream_->num_sent_client_hellos());
+  }
+}
+
+int QuicClientSession::TryCreateStream(StreamRequest* request,
+                                       QuicReliableClientStream** stream) {
+  if (!crypto_stream_->encryption_established()) {
+    DLOG(DFATAL) << "Encryption not established.";
+    return ERR_CONNECTION_CLOSED;
+  }
+
+  if (goaway_received()) {
+    DLOG(INFO) << "Going away.";
+    return ERR_CONNECTION_CLOSED;
+  }
+
+  if (!connection()->connected()) {
+    DLOG(INFO) << "Already closed.";
+    return ERR_CONNECTION_CLOSED;
+  }
+
+  if (GetNumOpenStreams() < get_max_open_streams()) {
+    *stream = CreateOutgoingReliableStreamImpl();
+    return OK;
+  }
+
+  stream_requests_.push_back(request);
+  return ERR_IO_PENDING;
+}
+
+void QuicClientSession::CancelRequest(StreamRequest* request) {
+  // Remove |request| from the queue while preserving the order of the
+  // other elements.
+  StreamRequestQueue::iterator it =
+      std::find(stream_requests_.begin(), stream_requests_.end(), request);
+  if (it != stream_requests_.end()) {
+    it = stream_requests_.erase(it);
   }
 }
 
@@ -106,6 +187,11 @@ QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
     return NULL;
   }
 
+  return CreateOutgoingReliableStreamImpl();
+}
+
+QuicReliableClientStream*
+QuicClientSession::CreateOutgoingReliableStreamImpl() {
   DCHECK(connection()->connected());
   QuicReliableClientStream* stream =
       new QuicReliableClientStream(GetNextStreamId(), this, net_log_);
@@ -147,6 +233,16 @@ ReliableQuicStream* QuicClientSession::CreateIncomingReliableStream(
 
 void QuicClientSession::CloseStream(QuicStreamId stream_id) {
   QuicSession::CloseStream(stream_id);
+
+  if (GetNumOpenStreams() < get_max_open_streams() &&
+      !stream_requests_.empty() &&
+      crypto_stream_->encryption_established() &&
+      !goaway_received() &&
+      connection()->connected()) {
+    StreamRequest* request = stream_requests_.front();
+    stream_requests_.pop_front();
+    request->OnRequestCompleteSuccess(CreateOutgoingReliableStreamImpl());
+  }
 
   if (GetNumOpenStreams() == 0) {
     stream_factory_->OnIdleSession(this);
@@ -215,6 +311,9 @@ void QuicClientSession::CloseSessionOnErrorInner(int error) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_CLOSE_ON_ERROR,
       NetLog::IntegerCallback("net_error", error));
+
+  connection()->CloseConnection(QUIC_INTERNAL_ERROR, false);
+  DCHECK(!connection()->connected());
 }
 
 base::Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
@@ -225,6 +324,10 @@ base::Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
   dict->SetString("peer_address", peer_address().ToString());
   dict->SetString("guid", base::Uint64ToString(guid()));
   return dict;
+}
+
+base::WeakPtr<QuicClientSession> QuicClientSession::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void QuicClientSession::OnReadComplete(int result) {
@@ -257,6 +360,8 @@ void QuicClientSession::OnReadComplete(int result) {
 }
 
 void QuicClientSession::NotifyFactoryOfSessionCloseLater() {
+  DCHECK_EQ(0u, GetNumOpenStreams());
+  DCHECK(!connection()->connected());
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&QuicClientSession::NotifyFactoryOfSessionClose,
@@ -264,6 +369,7 @@ void QuicClientSession::NotifyFactoryOfSessionCloseLater() {
 }
 
 void QuicClientSession::NotifyFactoryOfSessionClose() {
+  DCHECK_EQ(0u, GetNumOpenStreams());
   DCHECK(stream_factory_);
   // Will delete |this|.
   stream_factory_->OnSessionClose(this);

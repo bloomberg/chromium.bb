@@ -33,6 +33,43 @@ class QuicClientSessionPeer;
 
 class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
  public:
+  // A helper class used to manage a request to create a stream.
+  class NET_EXPORT_PRIVATE StreamRequest {
+   public:
+    StreamRequest();
+    ~StreamRequest();
+
+    // Starts a request to create a stream.  If OK is returned, then
+    // |stream| will be updated with the newly created stream.  If
+    // ERR_IO_PENDING is returned, then when the request is eventuallly
+    // complete |callback| will be called.
+    int StartRequest(const base::WeakPtr<QuicClientSession> session,
+                     QuicReliableClientStream** stream,
+                     const CompletionCallback& callback);
+
+    // Cancels any pending stream creation request. May be called
+    // repeatedly.
+    void CancelRequest();
+
+   private:
+    friend class QuicClientSession;
+
+    // Called by |session_| for an asynchronous request when the stream
+    // request has finished successfully.
+    void OnRequestCompleteSuccess(QuicReliableClientStream* stream);
+
+    // Called by |session_| for an asynchronous request when the stream
+    // request has finished with an error. Also called with ERR_ABORTED
+    // if |session_| is destroyed while the stream request is still pending.
+    void OnRequestCompleteFailure(int rv);
+
+    base::WeakPtr<QuicClientSession> session_;
+    CompletionCallback callback_;
+    QuicReliableClientStream** stream_;
+
+    DISALLOW_COPY_AND_ASSIGN(StreamRequest);
+  };
+
   // Constructs a new session which will own |connection| and |helper|, but
   // not |stream_factory|, which must outlive this session.
   // TODO(rch): decouple the factory from the session via a Delegate interface.
@@ -46,6 +83,19 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
                     NetLog* net_log);
 
   virtual ~QuicClientSession();
+
+  // Attempts to create a new stream.  If the stream can be
+  // created immediately, returns OK.  If the open stream limit
+  // has been reached, returns ERR_IO_PENDING, and |request|
+  // will be added to the stream requets queue and will
+  // be completed asynchronously.
+  // TODO(rch): remove |stream| from this and use setter on |request|
+  // and fix in spdy too.
+  int TryCreateStream(StreamRequest* request,
+                      QuicReliableClientStream** stream);
+
+  // Cancels the pending stream creation request.
+  void CancelRequest(StreamRequest* request);
 
   // QuicSession methods:
   virtual QuicReliableClientStream* CreateOutgoingReliableStream() OVERRIDE;
@@ -72,6 +122,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
 
   const BoundNetLog& net_log() const { return net_log_; }
 
+  base::WeakPtr<QuicClientSession> GetWeakPtr();
+
  protected:
   // QuicSession methods:
   virtual ReliableQuicStream* CreateIncomingReliableStream(
@@ -79,6 +131,10 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
 
  private:
   friend class test::QuicClientSessionPeer;
+
+  typedef std::list<StreamRequest*> StreamRequestQueue;
+
+  QuicReliableClientStream* CreateOutgoingReliableStreamImpl();
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
 
@@ -96,6 +152,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   QuicStreamFactory* stream_factory_;
   scoped_ptr<DatagramClientSocket> socket_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
+  StreamRequestQueue stream_requests_;
   bool read_pending_;
   CompletionCallback callback_;
   size_t num_total_streams_;

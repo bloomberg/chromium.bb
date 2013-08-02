@@ -23,9 +23,10 @@ namespace net {
 
 static const size_t kHeaderBufInitialSize = 4096;
 
-QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream)
+QuicHttpStream::QuicHttpStream(const base::WeakPtr<QuicClientSession> session)
     : next_state_(STATE_NONE),
-      stream_(stream),
+      session_(session),
+      stream_(NULL),
       request_info_(NULL),
       request_body_stream_(NULL),
       response_info_(NULL),
@@ -34,8 +35,7 @@ QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream)
       read_buf_(new GrowableIOBuffer()),
       user_buffer_len_(0),
       weak_factory_(this) {
-  DCHECK(stream_);
-  stream_->SetDelegate(this);
+  DCHECK(session_);
 }
 
 QuicHttpStream::~QuicHttpStream() {
@@ -46,15 +46,31 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      RequestPriority priority,
                                      const BoundNetLog& stream_net_log,
                                      const CompletionCallback& callback) {
-  if (!stream_)
-    return ERR_SOCKET_NOT_CONNECTED;
-
-  //DCHECK_EQ("http", request_info->url.scheme());
+  DCHECK(!stream_);
+  if (!session_)
+    return ERR_CONNECTION_CLOSED;
 
   stream_net_log_ = stream_net_log;
   request_info_ = request_info;
 
-  return OK;
+  int rv = stream_request_.StartRequest(
+      session_, &stream_, base::Bind(&QuicHttpStream::OnStreamReady,
+                                     weak_factory_.GetWeakPtr()));
+  if (rv == ERR_IO_PENDING)
+    callback_ = callback;
+
+  if (rv == OK)
+    stream_->SetDelegate(this);
+
+  return rv;
+}
+
+void QuicHttpStream::OnStreamReady(int rv) {
+  DCHECK(rv == OK || !stream_);
+  if (rv == OK)
+    stream_->SetDelegate(this);
+
+  ResetAndReturn(&callback_).Run(rv);
 }
 
 int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,

@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_stream.h"
+#include "net/quic/quic_client_session.h"
 #include "net/quic/quic_reliable_client_stream.h"
 
 namespace net {
@@ -21,7 +22,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
       public QuicReliableClientStream::Delegate,
       public HttpStream {
  public:
-  explicit QuicHttpStream(QuicReliableClientStream* stream);
+  explicit QuicHttpStream(const base::WeakPtr<QuicClientSession> session);
 
   virtual ~QuicHttpStream();
 
@@ -73,6 +74,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
     STATE_OPEN,
   };
 
+  void OnStreamReady(int rv);
   void OnIOComplete(int rv);
   void DoCallback(int rv);
 
@@ -92,6 +94,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
 
   State next_state_;
 
+  const base::WeakPtr<QuicClientSession> session_;
+  QuicClientSession::StreamRequest stream_request_;
   QuicReliableClientStream* stream_;  // Non-owning.
 
   // The following three fields are all owned by the caller and must

@@ -87,8 +87,8 @@ class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
 // is received.
 class AutoClosingStream : public QuicHttpStream {
  public:
-  explicit AutoClosingStream(QuicReliableClientStream* stream)
-      : QuicHttpStream(stream) {
+  explicit AutoClosingStream(const base::WeakPtr<QuicClientSession>& session)
+      : QuicHttpStream(session) {
   }
 
   virtual int OnDataReceived(const char* data, int length) OVERRIDE {
@@ -185,11 +185,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
                                          &crypto_config_, NULL));
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
-    QuicReliableClientStream* stream =
-        session_->CreateOutgoingReliableStream();
     stream_.reset(use_closing_stream_ ?
-                  new AutoClosingStream(stream) :
-                  new QuicHttpStream(stream));
+                  new AutoClosingStream(session_->GetWeakPtr()) :
+                  new QuicHttpStream(session_->GetWeakPtr()));
   }
 
   void SetRequestString(const std::string& method, const std::string& path) {

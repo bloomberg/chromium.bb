@@ -167,6 +167,57 @@ TEST_F(QuicStreamFactoryTest, Create) {
   EXPECT_TRUE(socket_data.at_write_eof());
 }
 
+TEST_F(QuicStreamFactoryTest, MaxOpenStream) {
+  MockRead reads[] = {
+    MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  HttpRequestInfo request_info;
+  std::vector<QuicHttpStream*> streams;
+  // The MockCryptoClientStream sets max_open_streams to be
+  // 2 * kDefaultMaxStreamsPerConnection.
+  for (size_t i = 0; i < 2 * kDefaultMaxStreamsPerConnection; i++) {
+    QuicStreamRequest request(&factory_);
+    int rv = request.Request(host_port_proxy_pair_, is_https_,
+                             cert_verifier_.get(), net_log_,
+                             callback_.callback());
+    if (i == 0) {
+      EXPECT_EQ(ERR_IO_PENDING, rv);
+      EXPECT_EQ(OK, callback_.WaitForResult());
+    } else {
+      EXPECT_EQ(OK, rv);
+    }
+    scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+    EXPECT_TRUE(stream);
+    EXPECT_EQ(OK, stream->InitializeStream(
+        &request_info, DEFAULT_PRIORITY, net_log_, CompletionCallback()));
+    streams.push_back(stream.release());
+  }
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(OK, request.Request(host_port_proxy_pair_, is_https_,
+                                cert_verifier_.get(), net_log_,
+                                CompletionCallback()));
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream);
+  EXPECT_EQ(ERR_IO_PENDING, stream->InitializeStream(
+        &request_info, DEFAULT_PRIORITY, net_log_, callback_.callback()));
+
+  // Close the first stream.
+  streams.front()->Close(false);
+
+  ASSERT_TRUE(callback_.have_result());
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+  STLDeleteElements(&streams);
+}
+
 TEST_F(QuicStreamFactoryTest, CreateError) {
   DeterministicSocketData socket_data(NULL, 0, NULL, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -232,6 +283,10 @@ TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info,
+                                         DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
 
   // Close the session and verify that stream saw the error.
   factory_.CloseAllSessions(ERR_INTERNET_DISCONNECTED);
@@ -278,6 +333,10 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
 
   EXPECT_EQ(OK, callback_.WaitForResult());
   scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info,
+                                         DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
 
   // Change the IP address and verify that stream saw the error.
   factory_.OnIPAddressChanged();

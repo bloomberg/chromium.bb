@@ -420,7 +420,7 @@ TEST_F(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED, callback.WaitForResult());
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.WaitForResult());
 }
 
 TEST_F(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
