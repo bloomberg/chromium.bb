@@ -1006,6 +1006,10 @@
             '../ui/ui.gyp:ui',
             '../ui/gl/gl.gyp:gl',
             '../third_party/WebKit/public/blink.gyp:blink',
+            # The following two dependencies provide the missing
+            # symbol HeapProfilerStart in Linux component builds.
+            '../webkit/support/webkit_support.gyp:glue',
+            '../webkit/support/webkit_support.gyp:glue_child',
           ],
           'include_dirs': [
             '..',
@@ -1027,6 +1031,10 @@
             '../ui/ui.gyp:ui',
             '../ui/gl/gl.gyp:gl',
             '../third_party/WebKit/public/blink.gyp:blink',
+            # The following two dependencies provide the missing
+            # symbol HeapProfilerStart in Linux component builds.
+            '../webkit/support/webkit_support.gyp:glue',
+            '../webkit/support/webkit_support.gyp:glue_child',
           ],
           'include_dirs': [
             '..',
