@@ -37,25 +37,10 @@
 #include "base/win/windows_version.h"
 #endif
 
-using base::TimeDelta;
 using base::TimeTicks;
 using content::InterstitialPage;
 using content::NavigationController;
 using content::NavigationEntry;
-
-#define HISTOGRAM_INTERSTITIAL_SMALL_TIME(name, sample) \
-    UMA_HISTOGRAM_CUSTOM_TIMES( \
-        name, \
-        sample, \
-        base::TimeDelta::FromMilliseconds(400), \
-        base::TimeDelta::FromMinutes(15), 75);
-
-#define HISTOGRAM_INTERSTITIAL_LARGE_TIME(name, sample) \
-    UMA_HISTOGRAM_CUSTOM_TIMES( \
-        name, \
-        sample, \
-        base::TimeDelta::FromMilliseconds(400), \
-        base::TimeDelta::FromMinutes(20), 50);
 
 namespace {
 
@@ -91,35 +76,26 @@ void RecordSSLBlockingPageEventStats(SSLBlockingPageEvent event) {
                             UNUSED_BLOCKING_PAGE_EVENT);
 }
 
-void RecordSSLBlockingPageTimeStats(
+void RecordSSLBlockingPageDetailedStats(
     bool proceed,
     int cert_error,
     bool overridable,
-    const base::TimeTicks& start_time,
-    const base::TimeTicks& end_time) {
+    const base::TimeTicks& start_time) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type",
      SSLErrorInfo::NetErrorToErrorType(cert_error), SSLErrorInfo::END_OF_ENUM);
   if (start_time.is_null() || !overridable) {
-    // A null start time will occur if the page never came into focus and the
-    // user quit without seeing it. If so, we don't record the time.
-    // The user might not have an option except to turn back; that happens
-    // if overridable is true.  If so, the time/outcome isn't meaningful.
+    // A null start time will occur if the page never came into focus.
+    // Overridable is false if the user didn't have any option except to turn
+    // back. In either case, we don't want to record some of our metrics.
     return;
   }
-  base::TimeDelta delta = end_time - start_time;
-  if (proceed) {
+  if (proceed)
     RecordSSLBlockingPageEventStats(PROCEED_OVERRIDABLE);
-    HISTOGRAM_INTERSTITIAL_LARGE_TIME("interstitial.ssl_accept_time", delta);
-  } else if (!proceed) {
+  else if (!proceed)
     RecordSSLBlockingPageEventStats(DONT_PROCEED_OVERRIDABLE);
-    HISTOGRAM_INTERSTITIAL_LARGE_TIME("interstitial.ssl_reject_time", delta);
-  }
   SSLErrorInfo::ErrorType type = SSLErrorInfo::NetErrorToErrorType(cert_error);
   switch (type) {
     case SSLErrorInfo::CERT_COMMON_NAME_INVALID: {
-      HISTOGRAM_INTERSTITIAL_SMALL_TIME(
-          "interstitial.common_name_invalid_time",
-          delta);
       if (proceed)
         RecordSSLBlockingPageEventStats(PROCEED_NAME);
       else
@@ -127,9 +103,6 @@ void RecordSSLBlockingPageTimeStats(
       break;
     }
     case SSLErrorInfo::CERT_DATE_INVALID: {
-      HISTOGRAM_INTERSTITIAL_SMALL_TIME(
-          "interstitial.date_invalid_time",
-          delta);
       if (proceed)
         RecordSSLBlockingPageEventStats(PROCEED_DATE);
       else
@@ -137,9 +110,6 @@ void RecordSSLBlockingPageTimeStats(
       break;
     }
     case SSLErrorInfo::CERT_AUTHORITY_INVALID: {
-      HISTOGRAM_INTERSTITIAL_SMALL_TIME(
-          "interstitial.authority_invalid_time",
-          delta);
       if (proceed)
         RecordSSLBlockingPageEventStats(PROCEED_AUTHORITY);
       else
@@ -195,10 +165,9 @@ SSLBlockingPage::SSLBlockingPage(
 
 SSLBlockingPage::~SSLBlockingPage() {
   if (!callback_.is_null()) {
-    RecordSSLBlockingPageTimeStats(
+    RecordSSLBlockingPageDetailedStats(
       false, cert_error_,
-      overridable_ && !strict_enforcement_, display_start_time_,
-      base::TimeTicks::Now());
+      overridable_ && !strict_enforcement_, display_start_time_);
     // The page is closed without the user having chosen what to do, default to
     // deny.
     NotifyDenyCertificate();
@@ -321,18 +290,16 @@ void SSLBlockingPage::OverrideRendererPrefs(
 }
 
 void SSLBlockingPage::OnProceed() {
-  RecordSSLBlockingPageTimeStats(true, cert_error_,
-      overridable_ && !strict_enforcement_, display_start_time_,
-      base::TimeTicks::Now());
+  RecordSSLBlockingPageDetailedStats(true, cert_error_,
+      overridable_ && !strict_enforcement_, display_start_time_);
 
   // Accepting the certificate resumes the loading of the page.
   NotifyAllowCertificate();
 }
 
 void SSLBlockingPage::OnDontProceed() {
-  RecordSSLBlockingPageTimeStats(false, cert_error_,
-    overridable_ && !strict_enforcement_, display_start_time_,
-    base::TimeTicks::Now());
+  RecordSSLBlockingPageDetailedStats(false, cert_error_,
+    overridable_ && !strict_enforcement_, display_start_time_);
 
   NotifyDenyCertificate();
 }
