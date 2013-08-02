@@ -30,10 +30,23 @@ NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return NACL_INVALID_HANDLE;
   }
+  DWORD flags;
+  if (executable) {
+    /*
+     * Passing SEC_RESERVE overrides the implicit default of
+     * SEC_COMMIT, and it means that we do not allocate swap space for
+     * the pages initially.  These uncommitted pages will be
+     * inaccessible even if they are mapped with PAGE_EXECUTE_READ,
+     * and nacl_text.c relies on this.
+     */
+    flags = PAGE_EXECUTE_READWRITE | SEC_RESERVE;
+  } else {
+    flags = PAGE_READWRITE;
+  }
   memory = CreateFileMapping(
       INVALID_HANDLE_VALUE,
       NULL,
-      executable ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE,
+      flags,
       static_cast<DWORD>(static_cast<unsigned __int64>(length) >> 32),
       static_cast<DWORD>(length & 0xFFFFFFFF), NULL);
   return (memory == NULL) ? NACL_INVALID_HANDLE : memory;

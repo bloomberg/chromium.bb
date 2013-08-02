@@ -26,6 +26,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
+#include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 
 /* initial size of the malloced buffer for dynamic regions */
@@ -135,11 +136,13 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
    *
    * Windows does not allow this, however: the initial permissions are
    * an upper bound on what the permissions may later be changed to
-   * with VirtualProtect().  Given this, using PROT_NONE at this point
-   * does not even make sense.  So we map with read+exec+write and
-   * immediately turn down the permissions, so that we can later
-   * re-enable read+exec page by page.  Write permissions are needed
-   * for gdb to set breakpoints.
+   * with VirtualProtect() or VirtualAlloc().  Given this, using
+   * PROT_NONE at this point does not even make sense.  On Windows,
+   * the pages start off as uncommitted, which makes them inaccessible
+   * regardless of the page permissions they are mapped with.
+   *
+   * Write permissions are included here for nacl64-gdb to set
+   * breakpoints.
    */
 #if NACL_WINDOWS
   mmap_protections =
@@ -165,29 +168,6 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   if (text_sysaddr != mmap_ret) {
     NaClLog(LOG_FATAL, "Could not map in shm for dynamic text region\n");
   }
-
-#if NACL_WINDOWS
-  {
-    /*
-     * We need a loop here because the Map() call above creates one
-     * mapping per page.  This is needed for mmap of validated file
-     * regions, since we do not know where such destination map pages
-     * will be, so the later over-mapping may occur from any
-     * NACL_MAP_PAGESIZE boundary to any other such boundary within
-     * the dynamic code region.
-     */
-    uintptr_t offset;
-    for (offset = 0; offset < dynamic_text_size; offset += NACL_MAP_PAGESIZE) {
-      DWORD old_prot;
-      if (!VirtualProtect((void *) (text_sysaddr + offset), NACL_MAP_PAGESIZE,
-                          PAGE_NOACCESS, &old_prot)) {
-        NaClLog(LOG_FATAL,
-                "NaClMakeDynamicTextShared: VirtualProtect() failed to "
-                "set page permissions to PAGE_NOACCESS\n");
-      }
-    }
-  }
-#endif
 
   nap->dynamic_page_bitmap =
     BitmapAllocate((uint32_t) (dynamic_text_size / NACL_MAP_PAGESIZE));
@@ -449,14 +429,47 @@ static void MakeDynamicCodePagesVisible(struct NaClApp *nap,
   user_addr = (void *) NaClUserToSys(nap, nap->dynamic_text_start
                                      + page_index_min * NACL_MAP_PAGESIZE);
 
+#if NACL_WINDOWS
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
+
+  /*
+   * The VirtualAlloc() call here has two effects:
+   *
+   *  1) It commits the page in the shared memory (SHM) object,
+   *     allocating swap space and making the page accessible.  This
+   *     affects our writable mapping of the shared memory object too.
+   *     Before the VirtualAlloc() call, dereferencing writable_addr
+   *     would fault.
+   *  2) It changes the page permissions of the mapping to
+   *     read+execute.  Since this exposes the page in its unsafe,
+   *     non-HLT-filled state, this must be done with untrusted
+   *     threads suspended.
+   */
+  {
+    uintptr_t offset;
+    for (offset = 0; offset < size; offset += NACL_MAP_PAGESIZE) {
+      void *user_page_addr = (char *) user_addr + offset;
+      if (VirtualAlloc(user_page_addr, NACL_MAP_PAGESIZE,
+                       MEM_COMMIT, PAGE_EXECUTE_READ) != user_page_addr) {
+        NaClLog(LOG_FATAL, "MakeDynamicCodePagesVisible: "
+                "VirtualAlloc() failed -- probably out of swap space\n");
+      }
+    }
+  }
+#endif
+
   /* Sanity check:  Ensure the page is not already in use. */
   CHECK(*writable_addr == 0);
 
   NaClFillMemoryRegionWithHalt(writable_addr, size);
 
+#if NACL_WINDOWS
+  NaClUntrustedThreadsResumeAll(nap);
+#else
   if (NaClMprotect(user_addr, size, PROT_READ | PROT_EXEC) != 0) {
     NaClLog(LOG_FATAL, "MakeDynamicCodePageVisible: NaClMprotect() failed\n");
   }
+#endif
 }
 
 /*
