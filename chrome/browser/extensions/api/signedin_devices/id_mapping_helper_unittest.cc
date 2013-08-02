@@ -16,7 +16,6 @@
 using browser_sync::DeviceInfo;
 
 namespace extensions {
-namespace id_mapping_helper {
 bool VerifyDictionary(
     const std::string& path,
     const std::string& expected_value,
@@ -76,5 +75,4 @@ TEST(IdMappingHelperTest, SetIdsForDevices) {
 
   EXPECT_EQ(dictionary.size(), 3U);
 }
-}  // namespace id_mapping_helper
 }  // namespace extensions

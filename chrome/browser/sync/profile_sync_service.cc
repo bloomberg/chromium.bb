@@ -408,6 +408,20 @@ ProfileSyncService::GetDeviceInfo(const std::string& client_id) const {
   return scoped_ptr<browser_sync::DeviceInfo>();
 }
 
+ScopedVector<browser_sync::DeviceInfo>
+    ProfileSyncService::GetAllSignedInDevices() const {
+  ScopedVector<browser_sync::DeviceInfo> devices;
+  if (backend_) {
+    browser_sync::SyncedDeviceTracker* device_tracker =
+        backend_->GetSyncedDeviceTracker();
+    if (device_tracker) {
+      // TODO(lipalani) - Make device tracker return a scoped vector.
+      device_tracker->GetAllSyncedDeviceInfo(&devices);
+    }
+  }
+  return devices.Pass();
+}
+
 void ProfileSyncService::GetDataTypeControllerStates(
   browser_sync::DataTypeController::StateMap* state_map) const {
     for (browser_sync::DataTypeController::TypeMap::const_iterator iter =

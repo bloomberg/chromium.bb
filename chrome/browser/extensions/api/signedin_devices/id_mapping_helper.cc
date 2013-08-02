@@ -15,7 +15,6 @@ using base::Value;
 using browser_sync::DeviceInfo;
 
 namespace extensions {
-namespace id_mapping_helper {
 
 std::string GetPublicIdFromGUID(
     const base::DictionaryValue& id_mapping,
@@ -81,5 +80,4 @@ void CreateMappingForUnmappedDevices(
   }
 }
 
-}  // namespace id_mapping_helper
 }  // namespace  extensions

@@ -17,7 +17,6 @@ class DeviceInfo;
 }  // namespace browser_sync
 
 namespace extensions {
-namespace id_mapping_helper {
 
 // In order to not expose unique GUIDs for devices to third pary apps,
 // the unique GUIDs are mapped to local ids and local ids are exposed to apps.
@@ -45,7 +44,6 @@ void CreateMappingForUnmappedDevices(
     std::vector<browser_sync::DeviceInfo*>* device_info,
     base::DictionaryValue* value);
 
-}  // namespace id_mapping_helper
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SIGNEDIN_DEVICES_ID_MAPPING_HELPER_H__

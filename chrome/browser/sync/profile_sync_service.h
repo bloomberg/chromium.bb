@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -279,6 +280,10 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // is unavailable.
   virtual scoped_ptr<browser_sync::DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const;
+
+  // Gets the device info for all devices signed into the account associated
+  // with this profile.
+  virtual ScopedVector<browser_sync::DeviceInfo> GetAllSignedInDevices() const;
 
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.
