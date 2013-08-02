@@ -32,6 +32,14 @@ cr.define('options', function() {
    */
   var butterBarVisibility = {};
 
+  /**
+   * @type {Object.<string, string>} A map from extension id to last reloaded
+   *     timestamp. The timestamp is recorded when the user click the 'Reload'
+   *     link. It is used to refresh the icon of an unpacked extension.
+   *     This persists between calls to decorate.
+   */
+  var extensionReloadedTimestamp = {};
+
   ExtensionsList.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -97,10 +105,16 @@ cr.define('options', function() {
         node.classList.add('extension-highlight');
 
       var item = node.querySelector('.extension-list-item');
-      var extensionIconUrl = extension.icon;
-      if (extension.allow_reload)
-        extensionIconUrl = extension.icon + '?' + Date.now();
-      item.style.backgroundImage = 'url(' + extensionIconUrl + ')';
+      // Prevent the image cache of extension icon by using the reloaded
+      // timestamp as a query string. The timestamp is recorded when the user
+      // clicks the 'Reload' link. http://crbug.com/159302.
+      if (extensionReloadedTimestamp[extension.id]) {
+        item.style.backgroundImage =
+            'url(' + extension.icon + '?' +
+            extensionReloadedTimestamp[extension.id] + ')';
+      } else {
+        item.style.backgroundImage = 'url(' + extension.icon + ')';
+      }
 
       var title = node.querySelector('.extension-title');
       title.textContent = extension.name;
@@ -182,6 +196,7 @@ cr.define('options', function() {
         var reload = node.querySelector('.reload-link');
         reload.addEventListener('click', function(e) {
           chrome.send('extensionSettingsReload', [extension.id]);
+          extensionReloadedTimestamp[extension.id] = Date.now();
         });
         reload.hidden = false;
 
