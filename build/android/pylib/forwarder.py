@@ -139,7 +139,7 @@ class Forwarder(object):
       port_map = Forwarder._GetInstanceLocked(
           None, None)._device_to_host_port_map
       adb_serial = adb.Adb().GetSerialNumber()
-      for ((device_serial, device_port), _) in port_map:
+      for (device_serial, device_port) in port_map.keys():
         if adb_serial == device_serial:
           Forwarder._UnmapDevicePortLocked(device_port, adb)
 
