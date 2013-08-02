@@ -25,6 +25,7 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
+#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_manager.h"
@@ -232,6 +233,9 @@ void CannedSyncableFileSystem::SetUp() {
       fileapi::FileSystemOptions::PROFILE_MODE_NORMAL,
       additional_allowed_schemes);
 
+  ScopedVector<fileapi::FileSystemBackend> additional_backends;
+  additional_backends.push_back(new SyncFileSystemBackend());
+
   file_system_context_ = new FileSystemContext(
       make_scoped_ptr(
           new fileapi::FileSystemTaskRunners(io_task_runner_.get(),
@@ -239,7 +243,7 @@ void CannedSyncableFileSystem::SetUp() {
       fileapi::ExternalMountPoints::CreateRefCounted().get(),
       storage_policy.get(),
       quota_manager_->proxy(),
-      ScopedVector<fileapi::FileSystemBackend>(),
+      additional_backends.Pass(),
       data_dir_.path(), options);
 
   is_filesystem_set_up_ = true;

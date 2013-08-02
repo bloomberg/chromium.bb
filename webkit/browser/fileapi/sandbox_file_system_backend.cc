@@ -23,8 +23,6 @@
 #include "webkit/browser/fileapi/sandbox_context.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/browser/fileapi/sandbox_quota_observer.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_operation.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -52,9 +50,7 @@ SandboxFileSystemBackend::~SandboxFileSystemBackend() {
 
 bool SandboxFileSystemBackend::CanHandleType(FileSystemType type) const {
   return type == kFileSystemTypeTemporary ||
-         type == kFileSystemTypePersistent ||
-         type == kFileSystemTypeSyncable ||
-         type == kFileSystemTypeSyncableForInternalSync;
+         type == kFileSystemTypePersistent;
 }
 
 void SandboxFileSystemBackend::Initialize(FileSystemContext* context) {
@@ -64,17 +60,6 @@ void SandboxFileSystemBackend::Initialize(FileSystemContext* context) {
       sandbox_context_->file_task_runner());
   access_observers_ = access_observers_.AddObserver(
       sandbox_context_->quota_observer(), NULL);
-
-  syncable_update_observers_ = update_observers_;
-
-  if (!sandbox_context_->file_task_runner()->RunsTasksOnCurrentThread()) {
-    // Post prepopulate task only if it's not already running on
-    // file_task_runner (which implies running in tests).
-    sandbox_context_->file_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ObfuscatedFileUtil::MaybePrepopulateDatabase,
-                  base::Unretained(sandbox_context_->sync_file_util())));
-  }
 }
 
 void SandboxFileSystemBackend::OpenFileSystem(
@@ -92,14 +77,9 @@ void SandboxFileSystemBackend::OpenFileSystem(
     return;
   }
 
-  // TODO(nhiroki): Factor out SyncFS related code to SyncFileSystemBackend we
-  // plan to introduce. (http://crbug.com/242422/)
-  GURL root_url = (type == kFileSystemTypeSyncable)
-      ? sync_file_system::GetSyncableFileSystemRootURI(origin_url)
-      : GetFileSystemRootURI(origin_url, type);
-
   sandbox_context_->OpenFileSystem(
-      origin_url, type, mode, callback, root_url);
+      origin_url, type, mode, callback,
+      GetFileSystemRootURI(origin_url, type));
 }
 
 FileSystemFileUtil* SandboxFileSystemBackend::GetFileUtil(
@@ -135,16 +115,6 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
 
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
-
-  // Copy the observer lists (assuming we only have small number of observers).
-  if (url.type() == kFileSystemTypeSyncable) {
-    operation_context->set_update_observers(syncable_update_observers_);
-    operation_context->set_change_observers(syncable_change_observers_);
-    return new sync_file_system::SyncableFileSystemOperation(
-        url, context, operation_context.Pass());
-  }
-
-  // For regular sandboxed types.
   operation_context->set_update_observers(update_observers_);
   operation_context->set_change_observers(change_observers_);
 
@@ -264,8 +234,6 @@ void SandboxFileSystemBackend::AddFileUpdateObserver(
     base::SequencedTaskRunner* task_runner) {
   DCHECK(CanHandleType(type));
   UpdateObserverList* list = &update_observers_;
-  if (type == kFileSystemTypeSyncable)
-    list = &syncable_update_observers_;
   *list = list->AddObserver(observer, task_runner);
 }
 
@@ -275,8 +243,6 @@ void SandboxFileSystemBackend::AddFileChangeObserver(
     base::SequencedTaskRunner* task_runner) {
   DCHECK(CanHandleType(type));
   ChangeObserverList* list = &change_observers_;
-  if (type == kFileSystemTypeSyncable)
-    list = &syncable_change_observers_;
   *list = list->AddObserver(observer, task_runner);
 }
 
@@ -291,16 +257,12 @@ void SandboxFileSystemBackend::AddFileAccessObserver(
 const UpdateObserverList* SandboxFileSystemBackend::GetUpdateObservers(
     FileSystemType type) const {
   DCHECK(CanHandleType(type));
-  if (type == kFileSystemTypeSyncable)
-    return &syncable_update_observers_;
   return &update_observers_;
 }
 
 const ChangeObserverList* SandboxFileSystemBackend::GetChangeObservers(
     FileSystemType type) const {
   DCHECK(CanHandleType(type));
-  if (type == kFileSystemTypeSyncable)
-    return &syncable_change_observers_;
   return &change_observers_;
 }
 

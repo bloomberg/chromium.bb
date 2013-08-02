@@ -206,6 +206,8 @@
         'browser/fileapi/syncable/sync_file_metadata.cc',
         'browser/fileapi/syncable/sync_file_metadata.h',
         'browser/fileapi/syncable/sync_file_status.h',
+        'browser/fileapi/syncable/sync_file_system_backend.cc',
+        'browser/fileapi/syncable/sync_file_system_backend.h',
         'browser/fileapi/syncable/sync_file_type.h',
         'browser/fileapi/syncable/sync_status_code.cc',
         'browser/fileapi/syncable/sync_status_code.h',

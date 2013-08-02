@@ -138,6 +138,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
 #include "webkit/common/webpreferences.h"
 #include "webkit/plugins/plugin_switches.h"
 
@@ -2456,6 +2457,8 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   DCHECK(backend->CanHandleType(fileapi::kFileSystemTypeExternal));
   additional_backends->push_back(backend);
 #endif
+
+  additional_backends->push_back(new sync_file_system::SyncFileSystemBackend());
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

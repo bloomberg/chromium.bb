@@ -228,25 +228,17 @@ bool FileSystemContext::IsSandboxFileSystem(FileSystemType type) const {
 
 const UpdateObserverList* FileSystemContext::GetUpdateObservers(
     FileSystemType type) const {
-  // Currently update observer is only available in SandboxFileSystemBackend
-  // and TestFileSystemBackend.
-  // TODO(kinuko): Probably GetUpdateObservers() virtual method should be
-  // added to FileSystemBackend interface and be called like
-  // other GetFoo() methods do.
-  if (sandbox_backend_->CanHandleType(type))
-    return sandbox_backend_->GetUpdateObservers(type);
-  if (type != kFileSystemTypeTest)
-    return NULL;
   FileSystemBackend* backend = GetFileSystemBackend(type);
-  return static_cast<TestFileSystemBackend*>(
-      backend)->GetUpdateObservers(type);
+  if (backend->GetQuotaUtil())
+    return backend->GetQuotaUtil()->GetUpdateObservers(type);
+  return NULL;
 }
 
 const AccessObserverList* FileSystemContext::GetAccessObservers(
     FileSystemType type) const {
-  // Currently access observer is only available in SandboxFileSystemBackend.
-  if (sandbox_backend_->CanHandleType(type))
-    return sandbox_backend_->GetAccessObservers(type);
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  if (backend->GetQuotaUtil())
+    return backend->GetQuotaUtil()->GetAccessObservers(type);
   return NULL;
 }
 
@@ -339,21 +331,26 @@ FileSystemContext::CreateFileSystemOperationRunner() {
   return make_scoped_ptr(new FileSystemOperationRunner(this));
 }
 
+// TODO(nhiroki): Move into SyncFileSystemBackend (http://crbug.com/242422/).
 void FileSystemContext::SetLocalFileChangeTracker(
     scoped_ptr<sync_file_system::LocalFileChangeTracker> tracker) {
   DCHECK(!change_tracker_.get());
   DCHECK(tracker.get());
   change_tracker_ = tracker.Pass();
-  sandbox_backend_->AddFileUpdateObserver(
+
+  FileSystemBackend* backend = GetFileSystemBackend(kFileSystemTypeSyncable);
+  DCHECK(backend->GetQuotaUtil());
+  backend->GetQuotaUtil()->AddFileUpdateObserver(
       kFileSystemTypeSyncable,
       change_tracker_.get(),
       task_runners_->file_task_runner());
-  sandbox_backend_->AddFileChangeObserver(
+  backend->GetQuotaUtil()->AddFileChangeObserver(
       kFileSystemTypeSyncable,
       change_tracker_.get(),
       task_runners_->file_task_runner());
 }
 
+// TODO(nhiroki): Move into SyncFileSystemBackend (http://crbug.com/242422/).
 void FileSystemContext::set_sync_context(
     sync_file_system::LocalFileSyncContext* sync_context) {
   sync_context_ = sync_context;

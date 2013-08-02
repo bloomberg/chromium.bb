@@ -121,10 +121,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
   ChangeObserverList change_observers_;
   AccessObserverList access_observers_;
 
-  // Observers for syncable file systems.
-  UpdateObserverList syncable_update_observers_;
-  ChangeObserverList syncable_change_observers_;
-
   DISALLOW_COPY_AND_ASSIGN(SandboxFileSystemBackend);
 };
 

@@ -87,9 +87,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SyncableFileSystemOperation
   typedef SyncableFileSystemOperation self;
   class QueueableTask;
 
-  // Only FileSystemBackends can create a new operation directly.
-  friend class fileapi::SandboxFileSystemBackend;
-  friend class SandboxFileSystemBackend;
+  // Only SyncFileSystemBackend can create a new operation directly.
+  friend class SyncFileSystemBackend;
+
   SyncableFileSystemOperation(
       const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* file_system_context,
