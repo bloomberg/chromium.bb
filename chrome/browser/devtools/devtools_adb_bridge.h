@@ -187,8 +187,6 @@ class DevToolsAdbBridge
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<DevToolsAdbBridge>;
-  friend class AdbWebSocket;
-  friend class AgentHostDelegate;
 
   class RefCountedAdbThread : public base::RefCounted<RefCountedAdbThread> {
    public:

@@ -183,6 +183,8 @@
             'browser/devtools/adb/android_usb_socket.h',
             'browser/devtools/adb_client_socket.cc',
             'browser/devtools/adb_client_socket.h',
+            'browser/devtools/adb_web_socket.cc',
+            'browser/devtools/adb_web_socket.h',
             'browser/devtools/browser_list_tabcontents_provider.cc',
             'browser/devtools/browser_list_tabcontents_provider.h',
             'browser/devtools/devtools_adb_bridge.cc',
