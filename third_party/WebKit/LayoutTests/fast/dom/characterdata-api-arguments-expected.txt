@@ -27,6 +27,8 @@ PASS text.deleteData(0) threw exception TypeError: Not enough arguments.
 PASS text.data is "abcd"
 PASS text.deleteData(999, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS text.data is "abcd"
+PASS text.deleteData(-1, 3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.data is "abcd"
 PASS text.deleteData(-4294967294, 2) did not throw exception.
 PASS text.data is "ab"
 PASS text.deleteData(1, 999) did not throw exception.
@@ -41,10 +43,16 @@ PASS text.replaceData(0, 0) threw exception TypeError: Not enough arguments.
 PASS text.data is "abcdefg"
 PASS text.replaceData(999, 3, 'test') threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS text.data is "abcdefg"
+PASS text.replaceData(-1, 3, 'test') threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.data is "abcdefg"
 PASS text.replaceData(-4294967294, 0, 'test') did not throw exception.
 PASS text.data is "abtestcdefg"
 PASS text.replaceData(1, 999, 'aaa') did not throw exception.
 PASS text.data is "aaaa"
+PASS text.substringData(4, 3) is "efg"
+PASS text.substringData(4, 999) is "efg"
+PASS text.substringData(-1, 2) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS text.substringData(-4294967294, 3) is "cde"
 PASS successfullyParsed is true
 
 TEST COMPLETE

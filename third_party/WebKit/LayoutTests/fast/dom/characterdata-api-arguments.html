@@ -28,7 +28,7 @@ shouldThrow("text.insertData(0)", "'TypeError: Not enough arguments'");
 shouldBeEqualToString("text.data", "abcdefg");
 shouldThrow("text.insertData(999, 'test')", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // offset greater than length.
 shouldBeEqualToString("text.data", "abcdefg");
-shouldNotThrow("text.insertData(-4294967294, 'test')");
+shouldNotThrow("text.insertData(-4294967294, 'test')"); // Wraps to 2, which is a valid offset.
 shouldBeEqualToString("text.data", "abtestcdefg");
 
 // deleteData()
@@ -41,7 +41,9 @@ shouldThrow("text.deleteData(0)", "'TypeError: Not enough arguments'");
 shouldBeEqualToString("text.data", "abcd");
 shouldThrow("text.deleteData(999, 3)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // offset greater than length.
 shouldBeEqualToString("text.data", "abcd");
-shouldNotThrow("text.deleteData(-4294967294, 2)");
+shouldThrow("text.deleteData(-1, 3)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // Wraps to 4294967295 which is greater than the data length
+shouldBeEqualToString("text.data", "abcd");
+shouldNotThrow("text.deleteData(-4294967294, 2)"); // Wraps to 2, which is a valid offset.
 shouldBeEqualToString("text.data", "ab");
 shouldNotThrow("text.deleteData(1, 999)"); // Length argument is too large, should be adjusted.
 shouldBeEqualToString("text.data", "a");
@@ -58,10 +60,20 @@ shouldThrow("text.replaceData(0, 0)", "'TypeError: Not enough arguments'");
 shouldBeEqualToString("text.data", "abcdefg");
 shouldThrow("text.replaceData(999, 3, 'test')", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // offset greater than length.
 shouldBeEqualToString("text.data", "abcdefg");
-shouldNotThrow("text.replaceData(-4294967294, 0, 'test')");
+shouldThrow("text.replaceData(-1, 3, 'test')", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // Wraps to 4294967295 which is greater than the data length
+shouldBeEqualToString("text.data", "abcdefg");
+shouldNotThrow("text.replaceData(-4294967294, 0, 'test')"); // Wraps to 2, which is a valid offset.
 shouldBeEqualToString("text.data", "abtestcdefg");
 shouldNotThrow("text.replaceData(1, 999, 'aaa')"); // Length argument is too large, should be adjusted.
 shouldBeEqualToString("text.data", "aaaa");
+
+// substringData()
+text.data = "abcdefg";
+shouldBeEqualToString("text.substringData(4, 3)", "efg");
+shouldBeEqualToString("text.substringData(4, 999)", "efg"); // Length argument is too large, should be adjusted.
+shouldThrow("text.substringData(-1, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // Wraps to 4294967295 which is greater than the data length
+shouldBeEqualToString("text.substringData(-4294967294, 3)", "cde"); // Wraps to 2, which is a valid offset.
+
 </script>
 <script src="../js/resources/js-test-post.js"></script>
 </body>
