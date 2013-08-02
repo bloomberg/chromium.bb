@@ -734,9 +734,9 @@
             # implementation.
             ['exclude', 'platform/KillRingNone\\.cpp$'],
 
-            # The Mac currently uses FontCustomPlatformData.cpp from
-            # platform/graphics/mac, included by regex above, instead.
-            ['exclude', 'platform/graphics/skia/FontCustomPlatformData\\.cpp$'],
+            # The Mac currently uses FontCustomPlatformDataMac.cpp,
+            # included by regex above, instead.
+            ['exclude', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
 
             # The Mac currently uses ScrollbarThemeChromiumMac.mm, which is not
             # related to ScrollbarThemeChromium.cpp.
@@ -785,6 +785,10 @@
             ['include', '/TransparencyWin\\.cpp$'],
 
             ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
+
+            # Windows currently uses FontCustomPlatformDataWin.cpp instead.
+            ['exclude', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
+            ['include', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
 
             # SystemInfo.cpp is useful and we don't want to copy it.
             ['include', 'platform/win/SystemInfo\\.cpp$'],

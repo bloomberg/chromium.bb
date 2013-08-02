@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/mac/FontCustomPlatformData.h"
+#include "core/platform/graphics/FontCustomPlatformData.h"
 
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
@@ -27,47 +27,53 @@
 #include "core/platform/graphics/skia/SkiaSharedBufferStream.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "wtf/PassOwnPtr.h"
+
 #include <ApplicationServices/ApplicationServices.h>
 
 namespace WebCore {
 
+FontCustomPlatformData::FontCustomPlatformData(CGFontRef cgFont, PassRefPtr<SkTypeface> typeface)
+    : m_cgFont(AdoptCF, cgFont)
+    , m_typeface(typeface)
+{
+}
+
 FontCustomPlatformData::~FontCustomPlatformData()
 {
-    SkSafeUnref(m_typeface);
-    CGFontRelease(m_cgFont);
 }
 
 FontPlatformData FontCustomPlatformData::fontPlatformData(int size, bool bold, bool italic, FontOrientation orientation, FontWidthVariant widthVariant)
 {
-    return FontPlatformData(m_cgFont, size, bold, italic, orientation, widthVariant);
+    return FontPlatformData(m_cgFont.get(), size, bold, italic, orientation, widthVariant);
 }
 
-FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
+PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* buffer)
 {
     ASSERT_ARG(buffer, buffer);
 
     OpenTypeSanitizer sanitizer(buffer);
     RefPtr<SharedBuffer> transcodeBuffer = sanitizer.sanitize();
     if (!transcodeBuffer)
-        return 0; // validation failed.
+        return nullptr; // validation failed.
     buffer = transcodeBuffer.get();
-
-    ATSFontContainerRef containerRef = 0;
-
-    RetainPtr<CGFontRef> cgFontRef;
 
     RetainPtr<CFDataRef> bufferData(AdoptCF, CFDataCreate(0, reinterpret_cast<const UInt8*>(buffer->data()), buffer->size()));
     RetainPtr<CGDataProviderRef> dataProvider(AdoptCF, CGDataProviderCreateWithCFData(bufferData.get()));
-
-    cgFontRef.adoptCF(CGFontCreateWithDataProvider(dataProvider.get()));
+    RetainPtr<CGFontRef> cgFontRef(AdoptCF, CGFontCreateWithDataProvider(dataProvider.get()));
     if (!cgFontRef)
-        return 0;
+        return nullptr;
 
-    FontCustomPlatformData* fontCustomPlatformData = new FontCustomPlatformData(containerRef, cgFontRef.leakRef());
-    SkiaSharedBufferStream* stream = new SkiaSharedBufferStream(buffer);
-    fontCustomPlatformData->m_typeface = SkTypeface::CreateFromStream(stream);
-    stream->unref();
-    return fontCustomPlatformData;
+    // It's unclear whether this is used. It seems like it has the effect of priming the cache.
+    // Since we store this anyways, it might be worthwhile just plumbing this to FontMac.cpp in
+    // a more obvious way.
+    // FIXME: Remove this, add an explicit use, or add a comment explaining why this exists.
+    RefPtr<SkiaSharedBufferStream> stream = SkiaSharedBufferStream::create(buffer);
+    RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromStream(stream.get()));
+    if (!typeface)
+        return nullptr;
+
+    return adoptPtr(new FontCustomPlatformData(cgFontRef.leakRef(), typeface.release()));
 }
 
 bool FontCustomPlatformData::supportsFormat(const String& format)

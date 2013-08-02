@@ -31,17 +31,18 @@
 #ifndef SkiaSharedBufferStream_h
 #define SkiaSharedBufferStream_h
 
-#include "third_party/skia/include/core/SkStream.h"
 #include "core/platform/SharedBuffer.h"
+#include "third_party/skia/include/core/SkStream.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class SkiaSharedBufferStream : public SkStreamAsset {
 public:
-    explicit SkiaSharedBufferStream(PassRefPtr<SharedBuffer> buffer)
-        : m_buffer(buffer)
-        , m_offset(0)
+    static PassRefPtr<SkiaSharedBufferStream> create(PassRefPtr<SharedBuffer> buffer)
     {
+        return adoptRef(new SkiaSharedBufferStream(buffer));
     }
 
     virtual ~SkiaSharedBufferStream()
@@ -64,6 +65,12 @@ public:
     virtual const void* getMemoryBase() OVERRIDE;
 
 private:
+    explicit SkiaSharedBufferStream(PassRefPtr<SharedBuffer> buffer)
+        : m_buffer(buffer)
+        , m_offset(0)
+    {
+    }
+
     RefPtr<SharedBuffer> m_buffer;
     size_t m_offset;
 };

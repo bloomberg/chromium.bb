@@ -30,6 +30,7 @@
 #include "core/loader/cache/ResourceClient.h"
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/FontWidthVariant.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -37,7 +38,7 @@ class ResourceFetcher;
 class FontPlatformData;
 class SVGDocument;
 class SVGFontElement;
-struct FontCustomPlatformData;
+class FontCustomPlatformData;
 
 class CachedFont : public Resource {
 public:
@@ -62,7 +63,7 @@ public:
 
 private:
     virtual void checkNotify();
-    FontCustomPlatformData* m_fontData;
+    OwnPtr<FontCustomPlatformData> m_fontData;
     bool m_loadInitiated;
 
 #if ENABLE(SVG_FONTS)

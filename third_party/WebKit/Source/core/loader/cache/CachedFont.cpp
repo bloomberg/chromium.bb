@@ -45,14 +45,12 @@ namespace WebCore {
 
 CachedFont::CachedFont(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, FontResource)
-    , m_fontData(0)
     , m_loadInitiated(false)
 {
 }
 
 CachedFont::~CachedFont()
 {
-    delete m_fontData;
 }
 
 void CachedFont::load(ResourceFetcher*, const ResourceLoaderOptions& options)
@@ -80,7 +78,7 @@ void CachedFont::beginLoadIfNeeded(ResourceFetcher* dl)
 bool CachedFont::ensureCustomFontData()
 {
     if (!m_fontData && !errorOccurred() && !isLoading() && m_data) {
-        m_fontData = createFontCustomPlatformData(m_data.get());
+        m_fontData = FontCustomPlatformData::create(m_data.get());
         if (!m_fontData)
             setStatus(DecodeError);
     }
@@ -148,10 +146,7 @@ SVGFontElement* CachedFont::getSVGFontById(const String& fontName) const
 
 void CachedFont::allClientsRemoved()
 {
-    if (m_fontData) {
-        delete m_fontData;
-        m_fontData = 0;
-    }
+    m_fontData.clear();
     Resource::allClientsRemoved();
 }
 
