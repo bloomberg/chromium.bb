@@ -441,6 +441,12 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
     success_callback_name_ = callback_name;
   }
 
+  void GetPropertiesCallback(const std::string& service_path,
+                             const base::DictionaryValue& dictionary) {
+    get_properties_path_ = service_path;
+    get_properties_.reset(dictionary.DeepCopy());
+  }
+
  protected:
   bool GetServiceStringProperty(const std::string& service_path,
                                 const std::string& key,
@@ -449,7 +455,18 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     const base::DictionaryValue* properties =
         service_test->GetServiceProperties(service_path);
-    if (properties && properties->GetString(key, result))
+    if (properties && properties->GetStringWithoutPathExpansion(key, result))
+      return true;
+    return false;
+  }
+
+  bool GetReceivedStringProperty(const std::string& service_path,
+                                 const std::string& key,
+                                 std::string* result) {
+    if (get_properties_path_ != service_path)
+      return false;
+    if (get_properties_ &&
+        get_properties_->GetStringWithoutPathExpansion(key, result))
       return true;
     return false;
   }
@@ -459,6 +476,8 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
   scoped_ptr<TestObserver> test_observer_;
   base::MessageLoopForUI message_loop_;
   std::string success_callback_name_;
+  std::string get_properties_path_;
+  scoped_ptr<DictionaryValue> get_properties_;
 };
 
 TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
@@ -469,8 +488,10 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
 
   // Set Properties
   base::DictionaryValue properties_to_set;
-  properties_to_set.SetString(flimflam::kIdentityProperty, test_identity);
-  properties_to_set.SetString(flimflam::kPassphraseProperty, test_passphrase);
+  properties_to_set.SetStringWithoutPathExpansion(
+      flimflam::kIdentityProperty, test_identity);
+  properties_to_set.SetStringWithoutPathExpansion(
+      flimflam::kPassphraseProperty, test_passphrase);
   network_configuration_handler_->SetProperties(
       service_path,
       properties_to_set,
@@ -509,6 +530,42 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
   EXPECT_FALSE(GetServiceStringProperty(
       service_path, flimflam::kIdentityProperty, &passphrase));
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(service_path));
+}
+
+TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
+  // TODO(stevenjb): Remove dependency on default Stub service.
+  const std::string service_path("wifi1");
+  std::string wifi_hex = "5468697320697320484558205353494421";
+  std::string expected_name = "This is HEX SSID!";
+
+  // Set Properties
+  base::DictionaryValue properties_to_set;
+  properties_to_set.SetStringWithoutPathExpansion(
+      flimflam::kWifiHexSsid, wifi_hex);
+  network_configuration_handler_->SetProperties(
+      service_path,
+      properties_to_set,
+      base::Bind(&base::DoNothing),
+      base::Bind(&ErrorCallback, false, service_path));
+  message_loop_.RunUntilIdle();
+  std::string wifi_hex_result;
+  EXPECT_TRUE(GetServiceStringProperty(
+      service_path, flimflam::kWifiHexSsid, &wifi_hex_result));
+  EXPECT_EQ(wifi_hex, wifi_hex_result);
+
+  // Get Properties
+  network_configuration_handler_->GetProperties(
+      service_path,
+      base::Bind(&NetworkConfigurationHandlerStubTest::GetPropertiesCallback,
+                 base::Unretained(this)),
+      base::Bind(&ErrorCallback, false, service_path));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(service_path, get_properties_path_);
+  std::string name_result;
+  EXPECT_TRUE(GetReceivedStringProperty(
+      service_path, flimflam::kNameProperty, &name_result));
+  EXPECT_EQ(expected_name, name_result);
 }
 
 }  // namespace chromeos

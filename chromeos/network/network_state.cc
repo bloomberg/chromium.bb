@@ -303,18 +303,31 @@ std::string NetworkState::GetNetmask() const {
 }
 
 bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
+  std::string updated_name = GetNameFromProperties(properties);
+  if (updated_name != name()) {
+    set_name(updated_name);
+    return true;
+  }
+  return false;
+}
+
+// static
+std::string NetworkState::GetNameFromProperties(
+    const base::DictionaryValue& properties) {
+  std::string name;
+  properties.GetStringWithoutPathExpansion(flimflam::kNameProperty, &name);
+
   std::string hex_ssid;
   properties.GetStringWithoutPathExpansion(flimflam::kWifiHexSsid, &hex_ssid);
+
   if (hex_ssid.empty()) {
     // Validate name for UTF8.
-    std::string valid_ssid = ValidateUTF8(name());
-    if (valid_ssid != name()) {
-      set_name(valid_ssid);
-      NET_LOG_DEBUG("UpdateName", base::StringPrintf(
-          "%s: UTF8: %s", path().c_str(), name().c_str()));
-      return true;
+    std::string valid_ssid = ValidateUTF8(name);
+    if (valid_ssid != name) {
+      NET_LOG_DEBUG("GetNameFromProperties", base::StringPrintf(
+          "%s: UTF8: %s", name.c_str(), valid_ssid.c_str()));
     }
-    return false;
+    return valid_ssid;
   }
 
   std::string ssid;
@@ -322,21 +335,18 @@ bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
   if (base::HexStringToBytes(hex_ssid, &raw_ssid_bytes)) {
     ssid = std::string(raw_ssid_bytes.begin(), raw_ssid_bytes.end());
   } else {
-    std::string desc = base::StringPrintf("%s: Error processing: %s",
-                                          path().c_str(), hex_ssid.c_str());
-    NET_LOG_DEBUG("UpdateName", desc);
-    LOG(ERROR) << desc;
-    ssid = name();
+    NET_LOG_ERROR("GetNameFromProperties",
+                  base::StringPrintf("%s: Error processing: %s",
+                                     name.c_str(), hex_ssid.c_str()));
+    return name;
   }
 
   if (IsStringUTF8(ssid)) {
-    if (ssid != name()) {
-      set_name(ssid);
-      NET_LOG_DEBUG("UpdateName", base::StringPrintf(
-          "%s: UTF8: %s", path().c_str(), name().c_str()));
-      return true;
+    if (ssid != name) {
+      NET_LOG_DEBUG("GetNameFromProperties", base::StringPrintf(
+          "%s: UTF8: %s", name.c_str(), ssid.c_str()));
     }
-    return false;
+    return ssid;
   }
 
   // Detect encoding and convert to UTF-8.
@@ -353,26 +363,22 @@ bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
   if (!encoding.empty()) {
     std::string utf8_ssid;
     if (base::ConvertToUtf8AndNormalize(ssid, encoding, &utf8_ssid)) {
-      if (utf8_ssid != name()) {
-        set_name(utf8_ssid);
-        NET_LOG_DEBUG("UpdateName", base::StringPrintf(
-            "%s: Encoding=%s: %s", path().c_str(),
-            encoding.c_str(), name().c_str()));
-        return true;
+      if (utf8_ssid != name) {
+        NET_LOG_DEBUG("GetNameFromProperties", base::StringPrintf(
+            "%s: Encoding=%s: %s", name.c_str(),
+            encoding.c_str(), utf8_ssid.c_str()));
       }
-      return false;
+      return utf8_ssid;
     }
   }
 
   // Unrecognized encoding. Only use raw bytes if name_ is empty.
-  NET_LOG_DEBUG("UpdateName", base::StringPrintf(
-      "%s: Unrecognized Encoding=%s: %s", path().c_str(),
+  NET_LOG_DEBUG("GetNameFromProperties", base::StringPrintf(
+      "%s: Unrecognized Encoding=%s: %s", name.c_str(),
       encoding.c_str(), ssid.c_str()));
-  if (name().empty() && !ssid.empty()) {
-    set_name(ssid);
-    return true;
-  }
-  return false;
+  if (name.empty() && !ssid.empty())
+    return ssid;
+  return name;
 }
 
 // static

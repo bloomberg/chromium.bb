@@ -102,6 +102,11 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns true if the source was successfully parsed.
   static bool GetOncSource(const base::Value& value, onc::ONCSource* out);
 
+  // Generates a name from properties."Wifi.HexSSID" if present, otherwise
+  // validates properties.Name and returns a valid utf8 version.
+  static std::string GetNameFromProperties(
+      const base::DictionaryValue& properties);
+
  private:
   friend class NetworkStateHandler;
   friend class NetworkChangeNotifierChromeosUpdateTest;

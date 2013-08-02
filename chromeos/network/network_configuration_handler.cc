@@ -20,6 +20,7 @@
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -45,6 +46,24 @@ void InvokeErrorCallback(const std::string& error,
   scoped_ptr<base::DictionaryValue> error_data(
       network_handler::CreateErrorData(path, error, ""));
   error_callback.Run(error, error_data.Pass());
+}
+
+void GetPropertiesCallback(
+    const network_handler::DictionaryResultCallback& callback,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& service_path,
+    DBusMethodCallStatus call_status,
+    const base::DictionaryValue& properties) {
+  // Get the correct name from WifiHex if necessary.
+  scoped_ptr<base::DictionaryValue> properties_copy(properties.DeepCopy());
+  std::string name = NetworkState::GetNameFromProperties(properties);
+  if (!name.empty()) {
+    properties_copy->SetStringWithoutPathExpansion(
+        flimflam::kNameProperty, name);
+  }
+  network_handler::GetPropertiesCallback(
+      callback, error_callback, service_path, call_status,
+      *properties_copy.get());
 }
 
 }  // namespace
@@ -160,7 +179,7 @@ void NetworkConfigurationHandler::GetProperties(
     const network_handler::ErrorCallback& error_callback) const {
   DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
       dbus::ObjectPath(service_path),
-      base::Bind(&network_handler::GetPropertiesCallback,
+      base::Bind(&GetPropertiesCallback,
                  callback, error_callback, service_path));
 }
 
