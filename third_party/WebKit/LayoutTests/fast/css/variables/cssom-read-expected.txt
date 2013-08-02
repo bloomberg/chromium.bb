@@ -1,3 +1,5 @@
+Inline style CSS text: var-a: apple; var-b: banana;
+
 Count vars: 2
 
 Access vars directly:

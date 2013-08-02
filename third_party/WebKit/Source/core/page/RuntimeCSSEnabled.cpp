@@ -43,7 +43,7 @@ static void setCSSPropertiesEnabled(CSSPropertyID* properties, size_t length, bo
         RuntimeCSSEnabled::setCSSPropertyEnabled(properties[i], featureFlag);
 }
 
-static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
+static void setPropertySwitchesFromRuntimeFeatures()
 {
     CSSPropertyID regionProperites[] = {
         CSSPropertyWebkitFlowInto,
@@ -92,6 +92,7 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyBackgroundBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMixBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyTouchAction, RuntimeEnabledFeatures::cssTouchActionEnabled());
+    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyVariable, RuntimeEnabledFeatures::cssVariablesEnabled());
 }
 
 static BoolVector& propertySwitches()
@@ -99,17 +100,18 @@ static BoolVector& propertySwitches()
     static BoolVector* switches = 0;
     if (!switches) {
         switches = new BoolVector;
-        switches->fill(true, numCSSProperties);
-        setPropertySwitchesFromRuntimeFeatures(*switches);
+        // Accomodate CSSPropertyIDs that fall outside the firstCSSProperty, lastCSSProperty range (eg. CSSPropertyVariable).
+        switches->fill(true, lastCSSProperty + 1);
+        setPropertySwitchesFromRuntimeFeatures();
     }
     return *switches;
 }
 
 size_t indexForProperty(CSSPropertyID propertyId)
 {
-    RELEASE_ASSERT(propertyId >= firstCSSProperty && propertyId <= lastCSSProperty);
-    // Values all start at 0.  Vector RELEASE_ASSERTS will catch if we're ever wrong.
-    return static_cast<size_t>(propertyId - firstCSSProperty);
+    RELEASE_ASSERT(propertyId >= 0 && propertyId <= lastCSSProperty);
+    ASSERT(propertyId != CSSPropertyInvalid);
+    return static_cast<size_t>(propertyId);
 }
 
 bool RuntimeCSSEnabled::isCSSPropertyEnabled(CSSPropertyID propertyId)

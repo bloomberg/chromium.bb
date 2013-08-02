@@ -9,6 +9,9 @@ if (window.testRunner) {
 
 var pre = document.querySelector("pre");
 
+pre.innerText += "Inline style CSS text: " + pre.style.cssText + "\n";
+pre.innerText += "\n";
+
 pre.innerText += "Count vars: " + pre.style.var.size + "\n";
 pre.innerText += "\n";
 
