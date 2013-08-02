@@ -170,8 +170,14 @@ cr.define('options', function() {
         chrome.send('setPrimary', [this.displays_[this.focusedIndex_].id]);
       }.bind(this);
       $('display-options-resolution-selection').onchange = function(ev) {
-        chrome.send('setUIScale', [this.displays_[this.focusedIndex_].id,
-                                   ev.target.value]);
+        var display = this.displays_[this.focusedIndex_];
+        var resolution = display.resolutions[ev.target.value];
+        if (resolution.scale) {
+          chrome.send('setUIScale', [display.id, resolution.scale]);
+        } else {
+          chrome.send('setResolution',
+                      [display.id, resolution.width, resolution.height]);
+        }
       }.bind(this);
       $('display-options-orientation-selection').onchange = function(ev) {
         chrome.send('setOrientation', [this.displays_[this.focusedIndex_].id,
@@ -606,7 +612,7 @@ cr.define('options', function() {
       $('selected-display-name').textContent = display.name;
 
       var resolution = $('display-options-resolution-selection');
-      if (display.uiScales.length <= 1) {
+      if (display.resolutions.length <= 1) {
         var option = document.createElement('option');
         option.value = 'default';
         option.textContent = display.width + 'x' + display.height;
@@ -614,19 +620,19 @@ cr.define('options', function() {
         resolution.appendChild(option);
         resolution.disabled = true;
       } else {
-        for (var i = 0; i < display.uiScales.length; i++) {
+        for (var i = 0; i < display.resolutions.length; i++) {
           var option = document.createElement('option');
-          option.value = display.uiScales[i].scale;
-          option.textContent =
-              display.uiScales[i].width + 'x' + display.uiScales[i].height;
-          if (display.uiScales[i].scale == 1.0) {
+          option.value = i;
+          option.textContent = display.resolutions[i].width + 'x' +
+              display.resolutions[i].height;
+          if (display.resolutions[i].isBest) {
             option.textContent += ' ' +
                 loadTimeData.getString('annotateBest');
           }
-          option.selected = display.uiScales[i].selected;
+          option.selected = display.resolutions[i].selected;
           resolution.appendChild(option);
         }
-        resolution.disabled = !display.isInternal;
+        resolution.disabled = (display.resolutions.length <= 1);
       }
     },
 
