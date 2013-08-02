@@ -104,6 +104,115 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestOverscrollDelegate);
 };
 
+// MockKeyboardListener --------------------------------------------------------
+class MockKeyboardListener : public KeyboardListener {
+ public:
+  MockKeyboardListener()
+      : handle_key_press_event_(false) {
+  }
+  virtual ~MockKeyboardListener() {}
+
+  // KeyboardListener:
+  virtual bool HandleKeyPressEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE {
+    return handle_key_press_event_;
+  }
+
+  void set_handle_key_press_event(bool handle) {
+    handle_key_press_event_ = handle;
+  }
+
+ private:
+  bool handle_key_press_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockKeyboardListener);
+};
+
+// MockInputRouter -------------------------------------------------------------
+
+class MockInputRouter : public InputRouter {
+ public:
+  explicit MockInputRouter(InputRouterClient* client)
+      : send_event_called_(false),
+        sent_mouse_event_(false),
+        sent_wheel_event_(false),
+        sent_keyboard_event_(false),
+        sent_gesture_event_(false),
+        send_touch_event_not_cancelled_(false),
+        message_received_(false),
+        client_(client) {
+  }
+  virtual ~MockInputRouter() {}
+
+  // InputRouter
+  virtual bool SendInput(IPC::Message* message) OVERRIDE {
+    send_event_called_ = true;
+    return true;
+  }
+  virtual void SendMouseEvent(
+      const MouseEventWithLatencyInfo& mouse_event) OVERRIDE {
+    if (client_->OnSendMouseEvent(mouse_event))
+      sent_mouse_event_ = true;
+  }
+  virtual void SendWheelEvent(
+      const MouseWheelEventWithLatencyInfo& wheel_event) OVERRIDE {
+    if (client_->OnSendWheelEvent(wheel_event))
+      sent_wheel_event_ = true;
+  }
+  virtual void SendKeyboardEvent(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info) OVERRIDE {
+    bool is_shortcut = false;
+    if (client_->OnSendKeyboardEvent(key_event, latency_info, &is_shortcut))
+      sent_keyboard_event_ = true;
+  }
+  virtual void SendGestureEvent(
+      const GestureEventWithLatencyInfo& gesture_event) OVERRIDE {
+    if (client_->OnSendGestureEvent(gesture_event))
+      sent_gesture_event_ = true;
+  }
+  virtual void SendTouchEvent(
+      const TouchEventWithLatencyInfo& touch_event) OVERRIDE {
+    if (client_->OnSendTouchEvent(touch_event))
+      send_touch_event_not_cancelled_ = true;
+  }
+  virtual void SendMouseEventImmediately(
+      const MouseEventWithLatencyInfo& mouse_event) OVERRIDE {}
+  virtual void SendTouchEventImmediately(
+      const TouchEventWithLatencyInfo& touch_event) OVERRIDE {}
+  virtual void SendGestureEventImmediately(
+      const GestureEventWithLatencyInfo& gesture_event) OVERRIDE {}
+  virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+  virtual bool ShouldForwardTouchEvent() const OVERRIDE { return true; }
+  virtual bool ShouldForwardGestureEvent(
+      const GestureEventWithLatencyInfo& gesture_event) const OVERRIDE {
+    return true;
+  }
+  virtual bool HasQueuedGestureEvents() const OVERRIDE { return true; }
+
+  // IPC::Listener
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    message_received_ = true;
+    return false;
+  }
+
+  bool send_event_called_;
+  bool sent_mouse_event_;
+  bool sent_wheel_event_;
+  bool sent_keyboard_event_;
+  bool sent_gesture_event_;
+  bool send_touch_event_not_cancelled_;
+  bool message_received_;
+
+ private:
+  InputRouterClient* client_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockInputRouter);
+};
+
 // MockRenderWidgetHost ----------------------------------------------------
 
 class MockRenderWidgetHost : public RenderWidgetHostImpl {
@@ -226,6 +335,15 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     return overscroll_delegate_.get();
   }
 
+  void SetupForInputRouterTest() {
+    mock_input_router_ = new MockInputRouter(this);
+    input_router_.reset(mock_input_router_);
+  }
+
+  MockInputRouter* mock_input_router() {
+    return mock_input_router_;
+  }
+
  protected:
   virtual void NotifyRendererUnresponsive() OVERRIDE {
     unresponsive_timer_fired_ = true;
@@ -242,7 +360,12 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
  private:
   bool unresponsive_timer_fired_;
 
+  // |immediate_input_router_| and |mock_input_router_| are owned by
+  // RenderWidgetHostImpl |input_router_|. Below are provided for convenience so
+  // that we don't have to reinterpret_cast it all the time.
   ImmediateInputRouter* immediate_input_router_;
+  MockInputRouter* mock_input_router_;
+
   scoped_ptr<TestOverscrollDelegate> overscroll_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHost);
@@ -337,6 +460,7 @@ class TestView : public TestRenderWidgetHostView {
   explicit TestView(RenderWidgetHostImpl* rwh)
       : TestRenderWidgetHostView(rwh),
         acked_event_count_(0),
+        gesture_event_type_(-1),
         use_fake_physical_backing_size_(false) {
   }
 
@@ -355,6 +479,7 @@ class TestView : public TestRenderWidgetHostView {
   const WebMouseWheelEvent& unhandled_wheel_event() const {
     return unhandled_wheel_event_;
   }
+  int gesture_event_type() const { return gesture_event_type_; }
 
   void SetMockPhysicalBackingSize(const gfx::Size& mock_physical_backing_size) {
     use_fake_physical_backing_size_ = true;
@@ -376,6 +501,9 @@ class TestView : public TestRenderWidgetHostView {
   virtual void UnhandledWheelEvent(const WebMouseWheelEvent& event) OVERRIDE {
     unhandled_wheel_event_ = event;
   }
+  virtual void GestureEventAck(int gesture_event_type) OVERRIDE {
+    gesture_event_type_ = gesture_event_type;
+  }
   virtual gfx::Size GetPhysicalBackingSize() const OVERRIDE {
     if (use_fake_physical_backing_size_)
       return mock_physical_backing_size_;
@@ -386,6 +514,7 @@ class TestView : public TestRenderWidgetHostView {
   WebMouseWheelEvent unhandled_wheel_event_;
   WebTouchEvent acked_event_;
   int acked_event_count_;
+  int gesture_event_type_;
   gfx::Rect bounds_;
   bool use_fake_physical_backing_size_;
   gfx::Size mock_physical_backing_size_;
@@ -1087,6 +1216,35 @@ TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
 
   EXPECT_TRUE(delegate_->unhandled_keyboard_event_called());
   EXPECT_EQ(WebInputEvent::KeyUp, delegate_->unhandled_keyboard_event_type());
+}
+
+TEST_F(RenderWidgetHostTest, UnhandledWheelEvent) {
+  SimulateWheelEvent(-5, 0, 0, true);
+
+  // Make sure we sent the input event to the renderer.
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+                  InputMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // Send the simulated response from the renderer back.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(-5, view_->unhandled_wheel_event().deltaX);
+}
+
+TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchscreen);
+
+  // Make sure we sent the input event to the renderer.
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+                  InputMsg_HandleInputEvent::ID));
+  process_->sink().ClearMessages();
+
+  // Send the simulated response from the renderer back.
+  SendInputEventACK(WebInputEvent::GestureScrollBegin,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GestureScrollBegin, view_->gesture_event_type());
 }
 
 // Test that the hang monitor timer expires properly if a new timer is started
@@ -2266,6 +2424,143 @@ TEST_F(RenderWidgetHostTest, OverscrollResetsOnBlur) {
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->completed_mode());
   process_->sink().ClearMessages();
+}
+
+#define TEST_InputRouterRoutes_NOARGS(INPUTMSG) \
+  TEST_F(RenderWidgetHostTest, InputRouterRoutes##INPUTMSG) { \
+    host_->SetupForInputRouterTest(); \
+    host_->INPUTMSG(); \
+    EXPECT_TRUE(host_->mock_input_router()->send_event_called_); \
+  }
+
+TEST_InputRouterRoutes_NOARGS(Undo);
+TEST_InputRouterRoutes_NOARGS(Redo);
+TEST_InputRouterRoutes_NOARGS(Cut);
+TEST_InputRouterRoutes_NOARGS(Copy);
+#if defined(OS_MACOSX)
+TEST_InputRouterRoutes_NOARGS(CopyToFindPboard);
+#endif
+TEST_InputRouterRoutes_NOARGS(Paste);
+TEST_InputRouterRoutes_NOARGS(PasteAndMatchStyle);
+TEST_InputRouterRoutes_NOARGS(Delete);
+TEST_InputRouterRoutes_NOARGS(SelectAll);
+TEST_InputRouterRoutes_NOARGS(Unselect);
+TEST_InputRouterRoutes_NOARGS(Focus);
+TEST_InputRouterRoutes_NOARGS(Blur);
+TEST_InputRouterRoutes_NOARGS(LostCapture);
+
+#undef TEST_InputRouterRoutes_NOARGS
+
+TEST_F(RenderWidgetHostTest, InputRouterRoutesReplace) {
+  host_->SetupForInputRouterTest();
+  host_->Replace(EmptyString16());
+  EXPECT_TRUE(host_->mock_input_router()->send_event_called_);
+}
+
+TEST_F(RenderWidgetHostTest, InputRouterRoutesReplaceMisspelling) {
+  host_->SetupForInputRouterTest();
+  host_->ReplaceMisspelling(EmptyString16());
+  EXPECT_TRUE(host_->mock_input_router()->send_event_called_);
+}
+
+TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {
+  host_->SetupForInputRouterTest();
+
+  host_->SetIgnoreInputEvents(true);
+
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
+  EXPECT_FALSE(host_->mock_input_router()->sent_keyboard_event_);
+
+  SimulateMouseEvent(WebInputEvent::MouseMove);
+  EXPECT_FALSE(host_->mock_input_router()->sent_mouse_event_);
+
+  SimulateWheelEvent(0, 100, 0, true);
+  EXPECT_FALSE(host_->mock_input_router()->sent_wheel_event_);
+
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_FALSE(host_->mock_input_router()->sent_gesture_event_);
+
+  PressTouchPoint(100, 100);
+  SendTouchEvent();
+  EXPECT_FALSE(host_->mock_input_router()->send_touch_event_not_cancelled_);
+}
+
+TEST_F(RenderWidgetHostTest, KeyboardListenerIgnoresEvent) {
+  host_->SetupForInputRouterTest();
+
+  scoped_ptr<MockKeyboardListener> keyboard_listener_(new MockKeyboardListener);
+  host_->AddKeyboardListener(keyboard_listener_.get());
+
+  keyboard_listener_->set_handle_key_press_event(false);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
+
+  EXPECT_TRUE(host_->mock_input_router()->sent_keyboard_event_);
+
+  host_->RemoveKeyboardListener(keyboard_listener_.get());
+}
+
+TEST_F(RenderWidgetHostTest, KeyboardListenerSuppressFollowingEvents) {
+  host_->SetupForInputRouterTest();
+
+  scoped_ptr<MockKeyboardListener> keyboard_listener_(new MockKeyboardListener);
+  host_->AddKeyboardListener(keyboard_listener_.get());
+
+  // KeyboardListener handles the first event
+  keyboard_listener_->set_handle_key_press_event(true);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
+
+  EXPECT_FALSE(host_->mock_input_router()->sent_keyboard_event_);
+
+  // Following Char events should be suppressed
+  keyboard_listener_->set_handle_key_press_event(false);
+  SimulateKeyboardEvent(WebInputEvent::Char);
+  EXPECT_FALSE(host_->mock_input_router()->sent_keyboard_event_);
+  SimulateKeyboardEvent(WebInputEvent::Char);
+  EXPECT_FALSE(host_->mock_input_router()->sent_keyboard_event_);
+
+  // Sending RawKeyDown event should stop suppression
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
+  EXPECT_TRUE(host_->mock_input_router()->sent_keyboard_event_);
+
+  host_->mock_input_router()->sent_keyboard_event_ = false;
+  SimulateKeyboardEvent(WebInputEvent::Char);
+  EXPECT_TRUE(host_->mock_input_router()->sent_keyboard_event_);
+
+  host_->RemoveKeyboardListener(keyboard_listener_.get());
+}
+
+TEST_F(RenderWidgetHostTest, InputRouterReceivesHandleInputEvent_ACK) {
+  host_->SetupForInputRouterTest();
+
+  SendInputEventACK(WebInputEvent::RawKeyDown,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  EXPECT_TRUE(host_->mock_input_router()->message_received_);
+}
+
+TEST_F(RenderWidgetHostTest, InputRouterReceivesMoveCaret_ACK) {
+  host_->SetupForInputRouterTest();
+
+  host_->OnMessageReceived(ViewHostMsg_MoveCaret_ACK(0));
+
+  EXPECT_TRUE(host_->mock_input_router()->message_received_);
+}
+
+TEST_F(RenderWidgetHostTest, InputRouterReceivesSelectRange_ACK) {
+  host_->SetupForInputRouterTest();
+
+  host_->OnMessageReceived(ViewHostMsg_SelectRange_ACK(0));
+
+  EXPECT_TRUE(host_->mock_input_router()->message_received_);
+}
+
+TEST_F(RenderWidgetHostTest, InputRouterReceivesHasTouchEventHandlers) {
+  host_->SetupForInputRouterTest();
+
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+
+  EXPECT_TRUE(host_->mock_input_router()->message_received_);
 }
 
 }  // namespace content
