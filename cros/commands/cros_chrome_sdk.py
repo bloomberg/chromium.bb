@@ -517,6 +517,8 @@ class ChromeSDKCommand(cros.CrosCommand):
 
     # Add managed components to the PATH.
     env['PATH'] = '%s:%s' % (constants.CHROMITE_BIN_DIR, env['PATH'])
+    env['PATH'] = '%s:%s' % (os.path.dirname(self.sdk.gs_ctx.gsutil_bin),
+                             env['PATH'])
 
     # Export internally referenced variables.
     os.environ[self.sdk.SDK_VERSION_ENV] = sdk_ctx.version
