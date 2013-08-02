@@ -31,7 +31,7 @@ def CommandToString(command):
   return ' '.join(map(pipes.quote, command))
 
 
-def SpawnCmd(command, stdout=None):
+def SpawnCmd(command, stdout=None, cwd=CHROME_SRC):
   """Spawn a process without waiting for termination."""
   print '>', CommandToString(command)
   sys.stdout.flush()
@@ -41,13 +41,14 @@ def SpawnCmd(command, stdout=None):
       def wait():
         return 0
     return MockPopen()
-  return subprocess.Popen(command, cwd=CHROME_SRC, stdout=stdout)
+  return subprocess.Popen(command, cwd=cwd, stdout=stdout)
 
 
 def RunCmd(command, flunk_on_failure=True, halt_on_failure=False,
-           warning_code=constants.WARNING_EXIT_CODE, stdout=None):
+           warning_code=constants.WARNING_EXIT_CODE, stdout=None,
+           cwd=CHROME_SRC):
   """Run a command relative to the chrome source root."""
-  code = SpawnCmd(command, stdout).wait()
+  code = SpawnCmd(command, stdout, cwd).wait()
   print '<', CommandToString(command)
   if code != 0:
     print 'ERROR: process exited with code %d' % code
