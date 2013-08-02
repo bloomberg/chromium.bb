@@ -1150,6 +1150,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kEnableShareGroupAsyncTextureUpload,
     switches::kEnableVirtualGLContexts,
     switches::kGpuStartupDialog,
+    switches::kGpuSandboxAllowSysVShm,
     switches::kLoggingLevel,
     switches::kNoSandbox,
     switches::kReduceGpuSandbox,

@@ -532,6 +532,9 @@ const char kGpuLauncher[]                   = "gpu-launcher";
 // Makes this process a GPU sub-process.
 const char kGpuProcess[]                    = "gpu-process";
 
+// Allow shmat system call in GPU sandbox.
+const char kGpuSandboxAllowSysVShm[]        = "gpu-sandbox-allow-sysv-shm";
+
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 

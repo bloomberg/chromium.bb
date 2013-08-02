@@ -1260,8 +1260,10 @@ ErrorCode RestrictMmapFlags(Sandbox* sandbox) {
   // "denied" mask because of the negation operator.
   // Significantly, we don't permit MAP_HUGETLB, or the newer flags such as
   // MAP_POPULATE.
+  // TODO(davidung), remove MAP_DENYWRITE with updated Tegra libraries.
   uint32_t denied_mask = ~(MAP_SHARED | MAP_PRIVATE | MAP_ANONYMOUS |
-                           MAP_STACK | MAP_NORESERVE | MAP_FIXED);
+                           MAP_STACK | MAP_NORESERVE | MAP_FIXED |
+                           MAP_DENYWRITE);
   return sandbox->Cond(3, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
                        denied_mask,
                        sandbox->Trap(CrashSIGSYS_Handler, NULL),
@@ -1441,7 +1443,7 @@ ErrorCode BaselinePolicyWithAux(Sandbox* sandbox, int sysno, void* aux) {
   return BaselinePolicy(sandbox, sysno);
 }
 
-// Main policy for x86_64/i386. Extended by ArmMaliGpuProcessPolicy.
+// Main policy for x86_64/i386. Extended by ArmGpuProcessPolicy.
 ErrorCode GpuProcessPolicy(Sandbox* sandbox, int sysno,
                            void* broker_process) {
   switch (sysno) {
@@ -1487,9 +1489,9 @@ ErrorCode GpuBrokerProcessPolicy(Sandbox* sandbox, int sysno, void* aux) {
   }
 }
 
-// ARM Mali GPU process sandbox, inheriting from GpuProcessPolicy.
-ErrorCode ArmMaliGpuProcessPolicy(Sandbox* sandbox, int sysno,
-                                  void* broker_process) {
+// Generic ARM GPU process sandbox, inheriting from GpuProcessPolicy.
+ErrorCode ArmGpuProcessPolicy(Sandbox* sandbox, int sysno,
+                              void* broker_process) {
   switch (sysno) {
 #if defined(__arm__)
     // ARM GPU sandbox is started earlier so we need to allow networking
@@ -1517,10 +1519,21 @@ ErrorCode ArmMaliGpuProcessPolicy(Sandbox* sandbox, int sysno,
   }
 }
 
+// Same as above but with shmat allowed, inheriting from GpuProcessPolicy.
+ErrorCode ArmGpuProcessPolicyWithShmat(Sandbox* sandbox, int sysno,
+                                       void* broker_process) {
+#if defined(__arm__)
+  if (sysno == __NR_shmat)
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+#endif  // defined(__arm__)
+
+  return ArmGpuProcessPolicy(sandbox, sysno, broker_process);
+}
+
 // A GPU broker policy is the same as a GPU policy with open and
 // openat allowed.
-ErrorCode ArmMaliGpuBrokerProcessPolicy(Sandbox* sandbox,
-                                        int sysno, void* aux) {
+ErrorCode ArmGpuBrokerProcessPolicy(Sandbox* sandbox,
+                                    int sysno, void* aux) {
   // "aux" would typically be NULL, when called from
   // "EnableGpuBrokerPolicyCallBack"
   switch (sysno) {
@@ -1529,7 +1542,7 @@ ErrorCode ArmMaliGpuBrokerProcessPolicy(Sandbox* sandbox,
     case __NR_openat:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
     default:
-      return ArmMaliGpuProcessPolicy(sandbox, sysno, aux);
+      return ArmGpuProcessPolicy(sandbox, sysno, aux);
   }
 }
 
@@ -1723,36 +1736,73 @@ bool EnableGpuBrokerPolicyCallback() {
   return true;
 }
 
-bool EnableArmMaliGpuBrokerPolicyCallback() {
-  StartSandboxWithPolicy(ArmMaliGpuBrokerProcessPolicy, NULL);
+bool EnableArmGpuBrokerPolicyCallback() {
+  StartSandboxWithPolicy(ArmGpuBrokerProcessPolicy, NULL);
   return true;
 }
 
 void AddArmMaliGpuWhitelist(std::vector<std::string>* read_whitelist,
                             std::vector<std::string>* write_whitelist) {
-  // On ARM we're enabling the sandbox before the X connection is made,
-  // so we need to allow access to |.Xauthority|.
-  static const char kXAutorityPath[] = "/home/chronos/.Xauthority";
-
-  // Devices and files needed by the ARM GPU userspace.
+  // Device file needed by the ARM GPU userspace.
   static const char kMali0Path[] = "/dev/mali0";
-  static const char kLibGlesPath[] = "/usr/lib/libGLESv2.so.2";
-  static const char kLibEglPath[] = "/usr/lib/libEGL.so.1";
 
   // Devices needed for video decode acceleration on ARM.
   static const char kDevMfcDecPath[] = "/dev/mfc-dec";
   static const char kDevGsc1Path[] = "/dev/gsc1";
 
-  read_whitelist->push_back(kXAutorityPath);
   read_whitelist->push_back(kMali0Path);
-  read_whitelist->push_back(kLibGlesPath);
-  read_whitelist->push_back(kLibEglPath);
   read_whitelist->push_back(kDevMfcDecPath);
   read_whitelist->push_back(kDevGsc1Path);
 
   write_whitelist->push_back(kMali0Path);
   write_whitelist->push_back(kDevMfcDecPath);
   write_whitelist->push_back(kDevGsc1Path);
+}
+
+void AddArmTegraGpuWhitelist(std::vector<std::string>* read_whitelist,
+                             std::vector<std::string>* write_whitelist) {
+  // Device files needed by the Tegra GPU userspace.
+  static const char kDevNvhostCtrlPath[] = "/dev/nvhost-ctrl";
+  static const char kDevNvhostGr2dPath[] = "/dev/nvhost-gr2d";
+  static const char kDevNvhostGr3dPath[] = "/dev/nvhost-gr3d";
+  static const char kDevNvhostIspPath[] = "/dev/nvhost-isp";
+  static const char kDevNvhostViPath[] = "/dev/nvhost-vi";
+  static const char kDevNvmapPath[] = "/dev/nvmap";
+  static const char kDevTegraSemaPath[] = "/dev/tegra_sema";
+
+  read_whitelist->push_back(kDevNvhostCtrlPath);
+  read_whitelist->push_back(kDevNvhostGr2dPath);
+  read_whitelist->push_back(kDevNvhostGr3dPath);
+  read_whitelist->push_back(kDevNvhostIspPath);
+  read_whitelist->push_back(kDevNvhostViPath);
+  read_whitelist->push_back(kDevNvmapPath);
+  read_whitelist->push_back(kDevTegraSemaPath);
+
+  write_whitelist->push_back(kDevNvhostCtrlPath);
+  write_whitelist->push_back(kDevNvhostGr2dPath);
+  write_whitelist->push_back(kDevNvhostGr3dPath);
+  write_whitelist->push_back(kDevNvhostIspPath);
+  write_whitelist->push_back(kDevNvhostViPath);
+  write_whitelist->push_back(kDevNvmapPath);
+  write_whitelist->push_back(kDevTegraSemaPath);
+}
+
+void AddArmGpuWhitelist(std::vector<std::string>* read_whitelist,
+                        std::vector<std::string>* write_whitelist) {
+  // On ARM we're enabling the sandbox before the X connection is made,
+  // so we need to allow access to |.Xauthority|.
+  static const char kXAutorityPath[] = "/home/chronos/.Xauthority";
+
+  // Files needed by the ARM GPU userspace.
+  static const char kLibGlesPath[] = "/usr/lib/libGLESv2.so.2";
+  static const char kLibEglPath[] = "/usr/lib/libEGL.so.1";
+
+  read_whitelist->push_back(kXAutorityPath);
+  read_whitelist->push_back(kLibGlesPath);
+  read_whitelist->push_back(kLibEglPath);
+
+  AddArmMaliGpuWhitelist(read_whitelist, write_whitelist);
+  AddArmTegraGpuWhitelist(read_whitelist, write_whitelist);
 }
 
 // Start a broker process to handle open() inside the sandbox.
@@ -1774,12 +1824,12 @@ void InitGpuBrokerProcess(Sandbox::EvaluateSyscall gpu_policy,
   std::vector<std::string> write_whitelist;
   write_whitelist.push_back(kDriCard0Path);
 
-  if (gpu_policy == ArmMaliGpuProcessPolicy) {
+  if (gpu_policy == ArmGpuProcessPolicy ||
+      gpu_policy == ArmGpuProcessPolicyWithShmat) {
     // We shouldn't be using this policy on non-ARM architectures.
     CHECK(IsArchitectureArm());
-
-    AddArmMaliGpuWhitelist(&read_whitelist, &write_whitelist);
-    sandbox_callback = EnableArmMaliGpuBrokerPolicyCallback;
+    AddArmGpuWhitelist(&read_whitelist, &write_whitelist);
+    sandbox_callback = EnableArmGpuBrokerPolicyCallback;
   } else if (gpu_policy == GpuProcessPolicy) {
     sandbox_callback = EnableGpuBrokerPolicyCallback;
   } else {
@@ -1816,9 +1866,20 @@ void WarmupPolicy(Sandbox::EvaluateSyscall policy,
         dlopen(I965DrvVideoPath, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
       }
     }
-  } else if (policy == ArmMaliGpuProcessPolicy) {
+  } else if (policy == ArmGpuProcessPolicy ||
+             policy == ArmGpuProcessPolicyWithShmat) {
     // Create a new broker process.
     InitGpuBrokerProcess(policy, broker_process);
+
+    // Preload the Tegra libraries.
+    dlopen("/usr/lib/libnvrm.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+    dlopen("/usr/lib/libnvrm_graphics.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+    dlopen("/usr/lib/libnvos.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+    dlopen("/usr/lib/libnvddk_2d.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+    dlopen("/usr/lib/libardrv_dynamic.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+    dlopen("/usr/lib/libnvwsi.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+    dlopen("/usr/lib/libnvglsi.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+    dlopen("/usr/lib/libcgdrv.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
   }
 }
 
@@ -1827,8 +1888,12 @@ Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
     const std::string& process_type) {
   if (process_type == switches::kGpuProcess) {
     // On Chrome OS ARM, we need a specific GPU process policy.
-    if (IsChromeOS() && IsArchitectureArm())
-      return ArmMaliGpuProcessPolicy;
+    if (IsChromeOS() && IsArchitectureArm()) {
+      if (command_line.HasSwitch(switches::kGpuSandboxAllowSysVShm))
+        return ArmGpuProcessPolicyWithShmat;
+      else
+        return ArmGpuProcessPolicy;
+    }
     else
       return GpuProcessPolicy;
   }

@@ -162,6 +162,7 @@ extern const char kGpuDriverVendor[];
 extern const char kGpuDriverVersion[];
 extern const char kGpuLauncher[];
 CONTENT_EXPORT extern const char kGpuProcess[];
+extern const char kGpuSandboxAllowSysVShm[];
 extern const char kGpuStartupDialog[];
 extern const char kGpuVendorID[];
 #if defined(OS_ANDROID)
