@@ -2505,11 +2505,11 @@ END
         if ($interface->extendedAttributes->{"ConstructorCallWith"} eq "ScriptExecutionContext") {
             push(@beforeArgumentList, "context");
             $code .= "\n";
-            $code .= "ScriptExecutionContext* context = getScriptExecutionContext();";
+            $code .= "    ScriptExecutionContext* context = getScriptExecutionContext();";
         } elsif ($interface->extendedAttributes->{"ConstructorCallWith"} eq "Document") {
             push(@beforeArgumentList, "document");
             $code .= "\n";
-            $code .= "Document* document = toDocument(getScriptExecutionContext());";
+            $code .= "    Document* document = toDocument(getScriptExecutionContext());";
         }
     }
 
