@@ -776,12 +776,8 @@
             }],
             # TODO(mallinath) - Enable SCTP for Android and iOS platforms.
             ['OS!="android" and OS!="ios"', {
-              'conditions': [
-                ['OS!="win"', {
-                  'defines': [
-                    'HAVE_SCTP',
-                  ],
-                }],
+              'defines': [
+                'HAVE_SCTP',
               ],
               'sources': [
                 '<(libjingle_source)/talk/media/sctp/sctpdataengine.cc',

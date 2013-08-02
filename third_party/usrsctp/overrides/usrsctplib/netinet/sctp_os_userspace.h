@@ -44,8 +44,6 @@
 #if defined(__Userspace_os_Windows)
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include <ws2ipdef.h>
-#include <ws2def.h>
 #include <iphlpapi.h>
 #include <Mswsock.h>
 #include <Windows.h>
@@ -63,6 +61,10 @@ typedef struct
 	CRITICAL_SECTION waiters_count_lock;
 	HANDLE events_[C_MAX_EVENTS];
 } userland_cond_t;
+void InitializeXPConditionVariable(userland_cond_t *);
+void DeleteXPConditionVariable(userland_cond_t *);
+int SleepXPConditionVariable(userland_cond_t *, userland_mutex_t *);
+void WakeAllXPConditionVariable(userland_cond_t *);
 #define InitializeConditionVariable(cond) InitializeXPConditionVariable(cond)
 #define DeleteConditionVariable(cond) DeleteXPConditionVariable(cond)
 #define SleepConditionVariableCS(cond, mtx, time) SleepXPConditionVariable(cond, mtx)
@@ -210,8 +212,10 @@ typedef HANDLE userland_thread_t;
 
 typedef char* caddr_t;
 
+int Win_getifaddrs(struct ifaddrs**);
 #define getifaddrs(interfaces)  (int)Win_getifaddrs(interfaces)
-#define if_nametoindex(x) (int)win_if_nametoindex(x)
+int win_if_nametoindex(const char *);
+#define if_nametoindex(x) win_if_nametoindex(x)
 
 #define bzero(buf, len) memset(buf, 0, len)
 #define bcopy(srcKey, dstKey, len) memcpy(dstKey, srcKey, len)
@@ -411,18 +415,18 @@ struct sx {int dummy;};
 #else
 #include <sys/queue.h>
 #endif
+#include <user_malloc.h>
 /* #include <sys/kernel.h> */
 /* #include <sys/sysctl.h> */
 /* #include <sys/protosw.h> */
 /* on FreeBSD, this results in a redefintion of SOCK(BUF)_(UN)LOCK and
  *  uknown type of struct mtx for sb_mtx in struct sockbuf */
+#include "user_socketvar.h" /* MALLOC_DECLARE's M_PCB. Replacement for sys/socketvar.h */
 /* #include <sys/jail.h> */
 /* #include <sys/sysctl.h> */
-#include <user_atomic.h>
 #include <user_environment.h>
-#include <user_malloc.h>
+#include <user_atomic.h>
 #include <user_mbuf.h>
-#include "user_socketvar.h" /* MALLOC_DECLARE's M_PCB. Replacement for sys/socketvar.h */
 /* #include <sys/uio.h> */
 /* #include <sys/lock.h> */
 #if defined(__FreeBSD__) && __FreeBSD_version > 602000
@@ -993,13 +997,7 @@ int sctp_userspace_get_mtu_from_ifn(uint32_t if_index, int af);
 
 
 #include <netinet/sctp_sha1.h>
-#if 0 /*this was old _KERNEL code... */
-#include <crypto/sha1.h>
-/* map standard crypto API names */
-#define SHA1_Init	SHA1Init
-#define SHA1_Update	SHA1Update
-#define SHA1_Final(x,y)	SHA1Final((caddr_t)x, y)
-#endif
+
 
 #if defined(HAVE_SHA2)
 #include <crypto/sha2/sha2.h>

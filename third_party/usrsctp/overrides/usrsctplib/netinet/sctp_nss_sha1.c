@@ -38,6 +38,9 @@ __FBSDID("$FreeBSD$");
 #ifdef SCTP_USE_NSS_SHA1
 #include <netinet/sctp_nss_sha1.h>
 
+/* A SHA-1 Digest is 160 bits, or 20 bytes */
+#define SHA_DIGEST_LENGTH (20)
+
 void
 SCTP_NSS_SHA1_Init(struct sha1_context *ctx)
 {
@@ -55,7 +58,7 @@ void
 SCTP_NSS_SHA1_Final(unsigned char *digest, struct sha1_context *ctx)
 {
 	unsigned int output_len = 0;
-	PK11_DigestFinal(ctx->pk11_ctx, digest, &output_len, sizeof(digest));
+	PK11_DigestFinal(ctx->pk11_ctx, digest, &output_len, SHA_DIGEST_LENGTH);
 	PK11_DestroyContext(ctx->pk11_ctx, PR_TRUE);
 }
 #endif
