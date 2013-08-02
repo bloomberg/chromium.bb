@@ -1392,3 +1392,5 @@ crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ I
 crbug.com/259083 fast/sub-pixel/ellipsis-zoom.html [ ImageOnlyFailure ]
 
 crbug.com/267206 [ Lion MountainLion ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
+
+crbug.com/267290 [ Win ] fast/text/midword-break-before-surrogate-pair-2.html [ Failure ]
