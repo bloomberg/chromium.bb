@@ -41,6 +41,7 @@
   background: transparent;  /* Hide the standard slider bar */
   height: 100%;
   left: -2px;  /* Required to align the input element with the parent. */
+  outline: none;
   position: absolute;
   top: -2px;
   width: 100%;
