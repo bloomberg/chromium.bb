@@ -36,7 +36,6 @@ base::SharedMemory* ScopedSafeSharedMemory::shared_memory() {
   return safe_shared_memory_;
 }
 
-
 SafeSharedMemoryPool::SafeSharedMemoryPool()
     : handles_acquired_(0),
       handles_consumed_(0),
@@ -94,8 +93,8 @@ void SafeSharedMemoryPool::
   base::AutoLock scoped_lock(lock_);
 
   // Adjust stats.
+  DCHECK_GT(handles_acquired_, 0);
   handles_acquired_--;
-  DCHECK(handles_acquired_ >= 0);
 
   MemoryMap::iterator it = memory_.find(handle);
   CHECK(it != memory_.end());
@@ -103,10 +102,10 @@ void SafeSharedMemoryPool::
   CHECK(it->second.safe_shared_memory);
   if (--it->second.reference_count == 0) {
     // Adjust stats.
+    DCHECK_GT(handles_consumed_, 0);
     handles_consumed_--;
+    DCHECK_LE(it->second.shm_size, address_space_consumed_);
     address_space_consumed_ -= it->second.shm_size;
-    DCHECK(handles_consumed_ >= 0);
-    DCHECK(address_space_consumed_ >= 0);
     // Delete the safe memory and remove it.
     delete it->second.safe_shared_memory;
     memory_.erase(it);
@@ -147,4 +146,4 @@ SharedMemory* SafeSharedMemoryPool::DuplicateSharedMemory(
   return duped_shared_memory.release();
 }
 
-}  // namespace gfx
+}  // namespace gpu
