@@ -21,7 +21,6 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/styled_label_listener.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget_observer.h"
@@ -39,7 +38,6 @@ namespace views {
 class BubbleBorder;
 class Checkbox;
 class Combobox;
-class FocusableBorder;
 class FocusManager;
 class ImageButton;
 class ImageView;
@@ -61,6 +59,7 @@ class MultiAnimation;
 namespace autofill {
 
 class AutofillDialogSignInDelegate;
+class DecoratedTextfield;
 struct DetailInput;
 
 // Views toolkit implementation of the Autofill dialog that handles the
@@ -196,42 +195,6 @@ class AutofillDialogViews : public AutofillDialogView,
     ScopedObserver<views::Widget, ErrorBubble> observer_;
 
     DISALLOW_COPY_AND_ASSIGN(ErrorBubble);
-  };
-
-  // A class which holds a textfield and draws extra stuff on top, like
-  // invalid content indications.
-  class DecoratedTextfield : public views::Textfield {
-   public:
-    DecoratedTextfield(const base::string16& default_value,
-                       const base::string16& placeholder,
-                       views::TextfieldController* controller);
-    virtual ~DecoratedTextfield();
-
-    // Sets whether to indicate the textfield has invalid content.
-    void SetInvalid(bool invalid);
-    bool invalid() const { return invalid_; }
-
-    // Sets the icon to be displayed inside the textfield at the end of the
-    // text.
-    void SetIcon(const gfx::Image& icon);
-
-    // views::View implementation.
-    virtual const char* GetClassName() const OVERRIDE;
-    virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
-    virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
-   private:
-    // We draw the border.
-    views::FocusableBorder* border_;  // Weak.
-
-    // The icon that goes at the right side of the textfield.
-    gfx::Image icon_;
-
-    // Whether the text contents are "invalid" (i.e. should special markers be
-    // shown to indicate invalidness).
-    bool invalid_;
-
-    DISALLOW_COPY_AND_ASSIGN(DecoratedTextfield);
   };
 
   // A View which displays the currently selected account and lets the user

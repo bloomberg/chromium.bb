@@ -1543,6 +1543,8 @@
         'browser/ui/views/autofill/autofill_dialog_views.h',
         'browser/ui/views/autofill/autofill_popup_view_views.cc',
         'browser/ui/views/autofill/autofill_popup_view_views.h',
+        'browser/ui/views/autofill/decorated_textfield.cc',
+        'browser/ui/views/autofill/decorated_textfield.h',
         'browser/ui/views/avatar_menu_bubble_view.cc',
         'browser/ui/views/avatar_menu_bubble_view.h',
         'browser/ui/views/avatar_menu_button.cc',
