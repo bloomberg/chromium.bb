@@ -592,9 +592,6 @@ base::ProcessHandle StartSandboxedProcess(
   cmd_line->AppendArg(base::StringPrintf("/prefetch:%d", base::Hash(type_str)));
 
   if (!in_sandbox) {
-    if (!cmd_line->HasSwitch(switches::kNoSandbox))
-      cmd_line->AppendSwitch(switches::kNoSandbox);
-
     base::ProcessHandle process = 0;
     base::LaunchProcess(*cmd_line, base::LaunchOptions(), &process);
     g_broker_services->AddTargetPeer(process);
