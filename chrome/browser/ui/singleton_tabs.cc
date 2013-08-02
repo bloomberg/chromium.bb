@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -43,12 +44,13 @@ void ShowSingletonTabRespectRef(Browser* browser, const GURL& url) {
 
 void ShowSingletonTabOverwritingNTP(Browser* browser,
                                     const NavigateParams& params) {
+  DCHECK(browser);
   NavigateParams local_params(params);
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (contents) {
     const GURL& contents_url = contents->GetURL();
-    if ((contents_url == GURL(kChromeUINewTabURL) ||
+    if ((contents_url == GURL(kChromeUINewTabURL) || IsInstantNTP(contents) ||
          contents_url == GURL(content::kAboutBlankURL)) &&
         GetIndexOfSingletonTab(&local_params) < 0) {
       local_params.disposition = CURRENT_TAB;

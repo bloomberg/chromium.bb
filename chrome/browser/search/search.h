@@ -82,6 +82,10 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile);
 // Returns true if the Instant |url| should use process per site.
 bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile);
 
+// Returns true if |url| corresponds to a New Tab page (it can be either an
+// Instant Extended NTP or a non-extended NTP).
+bool IsNTPURL(const GURL& url, Profile* profile);
+
 // Returns true if the visible entry of |contents| is a New Tab Page rendered
 // by Instant. A page that matches the search or Instant URL of the default
 // search provider but does not have any search terms is considered an Instant

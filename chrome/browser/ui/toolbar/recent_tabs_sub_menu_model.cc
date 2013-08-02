@@ -12,6 +12,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
@@ -26,7 +27,6 @@
 #include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
-#include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -417,8 +417,8 @@ void RecentTabsSubMenuModel::BuildDevices() {
           continue;
         const sessions::SerializedNavigationEntry& current_navigation =
             tab->navigations.at(tab->normalized_navigation_index());
-        if (current_navigation.virtual_url() ==
-            GURL(chrome::kChromeUINewTabURL)) {
+        if (chrome::IsNTPURL(current_navigation.virtual_url(),
+                             browser_->profile())) {
           continue;
         }
         tabs_in_session.push_back(tab);

@@ -626,4 +626,29 @@ TEST_F(SearchTest, ShouldShowInstantNTP_DisabledByInstantNewTabURLSwitch) {
   EXPECT_FALSE(ShouldShowInstantNTP());
 }
 
+TEST_F(SearchTest, IsNTPURL) {
+  GURL invalid_url;
+  GURL ntp_url(chrome::kChromeUINewTabURL);
+  GURL local_ntp_url(GetLocalInstantURL(profile()));
+
+  EXPECT_FALSE(chrome::IsNTPURL(invalid_url, profile()));
+  EXPECT_FALSE(chrome::IsNTPURL(local_ntp_url, profile()));
+
+  EXPECT_TRUE(chrome::IsNTPURL(ntp_url, NULL));
+  EXPECT_FALSE(chrome::IsNTPURL(local_ntp_url, NULL));
+
+  // Enable Instant. No margin.
+  EnableInstantExtendedAPIForTesting();
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+  GURL remote_ntp_url(GetInstantURL(profile(), kDisableStartMargin));
+
+  EXPECT_FALSE(chrome::IsNTPURL(ntp_url, profile()));
+  EXPECT_TRUE(chrome::IsNTPURL(local_ntp_url, profile()));
+  EXPECT_TRUE(chrome::IsNTPURL(remote_ntp_url, profile()));
+
+  EXPECT_FALSE(chrome::IsNTPURL(ntp_url, NULL));
+  EXPECT_FALSE(chrome::IsNTPURL(local_ntp_url, NULL));
+  EXPECT_FALSE(chrome::IsNTPURL(remote_ntp_url, NULL));
+}
+
 }  // namespace chrome

@@ -312,6 +312,18 @@ bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {
        url.host() == chrome::kChromeSearchOnlineNtpHost);
 }
 
+bool IsNTPURL(const GURL& url, Profile* profile) {
+  if (!url.is_valid())
+    return false;
+
+  if (!IsInstantExtendedAPIEnabled())
+    return url == GURL(chrome::kChromeUINewTabURL);
+
+  return profile &&
+      (IsInstantURL(url, profile) ||
+       url == GURL(chrome::kChromeSearchLocalNtpUrl));
+}
+
 bool IsInstantNTP(const content::WebContents* contents) {
   if (!contents)
     return false;
