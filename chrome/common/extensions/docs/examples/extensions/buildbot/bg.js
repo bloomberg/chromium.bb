@@ -176,7 +176,9 @@ function fetchPatches(issue, updatedCallback) {
 
       issue.full_patchsets[patch.patchset] = patch;
 
-      // TODO(wittman): Revise to reduce load on the try servers.
+      // TODO(wittman): Revise to reduce load on the try servers. Repeatedly
+      // loading old try results increases the size of the working set of try
+      // jobs on the try servers, causing them to become disk-bound.
       // patch.try_job_results.forEach(function(results) {
       //   if (results.buildnumber) {
       //     tryJobResultsOutstanding++;
@@ -189,8 +191,11 @@ function fetchPatches(issue, updatedCallback) {
       //   }
       // });
 
-      if (++patchsetsRetrieved == issue.patchsets.length)
+      if (++patchsetsRetrieved == issue.patchsets.length) {
         updatedCallback(PATCHES_COMPLETE);
+        // TODO(wittman): Remove once we revise the try job fetching code.
+        updatedCallback(TRY_JOBS_COMPLETE);
+      }
     });
   });
 }
