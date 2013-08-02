@@ -27,6 +27,11 @@
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/url_request/url_request_test_util.h"
 
+#if defined(OS_WIN)
+// For version specific disabled tests below (http://crbug.com/267597).
+#include "base/win/windows_version.h"
+#endif
+
 using base::TimeDelta;
 using content::BrowserThread;
 
@@ -477,6 +482,11 @@ class FastTabCloseTabStripModelObserver : public TabStripModelObserver {
 // Test that fast-tab-close works when closing a tab with an unload handler
 // (http://crbug.com/142458).
 IN_PROC_BROWSER_TEST_F(FastUnloadTest, UnloadHidden) {
+#if defined(OS_WIN)
+  // Flaky on Win7+ bots (http://crbug.com/267597).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+    return;
+#endif
   NavigateToPage("no_listeners");
   NavigateToPageInNewTab("unload_sets_cookie");
   EXPECT_EQ("", GetCookies("no_listeners"));
@@ -522,6 +532,11 @@ IN_PROC_BROWSER_TEST_F(FastUnloadTest, PRE_ClosingLastTabFinishesUnload) {
   window_observer.Wait();
 }
 IN_PROC_BROWSER_TEST_F(FastUnloadTest, ClosingLastTabFinishesUnload) {
+#if defined(OS_WIN)
+  // Flaky on Win7+ bots (http://crbug.com/267597).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+    return;
+#endif
   // Check for cookie set in unload handler of PRE_ test.
   NavigateToPage("no_listeners");
   EXPECT_EQ("unloaded=ohyeah", GetCookies("no_listeners"));
