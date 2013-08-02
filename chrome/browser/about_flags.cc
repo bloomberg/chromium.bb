@@ -1621,6 +1621,15 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableDeviceMotion)
   },
+#if defined(OS_ANDROID)
+  {
+    "enable-cast",
+    IDS_FLAGS_ENABLE_CAST_NAME,
+    IDS_FLAGS_ENABLE_CAST_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableCast)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
