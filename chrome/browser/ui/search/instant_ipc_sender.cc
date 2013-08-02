@@ -79,6 +79,10 @@ class IncognitoInstantIPCSenderImpl : public InstantIPCSender {
         routing_id(), bounds.x(), bounds.width()));
   }
 
+  virtual void ToggleVoiceSearch() OVERRIDE {
+    Send(new ChromeViewMsg_SearchBoxToggleVoiceSearch(routing_id()));
+  }
+
   DISALLOW_COPY_AND_ASSIGN(IncognitoInstantIPCSenderImpl);
 };
 

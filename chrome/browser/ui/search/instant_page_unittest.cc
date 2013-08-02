@@ -332,6 +332,8 @@ TEST_F(InstantPageTest, AppropriateMessagesSentToIncognitoPages) {
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxSubmit::ID));
   page->sender()->SetOmniboxBounds(gfx::Rect());
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
+  page->sender()->ToggleVoiceSearch();
+  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxToggleVoiceSearch::ID));
 
   // Incognito pages should not get any others.
   page->sender()->SetFontInformation(string16(), 0);
@@ -350,7 +352,4 @@ TEST_F(InstantPageTest, AppropriateMessagesSentToIncognitoPages) {
   page->sender()->SendMostVisitedItems(std::vector<InstantMostVisitedItem>());
   EXPECT_FALSE(MessageWasSent(
       ChromeViewMsg_SearchBoxMostVisitedItemsChanged::ID));
-
-  page->sender()->ToggleVoiceSearch();
-  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxToggleVoiceSearch::ID));
 }
