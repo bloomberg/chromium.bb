@@ -16,6 +16,7 @@
 #include "net/base/io_buffer.h"
 
 class UsbDeviceHandle;
+class UsbService;
 
 namespace extensions {
 
@@ -71,10 +72,21 @@ class UsbFindDevicesFunction : public UsbAsyncApiFunction {
   virtual void AsyncWorkStart() OVERRIDE;
 
  private:
-  void OnCompleted();
+  typedef scoped_ptr<std::vector<scoped_refptr<UsbDeviceHandle> > >
+      ScopedDeviceVector;
+
+  // Wait for GetDeviceService to return and start enumeration on FILE thread.
+  void EnumerateDevices(uint16_t vendor_id,
+                        uint16_t product_id,
+                        int interface_id,
+                        UsbService* service);
+  // Relay the result on IO thread to OnCompleted.
+  void OnEnumerationCompleted(ScopedDeviceVector devices);
+
+  // Create ApiResources and reply.
+  void OnCompleted(ScopedDeviceVector devices);
 
   scoped_ptr<base::ListValue> result_;
-  std::vector<scoped_refptr<UsbDeviceHandle> > devices_;
   scoped_ptr<extensions::api::usb::FindDevices::Params> parameters_;
 };
 

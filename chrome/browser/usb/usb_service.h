@@ -11,15 +11,16 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
-#include "base/threading/platform_thread.h"
 #include "chrome/browser/usb/usb_device_handle.h"
-#include "third_party/libusb/src/libusb/libusb.h"
 
-class UsbEventHandler;
+namespace base {
+
+template <class T> class DeleteHelper;
+
+}  // namespace base
+
 template <typename T> struct DefaultSingletonTraits;
-struct libusb_context;
-
-typedef struct libusb_context* PlatformUsbContext;
+class UsbContext;
 
 // The USB service handles creating and managing an event handler thread that is
 // used to manage and dispatch USB events. It is also responsbile for device
@@ -27,16 +28,19 @@ typedef struct libusb_context* PlatformUsbContext;
 // competition for the same USB device.
 class UsbService {
  public:
+  typedef scoped_ptr<std::vector<scoped_refptr<UsbDeviceHandle> > >
+      ScopedDeviceVector;
+  // Must be called on FILE thread.
   static UsbService* GetInstance();
 
   // Find all of the devices attached to the system that are identified by
   // |vendor_id| and |product_id|, inserting them into |devices|. Clears
   // |devices| before use. Calls |callback| once |devices| is populated.
-  void FindDevices(const uint16 vendor_id,
-                   const uint16 product_id,
-                   int interface_id,
-                   std::vector<scoped_refptr<UsbDeviceHandle> >* devices,
-                   const base::Callback<void()>& callback);
+  void FindDevices(
+      const uint16 vendor_id,
+      const uint16 product_id,
+      int interface_id,
+      const base::Callback<void(ScopedDeviceVector vector)>& callback);
 
   // Find all of the devices attached to the system, inserting them into
   // |devices|. Clears |devices| before use.
@@ -46,13 +50,11 @@ class UsbService {
   // UsbDevice's Close function and disposes of the associated platform handle.
   void CloseDevice(scoped_refptr<UsbDeviceHandle> device);
 
- protected:
+ private:
   UsbService();
   virtual ~UsbService();
-
- private:
   friend struct DefaultSingletonTraits<UsbService>;
-
+  friend class base::DeleteHelper<UsbService>;
 
   // RefCountedPlatformUsbDevice takes care of managing the underlying reference
   // count of a single PlatformUsbDevice. This allows us to construct things
@@ -77,15 +79,23 @@ class UsbService {
                             const uint16 vendor_id,
                             const uint16 product_id);
 
+  // This method is called when permission broker replied our request.
+  // We will simply relay it to FILE thread.
+  void OnRequestUsbAccessReplied(
+      const uint16 vendor_id,
+      const uint16 product_id,
+      const base::Callback<void(ScopedDeviceVector vector)>& callback,
+      bool success);
+
   // FindDevicesImpl is called by FindDevices on ChromeOS after the permission
-  // broker has signalled that permission has been granted to access the
+  // broker has signaled that permission has been granted to access the
   // underlying device nodes. On other platforms, it is called directly by
   // FindDevices.
-  void FindDevicesImpl(const uint16 vendor_id,
-                       const uint16 product_id,
-                       std::vector<scoped_refptr<UsbDeviceHandle> >* devices,
-                       const base::Callback<void()>& callback,
-                       bool success);
+  void FindDevicesImpl(
+      const uint16 vendor_id,
+      const uint16 product_id,
+      const base::Callback<void(ScopedDeviceVector vector)>& callback,
+      bool success);
 
   // Populates |output| with the result of enumerating all attached USB devices.
   void EnumerateDevicesImpl(DeviceVector* output);
@@ -95,8 +105,7 @@ class UsbService {
   // the wrapper with the device internally.
   UsbDeviceHandle* LookupOrCreateDevice(PlatformUsbDevice device);
 
-  PlatformUsbContext context_;
-  UsbEventHandler* event_handler_;
+  scoped_refptr<UsbContext> context_;
 
   // The devices_ map contains scoped_refptrs to all open devices, indicated by
   // their vendor and product id. This allows for reusing an open device without
