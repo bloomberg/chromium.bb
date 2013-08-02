@@ -50,7 +50,7 @@ public:
         ASSERT(position != notFound);
         m_activeAnimations.remove(position);
     }
-    bool hasActiveAnimations() const { return !m_activeAnimations.isEmpty(); }
+    bool isEmpty() const { return m_activeAnimations.isEmpty(); }
     // FIXME: This should be PassRefPtr<CompositableValue> composite(Element*, CSSPropertyId)
     const Vector<Animation*>& activeAnimations(const Element* element) const { return m_activeAnimations; }
 

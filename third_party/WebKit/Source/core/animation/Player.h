@@ -46,6 +46,7 @@ public:
 
     // Returns whether this player is still current or in effect.
     bool update();
+    void cancel();
     double currentTime() const;
     void setCurrentTime(double);
     bool paused() const { return !isNull(m_pauseStartTime); }

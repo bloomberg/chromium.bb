@@ -22,6 +22,7 @@
 #ifndef StyleResolver_h
 #define StyleResolver_h
 
+#include "core/animation/KeyframeAnimationEffect.h"
 #include "core/css/DocumentRuleSets.h"
 #include "core/css/InspectorCSSOMWrappers.h"
 #include "core/css/PseudoStyleRequest.h"
@@ -42,6 +43,7 @@
 
 namespace WebCore {
 
+class CSSAnimationUpdate;
 class CSSFontSelector;
 class CSSRuleList;
 class CSSSelector;
@@ -185,7 +187,15 @@ public:
     PassRefPtr<RenderStyle> styleForElement(Element*, RenderStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules, RenderRegion* regionForStyling = 0);
 
+    // FIXME: The following logic related to animations and keyframes should be factored out of StyleResolver
+    // The body of calculateCSSAnimationUpdate can move to CSSAnimations.cpp and take just const element, const style,
+    // and const ScopedStyleTree
+    PassOwnPtr<CSSAnimationUpdate> calculateCSSAnimationUpdate(StyleResolverState&);
+    void resolveKeyframes(Element*, const StringImpl* animationName, KeyframeAnimationEffect::KeyframeVector&);
+    const StylePropertySet* firstKeyframeStyles(const Element*, const StringImpl* animationName);
     void keyframeStylesForAnimation(Element*, const RenderStyle*, KeyframeList&);
+    const StyleRuleKeyframes* matchScopedKeyframesRule(const Element*, const StringImpl* animationName);
+    PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle*, const StyleKeyframe*, KeyframeValue&);
 
     PassRefPtr<RenderStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, RenderStyle* parentStyle);
 
@@ -221,9 +231,6 @@ public:
 
     // FIXME: Used by SharingStyleFinder, but should be removed.
     bool styleSharingCandidateMatchesRuleSet(const ElementResolveContext&, RenderStyle*, RuleSet*);
-
-    const StyleRuleKeyframes* matchScopedKeyframesRule(Element*, const StringImpl* animationName);
-    PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle*, const StyleKeyframe*, KeyframeValue&);
 
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).
     enum CSSRuleFilter {
@@ -303,7 +310,7 @@ private:
     template <StyleApplicationPass pass>
     void applyProperties(StyleResolverState&, const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <StyleApplicationPass pass>
-    void applyAnimatedProperties(StyleResolverState&, const Element*, const DocumentTimeline*);
+    void applyAnimatedProperties(StyleResolverState&, const Element*, const DocumentTimeline*, const CSSAnimationUpdate*);
     void resolveVariables(StyleResolverState&, CSSPropertyID, CSSValue*, Vector<std::pair<CSSPropertyID, String> >& knownExpressions);
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
     void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>&, bool isLeftPage, bool isFirstPage, const String& pageName);

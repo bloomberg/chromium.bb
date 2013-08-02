@@ -210,6 +210,11 @@ Element::~Element()
         data->setPseudoElement(AFTER, 0);
         data->setPseudoElement(BACKDROP, 0);
         data->clearShadow();
+
+        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
+            if (ActiveAnimations* activeAnimations = data->activeAnimations())
+                activeAnimations->cssAnimations()->cancel();
+        }
     }
 
     if (isCustomElement())
@@ -1367,6 +1372,11 @@ void Element::detach(const AttachContext& context)
         data->resetComputedStyle();
         data->resetDynamicRestyleObservations();
         data->setIsInsideRegion(false);
+
+        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && !context.performingReattach) {
+            if (ActiveAnimations* activeAnimations = data->activeAnimations())
+                activeAnimations->cssAnimations()->cancel();
+        }
     }
     if (ElementShadow* shadow = this->shadow())
         shadow->detach(context);
@@ -1474,9 +1484,9 @@ bool Element::recalcStyle(StyleChange change)
         InspectorInstrumentation::didRecalculateStyleForElement(this);
 
         if (RenderObject* renderer = this->renderer()) {
-            if (localChange != NoChange || pseudoStyleCacheIsInvalid(currentStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || shouldNotifyRendererWithIdenticalStyles())
+            if (localChange != NoChange || pseudoStyleCacheIsInvalid(currentStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || shouldNotifyRendererWithIdenticalStyles()) {
                 renderer->setAnimatableStyle(newStyle.get());
-            else if (needsStyleRecalc()) {
+            } else if (needsStyleRecalc()) {
                 // Although no change occurred, we use the new style so that the cousin style sharing code won't get
                 // fooled into believing this style is the same.
                 renderer->setStyleInternal(newStyle.get());

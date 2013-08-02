@@ -94,6 +94,15 @@ bool Player::update()
     return m_content->isCurrent() || m_content->isInEffect();
 }
 
+void Player::cancel()
+{
+    if (!m_content)
+        return;
+
+    m_content->detach();
+    m_content = 0;
+}
+
 void Player::setCurrentTime(double seekTime)
 {
     if (paused())

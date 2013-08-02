@@ -30,6 +30,7 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/animation/ActiveAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/FrameSelection.h"
@@ -1731,10 +1732,18 @@ void RenderObject::handleDynamicFloatPositionChange()
 
 void RenderObject::setAnimatableStyle(PassRefPtr<RenderStyle> style)
 {
-    if (!isText() && style && !RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        setStyle(animation()->updateAnimations(this, style.get()));
-    else
+    if (!isText() && style) {
+        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && node() && node()->isElementNode()) {
+            Element* element = toElement(node());
+            if (CSSAnimations::needsUpdate(element, style.get()))
+                element->ensureActiveAnimations()->cssAnimations()->update(element, style.get());
+            setStyle(style);
+        } else {
+            setStyle(animation()->updateAnimations(this, style.get()));
+        }
+    } else {
         setStyle(style);
+    }
 }
 
 StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const

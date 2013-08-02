@@ -1013,7 +1013,7 @@ public:
     // Return a Locale for the default locale if the argument is null or empty.
     Locale& getCachedLocale(const AtomicString& locale = nullAtom);
 
-    DocumentTimeline* timeline() { return m_timeline.get(); }
+    DocumentTimeline* timeline() const { return m_timeline.get(); }
 
     void addToTopLayer(Element*, const Element* before = 0);
     void removeFromTopLayer(Element*);
