@@ -80,11 +80,6 @@ public:
         const WebString& destinationHost, bool allowDestinationSubdomains);
     WEBKIT_EXPORT static void resetOriginAccessWhitelists();
 
-    // Returns whether the url should be allowed to see the referrer
-    // based on their respective protocols.
-    // FIXME: remove this function once the chromium side has landed.
-    WEBKIT_EXPORT static bool shouldHideReferrer(const WebURL&, const WebString& referrer);
-
     // Returns the referrer modified according to the referrer policy for a
     // navigation to a given URL. If the referrer returned is empty, the
     // referrer header should be omitted.

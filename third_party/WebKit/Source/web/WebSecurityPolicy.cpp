@@ -104,11 +104,6 @@ void WebSecurityPolicy::resetOriginAccessWhitelists()
     SecurityPolicy::resetOriginAccessWhitelists();
 }
 
-bool WebSecurityPolicy::shouldHideReferrer(const WebURL& url, const WebString& referrer)
-{
-    return SecurityPolicy::shouldHideReferrer(url, referrer);
-}
-
 WebString WebSecurityPolicy::generateReferrerHeader(WebReferrerPolicy referrerPolicy, const WebURL& url, const WebString& referrer)
 {
     return SecurityPolicy::generateReferrerHeader(static_cast<ReferrerPolicy>(referrerPolicy), url, referrer);
