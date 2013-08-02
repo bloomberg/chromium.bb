@@ -45,7 +45,6 @@ bool IsForceCompositingModeBlacklisted() {
 
 bool IsThreadedCompositingEnabled() {
 #if defined(OS_WIN) && defined(USE_AURA)
-  // No-op change.
   // We always want compositing on Aura Windows.
   return true;
 #endif
