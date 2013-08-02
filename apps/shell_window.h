@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_EXTENSIONS_SHELL_WINDOW_H_
-#define CHROME_BROWSER_UI_EXTENSIONS_SHELL_WINDOW_H_
+#ifndef APPS_SHELL_WINDOW_H_
+#define APPS_SHELL_WINDOW_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -73,7 +74,8 @@ class ShellWindowContents {
 class ShellWindow : public content::NotificationObserver,
                     public content::WebContentsDelegate,
                     public web_modal::WebContentsModalDialogManagerDelegate,
-                    public extensions::ExtensionKeybindingRegistry::Delegate {
+                    public extensions::ExtensionKeybindingRegistry::Delegate,
+                    public extensions::IconImage::Observer {
  public:
   enum WindowType {
     WINDOW_TYPE_DEFAULT  = 1 << 0,  // Default shell window.
@@ -316,8 +318,6 @@ class ShellWindow : public content::NotificationObserver,
   // Load the app's image, firing a load state change when loaded.
   void UpdateExtensionAppIcon();
 
-  void OnImageLoaded(const gfx::Image& image);
-
   // extensions::ExtensionKeybindingRegistry::Delegate implementation.
   virtual extensions::ActiveTabPermissionGranter*
       GetActiveTabPermissionGranter() OVERRIDE;
@@ -332,6 +332,10 @@ class ShellWindow : public content::NotificationObserver,
                           const GURL& image_url,
                           int requested_size,
                           const std::vector<SkBitmap>& bitmaps);
+
+  // extensions::IconImage::Observer implementation.
+  virtual void OnExtensionIconImageChanged(
+      extensions::IconImage* image) OVERRIDE;
 
   Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.
@@ -353,6 +357,9 @@ class ShellWindow : public content::NotificationObserver,
   // be fetched and set using this URL.
   GURL app_icon_url_;
 
+  // An object to load the app's icon as an extension resource.
+  scoped_ptr<extensions::IconImage> app_icon_image_;
+
   scoped_ptr<NativeAppWindow> native_app_window_;
   scoped_ptr<ShellWindowContents> shell_window_contents_;
   scoped_ptr<Delegate> delegate_;
@@ -369,4 +376,4 @@ class ShellWindow : public content::NotificationObserver,
 
 }  // namespace apps
 
-#endif  // CHROME_BROWSER_UI_EXTENSIONS_SHELL_WINDOW_H_
+#endif  // APPS_SHELL_WINDOW_H_

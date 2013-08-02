@@ -11,7 +11,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -352,6 +351,9 @@ void ShellWindow::SetAppIconUrl(const GURL& url) {
   // Avoid using any previous app icons were are being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
+  // Reset |app_icon_image_| to abort pending image load (if any).
+  app_icon_image_.reset();
+
   app_icon_url_ = url;
   web_contents()->DownloadImage(
       url,
@@ -401,10 +403,6 @@ void ShellWindow::Restore() {
 //------------------------------------------------------------------------------
 // Private methods
 
-void ShellWindow::OnImageLoaded(const gfx::Image& image) {
-  UpdateAppIcon(image);
-}
-
 void ShellWindow::DidDownloadFavicon(int id,
                                      int http_status_code,
                                      const GURL& image_url,
@@ -425,20 +423,27 @@ void ShellWindow::DidDownloadFavicon(int id,
   UpdateAppIcon(gfx::Image::CreateFrom1xBitmap(largest));
 }
 
+void ShellWindow::OnExtensionIconImageChanged(extensions::IconImage* image) {
+  DCHECK_EQ(app_icon_image_.get(), image);
+
+  UpdateAppIcon(gfx::Image(app_icon_image_->image_skia()));
+}
+
 void ShellWindow::UpdateExtensionAppIcon() {
   // Avoid using any previous app icons were are being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
-  // Enqueue OnImageLoaded callback.
-  extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile());
-  loader->LoadImageAsync(
+  app_icon_image_.reset(new extensions::IconImage(
+      profile(),
       extension(),
-      extensions::IconsInfo::GetIconResource(extension(),
-                                             delegate_->PreferredIconSize(),
-                                             ExtensionIconSet::MATCH_BIGGER),
-      gfx::Size(delegate_->PreferredIconSize(), delegate_->PreferredIconSize()),
-      base::Bind(&ShellWindow::OnImageLoaded,
-                 image_loader_ptr_factory_.GetWeakPtr()));
+      extensions::IconsInfo::GetIcons(extension()),
+      delegate_->PreferredIconSize(),
+      extensions::IconsInfo::GetDefaultAppIcon(),
+      this));
+
+  // Triggers actual image loading with 1x resources. The 2x resource will
+  // be handled by IconImage class when requested.
+  app_icon_image_->image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
 }
 
 void ShellWindow::CloseContents(WebContents* contents) {
