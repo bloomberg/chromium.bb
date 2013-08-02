@@ -133,35 +133,55 @@ static const uint8 kSubsampleIv[] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static const uint8 kSubsampleData[] = {
+// kSubsampleOriginalData encrypted with kSubsampleKey and kSubsampleIv using
+// kSubsampleEntriesNormal.
+static const uint8 kSubsampleEncryptedData[] = {
   0x4f, 0x72, 0x09, 0x16, 0x09, 0xe6, 0x79, 0xad,
   0x70, 0x73, 0x75, 0x62, 0x09, 0xbb, 0x83, 0x1d,
   0x4d, 0x08, 0xd7, 0x78, 0xa4, 0xa7, 0xf1, 0x2e
 };
 
-static const uint8 kPaddedSubsampleData[] = {
+// kSubsampleEncryptedData with 8 bytes padding at the beginning.
+static const uint8 kPaddedSubsampleEncryptedData[] = {
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   0x4f, 0x72, 0x09, 0x16, 0x09, 0xe6, 0x79, 0xad,
   0x70, 0x73, 0x75, 0x62, 0x09, 0xbb, 0x83, 0x1d,
   0x4d, 0x08, 0xd7, 0x78, 0xa4, 0xa7, 0xf1, 0x2e
 };
 
-// Encrypted with kSubsampleKey and kSubsampleIv but without subsamples.
-static const uint8 kNoSubsampleData[] = {
+// kSubsampleOriginalData encrypted with kSubsampleKey and kSubsampleIv but
+// without any subsamples (or equivalently using kSubsampleEntriesCypherOnly).
+static const uint8 kEncryptedData[] = {
   0x2f, 0x03, 0x09, 0xef, 0x71, 0xaf, 0x31, 0x16,
   0xfa, 0x9d, 0x18, 0x43, 0x1e, 0x96, 0x71, 0xb5,
   0xbf, 0xf5, 0x30, 0x53, 0x9a, 0x20, 0xdf, 0x95
 };
 
-static const SubsampleEntry kSubsampleEntries[] = {
+// Subsample entries for testing. The sum of |cypher_bytes| and |clear_bytes| of
+// all entries must be equal to kSubsampleOriginalDataSize to make the subsample
+// entries valid.
+
+static const SubsampleEntry kSubsampleEntriesNormal[] = {
   { 2, 7 },
   { 3, 11 },
   { 1, 0 }
 };
 
+static const SubsampleEntry kSubsampleEntriesClearOnly[] = {
+  { 7, 0 },
+  { 8, 0 },
+  { 9, 0 }
+};
+
+static const SubsampleEntry kSubsampleEntriesCypherOnly[] = {
+  { 0, 6 },
+  { 0, 8 },
+  { 0, 10 }
+};
+
 // Generates a 16 byte CTR counter block. The CTR counter block format is a
 // CTR IV appended with a CTR block counter. |iv| is an 8 byte CTR IV.
-// |iv_size| is the size of |iv| in btyes. Returns a string of
+// |iv_size| is the size of |iv| in bytes. Returns a string of
 // kDecryptionKeySize bytes.
 static std::string GenerateCounterBlock(const uint8* iv, int iv_size) {
   CHECK_GT(iv_size, 0);
@@ -209,6 +229,9 @@ static scoped_refptr<DecoderBuffer> CreateWebMEncryptedBuffer(
   return encrypted_buffer;
 }
 
+// TODO(xhwang): Refactor this function to encapsulate more details about
+// creating an encrypted DecoderBuffer with subsamples so we don't have so much
+// boilerplate code in each test before calling this function.
 static scoped_refptr<DecoderBuffer> CreateSubsampleEncryptedBuffer(
     const uint8* data, int data_size,
     const uint8* key_id, int key_id_size,
@@ -236,8 +259,9 @@ class AesDecryptorTest : public testing::Test {
             base::Bind(&AesDecryptorTest::KeyMessage, base::Unretained(this))),
         decrypt_cb_(base::Bind(&AesDecryptorTest::BufferDecrypted,
                                base::Unretained(this))),
-        subsample_entries_(kSubsampleEntries,
-                           kSubsampleEntries + arraysize(kSubsampleEntries)) {
+        subsample_entries_normal_(
+            kSubsampleEntriesNormal,
+            kSubsampleEntriesNormal + arraysize(kSubsampleEntriesNormal)) {
   }
 
  protected:
@@ -319,7 +343,7 @@ class AesDecryptorTest : public testing::Test {
   AesDecryptor decryptor_;
   std::string session_id_string_;
   AesDecryptor::DecryptCB decrypt_cb_;
-  std::vector<SubsampleEntry> subsample_entries_;
+  std::vector<SubsampleEntry> subsample_entries_normal_;
 };
 
 TEST_F(AesDecryptorTest, GenerateKeyRequestWithNullInitData) {
@@ -543,11 +567,11 @@ TEST_F(AesDecryptorTest, SubsampleDecryption) {
   AddKeyAndExpectToSucceed(kSubsampleKeyId, arraysize(kSubsampleKeyId),
                            kSubsampleKey, arraysize(kSubsampleKey));
   scoped_refptr<DecoderBuffer> encrypted_data = CreateSubsampleEncryptedBuffer(
-      kSubsampleData, arraysize(kSubsampleData),
+      kSubsampleEncryptedData, arraysize(kSubsampleEncryptedData),
       kSubsampleKeyId, arraysize(kSubsampleKeyId),
       kSubsampleIv, arraysize(kSubsampleIv),
       0,
-      subsample_entries_);
+      subsample_entries_normal_);
   ASSERT_NO_FATAL_FAILURE(DecryptAndExpectToSucceed(
       encrypted_data, kSubsampleOriginalData, kSubsampleOriginalDataSize));
 }
@@ -560,11 +584,12 @@ TEST_F(AesDecryptorTest, SubsampleDecryptionWithOffset) {
   AddKeyAndExpectToSucceed(kSubsampleKeyId, arraysize(kSubsampleKeyId),
                            kSubsampleKey, arraysize(kSubsampleKey));
   scoped_refptr<DecoderBuffer> encrypted_data = CreateSubsampleEncryptedBuffer(
-      kPaddedSubsampleData, arraysize(kPaddedSubsampleData),
+      kPaddedSubsampleEncryptedData, arraysize(kPaddedSubsampleEncryptedData),
       kSubsampleKeyId, arraysize(kSubsampleKeyId),
       kSubsampleIv, arraysize(kSubsampleIv),
-      arraysize(kPaddedSubsampleData) - arraysize(kSubsampleData),
-      subsample_entries_);
+      arraysize(kPaddedSubsampleEncryptedData)
+          - arraysize(kSubsampleEncryptedData),
+      subsample_entries_normal_);
   ASSERT_NO_FATAL_FAILURE(DecryptAndExpectToSucceed(
       encrypted_data, kSubsampleOriginalData, kSubsampleOriginalDataSize));
 }
@@ -575,7 +600,7 @@ TEST_F(AesDecryptorTest, NormalDecryption) {
   AddKeyAndExpectToSucceed(kSubsampleKeyId, arraysize(kSubsampleKeyId),
                            kSubsampleKey, arraysize(kSubsampleKey));
   scoped_refptr<DecoderBuffer> encrypted_data = CreateSubsampleEncryptedBuffer(
-      kNoSubsampleData, arraysize(kNoSubsampleData),
+      kEncryptedData, arraysize(kEncryptedData),
       kSubsampleKeyId, arraysize(kSubsampleKeyId),
       kSubsampleIv, arraysize(kSubsampleIv),
       0,
@@ -588,16 +613,52 @@ TEST_F(AesDecryptorTest, IncorrectSubsampleSize) {
   GenerateKeyRequest(kSubsampleKeyId, arraysize(kSubsampleKeyId));
   AddKeyAndExpectToSucceed(kSubsampleKeyId, arraysize(kSubsampleKeyId),
                            kSubsampleKey, arraysize(kSubsampleKey));
-  std::vector<SubsampleEntry> entries = subsample_entries_;
+  std::vector<SubsampleEntry> entries = subsample_entries_normal_;
   entries[2].cypher_bytes += 1;
 
   scoped_refptr<DecoderBuffer> encrypted_data = CreateSubsampleEncryptedBuffer(
-      kSubsampleData, arraysize(kSubsampleData),
+      kSubsampleEncryptedData, arraysize(kSubsampleEncryptedData),
       kSubsampleKeyId, arraysize(kSubsampleKeyId),
       kSubsampleIv, arraysize(kSubsampleIv),
       0,
       entries);
   ASSERT_NO_FATAL_FAILURE(DecryptAndExpectToFail(encrypted_data));
+}
+
+// No cypher bytes in any of the subsamples.
+TEST_F(AesDecryptorTest, SubsampleClearBytesOnly) {
+  GenerateKeyRequest(kSubsampleKeyId, arraysize(kSubsampleKeyId));
+  AddKeyAndExpectToSucceed(kSubsampleKeyId, arraysize(kSubsampleKeyId),
+                           kSubsampleKey, arraysize(kSubsampleKey));
+  std::vector<SubsampleEntry> subsample_entries_clear_only(
+      kSubsampleEntriesClearOnly,
+      kSubsampleEntriesClearOnly + arraysize(kSubsampleEntriesClearOnly));
+  scoped_refptr<DecoderBuffer> encrypted_data = CreateSubsampleEncryptedBuffer(
+      kSubsampleOriginalData, kSubsampleOriginalDataSize,
+      kSubsampleKeyId, arraysize(kSubsampleKeyId),
+      kSubsampleIv, arraysize(kSubsampleIv),
+      0,
+      subsample_entries_clear_only);
+  ASSERT_NO_FATAL_FAILURE(DecryptAndExpectToSucceed(encrypted_data,
+      kSubsampleOriginalData, kSubsampleOriginalDataSize));
+}
+
+// No clear bytes in any of the subsamples.
+TEST_F(AesDecryptorTest, SubsampleCypherBytesOnly) {
+  GenerateKeyRequest(kSubsampleKeyId, arraysize(kSubsampleKeyId));
+  AddKeyAndExpectToSucceed(kSubsampleKeyId, arraysize(kSubsampleKeyId),
+                           kSubsampleKey, arraysize(kSubsampleKey));
+  std::vector<SubsampleEntry> subsample_entries_cypher_only(
+      kSubsampleEntriesCypherOnly,
+      kSubsampleEntriesCypherOnly + arraysize(kSubsampleEntriesCypherOnly));
+  scoped_refptr<DecoderBuffer> encrypted_data = CreateSubsampleEncryptedBuffer(
+      kEncryptedData, arraysize(kEncryptedData),
+      kSubsampleKeyId, arraysize(kSubsampleKeyId),
+      kSubsampleIv, arraysize(kSubsampleIv),
+      0,
+      subsample_entries_cypher_only);
+  ASSERT_NO_FATAL_FAILURE(DecryptAndExpectToSucceed(encrypted_data,
+      kSubsampleOriginalData, kSubsampleOriginalDataSize));
 }
 
 }  // namespace media

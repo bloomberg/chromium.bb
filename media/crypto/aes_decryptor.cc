@@ -69,6 +69,10 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
       reinterpret_cast<const char*>(input.data() + data_offset);
   int sample_size = input.data_size() - data_offset;
 
+  DCHECK_GT(sample_size, 0) << "No sample data to be decrypted.";
+  if (sample_size <= 0)
+    return NULL;
+
   if (input.decrypt_config()->subsamples().empty()) {
     std::string decrypted_text;
     base::StringPiece encrypted_text(sample, sample_size);
@@ -97,6 +101,12 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
     return NULL;
   }
 
+  // No need to decrypt if there is no encrypted data.
+  if (total_encrypted_size <= 0) {
+    return DecoderBuffer::CopyFrom(reinterpret_cast<const uint8*>(sample),
+                                   sample_size);
+  }
+
   // The encrypted portions of all subsamples must form a contiguous block,
   // such that an encrypted subsample that ends away from a block boundary is
   // immediately followed by the start of the next encrypted subsample. We
@@ -115,6 +125,7 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
     DVLOG(1) << "Could not decrypt data.";
     return NULL;
   }
+  DCHECK_EQ(decrypted_text.size(), encrypted_text.size());
 
   scoped_refptr<DecoderBuffer> output = DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8*>(sample), sample_size);
