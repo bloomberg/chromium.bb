@@ -30,6 +30,7 @@
 
 namespace WebCore {
 
+// FIXME: Disassociate PODFreeListArena from PODArena, crbug.com/266535
 template <class T>
 class PODFreeListArena : public PODArena {
 public:
@@ -46,6 +47,18 @@ public:
         return adoptRef(new PODFreeListArena(allocator));
     }
 
+    // Allocates an object from the arena.
+    T* allocateObject()
+    {
+        size_t roundedSize = roundUp(sizeof(T), minAlignment<T>());
+        void* ptr = allocate(roundedSize);
+        if (ptr) {
+            // Use placement operator new to allocate a T at this location.
+            new(ptr) T();
+        }
+        return static_cast<T*>(ptr);
+    }
+
     template<class Argument1Type> T* allocateObject(const Argument1Type& argument1)
     {
         size_t roundedSize = roundUp(sizeof(T), minAlignment<T>());
@@ -59,97 +72,59 @@ public:
 
     void freeObject(T* ptr)
     {
-        ChunkVector::const_iterator end = m_chunks.end();
-        for (ChunkVector::const_iterator it = m_chunks.begin(); it != end; ++it) {
-            FreeListChunk* chunk = static_cast<FreeListChunk*>(it->get());
-            if (chunk->contains(ptr))
-                chunk->free(ptr);
-        }
+        FixedSizeMemoryChunk* oldFreeList = m_freeList;
+
+        m_freeList = reinterpret_cast<FixedSizeMemoryChunk*>(ptr);
+        m_freeList->next = oldFreeList;
     }
 
 private:
     PODFreeListArena()
-        : PODArena() { }
+        : PODArena(), m_freeList(0) { }
 
     explicit PODFreeListArena(PassRefPtr<Allocator> allocator)
-        : PODArena(allocator) { }
+        : PODArena(allocator), m_freeList(0) { }
 
     void* allocate(size_t size)
     {
-        void* ptr = 0;
-        if (m_current) {
-            // First allocate from the current chunk.
-            ptr = m_current->allocate(size);
-            if (!ptr) {
-                // Check if we can allocate from other chunks' free list.
-                ChunkVector::const_iterator end = m_chunks.end();
-                for (ChunkVector::const_iterator it = m_chunks.begin(); it != end; ++it) {
-                    FreeListChunk* chunk = static_cast<FreeListChunk*>(it->get());
-                    if (chunk->hasFreeList()) {
-                        ptr = chunk->allocate(size);
-                        if (ptr)
-                            break;
-                    }
-                }
-            }
+        ASSERT(size == roundUp(sizeof(T), minAlignment<T>()));
+
+        if (m_freeList) {
+            void* memory = m_freeList;
+            m_freeList = m_freeList->next;
+            return memory;
         }
 
-        if (!ptr) {
-            if (size > m_currentChunkSize)
-                m_currentChunkSize = size;
-            m_chunks.append(adoptPtr(new FreeListChunk(m_allocator.get(), m_currentChunkSize)));
+        void* memory = 0;
+        if (m_current)
+            memory = m_current->allocate(size);
+
+        if (!memory) {
+            m_chunks.append(adoptPtr(new Chunk(m_allocator.get(), m_currentChunkSize)));
             m_current = m_chunks.last().get();
-            ptr = m_current->allocate(size);
+            memory = m_current->allocate(size);
         }
-        return ptr;
+        return memory;
     }
 
-    class FreeListChunk : public PODArena::Chunk {
-        WTF_MAKE_NONCOPYABLE(FreeListChunk);
-
-        struct FreeCell {
-            FreeCell *m_next;
-        };
-    public:
-        FreeListChunk(Allocator* allocator, size_t size)
-            : Chunk(allocator, size)
-            , m_freeList(0) { }
-
-        void* allocate(size_t size)
-        {
-            if (m_freeList) {
-                // Reuse a cell from the free list.
-                void *cell = m_freeList;
-                m_freeList = m_freeList->m_next;
-                return cell;
-            }
-
-            return Chunk::allocate(size);
+    int getFreeListSizeForTesting() const
+    {
+        int total = 0;
+        for (FixedSizeMemoryChunk* cur = m_freeList; cur; cur = cur->next) {
+            total++;
         }
+        return total;
+    }
 
-        void free(void* ptr)
-        {
-            // Add the pointer to free list.
-            ASSERT(contains(ptr));
-
-            FreeCell* cell = reinterpret_cast<FreeCell*>(ptr);
-            cell->m_next = m_freeList;
-            m_freeList = cell;
-        }
-
-        bool contains(void* ptr) const
-        {
-            return ptr >= m_base && ptr < m_base + m_size;
-        }
-
-        bool hasFreeList() const
-        {
-            return m_freeList;
-        }
-
-    private:
-        FreeCell *m_freeList;
+    // This free list contains pointers within every chunk that's been allocated so
+    // far. None of the individual chunks can be freed until the arena is
+    // destroyed.
+    struct FixedSizeMemoryChunk {
+        FixedSizeMemoryChunk* next;
     };
+    FixedSizeMemoryChunk* m_freeList;
+
+    friend class PODFreeListArenaTest;
 };
 
 } // namespace WebCore

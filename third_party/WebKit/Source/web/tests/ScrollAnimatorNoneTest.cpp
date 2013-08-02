@@ -31,12 +31,12 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "TreeTestHelpers.h"
 #include "core/platform/Logging.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/tests/TreeTestHelpers.h"
 
 using namespace std;
 using namespace WebCore;

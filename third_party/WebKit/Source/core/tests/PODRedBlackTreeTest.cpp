@@ -26,13 +26,13 @@
 // Tests for the red-black tree class.
 
 #include "config.h"
-
 #include "core/platform/PODRedBlackTree.h"
 
-#include <gtest/gtest.h>
 #include "ArenaTestHelpers.h"
 #include "TreeTestHelpers.h"
 #include "wtf/Vector.h"
+
+#include <gtest/gtest.h>
 
 namespace WebCore {
 

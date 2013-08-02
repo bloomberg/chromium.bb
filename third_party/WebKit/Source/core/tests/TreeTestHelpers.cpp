@@ -23,57 +23,38 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ArenaTestHelpers_h
-#define ArenaTestHelpers_h
+#include "config.h"
+#include "TreeTestHelpers.h"
 
-#include <gtest/gtest.h>
-#include "core/platform/PODArena.h"
-#include "wtf/NotFound.h"
-#include "wtf/Vector.h"
+#include "wtf/CurrentTime.h"
+
+#include <cstdlib>
 
 namespace WebCore {
-namespace ArenaTestHelpers {
+namespace TreeTestHelpers {
 
-// An allocator for the PODArena which tracks the regions which have
-// been allocated.
-class TrackedAllocator : public PODArena::FastMallocAllocator {
-public:
-    static PassRefPtr<TrackedAllocator> create()
-    {
-        return adoptRef(new TrackedAllocator);
-    }
+int32_t generateSeed()
+{
+    // A seed of 1 has the special behavior of resetting the random
+    // number generator. Assume that if we call this routine that we
+    // don't want this behavior.
+    int32_t seed;
+    do {
+        seed = static_cast<int32_t>(currentTime());
+    } while (seed <= 1);
+    return seed;
+}
 
-    virtual void* allocate(size_t size)
-    {
-        void* result = PODArena::FastMallocAllocator::allocate(size);
-        m_allocatedRegions.append(result);
-        return result;
-    }
+void initRandom(const int32_t seed)
+{
+    srand(seed);
+}
 
-    virtual void free(void* ptr)
-    {
-        size_t slot = m_allocatedRegions.find(ptr);
-        ASSERT_NE(slot, notFound);
-        m_allocatedRegions.remove(slot);
-        PODArena::FastMallocAllocator::free(ptr);
-    }
+int32_t nextRandom(const int32_t maximumValue)
+{
+    // rand_r is not available on Windows
+    return rand() % maximumValue;
+}
 
-    bool isEmpty() const
-    {
-        return !numRegions();
-    }
-
-    int numRegions() const
-    {
-        return m_allocatedRegions.size();
-    }
-
-private:
-    TrackedAllocator() { }
-    Vector<void*> m_allocatedRegions;
-};
-
-} // namespace ArenaTestHelpers
+} // namespace TreeTestHelpers
 } // namespace WebCore
-
-#endif // ArenaTestHelpers_h
