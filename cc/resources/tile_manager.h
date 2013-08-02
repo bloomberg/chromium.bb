@@ -108,9 +108,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   void AssignGpuMemoryToTiles(
       const TileRefVector& sorted_tiles,
       TileVector* tiles_that_need_to_be_rasterized);
-  void AssignBinsToTiles(TileRefVector* tiles);
+  void GetTilesWithAssignedBins(TileRefVector* tiles);
   void SortTiles(TileRefVector* tiles);
-  void GetSortedTiles(TileRefVector* tiles);
+  void GetSortedTilesWithAssignedBins(TileRefVector* tiles);
 
  private:
   void OnImageDecodeTaskCompleted(

@@ -271,13 +271,18 @@ class BinComparator {
   }
 };
 
-void TileManager::AssignBinsToTiles(TileRefVector* tiles) {
+void TileManager::GetTilesWithAssignedBins(TileRefVector* tiles) {
+  TRACE_EVENT0("cc", "TileManager::GetTilesWithAssignedBins");
+
+  DCHECK_EQ(0u, tiles->size());
+  tiles->reserve(tiles_.size());
+
   const TileMemoryLimitPolicy memory_policy = global_state_.memory_limit_policy;
   const TreePriority tree_priority = global_state_.tree_priority;
 
   // For each tree, bin into different categories of tiles.
-  for (TileRefVector::iterator it = tiles->begin(); it != tiles->end(); ++it) {
-    Tile* tile = it->get();
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    Tile* tile = it->second;
     ManagedTileState& mts = tile->managed_state();
 
     TilePriority prio[NUM_BIN_PRIORITIES];
@@ -320,6 +325,12 @@ void TileManager::AssignBinsToTiles(TileRefVector* tiles) {
 
     mts.visible_and_ready_to_draw =
         mts.tree_bin[ACTIVE_TREE] == NOW_BIN && tile->IsReadyToDraw();
+
+    // Skip and free resources for tiles in the NEVER_BIN on both trees.
+    if (mts.is_in_never_bin_on_both_trees())
+      FreeResourcesForTile(tile);
+    else
+      tiles->push_back(make_scoped_refptr(tile));
   }
 }
 
@@ -330,16 +341,10 @@ void TileManager::SortTiles(TileRefVector* tiles) {
   std::sort(tiles->begin(), tiles->end(), BinComparator());
 }
 
-void TileManager::GetSortedTiles(TileRefVector* tiles) {
-  TRACE_EVENT0("cc", "TileManager::GetSortedTiles");
+void TileManager::GetSortedTilesWithAssignedBins(TileRefVector* tiles) {
+  TRACE_EVENT0("cc", "TileManager::GetSortedTilesWithAssignedBins");
 
-  DCHECK_EQ(0u, tiles->size());
-
-  tiles->reserve(tiles_.size());
-  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-    tiles->push_back(make_scoped_refptr(it->second));
-
-  AssignBinsToTiles(tiles);
+  GetTilesWithAssignedBins(tiles);
   SortTiles(tiles);
 }
 
@@ -349,7 +354,7 @@ void TileManager::ManageTiles() {
   // Clear |sorted_tiles_| so that tiles kept alive by it can be freed.
   sorted_tiles_.clear();
 
-  GetSortedTiles(&sorted_tiles_);
+  GetSortedTilesWithAssignedBins(&sorted_tiles_);
 
   TileVector tiles_that_need_to_be_rasterized;
   AssignGpuMemoryToTiles(sorted_tiles_, &tiles_that_need_to_be_rasterized);

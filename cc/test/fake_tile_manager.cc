@@ -44,7 +44,7 @@ void FakeTileManager::AssignMemoryToTiles() {
   tiles_for_raster.clear();
   all_tiles.clear();
 
-  GetSortedTiles(&all_tiles);
+  GetSortedTilesWithAssignedBins(&all_tiles);
   AssignGpuMemoryToTiles(all_tiles, &tiles_for_raster);
 }
 
