@@ -1777,9 +1777,16 @@ function entryBoxClick(event) {
   // Do nothing if a bookmark star is clicked.
   if (event.defaultPrevented)
     return;
-  var tagName = event.target.tagName;
-  if (tagName == 'BUTTON' || tagName == 'INPUT' || tagName == 'A')
-    return;
+  var element = event.target;
+  // Do nothing if the event happened in an interactive element.
+  for (; element != event.currentTarget; element = element.parentNode) {
+    switch (element.tagName) {
+      case 'A':
+      case 'BUTTON':
+      case 'INPUT':
+        return;
+    }
+  }
   var checkbox = event.currentTarget.control;
   checkbox.checked = !checkbox.checked;
   handleCheckboxStateChange(checkbox, event.shiftKey);
