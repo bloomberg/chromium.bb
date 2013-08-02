@@ -704,8 +704,6 @@ crbug.com/227396 fast/gradients/unprefixed-generated-gradients.html [ ImageOnlyF
 crbug.com/227396 css3/compositing/effect-background-blend-mode-tiled.html [ ImageOnlyFailure ]
 crbug.com/227396 css3/compositing/effect-background-blend-mode.html [ ImageOnlyFailure ]
 
-crbug.com/266427 css3/compositing/background-blend-mode-separate-layer-declaration.html [ NeedsRebaseline ]
-
 # IETC grid layout
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83913 ietestcenter/css3/grid/grid-items-003.htm [ ImageOnlyFailure ]
