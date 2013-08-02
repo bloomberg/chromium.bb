@@ -105,7 +105,7 @@ void RecursivePrintDeps(const Target* target,
 
 const char kDesc[] = "desc";
 const char kDesc_HelpShort[] =
-    "desc: Show lots of insigntful information about a target.";
+    "desc: Show lots of insightful information about a target.";
 const char kDesc_Help[] =
     "gn desc <target label>\n"
     "  Displays all recursive dependencies for a given labeled target.\n"

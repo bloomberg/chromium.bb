@@ -152,7 +152,7 @@ const char kExecScript_Help[] =
     "      File name of python script to execute, relative to the build file.\n"
     "\n"
     "  arguments:\n"
-    "      A list of strings to be passed to the scripe as arguments.\n"
+    "      A list of strings to be passed to the script as arguments.\n"
     "\n"
     "  input_conversion:\n"
     "      Controls how the file is read and parsed.\n"

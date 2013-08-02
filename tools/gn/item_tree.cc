@@ -25,18 +25,19 @@ namespace {
 bool RecursiveFindCycle(const ItemNode* look_for,
                         const ItemNode* search_in,
                         std::vector<const ItemNode*>* cycle) {
-  const ItemNode::ItemNodeSet& unresolved =
+  const ItemNode::ItemNodeMap& unresolved =
       search_in->unresolved_dependencies();
-  for (ItemNode::ItemNodeSet::const_iterator i = unresolved.begin();
+  for (ItemNode::ItemNodeMap::const_iterator i = unresolved.begin();
        i != unresolved.end(); ++i) {
-    if (*i == look_for) {
-      cycle->push_back(*i);
+    ItemNode* cur = i->first;
+    if (cur == look_for) {
+      cycle->push_back(cur);
       return true;
     }
 
-    if (RecursiveFindCycle(look_for, *i, cycle)) {
+    if (RecursiveFindCycle(look_for, cur, cycle)) {
       // Found a cycle inside this one, record our path and return.
-      cycle->push_back(*i);
+      cycle->push_back(cur);
       return true;
     }
   }
@@ -66,7 +67,9 @@ void ItemTree::AddNodeLocked(ItemNode* node) {
   items_[node->item()->label()] = node;
 }
 
-Err ItemTree::MarkItemGeneratedLocked(const Label& label) {
+bool ItemTree::MarkItemDefinedLocked(const BuildSettings* build_settings,
+                                     const Label& label,
+                                     Err* err) {
   lock_.AssertAcquired();
   DCHECK(items_.find(label) != items_.end());
 
@@ -74,10 +77,14 @@ Err ItemTree::MarkItemGeneratedLocked(const Label& label) {
 
   if (!node->unresolved_dependencies().empty()) {
     // Still some pending dependencies, wait for those to be resolved.
-    node->SetGenerated();
-    return Err();
+    if (!node->SetDefined(build_settings, err))
+      return false;
+    return true;
   }
-  return MarkItemResolvedLocked(node);
+
+  // No more pending deps.
+  MarkItemResolvedLocked(node);
+  return true;
 }
 
 void ItemTree::GetAllItemsLocked(std::vector<const Item*>* dest) const {
@@ -105,19 +112,23 @@ Err ItemTree::CheckForBadItems() const {
   for (StringToNodeHash::const_iterator i = items_.begin();
        i != items_.end(); ++i) {
     const ItemNode* src = i->second;
+    if (!src->should_generate())
+      continue;  // Skip ungenerated nodes.
 
-    if (src->state() == ItemNode::GENERATED) {
+    if (src->state() == ItemNode::DEFINED ||
+        src->state() == ItemNode::PENDING_DEPS) {
       bad_nodes.push_back(src);
 
       // Check dependencies.
-      for (ItemNode::ItemNodeSet::const_iterator dest =
+      for (ItemNode::ItemNodeMap::const_iterator dest =
                src->unresolved_dependencies().begin();
           dest != src->unresolved_dependencies().end();
           ++dest) {
-        if ((*dest)->state() == ItemNode::REFERENCED) {
+        const ItemNode* dest_node = dest->first;
+        if (dest_node->state() == ItemNode::REFERENCED) {
           depstring += "\"" + src->item()->label().GetUserVisibleName(false) +
-              "\" needs " + (*dest)->item()->GetItemTypeName() +
-              " \"" + (*dest)->item()->label().GetUserVisibleName(false) +
+              "\" needs " + dest_node->item()->GetItemTypeName() +
+              " \"" + dest_node->item()->label().GetUserVisibleName(false) +
               "\"\n";
         }
       }
@@ -144,16 +155,16 @@ Err ItemTree::CheckForBadItems() const {
   return Err(Location(), "Unresolved dependencies.", depstring);
 }
 
-Err ItemTree::MarkItemResolvedLocked(ItemNode* node) {
+void ItemTree::MarkItemResolvedLocked(ItemNode* node) {
   node->SetResolved();
   node->item()->OnResolved();
 
   // Now update our waiters, pushing the "resolved" bit.
-  ItemNode::ItemNodeSet waiting;
+  ItemNode::ItemNodeMap waiting;
   node->SwapOutWaitingDependencySet(&waiting);
-  for (ItemNode::ItemNodeSet::iterator i = waiting.begin();
+  for (ItemNode::ItemNodeMap::iterator i = waiting.begin();
        i != waiting.end(); ++i) {
-    ItemNode* waiter = *i;
+    ItemNode* waiter = i->first;
 
     // Our node should be unresolved in the waiter.
     DCHECK(waiter->unresolved_dependencies().find(node) !=
@@ -161,15 +172,11 @@ Err ItemTree::MarkItemResolvedLocked(ItemNode* node) {
     waiter->MarkDirectDependencyResolved(node);
 
     // Recursively mark nodes as resolved.
-    if (waiter->state() == ItemNode::GENERATED &&
-        waiter->unresolved_dependencies().empty()) {
-      Err err = MarkItemResolvedLocked(waiter);
-      if (err.has_error())
-        return err;
-    }
+    if ((waiter->state() == ItemNode::DEFINED ||
+         waiter->state() == ItemNode::PENDING_DEPS) &&
+        waiter->unresolved_dependencies().empty())
+      MarkItemResolvedLocked(waiter);
   }
-
-  return Err();
 }
 
 std::string ItemTree::CheckForCircularDependenciesLocked(

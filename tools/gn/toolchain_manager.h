@@ -89,7 +89,8 @@ class ToolchainManager {
                                     Err* err);
 
   // Schedules an invocation of the given file under the given toolchain. The
-  // toolchain file will be loaded if necessary.
+  // toolchain file will be loaded if necessary. If the toolchain is an is_null
+  // label, the default toolchain will be used.
   //
   // The origin should be the node that will be blamed for this invocation if
   // an error occurs. If a synchronous error occurs, the given error will be

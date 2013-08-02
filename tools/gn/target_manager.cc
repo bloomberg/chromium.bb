@@ -54,21 +54,20 @@ Target* TargetManager::GetTarget(const Label& label,
     }
 
     target = new Target(settings, label);
+
     target_node = new ItemNode(target);
+    if (settings->greedy_target_generation()) {
+      if (!target_node->SetShouldGenerate(build_settings_, err))
+        return NULL;
+    }
     target_node->set_originally_referenced_from_here(specified_from_here);
+
     build_settings_->item_tree().AddNodeLocked(target_node);
 
     // We're generating a node when there is no referencing one.
     if (!dep_from)
       target_node->set_generated_from_here(specified_from_here);
 
-    // Only schedule loading the given target if somebody is depending on it
-    // (and we optimize by not re-asking it to run the current file).
-    // Otherwise, we're probably generating it right now.
-    if (dep_from && dep_from->label().dir() != label.dir()) {
-      if (!ScheduleInvocationLocked(specified_from_here, label, err))
-        return NULL;
-    }
   } else if ((target = target_node->item()->AsTarget())) {
     // Previously saw this item as a target.
 
@@ -100,16 +99,21 @@ Target* TargetManager::GetTarget(const Label& label,
   // Keep a record of the guy asking us for this dependency. We know if
   // somebody is adding a dependency, that guy it himself not resolved.
   if (dep_from && target_node->state() != ItemNode::RESOLVED) {
-    build_settings_->item_tree().GetExistingNodeLocked(
-        dep_from->label())->AddDependency(target_node);
+    ItemNode* from_node =
+        build_settings_->item_tree().GetExistingNodeLocked(dep_from->label());
+    if (!from_node->AddDependency(build_settings_, specified_from_here,
+                                  target_node, err))
+      return NULL;
   }
 
   return target;
 }
 
-void TargetManager::TargetGenerationComplete(const Label& label) {
+bool TargetManager::TargetGenerationComplete(const Label& label,
+                                             Err* err) {
   base::AutoLock lock(build_settings_->item_tree().lock());
-  build_settings_->item_tree().MarkItemGeneratedLocked(label);
+  return build_settings_->item_tree().MarkItemDefinedLocked(
+      build_settings_, label, err);
 }
 
 void TargetManager::GetAllTargets(
@@ -123,12 +127,4 @@ void TargetManager::GetAllTargets(
     if (t)
       all_targets->push_back(t);
   }
-}
-
-bool TargetManager::ScheduleInvocationLocked(
-    const LocationRange& specified_from_here,
-    const Label& label,
-    Err* err) {
-  return build_settings_->toolchain_manager().ScheduleInvocationLocked(
-        specified_from_here, label.GetToolchainLabel(), label.dir(), err);
 }

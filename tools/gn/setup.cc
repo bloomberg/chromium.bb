@@ -213,7 +213,7 @@ bool Setup::FillOtherConfig(const CommandLine& cmdline) {
     }
   }
 
-  // Build config dir.
+  // Build config file.
   const Value* build_config_value =
       dotfile_scope_.GetValue("buildconfig", true);
   if (!build_config_value) {
@@ -221,9 +221,12 @@ bool Setup::FillOtherConfig(const CommandLine& cmdline) {
         "Your .gn file (\"" + FilePathToUTF8(dotfile_name_) + "\")\n"
         "didn't specify a \"buildconfig\" value.").PrintToStdout();
     return false;
+  } else if (!build_config_value->VerifyTypeIs(Value::STRING, &err)) {
+    err.PrintToStdout();
+    return false;
   }
   build_settings_.set_build_config_file(
-      SourceFile("//build/config/BUILDCONFIG.gn"));
+      SourceFile(build_config_value->string_value()));
 
   return true;
 }

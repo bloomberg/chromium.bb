@@ -55,16 +55,12 @@ class TargetManager {
 
   // Called by a target when it has been loaded from the .gin file. Its
   // dependencies may or may not be resolved yet.
-  void TargetGenerationComplete(const Label& label);
+  bool TargetGenerationComplete(const Label& label, Err* err);
 
   // Returns a list of all targets.
   void GetAllTargets(std::vector<const Target*>* all_targets) const;
 
  private:
-  bool ScheduleInvocationLocked(const LocationRange& specified_from_here,
-                                const Label& label,
-                                Err* err);
-
   const BuildSettings* build_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetManager);

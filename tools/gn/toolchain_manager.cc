@@ -54,7 +54,7 @@ struct ToolchainManager::Info {
         item_node(NULL) {
   }
 
-  // MAkes sure that an ItemNode is created for the toolchain, which lets
+  // Makes sure that an ItemNode is created for the toolchain, which lets
   // targets depend on the (potentially future) loading of the toolchain.
   //
   // We can't always do this at the beginning since when doing the default
@@ -260,7 +260,13 @@ bool ToolchainManager::ScheduleInvocationLocked(
   GetLock().AssertAcquired();
   SourceFile build_file(DirToBuildFile(dir));
 
-  ToolchainMap::iterator found = toolchains_.find(toolchain_name);
+  // If there's no specified toolchain name, use the default.
+  ToolchainMap::iterator found;
+  if (toolchain_name.is_null())
+    found = toolchains_.find(default_toolchain_);
+  else
+    found = toolchains_.find(toolchain_name);
+
   Info* info = NULL;
   if (found == toolchains_.end()) {
     // New toolchain.
@@ -393,6 +399,11 @@ void ToolchainManager::FixupDefaultToolchainLocked() {
   info->toolchain = Toolchain(default_toolchain_);
   info->EnsureItemNode();
 
+  // The default toolchain is loaded in greedy mode so all targets we
+  // encounter are generated. Non-default toolchain settings stay in non-greedy
+  // so we only generate the minimally required set.
+  info->settings.set_greedy_target_generation(true);
+
   // Schedule a load of the toolchain build file.
   Err err;
   ScheduleInvocationLocked(LocationRange(), default_toolchain_,
@@ -460,8 +471,10 @@ void ToolchainManager::BackgroundInvoke(const Info* info,
                                         const SourceFile& file_name,
                                         const ParseNode* root) {
   if (root && !g_scheduler->is_failed()) {
-    if (g_scheduler->verbose_logging())
-      g_scheduler->Log("Running", file_name.value());
+    if (g_scheduler->verbose_logging()) {
+      g_scheduler->Log("Running", file_name.value() + " with toolchain " +
+                       info->toolchain.label().GetUserVisibleName(false));
+    }
 
     Scope our_scope(info->settings.base_config());
     ScopePerFileProvider per_file_provider(&our_scope, file_name);

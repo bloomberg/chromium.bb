@@ -218,9 +218,6 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
     }
   }
 
-  if (g_scheduler->verbose_logging())
-    g_scheduler->Log("Parsing", name.value());
-
   // Tokenize.
   std::vector<Token> tokens = Tokenizer::Tokenize(file, err);
   if (err->has_error())

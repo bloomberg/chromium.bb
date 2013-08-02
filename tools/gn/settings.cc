@@ -14,7 +14,8 @@ Settings::Settings(const BuildSettings* build_settings,
       toolchain_(toolchain),
       target_os_(WIN),  // FIXME(brettw) set this properly.
       import_manager_(),
-      base_config_(this) {
+      base_config_(this),
+      greedy_target_generation_(false) {
   DCHECK(output_subdir_name.find('/') == std::string::npos);
   if (output_subdir_name.empty()) {
     toolchain_output_dir_ = build_settings->build_dir();

@@ -71,8 +71,10 @@ Config* Config::GetConfig(const Settings* settings,
 
   // Keep a record of the guy asking us for this dependency. We know if
   // somebody is adding a dependency, that guy it himself not resolved.
-  if (dep_from && node->state() != ItemNode::RESOLVED)
-    tree->GetExistingNodeLocked(dep_from->label())->AddDependency(node);
-
+  if (dep_from && node->state() != ItemNode::RESOLVED) {
+    if (!tree->GetExistingNodeLocked(dep_from->label())->AddDependency(
+            settings->build_settings(), specified_from_here, node, err))
+      return NULL;
+  }
   return config;
 }

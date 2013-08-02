@@ -12,10 +12,12 @@ CommandInfo::CommandInfo()
       runner(NULL) {
 }
 
-CommandInfo::CommandInfo(const char* hs, const char* h, CommandRunner r)
-    : help_short(hs),
-      help(h),
-      runner(r) {
+CommandInfo::CommandInfo(const char* in_help_short,
+                         const char* in_help,
+                         CommandRunner in_runner)
+    : help_short(in_help_short),
+      help(in_help),
+      runner(in_runner) {
 }
 
 const CommandInfoMap& GetCommands() {

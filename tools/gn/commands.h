@@ -46,7 +46,9 @@ int RunTree(const std::vector<std::string>& args);
 
 struct CommandInfo {
   CommandInfo();
-  CommandInfo(const char* hs, const char* h, CommandRunner r);
+  CommandInfo(const char* in_help_short,
+              const char* in_help,
+              CommandRunner in_runner);
 
   const char* help_short;
   const char* help;

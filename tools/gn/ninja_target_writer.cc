@@ -14,6 +14,7 @@
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"
 #include "tools/gn/file_template.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/location.h"
 #include "tools/gn/path_output.h"
 #include "tools/gn/scheduler.h"
@@ -103,6 +104,9 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
   base::FilePath ninja_file(settings->build_settings()->GetFullPath(
       helper.GetNinjaFileForTarget(target).GetSourceFile(
           settings->build_settings())));
+
+  if (g_scheduler->verbose_logging())
+    g_scheduler->Log("Writing", FilePathToUTF8(ninja_file));
 
   file_util::CreateDirectory(ninja_file.DirName());
 

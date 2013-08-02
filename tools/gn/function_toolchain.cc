@@ -54,7 +54,7 @@ Value RunToolchain(Scope* scope,
   const SourceDir& input_dir = SourceDirForFunctionCall(function);
   Label label(input_dir, args[0].string_value(), SourceDir(), std::string());
   if (g_scheduler->verbose_logging())
-    g_scheduler->Log("Generating toolchain", label.GetUserVisibleName(true));
+    g_scheduler->Log("Generating toolchain", label.GetUserVisibleName(false));
 
   // This object will actually be copied into the one owned by the toolchain
   // manager, but that has to be done in the lock.
@@ -77,7 +77,8 @@ Value RunToolchain(Scope* scope,
     base::AutoLock lock(build_settings->item_tree().lock());
     build_settings->toolchain_manager().SetToolchainDefinitionLocked(
         toolchain, function->GetRange(), err);
-    build_settings->item_tree().MarkItemGeneratedLocked(label);
+    build_settings->item_tree().MarkItemDefinedLocked(build_settings, label,
+                                                      err);
   }
   return Value();
 }

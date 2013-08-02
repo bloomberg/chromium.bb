@@ -226,7 +226,8 @@ Value RunConfig(const FunctionCallNode* function,
   // Mark as complete.
   {
     base::AutoLock lock(tree->lock());
-    tree->MarkItemGeneratedLocked(label);
+    tree->MarkItemDefinedLocked(scope->settings()->build_settings(), label,
+                                err);
   }
   return Value();
 }

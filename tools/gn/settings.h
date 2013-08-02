@@ -79,6 +79,17 @@ class Settings {
   const Scope* base_config() const { return &base_config_; }
   Scope* base_config() { return &base_config_; }
 
+  // Set to true when every target we encounter should be generated. False
+  // means that only targets that have a dependency from (directly or
+  // indirectly) some magic root node are actually generated. See the comments
+  // on ItemTree for more.
+  bool greedy_target_generation() const {
+    return greedy_target_generation_;
+  }
+  void set_greedy_target_generation(bool gtg) {
+    greedy_target_generation_ = gtg;
+  }
+
  private:
   const BuildSettings* build_settings_;
 
@@ -100,6 +111,8 @@ class Settings {
   SourceDir toolchain_gen_dir_;
 
   Scope base_config_;
+
+  bool greedy_target_generation_;
 
   DISALLOW_COPY_AND_ASSIGN(Settings);
 };

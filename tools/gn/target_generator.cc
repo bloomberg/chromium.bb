@@ -118,12 +118,14 @@ void TargetGenerator::Run() {
     base::AutoLock lock(tree->lock());
     ItemNode* tc_node =
         tree->GetExistingNodeLocked(ToolchainLabelForScope(scope_));
-    tree->GetExistingNodeLocked(target_->label())->AddDependency(tc_node);
+    if (!tree->GetExistingNodeLocked(target_->label())->AddDependency(
+            GetBuildSettings(), function_token_.range(), tc_node, err_))
+      return;
   }
 
   target_->SetGenerated(&function_token_);
   GetBuildSettings()->target_manager().TargetGenerationComplete(
-      target_->label());
+      target_->label(), err_);
 }
 
 // static
