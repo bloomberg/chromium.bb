@@ -22,15 +22,9 @@
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_util_win.h"
-#include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/common/chrome_constants.h"
@@ -206,28 +200,6 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   }
 
   return rv;
-}
-
-void ChromeBrowserMainPartsWin::PostMainMessageLoopRun() {
-  // Log the search engine chosen on first run. Do this at shutdown, after any
-  // changes are made from the first run bubble link, etc.
-  if (first_run::IsChromeFirstRun() && profile() &&
-      !profile()->IsOffTheRecord()) {
-    TemplateURLService* url_service =
-        TemplateURLServiceFactory::GetForProfile(profile());
-    const TemplateURL* default_search_engine =
-        url_service->GetDefaultSearchProvider();
-    // The default engine can be NULL if the administrator has disabled
-    // default search.
-    SearchEngineType search_engine_type =
-        TemplateURLPrepopulateData::GetEngineType(default_search_engine ?
-            default_search_engine->url() : std::string());
-    // Record the search engine chosen.
-    UMA_HISTOGRAM_ENUMERATION("Chrome.SearchSelectExempt", search_engine_type,
-                              SEARCH_ENGINE_MAX);
-  }
-
-  ChromeBrowserMainParts::PostMainMessageLoopRun();
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
