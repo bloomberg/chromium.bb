@@ -64,7 +64,9 @@ TabGtk::TabGtk(TabDelegate* delegate)
       closing_(false),
       dragging_(false),
       last_mouse_down_(NULL),
+      drag_widget_(NULL),
       title_width_(0),
+      destroy_factory_(this),
       drag_end_factory_(this) {
   event_box_ = gtk_input_event_box_new();
   g_signal_connect(event_box_, "button-press-event",
@@ -75,14 +77,6 @@ TabGtk::TabGtk(TabDelegate* delegate)
                    G_CALLBACK(OnEnterNotifyEventThunk), this);
   g_signal_connect(event_box_, "leave-notify-event",
                    G_CALLBACK(OnLeaveNotifyEventThunk), this);
-
-  g_signal_connect(widget(), "drag-failed",
-                   G_CALLBACK(OnDragFailedThunk), this);
-  g_signal_connect(widget(), "button-release-event",
-                   G_CALLBACK(OnDragButtonReleasedThunk), this);
-  g_signal_connect_after(widget(), "drag-begin",
-                         G_CALLBACK(OnDragBeginThunk), this);
-
   gtk_widget_add_events(event_box_,
         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
         GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -91,11 +85,12 @@ TabGtk::TabGtk(TabDelegate* delegate)
 }
 
 TabGtk::~TabGtk() {
-  if (dragging_) {
+  if (drag_widget_) {
     // Shadow the drag grab so the grab terminates. We could do this using any
-    // widget.
-    gtk_grab_add(widget());
-    gtk_grab_remove(widget());
+    // widget, |drag_widget_| is just convenient.
+    gtk_grab_add(drag_widget_);
+    gtk_grab_remove(drag_widget_);
+    DestroyDragWidget();
   }
 
   if (menu_controller_.get()) {
@@ -151,10 +146,6 @@ gboolean TabGtk::OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event) {
 
 gboolean TabGtk::OnButtonReleaseEvent(GtkWidget* widget,
                                       GdkEventButton* event) {
-  // Pass event handling to OnDragButtonReleased when dragging.
-  if (dragging_)
-    return FALSE;
-
   if (event->button == 1) {
     if (IsActive() && !(event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK))) {
       delegate_->ActivateTab(this);
@@ -181,7 +172,7 @@ gboolean TabGtk::OnButtonReleaseEvent(GtkWidget* widget,
     // some state before closing the tab to avoid a crash.  Once the drag has
     // started, we don't get the middle mouse click here.
     if (last_mouse_down_) {
-      DCHECK(!dragging_);
+      DCHECK(!drag_widget_);
       observer_.reset();
       gdk_event_free(last_mouse_down_);
       last_mouse_down_ = NULL;
@@ -232,7 +223,7 @@ void TabGtk::DidProcessEvent(GdkEvent* event) {
     return;
   }
 
-  if (dragging_) {
+  if (drag_widget_) {
     delegate_->ContinueDrag(NULL);
     return;
   }
@@ -315,16 +306,34 @@ void TabGtk::UpdateTooltipState() {
   }
 }
 
+void TabGtk::CreateDragWidget() {
+  DCHECK(!drag_widget_);
+  drag_widget_ = gtk_invisible_new();
+  g_signal_connect(drag_widget_, "drag-failed",
+                   G_CALLBACK(OnDragFailedThunk), this);
+  g_signal_connect(drag_widget_, "button-release-event",
+                   G_CALLBACK(OnDragButtonReleasedThunk), this);
+  g_signal_connect_after(drag_widget_, "drag-begin",
+                         G_CALLBACK(OnDragBeginThunk), this);
+}
+
+void TabGtk::DestroyDragWidget() {
+  if (drag_widget_) {
+    gtk_widget_destroy(drag_widget_);
+    drag_widget_ = NULL;
+  }
+}
+
 void TabGtk::StartDragging(gfx::Point drag_offset) {
   // If the drag is processed after the selection change it's possible
   // that the tab has been deselected, in which case we don't want to drag.
   if (!IsSelected())
     return;
 
-  dragging_ = true;
+  CreateDragWidget();
 
   GtkTargetList* list = ui::GetTargetListFromCodeMask(ui::CHROME_TAB);
-  gtk_drag_begin(widget(), list, GDK_ACTION_MOVE,
+  gtk_drag_begin(drag_widget_, list, GDK_ACTION_MOVE,
                  1,  // Drags are always initiated by the left button.
                  last_mouse_down_);
   // gtk_drag_begin adds a reference to list, so unref it here.
@@ -337,7 +346,12 @@ void TabGtk::EndDrag(bool canceled) {
   // to call EndDrag.
   drag_end_factory_.InvalidateWeakPtrs();
 
-  dragging_ = false;
+  // We must let gtk clean up after we handle the drag operation, otherwise
+  // there will be outstanding references to the drag widget when we try to
+  // destroy it.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&TabGtk::DestroyDragWidget, destroy_factory_.GetWeakPtr()));
 
   if (last_mouse_down_) {
     gdk_event_free(last_mouse_down_);
