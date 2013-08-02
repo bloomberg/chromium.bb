@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "ui/message_center/message_center_export.h"
 
@@ -49,6 +50,30 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
 
  private:
   friend class base::RefCountedThreadSafe<NotificationDelegate>;
+};
+
+// A simple notification delegate which invokes the passed closure when clicked.
+class MESSAGE_CENTER_EXPORT HandleNotificationClickedDelegate
+    : public NotificationDelegate {
+ public:
+  explicit HandleNotificationClickedDelegate(const base::Closure& closure);
+
+  // message_center::NotificationDelegate overrides:
+  virtual void Display() OVERRIDE;
+  virtual void Error() OVERRIDE;
+  virtual void Close(bool by_user) OVERRIDE;
+  virtual bool HasClickedListener() OVERRIDE;
+  virtual void Click() OVERRIDE;
+  virtual void ButtonClick(int button_index) OVERRIDE;
+
+ protected:
+  virtual ~HandleNotificationClickedDelegate();
+
+ private:
+  std::string id_;
+  base::Closure closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(HandleNotificationClickedDelegate);
 };
 
 }  //  namespace message_center

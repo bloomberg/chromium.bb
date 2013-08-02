@@ -13,6 +13,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_notification_view.h"
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -180,28 +181,6 @@ void OpenSettings(user::LoginStatus login_status) {
   }
 }
 
-class DisplayNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  DisplayNotificationDelegate(user::LoginStatus login_status)
-      : login_status_(login_status) {}
-
-  // message_center::NotificationDelegate overrides:
-  virtual void Display() OVERRIDE {}
-  virtual void Error() OVERRIDE {}
-  virtual void Close(bool by_user) OVERRIDE {}
-  virtual bool HasClickedListener() OVERRIDE { return true; }
-  virtual void Click() OVERRIDE { OpenSettings(login_status_); }
-
- protected:
-  virtual ~DisplayNotificationDelegate() {}
-
- private:
-  user::LoginStatus login_status_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayNotificationDelegate);
-};
-
 void UpdateDisplayNotification(const base::string16& message) {
   // Always remove the notification to make sure the notification appears
   // as a popup in any situation.
@@ -221,8 +200,10 @@ void UpdateDisplayNotification(const base::string16& message) {
       base::string16(),  // display_source
       "",  // extension_id
       message_center::RichNotificationData(),
-      new DisplayNotificationDelegate(
-          Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus())));
+      new message_center::HandleNotificationClickedDelegate(
+          base::Bind(&OpenSettings,
+                     Shell::GetInstance()->system_tray_delegate()->
+                     GetUserLoginStatus()))));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 

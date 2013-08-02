@@ -35,16 +35,19 @@ class TrayIME : public SystemTrayItem,
  private:
   void UpdateTrayLabel(const IMEInfo& info, size_t count);
 
+  // Update the content of the existing IME notification, or create a new one if
+  // necessary. IME notification should be created only once in a session, i.e.
+  // if an IME notification is created and removed already, it doesn't create a
+  // new one.
+  void UpdateOrCreateNotification();
+
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateNotificationView(
-      user::LoginStatus status) OVERRIDE;
   virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
-  virtual void DestroyNotificationView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
   virtual void UpdateAfterShelfAlignmentChange(
       ShelfAlignment alignment) OVERRIDE;
@@ -55,7 +58,6 @@ class TrayIME : public SystemTrayItem,
   TrayItemView* tray_label_;
   tray::IMEDefaultView* default_;
   tray::IMEDetailedView* detailed_;
-  tray::IMENotificationView* notification_;
 
   bool message_shown_;
 
