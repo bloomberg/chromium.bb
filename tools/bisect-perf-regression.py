@@ -1869,9 +1869,6 @@ class BisectPerformanceMetrics(object):
                                                    command_to_run,
                                                    metric, skippable=True)
 
-        if self.opts.output_buildbot_annotations:
-          bisect_utils.OutputAnnotationStepClosed()
-
         # If the build is successful, check whether or not the metric
         # had regressed.
         if not run_results[1]:
@@ -1895,10 +1892,15 @@ class BisectPerformanceMetrics(object):
           elif run_results[1] == BUILD_RESULT_FAIL:
             next_revision_data['passed'] = 'Failed'
 
+          print run_results[0]
+
           # If the build is broken, remove it and redo search.
           revision_list.pop(next_revision_index)
 
           max_revision -= 1
+
+        if self.opts.output_buildbot_annotations:
+          bisect_utils.OutputAnnotationStepClosed()
     else:
       # Weren't able to sync and retrieve the revision range.
       results['error'] = 'An error occurred attempting to retrieve revision '\
