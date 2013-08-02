@@ -50,10 +50,12 @@ class WebSecurityOrigin;
 class WebMIDIPermissionRequest {
 public:
     WebMIDIPermissionRequest(const WebMIDIPermissionRequest& o) { assign(o); }
+    ~WebMIDIPermissionRequest() { reset(); };
 
     WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
     WEBKIT_EXPORT void setIsAllowed(bool);
 
+    WEBKIT_EXPORT void reset();
     WEBKIT_EXPORT void assign(const WebMIDIPermissionRequest&);
     WEBKIT_EXPORT bool equals(const WebMIDIPermissionRequest&) const;
 

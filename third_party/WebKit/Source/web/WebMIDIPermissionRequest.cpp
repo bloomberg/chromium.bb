@@ -50,6 +50,11 @@ WebMIDIPermissionRequest::WebMIDIPermissionRequest(WebCore::MIDIAccess* midi)
 {
 }
 
+void WebMIDIPermissionRequest::reset()
+{
+    m_private.reset();
+}
+
 void WebMIDIPermissionRequest::assign(const WebMIDIPermissionRequest& other)
 {
     m_private = other.m_private;
