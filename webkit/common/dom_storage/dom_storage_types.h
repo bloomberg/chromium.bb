@@ -16,9 +16,9 @@
 
 namespace dom_storage {
 
-// The quota for each storage area. Suggested by the spec.
-// This value is enforced in renderer processes.
-const size_t kPerAreaQuota = 5 * 1024 * 1024;
+// The quota for each storage area.
+// This value is enforced in renderer processes and the browser process.
+const size_t kPerAreaQuota = 10 * 1024 * 1024;
 
 // In the browser process we allow some overage to
 // accomodate concurrent writes from different renderers
