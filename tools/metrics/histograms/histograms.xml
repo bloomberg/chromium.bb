@@ -12935,7 +12935,7 @@ other types of suffix sets.
 <histogram name="Settings.HomePageIsNewTabPage" enum="Boolean">
   <summary>
     Whether or not the home page user preference is set to the default NTP value
-    when a profile is loaded. This is only logged if the Home button is enabled.
+    when a profile is loaded.
   </summary>
 </histogram>
 

@@ -104,8 +104,7 @@ void PrefMetricsService::RecordLaunchPrefs() {
   const bool home_page_is_ntp = prefs->GetBoolean(prefs::kHomePageIsNewTabPage);
 
   UMA_HISTOGRAM_BOOLEAN("Settings.ShowHomeButton", show_home_button);
-  if (show_home_button)
-    UMA_HISTOGRAM_BOOLEAN("Settings.HomePageIsNewTabPage", home_page_is_ntp);
+  UMA_HISTOGRAM_BOOLEAN("Settings.HomePageIsNewTabPage", home_page_is_ntp);
 
   int restore_on_startup = profile_->GetPrefs()->GetInteger(
       prefs::kRestoreOnStartup);
