@@ -192,6 +192,9 @@ relevant() {
       pnacl_generate_pexe=0)
         echo -n "no_pexe "
         ;;
+      translate_fast=1)
+        echo -n "fast "
+        ;;
       --nacl_glibc)
         echo -n "glibc "
         ;;
@@ -400,10 +403,14 @@ mode-buildbot-x86() {
 
   # sandboxed translation
   build-sbtc-prerequisites ${arch}
-  scons-stage-noirt "${arch}" "${flags_build} use_sandboxed_translator=1" \
-      "${SCONS_EVERYTHING}"
+  scons-stage-irt "${arch}" "${flags_build} use_sandboxed_translator=1" \
+    "${SCONS_EVERYTHING}"
   scons-stage-irt "${arch}" "${flags_run} use_sandboxed_translator=1" \
-      "${SCONS_S_M_IRT}"
+    "${SCONS_S_M_IRT}"
+  scons-stage-irt "${arch}" \
+    "${flags_run} use_sandboxed_translator=1 translate_fast=1" \
+    "toolchain_tests"
+
   # translator memory consumption regression test
   scons-stage-irt "${arch}" "${flags_run} use_sandboxed_translator=1" \
       "large_code"
@@ -444,8 +451,12 @@ mode-buildbot-arm() {
 
   build-sbtc-prerequisites "arm"
 
-  scons-stage-noirt "arm" \
+  scons-stage-irt "arm" \
     "${qemuflags} use_sandboxed_translator=1 translate_in_build_step=0" \
+    "toolchain_tests"
+  scons-stage-irt "arm" \
+    "${qemuflags} use_sandboxed_translator=1 translate_fast=1 \
+       translate_in_build_step=0" \
     "toolchain_tests"
 }
 
@@ -461,8 +472,12 @@ mode-buildbot-arm-hw() {
   scons-stage-irt "arm" "${hwflags}" "${SCONS_S_M_IRT}"
 
   scons-stage-noirt "arm" "${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
-  scons-stage-noirt "arm" \
+  scons-stage-irt "arm" \
     "${hwflags} use_sandboxed_translator=1 translate_in_build_step=0" \
+    "toolchain_tests"
+  scons-stage-irt "arm" \
+    "${hwflags} use_sandboxed_translator=1 translate_fast=1 \
+       translate_in_build_step=0" \
     "toolchain_tests"
 }
 
@@ -539,13 +554,22 @@ tc-tests-all() {
         "nonpexe_tests"
   done
 
-  # small set of sbtc tests
-  scons-stage-noirt "x86-32" "${scons_flags} use_sandboxed_translator=1" \
+  # Small set of sbtc tests w/ and without translate_fast=1.
+  scons-stage-irt "x86-32" "${scons_flags} use_sandboxed_translator=1" \
     "toolchain_tests"
-  scons-stage-noirt "x86-64" "${scons_flags} use_sandboxed_translator=1" \
+  scons-stage-irt "x86-32" \
+    "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
     "toolchain_tests"
-  # smaller set of sbtc tests for ARM because qemu is flaky.
-  scons-stage-noirt "arm"    "${scons_flags} use_sandboxed_translator=1" \
+  scons-stage-irt "x86-64" "${scons_flags} use_sandboxed_translator=1" \
+    "toolchain_tests"
+  scons-stage-irt "x86-64" \
+    "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
+    "toolchain_tests"
+  # Smaller set of sbtc tests for ARM because qemu is flaky.
+  scons-stage-irt "arm" "${scons_flags} use_sandboxed_translator=1" \
+    "run_hello_world_test"
+  scons-stage-irt "arm" \
+    "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
     "run_hello_world_test"
 }
 
@@ -642,6 +666,23 @@ test-all-newlib() {
   scons-stage-noirt "x86-32"    "${scons_flags} -j1" "large_tests"
   scons-stage-noirt "x86-64" "${scons_flags}" "smoke_tests"
   scons-stage-noirt "x86-64"    "${scons_flags} -j1" "large_tests"
+  # Do some sandboxed translator tests as well.
+  scons-stage-irt "x86-32" "${scons_flags} use_sandboxed_translator=1" \
+    "toolchain_tests"
+  scons-stage-irt "x86-32" \
+    "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
+    "toolchain_tests"
+  scons-stage-irt "x86-64" "${scons_flags} use_sandboxed_translator=1" \
+    "toolchain_tests"
+  scons-stage-irt "x86-64" \
+    "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
+    "toolchain_tests"
+  # Smaller set of sbtc tests for ARM because qemu is flaky.
+  scons-stage-irt "arm" "${scons_flags} use_sandboxed_translator=1" \
+    "run_hello_world_test"
+  scons-stage-irt "arm" \
+    "${scons_flags} use_sandboxed_translator=1 translate_fast=1" \
+    "run_hello_world_test"
 }
 
 test-all-glibc() {
