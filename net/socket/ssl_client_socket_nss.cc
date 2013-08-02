@@ -1281,13 +1281,18 @@ SECStatus SSLClientSocketNSS::Core::OwnAuthCertHandler(
     // unsafe to call SSL_OptionSet in a renegotiation because the "first
     // handshake" lock isn't already held, which will result in an assertion
     // failure in the ssl_Get1stHandshakeLock call in SSL_OptionSet.
-    PRBool npn;
+    PRBool negotiated_extension;
     SECStatus rv = SSL_HandshakeNegotiatedExtension(socket,
                                                     ssl_next_proto_nego_xtn,
-                                                    &npn);
-    if (rv != SECSuccess || !npn) {
-      // If the server doesn't support NPN, then we don't do False Start with
-      // it.
+                                                    &negotiated_extension);
+    if (rv != SECSuccess || !negotiated_extension) {
+      rv = SSL_HandshakeNegotiatedExtension(socket,
+                                            ssl_application_layer_protocol,
+                                            &negotiated_extension);
+    }
+    if (rv != SECSuccess || !negotiated_extension) {
+      // If the server doesn't support NPN or ALPN, then we don't do False
+      // Start with it.
       SSL_OptionSet(socket, SSL_ENABLE_FALSE_START, PR_FALSE);
     }
   }
