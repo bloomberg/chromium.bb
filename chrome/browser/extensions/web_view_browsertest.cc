@@ -525,6 +525,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCannotMutateEventName) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPartitionRaisesException) {
+#if defined(OS_WIN)
+  // Flaky on XP bot http://crbug.com/267304
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
+
   TestHelper("testPartitionRaisesException",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
