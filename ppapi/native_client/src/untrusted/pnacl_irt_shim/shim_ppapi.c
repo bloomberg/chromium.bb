@@ -49,6 +49,11 @@
  *    (except in private/dev interfaces).  See:
  *    https://code.google.com/p/nativeclient/issues/detail?id=3574
  *
+ *  * "irt-fdio" and "irt-filename".  Under PNaCl, where
+ *    open_resource() open is disallowed, these are only useful for
+ *    debugging.  They are only allowed via the "dev" query strings;
+ *    the non-"dev" query strings are disallowed.
+ *
  * We omit these because they are only "dev" interfaces:
  *
  *  * "irt-dev-getpid"
@@ -56,8 +61,6 @@
  */
 static const char *const irt_interface_whitelist[] = {
   NACL_IRT_BASIC_v0_1,
-  NACL_IRT_FDIO_v0_1,
-  NACL_IRT_FILENAME_v0_1,
   NACL_IRT_MEMORY_v0_3,
   NACL_IRT_THREAD_v0_1,
   NACL_IRT_FUTEX_v0_1,
@@ -65,6 +68,9 @@ static const char *const irt_interface_whitelist[] = {
   NACL_IRT_PPAPIHOOK_v0_1,
   NACL_IRT_RANDOM_v0_1,
   NACL_IRT_CLOCK_v0_1,
+  /* Allowed for debugging purposes: */
+  NACL_IRT_DEV_FDIO_v0_1,
+  NACL_IRT_DEV_FILENAME_v0_1,
 };
 
 /* Use local strcmp to avoid dependency on libc. */
