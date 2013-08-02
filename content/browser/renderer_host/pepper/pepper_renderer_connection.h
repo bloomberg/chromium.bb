@@ -55,7 +55,8 @@ class PepperRendererConnection : public BrowserMessageFilter {
   void OnMsgFileRefGetInfoForRenderer(
       int routing_id,
       int child_process_id,
-      const ppapi::proxy::ResourceMessageCallParams& params);
+      int32_t sequence_num,
+      const std::vector<PP_Resource>& resources);
 
   void OnMsgDidCreateInProcessInstance(
       PP_Instance instance,

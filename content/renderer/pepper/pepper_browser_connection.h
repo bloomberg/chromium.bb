@@ -26,9 +26,11 @@ class PepperHelperImpl;
 class PepperBrowserConnection {
  public:
   typedef base::Callback<void(int)> PendingResourceIDCallback;
-  typedef base::Callback<void(PP_FileSystemType,
-                              std::string,
-                              base::FilePath)> FileRefGetInfoCallback;
+  typedef base::Callback<void(
+      const std::vector<PP_Resource>&,
+      const std::vector<PP_FileSystemType>&,
+      const std::vector<std::string>&,
+      const std::vector<base::FilePath>&)> FileRefGetInfoCallback;
 
   explicit PepperBrowserConnection(PepperHelperImpl* helper);
   virtual ~PepperBrowserConnection();
@@ -50,7 +52,7 @@ class PepperBrowserConnection {
   // |resource|. |callback| will be run when a reply is received with the
   // file information.
   void SendBrowserFileRefGetInfo(int child_process_id,
-                                 PP_Resource resource,
+                                 const std::vector<PP_Resource>& resource,
                                  const FileRefGetInfoCallback& callback);
 
   // Called when the renderer creates an in-process instance.
@@ -66,10 +68,12 @@ class PepperBrowserConnection {
   // Message handlers.
   void OnMsgCreateResourceHostFromHostReply(int32_t sequence_number,
                                             int pending_resource_host_id);
-  void OnMsgFileRefGetInfoReply(int32_t sequence_number,
-                                PP_FileSystemType type,
-                                std::string file_system_url_spec,
-                                base::FilePath external_path);
+  void OnMsgFileRefGetInfoReply(
+      int32_t sequence_number,
+      const std::vector<PP_Resource>& resources,
+      const std::vector<PP_FileSystemType>& types,
+      const std::vector<std::string>& file_system_url_specs,
+      const std::vector<base::FilePath>& external_paths);
 
   // Return the next sequence number.
   int32_t GetNextSequence();

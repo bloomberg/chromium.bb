@@ -1836,21 +1836,23 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_BrowserFontSingleton_GetFontFamiliesReply,
 // |child_process_id|. |routing_id| is sent so that the reply can be routed
 // properly in the renderer.
 // Only sent from the renderer to the browser.
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_FileRef_GetInfoForRenderer,
+IPC_MESSAGE_CONTROL4(PpapiHostMsg_FileRef_GetInfoForRenderer,
                      int /* routing_id */,
                      int /* child_process_id */,
-                     ppapi::proxy::ResourceMessageCallParams /* params */)
+                     int32_t /* sequence */,
+                     std::vector<PP_Resource> /* resources */)
 
 // Reply to PpapiHostMsg_FileRef_GetInfoForRenderer with a sequence number for
 // invoking the right callback, |fs_type| which indicates the file system, and
 // path information in either |file_system_url_spec| (for internal file systems)
 // or |external_path| (for external file systems).
 // Only sent from the browser to the renderer.
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_FileRef_GetInfoForRendererReply,
+IPC_MESSAGE_ROUTED5(PpapiHostMsg_FileRef_GetInfoForRendererReply,
                     int32_t /* sequence */,
-                    PP_FileSystemType /* fs_type */,
-                    std::string /* file_system_url_spec */,
-                    base::FilePath /* external_path */)
+                    std::vector<PP_Resource> /* resources */,
+                    std::vector<PP_FileSystemType> /* fs_type */,
+                    std::vector<std::string> /* file_system_url_spec */,
+                    std::vector<base::FilePath> /* external_path */)
 
 // Flash -----------------------------------------------------------------------
 
