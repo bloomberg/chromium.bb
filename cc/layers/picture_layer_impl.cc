@@ -527,6 +527,9 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
+  DCHECK(!other->needs_post_commit_initialization_);
+  DCHECK(other->tilings_);
+
   UpdateLCDTextStatus(other->is_using_lcd_text_);
 
   if (!DrawsContent()) {
@@ -722,7 +725,10 @@ void PictureLayerImpl::DoPostCommitInitialization() {
   if (twin_layer_) {
     DCHECK(!twin_layer_->twin_layer_);
     twin_layer_->twin_layer_ = this;
-    SyncFromActiveLayer(twin_layer_);
+    // If the twin has never been pushed to, do not sync from it.
+    // This can happen if this function is called during activation.
+    if (!twin_layer_->needs_post_commit_initialization_)
+      SyncFromActiveLayer(twin_layer_);
   }
 
   needs_post_commit_initialization_ = false;
