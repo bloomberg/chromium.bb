@@ -2355,8 +2355,6 @@
         'browser/ui/webui/sync_promo/sync_promo_trial.h',
         'browser/ui/webui/sync_setup_handler.cc',
         'browser/ui/webui/sync_setup_handler.h',
-        'browser/ui/webui/tab_modal_confirm_dialog_webui.cc',
-        'browser/ui/webui/tab_modal_confirm_dialog_webui.h',
         'browser/ui/webui/task_manager/task_manager_dialog.cc',
         'browser/ui/webui/task_manager/task_manager_dialog.h',
         'browser/ui/webui/task_manager/task_manager_handler.cc',
@@ -2978,8 +2976,6 @@
             'browser/ui/views/simple_message_box_views.cc',
             'browser/ui/webui/help/version_updater_basic.cc',
             'browser/ui/webui/help/version_updater_basic.h',
-            'browser/ui/webui/tab_modal_confirm_dialog_webui.cc',
-            'browser/ui/webui/tab_modal_confirm_dialog_webui.h',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -3027,8 +3023,6 @@
               'sources/': [
                 # Exclude all of views.
                 ['exclude', '^browser/ui/views/'],
-                ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.cc'],
-                ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h']
               ]
             }],
             # GTK build only
