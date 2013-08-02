@@ -2076,6 +2076,11 @@ void Element::blur()
     }
 }
 
+bool Element::isMouseFocusable() const
+{
+    return isFocusable();
+}
+
 void Element::dispatchFocusEvent(Element* oldFocusedElement, FocusDirection)
 {
     RefPtr<FocusEvent> event = FocusEvent::create(eventNames().focusEvent, false, false, document()->defaultView(), 0, oldFocusedElement);
