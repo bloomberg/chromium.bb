@@ -30,30 +30,60 @@ if (window == backgroundPage) {
         var callback = request.callback;
         request.callback = null;
 
-        var fileSystemId = response.fileSystemId;
-        var baseName = response.baseName;
-        var id = response.id;
-        var fs = GetIsolatedFileSystem(fileSystemId);
+        var entries = [];
+        var hasError = false;
 
-        try {
-          // TODO(koz): fs.root.getFile() makes a trip to the browser process,
-          // but it might be possible avoid that by calling
-          // WebFrame::createFileEntry().
-          fs.root.getFile(baseName, {}, function(fileEntry) {
-            entryIdManager.registerEntry(id, fileEntry);
-            callback(fileEntry);
-          }, function(fileError) {
-            lastError.run('fileSystem.' + functionName,
-                          'Error getting fileEntry, code: ' + fileError.code,
-                          request.stack,
-                          callback);
-          });
-        } catch (e) {
-          lastError.run('fileSystem.' + functionName,
-                        'Error in event handler for onLaunched: ' + e.stack,
-                        request.stack,
-                        callback);
-        }
+        // Loop through the response entries and asynchronously get the
+        // FileEntry for each. We use hasError to ensure that only the first
+        // error is reported. Note that an error can occur either during the
+        // loop or in the asynchronous error callback to getFile.
+        $Array.forEach(response.entries, function(entry) {
+          if (hasError)
+            return;
+          var fileSystemId = entry.fileSystemId;
+          var baseName = entry.baseName;
+          var id = entry.id;
+          var fs = GetIsolatedFileSystem(fileSystemId);
+
+          try {
+            // TODO(koz): fs.root.getFile() makes a trip to the browser process,
+            // but it might be possible avoid that by calling
+            // WebFrame::createFileEntry().
+            fs.root.getFile(baseName, {}, function(fileEntry) {
+              if (hasError)
+                return;
+              entryIdManager.registerEntry(id, fileEntry);
+              entries.push(fileEntry);
+              // Once all entries are ready, pass them to the callback. In the
+              // event of an error, this condition will never be satisfied so
+              // the callback will not be called with any entries.
+              if (entries.length == response.entries.length) {
+                if (response.multiple) {
+                  callback(entries);
+                } else {
+                  callback(entries[0]);
+                }
+              }
+            }, function(fileError) {
+              if (!hasError) {
+                hasError = true;
+                lastError.run(
+                    'fileSystem.' + functionName,
+                    'Error getting fileEntry, code: ' + fileError.code,
+                    request.stack,
+                    callback);
+              }
+            });
+          } catch (e) {
+            if (!hasError) {
+              hasError = true;
+              lastError.run('fileSystem.' + functionName,
+                            'Error getting fileEntry: ' + e.stack,
+                            request.stack,
+                            callback);
+            }
+          }
+        });
       }
     });
   };

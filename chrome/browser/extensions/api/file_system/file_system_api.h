@@ -50,34 +50,42 @@ class FileSystemEntryFunction : public AsyncExtensionFunction {
     WRITABLE
   };
 
+  FileSystemEntryFunction();
+
   virtual ~FileSystemEntryFunction() {}
 
   bool HasFileSystemWritePermission();
 
-  // This is called when a writable file entry is being returned. The function
-  // will ensure the file exists, creating it if necessary, and also check that
-  // the file is not a link. If it succeeds it proceeds to
-  // RegisterFileSystemAndSendResponse, otherwise to HandleWritableFileError.
-  void CheckWritableFile(const base::FilePath& path);
+  // This is called when writable file entries are being returned. The function
+  // will ensure the files exist, creating them if necessary, and also check
+  // that none of the files are links. If it succeeds it proceeds to
+  // RegisterFileSystemsAndSendResponse, otherwise to HandleWritableFileError.
+  void CheckWritableFiles(const std::vector<base::FilePath>& path);
 
   // This will finish the choose file process. This is either called directly
-  // from FileSelected, or from CreateFileIfNecessary. It is called on the UI
+  // from FilesSelected, or from WritableFileChecker. It is called on the UI
   // thread.
-  void RegisterFileSystemAndSendResponse(const base::FilePath& path,
-                                         EntryType entry_type);
+  void RegisterFileSystemsAndSendResponse(
+      const std::vector<base::FilePath>& path);
 
-  // This will finish the choose file process. This is either called directly
-  // from FileSelected, or from CreateFileIfNecessary. It is called on the UI
-  // thread. |id_override| specifies the id to send in the response instead of
-  // the generated id. This can be useful for creating a file entry with an id
-  // matching another file entry, e.g. for restoreEntry.
-  void RegisterFileSystemAndSendResponseWithIdOverride(
-      const base::FilePath& path,
-      EntryType entry_type,
-      const std::string& id_override);
+  // Creates a response dictionary and sets it as the response to be sent.
+  void CreateResponse();
+
+  // Adds an entry to the response dictionary.
+  void AddEntryToResponse(const base::FilePath& path,
+                          const std::string& id_override);
 
   // called on the UI thread if there is a problem checking a writable file.
-  void HandleWritableFileError();
+  void HandleWritableFileError(const std::string& error);
+
+  // Whether multiple entries have been requested.
+  bool multiple_;
+
+  // The type of the entry or entries to return.
+  EntryType entry_type_;
+
+  // The dictionary to send as the response.
+  base::DictionaryValue* response_;
 };
 
 class FileSystemGetWritableEntryFunction : public FileSystemEntryFunction {
@@ -104,6 +112,8 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
  public:
   // Allow picker UI to be skipped in testing.
   static void SkipPickerAndAlwaysSelectPathForTest(base::FilePath* path);
+  static void SkipPickerAndAlwaysSelectPathsForTest(
+      std::vector<base::FilePath>* paths);
   static void SkipPickerAndSelectSuggestedPathForTest();
   static void SkipPickerAndAlwaysCancelForTest();
   static void StopSkippingPickerForTest();
@@ -133,15 +143,14 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   virtual ~FileSystemChooseEntryFunction() {}
   virtual bool RunImpl() OVERRIDE;
   void ShowPicker(const ui::SelectFileDialog::FileTypeInfo& file_type_info,
-                  ui::SelectFileDialog::Type picker_type,
-                  EntryType entry_type);
+                  ui::SelectFileDialog::Type picker_type);
 
  private:
   void SetInitialPathOnFileThread(const base::FilePath& suggested_name,
                                   const base::FilePath& previous_path);
 
-  // FileSelected and FileSelectionCanceled are called by the file picker.
-  void FileSelected(const base::FilePath& path, EntryType entry_type);
+  // FilesSelected and FileSelectionCanceled are called by the file picker.
+  void FilesSelected(const std::vector<base::FilePath>& path);
   void FileSelectionCanceled();
 
   base::FilePath initial_path_;

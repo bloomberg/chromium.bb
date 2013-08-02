@@ -55,9 +55,18 @@ namespace fileSystem {
     // in the accepts argument. The default is true. If the accepts field is
     // unset or contains no valid entries, this will always be reset to true.
     boolean? acceptsAllTypes;
+
+    // Whether to accept multiple files. This is only supported for openFile and
+    // openWritableFile. The callback to chooseEntry will be called with a list
+    // of entries if this is set to true. Otherwise it will be called with a
+    // single Entry.
+    boolean? acceptsMultiple;
   };
   callback GetDisplayPathCallback = void (DOMString displayPath);
   callback FileEntryCallback = void ([instanceOf=FileEntry] object fileEntry);
+  callback FileEntriesCallback = void (
+      [instanceOf=FileEntry] optional object fileEntry,
+      [instanceOf=FileEntry] optional object[] fileEntries);
   callback IsWritableCallback = void (boolean isWritable);
   callback IsRestorableCallback = void (boolean isRestorable);
 
@@ -79,7 +88,7 @@ namespace fileSystem {
 
     // Ask the user to choose a file.
     static void chooseEntry(optional ChooseEntryOptions options,
-                            FileEntryCallback callback);
+                            FileEntriesCallback callback);
 
     // Returns the file entry with the given id if it can be restored. This call
     // will fail otherwise.

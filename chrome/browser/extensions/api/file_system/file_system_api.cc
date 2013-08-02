@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
@@ -60,10 +61,13 @@ const char kSecurityError[] = "Security error";
 const char kInvalidCallingPage[] = "Invalid calling page. This function can't "
     "be called from a background page.";
 const char kUserCancelled[] = "User cancelled";
-const char kWritableFileError[] =
+const char kWritableFileRestrictedLocationError[] =
     "Cannot write to file in a restricted location";
+const char kWritableFileErrorFormat[] = "Error opening %s";
 const char kRequiresFileSystemWriteError[] =
     "Operation requires fileSystem.write permission";
+const char kMultipleUnsupportedError[] =
+    "acceptsMultiple: true is not supported for 'saveFile'";
 const char kUnknownIdError[] = "Unknown id";
 
 namespace file_system = extensions::api::file_system;
@@ -156,6 +160,7 @@ base::FilePath PrettifyPath(const base::FilePath& source_path) {
 bool g_skip_picker_for_test = false;
 bool g_use_suggested_path_for_test = false;
 base::FilePath* g_path_to_be_picked_for_test;
+std::vector<base::FilePath>* g_paths_to_be_picked_for_test;
 
 bool GetFileSystemAndPathOfFileEntry(
     const std::string& filesystem_name,
@@ -210,13 +215,19 @@ bool GetFilePathOfFileEntry(const std::string& filesystem_name,
 }
 
 bool DoCheckWritableFile(const base::FilePath& path,
-                         const base::FilePath& extension_directory) {
+                         const base::FilePath& extension_directory,
+                         std::string* error_message) {
   // Don't allow links.
-  if (base::PathExists(path) && file_util::IsLink(path))
+  if (base::PathExists(path) && file_util::IsLink(path)) {
+    *error_message = base::StringPrintf(kWritableFileErrorFormat,
+                                        path.BaseName().AsUTF8Unsafe().c_str());
     return false;
+  }
 
-  if (extension_directory == path || extension_directory.IsParent(path))
+  if (extension_directory == path || extension_directory.IsParent(path)) {
+    *error_message = kWritableFileRestrictedLocationError;
     return false;
+  }
 
   bool is_whitelisted_path = false;
 
@@ -236,6 +247,7 @@ bool DoCheckWritableFile(const base::FilePath& path,
       base::FilePath blacklisted_path;
       if (PathService::Get(kBlacklistedPaths[i], &blacklisted_path) &&
           (blacklisted_path == path || blacklisted_path.IsParent(path))) {
+        *error_message = kWritableFileRestrictedLocationError;
         return false;
       }
     }
@@ -251,28 +263,119 @@ bool DoCheckWritableFile(const base::FilePath& path,
   // Close the file so we don't keep a lock open.
   if (file != base::kInvalidPlatformFileValue)
     base::ClosePlatformFile(file);
-  return error == base::PLATFORM_FILE_OK ||
-         error == base::PLATFORM_FILE_ERROR_EXISTS;
+  if (error != base::PLATFORM_FILE_OK &&
+      error != base::PLATFORM_FILE_ERROR_EXISTS) {
+    *error_message = base::StringPrintf(kWritableFileErrorFormat,
+                                        path.BaseName().AsUTF8Unsafe().c_str());
+    return false;
+  }
+
+  return true;
 }
 
-void CheckLocalWritableFile(const base::FilePath& path,
-                            const base::FilePath& extension_directory,
-                            const base::Closure& on_success,
-                            const base::Closure& on_failure) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      DoCheckWritableFile(path, extension_directory) ? on_success : on_failure);
-}
+// Checks whether a list of paths are all OK for writing and calls a provided
+// on_success or on_failure callback when done. A file is OK for writing if it
+// is not a symlink, is not in a blacklisted path and can be opened for writing;
+// files are created if they do not exist.
+class WritableFileChecker
+    : public base::RefCountedThreadSafe<WritableFileChecker> {
+ public:
+  WritableFileChecker(
+      const std::vector<base::FilePath>& paths,
+      Profile* profile,
+      const base::FilePath& extension_path,
+      const base::Closure& on_success,
+      const base::Callback<void(const std::string&)>& on_failure)
+      : outstanding_tasks_(1),
+        extension_path_(extension_path),
+        on_success_(on_success),
+        on_failure_(on_failure) {
+#if defined(OS_CHROMEOS)
+    if (drive::util::IsUnderDriveMountPoint(paths[0])) {
+      outstanding_tasks_ = paths.size();
+      for (std::vector<base::FilePath>::const_iterator it = paths.begin();
+           it != paths.end(); ++it) {
+        DCHECK(drive::util::IsUnderDriveMountPoint(*it));
+        drive::util::PrepareWritableFileAndRun(
+            profile,
+            *it,
+            base::Bind(&WritableFileChecker::CheckRemoteWritableFile, this));
+      }
+      return;
+    }
+#endif
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&WritableFileChecker::CheckLocalWritableFiles, this, paths));
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<WritableFileChecker>;
+  virtual ~WritableFileChecker() {}
+
+  // Called when a work item is completed. If all work items are done, this
+  // posts a task to run AllTasksDone on the UI thread.
+  void TaskDone() {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+    if (--outstanding_tasks_ == 0) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&WritableFileChecker::AllTasksDone, this));
+    }
+  }
+
+  // Called on the UI thread when all tasks are done.
+  void AllTasksDone() {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    if (error_.empty())
+      on_success_.Run();
+    else
+      on_failure_.Run(error_);
+  }
+
+  // Reports an error in completing a work item. This may be called more than
+  // once, but only the last message will be retained.
+  void Error(const std::string& message) {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+    DCHECK(!message.empty());
+    error_ = message;
+    TaskDone();
+  }
+
+  void CheckLocalWritableFiles(const std::vector<base::FilePath>& paths) {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+    std::string error;
+    for (std::vector<base::FilePath>::const_iterator it = paths.begin();
+         it != paths.end(); ++it) {
+      if (!DoCheckWritableFile(*it, extension_path_, &error)) {
+        Error(error);
+        return;
+      }
+    }
+    TaskDone();
+  }
 
 #if defined(OS_CHROMEOS)
-void CheckRemoteWritableFile(const base::Closure& on_success,
-                             const base::Closure& on_failure,
-                             drive::FileError error,
-                             const base::FilePath& path) {
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      error == drive::FILE_ERROR_OK ? on_success : on_failure);
-}
+  void CheckRemoteWritableFile(drive::FileError error,
+                               const base::FilePath& path) {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+    if (error == drive::FILE_ERROR_OK) {
+      TaskDone();
+    } else {
+      Error(base::StringPrintf(kWritableFileErrorFormat,
+                               path.BaseName().AsUTF8Unsafe().c_str()));
+    }
+  }
 #endif
+
+  int outstanding_tasks_;
+  const base::FilePath extension_path_;
+  std::string error_;
+  base::Closure on_success_;
+  base::Callback<void(const std::string&)> on_failure_;
+};
 
 // Expand the mime-types and extensions provided in an AcceptOption, returning
 // them within the passed extension vector. Returns false if no valid types
@@ -387,6 +490,11 @@ bool FileSystemGetDisplayPathFunction::RunImpl() {
   return true;
 }
 
+FileSystemEntryFunction::FileSystemEntryFunction()
+    : multiple_(false),
+      entry_type_(READ_ONLY),
+      response_(NULL) {}
+
 bool FileSystemEntryFunction::HasFileSystemWritePermission() {
   const extensions::Extension* extension = GetExtension();
   if (!extension)
@@ -395,60 +503,68 @@ bool FileSystemEntryFunction::HasFileSystemWritePermission() {
   return extension->HasAPIPermission(APIPermission::kFileSystemWrite);
 }
 
-void FileSystemEntryFunction::CheckWritableFile(const base::FilePath& path) {
+void FileSystemEntryFunction::CheckWritableFiles(
+    const std::vector<base::FilePath>& paths) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  base::Closure on_success =
-      base::Bind(&FileSystemEntryFunction::RegisterFileSystemAndSendResponse,
-                 this, path, WRITABLE);
-  base::Closure on_failure =
-      base::Bind(&FileSystemEntryFunction::HandleWritableFileError, this);
+  scoped_refptr<WritableFileChecker> helper = new WritableFileChecker(
+      paths, profile_, extension_->path(),
+      base::Bind(
+          &FileSystemEntryFunction::RegisterFileSystemsAndSendResponse,
+          this, paths),
+      base::Bind(&FileSystemEntryFunction::HandleWritableFileError, this));
+}
 
-#if defined(OS_CHROMEOS)
-  if (drive::util::IsUnderDriveMountPoint(path)) {
-    drive::util::PrepareWritableFileAndRun(profile_, path,
-        base::Bind(&CheckRemoteWritableFile, on_success, on_failure));
-    return;
+void FileSystemEntryFunction::RegisterFileSystemsAndSendResponse(
+    const std::vector<base::FilePath>& paths) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  CreateResponse();
+  for (std::vector<base::FilePath>::const_iterator it = paths.begin();
+       it != paths.end(); ++it) {
+    AddEntryToResponse(*it, "");
   }
-#endif
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CheckLocalWritableFile, path, extension_->path(), on_success,
-                 on_failure));
-}
-
-void FileSystemEntryFunction::RegisterFileSystemAndSendResponse(
-    const base::FilePath& path, EntryType entry_type) {
-  RegisterFileSystemAndSendResponseWithIdOverride(path, entry_type, "");
-}
-
-void FileSystemEntryFunction::RegisterFileSystemAndSendResponseWithIdOverride(
-    const base::FilePath& path, EntryType entry_type, const std::string& id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  fileapi::IsolatedContext* isolated_context =
-      fileapi::IsolatedContext::GetInstance();
-  DCHECK(isolated_context);
-
-  bool writable = entry_type == WRITABLE;
-  extensions::app_file_handler_util::GrantedFileEntry file_entry =
-      extensions::app_file_handler_util::CreateFileEntry(profile(),
-          GetExtension()->id(), render_view_host_->GetProcess()->GetID(), path,
-          writable);
-
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  SetResult(dict);
-  dict->SetString("fileSystemId", file_entry.filesystem_id);
-  dict->SetString("baseName", file_entry.registered_name);
-  if (id.empty())
-    dict->SetString("id", file_entry.id);
-  else
-    dict->SetString("id", id);
-
   SendResponse(true);
 }
 
-void FileSystemEntryFunction::HandleWritableFileError() {
+void FileSystemEntryFunction::CreateResponse() {
+  DCHECK(!response_);
+  response_ = new base::DictionaryValue();
+  base::ListValue* list = new base::ListValue();
+  response_->Set("entries", list);
+  response_->SetBoolean("multiple", multiple_);
+  SetResult(response_);
+}
+
+void FileSystemEntryFunction::AddEntryToResponse(
+    const base::FilePath& path,
+    const std::string& id_override) {
+  DCHECK(response_);
+  bool writable = entry_type_ == WRITABLE;
+  extensions::app_file_handler_util::GrantedFileEntry file_entry =
+      extensions::app_file_handler_util::CreateFileEntry(
+          profile(),
+          GetExtension()->id(),
+          render_view_host_->GetProcess()->GetID(),
+          path,
+          writable);
+  base::ListValue* entries;
+  bool success = response_->GetList("entries", &entries);
+  DCHECK(success);
+
+  base::DictionaryValue* entry = new base::DictionaryValue();
+  entry->SetString("fileSystemId", file_entry.filesystem_id);
+  entry->SetString("baseName", file_entry.registered_name);
+  if (id_override.empty())
+    entry->SetString("id", file_entry.id);
+  else
+    entry->SetString("id", id_override);
+  entries->Append(entry);
+}
+
+void FileSystemEntryFunction::HandleWritableFileError(
+    const std::string& error) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  error_ = kWritableFileError;
+  error_ = error;
   SendResponse(false);
 }
 
@@ -462,13 +578,16 @@ bool FileSystemGetWritableEntryFunction::RunImpl() {
     error_ = kRequiresFileSystemWriteError;
     return false;
   }
+  entry_type_ = WRITABLE;
 
   base::FilePath path;
   if (!GetFilePathOfFileEntry(filesystem_name, filesystem_path,
                               render_view_host_, &path, &error_))
     return false;
 
-  CheckWritableFile(path);
+  std::vector<base::FilePath> paths;
+  paths.push_back(path);
+  CheckWritableFiles(paths);
   return true;
 }
 
@@ -503,10 +622,8 @@ class FileSystemChooseEntryFunction::FilePicker
              content::WebContents* web_contents,
              const base::FilePath& suggested_name,
              const ui::SelectFileDialog::FileTypeInfo& file_type_info,
-             ui::SelectFileDialog::Type picker_type,
-             EntryType entry_type)
-      : entry_type_(entry_type),
-        function_(function) {
+             ui::SelectFileDialog::Type picker_type)
+      : function_(function) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
     gfx::NativeWindow owning_window = web_contents ?
@@ -521,10 +638,20 @@ class FileSystemChooseEntryFunction::FilePicker
                 base::Unretained(this), suggested_name, 1,
                 static_cast<void*>(NULL)));
       } else if (g_path_to_be_picked_for_test) {
-        content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+        content::BrowserThread::PostTask(
+            content::BrowserThread::UI, FROM_HERE,
             base::Bind(
                 &FileSystemChooseEntryFunction::FilePicker::FileSelected,
                 base::Unretained(this), *g_path_to_be_picked_for_test, 1,
+                static_cast<void*>(NULL)));
+      } else if (g_paths_to_be_picked_for_test) {
+        content::BrowserThread::PostTask(
+            content::BrowserThread::UI,
+            FROM_HERE,
+            base::Bind(
+                &FileSystemChooseEntryFunction::FilePicker::MultiFilesSelected,
+                base::Unretained(this),
+                *g_paths_to_be_picked_for_test,
                 static_cast<void*>(NULL)));
       } else {
         content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
@@ -553,8 +680,9 @@ class FileSystemChooseEntryFunction::FilePicker
   virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE {
-    function_->FileSelected(path, entry_type_);
-    delete this;
+    std::vector<base::FilePath> paths;
+    paths.push_back(path);
+    MultiFilesSelected(paths, params);
   }
 
   virtual void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file,
@@ -568,16 +696,30 @@ class FileSystemChooseEntryFunction::FilePicker
     //
     // TODO(kinaba): remove this, once after the file picker implements proper
     // switch of the path treatment depending on the |support_drive| flag.
-    function_->FileSelected(file.file_path, entry_type_);
+    FileSelected(file.file_path, index, params);
+  }
+
+  virtual void MultiFilesSelected(const std::vector<base::FilePath>& files,
+                                  void* params) OVERRIDE {
+    function_->FilesSelected(files);
     delete this;
+  }
+
+  virtual void MultiFilesSelectedWithExtraInfo(
+      const std::vector<ui::SelectedFileInfo>& files,
+      void* params) OVERRIDE {
+    std::vector<base::FilePath> paths;
+    for (std::vector<ui::SelectedFileInfo>::const_iterator it = files.begin();
+         it != files.end(); ++it) {
+      paths.push_back(it->file_path);
+    }
+    MultiFilesSelected(paths, params);
   }
 
   virtual void FileSelectionCanceled(void* params) OVERRIDE {
     function_->FileSelectionCanceled();
     delete this;
   }
-
-  EntryType entry_type_;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   scoped_refptr<FileSystemChooseEntryFunction> function_;
@@ -587,8 +729,7 @@ class FileSystemChooseEntryFunction::FilePicker
 
 void FileSystemChooseEntryFunction::ShowPicker(
     const ui::SelectFileDialog::FileTypeInfo& file_type_info,
-    ui::SelectFileDialog::Type picker_type,
-    EntryType entry_type) {
+    ui::SelectFileDialog::Type picker_type) {
   // TODO(asargent/benwells) - As a short term remediation for crbug.com/179010
   // we're adding the ability for a whitelisted extension to use this API since
   // chrome.fileBrowserHandler.selectFile is ChromeOS-only. Eventually we'd
@@ -613,8 +754,8 @@ void FileSystemChooseEntryFunction::ShowPicker(
   // its destruction (and subsequent sending of the function response) until the
   // user has selected a file or cancelled the picker. At that point, the picker
   // will delete itself, which will also free the function instance.
-  new FilePicker(this, web_contents, initial_path_, file_type_info,
-                 picker_type, entry_type);
+  new FilePicker(
+      this, web_contents, initial_path_, file_type_info, picker_type);
 }
 
 // static
@@ -623,6 +764,14 @@ void FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
   g_skip_picker_for_test = true;
   g_use_suggested_path_for_test = false;
   g_path_to_be_picked_for_test = path;
+  g_paths_to_be_picked_for_test = NULL;
+}
+
+void FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathsForTest(
+    std::vector<base::FilePath>* paths) {
+  g_skip_picker_for_test = true;
+  g_use_suggested_path_for_test = false;
+  g_paths_to_be_picked_for_test = paths;
 }
 
 // static
@@ -630,6 +779,7 @@ void FileSystemChooseEntryFunction::SkipPickerAndSelectSuggestedPathForTest() {
   g_skip_picker_for_test = true;
   g_use_suggested_path_for_test = true;
   g_path_to_be_picked_for_test = NULL;
+  g_paths_to_be_picked_for_test = NULL;
 }
 
 // static
@@ -637,6 +787,7 @@ void FileSystemChooseEntryFunction::SkipPickerAndAlwaysCancelForTest() {
   g_skip_picker_for_test = true;
   g_use_suggested_path_for_test = false;
   g_path_to_be_picked_for_test = NULL;
+  g_paths_to_be_picked_for_test = NULL;
 }
 
 // static
@@ -670,19 +821,18 @@ void FileSystemChooseEntryFunction::SetInitialPathOnFileThread(
   }
 }
 
-void FileSystemChooseEntryFunction::FileSelected(const base::FilePath& path,
-                                                 EntryType entry_type) {
+void FileSystemChooseEntryFunction::FilesSelected(
+    const std::vector<base::FilePath>& paths) {
+  DCHECK(!paths.empty());
   file_system_api::SetLastChooseEntryDirectory(
-      ExtensionPrefs::Get(profile()),
-      GetExtension()->id(),
-      path.DirName());
-  if (entry_type == WRITABLE) {
-    CheckWritableFile(path);
+      ExtensionPrefs::Get(profile()), GetExtension()->id(), paths[0].DirName());
+  if (entry_type_ == WRITABLE) {
+    CheckWritableFiles(paths);
     return;
   }
 
   // Don't need to check the file, it's for reading.
-  RegisterFileSystemAndSendResponse(path, READ_ONLY);
+  RegisterFileSystemsAndSendResponse(paths);
 }
 
 void FileSystemChooseEntryFunction::FileSelectionCanceled() {
@@ -756,16 +906,22 @@ bool FileSystemChooseEntryFunction::RunImpl() {
 
   base::FilePath suggested_name;
   ui::SelectFileDialog::FileTypeInfo file_type_info;
-  EntryType entry_type = READ_ONLY;
   ui::SelectFileDialog::Type picker_type =
       ui::SelectFileDialog::SELECT_OPEN_FILE;
 
   file_system::ChooseEntryOptions* options = params->options.get();
   if (options) {
+    multiple_ = options->accepts_multiple;
+    if (multiple_)
+      picker_type = ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE;
     if (options->type == file_system::CHOOSE_ENTRY_TYPE_OPENWRITABLEFILE) {
-      entry_type = WRITABLE;
+      entry_type_ = WRITABLE;
     } else if (options->type == file_system::CHOOSE_ENTRY_TYPE_SAVEFILE) {
-      entry_type = WRITABLE;
+      if (multiple_) {
+        error_ = kMultipleUnsupportedError;
+        return false;
+      }
+      entry_type_ = WRITABLE;
       picker_type = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
     }
 
@@ -777,7 +933,7 @@ bool FileSystemChooseEntryFunction::RunImpl() {
         options->accepts.get(), options->accepts_all_types.get());
   }
 
-  if (entry_type == WRITABLE && !HasFileSystemWritePermission()) {
+  if (entry_type_ == WRITABLE && !HasFileSystemWritePermission()) {
     error_ = kRequiresFileSystemWriteError;
     return false;
   }
@@ -798,7 +954,7 @@ bool FileSystemChooseEntryFunction::RunImpl() {
           suggested_name, previous_path),
       base::Bind(
           &FileSystemChooseEntryFunction::ShowPicker, this, file_type_info,
-          picker_type, entry_type));
+          picker_type));
   return true;
 }
 
@@ -868,13 +1024,11 @@ bool FileSystemRestoreEntryFunction::RunImpl() {
   // |needs_new_entry| will be false if the renderer already has an Entry for
   // |entry_id|.
   if (needs_new_entry) {
-    // Reuse the ID of the retained file entry so retainEntry returns the same
-    // ID that was passed to restoreEntry.
-    RegisterFileSystemAndSendResponseWithIdOverride(
-        file_entry->path,
-        file_entry->writable ? WRITABLE : READ_ONLY,
-        file_entry->id);
+    entry_type_ = file_entry->writable ? WRITABLE : READ_ONLY;
+    CreateResponse();
+    AddEntryToResponse(file_entry->path, file_entry->id);
   }
+  SendResponse(true);
   return true;
 }
 

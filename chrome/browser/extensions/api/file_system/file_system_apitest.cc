@@ -97,6 +97,30 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
     return destination;
   }
 
+  std::vector<base::FilePath> TempFilePaths(
+      const std::vector<std::string>& destination_names,
+      bool copy_gold) {
+    if (!temp_dir_.CreateUniqueTempDir()) {
+      ADD_FAILURE() << "CreateUniqueTempDir failed";
+      return std::vector<base::FilePath>();
+    }
+    FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
+        "test_temp", temp_dir_.path());
+
+    std::vector<base::FilePath> result;
+    for (std::vector<std::string>::const_iterator it =
+             destination_names.begin();
+         it != destination_names.end(); ++it) {
+      base::FilePath destination = temp_dir_.path().AppendASCII(*it);
+      if (copy_gold) {
+        base::FilePath source = test_root_folder_.AppendASCII("gold.txt");
+        EXPECT_TRUE(base::CopyFile(source, destination));
+      }
+      result.push_back(destination);
+    }
+    return result;
+  }
+
   void CheckStoredDirectoryMatches(const base::FilePath& filename) {
     const Extension* extension = GetSingleLoadedExtension();
     ASSERT_TRUE(extension);
@@ -222,6 +246,31 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   CheckStoredDirectoryMatches(test_file);
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenMultipleSuggested) {
+  base::FilePath test_file = TempFilePath("open_existing.txt", true);
+  ASSERT_FALSE(test_file.empty());
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+      chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false));
+  FileSystemChooseEntryFunction::SkipPickerAndSelectSuggestedPathForTest();
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/open_multiple_with_suggested_name"))
+      << message_;
+  CheckStoredDirectoryMatches(test_file);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+                       FileSystemApiOpenMultipleExistingFilesTest) {
+  std::vector<std::string> names;
+  names.push_back("open_existing1.txt");
+  names.push_back("open_existing2.txt");
+  std::vector<base::FilePath> test_files = TempFilePaths(names, true);
+  ASSERT_EQ(2u, test_files.size());
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathsForTest(
+      &test_files);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_multiple_existing"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiInvalidChooseEntryTypeTest) {
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
@@ -270,6 +319,20 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_TRUE(RunPlatformAppTest(
       "api_test/file_system/open_writable_existing_with_write")) << message_;
   CheckStoredDirectoryMatches(test_file);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+                       FileSystemApiOpenMultipleWritableExistingFilesTest) {
+  std::vector<std::string> names;
+  names.push_back("open_existing1.txt");
+  names.push_back("open_existing2.txt");
+  std::vector<base::FilePath> test_files = TempFilePaths(names, true);
+  ASSERT_EQ(2u, test_files.size());
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathsForTest(
+      &test_files);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/open_multiple_writable_existing_with_write"))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenCancelTest) {
@@ -324,6 +387,18 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_TRUE(RunPlatformAppTest(
       "api_test/file_system/save_existing_with_write")) << message_;
   CheckStoredDirectoryMatches(test_file);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveMultipleFilesTest) {
+  std::vector<std::string> names;
+  names.push_back("save1.txt");
+  names.push_back("save2.txt");
+  std::vector<base::FilePath> test_files = TempFilePaths(names, false);
+  ASSERT_EQ(2u, test_files.size());
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathsForTest(
+      &test_files);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_multiple"))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveCancelTest) {
