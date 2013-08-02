@@ -27,6 +27,8 @@
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -129,6 +131,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    if (token_forwarder_)
+      token_forwarder_->Shutdown();
     if (manager_) {
       manager_->RemoveObserver(&observer_);
       manager_->Shutdown();
@@ -155,12 +159,12 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
 
     if (!wait_for_fetch) {
-      // Create the UserCloudPolicyTokenForwarder, which forwards the refresh
-      // token from the TokenService to the UserCloudPolicyManagerChromeOS.
-      // This service is automatically created for regular Profiles but not for
-      // testing Profiles.
-      TokenService* token_service =
-          TokenServiceFactory::GetForProfile(profile_);
+      // Create the UserCloudPolicyTokenForwarder, which fetches the access
+      // token using the OAuth2PolicyFetcher and forwards it to the
+      // UserCloudPolicyManagerChromeOS. This service is automatically created
+      // for regular Profiles but not for testing Profiles.
+      ProfileOAuth2TokenService* token_service =
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
       ASSERT_TRUE(token_service);
       token_forwarder_.reset(
           new UserCloudPolicyTokenForwarder(manager_.get(), token_service));

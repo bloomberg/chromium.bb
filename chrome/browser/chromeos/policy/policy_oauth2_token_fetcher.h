@@ -38,12 +38,6 @@ class PolicyOAuth2TokenFetcher
   typedef base::Callback<void(const std::string&,
                               const GoogleServiceAuthError&)> TokenCallback;
 
-  // Fetches the device management service's OAuth2 token using
-  // |oauth2_tokens.refresh_token|.
-  PolicyOAuth2TokenFetcher(net::URLRequestContextGetter* system_context_getter,
-                           const std::string& oauth2_refresh_token,
-                           const TokenCallback& callback);
-
   // Fetches the device management service's oauth2 token, after also retrieving
   // the OAuth2 refresh tokens.
   PolicyOAuth2TokenFetcher(net::URLRequestContextGetter* auth_context_getter,

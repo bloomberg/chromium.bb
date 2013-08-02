@@ -15,8 +15,6 @@ class BrowserContext;
 
 namespace policy {
 
-class UserCloudPolicyTokenForwarder;
-
 // Creates instances of UserCloudPolicyTokenForwarder for Profiles that may need
 // to fetch the policy token.
 class UserCloudPolicyTokenForwarderFactory

@@ -17,8 +17,8 @@
 #include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/policy/cloud/component_cloud_policy_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "google_apis/gaia/gaia_auth_consumer.h"
 
+class GoogleServiceAuthError;
 class PrefService;
 
 namespace net {
@@ -55,18 +55,19 @@ class UserCloudPolicyManagerChromeOS
                scoped_refptr<net::URLRequestContextGetter> request_context,
                UserAffiliation user_affiliation);
 
-  // The OAuth2 login |refresh_token| can be used to obtain a policy OAuth2
-  // token, if the CloudPolicyClient isn't registered yet.
-  void OnRefreshTokenAvailable(const std::string& refresh_token);
+  // This class is one of the policy providers, and must be ready for the
+  // creation of the Profile's PrefService; all the other
+  // BrowserContextKeyedServices depend on the PrefService, so this class can't
+  // depend on other BCKS to avoid a circular dependency. So instead of using
+  // the ProfileOAuth2TokenService directly to get the access token, a 3rd
+  // service (UserCloudPolicyTokenForwarder) will fetch it later and pass it
+  // to this method once available.
+  // The |access_token| can then be used to authenticate the registration
+  // request to the DMServer.
+  void OnAccessTokenAvailable(const std::string& access_token);
 
   // Returns true if the underlying CloudPolicyClient is already registered.
   bool IsClientRegistered() const;
-
-  // Returns the OAuth2 tokens obtained by the manager for the initial
-  // registration, if it had to perform a blocking policy fetch.
-  const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens() const {
-    return oauth2_login_tokens_;
-  }
 
   // ConfigurationPolicyProvider:
   virtual void Shutdown() OVERRIDE;
@@ -90,11 +91,12 @@ class UserCloudPolicyManagerChromeOS
   virtual void OnComponentCloudPolicyUpdated() OVERRIDE;
 
  private:
-  // These methods fetch a policy token using either the authentication context
-  // of the signin Profile or a refresh token passed in OnRefreshTokenAvailable.
-  // OnOAuth2PolicyTokenFetched is called back when the policy token is fetched.
+  // Fetches a policy token using the authentication context of the signin
+  // Profile, and calls back to OnOAuth2PolicyTokenFetched when done.
   void FetchPolicyOAuthTokenUsingSigninProfile();
-  void FetchPolicyOAuthTokenUsingRefreshToken();
+
+  // Called once the policy access token is available, and starts the
+  // registration with the policy server if the token was successfully fetched.
   void OnOAuth2PolicyTokenFetched(const std::string& policy_token,
                                   const GoogleServiceAuthError& error);
 
@@ -128,9 +130,9 @@ class UserCloudPolicyManagerChromeOS
   // a callback with an unretained reference to the manager, when it exists.
   scoped_ptr<PolicyOAuth2TokenFetcher> token_fetcher_;
 
-  // The OAuth2 login tokens fetched by the |token_fetcher_|, which can be
-  // retrieved using oauth2_tokens().
-  GaiaAuthConsumer::ClientOAuthResult oauth2_login_tokens_;
+  // The access token passed to OnAccessTokenAvailable. It is stored here so
+  // that it can be used if OnInitializationCompleted is called later.
+  std::string access_token_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOS);
 };

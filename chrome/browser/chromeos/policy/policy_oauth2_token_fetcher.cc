@@ -41,25 +41,11 @@ PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher(
       failed_(false),
       callback_(callback) {}
 
-PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher(
-    net::URLRequestContextGetter* system_context_getter,
-    const std::string& oauth2_refresh_token,
-    const TokenCallback& callback)
-    : system_context_getter_(system_context_getter),
-      oauth2_refresh_token_(oauth2_refresh_token),
-      retry_count_(0),
-      failed_(false),
-      callback_(callback) {}
-
 PolicyOAuth2TokenFetcher::~PolicyOAuth2TokenFetcher() {}
 
 void PolicyOAuth2TokenFetcher::Start() {
   retry_count_ = 0;
-  if (oauth2_refresh_token_.empty()) {
-    StartFetchingRefreshToken();
-  } else {
-    StartFetchingAccessToken();
-  }
+  StartFetchingRefreshToken();
 }
 
 void PolicyOAuth2TokenFetcher::StartFetchingRefreshToken() {

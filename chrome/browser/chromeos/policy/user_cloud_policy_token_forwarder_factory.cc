@@ -8,8 +8,8 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 namespace policy {
@@ -24,7 +24,7 @@ UserCloudPolicyTokenForwarderFactory::UserCloudPolicyTokenForwarderFactory()
     : BrowserContextKeyedServiceFactory(
         "UserCloudPolicyTokenForwarder",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(TokenServiceFactory::GetInstance());
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(UserCloudPolicyManagerFactoryChromeOS::GetInstance());
 }
 
@@ -36,19 +36,10 @@ BrowserContextKeyedService*
   Profile* profile = static_cast<Profile*>(context);
   UserCloudPolicyManagerChromeOS* manager =
       UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile);
-  TokenService* token_service =
-      TokenServiceFactory::GetForProfile(profile);
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   if (!token_service || !manager)
     return NULL;
-  if (manager->IsClientRegistered()) {
-    // The CloudPolicyClient is already registered, so the manager doesn't need
-    // the refresh token. The manager may have fetched a refresh token if it
-    // performed a blocking policy fetch; send it to the TokenService in that
-    // case, so that it can be reused for other services.
-    if (!manager->oauth2_tokens().refresh_token.empty())
-      token_service->UpdateCredentialsWithOAuth2(manager->oauth2_tokens());
-    return NULL;
-  }
   return new UserCloudPolicyTokenForwarder(manager, token_service);
 }
 
