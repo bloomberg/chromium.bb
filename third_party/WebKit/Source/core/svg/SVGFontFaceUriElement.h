@@ -44,6 +44,8 @@ private:
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
+    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE { return false; }
+
     void loadFont();
 
     ResourcePtr<CachedFont> m_cachedFont;

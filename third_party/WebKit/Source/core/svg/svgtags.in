@@ -1,6 +1,7 @@
 namespace="SVG"
 namespaceURI="http://www.w3.org/2000/svg"
-fallbackInterfaceName="SVGElement"
+fallbackInterfaceName="SVGUnknownElement"
+fallbackJSInterfaceName="SVGElement"
 
 a
 #if ENABLE_SVG_FONTS

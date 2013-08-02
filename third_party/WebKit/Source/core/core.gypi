@@ -3612,6 +3612,8 @@
             'svg/SVGURIReference.cpp',
             'svg/SVGURIReference.h',
             'svg/SVGUnitTypes.h',
+            'svg/SVGUnknownElement.cpp',
+            'svg/SVGUnknownElement.h',
             'svg/SVGUseElement.cpp',
             'svg/SVGUseElement.h',
             'svg/SVGVKernElement.cpp',

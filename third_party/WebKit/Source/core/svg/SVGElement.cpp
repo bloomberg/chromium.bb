@@ -154,7 +154,7 @@ void SVGElement::buildPendingResourcesIfNeeded()
     }
 }
 
-bool SVGElement::rendererIsNeededInternal(const NodeRenderingContext& context)
+bool SVGElement::rendererIsNeeded(const NodeRenderingContext& context)
 {
     // http://www.w3.org/TR/SVG/extend.html#PrivateData
     // Prevent anything other than SVG renderers from appearing in our render tree

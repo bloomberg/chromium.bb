@@ -93,8 +93,6 @@ protected:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&);
 
-    virtual bool rendererIsNeeded(const NodeRenderingContext& context) OVERRIDE { return rendererIsNeededInternal(context); }
-
 private:
     virtual bool needsPendingResourceHandling() const { return false; }
 

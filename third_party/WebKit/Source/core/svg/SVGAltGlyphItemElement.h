@@ -34,6 +34,8 @@ public:
 
 private:
     SVGAltGlyphItemElement(const QualifiedName&, Document*);
+
+    virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE { return false; }
 };
 
 }
