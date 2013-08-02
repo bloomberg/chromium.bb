@@ -50,7 +50,9 @@ public:
 
     size_t size();
 
-private:
+    // This inner class used to be private but is now public on account of a
+    // possible MSVC bug. It can be made private again if we get rid of
+    // WTF_MAKE_FAST_ALLOCATED ever.
     class Node {
         WTF_MAKE_FAST_ALLOCATED;
     public:
@@ -60,6 +62,7 @@ private:
         OwnPtr<Node> m_next;
     };
 
+private:
     OwnPtr<Node> m_head;
     size_t m_size;
 };

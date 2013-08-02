@@ -51,7 +51,7 @@ class StyleRuleRegion;
 class StyleSheetContents;
 
 class RuleData {
-    NEW_DELETE_SAME_AS_MALLOC_FREE;
+    WTF_MAKE_FAST_ALLOCATED;
 public:
     RuleData(StyleRule*, unsigned selectorIndex, unsigned position, AddRuleFlags);
 

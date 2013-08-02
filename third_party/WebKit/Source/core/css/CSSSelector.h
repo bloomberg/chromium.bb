@@ -32,9 +32,7 @@ namespace WebCore {
 
     // this class represents a selector for a StyleRule
     class CSSSelector {
-      // This is needed because CSSSelectorList::adoptSelectorVector() expects
-      // to be able to free() this type of object, as a performance tweak.
-      NEW_DELETE_SAME_AS_MALLOC_FREE;
+        WTF_MAKE_FAST_ALLOCATED;
     public:
         CSSSelector();
         CSSSelector(const CSSSelector&);

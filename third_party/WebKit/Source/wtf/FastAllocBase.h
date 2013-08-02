@@ -53,10 +53,7 @@
 #include "wtf/FastMalloc.h"
 #include "wtf/StdLibExtras.h"
 
-// This needs to exist because some classes (e.g. StringImpl) want to use
-// fastMalloc() to return an object pointer and then have it deleted (as
-// opposed to free'd) by the RefPtr machinery.
-#define NEW_DELETE_SAME_AS_MALLOC_FREE \
+#define WTF_MAKE_FAST_ALLOCATED \
 public: \
     void* operator new(size_t, void* p) { return p; } \
     void* operator new[](size_t, void* p) { return p; } \
@@ -93,11 +90,5 @@ public: \
     } \
 private: \
 typedef int __thisIsHereToForceASemicolonAfterThisMacro
-
-#if !USE(SYSTEM_MALLOC)
-#define WTF_MAKE_FAST_ALLOCATED NEW_DELETE_SAME_AS_MALLOC_FREE
-#else
-#define WTF_MAKE_FAST_ALLOCATED
-#endif
 
 #endif // FastAllocBase_h

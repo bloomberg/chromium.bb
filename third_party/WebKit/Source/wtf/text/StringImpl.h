@@ -102,9 +102,7 @@ void removeStringForStats(StringImpl*);
 
 class WTF_EXPORT StringImpl {
     WTF_MAKE_NONCOPYABLE(StringImpl);
-    // This is needed because we malloc() space for a StringImpl plus an
-    // immediately following buffer, as a performance tweak.
-    NEW_DELETE_SAME_AS_MALLOC_FREE;
+    WTF_MAKE_FAST_ALLOCATED;
     friend struct WTF::CStringTranslator;
     template<typename CharacterType> friend struct WTF::HashAndCharactersTranslator;
     friend struct WTF::HashAndUTF8CharactersTranslator;
