@@ -388,6 +388,15 @@ void HTMLInputElement::updateFocusAppearance(bool restorePreviousSelection)
         HTMLTextFormControlElement::updateFocusAppearance(restorePreviousSelection);
 }
 
+void HTMLInputElement::beginEditing()
+{
+    if (!isTextField())
+        return;
+
+    if (Frame* frame = document()->frame())
+        frame->editor()->textFieldDidBeginEditing(this);
+}
+
 void HTMLInputElement::endEditing()
 {
     if (!isTextField())

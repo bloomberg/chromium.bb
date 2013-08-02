@@ -313,6 +313,7 @@ public:
     bool markedTextMatchesAreHighlighted() const;
     void setMarkedTextMatchesAreHighlighted(bool);
 
+    void textFieldDidBeginEditing(Element*);
     void textFieldDidEndEditing(Element*);
     void textDidChangeInTextField(Element*);
     bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*);

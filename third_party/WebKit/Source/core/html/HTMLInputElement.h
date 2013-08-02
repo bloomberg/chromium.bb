@@ -275,6 +275,7 @@ public:
 
     virtual const AtomicString& name() const OVERRIDE;
 
+    void beginEditing();
     void endEditing();
 
     static Vector<FileChooserFileInfo> filesFromFileInputFormControlState(const FormControlState&);

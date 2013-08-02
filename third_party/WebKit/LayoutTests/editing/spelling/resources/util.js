@@ -34,3 +34,35 @@ function initSpellTest(testElementId, testText, testFunction)
     document.execCommand("InsertText", false, testText);
     window.setTimeout(function() { verifySpellTest(10); }, 0);
 }
+
+function findFirstTextNode(node)
+{
+    function iterToFindFirstTextNode(node)
+    {
+        if (node instanceof Text)
+            return node;
+
+        var childNodes = node.childNodes;
+        for (var i = 0; i < childNodes.length; ++i) {
+            var n = iterToFindFirstTextNode(childNodes[i]);
+            if (n)
+                return n;
+        }
+
+        return null;
+    }
+
+    if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
+        return iterToFindFirstTextNode(internals.shadowRoot(node));
+    } else {
+        return iterToFindFirstTextNode(node);
+    }
+}
+
+function typeText(elem, text)
+{
+    elem.focus();
+    for (var i = 0; i < text.length; ++i) {
+        typeCharacterCommand(text[i]);
+    }
+}

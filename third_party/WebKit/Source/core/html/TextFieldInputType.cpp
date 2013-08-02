@@ -193,6 +193,12 @@ void TextFieldInputType::forwardEvent(Event* event)
     }
 }
 
+void TextFieldInputType::handleFocusEvent(Element* oldFocusedNode, FocusDirection focusDirection)
+{
+    InputType::handleFocusEvent(oldFocusedNode, focusDirection);
+    element()->beginEditing();
+}
+
 void TextFieldInputType::handleBlurEvent()
 {
     InputType::handleBlurEvent();

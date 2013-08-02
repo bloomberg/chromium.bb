@@ -191,8 +191,6 @@ void SpellChecker::requestCheckingFor(PassRefPtr<SpellCheckRequest> request)
 
 void SpellChecker::cancelCheck()
 {
-    if (!m_requestQueue.isEmpty())
-        m_requestQueue.clear();
     if (m_processingRequest)
         m_processingRequest->didCancel();
 }

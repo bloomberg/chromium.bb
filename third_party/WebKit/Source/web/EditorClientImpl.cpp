@@ -100,7 +100,7 @@ bool EditorClientImpl::isSelectTrailingWhitespaceEnabled()
 bool EditorClientImpl::shouldSpellcheckByDefault()
 {
     // Spellcheck should be enabled for all editable areas (such as textareas,
-    // contentEditable regions, and designMode docs), except text inputs.
+    // contentEditable regions, designMode docs and inputs).
     const Frame* frame = m_webView->focusedWebCoreFrame();
     if (!frame)
         return false;
@@ -125,7 +125,7 @@ bool EditorClientImpl::shouldSpellcheckByDefault()
     if (!renderer)
         return false;
 
-    return !renderer->isTextField();
+    return true;
 }
 
 bool EditorClientImpl::isContinuousSpellCheckingEnabled()

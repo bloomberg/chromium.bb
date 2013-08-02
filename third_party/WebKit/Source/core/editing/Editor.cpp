@@ -62,6 +62,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/EditorClient.h"
@@ -86,6 +87,16 @@ using namespace std;
 using namespace HTMLNames;
 using namespace WTF;
 using namespace Unicode;
+
+namespace {
+
+bool isSelectionInTextField(const VisibleSelection& selection)
+{
+    HTMLTextFormControlElement* textControl = enclosingTextFormControl(selection.start());
+    return textControl && textControl->hasTagName(inputTag) && toHTMLInputElement(textControl)->isTextField();
+}
+
+} // namespace
 
 // When an event handler has moved the selection outside of a text control
 // we should use the target control's selection for this editing operation.
@@ -2075,8 +2086,30 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     m_frame->selection()->setTypingStyle(typingStyle);
 }
 
+
+void Editor::textFieldDidBeginEditing(Element* e)
+{
+    if (isContinuousSpellCheckingEnabled()) {
+        Element* element = toHTMLTextFormControlElement(e)->innerTextElement();
+        VisibleSelection selection = VisibleSelection::selectionFromContentsOfNode(element);
+        markMisspellingsAndBadGrammar(selection);
+    }
+}
+
 void Editor::textFieldDidEndEditing(Element* e)
 {
+    // Remove markers when deactivating a selection in an <input type="text"/>.
+    // Prevent new ones from appearing too.
+    m_spellChecker->cancelCheck();
+    HTMLTextFormControlElement* textFormControlElement = toHTMLTextFormControlElement(e);
+    HTMLElement* innerText = textFormControlElement->innerTextElement();
+    DocumentMarker::MarkerTypes markerTypes(DocumentMarker::Spelling);
+    if (isGrammarCheckingEnabled() || unifiedTextCheckerEnabled())
+        markerTypes.add(DocumentMarker::Grammar);
+    for (Node* node = innerText; node; node = NodeTraversal::next(node, innerText)) {
+        m_frame->document()->markers()->removeMarkers(node, markerTypes);
+    }
+
     if (client())
         client()->textFieldDidEndEditing(e);
 }
@@ -2252,7 +2285,12 @@ void Editor::respondToChangedSelection(const VisibleSelection& oldSelection, Fra
         // When typing we check spelling elsewhere, so don't redo it here.
         // If this is a change in selection resulting from a delete operation,
         // oldSelection may no longer be in the document.
-        if (shouldCheckSpellingAndGrammar && closeTyping && oldSelection.isContentEditable() && oldSelection.start().deprecatedNode() && oldSelection.start().anchorNode()->inDocument()) {
+        if (shouldCheckSpellingAndGrammar
+            && closeTyping
+            && oldSelection.isContentEditable()
+            && oldSelection.start().deprecatedNode()
+            && oldSelection.start().anchorNode()->inDocument()
+            && !isSelectionInTextField(oldSelection)) {
             VisiblePosition oldStart(oldSelection.visibleStart());
             VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
             if (oldAdjacentWords != newAdjacentWords) {

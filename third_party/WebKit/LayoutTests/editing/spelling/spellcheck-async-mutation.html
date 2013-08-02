@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="../../fast/js/resources/js-test-style.css">
 <script src="../../fast/js/resources/js-test-pre.js"></script>
 <script src="../editing.js"></script>
+<script src="resources/util.js"></script>
 <style>
 .editing {
     border: 2px solid red;
@@ -180,29 +181,6 @@ function waitForSpellCheckRequestDone(requestId, destination, tweakKind, restTry
     setTimeout(doTestIfAny, 0);
 }
 
-function findFirstTextNode(node)
-{
-    function iterToFindFirstTextNode(node)
-    {
-        if (node instanceof Text)
-            return node;
-
-        var childNodes = node.childNodes;
-        for (var i = 0; i < childNodes.length; ++i) {
-            var n = iterToFindFirstTextNode(childNodes[i]);
-            if (n)
-                return n;
-        }
-
-        return null;
-    }
-
-    if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement)
-        return iterToFindFirstTextNode(internals.shadowRoot(node));
-    else
-        return iterToFindFirstTextNode(node);
-}
-
 function verifyExistenceOfMarkers(elem, tweakKind) {
     if (!window.internals)
         return true;
@@ -211,7 +189,10 @@ function verifyExistenceOfMarkers(elem, tweakKind) {
     case 'delete':
         return true;
     case 'move':
-        // In move, marker should be there.
+        // In move, marker should be there. However since markers are removed when unfocusing
+        // an input if it's the input what's moved and it's not focused return true right away.
+        if (elem instanceof HTMLInputElement && elem != document.activeElement)
+            return true;
         var markerNum = internals.markerCountForNode(findFirstTextNode(elem), "spelling");
         if (markerNum != 3)
             return false;
