@@ -34,7 +34,6 @@
 #include "content/renderer/device_orientation/device_motion_event_pump.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
-#include "content/renderer/hyphenator/hyphenator.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
@@ -57,7 +56,6 @@
 #include "third_party/WebKit/public/platform/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
-#include "third_party/WebKit/public/platform/WebHyphenator.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
@@ -163,24 +161,6 @@ class RendererWebKitPlatformSupportImpl::FileUtilities
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 };
 
-class RendererWebKitPlatformSupportImpl::Hyphenator
-    : public WebKit::WebHyphenator {
- public:
-  Hyphenator();
-  virtual ~Hyphenator();
-
-  virtual bool canHyphenate(const WebKit::WebString& locale);
-  virtual size_t computeLastHyphenLocation(
-      const WebKit::WebString& word,
-      size_t before_index,
-      const WebKit::WebString& locale);
-
- private:
-  scoped_ptr<content::Hyphenator> hyphenator_;
-
-  DISALLOW_COPY_AND_ASSIGN(Hyphenator);
-};
-
 #if defined(OS_ANDROID)
 // WebKit doesn't use WebSandboxSupport on android so we don't need to
 // implement anything here.
@@ -228,7 +208,6 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
     : clipboard_client_(new RendererClipboardClient),
       clipboard_(new WebClipboardImpl(clipboard_client_.get())),
       mime_registry_(new RendererWebKitPlatformSupportImpl::MimeRegistry),
-      hyphenator_(new RendererWebKitPlatformSupportImpl::Hyphenator),
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
       shared_worker_repository_(new WebSharedWorkerRepositoryImpl),
@@ -547,40 +526,6 @@ SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) const {
   base::TimeDelta delta = base::TimeTicks::Now() - begin;
   UMA_HISTOGRAM_TIMES("RendererSyncIPC.ElapsedTime", delta);
   return success;
-}
-
-//------------------------------------------------------------------------------
-
-RendererWebKitPlatformSupportImpl::Hyphenator::Hyphenator() {}
-
-RendererWebKitPlatformSupportImpl::Hyphenator::~Hyphenator() {}
-
-bool RendererWebKitPlatformSupportImpl::Hyphenator::canHyphenate(
-    const WebKit::WebString& locale) {
-  // Return false unless WebKit asks for US English dictionaries because WebKit
-  // can currently hyphenate only English words.
-  if (!locale.isEmpty() && !locale.equals("en-US"))
-    return false;
-
-  // Create a hyphenator object and attach it to the render thread so it can
-  // receive a dictionary file opened by a browser.
-  if (!hyphenator_) {
-    hyphenator_.reset(new content::Hyphenator(base::kInvalidPlatformFileValue));
-    if (!hyphenator_)
-      return false;
-    return hyphenator_->Attach(RenderThreadImpl::current(), locale);
-  }
-  return hyphenator_->CanHyphenate(locale);
-}
-
-size_t RendererWebKitPlatformSupportImpl::Hyphenator::computeLastHyphenLocation(
-    const WebKit::WebString& word,
-    size_t before_index,
-    const WebKit::WebString& locale) {
-  // Crash if WebKit calls this function when canHyphenate returns false.
-  DCHECK(locale.isEmpty() || locale.equals("en-US"));
-  DCHECK(hyphenator_.get());
-  return hyphenator_->ComputeLastHyphenLocation(word, before_index);
 }
 
 //------------------------------------------------------------------------------
@@ -1010,16 +955,6 @@ bool RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
 void RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(
     const WebGamepads& pads) {
   g_test_gamepads.Get() = pads;
-}
-
-//------------------------------------------------------------------------------
-
-WebKit::WebHyphenator* RendererWebKitPlatformSupportImpl::hyphenator() {
-  WebKit::WebHyphenator* hyphenator =
-      GetContentClient()->renderer()->OverrideWebHyphenator();
-  if (hyphenator)
-    return hyphenator;
-  return hyphenator_.get();
 }
 
 //------------------------------------------------------------------------------

@@ -273,10 +273,6 @@ bool ContentBrowserClient::AllowPepperSocketAPI(
   return false;
 }
 
-base::FilePath ContentBrowserClient::GetHyphenDictionaryDirectory() {
-  return base::FilePath();
-}
-
 ui::SelectFilePolicy* ContentBrowserClient::CreateSelectFilePolicy(
     WebContents* web_contents) {
   return NULL;

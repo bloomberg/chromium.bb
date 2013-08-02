@@ -52,23 +52,12 @@ ShellContentBrowserClient* ShellContentBrowserClient::Get() {
 }
 
 ShellContentBrowserClient::ShellContentBrowserClient()
-    : hyphen_dictionary_file_(base::kInvalidPlatformFileValue),
-      shell_browser_main_parts_(NULL) {
+    : shell_browser_main_parts_(NULL) {
   DCHECK(!g_browser_client);
   g_browser_client = this;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
   webkit_source_dir_ = GetWebKitRootDirFilePath();
-  base::FilePath source_root_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &source_root_path);
-  base::FilePath dictionary_file_path =
-      base::MakeAbsoluteFilePath(source_root_path.Append(
-          FILE_PATH_LITERAL("third_party/hyphen/hyph_en_US.dic")));
-  hyphen_dictionary_file_ = base::CreatePlatformFile(dictionary_file_path,
-                                                     base::PLATFORM_FILE_READ |
-                                                     base::PLATFORM_FILE_OPEN,
-                                                     NULL,
-                                                     NULL);
 }
 
 ShellContentBrowserClient::~ShellContentBrowserClient() {
@@ -231,12 +220,6 @@ void ShellContentBrowserClient::Observe(int type,
       registrar_.Remove(this,
                         NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                         source);
-      if (hyphen_dictionary_file_ != base::kInvalidPlatformFileValue) {
-        RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
-        IPC::PlatformFileForTransit file = IPC::GetFileHandleForProcess(
-            hyphen_dictionary_file_, host->GetHandle(), false);
-        host->Send(new ShellViewMsg_LoadHyphenDictionary(file));
-      }
       break;
     }
 

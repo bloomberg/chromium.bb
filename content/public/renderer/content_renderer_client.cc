@@ -70,10 +70,6 @@ WebKit::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
   return NULL;
 }
 
-WebKit::WebHyphenator* ContentRendererClient::OverrideWebHyphenator() {
-  return NULL;
-}
-
 WebKit::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
   return NULL;
 }

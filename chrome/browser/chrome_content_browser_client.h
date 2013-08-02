@@ -239,7 +239,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       bool private_api,
       const content::SocketPermissionRequest& params) OVERRIDE;
-  virtual base::FilePath GetHyphenDictionaryDirectory() OVERRIDE;
   virtual ui::SelectFilePolicy* CreateSelectFilePolicy(
       content::WebContents* web_contents) OVERRIDE;
   virtual void GetAdditionalAllowedSchemesForFileSystem(

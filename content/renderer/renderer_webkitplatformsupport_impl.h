@@ -58,7 +58,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebFileUtilities* fileUtilities();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual WebKit::WebCookieJar* cookieJar();
-  virtual WebKit::WebHyphenator* hyphenator();
   virtual WebKit::WebThemeEngine* themeEngine();
   virtual WebKit::WebSpeechSynthesizer* createSpeechSynthesizer(
       WebKit::WebSpeechSynthesizerClient* client);
@@ -180,9 +179,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   class SandboxSupport;
   scoped_ptr<SandboxSupport> sandbox_support_;
-
-  class Hyphenator;
-  scoped_ptr<Hyphenator> hyphenator_;
 
   // This counter keeps track of the number of times sudden termination is
   // enabled or disabled. It starts at 0 (enabled) and for every disable

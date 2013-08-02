@@ -88,8 +88,6 @@ class ShellContentBrowserClient : public ContentBrowserClient,
 
   base::FilePath webkit_source_dir_;
 
-  base::PlatformFile hyphen_dictionary_file_;
-
   ShellBrowserMainParts* shell_browser_main_parts_;
 
   NotificationRegistrar registrar_;

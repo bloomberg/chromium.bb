@@ -13,7 +13,6 @@
 #include "webkit/child/webkitplatformsupport_child_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
-#include "webkit/mocks/mock_webhyphenator.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/support/mock_webclipboard_impl.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
@@ -43,7 +42,6 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebFileUtilities* fileUtilities();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual WebKit::WebBlobRegistry* blobRegistry();
-  virtual WebKit::WebHyphenator* hyphenator();
   virtual WebKit::WebIDBFactory* idbFactory();
 
   virtual bool sandboxEnabled();
@@ -148,7 +146,6 @@ class TestWebKitPlatformSupport :
   base::ScopedTempDir appcache_dir_;
   scoped_refptr<TestShellWebBlobRegistryImpl> blob_registry_;
   base::ScopedTempDir file_system_root_;
-  webkit_glue::MockWebHyphenator hyphenator_;
   WebURLLoaderMockFactory url_loader_factory_;
   WebKit::WebGamepads gamepad_data_;
   webkit::WebCompositorSupportImpl compositor_support_;

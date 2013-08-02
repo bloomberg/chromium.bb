@@ -542,9 +542,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                     bool private_api,
                                     const SocketPermissionRequest& params);
 
-  // Returns the directory containing hyphenation dictionaries.
-  virtual base::FilePath GetHyphenDictionaryDirectory();
-
   // Returns an implementation of a file selecition policy. Can return NULL.
   virtual ui::SelectFilePolicy* CreateSelectFilePolicy(
       WebContents* web_contents);

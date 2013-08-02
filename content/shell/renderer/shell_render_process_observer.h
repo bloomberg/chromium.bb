@@ -53,7 +53,6 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
   // Message handlers.
   void OnResetAll();
   void OnSetWebKitSourceDir(const base::FilePath& webkit_source_dir);
-  void OnLoadHyphenDictionary(const IPC::PlatformFileForTransit& dict_file);
 
   WebKitTestRunner* main_test_runner_;
   WebTestRunner::WebTestDelegate* test_delegate_;

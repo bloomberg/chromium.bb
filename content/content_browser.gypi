@@ -574,8 +574,6 @@
     'browser/histogram_synchronizer.h',
     'browser/host_zoom_map_impl.cc',
     'browser/host_zoom_map_impl.h',
-    'browser/hyphenator/hyphenator_message_filter.cc',
-    'browser/hyphenator/hyphenator_message_filter.h',
     'browser/indexed_db/indexed_db.h',
     'browser/indexed_db/indexed_db_backing_store.cc',
     'browser/indexed_db/indexed_db_backing_store.h',

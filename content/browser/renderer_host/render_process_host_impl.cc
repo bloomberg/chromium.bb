@@ -54,7 +54,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/histogram_message_filter.h"
-#include "content/browser/hyphenator/hyphenator_message_filter.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/loader/resource_message_filter.h"
@@ -721,7 +720,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new DeviceMotionBrowserMessageFilter());
   channel_->AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   channel_->AddFilter(new HistogramMessageFilter());
-  channel_->AddFilter(new HyphenatorMessageFilter(this));
 #if defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMemoryBenchmarking))

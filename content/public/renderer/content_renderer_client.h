@@ -30,7 +30,6 @@ class WebAudioDevice;
 class WebClipboard;
 class WebCrypto;
 class WebFrame;
-class WebHyphenator;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebMediaStreamCenter;
@@ -145,10 +144,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows the embedder to override the WebKit::WebClipboard used. If it
   // returns NULL the content layer will handle clipboard interactions.
   virtual WebKit::WebClipboard* OverrideWebClipboard();
-
-  // Allows the embedder to override the WebKit::WebHyphenator used. If it
-  // returns NULL the content layer will handle hyphenation.
-  virtual WebKit::WebHyphenator* OverrideWebHyphenator();
 
   // Allows the embedder to override the WebThemeEngine used. If it returns NULL
   // the content layer will provide an engine.

@@ -2413,12 +2413,6 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
 #endif
 }
 
-base::FilePath ChromeContentBrowserClient::GetHyphenDictionaryDirectory() {
-  base::FilePath directory;
-  PathService::Get(chrome::DIR_APP_DICTIONARIES, &directory);
-  return directory.Append(FILE_PATH_LITERAL("Hyphen"));
-}
-
 ui::SelectFilePolicy* ChromeContentBrowserClient::CreateSelectFilePolicy(
     WebContents* web_contents) {
   return new ChromeSelectFilePolicy(web_contents);

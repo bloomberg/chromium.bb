@@ -105,7 +105,6 @@
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/third_party/hyphen/hyphen.gyp:hyphen',
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
@@ -129,8 +128,6 @@
         '<(DEPTH)/webkit/support/mock_webclipboard_impl.h',
         '<(DEPTH)/webkit/support/test_shell_webblobregistry_impl.cc',
         '<(DEPTH)/webkit/support/test_shell_webblobregistry_impl.h',
-        '<(DEPTH)/webkit/mocks/mock_webhyphenator.cc',
-        '<(DEPTH)/webkit/mocks/mock_webhyphenator.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

@@ -20,10 +20,6 @@ namespace WebTestRunner {
 class WebTestProxyBase;
 }
 
-namespace webkit_glue {
-class MockWebHyphenator;
-}
-
 class MockWebClipboardImpl;
 
 namespace content {
@@ -36,8 +32,6 @@ class ShellContentRendererClient : public ContentRendererClient {
 
   ShellContentRendererClient();
   virtual ~ShellContentRendererClient();
-
-  void LoadHyphenDictionary(base::PlatformFile dict_file);
 
   // ContentRendererClient implementation.
   virtual void RenderThreadStarted() OVERRIDE;
@@ -58,7 +52,6 @@ class ShellContentRendererClient : public ContentRendererClient {
       double sample_rate) OVERRIDE;
   virtual WebKit::WebClipboard* OverrideWebClipboard() OVERRIDE;
   virtual WebKit::WebCrypto* OverrideWebCrypto() OVERRIDE;
-  virtual WebKit::WebHyphenator* OverrideWebHyphenator() OVERRIDE;
   virtual WebKit::WebThemeEngine* OverrideThemeEngine() OVERRIDE;
   virtual bool AllowBrowserPlugin(
       WebKit::WebPluginContainer* container) const OVERRIDE;
@@ -69,7 +62,6 @@ class ShellContentRendererClient : public ContentRendererClient {
 
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;
   scoped_ptr<MockWebClipboardImpl> clipboard_;
-  scoped_ptr<webkit_glue::MockWebHyphenator> hyphenator_;
 };
 
 }  // namespace content

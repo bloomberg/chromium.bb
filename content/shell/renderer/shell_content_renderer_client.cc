@@ -22,13 +22,11 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
-#include "webkit/mocks/mock_webhyphenator.h"
 #include "webkit/support/mock_webclipboard_impl.h"
 
 using WebKit::WebAudioDevice;
 using WebKit::WebClipboard;
 using WebKit::WebFrame;
-using WebKit::WebHyphenator;
 using WebKit::WebMIDIAccessor;
 using WebKit::WebMIDIAccessorClient;
 using WebKit::WebMediaStreamCenter;
@@ -64,14 +62,6 @@ ShellContentRendererClient::ShellContentRendererClient() {
 
 ShellContentRendererClient::~ShellContentRendererClient() {
   g_renderer_client = NULL;
-}
-
-void ShellContentRendererClient::LoadHyphenDictionary(
-    base::PlatformFile dict_file) {
-  if (!hyphenator_)
-    hyphenator_.reset(new webkit_glue::MockWebHyphenator);
-  base::SeekPlatformFile(dict_file, base::PLATFORM_FILE_FROM_BEGIN, 0);
-  hyphenator_->LoadDictionary(dict_file);
 }
 
 void ShellContentRendererClient::RenderThreadStarted() {
@@ -176,15 +166,6 @@ WebKit::WebCrypto* ShellContentRendererClient::OverrideWebCrypto() {
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->crypto();
-}
-
-WebHyphenator* ShellContentRendererClient::OverrideWebHyphenator() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    return NULL;
-  if (!hyphenator_)
-    hyphenator_.reset(new webkit_glue::MockWebHyphenator);
-  return hyphenator_.get();
-
 }
 
 WebThemeEngine* ShellContentRendererClient::OverrideThemeEngine() {
