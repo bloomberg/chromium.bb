@@ -62,6 +62,12 @@ void SearchResult::SetPercentDownloaded(int percent_downloaded) {
                     OnPercentDownloadedChanged());
 }
 
+void SearchResult::NotifyItemInstalled() {
+  FOR_EACH_OBSERVER(SearchResultObserver,
+                    observers_,
+                    OnItemInstalled());
+}
+
 void SearchResult::AddObserver(SearchResultObserver* observer) {
   observers_.AddObserver(observer);
 }

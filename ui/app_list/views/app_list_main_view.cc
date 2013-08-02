@@ -226,4 +226,10 @@ void AppListMainView::InvokeResultAction(SearchResult* result,
     delegate_->InvokeSearchResultAction(result, action_index, event_flags);
 }
 
+void AppListMainView::OnResultInstalled(SearchResult* result) {
+  // Clears the search to show the apps grid. The last installed app
+  // should be highlighted and made visible already.
+  search_box_view_->ClearSearch();
+}
+
 }  // namespace app_list

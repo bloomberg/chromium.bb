@@ -183,6 +183,7 @@ void WebstoreResult::OnExtensionInstalled(
 
   SetIsInstalling(false);
   UpdateActions();
+  NotifyItemInstalled();
 }
 
 void WebstoreResult::OnExtensionLoaded(

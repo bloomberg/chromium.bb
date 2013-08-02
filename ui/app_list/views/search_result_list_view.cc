@@ -168,4 +168,9 @@ void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
   }
 }
 
+void SearchResultListView::OnSearchResultInstalled(SearchResultView* view) {
+  if (delegate_ && view->result())
+    delegate_->OnResultInstalled(view->result());
+}
+
 }  // namespace app_list

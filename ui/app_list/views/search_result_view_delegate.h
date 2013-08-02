@@ -21,6 +21,9 @@ class SearchResultViewDelegate {
                                            size_t action_index,
                                            int event_flags) = 0;
 
+  // Called when the app represented by the search result is installed.
+  virtual void OnSearchResultInstalled(SearchResultView* view) = 0;
+
  protected:
   virtual ~SearchResultViewDelegate() {}
 };

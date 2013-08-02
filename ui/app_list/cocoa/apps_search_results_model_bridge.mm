@@ -43,6 +43,7 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
   virtual void OnActionsChanged() OVERRIDE {}
   virtual void OnIsInstallingChanged() OVERRIDE {}
   virtual void OnPercentDownloadedChanged() OVERRIDE {}
+  virtual void OnItemInstalled() OVERRIDE {}
 
  private:
   AppsSearchResultsModelBridge* bridge_;  // Weak. Owns us.

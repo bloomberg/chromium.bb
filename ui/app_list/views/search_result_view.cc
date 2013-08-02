@@ -275,6 +275,10 @@ void SearchResultView::OnPercentDownloadedChanged() {
   progress_bar_->SetValue(result_->percent_downloaded() / 100.0);
 }
 
+void SearchResultView::OnItemInstalled() {
+  delegate_->OnSearchResultInstalled(this);
+}
+
 void SearchResultView::OnSearchResultActionActivated(size_t index,
                                                      int event_flags) {
   DCHECK(result_);

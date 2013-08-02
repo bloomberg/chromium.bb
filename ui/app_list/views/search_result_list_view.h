@@ -58,6 +58,7 @@ class SearchResultListView : public views::View,
   virtual void SearchResultActionActivated(SearchResultView* view,
                                            size_t action_index,
                                            int event_flags) OVERRIDE;
+  virtual void OnSearchResultInstalled(SearchResultView* view) OVERRIDE;
 
   SearchResultListViewDelegate* delegate_;  // Not owned.
   AppListModel::SearchResults* results_;  // Owned by AppListModel.

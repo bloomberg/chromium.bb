@@ -79,6 +79,7 @@ class SearchResultView : public views::CustomButton,
   virtual void OnActionsChanged() OVERRIDE;
   virtual void OnIsInstallingChanged() OVERRIDE;
   virtual void OnPercentDownloadedChanged() OVERRIDE;
+  virtual void OnItemInstalled() OVERRIDE;
 
   // SearchResultActionsViewDelegate overrides:
   virtual void OnSearchResultActionActivated(size_t index,

@@ -25,6 +25,9 @@ class APP_LIST_EXPORT SearchResultListViewDelegate {
                                   int action_index,
                                   int event_flags) = 0;
 
+  // Called when the app represented by |result| is installed.
+  virtual void OnResultInstalled(SearchResult* result) = 0;
+
  protected:
   virtual ~SearchResultListViewDelegate() {}
 };
