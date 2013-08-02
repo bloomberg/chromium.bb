@@ -308,7 +308,7 @@ Error* Session::SendKeys(const ElementId& element, const string16& keys) {
 }
 
 Error* Session::SendKeys(const string16& keys) {
-  Error* error;
+  Error* error = NULL;
   RunSessionTask(base::Bind(
       &Session::SendKeysOnSessionThread,
       base::Unretained(this),
