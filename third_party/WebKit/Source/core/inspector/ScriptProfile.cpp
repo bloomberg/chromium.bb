@@ -77,7 +77,6 @@ static PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor
         .setLineNumber(node->GetLineNumber())
         .setTotalTime(node->GetTotalTime())
         .setSelfTime(node->GetSelfTime())
-        .setVisible(true)
         .setCallUID(node->GetCallUid())
         .setChildren(children.release());
     result->setId(node->GetNodeId());
