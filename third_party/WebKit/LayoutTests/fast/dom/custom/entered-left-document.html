@@ -5,8 +5,8 @@
 <body>
 <script>
 (function () {
-var t = async_test('entered callback should not be invoked for documents ' +
-                   'without a view');
+var t = async_test('entered, left callbacks should only be invoked when ' +
+                   'entering or leaving a document with a view');
 withFrame(t.step_func(function (frame) {
     // Set up a definition
 
@@ -40,8 +40,8 @@ withFrame(t.step_func(function (frame) {
     invocations = [];
     docB.body.appendChild(a);
     assert_array_equals(invocations, [],
-                        'entered callback should not be invoked for a ' +
-                        'document without a view');
+                        'entered callback should not be invoked when ' +
+                        'entering a document without a view');
 
     // Attribute changed in document without a view
 
@@ -55,8 +55,16 @@ withFrame(t.step_func(function (frame) {
     invocations = [];
     docA.body.appendChild(a);
     assert_array_equals(invocations, ['entered'],
-                        'entered callback should be invoked for a document ' +
-                        'with a view');
+                        'entered callback should be invoked when entering ' +
+                        'a document with a view');
+
+    // Left document with a view
+
+    invocations = [];
+    a.remove();
+    assert_array_equals(invocations, ['left'],
+                        'left callback should be invoked when leaving a ' +
+                        'document with a view');
 
     // Created in a document without a view
 
@@ -66,6 +74,69 @@ withFrame(t.step_func(function (frame) {
                         'only created callback should be invoked when ' +
                         'parsing a custom element in a document without a ' +
                         'view');
+
+    // Created in Shadow DOM that is not in a document
+
+    var div = docB.createElement('div');
+    var s = div.createShadowRoot();
+    invocations = [];
+    s.innerHTML = '<x-a></x-a>';
+    assert_array_equals(invocations, ['created'],
+                        'the entered callback should not be invoked when ' +
+                        'entering a Shadow DOM subtree not in the document');
+
+    // Leaves Shadow DOM that is not in a document
+
+    invocations = [];
+    s.innerHTML = '';
+    assert_array_equals(invocations, [],
+                        'the left callback should not be invoked when ' +
+                        'leaving a Shadow DOM subtree not in the document');
+
+    // Enters a document with a view as a constituent of Shadow DOM
+
+    s.innerHTML = '<x-a></x-a>';
+    invocations = [];
+    docA.body.appendChild(div);
+    assert_array_equals(invocations, ['entered'],
+                        'the entered callback should be invoked when ' +
+                        'inserted into a document with a view as part of ' +
+                        'Shadow DOM');
+
+    // Leaves a document with a view as a constituent of Shadow DOM
+
+    invocations = [];
+    docB.body.appendChild(div);
+    assert_array_equals(invocations, ['left'],
+                        'the left callback should be invoked when removed ' +
+                        'from a document with a view as part of Shadow DOM');
+
+    // Enters a disconnected subtree of DOM
+
+    invocations = [];
+    div = docA.createElement('div');
+    div.innerHTML = '<x-a></x-a>';
+    assert_array_equals(invocations, ['created'],
+                        'the entered callback should not be invoked when ' +
+                        'inserted into a disconnected subtree');
+
+    // Leaves a disconnected subtree of DOM
+
+    invocations = [];
+    div.innerHTML = '';
+    assert_array_equals(invocations, [],
+                        'the left callback should not be invoked when ' +
+                        'removed from a disconnected subtree');
+
+    // Enters a document with a view as a constituent of a subtree
+
+    div.innerHTML = '<x-a></x-a>';
+    invocations = [];
+    docA.body.appendChild(div);
+    assert_array_equals(invocations, ['entered'],
+                        'the entered callback should be invoked when ' +
+                        'inserted into a document with a view as part of ' +
+                        'a subtree');
 
     frame.remove();    
     t.done();

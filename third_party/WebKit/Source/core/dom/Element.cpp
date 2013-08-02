@@ -1236,12 +1236,12 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     if (hasRareData())
         elementRareData()->clearClassListValueForQuirksMode();
 
+    if (isUpgradedCustomElement() && inDocument())
+        CustomElement::didEnterDocument(this, document());
+
     TreeScope* scope = insertionPoint->treeScope();
     if (scope != treeScope())
         return InsertionDone;
-
-    if (isUpgradedCustomElement())
-        CustomElement::didEnterDocument(this, document());
 
     const AtomicString& idValue = getIdAttribute();
     if (!idValue.isNull())
@@ -1261,7 +1261,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
 
 void Element::removedFrom(ContainerNode* insertionPoint)
 {
-    bool wasInDocument = insertionPoint->document();
+    bool wasInDocument = insertionPoint->inDocument();
 
     if (Element* before = pseudoElement(BEFORE))
         before->removedFrom(insertionPoint);
