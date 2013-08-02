@@ -1318,7 +1318,7 @@ void SavePackage::GetSaveInfo() {
   // Can't use web_contents_ in the file thread, so get the data that we need
   // before calling to it.
   base::FilePath website_save_dir, download_save_dir;
-  bool skip_dir_check;
+  bool skip_dir_check = false;
   DCHECK(download_manager_);
   if (download_manager_->GetDelegate()) {
     download_manager_->GetDelegate()->GetSaveDir(
