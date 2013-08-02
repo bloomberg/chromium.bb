@@ -889,6 +889,12 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
 
 void RenderWidgetHostViewAndroid::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+  if (!host_ ||
+      host_->accessibility_mode() != AccessibilityModeComplete ||
+      !content_view_core_) {
+    return;
+  }
+
   if (!GetBrowserAccessibilityManager()) {
     SetBrowserAccessibilityManager(
         new BrowserAccessibilityManagerAndroid(
