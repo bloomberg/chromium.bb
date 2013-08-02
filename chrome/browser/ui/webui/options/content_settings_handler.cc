@@ -391,6 +391,11 @@ void ContentSettingsHandler::GetLocalizedValues(
       IDS_AUTOMATIC_DOWNLOADS_ASK_RADIO },
     { "multiple-automatic-downloads_block",
       IDS_AUTOMATIC_DOWNLOADS_BLOCK_RADIO },
+    // MIDI system exclusive messages
+    { "midi-sysex_header", IDS_MIDI_SYSEX_TAB_LABEL },
+    { "midiSysExAllow", IDS_MIDI_SYSEX_ALLOW_RADIO },
+    { "midiSysExAsk", IDS_MIDI_SYSEX_ASK_RADIO },
+    { "midiSysExBlock", IDS_MIDI_SYSEX_BLOCK_RADIO },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -423,6 +428,8 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_PPAPI_BROKER_TAB_LABEL);
   RegisterTitle(localized_strings, "multiple-automatic-downloads",
                 IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL);
+  RegisterTitle(localized_strings, "midi-sysex",
+                IDS_MIDI_SYSEX_TAB_LABEL);
 
   localized_strings->SetBoolean("newContentSettings",
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kContentSettings2));
@@ -696,7 +703,7 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       // The RPH settings are retrieved separately.
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      // TODO(toyoshim): The content settings for MIDI sysex is not implemented.
+      UpdateMIDISysExExceptionsView();
       break;
 #if defined(OS_WIN)
     case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
@@ -722,6 +729,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       break;
     default:
       UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
@@ -925,6 +933,18 @@ void ContentSettingsHandler::UpdateMediaExceptionsView() {
                                    type_string, media_exceptions);
 
   UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+}
+
+void ContentSettingsHandler::UpdateMIDISysExExceptionsView() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebMIDI)) {
+    web_ui()->CallJavascriptFunction(
+        "ContentSettings.showExperimentalWebMIDISettings",
+        base::FundamentalValue(true));
+  }
+
+  UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+  UpdateExceptionsViewFromHostContentSettingsMap(
+      CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
 }
 
 void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
@@ -1229,6 +1249,10 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
       content::RecordAction(UserMetricsAction(
           "Options_DefaultMultipleAutomaticDownloadsSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultMIDISysExSettingChanged"));
       break;
     default:
       break;

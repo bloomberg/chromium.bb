@@ -106,6 +106,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   void UpdateNotificationExceptionsView();
   // Clobbers and rebuilds just the Media device exception table.
   void UpdateMediaExceptionsView();
+  // Clobbers and rebuilds just the MIDI SysEx exception table.
+  void UpdateMIDISysExExceptionsView();
   // Clobbers and rebuilds an exception table that's managed by the host content
   // settings map.
   void UpdateExceptionsViewFromHostContentSettingsMap(ContentSettingsType type);

@@ -14668,6 +14668,20 @@ Some features may be unavailable.  Please check that the profile exists and you 
       This page has been blocked from tracking your location.
     </message>
 
+    <!-- Web MIDI messages -->
+    <message name="IDS_MIDI_SYSEX_TAB_LABEL" desc="Label for MIDI system exclusive message on Content Settings dialog">
+      MIDI full control
+    </message>
+    <message name="IDS_MIDI_SYSEX_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow a site to access MIDI devices with system exclusive messages.">
+      Allow all sites to use system exclusive messages to access MIDI devices
+    </message>
+    <message name="IDS_MIDI_SYSEX_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny a site to access MIDI devices with system exclusive messages.">
+      Do not allow any sites to use system exclusive messages to access MIDI devices
+    </message>
+    <message name="IDS_MIDI_SYSEX_ASK_RADIO" desc="A radio button in Content Settings dialog to allow a site to query the permision to access MIDI devices with system exclusive messages.">
+      Ask me when a site wants to use system exclusive messages to access MIDI devices (recommended)
+    </message>
+
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP" desc="Location bar icon tooltip text when a page wants to use registerProtocolHandler.">
       This page wants to install a service handler.
     </message>
