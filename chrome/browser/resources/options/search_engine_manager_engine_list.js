@@ -135,9 +135,11 @@ cr.define('options.search_engines', function() {
           makeDefaultButtonEl.onclick = function(e) {
             chrome.send('managerSetDefaultSearchEngine', [engine.modelIndex]);
           };
-          // Don't select the row when clicking the button.
           makeDefaultButtonEl.onmousedown = function(e) {
+            // Don't select the row when clicking the button.
             e.stopPropagation();
+            // Don't focus on the button.
+            e.preventDefault();
           };
           urlWithButtonEl.appendChild(makeDefaultButtonEl);
         }
