@@ -524,8 +524,8 @@
           'native_memory_pressure_signals%': 1,
         }],
 
-        # Enable autofill dialog for Android and Views-enabled platforms for now.
-        ['toolkit_views==1 or (OS=="android" and android_webview_build==0) or OS=="mac"', {
+        # Enable autofill dialog for Mac and Views-enabled platforms for now.
+        ['toolkit_views==1 or OS=="mac"', {
           'enable_autofill_dialog%': 1
         }],
 
