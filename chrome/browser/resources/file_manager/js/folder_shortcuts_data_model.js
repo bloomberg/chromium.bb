@@ -16,6 +16,17 @@ function StoredSortedArray(type, name) {
   this.array_ = [];
   this.storage_ = (type == 'sync') ? chrome.storage.sync : chrome.storage.local;
 
+  /**
+   * Eliminate unsupported folders from the list.
+   *
+   * @param {Array.<string>} array Folder array which may contain the
+   *     unsupported folders.
+   * @return {Array.<string>} Folder list without unsupported folder.
+   */
+  var filter = function(array) {
+    return array.filter(PathUtil.isEligibleForFolderShortcut);
+  };
+
   // Loads the contents from the storage to initialize the array.
   this.storage_.get(name, function(value) {
     if (!(name in value))
@@ -25,6 +36,8 @@ function StoredSortedArray(type, name) {
     // case.
     var list = value[name];
     if (list instanceof Array) {
+      list = filter(list);
+
       var permutedEvent = new Event('permuted');
       permutedEvent.permutation = this.createPermutation_(this.array_, list);
       this.array_ = list;
@@ -41,6 +54,8 @@ function StoredSortedArray(type, name) {
     // Since the value comes from outer resource, we have to check it just in
     // case.
     if (list instanceof Array) {
+      list = filter(list);
+
       // If the list is not changed, do nothing and just return.
       if (this.array_.length == list.length) {
         var changed = false;
