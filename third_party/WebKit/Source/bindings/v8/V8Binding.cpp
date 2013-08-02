@@ -110,8 +110,14 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
         return 0;
     }
 
-    virtual void Free(void* data) OVERRIDE
+    virtual void Free(void* data)
     {
+        WTF::ArrayBufferContents::freeMemory(data);
+    }
+
+    virtual void Free(void* data, size_t size)
+    {
+        UNUSED_PARAM(size);
         WTF::ArrayBufferContents::freeMemory(data);
     }
 };
