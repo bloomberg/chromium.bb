@@ -2084,7 +2084,7 @@ llvm-sb-setup() {
   # The LLVM sandboxed build uses the normally-disallowed
   # llvm.nacl.target.arch intrinsic.  Allow that for now.
   local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    --pnacl-allow-dev-intrinsics "
+    --pnaclabi-allow-dev-intrinsics "
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
@@ -2352,7 +2352,7 @@ binutils-gold-sb-configure() {
   # The Gold sandboxed build uses the normally-disallowed
   # llvm.nacl.target.arch intrinsic.  Allow that for now.
   local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    -fno-exceptions -O3 --pnacl-allow-dev-intrinsics "
+    -fno-exceptions -O3 --pnaclabi-allow-dev-intrinsics "
   local configure_env=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
