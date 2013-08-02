@@ -78,13 +78,13 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
       glGetIntegerv(GL_BLEND_SRC_ALPHA, &blend_src_alpha_);
       glGetIntegerv(GL_BLEND_DST_RGB, &blend_dest_rgb_);
       glGetIntegerv(GL_BLEND_DST_ALPHA, &blend_dest_alpha_);
-      glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture_);
       glGetIntegerv(GL_VIEWPORT, viewport_);
       glGetBooleanv(GL_SCISSOR_TEST, &scissor_test_);
       glGetIntegerv(GL_SCISSOR_BOX, scissor_box_);
       break;
   }
 
+  glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture_);
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES,
                 &texture_external_oes_binding_);
   glGetIntegerv(GL_PACK_ALIGNMENT, &pack_alignment_);
@@ -141,6 +141,7 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
   glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding_);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_buffer_binding_);
 
+  glActiveTexture(active_texture_);
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_external_oes_binding_);
   glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment_);
   glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment_);
@@ -192,7 +193,6 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
     GLEnableDisable(GL_BLEND, blend_enabled_);
     glBlendFuncSeparate(
         blend_src_rgb_, blend_dest_rgb_, blend_src_alpha_, blend_dest_alpha_);
-    glActiveTexture(active_texture_);
 
     glViewport(viewport_[0], viewport_[1], viewport_[2], viewport_[3]);
 
