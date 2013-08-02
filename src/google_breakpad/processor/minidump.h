@@ -782,6 +782,13 @@ class MinidumpMiscInfo : public MinidumpStream {
   bool Read(uint32_t expected_size_);
 
   MDRawMiscInfo misc_info_;
+
+  // Populated by Read.  Contains the converted strings from the corresponding
+  // UTF-16 fields in misc_info_
+  string standard_name_;
+  string daylight_name_;
+  string build_string_;
+  string dbg_bld_str_;
 };
 
 

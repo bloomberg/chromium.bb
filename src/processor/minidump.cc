@@ -140,6 +140,19 @@ static void Swap(uint128_struct* value) {
   Swap(&value->high);
 }
 
+// Swapping signed integers
+static inline void Swap(int16_t* value) {
+  Swap(reinterpret_cast<uint16_t*>(value));
+}
+
+static inline void Swap(int32_t* value) {
+  Swap(reinterpret_cast<uint32_t*>(value));
+}
+
+static inline void Swap(int64_t* value) {
+  Swap(reinterpret_cast<uint64_t*>(value));
+}
+
 
 static inline void Swap(MDLocationDescriptor* location_descriptor) {
   Swap(&location_descriptor->data_size);
@@ -160,6 +173,23 @@ static inline void Swap(MDGUID* guid) {
   // Don't swap guid->data4[] because it contains 8-bit quantities.
 }
 
+static inline void Swap(MDSystemTime* system_time) {
+  Swap(&system_time->year);
+  Swap(&system_time->month);
+  Swap(&system_time->day_of_week);
+  Swap(&system_time->day);
+  Swap(&system_time->hour);
+  Swap(&system_time->minute);
+  Swap(&system_time->second);
+  Swap(&system_time->milliseconds);
+}
+
+static inline void Swap(uint16_t* data, size_t size_in_bytes) {
+  size_t data_length = size_in_bytes / sizeof(data[0]);
+  for (size_t i = 0; i < data_length; i++) {
+    Swap(&data[i]);
+  }
+}
 
 //
 // Character conversion routines
@@ -176,7 +206,7 @@ static inline void Swap(MDGUID* guid) {
 // CPU's endianness into consideration.  It doesn't seems worth the trouble
 // of making it a dependency when we don't care about anything but UTF-16.
 static string* UTF16ToUTF8(const vector<uint16_t>& in,
-                           bool                     swap) {
+                           bool swap) {
   scoped_ptr<string> out(new string());
 
   // Set the string's initial capacity to the number of UTF-16 characters,
@@ -256,6 +286,39 @@ static size_t UTF16codeunits(const uint16_t *string, size_t maxlen) {
   return count;
 }
 
+static inline void Swap(MDTimeZoneInformation* time_zone) {
+  Swap(&time_zone->bias);
+  // Skip time_zone->standard_name.  No need to swap UTF-16 fields.
+  // The swap will be done as part of the conversion to UTF-8.
+  Swap(&time_zone->standard_date);
+  Swap(&time_zone->standard_bias);
+  // Skip time_zone->daylight_name.  No need to swap UTF-16 fields.
+  // The swap will be done as part of the conversion to UTF-8.
+  Swap(&time_zone->daylight_date);
+  Swap(&time_zone->daylight_bias);
+}
+
+static void ConvertUTF16BufferToUTF8String(const uint16_t* utf16_data,
+                                           size_t max_length_in_bytes,
+                                           string* utf8_result,
+                                           bool swap) {
+  // Since there is no explicit byte length for each string, use
+  // UTF16codeunits to calculate word length, then derive byte
+  // length from that.
+  size_t max_word_length = max_length_in_bytes / sizeof(utf16_data[0]);
+  size_t word_length = UTF16codeunits(utf16_data, max_word_length);
+  if (word_length > 0) {
+    size_t byte_length = word_length * sizeof(utf16_data[0]);
+    vector<uint16_t> utf16_vector(word_length);
+    memcpy(&utf16_vector[0], &utf16_data[0], byte_length);
+    scoped_ptr<string> temp(UTF16ToUTF8(utf16_vector, swap));
+    if (temp.get()) {
+      utf8_result->assign(*temp);
+    }
+  } else {
+    utf8_result->clear();
+  }
+}
 
 //
 // MinidumpObject
@@ -2355,12 +2418,7 @@ const MDImageDebugMisc* MinidumpModule::GetMiscRecord(uint32_t* size) {
         uint16_t* data16 = reinterpret_cast<uint16_t*>(&(misc_record->data));
         unsigned int dataBytes = module_.misc_record.data_size -
                                  MDImageDebugMisc_minsize;
-        unsigned int dataLength = dataBytes / 2;
-        for (unsigned int characterIndex = 0;
-             characterIndex < dataLength;
-             ++characterIndex) {
-          Swap(&data16[characterIndex]);
-        }
+        Swap(data16, dataBytes);
       }
     }
 
@@ -3143,48 +3201,14 @@ bool MinidumpAssertion::Read(uint32_t expected_size) {
 
   // Each of {expression, function, file} is a UTF-16 string,
   // we'll convert them to UTF-8 for ease of use.
-  // expression
-  // Since we don't have an explicit byte length for each string,
-  // we use UTF16codeunits to calculate word length, then derive byte
-  // length from that.
-  uint32_t word_length = UTF16codeunits(assertion_.expression,
-                                         sizeof(assertion_.expression));
-  if (word_length > 0) {
-    uint32_t byte_length = word_length * 2;
-    vector<uint16_t> expression_utf16(word_length);
-    memcpy(&expression_utf16[0], &assertion_.expression[0], byte_length);
-
-    scoped_ptr<string> new_expression(UTF16ToUTF8(expression_utf16,
-                                                  minidump_->swap()));
-    if (new_expression.get())
-      expression_ = *new_expression;
-  }
-
-  // assertion
-  word_length = UTF16codeunits(assertion_.function,
-                               sizeof(assertion_.function));
-  if (word_length) {
-    uint32_t byte_length = word_length * 2;
-    vector<uint16_t> function_utf16(word_length);
-    memcpy(&function_utf16[0], &assertion_.function[0], byte_length);
-    scoped_ptr<string> new_function(UTF16ToUTF8(function_utf16,
-                                                minidump_->swap()));
-    if (new_function.get())
-      function_ = *new_function;
-  }
-
-  // file
-  word_length = UTF16codeunits(assertion_.file,
-                               sizeof(assertion_.file));
-  if (word_length > 0) {
-    uint32_t byte_length = word_length * 2;
-    vector<uint16_t> file_utf16(word_length);
-    memcpy(&file_utf16[0], &assertion_.file[0], byte_length);
-    scoped_ptr<string> new_file(UTF16ToUTF8(file_utf16,
-                                            minidump_->swap()));
-    if (new_file.get())
-      file_ = *new_file;
-  }
+  ConvertUTF16BufferToUTF8String(assertion_.expression,
+                                 sizeof(assertion_.expression), &expression_,
+                                 minidump_->swap());
+  ConvertUTF16BufferToUTF8String(assertion_.function,
+                                 sizeof(assertion_.function), &function_,
+                                 minidump_->swap());
+  ConvertUTF16BufferToUTF8String(assertion_.file, sizeof(assertion_.file),
+                                 &file_, minidump_->swap());
 
   if (minidump_->swap()) {
     Swap(&assertion_.line);
@@ -3502,10 +3526,13 @@ bool MinidumpMiscInfo::Read(uint32_t expected_size) {
   valid_ = false;
 
   if (expected_size != MD_MISCINFO_SIZE &&
-      expected_size != MD_MISCINFO2_SIZE) {
-    BPLOG(ERROR) << "MinidumpMiscInfo size mismatch, " << expected_size <<
-                    " != " << MD_MISCINFO_SIZE << ", " << MD_MISCINFO2_SIZE <<
-                    ")";
+      expected_size != MD_MISCINFO2_SIZE &&
+      expected_size != MD_MISCINFO3_SIZE &&
+      expected_size != MD_MISCINFO4_SIZE) {
+    BPLOG(ERROR) << "MinidumpMiscInfo size mismatch, " << expected_size
+                 << " != " << MD_MISCINFO_SIZE << ", " << MD_MISCINFO2_SIZE
+                 << ", " << MD_MISCINFO3_SIZE << ", " << MD_MISCINFO4_SIZE
+                 << ")";
     return false;
   }
 
@@ -3515,6 +3542,7 @@ bool MinidumpMiscInfo::Read(uint32_t expected_size) {
   }
 
   if (minidump_->swap()) {
+    // Swap version 1 fields
     Swap(&misc_info_.size_of_info);
     Swap(&misc_info_.flags1);
     Swap(&misc_info_.process_id);
@@ -3522,11 +3550,25 @@ bool MinidumpMiscInfo::Read(uint32_t expected_size) {
     Swap(&misc_info_.process_user_time);
     Swap(&misc_info_.process_kernel_time);
     if (misc_info_.size_of_info > MD_MISCINFO_SIZE) {
+      // Swap version 2 fields
       Swap(&misc_info_.processor_max_mhz);
       Swap(&misc_info_.processor_current_mhz);
       Swap(&misc_info_.processor_mhz_limit);
       Swap(&misc_info_.processor_max_idle_state);
       Swap(&misc_info_.processor_current_idle_state);
+    }
+    if (misc_info_.size_of_info > MD_MISCINFO2_SIZE) {
+      // Swap version 3 fields
+      Swap(&misc_info_.process_integrity_level);
+      Swap(&misc_info_.process_execute_flags);
+      Swap(&misc_info_.protected_process);
+      Swap(&misc_info_.time_zone_id);
+      Swap(&misc_info_.time_zone);
+    }
+    if (misc_info_.size_of_info > MD_MISCINFO3_SIZE) {
+      // Swap version 4 fields.
+      // Do not swap UTF-16 strings.  The swap is done as part of the
+      // conversion to UTF-8 (code follows below).
     }
   }
 
@@ -3534,6 +3576,26 @@ bool MinidumpMiscInfo::Read(uint32_t expected_size) {
     BPLOG(ERROR) << "MinidumpMiscInfo size mismatch, " <<
                     expected_size << " != " << misc_info_.size_of_info;
     return false;
+  }
+
+  // Convert UTF-16 strings
+  if (misc_info_.size_of_info > MD_MISCINFO2_SIZE) {
+    // Convert UTF-16 strings in version 3 fields
+    ConvertUTF16BufferToUTF8String(misc_info_.time_zone.standard_name,
+                                   sizeof(misc_info_.time_zone.standard_name),
+                                   &standard_name_, minidump_->swap());
+    ConvertUTF16BufferToUTF8String(misc_info_.time_zone.daylight_name,
+                                   sizeof(misc_info_.time_zone.daylight_name),
+                                   &daylight_name_, minidump_->swap());
+  }
+  if (misc_info_.size_of_info > MD_MISCINFO3_SIZE) {
+    // Convert UTF-16 strings in version 4 fields
+    ConvertUTF16BufferToUTF8String(misc_info_.build_string,
+                                   sizeof(misc_info_.build_string),
+                                   &build_string_, minidump_->swap());
+    ConvertUTF16BufferToUTF8String(misc_info_.dbg_bld_str,
+                                   sizeof(misc_info_.dbg_bld_str),
+                                   &dbg_bld_str_, minidump_->swap());
   }
 
   valid_ = true;
@@ -3548,6 +3610,7 @@ void MinidumpMiscInfo::Print() {
   }
 
   printf("MDRawMiscInfo\n");
+  // Print version 1 fields
   printf("  size_of_info                 = %d\n",   misc_info_.size_of_info);
   printf("  flags1                       = 0x%x\n", misc_info_.flags1);
   printf("  process_id                   = 0x%x\n", misc_info_.process_id);
@@ -3558,6 +3621,7 @@ void MinidumpMiscInfo::Print() {
   printf("  process_kernel_time          = 0x%x\n",
          misc_info_.process_kernel_time);
   if (misc_info_.size_of_info > MD_MISCINFO_SIZE) {
+    // Print version 2 fields
     printf("  processor_max_mhz            = %d\n",
            misc_info_.processor_max_mhz);
     printf("  processor_current_mhz        = %d\n",
@@ -3568,6 +3632,24 @@ void MinidumpMiscInfo::Print() {
            misc_info_.processor_max_idle_state);
     printf("  processor_current_idle_state = 0x%x\n",
            misc_info_.processor_current_idle_state);
+  }
+  if (misc_info_.size_of_info > MD_MISCINFO2_SIZE) {
+    // Print version 3 fields
+    printf("  process_integrity_level      = 0x%x\n",
+           misc_info_.process_integrity_level);
+    printf("  process_execute_flags        = 0x%x\n",
+           misc_info_.process_execute_flags);
+    printf("  protected_process            = %d\n",
+           misc_info_.protected_process);
+    printf("  time_zone_id                 = %d\n", misc_info_.time_zone_id);
+    printf("  time_zone.bias               = %d\n", misc_info_.time_zone.bias);
+    printf("  time_zone.standard_name      = %s\n", standard_name_.c_str());
+    printf("  time_zone.daylight_name      = %s\n", daylight_name_.c_str());
+  }
+  if (misc_info_.size_of_info > MD_MISCINFO3_SIZE) {
+    // Print version 4 fields
+    printf("  build_string                 = %s\n", build_string_.c_str());
+    printf("  dbg_bld_str                  = %s\n", dbg_bld_str_.c_str());
   }
   printf("\n");
 }

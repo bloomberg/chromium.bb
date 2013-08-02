@@ -347,7 +347,7 @@ typedef enum {
 
 typedef struct {
   uint32_t length;     /* Length of buffer in bytes (not characters),
-                         * excluding 0-terminator */
+                        * excluding 0-terminator */
   uint16_t buffer[1];  /* UTF-16-encoded, 0-terminated */
 } MDString;  /* MINIDUMP_STRING */
 
@@ -659,6 +659,55 @@ typedef enum {
 } MDOSPlatform;
 
 typedef struct {
+  uint16_t year;
+  uint16_t month;
+  uint16_t day_of_week;
+  uint16_t day;
+  uint16_t hour;
+  uint16_t minute;
+  uint16_t second;
+  uint16_t milliseconds;
+} MDSystemTime;  /* SYSTEMTIME */
+
+typedef struct {
+  /* Required field.  The bias is the difference, in minutes, between
+   * Coordinated Universal Time (UTC) and local time.
+   *   Formula: UTC = local time + bias */
+  int32_t bias;
+  /* A description for standard time.  For example, "EST" could indicate Eastern
+   * Standard Time.  In practice this contains the full time zone names.  This
+   * string can be empty. */
+  uint16_t standard_name[32];  /* UTF-16-encoded, 0-terminated */
+  /* A MDSystemTime structure that contains a date and local time when the
+   * transition from daylight saving time to standard time occurs on this
+   * operating system.  If the time zone does not support daylight saving time, 
+   * the month member in the MDSystemTime structure is zero. */
+  MDSystemTime standard_date;
+  /* The bias value to be used during local time translations that occur during
+   * standard time. */
+  int32_t standard_bias;
+  /* A description for daylight saving time.  For example, "PDT" could indicate
+   * Pacific Daylight Time.  In practice this contains the full time zone names.
+   * This string can be empty. */
+  uint16_t daylight_name[32];  /* UTF-16-encoded, 0-terminated */
+  /* A MDSystemTime structure that contains a date and local time when the
+   * transition from standard time to daylight saving time occurs on this
+   * operating system.  If the time zone does not support daylight saving time, 
+   * the month member in the MDSystemTime structure is zero.*/
+  MDSystemTime daylight_date;
+  /* The bias value to be used during local time translations that occur during
+   * daylight saving time. */
+  int32_t daylight_bias;
+} MDTimeZoneInformation;  /* TIME_ZONE_INFORMATION */
+
+/* MAX_PATH from windef.h */
+#define MD_MAX_PATH 260
+
+/* The miscellaneous information stream contains a variety
+ * of small pieces of information.  A member is valid if
+ * it's within the available size and its corresponding
+ * bit is set. */
+typedef struct {
   uint32_t size_of_info;  /* Length of entire MDRawMiscInfo structure. */
   uint32_t flags1;
 
@@ -673,8 +722,8 @@ typedef struct {
   uint32_t process_kernel_time;  /* seconds of kernel CPU time */
 
   /* The following fields are not present in MINIDUMP_MISC_INFO but are
-   * in MINIDUMP_MISC_INFO_2.  When this struct is populated, these values
-   * may not be set.  Use flags1 or sizeOfInfo to determine whether these
+   * in MINIDUMP_MISC_INFO_2.  When this struct is populated, these value
+   * may not be set.  Use flags1 or size_of_info to determine whether these
    * values are present.  These are only valid when flags1 contains
    * MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO. */
   uint32_t processor_max_mhz;
@@ -682,20 +731,66 @@ typedef struct {
   uint32_t processor_mhz_limit;
   uint32_t processor_max_idle_state;
   uint32_t processor_current_idle_state;
-} MDRawMiscInfo;  /* MINIDUMP_MISC_INFO, MINIDUMP_MISC_INFO2 */
 
-#define MD_MISCINFO_SIZE 24
-#define MD_MISCINFO2_SIZE 44
+  /* The following fields are not present in MINIDUMP_MISC_INFO_2 but are
+   * in MINIDUMP_MISC_INFO_3.  When this struct is populated, these value
+   * may not be set.  Use flags1 or size_of_info to determine whether these
+   * values are present. */
+   
+  /* The following field is only valid if flags1 contains
+   * MD_MISCINFO_FLAGS1_PROCESS_INTEGRITY. */
+  uint32_t process_integrity_level;
+
+  /* The following field is only valid if flags1 contains
+   * MD_MISCINFO_FLAGS1_PROCESS_EXECUTE_FLAGS. */
+  uint32_t process_execute_flags;
+
+  /* The following field is only valid if flags1 contains
+   * MD_MISCINFO_FLAGS1_PROTECTED_PROCESS. */
+  uint32_t protected_process;
+
+  /* The following 2 fields are only valid if flags1 contains
+   * MD_MISCINFO_FLAGS1_TIMEZONE. */
+  uint32_t time_zone_id;
+  MDTimeZoneInformation time_zone;
+
+  /* The following fields are not present in MINIDUMP_MISC_INFO_3 but are
+   * in MINIDUMP_MISC_INFO_4.  When this struct is populated, these value
+   * may not be set.  Use size_of_info to determine whether these values are 
+   * present. */
+
+  /* The following 2 fields are only valid if
+   * size_of_info is >= MD_MISCINFO4_SIZE */
+  uint16_t build_string[MD_MAX_PATH];  /* UTF-16-encoded, 0-terminated */
+  uint16_t dbg_bld_str[40];            /* UTF-16-encoded, 0-terminated */
+} MDRawMiscInfo;  /* MINIDUMP_MISC_INFO, MINIDUMP_MISC_INFO2,
+                   * MINIDUMP_MISC_INFO3, MINIDUMP_MISC_INFO4 */
+
+static const size_t MD_MISCINFO_SIZE =
+    offsetof(MDRawMiscInfo, processor_max_mhz);
+static const size_t MD_MISCINFO2_SIZE =
+    offsetof(MDRawMiscInfo, process_integrity_level);
+static const size_t MD_MISCINFO3_SIZE =
+    offsetof(MDRawMiscInfo, build_string[0]);
+static const size_t MD_MISCINFO4_SIZE = sizeof(MDRawMiscInfo);
 
 /* For (MDRawMiscInfo).flags1.  These values indicate which fields in the
  * MDRawMiscInfoStructure are valid. */
 typedef enum {
-  MD_MISCINFO_FLAGS1_PROCESS_ID           = 0x00000001,
+  MD_MISCINFO_FLAGS1_PROCESS_ID            = 0x00000001,
       /* MINIDUMP_MISC1_PROCESS_ID */
-  MD_MISCINFO_FLAGS1_PROCESS_TIMES        = 0x00000002,
+  MD_MISCINFO_FLAGS1_PROCESS_TIMES         = 0x00000002,
       /* MINIDUMP_MISC1_PROCESS_TIMES */
-  MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO = 0x00000004
+  MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO  = 0x00000004,
       /* MINIDUMP_MISC1_PROCESSOR_POWER_INFO */
+  MD_MISCINFO_FLAGS1_PROCESS_INTEGRITY     = 0x00000010,
+      /* MINIDUMP_MISC3_PROCESS_INTEGRITY */
+  MD_MISCINFO_FLAGS1_PROCESS_EXECUTE_FLAGS = 0x00000020,
+      /* MINIDUMP_MISC3_PROCESS_EXECUTE_FLAGS */
+  MD_MISCINFO_FLAGS1_TIMEZONE              = 0x00000040,
+      /* MINIDUMP_MISC3_TIMEZONE */
+  MD_MISCINFO_FLAGS1_PROTECTED_PROCESS     = 0x00000080,
+      /* MINIDUMP_MISC3_PROTECTED_PROCESS */
 } MDMiscInfoFlags1;
 
 /*
