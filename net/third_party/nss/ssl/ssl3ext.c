@@ -250,15 +250,15 @@ static const ssl3HelloExtensionHandler clientHelloHandlers[] = {
 /* These two tables are used by the client, to handle server hello
  * extensions. */
 static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
-    { ssl_server_name_xtn,            &ssl3_HandleServerNameXtn },
+    { ssl_server_name_xtn,        &ssl3_HandleServerNameXtn },
     /* TODO: add a handler for ssl_ec_point_formats_xtn */
-    { ssl_session_ticket_xtn,         &ssl3_ClientHandleSessionTicketXtn },
-    { ssl_renegotiation_info_xtn,     &ssl3_HandleRenegotiationInfoXtn },
-    { ssl_next_proto_nego_xtn,        &ssl3_ClientHandleNextProtoNegoXtn },
-    { ssl_application_layer_protocol, &ssl3_ClientHandleAppProtoXtn },
-    { ssl_use_srtp_xtn,               &ssl3_HandleUseSRTPXtn },
-    { ssl_channel_id_xtn,             &ssl3_ClientHandleChannelIDXtn },
-    { ssl_cert_status_xtn,            &ssl3_ClientHandleStatusRequestXtn },
+    { ssl_session_ticket_xtn,     &ssl3_ClientHandleSessionTicketXtn },
+    { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
+    { ssl_next_proto_nego_xtn,    &ssl3_ClientHandleNextProtoNegoXtn },
+    { ssl_app_layer_protocol_xtn, &ssl3_ClientHandleAppProtoXtn },
+    { ssl_use_srtp_xtn,           &ssl3_HandleUseSRTPXtn },
+    { ssl_channel_id_xtn,         &ssl3_ClientHandleChannelIDXtn },
+    { ssl_cert_status_xtn,        &ssl3_ClientHandleStatusRequestXtn },
     { -1, NULL }
 };
 
@@ -283,11 +283,11 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
 #endif
     { ssl_session_ticket_xtn,         &ssl3_SendSessionTicketXtn },
     { ssl_next_proto_nego_xtn,        &ssl3_ClientSendNextProtoNegoXtn },
-    { ssl_application_layer_protocol, &ssl3_ClientSendAppProtoXtn },
+    { ssl_app_layer_protocol_xtn,     &ssl3_ClientSendAppProtoXtn },
     { ssl_use_srtp_xtn,               &ssl3_SendUseSRTPXtn },
     { ssl_channel_id_xtn,             &ssl3_ClientSendChannelIDXtn },
     { ssl_cert_status_xtn,            &ssl3_ClientSendStatusRequestXtn },
-    { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn }
+    { ssl_signature_algorithms_xtn,   &ssl3_ClientSendSigAlgsXtn }
     /* any extra entries will appear as { 0, NULL }    */
 };
 
@@ -611,7 +611,7 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
 
     PORT_Assert(!ss->firstHsDone);
 
-    if (ssl3_ExtensionNegotiated(ss, ssl_application_layer_protocol)) {
+    if (ssl3_ExtensionNegotiated(ss, ssl_app_layer_protocol_xtn)) {
 	PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
 	return SECFailure;
     }
@@ -736,7 +736,7 @@ ssl3_ClientSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
 
     if (append && maxBytes >= extension_length) {
 	SECStatus rv;
-	rv = ssl3_AppendHandshakeNumber(ss, ssl_application_layer_protocol, 2);
+	rv = ssl3_AppendHandshakeNumber(ss, ssl_app_layer_protocol_xtn, 2);
 	if (rv != SECSuccess)
 	    goto loser;
 	rv = ssl3_AppendHandshakeNumber(ss, extension_length - 4, 2);
@@ -747,7 +747,7 @@ ssl3_ClientSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
 	if (rv != SECSuccess)
 	    goto loser;
 	ss->xtnData.advertised[ss->xtnData.numAdvertised++] =
-		ssl_application_layer_protocol;
+		ssl_app_layer_protocol_xtn;
     } else if (maxBytes < extension_length) {
 	return 0;
     }

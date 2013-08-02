@@ -1283,11 +1283,11 @@ SECStatus SSLClientSocketNSS::Core::OwnAuthCertHandler(
     // failure in the ssl_Get1stHandshakeLock call in SSL_OptionSet.
     PRBool negotiated_extension;
     SECStatus rv = SSL_HandshakeNegotiatedExtension(socket,
-                                                    ssl_next_proto_nego_xtn,
+                                                    ssl_app_layer_protocol_xtn,
                                                     &negotiated_extension);
     if (rv != SECSuccess || !negotiated_extension) {
       rv = SSL_HandshakeNegotiatedExtension(socket,
-                                            ssl_application_layer_protocol,
+                                            ssl_next_proto_nego_xtn,
                                             &negotiated_extension);
     }
     if (rv != SECSuccess || !negotiated_extension) {

@@ -45,7 +45,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
 +    { ssl_session_ticket_xtn,         &ssl3_ClientHandleSessionTicketXtn },
 +    { ssl_renegotiation_info_xtn,     &ssl3_HandleRenegotiationInfoXtn },
 +    { ssl_next_proto_nego_xtn,        &ssl3_ClientHandleNextProtoNegoXtn },
-+    { ssl_application_layer_protocol, &ssl3_ClientHandleAppProtoXtn },
++    { ssl_app_layer_protocol_xtn,     &ssl3_ClientHandleAppProtoXtn },
 +    { ssl_use_srtp_xtn,               &ssl3_HandleUseSRTPXtn },
 +    { ssl_channel_id_xtn,             &ssl3_ClientHandleChannelIDXtn },
 +    { ssl_cert_status_xtn,            &ssl3_ClientHandleStatusRequestXtn },
@@ -73,7 +73,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
 -    { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn },
 +    { ssl_session_ticket_xtn,         &ssl3_SendSessionTicketXtn },
 +    { ssl_next_proto_nego_xtn,        &ssl3_ClientSendNextProtoNegoXtn },
-+    { ssl_application_layer_protocol, &ssl3_ClientSendAppProtoXtn },
++    { ssl_app_layer_protocol_xtn,     &ssl3_ClientSendAppProtoXtn },
 +    { ssl_use_srtp_xtn,               &ssl3_SendUseSRTPXtn },
 +    { ssl_channel_id_xtn,             &ssl3_ClientSendChannelIDXtn },
 +    { ssl_cert_status_xtn,            &ssl3_ClientSendStatusRequestXtn },
@@ -84,7 +84,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
  
      PORT_Assert(!ss->firstHsDone);
  
-+    if (ssl3_ExtensionNegotiated(ss, ssl_application_layer_protocol)) {
++    if (ssl3_ExtensionNegotiated(ss, ssl_app_layer_protocol_xtn)) {
 +	PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
 +	return SECFailure;
 +    }
@@ -164,7 +164,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
 +
 +    if (append && maxBytes >= extension_length) {
 +	SECStatus rv;
-+	rv = ssl3_AppendHandshakeNumber(ss, ssl_application_layer_protocol, 2);
++	rv = ssl3_AppendHandshakeNumber(ss, ssl_app_layer_protocol_xtn, 2);
 +	if (rv != SECSuccess)
 +	    goto loser;
 +	rv = ssl3_AppendHandshakeNumber(ss, extension_length - 4, 2);
@@ -175,7 +175,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
 +	if (rv != SECSuccess)
 +	    goto loser;
 +	ss->xtnData.advertised[ss->xtnData.numAdvertised++] =
-+		ssl_application_layer_protocol;
++		ssl_app_layer_protocol_xtn;
 +    } else if (maxBytes < extension_length) {
 +	return 0;
 +    }
@@ -214,7 +214,7 @@ diff -pu a/nss/lib/ssl/sslt.h b/nss/lib/ssl/sslt.h
  #endif
      ssl_signature_algorithms_xtn     = 13,
      ssl_use_srtp_xtn                 = 14,
-+    ssl_application_layer_protocol   = 16,
++    ssl_app_layer_protocol_xtn       = 16,
      ssl_session_ticket_xtn           = 35,
      ssl_next_proto_nego_xtn          = 13172,
      ssl_channel_id_xtn               = 30031,
