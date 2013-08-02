@@ -1389,6 +1389,6 @@ crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html
 crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/canvas-text-alignment.html [ ImageOnlyFailure ]
 crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
 
-crbug.com/259083 fast/sub-pixel/ellipsis-zoom.html [ Failure ]
+crbug.com/259083 fast/sub-pixel/ellipsis-zoom.html [ ImageOnlyFailure ]
 
 crbug.com/267206 [ Lion MountainLion ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
