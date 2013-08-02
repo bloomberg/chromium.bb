@@ -50,8 +50,8 @@ base::DictionaryValue* CreateValueFromMountPoint(
   }
 
   mount_info->SetString("mountCondition",
-      DiskMountManager::MountConditionToString(
-          mount_point_info.mount_condition));
+                        DiskMountManager::MountConditionToString(
+                            mount_point_info.mount_condition));
 
   return mount_info;
 }
@@ -114,7 +114,7 @@ bool AddMountFunction::RunImpl() {
       break;
     }
     default: {
-      const base::FilePath path = GetLocalPathFromURL(
+      const base::FilePath path = util::GetLocalPathFromURL(
           render_view_host(), profile(), GURL(file_url));
 
       if (path.empty()) {
@@ -196,7 +196,7 @@ bool RemoveMountFunction::RunImpl() {
 
   std::vector<GURL> file_paths;
   file_paths.push_back(GURL(mount_path));
-  GetSelectedFileInfo(
+  util::GetSelectedFileInfo(
       render_view_host(),
       profile(),
       file_paths,

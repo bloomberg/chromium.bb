@@ -45,7 +45,7 @@ void LogDefaultTask(const std::set<std::string>& mime_types,
   if (!mime_types.empty()) {
     std::string mime_types_str;
     for (std::set<std::string>::const_iterator iter = mime_types.begin();
-        iter != mime_types.end(); ++iter) {
+         iter != mime_types.end(); ++iter) {
       if (iter == mime_types.begin()) {
         mime_types_str = *iter;
       } else {
@@ -60,7 +60,7 @@ void LogDefaultTask(const std::set<std::string>& mime_types,
   if (!suffixes.empty()) {
     std::string suffixes_str;
     for (std::set<std::string>::const_iterator iter = suffixes.begin();
-        iter != suffixes.end(); ++iter) {
+         iter != suffixes.end(); ++iter) {
       if (iter == suffixes.begin()) {
         suffixes_str = *iter;
       } else {
@@ -150,7 +150,7 @@ bool ExecuteTaskFunction::RunImpl() {
   std::string task_type;
   std::string action_id;
   if (!file_handler_util::CrackTaskID(
-      task_id, &extension_id, &task_type, &action_id)) {
+          task_id, &extension_id, &task_type, &action_id)) {
     LOG(WARNING) << "Invalid task " << task_id;
     return false;
   }
@@ -161,7 +161,7 @@ bool ExecuteTaskFunction::RunImpl() {
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
+      GetFileSystemContext();
 
   std::vector<FileSystemURL> file_urls;
   for (size_t i = 0; i < files_list->GetSize(); i++) {
@@ -178,7 +178,7 @@ bool ExecuteTaskFunction::RunImpl() {
     file_urls.push_back(url);
   }
 
-  int32 tab_id = GetTabId(dispatcher());
+  int32 tab_id = util::GetTabId(dispatcher());
   return file_handler_util::ExecuteFileTask(
       profile(),
       source_url(),
@@ -240,8 +240,8 @@ void GetFileTasksFunction::GetAvailableDriveTasks(
       // For the first file, we store all the info.
       for (size_t j = 0; j < app_info_list.size(); ++j) {
         const drive::DriveAppInfo& app_info = *app_info_list[j];
-        GURL icon_url =
-            FindPreferredIcon(app_info.app_icons, kPreferredIconSize);
+        GURL icon_url = util::FindPreferredIcon(app_info.app_icons,
+                                                util::kPreferredIconSize);
         task_info_map->insert(std::pair<std::string, TaskInfo>(
             MakeWebAppTaskId(app_info.app_id),
             TaskInfo(app_info.app_name, icon_url)));
@@ -390,8 +390,8 @@ bool GetFileTasksFunction::FindAppTasks(
     for (FileHandlerList::iterator i = file_handlers.begin();
          i != file_handlers.end(); ++i) {
       DictionaryValue* task = new DictionaryValue;
-      std::string task_id = file_handler_util::MakeTaskID(extension->id(),
-          file_handler_util::kTaskApp, (*i)->id);
+      std::string task_id = file_handler_util::MakeTaskID(
+          extension->id(), file_handler_util::kTaskApp, (*i)->id);
       task->SetString("taskId", task_id);
       task->SetString("title", (*i)->title);
       if (!(*default_already_set) && ContainsKey(default_tasks, task_id)) {
@@ -403,7 +403,7 @@ bool GetFileTasksFunction::FindAppTasks(
 
       GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
           extension,
-          kPreferredIconSize,
+          util::kPreferredIconSize,
           ExtensionIconSet::MATCH_BIGGER,
           false,  // grayscale
           NULL);  // exists
@@ -442,7 +442,7 @@ bool GetFileTasksFunction::RunImpl() {
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
+      GetFileSystemContext();
 
   // Collect all the URLs, convert them to GURLs, and crack all the urls into
   // file paths.
@@ -540,7 +540,7 @@ bool GetFileTasksFunction::RunImpl() {
     // Only set the default if there isn't already a default set.
     if (!default_already_set &&
         std::find(default_tasks.begin(), default_tasks.end(), *iter) !=
-            default_tasks.end()) {
+        default_tasks.end()) {
       task->SetBoolean("isDefault", true);
       default_already_set = true;
     } else {
@@ -573,7 +573,7 @@ bool SetDefaultTaskFunction::RunImpl() {
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> context =
       BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
+      GetFileSystemContext();
 
   std::set<std::string> suffixes =
       GetUniqueSuffixes(file_url_list, context.get());
@@ -628,7 +628,7 @@ bool ViewFilesFunction::RunImpl() {
   for (size_t i = 0; i < path_list->GetSize(); ++i) {
     std::string url_as_string;
     path_list->GetString(i, &url_as_string);
-    base::FilePath path = GetLocalPathFromURL(
+    base::FilePath path = util::GetLocalPathFromURL(
         render_view_host(), profile(), GURL(url_as_string));
     if (path.empty())
       return false;

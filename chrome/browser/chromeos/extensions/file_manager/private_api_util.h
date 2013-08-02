@@ -23,6 +23,7 @@ struct SelectedFileInfo;
 }
 
 namespace file_manager {
+namespace util {
 
 // Returns the ID of the tab associated with the dispatcher. Returns 0 on
 // error.
@@ -62,6 +63,7 @@ void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
                          bool for_opening,
                          GetSelectedFileInfoCallback callback);
 
+}  // namespace util
 }  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_UTIL_H_

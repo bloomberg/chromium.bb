@@ -84,10 +84,11 @@ base::DictionaryValue* CreateValueFromDisk(
   volume_info->SetString("filePath", volume->file_path());
   volume_info->SetString("deviceLabel", volume->device_label());
   volume_info->SetString("driveLabel", volume->drive_label());
-  volume_info->SetString("deviceType",
+  volume_info->SetString(
+      "deviceType",
       DiskMountManager::DeviceTypeToString(volume->device_type()));
   volume_info->SetDouble("totalSize",
-      static_cast<double>(volume->total_size_in_bytes()));
+                         static_cast<double>(volume->total_size_in_bytes()));
   volume_info->SetBoolean("isParent", volume->is_parent());
   volume_info->SetBoolean("isReadOnly", volume->is_read_only());
   volume_info->SetBoolean("hasMedia", volume->has_media());
@@ -274,7 +275,7 @@ bool RequestFileSystemFunction::RunImpl() {
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(profile_, site_instance)->
-          GetFileSystemContext();
+      GetFileSystemContext();
 
   const GURL origin_url = source_url_.GetOrigin();
   file_system_context->OpenFileSystem(
@@ -314,7 +315,7 @@ bool FileWatchFunctionBase::RunImpl() {
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
+      GetFileSystemContext();
 
   FileSystemURL file_watch_url = file_system_context->CrackURL(GURL(url));
   base::FilePath local_path = file_watch_url.path();
@@ -388,7 +389,7 @@ bool SetLastModifiedFunction::RunImpl() {
   if (!args_->GetString(1, &timestamp))
     return false;
 
-  base::FilePath local_path = GetLocalPathFromURL(
+  base::FilePath local_path = util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(file_url));
 
   base::PostTaskAndReplyWithResult(
@@ -417,7 +418,7 @@ bool GetSizeStatsFunction::RunImpl() {
   if (!args_->GetString(0, &mount_url))
     return false;
 
-  base::FilePath file_path = GetLocalPathFromURL(
+  base::FilePath file_path = util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(mount_url));
   if (file_path.empty())
     return false;
@@ -502,7 +503,7 @@ bool GetVolumeMetadataFunction::RunImpl() {
     return false;
   }
 
-  base::FilePath file_path = GetLocalPathFromURL(
+  base::FilePath file_path = util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(volume_mount_url));
   if (file_path.empty()) {
     error_ = "Invalid mount path.";
@@ -540,7 +541,7 @@ bool ValidatePathNameLengthFunction::RunImpl() {
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
+      GetFileSystemContext();
   fileapi::FileSystemURL filesystem_url(
       file_system_context->CrackURL(GURL(parent_url)));
   if (!chromeos::FileSystemBackend::CanHandleURL(filesystem_url))
@@ -587,7 +588,7 @@ bool FormatDeviceFunction::RunImpl() {
     return false;
   }
 
-  base::FilePath file_path = GetLocalPathFromURL(
+  base::FilePath file_path = util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(volume_file_url));
   if (file_path.empty())
     return false;

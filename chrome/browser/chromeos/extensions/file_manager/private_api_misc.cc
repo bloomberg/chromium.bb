@@ -114,7 +114,7 @@ bool ZipSelectionFunction::RunImpl() {
   if (!args_->GetString(0, &dir_url) || dir_url.empty())
     return false;
 
-  base::FilePath src_dir = GetLocalPathFromURL(
+  base::FilePath src_dir = util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(dir_url));
   if (src_dir.empty())
     return false;
@@ -129,7 +129,7 @@ bool ZipSelectionFunction::RunImpl() {
   for (size_t i = 0; i < selection_urls->GetSize(); ++i) {
     std::string file_url;
     selection_urls->GetString(i, &file_url);
-    base::FilePath path = GetLocalPathFromURL(
+    base::FilePath path = util::GetLocalPathFromURL(
         render_view_host(), profile(), GURL(file_url));
     if (path.empty())
       return false;

@@ -26,6 +26,7 @@ using content::BrowserThread;
 using google_apis::InstalledApp;
 
 namespace file_manager {
+namespace util {
 namespace {
 
 // The struct is used for GetSelectedFileInfo().
@@ -143,7 +144,7 @@ base::FilePath GetLocalPathFromURL(
   content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       content::BrowserContext::GetStoragePartition(profile, site_instance)->
-          GetFileSystemContext();
+      GetFileSystemContext();
 
   const fileapi::FileSystemURL filesystem_url(
       file_system_context->CrackURL(url));
@@ -182,4 +183,5 @@ void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
                  base::Passed(&params)));
 }
 
+}  // namespace util
 }  // namespace file_manager

@@ -20,7 +20,7 @@ CancelFileDialogFunction::~CancelFileDialogFunction() {
 }
 
 bool CancelFileDialogFunction::RunImpl() {
-  int32 tab_id = GetTabId(dispatcher());
+  int32 tab_id = util::GetTabId(dispatcher());
   SelectFileDialogExtension::OnFileSelectionCanceled(tab_id);
   SendResponse(true);
   return true;
@@ -43,7 +43,7 @@ bool SelectFileFunction::RunImpl() {
   bool for_opening = false;
   args_->GetBoolean(2, &for_opening);
 
-  GetSelectedFileInfo(
+  util::GetSelectedFileInfo(
       render_view_host(),
       profile(),
       file_paths,
@@ -61,7 +61,7 @@ void SelectFileFunction::GetSelectedFileInfoResponse(
   }
   int index;
   args_->GetInteger(1, &index);
-  int32 tab_id = GetTabId(dispatcher());
+  int32 tab_id = util::GetTabId(dispatcher());
   SelectFileDialogExtension::OnFileSelected(tab_id, files[0], index);
   SendResponse(true);
 }
@@ -90,7 +90,7 @@ bool SelectFilesFunction::RunImpl() {
     file_urls.push_back(GURL(virtual_path));
   }
 
-  GetSelectedFileInfo(
+  util::GetSelectedFileInfo(
       render_view_host(),
       profile(),
       file_urls,
@@ -102,7 +102,7 @@ bool SelectFilesFunction::RunImpl() {
 void SelectFilesFunction::GetSelectedFileInfoResponse(
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int32 tab_id = GetTabId(dispatcher());
+  int32 tab_id = util::GetTabId(dispatcher());
   SelectFileDialogExtension::OnMultiFilesSelected(tab_id, files);
   SendResponse(true);
 }

@@ -81,7 +81,7 @@ bool GetDriveEntryPropertiesFunction::RunImpl() {
 
   GURL file_url = GURL(file_url_str);
   file_path_ = drive::util::ExtractDrivePath(
-      GetLocalPathFromURL(render_view_host(), profile(), file_url));
+      util::GetLocalPathFromURL(render_view_host(), profile(), file_url));
 
   properties_.reset(new base::DictionaryValue);
   properties_->SetString("fileUrl", file_url.spec());
@@ -154,12 +154,12 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
       DictionaryValue* app = new DictionaryValue();
       app->SetString("appId", app_info->app_id);
       app->SetString("appName", app_info->app_name);
-      GURL app_icon = FindPreferredIcon(app_info->app_icons,
-                                        kPreferredIconSize);
+      GURL app_icon = util::FindPreferredIcon(app_info->app_icons,
+                                              util::kPreferredIconSize);
       if (!app_icon.is_empty())
         app->SetString("appIcon", app_icon.spec());
-      GURL doc_icon = FindPreferredIcon(app_info->document_icons,
-                                        kPreferredIconSize);
+      GURL doc_icon = util::FindPreferredIcon(app_info->document_icons,
+                                              util::kPreferredIconSize);
       if (!doc_icon.is_empty())
         app->SetString("docIcon", doc_icon.spec());
       app->SetString("objectType", app_info->object_type);
@@ -217,7 +217,7 @@ bool PinDriveFileFunction::RunImpl() {
 
   base::FilePath drive_path =
       drive::util::ExtractDrivePath(
-          GetLocalPathFromURL(render_view_host(), profile(), GURL(url)));
+          util::GetLocalPathFromURL(render_view_host(), profile(), GURL(url)));
   if (set_pin) {
     file_system->Pin(drive_path,
                      base::Bind(&PinDriveFileFunction::OnPinStateSet, this));
@@ -256,7 +256,7 @@ bool GetDriveFilesFunction::RunImpl() {
     std::string file_url_as_string;
     if (!file_urls_as_strings->GetString(i, &file_url_as_string))
       return false;
-    const base::FilePath path = GetLocalPathFromURL(
+    const base::FilePath path = util::GetLocalPathFromURL(
         render_view_host(), profile(), GURL(file_url_as_string));
     DCHECK(drive::util::IsUnderDriveMountPoint(path));
     base::FilePath drive_path = drive::util::ExtractDrivePath(path);
@@ -356,7 +356,7 @@ bool CancelFileTransfersFunction::RunImpl() {
     std::string url_as_string;
     url_list->GetString(i, &url_as_string);
 
-    base::FilePath file_path = GetLocalPathFromURL(
+    base::FilePath file_path = util::GetLocalPathFromURL(
         render_view_host(), profile(), GURL(url_as_string));
     if (file_path.empty())
       continue;
@@ -402,9 +402,9 @@ bool TransferFileFunction::RunImpl() {
   if (!integration_service)
     return false;
 
-  base::FilePath source_file = GetLocalPathFromURL(
+  base::FilePath source_file = util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(source_file_url));
-  base::FilePath destination_file = GetLocalPathFromURL(
+  base::FilePath destination_file = util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(destination_file_url));
   if (source_file.empty() || destination_file.empty())
     return false;
@@ -728,7 +728,7 @@ bool GetShareUrlFunction::RunImpl() {
   if (!args_->GetString(0, &file_url))
     return false;
 
-  const base::FilePath path = GetLocalPathFromURL(
+  const base::FilePath path = util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(file_url));
   DCHECK(drive::util::IsUnderDriveMountPoint(path));
 
