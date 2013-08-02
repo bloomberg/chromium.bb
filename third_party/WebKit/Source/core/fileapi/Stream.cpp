@@ -64,7 +64,7 @@ void Stream::finalize()
 
 Stream::~Stream()
 {
-    BlobRegistry::unregisterBlobURL(m_internalURL);
+    BlobRegistry::unregisterStreamURL(m_internalURL);
 }
 
 } // namespace WebCore

@@ -49,16 +49,20 @@ public:
     // Registers a blob URL referring to the specified blob data.
     virtual void registerBlobURL(const WebURL&, WebBlobData&) = 0;
 
+    // Registers a blob URL referring to the blob data identified by the
+    // specified srcURL.
+    virtual void registerBlobURL(const WebURL&, const WebURL& srcURL) = 0;
+
+    // Unregisters a blob referred by the URL.
+    virtual void unregisterBlobURL(const WebURL&) = 0;
+
     // Registers a stream URL referring to a stream with the specified media
     // type.
     virtual void registerStreamURL(const WebURL&, const WebString&) { WEBKIT_ASSERT_NOT_REACHED(); }
 
-    // Registers a blob or stream URL referring to the blob data or stream
-    // identified by the specified srcURL.
-    //
-    // FIXME: Rename this to registerURL or registerStream after experimental
-    // implementation is done.
-    virtual void registerBlobURL(const WebURL&, const WebURL& srcURL) = 0;
+    // Registers a stream URL referring to the stream identified by the
+    // specified srcURL.
+    virtual void registerStreamURL(const WebURL&, const WebURL& srcURL) { WEBKIT_ASSERT_NOT_REACHED(); };
 
     // Add data to the stream referred by the URL.
     virtual void addDataToStream(const WebURL&, WebThreadSafeData&) { WEBKIT_ASSERT_NOT_REACHED(); }
@@ -66,11 +70,8 @@ public:
     // Tell the registry that this stream won't receive any more data.
     virtual void finalizeStream(const WebURL&) { WEBKIT_ASSERT_NOT_REACHED(); }
 
-    // Unregisters a blob or stream referred by the URL.
-    //
-    // FIXME: Rename this to unregisterURL or unregisterStreamURL after
-    // experimental implementation is done.
-    virtual void unregisterBlobURL(const WebURL&) = 0;
+    // Unregisters a stream referred by the URL.
+    virtual void unregisterStreamURL(const WebURL&) { WEBKIT_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace WebKit

@@ -42,14 +42,23 @@ class KURL;
 class RawData;
 class SecurityOrigin;
 
+// A bridging class for calling WebKit::WebBlobRegistry methods on the main
+// thread. Each method gets the WebBlobRegistry implementation instance and
+// calls the corresponding method (the same name) on it using callOnMainThread()
+// if necessary.
 class BlobRegistry {
 public:
+    // Methods for controlling Blobs.
     static void registerBlobURL(const KURL&, PassOwnPtr<BlobData>);
-    static void registerStreamURL(const KURL&, const String&);
     static void registerBlobURL(SecurityOrigin*, const KURL&, const KURL& srcURL);
+    static void unregisterBlobURL(const KURL&);
+
+    // Methods for controlling Streams.
+    static void registerStreamURL(const KURL&, const String&);
+    static void registerStreamURL(SecurityOrigin*, const KURL&, const KURL& srcURL);
     static void addDataToStream(const KURL&, PassRefPtr<RawData>);
     static void finalizeStream(const KURL&);
-    static void unregisterBlobURL(const KURL&);
+    static void unregisterStreamURL(const KURL&);
 };
 
 } // namespace WebCore

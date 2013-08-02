@@ -117,6 +117,21 @@ static ThreadSpecific<BlobURLOriginMap>& originMap()
     return *map;
 }
 
+static void saveToOriginMap(SecurityOrigin* origin, const KURL& url)
+{
+    // If the blob URL contains null origin, as in the context with unique
+    // security origin or file URL, save the mapping between url and origin so
+    // that the origin can be retrived when doing security origin check.
+    if (origin && BlobURL::getOrigin(url) == "null")
+        originMap()->add(url.string(), origin);
+}
+
+static void removeFromOriginMap(const KURL& url)
+{
+    if (BlobURL::getOrigin(url) == "null")
+        originMap()->remove(url.string());
+}
+
 static void registerBlobURLTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
@@ -139,6 +154,46 @@ void BlobRegistry::registerBlobURL(const KURL& url, PassOwnPtr<BlobData> blobDat
     }
 }
 
+static void registerBlobURLFromTask(void* context)
+{
+    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
+    if (WebBlobRegistry* registry = blobRegistry())
+        registry->registerBlobURL(blobRegistryContext->url, blobRegistryContext->srcURL);
+}
+
+void BlobRegistry::registerBlobURL(SecurityOrigin* origin, const KURL& url, const KURL& srcURL)
+{
+    saveToOriginMap(origin, url);
+
+    if (isMainThread()) {
+        if (WebBlobRegistry* registry = blobRegistry())
+            registry->registerBlobURL(url, srcURL);
+    } else {
+        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, srcURL));
+        callOnMainThread(&registerBlobURLFromTask, context.leakPtr());
+    }
+}
+
+static void unregisterBlobURLTask(void* context)
+{
+    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
+    if (WebBlobRegistry* registry = blobRegistry())
+        registry->unregisterBlobURL(blobRegistryContext->url);
+}
+
+void BlobRegistry::unregisterBlobURL(const KURL& url)
+{
+    removeFromOriginMap(url);
+
+    if (isMainThread()) {
+        if (WebBlobRegistry* registry = blobRegistry())
+            registry->unregisterBlobURL(url);
+    } else {
+        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
+        callOnMainThread(&unregisterBlobURLTask, context.leakPtr());
+    }
+}
+
 static void registerStreamURLTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
@@ -157,27 +212,23 @@ void BlobRegistry::registerStreamURL(const KURL& url, const String& type)
     }
 }
 
-static void registerBlobURLFromTask(void* context)
+static void registerStreamURLFromTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
     if (WebBlobRegistry* registry = blobRegistry())
-        registry->registerBlobURL(blobRegistryContext->url, blobRegistryContext->srcURL);
+        registry->registerStreamURL(blobRegistryContext->url, blobRegistryContext->srcURL);
 }
 
-void BlobRegistry::registerBlobURL(SecurityOrigin* origin, const KURL& url, const KURL& srcURL)
+void BlobRegistry::registerStreamURL(SecurityOrigin* origin, const KURL& url, const KURL& srcURL)
 {
-    // If the blob URL contains null origin, as in the context with unique
-    // security origin or file URL, save the mapping between url and origin so
-    // that the origin can be retrived when doing security origin check.
-    if (origin && BlobURL::getOrigin(url) == "null")
-        originMap()->add(url.string(), origin);
+    saveToOriginMap(origin, url);
 
     if (isMainThread()) {
         if (WebBlobRegistry* registry = blobRegistry())
-            registry->registerBlobURL(url, srcURL);
+            registry->registerStreamURL(url, srcURL);
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, srcURL));
-        callOnMainThread(&registerBlobURLFromTask, context.leakPtr());
+        callOnMainThread(&registerStreamURLFromTask, context.leakPtr());
     }
 }
 
@@ -221,24 +272,23 @@ void BlobRegistry::finalizeStream(const KURL& url)
     }
 }
 
-static void unregisterBlobURLTask(void* context)
+static void unregisterStreamURLTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
     if (WebBlobRegistry* registry = blobRegistry())
-        registry->unregisterBlobURL(blobRegistryContext->url);
+        registry->unregisterStreamURL(blobRegistryContext->url);
 }
 
-void BlobRegistry::unregisterBlobURL(const KURL& url)
+void BlobRegistry::unregisterStreamURL(const KURL& url)
 {
-    if (BlobURL::getOrigin(url) == "null")
-        originMap()->remove(url.string());
+    removeFromOriginMap(url);
 
     if (isMainThread()) {
         if (WebBlobRegistry* registry = blobRegistry())
-            registry->unregisterBlobURL(url);
+            registry->unregisterStreamURL(url);
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
-        callOnMainThread(&unregisterBlobURLTask, context.leakPtr());
+        callOnMainThread(&unregisterStreamURLTask, context.leakPtr());
     }
 }
 
