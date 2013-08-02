@@ -46,18 +46,18 @@ void FontCache::platformInit()
 {
 }
 
-PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacters(const Font& font, const UChar* characters, int length)
+PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 c)
 {
     icu::Locale locale = icu::Locale::getDefault();
     FontCache::SimpleFontFamily family;
-    FontCache::getFontFamilyForCharacters(characters, length, locale.getLanguage(), &family);
+    FontCache::getFontFamilyForCharacter(c, locale.getLanguage(), &family);
     if (family.name.isEmpty())
         return 0;
 
     AtomicString atomicFamily(family.name);
     // Changes weight and/or italic of given FontDescription depends on
     // the result of fontconfig so that keeping the correct font mapping
-    // of the given characters. See http://crbug.com/32109 for details.
+    // of the given character. See http://crbug.com/32109 for details.
     bool shouldSetFakeBold = false;
     bool shouldSetFakeItalic = false;
     FontDescription description(font.fontDescription());

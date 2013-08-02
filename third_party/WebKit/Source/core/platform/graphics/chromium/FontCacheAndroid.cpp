@@ -97,20 +97,10 @@ void FontCache::platformInit()
 {
 }
 
-PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacters(const Font& font, const UChar* characters, int length)
+PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 c)
 {
-    if (!length)
-        return 0;
-
-    SkUnichar skiaChar;
-    if (U16_IS_LEAD(characters[0])) {
-        ASSERT(length >= 2);
-        skiaChar = U16_GET_SUPPLEMENTARY(characters[0], characters[1]);
-    } else
-        skiaChar = characters[0];
-
     SkString skiaFamilyName;
-    if (!SkGetFallbackFamilyNameForChar(skiaChar, &skiaFamilyName) || skiaFamilyName.isEmpty())
+    if (!SkGetFallbackFamilyNameForChar(c, &skiaFamilyName) || skiaFamilyName.isEmpty())
         return 0;
     return getCachedFontData(getCachedFontPlatformData(font.fontDescription(), AtomicString(skiaFamilyName.c_str()), DoNotRetain), DoNotRetain);
 }

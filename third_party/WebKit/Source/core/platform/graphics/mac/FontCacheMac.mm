@@ -7,13 +7,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -90,19 +90,31 @@ static inline bool isAppKitFontWeightBold(NSInteger appKitFontWeight)
     return appKitFontWeight >= 7;
 }
 
-PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacters(const Font& font, const UChar* characters, int length)
+PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 character)
 {
-    UChar32 character;
-    U16_GET(characters, 0, 0, length, character);
+    // FIXME: We should fix getFallbackFamily to take a UChar32
+    // and remove this split-to-UChar16 code.
+    UChar codeUnits[2];
+    int codeUnitsLength;
+    if (character <= 0xFFFF) {
+        codeUnits[0] = character;
+        codeUnitsLength = 1;
+    } else {
+        codeUnits[0] = U16_LEAD(character);
+        codeUnits[1] = U16_TRAIL(character);
+        codeUnitsLength = 2;
+    }
+
     const FontPlatformData& platformData = font.fontDataAt(0)->fontDataForCharacter(character)->platformData();
     NSFont *nsFont = platformData.font();
 
-    NSString *string = [[NSString alloc] initWithCharactersNoCopy:const_cast<UChar*>(characters) length:length freeWhenDone:NO];
-    NSFont *substituteFont = [NSFont findFontLike:nsFont forString:string withRange:NSMakeRange(0, length) inLanguage:nil];
+    NSString *string = [[NSString alloc] initWithCharactersNoCopy:codeUnits length:codeUnitsLength freeWhenDone:NO];
+    NSFont *substituteFont = [NSFont findFontLike:nsFont forString:string withRange:NSMakeRange(0, codeUnitsLength) inLanguage:nil];
     [string release];
 
-    if (!substituteFont && length == 1)
-        substituteFont = [NSFont findFontLike:nsFont forCharacter:characters[0] inLanguage:nil];
+    // FIXME: Remove this SPI usage: http://crbug.com/255122
+    if (!substituteFont && codeUnitsLength == 1)
+        substituteFont = [NSFont findFontLike:nsFont forCharacter:codeUnits[0] inLanguage:nil];
     if (!substituteFont)
         return 0;
 
@@ -163,7 +175,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacters(const Font& font,
 
 PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const Font& font)
 {
-    // Attempt to find an appropriate font using a match based on 
+    // Attempt to find an appropriate font using a match based on
     // the presence of keywords in the the requested names.  For example, we'll
     // match any name that contains "Arabic" to Geeza Pro.
     RefPtr<SimpleFontData> simpleFontData;

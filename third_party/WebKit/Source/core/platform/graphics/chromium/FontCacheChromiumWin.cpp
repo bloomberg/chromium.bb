@@ -422,15 +422,27 @@ void FontCache::platformInit()
 
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
-PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacters(const Font& font, const UChar* characters, int length)
+PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 inputC)
 {
+    // FIXME: We should fix getFallbackFamily to take a UChar32
+    // and remove this split-to-UChar16 code.
+    UChar codeUnits[2];
+    int codeUnitsLength;
+    if (inputC <= 0xFFFF) {
+        codeUnits[0] = inputC;
+        codeUnitsLength = 1;
+    } else {
+        codeUnits[0] = U16_LEAD(inputC);
+        codeUnits[1] = U16_TRAIL(inputC);
+        codeUnitsLength = 2;
+    }
+
     // FIXME: Consider passing fontDescription.dominantScript()
     // to GetFallbackFamily here.
     FontDescription fontDescription = font.fontDescription();
     UChar32 c;
     UScriptCode script;
-    const wchar_t* family = getFallbackFamily(characters, length,
-        fontDescription.genericFamily(), &c, &script);
+    const wchar_t* family = getFallbackFamily(codeUnits, codeUnitsLength, fontDescription.genericFamily(), &c, &script);
     FontPlatformData* data = 0;
     if (family)
         data = getCachedFontPlatformData(font.fontDescription(),  AtomicString(family, wcslen(family)), false);

@@ -52,13 +52,6 @@ void WebFontInfo::setSubpixelPositioning(bool subpixelPositioning)
     useSubpixelPositioning = subpixelPositioning;
 }
 
-void WebFontInfo::familyForChars(const WebUChar* characters, size_t numCharacters, const char* preferredLocale, WebFontFamily* family)
-{
-    WebUChar32 c;
-    U16_GET(characters, 0, 0, numCharacters, c);
-    return familyForChar(c, preferredLocale, family);
-}
-
 class CachedFont {
 public:
     // Note: We pass the charset explicitly as callers
@@ -88,6 +81,9 @@ private:
 
         // FCChar8 is unsigned char, so we cast to char for WebCString.
         const char* charFamily = reinterpret_cast<char*>(familyName);
+        // FIXME: This should use WebString instead, and we should be
+        // explicit about which encoding we're using. Right now callers
+        // assume that this is utf8, but that may be wrong!
         return WebCString(charFamily, strlen(charFamily));
     }
 

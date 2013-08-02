@@ -30,17 +30,18 @@
 #include "public/platform/linux/WebFontInfo.h"
 #include "public/platform/linux/WebSandboxSupport.h"
 #include "public/platform/Platform.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 
-void FontCache::getFontFamilyForCharacters(const UChar* characters, size_t numCharacters, const char* preferredLocale, FontCache::SimpleFontFamily* family)
+void FontCache::getFontFamilyForCharacter(UChar32 c, const char* preferredLocale, FontCache::SimpleFontFamily* family)
 {
     WebKit::WebFontFamily webFamily;
     if (WebKit::Platform::current()->sandboxSupport())
-        WebKit::Platform::current()->sandboxSupport()->getFontFamilyForCharacters(characters, numCharacters, preferredLocale, &webFamily);
+        WebKit::Platform::current()->sandboxSupport()->getFontFamilyForCharacter(c, preferredLocale, &webFamily);
     else
-        WebKit::WebFontInfo::familyForChars(characters, numCharacters, preferredLocale, &webFamily);
-    family->name = String::fromUTF8(webFamily.name.data(), webFamily.name.length());
+        WebKit::WebFontInfo::familyForChar(c, preferredLocale, &webFamily);
+    family->name = String::fromUTF8(CString(webFamily.name));
     family->isBold = webFamily.isBold;
     family->isItalic = webFamily.isItalic;
 }

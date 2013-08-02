@@ -270,17 +270,13 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
     // System fallback is character-dependent. When we get here, we
     // know that the character in question isn't in the system fallback
     // font's glyph page. Try to lazily create it here.
-    UChar codeUnits[2];
-    int codeUnitsLength;
-    if (c <= 0xFFFF) {
-        codeUnits[0] = Font::normalizeSpaces(c);
-        codeUnitsLength = 1;
-    } else {
-        codeUnits[0] = U16_LEAD(c);
-        codeUnits[1] = U16_TRAIL(c);
-        codeUnitsLength = 2;
-    }
-    RefPtr<SimpleFontData> characterFontData = fontCache()->getFontDataForCharacters(*this, codeUnits, codeUnitsLength);
+
+    // FIXME: Unclear if this should normalizeSpaces above 0xFFFF.
+    // Doing so changes fast/text/international/plane2-diffs.html
+    UChar32 characterToRender = c;
+    if (characterToRender <=  0xFFFF)
+        characterToRender = Font::normalizeSpaces(characterToRender);
+    RefPtr<SimpleFontData> characterFontData = fontCache()->getFontDataForCharacter(*this, characterToRender);
     if (characterFontData) {
         if (characterFontData->platformData().orientation() == Vertical && !characterFontData->hasVerticalGlyphs() && isCJKIdeographOrSymbol(c))
             variant = BrokenIdeographVariant;

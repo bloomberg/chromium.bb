@@ -66,8 +66,9 @@ public:
     PassRefPtr<FontData> getFontData(const Font&, int& familyIndex, FontSelector*);
     void releaseFontData(const SimpleFontData*);
 
-    // This method is implemented by the platform.
-    PassRefPtr<SimpleFontData> getFontDataForCharacters(const Font&, const UChar* characters, int length);
+    // This method is implemented by the plaform and used by
+    // FontFastPath to lookup the font for a given character.
+    PassRefPtr<SimpleFontData> getFontDataForCharacter(const Font&, UChar32);
 
     // Also implemented by the platform.
     void platformInit();
@@ -102,7 +103,7 @@ public:
         bool isBold;
         bool isItalic;
     };
-    static void getFontFamilyForCharacters(const UChar* characters, size_t numCharacters, const char* preferredLocale, SimpleFontFamily*);
+    static void getFontFamilyForCharacter(UChar32, const char* preferredLocale, SimpleFontFamily*);
 
 private:
     FontCache();

@@ -280,7 +280,7 @@ static bool attributeValueMatches(const Attribute* attributeItem, CSSSelector::M
     case CSSSelector::List:
         {
             // Ignore empty selectors or selectors containing HTML spaces
-            if (containsHTMLSpace(selectorValue) || selectorValue.isEmpty())
+            if (selectorValue.isEmpty() || containsHTMLSpace(selectorValue))
                 return false;
 
             unsigned startSearchAt = 0;
