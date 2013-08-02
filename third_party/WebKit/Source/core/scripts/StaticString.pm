@@ -71,16 +71,6 @@ sub GenerateStringAsserts($)
 
     push(@result, "\n");
 
-    push(@result, "#ifndef NDEBUG\n");
-
-    while ( my ($name, $value) = each %strings ) {
-        push(@result, "    ${name}Impl->assertHashIsCorrect();\n");
-    }
-
-    push(@result, "#endif // NDEBUG\n");
-
-    push(@result, "\n");
-
     return join "", @result;
 }
 
