@@ -193,11 +193,9 @@ void AutofillPopupViewGtk::SetLayoutText(const string16& text,
 
   gtk_util::SetLayoutText(layout_, text);
 
-  // We add one pixel to the width because if the text fills up the width
-  // pango will try to split it over 2 lines.
-  int required_width = font.GetStringWidth(text) + 1;
-
-  pango_layout_set_width(layout_, required_width * PANGO_SCALE);
+  // The popup is already the correct size for the text, so set the width to -1
+  // to prevent additional wrapping or ellipsization.
+  pango_layout_set_width(layout_, -1);
 }
 
 void AutofillPopupViewGtk::DrawSeparator(cairo_t* cairo_context,
