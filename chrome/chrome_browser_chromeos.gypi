@@ -845,6 +845,8 @@
             'browser/chromeos/extensions/file_manager/private_api_drive.h',
             'browser/chromeos/extensions/file_manager/private_api_file_system.cc',
             'browser/chromeos/extensions/file_manager/private_api_file_system.h',
+            'browser/chromeos/extensions/file_manager/private_api_misc.cc',
+            'browser/chromeos/extensions/file_manager/private_api_misc.h',
             'browser/chromeos/extensions/file_manager/private_api_mount.cc',
             'browser/chromeos/extensions/file_manager/private_api_mount.h',
             'browser/chromeos/extensions/file_manager/private_api_strings.cc',
