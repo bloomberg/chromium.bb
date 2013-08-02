@@ -68,8 +68,8 @@ class TestShellTab : public TabAndroid {
 
   virtual void RunExternalProtocolDialog(const GURL& url) OVERRIDE;
 
-  virtual int64 GetSyncId() const OVERRIDE;
-  virtual void SetSyncId(int64 sync_id) OVERRIDE;
+  virtual int GetSyncId() const OVERRIDE;
+  virtual void SetSyncId(int sync_id) OVERRIDE;
 
   // Register the Tab's native methods through JNI.
   static bool RegisterTestShellTab(JNIEnv* env);

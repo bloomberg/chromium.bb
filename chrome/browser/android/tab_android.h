@@ -82,8 +82,8 @@ class TabAndroid {
   virtual void RunExternalProtocolDialog(const GURL& url);
 
   // Used by sync to get/set the sync id of tab.
-  virtual int64 GetSyncId() const = 0;
-  virtual void SetSyncId(int64 sync_id) = 0;
+  virtual int GetSyncId() const = 0;
+  virtual void SetSyncId(int sync_id) = 0;
 
   static bool RegisterTabAndroid(JNIEnv* env);
 

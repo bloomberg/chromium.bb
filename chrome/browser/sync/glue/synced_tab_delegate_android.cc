@@ -106,11 +106,11 @@ SyncedTabDelegateAndroid::GetBlockedNavigations() const {
       ->GetBlockedNavigations();
 }
 
-int64 SyncedTabDelegateAndroid::GetSyncId() const {
+int SyncedTabDelegateAndroid::GetSyncId() const {
   return tab_android_->GetSyncId();
 }
 
-void SyncedTabDelegateAndroid::SetSyncId(int64 sync_id) {
+void SyncedTabDelegateAndroid::SetSyncId(int sync_id) {
   tab_android_->SetSyncId(sync_id);
 }
 

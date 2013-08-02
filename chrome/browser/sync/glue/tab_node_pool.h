@@ -20,15 +20,10 @@ namespace browser_sync {
 // A pool for managing free/used tab sync nodes for the *local* session.
 // Performs lazy creation of sync nodes when necessary.
 // Note: We make use of the following "id's"
-// - a sync_id: an int64 used in |syncer::InitByIdLookup|
 // - a tab_id: created by session service, unique to this client
 // - a tab_node_id: the id for a particular sync tab node. This is used
 //   to generate the sync tab node tag through:
 //       tab_tag = StringPrintf("%s_%ui", local_session_tag, tab_node_id);
-// tab_node_id and sync_id are both unique to a particular sync node. The
-// difference is that tab_node_id is controlled by the model associator and
-// is used when creating a new sync node, which returns the sync_id, created
-// by the sync db.
 //
 // A sync node can be in one of the three states:
 // 1. Associated   : Sync node is used and associated with a tab.
@@ -61,38 +56,39 @@ class TabNodePool {
   static std::string TabIdToTag(const std::string machine_tag,
                                 int tab_node_id);
 
-  // Returns the sync_id for the next free tab node. If none are available,
+  // Returns the tab_node_id for the next free tab node. If none are available,
   // creates a new tab node and adds it to free nodes pool. The free node can
   // then be used to associate with a tab by calling AssociateTabNode.
   // Note: The node is considered free until it has been associated. Repeated
-  // calls to GetFreeTabNode will return the same sync_id until node has been
+  // calls to GetFreeTabNode will return the same id until node has been
   // associated.
-  int64 GetFreeTabNode();
+  int GetFreeTabNode();
 
-  // Removes association for |sync_id| and returns it to the free node pool.
-  void FreeTabNode(int64 sync_id);
+  // Removes association for |tab_node_id| and returns it to the free node pool.
+  void FreeTabNode(int tab_node_id);
 
-  // Associates |sync_id| with |tab_id|. |sync_id| should either be unassociated
-  // or free. If |sync_id| is free, |sync_id| is removed from the free node pool
-  // In order to associate a non free sync node, use ReassociateTabNode.
-  void AssociateTabNode(int64 sync_id, SessionID::id_type tab_id);
+  // Associates |tab_node_id| with |tab_id|. |tab_node_id| should either be
+  // unassociated or free. If |tab_node_id| is free, |tab_node_id| is removed
+  // from the free node pool In order to associate a non free sync node,
+  // use ReassociateTabNode.
+  void AssociateTabNode(int tab_node_id, SessionID::id_type tab_id);
 
-  // Adds |sync_id| as an unassociated sync node.
+  // Adds |tab_node_id| as an unassociated sync node.
   // Note: this should only be called when we discover tab sync nodes from
   // previous sessions, not for freeing tab nodes we created through
   // GetFreeTabNode (use FreeTabNode below for that).
-  void AddTabNode(int64 sync_id, const SessionID& tab_id, int tab_node_id);
+  void AddTabNode(int tab_node_id, const SessionID& tab_id);
 
-  // Returns the tab_id for |sync_id| if it is associated else returns
+  // Returns the tab_id for |tab_node_id| if it is associated else returns
   // kInvalidTabID.
-  SessionID::id_type GetTabIdFromSyncId(int64 sync_id) const;
+  SessionID::id_type GetTabIdFromTabNodeId(int tab_node_id) const;
 
-  // Reassociates |sync_id| with |tab_id|. |sync_id| must be either associated
-  // with a tab or in the set of unassociated nodes.
-  void ReassociateTabNode(int64 sync_id, SessionID::id_type tab_id);
+  // Reassociates |tab_node_id| with |tab_id|. |tab_node_id| must be either
+  // associated with a tab or in the set of unassociated nodes.
+  void ReassociateTabNode(int tab_node_id, SessionID::id_type tab_id);
 
-  // Returns true if |sync_id| is an unassociated tab node.
-  bool IsUnassociatedTabNode(int64 sync_id);
+  // Returns true if |tab_node_id| is an unassociated tab node.
+  bool IsUnassociatedTabNode(int tab_node_id);
 
   // Returns any unassociated nodes to the free node pool.
   void FreeUnassociatedTabNodes();
@@ -114,24 +110,24 @@ class TabNodePool {
 
  private:
   friend class SyncTabNodePoolTest;
-  typedef std::map<int64, SessionID::id_type> SyncIDToTabIDMap;
+  typedef std::map<int, SessionID::id_type> TabNodeIDToTabIDMap;
 
-  // Adds |sync_id| to free node pool.
-  void FreeTabNodeInternal(int64 sync_id);
+  // Adds |tab_node_id| to free node pool.
+  void FreeTabNodeInternal(int tab_node_id);
 
-  // Stores mapping of sync_ids associated with tab_ids, these are the used
+  // Stores mapping of node ids associated with tab_ids, these are the used
   // nodes of tab node pool.
   // The nodes in the map can be returned to free tab node pool by calling
-  // FreeTabNode(sync_id).
-  SyncIDToTabIDMap syncid_tabid_map_;
+  // FreeTabNode(tab_node_id).
+  TabNodeIDToTabIDMap nodeid_tabid_map_;
 
-  // The sync ids for the set of free sync nodes.
-  std::set<int64> free_nodes_pool_;
+  // The node ids for the set of free sync nodes.
+  std::set<int> free_nodes_pool_;
 
-  // The sync ids that are added to pool using AddTabNode and are currently
+  // The node ids that are added to pool using AddTabNode and are currently
   // not associated with any tab. They can be reassociated using
   // ReassociateTabNode.
-  std::set<int64> unassociated_nodes_;
+  std::set<int> unassociated_nodes_;
 
   // The maximum used tab_node id for a sync node. A new sync node will always
   // be created with max_used_tab_node_id_ + 1.

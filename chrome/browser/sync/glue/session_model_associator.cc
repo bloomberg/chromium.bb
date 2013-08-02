@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/safe_numerics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -236,7 +237,7 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
           // Note: We cannot check if a tab is valid if it has no WebContents.
           // We assume any such tab is valid and leave the contents of
           // corresponding sync node unchanged.
-          if (synced_tab->GetSyncId() > syncer::kInvalidId &&
+          if (synced_tab->GetSyncId() > TabNodePool::kInvalidTabNodeID &&
               tab_id > TabNodePool::kInvalidTabID) {
             UpdateTabIdIfNecessary(synced_tab->GetSyncId(), tab_id);
             found_tabs = true;
@@ -333,7 +334,7 @@ bool SessionModelAssociator::AssociateTab(SyncedTabDelegate* const tab,
                                           syncer::SyncError* error) {
   DCHECK(CalledOnValidThread());
   DCHECK(tab->HasWebContents());
-  int64 sync_id;
+  int tab_node_id(TabNodePool::kInvalidTabNodeID);
   SessionID::id_type tab_id = tab->GetSessionId();
   if (tab->IsBeingDestroyed()) {
     // This tab is closing.
@@ -342,7 +343,7 @@ bool SessionModelAssociator::AssociateTab(SyncedTabDelegate* const tab,
       // We aren't tracking this tab (for example, sync setting page).
       return true;
     }
-    local_tab_pool_.FreeTabNode(tab_iter->second->sync_id());
+    local_tab_pool_.FreeTabNode(tab_iter->second->tab_node_id());
     local_tab_map_.erase(tab_iter);
     return true;
   }
@@ -353,12 +354,12 @@ bool SessionModelAssociator::AssociateTab(SyncedTabDelegate* const tab,
   TabLinksMap::iterator local_tab_map_iter = local_tab_map_.find(tab_id);
   TabLink* tab_link = NULL;
   if (local_tab_map_iter == local_tab_map_.end()) {
-    sync_id = tab->GetSyncId();
+    tab_node_id = tab->GetSyncId();
     // if there is an old sync node for the tab, reuse it.
-    if (!local_tab_pool_.IsUnassociatedTabNode(sync_id)) {
+    if (!local_tab_pool_.IsUnassociatedTabNode(tab_node_id)) {
       // This is a new tab, get a sync node for it.
-      sync_id = local_tab_pool_.GetFreeTabNode();
-      if (sync_id == syncer::kInvalidId) {
+      tab_node_id = local_tab_pool_.GetFreeTabNode();
+      if (tab_node_id == TabNodePool::kInvalidTabNodeID) {
         if (error) {
           *error = error_handler_->CreateAndUploadError(
               FROM_HERE,
@@ -367,10 +368,10 @@ bool SessionModelAssociator::AssociateTab(SyncedTabDelegate* const tab,
         }
         return false;
       }
-      tab->SetSyncId(sync_id);
+      tab->SetSyncId(tab_node_id);
     }
-    local_tab_pool_.AssociateTabNode(sync_id, tab_id);
-    tab_link = new TabLink(sync_id, tab);
+    local_tab_pool_.AssociateTabNode(tab_node_id, tab_id);
+    tab_link = new TabLink(tab_node_id, tab);
     local_tab_map_[tab_id] = make_linked_ptr<TabLink>(tab_link);
   } else {
     // This tab is already associated with a sync node, reuse it.
@@ -380,7 +381,7 @@ bool SessionModelAssociator::AssociateTab(SyncedTabDelegate* const tab,
     local_tab_map_iter->second->set_tab(tab);
   }
   DCHECK(tab_link);
-  DCHECK_NE(tab_link->sync_id(), syncer::kInvalidId);
+  DCHECK_NE(tab_link->tab_node_id(), TabNodePool::kInvalidTabNodeID);
 
   DVLOG(1) << "Reloading tab " << tab_id << " from window "
            << tab->GetWindowId();
@@ -418,7 +419,7 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
     syncer::SyncError* error) {
   DCHECK(CalledOnValidThread());
   const SyncedTabDelegate& tab_delegate = *(tab_link->tab());
-  int64 sync_id = tab_link->sync_id();
+  int tab_node_id = tab_link->tab_node_id();
   GURL old_tab_url = tab_link->url();
   const GURL new_url = GetCurrentVirtualURL(tab_delegate);
   DVLOG(1) << "Local tab " << tab_delegate.GetSessionId()
@@ -428,7 +429,10 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::WriteNode tab_node(&trans);
-    if (tab_node.InitByIdLookup(sync_id) != syncer::BaseNode::INIT_OK) {
+    if (tab_node.InitByClientTagLookup(
+            syncer::SESSIONS,
+            TabNodePool::TabIdToTag(current_machine_tag_, tab_node_id)) !=
+        syncer::BaseNode::INIT_OK) {
       if (error) {
         *error = error_handler_->CreateAndUploadError(
             FROM_HERE,
@@ -441,6 +445,8 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
     // Load the last stored version of this tab so we can compare changes. If
     // this is a new tab, session_tab will be a new, blank SessionTab object.
     sync_pb::SessionSpecifics specifics = tab_node.GetSessionSpecifics();
+    const int s_tab_node_id(specifics.tab_node_id());
+    DCHECK_EQ(tab_node_id, s_tab_node_id);
     session_tab =
         synced_session_tracker_.GetTab(GetCurrentMachineTag(),
                                        tab_delegate.GetSessionId(),
@@ -738,7 +744,7 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
           current_session_name_ = specifics.header().client_name();
         }
       } else {
-        if (specifics.has_header()) {
+        if (specifics.has_header() || !specifics.has_tab()) {
           LOG(WARNING) << "Found invalid session node, deleting.";
           sync_node.Tombstone();
         } else {
@@ -746,7 +752,7 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
           // reused for reassociation.
           SessionID tab_id;
           tab_id.set_id(specifics.tab().tab_id());
-          local_tab_pool_.AddTabNode(id, tab_id, specifics.tab_node_id());
+          local_tab_pool_.AddTabNode(specifics.tab_node_id(), tab_id);
         }
       }
     }
@@ -1155,15 +1161,18 @@ bool SessionModelAssociator::CryptoReadyIfNecessary() {
 }
 
 void SessionModelAssociator::UpdateTabIdIfNecessary(
-    int64 sync_id,
+    int tab_node_id,
     SessionID::id_type new_tab_id) {
-  DCHECK_NE(sync_id, syncer::kInvalidId);
-  SessionID::id_type old_tab_id = local_tab_pool_.GetTabIdFromSyncId(sync_id);
+  DCHECK_NE(tab_node_id, TabNodePool::kInvalidTabNodeID);
+  SessionID::id_type old_tab_id =
+      local_tab_pool_.GetTabIdFromTabNodeId(tab_node_id);
   if (old_tab_id != new_tab_id) {
     // Rewrite tab id if required.
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::WriteNode tab_node(&trans);
-    if (tab_node.InitByIdLookup(sync_id) == syncer::BaseNode::INIT_OK) {
+    if (tab_node.InitByClientTagLookup(syncer::SESSIONS,
+            TabNodePool::TabIdToTag(current_machine_tag_, tab_node_id)) ==
+                syncer::BaseNode::INIT_OK) {
       sync_pb::SessionSpecifics session_specifics =
           tab_node.GetSessionSpecifics();
       DCHECK(session_specifics.has_tab());
@@ -1172,7 +1181,7 @@ void SessionModelAssociator::UpdateTabIdIfNecessary(
         tab_s->set_tab_id(new_tab_id);
         tab_node.SetSessionSpecifics(session_specifics);
         // Update tab node pool with the new association.
-        local_tab_pool_.ReassociateTabNode(sync_id, new_tab_id);
+        local_tab_pool_.ReassociateTabNode(tab_node_id, new_tab_id);
       }
     }
   }

@@ -232,19 +232,19 @@ class SessionModelAssociator
   FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
                            TabNodePool);
 
-  // Keep all the links to local tab data in one place. A sync_id and tab must
-  // be passed at creation. The sync_id is not mutable after, although all other
-  // fields are.
+  // Keep all the links to local tab data in one place. A tab_node_id and tab
+  // must be passed at creation. The tab_node_id is not mutable after, although
+  // all other fields are.
   class TabLink {
    public:
-    TabLink(int64 sync_id, const SyncedTabDelegate* tab)
-      : sync_id_(sync_id),
+    TabLink(int tab_node_id, const SyncedTabDelegate* tab)
+      : tab_node_id_(tab_node_id),
         tab_(tab) {}
 
     void set_tab(const SyncedTabDelegate* tab) { tab_ = tab; }
     void set_url(const GURL& url) { url_ = url; }
 
-    int64 sync_id() const { return sync_id_; }
+    int tab_node_id() const { return tab_node_id_; }
     const SyncedTabDelegate* tab() const { return tab_; }
     const GURL& url() const { return url_; }
 
@@ -252,7 +252,7 @@ class SessionModelAssociator
     DISALLOW_COPY_AND_ASSIGN(TabLink);
 
     // The id for the sync node this tab is stored in.
-    const int64 sync_id_;
+    const int tab_node_id_;
 
     // The tab object itself.
     const SyncedTabDelegate* tab_;
@@ -331,8 +331,10 @@ class SessionModelAssociator
   // invalid url's.
   bool TabHasValidEntry(const SyncedTabDelegate& tab) const;
 
-  // Update the tab id of the node associated with |sync_id| to |new_tab_id|.
-  void UpdateTabIdIfNecessary(int64 sync_id, SessionID::id_type new_tab_id);
+  // Update the tab id of the node associated with |tab_node_id| to
+  // |new_tab_id|.
+  void UpdateTabIdIfNecessary(int tab_node_id,
+                              SessionID::id_type new_tab_id);
 
   // For testing only.
   void QuitLoopForSubtleTesting();

@@ -190,8 +190,8 @@ class SyncedTabDelegateMock : public SyncedTabDelegate {
                      const std::vector<const content::NavigationEntry*>*());
   MOCK_CONST_METHOD0(IsPinned, bool());
   MOCK_CONST_METHOD0(HasWebContents, bool());
-  MOCK_CONST_METHOD0(GetSyncId, int64());
-  MOCK_METHOD1(SetSyncId, void(int64));
+  MOCK_CONST_METHOD0(GetSyncId, int());
+  MOCK_METHOD1(SetSyncId, void(int));
 };
 
 class SyncRefreshListener : public content::NotificationObserver {

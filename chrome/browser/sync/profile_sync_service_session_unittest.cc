@@ -762,14 +762,14 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolEmpty) {
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
 
-  std::vector<int64> node_ids;
+  std::vector<int> node_ids;
   ASSERT_EQ(0U, model_associator_->local_tab_pool_.Capacity());
   ASSERT_TRUE(model_associator_->local_tab_pool_.Empty());
   ASSERT_TRUE(model_associator_->local_tab_pool_.Full());
   const size_t num_ids = 10;
   for (size_t i = 0; i < num_ids; ++i) {
-    int64 id = model_associator_->local_tab_pool_.GetFreeTabNode();
-    ASSERT_GT(id, -1);
+    int id = model_associator_->local_tab_pool_.GetFreeTabNode();
+    ASSERT_GT(id, TabNodePool::kInvalidTabNodeID);
     node_ids.push_back(id);
     // Associate with a tab node.
     model_associator_->local_tab_pool_.AssociateTabNode(id, i + 1);
@@ -795,18 +795,18 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
   SessionID session_id;
   for (size_t i = 0; i < num_starting_nodes; ++i) {
     session_id.set_id(i + 1);
-    model_associator_->local_tab_pool_.AddTabNode(i + 1, session_id, i);
+    model_associator_->local_tab_pool_.AddTabNode(i + 1, session_id);
   }
 
   model_associator_->local_tab_pool_.FreeUnassociatedTabNodes();
-  std::vector<int64> node_ids;
+  std::vector<int> node_ids;
   ASSERT_EQ(num_starting_nodes, model_associator_->local_tab_pool_.Capacity());
   ASSERT_FALSE(model_associator_->local_tab_pool_.Empty());
   ASSERT_TRUE(model_associator_->local_tab_pool_.Full());
   const size_t num_ids = 10;
   for (size_t i = 0; i < num_ids; ++i) {
-    int64 id = model_associator_->local_tab_pool_.GetFreeTabNode();
-    ASSERT_GT(id, -1);
+    int id = model_associator_->local_tab_pool_.GetFreeTabNode();
+    ASSERT_GT(id, TabNodePool::kInvalidTabNodeID);
     node_ids.push_back(id);
     // Associate with a tab node.
     model_associator_->local_tab_pool_.AssociateTabNode(id, i + 1);
@@ -1340,16 +1340,16 @@ TEST_F(ProfileSyncServiceSessionTest, TabPoolFreeNodeLimits) {
   // kFreeNodesLowWatermark.
 
   SessionID session_id;
-  std::vector<int64> used_sync_ids;
+  std::vector<int> used_sync_ids;
   for (size_t i = 1; i <= TabNodePool::kFreeNodesHighWatermark + 1; ++i) {
     session_id.set_id(i);
-    int64 sync_id = model_associator_->local_tab_pool_.GetFreeTabNode();
+    int sync_id = model_associator_->local_tab_pool_.GetFreeTabNode();
     model_associator_->local_tab_pool_.AssociateTabNode(sync_id, i);
     used_sync_ids.push_back(sync_id);
   }
 
   // Free all except one node.
-  int64 last_sync_id = used_sync_ids.back();
+  int last_sync_id = used_sync_ids.back();
   used_sync_ids.pop_back();
 
   for (size_t i = 0; i < used_sync_ids.size(); ++i) {

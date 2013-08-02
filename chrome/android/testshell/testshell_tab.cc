@@ -131,9 +131,9 @@ static jint Init(JNIEnv* env,
   return reinterpret_cast<jint>(tab);
 }
 
-int64 TestShellTab::GetSyncId() const {
+int TestShellTab::GetSyncId() const {
   NOTIMPLEMENTED();
   return 0;
 }
 
-void TestShellTab::SetSyncId(int64 sync_id) { NOTIMPLEMENTED(); }
+void TestShellTab::SetSyncId(int sync_id) { NOTIMPLEMENTED(); }

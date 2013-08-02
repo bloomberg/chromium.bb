@@ -23,17 +23,18 @@ TEST_F(SyncTabNodePoolTest, TabNodeIdIncreases) {
   // max_used_tab_node_ always increases.
   SessionID session_id;
   session_id.set_id(1);
-  pool_.AddTabNode(4, session_id, 10);
+  pool_.AddTabNode(10, session_id);
   EXPECT_EQ(10, GetMaxUsedTabNodeId());
   session_id.set_id(2);
-  pool_.AddTabNode(5, session_id, 1);
+  pool_.AddTabNode(1, session_id);
   EXPECT_EQ(10, GetMaxUsedTabNodeId());
   session_id.set_id(3);
-  pool_.AddTabNode(6, session_id, 1000);
+  pool_.AddTabNode(1000, session_id);
   EXPECT_EQ(1000, GetMaxUsedTabNodeId());
-  pool_.ReassociateTabNode(6, 500);
+  pool_.ReassociateTabNode(1000, 500);
+
   // Freeing a tab node does not change max_used_tab_node_id_.
-  pool_.FreeTabNode(6);
+  pool_.FreeTabNode(1000);
   pool_.FreeUnassociatedTabNodes();
   EXPECT_EQ(1000, GetMaxUsedTabNodeId());
   for (int i = 0; i < 3; ++i) {
@@ -46,46 +47,43 @@ TEST_F(SyncTabNodePoolTest, TabNodeIdIncreases) {
 
 TEST_F(SyncTabNodePoolTest, OldTabNodesAddAndRemove) {
   // VerifyOldTabNodes are added.
-  // sync_id =4, tab_node_id = 1, tab_id = 1
+  // tab_node_id = 1, tab_id = 1
   SessionID session_id;
   session_id.set_id(1);
-  pool_.AddTabNode(4, session_id, 1);
-  // sync_id = 5, tab_node_id = 5, tab_id = 2
+  pool_.AddTabNode(1, session_id);
+  // tab_node_id = 2, tab_id = 2
   session_id.set_id(2);
-  pool_.AddTabNode(5, session_id, 2);
+  pool_.AddTabNode(2, session_id);
   EXPECT_EQ(2u, pool_.Capacity());
   EXPECT_TRUE(pool_.Empty());
-  EXPECT_TRUE(pool_.IsUnassociatedTabNode(4));
-  pool_.ReassociateTabNode(4, 2);
+  EXPECT_TRUE(pool_.IsUnassociatedTabNode(1));
+  pool_.ReassociateTabNode(1, 2);
   EXPECT_TRUE(pool_.Empty());
   // Check FreeUnassociatedTabNodes returns the node to free node pool_.
   pool_.FreeUnassociatedTabNodes();
-  // 5 should be returned to free node pool_.
+  // 2 should be returned to free node pool_.
   EXPECT_EQ(2u, pool_.Capacity());
-  // Should be able to free 4.
-  pool_.FreeTabNode(4);
+  // Should be able to free 1.
+  pool_.FreeTabNode(1);
   EXPECT_FALSE(pool_.Empty());
   EXPECT_TRUE(pool_.Full());
-  EXPECT_EQ(4, pool_.GetFreeTabNode());
-  pool_.AssociateTabNode(4, 1);
-  EXPECT_EQ(5, pool_.GetFreeTabNode());
-  pool_.AssociateTabNode(5, 1);
+  EXPECT_EQ(1, pool_.GetFreeTabNode());
+  pool_.AssociateTabNode(1, 1);
+  EXPECT_EQ(2, pool_.GetFreeTabNode());
+  pool_.AssociateTabNode(2, 1);
   EXPECT_TRUE(pool_.Empty());
   EXPECT_FALSE(pool_.Full());
 }
 
 TEST_F(SyncTabNodePoolTest, OldTabNodesReassociation) {
   // VerifyOldTabNodes are reassociated correctly.
-  // sync_id =4, tab_node_id = 1, tab_id = 1
   SessionID session_id;
   session_id.set_id(1);
-  pool_.AddTabNode(4, session_id, 1);
-  // sync_id = 5, tab_node_id = 2, tab_id = 2
+  pool_.AddTabNode(4, session_id);
   session_id.set_id(2);
-  pool_.AddTabNode(5, session_id, 2);
-  // sync_id = 6, tab_node_id = 3, tab_id =3
+  pool_.AddTabNode(5, session_id);
   session_id.set_id(3);
-  pool_.AddTabNode(6, session_id, 3);
+  pool_.AddTabNode(6, session_id);
   EXPECT_EQ(3u, pool_.Capacity());
   EXPECT_TRUE(pool_.Empty());
   EXPECT_TRUE(pool_.IsUnassociatedTabNode(4));
@@ -102,7 +100,7 @@ TEST_F(SyncTabNodePoolTest, OldTabNodesReassociation) {
   // Free all nodes
   pool_.FreeTabNode(4);
   EXPECT_TRUE(pool_.Full());
-  std::set<int64> free_sync_ids;
+  std::set<int> free_sync_ids;
   for (int i = 0; i < 3; ++i) {
     free_sync_ids.insert(pool_.GetFreeTabNode());
     // GetFreeTabNode will return the same value till the node is
@@ -125,9 +123,9 @@ TEST_F(SyncTabNodePoolTest, Init) {
 TEST_F(SyncTabNodePoolTest, AddGet) {
   SessionID session_id;
   session_id.set_id(1);
-  pool_.AddTabNode(5, session_id, 1);
+  pool_.AddTabNode(5, session_id);
   session_id.set_id(2);
-  pool_.AddTabNode(10, session_id, 2);
+  pool_.AddTabNode(10, session_id);
   pool_.FreeUnassociatedTabNodes();
   EXPECT_FALSE(pool_.Empty());
   EXPECT_TRUE(pool_.Full());
@@ -148,9 +146,9 @@ TEST_F(SyncTabNodePoolTest, All) {
   EXPECT_EQ(0U, pool_.Capacity());
   SessionID session_id;
   session_id.set_id(1);
-  pool_.AddTabNode(5, session_id, 1);
+  pool_.AddTabNode(5, session_id);
   session_id.set_id(2);
-  pool_.AddTabNode(10, session_id, 2);
+  pool_.AddTabNode(10, session_id);
   // Free added nodes.
   pool_.FreeUnassociatedTabNodes();
   EXPECT_FALSE(pool_.Empty());
