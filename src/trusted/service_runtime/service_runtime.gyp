@@ -203,7 +203,7 @@
             }],
             ['OS=="linux" or OS=="FreeBSD"', {
               'sources': [
-                'posix/nacl_signal.c',
+                'linux/nacl_signal.c',
                ],
             }],
             ['OS=="win"', {

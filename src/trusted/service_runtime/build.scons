@@ -229,8 +229,8 @@ if env.Bit('windows'):
 
 if env.Bit('linux'):
   ldr_inputs += [
+      'linux/nacl_signal.c',
       'linux/thread_suspension.c',
-      'posix/nacl_signal.c',
       'posix/nacl_signal_stack.c',
       'posix/sel_addrspace_posix.c'
       ]
