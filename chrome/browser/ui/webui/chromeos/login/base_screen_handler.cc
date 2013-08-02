@@ -89,7 +89,7 @@ void BaseScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
 }
 
 void BaseScreenHandler::CallJS(const std::string& method) {
-  web_ui()->CallJavascriptFunction(method);
+  web_ui()->CallJavascriptFunction(FullMethodPath(method));
 }
 
 void BaseScreenHandler::ShowScreen(const char* screen_name,
