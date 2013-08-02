@@ -237,6 +237,12 @@ WebKit::WebGestureEvent MakeWebGestureEventFromUIEvent(
 
 int EventFlagsToWebEventModifiers(int flags) {
   int modifiers = 0;
+
+  // Translate AltGr modifier to Ctrl+Alt first.
+  if (flags & ui::EF_ALTGR_DOWN) {
+    modifiers |= WebKit::WebInputEvent::ControlKey |
+        WebKit::WebInputEvent::AltKey;
+  }
   if (flags & ui::EF_SHIFT_DOWN)
     modifiers |= WebKit::WebInputEvent::ShiftKey;
   if (flags & ui::EF_CONTROL_DOWN)

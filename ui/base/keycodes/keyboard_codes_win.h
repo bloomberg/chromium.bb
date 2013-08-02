@@ -180,7 +180,11 @@ enum KeyboardCode {
   VKEY_NONAME = VK_NONAME,
   VKEY_PA1 = VK_PA1,
   VKEY_OEM_CLEAR = VK_OEM_CLEAR,
-  VKEY_UNKNOWN = 0
+  VKEY_UNKNOWN = 0,
+
+  // Windows does not have a specific key code for AltGr. We use the unused
+  // VK_OEM_AX to represent AltGr, matching the behaviour of Firefox on Linux.
+  VKEY_ALTGR = VK_OEM_AX,
 };
 
 }  // namespace ui

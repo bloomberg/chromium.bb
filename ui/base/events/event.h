@@ -97,6 +97,7 @@ class UI_EXPORT Event {
   bool IsControlDown() const { return (flags_ & EF_CONTROL_DOWN) != 0; }
   bool IsCapsLockDown() const { return (flags_ & EF_CAPS_LOCK_DOWN) != 0; }
   bool IsAltDown() const { return (flags_ & EF_ALT_DOWN) != 0; }
+  bool IsAltGrDown() const { return (flags_ & EF_ALTGR_DOWN) != 0; }
 
   bool IsKeyEvent() const {
     return type_ == ET_KEY_PRESSED ||

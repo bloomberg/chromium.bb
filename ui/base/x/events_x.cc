@@ -150,6 +150,8 @@ int GetEventFlagsFromXState(unsigned int state) {
     flags |= ui::EF_ALT_DOWN;
   if (state & LockMask)
     flags |= ui::EF_CAPS_LOCK_DOWN;
+  if (state & Mod5Mask)
+    flags |= ui::EF_ALTGR_DOWN;
   if (state & Button1Mask)
     flags |= ui::EF_LEFT_MOUSE_BUTTON;
   if (state & Button2Mask)

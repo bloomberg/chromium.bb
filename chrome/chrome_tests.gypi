@@ -391,6 +391,7 @@
           'sources': [
             'browser/chromeos/cros/cros_in_process_browser_test.cc',
             'browser/chromeos/cros/cros_in_process_browser_test.h',
+            'browser/chromeos/input_method/keyboard_browsertest.cc',
             'browser/chromeos/input_method/textinput_browsertest.cc',
             'browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc',
             'browser/chromeos/input_method/textinput_test_helper.cc',

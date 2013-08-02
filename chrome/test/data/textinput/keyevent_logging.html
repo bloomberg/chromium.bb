@@ -1,0 +1,70 @@
+<html>
+  <head>
+    <script src="textinput_helper.js"></script>
+    <script>
+      var expectations = new Array();
+      var result = true;
+
+      /**
+       * Expectations are of the form:
+       * [ { keyCode: 39, shiftKey: true, ctrlKey: false, altKey: true},  ... ]
+       */
+      function initKeyDownExpectations(expect) {
+        expectations = expect;
+        result = true;
+      }
+
+      function didTestSucceed() {
+        if (!result) {
+          window.domAutomationController.send(false);
+        } else if (expectations.length != 0) {
+          console.error('There are un-satisfied expectations.');
+          window.domAutomationController.send(false);
+        } else {
+          window.domAutomationController.send(true);
+        }
+      }
+
+      window.onload = function() {
+        document.getElementById('text_id').onkeydown = function(e) {
+          if (expectations.length == 0) {
+            console.error('Expectations have been exhausted.');
+            return;
+          }
+
+          if (e.keyCode != expectations[0].keyCode) {
+            result = false;
+            console.error('keyCode does not match.' +
+                          ' Expected:' + expectations[0].keyCode +
+                          ' Actual: ' + e.keyCode);
+          }
+          if (e.shiftKey != expectations[0].shiftKey) {
+            result = false;
+            console.error('shiftKey does not match.' +
+                          ' Expected:' + expectations[0].shiftKey +
+                          ' Actual: ' + e.shiftKey);
+          }
+
+          if (e.ctrlKey != expectations[0].ctrlKey) {
+            result = false;
+            console.error('ctrlKey does not match.' +
+                          ' Expected:' + expectations[0].ctrlKey +
+                          ' Actual: ' + e.ctrlKey);
+          }
+
+          if (e.altKey != expectations[0].altKey) {
+            result = false;
+            console.error('altKey does not match.' +
+                          ' Expected:' + expectations[0].altKey +
+                          ' Actual: ' + e.altKey);
+          }
+
+          expectations.shift();
+        };
+      }
+    </script>
+  </head>
+  <body>
+    <input type="text" id="text_id">
+  </body>
+</html>

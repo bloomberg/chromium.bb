@@ -2492,6 +2492,32 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
       host_->Shutdown();
     }
   } else {
+    // Windows does not have a specific key code for AltGr and sends
+    // left-Control and right-Alt when the AltGr key is pressed. Also
+    // Windows translates AltGr modifier to Ctrl+Alt modifier. To be compatible
+    // with this behavior, we re-write keyboard event from AltGr to Alt + Ctrl
+    // key event here.
+    if (event->key_code() == ui::VKEY_ALTGR) {
+      // Synthesize Ctrl & Alt events.
+      NativeWebKeyboardEvent ctrl_webkit_event(
+          event->type(),
+          false,
+          ui::VKEY_CONTROL,
+          event->flags(),
+          ui::EventTimeForNow().InSecondsF());
+      host_->ForwardKeyboardEvent(ctrl_webkit_event);
+
+      NativeWebKeyboardEvent alt_webkit_event(
+          event->type(),
+          false,
+          ui::VKEY_MENU,
+          event->flags(),
+          ui::EventTimeForNow().InSecondsF());
+      host_->ForwardKeyboardEvent(alt_webkit_event);
+      event->SetHandled();
+      return;
+    }
+
     // We don't have to communicate with an input method here.
     if (!event->HasNativeEvent()) {
       NativeWebKeyboardEvent webkit_event(
