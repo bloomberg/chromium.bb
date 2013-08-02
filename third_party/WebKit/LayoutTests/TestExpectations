@@ -254,6 +254,8 @@ webkit.org/b/84854 [ Win7 ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass
 
 webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg [ Pass Timeout ]
 
+crbug.com/264211 svg/text/text-layout-crash.html [ Crash ]
+
 webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Crash Pass ]
 
 crbug.com/266213 svg/custom/bug86392.html [ Crash Pass ]

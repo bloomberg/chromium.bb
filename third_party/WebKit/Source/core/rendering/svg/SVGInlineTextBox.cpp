@@ -432,6 +432,10 @@ TextRun SVGInlineTextBox::constructTextRun(RenderStyle* style, const SVGTextFrag
     RenderText* text = textRenderer();
     ASSERT(text);
 
+    // FIXME(crbug.com/264211): This should not be necessary but can occur if we
+    //                          layout during layout. Remove this when 264211 is fixed.
+    RELEASE_ASSERT(!text->needsLayout());
+
     TextRun run(static_cast<const LChar*>(0) // characters, will be set below if non-zero.
                 , 0 // length, will be set below if non-zero.
                 , 0 // xPos, only relevant with allowTabs=true
