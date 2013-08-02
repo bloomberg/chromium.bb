@@ -35,11 +35,6 @@ class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
-namespace sync_file_system {
-class LocalFileChangeTracker;
-class LocalFileSyncContext;
-}
-
 namespace webkit_blob {
 class BlobURLRequestJobTest;
 class FileStreamReader;
@@ -212,17 +207,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
     return operation_runner_.get();
   }
 
-  sync_file_system::LocalFileChangeTracker* change_tracker() {
-    return change_tracker_.get();
-  }
-  void SetLocalFileChangeTracker(
-      scoped_ptr<sync_file_system::LocalFileChangeTracker> tracker);
-
-  sync_file_system::LocalFileSyncContext* sync_context() {
-    return sync_context_.get();
-  }
-  void set_sync_context(sync_file_system::LocalFileSyncContext* sync_context);
-
   const base::FilePath& partition_path() const { return partition_path_; }
 
   // Same as |CrackFileSystemURL|, but cracks FileSystemURL created from |url|.
@@ -319,10 +303,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
 
   // The base path of the storage partition for this context.
   const base::FilePath partition_path_;
-
-  // For syncable file systems.
-  scoped_ptr<sync_file_system::LocalFileChangeTracker> change_tracker_;
-  scoped_refptr<sync_file_system::LocalFileSyncContext> sync_context_;
 
   scoped_ptr<FileSystemOperationRunner> operation_runner_;
 

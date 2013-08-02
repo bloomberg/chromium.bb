@@ -12,6 +12,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
+#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_operation_runner.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
@@ -318,13 +319,16 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
                               operation_context.Pass()),
       url_(url) {
   DCHECK(file_system_context);
-  if (!file_system_context->sync_context()) {
+  SyncFileSystemBackend* backend =
+      SyncFileSystemBackend::GetBackend(file_system_context);
+  DCHECK(backend);
+  if (!backend->sync_context()) {
     // Syncable FileSystem is opened in a file system context which doesn't
     // support (or is not initialized for) the API.
     // Returning here to leave operation_runner_ as NULL.
     return;
   }
-  operation_runner_ = file_system_context->sync_context()->operation_runner();
+  operation_runner_ = backend->sync_context()->operation_runner();
   is_directory_operation_enabled_ = IsSyncFSDirectoryOperationEnabled();
 }
 

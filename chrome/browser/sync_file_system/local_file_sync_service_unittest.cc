@@ -27,6 +27,7 @@
 #include "webkit/browser/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/browser/fileapi/syncable/mock_sync_status_observer.h"
 #include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
+#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
@@ -127,7 +128,7 @@ class LocalFileSyncServiceTest
 
     EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->OpenFileSystem());
 
-    file_system_->file_system_context()->sync_context()->
+    file_system_->backend()->sync_context()->
         set_mock_notify_changes_duration_in_sec(0);
   }
 
@@ -172,7 +173,7 @@ class LocalFileSyncServiceTest
   }
 
   int64 GetNumChangesInTracker() const {
-    return file_system_->file_system_context()->change_tracker()->num_changes();
+    return file_system_->backend()->change_tracker()->num_changes();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -293,7 +294,7 @@ TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   run_loop.Run();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, file_system2.OpenFileSystem());
-  file_system2.file_system_context()->sync_context()->
+  file_system2.backend()->sync_context()->
       set_mock_notify_changes_duration_in_sec(0);
 
   const FileSystemURL kFile1(file_system_->URL("file1"));

@@ -11,6 +11,9 @@
 
 namespace sync_file_system {
 
+class LocalFileChangeTracker;
+class LocalFileSyncContext;
+
 class WEBKIT_STORAGE_BROWSER_EXPORT SyncFileSystemBackend
     : public fileapi::FileSystemBackend,
       public fileapi::FileSystemQuotaUtil {
@@ -91,6 +94,20 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SyncFileSystemBackend
   virtual const fileapi::AccessObserverList* GetAccessObservers(
       fileapi::FileSystemType type) const OVERRIDE;
 
+  static SyncFileSystemBackend* GetBackend(
+      const fileapi::FileSystemContext* context);
+
+  sync_file_system::LocalFileChangeTracker* change_tracker() {
+    return change_tracker_.get();
+  }
+  void SetLocalFileChangeTracker(
+      scoped_ptr<sync_file_system::LocalFileChangeTracker> tracker);
+
+  sync_file_system::LocalFileSyncContext* sync_context() {
+    return sync_context_.get();
+  }
+  void set_sync_context(sync_file_system::LocalFileSyncContext* sync_context);
+
  private:
   // Observers for internal sync.
   fileapi::UpdateObserverList update_observers_;
@@ -101,6 +118,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SyncFileSystemBackend
 
   // Owned by FileSystemContext.
   fileapi::SandboxContext* sandbox_context_;
+
+  scoped_ptr<sync_file_system::LocalFileChangeTracker> change_tracker_;
+  scoped_refptr<sync_file_system::LocalFileSyncContext> sync_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemBackend);
 };

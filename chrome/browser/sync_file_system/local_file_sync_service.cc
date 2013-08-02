@@ -21,6 +21,7 @@
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
+#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
 
 using content::BrowserThread;
 using fileapi::FileSystemURL;
@@ -282,10 +283,12 @@ void LocalFileSyncService::OnChangesAvailableInOrigins(
       continue;
     }
     need_notification = true;
-    fileapi::FileSystemContext* context = origin_to_contexts_[origin];
-    DCHECK(context->change_tracker());
+    SyncFileSystemBackend* backend =
+        SyncFileSystemBackend::GetBackend(origin_to_contexts_[origin]);
+    DCHECK(backend);
+    DCHECK(backend->change_tracker());
     origin_change_map_.SetOriginChangeCount(
-        origin, context->change_tracker()->num_changes());
+        origin, backend->change_tracker()->num_changes());
   }
   if (!need_notification)
     return;
@@ -316,9 +319,12 @@ void LocalFileSyncService::DidInitializeFileSystemContext(
       pending_origins_with_changes_.end()) {
     // We have remaining changes for the origin.
     pending_origins_with_changes_.erase(app_origin);
-    DCHECK(file_system_context->change_tracker());
+    SyncFileSystemBackend* backend =
+        SyncFileSystemBackend::GetBackend(file_system_context);
+    DCHECK(backend);
+    DCHECK(backend->change_tracker());
     origin_change_map_.SetOriginChangeCount(
-        app_origin, file_system_context->change_tracker()->num_changes());
+        app_origin, backend->change_tracker()->num_changes());
     int64 num_changes = origin_change_map_.GetTotalChangeCount();
     FOR_EACH_OBSERVER(Observer, change_observers_,
                       OnLocalChangeAvailable(num_changes));

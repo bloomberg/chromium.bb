@@ -23,6 +23,7 @@
 #include "webkit/browser/fileapi/syncable/file_change.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
+#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
@@ -228,16 +229,14 @@ TEST_F(LocalFileSyncContextTest, InitializeFileSystemContext) {
 
   // Make sure everything's set up for file_system to be able to handle
   // syncable file system operations.
-  EXPECT_TRUE(file_system.file_system_context()->sync_context() != NULL);
-  EXPECT_TRUE(file_system.file_system_context()->change_tracker() != NULL);
-  EXPECT_EQ(sync_context_.get(),
-            file_system.file_system_context()->sync_context());
+  EXPECT_TRUE(file_system.backend()->sync_context() != NULL);
+  EXPECT_TRUE(file_system.backend()->change_tracker() != NULL);
+  EXPECT_EQ(sync_context_.get(), file_system.backend()->sync_context());
 
   // Calling MaybeInitialize for the same context multiple times must be ok.
   EXPECT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
-  EXPECT_EQ(sync_context_.get(),
-            file_system.file_system_context()->sync_context());
+  EXPECT_EQ(sync_context_.get(), file_system.backend()->sync_context());
 
   // Opens the file_system, perform some operation and see if the change tracker
   // correctly captures the change.

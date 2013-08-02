@@ -17,6 +17,7 @@
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_status.h"
+#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_operation_runner.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_operation.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
@@ -85,7 +86,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   }
 
   LocalFileSyncStatus* sync_status() {
-    return file_system_.file_system_context()->sync_context()->sync_status();
+    return file_system_.backend()->sync_context()->sync_status();
   }
 
   void ResetCallbackStatus() {

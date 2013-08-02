@@ -25,6 +25,7 @@
 #include "webkit/browser/fileapi/syncable/mock_sync_status_observer.h"
 #include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 #include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
+#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
@@ -300,7 +301,7 @@ TEST_F(SyncFileSystemServiceTest, DISABLED_SimpleLocalSyncFlow) {
   StrictMock<MockSyncStatusObserver> status_observer;
 
   EnableSync();
-  file_system_->file_system_context()->sync_context()->
+  file_system_->backend()->sync_context()->
       set_mock_notify_changes_duration_in_sec(0);
   file_system_->AddSyncStatusObserver(&status_observer);
 
@@ -358,7 +359,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
   InitializeApp();
 
   EnableSync();
-  file_system_->file_system_context()->sync_context()->
+  file_system_->backend()->sync_context()->
       set_mock_notify_changes_duration_in_sec(0);
 
   const FileSystemURL kFile(file_system_->URL("foo"));

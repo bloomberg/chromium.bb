@@ -45,6 +45,7 @@ class QuotaManager;
 namespace sync_file_system {
 
 class LocalFileSyncContext;
+class SyncFileSystemBackend;
 
 // A canned syncable filesystem for testing.
 // This internally creates its own QuotaManager and FileSystemContext
@@ -138,6 +139,7 @@ class CannedSyncableFileSystem
   void GetChangedURLsInTracker(fileapi::FileSystemURLSet* urls);
   void ClearChangeForURLInTracker(const fileapi::FileSystemURL& url);
 
+  SyncFileSystemBackend* backend();
   fileapi::FileSystemOperationRunner* operation_runner();
 
   // LocalFileSyncStatus::Observer overrides.

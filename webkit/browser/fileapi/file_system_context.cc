@@ -25,8 +25,6 @@
 #include "webkit/browser/fileapi/isolated_file_system_backend.h"
 #include "webkit/browser/fileapi/mount_points.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
-#include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
-#include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/browser/fileapi/test_file_system_backend.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"
@@ -331,31 +329,6 @@ FileSystemContext::CreateFileSystemOperationRunner() {
   return make_scoped_ptr(new FileSystemOperationRunner(this));
 }
 
-// TODO(nhiroki): Move into SyncFileSystemBackend (http://crbug.com/242422/).
-void FileSystemContext::SetLocalFileChangeTracker(
-    scoped_ptr<sync_file_system::LocalFileChangeTracker> tracker) {
-  DCHECK(!change_tracker_.get());
-  DCHECK(tracker.get());
-  change_tracker_ = tracker.Pass();
-
-  FileSystemBackend* backend = GetFileSystemBackend(kFileSystemTypeSyncable);
-  DCHECK(backend->GetQuotaUtil());
-  backend->GetQuotaUtil()->AddFileUpdateObserver(
-      kFileSystemTypeSyncable,
-      change_tracker_.get(),
-      task_runners_->file_task_runner());
-  backend->GetQuotaUtil()->AddFileChangeObserver(
-      kFileSystemTypeSyncable,
-      change_tracker_.get(),
-      task_runners_->file_task_runner());
-}
-
-// TODO(nhiroki): Move into SyncFileSystemBackend (http://crbug.com/242422/).
-void FileSystemContext::set_sync_context(
-    sync_file_system::LocalFileSyncContext* sync_context) {
-  sync_context_ = sync_context;
-}
-
 FileSystemURL FileSystemContext::CrackURL(const GURL& url) const {
   return CrackFileSystemURL(FileSystemURL(url));
 }
@@ -374,8 +347,6 @@ void FileSystemContext::EnableTemporaryFileSystemInIncognito() {
 #endif
 
 FileSystemContext::~FileSystemContext() {
-  task_runners_->file_task_runner()->DeleteSoon(
-      FROM_HERE, change_tracker_.release());
 }
 
 void FileSystemContext::DeleteOnCorrectThread() const {
@@ -409,7 +380,6 @@ FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
     *error_code = fs_error;
   return operation;
 }
-
 
 FileSystemURL FileSystemContext::CrackFileSystemURL(
     const FileSystemURL& url) const {

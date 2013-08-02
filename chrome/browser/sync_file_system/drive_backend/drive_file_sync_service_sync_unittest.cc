@@ -27,6 +27,7 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
+#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 #define FPL(path) FILE_PATH_LITERAL(path)
@@ -169,7 +170,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
       EXPECT_TRUE(done);
       EXPECT_EQ(SYNC_STATUS_OK, status);
 
-      file_system->file_system_context()->sync_context()->
+      file_system->backend()->sync_context()->
           set_mock_notify_changes_duration_in_sec(0);
 
       EXPECT_EQ(base::PLATFORM_FILE_OK, file_system->OpenFileSystem());

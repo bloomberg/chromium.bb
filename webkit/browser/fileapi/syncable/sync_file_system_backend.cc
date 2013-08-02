@@ -12,6 +12,8 @@
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/browser/fileapi/sandbox_quota_observer.h"
+#include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
+#include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_operation.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -23,6 +25,10 @@ SyncFileSystemBackend::SyncFileSystemBackend()
 }
 
 SyncFileSystemBackend::~SyncFileSystemBackend() {
+  if (change_tracker_) {
+    sandbox_context_->file_task_runner()->DeleteSoon(
+        FROM_HERE, change_tracker_.release());
+  }
 }
 
 bool SyncFileSystemBackend::CanHandleType(
@@ -235,6 +241,38 @@ const fileapi::ChangeObserverList* SyncFileSystemBackend::GetChangeObservers(
 const fileapi::AccessObserverList* SyncFileSystemBackend::GetAccessObservers(
     fileapi::FileSystemType type) const {
   return NULL;
+}
+
+// static
+SyncFileSystemBackend* SyncFileSystemBackend::GetBackend(
+    const fileapi::FileSystemContext* file_system_context) {
+  DCHECK(file_system_context);
+  return static_cast<SyncFileSystemBackend*>(
+      file_system_context->GetFileSystemBackend(
+          fileapi::kFileSystemTypeSyncable));
+}
+
+void SyncFileSystemBackend::SetLocalFileChangeTracker(
+    scoped_ptr<LocalFileChangeTracker> tracker) {
+  DCHECK(!change_tracker_);
+  DCHECK(tracker);
+  change_tracker_ = tracker.Pass();
+
+  DCHECK(sandbox_context_);
+  AddFileUpdateObserver(
+      fileapi::kFileSystemTypeSyncable,
+      change_tracker_.get(),
+      sandbox_context_->file_task_runner());
+  AddFileChangeObserver(
+      fileapi::kFileSystemTypeSyncable,
+      change_tracker_.get(),
+      sandbox_context_->file_task_runner());
+}
+
+void SyncFileSystemBackend::set_sync_context(
+    LocalFileSyncContext* sync_context) {
+  DCHECK(!sync_context_);
+  sync_context_ = sync_context;
 }
 
 }  // namespace sync_file_system
