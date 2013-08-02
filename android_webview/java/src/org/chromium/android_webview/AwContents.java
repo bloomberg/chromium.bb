@@ -969,7 +969,6 @@ public class AwContents {
     /**
      * @see android.webkit.WebView#pauseTimers()
      */
-    // TODO(kristianm): Remove
     public void pauseTimers() {
         ContentViewStatics.setWebKitSharedTimersSuspended(true);
     }
@@ -977,7 +976,6 @@ public class AwContents {
     /**
      * @see android.webkit.WebView#resumeTimers()
      */
-    // TODO(kristianm): Remove
     public void resumeTimers() {
         ContentViewStatics.setWebKitSharedTimersSuspended(false);
     }
