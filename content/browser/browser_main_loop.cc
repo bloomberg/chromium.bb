@@ -7,12 +7,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/path_service.h"
 #include "base/pending_task.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process_metrics.h"
@@ -121,28 +119,19 @@ void SetupSandbox(const CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "SetupSandbox");
   // TODO(evanm): move this into SandboxWrapper; I'm just trying to move this
   // code en masse out of chrome_main for now.
-  base::FilePath sandbox_binary;
-  bool env_chrome_devel_sandbox_set = false;
+  const char* sandbox_binary = NULL;
   struct stat st;
 
-  base::FilePath exe_dir;
-  if (PathService::Get(base::DIR_EXE, &exe_dir)) {
-    base::FilePath sandbox_candidate = exe_dir.AppendASCII("chrome-sandbox");
-    if (base::PathExists(sandbox_candidate))
-      sandbox_binary = sandbox_candidate;
-  }
-
-  // In user-managed builds, including development builds, an environment
-  // variable is required to enable the sandbox. See
+  // In Chromium branded builds, developers can set an environment variable to
+  // use the development sandbox. See
   // http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
-  if (sandbox_binary.empty() &&
-      stat(base::kProcSelfExe, &st) == 0 && st.st_uid == getuid()) {
-    const char* devel_sandbox_path = getenv("CHROME_DEVEL_SANDBOX");
-    if (devel_sandbox_path) {
-      env_chrome_devel_sandbox_set = true;
-      sandbox_binary = base::FilePath(devel_sandbox_path);
-    }
-  }
+  if (stat(base::kProcSelfExe, &st) == 0 && st.st_uid == getuid())
+    sandbox_binary = getenv("CHROME_DEVEL_SANDBOX");
+
+#if defined(LINUX_SANDBOX_PATH)
+  if (!sandbox_binary)
+    sandbox_binary = LINUX_SANDBOX_PATH;
+#endif
 
   const bool want_setuid_sandbox =
       !parsed_command_line.HasSwitch(switches::kNoSandbox) &&
@@ -152,23 +141,26 @@ void SetupSandbox(const CommandLine& parsed_command_line) {
     static const char no_suid_error[] = "Running without the SUID sandbox! See "
         "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
         "for more information on developing with the sandbox on.";
-    if (sandbox_binary.empty()) {
-      if (!env_chrome_devel_sandbox_set) {
-        // This needs to be fatal. Talk to security@chromium.org if you feel
-        // otherwise.
-        LOG(FATAL) << no_suid_error;
-      }
-
-      // TODO(jln): an empty CHROME_DEVEL_SANDBOX environment variable (as
-      // opposed to a non existing one) is not fatal yet. This is needed
-      // because of existing bots and scripts. Fix it (crbug.com/245376).
-      LOG(ERROR) << no_suid_error;
+    if (!sandbox_binary) {
+      // This needs to be fatal. Talk to security@chromium.org if you feel
+      // otherwise.
+      LOG(FATAL) << no_suid_error;
     }
+    // TODO(jln): an empty CHROME_DEVEL_SANDBOX environment variable (as
+    // opposed to a non existing one) is not fatal yet. This is needed because
+    // of existing bots and scripts. Fix it (crbug.com/245376).
+    if (sandbox_binary && *sandbox_binary == '\0')
+      LOG(ERROR) << no_suid_error;
+  }
+
+  std::string sandbox_cmd;
+  if (want_setuid_sandbox && sandbox_binary) {
+    sandbox_cmd = sandbox_binary;
   }
 
   // Tickle the sandbox host and zygote host so they fork now.
-  RenderSandboxHostLinux::GetInstance()->Init(sandbox_binary.value());
-  ZygoteHostImpl::GetInstance()->Init(sandbox_binary.value());
+  RenderSandboxHostLinux::GetInstance()->Init(sandbox_cmd);
+  ZygoteHostImpl::GetInstance()->Init(sandbox_cmd);
 }
 #endif
 
