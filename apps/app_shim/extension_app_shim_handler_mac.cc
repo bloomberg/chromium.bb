@@ -42,6 +42,13 @@ void ProfileLoadedCallback(base::Callback<void(Profile*)> callback,
   DCHECK_EQ(Profile::CREATE_STATUS_CREATED, status);
 }
 
+void TerminateIfNoShellWindows() {
+  bool shell_windows_left =
+      extensions::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(0);
+  if (!shell_windows_left)
+    chrome::AttemptExit();
+}
+
 }  // namespace
 
 namespace apps {
@@ -113,10 +120,11 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(
 }
 
 void ExtensionAppShimHandler::Delegate::MaybeTerminate() {
-  bool shell_windows_left =
-      extensions::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(0);
-  if (!shell_windows_left)
-    chrome::AttemptExit();
+  // Post this to give ShellWindows a chance to remove themselves from the
+  // registry.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&TerminateIfNoShellWindows));
 }
 
 ExtensionAppShimHandler::ExtensionAppShimHandler()
