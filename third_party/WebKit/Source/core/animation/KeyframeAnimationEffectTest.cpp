@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/animation/KeyframeAnimationEffect.h"
 
+#include "core/animation/AnimatableNumber.h"
+#include "core/animation/AnimatableUnknown.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include <gtest/gtest.h>
 
@@ -40,12 +42,12 @@ namespace {
 
 AnimatableValue* unknownAnimatableValue(double n)
 {
-    return AnimatableValue::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::CSS_UNKNOWN).get()).leakRef();
+    return AnimatableUnknown::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::CSS_UNKNOWN).get()).leakRef();
 }
 
 AnimatableValue* pixelAnimatableValue(double n)
 {
-    return AnimatableValue::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::CSS_PX).get()).leakRef();
+    return AnimatableNumber::create(CSSPrimitiveValue::create(n, CSSPrimitiveValue::CSS_PX).get()).leakRef();
 }
 
 KeyframeAnimationEffect::KeyframeVector keyframesAtZeroAndOne(AnimatableValue* zeroValue, AnimatableValue* oneValue)
