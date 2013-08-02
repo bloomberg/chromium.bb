@@ -234,8 +234,12 @@ willPositionSheet:(NSWindow*)sheet
 
   // If in presentation mode, reset |maxY| to top of screen, so that the
   // floating bar slides over the things which appear to be in the content area.
-  if (inPresentationMode || !fullscreenUrl_.is_empty())
+  BOOL useSimplifiedFullscreen = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSimplifiedFullscreen);
+  if (inPresentationMode ||
+      (useSimplifiedFullscreen && !fullscreenUrl_.is_empty())) {
     maxY = NSMaxY(contentBounds);
+  }
 
   // Also place the info bar container immediate below the toolbar, except in
   // presentation mode in which case it's at the top of the visual content area.
