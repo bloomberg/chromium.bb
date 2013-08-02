@@ -700,10 +700,10 @@
             'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
           ],
         }],
-        ['use_aura==1 and OS=="linux"', {
+        ['branding=="Chrome"', {
           'sources!': [
-            # http://crbug.com/234172: these tests depend on single process
-            # mode, which doesn't work in content_browsertests on Linux Aura.
+            # These tests depend on single process mode, which is disabled in
+            # official builds.
             'renderer/dom_serializer_browsertest.cc',
             'renderer/resource_fetcher_browsertest.cc',
             'renderer/savable_resources_browsertest.cc',
