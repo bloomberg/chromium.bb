@@ -53,7 +53,7 @@ std::string TestAudioConfig::TestValidConfigs() {
     PP_AudioSampleRate sample_rate = kSampleRates[i];
 
     for (size_t j = 0;
-         j < sizeof(kRequestFrameCounts)/sizeof(kRequestFrameCounts);
+         j < sizeof(kRequestFrameCounts)/sizeof(kRequestFrameCounts[0]);
          j++) {
       uint32_t request_frame_count = kRequestFrameCounts[j];
       ASSERT_TRUE(request_frame_count >= PP_AUDIOMINSAMPLEFRAMECOUNT);
