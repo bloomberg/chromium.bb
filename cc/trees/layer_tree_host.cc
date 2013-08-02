@@ -678,9 +678,6 @@ bool LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue,
   if (!root_layer())
     return false;
 
-  if (device_viewport_size().IsEmpty())
-    return false;
-
   if (contents_texture_manager_ && memory_allocation_limit_bytes) {
     contents_texture_manager_->SetMaxMemoryLimitBytes(
         memory_allocation_limit_bytes);
