@@ -182,8 +182,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Asks the browser to show the cloud print dialog.
   void PrintWithCloudPrintDialog();
 
-  // Gets the initiator tab for the print preview dialog.
-  content::WebContents* GetInitiatorTab() const;
+  // Gets the initiator for the print preview dialog.
+  content::WebContents* GetInitiator() const;
 
   // Closes the preview dialog.
   void ClosePreviewDialog();
@@ -191,8 +191,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Adds all the recorded stats taken so far to histogram counts.
   void ReportStats();
 
-  // Clears initiator tab details for the print preview dialog.
-  void ClearInitiatorTabDetails();
+  // Clears initiator details for the print preview dialog.
+  void ClearInitiatorDetails();
 
   // Posts a task to save |data| to pdf at |print_to_pdf_path_|.
   void PostPrintToPdfTask();

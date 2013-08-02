@@ -74,7 +74,7 @@ void EnableInternalPDFPluginForContents(WebContents* preview_dialog) {
 // will look like.
 class PrintPreviewDialogDelegate : public WebDialogDelegate {
  public:
-  explicit PrintPreviewDialogDelegate(WebContents* initiator_tab);
+  explicit PrintPreviewDialogDelegate(WebContents* initiator);
   virtual ~PrintPreviewDialogDelegate();
 
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
@@ -90,14 +90,13 @@ class PrintPreviewDialogDelegate : public WebDialogDelegate {
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
  private:
-  WebContents* initiator_tab_;
+  WebContents* initiator_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogDelegate);
 };
 
-PrintPreviewDialogDelegate::PrintPreviewDialogDelegate(
-    WebContents* initiator_tab) {
-  initiator_tab_ = initiator_tab;
+PrintPreviewDialogDelegate::PrintPreviewDialogDelegate(WebContents* initiator)
+    : initiator_(initiator) {
 }
 
 PrintPreviewDialogDelegate::~PrintPreviewDialogDelegate() {
@@ -129,7 +128,7 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
   const int kBorder = 25;
   const int kConstrainedWindowOverlap = 3;
   gfx::Rect rect;
-  initiator_tab_->GetView()->GetContainerBounds(&rect);
+  initiator_->GetView()->GetContainerBounds(&rect);
   size->set_width(std::max(rect.width(), kMinDialogSize.width()) - 2 * kBorder);
   size->set_height(std::max(rect.height(), kMinDialogSize.height()) - kBorder +
                    kConstrainedWindowOverlap);
@@ -165,7 +164,7 @@ bool PrintPreviewDialogDelegate::ShouldShowDialogTitle() const {
 // renderer to the browser.
 class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate {
  public:
-  PrintPreviewWebContentDelegate(Profile* profile, WebContents* initiator_tab);
+  PrintPreviewWebContentDelegate(Profile* profile, WebContents* initiator);
   virtual ~PrintPreviewWebContentDelegate();
 
   // Overridden from WebDialogWebContentsDelegate:
@@ -174,16 +173,16 @@ class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate {
       const NativeWebKeyboardEvent& event) OVERRIDE;
 
  private:
-  WebContents* tab_;
+  WebContents* initiator_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewWebContentDelegate);
 };
 
 PrintPreviewWebContentDelegate::PrintPreviewWebContentDelegate(
     Profile* profile,
-    WebContents* initiator_tab)
+    WebContents* initiator)
     : WebDialogWebContentsDelegate(profile, new ChromeWebContentsHandler),
-      tab_(initiator_tab) {}
+      initiator_(initiator) {}
 
 PrintPreviewWebContentDelegate::~PrintPreviewWebContentDelegate() {}
 
@@ -192,7 +191,7 @@ void PrintPreviewWebContentDelegate::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   // Disabled on Mac due to http://crbug.com/112173
 #if !defined(OS_MACOSX)
-  Browser* current_browser = chrome::FindBrowserWithWebContents(tab_);
+  Browser* current_browser = chrome::FindBrowserWithWebContents(initiator_);
   if (!current_browser)
     return;
   current_browser->window()->HandleKeyboardEvent(event);
@@ -216,28 +215,28 @@ PrintPreviewDialogController* PrintPreviewDialogController::GetInstance() {
 }
 
 // static
-void PrintPreviewDialogController::PrintPreview(WebContents* initiator_tab) {
-  if (initiator_tab->ShowingInterstitialPage())
+void PrintPreviewDialogController::PrintPreview(WebContents* initiator) {
+  if (initiator->ShowingInterstitialPage())
     return;
 
   PrintPreviewDialogController* dialog_controller = GetInstance();
   if (!dialog_controller)
     return;
-  if (!dialog_controller->GetOrCreatePreviewDialog(initiator_tab))
-    PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewDone();
+  if (!dialog_controller->GetOrCreatePreviewDialog(initiator))
+    PrintViewManager::FromWebContents(initiator)->PrintPreviewDone();
 }
 
 WebContents* PrintPreviewDialogController::GetOrCreatePreviewDialog(
-    WebContents* initiator_tab) {
-  DCHECK(initiator_tab);
+    WebContents* initiator) {
+  DCHECK(initiator);
 
-  // Get the print preview dialog for |initiator_tab|.
-  WebContents* preview_dialog = GetPrintPreviewForContents(initiator_tab);
+  // Get the print preview dialog for |initiator|.
+  WebContents* preview_dialog = GetPrintPreviewForContents(initiator);
   if (!preview_dialog)
-    return CreatePrintPreviewDialog(initiator_tab);
+    return CreatePrintPreviewDialog(initiator);
 
-  // Show the initiator tab holding the existing preview dialog.
-  initiator_tab->GetDelegate()->ActivateContents(initiator_tab);
+  // Show the initiator holding the existing preview dialog.
+  initiator->GetDelegate()->ActivateContents(initiator);
   return preview_dialog;
 }
 
@@ -252,7 +251,7 @@ WebContents* PrintPreviewDialogController::GetPrintPreviewForContents(
   for (it = preview_dialog_map_.begin();
        it != preview_dialog_map_.end();
        ++it) {
-    // If |contents| is an initiator tab.
+    // If |contents| is an initiator.
     if (contents == it->second) {
       // Return the associated preview dialog.
       return it->first;
@@ -261,7 +260,7 @@ WebContents* PrintPreviewDialogController::GetPrintPreviewForContents(
   return NULL;
 }
 
-WebContents* PrintPreviewDialogController::GetInitiatorTab(
+WebContents* PrintPreviewDialogController::GetInitiator(
     WebContents* preview_dialog) {
   PrintPreviewDialogMap::iterator it = preview_dialog_map_.find(preview_dialog);
   return (it != preview_dialog_map_.end()) ? it->second : NULL;
@@ -297,7 +296,7 @@ bool PrintPreviewDialogController::IsPrintPreviewURL(const GURL& url) {
           url.host() == chrome::kChromeUIPrintHost);
 }
 
-void PrintPreviewDialogController::EraseInitiatorTabInfo(
+void PrintPreviewDialogController::EraseInitiatorInfo(
     WebContents* preview_dialog) {
   PrintPreviewDialogMap::iterator it = preview_dialog_map_.find(preview_dialog);
   if (it == preview_dialog_map_.end())
@@ -313,17 +312,17 @@ void PrintPreviewDialogController::OnRendererProcessClosed(
     content::RenderProcessHost* rph) {
   // Store contents in a vector and deal with them after iterating through
   // |preview_dialog_map_| because RemoveFoo() can change |preview_dialog_map_|.
-  std::vector<WebContents*> closed_initiator_tabs;
+  std::vector<WebContents*> closed_initiators;
   std::vector<WebContents*> closed_preview_dialogs;
   for (PrintPreviewDialogMap::iterator iter = preview_dialog_map_.begin();
        iter != preview_dialog_map_.end(); ++iter) {
     WebContents* preview_dialog = iter->first;
-    WebContents* initiator_tab = iter->second;
+    WebContents* initiator = iter->second;
     if (preview_dialog->GetRenderProcessHost() == rph) {
       closed_preview_dialogs.push_back(preview_dialog);
-    } else if (initiator_tab &&
-               initiator_tab->GetRenderProcessHost() == rph) {
-      closed_initiator_tabs.push_back(initiator_tab);
+    } else if (initiator &&
+               initiator->GetRenderProcessHost() == rph) {
+      closed_initiators.push_back(initiator);
     }
   }
 
@@ -335,8 +334,8 @@ void PrintPreviewDialogController::OnRendererProcessClosed(
       print_preview_ui->OnPrintPreviewDialogClosed();
   }
 
-  for (size_t i = 0; i < closed_initiator_tabs.size(); ++i)
-    RemoveInitiatorTab(closed_initiator_tabs[i]);
+  for (size_t i = 0; i < closed_initiators.size(); ++i)
+    RemoveInitiator(closed_initiators[i]);
 }
 
 void PrintPreviewDialogController::OnWebContentsDestroyed(
@@ -350,7 +349,7 @@ void PrintPreviewDialogController::OnWebContentsDestroyed(
   if (contents == preview_dialog)
     RemovePreviewDialog(contents);
   else
-    RemoveInitiatorTab(contents);
+    RemoveInitiator(contents);
 }
 
 void PrintPreviewDialogController::OnNavEntryCommitted(
@@ -373,7 +372,7 @@ void PrintPreviewDialogController::OnNavEntryCommitted(
           transition_type == content::PAGE_TRANSITION_AUTO_TOPLEVEL &&
           nav_type == content::NAVIGATION_TYPE_NEW_PAGE) {
         waiting_for_new_preview_page_ = false;
-        SaveInitiatorTabTitle(preview_dialog);
+        SaveInitiatorTitle(preview_dialog);
         return;
       }
 
@@ -389,14 +388,14 @@ void PrintPreviewDialogController::OnNavEntryCommitted(
     return;
   }
 
-  RemoveInitiatorTab(contents);
+  RemoveInitiator(contents);
 }
 
 WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
-    WebContents* initiator_tab) {
+    WebContents* initiator) {
   base::AutoReset<bool> auto_reset(&is_creating_print_preview_dialog_, true);
   Profile* profile =
-      Profile::FromBrowserContext(initiator_tab->GetBrowserContext());
+      Profile::FromBrowserContext(initiator->GetBrowserContext());
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
     // Chrome Frame only ever runs on the native desktop, so it is safe to
     // create the popup on the native desktop.
@@ -412,37 +411,37 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
   // |web_dialog_ui_delegate| deletes itself in
   // PrintPreviewDialogDelegate::OnDialogClosed().
   WebDialogDelegate* web_dialog_delegate =
-      new PrintPreviewDialogDelegate(initiator_tab);
+      new PrintPreviewDialogDelegate(initiator);
   // |web_dialog_delegate|'s owner is |constrained_delegate|.
   PrintPreviewWebContentDelegate* pp_wcd =
-      new PrintPreviewWebContentDelegate(profile, initiator_tab);
+      new PrintPreviewWebContentDelegate(profile, initiator);
   ConstrainedWebDialogDelegate* constrained_delegate =
       CreateConstrainedWebDialog(profile,
                                  web_dialog_delegate,
                                  pp_wcd,
-                                 initiator_tab);
+                                 initiator);
   WebContents* preview_dialog = constrained_delegate->GetWebContents();
   EnableInternalPDFPluginForContents(preview_dialog);
   PrintViewManager::CreateForWebContents(preview_dialog);
 
   // Add an entry to the map.
-  preview_dialog_map_[preview_dialog] = initiator_tab;
+  preview_dialog_map_[preview_dialog] = initiator;
   waiting_for_new_preview_page_ = true;
 
-  AddObservers(initiator_tab);
+  AddObservers(initiator);
   AddObservers(preview_dialog);
 
   return preview_dialog;
 }
 
-void PrintPreviewDialogController::SaveInitiatorTabTitle(
+void PrintPreviewDialogController::SaveInitiatorTitle(
     WebContents* preview_dialog) {
-  WebContents* initiator_tab = GetInitiatorTab(preview_dialog);
-  if (initiator_tab && preview_dialog->GetWebUI()) {
+  WebContents* initiator = GetInitiator(preview_dialog);
+  if (initiator && preview_dialog->GetWebUI()) {
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
         preview_dialog->GetWebUI()->GetController());
-    print_preview_ui->SetInitiatorTabTitle(
-        PrintViewManager::FromWebContents(initiator_tab)->RenderSourceName());
+    print_preview_ui->SetInitiatorTitle(
+        PrintViewManager::FromWebContents(initiator)->RenderSourceName());
   }
 }
 
@@ -480,36 +479,36 @@ void PrintPreviewDialogController::RemoveObservers(WebContents* contents) {
   }
 }
 
-void PrintPreviewDialogController::RemoveInitiatorTab(
-    WebContents* initiator_tab) {
-  WebContents* preview_dialog = GetPrintPreviewForContents(initiator_tab);
+void PrintPreviewDialogController::RemoveInitiator(
+    WebContents* initiator) {
+  WebContents* preview_dialog = GetPrintPreviewForContents(initiator);
   DCHECK(preview_dialog);
   // Update the map entry first, so when the print preview dialog gets destroyed
   // and reaches RemovePreviewDialog(), it does not attempt to also remove the
-  // initiator tab's observers.
+  // initiator's observers.
   preview_dialog_map_[preview_dialog] = NULL;
-  RemoveObservers(initiator_tab);
+  RemoveObservers(initiator);
 
-  PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewDone();
+  PrintViewManager::FromWebContents(initiator)->PrintPreviewDone();
 
-  // Initiator tab is closed. Close the print preview dialog too.
+  // initiator is closed. Close the print preview dialog too.
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(preview_dialog->GetWebUI()->GetController());
   if (print_preview_ui)
-    print_preview_ui->OnInitiatorTabClosed();
+    print_preview_ui->OnInitiatorClosed();
 }
 
 void PrintPreviewDialogController::RemovePreviewDialog(
     WebContents* preview_dialog) {
-  // Remove the initiator tab's observers before erasing the mapping.
-  WebContents* initiator_tab = GetInitiatorTab(preview_dialog);
-  if (initiator_tab) {
-    RemoveObservers(initiator_tab);
-    PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewDone();
+  // Remove the initiator's observers before erasing the mapping.
+  WebContents* initiator = GetInitiator(preview_dialog);
+  if (initiator) {
+    RemoveObservers(initiator);
+    PrintViewManager::FromWebContents(initiator)->PrintPreviewDone();
   }
 
   // Print preview WebContents is destroyed. Notify |PrintPreviewUI| to abort
-  // the initiator tab preview request.
+  // the initiator preview request.
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(preview_dialog->GetWebUI()->GetController());
   if (print_preview_ui)

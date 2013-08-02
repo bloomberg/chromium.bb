@@ -22,9 +22,9 @@ class WebContents;
 
 namespace printing {
 
-// For print preview, the tab that initiates the printing operation is the
-// initiator tab, and the constrained dialog that shows the print preview is
-// the print preview dialog.
+// For print preview, the WebContents that initiates the printing operation is
+// the initiator, and the constrained dialog that shows the print preview is the
+// print preview dialog.
 // This class manages print preview dialog creation and destruction, and keeps
 // track of the 1:1 relationship between initiatora tabs and print preview
 // dialogs.
@@ -36,14 +36,14 @@ class PrintPreviewDialogController
 
   static PrintPreviewDialogController* GetInstance();
 
-  // Initiate print preview for |initiator_tab|.
+  // Initiate print preview for |initiator|.
   // Call this instead of GetOrCreatePreviewDialog().
-  static void PrintPreview(content::WebContents* initiator_tab);
+  static void PrintPreview(content::WebContents* initiator);
 
-  // Get/Create the print preview dialog for |initiator_tab|.
+  // Get/Create the print preview dialog for |initiator|.
   // Exposed for unit tests.
   content::WebContents* GetOrCreatePreviewDialog(
-      content::WebContents* initiator_tab);
+      content::WebContents* initiator);
 
   // Returns the preview dialog for |contents|.
   // Returns |contents| if |contents| is a preview dialog.
@@ -51,9 +51,9 @@ class PrintPreviewDialogController
   content::WebContents* GetPrintPreviewForContents(
       content::WebContents* contents) const;
 
-  // Returns the initiator tab for |preview_dialog|.
-  // Returns NULL if no initiator tab exists for |preview_dialog|.
-  content::WebContents* GetInitiatorTab(content::WebContents* preview_dialog);
+  // Returns the initiator for |preview_dialog|.
+  // Returns NULL if no initiator exists for |preview_dialog|.
+  content::WebContents* GetInitiator(content::WebContents* preview_dialog);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -66,8 +66,8 @@ class PrintPreviewDialogController
   // Returns true if |url| is a print preview url.
   static bool IsPrintPreviewURL(const GURL& url);
 
-  // Erase the initiator tab info associated with |preview_tab|.
-  void EraseInitiatorTabInfo(content::WebContents* preview_tab);
+  // Erase the initiator info associated with |preview_dialog|.
+  void EraseInitiatorInfo(content::WebContents* preview_dialog);
 
   bool is_creating_print_preview_dialog() const {
     return is_creating_print_preview_dialog_;
@@ -78,7 +78,7 @@ class PrintPreviewDialogController
 
   // 1:1 relationship between a print preview dialog and its initiator tab.
   // Key: Print preview dialog.
-  // Value: Initiator tab.
+  // Value: Initiator.
   typedef std::map<content::WebContents*, content::WebContents*>
       PrintPreviewDialogMap;
 
@@ -99,21 +99,21 @@ class PrintPreviewDialogController
 
   // Creates a new print preview dialog.
   content::WebContents* CreatePrintPreviewDialog(
-      content::WebContents* initiator_tab);
+      content::WebContents* initiator);
 
-  // Helper function to store the title of the initiator tab associated with
+  // Helper function to store the title of the initiator associated with
   // |preview_dialog| in |preview_dialog|'s PrintPreviewUI.
-  void SaveInitiatorTabTitle(content::WebContents* preview_dialog);
+  void SaveInitiatorTitle(content::WebContents* preview_dialog);
 
   // Adds/Removes observers for notifications from |contents|.
   void AddObservers(content::WebContents* contents);
   void RemoveObservers(content::WebContents* contents);
 
   // Removes WebContents when they close/crash/navigate.
-  void RemoveInitiatorTab(content::WebContents* initiator_tab);
+  void RemoveInitiator(content::WebContents* initiator);
   void RemovePreviewDialog(content::WebContents* preview_dialog);
 
-  // Mapping between print preview dialog and the corresponding initiator tab.
+  // Mapping between print preview dialog and the corresponding initiator.
   PrintPreviewDialogMap preview_dialog_map_;
 
   // A registrar for listening notifications.

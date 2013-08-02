@@ -46,7 +46,7 @@ class PrintViewManager : public content::NotificationObserver,
   bool PrintForSystemDialogNow();
 
   // Same as PrintNow(), but for the case where a user press "ctrl+shift+p" to
-  // show the native system dialog. This can happen from both initiator tab and
+  // show the native system dialog. This can happen from both initiator and
   // preview dialog.
   bool AdvancedPrintNow();
 

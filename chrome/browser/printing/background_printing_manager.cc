@@ -63,16 +63,15 @@ void BackgroundPrintingManager::OwnPrintPreviewDialog(
                    rph_source);
   }
 
-  // Activate the initiator tab.
+  // Activate the initiator.
   PrintPreviewDialogController* dialog_controller =
       PrintPreviewDialogController::GetInstance();
   if (!dialog_controller)
     return;
-  WebContents* initiator_tab =
-      dialog_controller->GetInitiatorTab(preview_dialog);
-  if (!initiator_tab)
+  WebContents* initiator = dialog_controller->GetInitiator(preview_dialog);
+  if (!initiator)
     return;
-  initiator_tab->GetDelegate()->ActivateContents(initiator_tab);
+  initiator->GetDelegate()->ActivateContents(initiator);
 }
 
 void BackgroundPrintingManager::Observe(
