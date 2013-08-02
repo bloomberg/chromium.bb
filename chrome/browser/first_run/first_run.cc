@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -51,6 +52,8 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
@@ -297,6 +300,119 @@ void ConvertStringVectorToGURLVector(
     std::vector<GURL>* ret) {
   ret->resize(src.size());
   std::transform(src.begin(), src.end(), ret->begin(), &UrlFromString);
+}
+
+// Show the first run search engine bubble at the first appropriate opportunity.
+// This bubble may be delayed by other UI, like global errors and sync promos.
+class FirstRunBubbleLauncher : public content::NotificationObserver {
+ public:
+  // Show the bubble at the first appropriate opportunity. This function
+  // instantiates a FirstRunBubbleLauncher, which manages its own lifetime.
+  static void ShowFirstRunBubbleSoon();
+
+ private:
+  FirstRunBubbleLauncher();
+  virtual ~FirstRunBubbleLauncher();
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleLauncher);
+};
+
+// static
+void FirstRunBubbleLauncher::ShowFirstRunBubbleSoon() {
+  SetShowFirstRunBubblePref(first_run::FIRST_RUN_BUBBLE_SHOW);
+  // This FirstRunBubbleLauncher instance will manage its own lifetime.
+  new FirstRunBubbleLauncher();
+}
+
+FirstRunBubbleLauncher::FirstRunBubbleLauncher() {
+  registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                 content::NotificationService::AllSources());
+
+  // This notification is required to observe the switch between the sync setup
+  // page and the general settings page.
+  registrar_.Add(this, chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+                 content::NotificationService::AllSources());
+}
+
+FirstRunBubbleLauncher::~FirstRunBubbleLauncher() {}
+
+void FirstRunBubbleLauncher::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME ||
+         type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED);
+
+  Browser* browser = chrome::FindBrowserWithWebContents(
+      content::Source<content::WebContents>(source).ptr());
+  if (!browser || !browser->is_type_tabbed())
+    return;
+
+  // Check the preference to determine if the bubble should be shown.
+  PrefService* prefs = g_browser_process->local_state();
+  if (!prefs || prefs->GetInteger(prefs::kShowFirstRunBubbleOption) !=
+      first_run::FIRST_RUN_BUBBLE_SHOW) {
+    delete this;
+    return;
+  }
+
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+
+  // Suppress the first run bubble if a Gaia sign in page, the continue
+  // URL for the sign in page or the sync setup page is showing.
+  if (contents &&
+      (gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
+       signin::IsContinueUrlForWebBasedSigninFlow(contents->GetURL()) ||
+       contents->GetURL() == GURL(std::string(chrome::kChromeUISettingsURL) +
+                                  chrome::kSyncSetupSubPage))) {
+    return;
+  }
+
+  if (contents && contents->GetURL().SchemeIs(chrome::kChromeUIScheme)) {
+    // Suppress the first run bubble if 'make chrome metro' flow is showing.
+    if (contents->GetURL().host() == chrome::kChromeUIMetroFlowHost)
+      return;
+
+    // Suppress the first run bubble if the NTP sync promo bubble is showing
+    // or if sign in is in progress.
+    if (contents->GetURL().host() == chrome::kChromeUINewTabHost) {
+      Profile* profile =
+          Profile::FromBrowserContext(contents->GetBrowserContext());
+      SigninManagerBase* manager =
+          SigninManagerFactory::GetForProfile(profile);
+      bool signin_in_progress = manager &&
+          (!manager->GetAuthenticatedUsername().empty() &&
+              SigninTracker::GetSigninState(profile, NULL) !=
+                  SigninTracker::SIGNIN_COMPLETE);
+      bool is_promo_bubble_visible =
+          profile->GetPrefs()->GetBoolean(prefs::kSyncPromoShowNTPBubble);
+
+      if (is_promo_bubble_visible || signin_in_progress)
+        return;
+    }
+  }
+
+  // Suppress the first run bubble if a global error bubble is pending.
+  GlobalErrorService* global_error_service =
+      GlobalErrorServiceFactory::GetForProfile(browser->profile());
+  if (global_error_service->GetFirstGlobalErrorWithBubbleView() != NULL)
+    return;
+
+  // Reset the preference and notifications to avoid showing the bubble again.
+  prefs->SetInteger(prefs::kShowFirstRunBubbleOption,
+                    first_run::FIRST_RUN_BUBBLE_DONT_SHOW);
+
+  // Show the bubble now and destroy this bubble launcher.
+  browser->ShowFirstRunBubble();
+  delete this;
 }
 
 }  // namespace
@@ -556,88 +672,6 @@ bool ShouldDoPersonalDataManagerFirstRun() {
 void LogFirstRunMetric(FirstRunBubbleMetric metric) {
   UMA_HISTOGRAM_ENUMERATION("FirstRun.SearchEngineBubble", metric,
                             NUM_FIRST_RUN_BUBBLE_METRICS);
-}
-
-// static
-void FirstRunBubbleLauncher::ShowFirstRunBubbleSoon() {
-  SetShowFirstRunBubblePref(FIRST_RUN_BUBBLE_SHOW);
-  // This FirstRunBubbleLauncher instance will manage its own lifetime.
-  new FirstRunBubbleLauncher();
-}
-
-FirstRunBubbleLauncher::FirstRunBubbleLauncher() {
-  registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                 content::NotificationService::AllSources());
-}
-
-FirstRunBubbleLauncher::~FirstRunBubbleLauncher() {}
-
-void FirstRunBubbleLauncher::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      content::Source<content::WebContents>(source).ptr());
-  if (!browser || !browser->is_type_tabbed())
-    return;
-
-  // Check the preference to determine if the bubble should be shown.
-  PrefService* prefs = g_browser_process->local_state();
-  if (!prefs || prefs->GetInteger(
-          prefs::kShowFirstRunBubbleOption) != FIRST_RUN_BUBBLE_SHOW) {
-    delete this;
-    return;
-  }
-
-  content::WebContents* contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-
-  // Suppress the first run bubble if a Gaia sign in page or the continue
-  // URL for the sign in page is showing.
-  if (contents &&
-      (gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
-       signin::IsContinueUrlForWebBasedSigninFlow(contents->GetURL()))) {
-    return;
-  }
-
-  if (contents && contents->GetURL().SchemeIs(chrome::kChromeUIScheme)) {
-    // Suppress the first run bubble if 'make chrome metro' flow is showing.
-    if (contents->GetURL().host() == chrome::kChromeUIMetroFlowHost)
-      return;
-
-    // Suppress the first run bubble if the NTP sync promo bubble is showing
-    // or if sign in is in progress.
-    if (contents->GetURL().host() == chrome::kChromeUINewTabHost) {
-      Profile* profile =
-          Profile::FromBrowserContext(contents->GetBrowserContext());
-      SigninManagerBase* manager =
-          SigninManagerFactory::GetForProfile(profile);
-      bool signin_in_progress = manager &&
-          (!manager->GetAuthenticatedUsername().empty() &&
-              SigninTracker::GetSigninState(profile, NULL) !=
-                  SigninTracker::SIGNIN_COMPLETE);
-      bool is_promo_bubble_visible =
-          profile->GetPrefs()->GetBoolean(prefs::kSyncPromoShowNTPBubble);
-
-      if (is_promo_bubble_visible || signin_in_progress)
-        return;
-    }
-  }
-
-  // Suppress the first run bubble if a global error bubble is pending.
-  GlobalErrorService* global_error_service =
-      GlobalErrorServiceFactory::GetForProfile(browser->profile());
-  if (global_error_service->GetFirstGlobalErrorWithBubbleView() != NULL)
-    return;
-
-  // Reset the preference and notifications to avoid showing the bubble again.
-  prefs->SetInteger(prefs::kShowFirstRunBubbleOption,
-                    FIRST_RUN_BUBBLE_DONT_SHOW);
-
-  // Show the bubble now and destroy this bubble launcher.
-  browser->ShowFirstRunBubble();
-  delete this;
 }
 
 void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs) {

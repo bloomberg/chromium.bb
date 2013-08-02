@@ -9,14 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "ui/gfx/native_widget_types.h"
 
-class CommandLine;
 class GURL;
 class Profile;
 
@@ -175,28 +168,6 @@ void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs);
 ProcessMasterPreferencesResult ProcessMasterPreferences(
     const base::FilePath& user_data_dir,
     MasterPrefs* out_prefs);
-
-// Show the first run search engine bubble at the first appropriate opportunity.
-// This bubble may be delayed by other UI, like global errors and sync promos.
-class FirstRunBubbleLauncher : public content::NotificationObserver {
- public:
-  // Show the bubble at the first appropriate opportunity. This function
-  // instantiates a FirstRunBubbleLauncher, which manages its own lifetime.
-  static void ShowFirstRunBubbleSoon();
-
- private:
-  FirstRunBubbleLauncher();
-  virtual ~FirstRunBubbleLauncher();
-
-  // content::NotificationObserver override:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleLauncher);
-};
 
 }  // namespace first_run
 
