@@ -246,28 +246,6 @@ TEST_F(TCPServerSocketTest, AcceptIO) {
   ASSERT_EQ(message, received_message);
 }
 
-TEST_F(TCPServerSocketTest, Rebind) {
-  IPEndPoint address;
-  // Bind to a random, unused port.
-  ParseAddress("127.0.0.1", 0, &address);
-
-  scoped_ptr<TCPServerSocket> socket(
-      new TCPServerSocket(NULL, NetLog::Source()));
-  ASSERT_EQ(OK, socket->Listen(address, kListenBacklog));
-
-  // Retrieve the real endpoint bound.
-  ASSERT_EQ(OK, socket->GetLocalAddress(&address));
-
-  scoped_ptr<TCPServerSocket> conflict_socket(
-      new TCPServerSocket(NULL, NetLog::Source()));
-  ASSERT_NE(OK, conflict_socket->Listen(address, kListenBacklog));
-
-  // Unbind.
-  socket.reset(NULL);
-
-  ASSERT_EQ(OK, conflict_socket->Listen(address, kListenBacklog));
-}
-
 }  // namespace
 
 }  // namespace net
