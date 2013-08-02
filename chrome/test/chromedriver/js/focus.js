@@ -21,7 +21,8 @@ function focus(element) {
   //     keys to work. Not sure why
   //   - You cannot focus a descendant of a content editable node
   //   - V8 throws a TypeError when calling setSelectionRange for a non-text
-  //     input, which still have setSelectionRange defined.
+  //     input, which still have setSelectionRange defined. For chrome 29+, V8
+  //     throws a DOMException with code InvalidStateError.
   var doc = element.ownerDocument || element;
   var prevActiveElement = doc.activeElement;
   if (element != prevActiveElement && prevActiveElement)
@@ -32,7 +33,8 @@ function focus(element) {
     try {
       element.setSelectionRange(element.value.length, element.value.length);
     } catch (error) {
-      if (!(error instanceof TypeError))
+      if (!(error instanceof TypeError) && !(error instanceof DOMException &&
+          error.code == DOMException.INVALID_STATE_ERR))
         throw error;
     }
   }
