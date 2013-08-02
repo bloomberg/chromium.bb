@@ -4,7 +4,7 @@
 
 """Class for running uiautomator tests on a single device."""
 
-from pylib.instrumentation import test_options
+from pylib.instrumentation import test_options as instr_test_options
 from pylib.instrumentation import test_runner as instr_test_runner
 
 
@@ -24,7 +24,7 @@ class TestRunner(instr_test_runner.TestRunner):
           Can be optionally requested by a test case.
     """
     # Create an InstrumentationOptions object to pass to the super class
-    instrumentation_options = test_options.InstrumentationOptions(
+    instrumentation_options = instr_test_options.InstrumentationOptions(
         test_options.build_type,
         test_options.tool,
         test_options.cleanup_test_files,
@@ -37,7 +37,9 @@ class TestRunner(instr_test_runner.TestRunner):
         test_options.screenshot_failures,
         test_options.disable_assertions,
         wait_for_debugger=False,
-        test_apk=None)
+        test_apk=None,
+        test_apk_path=None,
+        test_apk_jar_path=None)
     super(TestRunner, self).__init__(instrumentation_options, device,
                                      shard_index, test_pkg, ports_to_forward)
 
