@@ -17,9 +17,9 @@ namespace {
 // cannot be acquired.
 // TODO(dfalcantara): Keep this reasonably up to date with the latest publicly
 //                    available version of Android.
-static const int kDefaultAndroidMajorVersion = 4;
-static const int kDefaultAndroidMinorVersion = 0;
-static const int kDefaultAndroidBugfixVersion = 3;
+const int kDefaultAndroidMajorVersion = 4;
+const int kDefaultAndroidMinorVersion = 3;
+const int kDefaultAndroidBugfixVersion = 0;
 
 // Parse out the OS version numbers from the system properties.
 void ParseOSVersionNumbers(const char* os_version_str,
