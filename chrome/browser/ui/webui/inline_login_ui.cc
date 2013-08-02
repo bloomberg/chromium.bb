@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -133,7 +134,8 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
         OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
         true /* force_same_tab_navigation */,
         OneClickSigninSyncStarter::NO_CONFIRMATION,
-        signin::SOURCE_UNKNOWN);
+        signin::SOURCE_UNKNOWN,
+        OneClickSigninSyncStarter::Callback());
     web_ui()->CallJavascriptFunction("inline.login.closeDialog");
 #endif
   }

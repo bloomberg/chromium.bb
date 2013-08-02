@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -94,7 +95,8 @@ struct StartSyncArgs {
                 const std::string& password,
                 bool force_same_tab_navigation,
                 bool untrusted_confirmation_required,
-                signin::Source source);
+                signin::Source source,
+                OneClickSigninSyncStarter::Callback callback);
 
   Profile* profile;
   Browser* browser;
@@ -105,6 +107,7 @@ struct StartSyncArgs {
   bool force_same_tab_navigation;
   OneClickSigninSyncStarter::ConfirmationRequired confirmation_required;
   signin::Source source;
+  OneClickSigninSyncStarter::Callback callback;
 };
 
 StartSyncArgs::StartSyncArgs(Profile* profile,
@@ -115,7 +118,8 @@ StartSyncArgs::StartSyncArgs(Profile* profile,
                              const std::string& password,
                              bool force_same_tab_navigation,
                              bool untrusted_confirmation_required,
-                             signin::Source source)
+                             signin::Source source,
+                             OneClickSigninSyncStarter::Callback callback)
     : profile(profile),
       browser(browser),
       auto_accept(auto_accept),
@@ -123,7 +127,8 @@ StartSyncArgs::StartSyncArgs(Profile* profile,
       email(email),
       password(password),
       force_same_tab_navigation(force_same_tab_navigation),
-      source(source) {
+      source(source),
+      callback(callback) {
   if (untrusted_confirmation_required) {
     confirmation_required = OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN;
   } else if (source == signin::SOURCE_SETTINGS ||
@@ -240,7 +245,8 @@ void StartSync(const StartSyncArgs& args,
                                 args.email, args.password, start_mode,
                                 args.force_same_tab_navigation,
                                 args.confirmation_required,
-                                args.source);
+                                args.source,
+                                args.callback);
 
   int action = one_click_signin::HISTOGRAM_MAX;
   switch (args.auto_accept) {
@@ -559,7 +565,8 @@ OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
       switched_to_advanced_(false),
       untrusted_navigations_since_signin_visit_(0),
       untrusted_confirmation_required_(false),
-      do_not_clear_pending_email_(false) {
+      do_not_clear_pending_email_(false),
+      weak_pointer_factory_(this) {
 }
 
 OneClickSigninHelper::~OneClickSigninHelper() {
@@ -1199,7 +1206,8 @@ void OneClickSigninHelper::DidStopLoading(
       StartSync(StartSyncArgs(profile, browser, auto_accept_,
                               session_index_, email_, password_,
                               false /* force_same_tab_navigation */,
-                              true /* confirmation_required */, source_),
+                              true /* confirmation_required */, source_,
+                              CreateSyncStarterCallback()),
                 OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
       break;
     case AUTO_ACCEPT_CONFIGURE:
@@ -1211,7 +1219,8 @@ void OneClickSigninHelper::DidStopLoading(
       StartSync(
           StartSyncArgs(profile, browser, auto_accept_, session_index_, email_,
                         password_, false /* force_same_tab_navigation */,
-                        true /* confirmation_required */, source_),
+                        true /* confirmation_required */, source_,
+                        CreateSyncStarterCallback()),
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
       break;
     case AUTO_ACCEPT_EXPLICIT: {
@@ -1258,14 +1267,16 @@ void OneClickSigninHelper::DidStopLoading(
                 StartSyncArgs(profile, browser, auto_accept_,
                               session_index_, email_, password_,
                               force_same_tab_navigation,
-                              false /* confirmation_required */, source_),
+                              false /* confirmation_required */, source_,
+                              CreateSyncStarterCallback()),
                 contents,
                 start_mode));
       } else {
         StartSync(
             StartSyncArgs(profile, browser, auto_accept_, session_index_,
                           email_, password_, force_same_tab_navigation,
-                          untrusted_confirmation_required_, source_),
+                          untrusted_confirmation_required_, source_,
+                          CreateSyncStarterCallback()),
             start_mode);
 
         // If this explicit sign in is not from settings page/webstore, show
@@ -1340,4 +1351,30 @@ void OneClickSigninHelper::OnStateChanged() {
   // because it is used in OnStateChanged which occurs later.
   original_continue_url_ = GURL();
   sync_service->RemoveObserver(this);
+}
+
+OneClickSigninSyncStarter::Callback
+    OneClickSigninHelper::CreateSyncStarterCallback() {
+  // The callback will only be invoked if this object is still alive when sync
+  // setup is completed. This is correct because this object is only deleted
+  // when the web contents that potentially shows a blank page is deleted.
+  return base::Bind(&OneClickSigninHelper::SyncSetupCompletedCallback,
+                    weak_pointer_factory_.GetWeakPtr());
+}
+
+void OneClickSigninHelper::SyncSetupCompletedCallback(
+    OneClickSigninSyncStarter::SyncSetupResult result) {
+  if (result == OneClickSigninSyncStarter::SYNC_SETUP_FAILURE &&
+      web_contents()) {
+    GURL current_url = web_contents()->GetVisibleURL();
+
+    // If the web contents is showing a blank page and not about to be closed,
+    // redirect to the NTP or apps page.
+    if (signin::IsContinueUrlForWebBasedSigninFlow(current_url) &&
+        !signin::IsAutoCloseEnabledInURL(original_continue_url_)) {
+      RedirectToNtpOrAppsPage(
+          web_contents(),
+          signin::GetSourceForPromoURL(original_continue_url_));
+    }
+  }
 }

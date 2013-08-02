@@ -8,8 +8,10 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -221,6 +223,12 @@ class OneClickSigninHelper
   // ProfileSyncServiceObserver.
   virtual void OnStateChanged() OVERRIDE;
 
+  OneClickSigninSyncStarter::Callback CreateSyncStarterCallback();
+
+  // Callback invoked when OneClickSigninSyncStarter completes sync setup.
+  void SyncSetupCompletedCallback(
+      OneClickSigninSyncStarter::SyncSetupResult result);
+
   // Tracks if we are in the process of showing the signin or one click
   // interstitial page. It's set to true the first time we load one of those
   // pages and set to false when transient state is cleaned.
@@ -254,6 +262,8 @@ class OneClickSigninHelper
   // Allows unittests to avoid accessing the ResourceContext for clearing a
   // pending e-mail.
   bool do_not_clear_pending_email_;
+
+  base::WeakPtrFactory<OneClickSigninHelper> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelper);
 };

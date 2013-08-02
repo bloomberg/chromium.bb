@@ -7,6 +7,9 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -60,10 +63,20 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
     CONFIRM_AFTER_SIGNIN
   };
 
+  // Result of the sync setup.
+  enum SyncSetupResult {
+    SYNC_SETUP_SUCCESS,
+    SYNC_SETUP_FAILURE
+  };
+
+  typedef base::Callback<void(SyncSetupResult)> Callback;
+
   // |profile| must not be NULL, however |browser| can be. When using the
   // OneClickSigninSyncStarter from a browser, provide both.
   // If |display_confirmation| is true, the user will be prompted to confirm the
   // signin before signin completes.
+  // |callback| is always executed before OneClickSigninSyncStarter is deleted.
+  // It can be empty.
   OneClickSigninSyncStarter(Profile* profile,
                             Browser* browser,
                             const std::string& session_index,
@@ -72,12 +85,21 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             StartSyncMode start_mode,
                             bool force_same_tab_navigation,
                             ConfirmationRequired display_confirmation,
-                            signin::Source source);
+                            signin::Source source,
+                            Callback callback);
 
   // chrome::BrowserListObserver override.
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 
  private:
+  friend class OneClickSigninSyncStarterTest;
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest,
+                           CallbackSigninFailed);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest,
+                           CallbackSigninSucceeded);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest,
+                           CallbackNull);
+
   virtual ~OneClickSigninSyncStarter();
 
   // Initializes the internals of the OneClickSigninSyncStarter object. Can also
@@ -176,6 +198,10 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   bool force_same_tab_navigation_;
   ConfirmationRequired confirmation_required_;
   signin::Source source_;
+
+  // Callback executed when sync setup succeeds or fails.
+  Callback sync_setup_completed_callback_;
+
   base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

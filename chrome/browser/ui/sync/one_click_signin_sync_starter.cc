@@ -50,11 +50,13 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     StartSyncMode start_mode,
     bool force_same_tab_navigation,
     ConfirmationRequired confirmation_required,
-    signin::Source source)
+    signin::Source source,
+    Callback sync_setup_completed_callback)
     : start_mode_(start_mode),
       force_same_tab_navigation_(force_same_tab_navigation),
       confirmation_required_(confirmation_required),
       source_(source),
+      sync_setup_completed_callback_(sync_setup_completed_callback),
       weak_pointer_factory_(this) {
   DCHECK(profile);
   BrowserList::AddObserver(this);
@@ -314,16 +316,6 @@ void OneClickSigninSyncStarter::ConfirmAndSignin() {
 void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
     StartSyncMode response) {
   if (response == UNDO_SYNC) {
-    // If this was not an interstitial signin, (i.e. it was a SAML signin)
-    // then the browser page is now blank and should redirect to the NTP.
-    if (source_ != signin::SOURCE_UNKNOWN) {
-      EnsureBrowser();
-      chrome::NavigateParams params(browser_, GURL(chrome::kChromeUINewTabURL),
-                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL);
-      params.disposition = CURRENT_TAB;
-      params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-      chrome::Navigate(&params);
-    }
     CancelSigninAndDelete();  // This statement frees this object.
   } else {
     // If the user clicked the "Advanced" link in the confirmation dialog, then
@@ -337,6 +329,9 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
 
 void OneClickSigninSyncStarter::SigninFailed(
     const GoogleServiceAuthError& error) {
+  if (!sync_setup_completed_callback_.is_null())
+    sync_setup_completed_callback_.Run(SYNC_SETUP_FAILURE);
+
   FinishProfileSyncServiceSetup();
   if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
     switch (error.state()) {
@@ -357,6 +352,9 @@ void OneClickSigninSyncStarter::SigninFailed(
 }
 
 void OneClickSigninSyncStarter::SigninSuccess() {
+  if (!sync_setup_completed_callback_.is_null())
+    sync_setup_completed_callback_.Run(SYNC_SETUP_SUCCESS);
+
   switch (start_mode_) {
     case SYNC_WITH_DEFAULT_SETTINGS: {
       // Just kick off the sync machine, no need to configure it first.
