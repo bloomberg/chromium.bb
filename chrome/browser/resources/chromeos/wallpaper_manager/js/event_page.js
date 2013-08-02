@@ -125,7 +125,8 @@ SurpriseWallpaper.prototype.updateRandomWallpaper_ = function() {
 
 /**
  * Sets wallpaper to one of the wallpapers displayed in wallpaper picker. If
- * the wallpaper download fails, retry one hour later.
+ * the wallpaper download fails, retry one hour later. Wallpapers that are
+ * disabled for surprise me are excluded.
  * @param {string} dateString String representation of current local date.
  * @private
  */
@@ -134,9 +135,15 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
   Constants.WallpaperLocalStorage.get(Constants.AccessManifestKey,
                                       function(items) {
     var manifest = items[Constants.AccessManifestKey];
-    if (manifest) {
-      var index = Math.floor(Math.random() * manifest.wallpaper_list.length);
-      var wallpaper = manifest.wallpaper_list[index];
+    if (manifest && manifest.wallpaper_list) {
+      var filtered = manifest.wallpaper_list.filter(function(element) {
+        // Older version manifest do not have available_for_surprise_me field.
+        // In this case, no wallpaper should be filtered out.
+        return element.available_for_surprise_me ||
+            element.available_for_surprise_me == undefined;
+      });
+      var index = Math.floor(Math.random() * filtered.length);
+      var wallpaper = filtered[index];
       var wallpaperURL = wallpaper.base_url + Constants.HighResolutionSuffix;
       var onSuccess = function() {
         WallpaperUtil.saveToStorage(
