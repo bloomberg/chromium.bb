@@ -358,11 +358,15 @@ DesktopNotificationService::DesktopNotificationService(
   if (!enabled_sync_notifier_ids_.empty()) {
     notifier::ChromeNotifierService* notifier_service =
         notifier::ChromeNotifierServiceFactory::GetInstance()->GetForProfile(
-            profile, Profile::EXPLICIT_ACCESS);
-    for (std::set<std::string>::const_iterator it =
-             enabled_sync_notifier_ids_.begin();
-         it != enabled_sync_notifier_ids_.end(); ++it) {
-      notifier_service->OnSyncedNotificationServiceEnabled(*it, true);
+            profile_, Profile::EXPLICIT_ACCESS);
+    // incognito profiles have enabled sync notifier ids but not a notifier
+    // service.
+    if (notifier_service) {
+      for (std::set<std::string>::const_iterator it =
+               enabled_sync_notifier_ids_.begin();
+           it != enabled_sync_notifier_ids_.end(); ++it) {
+        notifier_service->OnSyncedNotificationServiceEnabled(*it, true);
+      }
     }
   }
 }
