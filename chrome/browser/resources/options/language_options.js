@@ -333,6 +333,7 @@ cr.define('options', function() {
         if (inputMethod.optionsPage) {
           var button = document.createElement('button');
           button.textContent = loadTimeData.getString('configure');
+          button.inputMethodId = inputMethod.id;
           button.onclick = function(optionsPage, e) {
             window.open(optionsPage);
           }.bind(this, inputMethod.optionsPage);
@@ -1074,6 +1075,11 @@ cr.define('options', function() {
       for (var i = 0; i < checkboxes.length; i++) {
         if (!checkboxes[i].inputMethodId.match(/^_ext_ime_/))
           checkboxes[i].checked = (checkboxes[i].inputMethodId in dictionary);
+      }
+      var configureButtons = inputMethodList.querySelectorAll('button');
+      for (var i = 0; i < configureButtons.length; i++) {
+        configureButtons[i].hidden =
+            !(configureButtons[i].inputMethodId in dictionary);
       }
     },
 
