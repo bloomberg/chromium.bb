@@ -250,6 +250,15 @@ void PrerenderTabHelper::DidNavigateAnyFrame(
   if (params.password_form.origin.is_valid() && prerender_manager) {
     prerender_manager->RecordLikelyLoginOnURL(params.url);
     RecordEvent(EVENT_LOGIN_ACTION_ADDED);
+    if (details.is_main_frame) {
+      RecordEvent(EVENT_LOGIN_ACTION_ADDED_MAINFRAME);
+      if (params.password_form.password_value.empty())
+        RecordEvent(EVENT_LOGIN_ACTION_ADDED_MAINFRAME_PW_EMPTY);
+    } else {
+      RecordEvent(EVENT_LOGIN_ACTION_ADDED_SUBFRAME);
+      if (params.password_form.password_value.empty())
+        RecordEvent(EVENT_LOGIN_ACTION_ADDED_SUBFRAME_PW_EMPTY);
+    }
   }
 }
 
