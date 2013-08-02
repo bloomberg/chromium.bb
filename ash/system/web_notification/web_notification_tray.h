@@ -55,8 +55,10 @@ class ASH_EXPORT WebNotificationTray
       internal::StatusAreaWidget* status_area_widget);
   virtual ~WebNotificationTray();
 
-  // Set whether or not the popup notifications should be hidden.
-  void SetHidePopupBubble(bool hide);
+  // Sets the height of the system tray from the edge of the work area so that
+  // the notification popups don't overlap with the tray. Passes 0 if no UI is
+  // shown in the system tray side.
+  void SetSystemTrayHeight(int height);
 
   // Updates tray visibility login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
@@ -112,12 +114,15 @@ class ASH_EXPORT WebNotificationTray
   message_center::MessageCenter* message_center();
 
  private:
+  friend class WebNotificationTrayTest;
+
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotificationPopupBubble);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest,
                            ManyMessageCenterNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManyPopupNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, PopupShownOnBothDisplays);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, PopupAndSystemTray);
 
   void UpdateTrayContent();
 
