@@ -327,6 +327,8 @@ class RenderWidgetHostViewAura
   virtual void OnRootWindowHostMoved(const aura::RootWindow* root,
                                      const gfx::Point& new_origin) OVERRIDE;
 
+  bool CanCopyToBitmap() const;
+
 #if defined(OS_WIN)
   // Sets the cutout rects from constrained windows. These are rectangles that
   // windowed NPAPI plugins shouldn't paint in. Overwrites any previous cutout
@@ -457,7 +459,7 @@ class RenderWidgetHostViewAura
       const base::Callback<void(bool)>& callback,
       scoped_ptr<cc::CopyOutputResult> result);
 
-  ui::Compositor* GetCompositor();
+  ui::Compositor* GetCompositor() const;
 
   // Detaches |this| from the input method object.
   void DetachFromInputMethod();
@@ -507,6 +509,8 @@ class RenderWidgetHostViewAura
       const ui::LatencyInfo& latency_info);
   void SendSoftwareFrameAck(uint32 output_surface_id,
                             unsigned software_frame_id);
+
+  void DidReceiveFrameFromRenderer();
 
   BrowserAccessibilityManager* GetOrCreateBrowserAccessibilityManager();
 

@@ -979,8 +979,7 @@ bool RenderWidgetHostViewAura::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
-  return window_->layer()->has_external_content() ||
-         !!host_->GetBackingStore(false);
+  return CanCopyToBitmap() || !!host_->GetBackingStore(false);
 }
 
 void RenderWidgetHostViewAura::Show() {
@@ -1198,7 +1197,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
-  if (!window_->layer()->has_external_content()) {
+  if (!CanCopyToBitmap()) {
     callback.Run(false, SkBitmap());
     return;
   }
@@ -1219,7 +1218,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) {
-  if (!window_->layer()->has_external_content()) {
+  if (!CanCopyToVideoFrame()) {
     callback.Run(false);
     return;
   }
@@ -1237,9 +1236,15 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
   window_->layer()->RequestCopyOfOutput(request.Pass());
 }
 
+bool RenderWidgetHostViewAura::CanCopyToBitmap() const {
+  return GetCompositor() && window_->layer()->has_external_content();
+}
+
 bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
-  // TODO(skaslev): Implement this path for s/w compositing.
-  return window_->layer()->has_external_content() &&
+  // TODO(skaslev): Implement this path for s/w compositing by handling software
+  // CopyOutputResult in CopyFromCompositingSurfaceHasResultForVideo().
+  return GetCompositor() &&
+         window_->layer()->has_external_content() &&
          host_->is_accelerated_compositing_active();
 }
 
@@ -1363,8 +1368,18 @@ void RenderWidgetHostViewAura::SwapBuffersCompleted(
     const BufferPresentedCallback& ack_callback,
     const scoped_refptr<ui::Texture>& texture_to_return) {
   ui::Compositor* compositor = GetCompositor();
+  if (!compositor) {
+    ack_callback.Run(false, texture_to_return);
+  } else {
+    AddOnCommitCallbackAndDisableLocks(
+        base::Bind(ack_callback, false, texture_to_return));
+  }
 
-  if (frame_subscriber() && current_surface_.get() != NULL) {
+  DidReceiveFrameFromRenderer();
+}
+
+void RenderWidgetHostViewAura::DidReceiveFrameFromRenderer() {
+  if (frame_subscriber() && CanCopyToVideoFrame()) {
     const base::Time present_time = base::Time::Now();
     scoped_refptr<media::VideoFrame> frame;
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
@@ -1376,13 +1391,6 @@ void RenderWidgetHostViewAura::SwapBuffersCompleted(
           frame,
           base::Bind(callback, present_time));
     }
-  }
-
-  if (!compositor) {
-    ack_callback.Run(false, texture_to_return);
-  } else {
-    AddOnCommitCallbackAndDisableLocks(
-        base::Bind(ack_callback, false, texture_to_return));
   }
 }
 
@@ -1468,6 +1476,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
                    AsWeakPtr(),
                    output_surface_id));
   }
+  DidReceiveFrameFromRenderer();
 }
 
 void RenderWidgetHostViewAura::SendDelegatedFrameAck(uint32 output_surface_id) {
@@ -1537,6 +1546,7 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
     compositor->SetLatencyInfo(latency_info);
   if (paint_observer_)
     paint_observer_->OnUpdateCompositorContent();
+  DidReceiveFrameFromRenderer();
 }
 
 void RenderWidgetHostViewAura::SendSoftwareFrameAck(
@@ -3152,7 +3162,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
     compositor->RemoveObserver(this);
 }
 
-ui::Compositor* RenderWidgetHostViewAura::GetCompositor() {
+ui::Compositor* RenderWidgetHostViewAura::GetCompositor() const {
   aura::RootWindow* root_window = window_->GetRootWindow();
   return root_window ? root_window->compositor() : NULL;
 }
