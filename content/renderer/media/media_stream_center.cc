@@ -65,8 +65,8 @@ MediaStreamCenter::~MediaStreamCenter() {}
 
 bool MediaStreamCenter::getMediaStreamTrackSources(
     const WebKit::WebMediaStreamTrackSourcesRequest& request) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDeviceEnumeration)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableDeviceEnumeration)) {
     int request_id = next_request_id_++;
     requests_.insert(std::make_pair(request_id, request));
     RenderThread::Get()->Send(new MediaStreamHostMsg_GetSources(

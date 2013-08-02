@@ -902,7 +902,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
     switches::kDisableWebAudio,
 #if defined(ENABLE_WEBRTC)
-    switches::kEnableDeviceEnumeration,
+    switches::kDisableDeviceEnumeration,
     switches::kEnableSCTPDataChannels,
 #endif
     switches::kEnableWebAnimationsCSS,

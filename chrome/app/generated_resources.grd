@@ -6842,11 +6842,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SCTP_DATA_CHANNELS_DESCRIPTION" desc="Description of about:flags option to turn on SCTP data channels support">
         When enabled, DataChannels created by WebRTC will use the SCTP wire protocol.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DEVICE_ENUMERATION_NAME" desc="Name of about:flags option to turn on WebRTC device enumeration support.">
-        Enable WebRTC device enumeration.
+      <message name="IDS_FLAGS_DISABLE_DEVICE_ENUMERATION_NAME" desc="Name of about:flags option to turn off WebRTC device enumeration support.">
+        Disable WebRTC device enumeration.
       </message>
-      <message name="IDS_FLAGS_ENABLE_DEVICE_ENUMERATION_DESCRIPTION" desc="Description of chrome:flags option to turn on WebRTC device enumeration support">
-        When enabled, MediaStreamTrack can list the available video and audio input devices, and getUserMedia can open these input devices by referencing an opaque id.
+      <message name="IDS_FLAGS_DISABLE_DEVICE_ENUMERATION_DESCRIPTION" desc="Description of chrome:flags option to turn off WebRTC device enumeration support">
+        Disable support for MediaStreamTrack.getSources().
       </message>
       <message name="IDS_FLAGS_DISABLE_WEBAUDIO_NAME" desc="Name of the 'Disable WebAudio' lab.">
         Disable WebAudio
