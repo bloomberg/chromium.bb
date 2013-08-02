@@ -18,6 +18,7 @@
 
 class CloudPrintURLRequestContextGetter;
 class GURL;
+class URLRequestContextGetter;
 
 extern const char kCloudPrintUrl[];
 
@@ -41,7 +42,16 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
     // Invoked when server respond for registration-getAuthCode query and
     // response is successfully parsed.
     virtual void OnGetAuthCodeResponseParsed(
-        const std::string& refresh_token) = 0;
+        const std::string& refresh_token,
+        const std::string& access_token,
+        int access_token_expires_in_seconds) = 0;
+
+    // Invoked when XMPP JID was received and it has to be saved.
+    virtual void OnXmppJidReceived(const std::string& xmpp_jid) = 0;
+
+    // Invoked when access_token was received after UpdateAccesstoken() call.
+    virtual void OnAccesstokenReceviced(const std::string& access_token,
+                                        int expires_in_seconds) = 0;
 
     // Invoked when server respond with |"success" = false| or we cannot parse
     // response.
@@ -52,6 +62,12 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
 
     // Invoked when server error is received or cannot parse json response.
     virtual void OnServerError(const std::string& description) = 0;
+
+    // Invoked when authorization failed.
+    virtual void OnAuthError() = 0;
+
+    // Invoked when access_token is needed.
+    virtual std::string GetAccessToken() = 0;
 
     // Invoked when fetch response was received.
     virtual void OnPrintJobsAvailable(
@@ -65,7 +81,7 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
     virtual void OnPrintJobDone() = 0;
   };
 
-  // Creates and initializes objects.
+  // Creates and initializes object.
   CloudPrintRequester(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                       Delegate* delegate);
 
@@ -84,8 +100,7 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
   void CompleteRegistration();
 
   // Creates request for fetching printjobs.
-  void FetchPrintJobs(const std::string& refresh_token,
-                      const std::string& device_id);
+  void FetchPrintJobs(const std::string& device_id);
 
   // Creates request for updating accesstoken.
   // TODO(maksymb): Handle expiration of accesstoken.
@@ -159,14 +174,11 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
   // CloudPrint server responses.
   scoped_ptr<cloud_print_response_parser::Job> current_print_job_;
 
-  // Privet context getter.
-  scoped_refptr<CloudPrintURLRequestContextGetter> context_getter_;
+  // CloudPrint context getter.
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
 
   // URL for completing registration and receiving OAuth account.
   std::string polling_url_;
-
-  // Last valid access_token.
-  std::string access_token_;
 
   // OAuth client information (client_id, client_secret, etc).
   gaia::OAuthClientInfo oauth_client_info_;

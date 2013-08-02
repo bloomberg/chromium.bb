@@ -22,10 +22,19 @@ void StartPrinter(Printer* printer) {
 }
 
 base::RunLoop* g_runner = NULL;
+Printer* g_printer = NULL;
 
 void OnAbort(int val) {
-  if (g_runner)
-    g_runner->Quit();
+  if (g_runner) {
+    g_printer->Stop();  // TODO(maksymb): Make this call in safe place call:
+                        // |OnAbort| is called from different thread.
+    g_printer = NULL;
+
+    g_runner->Quit();   // Always do after printer.Stop() to make sure XMPP will
+                        // be disabled fully before |Quit| will be called
+                        // (XMPP disables itself via MessageLoop call).
+    g_runner = NULL;
+  }
 }
 
 }  // namespace
@@ -45,10 +54,9 @@ int main(int argc, char* argv[]) {
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(&StartPrinter, &printer));
   base::RunLoop runner;
+  g_printer = &printer;
   g_runner = &runner;
   runner.Run();
-  g_runner = NULL;
-  printer.Stop();
 
   return 0;
 }

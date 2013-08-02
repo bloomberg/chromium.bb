@@ -116,7 +116,8 @@ bool ParseRegisterStartResponse(const std::string& response,
 
 bool ParseRegisterCompleteResponse(const std::string& response,
                                    std::string* error_description,
-                                   std::string* authorization_code_result) {
+                                   std::string* authorization_code_result,
+                                   std::string* xmpp_jid_result) {
   scoped_ptr<base::Value> json(base::JSONReader::Read(response));
   base::DictionaryValue* response_dictionary = NULL;
   if (!GetJsonDictinaryAndCheckSuccess(json.get(), error_description,
@@ -131,7 +132,14 @@ bool ParseRegisterCompleteResponse(const std::string& response,
     return false;
   }
 
+  std::string xmpp_jid;
+  if (!response_dictionary->GetString("xmpp_jid", &xmpp_jid)) {
+    *error_description = "Cannot parse xmpp jid.";
+    return false;
+  }
+
   *authorization_code_result = authorization_code;
+  *xmpp_jid_result = xmpp_jid;
   return true;
 }
 

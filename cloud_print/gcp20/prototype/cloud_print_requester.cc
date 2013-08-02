@@ -9,13 +9,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "cloud_print/gcp20/prototype/cloud_print_url_request_context_getter.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/mime_util.h"
 #include "net/base/url_util.h"
+#include "net/http/http_status_code.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_builder.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 const char kCloudPrintUrl[] = "https://www.google.com/cloudprint";
@@ -50,44 +50,6 @@ GURL CreateControlUrl(const std::string& job_id, const std::string& status) {
 }  // namespace
 
 using cloud_print_response_parser::Job;
-
-// Used to return a dummy context, which lives on the message loop
-// given in the constructor.
-class CloudPrintURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  // |task_runner| must not be NULL.
-  explicit CloudPrintURLRequestContextGetter(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    DCHECK(task_runner);
-    network_task_runner_ = task_runner;
-  }
-
-  // URLRequestContextGetter implementation.
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
-    if (!context_) {
-      net::URLRequestContextBuilder builder;
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-      builder.set_proxy_config_service(
-          new net::ProxyConfigServiceFixed(net::ProxyConfig()));
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-      context_.reset(builder.Build());
-    }
-    return context_.get();
-  }
-
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE {
-    return network_task_runner_;
-  }
-
- protected:
-  virtual ~CloudPrintURLRequestContextGetter() {}
-
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-  scoped_ptr<net::URLRequestContext> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintURLRequestContextGetter);
-};
 
 CloudPrintRequester::CloudPrintRequester(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -143,33 +105,29 @@ void CloudPrintRequester::StartRegistration(const std::string& proxy_id,
       data,
       data_mimetype,
       base::Bind(&CloudPrintRequester::ParseRegisterStart, AsWeakPtr()));
-  request_->Run(access_token_, context_getter_);
+  request_->Run(delegate_->GetAccessToken(), context_getter_);
 }
 
 void CloudPrintRequester::CompleteRegistration() {
   request_ = CreateGet(
       GURL(polling_url_ + oauth_client_info_.client_id),
       base::Bind(&CloudPrintRequester::ParseRegisterComplete, AsWeakPtr()));
-  request_->Run(access_token_, context_getter_);
+  request_->Run(delegate_->GetAccessToken(), context_getter_);
 }
 
-void CloudPrintRequester::FetchPrintJobs(const std::string& refresh_token,
-                                         const std::string& device_id) {
+void CloudPrintRequester::FetchPrintJobs(const std::string& device_id) {
   VLOG(3) << "Function: " << __FUNCTION__;
   if (IsBusy())
     return;
 
-  if (access_token_.empty()) {
-    UpdateAccesstoken(refresh_token);
-    return;
-  }
+  DCHECK(!delegate_->GetAccessToken().empty());
 
   VLOG(3) << "Function: " << __FUNCTION__ <<
       ": request created";
   request_ = CreateGet(
       CreateFetchUrl(device_id),
       base::Bind(&CloudPrintRequester::ParseFetch, AsWeakPtr()));
-  request_->Run(access_token_, context_getter_);
+  request_->Run(delegate_->GetAccessToken(), context_getter_);
 }
 
 void CloudPrintRequester::UpdateAccesstoken(const std::string& refresh_token) {
@@ -178,7 +136,6 @@ void CloudPrintRequester::UpdateAccesstoken(const std::string& refresh_token) {
   gaia_.reset(new gaia::GaiaOAuthClient(context_getter_.get()));
   gaia_->RefreshToken(oauth_client_info_, refresh_token,
                       std::vector<std::string>(), kGaiaMaxRetries, this);
-  delegate_->OnServerError("Access token requested.");
 }
 
 void CloudPrintRequester::RequestPrintJob(const Job& job) {
@@ -187,7 +144,7 @@ void CloudPrintRequester::RequestPrintJob(const Job& job) {
   request_ = CreateGet(
       CreateControlUrl(current_print_job_->job_id, "IN_PROGRESS"),
       base::Bind(&CloudPrintRequester::ParsePrintJobInProgress, AsWeakPtr()));
-  request_->Run(access_token_, context_getter_);
+  request_->Run(delegate_->GetAccessToken(), context_getter_);
 }
 
 void CloudPrintRequester::SendPrintJobDone(const std::string& job_id) {
@@ -195,7 +152,7 @@ void CloudPrintRequester::SendPrintJobDone(const std::string& job_id) {
   request_ = CreateGet(
       CreateControlUrl(job_id, "DONE"),
       base::Bind(&CloudPrintRequester::ParsePrintJobDone, AsWeakPtr()));
-  request_->Run(access_token_, context_getter_);
+  request_->Run(delegate_->GetAccessToken(), context_getter_);
 }
 
 void CloudPrintRequester::OnFetchComplete(const std::string& response) {
@@ -212,6 +169,8 @@ void CloudPrintRequester::OnFetchError(const std::string& server_api,
   EraseRequest();
   current_print_job_.reset();
   delegate_->OnServerError("Fetch error");
+
+  // TODO(maksymb): |server_api| and other
   NOTIMPLEMENTED();
 }
 
@@ -227,8 +186,8 @@ void CloudPrintRequester::OnGetTokensResponse(const std::string& refresh_token,
                                               int expires_in_seconds) {
   VLOG(3) << "Function: " << __FUNCTION__;
   gaia_.reset();
-  access_token_ = access_token;
-  delegate_->OnGetAuthCodeResponseParsed(refresh_token);
+  delegate_->OnGetAuthCodeResponseParsed(refresh_token,
+                                         access_token, expires_in_seconds);
 }
 
 void CloudPrintRequester::OnRefreshTokenResponse(
@@ -236,20 +195,24 @@ void CloudPrintRequester::OnRefreshTokenResponse(
     int expires_in_seconds) {
   VLOG(3) << "Function: " << __FUNCTION__;
   gaia_.reset();
-  access_token_ = access_token;
-  LOG(INFO) << "New accesstoken: " << access_token;
+  delegate_->OnAccesstokenReceviced(access_token, expires_in_seconds);
 }
 
 void CloudPrintRequester::OnOAuthError() {
   VLOG(3) << "Function: " << __FUNCTION__;
   gaia_.reset();
-  NOTIMPLEMENTED();
+  delegate_->OnAuthError();
 }
 
 void CloudPrintRequester::OnNetworkError(int response_code) {
   VLOG(3) << "Function: " << __FUNCTION__;
   gaia_.reset();
-  NOTIMPLEMENTED();
+
+  if (response_code == net::HTTP_FORBIDDEN) {
+    // TODO(maksymb): delegate_->OnPrinterDeleted();
+  } else {
+    delegate_->OnNetworkError();
+  }
 }
 
 scoped_ptr<CloudPrintRequest> CloudPrintRequester::CreateGet(
@@ -308,12 +271,16 @@ void CloudPrintRequester::ParseRegisterComplete(const std::string& response) {
   std::string error_description;
   std::string authorization_code;
 
+  std::string xmpp_jid;
   bool success = cloud_print_response_parser::ParseRegisterCompleteResponse(
       response,
       &error_description,
-      &authorization_code);
+      &authorization_code,
+      &xmpp_jid);
 
   if (success) {
+    delegate_->OnXmppJidReceived(xmpp_jid);
+
     gaia_.reset(new gaia::GaiaOAuthClient(context_getter_.get()));
     gaia_->GetTokensFromAuthCode(oauth_client_info_, authorization_code,
                                  kGaiaMaxRetries, this);
@@ -348,7 +315,7 @@ void CloudPrintRequester::ParseGetPrintJobTicket(const std::string& response) {
       GURL(current_print_job_->file_url),
       base::Bind(&CloudPrintRequester::ParseGetPrintJobData, AsWeakPtr()));
   request_->AddHeader("Accept: \"application/pdf\"");
-  request_->Run(access_token_, context_getter_);
+  request_->Run(delegate_->GetAccessToken(), context_getter_);
 }
 
 void CloudPrintRequester::ParseGetPrintJobData(const std::string& response) {
@@ -370,6 +337,6 @@ void CloudPrintRequester::ParsePrintJobInProgress(const std::string& response) {
   request_ = CreateGet(
       GURL(current_print_job_->ticket_url),
       base::Bind(&CloudPrintRequester::ParseGetPrintJobTicket, AsWeakPtr()));
-  request_->Run(access_token_, context_getter_);
+  request_->Run(delegate_->GetAccessToken(), context_getter_);
 }
 

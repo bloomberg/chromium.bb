@@ -48,7 +48,8 @@ bool ParseRegisterStartResponse(const std::string& response,
 // when parsing is failed.
 bool ParseRegisterCompleteResponse(const std::string& response,
                                    std::string* error_description,
-                                   std::string* authorization_code_result);
+                                   std::string* authorization_code_result,
+                                   std::string* xmpp_jid_result);
 
 // Parses CloudPrint fetch response to out parameters.
 // Returns |true| on success. Callback is called with description as a parameter

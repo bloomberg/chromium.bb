@@ -42,7 +42,8 @@ const char kUserConfirmationTitle[] = "Confirm registration: type 'y' if you "
 const int64 kUserConfirmationTimeout = 30;  // in seconds
 
 const uint32 kReconnectTimeout = 5;  // in seconds
-const uint32 kPrintJobsTimeout = 10;  // in seconds
+
+const double kTimeToNextAccessTokenUpdate = 0.8;  // relatively to living time.
 
 const char kCdd[] =
 "{\n"
@@ -98,6 +99,10 @@ net::IPAddressNumber GetLocalIp(const std::string& interface_name,
   return net::IPAddressNumber();
 }
 
+scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
+  return base::MessageLoop::current()->message_loop_proxy();
+}
+
 }  // namespace
 
 using cloud_print_response_parser::Job;
@@ -110,7 +115,12 @@ Printer::RegistrationInfo::RegistrationInfo()
 Printer::RegistrationInfo::~RegistrationInfo() {
 }
 
-Printer::Printer() : http_server_(this), connection_state_(OFFLINE) {
+Printer::Printer()
+    : http_server_(this),
+      connection_state_(OFFLINE),
+      on_idle_posted_(false),
+      pending_local_settings_check_(false),
+      pending_print_jobs_check_(false) {
 }
 
 Printer::~Printer() {
@@ -118,7 +128,7 @@ Printer::~Printer() {
 }
 
 bool Printer::Start() {
-  if (IsOnline())
+  if (IsRunning())
     return true;
 
   // TODO(maksymb): Add switch for command line to control interface name.
@@ -152,33 +162,16 @@ bool Printer::Start() {
     return false;
   }
 
-  // Creating Cloud Requester.
-  requester_.reset(
-      new CloudPrintRequester(
-          base::MessageLoop::current()->message_loop_proxy(),
-          this));
-
+  print_job_handler_.reset(new PrintJobHandler);
   xtoken_ = XPrivetToken();
   starttime_ = base::Time::Now();
 
-  print_job_handler_.reset(new PrintJobHandler);
-  connection_state_ = CONNECTING;
-  WakeUp();
-
+  TryConnect();
   return true;
 }
 
-bool Printer::IsOnline() const {
-  return requester_;
-}
-
-void Printer::WakeUp() {
-  VLOG(3) << "Function: " << __FUNCTION__;
-
-  if (!IsRegistered())
-    return;
-
-  FetchPrintJobs();
+bool Printer::IsRunning() const {
+  return print_job_handler_;
 }
 
 void Printer::Stop() {
@@ -186,6 +179,17 @@ void Printer::Stop() {
   http_server_.Shutdown();
   requester_.reset();
   print_job_handler_.reset();
+  xmpp_listener_.reset();
+}
+
+void Printer::OnAuthError() {
+  access_token_update_ = base::Time::Now();
+  ChangeState(OFFLINE);
+  // TODO(maksymb): Implement *instant* updating of access_token.
+}
+
+std::string Printer::GetAccessToken() {
+  return access_token_;
 }
 
 PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationStart(
@@ -285,9 +289,7 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationCancel(
     return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
 
   reg_info_ = RegistrationInfo();
-  requester_.reset(new CloudPrintRequester(
-      base::MessageLoop::current()->message_loop_proxy(),
-      this));  // Forget all old queries.
+  requester_.reset(new CloudPrintRequester(GetTaskRunner(), this));
 
   return PrivetHttpServer::REG_ERROR_OK;
 }
@@ -342,11 +344,36 @@ void Printer::OnRegistrationStartResponseParsed(
   reg_info_.complete_invite_url = complete_invite_url;
 }
 
-void Printer::OnGetAuthCodeResponseParsed(const std::string& refresh_token) {
+void Printer::OnGetAuthCodeResponseParsed(const std::string& refresh_token,
+                                          const std::string& access_token,
+                                          int access_token_expires_in_seconds) {
   reg_info_.state = RegistrationInfo::DEV_REG_REGISTERED;
   reg_info_.refresh_token = refresh_token;
-  SaveToFile(base::FilePath(kPrinterStatePath));
-  FetchPrintJobs();
+  RememberAccessToken(access_token, access_token_expires_in_seconds);
+
+  ConnectXmpp();
+}
+
+void Printer::OnAccesstokenReceviced(const std::string& access_token,
+                                     int expires_in_seconds) {
+  VLOG(3) << "Function: " << __FUNCTION__;
+  RememberAccessToken(access_token, expires_in_seconds);
+  switch (connection_state_) {
+    case ONLINE:
+      PostOnIdle();
+      break;
+
+    case CONNECTING:
+      TryConnect();
+      break;
+
+    default:
+      NOTREACHED();
+  }
+}
+
+void Printer::OnXmppJidReceived(const std::string& xmpp_jid) {
+  reg_info_.xmpp_jid = xmpp_jid;
 }
 
 void Printer::OnRegistrationError(const std::string& description) {
@@ -357,32 +384,30 @@ void Printer::OnRegistrationError(const std::string& description) {
   reg_info_.error_description = description;
 }
 
+void Printer::OnNetworkError() {
+  VLOG(3) << "Function: " << __FUNCTION__;
+  ChangeState(OFFLINE);
+}
+
 void Printer::OnServerError(const std::string& description) {
   VLOG(3) << "Function: " << __FUNCTION__;
   LOG(ERROR) << "Server error: " << description;
 
-  PostDelayedWakeUp(base::TimeDelta::FromSeconds(kReconnectTimeout));
-}
-
-void Printer::OnNetworkError() {
-  VLOG(3) << "Function: " << __FUNCTION__;
   ChangeState(OFFLINE);
-  PostDelayedWakeUp(base::TimeDelta::FromSeconds(kReconnectTimeout));
 }
 
 void Printer::OnPrintJobsAvailable(const std::vector<Job>& jobs) {
   VLOG(3) << "Function: " << __FUNCTION__;
-  ChangeState(ONLINE);
 
   LOG(INFO) << "Available printjobs: " << jobs.size();
 
   if (jobs.empty()) {
-    PostDelayedWakeUp(base::TimeDelta::FromSeconds(kPrintJobsTimeout));
+    pending_print_jobs_check_ = false;
+    PostOnIdle();
     return;
   }
 
-  // TODO(maksymb): After finishing XMPP add 'Printjobs available' flag.
-  LOG(INFO) << "Downloading first printjob.";
+  LOG(INFO) << "Downloading printjob.";
   requester_->RequestPrintJob(jobs[0]);
   return;
 }
@@ -399,8 +424,121 @@ void Printer::OnPrintJobDownloaded(const Job& job) {
 
 void Printer::OnPrintJobDone() {
   VLOG(3) << "Function: " << __FUNCTION__;
-  // TODO(maksymb): Replace PostTask with with XMPP notifications.
-  PostWakeUp();
+  PostOnIdle();
+}
+
+void Printer::OnXmppConnected() {
+  pending_local_settings_check_ = true;
+  pending_print_jobs_check_ = true;
+  ChangeState(ONLINE);
+  PostOnIdle();
+}
+
+void Printer::OnXmppAuthError() {
+  OnAuthError();
+}
+
+void Printer::OnXmppNetworkError() {
+  ChangeState(OFFLINE);
+}
+
+void Printer::OnXmppNewPrintJob(const std::string& device_id) {
+  DCHECK_EQ(reg_info_.device_id, device_id) << "Data should contain printer_id";
+  pending_print_jobs_check_ = true;
+}
+
+void Printer::OnXmppNewLocalSettings(const std::string& device_id) {
+  DCHECK_EQ(reg_info_.device_id, device_id) << "Data should contain printer_id";
+  NOTIMPLEMENTED();
+}
+
+void Printer::OnXmppDeleteNotification(const std::string& device_id) {
+  DCHECK_EQ(reg_info_.device_id, device_id) << "Data should contain printer_id";
+  NOTIMPLEMENTED();
+}
+
+void Printer::TryConnect() {
+  VLOG(3) << "Function: " << __FUNCTION__;
+
+  ChangeState(CONNECTING);
+  if (!requester_)
+    requester_.reset(new CloudPrintRequester(GetTaskRunner(), this));
+
+  if (IsRegistered()) {
+    if (access_token_update_ < base::Time::Now()) {
+      requester_->UpdateAccesstoken(reg_info_.refresh_token);
+    } else {
+      ConnectXmpp();
+    }
+  } else {
+    // TODO(maksymb): Ping google.com to check connection state.
+    ChangeState(ONLINE);
+  }
+}
+
+void Printer::ConnectXmpp() {
+  xmpp_listener_.reset(
+      new CloudPrintXmppListener(reg_info_.xmpp_jid, GetTaskRunner(), this));
+  xmpp_listener_->Connect(access_token_);
+}
+
+void Printer::OnIdle() {
+  DCHECK(IsRegistered());
+  DCHECK(on_idle_posted_) << "Instant call is not allowed";
+  on_idle_posted_ = false;
+
+  if (connection_state_ != ONLINE)
+    return;
+
+  if (access_token_update_ < base::Time::Now()) {
+    requester_->UpdateAccesstoken(reg_info_.refresh_token);
+    return;
+  }
+
+  // TODO(maksymb): Check if privet-accesstoken was requested.
+
+  // TODO(maksymb): Check if local-printing was requested.
+
+  if (pending_local_settings_check_) {
+    GetLocalSettings();
+    return;
+  }
+
+  if (pending_print_jobs_check_) {
+    FetchPrintJobs();
+    return;
+  }
+
+  base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&Printer::PostOnIdle, AsWeakPtr()),
+        base::TimeDelta::FromMilliseconds(1000));
+}
+
+void Printer::GetLocalSettings() {
+  DCHECK(IsRegistered());
+
+  pending_local_settings_check_ = false;
+  PostOnIdle();
+}
+
+void Printer::FetchPrintJobs() {
+  VLOG(3) << "Function: " << __FUNCTION__;
+
+  DCHECK(IsRegistered());
+  requester_->FetchPrintJobs(reg_info_.device_id);
+}
+
+void Printer::RememberAccessToken(const std::string& access_token,
+                                  int expires_in_seconds) {
+  using base::Time;
+  using base::TimeDelta;
+  access_token_ = access_token;
+  int64 time_to_update = static_cast<int64>(expires_in_seconds *
+                                            kTimeToNextAccessTokenUpdate);
+  access_token_update_ = Time::Now() + TimeDelta::FromSeconds(time_to_update);
+  VLOG(1) << "Current access_token: " << access_token;
+  SaveToFile(base::FilePath(kPrinterStatePath));
 }
 
 PrivetHttpServer::RegistrationErrorStatus Printer::CheckCommonRegErrors(
@@ -460,19 +598,6 @@ std::vector<std::string> Printer::CreateTxt() const {
   return txt;
 }
 
-void Printer::FetchPrintJobs() {
-  VLOG(3) << "Function: " << __FUNCTION__;
-
-  if (!IsRegistered())
-    return;
-
-  if (requester_->IsBusy()) {
-    PostDelayedWakeUp(base::TimeDelta::FromSeconds(kReconnectTimeout));
-  } else {
-    requester_->FetchPrintJobs(reg_info_.refresh_token, reg_info_.device_id);
-  }
-}
-
 void Printer::SaveToFile(const base::FilePath& file_path) const {
   base::DictionaryValue json;
   // TODO(maksymb): Get rid of in-place constants.
@@ -481,6 +606,10 @@ void Printer::SaveToFile(const base::FilePath& file_path) const {
     json.SetString("user", reg_info_.user);
     json.SetString("device_id", reg_info_.device_id);
     json.SetString("refresh_token", reg_info_.refresh_token);
+    json.SetString("xmpp_jid", reg_info_.xmpp_jid);
+    json.SetString("access_token", access_token_);
+    json.SetInteger("access_token_update",
+                    static_cast<int>(access_token_update_.ToTimeT()));
   } else {
     json.SetBoolean("registered", false);
   }
@@ -497,10 +626,8 @@ void Printer::SaveToFile(const base::FilePath& file_path) const {
 }
 
 bool Printer::LoadFromFile(const base::FilePath& file_path) {
-  if (!base::PathExists(file_path)) {
-    LOG(INFO) << "Registration info is not found. Printer is unregistered.";
+  if (!base::PathExists(file_path))
     return false;
-  }
 
   LOG(INFO) << "Loading registration info from file.";
   std::string json_str;
@@ -545,28 +672,45 @@ bool Printer::LoadFromFile(const base::FilePath& file_path) {
     return false;
   }
 
+  std::string xmpp_jid;
+  if (!json->GetString("xmpp_jid", &xmpp_jid)) {
+    LOG(ERROR) << "Cannot parse |xmpp_jid|.";
+    return false;
+  }
+
+  std::string access_token;
+  if (!json->GetString("access_token", &access_token)) {
+    LOG(ERROR) << "Cannot parse |access_token|.";
+    return false;
+  }
+
+  int access_token_update;
+  if (!json->GetInteger("access_token_update", &access_token_update)) {
+    LOG(ERROR) << "Cannot parse |access_token_update|.";
+    return false;
+  }
+
   reg_info_ = RegistrationInfo();
   reg_info_.state = RegistrationInfo::DEV_REG_REGISTERED;
   reg_info_.user = user;
   reg_info_.device_id = device_id;
   reg_info_.refresh_token = refresh_token;
+  reg_info_.xmpp_jid = xmpp_jid;
+  using base::Time;
+  access_token_ = access_token;
+  access_token_update_ = Time::FromTimeT(access_token_update);
 
   return true;
 }
 
-void Printer::PostWakeUp() {
+void Printer::PostOnIdle() {
   VLOG(3) << "Function: " << __FUNCTION__;
+  DCHECK(!on_idle_posted_) << "Only one instance can be posted.";
+  on_idle_posted_ = true;
+
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&Printer::WakeUp, AsWeakPtr()));
-}
-
-void Printer::PostDelayedWakeUp(const base::TimeDelta& delay) {
-  VLOG(3) << "Function: " << __FUNCTION__;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&Printer::WakeUp, AsWeakPtr()),
-      delay);
+      base::Bind(&Printer::OnIdle, AsWeakPtr()));
 }
 
 PrivetHttpServer::RegistrationErrorStatus
@@ -609,9 +753,36 @@ bool Printer::ChangeState(ConnectionState new_state) {
   if (connection_state_ == new_state)
     return false;
 
-  VLOG(1) << "Printer is now " << ConnectionStateToString(new_state);
   connection_state_ = new_state;
+  LOG(INFO) << base::StringPrintf(
+      "Printer is now %s (%s)",
+      ConnectionStateToString(connection_state_).c_str(),
+      IsRegistered() ? "registered" : "unregistered");
+
   dns_server_.UpdateMetadata(CreateTxt());
+
+  switch (connection_state_) {
+    case CONNECTING:
+      break;
+
+    case ONLINE:
+      break;
+
+    case OFFLINE:
+      requester_.reset();
+      xmpp_listener_.reset();
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&Printer::TryConnect, AsWeakPtr()),
+          base::TimeDelta::FromSeconds(kReconnectTimeout));
+
+    case NOT_CONFIGURED:
+      break;
+
+    default:
+      NOTREACHED();
+  }
+
   return true;
 }
 
