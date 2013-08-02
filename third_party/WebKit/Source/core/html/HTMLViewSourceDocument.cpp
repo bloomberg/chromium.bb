@@ -85,6 +85,7 @@ void HTMLViewSourceDocument::createContainingTable()
     table->parserAppendChild(m_tbody);
     m_tbody->lazyAttach();
     m_current = m_tbody;
+    m_lineNumber = 0;
 }
 
 void HTMLViewSourceDocument::addSource(const String& source, HTMLToken& token)
@@ -194,6 +195,9 @@ void HTMLViewSourceDocument::addLine(const AtomicString& className)
     // Create a cell that will hold the line number (it is generated in the stylesheet using counters).
     RefPtr<HTMLTableCellElement> td = HTMLTableCellElement::create(tdTag, this);
     td->setAttribute(classAttr, "webkit-line-number");
+    RefPtr<Text> t = Text::create(this, String::number(++m_lineNumber));
+    td->parserAppendChild(t);
+    t->lazyAttach();
     trow->parserAppendChild(td);
     td->lazyAttach();
 

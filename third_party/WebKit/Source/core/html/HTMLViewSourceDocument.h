@@ -65,6 +65,7 @@ private:
     RefPtr<Element> m_current;
     RefPtr<HTMLTableSectionElement> m_tbody;
     RefPtr<HTMLTableCellElement> m_td;
+    int m_lineNumber;
 };
 
 }

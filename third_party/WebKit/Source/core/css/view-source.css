@@ -29,7 +29,6 @@ body {
 table {
     width: 100%;
     border-spacing: 0;
-    counter-reset: lines;
     white-space: pre-wrap !important;
     margin: 0;
     word-break: break-word;
@@ -67,13 +66,8 @@ td {
     word-break: normal;
     white-space: nowrap;
     font-size: 9px;
-    font-family: Helvetica
-}
-
-.webkit-line-number::before {
-    content: counter(lines);
-    counter-increment: lines;
-    -webkit-user-select: none
+    font-family: Helvetica;
+    -webkit-user-select: none;
 }
 
 tbody:last-child .webkit-line-content:empty:before {
