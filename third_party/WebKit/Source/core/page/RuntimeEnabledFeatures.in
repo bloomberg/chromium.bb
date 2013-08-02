@@ -79,7 +79,7 @@ SpeechSynthesis status=experimental
 Stream status=experimental
 StyleScoped status=experimental
 Touch status=stable
-Vibration status=test
+Vibration status=experimental
 VideoTrack status=stable
 WebAnimations
 WebAnimationsCSS depends_on=WebAnimations
