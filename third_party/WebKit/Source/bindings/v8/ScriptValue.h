@@ -71,6 +71,7 @@ public:
     }
 
     static ScriptValue createNull() { return ScriptValue(v8::Null()); }
+    static ScriptValue createBoolean(bool b) { return ScriptValue(b ? v8::True() : v8::False()); }
 
     ScriptValue& operator=(const ScriptValue& value)
     {

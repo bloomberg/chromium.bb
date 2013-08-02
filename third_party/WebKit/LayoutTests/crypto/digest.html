@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/common.js"></script>
 </head>
 <body>
 <p id="description"></p>
@@ -11,23 +12,6 @@
 description("Tests cypto.subtle.digest.");
 
 jsTestIsAsync = true;
-
-// Builds a hex string representation of any array-like input (array or
-// ArrayBufferView). The output looks like this:
-//    [ab 03 4c 99]
-function byteArrayToHexString(bytes)
-{
-    var hexBytes = [];
-
-    for (var i = 0; i < bytes.length; ++i) {
-        var byteString = bytes[i].toString(16);
-        if (byteString.length < 2)
-            byteString = "0" + byteString;
-        hexBytes.push(byteString);
-    }
-
-    return "[" + hexBytes.join(" ") + "]";
-}
 
 // Each sub-test run in this file is asynchronous. Chaining them together
 // manually leads to very unreadable code, due to having closures within

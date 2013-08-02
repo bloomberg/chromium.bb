@@ -101,7 +101,7 @@ bool keyCanBeUsedForAlgorithm(const WebKit::WebCryptoKey& key, const WebKit::Web
     return false;
 }
 
-PassRefPtr<CryptoOperation> createCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ExceptionState& es)
+PassRefPtr<CryptoOperation> createCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ExceptionState& es)
 {
     WebKit::WebCrypto* platformCrypto = WebKit::Platform::current()->crypto();
     if (!platformCrypto) {
@@ -126,6 +126,12 @@ PassRefPtr<CryptoOperation> createCryptoOperation(const Dictionary& rawAlgorithm
         }
     }
 
+    // Only Verify takes a signature.
+    if (operationType == Verify && !signature) {
+        es.throwDOMException(TypeError);
+        return 0;
+    }
+
     RefPtr<CryptoOperationImpl> opImpl = CryptoOperationImpl::create();
     WebKit::WebCryptoOperationResult result(opImpl.get());
 
@@ -138,6 +144,9 @@ PassRefPtr<CryptoOperation> createCryptoOperation(const Dictionary& rawAlgorithm
         break;
     case Sign:
         platformCrypto->sign(algorithm, key->key(), result);
+        break;
+    case Verify:
+        platformCrypto->verifySignature(algorithm, key->key(), reinterpret_cast<const unsigned char*>(signature->baseAddress()), signature->byteLength(), result);
         break;
     case Digest:
         platformCrypto->digest(algorithm, result);
@@ -161,28 +170,27 @@ SubtleCrypto::SubtleCrypto()
 
 PassRefPtr<CryptoOperation> SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, Key* key, ExceptionState& es)
 {
-    return createCryptoOperation(rawAlgorithm, key, Encrypt, es);
+    return createCryptoOperation(rawAlgorithm, key, Encrypt, 0, es);
 }
 
 PassRefPtr<CryptoOperation> SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, Key* key, ExceptionState& es)
 {
-    return createCryptoOperation(rawAlgorithm, key, Decrypt, es);
+    return createCryptoOperation(rawAlgorithm, key, Decrypt, 0, es);
 }
 
 PassRefPtr<CryptoOperation> SubtleCrypto::sign(const Dictionary& rawAlgorithm, Key* key, ExceptionState& es)
 {
-    return createCryptoOperation(rawAlgorithm, key, Sign, es);
+    return createCryptoOperation(rawAlgorithm, key, Sign, 0, es);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, Key* key, ExceptionState& es)
+PassRefPtr<CryptoOperation> SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, Key* key, ArrayBufferView* signature, ExceptionState& es)
 {
-    // FIXME
-    return 0;
+    return createCryptoOperation(rawAlgorithm, key, Verify, signature, es);
 }
 
 PassRefPtr<CryptoOperation> SubtleCrypto::digest(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
-    return createCryptoOperation(rawAlgorithm, 0, Digest, es);
+    return createCryptoOperation(rawAlgorithm, 0, Digest, 0, es);
 }
 
 ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)

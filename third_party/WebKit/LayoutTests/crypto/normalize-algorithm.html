@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/common.js"></script>
 </head>
 <body>
 <p id="description"></p>
@@ -163,17 +164,6 @@ function importAesCbcKey(keyUsages)
     var data = new Uint8Array([]);
     var algorithm = {name: "aes-cbc"};
     var extractable = false;
-
-    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
-}
-
-function importHmacSha1Key()
-{
-    var keyFormat = "spki";
-    var data = new Uint8Array([]);
-    var algorithm = {name: 'hmac', hash: {name: 'sha-1'}};
-    var extractable = false;
-    var keyUsages = ['encrypt', 'decrypt', 'sign', 'verify'];
 
     return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
 }

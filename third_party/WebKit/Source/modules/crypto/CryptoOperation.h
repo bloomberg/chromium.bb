@@ -86,6 +86,7 @@ public:
     virtual void initializationSucceeded(WebKit::WebCryptoOperation*) OVERRIDE;
     virtual void completeWithError() OVERRIDE;
     virtual void completeWithArrayBuffer(const WebKit::WebArrayBuffer&) OVERRIDE;
+    virtual void completeWithBoolean(bool) OVERRIDE;
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
 

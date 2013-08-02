@@ -89,6 +89,7 @@ public:
     virtual void encrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, WebCryptoOperationResult&) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void decrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, WebCryptoOperationResult&) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void sign(const WebCryptoAlgorithm&, const WebCryptoKey&, WebCryptoOperationResult&) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void verifySignature(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* signature, size_t, WebCryptoOperationResult&) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void digest(const WebCryptoAlgorithm&, WebCryptoOperationResult&) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // The following methods begin an asynchronous single-part key operation.
@@ -155,6 +156,7 @@ public:
     virtual void initializationSucceeded(WebCryptoOperation*) = 0;
     virtual void completeWithError() = 0;
     virtual void completeWithArrayBuffer(const WebArrayBuffer&) = 0;
+    virtual void completeWithBoolean(bool) = 0;
 
     virtual void ref() = 0;
     virtual void deref() = 0;
@@ -185,6 +187,7 @@ public:
     WEBKIT_EXPORT void initializationSucceeded(WebCryptoOperation*);
     WEBKIT_EXPORT void completeWithError();
     WEBKIT_EXPORT void completeWithArrayBuffer(const WebArrayBuffer&);
+    WEBKIT_EXPORT void completeWithBoolean(bool);
 
 private:
     WEBKIT_EXPORT void reset();

@@ -52,7 +52,7 @@ public:
     PassRefPtr<CryptoOperation> decrypt(const Dictionary&, Key*, ExceptionState&);
     PassRefPtr<CryptoOperation> sign(const Dictionary&, Key*, ExceptionState&);
     // Note that this is not named "verify" because when compiling on Mac that expands to a macro and breaks.
-    PassRefPtr<CryptoOperation> verifySignature(const Dictionary&, Key*, ExceptionState&);
+    PassRefPtr<CryptoOperation> verifySignature(const Dictionary&, Key*, ArrayBufferView* signature, ExceptionState&);
     PassRefPtr<CryptoOperation> digest(const Dictionary&, ExceptionState&);
 
     ScriptObject importKey(const String&, ArrayBufferView*, const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);

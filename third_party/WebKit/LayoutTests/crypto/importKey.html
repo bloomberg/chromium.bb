@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/common.js"></script>
 </head>
 <body>
 <p id="description"></p>
@@ -11,14 +12,6 @@
 description("Tests cypto.subtle.importKey.");
 
 jsTestIsAsync = true;
-
-function asciiToArrayBuffer(str)
-{
-    var chars = [];
-    for (var i = 0; i < str.length; ++i)
-        chars.push(str.charCodeAt(i));
-    return new Uint8Array(chars);
-}
 
 // Each sub-test run in this file is asynchronous. Chaining them together
 // manually leads to very unreadable code, due to having closures within

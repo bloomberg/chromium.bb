@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests cypto.subtle.sign and crypto.subtle.verify");
+
+jsTestIsAsync = true;
+
+importHmacSha1Key().then(function(key) {
+    hmacSha1Key = key;
+    hmacSha1 = {name: 'hmac', hash: {name: 'Sha-1'}};
+
+    // Pass invalid signature parameters to verify()
+    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, null)");
+    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, 'a')");
+    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, [])");
+
+    var data = asciiToArrayBuffer("hello");
+    var expectedSignature = asciiToArrayBuffer("signed HMAC:hello");
+
+    var signPromise = crypto.subtle.sign(hmacSha1, hmacSha1Key).process(data).finish();
+    var verifyPromise = crypto.subtle.verify(hmacSha1, hmacSha1Key, expectedSignature).process(data).finish();
+    var badVerifyPromise = crypto.subtle.verify(hmacSha1, hmacSha1Key, asciiToArrayBuffer("badsignature")).process(data).finish();
+
+    Promise.every(signPromise, verifyPromise, badVerifyPromise).then(function(results)
+    {
+        signResult = results[0];
+        verifyResult1 = results[1];
+        verifyResult2 = results[2];
+
+        shouldBe("signResult.byteLength", "17");
+        shouldBe("verifyResult1", "true");
+        shouldBe("verifyResult2", "false");
+
+        finishJSTest();
+    });
+});
+
+</script>
+
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>

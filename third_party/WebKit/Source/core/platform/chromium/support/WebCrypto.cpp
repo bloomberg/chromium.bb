@@ -59,6 +59,12 @@ void WebCryptoOperationResult::completeWithArrayBuffer(const WebArrayBuffer& buf
     reset();
 }
 
+void WebCryptoOperationResult::completeWithBoolean(bool b)
+{
+    m_impl->completeWithBoolean(b);
+    reset();
+}
+
 void WebCryptoOperationResult::reset()
 {
     m_impl.reset();

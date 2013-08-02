@@ -120,6 +120,15 @@ void CryptoOperationImpl::completeWithArrayBuffer(const WebKit::WebArrayBuffer& 
     promiseResolver()->fulfill(PassRefPtr<ArrayBuffer>(buffer));
 }
 
+void CryptoOperationImpl::completeWithBoolean(bool b)
+{
+    ASSERT(m_state == Processing || m_state == Finishing);
+
+    m_impl = 0;
+    m_state = Done;
+    promiseResolver()->fulfill(ScriptValue::createBoolean(b));
+}
+
 void CryptoOperationImpl::process(const void* bytes, size_t size)
 {
     switch (m_state) {
