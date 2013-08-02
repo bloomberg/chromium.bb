@@ -2,23 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/usb/usb_context.h"
+#include "chrome/browser/usb/usb_service.h"
 
-#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class UsbContextTest : public testing::Test {
+class UsbServiceTest : public testing::Test {
  protected:
-  class UsbContextForTest : public UsbContext {
-   public:
-    UsbContextForTest() : UsbContext() {}
-   private:
-    virtual ~UsbContextForTest() {}
-    DISALLOW_COPY_AND_ASSIGN(UsbContextForTest);
-  };
+  class UsbServiceForTest : public UsbService {};
 };
 
 #if defined(OS_LINUX)
@@ -31,10 +24,10 @@ class UsbContextTest : public testing::Test {
 #define MAYBE_GracefulShutdown GracefulShutdown
 #endif
 
-TEST_F(UsbContextTest, MAYBE_GracefulShutdown) {
+TEST_F(UsbServiceTest, MAYBE_GracefulShutdown) {
   base::TimeTicks start = base::TimeTicks::Now();
   {
-    scoped_refptr<UsbContextForTest> context(new UsbContextForTest());
+    scoped_ptr<UsbServiceForTest> service(new UsbServiceForTest());
   }
   base::TimeDelta elapse = base::TimeTicks::Now() - start;
   if (elapse > base::TimeDelta::FromSeconds(2)) {
