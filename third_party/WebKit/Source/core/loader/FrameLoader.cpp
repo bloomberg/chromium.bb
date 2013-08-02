@@ -801,10 +801,8 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     m_documentLoader->clearRedirectChain();
     m_documentLoader->setIsClientRedirect((m_startingClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture());
     m_documentLoader->setReplacesCurrentHistoryItem(!isNewNavigation);
-    if (m_documentLoader->isClientRedirect()) {
-        m_client->dispatchDidCompleteClientRedirect(oldURL);
+    if (m_documentLoader->isClientRedirect())
         m_documentLoader->appendRedirect(oldURL);
-    }
     m_documentLoader->appendRedirect(url);
 
     m_client->dispatchDidNavigateWithinPage();
@@ -1821,8 +1819,6 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
         m_provisionalDocumentLoader->appendRedirect(m_frame->document()->url());
     m_provisionalDocumentLoader->appendRedirect(m_provisionalDocumentLoader->request().url());
     m_client->dispatchDidStartProvisionalLoad();
-    if (m_provisionalDocumentLoader->isClientRedirect())
-        m_client->dispatchDidCompleteClientRedirect(m_frame->document()->url());
     ASSERT(m_provisionalDocumentLoader);
     m_provisionalDocumentLoader->startLoadingMainResource();
 }

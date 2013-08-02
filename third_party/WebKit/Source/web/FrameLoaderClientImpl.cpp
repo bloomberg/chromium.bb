@@ -352,12 +352,6 @@ void FrameLoaderClientImpl::dispatchDidReceiveServerRedirectForProvisionalLoad()
         m_webFrame->client()->didReceiveServerRedirectForProvisionalLoad(m_webFrame);
 }
 
-void FrameLoaderClientImpl::dispatchDidCompleteClientRedirect(const KURL& sourceURL)
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->didCompleteClientRedirect(m_webFrame, sourceURL);
-}
-
 void FrameLoaderClientImpl::dispatchDidNavigateWithinPage()
 {
     bool isNewNavigation;

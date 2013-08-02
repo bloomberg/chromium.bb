@@ -81,7 +81,6 @@ public:
     virtual void dispatchDidLoadResourceFromMemoryCache(WebCore::DocumentLoader*, const WebCore::ResourceRequest&, const WebCore::ResourceResponse&, int length);
     virtual void dispatchDidHandleOnloadEvents();
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad();
-    virtual void dispatchDidCompleteClientRedirect(const WebCore::KURL&);
     virtual void dispatchDidNavigateWithinPage();
     virtual void dispatchDidChangeLocationWithinPage();
     virtual void dispatchWillClose();

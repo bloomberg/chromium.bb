@@ -150,9 +150,6 @@ public:
     // A form submission is about to occur.
     virtual void willSubmitForm(WebFrame*, const WebFormElement&) { }
 
-    // A client-side redirect completed.
-    virtual void didCompleteClientRedirect(WebFrame*, const WebURL& fromURL) { }
-
     // A datasource has been created for a new navigation.  The given
     // datasource will become the provisional datasource for the frame.
     virtual void didCreateDataSource(WebFrame*, WebDataSource*) { }
