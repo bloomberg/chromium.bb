@@ -266,46 +266,48 @@ void PSInstance::Error(const char *fmt, ...) {
 
 void PSInstance::SetEnabledEvents(uint32_t mask) {
   events_enabled_ = mask;
+  if (mask == 0) {
+    static bool warn_once = true;
+    if (warn_once) {
+      Warn("PSInstance::SetEnabledEvents(mask) where mask == 0 will block\n");
+      Warn("all events. This can come from PSEventSetFilter(PSE_NONE);\n");
+      warn_once = false;
+    }
+  }
 }
 
 void PSInstance::PostEvent(PSEventType type) {
   assert(PSE_GRAPHICS3D_GRAPHICS3DCONTEXTLOST == type ||
          PSE_MOUSELOCK_MOUSELOCKLOST == type);
 
-  if (events_enabled_ & type) {
-    PSEvent *env = (PSEvent *) malloc(sizeof(PSEvent));
-    memset(env, 0, sizeof(*env));
-    env->type = type;
-    event_queue_.Enqueue(env);
-  }
+  PSEvent *env = (PSEvent *) malloc(sizeof(PSEvent));
+  memset(env, 0, sizeof(*env));
+  env->type = type;
+  event_queue_.Enqueue(env);
 }
 
 void PSInstance::PostEvent(PSEventType type, PP_Bool bool_value) {
   assert(PSE_INSTANCE_DIDCHANGEFOCUS == type);
 
-  if (events_enabled_ & type) {
-    PSEvent *env = (PSEvent *) malloc(sizeof(PSEvent));
-    memset(env, 0, sizeof(*env));
-    env->type = type;
-    env->as_bool = bool_value;
-    event_queue_.Enqueue(env);
-  }
+  PSEvent *env = (PSEvent *) malloc(sizeof(PSEvent));
+  memset(env, 0, sizeof(*env));
+  env->type = type;
+  env->as_bool = bool_value;
+  event_queue_.Enqueue(env);
 }
 
 void PSInstance::PostEvent(PSEventType type, PP_Resource resource) {
   assert(PSE_INSTANCE_HANDLEINPUT == type ||
          PSE_INSTANCE_DIDCHANGEVIEW == type);
 
-  if (events_enabled_ & type) {
-    if (resource) {
-      PSInterfaceCore()->AddRefResource(resource);
-    }
-    PSEvent *env = (PSEvent *) malloc(sizeof(PSEvent));
-    memset(env, 0, sizeof(*env));
-    env->type = type;
-    env->as_resource = resource;
-    event_queue_.Enqueue(env);
+  if (resource) {
+    PSInterfaceCore()->AddRefResource(resource);
   }
+  PSEvent *env = (PSEvent *) malloc(sizeof(PSEvent));
+  memset(env, 0, sizeof(*env));
+  env->type = type;
+  env->as_resource = resource;
+  event_queue_.Enqueue(env);
 }
 
 void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
@@ -335,22 +337,38 @@ void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
     return;
   }
 
-  if (events_enabled_ & type) {
-    PSInterfaceVar()->AddRef(var);
-    PSEvent *env = (PSEvent *) malloc(sizeof(PSEvent));
-    memset(env, 0, sizeof(*env));
-    env->type = type;
-    env->as_var = var;
-    event_queue_.Enqueue(env);
-  }
+  PSInterfaceVar()->AddRef(var);
+  PSEvent *env = (PSEvent *) malloc(sizeof(PSEvent));
+  memset(env, 0, sizeof(*env));
+  env->type = type;
+  env->as_var = var;
+  event_queue_.Enqueue(env);
 }
 
 PSEvent* PSInstance::TryAcquireEvent() {
-  return event_queue_.Dequeue(false);
+  PSEvent* event;
+  while(true) {
+    event = event_queue_.Dequeue(false);
+    if (NULL == event)
+      break;
+    if (events_enabled_ & event->type)
+      break;
+    // Release filtered events & continue to acquire.
+    ReleaseEvent(event);
+  }
+  return event;
 }
 
 PSEvent* PSInstance::WaitAcquireEvent() {
-  return event_queue_.Dequeue(true);
+  PSEvent* event;
+  while(true) {
+    event = event_queue_.Dequeue(true);
+    if (events_enabled_ & event->type)
+      break;
+    // Release filtered events & continue to acquire.
+    ReleaseEvent(event);
+  }
+  return event;
 }
 
 void PSInstance::ReleaseEvent(PSEvent* event) {
