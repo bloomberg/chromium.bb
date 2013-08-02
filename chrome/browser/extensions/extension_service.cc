@@ -1888,13 +1888,16 @@ void ExtensionService::UnloadExtension(
     // disabled extension is unloaded (since they are also tracking the disabled
     // extensions).
     system_->UnregisterExtensionWithRequestContexts(extension_id, reason);
-    return;
+  } else {
+    // Remove the extension from our list.
+    extensions_.Remove(extension->id());
+    NotifyExtensionUnloaded(extension.get(), reason);
   }
 
-  // Remove the extension from our list.
-  extensions_.Remove(extension->id());
-
-  NotifyExtensionUnloaded(extension.get(), reason);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_REMOVED,
+      content::Source<Profile>(profile_),
+      content::Details<const Extension>(extension.get()));
 }
 
 void ExtensionService::UnloadAllExtensions() {
@@ -2599,7 +2602,14 @@ void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
 
 void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
   std::string lowercase_id = StringToLowerASCII(id);
+  const Extension* extension = terminated_extensions_.GetByID(lowercase_id);
   terminated_extensions_.Remove(lowercase_id);
+  if (extension) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_EXTENSION_REMOVED,
+        content::Source<Profile>(profile_),
+        content::Details<const Extension>(extension));
+  }
 }
 
 const Extension* ExtensionService::GetTerminatedExtension(
