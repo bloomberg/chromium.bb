@@ -187,7 +187,6 @@ TEST_F('CertificateManagerWebUITest',
   $('personalCertsTab-view').click();
 
   Mock4JS.verifyAllMocks();
-  Mock4JS.clearMocksToVerify();
 
   this.mockHandler.expects(once()).deleteCertificate(['c1']).will(callFunction(
       function() {
