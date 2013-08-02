@@ -11,14 +11,36 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::Sequence;
+
 namespace {
 
 using remoting::protocol::PairingRegistry;
+
+class MockPairingRegistryCallbacks {
+ public:
+  MockPairingRegistryCallbacks() {}
+  virtual ~MockPairingRegistryCallbacks() {}
+
+  MOCK_METHOD1(DoneCallback, void(bool));
+  MOCK_METHOD1(GetAllPairingsCallbackPtr, void(base::ListValue*));
+  MOCK_METHOD1(GetPairingCallback, void(PairingRegistry::Pairing));
+
+  void GetAllPairingsCallback(scoped_ptr<base::ListValue> pairings) {
+    GetAllPairingsCallbackPtr(pairings.get());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPairingRegistryCallbacks);
+};
 
 // Verify that a pairing Dictionary has correct entries, but doesn't include
 // any shared secret.
@@ -59,32 +81,19 @@ class PairingRegistryTest : public testing::Test {
     ++callback_count_;
   }
 
-  void ExpectClientName(const std::string& expected,
-                        PairingRegistry::Pairing actual) {
-    EXPECT_EQ(expected, actual.client_name());
-    ++callback_count_;
-  }
-
-  void ExpectNoPairings(scoped_ptr<base::ListValue> pairings) {
-    EXPECT_TRUE(pairings->empty());
-    ++callback_count_;
-  }
-
  protected:
+  base::MessageLoop message_loop_;
+  base::RunLoop run_loop_;
+
   int callback_count_;
   scoped_ptr<base::ListValue> pairings_;
 };
 
 TEST_F(PairingRegistryTest, CreateAndGetPairings) {
-  MockPairingRegistryDelegate* mock_delegate =
-      new MockPairingRegistryDelegate();
-  scoped_ptr<PairingRegistry::Delegate> delegate(mock_delegate);
-
-  scoped_refptr<PairingRegistry> registry(new PairingRegistry(delegate.Pass()));
+  scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
+      scoped_ptr<PairingRegistry::Delegate>(new MockPairingRegistryDelegate()));
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("my_client");
-  mock_delegate->RunCallback();
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("my_client");
-  mock_delegate->RunCallback();
 
   EXPECT_NE(pairing_1.shared_secret(), pairing_2.shared_secret());
 
@@ -92,7 +101,6 @@ TEST_F(PairingRegistryTest, CreateAndGetPairings) {
                        base::Bind(&PairingRegistryTest::ExpectSecret,
                                   base::Unretained(this),
                                   pairing_1.shared_secret()));
-  mock_delegate->RunCallback();
   EXPECT_EQ(1, callback_count_);
 
   // Check that the second client is paired with a different shared secret.
@@ -100,25 +108,18 @@ TEST_F(PairingRegistryTest, CreateAndGetPairings) {
                        base::Bind(&PairingRegistryTest::ExpectSecret,
                                   base::Unretained(this),
                                   pairing_2.shared_secret()));
-  mock_delegate->RunCallback();
   EXPECT_EQ(2, callback_count_);
 }
 
 TEST_F(PairingRegistryTest, GetAllPairings) {
-  MockPairingRegistryDelegate* mock_delegate =
-      new MockPairingRegistryDelegate();
-  scoped_ptr<PairingRegistry::Delegate> delegate(mock_delegate);
-
-  scoped_refptr<PairingRegistry> registry(new PairingRegistry(delegate.Pass()));
+  scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
+      scoped_ptr<PairingRegistry::Delegate>(new MockPairingRegistryDelegate()));
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
-  mock_delegate->RunCallback();
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
-  mock_delegate->RunCallback();
 
   registry->GetAllPairings(
       base::Bind(&PairingRegistryTest::set_pairings,
                  base::Unretained(this)));
-  mock_delegate->RunCallback();
 
   ASSERT_EQ(2u, pairings_->GetSize());
   const base::DictionaryValue* actual_pairing_1;
@@ -139,27 +140,20 @@ TEST_F(PairingRegistryTest, GetAllPairings) {
 }
 
 TEST_F(PairingRegistryTest, DeletePairing) {
-  MockPairingRegistryDelegate* mock_delegate =
-      new MockPairingRegistryDelegate();
-  scoped_ptr<PairingRegistry::Delegate> delegate(mock_delegate);
-
-  scoped_refptr<PairingRegistry> registry(new PairingRegistry(delegate.Pass()));
+  scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
+      scoped_ptr<PairingRegistry::Delegate>(new MockPairingRegistryDelegate()));
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
-  mock_delegate->RunCallback();
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
-  mock_delegate->RunCallback();
 
   registry->DeletePairing(
       pairing_1.client_id(),
       base::Bind(&PairingRegistryTest::ExpectSaveSuccess,
                  base::Unretained(this)));
-  mock_delegate->RunCallback();
 
   // Re-read the list, and verify it only has the pairing_2 client.
   registry->GetAllPairings(
       base::Bind(&PairingRegistryTest::set_pairings,
                  base::Unretained(this)));
-  mock_delegate->RunCallback();
 
   ASSERT_EQ(1u, pairings_->GetSize());
   const base::DictionaryValue* actual_pairing_2;
@@ -171,15 +165,10 @@ TEST_F(PairingRegistryTest, DeletePairing) {
 }
 
 TEST_F(PairingRegistryTest, ClearAllPairings) {
-  MockPairingRegistryDelegate* mock_delegate =
-      new MockPairingRegistryDelegate();
-  scoped_ptr<PairingRegistry::Delegate> delegate(mock_delegate);
-
-  scoped_refptr<PairingRegistry> registry(new PairingRegistry(delegate.Pass()));
+  scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
+      scoped_ptr<PairingRegistry::Delegate>(new MockPairingRegistryDelegate()));
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
-  mock_delegate->RunCallback();
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
-  mock_delegate->RunCallback();
 
   registry->ClearAllPairings(
       base::Bind(&PairingRegistryTest::ExpectSaveSuccess,
@@ -189,57 +178,81 @@ TEST_F(PairingRegistryTest, ClearAllPairings) {
   registry->GetAllPairings(
       base::Bind(&PairingRegistryTest::set_pairings,
                  base::Unretained(this)));
-  mock_delegate->RunCallback();
 
   EXPECT_TRUE(pairings_->empty());
 }
 
-TEST_F(PairingRegistryTest, SerializedRequests) {
-  MockPairingRegistryDelegate* mock_delegate =
-      new MockPairingRegistryDelegate();
-  scoped_ptr<PairingRegistry::Delegate> delegate(mock_delegate);
-  mock_delegate->set_run_save_callback_automatically(false);
+ACTION_P(QuitMessageLoop, callback) {
+  callback.Run();
+}
 
-  scoped_refptr<PairingRegistry> registry(new PairingRegistry(delegate.Pass()));
+MATCHER_P(EqualsClientName, client_name, "") {
+  return arg.client_name() == client_name;
+}
+
+MATCHER(NoPairings, "") {
+  return arg->empty();
+}
+
+TEST_F(PairingRegistryTest, SerializedRequests) {
+  MockPairingRegistryCallbacks callbacks;
+  Sequence s;
+  EXPECT_CALL(callbacks, GetPairingCallback(EqualsClientName("client1")))
+      .InSequence(s);
+  EXPECT_CALL(callbacks, GetPairingCallback(EqualsClientName("client2")))
+      .InSequence(s);
+  EXPECT_CALL(callbacks, DoneCallback(true))
+      .InSequence(s);
+  EXPECT_CALL(callbacks, GetPairingCallback(EqualsClientName("client1")))
+      .InSequence(s);
+  EXPECT_CALL(callbacks, GetPairingCallback(EqualsClientName("")))
+      .InSequence(s);
+  EXPECT_CALL(callbacks, DoneCallback(true))
+      .InSequence(s);
+  EXPECT_CALL(callbacks, GetAllPairingsCallbackPtr(NoPairings()))
+      .InSequence(s);
+  EXPECT_CALL(callbacks, GetPairingCallback(EqualsClientName("client3")))
+      .InSequence(s)
+      .WillOnce(QuitMessageLoop(run_loop_.QuitClosure()));
+
+  scoped_refptr<PairingRegistry> registry = new PairingRegistry(
+      base::ThreadTaskRunnerHandle::Get(),
+      scoped_ptr<PairingRegistry::Delegate>(new MockPairingRegistryDelegate()));
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
   registry->GetPairing(
       pairing_1.client_id(),
-      base::Bind(&PairingRegistryTest::ExpectClientName,
-                 base::Unretained(this), "client1"));
+      base::Bind(&MockPairingRegistryCallbacks::GetPairingCallback,
+                 base::Unretained(&callbacks)));
   registry->GetPairing(
       pairing_2.client_id(),
-      base::Bind(&PairingRegistryTest::ExpectClientName,
-                 base::Unretained(this), "client2"));
+      base::Bind(&MockPairingRegistryCallbacks::GetPairingCallback,
+                 base::Unretained(&callbacks)));
   registry->DeletePairing(
       pairing_2.client_id(),
-      base::Bind(&PairingRegistryTest::ExpectSaveSuccess,
-                 base::Unretained(this)));
+      base::Bind(&MockPairingRegistryCallbacks::DoneCallback,
+                 base::Unretained(&callbacks)));
   registry->GetPairing(
       pairing_1.client_id(),
-      base::Bind(&PairingRegistryTest::ExpectClientName,
-                 base::Unretained(this), "client1"));
+      base::Bind(&MockPairingRegistryCallbacks::GetPairingCallback,
+                 base::Unretained(&callbacks)));
   registry->GetPairing(
       pairing_2.client_id(),
-      base::Bind(&PairingRegistryTest::ExpectClientName,
-                 base::Unretained(this), ""));
+      base::Bind(&MockPairingRegistryCallbacks::GetPairingCallback,
+                 base::Unretained(&callbacks)));
   registry->ClearAllPairings(
-      base::Bind(&PairingRegistryTest::ExpectSaveSuccess,
-                 base::Unretained(this)));
+      base::Bind(&MockPairingRegistryCallbacks::DoneCallback,
+                 base::Unretained(&callbacks)));
   registry->GetAllPairings(
-      base::Bind(&PairingRegistryTest::ExpectNoPairings,
-                 base::Unretained(this)));
+      base::Bind(&MockPairingRegistryCallbacks::GetAllPairingsCallback,
+                 base::Unretained(&callbacks)));
   PairingRegistry::Pairing pairing_3 = registry->CreatePairing("client3");
   registry->GetPairing(
       pairing_3.client_id(),
-      base::Bind(&PairingRegistryTest::ExpectClientName,
-                 base::Unretained(this), "client3"));
+      base::Bind(&MockPairingRegistryCallbacks::GetPairingCallback,
+                 base::Unretained(&callbacks)));
 
-  while (mock_delegate->HasCallback()) {
-    mock_delegate->RunCallback();
-  }
-
-  EXPECT_EQ(8, callback_count_);
+  run_loop_.Run();
 }
 
 }  // namespace protocol

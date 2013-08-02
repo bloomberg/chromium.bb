@@ -20,8 +20,9 @@
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using remoting::protocol::PairingRegistry;
 using remoting::protocol::MockPairingRegistryDelegate;
+using remoting::protocol::PairingRegistry;
+using remoting::protocol::SynchronousPairingRegistry;
 
 namespace {
 
@@ -266,8 +267,9 @@ void NativeMessagingHostTest::SetUp() {
   daemon_controller_ = new MockDaemonController();
   scoped_ptr<DaemonController> daemon_controller(daemon_controller_);
 
-  scoped_refptr<PairingRegistry> pairing_registry = new PairingRegistry(
-      scoped_ptr<PairingRegistry::Delegate>(new MockPairingRegistryDelegate));
+  scoped_refptr<PairingRegistry> pairing_registry =
+      new SynchronousPairingRegistry(scoped_ptr<PairingRegistry::Delegate>(
+          new MockPairingRegistryDelegate()));
 
   host_.reset(new NativeMessagingHost(daemon_controller.Pass(),
                                       pairing_registry,

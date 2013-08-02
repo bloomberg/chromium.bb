@@ -10,8 +10,7 @@ namespace remoting {
 
 using protocol::PairingRegistry;
 
-scoped_ptr<PairingRegistry::Delegate> CreatePairingRegistryDelegate(
-    scoped_refptr<base::TaskRunner> task_runner) {
+scoped_ptr<PairingRegistry::Delegate> CreatePairingRegistryDelegate() {
   return scoped_ptr<PairingRegistry::Delegate>();
 }
 

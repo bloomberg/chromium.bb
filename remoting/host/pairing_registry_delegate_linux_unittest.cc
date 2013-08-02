@@ -5,11 +5,8 @@
 #include "remoting/host/pairing_registry_delegate_linux.h"
 
 #include "base/file_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -18,59 +15,75 @@ using protocol::PairingRegistry;
 
 class PairingRegistryDelegateLinuxTest : public testing::Test {
  public:
-  void SaveComplete(PairingRegistry::Delegate* delegate,
-                    const std::string& expected_json,
-                    bool success) {
-    EXPECT_TRUE(success);
-    // Load the pairings again to make sure we get what we've just written.
-    delegate->Load(
-        base::Bind(&PairingRegistryDelegateLinuxTest::VerifyLoad,
-                   base::Unretained(this),
-                   expected_json));
+  virtual void SetUp() OVERRIDE {
+    // Create a temporary directory in order to get a unique name and use a
+    // subdirectory to ensure that PairingRegistryDelegateLinux::Save() creates
+    // the parent directory if it doesn't exist.
+    file_util::CreateNewTempDirectory("chromoting-test", &temp_dir_);
+    temp_registry_ = temp_dir_.Append("paired-clients");
   }
 
-  void VerifyLoad(const std::string& expected,
-                  const std::string& actual) {
-    EXPECT_EQ(actual, expected);
-    base::MessageLoop::current()->Quit();
+  virtual void TearDown() OVERRIDE {
+    base::DeleteFile(temp_dir_, true);
   }
+
+ protected:
+  base::FilePath temp_dir_;
+  base::FilePath temp_registry_;
 };
 
 TEST_F(PairingRegistryDelegateLinuxTest, SaveAndLoad) {
-  base::MessageLoop message_loop;
-  base::RunLoop run_loop;
+  scoped_ptr<PairingRegistryDelegateLinux> delegate(
+      new PairingRegistryDelegateLinux());
+  delegate->SetRegistryPathForTesting(temp_registry_);
 
-  // Create a temporary directory in order to get a unique name and use a
-  // subdirectory to ensure that the AddPairing method creates the parent
-  // directory if it doesn't exist.
-  base::FilePath temp_dir;
-  file_util::CreateNewTempDirectory("chromoting-test", &temp_dir);
-  base::FilePath temp_file = temp_dir.Append("dir").Append("registry.json");
+  // Check that registry is initially empty.
+  EXPECT_TRUE(delegate->LoadAll()->empty());
 
-  scoped_refptr<base::TaskRunner> task_runner =
-      base::ThreadTaskRunnerHandle::Get();
+  // Add a couple of pairings.
+  PairingRegistry::Pairing pairing1(base::Time::Now(), "xxx", "xxx", "xxx");
+  PairingRegistry::Pairing pairing2(base::Time::Now(), "yyy", "yyy", "yyy");
+  EXPECT_TRUE(delegate->Save(pairing1));
+  EXPECT_TRUE(delegate->Save(pairing2));
+
+  // Verify that there are two pairings in the store now.
+EXPECT_EQ(delegate->LoadAll()->GetSize(), 2u);
+
+  // Verify that they can be retrieved.
+  EXPECT_EQ(delegate->Load(pairing1.client_id()), pairing1);
+  EXPECT_EQ(delegate->Load(pairing2.client_id()), pairing2);
+
+  // Delete the first pairing.
+  EXPECT_TRUE(delegate->Delete(pairing1.client_id()));
+
+  // Verify that there is only one pairing left.
+  EXPECT_EQ(delegate->Load(pairing1.client_id()), PairingRegistry::Pairing());
+  EXPECT_EQ(delegate->Load(pairing2.client_id()), pairing2);
+
+  // Verify that the only value that left is |pairing2|.
+  EXPECT_EQ(delegate->LoadAll()->GetSize(), 1u);
+  scoped_ptr<base::ListValue> pairings = delegate->LoadAll();
+  base::Value* json;
+  EXPECT_TRUE(pairings->Get(0, &json));
+  EXPECT_EQ(PairingRegistry::Pairing::CreateFromValue(*json), pairing2);
+
+  // Delete the rest and verify.
+  EXPECT_TRUE(delegate->DeleteAll());
+  EXPECT_TRUE(delegate->LoadAll()->empty());
+}
+
+// Verifies that the delegate is stateless by using two different instances.
+TEST_F(PairingRegistryDelegateLinuxTest, Stateless) {
   scoped_ptr<PairingRegistryDelegateLinux> save_delegate(
-      new PairingRegistryDelegateLinux(task_runner));
+      new PairingRegistryDelegateLinux());
   scoped_ptr<PairingRegistryDelegateLinux> load_delegate(
-      new PairingRegistryDelegateLinux(task_runner));
-  save_delegate->SetFilenameForTesting(temp_file);
-  load_delegate->SetFilenameForTesting(temp_file);
+      new PairingRegistryDelegateLinux());
+  save_delegate->SetRegistryPathForTesting(temp_registry_);
+  load_delegate->SetRegistryPathForTesting(temp_registry_);
 
-  // Save the pairings, then load them using a different delegate to ensure
-  // that the test isn't passing due to cached values. Note that the delegate
-  // doesn't require that the strings it loads and saves are valid JSON, so
-  // we can simplify the test a bit.
-  std::string test_data = "test data";
-  save_delegate->Save(
-      test_data,
-      base::Bind(&PairingRegistryDelegateLinuxTest::SaveComplete,
-                 base::Unretained(this),
-                 load_delegate.get(),
-                 test_data));
-
-  run_loop.Run();
-
-  base::DeleteFile(temp_dir, true);
-};
+  PairingRegistry::Pairing pairing(base::Time::Now(), "xxx", "xxx", "xxx");
+  EXPECT_TRUE(save_delegate->Save(pairing));
+  EXPECT_EQ(load_delegate->Load(pairing.client_id()), pairing);
+}
 
 }  // namespace remoting

@@ -6,127 +6,153 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/important_file_writer.h"
+#include "base/json/json_file_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "remoting/host/branding.h"
 
 namespace {
-const char kRegistryFilename[] = "paired-clients.json";
+
+// The pairing registry path relative to the configuration directory.
+const char kRegistryDirectory[] = "paired-clients";
+
+const char kPairingFilenameFormat[] = "%s.json";
+const char kPairingFilenamePattern[] = "*.json";
+
 }  // namespace
 
 namespace remoting {
 
 using protocol::PairingRegistry;
 
-PairingRegistryDelegateLinux::PairingRegistryDelegateLinux(
-    scoped_refptr<base::TaskRunner> task_runner)
-    : task_runner_(task_runner),
-      weak_factory_(this) {
+PairingRegistryDelegateLinux::PairingRegistryDelegateLinux() {
 }
 
 PairingRegistryDelegateLinux::~PairingRegistryDelegateLinux() {
 }
 
-void PairingRegistryDelegateLinux::Save(
-    const std::string& pairings_json,
-    const PairingRegistry::SaveCallback& callback) {
-  // If a callback was supplied, wrap it in a helper function that will
-  // run it on this thread.
-  PairingRegistry::SaveCallback run_callback_on_this_thread;
-  if (!callback.is_null()) {
-    run_callback_on_this_thread =
-        base::Bind(&PairingRegistryDelegateLinux::RunSaveCallbackOnThread,
-                   base::ThreadTaskRunnerHandle::Get(),
-                   callback);
+scoped_ptr<base::ListValue> PairingRegistryDelegateLinux::LoadAll() {
+  scoped_ptr<base::ListValue> pairings(new base::ListValue());
+
+  // Enumerate all pairing files in the pairing registry.
+  base::FilePath registry_path = GetRegistryPath();
+  base::FileEnumerator enumerator(registry_path, false,
+                                  base::FileEnumerator::FILES,
+                                  kPairingFilenamePattern);
+  for (base::FilePath pairing_file = enumerator.Next(); !pairing_file.empty();
+       pairing_file = enumerator.Next()) {
+    // Read the JSON containing pairing data.
+    JSONFileValueSerializer serializer(pairing_file);
+    int error_code;
+    std::string error_message;
+    scoped_ptr<base::Value> pairing_json(
+        serializer.Deserialize(&error_code, &error_message));
+    if (!pairing_json) {
+      LOG(WARNING) << "Failed to load '" << pairing_file.value() << "' ("
+                   << error_code << ").";
+      continue;
+    }
+
+    pairings->Append(pairing_json.release());
   }
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PairingRegistryDelegateLinux::DoSave,
-                 weak_factory_.GetWeakPtr(),
-                 pairings_json,
-                 run_callback_on_this_thread));
+
+  return pairings.Pass();
 }
 
-void PairingRegistryDelegateLinux::Load(
-    const PairingRegistry::LoadCallback& callback) {
-  // Wrap the callback in a helper function that will run it on this thread.
-  // Note that, unlike AddPairing, the GetPairing callback is mandatory.
-  PairingRegistry::LoadCallback run_callback_on_this_thread =
-      base::Bind(&PairingRegistryDelegateLinux::RunLoadCallbackOnThread,
-                 base::ThreadTaskRunnerHandle::Get(),
-                 callback);
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PairingRegistryDelegateLinux::DoLoad,
-                 weak_factory_.GetWeakPtr(),
-                 run_callback_on_this_thread));
+bool PairingRegistryDelegateLinux::DeleteAll() {
+  // Delete all pairing files in the pairing registry.
+  base::FilePath registry_path = GetRegistryPath();
+  base::FileEnumerator enumerator(registry_path, false,
+                                  base::FileEnumerator::FILES,
+                                  kPairingFilenamePattern);
+
+  bool success = true;
+  for (base::FilePath pairing_file = enumerator.Next(); !pairing_file.empty();
+       pairing_file = enumerator.Next()) {
+    success = success && base::DeleteFile(pairing_file, false);
+  }
+
+  return success;
 }
 
-void PairingRegistryDelegateLinux::RunSaveCallbackOnThread(
-    scoped_refptr<base::TaskRunner> task_runner,
-    const PairingRegistry::SaveCallback& callback,
-    bool success) {
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, success));
+PairingRegistry::Pairing PairingRegistryDelegateLinux::Load(
+    const std::string& client_id) {
+  base::FilePath registry_path = GetRegistryPath();
+  base::FilePath pairing_file = registry_path.Append(
+      base::StringPrintf(kPairingFilenameFormat, client_id.c_str()));
+
+  JSONFileValueSerializer serializer(pairing_file);
+  int error_code;
+  std::string error_message;
+  scoped_ptr<base::Value> pairing(
+      serializer.Deserialize(&error_code, &error_message));
+  if (!pairing) {
+    LOG(WARNING) << "Failed to load pairing information: " << error_message
+                 << " (" << error_code << ").";
+    return PairingRegistry::Pairing();
+  }
+
+  return PairingRegistry::Pairing::CreateFromValue(*pairing);
 }
 
-void PairingRegistryDelegateLinux::RunLoadCallbackOnThread(
-      scoped_refptr<base::TaskRunner> task_runner,
-      const PairingRegistry::LoadCallback& callback,
-      const std::string& pairings_json) {
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, pairings_json));
-}
-
-void PairingRegistryDelegateLinux::DoSave(
-    const std::string& pairings_json,
-    const PairingRegistry::SaveCallback& callback) {
-  base::FilePath registry_path = GetRegistryFilePath();
-  base::FilePath parent_directory = registry_path.DirName();
+bool PairingRegistryDelegateLinux::Save(
+    const PairingRegistry::Pairing& pairing) {
+  base::FilePath registry_path = GetRegistryPath();
   base::PlatformFileError error;
-  if (!file_util::CreateDirectoryAndGetError(parent_directory, &error)) {
+  if (!file_util::CreateDirectoryAndGetError(registry_path, &error)) {
     LOG(ERROR) << "Could not create pairing registry directory: " << error;
-    return;
-  }
-  if (!base::ImportantFileWriter::WriteFileAtomically(registry_path,
-                                                      pairings_json)) {
-    LOG(ERROR) << "Could not save pairing registry.";
+    return false;
   }
 
-  if (!callback.is_null()) {
-    callback.Run(true);
+  std::string pairing_json;
+  JSONStringValueSerializer serializer(&pairing_json);
+  if (!serializer.Serialize(*pairing.ToValue())) {
+    LOG(ERROR) << "Failed to serialize pairing data for "
+               << pairing.client_id();
+    return false;
   }
+
+  base::FilePath pairing_file = registry_path.Append(
+      base::StringPrintf(kPairingFilenameFormat, pairing.client_id().c_str()));
+  if (!base::ImportantFileWriter::WriteFileAtomically(pairing_file,
+                                                      pairing_json)) {
+    LOG(ERROR) << "Could not save pairing data for " << pairing.client_id();
+    return false;
+  }
+
+  return true;
 }
 
-void PairingRegistryDelegateLinux::DoLoad(
-    const PairingRegistry::LoadCallback& callback) {
-  base::FilePath registry_path = GetRegistryFilePath();
-  std::string result;
-  if (!file_util::ReadFileToString(registry_path, &result)) {
-    LOG(ERROR) << "Load failed.";
-  }
-  callback.Run(result);
+bool PairingRegistryDelegateLinux::Delete(const std::string& client_id) {
+  base::FilePath registry_path = GetRegistryPath();
+  base::FilePath pairing_file = registry_path.Append(
+      base::StringPrintf(kPairingFilenameFormat, client_id.c_str()));
+
+  return base::DeleteFile(pairing_file, false);
 }
 
-base::FilePath PairingRegistryDelegateLinux::GetRegistryFilePath() {
-  if (!filename_for_testing_.empty()) {
-    return filename_for_testing_;
+base::FilePath PairingRegistryDelegateLinux::GetRegistryPath() {
+  if (!registry_path_for_testing_.empty()) {
+    return registry_path_for_testing_;
   }
 
   base::FilePath config_dir = remoting::GetConfigDir();
-  return config_dir.Append(kRegistryFilename);
+  return config_dir.Append(kRegistryDirectory);
 }
 
-void PairingRegistryDelegateLinux::SetFilenameForTesting(
-    const base::FilePath &filename) {
-  filename_for_testing_ = filename;
+void PairingRegistryDelegateLinux::SetRegistryPathForTesting(
+    const base::FilePath& registry_path) {
+  registry_path_for_testing_ = registry_path;
 }
 
 
-scoped_ptr<PairingRegistry::Delegate> CreatePairingRegistryDelegate(
-    scoped_refptr<base::TaskRunner> task_runner) {
+scoped_ptr<PairingRegistry::Delegate> CreatePairingRegistryDelegate() {
   return scoped_ptr<PairingRegistry::Delegate>(
-      new PairingRegistryDelegateLinux(task_runner));
+      new PairingRegistryDelegateLinux());
 }
 
 }  // namespace remoting

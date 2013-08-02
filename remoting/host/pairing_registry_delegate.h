@@ -10,20 +10,20 @@
 #include "remoting/protocol/pairing_registry.h"
 
 namespace base {
-class TaskRunner;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace remoting {
 // Returns a platform-specific pairing registry delegate that will save to
-// permanent storage using the specified TaskRunner. Returns NULL on platforms
-// that don't support pairing.
+// permanent storage. Returns NULL on platforms that don't support pairing.
 scoped_ptr<protocol::PairingRegistry::Delegate>
-CreatePairingRegistryDelegate(scoped_refptr<base::TaskRunner> task_runner);
+CreatePairingRegistryDelegate();
 
 // Convenience function which returns a new PairingRegistry, using the delegate
-// returned by CreatePairingRegistryDelegate().
+// returned by CreatePairingRegistryDelegate(). The passed |task_runner| is used
+// to run the delegate's methods asynchronously.
 scoped_refptr<protocol::PairingRegistry> CreatePairingRegistry(
-    scoped_refptr<base::TaskRunner> task_runner);
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
 }  // namespace remoting
 

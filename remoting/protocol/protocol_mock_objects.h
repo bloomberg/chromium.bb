@@ -5,8 +5,12 @@
 #ifndef REMOTING_PROTOCOL_PROTOCOL_MOCK_OBJECTS_H_
 #define REMOTING_PROTOCOL_PROTOCOL_MOCK_OBJECTS_H_
 
+#include <map>
 #include <string>
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/values.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/proto/video.pb.h"
@@ -211,44 +215,31 @@ class MockPairingRegistryDelegate : public PairingRegistry::Delegate {
   MockPairingRegistryDelegate();
   virtual ~MockPairingRegistryDelegate();
 
-  const std::string& pairings_json() const {
-    return pairings_json_;
-  }
-
   // PairingRegistry::Delegate implementation.
-  virtual void Save(
-      const std::string& pairings_json,
-      const PairingRegistry::SaveCallback& callback) OVERRIDE;
-  virtual void Load(
-      const PairingRegistry::LoadCallback& callback) OVERRIDE;
-
-  // By default, the Save method runs its callback automatically because the
-  // negotiating authenticator unit test does not provide any hooks to do it
-  // manually. For unit tests that need to verify correct behaviour under
-  // asynchronous conditions, use this method to disable this feature and call
-  // RunCallback as appropriate.
-  void set_run_save_callback_automatically(
-      bool run_save_callback_automatically) {
-    run_save_callback_automatically_ = run_save_callback_automatically;
-  }
-
-  bool HasCallback() const {
-    return !load_callback_.is_null() || !save_callback_.is_null();
-  }
-
-  // Run either the save or the load callback (whichever was set most recently;
-  // it is an error for both of these to be set at the same time).
-  void RunCallback();
+  virtual scoped_ptr<base::ListValue> LoadAll() OVERRIDE;
+  virtual bool DeleteAll() OVERRIDE;
+  virtual protocol::PairingRegistry::Pairing Load(
+      const std::string& client_id) OVERRIDE;
+  virtual bool Save(const protocol::PairingRegistry::Pairing& pairing) OVERRIDE;
+  virtual bool Delete(const std::string& client_id) OVERRIDE;
 
  private:
-  void SetPairingsJsonAndRunCallback(
-      const std::string& pairings_json,
-      const PairingRegistry::SaveCallback& callback);
+  typedef std::map<std::string, protocol::PairingRegistry::Pairing> Pairings;
+  Pairings pairings_;
+};
 
-  base::Closure load_callback_;
-  base::Closure save_callback_;
-  std::string pairings_json_;
-  bool run_save_callback_automatically_;
+class SynchronousPairingRegistry : public PairingRegistry {
+ public:
+  explicit SynchronousPairingRegistry(scoped_ptr<Delegate> delegate);
+
+ protected:
+  virtual ~SynchronousPairingRegistry();
+
+  // Runs tasks synchronously instead of posting them to |task_runner|.
+  virtual void PostTask(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const tracked_objects::Location& from_here,
+      const base::Closure& task) OVERRIDE;
 };
 
 }  // namespace protocol

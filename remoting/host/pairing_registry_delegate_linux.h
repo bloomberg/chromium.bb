@@ -8,11 +8,9 @@
 #include "remoting/protocol/pairing_registry.h"
 
 #include "base/files/file_path.h"
-#include "base/memory/weak_ptr.h"
 
 namespace base {
 class ListValue;
-class TaskRunner;
 }  // namespace base
 
 namespace remoting {
@@ -20,50 +18,29 @@ namespace remoting {
 class PairingRegistryDelegateLinux
     : public protocol::PairingRegistry::Delegate {
  public:
-  explicit PairingRegistryDelegateLinux(
-      scoped_refptr<base::TaskRunner> task_runner);
+  PairingRegistryDelegateLinux();
   virtual ~PairingRegistryDelegateLinux();
 
   // PairingRegistry::Delegate interface
-  virtual void Save(
-      const std::string& pairings_json,
-      const protocol::PairingRegistry::SaveCallback& callback) OVERRIDE;
-  virtual void Load(
-      const protocol::PairingRegistry::LoadCallback& callback) OVERRIDE;
+  virtual scoped_ptr<base::ListValue> LoadAll() OVERRIDE;
+  virtual bool DeleteAll() OVERRIDE;
+  virtual protocol::PairingRegistry::Pairing Load(
+      const std::string& client_id) OVERRIDE;
+  virtual bool Save(const protocol::PairingRegistry::Pairing& pairing) OVERRIDE;
+  virtual bool Delete(const std::string& client_id) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PairingRegistryDelegateLinuxTest, SaveAndLoad);
+  FRIEND_TEST_ALL_PREFIXES(PairingRegistryDelegateLinuxTest, Stateless);
 
-  // Blocking helper methods run using the TaskRunner passed to the ctor.
-  void DoSave(const std::string& pairings_json,
-              const protocol::PairingRegistry::SaveCallback& callback);
-  void DoLoad(const protocol::PairingRegistry::LoadCallback& callback);
+  // Return the path to the directory to use for loading and saving paired
+  // clients.
+  base::FilePath GetRegistryPath();
 
-  // Run the delegate callbacks on their original thread.
-  static void RunSaveCallbackOnThread(
-      scoped_refptr<base::TaskRunner> task_runner,
-      const protocol::PairingRegistry::SaveCallback& callback,
-      bool success);
-  static void RunLoadCallbackOnThread(
-      scoped_refptr<base::TaskRunner> task_runner,
-      const protocol::PairingRegistry::LoadCallback& callback,
-      const std::string& pairings_json);
+  // For testing purposes, set the path returned by |GetRegistryPath()|.
+  void SetRegistryPathForTesting(const base::FilePath& registry_path);
 
-  // Helper methods to load and save the pairing registry.
-  protocol::PairingRegistry::PairedClients LoadPairings();
-  void SavePairings(
-      const protocol::PairingRegistry::PairedClients& paired_clients);
-
-  // Return the path to the file to use for loading and saving paired clients.
-  base::FilePath GetRegistryFilePath();
-
-  // For testing purposes, set the path returned by |GetRegistryFilePath|.
-  void SetFilenameForTesting(const base::FilePath &filename);
-
-  scoped_refptr<base::TaskRunner> task_runner_;
-  base::FilePath filename_for_testing_;
-
-  base::WeakPtrFactory<PairingRegistryDelegateLinux> weak_factory_;
+  base::FilePath registry_path_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(PairingRegistryDelegateLinux);
 };

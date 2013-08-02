@@ -4,6 +4,9 @@
 
 #include "remoting/protocol/protocol_mock_objects.h"
 
+#include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
+
 namespace remoting {
 namespace protocol {
 
@@ -48,57 +51,61 @@ MockSessionManager::MockSessionManager() {}
 
 MockSessionManager::~MockSessionManager() {}
 
-MockPairingRegistryDelegate::MockPairingRegistryDelegate()
-    : run_save_callback_automatically_(true) {
+MockPairingRegistryDelegate::MockPairingRegistryDelegate() {
 }
 
 MockPairingRegistryDelegate::~MockPairingRegistryDelegate() {
 }
 
-void MockPairingRegistryDelegate::Save(
-    const std::string& pairings_json,
-    const PairingRegistry::SaveCallback& callback) {
-  EXPECT_TRUE(load_callback_.is_null());
-  EXPECT_TRUE(save_callback_.is_null());
-  if (run_save_callback_automatically_) {
-    SetPairingsJsonAndRunCallback(pairings_json, callback);
+scoped_ptr<base::ListValue> MockPairingRegistryDelegate::LoadAll() {
+  scoped_ptr<base::ListValue> result(new base::ListValue());
+  for (Pairings::const_iterator i = pairings_.begin(); i != pairings_.end();
+       ++i) {
+    result->Append(i->second.ToValue().release());
+  }
+  return result.Pass();
+}
+
+bool MockPairingRegistryDelegate::DeleteAll() {
+  pairings_.clear();
+  return true;
+}
+
+protocol::PairingRegistry::Pairing MockPairingRegistryDelegate::Load(
+    const std::string& client_id) {
+  Pairings::const_iterator i = pairings_.find(client_id);
+  if (i != pairings_.end()) {
+    return i->second;
   } else {
-    save_callback_ = base::Bind(
-        &MockPairingRegistryDelegate::SetPairingsJsonAndRunCallback,
-        base::Unretained(this), pairings_json, callback);
+    return protocol::PairingRegistry::Pairing();
   }
 }
 
-void MockPairingRegistryDelegate::SetPairingsJsonAndRunCallback(
-    const std::string& pairings_json,
-    const PairingRegistry::SaveCallback& callback) {
-  pairings_json_ = pairings_json;
-  if (!callback.is_null()) {
-    callback.Run(true);
-  }
+bool MockPairingRegistryDelegate::Save(
+    const protocol::PairingRegistry::Pairing& pairing) {
+  pairings_[pairing.client_id()] = pairing;
+  return true;
 }
 
-void MockPairingRegistryDelegate::Load(
-    const PairingRegistry::LoadCallback& callback) {
-  EXPECT_TRUE(load_callback_.is_null());
-  EXPECT_TRUE(save_callback_.is_null());
-  load_callback_ = base::Bind(callback, pairings_json_);
+bool MockPairingRegistryDelegate::Delete(const std::string& client_id) {
+  pairings_.erase(client_id);
+  return true;
 }
 
-void MockPairingRegistryDelegate::RunCallback() {
-  if (!load_callback_.is_null()) {
-    EXPECT_TRUE(save_callback_.is_null());
-    base::Closure load_callback = load_callback_;
-    load_callback_.Reset();
-    load_callback.Run();
-  } else if (!save_callback_.is_null()) {
-    EXPECT_TRUE(load_callback_.is_null());
-    base::Closure save_callback = save_callback_;
-    save_callback_.Reset();
-    save_callback.Run();
-  } else {
-    ADD_FAILURE() << "RunCallback called without any callbacks set.";
-  }
+SynchronousPairingRegistry::SynchronousPairingRegistry(
+    scoped_ptr<Delegate> delegate)
+    : PairingRegistry(base::ThreadTaskRunnerHandle::Get(), delegate.Pass()) {
+}
+
+SynchronousPairingRegistry::~SynchronousPairingRegistry() {
+}
+
+void SynchronousPairingRegistry::PostTask(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  DCHECK(task_runner->BelongsToCurrentThread());
+  task.Run();
 }
 
 }  // namespace protocol

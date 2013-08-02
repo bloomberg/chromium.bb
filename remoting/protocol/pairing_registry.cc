@@ -8,7 +8,10 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "crypto/random.h"
 
@@ -36,6 +39,9 @@ PairingRegistry::Pairing::Pairing(const base::Time& created_time,
       shared_secret_(shared_secret) {
 }
 
+PairingRegistry::Pairing::~Pairing() {
+}
+
 PairingRegistry::Pairing PairingRegistry::Pairing::Create(
     const std::string& client_name) {
   base::Time created_time = base::Time::Now();
@@ -50,7 +56,38 @@ PairingRegistry::Pairing PairingRegistry::Pairing::Create(
   return Pairing(created_time, client_name, client_id, shared_secret);
 }
 
-PairingRegistry::Pairing::~Pairing() {
+PairingRegistry::Pairing PairingRegistry::Pairing::CreateFromValue(
+    const base::Value& pairing_json) {
+  const base::DictionaryValue* pairing = NULL;
+  if (!pairing_json.GetAsDictionary(&pairing)) {
+    LOG(ERROR) << "Failed to load pairing information: not a dictionary.";
+    return Pairing();
+  }
+
+  std::string client_name, client_id;
+  double created_time_value;
+  if (pairing->GetDouble(kCreatedTimeKey, &created_time_value) &&
+      pairing->GetString(kClientNameKey, &client_name) &&
+      pairing->GetString(kClientIdKey, &client_id)) {
+    // The shared secret is optional.
+    std::string shared_secret;
+    pairing->GetString(kSharedSecretKey, &shared_secret);
+    base::Time created_time = base::Time::FromJsTime(created_time_value);
+    return Pairing(created_time, client_name, client_id, shared_secret);
+  }
+
+  LOG(ERROR) << "Failed to load pairing information: unexpected format.";
+  return Pairing();
+}
+
+scoped_ptr<base::Value> PairingRegistry::Pairing::ToValue() const {
+  scoped_ptr<base::DictionaryValue> pairing(new base::DictionaryValue());
+  pairing->SetDouble(kCreatedTimeKey, created_time().ToJsTime());
+  pairing->SetString(kClientNameKey, client_name());
+  pairing->SetString(kClientIdKey, client_id());
+  if (!shared_secret().empty())
+    pairing->SetString(kSharedSecretKey, shared_secret());
+  return pairing.PassAs<base::Value>();
 }
 
 bool PairingRegistry::Pairing::operator==(const Pairing& other) const {
@@ -64,17 +101,19 @@ bool PairingRegistry::Pairing::is_valid() const {
   return !client_id_.empty() && !shared_secret_.empty();
 }
 
-PairingRegistry::PairingRegistry(scoped_ptr<Delegate> delegate)
-    : delegate_(delegate.Pass()) {
+PairingRegistry::PairingRegistry(
+    scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner,
+    scoped_ptr<Delegate> delegate)
+    : caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      delegate_task_runner_(delegate_task_runner),
+      delegate_(delegate.Pass()) {
   DCHECK(delegate_);
-}
-
-PairingRegistry::~PairingRegistry() {
 }
 
 PairingRegistry::Pairing PairingRegistry::CreatePairing(
     const std::string& client_name) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
   Pairing result = Pairing::Create(client_name);
   AddPairing(result);
   return result;
@@ -82,121 +121,124 @@ PairingRegistry::Pairing PairingRegistry::CreatePairing(
 
 void PairingRegistry::GetPairing(const std::string& client_id,
                                  const GetPairingCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
   GetPairingCallback wrapped_callback = base::Bind(
       &PairingRegistry::InvokeGetPairingCallbackAndScheduleNext,
       this, callback);
-  LoadCallback load_callback = base::Bind(
-      &PairingRegistry::DoGetPairing, this, client_id, wrapped_callback);
-  // |Unretained| and |get| are both safe here because the delegate is owned
-  // by the pairing registry and so is guaranteed to exist when the request
-  // is serviced.
   base::Closure request = base::Bind(
-      &PairingRegistry::Delegate::Load,
-      base::Unretained(delegate_.get()), load_callback);
+      &PairingRegistry::DoLoad, this, client_id, wrapped_callback);
   ServiceOrQueueRequest(request);
 }
 
 void PairingRegistry::GetAllPairings(
     const GetAllPairingsCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
   GetAllPairingsCallback wrapped_callback = base::Bind(
       &PairingRegistry::InvokeGetAllPairingsCallbackAndScheduleNext,
       this, callback);
-  LoadCallback load_callback = base::Bind(
-      &PairingRegistry::SanitizePairings, this, wrapped_callback);
+  GetAllPairingsCallback sanitize_callback = base::Bind(
+      &PairingRegistry::SanitizePairings,
+      this, wrapped_callback);
   base::Closure request = base::Bind(
-      &PairingRegistry::Delegate::Load,
-      base::Unretained(delegate_.get()), load_callback);
+      &PairingRegistry::DoLoadAll, this, sanitize_callback);
   ServiceOrQueueRequest(request);
 }
 
 void PairingRegistry::DeletePairing(
-    const std::string& client_id, const SaveCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  SaveCallback wrapped_callback = base::Bind(
-      &PairingRegistry::InvokeSaveCallbackAndScheduleNext,
+    const std::string& client_id, const DoneCallback& callback) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  DoneCallback wrapped_callback = base::Bind(
+      &PairingRegistry::InvokeDoneCallbackAndScheduleNext,
       this, callback);
-  LoadCallback load_callback = base::Bind(
-      &PairingRegistry::DoDeletePairing, this, client_id, wrapped_callback);
   base::Closure request = base::Bind(
-      &PairingRegistry::Delegate::Load,
-      base::Unretained(delegate_.get()), load_callback);
+      &PairingRegistry::DoDelete, this, client_id, wrapped_callback);
   ServiceOrQueueRequest(request);
 }
 
 void PairingRegistry::ClearAllPairings(
-    const SaveCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  SaveCallback wrapped_callback = base::Bind(
-      &PairingRegistry::InvokeSaveCallbackAndScheduleNext,
+    const DoneCallback& callback) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  DoneCallback wrapped_callback = base::Bind(
+      &PairingRegistry::InvokeDoneCallbackAndScheduleNext,
       this, callback);
   base::Closure request = base::Bind(
-      &PairingRegistry::Delegate::Save,
-      base::Unretained(delegate_.get()),
-      EncodeJson(PairedClients()),
-      wrapped_callback);
+      &PairingRegistry::DoDeleteAll, this, wrapped_callback);
   ServiceOrQueueRequest(request);
+}
+
+PairingRegistry::~PairingRegistry() {
+}
+
+void PairingRegistry::PostTask(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  task_runner->PostTask(from_here, task);
 }
 
 void PairingRegistry::AddPairing(const Pairing& pairing) {
-  SaveCallback callback = base::Bind(
-      &PairingRegistry::InvokeSaveCallbackAndScheduleNext,
-      this, SaveCallback());
-  LoadCallback load_callback = base::Bind(
-      &PairingRegistry::MergePairingAndSave, this, pairing, callback);
+  DoneCallback wrapped_callback = base::Bind(
+      &PairingRegistry::InvokeDoneCallbackAndScheduleNext,
+      this, DoneCallback());
   base::Closure request = base::Bind(
-      &PairingRegistry::Delegate::Load,
-      base::Unretained(delegate_.get()), load_callback);
+      &PairingRegistry::DoSave, this, pairing, wrapped_callback);
   ServiceOrQueueRequest(request);
 }
 
-void PairingRegistry::MergePairingAndSave(const Pairing& pairing,
-                                          const SaveCallback& callback,
-                                          const std::string& pairings_json) {
-  DCHECK(CalledOnValidThread());
-  PairedClients clients = DecodeJson(pairings_json);
-  clients[pairing.client_id()] = pairing;
-  std::string new_pairings_json = EncodeJson(clients);
-  delegate_->Save(new_pairings_json, callback);
+void PairingRegistry::DoLoadAll(
+    const protocol::PairingRegistry::GetAllPairingsCallback& callback) {
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
+
+  scoped_ptr<base::ListValue> pairings = delegate_->LoadAll();
+  PostTask(caller_task_runner_, FROM_HERE, base::Bind(callback,
+                                                      base::Passed(&pairings)));
 }
 
-void PairingRegistry::DoGetPairing(const std::string& client_id,
-                                   const GetPairingCallback& callback,
-                                   const std::string& pairings_json) {
-  PairedClients clients = DecodeJson(pairings_json);
-  Pairing result = clients[client_id];
-  callback.Run(result);
+void PairingRegistry::DoDeleteAll(
+    const protocol::PairingRegistry::DoneCallback& callback) {
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
+
+  bool success = delegate_->DeleteAll();
+  PostTask(caller_task_runner_, FROM_HERE, base::Bind(callback, success));
 }
 
-void PairingRegistry::SanitizePairings(const GetAllPairingsCallback& callback,
-                                       const std::string& pairings_json) {
-  PairedClients clients = DecodeJson(pairings_json);
-  callback.Run(ConvertToListValue(clients, false));
+void PairingRegistry::DoLoad(
+    const std::string& client_id,
+    const protocol::PairingRegistry::GetPairingCallback& callback) {
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
+
+  Pairing pairing = delegate_->Load(client_id);
+  PostTask(caller_task_runner_, FROM_HERE, base::Bind(callback, pairing));
 }
 
-void PairingRegistry::DoDeletePairing(const std::string& client_id,
-                                      const SaveCallback& callback,
-                                      const std::string& pairings_json) {
-  PairedClients clients = DecodeJson(pairings_json);
-  clients.erase(client_id);
-  std::string new_pairings_json = EncodeJson(clients);
-  delegate_->Save(new_pairings_json, callback);
+void PairingRegistry::DoSave(
+    const protocol::PairingRegistry::Pairing& pairing,
+    const protocol::PairingRegistry::DoneCallback& callback) {
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
+
+  bool success = delegate_->Save(pairing);
+  PostTask(caller_task_runner_, FROM_HERE, base::Bind(callback, success));
 }
 
-void PairingRegistry::InvokeLoadCallbackAndScheduleNext(
-    const LoadCallback& callback, const std::string& pairings_json) {
-  callback.Run(pairings_json);
-  pending_requests_.pop();
-  ServiceNextRequest();
+void PairingRegistry::DoDelete(
+    const std::string& client_id,
+    const protocol::PairingRegistry::DoneCallback& callback) {
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
+
+  bool success = delegate_->Delete(client_id);
+  PostTask(caller_task_runner_, FROM_HERE, base::Bind(callback, success));
 }
 
-void PairingRegistry::InvokeSaveCallbackAndScheduleNext(
-    const SaveCallback& callback, bool success) {
+void PairingRegistry::InvokeDoneCallbackAndScheduleNext(
+    const DoneCallback& callback, bool success) {
   // CreatePairing doesn't have a callback, so the callback can be null.
-  if (!callback.is_null()) {
+  if (!callback.is_null())
     callback.Run(success);
-  }
+
   pending_requests_.pop();
   ServiceNextRequest();
 }
@@ -216,50 +258,35 @@ void PairingRegistry::InvokeGetAllPairingsCallbackAndScheduleNext(
   ServiceNextRequest();
 }
 
-// static
-PairingRegistry::PairedClients PairingRegistry::DecodeJson(
-    const std::string& pairings_json) {
-  PairedClients result;
+void PairingRegistry::SanitizePairings(const GetAllPairingsCallback& callback,
+                                       scoped_ptr<base::ListValue> pairings) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  if (pairings_json.empty()) {
-    return result;
-  }
-
-  JSONStringValueSerializer registry(pairings_json);
-  int error_code;
-  std::string error_message;
-  scoped_ptr<base::Value> root(
-      registry.Deserialize(&error_code, &error_message));
-  if (!root) {
-    LOG(ERROR) << "Failed to load paired clients: " << error_message
-               << " (" << error_code << ").";
-    return result;
-  }
-
-  base::ListValue* root_list = NULL;
-  if (!root->GetAsList(&root_list)) {
-    LOG(ERROR) << "Failed to load paired clients: root node is not a list.";
-    return result;
-  }
-
-  for (size_t i = 0; i < root_list->GetSize(); ++i) {
-    base::DictionaryValue* pairing = NULL;
-    std::string client_name, client_id, shared_secret;
-    double created_time_value;
-    if (root_list->GetDictionary(i, &pairing) &&
-        pairing->GetDouble(kCreatedTimeKey, &created_time_value) &&
-        pairing->GetString(kClientNameKey, &client_name) &&
-        pairing->GetString(kClientIdKey, &client_id) &&
-        pairing->GetString(kSharedSecretKey, &shared_secret)) {
-      base::Time created_time = base::Time::FromJsTime(created_time_value);
-      result[client_id] = Pairing(
-          created_time, client_name, client_id, shared_secret);
-    } else {
-      LOG(ERROR) << "Paired client " << i << " has unexpected format.";
+  scoped_ptr<base::ListValue> sanitized_pairings(new base::ListValue());
+  for (size_t i = 0; i < pairings->GetSize(); ++i) {
+    DictionaryValue* pairing_json;
+    if (!pairings->GetDictionary(i, &pairing_json)) {
+      LOG(WARNING) << "A pairing entry is not a dictionary.";
+      continue;
     }
+
+    // Parse the pairing data.
+    Pairing pairing = Pairing::CreateFromValue(*pairing_json);
+    if (!pairing.is_valid()) {
+      LOG(WARNING) << "Could not parse a pairing entry.";
+      continue;
+    }
+
+    // Clear the shared secrect and append the pairing data to the list.
+    Pairing sanitized_pairing(
+        pairing.created_time(),
+        pairing.client_name(),
+        pairing.client_id(),
+        "");
+    sanitized_pairings->Append(sanitized_pairing.ToValue().release());
   }
 
-  return result;
+  callback.Run(sanitized_pairings.Pass());
 }
 
 void PairingRegistry::ServiceOrQueueRequest(const base::Closure& request) {
@@ -271,40 +298,10 @@ void PairingRegistry::ServiceOrQueueRequest(const base::Closure& request) {
 }
 
 void PairingRegistry::ServiceNextRequest() {
-  if (pending_requests_.empty()) {
+  if (pending_requests_.empty())
     return;
-  }
-  base::Closure request = pending_requests_.front();
-  request.Run();
-}
 
-// static
-std::string PairingRegistry::EncodeJson(const PairedClients& clients) {
-  scoped_ptr<base::ListValue> root = ConvertToListValue(clients, true);
-  std::string result;
-  JSONStringValueSerializer serializer(&result);
-  serializer.Serialize(*root);
-
-  return result;
-}
-
-// static
-scoped_ptr<base::ListValue> PairingRegistry::ConvertToListValue(
-    const PairedClients& clients,
-    bool include_shared_secrets) {
-  scoped_ptr<base::ListValue> root(new base::ListValue());
-  for (PairedClients::const_iterator i = clients.begin();
-       i != clients.end(); ++i) {
-    base::DictionaryValue* pairing = new base::DictionaryValue();
-    pairing->SetDouble(kCreatedTimeKey, i->second.created_time().ToJsTime());
-    pairing->SetString(kClientNameKey, i->second.client_name());
-    pairing->SetString(kClientIdKey, i->second.client_id());
-    if (include_shared_secrets) {
-      pairing->SetString(kSharedSecretKey, i->second.shared_secret());
-    }
-    root->Append(pairing);
-  }
-  return root.Pass();
+  PostTask(delegate_task_runner_, FROM_HERE, pending_requests_.front());
 }
 
 }  // namespace protocol

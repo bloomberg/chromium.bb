@@ -84,14 +84,13 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
   }
 
   void CreatePairingRegistry(bool with_paired_client) {
-    mock_delegate_ = new MockPairingRegistryDelegate;
-    pairing_registry_ = new PairingRegistry(
-        scoped_ptr<PairingRegistry::Delegate>(mock_delegate_));
+    pairing_registry_ = new SynchronousPairingRegistry(
+        scoped_ptr<PairingRegistry::Delegate>(
+            new MockPairingRegistryDelegate()));
     if (with_paired_client) {
       PairingRegistry::Pairing pairing(
           base::Time(), kTestClientName, kTestClientId, kTestPairedSecret);
       pairing_registry_->AddPairing(pairing);
-      mock_delegate_->RunCallback();
     }
   }
 
@@ -141,9 +140,6 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
 
   // Use a bare pointer because the storage is managed by the base class.
   NegotiatingClientAuthenticator* client_as_negotiating_authenticator_;
-
- protected:
-  MockPairingRegistryDelegate* mock_delegate_;
 
  private:
   scoped_refptr<PairingRegistry> pairing_registry_;
@@ -217,7 +213,6 @@ TEST_F(NegotiatingAuthenticatorTest, PairingRevokedPinOkay) {
       kTestClientId, kTestPairedSecret, kTestPin, kTestPin,
       AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
-  mock_delegate_->RunCallback();
   VerifyAccepted(AuthenticationMethod::Spake2Pair());
 }
 
@@ -227,7 +222,6 @@ TEST_F(NegotiatingAuthenticatorTest, PairingRevokedPinBad) {
       kTestClientId, kTestPairedSecret, kTestPinBad, kTestPin,
       AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
-  mock_delegate_->RunCallback();
   VerifyRejected(Authenticator::INVALID_CREDENTIALS);
 }
 
@@ -237,7 +231,6 @@ TEST_F(NegotiatingAuthenticatorTest, PairingSucceeded) {
       kTestClientId, kTestPairedSecret, kTestPinBad, kTestPin,
       AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
-  mock_delegate_->RunCallback();
   VerifyAccepted(AuthenticationMethod::Spake2Pair());
 }
 
@@ -247,7 +240,6 @@ TEST_F(NegotiatingAuthenticatorTest, PairingSucceededInvalidSecretButPinOkay) {
       kTestClientId, kTestPairedSecretBad, kTestPin, kTestPin,
       AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
-  mock_delegate_->RunCallback();
   VerifyAccepted(AuthenticationMethod::Spake2Pair());
 }
 
@@ -257,7 +249,6 @@ TEST_F(NegotiatingAuthenticatorTest, PairingFailedInvalidSecretAndPin) {
       kTestClientId, kTestPairedSecretBad, kTestPinBad, kTestPin,
       AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
-  mock_delegate_->RunCallback();
   VerifyRejected(Authenticator::INVALID_CREDENTIALS);
 }
 
