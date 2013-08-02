@@ -1479,6 +1479,7 @@
         'browser/policy/policy_prefs_browsertest.cc',
         'browser/policy/test_utils.cc',
         'browser/policy/test_utils.h',
+        'browser/prefs/pref_functional_browsertest.cc',
         'browser/prefs/pref_service_browsertest.cc',
         'browser/prerender/prefetch_browsertest.cc',
         'browser/prerender/prerender_browsertest.cc',
