@@ -246,7 +246,9 @@ public class ImeAdapter {
         mTextInputType = textInputType;
         mInitialSelectionStart = selectionStart;
         mInitialSelectionEnd = selectionEnd;
-        nativeAttachImeAdapter(mNativeImeAdapterAndroid);
+        if (nativeImeAdapter != 0) {
+            nativeAttachImeAdapter(mNativeImeAdapterAndroid);
+        }
     }
 
     /**
