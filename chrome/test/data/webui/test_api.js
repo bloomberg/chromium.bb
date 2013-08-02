@@ -131,7 +131,26 @@ var testing = {};
      * Configuration for the accessibility audit.
      * @type {axs.AuditConfiguration}
      */
-    accessibilityAuditConfig: new axs.AuditConfiguration(),
+    accessibilityAuditConfig_: null,
+
+    /**
+     * Returns the configuration for the accessibility audit, creating it
+     * on-demand.
+     * @return {axs.AuditConfiguration}
+     */
+    accessibilityAuditConfig: function() {
+      if (!this.accessibilityAuditConfig_) {
+        this.accessibilityAuditConfig_ = new axs.AuditConfiguration();
+
+        // The "elements with meaningful background image" accessibility
+        // audit (AX_IMAGE_01) does not apply, since Chrome doesn't
+        // disable background images in high-contrast mode like some
+        // browsers do.
+        this.accessibilityAuditConfig_.ignoreSelectors(
+            "elementsWithMeaningfulBackgroundImage", "*");
+      }
+      return this.accessibilityAuditConfig_;
+    },
 
     /**
      * Whether to treat accessibility issues (errors or warnings) as test
@@ -267,7 +286,7 @@ var testing = {};
         return;
 
       if (!runAccessibilityAudit(this.a11yResults_,
-                                 this.accessibilityAuditConfig)) {
+                                 this.accessibilityAuditConfig())) {
         var report = accessibilityAuditReport(this.a11yResults_);
         if (this.accessibilityIssuesAreErrors)
           throw new Error(report);
@@ -1007,7 +1026,7 @@ var testing = {};
   function assertAccessibilityOk(opt_results) {
     helper.registerCall();
     var a11yResults = opt_results || [];
-    var auditConfig = currentTestCase.fixture.accessibilityAuditConfig;
+    var auditConfig = currentTestCase.fixture.accessibilityAuditConfig();
     if (!runAccessibilityAudit(a11yResults, auditConfig))
       throw new Error(accessibilityAuditReport(a11yResults));
   }

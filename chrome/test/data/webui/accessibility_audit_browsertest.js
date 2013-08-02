@@ -359,7 +359,7 @@ TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
 
   accessibilityResults.length = 0;
 
-  this.accessibilityAuditConfig.ignoreSelectors('lowContrastElements', 'P');
+  this.accessibilityAuditConfig().ignoreSelectors('lowContrastElements', 'P');
   try {
     assertAccessibilityOk(accessibilityResults);
   } catch (e) {
