@@ -15,19 +15,15 @@ layer at (0,0) size 800x600
           RenderSVGTSpan {altGlyph} at (0,0) size 38x75
             RenderSVGInlineText {#text} at (0,0) size 38x75
               chunk 1 text run 1 at (140.00,190.00) startOffset 0 endOffset 1 width 37.50: "H"
-          RenderSVGInlineText {#text} at (0,0) size 0x0
           RenderSVGTSpan {altGlyph} at (0,0) size 38x75
             RenderSVGInlineText {#text} at (37,0) size 38x75
               chunk 1 text run 1 at (177.50,190.00) startOffset 0 endOffset 1 width 37.50: "A"
-          RenderSVGInlineText {#text} at (0,0) size 0x0
           RenderSVGTSpan {altGlyph} at (0,0) size 38x75
             RenderSVGInlineText {#text} at (75,0) size 38x75
               chunk 1 text run 1 at (215.00,190.00) startOffset 0 endOffset 1 width 37.50: "P"
-          RenderSVGInlineText {#text} at (0,0) size 0x0
           RenderSVGTSpan {altGlyph} at (0,0) size 38x75
             RenderSVGInlineText {#text} at (112,0) size 38x75
               chunk 1 text run 1 at (252.50,190.00) startOffset 0 endOffset 1 width 37.50: "P"
-          RenderSVGInlineText {#text} at (0,0) size 0x0
           RenderSVGTSpan {altGlyph} at (0,0) size 38x75
             RenderSVGInlineText {#text} at (150,0) size 38x75
               chunk 1 text run 1 at (290.00,190.00) startOffset 0 endOffset 1 width 37.50: "Y"

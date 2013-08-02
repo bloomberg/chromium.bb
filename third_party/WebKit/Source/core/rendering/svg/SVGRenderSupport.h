@@ -78,6 +78,9 @@ public:
     // FIXME: These methods do not belong here.
     static const RenderSVGRoot* findTreeRootObject(const RenderObject*);
 
+    // Helper method for determining whether an RenderSVGInlineText object has zero length text.
+    static bool isEmptySVGInlineText(const RenderObject*);
+
 private:
     // This class is not constructable.
     SVGRenderSupport();

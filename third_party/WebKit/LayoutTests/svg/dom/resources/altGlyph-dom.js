@@ -10,7 +10,7 @@ shouldBe("altGlyph.namespaceURI", '"http://www.w3.org/2000/svg"');
 shouldBe("altGlyph.format", '"image/svg+xml"');
 shouldThrow("altGlyph.format = 'x'");
 
-shouldBe("altGlyph.getStartPositionOfChar(0).x", '0');
+shouldBe("altGlyph.getStartPositionOfChar(0).x", '72');
 
 
 successfullyParsed = true;

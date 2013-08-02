@@ -29,6 +29,7 @@
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
@@ -386,6 +387,14 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
         dashArray.append((*it).value(lengthContext));
 
     strokeData->setLineDash(dashArray, svgStyle->strokeDashOffset().value(lengthContext));
+}
+
+bool SVGRenderSupport::isEmptySVGInlineText(const RenderObject* object)
+{
+    // RenderSVGInlineText performs whitespace filtering in order to support xml:space
+    // (http://www.w3.org/TR/SVG/struct.html#LangSpaceAttrs), and can end up with an empty string
+    // even when its original constructor argument is non-empty.
+    return object->isSVGInlineText() && toRenderSVGInlineText(object)->hasEmptyText();
 }
 
 }
