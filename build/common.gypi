@@ -2547,7 +2547,7 @@
               }],
             ],
           }],
-          ['OS=="linux"', {
+          ['OS=="linux" and clang!=1', {
             # Enable libstdc++ debugging facilities to help catch problems
             # early, see http://crbug.com/65151 .
             # TODO(phajdan.jr): Should we enable this for all of POSIX?
