@@ -72,7 +72,7 @@ void Stream::AddData(scoped_refptr<net::IOBuffer> buffer, size_t size) {
 }
 
 void Stream::Finalize() {
-  writer_->Close(DOWNLOAD_INTERRUPT_REASON_NONE);
+  writer_->Close(0);
   writer_.reset(NULL);
 
   // Continue asynchronously.

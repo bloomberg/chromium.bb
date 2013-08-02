@@ -41,7 +41,7 @@ class MockByteStreamReader : public ByteStreamReader {
   // ByteStream functions
   MOCK_METHOD2(Read, ByteStreamReader::StreamState(
       scoped_refptr<net::IOBuffer>*, size_t*));
-  MOCK_CONST_METHOD0(GetStatus, DownloadInterruptReason());
+  MOCK_CONST_METHOD0(GetStatus, int());
   MOCK_METHOD1(RegisterCallback, void(const base::Closure&));
 };
 

@@ -232,7 +232,8 @@ void DownloadFileImpl::StreamActive() {
         break;
       case ByteStreamReader::STREAM_COMPLETE:
         {
-          reason = stream_reader_->GetStatus();
+          reason = static_cast<DownloadInterruptReason>(
+              stream_reader_->GetStatus());
           SendUpdate();
           base::TimeTicks close_start(base::TimeTicks::Now());
           file_.Finish();

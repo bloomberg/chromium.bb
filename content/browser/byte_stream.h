@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "content/public/browser/download_interrupt_reasons.h"
+#include "content/common/content_export.h"
 #include "net/base/io_buffer.h"
 
 namespace base {
@@ -33,8 +33,10 @@ namespace content {
 // and the sink retrieves bytes already written via |ByteStreamReader::Read|.
 //
 // When the source has no more data to add, it will call
-// |ByteStreamWriter::Close| to indicate that.  Errors at the source
-// are indicated to the sink via a non-DOWNLOAD_INTERRUPT_REASON_NONE code.
+// |ByteStreamWriter::Close| to indicate that.  Operation status at the source
+// is indicated to the sink via an int passed to the Close() method and returned
+// from the GetStatus() method. Source and sink must agree on the interpretation
+// of this int.
 //
 // Normally the source is not managed after the relationship is setup;
 // it is expected to provide data and then close itself.  If an error
@@ -113,7 +115,7 @@ namespace content {
 //      }
 //
 //      if (ByteStreamReader::STREAM_COMPLETE == state) {
-//        DownloadInterruptReason status = reader->GetStatus();
+//        int status = reader->GetStatus();
 //        // Process error or successful completion in |status|.
 //      }
 //
@@ -121,7 +123,7 @@ namespace content {
 //      // again when there's more data.
 //    }
 class CONTENT_EXPORT ByteStreamWriter {
-public:
+ public:
   // Inverse of the fraction of the stream buffer that must be full before
   // a notification is sent to paired Reader that there's more data.
   static const int kFractionBufferBeforeSending;
@@ -141,9 +143,8 @@ public:
   virtual void Flush() = 0;
 
   // Signal that all data that is going to be sent, has been sent,
-  // and provide a status.  |DOWNLOAD_INTERRUPT_REASON_NONE| should be
-  // passed for successful completion.
-  virtual void Close(DownloadInterruptReason status) = 0;
+  // and provide a status.
+  virtual void Close(int status) = 0;
 
   // Register a callback to be called when the stream transitions from
   // full to having space available.  The callback will always be
@@ -178,7 +179,7 @@ class CONTENT_EXPORT ByteStreamReader {
                            size_t* length) = 0;
 
   // Only valid to call if Read() has returned STREAM_COMPLETE.
-  virtual DownloadInterruptReason GetStatus() const = 0;
+  virtual int GetStatus() const = 0;
 
   // Register a callback to be called when data is added or the source
   // completes.  The callback will be always be called on the owning

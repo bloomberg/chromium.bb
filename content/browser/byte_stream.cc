@@ -56,7 +56,7 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
   virtual bool Write(scoped_refptr<net::IOBuffer> buffer,
                      size_t byte_count) OVERRIDE;
   virtual void Flush() OVERRIDE;
-  virtual void Close(DownloadInterruptReason status) OVERRIDE;
+  virtual void Close(int status) OVERRIDE;
   virtual void RegisterCallback(const base::Closure& source_callback) OVERRIDE;
 
   // PostTask target from |ByteStreamReaderImpl::MaybeUpdateInput|.
@@ -68,7 +68,7 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
   // Called from UpdateWindow when object existence has been validated.
   void UpdateWindowInternal(size_t bytes_consumed);
 
-  void PostToPeer(bool complete, DownloadInterruptReason status);
+  void PostToPeer(bool complete, int status);
 
   const size_t total_buffer_size_;
 
@@ -114,10 +114,10 @@ class ByteStreamReaderImpl : public ByteStreamReader {
   // Overridden from ByteStreamReader.
   virtual StreamState Read(scoped_refptr<net::IOBuffer>* data,
                            size_t* length) OVERRIDE;
-  virtual DownloadInterruptReason GetStatus() const OVERRIDE;
+  virtual int GetStatus() const OVERRIDE;
   virtual void RegisterCallback(const base::Closure& sink_callback) OVERRIDE;
 
-  // PostTask target from |ByteStreamWriterImpl::MaybePostToPeer| and
+  // PostTask target from |ByteStreamWriterImpl::Write| and
   // |ByteStreamWriterImpl::Close|.
   // Receive data from our peer.
   // static because it may be called after the object it is targeting
@@ -129,7 +129,7 @@ class ByteStreamReaderImpl : public ByteStreamReader {
       scoped_ptr<ContentVector> transfer_buffer,
       size_t transfer_buffer_bytes,
       bool source_complete,
-      DownloadInterruptReason status);
+      int status);
 
  private:
   // Called from TransferData once object existence has been validated.
@@ -137,7 +137,7 @@ class ByteStreamReaderImpl : public ByteStreamReader {
       scoped_ptr<ContentVector> transfer_buffer,
       size_t transfer_buffer_bytes,
       bool source_complete,
-      DownloadInterruptReason status);
+      int status);
 
   void MaybeUpdateInput();
 
@@ -151,7 +151,7 @@ class ByteStreamReaderImpl : public ByteStreamReader {
   ContentVector available_contents_;
 
   bool received_status_;
-  DownloadInterruptReason status_;
+  int status_;
 
   base::Closure data_available_callback_;
 
@@ -211,7 +211,7 @@ bool ByteStreamWriterImpl::Write(
 
   // Arbitrarily, we buffer to a third of the total size before sending.
   if (input_contents_size_ > total_buffer_size_ / kFractionBufferBeforeSending)
-    PostToPeer(false, DOWNLOAD_INTERRUPT_REASON_NONE);
+    PostToPeer(false, 0);
 
   return (input_contents_size_ + output_size_used_ <= total_buffer_size_);
 }
@@ -219,11 +219,10 @@ bool ByteStreamWriterImpl::Write(
 void ByteStreamWriterImpl::Flush() {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   if (input_contents_size_ > 0)
-    PostToPeer(false, DOWNLOAD_INTERRUPT_REASON_NONE);
+    PostToPeer(false, 0);
 }
 
-void ByteStreamWriterImpl::Close(
-    DownloadInterruptReason status) {
+void ByteStreamWriterImpl::Close(int status) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   PostToPeer(true, status);
 }
@@ -259,8 +258,7 @@ void ByteStreamWriterImpl::UpdateWindowInternal(size_t bytes_consumed) {
     space_available_callback_.Run();
 }
 
-void ByteStreamWriterImpl::PostToPeer(
-    bool complete, DownloadInterruptReason status) {
+void ByteStreamWriterImpl::PostToPeer(bool complete, int status) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   // Valid contexts in which to call.
   DCHECK(complete || 0 != input_contents_size_);
@@ -293,7 +291,7 @@ ByteStreamReaderImpl::ByteStreamReaderImpl(
       my_task_runner_(task_runner),
       my_lifetime_flag_(lifetime_flag),
       received_status_(false),
-      status_(DOWNLOAD_INTERRUPT_REASON_NONE),
+      status_(0),
       unreported_consumed_bytes_(0),
       peer_(NULL) {
   DCHECK(my_lifetime_flag_.get());
@@ -333,7 +331,7 @@ ByteStreamReaderImpl::Read(scoped_refptr<net::IOBuffer>* data,
   return STREAM_EMPTY;
 }
 
-DownloadInterruptReason ByteStreamReaderImpl::GetStatus() const {
+int ByteStreamReaderImpl::GetStatus() const {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(received_status_);
   return status_;
@@ -353,7 +351,7 @@ void ByteStreamReaderImpl::TransferData(
     scoped_ptr<ContentVector> transfer_buffer,
     size_t buffer_size,
     bool source_complete,
-    DownloadInterruptReason status) {
+    int status) {
   // If our target is no longer alive, do nothing.
   if (!object_lifetime_flag->is_alive) return;
 
@@ -365,7 +363,7 @@ void ByteStreamReaderImpl::TransferDataInternal(
     scoped_ptr<ContentVector> transfer_buffer,
     size_t buffer_size,
     bool source_complete,
-    DownloadInterruptReason status) {
+    int status) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
 
   bool was_empty = available_contents_.empty();
