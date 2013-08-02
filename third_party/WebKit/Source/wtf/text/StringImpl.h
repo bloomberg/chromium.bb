@@ -174,29 +174,6 @@ public:
 
     static PassRefPtr<StringImpl> createUninitialized(unsigned length, LChar*& data);
     static PassRefPtr<StringImpl> createUninitialized(unsigned length, UChar*& data);
-    template <typename T> static ALWAYS_INLINE PassRefPtr<StringImpl> tryCreateUninitialized(unsigned length, T*& output)
-    {
-        if (!length) {
-            output = 0;
-            return empty();
-        }
-
-        if (length > ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(T))) {
-            output = 0;
-            return 0;
-        }
-        StringImpl* resultImpl;
-        if (!tryFastMalloc(sizeof(T) * length + sizeof(StringImpl)).getValue(resultImpl)) {
-            output = 0;
-            return 0;
-        }
-        output = reinterpret_cast<T*>(resultImpl + 1);
-
-        if (sizeof(T) == sizeof(char))
-            return adoptRef(new (NotNull, resultImpl) StringImpl(length, Force8BitConstructor));
-
-        return adoptRef(new (NotNull, resultImpl) StringImpl(length));
-    }
 
     // Reallocate the StringImpl. The originalString must be only owned by the PassRefPtr.
     // Just like the input pointer of realloc(), the originalString can't be used after this function.

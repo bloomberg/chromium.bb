@@ -424,7 +424,7 @@ inline void sumWithOverflow(unsigned& total, unsigned addend, bool& overflow)
 }
 
 template<typename StringType1, typename StringType2>
-PassRefPtr<StringImpl> tryMakeString(StringType1 string1, StringType2 string2)
+PassRefPtr<StringImpl> makeString(StringType1 string1, StringType2 string2)
 {
     StringTypeAdapter<StringType1> adapter1(string1);
     StringTypeAdapter<StringType2> adapter2(string2);
@@ -437,7 +437,7 @@ PassRefPtr<StringImpl> tryMakeString(StringType1 string1, StringType2 string2)
 
     if (adapter1.is8Bit() && adapter2.is8Bit()) {
         LChar* buffer;
-        RefPtr<StringImpl> resultImpl = StringImpl::tryCreateUninitialized(length, buffer);
+        RefPtr<StringImpl> resultImpl = StringImpl::createUninitialized(length, buffer);
         if (!resultImpl)
             return 0;
 
@@ -450,7 +450,7 @@ PassRefPtr<StringImpl> tryMakeString(StringType1 string1, StringType2 string2)
     }
 
     UChar* buffer;
-    RefPtr<StringImpl> resultImpl = StringImpl::tryCreateUninitialized(length, buffer);
+    RefPtr<StringImpl> resultImpl = StringImpl::createUninitialized(length, buffer);
     if (!resultImpl)
         return 0;
 

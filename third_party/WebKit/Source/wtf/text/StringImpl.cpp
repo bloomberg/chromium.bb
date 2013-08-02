@@ -25,7 +25,6 @@
 #include "config.h"
 #include "wtf/text/StringImpl.h"
 
-#include "wtf/ProcessID.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/WTFThreadData.h"
 #include "wtf/text/AtomicString.h"
@@ -36,6 +35,7 @@
 #ifdef STRING_STATS
 #include "wtf/DataLog.h"
 #include "wtf/MainThread.h"
+#include "wtf/ProcessID.h"
 #include "wtf/RefCounted.h"
 #include <unistd.h>
 #endif

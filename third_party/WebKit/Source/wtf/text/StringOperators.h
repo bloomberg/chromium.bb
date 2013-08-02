@@ -35,8 +35,7 @@ public:
 
     operator String() const
     {
-        RefPtr<StringImpl> resultImpl = tryMakeString(m_string1, m_string2);
-        RELEASE_ASSERT(resultImpl);
+        RefPtr<StringImpl> resultImpl = makeString(m_string1, m_string2);
         return resultImpl.release();
     }
 
