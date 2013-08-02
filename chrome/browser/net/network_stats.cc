@@ -112,7 +112,8 @@ void DynamicHistogramCounts(const std::string& name,
                             uint32 max,
                             uint32 bucket_count) {
   base::HistogramBase* histogram_pointer = base::Histogram::FactoryGet(
-      name, min, max, bucket_count, base::HistogramBase::kNoFlags);
+      name, min, max, bucket_count,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram_pointer->Add(sample);
 }
 
