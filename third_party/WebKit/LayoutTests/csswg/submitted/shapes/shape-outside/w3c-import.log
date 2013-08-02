@@ -55,5 +55,7 @@ List of files:
 /LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-polygon-001-expected.html
 /LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-polygon-002.html
 /LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-polygon-002-expected.html
+/LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-stacked-000.html
+/LayoutTests/csswg/submitted/shapes/shape-outside/shape-outside-floats-stacked-000-expected.html
 /LayoutTests/csswg/submitted/shapes/shape-outside/resources/rounded-rectangle.js
 /LayoutTests/csswg/submitted/shapes/shape-outside/resources/subpixel-utils.js
