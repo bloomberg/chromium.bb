@@ -990,18 +990,18 @@ class NinjaWriter:
       self.target.binary = compile_deps
     elif spec['type'] == 'static_library':
       self.target.binary = self.ComputeOutput(spec)
-      variables = []
-      self.AppendPostbuildVariable(variables, spec, self.target.binary,
-                                   self.target.binary)
-      if self.xcode_settings:
-        libtool_flags = self.xcode_settings.GetLibtoolflags(config_name)
-        if libtool_flags:
-          variables.append(('libtool_flags', libtool_flags))
       if (self.flavor not in ('mac', 'openbsd', 'win') and not
           self.is_standalone_static_library):
         self.ninja.build(self.target.binary, 'alink_thin', link_deps,
-                         order_only=compile_deps, variables=variables)
+                         order_only=compile_deps)
       else:
+        variables = []
+        self.AppendPostbuildVariable(variables, spec, self.target.binary,
+                                     self.target.binary)
+        if self.xcode_settings:
+          libtool_flags = self.xcode_settings.GetLibtoolflags(config_name)
+          if libtool_flags:
+            variables.append(('libtool_flags', libtool_flags))
         if self.msvs_settings:
           libflags = self.msvs_settings.GetLibFlags(config_name,
                                                     self.GypPathToNinja)
