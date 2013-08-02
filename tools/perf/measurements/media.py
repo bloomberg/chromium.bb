@@ -4,10 +4,10 @@
 
 """Media measurement class gathers media related metrics on a page set.
 
-Media metrics recorded are controlled by media_metrics.js.  At the end of the
+Media metrics recorded are controlled by metrics/media.js.  At the end of the
 test each metrics for every media element in the page are reported.
 """
-from perf_tools import  media_metrics
+import metrics.media
 
 from telemetry.page import page_measurement
 
@@ -25,7 +25,7 @@ class Media(page_measurement.PageMeasurement):
 
   def DidNavigateToPage(self, page, tab):
     """Override to do operations right after the page is navigated."""
-    self.metrics = media_metrics.MediaMetrics(tab)
+    self.metrics = metrics.media.MediaMetrics(tab)
     self.metrics.Start()
 
   def MeasurePage(self, page, tab, results):

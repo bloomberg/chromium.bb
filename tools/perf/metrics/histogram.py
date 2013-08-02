@@ -1,7 +1,7 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from perf_tools import histogram as histogram_module
+from metrics import histogram_util
 
 BROWSER_HISTOGRAM = 'browser_histogram'
 RENDERER_HISTOGRAM = 'renderer_histogram'
@@ -24,7 +24,7 @@ class HistogramMetric(object):
     data = self._GetHistogramFromDomAutomation(tab)
     if not data:
       return
-    new_histogram = histogram_module.SubtractHistogram(
+    new_histogram = histogram_util.SubtractHistogram(
         data, self._start_values[page.url + self.name])
     results.Add(self.name, self.units, new_histogram,
                 data_type='unimportant-histogram')
@@ -36,5 +36,5 @@ class HistogramMetric(object):
     return 'getHistogram'
 
   def _GetHistogramFromDomAutomation(self, tab):
-    return histogram_module.GetHistogramFromDomAutomation(
+    return histogram_util.GetHistogramFromDomAutomation(
         self.histogram_function, self.name, tab)

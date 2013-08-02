@@ -18,8 +18,8 @@ cycling all pages.
 import os
 import sys
 
-from perf_tools import histogram_metric
-from perf_tools import memory_metrics
+from metrics import histogram
+from metrics import memory
 from telemetry.core import util
 from telemetry.page import page_measurement
 
@@ -51,11 +51,11 @@ class PageCycler(page_measurement.PageMeasurement):
     parser.add_option(pageset_repeat_option)
 
   def DidStartBrowser(self, browser):
-    self._memory_metrics = memory_metrics.MemoryMetrics()
+    self._memory_metrics = memory.MemoryMetrics()
     self._memory_metrics.Start(browser)
 
-    self._histograms = [histogram_metric.HistogramMetric(
-                           h, histogram_metric.RENDERER_HISTOGRAM)
+    self._histograms = [histogram.HistogramMetric(
+                           h, histogram.RENDERER_HISTOGRAM)
                        for h in MEMORY_HISTOGRAMS]
 
   def DidStartHTTPServer(self, tab):

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import unittest
 
-from perf_tools import smoothness_metrics
+from metrics import smoothness
 from telemetry.page import page
 from telemetry.page.page_measurement_results import PageMeasurementResults
 
@@ -16,7 +16,7 @@ class SmoothnessMetricsUnitTest(unittest.TestCase):
                        'numFramesSentToScreen': 10}
     res = PageMeasurementResults()
     res.WillMeasurePage(page.Page('http://foo.com/', None))
-    smoothness_metrics.CalcScrollResults(rendering_stats, res)
+    smoothness.CalcScrollResults(rendering_stats, res)
     res.DidMeasurePage()
     self.assertEquals(50, res.page_results[0]['dropped_percent'].value)
     self.assertAlmostEquals(
@@ -38,7 +38,7 @@ class SmoothnessMetricsUnitTest(unittest.TestCase):
                        'totalTimeInSeconds': 1.0}
     res = PageMeasurementResults()
     res.WillMeasurePage(page.Page('http://foo.com/', None))
-    smoothness_metrics.CalcScrollResults(rendering_stats, res)
+    smoothness.CalcScrollResults(rendering_stats, res)
     res.DidMeasurePage()
     self.assertEquals(0, res.page_results[0]['dropped_percent'].value)
     self.assertAlmostEquals(

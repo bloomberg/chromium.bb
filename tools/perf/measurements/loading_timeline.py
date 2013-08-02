@@ -1,8 +1,8 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from perf_tools import timeline_metrics
-from perf_tools import loading_metrics
+from metrics import timeline
+from metrics import loading
 from telemetry.core import util
 from telemetry.page import page_measurement
 
@@ -16,8 +16,7 @@ class LoadingTimeline(page_measurement.PageMeasurement):
     return False
 
   def WillNavigateToPage(self, page, tab):
-    self._metrics = timeline_metrics.TimelineMetrics(
-        timeline_metrics.TIMELINE_MODE)
+    self._metrics = timeline.TimelineMetrics(timeline.TIMELINE_MODE)
     self._metrics.Start(tab)
 
   def MeasurePage(self, page, tab, results):
@@ -31,5 +30,5 @@ class LoadingTimeline(page_measurement.PageMeasurement):
     # recognize loading as a toplevel action.
     self._metrics.Stop(tab)
 
-    loading_metrics.AddResultsForTab(tab, results)
+    loading.AddResultsForTab(tab, results)
     self._metrics.AddResults(results)

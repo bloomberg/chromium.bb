@@ -40,6 +40,11 @@ def ListBootstrapDeps():
 
   Returns: a list of telemetry deps.
   """
+  # Add telemetry_tools to sys.path for the import below
+  telemetry_tools_path = os.path.join(os.path.dirname(__file__),
+                                      os.pardir, 'telemetry_tools')
+  sys.path.append(telemetry_tools_path)
+
   import perf_tools
   import telemetry_bootstrap
   deps_file = os.path.join(os.path.dirname(perf_tools.__file__),
@@ -50,7 +55,12 @@ def main():
   BootstrapIfNeeded('perf_tools', PERF_DIR,
                     'http://src.chromium.org/viewvc/chrome/trunk/src/tools'
                     '/perf/perf_tools/' + DEPS_FILE)
-  import perf_tools
+
+  # Add telemetry to sys.path for the import below
+  telemetry_path = os.path.join(os.path.dirname(__file__),
+                                os.pardir, 'telemetry')
+  sys.path.append(telemetry_path)
+
   if '--print-bootstrap-deps' in sys.argv:
     print ListBootstrapDeps()
     sys.exit(0)

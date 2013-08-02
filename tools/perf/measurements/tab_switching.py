@@ -9,7 +9,7 @@ it cycles through each tab in sequence, and records a histogram of the time
 between when a tab was first requested to be shown, and when it was painted.
 """
 
-from perf_tools import histogram as histogram_module
+from metrics import histogram as histogram_module
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_runner

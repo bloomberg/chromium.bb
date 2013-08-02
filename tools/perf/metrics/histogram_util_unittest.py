@@ -4,7 +4,7 @@
 import json
 import unittest
 
-from perf_tools import histogram as histogram_module
+from metrics import histogram_util
 
 class TestHistogram(unittest.TestCase):
   def testSubtractHistogram(self):
@@ -18,7 +18,7 @@ class TestHistogram(unittest.TestCase):
 {"low": 3, "high": 4, "count": 10}]}"""
 
     new_histogram = json.loads(
-        histogram_module.SubtractHistogram(histogram, baseline_histogram))
+        histogram_util.SubtractHistogram(histogram, baseline_histogram))
     new_buckets = dict()
     for b in new_histogram['buckets']:
       new_buckets[b['low']] = b['count']

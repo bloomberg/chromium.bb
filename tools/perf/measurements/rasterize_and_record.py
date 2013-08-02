@@ -4,7 +4,7 @@
 
 import time
 
-from perf_tools import smoothness_metrics
+from metrics import smoothness
 from telemetry.page import page_measurement
 
 class StatsCollector(object):
@@ -121,7 +121,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     options.extra_browser_args.append('--enable-threaded-compositing')
 
   def MeasurePage(self, page, tab, results):
-    self._metrics = smoothness_metrics.SmoothnessMetrics(tab)
+    self._metrics = smoothness.SmoothnessMetrics(tab)
 
     # Rasterize only what's visible.
     tab.ExecuteJavaScript(

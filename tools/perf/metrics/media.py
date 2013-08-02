@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,7 +16,7 @@ import os
 class MediaMetrics(object):
   def __init__(self, tab):
     with open(
-        os.path.join(os.path.dirname(__file__), 'media_metrics.js')) as f:
+        os.path.join(os.path.dirname(__file__), 'media.js')) as f:
       js = f.read()
       tab.ExecuteJavaScript(js)
     self.tab = tab

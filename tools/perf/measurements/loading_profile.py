@@ -5,7 +5,7 @@
 import os
 import tempfile
 
-from perf_tools import loading_metrics
+from metrics import loading
 from telemetry.core import util
 from telemetry.core.platform.profiler import perf_profiler
 from telemetry.page import page_measurement
@@ -45,7 +45,7 @@ class LoadingProfile(page_measurement.PageMeasurement):
 
     profile_files = tab.browser.StopProfiling()
 
-    loading_metrics.AddResultsForTab(tab, results)
+    loading.AddResultsForTab(tab, results)
 
     profile_file = None
     for profile_file in profile_files:

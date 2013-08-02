@@ -1,8 +1,8 @@
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from perf_tools import loading_metrics
-from perf_tools import smoothness_metrics
+from metrics import loading
+from metrics import smoothness
 from telemetry.page import page_measurement
 
 class DidNotScrollException(page_measurement.MeasurementFailure):
@@ -38,7 +38,7 @@ class Smoothness(page_measurement.PageMeasurement):
   def WillRunAction(self, page, tab, action):
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StartRawDisplayFrameRateMeasurement()
-    self._metrics = smoothness_metrics.SmoothnessMetrics(tab)
+    self._metrics = smoothness.SmoothnessMetrics(tab)
     if action.CanBeBound():
       self._metrics.BindToAction(action)
     else:
@@ -56,14 +56,14 @@ class Smoothness(page_measurement.PageMeasurement):
     if not (rendering_stats_deltas['numFramesSentToScreen'] > 0):
       raise DidNotScrollException()
 
-    loading_metrics.AddResultsForTab(tab, results)
+    loading.AddResultsForTab(tab, results)
 
-    smoothness_metrics.CalcFirstPaintTimeResults(results, tab)
-    smoothness_metrics.CalcScrollResults(rendering_stats_deltas, results)
-    smoothness_metrics.CalcTextureUploadResults(rendering_stats_deltas, results)
-    smoothness_metrics.CalcImageDecodingResults(rendering_stats_deltas, results)
-    smoothness_metrics.CalcAnalysisResults(rendering_stats_deltas, results)
-    smoothness_metrics.CalcLatencyResults(rendering_stats_deltas, results)
+    smoothness.CalcFirstPaintTimeResults(results, tab)
+    smoothness.CalcScrollResults(rendering_stats_deltas, results)
+    smoothness.CalcTextureUploadResults(rendering_stats_deltas, results)
+    smoothness.CalcImageDecodingResults(rendering_stats_deltas, results)
+    smoothness.CalcAnalysisResults(rendering_stats_deltas, results)
+    smoothness.CalcLatencyResults(rendering_stats_deltas, results)
 
     if self.options.report_all_results:
       for k, v in rendering_stats_deltas.iteritems():
