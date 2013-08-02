@@ -41,11 +41,28 @@ namespace WebCore {
 class Node;
 class ScriptState;
 
+// V8NodeFilterCondition maintains a Javascript implemented callback for
+// filtering Node returned by NodeIterator/TreeWalker.
+// A NodeFilterCondition is referenced by a NodeFilter, and A NodeFilter is
+// referenced by a NodeIterator/TreeWalker. As V8NodeFilterCondition maintains
+// a Javascript callback which may reference Document, we need to avoid circular
+// reference spanning V8/Blink object space.
+// To address this issue, V8NodeFilterCondition holds a weak reference to
+// |m_filter|, the Javascript value, and the whole reference is exposed to V8 to
+// let V8 GC handle collection of |m_filter|.
+// (DOM)
+// NodeIterator  ----RefPtr----> NodeFilter ----RefPtr----> NodeFilterCondition
+//   |   ^                        |   ^                        |
+//  weak |                       weak |                ScopedPersistent(weak)
+//   | RefPtr                     | RefPtr                     |
+//   v   |                        v   |                        v
+// NodeIterator  --HiddenValue--> NodeFilter --HiddenValue--> JS Callback
+// (V8)
 class V8NodeFilterCondition : public NodeFilterCondition {
 public:
-    static PassRefPtr<V8NodeFilterCondition> create(v8::Handle<v8::Value> filter)
+    static PassRefPtr<V8NodeFilterCondition> create(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner)
     {
-        return adoptRef(new V8NodeFilterCondition(filter));
+        return adoptRef(new V8NodeFilterCondition(filter, owner));
     }
 
     virtual ~V8NodeFilterCondition();
@@ -53,7 +70,12 @@ public:
     virtual short acceptNode(ScriptState*, Node*) const;
 
 private:
-    explicit V8NodeFilterCondition(v8::Handle<v8::Value> filter);
+    // As the value |filter| is maintained by V8GC, the |owner| which references
+    // V8NodeFilterCondition, usually a wrapper of NodeFilter, is specified here
+    // to hold a strong reference to |filter|.
+    V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner);
+
+    static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Value>*, V8NodeFilterCondition*);
 
     ScopedPersistent<v8::Value> m_filter;
 };

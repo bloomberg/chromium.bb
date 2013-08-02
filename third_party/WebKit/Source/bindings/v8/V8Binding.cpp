@@ -33,6 +33,7 @@
 
 #include "V8DOMStringList.h"
 #include "V8Element.h"
+#include "V8NodeFilter.h"
 #include "V8Window.h"
 #include "V8WorkerGlobalScope.h"
 #include "V8XPathNSResolver.h"
@@ -148,9 +149,17 @@ Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::FunctionCallbackInf
     return result;
 }
 
-PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback)
+PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, v8::Isolate* isolate)
 {
-    return NodeFilter::create(V8NodeFilterCondition::create(callback));
+    RefPtr<NodeFilter> filter = NodeFilter::create();
+
+    // FIXME: Should pass in appropriate creationContext
+    v8::Handle<v8::Object> filterWrapper = toV8(filter.get(), v8::Handle<v8::Object>(), isolate).As<v8::Object>();
+
+    RefPtr<NodeFilterCondition> condition = V8NodeFilterCondition::create(callback, filterWrapper);
+    filter->setCondition(condition.release());
+
+    return filter.release();
 }
 
 static const int8_t kMaxInt8 = 127;

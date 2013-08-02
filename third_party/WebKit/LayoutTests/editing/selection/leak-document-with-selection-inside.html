@@ -1,48 +1,23 @@
 <html>
-<head>
-<script src="../../fast/js/resources/js-test-pre.js"></script>
-</head>
 <body>
-    <span>This test only runs on DumpRenderTree, as it requires existence of window.internals and cross-domain resource access check disabled.</span>
-    <iframe id="f" src='about:blank'></iframe>
+    <script id='targetHTML' type='text/html'>
+        <span id='t'></span>
+    </script>
+    <script id='targetJS' type='text/html'>
+        var element = document.getElementById("t");
+        window.getSelection().setPosition(element, 0);
+    </script>
+
+    <script src="../../fast/js/resources/js-test-pre.js"></script>
+    <script src="../../fast/dom/resources/leak-check.js"></script>
     <script>
         description("This test asserts that document doesn't leak when a selection is created inside the document.");
 
-        jsTestIsAsync = true;
-        if (!window.internals)
-            finishJSTest(); 
+        var target = grabScriptText('targetHTML') + 
+                     '<script>'+grabScriptText('targetJS')+'<'+'/script>';
+        var tolerance = {'numberOfLiveDocuments': 0};
 
-        function countNumberOfLiveDocuments() {
-            gc();
-            return window.internals.numberOfLiveDocuments();
-        }
-
-        var numberOfDocumentsBefore = countNumberOfLiveDocuments();
-        var numberOfDocumentsAfter = 0;
-
-        var frame = document.getElementById('f');
-        frame.onload = function() {
-            if (frame.src === 'about:blank') return true;
-
-            // document loaded...
-
-            // create a selection inside iframe
-            (function() {
-                var contentWindow = frame.contentWindow;
-                var element = contentWindow.document.getElementById("t");
-                contentWindow.getSelection().setPosition(element, 0);
-            })();
-
-            frame.onload = function() {
-                // document unloaded...
-
-                numberOfDocumentsAfter = countNumberOfLiveDocuments();
-                shouldBe("numberOfDocumentsAfter", "numberOfDocumentsBefore");
-                finishJSTest();
-            }
-            frame.src = 'about:blank';
-        }
-        frame.src='data:text/html;charset=utf-8,<span id="t"></span>';
+        doLeakTest(htmlToUrl(target), tolerance);
     </script>
     <script src="../../fast/js/resources/js-test-post.js"></script>
 </body>

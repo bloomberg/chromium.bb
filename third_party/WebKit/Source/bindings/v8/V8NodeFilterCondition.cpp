@@ -34,15 +34,18 @@
 #include "V8Node.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptState.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeFilter.h"
 #include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
 
-V8NodeFilterCondition::V8NodeFilterCondition(v8::Handle<v8::Value> filter)
+V8NodeFilterCondition::V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner)
     : m_filter(filter)
 {
+    owner->SetHiddenValue(V8HiddenPropertyName::condition(), filter);
+    m_filter.makeWeak(this, &makeWeakCallback);
 }
 
 V8NodeFilterCondition::~V8NodeFilterCondition()
@@ -56,6 +59,7 @@ short V8NodeFilterCondition::acceptNode(ScriptState* state, Node* node) const
     v8::Isolate* isolate = state->isolate();
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> filter = m_filter.newLocal(isolate);
+    ASSERT(!filter.IsEmpty());
     if (!filter->IsObject())
         return NodeFilter::FILTER_ACCEPT;
 
@@ -87,6 +91,11 @@ short V8NodeFilterCondition::acceptNode(ScriptState* state, Node* node) const
     ASSERT(!result.IsEmpty());
 
     return result->Int32Value();
+}
+
+void V8NodeFilterCondition::makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Value>*, V8NodeFilterCondition* condition)
+{
+    condition->m_filter.clear();
 }
 
 } // namespace WebCore

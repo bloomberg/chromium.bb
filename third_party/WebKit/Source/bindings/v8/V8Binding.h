@@ -519,7 +519,7 @@ namespace WebCore {
         return v8Value;
     }
 
-    PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>);
+    PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Isolate*);
 
     inline bool isUndefinedOrNull(v8::Handle<v8::Value> value)
     {

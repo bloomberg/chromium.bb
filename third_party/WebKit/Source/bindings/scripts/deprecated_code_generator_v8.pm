@@ -5146,7 +5146,7 @@ sub JSValueToNative
     }
 
     if ($type eq "NodeFilter") {
-        return "toNodeFilter($value)";
+        return "toNodeFilter($value, $getIsolate)";
     }
 
     if ($type eq "MediaQueryListListener") {

@@ -1,0 +1,18 @@
+<html>
+<body>
+    <script id='targetJS' type='text/html'>
+        // This test asserts that document doesn't leak when a NodeFilter callback referencing the document is created.
+        keepTreeWalker = document.createTreeWalker(document, NodeFilter.SHOW_ELEMENT, function(node) { return NodeFilter.SHOW_ELEMENT; }, false);
+    </script>
+
+    <script src="../../js/resources/js-test-pre.js"></script>
+    <script src="../../dom/resources/leak-check.js"></script>
+    <script>
+        var target = '<script>'+grabScriptText('targetJS')+'<'+'/script>';
+        var tolerance = {'numberOfLiveDocuments': 0};
+
+        doLeakTest(htmlToUrl(target), tolerance);
+    </script>
+    <script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

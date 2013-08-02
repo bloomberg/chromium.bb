@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,54 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8HiddenPropertyName_h
-#define V8HiddenPropertyName_h
+#include "config.h"
+#include "V8NodeIterator.h"
 
-#include <v8.h>
+#include "V8NodeFilter.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 
-#define V8_HIDDEN_PROPERTIES(V) \
-    V(adaptorFunctionPeer) \
-    V(attributeListener) \
-    V(callback) \
-    V(condition) \
-    V(customElementAttributeChanged) \
-    V(customElementCreated) \
-    V(customElementDocument) \
-    V(customElementEnteredDocument) \
-    V(customElementIsInterfacePrototypeObject) \
-    V(customElementLeftDocument) \
-    V(customElementNamespaceURI) \
-    V(customElementTagName) \
-    V(customElementType) \
-    V(data) \
-    V(detail) \
-    V(document) \
-    V(event) \
-    V(listener) \
-    V(scriptState) \
-    V(sleepFunction) \
-    V(state) \
-    V(toStringString) \
-    V(typedArrayHiddenCopyMethod)
+v8::Handle<v8::Object> wrap(NodeIterator* nodeIterator, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(nodeIterator);
+    ASSERT(DOMDataStore::getWrapper<V8NodeIterator>(nodeIterator, isolate).IsEmpty());
 
-class V8HiddenPropertyName {
-public:
-    V8HiddenPropertyName() { }
-#define V8_DECLARE_PROPERTY(name) static v8::Handle<v8::String> name();
-    V8_HIDDEN_PROPERTIES(V8_DECLARE_PROPERTY);
-#undef V8_DECLARE_PROPERTY
+    v8::Handle<v8::Object> wrapper = V8NodeIterator::createWrapper(nodeIterator, creationContext, isolate);
 
-    static void setNamedHiddenReference(v8::Handle<v8::Object> parent, const char* name, v8::Handle<v8::Value> child);
+    if (nodeIterator->filter())
+        V8HiddenPropertyName::setNamedHiddenReference(wrapper, "filter", toV8(nodeIterator->filter(), creationContext, isolate));
 
-private:
-    static void createString(const char* key, v8::Persistent<v8::String>* handle);
-#define V8_DECLARE_FIELD(name) v8::Persistent<v8::String> m_##name;
-    V8_HIDDEN_PROPERTIES(V8_DECLARE_FIELD);
-#undef V8_DECLARE_FIELD
-};
-
+    return wrapper;
 }
 
-#endif // V8HiddenPropertyName_h
+} // namespace WebCore

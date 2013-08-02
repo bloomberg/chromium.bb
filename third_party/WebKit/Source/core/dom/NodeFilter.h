@@ -77,6 +77,11 @@ public:
 
     short acceptNode(ScriptState*, Node*) const;
 
+    void setCondition(PassRefPtr<NodeFilterCondition> condition)
+    {
+        m_condition = condition;
+    }
+
 private:
     explicit NodeFilter(PassRefPtr<NodeFilterCondition> condition) : m_condition(condition)
     {
