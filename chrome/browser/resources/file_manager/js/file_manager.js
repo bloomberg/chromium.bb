@@ -246,15 +246,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }.bind(this));
     }.bind(this));
 
-    // TODO(yoshiki): Remove this after launching folder shortcuts feature.
-    group.add(function(done) {
-      chrome.commandLinePrivate.hasSwitch(
-          'file-manager-enable-folder-shortcuts', function(flag) {
-        this.isFolderShortcutsEnabled_ = flag;
-        done();
-      }.bind(this));
-    }.bind(this));
-
     group.run(callback);
   };
 
@@ -2186,7 +2177,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @return {boolena} True if the flag is enabled.
    */
   FileManager.prototype.isFolderShortcutsEnabled = function() {
-    return this.isFolderShortcutsEnabled_;
+    // TODO(yoshiki): Remove this method in M31.
+    return true;
   };
 
   /**

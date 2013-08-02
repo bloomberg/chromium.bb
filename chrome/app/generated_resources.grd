@@ -12618,12 +12618,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FLAGS_FILE_MANAGER_SHOW_CHECKBOXES_DESCRIPTION" desc="Description of the about:flag option to show the selecting checkboxes to the Files app.">
         Show selecting checkboxes in the Files.app.
       </message>
-      <message name="IDS_FLAGS_FILE_MANAGER_ENABLE_FOLDER_SHORTCUTS" desc="Name of the about:flag option to enable the folder-shortcuts feature in the Files app.">
-        Enable folder shortcuts in Files.app.
-      </message>
-      <message name="IDS_FLAGS_FILE_MANAGER_ENABLE_FOLDER_SHORTCUTS_DESCRIPTION" desc="Description of the about:flag option of folder shortcuts feature in Files app.">
-        Enables the folder shortcuts feature in Files.app, which allows you to create shortcuts to folders in the left panel.
-      </message>
       <message name="IDS_FLAGS_FILE_MANAGER_ENABLE_WEBSTORE_INTEGRATION" desc="Name of the about:flag option to enable the webstore integration feature in Files app.">
         Enable the integration of Webstore and Files.app.
       </message>

@@ -1092,13 +1092,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerShowCheckboxes)
   },
   {
-    "file-manager-enable-folder-shortcuts",
-    IDS_FLAGS_FILE_MANAGER_ENABLE_FOLDER_SHORTCUTS,
-    IDS_FLAGS_FILE_MANAGER_ENABLE_FOLDER_SHORTCUTS_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerEnableFolderShortcuts)
-  },
-  {
     "file-manager-enable-webstore-integration",
     IDS_FLAGS_FILE_MANAGER_ENABLE_WEBSTORE_INTEGRATION,
     IDS_FLAGS_FILE_MANAGER_ENABLE_WEBSTORE_INTEGRATION_DESCRIPTION,
