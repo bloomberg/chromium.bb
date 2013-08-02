@@ -132,6 +132,9 @@ base::DictionaryValue* CreateValueFromDisk(
   return volume_info;
 }
 
+// Sets permissions for the Drive mount point so Files.app can access files
+// in the mount point directory. It's safe to call this function even if
+// Drive is disabled by the setting (i.e. prefs::kDisableDrive is true).
 void SetDriveMountPointPermissions(
     Profile* profile,
     const std::string& extension_id,
@@ -311,13 +314,15 @@ void RequestFileSystemFunction::DidOpenFileSystem(
     return;
   }
 
-  // Add drive mount point immediately when we kick of first instance of file
-  // manager. The actual mount event will be sent to UI only when we perform
-  // proper authentication.
-  drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-  if (integration_service)
-    SetDriveMountPointPermissions(profile_, extension_id(), render_view_host());
+  // Set permissions for the Drive mount point immediately when we kick of
+  // first instance of file manager. The actual mount event will be sent to
+  // UI only when we perform proper authentication.
+  //
+  // Note that we call this function even when Drive is disabled by the
+  // setting. Otherwise, we need to call this when the setting is changed at
+  // a later time, which complicates the code.
+  SetDriveMountPointPermissions(profile_, extension_id(), render_view_host());
+
   DictionaryValue* dict = new DictionaryValue();
   SetResult(dict);
   dict->SetString("name", name);
@@ -669,9 +674,6 @@ bool GetPreferencesFunction::RunImpl() {
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
   bool drive_enabled = (integration_service != NULL);
-
-  if (drive_enabled)
-    SetDriveMountPointPermissions(profile_, extension_id(), render_view_host());
 
   value->SetBoolean("driveEnabled", drive_enabled);
 
