@@ -91,8 +91,9 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
     if (!fontFamily || !src || !fontFamily->isValueList() || !src->isValueList() || (unicodeRange && !unicodeRange->isValueList()))
         return;
 
+    // The font-family descriptor has to have exactly one family name.
     CSSValueList* familyList = toCSSValueList(fontFamily.get());
-    if (!familyList->length())
+    if (familyList->length() != 1)
         return;
 
     CSSValueList* srcList = toCSSValueList(src.get());
@@ -252,69 +253,65 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
         }
     }
 
-    // Hash under every single family name.
-    int familyLength = familyList->length();
-    for (int i = 0; i < familyLength; i++) {
-        CSSPrimitiveValue* item = toCSSPrimitiveValue(familyList->itemWithoutBoundsCheck(i));
-        String familyName;
-        if (item->isString()) {
-            familyName = item->getStringValue();
-        } else if (item->isValueID()) {
-            // We need to use the raw text for all the generic family types, since @font-face is a way of actually
-            // defining what font to use for those types.
-            switch (item->getValueID()) {
-                case CSSValueSerif:
-                    familyName = serifFamily;
-                    break;
-                case CSSValueSansSerif:
-                    familyName = sansSerifFamily;
-                    break;
-                case CSSValueCursive:
-                    familyName = cursiveFamily;
-                    break;
-                case CSSValueFantasy:
-                    familyName = fantasyFamily;
-                    break;
-                case CSSValueMonospace:
-                    familyName = monospaceFamily;
-                    break;
-                case CSSValueWebkitPictograph:
-                    familyName = pictographFamily;
-                    break;
-                default:
-                    break;
-            }
+    CSSPrimitiveValue* familyValue = toCSSPrimitiveValue(familyList->itemWithoutBoundsCheck(0));
+    String familyName;
+    if (familyValue->isString()) {
+        familyName = familyValue->getStringValue();
+    } else if (familyValue->isValueID()) {
+        // We need to use the raw text for all the generic family types, since @font-face is a way of actually
+        // defining what font to use for those types.
+        switch (familyValue->getValueID()) {
+        case CSSValueSerif:
+            familyName =  serifFamily;
+            break;
+        case CSSValueSansSerif:
+            familyName =  sansSerifFamily;
+            break;
+        case CSSValueCursive:
+            familyName =  cursiveFamily;
+            break;
+        case CSSValueFantasy:
+            familyName =  fantasyFamily;
+            break;
+        case CSSValueMonospace:
+            familyName =  monospaceFamily;
+            break;
+        case CSSValueWebkitPictograph:
+            familyName =  pictographFamily;
+            break;
+        default:
+            break;
         }
-
-        if (familyName.isEmpty())
-            continue;
-
-        OwnPtr<Vector<RefPtr<CSSFontFace> > >& familyFontFaces = m_fontFaces.add(familyName, nullptr).iterator->value;
-        if (!familyFontFaces) {
-            familyFontFaces = adoptPtr(new Vector<RefPtr<CSSFontFace> >);
-
-            ASSERT(!m_locallyInstalledFontFaces.contains(familyName));
-
-            Vector<unsigned> locallyInstalledFontsTraitsMasks;
-            fontCache()->getTraitsInFamily(familyName, locallyInstalledFontsTraitsMasks);
-            if (unsigned numLocallyInstalledFaces = locallyInstalledFontsTraitsMasks.size()) {
-                OwnPtr<Vector<RefPtr<CSSFontFace> > > familyLocallyInstalledFaces = adoptPtr(new Vector<RefPtr<CSSFontFace> >);
-
-                for (unsigned i = 0; i < numLocallyInstalledFaces; ++i) {
-                    RefPtr<CSSFontFace> locallyInstalledFontFace = CSSFontFace::create(static_cast<FontTraitsMask>(locallyInstalledFontsTraitsMasks[i]), 0, true);
-                    locallyInstalledFontFace->addSource(adoptPtr(new CSSFontFaceSource(familyName)));
-                    ASSERT(locallyInstalledFontFace->isValid());
-                    familyLocallyInstalledFaces->append(locallyInstalledFontFace);
-                }
-
-                m_locallyInstalledFontFaces.set(familyName, familyLocallyInstalledFaces.release());
-            }
-        }
-
-        familyFontFaces->append(fontFace);
-
-        ++m_version;
     }
+
+    if (familyName.isEmpty())
+        return;
+
+    OwnPtr<Vector<RefPtr<CSSFontFace> > >& familyFontFaces = m_fontFaces.add(familyName, nullptr).iterator->value;
+    if (!familyFontFaces) {
+        familyFontFaces = adoptPtr(new Vector<RefPtr<CSSFontFace> >);
+
+        ASSERT(!m_locallyInstalledFontFaces.contains(familyName));
+
+        Vector<unsigned> locallyInstalledFontsTraitsMasks;
+        fontCache()->getTraitsInFamily(familyName, locallyInstalledFontsTraitsMasks);
+        if (unsigned numLocallyInstalledFaces = locallyInstalledFontsTraitsMasks.size()) {
+            OwnPtr<Vector<RefPtr<CSSFontFace> > > familyLocallyInstalledFaces = adoptPtr(new Vector<RefPtr<CSSFontFace> >);
+
+            for (unsigned i = 0; i < numLocallyInstalledFaces; ++i) {
+                RefPtr<CSSFontFace> locallyInstalledFontFace = CSSFontFace::create(static_cast<FontTraitsMask>(locallyInstalledFontsTraitsMasks[i]), 0, true);
+                locallyInstalledFontFace->addSource(adoptPtr(new CSSFontFaceSource(familyName)));
+                ASSERT(locallyInstalledFontFace->isValid());
+                familyLocallyInstalledFaces->append(locallyInstalledFontFace);
+            }
+
+            m_locallyInstalledFontFaces.set(familyName, familyLocallyInstalledFaces.release());
+        }
+    }
+
+    familyFontFaces->append(fontFace);
+
+    ++m_version;
 }
 
 void CSSFontSelector::registerForInvalidationCallbacks(FontSelectorClient* client)
