@@ -223,6 +223,14 @@
     ]
   },
 
+  "RemoteAccessHostAllowClientPairing": {
+    "os": [],
+    "test_policy": { "RemoteAccessHostAllowClientPairing": true },
+    "pref_mappings": [
+      { "pref": "remote_access.host_allow_client_pairing" }
+    ]
+  },
+
   "PrintingEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PrintingEnabled": false },

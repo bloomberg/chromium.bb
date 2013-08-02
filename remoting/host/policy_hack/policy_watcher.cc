@@ -98,6 +98,9 @@ const char PolicyWatcher::kHostTokenUrlPolicyName[] =
 const char PolicyWatcher::kHostTokenValidationUrlPolicyName[] =
     "RemoteAccessHostTokenValidationUrl";
 
+const char PolicyWatcher::kHostAllowClientPairing[] =
+    "RemoteAccessHostAllowClientPairing";
+
 const char PolicyWatcher::kHostDebugOverridePoliciesName[] =
     "RemoteAccessHostDebugOverridePolicies";
 
@@ -117,6 +120,7 @@ PolicyWatcher::PolicyWatcher(
                                kDefaultHostTalkGadgetPrefix);
   default_values_->SetString(kHostTokenUrlPolicyName, std::string());
   default_values_->SetString(kHostTokenValidationUrlPolicyName, std::string());
+  default_values_->SetBoolean(kHostAllowClientPairing, true);
 #if !defined(NDEBUG)
   default_values_->SetString(kHostDebugOverridePoliciesName, std::string());
 #endif

@@ -1965,6 +1965,10 @@ const char kRemoteAccessHostTalkGadgetPrefix[] =
 const char kRemoteAccessHostRequireCurtain[] =
     "remote_access.host_require_curtain";
 
+// Boolean controlling whether curtaining is required when connecting to a host.
+const char kRemoteAccessHostAllowClientPairing[] =
+    "remote_access.host_allow_client_pairing";
+
 // The last used printer and its settings.
 const char kPrintPreviewStickySettings[] =
     "printing.print_preview_sticky_settings";

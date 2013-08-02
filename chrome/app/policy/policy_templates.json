@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 233
+#   For your editing convenience: highest ID currently used: 234
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -587,6 +587,22 @@
           If this setting is enabled, then hosts' physical input and output devices are disabled while a remote connection is in progress.
 
           If this setting is disabled or not set, then both local and remote users can interact with the host when it is being shared.''',
+        },
+        {
+          'name': 'RemoteAccessHostAllowClientPairing',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome.*:30-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': False,
+          'id': 234,
+          'caption': '''Enable or disable PIN-less authentication''',
+          'desc': '''If this setting is enabled or not configured, then users can opt to pair clients and hosts at connection time, eliminating the need to enter a PIN every time.
+
+          If this setting is disabled, then this feature will not be available.''',
         },
       ],
     },

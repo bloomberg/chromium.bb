@@ -55,7 +55,9 @@ class PolicyWatcher {
   // The name of the host domain policy.
   static const char kHostDomainPolicyName[];
 
-  // The name of the username policy.
+  // The name of the username policy. This policy is ignored on Windows.
+  // This policy is currently considered 'internal only' and so is not
+  // documented in policy_templates.json.
   static const char kHostMatchUsernamePolicyName[];
 
   // The name of the policy that controls the host talkgadget prefix.
@@ -67,6 +69,9 @@ class PolicyWatcher {
   // The names of the policies for token authentication URLs.
   static const char kHostTokenUrlPolicyName[];
   static const char kHostTokenValidationUrlPolicyName[];
+
+  // The name of the policy for disabling PIN-less authentication.
+  static const char kHostAllowClientPairing[];
 
   // The name of the policy for overriding policies, for use in testing.
   static const char kHostDebugOverridePoliciesName[];

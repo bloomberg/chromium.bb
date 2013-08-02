@@ -213,6 +213,7 @@ class HostProcess
   bool OnHostTalkGadgetPrefixPolicyUpdate(const std::string& talkgadget_prefix);
   bool OnHostTokenUrlPolicyUpdate(const GURL& token_url,
                                   const GURL& token_validation_url);
+  bool OnPairingPolicyUpdate(bool pairing_enabled);
 
   void StartHost();
 
@@ -266,6 +267,7 @@ class HostProcess
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
   bool allow_nat_traversal_;
   std::string talkgadget_prefix_;
+  bool allow_pairing_;
 
   bool curtain_required_;
   GURL token_url_;
@@ -297,6 +299,7 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
     : context_(context.Pass()),
       state_(HOST_INITIALIZING),
       allow_nat_traversal_(true),
+      allow_pairing_(true),
       curtain_required_(false),
 #if defined(REMOTING_MULTI_PROCESS)
       desktop_session_connector_(NULL),
@@ -482,8 +485,10 @@ void HostProcess::CreateAuthenticatorFactory() {
     return;
   }
 
-  scoped_refptr<protocol::PairingRegistry> pairing_registry =
-      CreatePairingRegistry(context_->file_task_runner());
+  scoped_refptr<protocol::PairingRegistry> pairing_registry = NULL;
+  if (allow_pairing_) {
+    pairing_registry = CreatePairingRegistry(context_->file_task_runner());
+  }
 
   scoped_ptr<protocol::AuthenticatorFactory> factory;
 
@@ -748,6 +753,11 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
     restart_required |= OnHostTokenUrlPolicyUpdate(
         GURL(token_url_string), GURL(token_validation_url_string));
   }
+  if (policies->GetBoolean(
+          policy_hack::PolicyWatcher::kHostAllowClientPairing,
+          &bool_value)) {
+    restart_required |= OnPairingPolicyUpdate(bool_value);
+  }
 
   if (state_ == HOST_INITIALIZING) {
     StartHost();
@@ -891,6 +901,20 @@ bool HostProcess::OnHostTokenUrlPolicyUpdate(
   }
 
   return false;
+}
+
+bool HostProcess::OnPairingPolicyUpdate(bool allow_pairing) {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  if (allow_pairing_ == allow_pairing)
+    return false;
+
+  if (allow_pairing)
+    LOG(INFO) << "Policy enables client pairing.";
+  else
+    LOG(INFO) << "Policy disables client pairing.";
+  allow_pairing_ = allow_pairing;
+  return true;
 }
 
 void HostProcess::StartHost() {

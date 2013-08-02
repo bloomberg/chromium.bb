@@ -68,6 +68,8 @@ class PolicyWatcherTest : public testing::Test {
     nat_true_and_overridden_.SetString(
         PolicyWatcher::kHostDebugOverridePoliciesName,
         kOverrideNatTraversalToFalse);
+    pairing_true_.SetBoolean(PolicyWatcher::kHostAllowClientPairing, true);
+    pairing_false_.SetBoolean(PolicyWatcher::kHostAllowClientPairing, false);
 #if !defined(NDEBUG)
     SetDefaults(nat_false_overridden_others_default_);
     nat_false_overridden_others_default_.SetBoolean(
@@ -115,6 +117,8 @@ class PolicyWatcherTest : public testing::Test {
   base::DictionaryValue unknown_policies_;
   base::DictionaryValue nat_true_and_overridden_;
   base::DictionaryValue nat_false_overridden_others_default_;
+  base::DictionaryValue pairing_true_;
+  base::DictionaryValue pairing_false_;
 
  private:
   void SetDefaults(base::DictionaryValue& dict) {
@@ -128,6 +132,7 @@ class PolicyWatcherTest : public testing::Test {
     dict.SetString(PolicyWatcher::kHostTokenUrlPolicyName, std::string());
     dict.SetString(PolicyWatcher::kHostTokenValidationUrlPolicyName,
                    std::string());
+    dict.SetBoolean(PolicyWatcher::kHostAllowClientPairing, true);
 #if !defined(NDEBUG)
     dict.SetString(PolicyWatcher::kHostDebugOverridePoliciesName, "");
 #endif
@@ -305,6 +310,22 @@ TEST_F(PolicyWatcherTest, DebugOverrideNatPolicy) {
 
   StartWatching();
   policy_watcher_->SetPolicies(&nat_true_and_overridden_);
+  StopWatching();
+}
+
+TEST_F(PolicyWatcherTest, PairingFalseThenTrue) {
+  testing::InSequence sequence;
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&pairing_false_)));
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&pairing_true_)));
+
+  StartWatching();
+  policy_watcher_->SetPolicies(&empty_);
+  policy_watcher_->SetPolicies(&pairing_false_);
+  policy_watcher_->SetPolicies(&pairing_true_);
   StopWatching();
 }
 
