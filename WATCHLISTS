@@ -58,6 +58,15 @@
       'filepath': 'ui/aura/|'\
                   'ash/',
     },
+    'aura_compositor': {
+      'filepath':
+        'ui/compositor/' \
+       	'|content/browser/aura/' \
+        '|content/browser/renderer_host/render_widget_host_view_aura' \
+        '|content/browser/renderer_host/render_widget_host_view_browsertest' \
+        '|content/common/gpu/client/' \
+        '|webkit/common/gpu/'
+    },
     'autofill': {
       'filepath': 'chrome/browser/autofill/|'\
                   'chrome/browser/resources/options/autofill_|'\
@@ -600,6 +609,10 @@
     'appcache': ['michaeln@chromium.org'],
     'apps': ['tfarina@chromium.org', 'chromium-apps-reviews@chromium.org'],
     'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org'],
+    'aura_compositor': ['danakj+watch@chromium.org',
+                        'jbauman+watch@chromium.org',
+                        'piman+watch@chromium.org',
+                        'sievers+watch@chromium.org'],
     'autofill': ['isherman@chromium.org',
                  'dyu@chromium.org', 'abodenha@chromium.org',
                  'estade+watch@chromium.org', 'ahutter@chromium.org',
