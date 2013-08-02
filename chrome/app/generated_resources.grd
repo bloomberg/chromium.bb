@@ -13551,6 +13551,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_THUMBNAIL_VIEW_TOOLTIP" desc="Tooltip for the Thumbnail View button.">
         Thumbnail view
       </message>
+      <message name="IDS_FILE_BROWSER_GEAR_BUTTON_TOOLTIP" desc="Tooltip for the gear button in Files.app.">
+        Settings
+      </message>
 
       <message name="IDS_FILE_BROWSER_TIME_TODAY" desc="File date and time in case the date is today.">
         Today <ph name="TODAY_DAYTIME">$1<ex>6:19 AM</ex></ph>
