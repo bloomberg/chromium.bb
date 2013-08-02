@@ -17,9 +17,3 @@ IPC_SYNC_MESSAGE_CONTROL1_2(FileUtilitiesMsg_GetFileInfo,
                             base::FilePath /* path */,
                             base::PlatformFileInfo /* result */,
                             base::PlatformFileError /* status */)
-
-// Open the file.
-IPC_SYNC_MESSAGE_CONTROL2_1(FileUtilitiesMsg_OpenFile,
-                            base::FilePath /* path */,
-                            int /* mode */,
-                            IPC::PlatformFileForTransit /* result */)

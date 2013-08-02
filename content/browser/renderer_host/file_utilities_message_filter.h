@@ -39,9 +39,6 @@ class FileUtilitiesMessageFilter : public BrowserMessageFilter {
   void OnGetFileInfo(const base::FilePath& path,
                      base::PlatformFileInfo* result,
                      base::PlatformFileError* status);
-  void OnOpenFile(const base::FilePath& path,
-                  int mode,
-                  IPC::PlatformFileForTransit* result);
 
   // The ID of this process.
   int process_id_;

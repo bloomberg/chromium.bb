@@ -158,8 +158,6 @@ class RendererWebKitPlatformSupportImpl::FileUtilities
   explicit FileUtilities(ThreadSafeSender* sender)
       : thread_safe_sender_(sender) {}
   virtual bool getFileInfo(const WebString& path, WebFileInfo& result);
-  virtual base::PlatformFile openFile(const WebKit::WebString& path,
-                                      int mode);
  private:
   bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) const;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
@@ -540,15 +538,6 @@ bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
   webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
   web_file_info.platformPath = path;
   return true;
-}
-
-base::PlatformFile RendererWebKitPlatformSupportImpl::FileUtilities::openFile(
-    const WebString& path,
-    int mode) {
-  IPC::PlatformFileForTransit handle = IPC::InvalidPlatformFileForTransit();
-  SendSyncMessageFromAnyThread(new FileUtilitiesMsg_OpenFile(
-      base::FilePath::FromUTF16Unsafe(path), mode, &handle));
-  return IPC::PlatformFileForTransitToPlatformFile(handle);
 }
 
 bool RendererWebKitPlatformSupportImpl::FileUtilities::
