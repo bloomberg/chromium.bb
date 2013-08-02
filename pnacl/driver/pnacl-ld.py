@@ -175,7 +175,7 @@ LDPatterns = [
   # required for ABI-stable pexes but can be omitted when the PNaCl
   # toolchain is used for producing native nexes.
   ( '--pnacl-disable-pass=(.+)', "env.append('LLVM_PASSES_TO_DISABLE', $0)"),
-  ( '--pnaclabi-allow-dev-intrinsics', "env.set('ALLOW_DEV_INTRINSICS', '1')"),
+  ( '--pnacl-allow-dev-intrinsics', "env.set('ALLOW_DEV_INTRINSICS', '1')"),
   ( ('-target', '(.+)'), SetLibTarget),
   ( ('--target=(.+)'), SetLibTarget),
 
