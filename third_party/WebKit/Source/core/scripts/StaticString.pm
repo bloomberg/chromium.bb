@@ -36,31 +36,22 @@ sub GenerateStrings($)
     push(@result, "\n");
 
     while ( my ($name, $value) = each %strings ) {
-        push(@result, "static const LChar ${name}String8[] = \"${value}\";\n");
-    }
-
-    push(@result, "\n");
-
-    while ( my ($name, $value) = each %strings ) {
         my $length = length($value);
         my $hash = Hasher::GenerateHashValue($value);
         push(@result, <<END);
-static StringImpl::StaticASCIILiteral ${name}Data = {
-    ${name}String8,
-    StringImpl::StaticASCIILiteral::s_initialRefCount,
-    $length,
-    StringImpl::StaticASCIILiteral::s_initialFlags | (${hash} << StringImpl::StaticASCIILiteral::s_hashShift)
+static struct {
+    StringImpl::StaticASCIILiteral header;
+    const char data[$length + 1];
+} ${name}Data = {
+    {
+        StringImpl::StaticASCIILiteral::s_initialRefCount,
+        $length,
+        StringImpl::StaticASCIILiteral::s_initialFlags | (${hash} << StringImpl::StaticASCIILiteral::s_hashShift)
+    },
+    "${value}",
 };
 END
     }
-
-    push(@result, "\n");
-
-    while ( my ($name, $value) = each %strings ) {
-        push(@result, "static StringImpl* ${name}Impl = reinterpret_cast<StringImpl*>(&${name}Data);\n");
-    }
-
-    push(@result, "\n");
 
     return join "", @result;
 }
@@ -71,6 +62,14 @@ sub GenerateStringAsserts($)
     my %strings = %$stringsRef;
 
     my @result = ();
+
+    push(@result, "\n");
+
+    while ( my ($name, $value) = each %strings ) {
+        push(@result, "StringImpl* ${name}Impl = reinterpret_cast<StringImpl*>(&${name}Data.header);\n");
+    }
+
+    push(@result, "\n");
 
     push(@result, "#ifndef NDEBUG\n");
 
