@@ -766,6 +766,10 @@ void ProxyResolverV8::CreateIsolate() {
   v8::Isolate* isolate = v8::Isolate::New();
   DCHECK(isolate);
   DCHECK(g_default_isolate_ == NULL) << "Default Isolate can not be set twice";
+
+  isolate->Enter();
+  v8::V8::Initialize();
+
   g_default_isolate_ = isolate;
 }
 #endif  // defined(OS_WIN)
