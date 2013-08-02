@@ -32,6 +32,7 @@
 #define TimedItem_h
 
 #include "core/animation/Timing.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -47,6 +48,12 @@ static inline double nullValue()
 {
     return std::numeric_limits<double>::quiet_NaN();
 }
+
+class TimedItemEventDelegate {
+public:
+    virtual ~TimedItemEventDelegate() { };
+    virtual void onEventCondition(bool wasInPlay, bool isInPlay, double previousIteration, double currentIteration) = 0;
+};
 
 class TimedItem : public RefCounted<TimedItem> {
     friend class Player; // Calls attach/detach, updateInheritedTime.
@@ -72,7 +79,7 @@ public:
     };
 
 protected:
-    TimedItem(const Timing&);
+    TimedItem(const Timing&, PassOwnPtr<TimedItemEventDelegate> = nullptr);
 
     // When TimedItem receives a new inherited time via updateInheritedTime
     // it will (if necessary) recalculate timings and (if necessary) call
@@ -96,6 +103,7 @@ private:
     const double m_startTime;
     Player* m_player;
     Timing m_specified;
+    OwnPtr<TimedItemEventDelegate> m_eventDelegate;
 
     // FIXME: Should be versioned by monotonic value on player.
     mutable struct CalculatedTiming {

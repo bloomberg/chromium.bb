@@ -37,15 +37,43 @@ using namespace WebCore;
 
 namespace {
 
+class TestTimedItemEventDelegate : public TimedItemEventDelegate {
+public:
+    void onEventCondition(bool wasInPlay, bool isInPlay, double previousIteration, double currentIteration) OVERRIDE
+    {
+        m_eventTriggered = true;
+        m_playStateChanged = wasInPlay != isInPlay;
+        m_iterationChanged = isInPlay && previousIteration != currentIteration;
+        if (isInPlay)
+            ASSERT(!isNull(currentIteration));
+
+    }
+    void reset()
+    {
+        m_eventTriggered = false;
+        m_playStateChanged = false;
+        m_iterationChanged = false;
+    }
+    bool eventTriggered() { return m_eventTriggered; }
+    bool playStateChanged() { return m_playStateChanged; }
+    bool iterationChanged() { return m_iterationChanged; }
+
+private:
+    bool m_eventTriggered;
+    bool m_playStateChanged;
+    bool m_iterationChanged;
+};
+
 class TestTimedItem : public TimedItem {
 public:
     static PassRefPtr<TestTimedItem> create(const Timing& specified)
     {
-        return adoptRef(new TestTimedItem(specified));
+        return adoptRef(new TestTimedItem(specified, new TestTimedItemEventDelegate()));
     }
 
     void updateInheritedTime(double time)
     {
+        m_eventDelegate->reset();
         TimedItem::updateInheritedTime(time);
     }
 
@@ -54,11 +82,16 @@ public:
 
     void willDetach() { }
 
+    TestTimedItemEventDelegate* eventDelegate() { return m_eventDelegate; }
+
 private:
-    TestTimedItem(const Timing& specified)
-        : TimedItem(specified)
+    TestTimedItem(const Timing& specified, TestTimedItemEventDelegate* eventDelegate)
+        : TimedItem(specified, adoptPtr(eventDelegate))
+        , m_eventDelegate(eventDelegate)
     {
     }
+
+    TestTimedItemEventDelegate* m_eventDelegate;
 };
 
 TEST(TimedItem, Sanity)
@@ -505,5 +538,40 @@ TEST(TimedItem, ZeroDurationIterationAlternateReverse)
     timedItem->updateInheritedTime(1);
     ASSERT_EQ(1, timedItem->currentIteration());
     ASSERT_EQ(1, timedItem->timeFraction());
+}
+
+TEST(TimedItem, Events)
+{
+    Timing timing;
+    timing.hasIterationDuration = true;
+    timing.iterationDuration = 1;
+    timing.iterationCount = 2;
+    RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
+
+    timedItem->updateInheritedTime(0.3);
+    ASSERT_TRUE(timedItem->eventDelegate()->eventTriggered());
+    EXPECT_TRUE(timedItem->eventDelegate()->playStateChanged());
+    EXPECT_TRUE(timedItem->eventDelegate()->iterationChanged());
+
+    timedItem->updateInheritedTime(0.6);
+    ASSERT_FALSE(timedItem->eventDelegate()->eventTriggered());
+
+    timedItem->updateInheritedTime(1.5);
+    ASSERT_TRUE(timedItem->eventDelegate()->eventTriggered());
+    EXPECT_TRUE(timedItem->eventDelegate()->iterationChanged());
+    EXPECT_FALSE(timedItem->eventDelegate()->playStateChanged());
+
+    timedItem->updateInheritedTime(2.5);
+    ASSERT_TRUE(timedItem->eventDelegate()->eventTriggered());
+    EXPECT_FALSE(timedItem->eventDelegate()->iterationChanged());
+    EXPECT_TRUE(timedItem->eventDelegate()->playStateChanged());
+
+    timedItem->updateInheritedTime(3);
+    ASSERT_FALSE(timedItem->eventDelegate()->eventTriggered());
+
+    timedItem->updateInheritedTime(1.5);
+    ASSERT_TRUE(timedItem->eventDelegate()->eventTriggered());
+    EXPECT_FALSE(timedItem->eventDelegate()->iterationChanged());
+    EXPECT_TRUE(timedItem->eventDelegate()->playStateChanged());
 }
 }

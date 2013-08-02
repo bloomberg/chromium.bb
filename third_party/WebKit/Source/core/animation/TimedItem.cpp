@@ -34,12 +34,13 @@
 
 namespace WebCore {
 
-TimedItem::TimedItem(const Timing& timing)
+TimedItem::TimedItem(const Timing& timing, PassOwnPtr<TimedItemEventDelegate> eventDelegate)
     : m_parent(0)
     , m_player(0)
     , m_startTime(0)
     , m_specified(timing)
     , m_calculated()
+    , m_eventDelegate(eventDelegate)
 {
     timing.assertValid();
 }
@@ -86,14 +87,19 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
         timeFraction = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_specified);
     }
 
+    const double lastIteration = m_calculated.currentIteration;
     m_calculated.currentIteration = currentIteration;
     m_calculated.activeDuration = activeDuration;
     m_calculated.timeFraction = timeFraction;
 
-    const bool wasInEffect = isInEffect();
+    const bool wasInEffect = m_calculated.isInEffect;
+    const bool wasInPlay = m_calculated.isInPlay;
     m_calculated.isInEffect = !isNull(activeTime);
     m_calculated.isInPlay = phase == PhaseActive && (!m_parent || m_parent->isInPlay());
     m_calculated.isCurrent = phase == PhaseBefore || isInPlay() || (m_parent && m_parent->isCurrent());
+
+    if (m_eventDelegate && (isInPlay() != wasInPlay || (isInPlay() && lastIteration != currentIteration)))
+        m_eventDelegate->onEventCondition(wasInPlay, isInPlay(), lastIteration, currentIteration);
 
     // FIXME: This probably shouldn't be recursive.
     updateChildrenAndEffects(wasInEffect);
