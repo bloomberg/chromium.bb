@@ -66,9 +66,9 @@ cr.define('options', function() {
         OptionsPage.closeOverlay();
       };
       $('delete-profile-ok').onclick = function(event) {
-        if (self.profileInfo_ && self.profileInfo_.isManaged)
-          return;
         OptionsPage.closeOverlay();
+        if (BrowserOptions.getCurrentProfile().isManaged)
+          return;
         chrome.send('deleteProfile', [self.profileInfo_.filePath]);
       };
       $('add-shortcut-button').onclick = function(event) {
@@ -372,8 +372,7 @@ cr.define('options', function() {
      * @private
      */
     showDeleteDialog_: function(profileInfo) {
-      var currentProfile = BrowserOptions.getCurrentProfile();
-      if (currentProfile.isManaged)
+      if (BrowserOptions.getCurrentProfile().isManaged)
         return;
 
       ManageProfileOverlay.setProfileInfo(profileInfo, 'manage');
@@ -436,8 +435,7 @@ cr.define('options', function() {
 
     /** @override */
     canShowPage: function() {
-      var profileInfo = BrowserOptions.getCurrentProfile();
-      return !profileInfo.isManaged;
+      return !BrowserOptions.getCurrentProfile().isManaged;
     },
 
     /**

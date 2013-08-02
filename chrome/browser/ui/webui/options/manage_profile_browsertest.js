@@ -307,7 +307,7 @@ TEST_F('ManageProfileUITest', 'PolicyDynamicRefresh', function() {
 });
 
 // Managed users shouldn't be able to open the delete or create dialogs.
-TEST_F('ManageProfileUITest', 'ManagedDeleteAndCreate', function() {
+TEST_F('ManageProfileUITest', 'ManagedShowDeleteAndCreate', function() {
   this.setProfileManaged_(false);
 
   ManageProfileOverlay.showCreateDialog();
@@ -324,6 +324,39 @@ TEST_F('ManageProfileUITest', 'ManagedDeleteAndCreate', function() {
   ManageProfileOverlay.showCreateDialog();
   assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
+  assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+});
+
+// Only non-managed users should be able to delete profiles.
+TEST_F('ManageProfileUITest', 'ManagedDelete', function() {
+  ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
+  assertEquals('manageProfile', OptionsPage.getTopmostVisiblePage().name);
+  assertFalse($('manage-profile-overlay-delete').hidden);
+
+  // Clicks the "Delete" button, after overriding chrome.send to record what
+  // messages were sent.
+  function clickAndListen() {
+    var originalChromeSend = chrome.send;
+    var chromeSendMessages = [];
+    chrome.send = function(message) {
+      chromeSendMessages.push(message);
+    };
+    $('delete-profile-ok').onclick();
+    // Restore the original function so the test framework can use it.
+    chrome.send = originalChromeSend;
+    return chromeSendMessages;
+  }
+
+  this.setProfileManaged_(false);
+  var messages = clickAndListen();
+  assertEquals(1, messages.length);
+  assertEquals('deleteProfile', messages[0]);
+  assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+
+  ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));
+  this.setProfileManaged_(true);
+  messages = clickAndListen();
+  assertEquals(0, messages.length);
   assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
 });
 
