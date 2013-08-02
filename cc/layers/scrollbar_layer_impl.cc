@@ -31,8 +31,8 @@ ScrollbarLayerImpl::ScrollbarLayerImpl(
     int id,
     ScrollbarOrientation orientation)
     : LayerImpl(tree_impl, id),
-      track_ui_resource_id_(0),
-      thumb_ui_resource_id_(0),
+      track_resource_id_(0),
+      thumb_resource_id_(0),
       current_pos_(0.f),
       maximum_(0),
       thumb_thickness_(0),
@@ -69,8 +69,8 @@ void ScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_track_length(track_length_);
   scrollbar_layer->set_is_overlay_scrollbar(is_overlay_scrollbar_);
 
-  scrollbar_layer->set_track_ui_resource_id(track_ui_resource_id_);
-  scrollbar_layer->set_thumb_ui_resource_id(thumb_ui_resource_id_);
+  scrollbar_layer->set_track_resource_id(track_resource_id_);
+  scrollbar_layer->set_thumb_resource_id(thumb_resource_id_);
 }
 
 bool ScrollbarLayerImpl::WillDraw(DrawMode draw_mode,
@@ -106,19 +106,14 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
     return;
   }
 
-  ResourceProvider::ResourceId thumb_resource_id =
-      layer_tree_impl()->ResourceIdForUIResource(thumb_ui_resource_id_);
-  ResourceProvider::ResourceId track_resource_id =
-      layer_tree_impl()->ResourceIdForUIResource(track_ui_resource_id_);
-
-  if (thumb_resource_id && !thumb_quad_rect.IsEmpty()) {
+  if (thumb_resource_id_ && !thumb_quad_rect.IsEmpty()) {
     gfx::Rect opaque_rect;
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
     quad->SetNew(shared_quad_state,
                  thumb_quad_rect,
                  opaque_rect,
-                 thumb_resource_id,
+                 thumb_resource_id_,
                  premultipled_alpha,
                  uv_top_left,
                  uv_bottom_right,
@@ -128,15 +123,21 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
     quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
   }
 
-  gfx::Rect track_quad_rect = content_bounds_rect;
-  if (track_resource_id && !track_quad_rect.IsEmpty()) {
-    gfx::Rect opaque_rect(contents_opaque() ? track_quad_rect : gfx::Rect());
+  if (!track_resource_id_)
+    return;
+
+  // Order matters here: since the back track texture is being drawn to the
+  // entire contents rect, we must append it after the thumb and fore track
+  // quads. The back track texture contains (and displays) the buttons.
+  if (!content_bounds_rect.IsEmpty()) {
+    gfx::Rect quad_rect(content_bounds_rect);
+    gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
     quad->SetNew(shared_quad_state,
-                 track_quad_rect,
+                 quad_rect,
                  opaque_rect,
-                 track_resource_id,
+                 track_resource_id_,
                  premultipled_alpha,
                  uv_top_left,
                  uv_bottom_right,
@@ -258,6 +259,11 @@ gfx::Rect ScrollbarLayerImpl::ComputeThumbQuadRect() const {
   }
 
   return ScrollbarLayerRectToContentRect(thumb_rect);
+}
+
+void ScrollbarLayerImpl::DidLoseOutputSurface() {
+  track_resource_id_ = 0;
+  thumb_resource_id_ = 0;
 }
 
 const char* ScrollbarLayerImpl::LayerTypeAsString() const {

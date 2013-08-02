@@ -4,7 +4,6 @@
 
 #include "cc/layers/scrollbar_layer.h"
 
-#include "base/containers/hash_tables.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/scrollbar_layer_impl.h"
@@ -21,7 +20,6 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/mock_quad_culler.h"
 #include "cc/test/test_web_graphics_context_3d.h"
-#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
@@ -405,39 +403,9 @@ class MockLayerTreeHost : public LayerTreeHost {
  public:
   MockLayerTreeHost(LayerTreeHostClient* client,
                     const LayerTreeSettings& settings)
-      : LayerTreeHost(client, settings),
-        next_id_(1),
-        total_ui_resource_created_(0),
-        total_ui_resource_deleted_(0) {
+      : LayerTreeHost(client, settings) {
     Initialize(NULL);
   }
-
-  virtual UIResourceId CreateUIResource(UIResourceClient* content) OVERRIDE {
-    total_ui_resource_created_++;
-    UIResourceId nid = next_id_++;
-    ui_resource_id_set_.insert(nid);
-    return nid;
-  }
-
-  // Deletes a UI resource.  May safely be called more than once.
-  virtual void DeleteUIResource(UIResourceId id) OVERRIDE {
-    UIResourceIdSet::iterator iter = ui_resource_id_set_.find(id);
-    if (iter != ui_resource_id_set_.end()) {
-      ui_resource_id_set_.erase(iter);
-      total_ui_resource_deleted_++;
-    }
-  }
-
-  size_t UIResourceCount() { return ui_resource_id_set_.size(); }
-  int TotalUIResourceDeleted() { return total_ui_resource_deleted_; }
-  int TotalUIResourceCreated() { return total_ui_resource_created_; }
-
- private:
-  typedef base::hash_set<UIResourceId> UIResourceIdSet;
-  UIResourceIdSet ui_resource_id_set_;
-  int next_id_;
-  int total_ui_resource_created_;
-  int total_ui_resource_deleted_;
 };
 
 
@@ -446,10 +414,7 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
   ScrollbarLayerTestResourceCreation()
       : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
-  void TestResourceUpload(int num_updates,
-                          size_t expected_resources,
-                          int expected_created,
-                          int expected_deleted) {
+  void TestResourceUpload(size_t expected_resources) {
     layer_tree_host_.reset(
         new MockLayerTreeHost(&fake_client_, layer_tree_settings_));
 
@@ -481,17 +446,15 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
 
+    PriorityCalculator calculator;
     ResourceUpdateQueue queue;
     OcclusionTracker occlusion_tracker(gfx::Rect(), false);
 
-    for (int update_counter = 0; update_counter < num_updates; update_counter++)
-      scrollbar_layer->Update(&queue, &occlusion_tracker);
-
-    // A non-solid-color scrollbar should have requested two textures.
-    // A solid-color scrollbar should have requested two textures.
-    EXPECT_EQ(expected_resources, layer_tree_host_->UIResourceCount());
-    EXPECT_EQ(expected_created, layer_tree_host_->TotalUIResourceCreated());
-    EXPECT_EQ(expected_deleted, layer_tree_host_->TotalUIResourceDeleted());
+    scrollbar_layer->SetTexturePriorities(calculator);
+    layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
+    scrollbar_layer->Update(&queue, &occlusion_tracker);
+    EXPECT_EQ(0u, queue.FullUploadSize());
+    EXPECT_EQ(expected_resources, queue.PartialUploadSize());
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 
@@ -506,18 +469,104 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
 
 TEST_F(ScrollbarLayerTestResourceCreation, ResourceUpload) {
   layer_tree_settings_.solid_color_scrollbars = false;
-  TestResourceUpload(0, 0, 0, 0);
-  int num_updates[3] = {1, 5, 10};
-  for (int j = 0; j < 3; j++) {
-    TestResourceUpload(
-        num_updates[j], 2, num_updates[j] * 2, (num_updates[j] - 1) * 2);
-  }
+  TestResourceUpload(2);
 }
 
 TEST_F(ScrollbarLayerTestResourceCreation, SolidColorNoResourceUpload) {
   layer_tree_settings_.solid_color_scrollbars = true;
-  TestResourceUpload(0, 0, 0, 0);
-  TestResourceUpload(1, 0, 0, 0);
+  TestResourceUpload(0);
+}
+
+class ScaledScrollbarLayerTestResourceCreation : public testing::Test {
+ public:
+  ScaledScrollbarLayerTestResourceCreation()
+      : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
+
+  void TestResourceUpload(size_t expected_resources, const float test_scale) {
+    layer_tree_host_.reset(
+        new MockLayerTreeHost(&fake_client_, layer_tree_settings_));
+
+    gfx::Point scrollbar_location(0, 185);
+    scoped_ptr<FakeScrollbar> scrollbar(new FakeScrollbar(false, true, false));
+    scrollbar->set_location(scrollbar_location);
+
+    scoped_refptr<Layer> layer_tree_root = Layer::Create();
+    scoped_refptr<Layer> content_layer = Layer::Create();
+    scoped_refptr<Layer> scrollbar_layer =
+        ScrollbarLayer::Create(scrollbar.PassAs<cc::Scrollbar>(),
+                               layer_tree_root->id());
+    layer_tree_root->AddChild(content_layer);
+    layer_tree_root->AddChild(scrollbar_layer);
+
+    layer_tree_host_->InitializeOutputSurfaceIfNeeded();
+    layer_tree_host_->contents_texture_manager()->
+        SetMaxMemoryLimitBytes(1024 * 1024);
+    layer_tree_host_->SetRootLayer(layer_tree_root);
+
+    scrollbar_layer->SetIsDrawable(true);
+    scrollbar_layer->SetBounds(gfx::Size(100, 15));
+    scrollbar_layer->SetPosition(scrollbar_location);
+    layer_tree_root->SetBounds(gfx::Size(100, 200));
+    content_layer->SetBounds(gfx::Size(100, 200));
+    gfx::SizeF scaled_size =
+        gfx::ScaleSize(scrollbar_layer->bounds(), test_scale, test_scale);
+    gfx::PointF scaled_location =
+        gfx::ScalePoint(scrollbar_layer->position(), test_scale, test_scale);
+    scrollbar_layer->draw_properties().content_bounds =
+        gfx::Size(scaled_size.width(), scaled_size.height());
+    scrollbar_layer->draw_properties().contents_scale_x = test_scale;
+    scrollbar_layer->draw_properties().contents_scale_y = test_scale;
+    scrollbar_layer->draw_properties().visible_content_rect =
+        gfx::Rect(scaled_location.x(),
+                  scaled_location.y(),
+                  scaled_size.width(),
+                  scaled_size.height());
+    scrollbar_layer->CreateRenderSurface();
+    scrollbar_layer->draw_properties().render_target = scrollbar_layer.get();
+
+    testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+    EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
+
+    PriorityCalculator calculator;
+    ResourceUpdateQueue queue;
+    OcclusionTracker occlusion_tracker(gfx::Rect(), false);
+
+    scrollbar_layer->SetTexturePriorities(calculator);
+    layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
+    scrollbar_layer->Update(&queue, &occlusion_tracker);
+    EXPECT_EQ(expected_resources, queue.PartialUploadSize());
+
+    // Verify that we have not generated any content uploads that are larger
+    // than their destination textures.
+    while (queue.HasMoreUpdates()) {
+      ResourceUpdate update = queue.TakeFirstPartialUpload();
+      EXPECT_LE(update.texture->size().width(),
+                scrollbar_layer->content_bounds().width());
+      EXPECT_LE(update.texture->size().height(),
+                scrollbar_layer->content_bounds().height());
+
+      EXPECT_LE(update.dest_offset.x() + update.content_rect.width(),
+                update.texture->size().width());
+      EXPECT_LE(update.dest_offset.y() + update.content_rect.height(),
+                update.texture->size().height());
+    }
+
+    testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+    scrollbar_layer->ClearRenderSurface();
+  }
+
+ protected:
+  FakeLayerTreeHostClient fake_client_;
+  LayerTreeSettings layer_tree_settings_;
+  scoped_ptr<MockLayerTreeHost> layer_tree_host_;
+};
+
+TEST_F(ScaledScrollbarLayerTestResourceCreation, ScaledResourceUpload) {
+  layer_tree_settings_.solid_color_scrollbars = false;
+  // Pick a test scale that moves the scrollbar's (non-zero) position to
+  // a non-pixel-aligned location.
+  TestResourceUpload(2, 1.41f);
 }
 
 }  // namespace

@@ -23,6 +23,12 @@ class FakeScrollbarLayer : public ScrollbarLayer {
 
   int update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
+  size_t last_update_full_upload_size() const {
+    return last_update_full_upload_size_;
+  }
+  size_t last_update_partial_upload_size() const {
+    return last_update_partial_upload_size_;
+  }
 
   virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE;
@@ -42,6 +48,8 @@ class FakeScrollbarLayer : public ScrollbarLayer {
 
   int update_count_;
   size_t push_properties_count_;
+  size_t last_update_full_upload_size_;
+  size_t last_update_partial_upload_size_;
 };
 
 }  // namespace cc
