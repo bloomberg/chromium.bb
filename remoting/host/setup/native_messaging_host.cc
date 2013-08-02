@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_string_value_serializer.h"
@@ -19,6 +20,11 @@
 #include "remoting/protocol/pairing_registry.h"
 
 namespace {
+
+// Features supported in addition to the base protocol.
+const char* kSupportedFeatures[] = {
+  "pairingRegistry",
+};
 
 // Helper to extract the "config" part of a message as a DictionaryValue.
 // Returns NULL on failure, and logs an error message.
@@ -143,6 +149,10 @@ bool NativeMessagingHost::ProcessHello(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   response->SetString("version", STRINGIZE(VERSION));
+  scoped_ptr<base::ListValue> supported_features_list(new base::ListValue());
+  supported_features_list->AppendStrings(std::vector<std::string>(
+      kSupportedFeatures, kSupportedFeatures + arraysize(kSupportedFeatures)));
+  response->Set("supportedFeatures", supported_features_list.release());
   SendResponse(response.Pass());
   return true;
 }

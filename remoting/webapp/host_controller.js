@@ -58,6 +58,26 @@ remoting.HostController.AsyncResult = {
 };
 
 /**
+ * Set of features for which hasFeature() can be used to test.
+ *
+ * @enum {string}
+ */
+remoting.HostController.Feature = {
+  PAIRING_REGISTRY: 'pairingRegistry'
+};
+
+/**
+ * @param {remoting.HostController.Feature} feature The feature to test for.
+ * @param {function(boolean):void} callback
+ * @return {void}
+ */
+remoting.HostController.prototype.hasFeature = function(feature, callback) {
+  // TODO(rmsousa): This could synchronously return a boolean, provided it were
+  // only called after the dispatcher is completely initialized.
+  this.hostDispatcher_.hasFeature(feature, callback);
+};
+
+/**
  * @param {function(boolean, boolean, boolean):void} onDone Callback to be
  *     called when done.
  * @param {function(remoting.Error):void} onError Callback to be called on
@@ -92,7 +112,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
       e[i] = (/** @type {number} */random[i] + 0x10000).
           toString(16).substring(1);
     }
-    return e[0] + e[1] + '-' + e[2] + "-" + e[3] + '-' +
+    return e[0] + e[1] + '-' + e[2] + '-' + e[3] + '-' +
         e[4] + '-' + e[5] + e[6] + e[7];
   };
 

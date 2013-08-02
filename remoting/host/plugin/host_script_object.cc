@@ -58,6 +58,7 @@ const char* kAttrNameOnStateChanged = "onStateChanged";
 const char* kAttrNameXmppServerAddress = "xmppServerAddress";
 const char* kAttrNameXmppServerUseTls = "xmppServerUseTls";
 const char* kAttrNameDirectoryBotJid = "directoryBotJid";
+const char* kAttrNameSupportedFeatures = "supportedFeatures";
 const char* kFuncNameConnect = "connect";
 const char* kFuncNameDisconnect = "disconnect";
 const char* kFuncNameLocalize = "localize";
@@ -85,6 +86,9 @@ const char* kAttrNameError = "ERROR";
 const char* kAttrNameInvalidDomainError = "INVALID_DOMAIN_ERROR";
 
 const int kMaxLoginAttempts = 5;
+
+// Space separated list of features supported in addition to the base protocol.
+const char* kSupportedFeatures = "pairingRegistry";
 
 }  // namespace
 
@@ -797,7 +801,8 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
           property_name == kAttrNameError ||
           property_name == kAttrNameXmppServerAddress ||
           property_name == kAttrNameXmppServerUseTls ||
-          property_name == kAttrNameDirectoryBotJid);
+          property_name == kAttrNameDirectoryBotJid ||
+          property_name == kAttrNameSupportedFeatures);
 }
 
 bool HostNPScriptObject::GetProperty(const std::string& property_name,
@@ -866,6 +871,9 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
     return true;
   } else if (property_name == kAttrNameDirectoryBotJid) {
     *result = NPVariantFromString(directory_bot_jid_);
+    return true;
+  } else if (property_name == kAttrNameSupportedFeatures) {
+    *result = NPVariantFromString(kSupportedFeatures);
     return true;
   } else {
     SetException("GetProperty: unsupported property " + property_name);

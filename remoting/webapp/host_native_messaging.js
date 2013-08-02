@@ -32,7 +32,10 @@ remoting.HostNativeMessaging = function() {
   this.port_ = null;
 
   /** @type {string} @private */
-  this.version_ = ''
+  this.version_ = '';
+
+  /** @type {Array.<remoting.HostController.Feature>} @private */
+  this.supportedFeatures_ = [];
 };
 
 /**
@@ -147,6 +150,14 @@ function asHostState_(result) {
 }
 
 /**
+ * @param {remoting.HostController.Feature} feature The feature to test for.
+ * @return {boolean} True if the implementation supports the named feature.
+ */
+remoting.HostNativeMessaging.prototype.hasFeature = function(feature) {
+  return this.supportedFeatures_.indexOf(feature) >= 0;
+};
+
+/**
  * Attaches a new ID to the supplied message, and posts it to the Native
  * Messaging port, adding |onDone| to the list of pending replies.
  * |message| should have its 'type' field set, and any other fields set
@@ -212,6 +223,13 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
       var version = message['version'];
       if (checkType_('version', version, 'string')) {
         this.version_ = version;
+        if (message['supportedFeatures'] instanceof Array) {
+          this.supportedFeatures_ = message['supportedFeatures'];
+        } else {
+          // Old versions of the native messaging host do not return this list.
+          // Those versions don't support any new feature.
+          this.supportedFeatures_ = [];
+        }
         onDone();
       } else {
         onError(remoting.Error.UNEXPECTED);

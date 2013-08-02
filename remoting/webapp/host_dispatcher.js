@@ -75,6 +75,33 @@ remoting.HostDispatcher.State = {
 };
 
 /**
+ * @param {remoting.HostController.Feature} feature The feature to test for.
+ * @param {function(boolean):void} onDone
+ * @return {void}
+ */
+remoting.HostDispatcher.prototype.hasFeature = function(
+    feature, onDone) {
+  switch (this.state_) {
+    case remoting.HostDispatcher.State.UNKNOWN:
+      this.pendingRequests_.push(
+          this.hasFeature.bind(this, feature, onDone));
+      break;
+    case remoting.HostDispatcher.State.NATIVE_MESSAGING:
+      onDone(this.nativeMessagingHost_.hasFeature(feature));
+      break;
+    case remoting.HostDispatcher.State.NPAPI:
+      // If this is an old NPAPI plugin that doesn't list supportedFeatures,
+      // assume it is an old plugin that doesn't support any new feature.
+      var supportedFeatures = [];
+      if (typeof(this.npapiHost_.supportedFeatures) == 'string') {
+        supportedFeatures = this.npapiHost_.supportedFeatures.split(' ');
+      }
+      onDone(supportedFeatures.indexOf(feature) >= 0);
+      break;
+  }
+};
+
+/**
  * @param {function(string):void} onDone
  * @param {function(remoting.Error):void} onError
  * @return {void}

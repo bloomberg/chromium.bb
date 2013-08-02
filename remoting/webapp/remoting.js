@@ -212,18 +212,31 @@ remoting.updateLocalHostState = function() {
   };
 
   /**
-   * @param {remoting.Error} error
+   * @param {boolean} response True if the feature is present.
    */
-  var onError = function(error) {
-    console.error('Failed to get pairing status: ' + error);
-    remoting.pairedClientManager.setPairedClients([]);
-  }
+  var onHasFeatureResponse = function(response) {
+    /**
+     * @param {remoting.Error} error
+     */
+    var onError = function(error) {
+      console.error('Failed to get pairing status: ' + error);
+      remoting.pairedClientManager.setPairedClients([]);
+    };
 
+    if (response) {
+      remoting.hostController.getPairedClients(
+          remoting.pairedClientManager.setPairedClients.bind(
+              remoting.pairedClientManager),
+          onError);
+    } else {
+      console.log('Pairing registry not supported by host.');
+      remoting.pairedClientManager.setPairedClients([]);
+    }
+  };
+
+  remoting.hostController.hasFeature(
+      remoting.HostController.Feature.PAIRING_REGISTRY, onHasFeatureResponse);
   remoting.hostController.getLocalHostId(onHostId);
-  remoting.hostController.getPairedClients(
-      remoting.pairedClientManager.setPairedClients.bind(
-          remoting.pairedClientManager),
-      onError);
 };
 
 /**

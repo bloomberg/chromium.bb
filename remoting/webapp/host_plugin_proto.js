@@ -128,3 +128,4 @@ remoting.HostPlugin.prototype.onNatTraversalPolicyChanged;
 /** @type {string} */ remoting.HostPlugin.prototype.xmppServerAddress;
 /** @type {boolean} */ remoting.HostPlugin.prototype.xmppServerUseTls;
 /** @type {string} */ remoting.HostPlugin.prototype.directoryBotJid;
+/** @type {string} */ remoting.HostPlugin.prototype.supportedFeatures;
