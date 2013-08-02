@@ -155,8 +155,8 @@ cr.define('login', function() {
       this.actionBoxMenuRemoveElement.addEventListener('blur',
           this.handleRemoveCommandBlur_.bind(this));
 
-      if (this.actionBoxRemoveManagedUserWarningButtonElement) {
-        this.actionBoxRemoveManagedUserWarningButtonElement.addEventListener(
+      if (this.actionBoxRemoveUserWarningButtonElement) {
+        this.actionBoxRemoveUserWarningButtonElement.addEventListener(
             'click',
             this.handleRemoveUserConfirmationClick_.bind(this));
       }
@@ -313,15 +313,15 @@ cr.define('login', function() {
      * Gets action box menu, remove user command item div.
      * @type {!HTMLInputElement}
      */
-    get actionBoxRemoveManagedUserWarningElement() {
-      return this.querySelector('.action-box-remove-managed-user-warning');
+    get actionBoxRemoveUserWarningElement() {
+      return this.querySelector('.action-box-remove-user-warning');
     },
 
     /**
      * Gets action box menu, remove user command item div.
      * @type {!HTMLInputElement}
      */
-    get actionBoxRemoveManagedUserWarningButtonElement() {
+    get actionBoxRemoveUserWarningButtonElement() {
       return this.querySelector(
           '.remove-warning-button');
     },
@@ -416,8 +416,8 @@ cr.define('login', function() {
 
       if (active) {
         this.actionBoxMenuRemoveElement.hidden = !this.user_.canRemove;
-        if (this.actionBoxRemoveManagedUserWarningElement)
-          this.actionBoxRemoveManagedUserWarningElement.hidden = true;
+        if (this.actionBoxRemoveUserWarningElement)
+          this.actionBoxRemoveUserWarningElement.hidden = true;
 
         // Clear focus first if another pod is focused.
         if (!this.parentNode.isFocused(this)) {
@@ -558,7 +558,7 @@ cr.define('login', function() {
      * @param {Event} e Click event.
      */
     handleRemoveCommandClick_: function(e) {
-      if (this.user.locallyManagedUser) {
+      if (this.user.locallyManagedUser || this.user.isDesktopUser) {
         this.showRemoveWarning_();
         return;
       }
@@ -571,7 +571,7 @@ cr.define('login', function() {
      */
     showRemoveWarning_: function() {
       this.actionBoxMenuRemoveElement.hidden = true;
-      this.actionBoxRemoveManagedUserWarningElement.hidden = false;
+      this.actionBoxRemoveUserWarningElement.hidden = false;
     },
 
     /**
@@ -884,10 +884,8 @@ cr.define('login', function() {
     },
 
     /** @override */
-    handleRemoveCommandClick_: function(e) {
-      //TODO(noms): Add deletion confirmation overlay before attempting
-      // to delete the user.
-      UserPod.prototype.handleRemoveCommandClick_.call(this, e);
+    handleRemoveUserConfirmationClick_: function(e) {
+      chrome.send('removeUser', [this.user.profilePath]);
     },
   };
 

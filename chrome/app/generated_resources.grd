@@ -15298,6 +15298,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_LOGIN_BUTTON">
           Sign In
         </message>
+        <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Login screen user pod menu item text.">
+          Remove This User
+        </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
@@ -15308,6 +15311,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
         <message name="IDS_LOGIN_BUTTON">
           Sign in
+        </message>
+        <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Login screen user pod menu item text.">
+          Remove this user
         </message>
       </if>
       <message name="IDS_GO_INCOGNITO_BUTTON" desc="Text shown on Chrome OS login screen button that launches guest session. Should be short.">
@@ -15328,8 +15334,8 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME" desc="Text to be spoken when 'Remove user' item is selected on the pod menu.">
         Remove this user
       </message>
-      <message name="IDS_LOGIN_POD_REMOVE_USER" desc="Login screen user pod menu item text.">
-        Remove this user
+      <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove an user.">
+        Are you sure you want to delete this user and all the data associated with it from this computer? This cannot be undone!
       </message>
     </if>
 

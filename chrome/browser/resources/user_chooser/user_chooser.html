@@ -2,14 +2,14 @@
 <html i18n-values="dir:textdirection;screen:screenType;build:buildType">
 <head>
 <title i18n-content="title"></title>
+<link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
+<link rel="stylesheet" href="../chromeos/login/bubble.css">
+<link rel="stylesheet" href="../chromeos/login/screen_account_picker.css">
+<link rel="stylesheet" href="../chromeos/login/screen_container.css">
 <link rel="stylesheet" href="../chromeos/login/oobe.css">
 <link rel="stylesheet" href="../chromeos/login/user_pod_row.css">
 <!-- desktop user chooser specific overrides -->
 <link rel="stylesheet" href="control_bar.css">
-<link rel="stylesheet" href="../chromeos/login/bubble.css">
-<link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
-<link rel="stylesheet" href="../chromeos/login/screen_account_picker.css">
-<link rel="stylesheet" href="../chromeos/login/screen_container.css">
 <!-- framework imports -->
 <!-- as per chrome/browser/resources/chromeos/login/login_resources.html -->
 <script src="chrome://resources/js/cr.js"></script>
@@ -44,7 +44,7 @@
   </div>
   <div id="bubble" class="bubble faded" hidden></div>
   <include src="control_bar.html">
-  <include src="desktop_user_pod_template.html">
+  <include src="../chromeos/login/user_pod_template.html">
   <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 </html>

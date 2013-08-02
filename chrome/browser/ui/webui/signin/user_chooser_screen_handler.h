@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_CHOOSER_SCREEN_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
 class DictionaryValue;
+class FilePath;
 class ListValue;
 }
 
@@ -24,6 +26,10 @@ class UserChooserScreenHandler : public content::WebUIMessageHandler {
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
  private:
+  // An observer for any changes to Profiles in the ProfileInfoCache so that
+  // all the visible user manager screens can be updated.
+  class ProfileUpdateObserver;
+
   void HandleInitialize(const base::ListValue* args);
   void HandleAddUser(const base::ListValue* args);
   void HandleLaunchGuest(const base::ListValue* args);
@@ -32,6 +38,10 @@ class UserChooserScreenHandler : public content::WebUIMessageHandler {
 
   // Sends user list to account chooser.
   void SendUserList();
+
+  // Observes the ProfileInfoCache and gets notified when a profile has been
+  // modified, so that the displayed user pods can be updated.
+  scoped_ptr<ProfileUpdateObserver> profileInfoCacheObserver_;
 
   DISALLOW_COPY_AND_ASSIGN(UserChooserScreenHandler);
 };

@@ -607,12 +607,12 @@ Press any key to continue exploring.
   <message name="IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE" desc="Text for notifications showing that this user is locally managed">
     This supervised user is managed by <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph>. Usage and browsing history can be viewed by the manager.
   </message>
-  <message name="IDS_USER_IS_LOCALLY_MANAGED_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove supervised user.">
+  <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove supervised user.">
     All files and local data associated with the supervised user will be permanently
     deleted once this supervised user is removed. Visited websites and settings
     for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
   </message>
-  <message name="IDS_USER_IS_LOCALLY_MANAGED_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of supervised user.">
+  <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of supervised user.">
     Remove this user
   </message>
   <message name="IDS_OFFLINE_LOGIN_HTML" desc="Text which suggests enter as an existing user when valid network isn't presented.">
