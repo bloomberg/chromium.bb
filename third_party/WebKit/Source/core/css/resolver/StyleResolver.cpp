@@ -531,6 +531,11 @@ static inline void resetDirectionAndWritingModeOnDocument(Document* document)
     document->setWritingModeSetOnDocumentElement(false);
 }
 
+static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAttrValues, RuleFeatureSet& features)
+{
+    for (size_t i = 0; i < contentAttrValues.size(); ++i)
+        features.attrsInRules.add(contentAttrValues[i].impl());
+}
 
 PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,
     RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling)
@@ -607,6 +612,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
             matchAllRules(state, collector, m_matchAuthorAndUserStyles, matchingBehavior != MatchAllRulesExcludingSMIL);
 
         applyMatchedProperties(state, collector.matchedResult());
+
+        addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
     {
         StyleAdjuster adjuster(state.cachedUAStyle(), m_document->inQuirksMode());
@@ -802,6 +809,8 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
         state.style()->setStyleType(pseudoStyleRequest.pseudoId);
 
         applyMatchedProperties(state, collector.matchedResult());
+
+        addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
     {
         StyleAdjuster adjuster(state.cachedUAStyle(), m_document->inQuirksMode());
@@ -852,6 +861,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
         applyProperty(state, CSSPropertyLineHeight, state.lineHeightValue());
 
     applyMatchedProperties<LowPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+
+    addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
 
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());

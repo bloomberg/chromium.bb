@@ -76,6 +76,9 @@ public:
     bool applyPropertyToRegularStyle() const { return m_applyPropertyToRegularStyle; }
     bool applyPropertyToVisitedLinkStyle() const { return m_applyPropertyToVisitedLinkStyle; }
 
+    // Holds all attribute names found while applying "content" properties that contain an "attr()" value.
+    Vector<AtomicString>& contentAttrValues() { return m_contentAttrValues; }
+
     void setLineHeightValue(CSSValue* value) { m_lineHeightValue = value; }
     CSSValue* lineHeightValue() { return m_lineHeightValue; }
 
@@ -148,6 +151,7 @@ private:
     // CSSToStyleMap is a pure-logic class and only contains
     // a back-pointer to this object.
     CSSToStyleMap m_styleMap;
+    Vector<AtomicString> m_contentAttrValues;
 };
 
 } // namespace WebCore

@@ -344,6 +344,8 @@ private:
 
     ScopedStyleTree m_styleTree;
 
+    // FIXME: The entire logic of collecting features on StyleResolver, as well astransferring them
+    // between various parts of machinery smells wrong. This needs to be better somehow.
     RuleFeatureSet m_features;
     OwnPtr<RuleSet> m_siblingRuleSet;
     OwnPtr<RuleSet> m_uncommonAttributeRuleSet;
