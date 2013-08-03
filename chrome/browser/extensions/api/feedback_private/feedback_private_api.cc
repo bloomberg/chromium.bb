@@ -100,7 +100,6 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
 
   const FeedbackInfo &feedback_info = params->feedback;
 
-  std::string description = feedback_info.description;
   std::string attached_file_url, screenshot_url;
   if (feedback_info.attached_file.get() &&
       feedback_info.attached_file_blob_url.get() &&
