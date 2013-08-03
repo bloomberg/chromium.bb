@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 
 // This class manages the Omnibox field trials.
 class OmniboxFieldTrial {
@@ -101,18 +103,44 @@ class OmniboxFieldTrial {
   static bool ShortcutsScoringMaxRelevance(int* max_relevance);
 
   // ---------------------------------------------------------
-  // For the SearchHistory field trial.
+  // For the SearchHistory experiment that's part of the bundled omnibox
+  // field trial.
 
-  // Returns true if the user is in the experiment group that scores
-  // search history query suggestions less aggressively so that they don't
-  // inline.
-  static bool SearchHistoryPreventInlining();
+  // Returns true if the user is in the experiment group that, given the
+  // provided |current_page_classification| context, scores search history
+  // query suggestions less aggressively so that they don't inline.
+  static bool SearchHistoryPreventInlining(
+      AutocompleteInput::PageClassification current_page_classification);
 
-  // Returns true if the user is in the experiment group that disables
-  // all query suggestions from search history.
-  static bool SearchHistoryDisable();
+  // Returns true if the user is in the experiment group that, given the
+  // provided |current_page_classification| context, disables all query
+  // suggestions from search history.
+  static bool SearchHistoryDisable(
+      AutocompleteInput::PageClassification current_page_classification);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OmniboxFieldTrialTest, GetValueForRuleInContext);
+
+  // The bundled omnibox experiment comes with a set of parameters
+  // (key-value pairs).  Each key indicates a certain rule that applies in
+  // a certain context.  The value indicates what the consequences of
+  // applying the rule are.  For example, the value of a SearchHistory rule
+  // in the context of a search results page might indicate that we should
+  // prevent search history matches from inlining.
+  //
+  // This function returns the value associated with the |rule| that applies
+  // in the current context (which currently only consists of
+  // |page_classification| but will soon contain other features, some not
+  // passed in as parameters, such as whether Instant Extended is enabled).
+  // If no such rule exists in the current context, looks for that rule in
+  // the global context and return its value if found.  If the rule remains
+  // unfound in the global context, returns the empty string.  For more
+  // details, see the implementation.  How to interpret the value is left
+  // to the caller; this is rule-dependent.
+  static std::string GetValueForRuleInContext(
+      const std::string& rule,
+      AutocompleteInput::PageClassification page_classification);
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxFieldTrial);
 };
 

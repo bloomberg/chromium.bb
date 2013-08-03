@@ -22,7 +22,10 @@ const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
 const char kShortcutsScoringFieldTrialName[] = "OmniboxShortcutsScoring";
-const char kSearchHistoryFieldTrialName[] = "OmniboxSearchHistory";
+const char kBundledExperimentFieldTrialName[] = "OmniboxBundledExperimentV1";
+
+// Rule names used by the bundled experiment.
+const char kSearchHistoryRule[] = "SearchHistory";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
 // configured dynamically and is retrieved automatically by Chrome during
@@ -218,12 +221,53 @@ bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(int* max_relevance) {
   return true;
 }
 
-bool OmniboxFieldTrial::SearchHistoryPreventInlining() {
-  return (base::FieldTrialList::FindFullName(kSearchHistoryFieldTrialName) ==
-          "PreventInlining");
+bool OmniboxFieldTrial::SearchHistoryPreventInlining(
+    AutocompleteInput::PageClassification current_page_classification) {
+  return OmniboxFieldTrial::GetValueForRuleInContext(
+      kSearchHistoryRule, current_page_classification) == "PreventInlining";
 }
 
-bool OmniboxFieldTrial::SearchHistoryDisable() {
-  return (base::FieldTrialList::FindFullName(kSearchHistoryFieldTrialName) ==
-          "Disable");
+bool OmniboxFieldTrial::SearchHistoryDisable(
+    AutocompleteInput::PageClassification current_page_classification) {
+  return OmniboxFieldTrial::GetValueForRuleInContext(
+      kSearchHistoryRule, current_page_classification) == "Disable";
+}
+
+// Background and implementation details:
+//
+// Each experiment group in any field trial can come with an optional set of
+// parameters (key-value pairs).  In the bundled omnibox experiment
+// (kBundledExperimentFieldTrialName), each experiment group comes with a
+// list of parameters in the form:
+//   key=<Rule>:<AutocompleteInput::PageClassification (as an int)>
+//   value=<arbitrary string>
+// The AutocompleteInput::PageClassification can also be "*", which means
+// this rule applies in all page classification contexts.
+// One example parameter is
+//   key=SearchHistory:6
+//   value=PreventInlining
+// This means in page classification context 6 (a search result page doing
+// search term replacement), the SearchHistory experiment should
+// PreventInlining.
+//
+// In short, this function tries to find the value associated with key
+// |rule|:|page_classification|, failing that it looks up |rule|:*,
+// and failing that it returns the empty string.
+std::string OmniboxFieldTrial::GetValueForRuleInContext(
+    const std::string& rule,
+    AutocompleteInput::PageClassification page_classification) {
+  std::map<std::string, std::string> params;
+  if (!chrome_variations::GetVariationParams(kBundledExperimentFieldTrialName,
+                                             &params)) {
+    return std::string();
+  }
+  // Look up rule in this exact context.
+  std::map<std::string, std::string>::iterator it =
+      params.find(rule + ":" + base::IntToString(
+          static_cast<int>(page_classification)));
+  if (it != params.end())
+    return it->second;
+  // Look up rule in the global context.
+  it = params.find(rule + ":*");
+  return (it != params.end()) ? it->second : std::string();
 }

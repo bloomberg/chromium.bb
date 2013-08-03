@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "chrome/common/metrics/entropy_provider.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class OmniboxFieldTrialTest : public testing::Test {
@@ -128,4 +129,75 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
     CreateTestTrial("AutocompleteDynamicTrial_3", "EnableZeroSuggest_URLs");
     EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
   }
+}
+
+TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
+  // Must be the same as kBundledExperimentFieldTrialName
+  // defined in omnibox_field_trial.cc.
+  const std::string kTrialName = "OmniboxBundledExperimentV1";
+  {
+    std::map<std::string, std::string> params;
+    // Rule 1 has some exact matches and a global fallback.
+    params["rule1:1"] = "rule1-1-value";  // NEW_TAB_PAGE
+    params["rule1:3"] = "rule1-3-value";  // HOMEPAGE
+    params["rule1:*"] = "rule1-*-value";  // global
+    // Rule 2 has no exact matches but has a global fallback.
+    params["rule2:*"] = "rule2-*-value";  // global
+    // Rule 3 has an exact match but no global fallback.
+    params["rule3:4"] = "rule3-4-value";  // OTHER
+    // Add a malformed rule to make sure it doesn't screw things up.
+    params["unrecognized"] = "unrecognized-value";
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+        kTrialName, "A", params));
+  }
+
+  base::FieldTrialList::CreateFieldTrial(kTrialName, "A");
+
+  // Tests for rule 1.
+  EXPECT_EQ(
+      "rule1-1-value",
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          "rule1", AutocompleteInput::NEW_TAB_PAGE));  // exact match
+  EXPECT_EQ(
+      "rule1-*-value",
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          "rule1", AutocompleteInput::BLANK));  // fallback to global
+  EXPECT_EQ(
+      "rule1-3-value",
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          "rule1", AutocompleteInput::HOMEPAGE));  // exact match
+  EXPECT_EQ(
+      "rule1-*-value",
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          "rule1", AutocompleteInput::OTHER));  // fallback to global
+
+  // Tests for rule 2.
+  EXPECT_EQ(
+      "rule2-*-value",
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          "rule2", AutocompleteInput::HOMEPAGE));  // fallback to global
+  EXPECT_EQ(
+      "rule2-*-value",
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          "rule2", AutocompleteInput::OTHER));  // fallback to global
+
+  // Tests for rule 3.
+  EXPECT_EQ(
+      "",
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          "rule3", AutocompleteInput::BLANK));  // no global fallback
+  EXPECT_EQ(
+      "",
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          "rule3", AutocompleteInput::HOMEPAGE));  // no global fallback
+  EXPECT_EQ(
+      "rule3-4-value",
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          "rule3", AutocompleteInput::OTHER));  // exact match
+
+  // Tests for rule 4 (a missing rule).
+  EXPECT_EQ(
+      "",
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          "rule4", AutocompleteInput::OTHER));  // no rule at all
 }

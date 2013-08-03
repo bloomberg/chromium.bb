@@ -435,11 +435,14 @@ class SearchProvider : public AutocompleteProvider,
 
   // |time| is the time at which this query was last seen.  |is_keyword|
   // indicates whether the results correspond to the keyword provider or default
-  // provider. |prevent_inline_autocomplete| is true if we should not inline
-  // autocomplete this query.
+  // provider. |use_aggressive_method| says whether this function can use a
+  // method that gives high scores (1200+) rather than one that gives lower
+  // scores.  When using the aggressive method, scores may exceed 1300
+  // unless |prevent_search_history_inlining| is set.
   int CalculateRelevanceForHistory(const base::Time& time,
                                    bool is_keyword,
-                                   bool prevent_inline_autocomplete) const;
+                                   bool use_aggressive_method,
+                                   bool prevent_search_history_inlining) const;
 
   // Creates an AutocompleteMatch for "Search <engine> for |query_string|" with
   // the supplied relevance.  Adds this match to |map|; if such a match already
@@ -530,9 +533,6 @@ class SearchProvider : public AutocompleteProvider,
   // If true, search history query suggestions will score low enough that
   // they will not be inlined.
   bool prevent_search_history_inlining_;
-
-  // If true, no search history query suggestions will be offered.
-  bool disable_search_history_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };
