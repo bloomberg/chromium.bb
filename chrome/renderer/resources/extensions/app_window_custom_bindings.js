@@ -136,6 +136,16 @@ function boundsEqual(bounds1, bounds2) {
           bounds1.width == bounds2.width && bounds1.height == bounds2.height);
 }
 
+function dispatchEventIfExists(target, name) {
+  // Sometimes apps like to put their own properties on the window which
+  // break our assumptions.
+  var event = target[name];
+  if (event && (typeof event.dispatch == 'function'))
+    event.dispatch();
+  else
+    console.warn('Could not dispatch ' + name + ', event has been clobbered');
+}
+
 function updateAppWindowProperties(update) {
   if (!appWindowData)
     return;
@@ -147,25 +157,25 @@ function updateAppWindowProperties(update) {
   var currentWindow = currentAppWindow;
 
   if (!boundsEqual(oldData.bounds, update.bounds))
-    currentWindow["onBoundsChanged"].dispatch();
+    dispatchEventIfExists(currentWindow, "onBoundsChanged");
 
   if (!oldData.fullscreen && update.fullscreen)
-    currentWindow["onFullscreened"].dispatch();
+    dispatchEventIfExists(currentWindow, "onFullscreened");
   if (!oldData.minimized && update.minimized)
-    currentWindow["onMinimized"].dispatch();
+    dispatchEventIfExists(currentWindow, "onMinimized");
   if (!oldData.maximized && update.maximized)
-    currentWindow["onMaximized"].dispatch();
+    dispatchEventIfExists(currentWindow, "onMaximized");
 
   if ((oldData.fullscreen && !update.fullscreen) ||
       (oldData.minimized && !update.minimized) ||
       (oldData.maximized && !update.maximized))
-    currentWindow["onRestored"].dispatch();
+    dispatchEventIfExists(currentWindow, "onRestored");
 };
 
 function onAppWindowClosed() {
   if (!currentAppWindow)
     return;
-  currentAppWindow.onClosed.dispatch();
+  dispatchEventIfExists(currentAppWindow, "onClosed");
 }
 
 exports.binding = appWindow.generate();
