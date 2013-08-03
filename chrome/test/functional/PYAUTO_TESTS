@@ -223,7 +223,6 @@
       'chromeos_prefs',
       'chromeos_security',
       'chromeos_time',
-      'chromeos_update',
       'chromeos_wifi_sanity',
       'doc_viewing',
       'secure_shell',

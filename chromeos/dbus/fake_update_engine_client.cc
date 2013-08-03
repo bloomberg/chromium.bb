@@ -33,13 +33,6 @@ void FakeUpdateEngineClient::RebootAfterUpdate() {
   reboot_after_update_call_count_++;
 }
 
-void FakeUpdateEngineClient::SetReleaseTrack(const std::string& track) {
-}
-
-void FakeUpdateEngineClient::GetReleaseTrack(
-    const GetReleaseTrackCallback& callback) {
-}
-
 UpdateEngineClient::Status FakeUpdateEngineClient::GetLastStatus() {
   if (status_queue_.empty())
     return default_status_;

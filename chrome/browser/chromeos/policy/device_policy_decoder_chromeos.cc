@@ -399,7 +399,7 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       // have to pass the channel in here, only ping the update engine to tell
       // it to fetch the channel from the policy.
       chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->
-          SetReleaseTrack(channel);
+          SetChannel(channel, false);
     }
     if (container.has_release_channel_delegated()) {
       policies->Set(key::kChromeOsReleaseChannelDelegated,

@@ -87,26 +87,10 @@ class CHROMEOS_EXPORT UpdateEngineClient {
   // Reboots if update has been performed.
   virtual void RebootAfterUpdate() = 0;
 
-  // DEPRECATED: Use SetChannel instead.
-  // Requests to set the release track (channel). |track| should look like
-  // "beta-channel" or "dev-channel".
-  virtual void SetReleaseTrack(const std::string& track) = 0;
-
-  // Called once GetReleaseTrack() is complete. Takes one parameter;
-  // - string: the release track name like "beta-channel".
-  typedef base::Callback<void(const std::string& channel_name)>
-      GetReleaseTrackCallback;
-
   // Called once GetChannel() is complete. Takes one parameter;
   // - string: the channel name like "beta-channel".
   typedef base::Callback<void(const std::string& channel_name)>
       GetChannelCallback;
-
-  // DEPRECATED: Use GetChannel() instead.
-  // Requests to get the release track and calls |callback| with the
-  // release track (channel). On error, calls |callback| with an empty
-  // string.
-  virtual void GetReleaseTrack(const GetReleaseTrackCallback& callback) = 0;
 
   // Returns the last status the object received from the update engine.
   //

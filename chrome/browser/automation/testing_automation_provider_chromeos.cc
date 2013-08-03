@@ -103,33 +103,6 @@ const char* UpdateStatusToString(
   }
 }
 
-void GetReleaseTrackCallback(AutomationJSONReply* reply,
-                             const std::string& track) {
-  if (track.empty()) {
-    reply->SendError("Unable to get release track.");
-    delete reply;
-    return;
-  }
-
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  return_value->SetString("release_track", track);
-
-  const UpdateEngineClient::Status& status =
-      DBusThreadManager::Get()->GetUpdateEngineClient()->GetLastStatus();
-  UpdateEngineClient::UpdateStatusOperation update_status =
-      status.status;
-  return_value->SetString("status", UpdateStatusToString(update_status));
-  if (update_status == UpdateEngineClient::UPDATE_STATUS_DOWNLOADING)
-    return_value->SetDouble("download_progress", status.download_progress);
-  if (status.last_checked_time > 0)
-    return_value->SetInteger("last_checked_time", status.last_checked_time);
-  if (status.new_size > 0)
-    return_value->SetInteger("new_size", status.new_size);
-
-  reply->SendSuccess(return_value.get());
-  delete reply;
-}
-
 void UpdateCheckCallback(AutomationJSONReply* reply,
                          UpdateEngineClient::UpdateCheckResult result) {
   if (result == UpdateEngineClient::UPDATE_RESULT_SUCCESS)
@@ -1154,32 +1127,12 @@ void TestingAutomationProvider::SetTimezone(DictionaryValue* args,
   reply.SendSuccess(NULL);
 }
 
-void TestingAutomationProvider::GetUpdateInfo(DictionaryValue* args,
-                                              IPC::Message* reply_message) {
-  AutomationJSONReply* reply = new AutomationJSONReply(this, reply_message);
-  DBusThreadManager::Get()->GetUpdateEngineClient()
-      ->GetReleaseTrack(base::Bind(GetReleaseTrackCallback, reply));
-}
-
 void TestingAutomationProvider::UpdateCheck(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   AutomationJSONReply* reply = new AutomationJSONReply(this, reply_message);
   DBusThreadManager::Get()->GetUpdateEngineClient()
       ->RequestUpdateCheck(base::Bind(UpdateCheckCallback, reply));
-}
-
-void TestingAutomationProvider::SetReleaseTrack(DictionaryValue* args,
-                                                IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  std::string track;
-  if (!args->GetString("track", &track)) {
-    reply.SendError("Invalid or missing args.");
-    return;
-  }
-
-  DBusThreadManager::Get()->GetUpdateEngineClient()->SetReleaseTrack(track);
-  reply.SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::GetVolumeInfo(DictionaryValue* args,

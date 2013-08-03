@@ -1789,10 +1789,7 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
   handler_map_["GetTimeInfo"] = &TestingAutomationProvider::GetTimeInfo;
   handler_map_["SetTimezone"] = &TestingAutomationProvider::SetTimezone;
 
-  handler_map_["GetUpdateInfo"] = &TestingAutomationProvider::GetUpdateInfo;
   handler_map_["UpdateCheck"] = &TestingAutomationProvider::UpdateCheck;
-  handler_map_["SetReleaseTrack"] =
-      &TestingAutomationProvider::SetReleaseTrack;
 
   handler_map_["GetVolumeInfo"] = &TestingAutomationProvider::GetVolumeInfo;
   handler_map_["SetVolume"] = &TestingAutomationProvider::SetVolume;

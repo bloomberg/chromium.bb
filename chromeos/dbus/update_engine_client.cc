@@ -132,36 +132,6 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual void SetReleaseTrack(const std::string& track) OVERRIDE {
-    dbus::MethodCall method_call(
-        update_engine::kUpdateEngineInterface,
-        update_engine::kSetTrack);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(track);
-
-    VLOG(1) << "Requesting to set the release track to " << track;
-    update_engine_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&UpdateEngineClientImpl::OnSetReleaseTrack,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  virtual void GetReleaseTrack(
-      const GetReleaseTrackCallback& callback) OVERRIDE {
-    dbus::MethodCall method_call(
-        update_engine::kUpdateEngineInterface,
-        update_engine::kGetTrack);
-
-    VLOG(1) << "Requesting to get the current release track";
-    update_engine_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&UpdateEngineClientImpl::OnGetReleaseTrack,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
-  }
-
   virtual Status GetLastStatus() OVERRIDE {
     return last_status_;
   }
@@ -241,33 +211,6 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     }
   }
 
-  // Called when a response for SetReleaseTrack() is received.
-  void OnSetReleaseTrack(dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Failed to request setting release track";
-      return;
-    }
-  }
-
-  // Called when a response for GetReleaseTrack() is received.
-  void OnGetReleaseTrack(const GetReleaseTrackCallback& callback,
-                         dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Failed to request getting release track";
-      callback.Run("");
-      return;
-    }
-    dbus::MessageReader reader(response);
-    std::string release_track;
-    if (!reader.PopString(&release_track)) {
-      LOG(ERROR) << "Incorrect response: " << response->ToString();
-      callback.Run("");
-      return;
-    }
-    VLOG(1) << "The current release track received: " << release_track;
-    callback.Run(release_track);
-  }
-
   // Called when a response for GetStatus is received.
   void OnGetStatus(dbus::Response* response) {
     if (!response) {
@@ -297,7 +240,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     LOG(ERROR) << "GetStatus request failed with error: " << error->ToString();
   }
 
-    // Called when a response for SetReleaseTrack() is received.
+  // Called when a response for SetReleaseChannel() is received.
   void OnSetChannel(dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to request setting channel";
@@ -307,7 +250,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   }
 
   // Called when a response for GetChannel() is received.
-  void OnGetChannel(const GetReleaseTrackCallback& callback,
+  void OnGetChannel(const GetChannelCallback& callback,
                     dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to request getting channel";
@@ -386,11 +329,6 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
     callback.Run(UPDATE_RESULT_NOTIMPLEMENTED);
   }
   virtual void RebootAfterUpdate() OVERRIDE {}
-  virtual void SetReleaseTrack(const std::string& track) OVERRIDE {}
-  virtual void GetReleaseTrack(
-      const GetReleaseTrackCallback& callback) OVERRIDE {
-    callback.Run("beta-channel");
-  }
   virtual Status GetLastStatus() OVERRIDE { return Status(); }
   virtual void SetChannel(const std::string& target_channel,
                           bool is_powerwash_allowed) OVERRIDE {

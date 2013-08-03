@@ -417,7 +417,7 @@ void HelpHandler::SetChannel(const ListValue* args) {
   bool is_powerwash_allowed;
   if (!args->GetString(0, &channel) ||
       !args->GetBoolean(1, &is_powerwash_allowed)) {
-    LOG(ERROR) << "Can't parse SetReleaseTrack() args";
+    LOG(ERROR) << "Can't parse SetChannel() args";
     return;
   }
 

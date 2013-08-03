@@ -1368,13 +1368,7 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void SetTimezone(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  // Update.
-  void GetUpdateInfo(base::DictionaryValue* args, IPC::Message* reply_message);
-
   void UpdateCheck(base::DictionaryValue* args, IPC::Message* reply_message);
-
-  void SetReleaseTrack(base::DictionaryValue* args,
-                       IPC::Message* reply_message);
 
   // Volume.
   void GetVolumeInfo(base::DictionaryValue* args, IPC::Message* reply_message);
