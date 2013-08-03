@@ -139,7 +139,7 @@ TEST_F(AcceleratorManagerTest, Process) {
   // Test all 2*2*2 cases (shift/control/alt = on/off).
   for (int mask = 0; mask < 2 * 2 * 2; ++mask) {
     Accelerator accelerator(GetAccelerator(VKEY_A, mask));
-    const string16 text = accelerator.GetShortcutText();
+    const base::string16 text = accelerator.GetShortcutText();
     manager_.Register(accelerator, AcceleratorManager::kNormalPriority,
                       &target);
 
@@ -169,7 +169,7 @@ TEST_F(AcceleratorManagerTest, Process) {
       if (test_mask == mask)
         continue;
       const Accelerator test_accelerator(GetAccelerator(VKEY_A, test_mask));
-      const string16 test_text = test_accelerator.GetShortcutText();
+      const base::string16 test_text = test_accelerator.GetShortcutText();
       EXPECT_FALSE(manager_.Process(test_accelerator))
           << text << ", " << test_text;  // different modifiers
     }

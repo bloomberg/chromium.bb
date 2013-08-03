@@ -56,7 +56,7 @@ class UI_EXPORT Accelerator {
   bool IsCmdDown() const;
 
   // Returns a string with the localized shortcut if any.
-  string16 GetShortcutText() const;
+  base::string16 GetShortcutText() const;
 
   void set_platform_accelerator(scoped_ptr<PlatformAccelerator> p) {
     platform_accelerator_ = p.Pass();
