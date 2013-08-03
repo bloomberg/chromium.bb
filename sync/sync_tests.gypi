@@ -385,7 +385,6 @@
           'internal_api/js_sync_manager_observer_unittest.cc',
           'internal_api/public/change_record_unittest.cc',
           'internal_api/public/sessions/sync_session_snapshot_unittest.cc',
-          'internal_api/public/sessions/sync_source_info_unittest.cc',
           'internal_api/syncapi_server_connection_manager_unittest.cc',
           'internal_api/sync_encryption_handler_impl_unittest.cc',
           'internal_api/sync_manager_impl_unittest.cc',

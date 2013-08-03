@@ -335,8 +335,11 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   }
 
   if (snapshot.is_initialized()) {
-    session_source.SetValue(
-        syncer::GetUpdatesSourceString(snapshot.source().updates_source));
+    if (snapshot.legacy_updates_source() !=
+        sync_pb::GetUpdatesCallerInfo::UNKNOWN) {
+      session_source.SetValue(
+          syncer::GetUpdatesSourceString(snapshot.legacy_updates_source()));
+    }
     get_key_result.SetValue(
         GetSyncerErrorString(
             snapshot.model_neutral_state().last_get_key_result));

@@ -45,8 +45,7 @@ TEST_F(DownloadUpdatesTest, ExecuteNoStates) {
       GetRoutingInfoTypes(routing_info()));
   scoped_ptr<sessions::SyncSession> session(
       sessions::SyncSession::Build(context(),
-                                   delegate(),
-                                   nudge_tracker.GetSourceInfo()));
+                                   delegate()));
   NormalDownloadUpdates(session.get(),
                         false,
                         GetRoutingInfoTypes(routing_info()),
@@ -67,14 +66,23 @@ TEST_F(DownloadUpdatesTest, ExecuteWithStates) {
       ModelTypeSetToInvalidationMap(ModelTypeSet(PREFERENCES),
                                     "preferences_payload"));
 
+  ModelTypeInvalidationMap invalidation_map;
+  Invalidation i1;
+  i1.payload = "autofill_payload";
+  invalidation_map.insert(std::make_pair(AUTOFILL, i1));
+  Invalidation i2;
+  i2.payload = "bookmark_payload";
+  invalidation_map.insert(std::make_pair(BOOKMARKS, i2));
+  Invalidation i3;
+  i3.payload = "preferences_payload";
+  invalidation_map.insert(std::make_pair(PREFERENCES, i3));
+
   mock_server()->ExpectGetUpdatesRequestTypes(
       GetRoutingInfoTypes(routing_info()));
   mock_server()->ExpectGetUpdatesRequestStates(
-      nudge_tracker.GetSourceInfo().types);
+      invalidation_map);
   scoped_ptr<sessions::SyncSession> session(
-      sessions::SyncSession::Build(context(),
-                                   delegate(),
-                                   nudge_tracker.GetSourceInfo()));
+      sessions::SyncSession::Build(context(), delegate()));
   NormalDownloadUpdates(session.get(),
                         false,
                         GetRoutingInfoTypes(routing_info()),

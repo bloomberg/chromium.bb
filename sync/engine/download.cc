@@ -214,7 +214,7 @@ SyncerError NormalDownloadUpdates(
 SyncerError DownloadUpdatesForConfigure(
     SyncSession* session,
     bool create_mobile_bookmarks_folder,
-    const syncer::sessions::SyncSourceInfo& source,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
     ModelTypeSet request_types) {
   sync_pb::ClientToServerMessage client_to_server_message;
   InitDownloadUpdatesRequest(
@@ -231,11 +231,11 @@ SyncerError DownloadUpdatesForConfigure(
   DCHECK(!request_types.Empty());
 
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
-  get_updates->mutable_caller_info()->set_source(source.updates_source);
+  get_updates->mutable_caller_info()->set_source(source);
 
   // Set the new and improved version of source, too.
   sync_pb::SyncEnums::GetUpdatesOrigin origin =
-      ConvertConfigureSourceToOrigin(source.updates_source);
+      ConvertConfigureSourceToOrigin(source);
   get_updates->set_get_updates_origin(origin);
 
   return ExecuteDownloadUpdates(session, &client_to_server_message);
@@ -257,8 +257,6 @@ SyncerError DownloadUpdatesForPoll(
   DVLOG(1) << "Polling for types "
            << ModelTypeSetToString(request_types);
   DCHECK(!request_types.Empty());
-  DCHECK_EQ(sync_pb::GetUpdatesCallerInfo::PERIODIC,
-            session->source().updates_source);
 
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_source(

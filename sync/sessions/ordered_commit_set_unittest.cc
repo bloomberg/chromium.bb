@@ -18,7 +18,7 @@ class OrderedCommitSetTest : public testing::Test {
     routes_[BOOKMARKS] = GROUP_UI;
     routes_[PREFERENCES] = GROUP_UI;
     routes_[AUTOFILL] = GROUP_DB;
-    routes_[TOP_LEVEL_FOLDER] = GROUP_PASSIVE;
+    routes_[SESSIONS] = GROUP_PASSIVE;
   }
  protected:
   TestIdFactory ids_;
@@ -36,8 +36,8 @@ TEST_F(OrderedCommitSetTest, Projections) {
   commit_set1.AddCommitItem(2, expected[2], PREFERENCES);
   // Duplicates should be dropped.
   commit_set1.AddCommitItem(2, expected[2], PREFERENCES);
-  commit_set1.AddCommitItem(3, expected[3], TOP_LEVEL_FOLDER);
-  commit_set1.AddCommitItem(4, expected[4], TOP_LEVEL_FOLDER);
+  commit_set1.AddCommitItem(3, expected[3], SESSIONS);
+  commit_set1.AddCommitItem(4, expected[4], SESSIONS);
   commit_set2.AddCommitItem(7, expected[7], AUTOFILL);
   commit_set2.AddCommitItem(6, expected[6], AUTOFILL);
   commit_set2.AddCommitItem(5, expected[5], AUTOFILL);
@@ -102,7 +102,7 @@ TEST_F(OrderedCommitSetTest, HasBookmarkCommitId) {
   OrderedCommitSet commit_set(routes_);
 
   commit_set.AddCommitItem(0, ids_.NewLocalId(), AUTOFILL);
-  commit_set.AddCommitItem(1, ids_.NewLocalId(), TOP_LEVEL_FOLDER);
+  commit_set.AddCommitItem(1, ids_.NewLocalId(), SESSIONS);
   EXPECT_FALSE(commit_set.HasBookmarkCommitId());
 
   commit_set.AddCommitItem(2, ids_.NewLocalId(), PREFERENCES);

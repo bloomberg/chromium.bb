@@ -7,7 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "sync/internal_api/public/sessions/sync_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -44,21 +43,18 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
   const int kNumHierarchyConflicts = 1055;
   const int kNumServerConflicts = 1057;
 
-  SyncSourceInfo source;
-  scoped_ptr<base::DictionaryValue> expected_source_value(source.ToValue());
-
   SyncSessionSnapshot snapshot(model_neutral,
                                download_progress_markers,
                                kIsSilenced,
                                kNumEncryptionConflicts,
                                kNumHierarchyConflicts,
                                kNumServerConflicts,
-                               source,
                                false,
                                0,
                                base::Time::Now(),
                                std::vector<int>(MODEL_TYPE_COUNT,0),
-                               std::vector<int>(MODEL_TYPE_COUNT, 0));
+                               std::vector<int>(MODEL_TYPE_COUNT, 0),
+                               sync_pb::GetUpdatesCallerInfo::UNKNOWN);
   scoped_ptr<base::DictionaryValue> value(snapshot.ToValue());
   EXPECT_EQ(17u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits,
@@ -86,7 +82,6 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
                          "numHierarchyConflicts");
   ExpectDictIntegerValue(kNumServerConflicts, *value,
                          "numServerConflicts");
-  ExpectDictDictionaryValue(*expected_source_value, *value, "source");
   ExpectDictBooleanValue(false, *value, "notificationsEnabled");
 }
 

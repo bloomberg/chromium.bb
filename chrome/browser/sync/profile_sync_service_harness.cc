@@ -501,9 +501,14 @@ void ProfileSyncServiceHarness::OnSyncCycleCompleted() {
   bool is_notifiable_commit =
       (snap.model_neutral_state().num_successful_commits > 0);
   if (is_notifiable_commit && p2p_invalidation_service_) {
-    const syncer::ObjectIdInvalidationMap& invalidation_map =
-        ModelTypeInvalidationMapToObjectIdInvalidationMap(
-            snap.source().types);
+    syncer::ModelTypeSet model_types =
+        snap.model_neutral_state().commit_request_types;
+    syncer::ObjectIdSet ids = ModelTypeSetToObjectIdSet(model_types);
+    syncer::ObjectIdInvalidationMap invalidation_map =
+        syncer::ObjectIdSetToInvalidationMap(
+            ids,
+            syncer::Invalidation::kUnknownVersion,
+            "");
     p2p_invalidation_service_->SendInvalidation(invalidation_map);
   }
 

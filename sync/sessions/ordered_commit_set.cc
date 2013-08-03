@@ -27,6 +27,7 @@ void OrderedCommitSet::AddCommitItem(const int64 metahandle,
     projections_[GetGroupForModelType(type, routes_)].push_back(
         commit_ids_.size() - 1);
     types_.push_back(type);
+    types_in_list_.Put(type);
   }
 }
 
@@ -86,6 +87,7 @@ void OrderedCommitSet::Clear() {
     it->second.clear();
   }
   types_.clear();
+  types_in_list_.Clear();
 }
 
 OrderedCommitSet::CommitItem OrderedCommitSet::GetCommitItemAt(

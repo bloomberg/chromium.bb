@@ -26,6 +26,9 @@ struct SYNC_EXPORT ModelNeutralState {
   // requested_update_types stores the set of types which were requested.
   ModelTypeSet updates_request_types;
 
+  // The set of types for which commits were sent to the server.
+  ModelTypeSet commit_request_types;
+
   sync_pb::ClientToServerResponse updates_response;
 
   int num_successful_commits;

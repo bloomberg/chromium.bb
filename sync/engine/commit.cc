@@ -102,6 +102,7 @@ SyncerError BuildAndPostCommitsImpl(ModelTypeSet requested_types,
                                     Syncer* syncer,
                                     sessions::SyncSession* session,
                                     sessions::OrderedCommitSet* commit_set) {
+  ModelTypeSet commit_request_types;
   while (!syncer->ExitRequested()) {
     sync_pb::ClientToServerMessage commit_message;
     ExtensionsActivity::Records extensions_activity_buffer;
@@ -113,6 +114,10 @@ SyncerError BuildAndPostCommitsImpl(ModelTypeSet requested_types,
                               &extensions_activity_buffer)) {
       break;
     }
+
+    commit_request_types.PutAll(commit_set->Types());
+    session->mutable_status_controller()->set_commit_request_types(
+        commit_request_types);
 
     sync_pb::ClientToServerResponse commit_response;
 

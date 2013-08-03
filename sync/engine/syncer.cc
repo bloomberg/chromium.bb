@@ -73,7 +73,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
                        kCreateMobileBookmarksFolder,
                        request_types,
                        base::ConstRef(nudge_tracker)))) {
-      return HandleCycleEnd(session);
+    return HandleCycleEnd(session, nudge_tracker.updates_source());
     }
   }
 
@@ -81,11 +81,13 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
   SyncerError commit_result = BuildAndPostCommits(request_types, this, session);
   session->mutable_status_controller()->set_commit_result(commit_result);
 
-  return HandleCycleEnd(session);
+  return HandleCycleEnd(session, nudge_tracker.updates_source());
 }
 
-bool Syncer::ConfigureSyncShare(ModelTypeSet request_types,
-                                SyncSession* session) {
+bool Syncer::ConfigureSyncShare(
+    ModelTypeSet request_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    SyncSession* session) {
   HandleCycleBegin(session);
   VLOG(1) << "Configuring types " << ModelTypeSetToString(request_types);
   DownloadAndApplyUpdates(
@@ -93,9 +95,9 @@ bool Syncer::ConfigureSyncShare(ModelTypeSet request_types,
       base::Bind(&DownloadUpdatesForConfigure,
                  session,
                  kCreateMobileBookmarksFolder,
-                 session->source(),
+                 source,
                  request_types));
-  return HandleCycleEnd(session);
+  return HandleCycleEnd(session, source);
 }
 
 bool Syncer::PollSyncShare(ModelTypeSet request_types,
@@ -108,7 +110,7 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types,
                  session,
                  kCreateMobileBookmarksFolder,
                  request_types));
-  return HandleCycleEnd(session);
+  return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::PERIODIC);
 }
 
 void Syncer::ApplyUpdates(SyncSession* session) {
@@ -149,9 +151,11 @@ void Syncer::HandleCycleBegin(SyncSession* session) {
   session->SendEventNotification(SyncEngineEvent::SYNC_CYCLE_BEGIN);
 }
 
-bool Syncer::HandleCycleEnd(SyncSession* session) {
+bool Syncer::HandleCycleEnd(
+    SyncSession* session,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
   if (!ExitRequested()) {
-    session->SendEventNotification(SyncEngineEvent::SYNC_CYCLE_ENDED);
+    session->SendSyncCycleEndEventNotification(source);
     return true;
   } else {
     return false;

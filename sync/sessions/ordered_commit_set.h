@@ -75,6 +75,11 @@ class SYNC_EXPORT_PRIVATE OrderedCommitSet {
     return Size() == 0;
   }
 
+  // Returns all the types that are included in this list.
+  ModelTypeSet Types() const {
+    return types_in_list_;
+  }
+
   // Returns true iff any of the commit ids added to this set have model type
   // BOOKMARKS.
   bool HasBookmarkCommitId() const;
@@ -114,6 +119,9 @@ class SYNC_EXPORT_PRIVATE OrderedCommitSet {
   // to just return the vector of Ids, so this is more straightforward
   // and shouldn't take up too much extra space since commit lists are small.
   std::vector<ModelType> types_;
+
+  // The set of types which are included in this particular list.
+  ModelTypeSet types_in_list_;
 
   ModelSafeRoutingInfo routes_;
 };

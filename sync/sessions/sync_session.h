@@ -104,14 +104,18 @@ class SYNC_EXPORT_PRIVATE SyncSession {
   // Build a session without a nudge tracker.  Used for poll or configure type
   // sync cycles.
   static SyncSession* Build(SyncSessionContext* context,
-                            Delegate* delegate,
-                            const SyncSourceInfo& source);
+                            Delegate* delegate);
   ~SyncSession();
 
   // Builds a thread-safe and read-only copy of the current session state.
   SyncSessionSnapshot TakeSnapshot() const;
+  SyncSessionSnapshot TakeSnapshotWithSource(
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source)
+      const;
 
   // Builds and sends a snapshot to the session context's listeners.
+  void SendSyncCycleEndEventNotification(
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
   void SendEventNotification(SyncEngineEvent::EventCause cause);
 
   // TODO(akalin): Split this into context() and mutable_context().
@@ -124,18 +128,11 @@ class SYNC_EXPORT_PRIVATE SyncSession {
     return status_controller_.get();
   }
 
-  const SyncSourceInfo& source() const { return source_; }
-
  private:
-  SyncSession(SyncSessionContext* context,
-              Delegate* delegate,
-              const SyncSourceInfo& source);
+  SyncSession(SyncSessionContext* context, Delegate* delegate);
 
   // The context for this session, guaranteed to outlive |this|.
   SyncSessionContext* const context_;
-
-  // The source for initiating this sync session.
-  SyncSourceInfo source_;
 
   // The delegate for this session, must never be NULL.
   Delegate* const delegate_;

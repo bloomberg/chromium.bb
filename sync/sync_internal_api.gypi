@@ -73,8 +73,6 @@
     'internal_api/public/sessions/model_neutral_state.h',
     'internal_api/public/sessions/sync_session_snapshot.cc',
     'internal_api/public/sessions/sync_session_snapshot.h',
-    'internal_api/public/sessions/sync_source_info.cc',
-    'internal_api/public/sessions/sync_source_info.h',
     'internal_api/public/sync_encryption_handler.cc',
     'internal_api/public/sync_encryption_handler.h',
     'internal_api/public/sync_manager_factory.h',

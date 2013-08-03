@@ -103,24 +103,8 @@ class SyncerCommandTestBase : public testing::Test,
 
   // Lazily create a session requesting all datatypes with no state.
   sessions::SyncSession* session() {
-    ModelTypeInvalidationMap types =
-        ModelSafeRoutingInfoToInvalidationMap(routing_info_, std::string());
-    return session(sessions::SyncSourceInfo(types));
-  }
-
-  // Create a session with the provided source.
-  sessions::SyncSession* session(const sessions::SyncSourceInfo& source) {
-    // These sources require a valid nudge tracker.
-    DCHECK_NE(sync_pb::GetUpdatesCallerInfo::LOCAL, source.updates_source);
-    DCHECK_NE(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
-              source.updates_source);
-    DCHECK_NE(sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH,
-              source.updates_source);
-    if (!session_.get()) {
-      std::vector<ModelSafeWorker*> workers = GetWorkers();
-      session_.reset(
-          sessions::SyncSession::Build(context(), delegate(), source));
-    }
+    if (!session_.get())
+      session_.reset(sessions::SyncSession::Build(context(), delegate()));
     return session_.get();
   }
 

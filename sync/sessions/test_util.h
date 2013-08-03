@@ -16,14 +16,22 @@ namespace sessions {
 namespace test_util {
 
 // Configure sync cycle successes and failures.
-void SimulateGetEncryptionKeyFailed(ModelTypeSet requested_types,
-                                    sessions::SyncSession* session);
-void SimulateConfigureSuccess(ModelTypeSet requested_types,
-                              sessions::SyncSession* session);
-void SimulateConfigureFailed(ModelTypeSet requested_types,
-                             sessions::SyncSession* session);
-void SimulateConfigureConnectionFailure(ModelTypeSet requested_types,
-                                        sessions::SyncSession* session);
+void SimulateGetEncryptionKeyFailed(
+    ModelTypeSet requested_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    sessions::SyncSession* session);
+void SimulateConfigureSuccess(
+    ModelTypeSet requested_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    sessions::SyncSession* session);
+void SimulateConfigureFailed(
+    ModelTypeSet requested_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    sessions::SyncSession* session);
+void SimulateConfigureConnectionFailure(
+    ModelTypeSet requested_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    sessions::SyncSession* session);
 
 // Normal mode sync cycle successes and failures.
 void SimulateNormalSuccess(ModelTypeSet requested_types,

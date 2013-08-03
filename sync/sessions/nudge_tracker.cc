@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "sync/internal_api/public/base/invalidation.h"
-#include "sync/internal_api/public/sessions/sync_source_info.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -174,35 +173,6 @@ ModelTypeSet NudgeTracker::GetThrottledTypes() const {
     }
   }
   return result;
-}
-
-// This function is intended to mimic the behavior of older clients.  Newer
-// clients and servers will not rely on SyncSourceInfo.  See FillProtoMessage
-// for the more modern equivalent.
-SyncSourceInfo NudgeTracker::GetSourceInfo() const {
-  ModelTypeInvalidationMap invalidation_map;
-  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
-       it != type_trackers_.end(); ++it) {
-    if (it->second.IsThrottled()) {
-      // We pretend throttled types are not enabled by skipping them.
-      continue;
-    } else if (it->second.HasPendingInvalidation()) {
-      // The old-style source info can contain only one hint per type.  We grab
-      // the most recent, to mimic the old coalescing behaviour.
-      Invalidation invalidation;
-      invalidation.payload = it->second.GetMostRecentInvalidationPayload();
-      invalidation_map.insert(std::make_pair(it->first, invalidation));
-    } else if (it->second.HasLocalChangePending()) {
-      // The old-style source info sent up an empty string (as opposed to
-      // nothing at all) when the type was locally nudged, but had not received
-      // any invalidations.
-      Invalidation invalidation;
-      invalidation.payload = "";
-      invalidation_map.insert(std::make_pair(it->first, invalidation));
-    }
-  }
-
-  return SyncSourceInfo(updates_source_, invalidation_map);
 }
 
 void NudgeTracker::SetLegacyNotificationHint(

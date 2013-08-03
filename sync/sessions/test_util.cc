@@ -8,31 +8,39 @@ namespace syncer {
 namespace sessions {
 namespace test_util {
 
-void SimulateGetEncryptionKeyFailed(ModelTypeSet requsted_types,
-                                    sessions::SyncSession* session) {
+void SimulateGetEncryptionKeyFailed(
+    ModelTypeSet requsted_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    sessions::SyncSession* session) {
   session->mutable_status_controller()->set_last_get_key_result(
       SERVER_RESPONSE_VALIDATION_FAILED);
   session->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
 }
 
-void SimulateConfigureSuccess(ModelTypeSet requsted_types,
-                              sessions::SyncSession* session) {
+void SimulateConfigureSuccess(
+    ModelTypeSet requsted_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    sessions::SyncSession* session) {
   ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
   session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   session->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
 }
 
-void SimulateConfigureFailed(ModelTypeSet requsted_types,
-                             sessions::SyncSession* session) {
+void SimulateConfigureFailed(
+    ModelTypeSet requsted_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    sessions::SyncSession* session) {
   session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   session->mutable_status_controller()->set_last_download_updates_result(
       SERVER_RETURN_TRANSIENT_ERROR);
 }
 
-void SimulateConfigureConnectionFailure(ModelTypeSet requsted_types,
-                                        sessions::SyncSession* session) {
+void SimulateConfigureConnectionFailure(
+    ModelTypeSet requsted_types,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+    sessions::SyncSession* session) {
   session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   session->mutable_status_controller()->set_last_download_updates_result(
       NETWORK_CONNECTION_UNAVAILABLE);

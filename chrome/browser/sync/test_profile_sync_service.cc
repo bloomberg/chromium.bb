@@ -23,7 +23,6 @@ using syncer::ModelSafeRoutingInfo;
 using syncer::TestInternalComponentsFactory;
 using syncer::sessions::ModelNeutralState;
 using syncer::sessions::SyncSessionSnapshot;
-using syncer::sessions::SyncSourceInfo;
 using syncer::UserShare;
 using syncer::syncable::Directory;
 using syncer::DEVICE_INFO;

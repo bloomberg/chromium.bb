@@ -13,7 +13,6 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/progress_marker_map.h"
 #include "sync/internal_api/public/sessions/model_neutral_state.h"
-#include "sync/internal_api/public/sessions/sync_source_info.h"
 
 namespace base {
 class DictionaryValue;
@@ -37,12 +36,12 @@ class SYNC_EXPORT SyncSessionSnapshot {
       int num_encryption_conflicts,
       int num_hierarchy_conflicts,
       int num_server_conflicts,
-      const SyncSourceInfo& source,
       bool notifications_enabled,
       size_t num_entries,
       base::Time sync_start_time,
       const std::vector<int>& num_entries_by_type,
-      const std::vector<int>& num_to_delete_entries_by_type);
+      const std::vector<int>& num_to_delete_entries_by_type,
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source);
   ~SyncSessionSnapshot();
 
   // Caller takes ownership of the returned dictionary.
@@ -59,12 +58,12 @@ class SYNC_EXPORT SyncSessionSnapshot {
   int num_encryption_conflicts() const;
   int num_hierarchy_conflicts() const;
   int num_server_conflicts() const;
-  SyncSourceInfo source() const;
   bool notifications_enabled() const;
   size_t num_entries() const;
   base::Time sync_start_time() const;
   const std::vector<int>& num_entries_by_type() const;
   const std::vector<int>& num_to_delete_entries_by_type() const;
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source() const;
 
   // Set iff this snapshot was not built using the default constructor.
   bool is_initialized() const;
@@ -76,13 +75,17 @@ class SYNC_EXPORT SyncSessionSnapshot {
   int num_encryption_conflicts_;
   int num_hierarchy_conflicts_;
   int num_server_conflicts_;
-  SyncSourceInfo source_;
   bool notifications_enabled_;
   size_t num_entries_;
   base::Time sync_start_time_;
 
   std::vector<int> num_entries_by_type_;
   std::vector<int> num_to_delete_entries_by_type_;
+
+  // This enum value used to be an important part of the sync protocol, but is
+  // now deprecated.  We continue to use it in the snapshot because there is
+  // still some value in displaying it on the about:sync page.
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source_;
 
   bool is_initialized_;
 };

@@ -5,7 +5,6 @@
 #include "sync/sessions/nudge_tracker.h"
 
 #include "sync/internal_api/public/base/model_type_invalidation_map.h"
-#include "sync/internal_api/public/sessions/sync_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -68,9 +67,8 @@ TEST_F(NudgeTrackerTest, EmptyNudgeTracker) {
   sync_pb::GetUpdateTriggers gu_trigger;
   nudge_tracker.FillProtoMessage(BOOKMARKS, &gu_trigger);
 
-  SyncSourceInfo source_info = nudge_tracker.GetSourceInfo();
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
-            source_info.updates_source);
+            nudge_tracker.updates_source());
 }
 
 // Verify that nudges override each other based on a priority order.

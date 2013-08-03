@@ -32,9 +32,7 @@ class SyncSessionTest : public testing::Test,
   SyncSessionTest() : controller_invocations_allowed_(false) {}
 
   SyncSession* MakeSession() {
-    return SyncSession::Build(context_.get(),
-                              this,
-                              SyncSourceInfo());
+    return SyncSession::Build(context_.get(), this);
   }
 
   virtual void SetUp() {

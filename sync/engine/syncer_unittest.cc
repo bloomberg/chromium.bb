@@ -182,14 +182,7 @@ class SyncerTest : public testing::Test,
   }
 
   void SyncShareNudge() {
-    ModelSafeRoutingInfo info;
-    GetModelSafeRoutingInfo(&info);
-    ModelTypeInvalidationMap invalidation_map =
-        ModelSafeRoutingInfoToInvalidationMap(info, std::string());
-    sessions::SyncSourceInfo source_info(
-        sync_pb::GetUpdatesCallerInfo::LOCAL,
-        invalidation_map);
-    session_.reset(SyncSession::Build(context_.get(), this, source_info));
+    session_.reset(SyncSession::Build(context_.get(), this));
 
     // Pretend we've seen a local change, to make the nudge_tracker look normal.
     nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
@@ -202,18 +195,10 @@ class SyncerTest : public testing::Test,
   }
 
   void SyncShareConfigure() {
-    ModelSafeRoutingInfo info;
-    GetModelSafeRoutingInfo(&info);
-    ModelTypeInvalidationMap invalidation_map =
-        ModelSafeRoutingInfoToInvalidationMap(info, std::string());
-    sessions::SyncSourceInfo source_info(
-        sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
-        invalidation_map);
-    session_.reset(SyncSession::Build(context_.get(),
-                                      this,
-                                      source_info));
+    session_.reset(SyncSession::Build(context_.get(), this));
     EXPECT_TRUE(syncer_->ConfigureSyncShare(
             GetRoutingInfoTypes(context_->routing_info()),
+            sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
             session_.get()));
   }
 

@@ -8,6 +8,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/syncer_error.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace sync_pb {
 class DebugInfo;
@@ -18,7 +19,6 @@ namespace syncer {
 namespace sessions {
 class NudgeTracker;
 class SyncSession;
-struct SyncSourceInfo;
 }  // namespace sessions
 
 class Syncer;
@@ -38,7 +38,7 @@ SYNC_EXPORT_PRIVATE SyncerError NormalDownloadUpdates(
 SYNC_EXPORT_PRIVATE SyncerError DownloadUpdatesForConfigure(
     sessions::SyncSession* session,
     bool create_mobile_bookmarks_folder,
-    const syncer::sessions::SyncSourceInfo& source,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
     ModelTypeSet request_types);
 
 // This function executes a single GetUpdate request and stores the response in

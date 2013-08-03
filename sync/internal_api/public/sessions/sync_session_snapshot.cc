@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "sync/protocol/proto_enum_conversions.h"
 
 namespace syncer {
 namespace sessions {
@@ -30,24 +31,24 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     int num_encryption_conflicts,
     int num_hierarchy_conflicts,
     int num_server_conflicts,
-    const SyncSourceInfo& source,
     bool notifications_enabled,
     size_t num_entries,
     base::Time sync_start_time,
     const std::vector<int>& num_entries_by_type,
-    const std::vector<int>& num_to_delete_entries_by_type)
+    const std::vector<int>& num_to_delete_entries_by_type,
+    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source)
     : model_neutral_state_(model_neutral_state),
       download_progress_markers_(download_progress_markers),
       is_silenced_(is_silenced),
       num_encryption_conflicts_(num_encryption_conflicts),
       num_hierarchy_conflicts_(num_hierarchy_conflicts),
       num_server_conflicts_(num_server_conflicts),
-      source_(source),
       notifications_enabled_(notifications_enabled),
       num_entries_(num_entries),
       sync_start_time_(sync_start_time),
       num_entries_by_type_(num_entries_by_type),
       num_to_delete_entries_by_type_(num_to_delete_entries_by_type),
+      legacy_updates_source_(legacy_updates_source),
       is_initialized_(true) {
 }
 
@@ -83,7 +84,8 @@ base::DictionaryValue* SyncSessionSnapshot::ToValue() const {
   value->SetInteger("numServerConflicts",
                     num_server_conflicts_);
   value->SetInteger("numEntries", num_entries_);
-  value->Set("source", source_.ToValue());
+  value->SetString("legacySource",
+                   GetUpdatesSourceString(legacy_updates_source_));
   value->SetBoolean("notificationsEnabled", notifications_enabled_);
 
   scoped_ptr<base::DictionaryValue> counter_entries(
@@ -135,10 +137,6 @@ int SyncSessionSnapshot::num_server_conflicts() const {
   return num_server_conflicts_;
 }
 
-SyncSourceInfo SyncSessionSnapshot::source() const {
-  return source_;
-}
-
 bool SyncSessionSnapshot::notifications_enabled() const {
   return notifications_enabled_;
 }
@@ -162,6 +160,11 @@ const std::vector<int>& SyncSessionSnapshot::num_entries_by_type() const {
 const std::vector<int>&
 SyncSessionSnapshot::num_to_delete_entries_by_type() const {
   return num_to_delete_entries_by_type_;
+}
+
+sync_pb::GetUpdatesCallerInfo::GetUpdatesSource
+SyncSessionSnapshot::legacy_updates_source() const {
+  return legacy_updates_source_;
 }
 
 }  // namespace sessions

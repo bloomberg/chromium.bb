@@ -43,11 +43,28 @@ class SYNC_EXPORT_PRIVATE Syncer {
   bool ExitRequested();
   void RequestEarlyExit();
 
+  // Fetches and applies updates, resolves conflicts and commits local changes
+  // for |request_types| as necessary until client and server states are in
+  // sync.  The |nudge_tracker| contains state that describes why the client is
+  // out of sync and what must be done to bring it back into sync.
   virtual bool NormalSyncShare(ModelTypeSet request_types,
                                const sessions::NudgeTracker& nudge_tracker,
                                sessions::SyncSession* session);
-  virtual bool ConfigureSyncShare(ModelTypeSet request_types,
-                                  sessions::SyncSession* session);
+
+  // Performs an initial download for the |request_types|.  It is assumed that
+  // the specified types have no local state, and that their associated change
+  // processors are in "passive" mode, so none of the downloaded updates will be
+  // applied to the model.  The |source| is sent up to the server for debug
+  // purposes.  It describes the reson for performing this initial download.
+  virtual bool ConfigureSyncShare(
+      ModelTypeSet request_types,
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+      sessions::SyncSession* session);
+
+  // Requests to download updates for the |request_types|.  For a well-behaved
+  // client with a working connection to the invalidations server, this should
+  // be unnecessary.  It may be invoked periodically to try to keep the client
+  // in sync despite bugs or transient failures.
   virtual bool PollSyncShare(ModelTypeSet request_types,
                              sessions::SyncSession* session);
 
@@ -58,7 +75,9 @@ class SYNC_EXPORT_PRIVATE Syncer {
       base::Callback<SyncerError(void)> download_fn);
 
   void HandleCycleBegin(sessions::SyncSession* session);
-  bool HandleCycleEnd(sessions::SyncSession* session);
+  bool HandleCycleEnd(
+      sessions::SyncSession* session,
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
   bool early_exit_requested_;
   base::Lock early_exit_requested_lock_;

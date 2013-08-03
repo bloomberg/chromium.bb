@@ -20,8 +20,6 @@
 namespace syncer {
 namespace sessions {
 
-struct SyncSourceInfo;
-
 class SYNC_EXPORT_PRIVATE NudgeTracker {
  public:
   static size_t kDefaultMaxPayloadsPerType;
@@ -77,10 +75,6 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
 
   // Returns the set of currently throttled types.
   ModelTypeSet GetThrottledTypes() const;
-
-  // A helper to return an old-style source info.  Used only to maintain
-  // compatibility with some old code.
-  SyncSourceInfo GetSourceInfo() const;
 
   // Returns the 'source' of the GetUpdate request.
   //
