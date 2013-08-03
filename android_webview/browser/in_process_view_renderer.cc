@@ -13,6 +13,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/android/synchronous_compositor.h"
@@ -155,6 +156,8 @@ ScopedAllowGL::~ScopedAllowGL() {
 
 bool ScopedAllowGL::allow_gl = false;
 
+base::LazyInstance<GLViewRendererManager>::Leaky g_view_renderer_manager;
+
 }  // namespace
 
 // Called from different threads!
@@ -162,7 +165,11 @@ static void ScheduleGpuWork() {
   if (ScopedAllowGL::IsAllowed()) {
     gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
   } else {
-    // TODO: We need to request a callback with a GL context current here.
+    InProcessViewRenderer* renderer = static_cast<InProcessViewRenderer*>(
+        g_view_renderer_manager.Get().GetMostRecentlyDrawn());
+    if (!renderer || !renderer->RequestProcessGL()) {
+      LOG(ERROR) << "Failed to request DrawGL. Probably going to deadlock.";
+    }
   }
 }
 
@@ -209,7 +216,8 @@ InProcessViewRenderer::InProcessViewRenderer(
       attached_to_window_(false),
       hardware_initialized_(false),
       hardware_failed_(false),
-      last_egl_context_(NULL) {
+      last_egl_context_(NULL),
+      manager_key_(g_view_renderer_manager.Get().NullKey()) {
   CHECK(web_contents_);
   web_contents_->SetUserData(kUserDataKey, new UserData(this));
   content::SynchronousCompositor::SetClientForWebContents(web_contents_, this);
@@ -222,7 +230,23 @@ InProcessViewRenderer::~InProcessViewRenderer() {
   CHECK(web_contents_);
   content::SynchronousCompositor::SetClientForWebContents(web_contents_, NULL);
   web_contents_->SetUserData(kUserDataKey, NULL);
+  NoLongerExpectsDrawGL();
   DCHECK(web_contents_ == NULL);  // WebContentsGone should have been called.
+}
+
+
+// TODO(boliu): Should also call this when we know for sure we are no longer,
+// for example, when visible rect becomes 0.
+void InProcessViewRenderer::NoLongerExpectsDrawGL() {
+  GLViewRendererManager& mru = g_view_renderer_manager.Get();
+  if (manager_key_ != mru.NullKey()) {
+    mru.NoLongerExpectsDrawGL(manager_key_);
+    manager_key_ = mru.NullKey();
+
+    // TODO(boliu): If this is the first one and there are GL pending,
+    // requestDrawGL on next one.
+    // TODO(boliu): If this is the last one, lose all global contexts.
+  }
 }
 
 // static
@@ -234,6 +258,10 @@ InProcessViewRenderer* InProcessViewRenderer::FromWebContents(
 void InProcessViewRenderer::WebContentsGone() {
   web_contents_ = NULL;
   compositor_ = NULL;
+}
+
+bool InProcessViewRenderer::RequestProcessGL() {
+  return client_->RequestDrawGL(NULL);
 }
 
 bool InProcessViewRenderer::OnDraw(jobject java_canvas,
@@ -260,6 +288,8 @@ bool InProcessViewRenderer::OnDraw(jobject java_canvas,
 void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawGL");
   DCHECK(visible_);
+
+  manager_key_ = g_view_renderer_manager.Get().DidDrawGL(manager_key_, this);
 
   // We need to watch if the current Android context has changed and enforce
   // a clean-up in the compositor.
@@ -501,6 +531,7 @@ void InProcessViewRenderer::OnDetachedFromWindow() {
   TRACE_EVENT0("android_webview",
                "InProcessViewRenderer::OnDetachedFromWindow");
 
+  NoLongerExpectsDrawGL();
   if (hardware_initialized_) {
     DCHECK(compositor_);
 

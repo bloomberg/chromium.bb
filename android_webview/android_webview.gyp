@@ -138,6 +138,8 @@
         'browser/input_stream.h',
         'browser/intercepted_request_data.h',
         'browser/jni_dependency_factory.h',
+        'browser/gl_view_renderer_manager.cc',
+        'browser/gl_view_renderer_manager.h',
         'browser/net/android_stream_reader_url_request_job.cc',
         'browser/net/android_stream_reader_url_request_job.h',
         'browser/net/aw_network_delegate.cc',

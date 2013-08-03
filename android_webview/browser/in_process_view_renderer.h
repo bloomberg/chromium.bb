@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_IN_PROCESS_IN_PROCESS_VIEW_RENDERER_H_
-#define ANDROID_WEBVIEW_BROWSER_IN_PROCESS_IN_PROCESS_VIEW_RENDERER_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_IN_PROCESS_VIEW_RENDERER_H_
+#define ANDROID_WEBVIEW_BROWSER_IN_PROCESS_VIEW_RENDERER_H_
 
 #include <string>
 
 #include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/gl_view_renderer_manager.h"
 #include "base/cancelable_callback.h"
-#include "base/memory/weak_ptr.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "ui/gfx/vector2d_f.h"
 
@@ -72,6 +72,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
                              gfx::Vector2dF current_fling_velocity) OVERRIDE;
 
   void WebContentsGone();
+  bool RequestProcessGL();
 
  private:
   void EnsureContinuousInvalidation(AwDrawGLInfo* draw_info);
@@ -82,6 +83,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // If we call up view invalidate and OnDraw is not called before a deadline,
   // then we keep ticking the SynchronousCompositor so it can make progress.
   void FallbackTickFired();
+
+  void NoLongerExpectsDrawGL();
 
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state and the |draw_info| if provided.
@@ -131,9 +134,11 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // spot over a period of time).
   gfx::Vector2dF overscroll_rounding_error_;
 
+  GLViewRendererManager::Key manager_key_;
+
   DISALLOW_COPY_AND_ASSIGN(InProcessViewRenderer);
 };
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_IN_PROCESS_IN_PROCESS_VIEW_RENDERER_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_IN_PROCESS_VIEW_RENDERER_H_
