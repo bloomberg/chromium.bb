@@ -111,7 +111,8 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   for (syncer::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
     // MANAGED_USERS is always synced.
-    if (it.Get() == syncer::MANAGED_USERS)
+    if (it.Get() == syncer::MANAGED_USERS ||
+        it.Get() == syncer::SYNCED_NOTIFICATIONS)
       continue;
 
     ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(it.Get()));
