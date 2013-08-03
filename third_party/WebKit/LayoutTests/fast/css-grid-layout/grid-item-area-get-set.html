@@ -35,18 +35,18 @@
         return gridPosition === undefined ? "auto" : gridPosition;
     }
 
-    function checkColumnRowValues(gridItem, gridColumnStart, gridRowStart, gridColumnEnd, gridRowEnd)
+    function checkColumnRowValues(gridItem, gridRowStart, gridColumnStart, gridRowEnd, gridColumnEnd)
     {
         this.gridItem = gridItem;
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-column-start')", gridColumnStart);
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-row-start')", valueOrDefaultGridPosition(gridRowStart));
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-column-end')", valueOrDefaultGridPosition(gridColumnEnd));
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-row-start')", gridRowStart);
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-column-start')", valueOrDefaultGridPosition(gridColumnStart));
         shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-row-end')", valueOrDefaultGridPosition(gridRowEnd));
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-column-end')", valueOrDefaultGridPosition(gridColumnEnd));
     }
 
-    function testGridAreaCSSParsing(gridItemId, gridColumnStart, gridRowStart, gridColumnEnd, gridRowEnd)
+    function testGridAreaCSSParsing(gridItemId, gridRowStart, gridColumnStart, gridRowEnd, gridColumnEnd)
     {
-        checkColumnRowValues(document.getElementById(gridItemId), gridColumnStart, gridRowStart, gridColumnEnd, gridRowEnd);
+        checkColumnRowValues(document.getElementById(gridItemId), gridRowStart, gridColumnStart, gridRowEnd, gridColumnEnd);
     }
 
     function testGridAreaJSParsing(gridAreaValue)
