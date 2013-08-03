@@ -13,9 +13,4 @@ const base::FilePath::CharType kWidevineCdmBaseDirectory[] =
 const char kWidevineCdmPluginExtension[] = "";
 
 const int32 kWidevineCdmPluginPermissions = ppapi::PERMISSION_DEV |
-#if defined(OS_CHROMEOS)
-// TODO(xhwang): Make permission requirements the same on all OS.
-// See http://crbug.com/222252
-                                            ppapi::PERMISSION_FLASH |
-#endif  // !defined(OS_CHROMEOS)
                                             ppapi::PERMISSION_PRIVATE;
