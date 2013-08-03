@@ -106,7 +106,7 @@
     static void onWriteProgress(ProgressInfo info);
     // Fires when the write operation has completely finished, such as all
     // devices being finalized and resources released.
-    static void onWriteComplete(ProgressInfo info);
+    static void onWriteComplete();
     // Fires when an error occured during writing, passing the $ref:ProgressInfo
     // of the operation at the time the error occured.
     static void onWriteError(ProgressInfo info);

@@ -4,8 +4,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_RECOVERY_PRIVATE_RECOVERY_PRIVATE_API_H_
 
-#include <string>
-
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/recovery_private.h"
 
@@ -20,6 +18,7 @@ class RecoveryPrivateWriteFromUrlFunction : public AsyncExtensionFunction {
  private:
   virtual ~RecoveryPrivateWriteFromUrlFunction();
   virtual bool RunImpl() OVERRIDE;
+  void OnWriteStarted(bool success);
 };
 
 class RecoveryPrivateWriteFromFileFunction : public AsyncExtensionFunction {
@@ -31,6 +30,7 @@ class RecoveryPrivateWriteFromFileFunction : public AsyncExtensionFunction {
  private:
   virtual ~RecoveryPrivateWriteFromFileFunction();
   virtual bool RunImpl() OVERRIDE;
+  void OnWriteStarted(bool success);
 };
 
 class RecoveryPrivateCancelWriteFunction : public AsyncExtensionFunction {
@@ -42,6 +42,7 @@ class RecoveryPrivateCancelWriteFunction : public AsyncExtensionFunction {
  private:
   virtual ~RecoveryPrivateCancelWriteFunction();
   virtual bool RunImpl() OVERRIDE;
+  void OnWriteCancelled(bool success);
 };
 
 class RecoveryPrivateDestroyPartitionsFunction : public AsyncExtensionFunction {
