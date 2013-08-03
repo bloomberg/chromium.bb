@@ -132,15 +132,38 @@ TEST_F(VideoDetectorTest, Basic) {
   EXPECT_EQ(0, observer_->num_fullscreens());
   EXPECT_EQ(1, observer_->num_not_fullscreens());
 
-  // Spread out the frames over two seconds; we shouldn't detect video.
+  // Spread out the frames over a longer period of time, but send enough
+  // over a one-second window that the observer should be notified.
   observer_->reset_stats();
   AdvanceTime(base::TimeDelta::FromSeconds(2));
-  for (int i = 0; i < VideoDetector::kMinFramesPerSecond - 1; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
-  AdvanceTime(base::TimeDelta::FromSeconds(1));
-  for (int i = 0; i < VideoDetector::kMinFramesPerSecond - 1; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+  detector_->OnWindowPaintScheduled(window.get(), update_region);
   EXPECT_EQ(0, observer_->num_invocations());
+
+  AdvanceTime(base::TimeDelta::FromMilliseconds(500));
+  const int kNumFrames = VideoDetector::kMinFramesPerSecond + 1;
+  base::TimeDelta kInterval =
+      base::TimeDelta::FromMilliseconds(1000 / kNumFrames);
+  for (int i = 0; i < kNumFrames; ++i) {
+    AdvanceTime(kInterval);
+    detector_->OnWindowPaintScheduled(window.get(), update_region);
+  }
+  EXPECT_EQ(1, observer_->num_invocations());
+
+  // Keep going and check that the observer is notified again.
+  for (int i = 0; i < kNumFrames; ++i) {
+    AdvanceTime(kInterval);
+    detector_->OnWindowPaintScheduled(window.get(), update_region);
+  }
+  EXPECT_EQ(2, observer_->num_invocations());
+
+  // Send updates at a slower rate and check that the observer isn't notified.
+  base::TimeDelta kSlowInterval = base::TimeDelta::FromMilliseconds(
+      1000 / (VideoDetector::kMinFramesPerSecond - 2));
+  for (int i = 0; i < kNumFrames; ++i) {
+    AdvanceTime(kSlowInterval);
+    detector_->OnWindowPaintScheduled(window.get(), update_region);
+  }
+  EXPECT_EQ(2, observer_->num_invocations());
 }
 
 TEST_F(VideoDetectorTest, Shutdown) {

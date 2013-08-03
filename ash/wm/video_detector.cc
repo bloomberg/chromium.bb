@@ -22,32 +22,38 @@ const double VideoDetector::kNotifyIntervalSec = 1.0;
 // likely that a video is playing in it.
 class VideoDetector::WindowInfo {
  public:
-  WindowInfo() : num_video_updates_in_second_(0) {}
+  WindowInfo() : buffer_start_(0), buffer_size_(0) {}
 
-  // Handles an update within a window, returning true if this update made us
-  // believe that a video is playing in the window.  true is returned at most
-  // once per second.
+  // Handles an update within a window, returning true if it appears that
+  // video is currently playing in the window.
   bool RecordUpdateAndCheckForVideo(const gfx::Rect& region,
                                     base::TimeTicks now) {
     if (region.width() < kMinUpdateWidth || region.height() < kMinUpdateHeight)
       return false;
 
-    if (second_start_time_.is_null() ||
-        (now - second_start_time_).InSecondsF() >= 1.0) {
-      second_start_time_ = now;
-      num_video_updates_in_second_ = 0;
+    // If the buffer is full, drop the first timestamp.
+    if (buffer_size_ == static_cast<size_t>(kMinFramesPerSecond)) {
+      buffer_start_ = (buffer_start_ + 1) % kMinFramesPerSecond;
+      buffer_size_--;
     }
-    num_video_updates_in_second_++;
 
-    return num_video_updates_in_second_ == kMinFramesPerSecond;
+    update_times_[(buffer_start_ + buffer_size_) % kMinFramesPerSecond] = now;
+    buffer_size_++;
+
+    return buffer_size_ == static_cast<size_t>(kMinFramesPerSecond) &&
+        (now - update_times_[buffer_start_]).InSecondsF() <= 1.0;
   }
 
  private:
-  // Number of video-sized updates that we've seen in the second starting at
-  // |second_start_time_|.  (Keeping a rolling window is overkill here.)
-  int num_video_updates_in_second_;
+  // Circular buffer containing update times of the last (up to
+  // |kMinFramesPerSecond|) video-sized updates to this window.
+  base::TimeTicks update_times_[kMinFramesPerSecond];
 
-  base::TimeTicks second_start_time_;
+  // Index into |update_times_| of the oldest update.
+  size_t buffer_start_;
+
+  // Number of updates stored in |update_times_|.
+  size_t buffer_size_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowInfo);
 };
