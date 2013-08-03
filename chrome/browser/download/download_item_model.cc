@@ -327,7 +327,7 @@ string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
 
     case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_POTENTIALLY_UNWANTED_DOWNLOAD, elided_filename);
+          IDS_PROMPT_DOWNLOAD_CHANGES_SEARCH_SETTINGS, elided_filename);
 
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:

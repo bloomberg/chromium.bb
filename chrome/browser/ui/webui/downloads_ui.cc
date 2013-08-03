@@ -24,6 +24,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -60,7 +61,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("danger_uncommon_desc",
                              IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT);
   source->AddLocalizedString("danger_potentially_unwanted_desc",
-                             IDS_PROMPT_POTENTIALLY_UNWANTED_DOWNLOAD);
+                             IDS_PROMPT_DOWNLOAD_CHANGES_SEARCH_SETTINGS);
   source->AddLocalizedString("danger_save", IDS_CONFIRM_DOWNLOAD);
   source->AddLocalizedString("danger_discard", IDS_DISCARD_DOWNLOAD);
 

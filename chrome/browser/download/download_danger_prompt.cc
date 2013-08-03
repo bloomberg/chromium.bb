@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -118,7 +119,7 @@ string16 DownloadDangerPromptImpl::GetMessage() {
           download_->GetFileNameToReportUser().LossyDisplayName());
     case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_POTENTIALLY_UNWANTED_DOWNLOAD,
+          IDS_PROMPT_DOWNLOAD_CHANGES_SEARCH_SETTINGS,
           download_->GetFileNameToReportUser().LossyDisplayName());
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
