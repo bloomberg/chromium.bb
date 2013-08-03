@@ -64,6 +64,7 @@
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_module.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #if defined(OS_WIN)
 #include "net/base/winsock_init.h"
 #endif
@@ -1388,6 +1389,40 @@ std::string GetHostAndOptionalPort(const GURL& url) {
   if (url.has_port())
     return base::StringPrintf("%s:%s", url.host().c_str(), url.port().c_str());
   return url.host();
+}
+
+// static
+bool IsHostnameNonUnique(const std::string& hostname) {
+  // CanonicalizeHost requires surrounding brackets to parse an IPv6 address.
+  const std::string host_or_ip = hostname.find(':') != std::string::npos ?
+      "[" + hostname + "]" : hostname;
+  url_canon::CanonHostInfo host_info;
+  std::string canonical_name = CanonicalizeHost(host_or_ip, &host_info);
+
+  // If canonicalization fails, then the input is truly malformed. However,
+  // to avoid mis-reporting bad inputs as "non-unique", treat them as unique.
+  if (canonical_name.empty())
+    return false;
+
+  // If |hostname| is an IP address, presume it's unique.
+  // TODO(rsleevi): In the future, this should also reject IP addresses in
+  // IANA-reserved ranges.
+  if (host_info.IsIPAddress())
+    return false;
+
+  // Check for a registry controlled portion of |hostname|, ignoring private
+  // registries, as they already chain to ICANN-administered registries,
+  // and explicitly ignoring unknown registries.
+  //
+  // Note: This means that as new gTLDs are introduced on the Internet, they
+  // will be treated as non-unique until the registry controlled domain list
+  // is updated. However, because gTLDs are expected to provide significant
+  // advance notice to deprecate older versions of this code, this an
+  // acceptable tradeoff.
+  return 0 == registry_controlled_domains::GetRegistryLength(
+                  canonical_name,
+                  registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+                  registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 }
 
 // Extracts the address and port portions of a sockaddr.

@@ -9,13 +9,11 @@
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/x509_certificate.h"
-#include "url/url_canon.h"
 
 #if defined(USE_NSS) || defined(OS_IOS)
 #include "net/cert/cert_verify_proc_nss.h"
@@ -152,7 +150,10 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   // Flag certificates from publicly-trusted CAs that are issued to intranet
   // hosts. While the CA/Browser Forum Baseline Requirements (v1.1) permit
   // these to be issued until 1 November 2015, they represent a real risk for
-  // the deployment of gTLDs and are being phased out.
+  // the deployment of gTLDs and are being phased out ahead of the hard
+  // deadline.
+  // TODO(rsleevi): http://crbug.com/119212 - Also match internal IP address
+  // ranges.
   if (verify_result->is_issued_by_known_root && IsHostnameNonUnique(hostname)) {
     verify_result->cert_status |= CERT_STATUS_NON_UNIQUE_NAME;
   }
@@ -291,41 +292,6 @@ bool CertVerifyProc::IsPublicKeyBlacklisted(
   }
 
   return false;
-}
-
-// static
-bool CertVerifyProc::IsHostnameNonUnique(const std::string& hostname) {
-  // CanonicalizeHost requires surrounding brackets to parse an IPv6 address.
-  const std::string host_or_ip = hostname.find(':') != std::string::npos ?
-      "[" + hostname + "]" : hostname;
-  url_canon::CanonHostInfo host_info;
-  std::string canonical_name = CanonicalizeHost(host_or_ip, &host_info);
-
-  // If canonicalization fails, then the input is truly malformed. However,
-  // to avoid mis-reporting bad inputs as "non-unique", treat them as unique.
-  if (canonical_name.empty())
-    return false;
-
-  // If |hostname| is an IP address, presume it's unique.
-  // TODO(rsleevi): In the future, this should also reject IP addresses in
-  // IANA-reserved ranges, since those are also non-unique among publicly
-  // trusted CAs.
-  if (host_info.IsIPAddress())
-    return false;
-
-  // Check for a registry controlled portion of |hostname|, ignoring private
-  // registries, as they already chain to ICANN-administered registries,
-  // and explicitly ignoring unknown registries.
-  //
-  // Note: This means that as new gTLDs are introduced on the Internet, they
-  // will be treated as non-unique until the registry controlled domain list
-  // is updated. However, because gTLDs are expected to provide significant
-  // advance notice to deprecate older versions of this code, this an
-  // acceptable tradeoff.
-  return 0 == registry_controlled_domains::GetRegistryLength(
-                  canonical_name,
-                  registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-                  registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 }
 
 }  // namespace net

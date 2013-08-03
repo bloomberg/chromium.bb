@@ -72,7 +72,6 @@ class NET_EXPORT CertVerifyProc
 
  private:
   friend class base::RefCountedThreadSafe<CertVerifyProc>;
-  friend class CertVerifyProcNonUniqueNameTest;
   FRIEND_TEST_ALL_PREFIXES(CertVerifyProcTest, DigiNotarCerts);
 
   // Performs the actual verification using the desired underlying
@@ -90,17 +89,6 @@ class NET_EXPORT CertVerifyProc
   // IsPublicKeyBlacklisted returns true iff one of |public_key_hashes| (which
   // are hashes of SubjectPublicKeyInfo structures) is explicitly blocked.
   static bool IsPublicKeyBlacklisted(const HashValueVector& public_key_hashes);
-
-  // Returns true if |hostname| contains a name that is non-unique among
-  // certificates (eg: an "internal server name").
-  //
-  // While such names are not scheduled to be deprecated until 1 November 2015
-  // according to the CA/Browser Forum Baseline Requirements (v1.1), they
-  // represent a real risk for the deployment of new gTLDs, and thus being
-  // phased out ahead of the hard deadline.
-  // TODO(rsleevi): http://crbug.com/119212 - Also match internal IP address
-  // ranges.
-  static bool IsHostnameNonUnique(const std::string& hostname);
 
   DISALLOW_COPY_AND_ASSIGN(CertVerifyProc);
 };

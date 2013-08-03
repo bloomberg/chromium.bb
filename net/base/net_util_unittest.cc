@@ -3498,4 +3498,72 @@ TEST(NetUtilTest, IsSafePortableRelativePath) {
   }
 }
 
+struct NonUniqueNameTestData {
+  bool is_unique;
+  const char* hostname;
+};
+
+// Google Test pretty-printer.
+void PrintTo(const NonUniqueNameTestData& data, std::ostream* os) {
+  ASSERT_TRUE(data.hostname);
+  *os << " hostname: " << testing::PrintToString(data.hostname)
+      << "; is_unique: " << testing::PrintToString(data.is_unique);
+}
+
+const NonUniqueNameTestData kNonUniqueNameTestData[] = {
+    // Domains under ICANN-assigned domains.
+    { true, "google.com" },
+    { true, "google.co.uk" },
+    // Domains under private registries.
+    { true, "appspot.com" },
+    { true, "test.appspot.com" },
+    // IPv4 addresses (in various forms).
+    { true, "8.8.8.8" },
+    { true, "1.2.3" },
+    { true, "14.15" },
+    { true, "676768" },
+    // IPv6 addresses.
+    { true, "FEDC:ba98:7654:3210:FEDC:BA98:7654:3210" },
+    { true, "::192.9.5.5" },
+    { true, "FEED::BEEF" },
+    // 'internal'/non-IANA assigned domains.
+    { false, "intranet" },
+    { false, "intranet." },
+    { false, "intranet.example" },
+    { false, "host.intranet.example" },
+    // gTLDs under discussion, but not yet assigned.
+    { false, "intranet.corp" },
+    { false, "example.tech" },
+    { false, "intranet.internal" },
+    // Invalid host names are treated as unique - but expected to be
+    // filtered out before then.
+    { true, "junk)(£)$*!@~#" },
+    { true, "w$w.example.com" },
+    { true, "nocolonsallowed:example" },
+    { true, "[::4.5.6.9]" },
+};
+
+class NetUtilNonUniqueNameTest
+    : public testing::TestWithParam<NonUniqueNameTestData> {
+ public:
+  virtual ~NetUtilNonUniqueNameTest() {}
+
+ protected:
+  bool IsUnique(const std::string& hostname) {
+    return !IsHostnameNonUnique(hostname);
+  }
+};
+
+// Test that internal/non-unique names are properly identified as such, but
+// that IP addresses and hosts beneath registry-controlled domains are flagged
+// as unique names.
+TEST_P(NetUtilNonUniqueNameTest, IsHostnameNonUnique) {
+  const NonUniqueNameTestData& test_data = GetParam();
+
+  EXPECT_EQ(test_data.is_unique, IsUnique(test_data.hostname));
+}
+
+INSTANTIATE_TEST_CASE_P(, NetUtilNonUniqueNameTest,
+                        testing::ValuesIn(kNonUniqueNameTestData));
+
 }  // namespace net

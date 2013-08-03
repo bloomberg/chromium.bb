@@ -29,6 +29,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
@@ -67,6 +68,8 @@ enum SSLBlockingPageEvent {
   DONT_PROCEED_AUTHORITY,
   MORE,
   SHOW_UNDERSTAND,
+  SHOW_INTERNAL_HOSTNAME,
+  PROCEED_INTERNAL_HOSTNAME,
   UNUSED_BLOCKING_PAGE_EVENT,
 };
 
@@ -80,6 +83,7 @@ void RecordSSLBlockingPageDetailedStats(
     bool proceed,
     int cert_error,
     bool overridable,
+    bool internal,
     const base::TimeTicks& start_time) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type",
      SSLErrorInfo::NetErrorToErrorType(cert_error), SSLErrorInfo::END_OF_ENUM);
@@ -89,10 +93,13 @@ void RecordSSLBlockingPageDetailedStats(
     // back. In either case, we don't want to record some of our metrics.
     return;
   }
-  if (proceed)
+  if (proceed) {
     RecordSSLBlockingPageEventStats(PROCEED_OVERRIDABLE);
-  else if (!proceed)
+    if (internal)
+      RecordSSLBlockingPageEventStats(PROCEED_INTERNAL_HOSTNAME);
+  } else if (!proceed) {
     RecordSSLBlockingPageEventStats(DONT_PROCEED_OVERRIDABLE);
+  }
   SSLErrorInfo::ErrorType type = SSLErrorInfo::NetErrorToErrorType(cert_error);
   switch (type) {
     case SSLErrorInfo::CERT_COMMON_NAME_INVALID: {
@@ -150,12 +157,19 @@ SSLBlockingPage::SSLBlockingPage(
       ssl_info_(ssl_info),
       request_url_(request_url),
       overridable_(overridable),
-      strict_enforcement_(strict_enforcement) {
+      strict_enforcement_(strict_enforcement),
+      internal_(false) {
   trialCondition_ = base::FieldTrialList::FindFullName(kStudyName);
 
+  if (net::IsHostnameNonUnique(request_url_.HostNoBrackets()))
+    internal_ = true;
+
   RecordSSLBlockingPageEventStats(SHOW_ALL);
-  if (overridable_ && !strict_enforcement_)
+  if (overridable_ && !strict_enforcement_) {
     RecordSSLBlockingPageEventStats(SHOW_OVERRIDABLE);
+    if (internal_)
+      RecordSSLBlockingPageEventStats(SHOW_INTERNAL_HOSTNAME);
+  }
 
   interstitial_page_ = InterstitialPage::Create(
       web_contents_, true, request_url, this);
@@ -165,9 +179,11 @@ SSLBlockingPage::SSLBlockingPage(
 
 SSLBlockingPage::~SSLBlockingPage() {
   if (!callback_.is_null()) {
-    RecordSSLBlockingPageDetailedStats(
-      false, cert_error_,
-      overridable_ && !strict_enforcement_, display_start_time_);
+    RecordSSLBlockingPageDetailedStats(false,
+                                       cert_error_,
+                                       overridable_ && !strict_enforcement_,
+                                       internal_,
+                                       display_start_time_);
     // The page is closed without the user having chosen what to do, default to
     // deny.
     NotifyDenyCertificate();
@@ -290,17 +306,21 @@ void SSLBlockingPage::OverrideRendererPrefs(
 }
 
 void SSLBlockingPage::OnProceed() {
-  RecordSSLBlockingPageDetailedStats(true, cert_error_,
-      overridable_ && !strict_enforcement_, display_start_time_);
-
+  RecordSSLBlockingPageDetailedStats(true,
+                                     cert_error_,
+                                     overridable_ && !strict_enforcement_,
+                                     internal_,
+                                     display_start_time_);
   // Accepting the certificate resumes the loading of the page.
   NotifyAllowCertificate();
 }
 
 void SSLBlockingPage::OnDontProceed() {
-  RecordSSLBlockingPageDetailedStats(false, cert_error_,
-    overridable_ && !strict_enforcement_, display_start_time_);
-
+  RecordSSLBlockingPageDetailedStats(false,
+                                     cert_error_,
+                                     overridable_ && !strict_enforcement_,
+                                     internal_,
+                                     display_start_time_);
   NotifyDenyCertificate();
 }
 

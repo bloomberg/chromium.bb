@@ -72,6 +72,8 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
   // Has the site requested strict enforcement of certificate errors?
   bool strict_enforcement_;
   content::InterstitialPage* interstitial_page_;  // Owns us.
+  // Is the hostname for an internal network?
+  bool internal_;
 
   // For the FieldTrial: this contains the name of the condition.
   std::string trialCondition_;

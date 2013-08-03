@@ -111,6 +111,13 @@ NET_EXPORT std::string GetHostAndPort(const GURL& url);
 // if it is the default for the URL's scheme.
 NET_EXPORT_PRIVATE std::string GetHostAndOptionalPort(const GURL& url);
 
+// Returns true if |hostname| contains a non-registerable or non-assignable
+// domain name (eg: a gTLD that has not been assigned by IANA)
+//
+// TODO(rsleevi): http://crbug.com/119212 - Also match internal IP
+// address ranges.
+NET_EXPORT bool IsHostnameNonUnique(const std::string& hostname);
+
 // Convenience struct for when you need a |struct sockaddr|.
 struct SockaddrStorage {
   SockaddrStorage() : addr_len(sizeof(addr_storage)),
