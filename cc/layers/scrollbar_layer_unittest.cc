@@ -451,6 +451,7 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     ResourceUpdateQueue queue;
     OcclusionTracker occlusion_tracker(gfx::Rect(), false);
 
+    scrollbar_layer->SavePaintProperties();
     scrollbar_layer->SetTexturePriorities(calculator);
     layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
     scrollbar_layer->Update(&queue, &occlusion_tracker);
@@ -532,6 +533,7 @@ class ScaledScrollbarLayerTestResourceCreation : public testing::Test {
     ResourceUpdateQueue queue;
     OcclusionTracker occlusion_tracker(gfx::Rect(), false);
 
+    scrollbar_layer->SavePaintProperties();
     scrollbar_layer->SetTexturePriorities(calculator);
     layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
     scrollbar_layer->Update(&queue, &occlusion_tracker);

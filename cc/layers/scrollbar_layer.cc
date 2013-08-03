@@ -302,10 +302,12 @@ bool ScrollbarLayer::Update(ResourceUpdateQueue* queue,
   if (layer_tree_host()->settings().solid_color_scrollbars)
     return false;
 
+  bool updated = false;
+
   {
     base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
                                                   true);
-    ContentsScalingLayer::Update(queue, occlusion);
+    updated = ContentsScalingLayer::Update(queue, occlusion);
   }
 
   dirty_rect_.Union(update_rect_);
@@ -318,8 +320,8 @@ bool ScrollbarLayer::Update(ResourceUpdateQueue* queue,
 
   gfx::Rect content_rect = ScrollbarLayerRectToContentRect(
       gfx::Rect(scrollbar_->Location(), bounds()));
-  bool updated = UpdatePart(track_updater_.get(), track_.get(), content_rect,
-                            queue);
+  updated |= UpdatePart(track_updater_.get(), track_.get(), content_rect,
+                        queue);
 
   if (scrollbar_->HasThumb()) {
     thumb_thickness_ = scrollbar_->ThumbThickness();

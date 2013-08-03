@@ -11,9 +11,11 @@ namespace cc {
 
 // Container for properties that layers need to save before they can be paint.
 struct CC_EXPORT PaintProperties {
-  PaintProperties() {}
+  PaintProperties() : source_frame_number(-1) {}
 
   gfx::Size bounds;
+
+  int source_frame_number;
 };
 
 }  // namespace cc

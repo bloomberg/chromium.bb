@@ -69,8 +69,8 @@ void PictureLayer::SetNeedsDisplayRect(const gfx::RectF& layer_rect) {
   Layer::SetNeedsDisplayRect(layer_rect);
 }
 
-bool PictureLayer::Update(ResourceUpdateQueue*,
-                          const OcclusionTracker*) {
+bool PictureLayer::Update(ResourceUpdateQueue* queue,
+                          const OcclusionTracker* occlusion) {
   // Do not early-out of this function so that PicturePile::Update has a chance
   // to record pictures due to changing visibility of this layer.
 
@@ -78,6 +78,8 @@ bool PictureLayer::Update(ResourceUpdateQueue*,
                benchmark_instrumentation::kPictureLayerUpdate,
                benchmark_instrumentation::kSourceFrameNumber,
                layer_tree_host()->source_frame_number());
+
+  bool updated = Layer::Update(queue, occlusion);
 
   pile_->Resize(paint_properties().bounds);
 
@@ -95,12 +97,12 @@ bool PictureLayer::Update(ResourceUpdateQueue*,
   }
   devtools_instrumentation::ScopedLayerTask paint_layer(
       devtools_instrumentation::kPaintLayer, id());
-  bool updated = pile_->Update(client_,
-                               SafeOpaqueBackgroundColor(),
-                               contents_opaque(),
-                               pile_invalidation_,
-                               visible_layer_rect,
-                               rendering_stats_instrumentation());
+  updated |= pile_->Update(client_,
+                           SafeOpaqueBackgroundColor(),
+                           contents_opaque(),
+                           pile_invalidation_,
+                           visible_layer_rect,
+                           rendering_stats_instrumentation());
   if (updated) {
     SetNeedsPushProperties();
   } else {

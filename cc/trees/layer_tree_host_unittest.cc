@@ -16,6 +16,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer.h"
+#include "cc/layers/solid_color_layer.h"
 #include "cc/layers/video_layer.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
@@ -4073,6 +4074,112 @@ class LayerTreeHostTestVideoLayerInvalidate : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestVideoLayerInvalidate);
+
+class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
+ protected:
+  virtual void SetupTree() OVERRIDE {
+    root_layer_ = Layer::Create();
+    root_layer_->SetAnchorPoint(gfx::PointF());
+    root_layer_->SetPosition(gfx::Point());
+    root_layer_->SetBounds(gfx::Size(10, 10));
+
+    parent_layer_ = SolidColorLayer::Create();
+    parent_layer_->SetAnchorPoint(gfx::PointF());
+    parent_layer_->SetPosition(gfx::Point());
+    parent_layer_->SetBounds(gfx::Size(10, 10));
+    parent_layer_->SetIsDrawable(true);
+    root_layer_->AddChild(parent_layer_);
+
+    child_layer_ = SolidColorLayer::Create();
+    child_layer_->SetAnchorPoint(gfx::PointF());
+    child_layer_->SetPosition(gfx::Point());
+    child_layer_->SetBounds(gfx::Size(10, 10));
+    child_layer_->SetIsDrawable(true);
+    parent_layer_->AddChild(child_layer_);
+
+    layer_tree_host()->SetRootLayer(root_layer_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // The layer type used does not need to push properties every frame.
+        EXPECT_FALSE(child_layer_->needs_push_properties());
+
+        // Change the bounds of the child layer, but make it skipped
+        // by CalculateDrawProperties.
+        parent_layer_->SetOpacity(0.f);
+        child_layer_->SetBounds(gfx::Size(5, 5));
+        break;
+      case 2:
+        // The bounds of the child layer were pushed to the impl side.
+        EXPECT_FALSE(child_layer_->needs_push_properties());
+
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    LayerImpl* root = impl->active_tree()->root_layer();
+    LayerImpl* parent = root->children()[0];
+    LayerImpl* child = parent->children()[0];
+
+    switch (impl->active_tree()->source_frame_number()) {
+      case 1:
+        EXPECT_EQ(gfx::Size(5, 5).ToString(), child->bounds().ToString());
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  scoped_refptr<Layer> root_layer_;
+  scoped_refptr<SolidColorLayer> parent_layer_;
+  scoped_refptr<SolidColorLayer> child_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushHiddenLayer);
+
+class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
+ protected:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->impl_side_painting = true;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    root_layer_ = FakePictureLayer::Create(&client_);
+    root_layer_->SetAnchorPoint(gfx::PointF());
+    root_layer_->SetBounds(gfx::Size(10, 10));
+
+    layer_tree_host()->SetRootLayer(root_layer_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    // The viewport is empty, but we still need to update layers on the main
+    // thread.
+    layer_tree_host()->SetViewportSize(gfx::Size(0, 0));
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidCommit() OVERRIDE {
+    // The layer should be updated even though the viewport is empty, so we
+    // are capable of drawing it on the impl tree.
+    EXPECT_GT(root_layer_->update_count(), 0u);
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  FakeContentLayerClient client_;
+  scoped_refptr<FakePictureLayer> root_layer_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayerInEmptyViewport);
 
 }  // namespace
 }  // namespace cc

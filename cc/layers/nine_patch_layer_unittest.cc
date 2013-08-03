@@ -71,6 +71,7 @@ TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
   OcclusionTracker occlusion_tracker(gfx::Rect(), false);
 
   // No bitmap set should not trigger any uploads.
+  test_layer->SavePaintProperties();
   test_layer->SetTexturePriorities(calculator);
   test_layer->Update(&queue, &occlusion_tracker);
   EXPECT_EQ(0u, queue.FullUploadSize());
@@ -81,6 +82,7 @@ TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
   bitmap.allocPixels();
   test_layer->SetBitmap(bitmap, gfx::Rect(5, 5, 1, 1));
+  test_layer->SavePaintProperties();
   test_layer->SetTexturePriorities(calculator);
   test_layer->Update(&queue, &occlusion_tracker);
   EXPECT_EQ(1u, queue.FullUploadSize());
@@ -105,6 +107,7 @@ TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
   }
 
   // Nothing changed, so no repeated upload.
+  test_layer->SavePaintProperties();
   test_layer->SetTexturePriorities(calculator);
   test_layer->Update(&queue, &occlusion_tracker);
   EXPECT_EQ(0u, queue.FullUploadSize());
@@ -117,6 +120,7 @@ TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
   }
 
   // Reupload after eviction
+  test_layer->SavePaintProperties();
   test_layer->SetTexturePriorities(calculator);
   test_layer->Update(&queue, &occlusion_tracker);
   EXPECT_EQ(1u, queue.FullUploadSize());
@@ -126,6 +130,7 @@ TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
   layer_tree_host_->contents_texture_manager()->UnregisterTexture(
       params.texture);
   EXPECT_EQ(NULL, params.texture->resource_manager());
+  test_layer->SavePaintProperties();
   test_layer->SetTexturePriorities(calculator);
   ResourceUpdateQueue queue2;
   test_layer->Update(&queue2, &occlusion_tracker);

@@ -730,10 +730,16 @@ static void PostCopyCallbackToMainThread(
 void Layer::PushPropertiesTo(LayerImpl* layer) {
   DCHECK(layer_tree_host_);
 
+  // If we did not SavePaintProperties() for the layer this frame, then push the
+  // real property values, not the paint property values.
+  bool use_paint_properties = paint_properties_.source_frame_number ==
+                              layer_tree_host_->source_frame_number();
+
   layer->SetAnchorPoint(anchor_point_);
   layer->SetAnchorPointZ(anchor_point_z_);
   layer->SetBackgroundColor(background_color_);
-  layer->SetBounds(paint_properties_.bounds);
+  layer->SetBounds(use_paint_properties ? paint_properties_.bounds
+                                        : bounds_);
   layer->SetContentBounds(content_bounds());
   layer->SetContentsScale(contents_scale_x(), contents_scale_y());
   layer->SetDebugName(debug_name_);
@@ -845,11 +851,16 @@ void Layer::SavePaintProperties() {
   // TODO(reveman): Save all layer properties that we depend on not
   // changing until PushProperties() has been called. crbug.com/231016
   paint_properties_.bounds = bounds_;
+  paint_properties_.source_frame_number =
+      layer_tree_host_->source_frame_number();
 }
 
 bool Layer::Update(ResourceUpdateQueue* queue,
                    const OcclusionTracker* occlusion) {
   DCHECK(layer_tree_host_);
+  DCHECK_EQ(layer_tree_host_->source_frame_number(),
+            paint_properties_.source_frame_number) <<
+      "SavePaintProperties must be called for any layer that is painted.";
   return false;
 }
 
