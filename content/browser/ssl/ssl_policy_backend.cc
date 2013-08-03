@@ -27,18 +27,22 @@ bool SSLPolicyBackend::DidHostRunInsecureContent(const std::string& host,
 }
 
 void SSLPolicyBackend::DenyCertForHost(net::X509Certificate* cert,
-                                       const std::string& host) {
-  ssl_host_state_->DenyCertForHost(cert, host);
+                                       const std::string& host,
+                                       net::CertStatus error) {
+  ssl_host_state_->DenyCertForHost(cert, host, error);
 }
 
 void SSLPolicyBackend::AllowCertForHost(net::X509Certificate* cert,
-                                        const std::string& host) {
-  ssl_host_state_->AllowCertForHost(cert, host);
+                                        const std::string& host,
+                                        net::CertStatus error) {
+  ssl_host_state_->AllowCertForHost(cert, host, error);
 }
 
 net::CertPolicy::Judgment SSLPolicyBackend::QueryPolicy(
-    net::X509Certificate* cert, const std::string& host) {
-  return ssl_host_state_->QueryPolicy(cert, host);
+    net::X509Certificate* cert,
+    const std::string& host,
+    net::CertStatus error) {
+  return ssl_host_state_->QueryPolicy(cert, host, error);
 }
 
 }  // namespace content

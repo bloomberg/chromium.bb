@@ -616,31 +616,100 @@ TEST(X509CertificateTest, Policy) {
 
   CertPolicy policy;
 
-  EXPECT_EQ(policy.Check(google_cert.get()), CertPolicy::UNKNOWN);
-  EXPECT_EQ(policy.Check(webkit_cert.get()), CertPolicy::UNKNOWN);
+  // To begin with, everything should be unknown.
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(google_cert.get(), CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
   EXPECT_FALSE(policy.HasAllowedCert());
   EXPECT_FALSE(policy.HasDeniedCert());
 
-  policy.Allow(google_cert.get());
-
-  EXPECT_EQ(policy.Check(google_cert.get()), CertPolicy::ALLOWED);
-  EXPECT_EQ(policy.Check(webkit_cert.get()), CertPolicy::UNKNOWN);
+  // Test adding one certificate with one error.
+  policy.Allow(google_cert.get(), CERT_STATUS_DATE_INVALID);
+  EXPECT_EQ(CertPolicy::ALLOWED,
+            policy.Check(google_cert.get(), CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(google_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(google_cert.get(),
+                CERT_STATUS_DATE_INVALID | CERT_STATUS_COMMON_NAME_INVALID));
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
   EXPECT_TRUE(policy.HasAllowedCert());
   EXPECT_FALSE(policy.HasDeniedCert());
 
-  policy.Deny(google_cert.get());
+  // Test saving the same certificate with a new error.
+  policy.Allow(google_cert.get(), CERT_STATUS_AUTHORITY_INVALID);
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(google_cert.get(), CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(CertPolicy::ALLOWED,
+            policy.Check(google_cert.get(), CERT_STATUS_AUTHORITY_INVALID));
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
+  EXPECT_TRUE(policy.HasAllowedCert());
+  EXPECT_FALSE(policy.HasDeniedCert());
 
-  EXPECT_EQ(policy.Check(google_cert.get()), CertPolicy::DENIED);
-  EXPECT_EQ(policy.Check(webkit_cert.get()), CertPolicy::UNKNOWN);
+  // Test adding one certificate with two errors.
+  policy.Allow(google_cert.get(),
+               CERT_STATUS_DATE_INVALID | CERT_STATUS_AUTHORITY_INVALID);
+  EXPECT_EQ(CertPolicy::ALLOWED,
+            policy.Check(google_cert.get(), CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(CertPolicy::ALLOWED,
+            policy.Check(google_cert.get(), CERT_STATUS_AUTHORITY_INVALID));
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(google_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
+  EXPECT_TRUE(policy.HasAllowedCert());
+  EXPECT_FALSE(policy.HasDeniedCert());
+
+  // Test removing a certificate that was previously allowed.
+  policy.Deny(google_cert.get(), CERT_STATUS_DATE_INVALID);
+  EXPECT_EQ(CertPolicy::DENIED,
+            policy.Check(google_cert.get(), CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
   EXPECT_FALSE(policy.HasAllowedCert());
   EXPECT_TRUE(policy.HasDeniedCert());
 
-  policy.Allow(webkit_cert.get());
+  // Test removing a certificate that was previously unknown.
+  policy.Deny(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID);
+  EXPECT_EQ(CertPolicy::DENIED,
+            policy.Check(google_cert.get(), CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(CertPolicy::DENIED,
+            policy.Check(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
+  EXPECT_FALSE(policy.HasAllowedCert());
+  EXPECT_TRUE(policy.HasDeniedCert());
 
-  EXPECT_EQ(policy.Check(google_cert.get()), CertPolicy::DENIED);
-  EXPECT_EQ(policy.Check(webkit_cert.get()), CertPolicy::ALLOWED);
+  // Test saving a certificate that was previously denied.
+  policy.Allow(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID);
+  EXPECT_EQ(CertPolicy::DENIED,
+            policy.Check(google_cert.get(), CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(CertPolicy::ALLOWED,
+            policy.Check(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
   EXPECT_TRUE(policy.HasAllowedCert());
   EXPECT_TRUE(policy.HasDeniedCert());
+
+  // Test denying an overlapping certificate.
+  policy.Allow(google_cert.get(),
+               CERT_STATUS_COMMON_NAME_INVALID | CERT_STATUS_DATE_INVALID);
+  policy.Deny(google_cert.get(), CERT_STATUS_DATE_INVALID);
+  EXPECT_EQ(CertPolicy::DENIED,
+            policy.Check(google_cert.get(), CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(CertPolicy::UNKNOWN,
+            policy.Check(google_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
+  EXPECT_EQ(CertPolicy::DENIED,
+            policy.Check(google_cert.get(),
+                CERT_STATUS_COMMON_NAME_INVALID | CERT_STATUS_DATE_INVALID));
+
+  // Test denying an overlapping certificate (other direction).
+  policy.Allow(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID);
+  policy.Deny(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID);
+  policy.Deny(webkit_cert.get(), CERT_STATUS_DATE_INVALID);
+  EXPECT_EQ(CertPolicy::DENIED,
+            policy.Check(webkit_cert.get(), CERT_STATUS_COMMON_NAME_INVALID));
+  EXPECT_EQ(CertPolicy::DENIED,
+            policy.Check(webkit_cert.get(), CERT_STATUS_DATE_INVALID));
 }
 
 TEST(X509CertificateTest, IntermediateCertificates) {

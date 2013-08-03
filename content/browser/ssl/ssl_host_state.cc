@@ -39,17 +39,19 @@ bool SSLHostState::DidHostRunInsecureContent(const std::string& host,
 }
 
 void SSLHostState::DenyCertForHost(net::X509Certificate* cert,
-                                   const std::string& host) {
+                                   const std::string& host,
+                                   net::CertStatus error) {
   DCHECK(CalledOnValidThread());
 
-  cert_policy_for_host_[host].Deny(cert);
+  cert_policy_for_host_[host].Deny(cert, error);
 }
 
 void SSLHostState::AllowCertForHost(net::X509Certificate* cert,
-                                    const std::string& host) {
+                                    const std::string& host,
+                                    net::CertStatus error) {
   DCHECK(CalledOnValidThread());
 
-  cert_policy_for_host_[host].Allow(cert);
+  cert_policy_for_host_[host].Allow(cert, error);
 }
 
 void SSLHostState::Clear() {
@@ -58,11 +60,12 @@ void SSLHostState::Clear() {
   cert_policy_for_host_.clear();
 }
 
-net::CertPolicy::Judgment SSLHostState::QueryPolicy(
-    net::X509Certificate* cert, const std::string& host) {
+net::CertPolicy::Judgment SSLHostState::QueryPolicy(net::X509Certificate* cert,
+                                                    const std::string& host,
+                                                    net::CertStatus error) {
   DCHECK(CalledOnValidThread());
 
-  return cert_policy_for_host_[host].Check(cert);
+  return cert_policy_for_host_[host].Check(cert, error);
 }
 
 }  // namespace content

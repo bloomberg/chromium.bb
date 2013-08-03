@@ -120,48 +120,84 @@ TEST_F(SSLHostStateTest, QueryPolicy) {
 
   SSLHostState state;
 
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
-            net::CertPolicy::UNKNOWN);
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "google.com"),
-            net::CertPolicy::UNKNOWN);
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
-            net::CertPolicy::UNKNOWN);
+  EXPECT_EQ(net::CertPolicy::UNKNOWN,
+            state.QueryPolicy(google_cert.get(),
+                              "www.google.com",
+                              net::CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(net::CertPolicy::UNKNOWN,
+            state.QueryPolicy(google_cert.get(),
+                              "google.com",
+                              net::CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(net::CertPolicy::UNKNOWN,
+            state.QueryPolicy(google_cert.get(),
+                              "example.com",
+                              net::CERT_STATUS_DATE_INVALID));
 
-  state.AllowCertForHost(google_cert.get(), "www.google.com");
+  state.AllowCertForHost(google_cert.get(),
+                         "www.google.com",
+                         net::CERT_STATUS_DATE_INVALID);
 
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
-            net::CertPolicy::ALLOWED);
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "google.com"),
-            net::CertPolicy::UNKNOWN);
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
-            net::CertPolicy::UNKNOWN);
+  EXPECT_EQ(net::CertPolicy::ALLOWED,
+           state.QueryPolicy(google_cert.get(),
+                             "www.google.com",
+                             net::CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(net::CertPolicy::UNKNOWN,
+           state.QueryPolicy(google_cert.get(),
+                             "google.com",
+                             net::CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(net::CertPolicy::UNKNOWN,
+           state.QueryPolicy(google_cert.get(),
+                             "example.com",
+                             net::CERT_STATUS_DATE_INVALID));
 
-  state.AllowCertForHost(google_cert.get(), "example.com");
+  state.AllowCertForHost(google_cert.get(),
+                         "example.com",
+                         net::CERT_STATUS_DATE_INVALID);
 
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
-            net::CertPolicy::ALLOWED);
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "google.com"),
-            net::CertPolicy::UNKNOWN);
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
-            net::CertPolicy::ALLOWED);
+  EXPECT_EQ(net::CertPolicy::ALLOWED,
+          state.QueryPolicy(google_cert.get(),
+                            "www.google.com",
+                            net::CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(net::CertPolicy::UNKNOWN,
+          state.QueryPolicy(google_cert.get(),
+                            "google.com",
+                            net::CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(net::CertPolicy::ALLOWED,
+          state.QueryPolicy(google_cert.get(),
+                            "example.com",
+                            net::CERT_STATUS_DATE_INVALID));
 
-  state.DenyCertForHost(google_cert.get(), "example.com");
+  state.DenyCertForHost(google_cert.get(),
+                        "example.com",
+                        net::CERT_STATUS_DATE_INVALID);
 
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
-            net::CertPolicy::ALLOWED);
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "google.com"),
-            net::CertPolicy::UNKNOWN);
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
-            net::CertPolicy::DENIED);
+  EXPECT_EQ(net::CertPolicy::ALLOWED,
+          state.QueryPolicy(google_cert.get(),
+                            "www.google.com",
+                            net::CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(net::CertPolicy::UNKNOWN,
+          state.QueryPolicy(google_cert.get(),
+                            "google.com",
+                            net::CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(net::CertPolicy::DENIED,
+          state.QueryPolicy(google_cert.get(),
+                            "example.com",
+                            net::CERT_STATUS_DATE_INVALID));
 
   state.Clear();
 
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
-            net::CertPolicy::UNKNOWN);
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "google.com"),
-            net::CertPolicy::UNKNOWN);
-  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
-            net::CertPolicy::UNKNOWN);
+  EXPECT_EQ(net::CertPolicy::UNKNOWN,
+            state.QueryPolicy(google_cert.get(),
+                              "www.google.com",
+                              net::CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(net::CertPolicy::UNKNOWN,
+            state.QueryPolicy(google_cert.get(),
+                              "google.com",
+                              net::CERT_STATUS_DATE_INVALID));
+  EXPECT_EQ(net::CertPolicy::UNKNOWN,
+            state.QueryPolicy(google_cert.get(),
+                              "example.com",
+                              net::CERT_STATUS_DATE_INVALID));
 }
 
 }  // namespace content

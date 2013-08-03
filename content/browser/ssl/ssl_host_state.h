@@ -14,6 +14,7 @@
 #include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 
 namespace content {
@@ -42,18 +43,25 @@ class CONTENT_EXPORT SSLHostState
   // Returns whether the specified host ran insecure content.
   bool DidHostRunInsecureContent(const std::string& host, int pid) const;
 
-  // Records that |cert| is permitted to be used for |host| in the future.
-  void DenyCertForHost(net::X509Certificate* cert, const std::string& host);
+  // Records that |cert| is not permitted to be used for |host| in the future,
+  // for a specified |error| type..
+  void DenyCertForHost(net::X509Certificate* cert,
+                       const std::string& host,
+                       net::CertStatus error);
 
-  // Records that |cert| is not permitted to be used for |host| in the future.
-  void AllowCertForHost(net::X509Certificate* cert, const std::string& host);
+  // Records that |cert| is permitted to be used for |host| in the future, for
+  // a specified |error| type.
+  void AllowCertForHost(net::X509Certificate* cert,
+                        const std::string& host,
+                        net::CertStatus error);
 
   // Clear all allow/deny preferences.
   void Clear();
 
-  // Queries whether |cert| is allowed or denied for |host|.
-  net::CertPolicy::Judgment QueryPolicy(
-      net::X509Certificate* cert, const std::string& host);
+  // Queries whether |cert| is allowed or denied for |host| and |error|.
+  net::CertPolicy::Judgment QueryPolicy(net::X509Certificate* cert,
+                                        const std::string& host,
+                                        net::CertStatus error);
 
  private:
   // A BrokenHostEntry is a pair of (host, process_id) that indicates the host

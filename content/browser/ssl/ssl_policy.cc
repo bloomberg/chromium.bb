@@ -34,7 +34,9 @@ SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
 void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
   // First we check if we know the policy for this error.
   net::CertPolicy::Judgment judgment = backend_->QueryPolicy(
-      handler->ssl_info().cert.get(), handler->request_url().host());
+      handler->ssl_info().cert.get(),
+      handler->request_url().host(),
+      handler->cert_error());
 
   if (judgment == net::CertPolicy::ALLOWED) {
     handler->ContinueRequest();
@@ -156,7 +158,8 @@ void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
     // ContinueRequest() gets posted to a different thread. Calling
     // AllowCertForHost() first ensures deterministic ordering.
     backend_->AllowCertForHost(handler->ssl_info().cert.get(),
-                               handler->request_url().host());
+                               handler->request_url().host(),
+                               handler->cert_error());
     handler->ContinueRequest();
   } else {
     // Default behavior for rejecting a certificate.
@@ -165,7 +168,8 @@ void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
     // CancelRequest() gets posted to a different thread. Calling
     // DenyCertForHost() first ensures deterministic ordering.
     backend_->DenyCertForHost(handler->ssl_info().cert.get(),
-                              handler->request_url().host());
+                              handler->request_url().host(),
+                              handler->cert_error());
     handler->CancelRequest();
   }
 }

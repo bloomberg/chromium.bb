@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -16,6 +17,7 @@
 #include "build/build_config.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
+#include "net/cert/cert_status_flags.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include <Security/x509defs.h>
@@ -86,13 +88,17 @@ class NET_EXPORT CertPolicy {
   ~CertPolicy();
 
   // Returns the judgment this policy makes about this certificate.
-  Judgment Check(X509Certificate* cert) const;
+  // For a certificate to be allowed, it must not have any *additional* errors
+  // from when it was allowed. For a certificate to be denied, it need only
+  // match *any* of the errors that caused it to be denied. We check denial
+  // first, before checking whether it's been allowed.
+  Judgment Check(X509Certificate* cert, CertStatus error) const;
 
-  // Causes the policy to allow this certificate.
-  void Allow(X509Certificate* cert);
+  // Causes the policy to allow this certificate for a given |error|.
+  void Allow(X509Certificate* cert, CertStatus error);
 
-  // Causes the policy to deny this certificate.
-  void Deny(X509Certificate* cert);
+  // Causes the policy to deny this certificate for a given |error|.
+  void Deny(X509Certificate* cert, CertStatus error);
 
   // Returns true if this policy has allowed at least one certificate.
   bool HasAllowedCert() const;
@@ -102,10 +108,10 @@ class NET_EXPORT CertPolicy {
 
  private:
   // The set of fingerprints of allowed certificates.
-  std::set<SHA1HashValue, SHA1HashValueLessThan> allowed_;
+  std::map<SHA1HashValue, CertStatus, SHA1HashValueLessThan> allowed_;
 
   // The set of fingerprints of denied certificates.
-  std::set<SHA1HashValue, SHA1HashValueLessThan> denied_;
+  std::map<SHA1HashValue, CertStatus, SHA1HashValueLessThan> denied_;
 };
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

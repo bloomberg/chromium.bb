@@ -55,37 +55,50 @@ CertPolicy::CertPolicy() {
 CertPolicy::~CertPolicy() {
 }
 
+// For a denial, we consider a given |cert| to be a match to a saved denied
+// cert if the |error| intersects with the saved error status. For an
+// allowance, we consider a given |cert| to be a match to a saved allowed
+// cert if the |error| is an exact match to or subset of the errors in the
+// saved CertStatus.
 CertPolicy::Judgment CertPolicy::Check(
-    X509Certificate* cert) const {
+    X509Certificate* cert, CertStatus error) const {
   // It shouldn't matter which set we check first, but we check denied first
   // in case something strange has happened.
+  bool denied = false;
+  std::map<SHA1HashValue, CertStatus, SHA1HashValueLessThan>::const_iterator
+      denied_iter = denied_.find(cert->fingerprint());
+  if ((denied_iter != denied_.end()) && (denied_iter->second & error))
+    denied = true;
 
-  if (denied_.find(cert->fingerprint()) != denied_.end()) {
-    // DCHECK that the order didn't matter.
-    DCHECK(allowed_.find(cert->fingerprint()) == allowed_.end());
-    return DENIED;
-  }
-
-  if (allowed_.find(cert->fingerprint()) != allowed_.end()) {
-    // DCHECK that the order didn't matter.
-    DCHECK(denied_.find(cert->fingerprint()) == denied_.end());
+  std::map<SHA1HashValue, CertStatus, SHA1HashValueLessThan>::const_iterator
+      allowed_iter = allowed_.find(cert->fingerprint());
+  if ((allowed_iter != allowed_.end()) &&
+      (allowed_iter->second & error) &&
+      !(~(allowed_iter->second & error) ^ ~error)) {
+    DCHECK(!denied);
     return ALLOWED;
   }
 
-  // We don't have a policy for this cert.
-  return UNKNOWN;
+  if (denied)
+    return DENIED;
+  return UNKNOWN;  // We don't have a policy for this cert.
 }
 
-void CertPolicy::Allow(X509Certificate* cert) {
+void CertPolicy::Allow(X509Certificate* cert, CertStatus error) {
   // Put the cert in the allowed set and (maybe) remove it from the denied set.
   denied_.erase(cert->fingerprint());
-  allowed_.insert(cert->fingerprint());
+  // If this same cert had already been saved with a different error status,
+  // this will replace it with the new error status.
+  allowed_[cert->fingerprint()] = error;
 }
 
-void CertPolicy::Deny(X509Certificate* cert) {
+void CertPolicy::Deny(X509Certificate* cert, CertStatus error) {
   // Put the cert in the denied set and (maybe) remove it from the allowed set.
-  allowed_.erase(cert->fingerprint());
-  denied_.insert(cert->fingerprint());
+  std::map<SHA1HashValue, CertStatus, SHA1HashValueLessThan>::const_iterator
+      allowed_iter = allowed_.find(cert->fingerprint());
+  if ((allowed_iter != allowed_.end()) && (allowed_iter->second & error))
+    allowed_.erase(cert->fingerprint());
+  denied_[cert->fingerprint()] |= error;
 }
 
 bool CertPolicy::HasAllowedCert() const {
