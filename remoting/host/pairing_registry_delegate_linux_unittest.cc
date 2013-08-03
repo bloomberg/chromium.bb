@@ -47,7 +47,7 @@ TEST_F(PairingRegistryDelegateLinuxTest, SaveAndLoad) {
   EXPECT_TRUE(delegate->Save(pairing2));
 
   // Verify that there are two pairings in the store now.
-EXPECT_EQ(delegate->LoadAll()->GetSize(), 2u);
+  EXPECT_EQ(delegate->LoadAll()->GetSize(), 2u);
 
   // Verify that they can be retrieved.
   EXPECT_EQ(delegate->Load(pairing1.client_id()), pairing1);
