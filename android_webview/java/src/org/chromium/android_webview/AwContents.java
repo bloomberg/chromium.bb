@@ -1332,6 +1332,7 @@ public class AwContents {
      * @see android.view.View#onDetachedFromWindow()
      */
     public void onDetachedFromWindow() {
+        hideAutofillPopup();
         mIsAttachedToWindow = false;
         if (mNativeAwContents != 0) {
             nativeOnDetachedFromWindow(mNativeAwContents);
