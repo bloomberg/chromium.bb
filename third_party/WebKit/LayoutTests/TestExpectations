@@ -1390,5 +1390,5 @@ crbug.com/267206 [ Lion MountainLion ] fast/scrolling/scrollbar-tickmarks-hittes
 crbug.com/267296 [ Win ] http/tests/htmlimports/import-script-nosniff.html  [ Pass Crash ]
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
 
-Bug(dpranke) [ Win ] http/tests/inspector/appcache/appcache-swap.html [ Slow ] 
-Bug(dpranke) [ Win ] http/tests/appcache/online-whitelist.html [ Slow ] 
+Bug(dpranke) [ Win7 Release ] http/tests/inspector/appcache/appcache-swap.html [ Pass Timeout ]
+Bug(dpranke) [ Win ] http/tests/appcache/online-whitelist.html [ Pass Failure ] 
