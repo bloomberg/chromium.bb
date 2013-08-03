@@ -273,7 +273,7 @@ VideoDecoderJob* VideoDecoderJob::Create(
     const VideoCodec video_codec, const gfx::Size& size, jobject surface,
     jobject media_crypto) {
   scoped_ptr<VideoCodecBridge> codec(VideoCodecBridge::Create(video_codec));
-  if (codec->Start(video_codec, size, surface, media_crypto))
+  if (codec && codec->Start(video_codec, size, surface, media_crypto))
     return new VideoDecoderJob(codec.release());
   return NULL;
 }
@@ -291,8 +291,8 @@ AudioDecoderJob* AudioDecoderJob::Create(
     size_t extra_data_size,
     jobject media_crypto) {
   scoped_ptr<AudioCodecBridge> codec(AudioCodecBridge::Create(audio_codec));
-  if (codec->Start(audio_codec, sample_rate, channel_count, extra_data,
-                   extra_data_size, true, media_crypto)) {
+  if (codec && codec->Start(audio_codec, sample_rate, channel_count, extra_data,
+                            extra_data_size, true, media_crypto)) {
     return new AudioDecoderJob(codec.release());
   }
   return NULL;
