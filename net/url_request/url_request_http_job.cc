@@ -80,67 +80,79 @@ class URLRequestHttpJob::HttpFilterContext : public FilterContext {
 class URLRequestHttpJob::HttpTransactionDelegateImpl
     : public HttpTransactionDelegate {
  public:
-  HttpTransactionDelegateImpl(
-      URLRequest* request, NetworkDelegate* network_delegate)
+  HttpTransactionDelegateImpl(URLRequest* request,
+                              NetworkDelegate* network_delegate)
       : request_(request),
         network_delegate_(network_delegate),
-        cache_active_(false),
-        network_active_(false) {
-  }
-  virtual ~HttpTransactionDelegateImpl() {
-    OnDetachRequest();
-  }
+        state_(NONE_ACTIVE) {}
+  virtual ~HttpTransactionDelegateImpl() { OnDetachRequest(); }
   void OnDetachRequest() {
-    if (request_ == NULL || network_delegate_ == NULL)
+    if (!IsRequestAndDelegateActive())
       return;
-    network_delegate_->NotifyRequestWaitStateChange(
-        *request_,
-        NetworkDelegate::REQUEST_WAIT_STATE_RESET);
-    cache_active_ = false;
-    network_active_ = false;
+    NotifyStateChange(NetworkDelegate::REQUEST_WAIT_STATE_RESET);
+    state_ = NONE_ACTIVE;
     request_ = NULL;
   }
   virtual void OnCacheActionStart() OVERRIDE {
-    if (request_ == NULL || network_delegate_ == NULL)
-      return;
-    DCHECK(!cache_active_ && !network_active_);
-    cache_active_ = true;
-    network_delegate_->NotifyRequestWaitStateChange(
-        *request_,
-        NetworkDelegate::REQUEST_WAIT_STATE_CACHE_START);
+    HandleStateChange(NONE_ACTIVE,
+                      CACHE_ACTIVE,
+                      NetworkDelegate::REQUEST_WAIT_STATE_CACHE_START);
   }
   virtual void OnCacheActionFinish() OVERRIDE {
-    if (request_ == NULL || network_delegate_ == NULL)
-      return;
-    DCHECK(cache_active_ && !network_active_);
-    cache_active_ = false;
-    network_delegate_->NotifyRequestWaitStateChange(
-        *request_,
-        NetworkDelegate::REQUEST_WAIT_STATE_CACHE_FINISH);
+    HandleStateChange(CACHE_ACTIVE,
+                      NONE_ACTIVE,
+                      NetworkDelegate::REQUEST_WAIT_STATE_CACHE_FINISH);
   }
   virtual void OnNetworkActionStart() OVERRIDE {
-    if (request_ == NULL || network_delegate_ == NULL)
-      return;
-    DCHECK(!cache_active_ && !network_active_);
-    network_active_ = true;
-    network_delegate_->NotifyRequestWaitStateChange(
-        *request_,
-        NetworkDelegate::REQUEST_WAIT_STATE_NETWORK_START);
+    HandleStateChange(NONE_ACTIVE,
+                      NETWORK_ACTIVE,
+                      NetworkDelegate::REQUEST_WAIT_STATE_NETWORK_START);
   }
   virtual void OnNetworkActionFinish() OVERRIDE {
-    if (request_ == NULL || network_delegate_ == NULL)
-      return;
-    DCHECK(!cache_active_ && network_active_);
-    network_active_ = false;
-    network_delegate_->NotifyRequestWaitStateChange(
-        *request_,
-        NetworkDelegate::REQUEST_WAIT_STATE_NETWORK_FINISH);
+    HandleStateChange(NETWORK_ACTIVE,
+                      NONE_ACTIVE,
+                      NetworkDelegate::REQUEST_WAIT_STATE_NETWORK_FINISH);
   }
+
  private:
+  enum State {
+    NONE_ACTIVE,
+    CACHE_ACTIVE,
+    NETWORK_ACTIVE
+  };
+
+  // Returns true if this object still has an active request and network
+  // delegate.
+  bool IsRequestAndDelegateActive() const {
+    return request_ && network_delegate_;
+  }
+
+  // Notifies the |network_delegate_| object of a change in the state of the
+  // |request_| to the state given by the |request_wait_state| argument.
+  void NotifyStateChange(NetworkDelegate::RequestWaitState request_wait_state) {
+    network_delegate_->NotifyRequestWaitStateChange(*request_,
+                                                    request_wait_state);
+  }
+
+  // Checks the request and delegate are still active, changes |state_| from
+  // |expected_state| to |next_state|, and then notifies the network delegate of
+  // the change to |request_wait_state|.
+  void HandleStateChange(State expected_state,
+                         State next_state,
+                         NetworkDelegate::RequestWaitState request_wait_state) {
+    if (!IsRequestAndDelegateActive())
+      return;
+    DCHECK_EQ(expected_state, state_);
+    state_ = next_state;
+    NotifyStateChange(request_wait_state);
+  }
+
   URLRequest* request_;
   NetworkDelegate* network_delegate_;
-  bool cache_active_;
-  bool network_active_;
+  // Internal state tracking, for sanity checking.
+  State state_;
+
+  DISALLOW_COPY_AND_ASSIGN(HttpTransactionDelegateImpl);
 };
 
 URLRequestHttpJob::HttpFilterContext::HttpFilterContext(URLRequestHttpJob* job)
