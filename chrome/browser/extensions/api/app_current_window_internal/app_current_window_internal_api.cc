@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/common/extensions/api/app_current_window_internal.h"
 #include "chrome/common/extensions/api/app_window.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "extensions/common/switches.h"
 
 using apps::ShellWindow;
@@ -25,9 +26,8 @@ const char kNoAssociatedShellWindow[] =
     "The context from which the function was called did not have an "
     "associated shell window.";
 
-const char kNoExperimental[] =
-    "This function is experimental. Use --enable-experimental-extension-apis "
-    "to enable.";
+const char kDevChannelOnly[] =
+    "This function is currently only available in the Dev channel.";
 
 }  // namespace
 
@@ -123,9 +123,9 @@ bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(
     ShellWindow* window) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis)) {
-    error_ = kNoExperimental;
+  if (Feature::GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
+      GetExtension()->location() != extensions::Manifest::COMPONENT) {
+    error_ = kDevChannelOnly;
     return false;
   }
 

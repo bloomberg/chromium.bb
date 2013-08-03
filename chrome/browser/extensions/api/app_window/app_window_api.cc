@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/common/extensions/api/app_window.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -206,8 +207,8 @@ bool AppWindowCreateFunction::RunImpl() {
         create_params.bounds.set_y(*bounds->top.get());
     }
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalExtensionApis)) {
+    if (Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV ||
+        GetExtension()->location() == extensions::Manifest::COMPONENT) {
       if (options->type == extensions::api::app_window::WINDOW_TYPE_PANEL) {
           create_params.window_type = ShellWindow::WINDOW_TYPE_PANEL;
       }
