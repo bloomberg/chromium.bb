@@ -117,8 +117,7 @@ std::string ModuleSystem::ExceptionHandler::CreateExceptionString(
                             error_message.c_str());
 }
 
-ModuleSystem::ModuleSystem(ChromeV8Context* context,
-                           SourceMap* source_map)
+ModuleSystem::ModuleSystem(ChromeV8Context* context, SourceMap* source_map)
     : ObjectBackedNativeHandler(context),
       context_(context),
       source_map_(source_map),
@@ -237,6 +236,8 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
     natives->Get(v8::String::NewSymbol("require")),
     natives->Get(v8::String::NewSymbol("requireNative")),
     exports,
+    // Libraries that we magically expose to every module.
+    console::AsV8Object(),
     // Each safe builtin. Keep in order with the arguments in WrapSource.
     context_->safe_builtins()->GetArray(),
     context_->safe_builtins()->GetFunction(),
@@ -521,7 +522,8 @@ v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
   v8::HandleScope handle_scope;
   // Keep in order with the arguments in RequireForJsInner.
   v8::Handle<v8::String> left = v8::String::New(
-      "(function(require, requireNative, exports,"
+      "(function(require, requireNative, exports, "
+                "console, "
                 "$Array, $Function, $JSON, $Object, $RegExp, $String) {"
        "'use strict';");
   v8::Handle<v8::String> right = v8::String::New("\n})");

@@ -45,6 +45,12 @@ void AddMessage(v8::Handle<v8::Context> context,
                 content::ConsoleMessageLevel level,
                 const std::string& message);
 
+// Returns a new v8::Object with each standard log method (Debug/Log/Warn/Error)
+// bound to respective debug/log/warn/error methods. This is a direct drop-in
+// replacement for the standard devtools console.* methods usually accessible
+// from JS.
+v8::Local<v8::Object> AsV8Object();
+
 }  // namespace console
 
 }  // namespace extensions
