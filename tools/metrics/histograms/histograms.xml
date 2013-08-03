@@ -1133,6 +1133,66 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Chrome.SearchSelectExempt" enum="SearchEngine">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <summary>
+    The default search engine selected by a user not in the search engine dialog
+    experiment.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.SearchSelectExperiment" enum="SearchEngine">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <summary>
+    The default search engine selected by a user in the search engine dialog
+    experiment.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.SearchSelectExperimentSlot1" enum="SearchEngine">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <summary>
+    The default search engine selected by a user in slot 1 of a randomized
+    search engine dialog.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.SearchSelectExperimentSlot2" enum="SearchEngine">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <summary>
+    The default search engine selected by a user in slot 2 of a randomized
+    search engine dialog.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.SearchSelectExperimentSlot3" enum="SearchEngine">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <summary>
+    The default search engine selected by a user in slot 3 of a randomized
+    search engine dialog.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.SearchSelectExperimentSlot4" enum="SearchEngine">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <summary>
+    The default search engine selected by a user in slot 4 of a randomized
+    search engine dialog.
+  </summary>
+</histogram>
+
 <histogram name="clickjacking.discard_download" units="ms">
   <summary>
     The length of time between a dangerous download appearing on the downloads
@@ -11410,6 +11470,46 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Protector.DefaultSearchProvider" enum="ProtectorError">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <summary>
+    Errors that Protector detects about default search provider in Web Data.
+    Reported once when Web Data is loaded.
+  </summary>
+</histogram>
+
+<histogram name="Protector.Preferences" enum="ProtectorError">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <summary>
+    Errors that Protector detects about protected settings in Preferences.
+    Reported once when profile is loaded.
+  </summary>
+</histogram>
+
+<histogram name="Protector.SearchProvider" enum="SearchEngine">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <summary>
+    When the default search provider setting is changed outside of Chrome, which
+    is detected by the Protector, this histogram reports the new setting.
+  </summary>
+</histogram>
+
+<histogram name="Protector.StartupSettings" enum="SessionStartupType">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <summary>
+    When the startup settings are changed outside of Chrome, which is detected
+    by the Protector, this histogram reports the new setting.
+  </summary>
+</histogram>
+
 <histogram name="Quickoffice.docPageCount">
   <summary>
     Records the page count when a compound binary format document is opened.
@@ -20394,6 +20494,20 @@ other types of suffix sets.
   <int value="4" label="Canceled"/>
 </enum>
 
+<enum name="ProtectorError" type="int">
+  <obsolete>
+    Deprecated 8/2013. No longer generated.
+  </obsolete>
+  <summary>
+    Codes for errors Protector detects about settings it protects. See
+    chrome/browser/protector/histograms.h for the corresponding enum.
+  </summary>
+  <int value="0" label="Backup invalid"/>
+  <int value="1" label="Value changed"/>
+  <int value="2" label="Value valid"/>
+  <int value="3" label="Value is valid and zero"/>
+</enum>
+
 <enum name="ProtocolVersion" type="int">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="HTTP 1.1"/>
@@ -20873,11 +20987,65 @@ other types of suffix sets.
   <int value="1" label="Scroll on main-thread"/>
 </enum>
 
+<enum name="SearchEngine" type="int">
+  <obsolete>
+    Deprecated 8/2013. No longer generated.
+  </obsolete>
+  <summary>
+    Indices of most popular prepopulated search engines as defined in
+    chrome/browser/search_engines/search_engine_type.h.
+  </summary>
+  <int value="0" label="OTHER"/>
+  <int value="1" label="GOOGLE"/>
+  <int value="2" label="YAHOO"/>
+  <int value="3" label="YAHOOJP"/>
+  <int value="4" label="BING"/>
+  <int value="5" label="ASK"/>
+  <int value="6" label="YANDEX"/>
+  <int value="7" label="SEZNAM"/>
+  <int value="8" label="CENTRUM"/>
+  <int value="9" label="NETSPRINT"/>
+  <int value="10" label="VIRGILIO"/>
+  <int value="11" label="MAILRU"/>
+  <int value="12" label="ABCSOK"/>
+  <int value="13" label="ALTAVISTA"/>
+  <int value="14" label="BAIDU"/>
+  <int value="15" label="DAUM"/>
+  <int value="16" label="DELFI"/>
+  <int value="17" label="DIRI"/>
+  <int value="18" label="GOO"/>
+  <int value="19" label="IN"/>
+  <int value="20" label="NAJDI"/>
+  <int value="21" label="NAVER"/>
+  <int value="22" label="NETI"/>
+  <int value="23" label="OK"/>
+  <int value="24" label="POGODAK"/>
+  <int value="25" label="POGODOK_MK"/>
+  <int value="26" label="RAMBLER"/>
+  <int value="27" label="SANOOK"/>
+  <int value="28" label="SAPO"/>
+  <int value="29" label="TUT"/>
+  <int value="30" label="WALLA"/>
+  <int value="31" label="ZOZNAM"/>
+  <int value="32" label="YAHOOQC"/>
+  <int value="33" label="NONE"/>
+</enum>
+
 <enum name="SessionStartupPref" type="int">
   <int value="0" label="Open home page (unused)"/>
   <int value="1" label="Continue from last opened pages"/>
   <int value="4" label="Open URLs"/>
   <int value="5" label="Open new tab page"/>
+</enum>
+
+<enum name="SessionStartupType" type="int">
+  <obsolete>
+    Deprecated 8/2013. No longer generated.
+  </obsolete>
+  <int value="0" label="New Tab page"/>
+  <int value="1" label="Homepage (DEPRECATED)"/>
+  <int value="2" label="Last session"/>
+  <int value="3" label="Specified URLs"/>
 </enum>
 
 <enum name="ShillTerminationActionResult" type="int">
@@ -23947,6 +24115,24 @@ other types of suffix sets.
   <affected-histogram name="Network.Shill.WiFi.ScanResult"/>
   <affected-histogram name="Network.Shill.Wifi.TimeToScan"/>
   <affected-histogram name="Network.Shill.Wifi.TimeToScanAndConnect"/>
+</fieldtrial>
+
+<fieldtrial name="ProtectorSettingChange" separator=".">
+  <obsolete>
+    Deprecated 8/2013. No longer tracked.
+  </obsolete>
+  <group name="Applied" label="change has been accepted by user"/>
+  <group name="Corrupt" label="possibly hijacked, backup invalid"/>
+  <group name="Discarded" label="change has been reverted by user"/>
+  <group name="Fallback" label="fallback provider used (no backup available)"/>
+  <group name="Hijacked" label="hijacked, with a valid backup"/>
+  <group name="Missing" label="fallback provider missing, added"/>
+  <group name="New" label="(obsolete, was sum of Corrupt+Hijacked)"/>
+  <group name="Restored"
+      label="search provider restored by Protector before showing the bubble"/>
+  <group name="Timeout" label="change has been ignored by user (timed out)"/>
+  <affected-histogram name="Protector.SearchProvider"/>
+  <affected-histogram name="Protector.StartupSettings"/>
 </fieldtrial>
 
 <fieldtrial name="ProxyConnectionImpact">
