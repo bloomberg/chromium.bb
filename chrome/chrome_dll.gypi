@@ -356,6 +356,8 @@
             'CHROME_MULTIPLE_DLL_CHILD',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
             'app/chrome_main.cc',
             'app/chrome_main_delegate.cc',
