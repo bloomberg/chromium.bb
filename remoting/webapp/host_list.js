@@ -181,6 +181,8 @@ remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
             return 0;
           };
           this.hosts_ = /** @type {Array} */ this.hosts_.sort(cmp);
+        } else {
+          this.hosts_ = [];
         }
       } else {
         this.lastError_ = remoting.Error.UNEXPECTED;

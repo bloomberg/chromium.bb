@@ -60,6 +60,12 @@ remoting.ThirdPartyTokenFetcher = function(
  * Fetch a token with the parameters configured in this object.
  */
 remoting.ThirdPartyTokenFetcher.prototype.fetchToken = function() {
+  // If there is no list of patterns, this host cannot use a token URL.
+  if (!this.tokenUrlPatterns_) {
+    console.error('No token URLs are allowed for this host');
+    this.failFetchToken_();
+  }
+
   // Verify the host-supplied URL matches the domain's allowed URL patterns.
   for (var i = 0; i < this.tokenUrlPatterns_.length; i++) {
     if (this.tokenUrl_.match(this.tokenUrlPatterns_[i])) {
@@ -68,7 +74,6 @@ remoting.ThirdPartyTokenFetcher.prototype.fetchToken = function() {
       hostPermissions.getPermission(
           this.fetchTokenInternal_,
           this.failFetchToken_);
-
       return;
     }
   }
