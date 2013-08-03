@@ -6,6 +6,7 @@
 
 #include <sys/stat.h>
 
+#include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -21,6 +22,8 @@ namespace content {
 void GetFontFamilyForCharacter(int32_t character,
                                const char* preferred_locale,
                                WebKit::WebFontFamily* family) {
+  TRACE_EVENT0("sandbox_ipc", "GetFontFamilyForCharacter");
+
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_GET_FONT_FAMILY_FOR_CHAR);
   request.WriteInt(character);
@@ -48,6 +51,8 @@ void GetFontFamilyForCharacter(int32_t character,
 
 void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
                              WebKit::WebFontRenderStyle* out) {
+  TRACE_EVENT0("sandbox_ipc", "GetRenderStyleForStrike");
+
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE);
   request.WriteString(family);
@@ -85,6 +90,8 @@ void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
 
 int MatchFontWithFallback(const std::string& face, bool bold,
                           bool italic, int charset) {
+  TRACE_EVENT0("sandbox_ipc", "MatchFontWithFallback");
+
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_MATCH_WITH_FALLBACK);
   request.WriteString(face);

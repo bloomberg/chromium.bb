@@ -12,6 +12,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
@@ -49,6 +50,7 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
                                     FontIdentity* outFontIdentity,
                                     SkString* outFamilyName,
                                     SkTypeface::Style* outStyle) {
+  TRACE_EVENT0("sandbox_ipc", "FontConfigIPC::matchFamilyName");
   size_t familyNameLen = familyName ? strlen(familyName) : 0;
   if (familyNameLen > kMaxFontFamilyLength)
     return false;
@@ -93,6 +95,7 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
 }
 
 SkStream* FontConfigIPC::openStream(const FontIdentity& identity) {
+  TRACE_EVENT0("sandbox_ipc", "FontConfigIPC::openStream");
   Pickle request;
   request.WriteInt(METHOD_OPEN);
   request.WriteUInt32(identity.fID);
