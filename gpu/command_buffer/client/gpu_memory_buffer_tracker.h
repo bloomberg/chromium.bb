@@ -11,9 +11,11 @@
 #include "gles2_impl_export.h"
 #include "gpu/command_buffer/client/hash_tables.h"
 
-namespace gpu {
+namespace gfx {
 class GpuMemoryBuffer;
+}
 
+namespace gpu {
 namespace gles2 {
 class ImageFactory;
 
@@ -26,11 +28,11 @@ class GLES2_IMPL_EXPORT GpuMemoryBufferTracker {
 
   GLuint CreateBuffer(
       GLsizei width, GLsizei height, GLenum internalformat);
-  GpuMemoryBuffer* GetBuffer(GLuint image_id);
+  gfx::GpuMemoryBuffer* GetBuffer(GLuint image_id);
   void RemoveBuffer(GLuint image_id);
 
  private:
-  typedef gpu::hash_map<GLuint, GpuMemoryBuffer*> BufferMap;
+  typedef gpu::hash_map<GLuint, gfx::GpuMemoryBuffer*> BufferMap;
   BufferMap buffers_;
   ImageFactory* factory_;
 

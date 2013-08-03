@@ -6,6 +6,7 @@
 #define UI_GL_GL_IMAGE_H_
 
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_export.h"

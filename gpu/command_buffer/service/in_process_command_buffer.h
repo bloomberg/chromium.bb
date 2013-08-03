@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/gpu_export.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gpu_preference.h"
 

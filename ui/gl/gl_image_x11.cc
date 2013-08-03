@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "ui/gl/gl_image_glx.h"
+#include "ui/gl/gl_image_shm.h"
 #include "ui/gl/gl_image_stub.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -40,7 +41,18 @@ scoped_refptr<GLImage> GLImage::CreateGLImageForGpuMemoryBuffer(
     case kGLImplementationOSMesaGL:
     case kGLImplementationDesktopGL:
     case kGLImplementationEGLGLES2:
-      return NULL;
+      switch (buffer.type) {
+        case SHARED_MEMORY_BUFFER: {
+          scoped_refptr<GLImageShm> image(new GLImageShm(size));
+          if (!image->Initialize(buffer))
+            return NULL;
+
+          return image;
+        }
+        default:
+          NOTREACHED();
+          return NULL;
+      }
     case kGLImplementationMockGL:
       return new GLImageStub;
     default:

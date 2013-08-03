@@ -36,7 +36,6 @@
       'command_buffer/client/gles2_trace_implementation.cc',
       'command_buffer/client/gles2_trace_implementation.h',
       'command_buffer/client/gles2_trace_implementation_impl_autogen.h',
-      'command_buffer/client/gpu_memory_buffer.h',
       'command_buffer/client/gpu_memory_buffer_factory.h',
       'command_buffer/client/gpu_memory_buffer_tracker.cc',
       'command_buffer/client/gpu_memory_buffer_tracker.h',

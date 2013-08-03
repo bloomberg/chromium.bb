@@ -270,10 +270,6 @@
       ],
       'sources': [
         '<@(gles2_c_lib_source_files)',
-        'command_buffer/client/gpu_memory_buffer_mock.cc',
-        'command_buffer/client/gpu_memory_buffer_mock.h',
-        'command_buffer/client/image_factory_mock.cc',
-        'command_buffer/client/image_factory_mock.h',
         'command_buffer/tests/compressed_texture_test.cc',
         'command_buffer/tests/gl_bind_uniform_location_unittest.cc',
         'command_buffer/tests/gl_chromium_framebuffer_multisample_unittest.cc',

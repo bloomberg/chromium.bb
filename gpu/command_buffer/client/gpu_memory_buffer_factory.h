@@ -7,12 +7,15 @@
 
 #include "gpu/gpu_export.h"
 
-namespace gpu {
+namespace gfx {
 class GpuMemoryBuffer;
+}
+
+namespace gpu {
 
 class GPU_EXPORT GpuMemoryBufferFactory {
  public:
-  virtual gpu::GpuMemoryBuffer* CreateGpuMemoryBuffer(
+  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
       size_t width,
       size_t height,
       unsigned internalformat) = 0;

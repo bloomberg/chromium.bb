@@ -207,11 +207,6 @@ typedef void (*OSMESAproc)();
 // Forward declare EGL types.
 typedef uint64 EGLuint64CHROMIUM;
 
-#ifndef EGL_ANDROID_image_native_buffer
-#define EGL_ANDROID_image_native_buffer 1
-#define EGL_NATIVE_BUFFER_ANDROID                        0x3140
-#endif
-
 #include "gl_bindings_autogen_gl.h"
 #include "gl_bindings_autogen_osmesa.h"
 

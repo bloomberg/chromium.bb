@@ -16,7 +16,6 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include "gpu/command_buffer/client/buffer_tracker.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_tracker.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
 #include "gpu/command_buffer/client/program_info_manager.h"
@@ -25,6 +24,7 @@
 #include "gpu/command_buffer/client/vertex_array_object_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/trace_event.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(__native_client__) && !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 #define GLES2_SUPPORT_CLIENT_SIDE_ARRAYS
@@ -3699,7 +3699,8 @@ GLuint GLES2Implementation::CreateImageCHROMIUM(
 }
 
 void GLES2Implementation::DestroyImageCHROMIUMHelper(GLuint image_id) {
-  GpuMemoryBuffer* gpu_buffer = gpu_memory_buffer_tracker_->GetBuffer(image_id);
+  gfx::GpuMemoryBuffer* gpu_buffer = gpu_memory_buffer_tracker_->GetBuffer(
+      image_id);
   if (!gpu_buffer) {
     SetGLError(GL_INVALID_OPERATION, "glDestroyImageCHROMIUM", "invalid image");
     return;
@@ -3720,7 +3721,8 @@ void GLES2Implementation::DestroyImageCHROMIUM(GLuint image_id) {
 }
 
 void GLES2Implementation::UnmapImageCHROMIUMHelper(GLuint image_id) {
-  GpuMemoryBuffer* gpu_buffer = gpu_memory_buffer_tracker_->GetBuffer(image_id);
+  gfx::GpuMemoryBuffer* gpu_buffer = gpu_memory_buffer_tracker_->GetBuffer(
+      image_id);
   if (!gpu_buffer) {
     SetGLError(GL_INVALID_OPERATION, "glUnmapImageCHROMIUM", "invalid image");
     return;
@@ -3744,21 +3746,22 @@ void GLES2Implementation::UnmapImageCHROMIUM(GLuint image_id) {
 
 void* GLES2Implementation::MapImageCHROMIUMHelper(GLuint image_id,
                                                   GLenum access) {
-  GpuMemoryBuffer* gpu_buffer = gpu_memory_buffer_tracker_->GetBuffer(image_id);
+  gfx::GpuMemoryBuffer* gpu_buffer = gpu_memory_buffer_tracker_->GetBuffer(
+      image_id);
   if (!gpu_buffer) {
     SetGLError(GL_INVALID_OPERATION, "glMapImageCHROMIUM", "invalid image");
     return NULL;
   }
-  GpuMemoryBuffer::AccessMode mode;
+  gfx::GpuMemoryBuffer::AccessMode mode;
   switch(access) {
     case GL_WRITE_ONLY:
-      mode = GpuMemoryBuffer::WRITE_ONLY;
+      mode = gfx::GpuMemoryBuffer::WRITE_ONLY;
       break;
     case GL_READ_ONLY:
-      mode = GpuMemoryBuffer::READ_ONLY;
+      mode = gfx::GpuMemoryBuffer::READ_ONLY;
       break;
     case GL_READ_WRITE:
-      mode = GpuMemoryBuffer::READ_WRITE;
+      mode = gfx::GpuMemoryBuffer::READ_WRITE;
       break;
     default:
       SetGLError(GL_INVALID_ENUM, "glMapImageCHROMIUM",
@@ -3796,8 +3799,8 @@ void GLES2Implementation::GetImageParameterivCHROMIUMHelper(
     return;
   }
 
-  GpuMemoryBuffer* gpu_buffer =
-      gpu_memory_buffer_tracker_->GetBuffer(image_id);
+  gfx::GpuMemoryBuffer* gpu_buffer = gpu_memory_buffer_tracker_->GetBuffer(
+      image_id);
   if (!gpu_buffer) {
     SetGLError(GL_INVALID_OPERATION, "glGetImageParameterivCHROMIUM",
                "invalid image");

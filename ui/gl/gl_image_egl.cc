@@ -19,7 +19,7 @@ GLImageEGL::~GLImageEGL() {
 }
 
 bool GLImageEGL::Initialize(gfx::GpuMemoryBufferHandle buffer) {
-  EGLClientBuffer cbuf = static_cast<EGLClientBuffer>(buffer);
+  DCHECK(buffer.native_buffer);
   EGLint attrs[] = {
     EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
     EGL_NONE,
@@ -28,7 +28,7 @@ bool GLImageEGL::Initialize(gfx::GpuMemoryBufferHandle buffer) {
       GLSurfaceEGL::GetHardwareDisplay(),
       EGL_NO_CONTEXT,
       EGL_NATIVE_BUFFER_ANDROID,
-      cbuf,
+      buffer.native_buffer,
       attrs);
 
   if (egl_image_ == EGL_NO_IMAGE_KHR) {

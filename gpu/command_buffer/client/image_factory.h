@@ -10,9 +10,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "gles2_impl_export.h"
 
-namespace gpu {
+namespace gfx {
 class GpuMemoryBuffer;
+}
 
+namespace gpu {
 namespace gles2 {
 
 class GLES2_IMPL_EXPORT ImageFactory {
@@ -22,7 +24,7 @@ class GLES2_IMPL_EXPORT ImageFactory {
 
   // Create a GpuMemoryBuffer and makes it available to the
   // service side by inserting it to the ImageManager.
-  virtual scoped_ptr<GpuMemoryBuffer> CreateGpuMemoryBuffer(
+  virtual scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       int width, int height, GLenum internalformat, unsigned* image_id) = 0;
   virtual void DeleteGpuMemoryBuffer(unsigned image_id) = 0;
 };

@@ -454,6 +454,8 @@
         'gfx/font_smoothing_win.h',
         'gfx/gfx_paths.cc',
         'gfx/gfx_paths.h',
+        'gfx/gpu_memory_buffer.cc',
+        'gfx/gpu_memory_buffer.h',
         'gfx/image/canvas_image_source.cc',
         'gfx/image/canvas_image_source.h',
         'gfx/image/image.cc',

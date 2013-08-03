@@ -6,7 +6,7 @@
 
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/logging.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -17,7 +17,7 @@ namespace {
 // Provides hardware rendering functions from the Android glue layer.
 AwDrawGLFunctionTable* g_gl_draw_functions = NULL;
 
-class GpuMemoryBufferImpl : public gpu::GpuMemoryBuffer {
+class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   GpuMemoryBufferImpl(int buffer_id, gfx::Size size)
       : buffer_id_(buffer_id),
@@ -30,8 +30,8 @@ class GpuMemoryBufferImpl : public gpu::GpuMemoryBuffer {
     g_gl_draw_functions->release_graphic_buffer(buffer_id_);
   }
 
-  // Overridden from gpu::GpuMemoryBuffer:
-  virtual void Map(gpu::GpuMemoryBuffer::AccessMode mode,
+  // Overridden from gfx::GpuMemoryBuffer:
+  virtual void Map(gfx::GpuMemoryBuffer::AccessMode mode,
                    void** vaddr) OVERRIDE {
     AwMapMode map_mode = MAP_READ_ONLY;
     switch (mode) {
@@ -56,12 +56,15 @@ class GpuMemoryBufferImpl : public gpu::GpuMemoryBuffer {
     DCHECK(!err);
     mapped_ = false;
   }
-  virtual bool IsMapped() OVERRIDE { return mapped_; }
-  virtual uint32 GetStride() OVERRIDE {
+  virtual bool IsMapped() const OVERRIDE { return mapped_; }
+  virtual uint32 GetStride() const OVERRIDE {
     return g_gl_draw_functions->get_stride(buffer_id_);
   }
-  virtual void* GetNativeBuffer() OVERRIDE {
-    return g_gl_draw_functions->get_native_buffer(buffer_id_);
+  virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE {
+    gfx::GpuMemoryBufferHandle handle;
+    handle.type = gfx::EGL_CLIENT_BUFFER;
+    handle.native_buffer = g_gl_draw_functions->get_native_buffer(buffer_id_);
+    return handle;
   }
 
  private:
@@ -80,7 +83,7 @@ GpuMemoryBufferFactoryImpl::GpuMemoryBufferFactoryImpl() {
 GpuMemoryBufferFactoryImpl::~GpuMemoryBufferFactoryImpl() {
 }
 
-gpu::GpuMemoryBuffer* GpuMemoryBufferFactoryImpl::CreateGpuMemoryBuffer(
+gfx::GpuMemoryBuffer* GpuMemoryBufferFactoryImpl::CreateGpuMemoryBuffer(
     size_t width,
     size_t height,
     unsigned internalformat) {

@@ -72,6 +72,8 @@
         'gl_image_android.cc',
         'gl_image_mac.cc',
         'gl_image_ozone.cc',
+        'gl_image_shm.cc',
+        'gl_image_shm.h',
         'gl_image_stub.cc',
         'gl_image_stub.h',
         'gl_image_win.cc',
@@ -307,8 +309,6 @@
         ],
       },
       'sources': [
-        'gl_image_mock.cc',
-        'gl_image_mock.h',
         'gl_mock.h',
         'gl_mock.cc',
         '<(gl_binding_output_dir)/gl_mock_autogen_gl.h',
