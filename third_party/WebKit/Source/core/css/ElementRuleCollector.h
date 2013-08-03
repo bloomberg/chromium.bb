@@ -41,6 +41,29 @@ class ScopedStyleResolver;
 class SelectorFilter;
 class StaticCSSRuleList;
 
+typedef unsigned TreePosition;
+
+const TreePosition ignoreTreePosition = 0;
+
+class MatchedRule {
+    WTF_MAKE_FAST_ALLOCATED;
+public:
+    explicit MatchedRule(const RuleData* ruleData, TreePosition treePosition)
+        : m_ruleData(ruleData)
+    {
+        ASSERT(m_ruleData);
+        static const unsigned BitsForPositionInRuleData = 18;
+        m_globalPosition = (treePosition << BitsForPositionInRuleData) + m_ruleData->position();
+    }
+
+    const RuleData* ruleData() const { return m_ruleData; }
+    uint32_t globalPosition() const { return m_globalPosition; }
+
+private:
+    const RuleData* m_ruleData;
+    uint32_t m_globalPosition;
+};
+
 // ElementRuleCollector is designed to be used as a stack object.
 // Create one, ask what rules the ElementResolveContext matches
 // and then let it go out of scope.
@@ -66,8 +89,8 @@ public:
     MatchResult& matchedResult();
     PassRefPtr<CSSRuleList> matchedRuleList();
 
-    void collectMatchingRules(const MatchRequest&, RuleRange&);
-    void collectMatchingRulesForRegion(const MatchRequest&, RuleRange&);
+    void collectMatchingRules(const MatchRequest&, RuleRange&, TreePosition = ignoreTreePosition);
+    void collectMatchingRulesForRegion(const MatchRequest&, RuleRange&, TreePosition = ignoreTreePosition);
     void sortAndTransferMatchedRules();
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
@@ -75,14 +98,14 @@ public:
 private:
     Document* document() { return m_context.document(); }
 
-    void collectRuleIfMatches(const RuleData&, const MatchRequest&, RuleRange&);
-    void collectMatchingRulesForList(const Vector<RuleData>*, const MatchRequest&, RuleRange&);
-    void collectMatchingRulesForList(const RuleData*, const MatchRequest&, RuleRange&);
+    void collectRuleIfMatches(const RuleData&, TreePosition, const MatchRequest&, RuleRange&);
+    void collectMatchingRulesForList(const Vector<RuleData>*, TreePosition, const MatchRequest&, RuleRange&);
+    void collectMatchingRulesForList(const RuleData*, TreePosition, const MatchRequest&, RuleRange&);
     bool ruleMatches(const RuleData&, const ContainerNode* scope, PseudoId&);
 
     void sortMatchedRules();
 
-    void addMatchedRule(const RuleData*);
+    void addMatchedRule(const RuleData*, TreePosition);
 
     StaticCSSRuleList* ensureRuleList();
 
@@ -99,7 +122,7 @@ private:
     bool m_sameOriginOnly;
     bool m_matchingUARules;
 
-    OwnPtr<Vector<const RuleData*, 32> > m_matchedRules;
+    OwnPtr<Vector<MatchedRule, 32> > m_matchedRules;
 
     // Output.
     RefPtr<StaticCSSRuleList> m_ruleList;

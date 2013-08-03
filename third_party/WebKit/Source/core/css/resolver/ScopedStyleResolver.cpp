@@ -333,6 +333,9 @@ inline RuleSet* ScopedStyleResolver::atHostRuleSetFor(const ShadowRoot* shadowRo
 
 void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool includeEmptyRules)
 {
+    // FIXME: Determine tree position.
+    TreePosition treePosition = ignoreTreePosition;
+
     if (m_atHostRules.isEmpty() || !m_scopingNode->isElementNode())
         return;
 
@@ -359,7 +362,7 @@ void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool i
     collector.setBehaviorAtBoundary(static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::DoesNotCrossBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
     for (; shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
         if (RuleSet* ruleSet = atHostRuleSetFor(shadowRoot))
-            collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, m_scopingNode), ruleRange);
+            collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, m_scopingNode), ruleRange, treePosition);
     }
 
     collector.sortAndTransferMatchedRules();
@@ -367,6 +370,9 @@ void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool i
 
 void ScopedStyleResolver::matchAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, bool applyAuthorStyles)
 {
+    // FIXME: Determine tree position.
+    TreePosition treePosition = ignoreTreePosition;
+
     if (m_authorStyle) {
         collector.clearMatchedRules();
         collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
@@ -375,8 +381,8 @@ void ScopedStyleResolver::matchAuthorRules(ElementRuleCollector& collector, bool
         MatchRequest matchRequest(m_authorStyle.get(), includeEmptyRules, m_scopingNode);
         RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
         collector.setBehaviorAtBoundary(applyAuthorStyles ? SelectorChecker::DoesNotCrossBoundary : static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::DoesNotCrossBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
-        collector.collectMatchingRules(matchRequest, ruleRange);
-        collector.collectMatchingRulesForRegion(matchRequest, ruleRange);
+        collector.collectMatchingRules(matchRequest, ruleRange, treePosition);
+        collector.collectMatchingRulesForRegion(matchRequest, ruleRange, treePosition);
         collector.sortAndTransferMatchedRules();
     }
 }

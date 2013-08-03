@@ -285,6 +285,9 @@ StyleResolver::~StyleResolver()
 
 inline void StyleResolver::matchShadowDistributedRules(ElementRuleCollector& collector, bool includeEmptyRules)
 {
+    // FIXME: Determine tree position.
+    TreePosition treePosition = ignoreTreePosition;
+
     if (m_ruleSets.shadowDistributedRules().isEmpty())
         return;
 
@@ -300,7 +303,7 @@ inline void StyleResolver::matchShadowDistributedRules(ElementRuleCollector& col
     Vector<MatchRequest> matchRequests;
     m_ruleSets.shadowDistributedRules().collectMatchRequests(includeEmptyRules, matchRequests);
     for (size_t i = 0; i < matchRequests.size(); ++i)
-        collector.collectMatchingRules(matchRequests[i], ruleRange);
+        collector.collectMatchingRules(matchRequests[i], ruleRange, treePosition);
     collector.sortAndTransferMatchedRules();
 
     collector.setBehaviorAtBoundary(previousBoundary);
