@@ -2138,7 +2138,7 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
   }
 }
 
-TEST_F(LayerTreeHostCommonTest, drawable_content_rectForLayers) {
+TEST_F(LayerTreeHostCommonTest, DrawableContentRectForLayers) {
   // Verify that layers get the appropriate DrawableContentRect when their
   // parent masksToBounds is true.
   //
@@ -7634,7 +7634,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   EXPECT_EQ(can_use_lcd_text_, grand_child_->can_use_lcd_text());
 }
 
-TEST_P(LCDTextTest, verifycan_use_lcd_textWithAnimation) {
+TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
   // Sanity check: Make sure can_use_lcd_text_ is set on each node.
   ExecuteCalculateDrawProperties(
       root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_);
