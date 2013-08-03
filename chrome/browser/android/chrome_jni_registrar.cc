@@ -15,6 +15,7 @@
 #include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/most_visited_sites.h"
+#include "chrome/browser/android/omnibox/omnibox_prerender.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
 #include "chrome/browser/android/tab_android.h"
@@ -76,6 +77,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog },
   { "MostVisitedSites", RegisterMostVisitedSites },
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
+  { "OmniboxPrerender", RegisterOmniboxPrerender },
   { "PersonalDataManagerAndroid",
     autofill::PersonalDataManagerAndroid::Register },
   { "ProfileAndroid", ProfileAndroid::RegisterProfileAndroid },
