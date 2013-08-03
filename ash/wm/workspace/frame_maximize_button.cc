@@ -147,7 +147,11 @@ void FrameMaximizeButton::SnapButtonHovered(SnapType type) {
 }
 
 void FrameMaximizeButton::ExecuteSnapAndCloseMenu(SnapType snap_type) {
-  DCHECK_NE(snap_type_, SNAP_NONE);
+  // We can come here with no snap type set in case that the mouse opened the
+  // maximize button and a touch event "touched" a button.
+  if (snap_type_ == SNAP_NONE)
+    SnapButtonHovered(snap_type);
+
   Cancel(true);
   // Tell our menu to close.
   maximizer_.reset();
