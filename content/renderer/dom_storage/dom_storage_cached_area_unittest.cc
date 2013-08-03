@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/dom_storage/dom_storage_cached_area.h"
+
 #include <list>
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/dom_storage/dom_storage_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/renderer/dom_storage/dom_storage_cached_area.h"
-#include "webkit/renderer/dom_storage/dom_storage_proxy.h"
 
-namespace dom_storage {
+namespace content {
 
 namespace {
 // A mock implementation of the DomStorageProxy interface.
@@ -22,7 +23,8 @@ class MockProxy : public DomStorageProxy {
 
   // DomStorageProxy interface for use by DomStorageCachedArea.
 
-  virtual void LoadArea(int connection_id, ValuesMap* values,
+  virtual void LoadArea(int connection_id,
+                        dom_storage::ValuesMap* values,
                         const CompletionCallback& callback) OVERRIDE {
     pending_callbacks_.push_back(callback);
     observed_load_area_ = true;
@@ -30,8 +32,10 @@ class MockProxy : public DomStorageProxy {
     *values = load_area_return_values_;
   }
 
-  virtual void SetItem(int connection_id, const base::string16& key,
-                       const base::string16& value, const GURL& page_url,
+  virtual void SetItem(int connection_id,
+                       const base::string16& key,
+                       const base::string16& value,
+                       const GURL& page_url,
                        const CompletionCallback& callback) OVERRIDE {
     pending_callbacks_.push_back(callback);
     observed_set_item_ = true;
@@ -41,7 +45,8 @@ class MockProxy : public DomStorageProxy {
     observed_page_url_ = page_url;
   }
 
-  virtual void RemoveItem(int connection_id, const base::string16& key,
+  virtual void RemoveItem(int connection_id,
+                          const base::string16& key,
                           const GURL& page_url,
                           const CompletionCallback& callback) OVERRIDE {
     pending_callbacks_.push_back(callback);
@@ -52,8 +57,8 @@ class MockProxy : public DomStorageProxy {
   }
 
   virtual void ClearArea(int connection_id,
-                        const GURL& page_url,
-                        const CompletionCallback& callback) OVERRIDE {
+                         const GURL& page_url,
+                         const CompletionCallback& callback) OVERRIDE {
     pending_callbacks_.push_back(callback);
     observed_clear_area_ = true;
     observed_connection_id_ = connection_id;
@@ -86,7 +91,7 @@ class MockProxy : public DomStorageProxy {
 
   typedef std::list<CompletionCallback> CallbackList;
 
-  ValuesMap load_area_return_values_;
+  dom_storage::ValuesMap load_area_return_values_;
   CallbackList pending_callbacks_;
   bool observed_load_area_;
   bool observed_set_item_;
@@ -100,6 +105,7 @@ class MockProxy : public DomStorageProxy {
  private:
   virtual ~MockProxy() {}
 };
+
 }  // namespace
 
 class DomStorageCachedAreaTest : public testing::Test {

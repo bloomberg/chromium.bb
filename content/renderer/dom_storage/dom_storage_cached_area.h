@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_DOM_STORAGE_DOM_STORAGE_CACHED_AREA_H_
-#define WEBKIT_RENDERER_DOM_STORAGE_DOM_STORAGE_CACHED_AREA_H_
+#ifndef CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_CACHED_AREA_H_
+#define CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_CACHED_AREA_H_
 
 #include <map>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/nullable_string16.h"
+#include "content/common/content_export.h"
 #include "url/gurl.h"
-#include "webkit/renderer/webkit_storage_renderer_export.h"
 
 namespace dom_storage {
-
 class DomStorageMap;
+}
+
+namespace content {
+
 class DomStorageProxy;
 
 // Unlike the other classes in the dom_storage library, this one is intended
@@ -24,10 +27,11 @@ class DomStorageProxy;
 // first access and changes are written to the backend thru the |proxy|.
 // Mutations originating in other processes are applied to the cache via
 // the ApplyMutation method.
-class WEBKIT_STORAGE_RENDERER_EXPORT DomStorageCachedArea :
-      public base::RefCounted<DomStorageCachedArea> {
+class CONTENT_EXPORT DomStorageCachedArea
+    : public base::RefCounted<DomStorageCachedArea> {
  public:
-  DomStorageCachedArea(int64 namespace_id, const GURL& origin,
+  DomStorageCachedArea(int64 namespace_id,
+                       const GURL& origin,
                        DomStorageProxy* proxy);
 
   int64 namespace_id() const { return namespace_id_; }
@@ -40,7 +44,8 @@ class WEBKIT_STORAGE_RENDERER_EXPORT DomStorageCachedArea :
                const base::string16& key,
                const base::string16& value,
                const GURL& page_url);
-  void RemoveItem(int connection_id, const base::string16& key,
+  void RemoveItem(int connection_id,
+                  const base::string16& key,
                   const GURL& page_url);
   void Clear(int connection_id, const GURL& page_url);
 
@@ -82,11 +87,11 @@ class WEBKIT_STORAGE_RENDERER_EXPORT DomStorageCachedArea :
 
   int64 namespace_id_;
   GURL origin_;
-  scoped_refptr<DomStorageMap> map_;
+  scoped_refptr<dom_storage::DomStorageMap> map_;
   scoped_refptr<DomStorageProxy> proxy_;
   base::WeakPtrFactory<DomStorageCachedArea> weak_factory_;
 };
 
-}  // namespace dom_storage
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_DOM_STORAGE_DOM_STORAGE_CACHED_AREA_H_
+#endif  // CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_CACHED_AREA_H_

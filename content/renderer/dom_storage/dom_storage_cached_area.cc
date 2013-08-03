@@ -2,46 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/dom_storage/dom_storage_cached_area.h"
+#include "content/renderer/dom_storage/dom_storage_cached_area.h"
 
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
+#include "content/renderer/dom_storage/dom_storage_proxy.h"
 #include "webkit/common/dom_storage/dom_storage_map.h"
-#include "webkit/renderer/dom_storage/dom_storage_proxy.h"
 
-namespace dom_storage {
+namespace content {
 
-DomStorageCachedArea::DomStorageCachedArea(
-    int64 namespace_id, const GURL& origin, DomStorageProxy* proxy)
+DomStorageCachedArea::DomStorageCachedArea(int64 namespace_id,
+                                           const GURL& origin,
+                                           DomStorageProxy* proxy)
     : ignore_all_mutations_(false),
-      namespace_id_(namespace_id), origin_(origin),
-      proxy_(proxy), weak_factory_(this) {
-}
+      namespace_id_(namespace_id),
+      origin_(origin),
+      proxy_(proxy),
+      weak_factory_(this) {}
 
-DomStorageCachedArea::~DomStorageCachedArea() {
-}
+DomStorageCachedArea::~DomStorageCachedArea() {}
 
 unsigned DomStorageCachedArea::GetLength(int connection_id) {
   PrimeIfNeeded(connection_id);
   return map_->Length();
 }
 
-base::NullableString16 DomStorageCachedArea::GetKey(
-    int connection_id, unsigned index) {
+base::NullableString16 DomStorageCachedArea::GetKey(int connection_id,
+                                                    unsigned index) {
   PrimeIfNeeded(connection_id);
   return map_->Key(index);
 }
 
 base::NullableString16 DomStorageCachedArea::GetItem(
-    int connection_id, const base::string16& key) {
+    int connection_id,
+    const base::string16& key) {
   PrimeIfNeeded(connection_id);
   return map_->GetItem(key);
 }
 
-bool DomStorageCachedArea::SetItem(
-    int connection_id, const base::string16& key,
-    const base::string16& value, const GURL& page_url) {
+bool DomStorageCachedArea::SetItem(int connection_id,
+                                   const base::string16& key,
+                                   const base::string16& value,
+                                   const GURL& page_url) {
   // A quick check to reject obviously overbudget items to avoid
   // the priming the cache.
   if (key.length() + value.length() > dom_storage::kPerAreaQuota)
@@ -61,8 +64,9 @@ bool DomStorageCachedArea::SetItem(
   return true;
 }
 
-void DomStorageCachedArea::RemoveItem(
-    int connection_id, const base::string16& key, const GURL& page_url) {
+void DomStorageCachedArea::RemoveItem(int connection_id,
+                                      const base::string16& key,
+                                      const GURL& page_url) {
   PrimeIfNeeded(connection_id);
   base::string16 unused;
   if (!map_->RemoveItem(key, &unused))
@@ -79,14 +83,14 @@ void DomStorageCachedArea::RemoveItem(
 void DomStorageCachedArea::Clear(int connection_id, const GURL& page_url) {
   // No need to prime the cache in this case.
   Reset();
-  map_ = new DomStorageMap(dom_storage::kPerAreaQuota);
+  map_ = new dom_storage::DomStorageMap(dom_storage::kPerAreaQuota);
 
   // Ignore all mutations until OnClearComplete time.
   ignore_all_mutations_ = true;
-  proxy_->ClearArea(
-      connection_id, page_url,
-      base::Bind(&DomStorageCachedArea::OnClearComplete,
-                 weak_factory_.GetWeakPtr()));
+  proxy_->ClearArea(connection_id,
+                    page_url,
+                    base::Bind(&DomStorageCachedArea::OnClearComplete,
+                               weak_factory_.GetWeakPtr()));
 }
 
 void DomStorageCachedArea::ApplyMutation(
@@ -97,8 +101,8 @@ void DomStorageCachedArea::ApplyMutation(
 
   if (key.is_null()) {
     // It's a clear event.
-    scoped_refptr<DomStorageMap> old = map_;
-    map_ = new DomStorageMap(dom_storage::kPerAreaQuota);
+    scoped_refptr<dom_storage::DomStorageMap> old = map_;
+    map_ = new dom_storage::DomStorageMap(dom_storage::kPerAreaQuota);
 
     // We have to retain local additions which happened after this
     // clear operation from another process.
@@ -150,18 +154,18 @@ void DomStorageCachedArea::Prime(int connection_id) {
 
   // Ignore all mutations until OnLoadComplete time.
   ignore_all_mutations_ = true;
-  ValuesMap values;
+  dom_storage::ValuesMap values;
   base::TimeTicks before = base::TimeTicks::Now();
-  proxy_->LoadArea(
-      connection_id, &values,
-      base::Bind(&DomStorageCachedArea::OnLoadComplete,
-                 weak_factory_.GetWeakPtr()));
+  proxy_->LoadArea(connection_id,
+                   &values,
+                   base::Bind(&DomStorageCachedArea::OnLoadComplete,
+                              weak_factory_.GetWeakPtr()));
   base::TimeDelta time_to_prime = base::TimeTicks::Now() - before;
   // Keeping this histogram named the same (without the ForRenderer suffix)
   // to maintain histogram continuity.
   UMA_HISTOGRAM_TIMES("LocalStorage.TimeToPrimeLocalStorage",
                       time_to_prime);
-  map_ = new DomStorageMap(dom_storage::kPerAreaQuota);
+  map_ = new dom_storage::DomStorageMap(dom_storage::kPerAreaQuota);
   map_->SwapValues(&values);
 
   size_t local_storage_size_kb = map_->bytes_used() / 1024;
@@ -199,8 +203,8 @@ void DomStorageCachedArea::OnLoadComplete(bool success) {
   ignore_all_mutations_ = false;
 }
 
-void DomStorageCachedArea::OnSetItemComplete(
-    const base::string16& key, bool success) {
+void DomStorageCachedArea::OnSetItemComplete(const base::string16& key,
+                                             bool success) {
   if (!success) {
     Reset();
     return;
@@ -212,8 +216,8 @@ void DomStorageCachedArea::OnSetItemComplete(
     ignore_key_mutations_.erase(found);
 }
 
-void DomStorageCachedArea::OnRemoveItemComplete(
-    const base::string16& key, bool success) {
+void DomStorageCachedArea::OnRemoveItemComplete(const base::string16& key,
+                                                bool success) {
   DCHECK(success);
   std::map<base::string16, int>::iterator found =
       ignore_key_mutations_.find(key);
@@ -228,4 +232,4 @@ void DomStorageCachedArea::OnClearComplete(bool success) {
   ignore_all_mutations_ = false;
 }
 
-}  // namespace dom_storage
+}  // namespace content

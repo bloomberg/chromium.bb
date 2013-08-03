@@ -9,12 +9,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/common/dom_storage_messages.h"
+#include "content/renderer/dom_storage/dom_storage_cached_area.h"
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "webkit/renderer/dom_storage/dom_storage_cached_area.h"
 
-using dom_storage::DomStorageCachedArea;
 using WebKit::WebString;
 using WebKit::WebURL;
 
