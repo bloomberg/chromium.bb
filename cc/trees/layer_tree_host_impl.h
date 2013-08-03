@@ -210,9 +210,8 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void SetExternalStencilTest(bool enabled) OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE;
-  virtual void SetMemoryPolicy(
-      const ManagedMemoryPolicy& policy,
-      bool discard_backbuffer_when_not_visible) OVERRIDE;
+  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
+  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
   virtual void SetTreeActivationCallback(const base::Closure& callback)
       OVERRIDE;
 
@@ -262,9 +261,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   ManagedMemoryPolicy ActualManagedMemoryPolicy() const;
 
-  size_t memory_allocation_limit_bytes() const {
-    return managed_memory_policy_.bytes_limit_when_visible;
-  }
+  size_t memory_allocation_limit_bytes() const;
 
   void SetViewportSize(gfx::Size device_viewport_size);
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
@@ -450,7 +447,8 @@ class CC_EXPORT LayerTreeHostImpl
   void UpdateCurrentFrameTime(base::TimeTicks* ticks, base::Time* now) const;
 
   void StartScrollbarAnimationRecursive(LayerImpl* layer, base::TimeTicks time);
-  void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
+  void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy,
+                              bool zero_budget);
   void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
 
   void DidInitializeVisibleTile();
@@ -490,7 +488,7 @@ class CC_EXPORT LayerTreeHostImpl
   LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;
   bool visible_;
-  ManagedMemoryPolicy managed_memory_policy_;
+  ManagedMemoryPolicy cached_managed_memory_policy_;
 
   gfx::Vector2dF accumulated_root_overscroll_;
   gfx::Vector2dF current_fling_velocity_;

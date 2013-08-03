@@ -178,11 +178,12 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       root_layer_scroll_offset_delegate_(NULL),
       settings_(settings),
       visible_(true),
-      managed_memory_policy_(
+      cached_managed_memory_policy_(
           PrioritizedResourceManager::DefaultMemoryAllocationLimit(),
           ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
           0,
-          ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING),
+          ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+          ManagedMemoryPolicy::kDefaultNumResourcesLimit),
       pinch_gesture_active_(false),
       fps_counter_(FrameRateCounter::Create(proxy_->HasImplThread())),
       paint_time_counter_(PaintTimeCounter::Create()),
@@ -1043,6 +1044,7 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
           visible_ ?
           policy.priority_cutoff_when_visible :
           policy.priority_cutoff_when_not_visible);
+  new_state.num_resources_limit = policy.num_resources_limit;
   tile_manager_->SetGlobalState(new_state);
   manage_tiles_needed_ = true;
 }
@@ -1070,17 +1072,13 @@ bool LayerTreeHostImpl::ShouldClearRootRenderPass() const {
   return settings_.should_clear_root_render_pass;
 }
 
-void LayerTreeHostImpl::SetMemoryPolicy(
-    const ManagedMemoryPolicy& policy,
-    bool discard_backbuffer_when_not_visible) {
-  if (policy.bytes_limit_when_visible) {
-    // Just ignore the memory manager when it says to set the limit to zero
-    // bytes. This will happen when the memory manager thinks that the renderer
-    // is not visible (which the renderer knows better).
-    SetManagedMemoryPolicy(policy);
-  }
-  renderer_->SetDiscardBackBufferWhenNotVisible(
-      discard_backbuffer_when_not_visible);
+void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
+  SetManagedMemoryPolicy(policy, zero_budget_);
+}
+
+void LayerTreeHostImpl::SetDiscardBackBufferWhenNotVisible(bool discard) {
+  DCHECK(renderer_);
+  renderer_->SetDiscardBackBufferWhenNotVisible(discard);
 }
 
 void LayerTreeHostImpl::SetTreeActivationCallback(
@@ -1091,12 +1089,28 @@ void LayerTreeHostImpl::SetTreeActivationCallback(
 }
 
 void LayerTreeHostImpl::SetManagedMemoryPolicy(
-    const ManagedMemoryPolicy& policy) {
-  if (managed_memory_policy_ == policy)
+    const ManagedMemoryPolicy& policy, bool zero_budget) {
+  if (cached_managed_memory_policy_ == policy && zero_budget_ == zero_budget)
     return;
 
-  if (zero_budget_)
-    DCHECK_EQ(0u, policy.bytes_limit_when_visible);
+  ManagedMemoryPolicy old_policy = ActualManagedMemoryPolicy();
+
+  cached_managed_memory_policy_ = policy;
+  zero_budget_ = zero_budget;
+  ManagedMemoryPolicy actual_policy = ActualManagedMemoryPolicy();
+
+  if (old_policy == actual_policy)
+    return;
+
+  if (!proxy_->HasImplThread()) {
+    // In single-thread mode, this can be called on the main thread by
+    // GLRenderer::OnMemoryAllocationChanged.
+    DebugScopedSetImplThread impl_thread(proxy_);
+    EnforceManagedMemoryPolicy(actual_policy);
+  } else {
+    DCHECK(proxy_->IsImplThread());
+    EnforceManagedMemoryPolicy(actual_policy);
+  }
 
   // If there is already enough memory to draw everything imaginable and the
   // new memory limit does not change this, then do not re-commit. Don't bother
@@ -1104,24 +1118,11 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
   // visible, there will almost always be a commit when this becomes visible).
   bool needs_commit = true;
   if (visible() &&
-      policy.bytes_limit_when_visible >=
-          max_memory_needed_bytes_ &&
-      managed_memory_policy_.bytes_limit_when_visible >=
-          max_memory_needed_bytes_ &&
-      policy.priority_cutoff_when_visible ==
-          managed_memory_policy_.priority_cutoff_when_visible) {
+      actual_policy.bytes_limit_when_visible >= max_memory_needed_bytes_ &&
+      old_policy.bytes_limit_when_visible >= max_memory_needed_bytes_ &&
+      actual_policy.priority_cutoff_when_visible ==
+          old_policy.priority_cutoff_when_visible) {
     needs_commit = false;
-  }
-
-  managed_memory_policy_ = policy;
-  if (!proxy_->HasImplThread()) {
-    // In single-thread mode, this can be called on the main thread by
-    // GLRenderer::OnMemoryAllocationChanged.
-    DebugScopedSetImplThread impl_thread(proxy_);
-    EnforceManagedMemoryPolicy(ActualManagedMemoryPolicy());
-  } else {
-    DCHECK(proxy_->IsImplThread());
-    EnforceManagedMemoryPolicy(ActualManagedMemoryPolicy());
   }
 
   if (needs_commit)
@@ -1512,15 +1513,24 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
 }
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
-  if (!debug_state_.rasterize_only_visible_content)
-    return managed_memory_policy_;
+  ManagedMemoryPolicy actual = cached_managed_memory_policy_;
+  if (debug_state_.rasterize_only_visible_content) {
+    actual.priority_cutoff_when_not_visible =
+        ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
+    actual.priority_cutoff_when_visible =
+        ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY;
+  }
 
-  ManagedMemoryPolicy actual = managed_memory_policy_;
-  actual.priority_cutoff_when_not_visible =
-      ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
-  actual.priority_cutoff_when_visible =
-      ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY;
+  if (zero_budget_) {
+    actual.bytes_limit_when_visible = 0;
+    actual.bytes_limit_when_not_visible = 0;
+  }
+
   return actual;
+}
+
+size_t LayerTreeHostImpl::memory_allocation_limit_bytes() const {
+  return ActualManagedMemoryPolicy().bytes_limit_when_visible;
 }
 
 void LayerTreeHostImpl::ReleaseTreeResources() {
@@ -1575,19 +1585,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
 }
 
 void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {
-  if (zero_budget_ == zero_budget)
-    return;
-
-  zero_budget_ = zero_budget;
-
-  ManagedMemoryPolicy new_policy = managed_memory_policy_;
-  if (zero_budget_) {
-    new_policy.bytes_limit_when_visible = 0;
-  } else {
-    new_policy.bytes_limit_when_visible =
-        PrioritizedResourceManager::DefaultMemoryAllocationLimit();
-  }
-  SetManagedMemoryPolicy(new_policy);
+  SetManagedMemoryPolicy(cached_managed_memory_policy_, zero_budget);
 }
 
 bool LayerTreeHostImpl::InitializeRenderer(

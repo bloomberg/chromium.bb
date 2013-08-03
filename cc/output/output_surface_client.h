@@ -37,14 +37,13 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void SetExternalStencilTest(bool enabled) = 0;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           gfx::Rect viewport) = 0;
-  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy,
-                               bool discard_backbuffer_when_not_visible) = 0;
+  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) = 0;
+  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
   // If set, |callback| will be called subsequent to each new tree activation,
   // regardless of the compositor visibility or damage. |callback| must remain
   // valid for the lifetime of the OutputSurfaceClient or until unregisted --
   // use SetTreeActivationCallback(base::Closure()) to unregister it.
   virtual void SetTreeActivationCallback(const base::Closure& callback) = 0;
-
 
  protected:
   virtual ~OutputSurfaceClient() {}

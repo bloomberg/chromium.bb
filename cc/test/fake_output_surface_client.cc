@@ -21,10 +21,13 @@ void FakeOutputSurfaceClient::DidLoseOutputSurface() {
 }
 
 void FakeOutputSurfaceClient::SetMemoryPolicy(
-    const ManagedMemoryPolicy& policy,
-    bool discard_backbuffer_when_not_visible) {
+    const ManagedMemoryPolicy& policy) {
   memory_policy_ = policy;
-  discard_backbuffer_when_not_visible_ = discard_backbuffer_when_not_visible;
 }
+
+void FakeOutputSurfaceClient::SetDiscardBackBufferWhenNotVisible(bool discard) {
+  discard_backbuffer_when_not_visible_ = discard;
+}
+
 
 }  // namespace cc

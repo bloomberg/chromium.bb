@@ -9,28 +9,34 @@
 
 namespace cc {
 
+const size_t ManagedMemoryPolicy::kDefaultNumResourcesLimit = 10 * 1000 * 1000;
+
 ManagedMemoryPolicy::ManagedMemoryPolicy(size_t bytes_limit_when_visible)
     : bytes_limit_when_visible(bytes_limit_when_visible),
       priority_cutoff_when_visible(CUTOFF_ALLOW_EVERYTHING),
       bytes_limit_when_not_visible(0),
-      priority_cutoff_when_not_visible(CUTOFF_ALLOW_NOTHING) {}
+      priority_cutoff_when_not_visible(CUTOFF_ALLOW_NOTHING),
+      num_resources_limit(kDefaultNumResourcesLimit) {}
 
 ManagedMemoryPolicy::ManagedMemoryPolicy(
     size_t bytes_limit_when_visible,
     PriorityCutoff priority_cutoff_when_visible,
     size_t bytes_limit_when_not_visible,
-    PriorityCutoff priority_cutoff_when_not_visible)
+    PriorityCutoff priority_cutoff_when_not_visible,
+    size_t num_resources_limit)
     : bytes_limit_when_visible(bytes_limit_when_visible),
       priority_cutoff_when_visible(priority_cutoff_when_visible),
       bytes_limit_when_not_visible(bytes_limit_when_not_visible),
-      priority_cutoff_when_not_visible(priority_cutoff_when_not_visible) {}
+      priority_cutoff_when_not_visible(priority_cutoff_when_not_visible),
+      num_resources_limit(num_resources_limit) {}
 
 bool ManagedMemoryPolicy::operator==(const ManagedMemoryPolicy& other) const {
   return bytes_limit_when_visible == other.bytes_limit_when_visible &&
          priority_cutoff_when_visible == other.priority_cutoff_when_visible &&
          bytes_limit_when_not_visible == other.bytes_limit_when_not_visible &&
          priority_cutoff_when_not_visible ==
-         other.priority_cutoff_when_not_visible;
+             other.priority_cutoff_when_not_visible &&
+         num_resources_limit == other.num_resources_limit;
 }
 
 bool ManagedMemoryPolicy::operator!=(const ManagedMemoryPolicy& other) const {

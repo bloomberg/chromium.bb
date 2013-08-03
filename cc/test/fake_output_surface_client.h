@@ -30,9 +30,8 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           gfx::Rect viewport) OVERRIDE {}
   virtual void SetExternalStencilTest(bool enable) OVERRIDE {}
-  virtual void SetMemoryPolicy(
-      const ManagedMemoryPolicy& policy,
-      bool discard_backbuffer_when_not_visible) OVERRIDE;
+  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
+  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
   virtual void SetTreeActivationCallback(const base::Closure&) OVERRIDE {}
 
   int begin_frame_count() {

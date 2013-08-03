@@ -59,11 +59,11 @@ class TilePriorityRequiredForActivation : public TilePriority {
     }
 };
 
-class TileManagerTest : public testing::Test {
+class TileManagerTest : public testing::TestWithParam<bool> {
  public:
   typedef std::vector<scoped_refptr<Tile> > TileVector;
 
-  void Initialize(int max_memory_tiles,
+  void Initialize(int max_tiles,
                   TileMemoryLimitPolicy memory_limit_policy,
                   TreePriority tree_priority) {
     output_surface_ = FakeOutputSurface::Create3d();
@@ -72,11 +72,20 @@ class TileManagerTest : public testing::Test {
         new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
 
     memory_limit_policy_ = memory_limit_policy;
-    max_memory_tiles_ = max_memory_tiles;
+    max_memory_tiles_ = max_tiles;
     GlobalStateThatImpactsTilePriority state;
     gfx::Size tile_size = settings_.default_tile_size;
-    state.memory_limit_in_bytes =
-        max_memory_tiles * 4 * tile_size.width() * tile_size.height();
+
+    // The parametrization specifies whether the max tile limit should
+    // be applied to RAM or to tile limit.
+    if (GetParam()) {
+      state.memory_limit_in_bytes =
+          max_tiles * 4 * tile_size.width() * tile_size.height();
+      state.num_resources_limit = 100;
+    } else {
+      state.memory_limit_in_bytes = 100 * 1000 * 1000;
+      state.num_resources_limit = max_tiles;
+    }
     state.memory_limit_policy = memory_limit_policy;
     state.tree_priority = tree_priority;
 
@@ -90,6 +99,7 @@ class TileManagerTest : public testing::Test {
     state.memory_limit_in_bytes =
         max_memory_tiles_ * 4 * tile_size.width() * tile_size.height();
     state.memory_limit_policy = memory_limit_policy_;
+    state.num_resources_limit = 100;
     state.tree_priority = tree_priority;
     tile_manager_->SetGlobalState(state);
   }
@@ -160,7 +170,7 @@ class TileManagerTest : public testing::Test {
   int max_memory_tiles_;
 };
 
-TEST_F(TileManagerTest, EnoughMemoryAllowAnything) {
+TEST_P(TileManagerTest, EnoughMemoryAllowAnything) {
   // A few tiles of each type of priority, with enough memory for all tiles.
 
   Initialize(10, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
@@ -180,7 +190,7 @@ TEST_F(TileManagerTest, EnoughMemoryAllowAnything) {
   EXPECT_EQ(0, AssignedMemoryCount(never_bin));
 }
 
-TEST_F(TileManagerTest, EnoughMemoryAllowPrepaintOnly) {
+TEST_P(TileManagerTest, EnoughMemoryAllowPrepaintOnly) {
   // A few tiles of each type of priority, with enough memory for all tiles,
   // with the exception of never bin.
 
@@ -201,7 +211,7 @@ TEST_F(TileManagerTest, EnoughMemoryAllowPrepaintOnly) {
   EXPECT_EQ(0, AssignedMemoryCount(never_bin));
 }
 
-TEST_F(TileManagerTest, EnoughMemoryAllowAbsoluteMinimum) {
+TEST_P(TileManagerTest, EnoughMemoryAllowAbsoluteMinimum) {
   // A few tiles of each type of priority, with enough memory for all tiles,
   // with the exception of never and soon bins.
 
@@ -222,7 +232,7 @@ TEST_F(TileManagerTest, EnoughMemoryAllowAbsoluteMinimum) {
   EXPECT_EQ(0, AssignedMemoryCount(never_bin));
 }
 
-TEST_F(TileManagerTest, EnoughMemoryAllowNothing) {
+TEST_P(TileManagerTest, EnoughMemoryAllowNothing) {
   // A few tiles of each type of priority, with enough memory for all tiles,
   // but allow nothing should not assign any memory.
 
@@ -243,7 +253,7 @@ TEST_F(TileManagerTest, EnoughMemoryAllowNothing) {
   EXPECT_EQ(0, AssignedMemoryCount(never_bin));
 }
 
-TEST_F(TileManagerTest, PartialOOMMemoryToPending) {
+TEST_P(TileManagerTest, PartialOOMMemoryToPending) {
   // 5 tiles on active tree eventually bin, 5 tiles on pending tree that are
   // required for activation, but only enough memory for 8 tiles. The result
   // is all pending tree tiles get memory, and 3 of the active tree tiles
@@ -267,7 +277,7 @@ TEST_F(TileManagerTest, PartialOOMMemoryToPending) {
   EXPECT_EQ(5, AssignedMemoryCount(pending_tree_tiles));
 }
 
-TEST_F(TileManagerTest, PartialOOMMemoryToActive) {
+TEST_P(TileManagerTest, PartialOOMMemoryToActive) {
   // 5 tiles on active tree eventually bin, 5 tiles on pending tree now bin,
   // but only enough memory for 8 tiles. The result is all active tree tiles
   // get memory, and 3 of the pending tree tiles get memory.
@@ -284,7 +294,7 @@ TEST_F(TileManagerTest, PartialOOMMemoryToActive) {
   EXPECT_EQ(3, AssignedMemoryCount(pending_tree_tiles));
 }
 
-TEST_F(TileManagerTest, TotalOOMMemoryToPending) {
+TEST_P(TileManagerTest, TotalOOMMemoryToPending) {
   // 5 tiles on active tree eventually bin, 5 tiles on pending tree that are
   // required for activation, but only enough memory for 4 tiles. The result
   // is 4 pending tree tiles get memory, and none of the active tree tiles
@@ -308,7 +318,7 @@ TEST_F(TileManagerTest, TotalOOMMemoryToPending) {
   EXPECT_EQ(4, AssignedMemoryCount(pending_tree_tiles));
 }
 
-TEST_F(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
+TEST_P(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
   // 5 tiles on active tree soon bin, 5 tiles on pending tree that are
   // required for activation, but only enough memory for 4 tiles. The result
   // is 4 pending tree tiles get memory, and none of the active tree tiles
@@ -332,7 +342,7 @@ TEST_F(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
   EXPECT_EQ(4, AssignedMemoryCount(pending_tree_tiles));
 }
 
-TEST_F(TileManagerTest, TotalOOMMemoryToActive) {
+TEST_P(TileManagerTest, TotalOOMMemoryToActive) {
   // 5 tiles on active tree eventually bin, 5 tiles on pending tree now bin,
   // but only enough memory for 4 tiles. The result is 5 active tree tiles
   // get memory, and none of the pending tree tiles get memory.
@@ -349,7 +359,9 @@ TEST_F(TileManagerTest, TotalOOMMemoryToActive) {
   EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
 }
 
-TEST_F(TileManagerTest, RasterAsLCD) {
+
+
+TEST_P(TileManagerTest, RasterAsLCD) {
   Initialize(20, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
       CreateTiles(5, TilePriorityForNowBin(), TilePriority());
@@ -362,7 +374,7 @@ TEST_F(TileManagerTest, RasterAsLCD) {
   EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
 }
 
-TEST_F(TileManagerTest, RasterAsNoLCD) {
+TEST_P(TileManagerTest, RasterAsNoLCD) {
   Initialize(20, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
       CreateTiles(5, TilePriorityForNowBin(), TilePriority());
@@ -386,7 +398,7 @@ TEST_F(TileManagerTest, RasterAsNoLCD) {
   EXPECT_EQ(0, TilesWithLCDCount(pending_tree_tiles));
 }
 
-TEST_F(TileManagerTest, ReRasterAsNoLCD) {
+TEST_P(TileManagerTest, ReRasterAsNoLCD) {
   Initialize(20, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
       CreateTiles(5, TilePriorityForNowBin(), TilePriority());
@@ -415,7 +427,7 @@ TEST_F(TileManagerTest, ReRasterAsNoLCD) {
   EXPECT_EQ(0, TilesWithLCDCount(pending_tree_tiles));
 }
 
-TEST_F(TileManagerTest, NoTextDontReRasterAsNoLCD) {
+TEST_P(TileManagerTest, NoTextDontReRasterAsNoLCD) {
   Initialize(20, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
       CreateTiles(5, TilePriorityForNowBin(), TilePriority());
@@ -452,7 +464,7 @@ TEST_F(TileManagerTest, NoTextDontReRasterAsNoLCD) {
   EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
 }
 
-TEST_F(TileManagerTest, TextReRasterAsNoLCD) {
+TEST_P(TileManagerTest, TextReRasterAsNoLCD) {
   Initialize(20, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
       CreateTiles(5, TilePriorityForNowBin(), TilePriority());
@@ -493,6 +505,12 @@ TEST_F(TileManagerTest, TextReRasterAsNoLCD) {
   EXPECT_EQ(0, TilesWithLCDCount(active_tree_tiles));
   EXPECT_EQ(0, TilesWithLCDCount(pending_tree_tiles));
 }
+
+// If true, the max tile limit should be applied as bytes; if false,
+// as num_resources_limit.
+INSTANTIATE_TEST_CASE_P(TileManagerTests,
+                        TileManagerTest,
+                        ::testing::Values(true, false));
 
 }  // namespace
 }  // namespace cc

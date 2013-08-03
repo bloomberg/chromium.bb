@@ -9,6 +9,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
+#include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
@@ -124,6 +125,16 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate)
     delegate->DidBindOutputSurface(this);
+
+  const int bytes_limit = 64 * 1024 * 1024;
+  const int num_resources_limit = 100;
+  surface_client->SetMemoryPolicy(
+      cc::ManagedMemoryPolicy(bytes_limit,
+                              cc::ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
+                              0,
+                              cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+                              num_resources_limit));
+
   return true;
 }
 

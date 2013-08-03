@@ -71,8 +71,8 @@ class PixelTest::PixelTestRendererClient
   virtual void SetExternalStencilTest(bool enable) OVERRIDE {
     stencil_enabled_ = enable;
   }
-  virtual void SetMemoryPolicy(
-      const ManagedMemoryPolicy& policy, bool discard) OVERRIDE {}
+  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE {}
+  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE {}
   virtual void SetTreeActivationCallback(const base::Closure&) OVERRIDE {}
 
  private:

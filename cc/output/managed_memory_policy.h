@@ -18,12 +18,14 @@ struct CC_EXPORT ManagedMemoryPolicy {
     CUTOFF_ALLOW_NICE_TO_HAVE,
     CUTOFF_ALLOW_EVERYTHING,
   };
+  static const size_t kDefaultNumResourcesLimit;
 
   explicit ManagedMemoryPolicy(size_t bytes_limit_when_visible);
   ManagedMemoryPolicy(size_t bytes_limit_when_visible,
                       PriorityCutoff priority_cutoff_when_visible,
                       size_t bytes_limit_when_not_visible,
-                      PriorityCutoff priority_cutoff_when_not_visible);
+                      PriorityCutoff priority_cutoff_when_not_visible,
+                      size_t num_resources_limit);
   bool operator==(const ManagedMemoryPolicy&) const;
   bool operator!=(const ManagedMemoryPolicy&) const;
 
@@ -31,6 +33,7 @@ struct CC_EXPORT ManagedMemoryPolicy {
   PriorityCutoff priority_cutoff_when_visible;
   size_t bytes_limit_when_not_visible;
   PriorityCutoff priority_cutoff_when_not_visible;
+  size_t num_resources_limit;
 
   static int PriorityCutoffToValue(PriorityCutoff priority_cutoff);
   static TileMemoryLimitPolicy PriorityCutoffToTileMemoryLimitPolicy(

@@ -32,11 +32,12 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider)
       max_memory_usage_bytes_(0),
       max_unused_memory_usage_bytes_(0),
       memory_usage_bytes_(0),
-      unused_memory_usage_bytes_(0) {
+      unused_memory_usage_bytes_(0),
+      num_resources_limit_(0) {
 }
 
 ResourcePool::~ResourcePool() {
-  SetMaxMemoryUsageBytes(0, 0);
+  SetMemoryUsageLimits(0, 0, 0);
 }
 
 scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
@@ -85,11 +86,13 @@ void ResourcePool::ReleaseResource(
   resources_.push_back(resource.release());
 }
 
-void ResourcePool::SetMaxMemoryUsageBytes(
+void ResourcePool::SetMemoryUsageLimits(
     size_t max_memory_usage_bytes,
-    size_t max_unused_memory_usage_bytes) {
+    size_t max_unused_memory_usage_bytes,
+    size_t num_resources_limit) {
   max_memory_usage_bytes_ = max_memory_usage_bytes;
   max_unused_memory_usage_bytes_ = max_unused_memory_usage_bytes;
+  num_resources_limit_ = num_resources_limit;
 
   while (!resources_.empty()) {
     if (!MemoryUsageTooHigh())
@@ -106,6 +109,8 @@ void ResourcePool::SetMaxMemoryUsageBytes(
 }
 
 bool ResourcePool::MemoryUsageTooHigh() {
+  if (resources_.size() > num_resources_limit_)
+    return true;
   if (memory_usage_bytes_ > max_memory_usage_bytes_)
     return true;
   if (unused_memory_usage_bytes_ > max_unused_memory_usage_bytes_)

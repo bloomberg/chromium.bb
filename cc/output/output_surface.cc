@@ -78,8 +78,10 @@ class OutputSurfaceCallbacks
         allocation.bytesLimitWhenVisible,
         ConvertPriorityCutoff(allocation.priorityCutoffWhenVisible),
         allocation.bytesLimitWhenNotVisible,
-        ConvertPriorityCutoff(allocation.priorityCutoffWhenNotVisible));
-    client_->SetMemoryPolicy(policy, !allocation.suggestHaveBackbuffer);
+        ConvertPriorityCutoff(allocation.priorityCutoffWhenNotVisible),
+        ManagedMemoryPolicy::kDefaultNumResourcesLimit);
+    bool discard_backbuffer = !allocation.suggestHaveBackbuffer;
+    client_->SetMemoryPolicy(policy, discard_backbuffer);
   }
 
  private:
@@ -442,11 +444,16 @@ void OutputSurface::PostSwapBuffersComplete() {
 }
 
 void OutputSurface::SetMemoryPolicy(const ManagedMemoryPolicy& policy,
-                                    bool discard_backbuffer_when_not_visible) {
+                                    bool discard_backbuffer) {
   TRACE_EVENT2("cc", "OutputSurface::SetMemoryPolicy",
                "bytes_limit_when_visible", policy.bytes_limit_when_visible,
-               "discard_backbuffer", discard_backbuffer_when_not_visible);
-  client_->SetMemoryPolicy(policy, discard_backbuffer_when_not_visible);
+               "discard_backbuffer", discard_backbuffer);
+  // Just ignore the memory manager when it says to set the limit to zero
+  // bytes. This will happen when the memory manager thinks that the renderer
+  // is not visible (which the renderer knows better).
+  if (policy.bytes_limit_when_visible)
+    client_->SetMemoryPolicy(policy);
+  client_->SetDiscardBackBufferWhenNotVisible(discard_backbuffer);
 }
 
 }  // namespace cc

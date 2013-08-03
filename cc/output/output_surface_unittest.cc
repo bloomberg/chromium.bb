@@ -360,6 +360,11 @@ TEST(OutputSurfaceTest, MemoryAllocation) {
             client.memory_policy().priority_cutoff_when_visible);
   EXPECT_EQ(ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
             client.memory_policy().priority_cutoff_when_not_visible);
+
+  // 0 bytes limit should be ignored.
+  allocation.bytesLimitWhenVisible = 0;
+  context->SetMemoryAllocation(allocation);
+  EXPECT_EQ(1234u, client.memory_policy().bytes_limit_when_visible);
 }
 
 }  // namespace

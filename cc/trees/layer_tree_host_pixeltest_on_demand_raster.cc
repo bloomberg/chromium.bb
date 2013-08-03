@@ -30,8 +30,9 @@ class LayerTreeHostOnDemandRasterPixelTest : public LayerTreePixelTest {
     // Not enough memory available. Enforce on-demand rasterization.
     impl->SetMemoryPolicy(
         ManagedMemoryPolicy(1, ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
-                            1, ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING),
-        true);
+                            1, ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+                            1000));
+    impl->SetDiscardBackBufferWhenNotVisible(true);
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,

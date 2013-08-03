@@ -161,9 +161,10 @@ TileManager::~TileManager() {
 void TileManager::SetGlobalState(
     const GlobalStateThatImpactsTilePriority& global_state) {
   global_state_ = global_state;
-  resource_pool_->SetMaxMemoryUsageBytes(
+  resource_pool_->SetMemoryUsageLimits(
       global_state_.memory_limit_in_bytes,
-      global_state_.unused_memory_limit_in_bytes);
+      global_state_.unused_memory_limit_in_bytes,
+      global_state_.num_resources_limit);
 }
 
 void TileManager::RegisterTile(Tile* tile) {
@@ -474,14 +475,17 @@ void TileManager::AssignGpuMemoryToTiles(
   // Now give memory out to the tiles until we're out, and build
   // the needs-to-be-rasterized queue.
   size_t bytes_releasable = 0;
+  size_t resources_releasable = 0;
   for (TileRefVector::const_iterator it = sorted_tiles.begin();
        it != sorted_tiles.end();
        ++it) {
     const Tile* tile = it->get();
     const ManagedTileState& mts = tile->managed_state();
     for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-      if (mts.tile_versions[mode].resource_)
+      if (mts.tile_versions[mode].resource_) {
         bytes_releasable += tile->bytes_consumed_if_allocated();
+        resources_releasable++;
+      }
     }
   }
 
@@ -494,12 +498,17 @@ void TileManager::AssignGpuMemoryToTiles(
       static_cast<int64>(bytes_releasable) +
       static_cast<int64>(global_state_.memory_limit_in_bytes) -
       static_cast<int64>(resource_pool_->acquired_memory_usage_bytes());
+  int resources_available = resources_releasable +
+                            global_state_.num_resources_limit -
+                            resource_pool_->NumResources();
 
   size_t bytes_allocatable =
       std::max(static_cast<int64>(0), bytes_available);
+  size_t resources_allocatable = std::max(0, resources_available);
 
   size_t bytes_that_exceeded_memory_budget = 0;
   size_t bytes_left = bytes_allocatable;
+  size_t resources_left = resources_allocatable;
   bool oomed = false;
   for (TileRefVector::const_iterator it = sorted_tiles.begin();
        it != sorted_tiles.end();
@@ -523,11 +532,14 @@ void TileManager::AssignGpuMemoryToTiles(
     }
 
     size_t tile_bytes = 0;
+    size_t tile_resources = 0;
 
     // It costs to maintain a resource.
     for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-      if (mts.tile_versions[mode].resource_)
+      if (mts.tile_versions[mode].resource_) {
         tile_bytes += tile->bytes_consumed_if_allocated();
+        tile_resources++;
+      }
     }
 
     // Allow lower priority tiles with initialized resources to keep
@@ -536,12 +548,14 @@ void TileManager::AssignGpuMemoryToTiles(
     if (tiles_that_need_to_be_rasterized->size() < kMaxRasterTasks) {
       // If we don't have the required version, and it's not in flight
       // then we'll have to pay to create a new task.
-      if (!tile_version.resource_ && tile_version.raster_task_.is_null())
+      if (!tile_version.resource_ && tile_version.raster_task_.is_null()) {
         tile_bytes += tile->bytes_consumed_if_allocated();
+        tile_resources++;
+      }
     }
 
     // Tile is OOM.
-    if (tile_bytes > bytes_left) {
+    if (tile_bytes > bytes_left || tile_resources > resources_left) {
       FreeResourcesForTile(tile);
 
       // This tile was already on screen and now its resources have been
@@ -554,6 +568,7 @@ void TileManager::AssignGpuMemoryToTiles(
       bytes_that_exceeded_memory_budget += tile_bytes;
     } else {
       bytes_left -= tile_bytes;
+      resources_left -= tile_resources;
 
       if (tile_version.resource_)
         continue;
