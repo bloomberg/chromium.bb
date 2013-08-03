@@ -90,9 +90,6 @@ class BASE_EXPORT WeakReference {
     void Invalidate();
     bool IsValid() const;
 
-    // Remove this when crbug.com/234964 is addressed.
-    void DetachFromThreadHack() { sequence_checker_.DetachFromSequence(); }
-
    private:
     friend class base::RefCountedThreadSafe<Flag>;
 
@@ -124,12 +121,6 @@ class BASE_EXPORT WeakReferenceOwner {
   }
 
   void Invalidate();
-
-  // Remove this when crbug.com/234964 is addressed.
-  void DetachFromThreadHack() {
-    if (flag_.get())
-      flag_->DetachFromThreadHack();
-  }
 
  private:
   mutable scoped_refptr<WeakReference::Flag> flag_;
@@ -309,14 +300,6 @@ class SupportsWeakPtr : public internal::SupportsWeakPtrBase {
 
   WeakPtr<T> AsWeakPtr() {
     return WeakPtr<T>(weak_reference_owner_.GetRef(), static_cast<T*>(this));
-  }
-
-  // Removes the binding, if any, from this object to a particular thread.
-  // This is used in WebGraphicsContext3DInProcessCommandBufferImpl to work-
-  // around access to cmmand buffer objects by more than one thread.
-  // Remove this when crbug.com/234964 is addressed.
-  void DetachFromThreadHack() {
-    weak_reference_owner_.DetachFromThreadHack();
   }
 
  protected:
