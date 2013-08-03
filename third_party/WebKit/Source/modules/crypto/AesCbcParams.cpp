@@ -47,6 +47,7 @@ Uint8Array* AesCbcParams::iv()
 AesCbcParams::AesCbcParams(const WebKit::WebCryptoAlgorithm& algorithm)
     : Algorithm(algorithm)
 {
+    ASSERT(algorithm.aesCbcParams());
     ScriptWrappable::init(this);
 }
 

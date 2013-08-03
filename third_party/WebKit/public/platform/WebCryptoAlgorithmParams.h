@@ -46,7 +46,7 @@ namespace WebKit {
 
 class WebCryptoAlgorithmParams {
 public:
-    WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsType type)
+    explicit WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsType type)
         : m_type(type)
     {
     }
@@ -75,7 +75,7 @@ private:
 
 class WebCryptoAesKeyGenParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoAesKeyGenParams(unsigned short length)
+    explicit WebCryptoAesKeyGenParams(unsigned short length)
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesKeyGenParams)
         , m_length(length)
     {
@@ -89,7 +89,7 @@ private:
 
 class WebCryptoHmacParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoHmacParams(const WebCryptoAlgorithm& hash)
+    explicit WebCryptoHmacParams(const WebCryptoAlgorithm& hash)
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeHmacParams)
         , m_hash(hash)
     {
@@ -99,6 +99,37 @@ public:
 
 private:
     WebCryptoAlgorithm m_hash;
+};
+
+class WebCryptoRsaSsaParams : public WebCryptoAlgorithmParams {
+public:
+    explicit WebCryptoRsaSsaParams(const WebCryptoAlgorithm& hash)
+        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeRsaSsaParams)
+        , m_hash(hash)
+    {
+    }
+
+    const WebCryptoAlgorithm& hash() const { return m_hash; }
+
+private:
+    WebCryptoAlgorithm m_hash;
+};
+
+class WebCryptoRsaKeyGenParams : public WebCryptoAlgorithmParams {
+public:
+    WebCryptoRsaKeyGenParams(unsigned modulusLength, const unsigned char* publicExponent, size_t publicExponentSize)
+        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeRsaKeyGenParams)
+        , m_modulusLength(modulusLength)
+        , m_publicExponent(publicExponent, publicExponentSize)
+    {
+    }
+
+    unsigned modulusLength() const { return m_modulusLength; }
+    const WebVector<unsigned char>& publicExponent() const { return m_publicExponent; }
+
+private:
+    const unsigned m_modulusLength;
+    const WebVector<unsigned char> m_publicExponent;
 };
 
 } // namespace WebKit

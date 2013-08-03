@@ -34,6 +34,8 @@
 #include "V8AesCbcParams.h"
 #include "V8AesKeyGenParams.h"
 #include "V8HmacParams.h"
+#include "V8RsaKeyGenParams.h"
+#include "V8RsaSsaParams.h"
 #include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
@@ -52,6 +54,10 @@ v8::Handle<v8::Object> wrap(Algorithm* impl, v8::Handle<v8::Object> creationCont
         return wrap(static_cast<AesKeyGenParams*>(impl), creationContext, isolate);
     case WebKit::WebCryptoAlgorithmParamsTypeHmacParams:
         return wrap(static_cast<HmacParams*>(impl), creationContext, isolate);
+    case WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams:
+        return wrap(static_cast<RsaSsaParams*>(impl), creationContext, isolate);
+    case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
+        return wrap(static_cast<RsaKeyGenParams*>(impl), creationContext, isolate);
     }
 
     ASSERT_NOT_REACHED();

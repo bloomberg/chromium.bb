@@ -45,6 +45,7 @@ Algorithm* HmacParams::hash()
 HmacParams::HmacParams(const WebKit::WebCryptoAlgorithm& algorithm)
     : Algorithm(algorithm)
 {
+    ASSERT(algorithm.hmacParams());
     ScriptWrappable::init(this);
 }
 

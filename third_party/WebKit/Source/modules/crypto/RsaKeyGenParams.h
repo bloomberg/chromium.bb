@@ -28,23 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/crypto/AesKeyGenParams.h"
+#ifndef RsaKeyGenParams_h
+#define RsaKeyGenParams_h
 
-#include "public/platform/WebCryptoAlgorithmParams.h"
+#include "modules/crypto/Algorithm.h"
+#include "public/platform/WebCryptoAlgorithm.h"
+#include "wtf/Uint8Array.h"
 
 namespace WebCore {
 
-unsigned short AesKeyGenParams::length() const
-{
-    return m_algorithm.aesKeyGenParams()->length();
-}
+class RsaKeyGenParams : public Algorithm {
+public:
+    static PassRefPtr<RsaKeyGenParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new RsaKeyGenParams(algorithm)); }
 
-AesKeyGenParams::AesKeyGenParams(const WebKit::WebCryptoAlgorithm& algorithm)
-    : Algorithm(algorithm)
-{
-    ASSERT(algorithm.aesKeyGenParams());
-    ScriptWrappable::init(this);
-}
+    unsigned modulusLength() const;
+    Uint8Array* publicExponent();
+
+private:
+    explicit RsaKeyGenParams(const WebKit::WebCryptoAlgorithm&);
+
+    RefPtr<Uint8Array> m_publicExponent;
+};
 
 } // namespace WebCore
+
+#endif

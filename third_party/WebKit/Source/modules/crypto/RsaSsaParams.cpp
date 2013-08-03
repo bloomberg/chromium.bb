@@ -29,21 +29,23 @@
  */
 
 #include "config.h"
-#include "modules/crypto/AesKeyGenParams.h"
+#include "modules/crypto/RsaSsaParams.h"
 
 #include "public/platform/WebCryptoAlgorithmParams.h"
 
 namespace WebCore {
 
-unsigned short AesKeyGenParams::length() const
+Algorithm* RsaSsaParams::hash()
 {
-    return m_algorithm.aesKeyGenParams()->length();
+    if (!m_hash)
+        m_hash = Algorithm::create(m_algorithm.rsaSsaParams()->hash());
+    return m_hash.get();
 }
 
-AesKeyGenParams::AesKeyGenParams(const WebKit::WebCryptoAlgorithm& algorithm)
+RsaSsaParams::RsaSsaParams(const WebKit::WebCryptoAlgorithm& algorithm)
     : Algorithm(algorithm)
 {
-    ASSERT(algorithm.aesKeyGenParams());
+    ASSERT(algorithm.rsaSsaParams());
     ScriptWrappable::init(this);
 }
 

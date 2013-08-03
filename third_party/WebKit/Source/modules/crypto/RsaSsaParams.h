@@ -28,23 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/crypto/AesKeyGenParams.h"
+#ifndef RsaSsaParams_h
+#define RsaSsaParams_h
 
-#include "public/platform/WebCryptoAlgorithmParams.h"
+#include "modules/crypto/Algorithm.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-unsigned short AesKeyGenParams::length() const
-{
-    return m_algorithm.aesKeyGenParams()->length();
-}
+class RsaSsaParams : public Algorithm {
+public:
+    static PassRefPtr<RsaSsaParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new RsaSsaParams(algorithm)); }
 
-AesKeyGenParams::AesKeyGenParams(const WebKit::WebCryptoAlgorithm& algorithm)
-    : Algorithm(algorithm)
-{
-    ASSERT(algorithm.aesKeyGenParams());
-    ScriptWrappable::init(this);
-}
+    Algorithm* hash();
+
+private:
+    explicit RsaSsaParams(const WebKit::WebCryptoAlgorithm&);
+
+    RefPtr<Algorithm> m_hash;
+};
 
 } // namespace WebCore
+
+#endif

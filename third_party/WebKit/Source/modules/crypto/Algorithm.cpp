@@ -34,6 +34,8 @@
 #include "modules/crypto/AesCbcParams.h"
 #include "modules/crypto/AesKeyGenParams.h"
 #include "modules/crypto/HmacParams.h"
+#include "modules/crypto/RsaKeyGenParams.h"
+#include "modules/crypto/RsaSsaParams.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -49,6 +51,10 @@ PassRefPtr<Algorithm> Algorithm::create(const WebKit::WebCryptoAlgorithm& algori
         return AesKeyGenParams::create(algorithm);
     case WebKit::WebCryptoAlgorithmParamsTypeHmacParams:
         return HmacParams::create(algorithm);
+    case WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams:
+        return RsaSsaParams::create(algorithm);
+    case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
+        return RsaKeyGenParams::create(algorithm);
     }
     ASSERT_NOT_REACHED();
     return 0;
