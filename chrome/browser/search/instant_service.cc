@@ -98,6 +98,8 @@ InstantService::InstantService(Profile* profile)
       profile, FaviconSource::FAVICON));
   content::URLDataSource::Add(profile, new LocalNtpSource(profile));
   content::URLDataSource::Add(profile, new MostVisitedIframeSource());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::Source<Profile>(profile_));
 }
 
 InstantService::~InstantService() {
@@ -242,6 +244,16 @@ void InstantService::Observe(int type,
       break;
     }
 #endif  // defined(ENABLE_THEMES)
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+      // Last chance to delete InstantNTP contents. We generally delete
+      // preloaded InstantNTP when the last BrowserInstantController object is
+      // destroyed. When the browser shutdown happens without closing browsers,
+      // there is a race condition between BrowserInstantController destruction
+      // and Profile destruction.
+      if (GetNTPContents())
+        ntp_prerenderer_.DeleteNTPContents();
+      break;
+    }
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
   }
