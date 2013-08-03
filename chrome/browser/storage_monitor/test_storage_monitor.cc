@@ -30,6 +30,7 @@ TestStorageMonitor::TestStorageMonitor()
 
 TestStorageMonitor::~TestStorageMonitor() {}
 
+// static
 TestStorageMonitor* TestStorageMonitor::CreateAndInstall() {
   RemoveSingleton();
   TestStorageMonitor* monitor = new TestStorageMonitor();
@@ -44,6 +45,7 @@ TestStorageMonitor* TestStorageMonitor::CreateAndInstall() {
   return NULL;
 }
 
+// static
 TestStorageMonitor* TestStorageMonitor::CreateForBrowserTests() {
   TestStorageMonitor* return_monitor = new TestStorageMonitor();
   return_monitor->Init();
@@ -57,6 +59,7 @@ TestStorageMonitor* TestStorageMonitor::CreateForBrowserTests() {
   return return_monitor;
 }
 
+// static
 void TestStorageMonitor::RemoveSingleton() {
   TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
   if (browser_process)

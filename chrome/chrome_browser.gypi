@@ -1997,9 +1997,6 @@
         'browser/storage_monitor/storage_monitor_win.h',
         'browser/storage_monitor/storage_monitor.cc',
         'browser/storage_monitor/storage_monitor.h',
-        # TODO(thestig) Refactor StorageMonitor so these are test-only.
-        'browser/storage_monitor/test_media_transfer_protocol_manager_linux.cc',
-        'browser/storage_monitor/test_media_transfer_protocol_manager_linux.h',
         'browser/storage_monitor/transient_device_ids.cc',
         'browser/storage_monitor/transient_device_ids.h',
         'browser/storage_monitor/udev_util_linux.cc',

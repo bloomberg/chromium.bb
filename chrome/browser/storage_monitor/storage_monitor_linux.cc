@@ -13,7 +13,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -25,9 +24,7 @@
 #include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
-#include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
 #include "chrome/browser/storage_monitor/udev_util_linux.h"
-#include "chrome/common/chrome_switches.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 namespace chrome {
@@ -261,13 +258,6 @@ StorageMonitorLinux::StorageMonitorLinux(const base::FilePath& path)
       get_device_info_callback_(base::Bind(&GetDeviceInfo)),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // TODO(thestig) Do not do this here. Do it in TestingBrowserProcess when
-  // BrowserProcess owns StorageMonitor.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    SetMediaTransferProtocolManagerForTest(
-        new TestMediaTransferProtocolManagerLinux());
-  }
 }
 
 StorageMonitorLinux::~StorageMonitorLinux() {

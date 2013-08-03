@@ -6,7 +6,6 @@
 
 #include "chrome/browser/storage_monitor/storage_monitor_chromeos.h"
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -17,8 +16,6 @@
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
-#include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
@@ -97,12 +94,6 @@ using chrome::StorageInfo;
 
 StorageMonitorCros::StorageMonitorCros()
     : weak_ptr_factory_(this) {
-  // TODO(thestig) Do not do this here. Do it in TestingBrowserProcess when
-  // BrowserProcess owns StorageMonitor.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    SetMediaTransferProtocolManagerForTest(
-        new chrome::TestMediaTransferProtocolManagerLinux());
-  }
 }
 
 StorageMonitorCros::~StorageMonitorCros() {

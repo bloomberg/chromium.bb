@@ -70,6 +70,10 @@
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
+#endif
+
 namespace {
 
 // Passed as value of kTestType.
@@ -424,6 +428,12 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
     content::WaitForLoadStop(
         browser_->tab_strip_model()->GetActiveWebContents());
   }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Do not use the real StorageMonitor for tests, which introduces another
+  // source of variability and potential slowness.
+  ASSERT_TRUE(chrome::test::TestStorageMonitor::CreateForBrowserTests());
+#endif
 
   // Pump any pending events that were created as a result of creating a
   // browser.

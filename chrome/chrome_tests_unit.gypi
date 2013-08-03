@@ -172,6 +172,8 @@
         'browser/signin/fake_signin_manager.h',
         'browser/ssl/ssl_client_auth_requestor_mock.cc',
         'browser/ssl/ssl_client_auth_requestor_mock.h',
+        'browser/storage_monitor/test_media_transfer_protocol_manager_linux.cc',
+        'browser/storage_monitor/test_media_transfer_protocol_manager_linux.h',
         'browser/storage_monitor/test_storage_monitor.cc',
         'browser/storage_monitor/test_storage_monitor.h',
         'browser/ui/browser.h',
