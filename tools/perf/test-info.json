@@ -271,6 +271,13 @@
       "chrome/src/tools/perf/page_sets/tough_layout_cases.json"
     ]
   },
+  "tab_switching_measurement": {
+    "description": "This test records the MPArch.RWH_TabSwitchPaintDuration histogram, which is a measure of the time between when a tab was requested to be shown, and when first paint occurred. The script opens 10 pages in different tabs, waits for them to load, and then switches to each tab and records the metric. The pages were chosen from Alexa top ranking sites.",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/tab_switching_measurement.py",
+      "chrome/src/tools/perf/page_sets/top_10.json"
+    ]
+  },
   "typical_25": {
     "description": "Page load time benchmark for a 25 typical web pages. Designed to represent typical, not highly optimized or highly popular web sites. Runs against pages recorded in April, 2013.",
     "code": [
