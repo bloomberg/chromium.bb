@@ -7,7 +7,6 @@
 
 #include "cc/base/invalidation_region.h"
 #include "cc/debug/devtools_instrumentation.h"
-#include "cc/layers/contents_scaling_layer.h"
 #include "cc/layers/layer.h"
 #include "cc/resources/picture_pile.h"
 #include "cc/trees/occlusion_tracker.h"
@@ -17,13 +16,13 @@ namespace cc {
 class ContentLayerClient;
 class ResourceUpdateQueue;
 
-class CC_EXPORT PictureLayer : public ContentsScalingLayer {
+class CC_EXPORT PictureLayer : public Layer {
  public:
   static scoped_refptr<PictureLayer> Create(ContentLayerClient* client);
 
   void ClearClient() { client_ = NULL; }
 
-  // Implement Layer interface
+  // Layer interface.
   virtual bool DrawsContent() const OVERRIDE;
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(
       LayerTreeImpl* tree_impl) OVERRIDE;
