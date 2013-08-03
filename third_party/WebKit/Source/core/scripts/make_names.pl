@@ -621,8 +621,6 @@ sub printNamesCppFile
 
     print F "DEFINE_GLOBAL(AtomicString, ${lowerNamespace}NamespaceURI)\n\n";
 
-    print F StaticString::GenerateStringDecls(\%allStrings);
-
     if (keys %allTags) {
         print F "// Tags\n";
         for my $name (sort keys %allTags) {
@@ -1264,8 +1262,6 @@ sub createGenericNamesFile
 
     printLicenseHeader($F);
     printCppHead($F, $basePrefix, $baseName, "WTF");
-
-    print F StaticString::GenerateStringDecls(\%parameters);
 
     while ( my ($name, $identifier) = each %parameters ) {
         print F "DEFINE_GLOBAL(AtomicString, $name)\n";

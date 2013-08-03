@@ -148,19 +148,18 @@ private:
         STRING_STATS_ADD_16BIT_STRING(m_length);
     }
 
-public:
-    ~StringImpl();
-
     enum StaticStringTag { StaticString };
     StringImpl(unsigned length, unsigned hash, StaticStringTag)
         : m_refCount(s_refCountFlagIsStaticString)
         , m_length(length)
         , m_hashAndFlags(hash << s_flagCount | s_hashFlag8BitBuffer)
     {
-#ifndef NDEBUG
-        assertHashIsCorrect();
-#endif
     }
+
+public:
+    ~StringImpl();
+
+    static StringImpl* createStatic(const char* string, unsigned length, unsigned hash);
 
     static PassRefPtr<StringImpl> create(const UChar*, unsigned length);
     static PassRefPtr<StringImpl> create(const LChar*, unsigned length);

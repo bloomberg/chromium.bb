@@ -336,6 +336,27 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
     return adoptRef(new (NotNull, string) StringImpl(length));
 }
 
+StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsigned hash)
+{
+    ASSERT(string);
+    ASSERT(length);
+
+    // Allocate a single buffer large enough to contain the StringImpl
+    // struct as well as the data which it contains. This removes one
+    // heap allocation from this call.
+    RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)));
+    size_t size = sizeof(StringImpl) + length * sizeof(LChar);
+    StringImpl* impl = static_cast<StringImpl*>(fastMalloc(size));
+
+    LChar* data = reinterpret_cast<LChar*>(impl + 1);
+    impl = new (NotNull, impl) StringImpl(length, hash, StaticString);
+    memcpy(data, string, length * sizeof(LChar));
+#ifndef NDEBUG
+    impl->assertHashIsCorrect();
+#endif
+    return impl;
+}
+
 PassRefPtr<StringImpl> StringImpl::create(const UChar* characters, unsigned length)
 {
     if (!characters || !length)

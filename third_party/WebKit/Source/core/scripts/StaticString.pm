@@ -26,31 +26,6 @@ package StaticString;
 use strict;
 use Hasher;
 
-sub GenerateStringDecls($)
-{
-    my $stringsRef = shift;
-    my %strings = %$stringsRef;
-
-    my @result = ();
-
-    push(@result, "\n");
-
-    while ( my ($name, $value) = each %strings ) {
-        my $length = length($value);
-        push(@result, <<END);
-static struct {
-    const char header[sizeof(StringImpl)];
-    const char data[$length + 1];
-} ${name}Data = {
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    "${value}",
-};
-END
-    }
-
-    return join "", @result;
-}
-
 sub GenerateStringImpls($)
 {
     my $stringsRef = shift;
@@ -63,7 +38,7 @@ sub GenerateStringImpls($)
     while ( my ($name, $value) = each %strings ) {
         my $length = length($value);
         my $hash = Hasher::GenerateHashValue($value);
-        push(@result, "    StringImpl* ${name}Impl = new ((void*)&${name}Data.header) StringImpl($length, $hash, StringImpl::StaticString);\n");
+        push(@result, "    StringImpl* ${name}Impl = StringImpl::createStatic(\"$value\", $length, $hash);\n");
     }
 
     push(@result, "\n");
