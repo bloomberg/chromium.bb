@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_service.h"
@@ -47,12 +48,9 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "webkit/browser/blob/blob_storage_controller.h"
-#include "webkit/browser/blob/blob_url_request_job.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/common/blob/blob_data.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -695,202 +693,58 @@ class ScopedItemVectorCanceller {
   DISALLOW_COPY_AND_ASSIGN(ScopedItemVectorCanceller);
 };
 
-class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  explicit TestProtocolHandler(
-      webkit_blob::BlobStorageController* blob_storage_controller,
-      fileapi::FileSystemContext* file_system_context)
-      : blob_storage_controller_(blob_storage_controller),
-        file_system_context_(file_system_context) {}
-
-  virtual ~TestProtocolHandler() {}
-
-  virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return new webkit_blob::BlobURLRequestJob(
-        request,
-        network_delegate,
-        blob_storage_controller_->GetBlobDataFromUrl(request->url()),
-        file_system_context_,
-        base::MessageLoopProxy::current().get());
-  }
-
- private:
-  webkit_blob::BlobStorageController* const blob_storage_controller_;
-  fileapi::FileSystemContext* const file_system_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProtocolHandler);
-};
-
-class TestURLRequestContext : public net::URLRequestContext {
- public:
-  explicit TestURLRequestContext(
-      fileapi::FileSystemContext* file_system_context)
-      : blob_storage_controller_(new webkit_blob::BlobStorageController) {
-    // Job factory owns the protocol handler.
-    job_factory_.SetProtocolHandler(
-        "blob", new TestProtocolHandler(blob_storage_controller_.get(),
-                                        file_system_context));
-    set_job_factory(&job_factory_);
-  }
-
-  virtual ~TestURLRequestContext() {}
-
-  webkit_blob::BlobStorageController* blob_storage_controller() const {
-    return blob_storage_controller_.get();
-  }
-
- private:
-  net::URLRequestJobFactoryImpl job_factory_;
-  scoped_ptr<webkit_blob::BlobStorageController> blob_storage_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLRequestContext);
-};
-
 // Writes an HTML5 file so that it can be downloaded.
 class HTML5FileWriter {
  public:
-  HTML5FileWriter(
-      Profile* profile,
-      const std::string& filename,
-      const std::string& origin,
-      DownloadsEventsListener* events_listener,
-      const std::string& payload)
-    : profile_(profile),
-      filename_(filename),
-      origin_(origin),
-      events_listener_(events_listener),
-      blob_data_(new webkit_blob::BlobData()),
-      payload_(payload),
-      fs_(BrowserContext::GetDefaultStoragePartition(profile_)->
-          GetFileSystemContext()) {
-    CHECK(profile_);
-    CHECK(events_listener_);
-    CHECK(fs_);
-  }
-
-  ~HTML5FileWriter() {
-    CHECK(BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-        &HTML5FileWriter::TearDownURLRequestContext, base::Unretained(this))));
-    events_listener_->WaitFor(
-        profile_, kURLRequestContextToreDown, std::string());
-  }
-
-  bool WriteFile() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    fs_->OpenFileSystem(
-        GURL(origin_),
-        fileapi::kFileSystemTypeTemporary,
-        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::Bind(&HTML5FileWriter::OpenFileSystemCallback,
-                   base::Unretained(this)));
-    return events_listener_->WaitFor(profile_, kHTML5FileWritten, filename_);
+  static bool CreateFileForTesting(fileapi::FileSystemContext* context,
+                                   const fileapi::FileSystemURL& path,
+                                   const char*data,
+                                   int length) {
+    // Create a temp file.
+    base::FilePath temp_file;
+    if (!file_util::CreateTemporaryFile(&temp_file) ||
+        file_util::WriteFile(temp_file, data, length) != length) {
+      return false;
+    }
+    // Invoke the fileapi to copy it into the sandboxed filesystem.
+    bool result = false;
+    base::WaitableEvent done_event(true, false);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&CreateFileForTestingOnIOThread,
+                   base::Unretained(context),
+                   path, temp_file,
+                   base::Unretained(&result),
+                   base::Unretained(&done_event)));
+    // Wait for that to finish.
+    done_event.Wait();
+    base::DeleteFile(temp_file, false);
+    return result;
   }
 
  private:
-  static const char kHTML5FileWritten[];
-  static const char kURLRequestContextToreDown[];
-  static const bool kExclusive = true;
-
-  GURL blob_url() const { return GURL("blob:" + filename_); }
-
-  void OpenFileSystemCallback(
-      base::PlatformFileError result,
-      const std::string& fs_name,
-      const GURL& root) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    root_ = root.spec();
-    CHECK(BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-        &HTML5FileWriter::CreateFile, base::Unretained(this))));
+  static void CopyInCompletion(bool* result,
+                               base::WaitableEvent* done_event,
+                               base::PlatformFileError error) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    *result = error == base::PLATFORM_FILE_OK;
+    done_event->Signal();
   }
 
-  fileapi::FileSystemOperationRunner* operation_runner() {
-    return fs_->operation_runner();
+  static void CreateFileForTestingOnIOThread(
+      fileapi::FileSystemContext* context,
+      const fileapi::FileSystemURL& path,
+      const base::FilePath& temp_file,
+      bool* result,
+      base::WaitableEvent* done_event) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    context->operation_runner()->CopyInForeignFile(
+        temp_file, path,
+        base::Bind(&CopyInCompletion,
+                   base::Unretained(result),
+                   base::Unretained(done_event)));
   }
-
-  void CreateFile() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    operation_runner()->CreateFile(fs_->CrackURL(GURL(root_ + filename_)),
-        kExclusive, base::Bind(
-            &HTML5FileWriter::CreateFileCallback, base::Unretained(this)));
-  }
-
-  void CreateFileCallback(base::PlatformFileError result) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    CHECK_EQ(base::PLATFORM_FILE_OK, result);
-    blob_data_->AppendData(payload_);
-    url_request_context_.reset(new TestURLRequestContext(fs_));
-    url_request_context_->blob_storage_controller()
-        ->AddFinishedBlob(blob_url(), blob_data_.get());
-    operation_runner()->Write(
-        url_request_context_.get(),
-        fs_->CrackURL(GURL(root_ + filename_)),
-        blob_url(),
-        0,  // offset
-        base::Bind(&HTML5FileWriter::WriteCallback, base::Unretained(this)));
-  }
-
-  void WriteCallback(
-      base::PlatformFileError result,
-      int64 bytes,
-      bool complete) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    CHECK_EQ(base::PLATFORM_FILE_OK, result);
-    CHECK(BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &HTML5FileWriter::NotifyWritten, base::Unretained(this))));
-  }
-
-  void NotifyWritten() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    DownloadsEventsListener::DownloadsNotificationSource notification_source;
-    notification_source.event_name = kHTML5FileWritten;
-    notification_source.profile = profile_;
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
-        content::Source<DownloadsEventsListener::DownloadsNotificationSource>(
-          &notification_source),
-        content::Details<std::string>(&filename_));
-  }
-
-  void TearDownURLRequestContext() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    url_request_context_->blob_storage_controller()->RemoveBlob(blob_url());
-    url_request_context_.reset();
-    CHECK(BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &HTML5FileWriter::NotifyURLRequestContextToreDown,
-        base::Unretained(this))));
-  }
-
-  void NotifyURLRequestContextToreDown() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    DownloadsEventsListener::DownloadsNotificationSource notification_source;
-    notification_source.event_name = kURLRequestContextToreDown;
-    notification_source.profile = profile_;
-    std::string empty_args;
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
-        content::Source<DownloadsEventsListener::DownloadsNotificationSource>(
-          &notification_source),
-        content::Details<std::string>(&empty_args));
-  }
-
-  Profile* profile_;
-  std::string filename_;
-  std::string origin_;
-  std::string root_;
-  DownloadsEventsListener* events_listener_;
-  scoped_refptr<webkit_blob::BlobData> blob_data_;
-  std::string payload_;
-  scoped_ptr<TestURLRequestContext> url_request_context_;
-  fileapi::FileSystemContext* fs_;
-
-  DISALLOW_COPY_AND_ASSIGN(HTML5FileWriter);
 };
-
-const char HTML5FileWriter::kHTML5FileWritten[] = "html5_file_written";
-const char HTML5FileWriter::kURLRequestContextToreDown[] =
-  "url_request_context_tore_down";
 
 // TODO(benjhayden) Merge this with the other TestObservers.
 class JustInProgressDownloadObserver
@@ -2303,16 +2157,18 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   static const char* kPayloadData = "on the record\ndata";
   GoOnTheRecord();
   LoadExtension("downloads_split");
-  HTML5FileWriter html5_file_writer(
-      browser()->profile(),
-      "on_record.txt",
-      GetExtensionURL(),
-      events_listener(),
-      kPayloadData);
-  ASSERT_TRUE(html5_file_writer.WriteFile());
 
-  std::string download_url = "filesystem:" + GetExtensionURL() +
+  const std::string download_url = "filesystem:" + GetExtensionURL() +
     "temporary/on_record.txt";
+
+  // Setup a file in the filesystem which we can download.
+  ASSERT_TRUE(HTML5FileWriter::CreateFileForTesting(
+      BrowserContext::GetDefaultStoragePartition(browser()->profile())->
+          GetFileSystemContext(),
+      fileapi::FileSystemURL::CreateForTest(GURL(download_url)),
+      kPayloadData, strlen(kPayloadData)));
+
+  // Now download it.
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsDownloadFunction(), base::StringPrintf(
           "[{\"url\": \"%s\"}]", download_url.c_str())));
