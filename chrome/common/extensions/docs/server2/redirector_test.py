@@ -73,8 +73,8 @@ class RedirectorTest(unittest.TestCase):
         '/index.html', redirector.Redirect(HOST, 'apps/'))
 
   def testNotFound(self):
-    self.assertIsNone(redirector.Redirect(HOST, 'not/a/real/path'))
-    self.assertIsNone(redirector.Redirect(HOST, 'public/apps/okay.html'))
+    self.assertEqual(None, redirector.Redirect(HOST, 'not/a/real/path'))
+    self.assertEqual(None, redirector.Redirect(HOST, 'public/apps/okay.html'))
 
   def testOldHosts(self):
     self.assertEqual(

@@ -129,7 +129,7 @@ class BranchUtility(object):
     if version == 'trunk':
       return 'trunk'
 
-    branch = self._branch_object_store.Get(version).Get()
+    branch = self._branch_object_store.Get(str(version)).Get()
     if branch is not None:
       return branch
 

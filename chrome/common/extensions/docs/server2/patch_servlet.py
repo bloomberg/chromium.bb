@@ -33,10 +33,12 @@ class _PatchServletDelegate(RenderServlet.Delegate):
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
     host_file_system_creator = self._delegate.CreateHostFileSystemCreator(
         object_store_creator)
-    # TODO(fj): Use OfflineFileSystem here once all json/idl files in api/
-    # are pulled into data store by cron jobs.
-    base_file_system = CachingFileSystem(host_file_system_creator.Create(),
-                                         object_store_creator)
+    # offline=False because a patch can rely on files that are already in SVN
+    # repository but not yet pulled into data store by cron jobs (a typical
+    # example is to add documentation for an existing API).
+    base_file_system = CachingFileSystem(
+        host_file_system_creator.Create(offline=False),
+        object_store_creator)
     base_compiled_fs_factory = CompiledFileSystem.Factory(base_file_system,
                                                           object_store_creator)
 
