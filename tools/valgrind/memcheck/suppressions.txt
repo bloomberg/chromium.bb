@@ -6982,13 +6982,6 @@
    fun:_ZN11webkit_glue25WebKitPlatformSupportImpl9DoTimeoutEv
 }
 {
-   bug_251827
-   Memcheck:Leak
-   fun:_Zna*
-   fun:_ZN5media*scoped_refptrINS_11AudioBufferEENS_12SampleFormatEiT_S5_iN4base9TimeDeltaE
-   fun:_ZN5media*AudioBufferTest*
-}
-{
    bug_252036
    Memcheck:Uninitialized
    fun:_ZN2cc9Scheduler27SetupNextBeginFrameIfNeededEv
