@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_NAVIGATOR_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_BROWSER_NAVIGATOR_BROWSERTEST_H_
 
+#include <string>
+
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_types.h"
@@ -41,6 +43,11 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  bool OpenPOSTURLInNewForegroundTabAndGetTitle(const GURL& url,
+                                                const std::string& post_data,
+                                                bool is_browser_initiated,
+                                                base::string16* title);
 
   size_t created_tab_contents_count_;
 };

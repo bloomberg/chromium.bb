@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,6 +32,9 @@
 using content::WebContents;
 
 namespace {
+
+const char kExpectedTitle[] = "PASSED!";
+const char kEchoTitleCommand[] = "echotitle";
 
 GURL GetGoogleURL() {
   return GURL("http://www.google.com/");
@@ -62,7 +66,7 @@ GURL ShortenUberURL(const GURL& url) {
   return GURL(url_string);
 }
 
-} // namespace
+}  // namespace
 
 chrome::NavigateParams BrowserNavigatorTest::MakeNavigateParams() const {
   return MakeNavigateParams(browser());
@@ -74,6 +78,34 @@ chrome::NavigateParams BrowserNavigatorTest::MakeNavigateParams(
                                 content::PAGE_TRANSITION_LINK);
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   return params;
+}
+
+bool BrowserNavigatorTest::OpenPOSTURLInNewForegroundTabAndGetTitle(
+    const GURL& url, const std::string& post_data, bool is_browser_initiated,
+    base::string16* title) {
+  chrome::NavigateParams param(MakeNavigateParams());
+  param.disposition = NEW_FOREGROUND_TAB;
+  param.url = url;
+  param.is_renderer_initiated = !is_browser_initiated;
+  param.uses_post = true;
+  param.browser_initiated_post_data = new base::RefCountedStaticMemory(
+      reinterpret_cast<const uint8*>(post_data.data()), post_data.size());
+
+  ui_test_utils::NavigateToURL(&param);
+  if (!param.target_contents)
+    return false;
+
+  // Navigate() should have opened the contents in new foreground tab in the
+  // current Browser.
+  EXPECT_EQ(browser(), param.browser);
+  EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
+            param.target_contents);
+  // We should have one window, with one tab.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  *title = param.target_contents->GetTitle();
+  return true;
 }
 
 Browser* BrowserNavigatorTest::CreateEmptyBrowserForType(Browser::Type type,
@@ -1291,4 +1323,36 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, ViewSourceIsntSingleton) {
   EXPECT_EQ(-1, chrome::GetIndexOfSingletonTab(&singleton_params));
 }
 
-} // namespace
+// This test verifies that browser initiated navigations can send requests
+// using POST.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       SendBrowserInitiatedRequestUsingPOST) {
+  // Uses a test sever to verify POST request.
+  ASSERT_TRUE(test_server()->Start());
+
+  // Open a browser initiated POST request in new foreground tab.
+  string16 expected_title(base::ASCIIToUTF16(kExpectedTitle));
+  std::string post_data = kExpectedTitle;
+  string16 title;
+  ASSERT_TRUE(OpenPOSTURLInNewForegroundTabAndGetTitle(
+      test_server()->GetURL(kEchoTitleCommand), post_data, true, &title));
+  EXPECT_EQ(expected_title, title);
+}
+
+// This test verifies that renderer initiated navigations can NOT send requests
+// using POST.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       SendRendererInitiatedRequestUsingPOST) {
+  // Uses a test sever to verify POST request.
+  ASSERT_TRUE(test_server()->Start());
+
+  // Open a renderer initiated POST request in new foreground tab.
+  string16 expected_title(base::ASCIIToUTF16(kExpectedTitle));
+  std::string post_data = kExpectedTitle;
+  string16 title;
+  ASSERT_TRUE(OpenPOSTURLInNewForegroundTabAndGetTitle(
+      test_server()->GetURL(kEchoTitleCommand), post_data, false, &title));
+  EXPECT_NE(expected_title, title);
+}
+
+}  // namespace

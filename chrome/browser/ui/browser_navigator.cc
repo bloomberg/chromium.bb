@@ -45,6 +45,7 @@
 #endif
 
 using content::GlobalRequestID;
+using content::NavigationController;
 using content::WebContents;
 
 class BrowserNavigatorWebContentsAdoption {
@@ -243,7 +244,7 @@ Profile* GetSourceProfile(chrome::NavigateParams* params) {
 void LoadURLInContents(WebContents* target_contents,
                        const GURL& url,
                        chrome::NavigateParams* params) {
-  content::NavigationController::LoadURLParams load_url_params(url);
+  NavigationController::LoadURLParams load_url_params(url);
   load_url_params.referrer = params->referrer;
   load_url_params.transition_type = params->transition;
   load_url_params.extra_headers = params->extra_headers;
@@ -256,6 +257,14 @@ void LoadURLInContents(WebContents* target_contents,
         params->transferred_global_request_id;
   } else if (params->is_renderer_initiated) {
     load_url_params.is_renderer_initiated = true;
+  }
+
+  // Only allows the browser-initiated navigation to use POST.
+  if (params->uses_post && !params->is_renderer_initiated) {
+    load_url_params.load_type =
+        NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
+    load_url_params.browser_initiated_post_data =
+        params->browser_initiated_post_data;
   }
   target_contents->GetController().LoadURLWithParams(load_url_params);
 }
@@ -382,6 +391,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
                                const GURL& a_url,
                                content::PageTransition a_transition)
     : url(a_url),
+      uses_post(false),
       target_contents(NULL),
       source_contents(NULL),
       disposition(CURRENT_TAB),
@@ -402,7 +412,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
 
 NavigateParams::NavigateParams(Browser* a_browser,
                                WebContents* a_target_contents)
-    : target_contents(a_target_contents),
+    : uses_post(false),
+      target_contents(a_target_contents),
       source_contents(NULL),
       disposition(CURRENT_TAB),
       transition(content::PAGE_TRANSITION_LINK),
@@ -424,6 +435,7 @@ NavigateParams::NavigateParams(Profile* a_profile,
                                const GURL& a_url,
                                content::PageTransition a_transition)
     : url(a_url),
+      uses_post(false),
       target_contents(NULL),
       source_contents(NULL),
       disposition(NEW_FOREGROUND_TAB),
@@ -455,6 +467,8 @@ void FillNavigateParamsFromOpenURLParams(chrome::NavigateParams* nav_params,
       params.transferred_global_request_id;
   nav_params->should_replace_current_entry =
       params.should_replace_current_entry;
+  nav_params->uses_post = params.uses_post;
+  nav_params->browser_initiated_post_data = params.browser_initiated_post_data;
 }
 
 void Navigate(NavigateParams* params) {

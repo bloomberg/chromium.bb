@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
@@ -62,6 +64,15 @@ struct NavigateParams {
   // The URL/referrer to be loaded. Ignored if |target_contents| is non-NULL.
   GURL url;
   content::Referrer referrer;
+
+  // Indicates whether this navigation will be sent using POST.
+  // The POST method is limited support for basic POST data by leveraging
+  // NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST.
+  // It is not for things like file uploads.
+  bool uses_post;
+
+  // The post data when the navigation uses POST.
+  scoped_refptr<base::RefCountedMemory> browser_initiated_post_data;
 
   // Extra headers to add to the request for this page.  Headers are
   // represented as "<name>: <value>" and separated by \r\n.  The entire string

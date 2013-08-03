@@ -14,6 +14,7 @@ OpenURLParams::OpenURLParams(
     bool is_renderer_initiated)
     : url(url),
       referrer(referrer),
+      uses_post(false),
       source_frame_id(-1),
       disposition(disposition),
       transition(transition),
@@ -31,6 +32,7 @@ OpenURLParams::OpenURLParams(
     bool is_renderer_initiated)
     : url(url),
       referrer(referrer),
+      uses_post(false),
       source_frame_id(source_frame_id),
       disposition(disposition),
       transition(transition),
@@ -40,7 +42,8 @@ OpenURLParams::OpenURLParams(
 }
 
 OpenURLParams::OpenURLParams()
-    : source_frame_id(-1),
+    : uses_post(false),
+      source_frame_id(-1),
       disposition(UNKNOWN),
       transition(PageTransitionFromInt(0)),
       is_renderer_initiated(false),
