@@ -62,7 +62,8 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
   // calculations.
   virtual QuicTime::Delta TimeUntilSend(QuicTime now,
                                         Retransmission retransmission,
-                                        HasRetransmittableData retransmittable);
+                                        HasRetransmittableData retransmittable,
+                                        IsHandshake handshake);
 
   // Should be called before sending an ACK packet, to decide if we need
   // to attach a QuicCongestionFeedbackFrame block.

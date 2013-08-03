@@ -128,8 +128,10 @@ void QuicCongestionManager::OnIncomingAckFrame(const QuicAckFrame& frame,
 QuicTime::Delta QuicCongestionManager::TimeUntilSend(
     QuicTime now,
     Retransmission retransmission,
-    HasRetransmittableData retransmittable) {
-  return send_algorithm_->TimeUntilSend(now, retransmission, retransmittable);
+    HasRetransmittableData retransmittable,
+    IsHandshake handshake) {
+  return send_algorithm_->TimeUntilSend(now, retransmission, retransmittable,
+                                        handshake);
 }
 
 bool QuicCongestionManager::GenerateCongestionFeedback(

@@ -79,7 +79,8 @@ void FixRateSender::AbandoningPacket(
 QuicTime::Delta FixRateSender::TimeUntilSend(
     QuicTime now,
     Retransmission /*is_retransmission*/,
-    HasRetransmittableData /*has_retransmittable_data*/) {
+    HasRetransmittableData /*has_retransmittable_data*/,
+    IsHandshake /* handshake */) {
   if (CongestionWindow() > fix_rate_leaky_bucket_.BytesPending(now)) {
     if (CongestionWindow() <= data_in_flight_) {
       // We need an ack before we send more.

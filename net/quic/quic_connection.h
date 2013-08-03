@@ -309,7 +309,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // QuicPacketGenerator::DelegateInterface
   virtual bool CanWrite(
       Retransmission is_retransmission,
-      HasRetransmittableData has_retransmittable_data) OVERRIDE;
+      HasRetransmittableData has_retransmittable_data,
+      IsHandshake handshake) OVERRIDE;
   virtual QuicAckFrame* CreateAckFrame() OVERRIDE;
   virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() OVERRIDE;
   virtual bool OnSerializedPacket(const SerializedPacket& packet) OVERRIDE;

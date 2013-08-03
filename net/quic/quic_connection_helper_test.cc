@@ -104,7 +104,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
     helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
                                        &random_generator_, socket_.get());
     send_algorithm_ = new testing::StrictMock<MockSendAlgorithm>();
-    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
         WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
     connection_.reset(new TestConnection(guid_, IPEndPoint(), helper_));
     connection_->set_visitor(&visitor_);
@@ -451,7 +451,7 @@ TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
   EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
       testing::Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(
-      *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
+      *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _, _)).WillOnce(
           testing::Return(QuicTime::Delta::FromMicroseconds(1)));
 
   QuicPacket* packet = ConstructRawDataPacket(1);
@@ -462,9 +462,9 @@ TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
 
   // Advance the clock to fire the alarm, and configure the scheduler
   // to permit the packet to be sent.
-  EXPECT_CALL(
-      *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillRepeatedly(
-          testing::Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm_,
+              TimeUntilSend(_, NOT_RETRANSMISSION, _, _)).WillRepeatedly(
+      testing::Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(testing::Return(true));
   runner_->RunNextTask();
   EXPECT_EQ(0u, connection_->NumQueuedPackets());

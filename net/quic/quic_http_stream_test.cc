@@ -170,7 +170,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     receive_algorithm_ = new TestReceiveAlgorithm(NULL);
     EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
         testing::Return(QuicTime::Delta::Zero()));
-    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
         WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
     helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
                                        &random_generator_, socket);

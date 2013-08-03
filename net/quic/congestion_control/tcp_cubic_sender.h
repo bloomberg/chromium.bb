@@ -48,7 +48,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
       Retransmission is_retransmission,
-      HasRetransmittableData has_retransmittable_data) OVERRIDE;
+      HasRetransmittableData has_retransmittable_data,
+      IsHandshake handshake) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
   virtual QuicTime::Delta SmoothedRtt() OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() OVERRIDE;

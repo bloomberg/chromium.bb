@@ -112,10 +112,15 @@ void TcpCubicSender::AbandoningPacket(QuicPacketSequenceNumber sequence_number,
 QuicTime::Delta TcpCubicSender::TimeUntilSend(
     QuicTime now,
     Retransmission is_retransmission,
-    HasRetransmittableData has_retransmittable_data) {
+    HasRetransmittableData has_retransmittable_data,
+    IsHandshake handshake) {
   if (is_retransmission == IS_RETRANSMISSION ||
-      has_retransmittable_data == NO_RETRANSMITTABLE_DATA) {
-    // For TCP we can always send a retransmission and/or an ACK immediately.
+      has_retransmittable_data == NO_RETRANSMITTABLE_DATA ||
+      handshake == IS_HANDSHAKE) {
+    // For TCP we can always send a retransmission,  or an ACK immediately.
+    // We also immediately send any handshake packet (CHLO, etc.).  We provide
+    // this  special dispensation for handshake messages in QUIC, although the
+    // concept is not present in TCP.
     return QuicTime::Delta::Zero();
   }
   if (AvailableCongestionWindow() == 0) {

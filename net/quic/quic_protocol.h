@@ -91,6 +91,11 @@ enum HasRetransmittableData {
   HAS_RETRANSMITTABLE_DATA,
 };
 
+enum IsHandshake {
+  NOT_HANDSHAKE,
+  IS_HANDSHAKE
+};
+
 enum QuicFrameType {
   PADDING_FRAME = 0,
   STREAM_FRAME,

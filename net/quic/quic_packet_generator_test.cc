@@ -32,32 +32,33 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
   MockDelegate() {}
   virtual ~MockDelegate() {}
 
-  MOCK_METHOD2(CanWrite, bool(Retransmission retransmission,
-                              HasRetransmittableData retransmittable));
+  MOCK_METHOD3(CanWrite, bool(Retransmission retransmission,
+                              HasRetransmittableData retransmittable,
+                              IsHandshake handshake));
 
   MOCK_METHOD0(CreateAckFrame, QuicAckFrame*());
   MOCK_METHOD0(CreateFeedbackFrame, QuicCongestionFeedbackFrame*());
   MOCK_METHOD1(OnSerializedPacket, bool(const SerializedPacket& packet));
 
   void SetCanWriteAnything() {
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, _))
+    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, _, _))
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA))
+    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA, _))
         .WillRepeatedly(Return(true));
   }
 
   void SetCanNotWrite() {
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, _))
+    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, _, _))
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA))
+    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA, _))
         .WillRepeatedly(Return(false));
   }
 
   // Use this when only ack and feedback frames should be allowed to be written.
   void SetCanWriteOnlyNonRetransmittable() {
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, _))
+    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, _, _))
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA))
+    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA, _))
         .WillRepeatedly(Return(true));
   }
 

@@ -60,10 +60,10 @@ TEST_F(QuicCongestionManagerTest, Bandwidth) {
 
   for (int i = 1; i <= 100; ++i) {
     QuicTime::Delta advance_time = manager_->TimeUntilSend(
-        clock_.Now(), NOT_RETRANSMISSION, kIgnored);
+        clock_.Now(), NOT_RETRANSMISSION, kIgnored, NOT_HANDSHAKE);
     clock_.AdvanceTime(advance_time);
     EXPECT_TRUE(manager_->TimeUntilSend(
-        clock_.Now(), NOT_RETRANSMISSION, kIgnored).IsZero());
+        clock_.Now(), NOT_RETRANSMISSION, kIgnored, NOT_HANDSHAKE).IsZero());
     manager_->SentPacket(i, clock_.Now(), 1000, NOT_RETRANSMISSION);
     // Ack the packet we sent.
     ack.received_info.largest_observed = i;
@@ -91,7 +91,7 @@ TEST_F(QuicCongestionManagerTest, BandwidthWith1SecondGap) {
       ++sequence_number) {
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
     EXPECT_TRUE(manager_->TimeUntilSend(
-        clock_.Now(), NOT_RETRANSMISSION, kIgnored).IsZero());
+        clock_.Now(), NOT_RETRANSMISSION, kIgnored, NOT_HANDSHAKE).IsZero());
     manager_->SentPacket(
         sequence_number, clock_.Now(), 1000, NOT_RETRANSMISSION);
     // Ack the packet we sent.
@@ -117,7 +117,7 @@ TEST_F(QuicCongestionManagerTest, BandwidthWith1SecondGap) {
       clock_.Now()).IsZero());
   for (int i = 1; i <= 150; ++i) {
     EXPECT_TRUE(manager_->TimeUntilSend(
-        clock_.Now(), NOT_RETRANSMISSION, kIgnored).IsZero());
+        clock_.Now(), NOT_RETRANSMISSION, kIgnored, NOT_HANDSHAKE).IsZero());
     manager_->SentPacket(i + 100, clock_.Now(), 1000, NOT_RETRANSMISSION);
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
     // Ack the packet we sent.

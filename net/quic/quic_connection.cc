@@ -375,7 +375,7 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   // queued locally, or drain streams which are blocked.
   QuicTime::Delta delay = congestion_manager_.TimeUntilSend(
       time_of_last_received_packet_, NOT_RETRANSMISSION,
-      HAS_RETRANSMITTABLE_DATA);
+      HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
   if (delay.IsZero()) {
     helper_->UnregisterSendAlarmIfRegistered();
     WriteIfNotBlocked();
@@ -798,7 +798,8 @@ bool QuicConnection::DoWrite() {
   // or the congestion manager to prohibit sending.  If we've sent everything
   // we had queued and we're still not blocked, let the visitor know it can
   // write more.
-  if (CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA)) {
+  if (CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
+               NOT_HANDSHAKE)) {
     packet_generator_.StartBatchOperations();
     bool all_bytes_written = visitor_->OnCanWrite();
     packet_generator_.FinishBatchOperations();
@@ -806,7 +807,8 @@ bool QuicConnection::DoWrite() {
     // After the visitor writes, it may have caused the socket to become write
     // blocked or the congestion manager to prohibit sending, so check again.
     if (!write_blocked_ && !all_bytes_written &&
-        CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA)) {
+        CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
+                 NOT_HANDSHAKE)) {
       // We're not write blocked, but some stream didn't write out all of its
       // bytes.  Register for 'immediate' resumption so we'll keep writing after
       // other quic connections have had a chance to use the socket.
@@ -984,7 +986,8 @@ void QuicConnection::RetransmitPacket(
 }
 
 bool QuicConnection::CanWrite(Retransmission retransmission,
-                              HasRetransmittableData retransmittable) {
+                              HasRetransmittableData retransmittable,
+                              IsHandshake handshake) {
   // TODO(ianswett): If the packet is a retransmit, the current send alarm may
   // be too long.
   if (write_blocked_ || helper_->IsSendAlarmSet()) {
@@ -993,7 +996,7 @@ bool QuicConnection::CanWrite(Retransmission retransmission,
 
   QuicTime now = clock_->Now();
   QuicTime::Delta delay = congestion_manager_.TimeUntilSend(
-      now, retransmission, retransmittable);
+      now, retransmission, retransmittable, handshake);
   if (delay.IsInfinite()) {
     return false;
   }
@@ -1101,8 +1104,12 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
 
   Retransmission retransmission = IsRetransmission(sequence_number) ?
       IS_RETRANSMISSION : NOT_RETRANSMISSION;
+  IsHandshake handshake = level == ENCRYPTION_NONE ? IS_HANDSHAKE
+                                                   : NOT_HANDSHAKE;
+
   // If we are not forced and we can't write, then simply return false;
-  if (forced == NO_FORCE && !CanWrite(retransmission, retransmittable)) {
+  if (forced == NO_FORCE &&
+      !CanWrite(retransmission, retransmittable, handshake)) {
     return false;
   }
 

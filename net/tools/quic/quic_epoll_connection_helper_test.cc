@@ -85,8 +85,8 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
     connection_.set_visitor(&visitor_);
     connection_.SetSendAlgorithm(send_algorithm_);
     epoll_server_.set_timeout_in_us(-1);
-    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).WillRepeatedly(Return(
-        QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
+        WillRepeatedly(Return(QuicTime::Delta::Zero()));
   }
 
   QuicPacket* ConstructDataPacket(QuicPacketSequenceNumber number,
@@ -184,7 +184,7 @@ TEST_F(QuicEpollConnectionHelperTest, SendSchedulerDelayThenSend) {
       Return(QuicTime::Delta::Zero()));
   QuicPacket* packet = ConstructDataPacket(1, 0);
   EXPECT_CALL(
-      *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
+      *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _, _)).WillOnce(
           testing::Return(QuicTime::Delta::FromMicroseconds(1)));
   connection_.SendOrQueuePacket(ENCRYPTION_NONE, 1, packet, 0,
                                 HAS_RETRANSMITTABLE_DATA);
@@ -193,9 +193,8 @@ TEST_F(QuicEpollConnectionHelperTest, SendSchedulerDelayThenSend) {
 
   // Advance the clock to fire the alarm, and configure the scheduler
   // to permit the packet to be sent.
-  EXPECT_CALL(
-      *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillRepeatedly(
-          testing::Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _, _)).
+      WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(testing::Return(true));
   epoll_server_.AdvanceByAndCallCallbacks(1);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());

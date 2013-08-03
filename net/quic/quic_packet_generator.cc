@@ -75,7 +75,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
 
-  while (delegate_->CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA)) {
+  while (delegate_->CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
+                             NOT_HANDSHAKE)) {
     QuicFrame frame;
     size_t bytes_consumed = packet_creator_->CreateStreamFrame(
         id, data, offset + total_bytes_consumed, fin, &frame);
@@ -120,7 +121,8 @@ bool QuicPacketGenerator::CanSendWithNextPendingFrameAddition() const {
   if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
       DCHECK(!queued_control_frames_.empty());  // These are retransmittable.
   }
-  return delegate_->CanWrite(NOT_RETRANSMISSION, retransmittable);
+  return delegate_->CanWrite(NOT_RETRANSMISSION, retransmittable,
+                             NOT_HANDSHAKE);
 }
 
 void QuicPacketGenerator::SendQueuedFrames() {

@@ -257,7 +257,8 @@ void InterArrivalSender::AbandoningPacket(
 QuicTime::Delta InterArrivalSender::TimeUntilSend(
     QuicTime now,
     Retransmission /*retransmit*/,
-    HasRetransmittableData has_retransmittable_data) {
+    HasRetransmittableData has_retransmittable_data,
+    IsHandshake /* handshake */) {
   // TODO(pwestin): implement outer_congestion_window_ logic.
   QuicTime::Delta outer_window = QuicTime::Delta::Zero();
 

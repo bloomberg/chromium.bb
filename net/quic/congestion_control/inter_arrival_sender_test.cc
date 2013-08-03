@@ -33,8 +33,8 @@ class InterArrivalSenderTest : public ::testing::Test {
   }
 
   void SendAvailableCongestionWindow() {
-    while (sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                 HAS_RETRANSMITTABLE_DATA).IsZero()) {
+    while (sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero()) {
       QuicByteCount bytes_in_packet = kMaxPacketSize;
       sent_packets_[sequence_number_] =
           new class SendAlgorithmInterface::SentPacket(
@@ -44,8 +44,8 @@ class InterArrivalSenderTest : public ::testing::Test {
                          NOT_RETRANSMISSION);
       sequence_number_++;
     }
-    EXPECT_FALSE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                       HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_FALSE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
   }
 
   void AckNPackets(int n) {
@@ -119,29 +119,29 @@ class InterArrivalSenderTest : public ::testing::Test {
 TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
 
   // Send 5 bursts.
   for (int i = 0; i < 4; ++i) {
     SendAvailableCongestionWindow();
-    send_clock_.AdvanceTime(sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
   }
   SendAvailableCongestionWindow();
 
   // We have now sent our probe.
   EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsInfinite());
+      HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsInfinite());
 
   AckNPackets(10);
   SendFeedbackMessageNPackets(10, one_ms_, nine_ms_);
-  send_clock_.AdvanceTime(sender_.TimeUntilSend(
-      send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
 
   // We should now have our probe rate.
   QuicTime::Delta acc_arrival_time = QuicTime::Delta::FromMilliseconds(41);
@@ -153,11 +153,11 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   // Send 50 bursts, make sure that we move fast in the beginning.
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -168,11 +168,11 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   // Send 50 bursts, make sure that we slow down towards the probe rate.
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -183,11 +183,11 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   // Send 50 bursts, make sure that we move very slow close to the probe rate.
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -199,11 +199,11 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   // Send 50 bursts, make sure that we move very slow close to the probe rate.
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -215,11 +215,11 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   // Send 50 bursts, make sure that we move very slow close to the probe rate.
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -230,11 +230,11 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   // Send 50 bursts, make sure that we accelerate after the probe rate.
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -245,11 +245,11 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   // Send 50 bursts, make sure that we accelerate after the probe rate.
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -265,11 +265,11 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   // Send until we reach halfway point.
   for (int i = 0; i < 570; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -281,11 +281,11 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
   // Send until we reach max channel capacity.
   for (int i = 0; i < 1500; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -297,29 +297,29 @@ TEST_F(InterArrivalSenderTest, ProbeFollowedByFullRampUpCycle) {
 TEST_F(InterArrivalSenderTest, DelaySpikeFollowedBySlowDrain) {
   QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
 
   // Send 5 bursts.
   for (int i = 0; i < 4; ++i) {
     SendAvailableCongestionWindow();
-    send_clock_.AdvanceTime(sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
   }
   SendAvailableCongestionWindow();
 
   // We have now sent our probe.
   EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsInfinite());
+      HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsInfinite());
 
   AckNPackets(10);
   SendFeedbackMessageNPackets(10, one_ms_, nine_ms_);
-  send_clock_.AdvanceTime(sender_.TimeUntilSend(
-      send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
 
   // We should now have our probe rate.
   QuicTime::Delta acc_arrival_time = QuicTime::Delta::FromMilliseconds(41);
@@ -331,11 +331,11 @@ TEST_F(InterArrivalSenderTest, DelaySpikeFollowedBySlowDrain) {
   // Send 50 bursts, make sure that we move fast in the beginning.
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -344,10 +344,10 @@ TEST_F(InterArrivalSenderTest, DelaySpikeFollowedBySlowDrain) {
   EXPECT_NEAR(SenderDeltaSinceStart().ToMilliseconds(), 600, 10);
 
   SendAvailableCongestionWindow();
-  send_clock_.AdvanceTime(sender_.TimeUntilSend(
-      send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
   AckNPackets(2);
 
   int64 rate_at_introduced_delay_spike = 0.875f * probe_rate;
@@ -362,10 +362,10 @@ TEST_F(InterArrivalSenderTest, DelaySpikeFollowedBySlowDrain) {
   // Run until we are catched up after our introduced delay spike.
   while (send_clock_.Now() < receive_clock_.Now()) {
     SendAvailableCongestionWindow();
-    send_clock_.AdvanceTime(sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, one_ms_);
   }
@@ -378,11 +378,11 @@ TEST_F(InterArrivalSenderTest, DelaySpikeFollowedBySlowDrain) {
   // before the spike.
   for (int i = 0; i < 100; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -394,29 +394,29 @@ TEST_F(InterArrivalSenderTest, DelaySpikeFollowedBySlowDrain) {
 TEST_F(InterArrivalSenderTest, DelaySpikeFollowedByImmediateDrain) {
   QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
 
   // Send 5 bursts.
   for (int i = 0; i < 4; ++i) {
     SendAvailableCongestionWindow();
-    send_clock_.AdvanceTime(sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
   }
   SendAvailableCongestionWindow();
 
   // We have now sent our probe.
   EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsInfinite());
+      HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsInfinite());
 
   AckNPackets(10);
   SendFeedbackMessageNPackets(10, one_ms_, nine_ms_);
-  send_clock_.AdvanceTime(sender_.TimeUntilSend(
-      send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
 
   // We should now have our probe rate.
   QuicTime::Delta acc_arrival_time = QuicTime::Delta::FromMilliseconds(41);
@@ -428,11 +428,11 @@ TEST_F(InterArrivalSenderTest, DelaySpikeFollowedByImmediateDrain) {
   // Send 50 bursts, make sure that we move fast in the beginning.
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     AckNPackets(2);
     SendFeedbackMessageNPackets(2, one_ms_, time_until_send.Subtract(one_ms_));
   }
@@ -441,10 +441,10 @@ TEST_F(InterArrivalSenderTest, DelaySpikeFollowedByImmediateDrain) {
   EXPECT_NEAR(SenderDeltaSinceStart().ToMilliseconds(), 600, 10);
 
   SendAvailableCongestionWindow();
-  send_clock_.AdvanceTime(sender_.TimeUntilSend(
-      send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
   AckNPackets(2);
 
   int64 rate_at_introduced_delay_spike = 0.875f * probe_rate;
@@ -474,16 +474,16 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToDelay) {
   QuicBandwidth expected_min_bitrate = QuicBandwidth::FromKBitsPerSecond(10);
   QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
 
   // Send 5 bursts.
   for (int i = 0; i < 4; ++i) {
     SendAvailableCongestionWindow();
-    send_clock_.AdvanceTime(sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
   }
   SendAvailableCongestionWindow();
 
@@ -492,10 +492,10 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToDelay) {
   // One second spread per packet is expected to result in an estimate at
   // our minimum bitrate.
   SendFeedbackMessageNPackets(10, one_s_, one_s_);
-  send_clock_.AdvanceTime(sender_.TimeUntilSend(
-      send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
   EXPECT_EQ(expected_min_bitrate, sender_.BandwidthEstimate());
 }
 
@@ -503,25 +503,25 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToLoss) {
   QuicBandwidth expected_min_bitrate = QuicBandwidth::FromKBitsPerSecond(10);
   QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
 
   // Send 5 bursts.
   for (int i = 0; i < 4; ++i) {
     SendAvailableCongestionWindow();
-    send_clock_.AdvanceTime(sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
   }
   SendAvailableCongestionWindow();
 
   AckNPackets(10);
   SendFeedbackMessageNPackets(10, nine_ms_, nine_ms_);
-  send_clock_.AdvanceTime(sender_.TimeUntilSend(
-      send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
-  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA).IsZero());
+  send_clock_.AdvanceTime(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
+  EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
 
   QuicTime::Delta acc_arrival_time = QuicTime::Delta::FromMilliseconds(81);
   int64 probe_rate = kMaxPacketSize * 9 * kNumMicrosPerSecond /
@@ -531,11 +531,11 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToLoss) {
 
   for (int i = 0; i < 15; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     sender_.OnIncomingLoss(send_clock_.Now());
     sender_.OnIncomingAck(acked_sequence_number_, kMaxPacketSize, rtt_);
     acked_sequence_number_ += 2;  // Create a loss by not acking both packets.
@@ -546,11 +546,11 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToLoss) {
 
   for (int i = 0; i < 50; ++i) {
     SendAvailableCongestionWindow();
-    QuicTime::Delta time_until_send = sender_.TimeUntilSend(
-        send_clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+    QuicTime::Delta time_until_send = sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     send_clock_.AdvanceTime(time_until_send);
-    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(), NOT_RETRANSMISSION,
-                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+    EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
+        NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     sender_.OnIncomingLoss(send_clock_.Now());
     sender_.OnIncomingAck(acked_sequence_number_, kMaxPacketSize, rtt_);
     acked_sequence_number_ += 2;  // Create a loss by not acking both packets.
