@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -94,9 +93,6 @@ std::string OfflineLoadPage::GetHTMLContents() {
   // access to chrome:// URL's.
   strings.SetString("icon",
                     webui::GetBitmapDataUrlFromResource(IDR_PRODUCT_LOGO_32));
-
-  // Activation
-  strings.SetBoolean("show_activation", ShowActivationMessage());
 
   webui::SetFontAndTextDirection(&strings);
   string16 failed_url(ASCIIToUTF16(url_.spec()));
@@ -190,22 +186,6 @@ void OfflineLoadPage::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
     interstitial_page_->Proceed();
   }
-}
-
-bool OfflineLoadPage::ShowActivationMessage() {
-  NetworkLibrary* network_library = NetworkLibrary::Get();
-  if (!network_library || !network_library->cellular_available())
-    return false;
-
-  const CellularNetworkVector& cell_networks =
-      network_library->cellular_networks();
-  for (size_t i = 0; i < cell_networks.size(); ++i) {
-    chromeos::ActivationState activation_state =
-        cell_networks[i]->activation_state();
-    if (activation_state == ACTIVATION_STATE_ACTIVATED)
-      return false;
-  }
-  return true;
 }
 
 }  // namespace chromeos

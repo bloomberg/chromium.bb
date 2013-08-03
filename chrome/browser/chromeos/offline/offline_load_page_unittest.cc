@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/interstitial_page.h"
@@ -84,9 +83,6 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
   friend class TestOfflineLoadPage;
 
   UserResponse user_response_;
-
-  // Initializes / shuts down a stub NetworkLibrary.
-  ScopedStubNetworkLibraryEnabler stub_network_library_enabler_;
 };
 
 void TestOfflineLoadPage::NotifyBlockingPageComplete(bool proceed) {

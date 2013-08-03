@@ -74,10 +74,6 @@ class OfflineLoadPage
                             base::DictionaryValue* strings) const;
   void GetNormalOfflineStrings(base::DictionaryValue* strings) const;
 
-  // True if there is a mobile network is available but
-  // has not been activated.
-  bool ShowActivationMessage();
-
   CompletionCallback callback_;
 
   // True if the proceed is chosen.

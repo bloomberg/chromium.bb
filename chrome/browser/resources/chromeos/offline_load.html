@@ -45,14 +45,6 @@ body {
   font-size: 160%;
 }
 
-#lower {
-  -webkit-box-flex: 1;
-  position: relative;
-  margin-top: 0;
-  width: 100%;
-  background-image: -webkit-gradient(radial, 50% -20%, 700, 50% -70%, 0, from(#FFF), color-stop(.7, #EEE), to(#EEE));
-}
-
 #heading {
   font-size: 15px;
   padding-top: 20px;
@@ -117,11 +109,7 @@ function showPage() {
 
 document.addEventListener('DOMContentLoaded', function() {
   var timeToWait = localStrings.getString('time_to_wait');
-  var showActivation = localStrings.getString('show_activation') == 'true';
   window.setTimeout(showPage, timeToWait);
-  var lower = document.getElementById('lower');
-  if (showActivation)
-    lower.style.display = 'block';
 });
 </script>
 
@@ -139,13 +127,6 @@ document.addEventListener('DOMContentLoaded', function() {
         <div id="button">
           <button onclick="sendCommand('open_network_settings')"
              i18n-content="network_settings"></button>
-        </div>
-      </div>
-      <div id="lower" class="hidden">
-        <div class="activation_message">
-          <div class="splitter"></div>
-          <iframe src="chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/activation_in_offline.html"
-                  id="carrierPage" frameborder="0"></iframe>
         </div>
       </div>
     </div>
