@@ -9,7 +9,7 @@ it cycles through each tab in sequence, and records a histogram of the time
 between when a tab was first requested to be shown, and when it was painted.
 """
 
-from metrics import histogram as histogram_module
+from metrics import histogram_util
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_runner
@@ -19,6 +19,7 @@ from telemetry.page import page_runner
 class TabSwitching(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
+    options.AppendExtraBrowserArg('--dom-automation')
 
   def CanRunForPage(self, page):
     return not page.page_set.pages.index(page)
@@ -37,7 +38,7 @@ class TabSwitching(page_measurement.PageMeasurement):
     """
     histogram_name = 'MPArch.RWH_TabSwitchPaintDuration'
     histogram_type = 'getBrowserHistogram'
-    first_histogram = histogram_module.GetHistogramFromDomAutomation(
+    first_histogram = histogram_util.GetHistogramFromDomAutomation(
         histogram_type, histogram_name, tab)
     prev_histogram = first_histogram
 
@@ -45,18 +46,18 @@ class TabSwitching(page_measurement.PageMeasurement):
       t = tab.browser.tabs[i]
       t.Activate()
       def _IsDone():
-        cur_histogram = histogram_module.GetHistogramFromDomAutomation(
+        cur_histogram = histogram_util.GetHistogramFromDomAutomation(
             histogram_type, histogram_name, tab)
-        diff_histogram = histogram_module.SubtractHistogram(
+        diff_histogram = histogram_util.SubtractHistogram(
             cur_histogram, prev_histogram)
         return diff_histogram
       util.WaitFor(_IsDone, 30)
-      prev_histogram = histogram_module.GetHistogramFromDomAutomation(
+      prev_histogram = histogram_util.GetHistogramFromDomAutomation(
           histogram_type, histogram_name, tab)
 
-    last_histogram = histogram_module.GetHistogramFromDomAutomation(
+    last_histogram = histogram_util.GetHistogramFromDomAutomation(
         histogram_type, histogram_name, tab)
-    diff_histogram = histogram_module.SubtractHistogram(last_histogram,
+    diff_histogram = histogram_util.SubtractHistogram(last_histogram,
         first_histogram)
 
     results.AddSummary(histogram_name, '', diff_histogram,
