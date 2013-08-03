@@ -16,6 +16,7 @@ namespace media {
 #if defined(COMPILER_MSVC)
 // Warning 4799 is about calling emms before the function exits.
 // We calls emms in a frame level so suppress this warning.
+#pragma warning(push)
 #pragma warning(disable: 4799)
 #endif
 
@@ -72,7 +73,7 @@ void FilterYUVRows_MMX(uint8* dest,
 }
 
 #if defined(COMPILER_MSVC)
-#pragma warning(default: 4799)
+#pragma warning(pop)
 #endif
 
 }  // namespace media
