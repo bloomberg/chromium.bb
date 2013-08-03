@@ -110,6 +110,10 @@ const char kAudioPipeSwitchName[] = "audio-pipe-name";
 // when it is successfully started.
 const char kSignalParentSwitchName[] = "signal-parent";
 
+// Value used for --host-config option to indicate that the path must be read
+// from stdin.
+const char kStdinConfigPath[] = "-";
+
 void QuitMessageLoop(base::MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
@@ -249,6 +253,7 @@ class HostProcess
 
   // Created on the UI thread but used from the network thread.
   base::FilePath host_config_path_;
+  std::string host_config_;
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
   // Accessed on the network thread.
@@ -366,10 +371,26 @@ bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
                               context_->network_task_runner().get()));
   }
 
-  base::FilePath default_config_dir = remoting::GetConfigDir();
-  host_config_path_ = default_config_dir.Append(kDefaultHostConfigFile);
   if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
     host_config_path_ = cmd_line->GetSwitchValuePath(kHostConfigSwitchName);
+
+    // Read config from stdin if necessary.
+    if (host_config_path_ == base::FilePath(kStdinConfigPath)) {
+      char buf[4096];
+      size_t len;
+      while ((len = fread(buf, 1, sizeof(buf), stdin)) > 0) {
+        host_config_.append(buf, len);
+      }
+    }
+  } else {
+    base::FilePath default_config_dir = remoting::GetConfigDir();
+    host_config_path_ = default_config_dir.Append(kDefaultHostConfigFile);
+  }
+
+  if (host_config_path_ != base::FilePath(kStdinConfigPath) &&
+      !base::PathExists(host_config_path_)) {
+    LOG(ERROR) << "Can't find host config at " << host_config_path_.value();
+    return false;
   }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
@@ -449,11 +470,16 @@ void HostProcess::StartOnNetworkThread() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
 #if !defined(REMOTING_MULTI_PROCESS)
-  // Start watching the host configuration file.
-  config_watcher_.reset(new ConfigFileWatcher(context_->network_task_runner(),
-                                              context_->file_task_runner(),
-                                              this));
-  config_watcher_->Watch(host_config_path_);
+  if (host_config_path_ == base::FilePath(kStdinConfigPath)) {
+    // Process config we've read from stdin.
+    OnConfigUpdated(host_config_);
+  } else {
+    // Start watching the host configuration file.
+    config_watcher_.reset(new ConfigFileWatcher(context_->network_task_runner(),
+                                                context_->file_task_runner(),
+                                                this));
+    config_watcher_->Watch(host_config_path_);
+  }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
 #if defined(OS_POSIX)
@@ -568,7 +594,7 @@ void HostProcess::StartOnUiThread() {
     // Shutdown the host if the command line is invalid.
     context_->network_task_runner()->PostTask(
         FROM_HERE, base::Bind(&HostProcess::ShutdownHost, this,
-                              kInvalidHostConfigurationExitCode));
+                              kUsageExitCode));
     return;
   }
 

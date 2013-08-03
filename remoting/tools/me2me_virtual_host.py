@@ -126,16 +126,8 @@ class Config:
     self.data[key] = value
     self.changed = True
 
-  def clear_auth(self):
-    del self.data["xmpp_login"]
-    del self.data["oauth_refresh_token"]
-    self.changed = True
-
-  def clear_host_info(self):
-    del self.data["host_id"]
-    del self.data["host_name"]
-    del self.data["host_secret_hash"]
-    del self.data["private_key"]
+  def clear(self):
+    self.data = {}
     self.changed = True
 
 
@@ -426,7 +418,7 @@ class Desktop:
 
   def launch_host(self, host_config):
     # Start remoting host
-    args = [locate_executable(HOST_BINARY_NAME), "--host-config=/dev/stdin"]
+    args = [locate_executable(HOST_BINARY_NAME), "--host-config=-"]
     if self.pulseaudio_pipe:
       args.append("--audio-pipe-name=%s" % self.pulseaudio_pipe)
     if self.server_supports_exact_resize:
@@ -1133,32 +1125,21 @@ Web Store: https://chrome.google.com/remotedesktop"""
       if os.WIFEXITED(status):
         if os.WEXITSTATUS(status) == 100:
           logging.info("Host configuration is invalid - exiting.")
-          host_config.clear_auth()
-          host_config.clear_host_info()
-          host_config.save_and_log_errors()
           return 0
         elif os.WEXITSTATUS(status) == 101:
           logging.info("Host ID has been deleted - exiting.")
-          host_config.clear_host_info()
+          host_config.clear()
           host_config.save_and_log_errors()
           return 0
         elif os.WEXITSTATUS(status) == 102:
           logging.info("OAuth credentials are invalid - exiting.")
-          host_config.clear_auth()
-          host_config.save_and_log_errors()
           return 0
         elif os.WEXITSTATUS(status) == 103:
           logging.info("Host domain is blocked by policy - exiting.")
-          host_config.clear_auth()
-          host_config.clear_host_info()
-          host_config.save_and_log_errors()
           return 0
         # Nothing to do for Mac-only status 104 (login screen unsupported)
         elif os.WEXITSTATUS(status) == 105:
           logging.info("Username is blocked by policy - exiting.")
-          host_config.clear_auth()
-          host_config.clear_host_info()
-          host_config.save_and_log_errors()
           return 0
         else:
           logging.info("Host exited with status %s." % os.WEXITSTATUS(status))
