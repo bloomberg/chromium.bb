@@ -186,8 +186,7 @@ bool WebHelperPluginImpl::initializePage(const String& pluginType, const WebDocu
     pageClients.chromeClient = m_chromeClient.get();
 
     m_page = adoptPtr(new Page(pageClients));
-    // Scripting must be enabled in ScriptController::windowScriptNPObject().
-    m_page->settings()->setScriptEnabled(true);
+    ASSERT(!m_page->settings()->isScriptEnabled());
     m_page->settings()->setPluginsEnabled(true);
 
     unsigned layoutMilestones = DidFirstLayout | DidFirstVisuallyNonEmptyLayout;
@@ -198,7 +197,7 @@ bool WebHelperPluginImpl::initializePage(const String& pluginType, const WebDocu
     // The page's main frame was set in initializeFrame() as a result of the above call.
     Frame* frame = m_page->mainFrame();
     ASSERT(frame);
-    frame->loader()->forceSandboxFlags(SandboxAll & ~SandboxPlugins & ~SandboxScripts);
+    frame->loader()->forceSandboxFlags(SandboxAll & ~SandboxPlugins);
     frame->setView(FrameView::create(frame));
     // No need to set a size or make it not transparent.
 
