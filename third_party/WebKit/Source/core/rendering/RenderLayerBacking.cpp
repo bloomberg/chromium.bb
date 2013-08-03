@@ -1543,9 +1543,8 @@ void RenderLayerBacking::setContentsNeedDisplayInRect(const IntRect& r)
     }
 }
 
-void RenderLayerBacking::paintIntoLayer(const GraphicsLayer* graphicsLayer, GraphicsContext* context,
-                    const IntRect& paintDirtyRect, // In the coords of rootLayer.
-                    PaintBehavior paintBehavior, GraphicsLayerPaintingPhase paintingPhase)
+void RenderLayerBacking::doPaintTask(GraphicsLayerPaintInfo& paintInfo, GraphicsContext* context,
+    const IntRect& clip) // In the coords of rootLayer.
 {
     if (paintsIntoCompositedAncestor()) {
         ASSERT_NOT_REACHED();
@@ -1555,32 +1554,48 @@ void RenderLayerBacking::paintIntoLayer(const GraphicsLayer* graphicsLayer, Grap
     FontCachePurgePreventer fontCachePurgePreventer;
 
     RenderLayer::PaintLayerFlags paintFlags = 0;
-    if (paintingPhase & GraphicsLayerPaintBackground)
+    if (paintInfo.paintingPhase & GraphicsLayerPaintBackground)
         paintFlags |= RenderLayer::PaintLayerPaintingCompositingBackgroundPhase;
-    if (paintingPhase & GraphicsLayerPaintForeground)
+    if (paintInfo.paintingPhase & GraphicsLayerPaintForeground)
         paintFlags |= RenderLayer::PaintLayerPaintingCompositingForegroundPhase;
-    if (paintingPhase & GraphicsLayerPaintMask)
+    if (paintInfo.paintingPhase & GraphicsLayerPaintMask)
         paintFlags |= RenderLayer::PaintLayerPaintingCompositingMaskPhase;
-    if (paintingPhase & GraphicsLayerPaintOverflowContents)
+    if (paintInfo.paintingPhase & GraphicsLayerPaintOverflowContents)
         paintFlags |= RenderLayer::PaintLayerPaintingOverflowContents;
-    if (paintingPhase & GraphicsLayerPaintCompositedScroll)
+    if (paintInfo.paintingPhase & GraphicsLayerPaintCompositedScroll)
         paintFlags |= RenderLayer::PaintLayerPaintingCompositingScrollingPhase;
 
-    if (graphicsLayer == m_backgroundLayer)
+    if (paintInfo.isBackgroundLayer)
         paintFlags |= (RenderLayer::PaintLayerPaintingRootBackgroundOnly | RenderLayer::PaintLayerPaintingCompositingForegroundPhase); // Need PaintLayerPaintingCompositingForegroundPhase to walk child layers.
     else if (compositor()->fixedRootBackgroundLayer())
         paintFlags |= RenderLayer::PaintLayerPaintingSkipRootBackground;
 
+    InspectorInstrumentation::willPaint(paintInfo.renderLayer->renderer());
+    context->save();
+
+    LayoutSize offset = paintInfo.offsetFromRenderer;
+    context->translate(-offset);
+    LayoutRect relativeClip(clip);
+    relativeClip.move(offset);
+
+    // The dirtyRect is in the coords of the painting root.
+    IntRect dirtyRect = pixelSnappedIntRect(relativeClip);
+    if (!(paintInfo.paintingPhase & GraphicsLayerPaintOverflowContents))
+        dirtyRect.intersect(paintInfo.compositedBounds);
+
     // FIXME: GraphicsLayers need a way to split for RenderRegions.
-    RenderLayer::LayerPaintingInfo paintingInfo(m_owningLayer, paintDirtyRect, paintBehavior, LayoutSize());
-    m_owningLayer->paintLayerContents(context, paintingInfo, paintFlags);
+    RenderLayer::LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, LayoutSize());
+    paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintFlags);
 
-    ASSERT(graphicsLayer != m_backgroundLayer || paintFlags & RenderLayer::PaintLayerPaintingRootBackgroundOnly);
+    ASSERT(!paintInfo.isBackgroundLayer || paintFlags & RenderLayer::PaintLayerPaintingRootBackgroundOnly);
 
-    if (m_owningLayer->containsDirtyOverlayScrollbars())
-        m_owningLayer->paintLayerContents(context, paintingInfo, paintFlags | RenderLayer::PaintLayerPaintingOverlayScrollbars);
+    if (paintInfo.renderLayer->containsDirtyOverlayScrollbars())
+        paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintFlags | RenderLayer::PaintLayerPaintingOverlayScrollbars);
 
-    ASSERT(!m_owningLayer->m_usedTransparency);
+    ASSERT(!paintInfo.renderLayer->m_usedTransparency);
+
+    context->restore();
+    InspectorInstrumentation::didPaint(paintInfo.renderLayer->renderer(), context, clip);
 }
 
 static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)
@@ -1610,17 +1625,16 @@ void RenderLayerBacking::paintContents(const GraphicsLayer* graphicsLayer, Graph
         || graphicsLayer == m_backgroundLayer.get()
         || graphicsLayer == m_maskLayer.get()
         || graphicsLayer == m_scrollingContentsLayer.get()) {
-        InspectorInstrumentation::willPaint(renderer());
 
-        // The dirtyRect is in the coords of the painting root.
-        IntRect dirtyRect = clip;
-        if (!(paintingPhase & GraphicsLayerPaintOverflowContents))
-            dirtyRect.intersect(compositedBounds());
+        GraphicsLayerPaintInfo paintInfo;
+        paintInfo.renderLayer = m_owningLayer;
+        paintInfo.compositedBounds = compositedBounds();
+        paintInfo.offsetFromRenderer = graphicsLayer->offsetFromRenderer();
+        paintInfo.paintingPhase = paintingPhase;
+        paintInfo.isBackgroundLayer = (graphicsLayer == m_backgroundLayer);
 
         // We have to use the same root as for hit testing, because both methods can compute and cache clipRects.
-        paintIntoLayer(graphicsLayer, &context, dirtyRect, PaintBehaviorNormal, paintingPhase);
-
-        InspectorInstrumentation::didPaint(renderer(), &context, clip);
+        doPaintTask(paintInfo, &context, clip);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {
         paintScrollbar(m_owningLayer->horizontalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForVerticalScrollbar()) {

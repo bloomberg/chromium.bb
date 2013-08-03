@@ -44,6 +44,20 @@ enum CompositingLayerType {
     ContainerCompositingLayer // layer with no backing store
 };
 
+
+// A GraphicsLayerPaintInfo contains all the info needed to paint a partial subtree of RenderLayers into a GraphicsLayer.
+struct GraphicsLayerPaintInfo {
+    RenderLayer* renderLayer;
+
+    IntRect compositedBounds;
+
+    IntSize offsetFromRenderer;
+
+    GraphicsLayerPaintingPhase paintingPhase;
+
+    bool isBackgroundLayer;
+};
+
 // RenderLayerBacking controls the compositing behavior for a single RenderLayer.
 // It holds the various GraphicsLayers, and makes decisions about intra-layer rendering
 // optimizations.
@@ -224,7 +238,7 @@ private:
 
     bool shouldClipCompositedBounds() const;
 
-    void paintIntoLayer(const GraphicsLayer*, GraphicsContext*, const IntRect& paintDirtyRect, PaintBehavior, GraphicsLayerPaintingPhase);
+    void doPaintTask(GraphicsLayerPaintInfo&, GraphicsContext*, const IntRect& clip);
 
     static CSSPropertyID graphicsLayerToCSSProperty(AnimatedPropertyID);
     static AnimatedPropertyID cssToGraphicsLayerProperty(CSSPropertyID);

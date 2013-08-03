@@ -357,15 +357,8 @@ void GraphicsLayer::setOffsetFromRenderer(const IntSize& offset, ShouldSetNeedsD
 
 void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const IntRect& clip)
 {
-    if (m_client) {
-        LayoutSize offset = offsetFromRenderer();
-        context.translate(-offset);
-
-        LayoutRect clipRect(clip);
-        clipRect.move(offset);
-
-        m_client->paintContents(this, context, m_paintingPhase, pixelSnappedIntRect(clipRect));
-    }
+    if (m_client)
+        m_client->paintContents(this, context, m_paintingPhase, clip);
 }
 
 String GraphicsLayer::animationNameForTransition(AnimatedPropertyID property)
