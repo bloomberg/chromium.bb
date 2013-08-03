@@ -102,8 +102,11 @@ void ElementShadow::removeAllEventListeners()
 
 void ElementShadow::setNeedsDistributionRecalc()
 {
+    if (m_needsDistributionRecalc)
+        return;
     m_needsDistributionRecalc = true;
     host()->markAncestorsWithChildNeedsDistributionRecalc();
+    clearDistribution();
 }
 
 } // namespace

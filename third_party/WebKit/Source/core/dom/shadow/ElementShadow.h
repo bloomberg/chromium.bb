@@ -75,6 +75,7 @@ public:
             m_distributor.distribute(host());
         m_needsDistributionRecalc = false;
     }
+    void clearDistribution() { m_distributor.clearDistribution(host()); }
 
     void setNeedsDistributionRecalc();
 

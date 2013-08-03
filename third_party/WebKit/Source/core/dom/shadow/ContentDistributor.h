@@ -74,8 +74,8 @@ class ScopeContentDistribution {
 public:
     ScopeContentDistribution();
 
-    InsertionPoint* insertionPointAssignedTo() const { return m_insertionPointAssignedTo; }
-    void setInsertionPointAssignedTo(InsertionPoint* insertionPoint) { m_insertionPointAssignedTo = insertionPoint; }
+    InsertionPoint* insertionPointAssignedTo() const { return m_insertionPointAssignedTo.get(); }
+    void setInsertionPointAssignedTo(PassRefPtr<InsertionPoint>);
 
     void registerInsertionPoint(InsertionPoint*);
     void unregisterInsertionPoint(InsertionPoint*);
@@ -91,7 +91,7 @@ public:
     const Vector<RefPtr<InsertionPoint> >& ensureInsertionPointList(ShadowRoot*);
 
 private:
-    InsertionPoint* m_insertionPointAssignedTo;
+    RefPtr<InsertionPoint> m_insertionPointAssignedTo;
     unsigned m_numberOfShadowElementChildren;
     unsigned m_numberOfContentElementChildren;
     unsigned m_numberOfElementShadowChildren;
@@ -115,6 +115,7 @@ public:
     void willAffectSelector(Element* host);
 
     void distribute(Element* host);
+    void clearDistribution(Element* host);
 
 private:
     void populate(Node*, Vector<Node*>&);

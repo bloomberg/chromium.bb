@@ -85,6 +85,11 @@ ScopeContentDistribution::ScopeContentDistribution()
 {
 }
 
+void ScopeContentDistribution::setInsertionPointAssignedTo(PassRefPtr<InsertionPoint> insertionPoint)
+{
+    m_insertionPointAssignedTo = insertionPoint;
+}
+
 void ScopeContentDistribution::invalidateInsertionPointList()
 {
     m_insertionPointListIsValid = false;
@@ -177,7 +182,6 @@ void ContentDistributor::distribute(Element* host)
         populate(node, pool);
 
     host->setNeedsStyleRecalc();
-    m_nodeToInsertionPoint.clear();
 
     Vector<bool> distributed(pool.size());
     distributed.fill(false);
@@ -187,7 +191,6 @@ void ContentDistributor::distribute(Element* host)
         HTMLShadowElement* firstActiveShadowInsertionPoint = 0;
 
         if (ScopeContentDistribution* scope = root->scopeDistribution()) {
-            scope->setInsertionPointAssignedTo(0);
             const Vector<RefPtr<InsertionPoint> >& insertionPoints = scope->ensureInsertionPointList(root);
             for (size_t i = 0; i < insertionPoints.size(); ++i) {
                 InsertionPoint* point = insertionPoints[i].get();
@@ -318,6 +321,16 @@ void ContentDistributor::willAffectSelector(Element* host)
         shadow->distributor().setNeedsSelectFeatureSet();
     }
     host->shadow()->setNeedsDistributionRecalc();
+}
+
+void ContentDistributor::clearDistribution(Element* host)
+{
+    m_nodeToInsertionPoint.clear();
+
+    for (ShadowRoot* root = host->youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+        if (ScopeContentDistribution* scope = root->scopeDistribution())
+            scope->setInsertionPointAssignedTo(0);
+    }
 }
 
 }
