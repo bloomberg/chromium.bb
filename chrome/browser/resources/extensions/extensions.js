@@ -104,6 +104,8 @@ cr.define('extensions', function() {
           this.handleToggleDevMode_.bind(this));
       $('dev-controls').addEventListener('webkitTransitionEnd',
           this.handleDevControlsTransitionEnd_.bind(this));
+      $('open-apps-dev-tools').addEventListener('click',
+          this.handleOpenAppsDevTools_.bind(this));
 
       // Set up the three dev mode buttons (load unpacked, pack and update).
       $('load-unpacked').addEventListener('click',
@@ -237,6 +239,17 @@ cr.define('extensions', function() {
         $('dev-controls').hidden = true;
       }
     },
+
+    /**
+     * Called when the user clicked on the button to launch Apps Developer
+     * Tools.
+     * @param {!Event} e A click event.
+     * @private
+     */
+    handleOpenAppsDevTools_: function(e) {
+      chrome.send('extensionSettingsLaunch',
+                  ['lphgohfeebnhcpiohjndkgbhhkoapkjc']);
+    },
   };
 
   /**
@@ -295,6 +308,9 @@ cr.define('extensions', function() {
       pageDiv.classList.remove('dev-mode');
       $('toggle-dev-on').checked = false;
     }
+
+    if (extensionsData.appsDevToolsEnabled)
+      pageDiv.classList.add('apps-dev-tools-mode');
 
     $('load-unpacked').disabled = extensionsData.loadUnpackedDisabled;
 

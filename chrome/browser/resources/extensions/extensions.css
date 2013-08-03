@@ -15,14 +15,23 @@ html:not(.focus-outline-visible)
 /* Developer mode */
 
 #dev-controls {
-  -webkit-padding-end: 3px;
-  -webkit-padding-start: 4px;
+  -webkit-margin-end: 20px;
   -webkit-transition: padding 100ms, height 100ms, opacity 100ms;
   border-bottom: 1px solid #eee;
-  display: -webkit-box;
   height: 0;
   opacity: 0;
   overflow: hidden;
+}
+
+#dev-controls .buttons-container,
+#apps-dev-tool-banner {
+  -webkit-padding-end: 3px;
+  -webkit-padding-start: 4px;
+}
+
+#dev-controls .buttons-container {
+  display: -webkit-box;
+  padding-top: 13px;
 }
 
 #dev-controls button {
@@ -31,10 +40,28 @@ html:not(.focus-outline-visible)
 
 #extension-settings.dev-mode #dev-controls {
   -webkit-transition-duration: 250ms;
-  height: 32px;
+  height: 45px;
   opacity: 1;
   padding-bottom: 7px;
+}
+
+#extension-settings.dev-mode.apps-dev-tools-mode #dev-controls {
+  height: 100px;
+}
+
+#apps-dev-tool-banner {
+  border-bottom: 1px solid #eee;
+  display: none;
+  padding-bottom: 13px;
   padding-top: 13px;
+}
+
+#extension-settings.dev-mode.apps-dev-tools-mode #apps-dev-tool-banner {
+  display: -webkit-box;
+}
+
+.apps-dev-tool-banner-text {
+  -webkit-box-flex: 1;
 }
 
 #dev-controls-spacer {

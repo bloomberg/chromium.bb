@@ -5694,6 +5694,12 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_LOCKED_MANAGED_USER" desc="The error message (either shown in the extensions UI or logged) informing a supervised user that extensions cannot be changed.">
         Extensions cannot be modified by supervised users.
       </message>
+      <message name="IDS_EXTENSIONS_USE_APPS_DEV_TOOLS" desc="The message in the banner to invite people to use Apps Developer Tools.">
+        The new Apps Developer Tools makes it easier than ever to manage and debug your apps and extensions. It's also been added to the application list.
+      </message>
+      <message name="IDS_EXTENSIONS_OPEN_APPS_DEV_TOOLS" desc="The text of the button to open Apps Developer Tools in the banner to invite people to use Apps Developer Tools.">
+        Open
+      </message>
       <message name="IDS_GET_MORE_EXTENSIONS" desc="The text for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
         Get more extensions
       </message>

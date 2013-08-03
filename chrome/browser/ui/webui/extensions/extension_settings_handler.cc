@@ -328,6 +328,10 @@ void ExtensionSettingsHandler::GetLocalizedValues(
      l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
   source->AddString("extensionSettingsManagedMode",
      l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_USER));
+  source->AddString("extensionSettingsUseAppsDevTools",
+     l10n_util::GetStringUTF16(IDS_EXTENSIONS_USE_APPS_DEV_TOOLS));
+  source->AddString("extensionSettingsOpenAppsDevTools",
+     l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPEN_APPS_DEV_TOOLS));
   source->AddString("sideloadWipeoutUrl",
       chrome::kSideloadWipeoutHelpURL);
   source->AddString("sideloadWipoutLearnMore",
@@ -613,6 +617,9 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   results.SetBoolean("profileIsManaged", is_managed);
   results.SetBoolean("developerMode", developer_mode);
+  results.SetBoolean(
+      "appsDevToolsEnabled",
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsDevtool));
 
   bool load_unpacked_disabled =
       extension_service_->extension_prefs()->ExtensionsBlacklistedByDefault();

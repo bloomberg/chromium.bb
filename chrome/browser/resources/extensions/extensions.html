@@ -72,17 +72,25 @@
     </div>
   </header>
   <div id="dev-controls" hidden>
-    <button id="load-unpacked"
-        i18n-content="extensionSettingsLoadUnpackedButton"></button>
-    <button id="pack-extension"
-        i18n-content="extensionSettingsPackButton"></button>
+    <div id="apps-dev-tool-banner">
+      <div class="apps-dev-tool-banner-text"
+          i18n-content="extensionSettingsUseAppsDevTools"></div>
+      <button id="open-apps-dev-tools"
+          i18n-content="extensionSettingsOpenAppsDevTools"></button>
+    </div>
+    <div class="buttons-container">
+      <button id="load-unpacked"
+          i18n-content="extensionSettingsLoadUnpackedButton"></button>
+      <button id="pack-extension"
+          i18n-content="extensionSettingsPackButton"></button>
 <if expr="pp_ifdef('chromeos')">
       <button id="add-kiosk-app"
           i18n-content="addKioskAppButton" hidden></button>
 </if>
-    <div id="dev-controls-spacer"></div>
-    <button id="update-extensions-now"
-        i18n-content="extensionSettingsUpdateButton"></button>
+      <div id="dev-controls-spacer"></div>
+      <button id="update-extensions-now"
+          i18n-content="extensionSettingsUpdateButton"></button>
+    </div>
   </div>
   <div id="extension-settings-list" class="empty-extension-list"></div>
   <div id="no-extensions">
