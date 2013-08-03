@@ -302,7 +302,7 @@ bool InProcessCommandBuffer::Initialize(
   share_group_id_ = share_group_id;
 
   base::WaitableEvent completion(true, false);
-  bool result;
+  bool result = false;
   base::Callback<bool(void)> init_task =
       base::Bind(&InProcessCommandBuffer::InitializeOnGpuThread,
                  base::Unretained(this),
@@ -453,7 +453,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
 
 void InProcessCommandBuffer::Destroy() {
   base::WaitableEvent completion(true, false);
-  bool result;
+  bool result = false;
   base::Callback<bool(void)> destroy_task = base::Bind(
       &InProcessCommandBuffer::DestroyOnGpuThread, base::Unretained(this));
   QueueTask(
