@@ -4262,6 +4262,82 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="interstitial.authority_invalid_time" units="milliseconds">
+  <obsolete>
+    Removed on 8/1/13.
+  </obsolete>
+  <summary>
+    The time between the SSL interstitial display and the user decision, which
+    may be either accept or deny.  This is only recorded for overridable SSL
+    warnings with a CERT_AUTHORITY_INVALID warning. Timing begins when user
+    first focuses on the page.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.common_name_invalid_time" units="milliseconds">
+  <obsolete>
+    Removed on 8/1/13.
+  </obsolete>
+  <summary>
+    The time between the SSL interstitial display and the user decision, which
+    may be either accept or deny.  This is only recorded for overridable SSL
+    warnings with a CERT_COMMON_NAME_INVALID warning. Timing begins when user
+    first focuses on the page.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.date_invalid_time" units="milliseconds">
+  <obsolete>
+    Removed on 8/1/13.
+  </obsolete>
+  <summary>
+    The time between the SSL interstitial display and the user decision, which
+    may be either accept or deny.  This is only recorded for overridable SSL
+    warnings with a CERT_DATE_INVALID warning.  Timing begins when user first
+    focuses on the page.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl" enum="SSLResponseTypesV2">
+  <summary>
+    User action when the user is shown a SSL interstitial.  SHOW_ALL and MORE
+    refer to the total number of SSL errors; all of the other numbers pertain to
+    the number of actions related to SSL errors that are overridable.  The
+    counts do not sum to 100%; SHOW_ALL is a superset of SHOW_OVERRIDABLE, which
+    in turn will be a supserset of the PROCEED/DONT_PROCEED variables.
+    SHOW_UNDERSTAND is only being used by an experimental field trial.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl_accept_time" units="milliseconds">
+  <obsolete>
+    Removed on 8/1/13.
+  </obsolete>
+  <summary>
+    The time between the SSL interstitial display and the user decision, when
+    the user accepts the SSL warning.  This is only recorded for overridable SSL
+    warnings.  Timing begins when user first focuses on the page.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl_error_type" enum="SSLErrorTypes">
+  <summary>
+    The type of SSL error that the user encounters.  This is recorded for all
+    SSL warnings, regardless of whether they are overridable.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl_reject_time" units="milliseconds">
+  <obsolete>
+    Removed on 8/1/13.
+  </obsolete>
+  <summary>
+    The time between the SSL interstitial display and the user decision, when
+    the user rejects the SSL warning.  This is only recorded for overridable SSL
+    warnings.  Timing begins when user first focuses on the page.
+  </summary>
+</histogram>
+
 <histogram name="LanguageUsage.AcceptLanguage" enum="LanguageCode">
   <summary>Accept languages.</summary>
 </histogram>
@@ -20826,18 +20902,18 @@ other types of suffix sets.
   <int value="2" label="Dismiss"/>
 </enum>
 
+<enum name="SimpleCache.FileDescriptorLimitStatus" type="int">
+  <int value="0" label="Unsupported"/>
+  <int value="1" label="Supported but failed"/>
+  <int value="2" label="Succeeded"/>
+</enum>
+
 <enum name="SimpleCacheHeaderSizeChange" type="int">
   <int value="0" label="Written for the first time"/>
   <int value="1" label="Rewritten with same size"/>
   <int value="2" label="Rewritten with larger size"/>
   <int value="3" label="Rewritten with smaller size"/>
   <int value="4" label="Unexpected header stream write"/>
-</enum>
-
-<enum name="SimpleCache.FileDescriptorLimitStatus" type="int">
-  <int value="0" label="Unsupported"/>
-  <int value="1" label="Supported but failed"/>
-  <int value="2" label="Succeeded"/>
 </enum>
 
 <enum name="SimpleCacheIndexInitializeMethod" type="int">
@@ -21531,6 +21607,34 @@ other types of suffix sets.
   <int value="49321" label="TLS_PSK_WITH_AES_256_CCM_8"/>
   <int value="49322" label="TLS_PSK_DHE_WITH_AES_128_CCM_8"/>
   <int value="49323" label="TLS_PSK_DHE_WITH_AES_256_CCM_8"/>
+</enum>
+
+<enum name="SSLErrorTypes" type="int">
+  <int value="0" label="CERT_COMMON_NAME_INVALID"/>
+  <int value="1" label="CERT_DATE_INVALID"/>
+  <int value="2" label="CERT_AUTHORITY_INVALID"/>
+  <int value="3" label="CERT_CONTAINS_ERRORS"/>
+  <int value="4" label="CERT_NO_REVOCATION_MECHANISM"/>
+  <int value="5" label="CERT_REVOKED"/>
+  <int value="6" label="CERT_INVALID"/>
+  <int value="7" label="CERT_WEAK_SIGNATURE_ALGORITHM"/>
+  <int value="8" label="CERT_WEAK_KEY"/>
+  <int value="9" label="UNKNOWN"/>
+</enum>
+
+<enum name="SSLResponseTypesV2" type="int">
+  <int value="0" label="SHOW_ALL"/>
+  <int value="1" label="SHOW_OVERRIDABLE"/>
+  <int value="2" label="PROCEED_OVERRIDABLE"/>
+  <int value="3" label="PROCEED_NAME"/>
+  <int value="4" label="PROCEED_DATE"/>
+  <int value="5" label="PROCEED_AUTHORITY"/>
+  <int value="6" label="DONT_PROCEED_OVERRIDABLE"/>
+  <int value="7" label="DONT_PROCEED_NAME"/>
+  <int value="8" label="DONT_PROCEED_DATE"/>
+  <int value="9" label="DONT_PROCEED_AUTHORITY"/>
+  <int value="10" label="MORE"/>
+  <int value="11" label="SHOW_UNDERSTAND"/>
 </enum>
 
 <enum name="SuspendStatus" type="int">
