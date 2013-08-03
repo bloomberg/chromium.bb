@@ -4,4 +4,4 @@ If an authentication dialog appears, please cancel it.
 
 Login: PASS
 Async request sent before logout: PASS
-Logout: PASS
+Logout: FAIL

@@ -1,0 +1,31 @@
+CONSOLE MESSAGE: line 6: XHR loaded: 1
+Tests XHR replaying. Bug 95187
+
+Running: testGetStaticAsync
+Dumping request: 
+    url: http://user:password@127.0.0.1:8000/inspector/network/resources/empty.html
+    requestMethod: GET
+    test request header value: undefined
+Exception while running: function step3()
+        {
+            var replayedRequest = lastRequest();
+            assertRequestEqual(originalRequest, replayedRequest);
+            callback();
+        }
+Error: Failure (Requests have different requestHeadersText): expected <GET http://user:password@127.0.0.1:8000/inspector/network/resources/empty.html HTTP/1.1
+> found <GET http://user:password@127.0.0.1:8000/inspector/network/resources/empty.html HTTP/1.1
+headerName: headerValue
+Referer: http://127.0.0.1:8000/inspector/network/network-xhr-replay.html
+User-Agent: Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/19.77.34.5 Safari/537.36
+>
+    at Object.InspectorTest.assertEquals (evaluateInWebInspector0.js:302:11)
+    at assertRequestEqual (evaluateInWebInspector1.js:39:23)
+    at Object.step3 (evaluateInWebInspector1.js:63:13)
+    at Object.result (evaluateInWebInspector0.js:318:25)
+    at Object.receiver.(anonymous function) (evaluateInWebInspector0.js:347:22)
+    at Object.WebInspector.NetworkLogView._onRequestStarted (file:///E:/b/build/slave/WebKit_XP/build/src/out/Release/resources/inspector/NetworkPanel.js:1886:6)
+    at Object.WebInspector.Object.dispatchEventToListeners (file:///E:/b/build/slave/WebKit_XP/build/src/out/Release/resources/inspector/inspector.js:4928:23)
+    at Object.WebInspector.NetworkDispatcher._dispatchEventToListeners (file:///E:/b/build/slave/WebKit_XP/build/src/out/Release/resources/inspector/inspector.js:18517:15)
+    at Object.WebInspector.NetworkDispatcher._startNetworkRequest (file:///E:/b/build/slave/WebKit_XP/build/src/out/Release/resources/inspector/inspector.js:18495:6)
+    at Object.WebInspector.NetworkDispatcher.requestWillBeSent (file:///E:/b/build/slave/WebKit_XP/build/src/out/Release/resources/inspector/inspector.js:18299:6)
+

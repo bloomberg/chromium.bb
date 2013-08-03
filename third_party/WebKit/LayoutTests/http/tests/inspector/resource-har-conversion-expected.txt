@@ -115,7 +115,6 @@ Page reloaded.
             response : {
                 bodySize : <number>
                 content : {
-                    compression : <number>
                     mimeType : "text/html"
                     size : <number>
                 }
@@ -125,8 +124,8 @@ Page reloaded.
                 headersSize : <number>
                 httpVersion : "HTTP/1.1"
                 redirectURL : ""
-                status : 200
-                statusText : "OK"
+                status : 304
+                statusText : "Not Modified"
             }
             startedDateTime : <plausible>
             time : <number>
