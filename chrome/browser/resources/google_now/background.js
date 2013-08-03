@@ -129,6 +129,10 @@ tasks.instrumentApiFunction(
 tasks.instrumentApiFunction(chrome.notifications.onClicked, 'addListener', 0);
 tasks.instrumentApiFunction(chrome.notifications.onClosed, 'addListener', 0);
 tasks.instrumentApiFunction(
+    googleGeolocationAccessEnabledPref,
+    'get',
+    1);
+tasks.instrumentApiFunction(
     googleGeolocationAccessEnabledPref.onChange,
     'addListener',
     0);

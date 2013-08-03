@@ -82,6 +82,26 @@ function buildTaskManager(areConflicting) {
   var isInTask = false;
 
   /**
+   * True if currently executed code runs in an instrumented callback.
+   * @type {boolean}
+   */
+  var isInInstrumentedCallback = false;
+
+  /**
+   * Checks that we run in an instrumented callback.
+   */
+  function checkInInstrumentedCallback() {
+    if (!isInInstrumentedCallback) {
+      // Cannot use verify() since no one will catch the exception.
+      // This alert will detect bugs at the development stage, and is very
+      // unlikely to be seen by users.
+      var error = 'Not in instrumented callback: ' + new Error().stack;
+      console.error(error);
+      alert(error);
+    }
+  }
+
+  /**
    * Starts the first queued task.
    */
   function startFirst() {
@@ -133,6 +153,7 @@ function buildTaskManager(areConflicting) {
    *     parameter. Call this callback on completion.
    */
   function add(taskName, task) {
+    checkInInstrumentedCallback();
     console.log('Adding task ' + taskName);
     if (!canQueue(taskName))
       return;
@@ -207,18 +228,21 @@ function buildTaskManager(areConflicting) {
   /**
    * Adds error processing to an API callback.
    * @param {Function} callback Callback to instrument.
-   * @param {boolean=} opt_dontRequire True if the callback is not required to
-   *     be invoked.
+   * @param {boolean=} opt_isEventListener True if the callback is an event
+   *      listener.
    * @return {Function} Instrumented callback.
    */
-  function wrapCallback(callback, opt_dontRequire) {
-    verify(!(opt_dontRequire && isInTask), 'Unrequired callback in a task.');
+  function wrapCallback(callback, opt_isEventListener) {
+    verify(!(opt_isEventListener && isInTask),
+           'Unrequired callback in a task.');
     var callbackId = nextCallbackId++;
     var isTaskCallback = isInTask;
     if (isTaskCallback)
       ++taskPendingCallbackCount;
-    if (!opt_dontRequire)
+    if (!opt_isEventListener) {
+      checkInInstrumentedCallback();
       pendingCallbacks[callbackId] = new Error().stack;
+    }
 
     return function() {
       // This is the wrapper for the callback.
@@ -227,11 +251,16 @@ function buildTaskManager(areConflicting) {
           verify(!isInTask, 'wrapCallback: already in task');
           isInTask = true;
         }
-        if (!opt_dontRequire)
+        if (!opt_isEventListener)
           delete pendingCallbacks[callbackId];
 
         // Call the original callback.
+        verify(!isInInstrumentedCallback, 'Re-entering instrumented callback');
+        isInInstrumentedCallback = true;
         callback.apply(null, arguments);
+        verify(isInInstrumentedCallback,
+               'Instrumented callback is not instrumented upon exit');
+        isInInstrumentedCallback = false;
 
         if (isTaskCallback) {
           verify(isInTask, 'wrapCallback: not in task at exit');
@@ -282,7 +311,9 @@ function buildTaskManager(areConflicting) {
     };
   }
 
+  instrumentApiFunction(chrome.alarms, 'get', 1);
   instrumentApiFunction(chrome.alarms.onAlarm, 'addListener', 0);
+  instrumentApiFunction(chrome.identity, 'getAuthToken', 1);
   instrumentApiFunction(chrome.runtime.onSuspend, 'addListener', 0);
 
   chrome.runtime.onSuspend.addListener(function() {
