@@ -66,7 +66,7 @@ class CC_EXPORT ResourceProvider {
   WebKit::WebGraphicsContext3D* GraphicsContext3D();
   int max_texture_size() const { return max_texture_size_; }
   GLenum best_texture_format() const { return best_texture_format_; }
-  unsigned num_resources() const { return resources_.size(); }
+  size_t num_resources() const { return resources_.size(); }
 
   // Checks whether a resource is in use by a consumer.
   bool InUseByConsumer(ResourceId id);
