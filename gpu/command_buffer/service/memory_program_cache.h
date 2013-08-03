@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/containers/hash_tables.h"
+#include "base/containers/mru_cache.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/program_cache.h"
-#include "gpu/command_buffer/service/program_cache_lru_helper.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 
 namespace gpu {
@@ -33,7 +33,7 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       Shader* shader_b,
       const ShaderTranslatorInterface* translator_b,
       const LocationMap* bind_attrib_location_map,
-      const ShaderCacheCallback& shader_callback) const OVERRIDE;
+      const ShaderCacheCallback& shader_callback) OVERRIDE;
   virtual void SaveLinkedProgram(
       GLuint program,
       const Shader* shader_a,
@@ -48,42 +48,84 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
  private:
   virtual void ClearBackend() OVERRIDE;
 
-  struct ProgramCacheValue : public base::RefCounted<ProgramCacheValue> {
+  class ProgramCacheValue : public base::RefCounted<ProgramCacheValue> {
    public:
-    ProgramCacheValue(GLsizei _length,
-                      GLenum _format,
-                      const char* _data,
-                      const char* _shader_0_hash,
-                      const ShaderTranslator::VariableMap& _attrib_map_0,
-                      const ShaderTranslator::VariableMap& _uniform_map_0,
-                      const char* _shader_1_hash,
-                      const ShaderTranslator::VariableMap& _attrib_map_1,
-                      const ShaderTranslator::VariableMap& _uniform_map_1);
-    const GLsizei length;
-    const GLenum format;
-    const scoped_ptr<const char[]> data;
-    const std::string shader_0_hash;
-    const ShaderTranslator::VariableMap attrib_map_0;
-    const ShaderTranslator::VariableMap uniform_map_0;
-    const std::string shader_1_hash;
-    const ShaderTranslator::VariableMap attrib_map_1;
-    const ShaderTranslator::VariableMap uniform_map_1;
+    ProgramCacheValue(GLsizei length,
+                      GLenum format,
+                      const char* data,
+                      const std::string& program_hash,
+                      const char* shader_0_hash,
+                      const ShaderTranslator::VariableMap& attrib_map_0,
+                      const ShaderTranslator::VariableMap& uniform_map_0,
+                      const char* shader_1_hash,
+                      const ShaderTranslator::VariableMap& attrib_map_1,
+                      const ShaderTranslator::VariableMap& uniform_map_1,
+                      MemoryProgramCache* program_cache);
+
+    GLsizei length() const {
+      return length_;
+    }
+
+    GLenum format() const {
+      return format_;
+    }
+
+    const char* data() const {
+      return data_.get();
+    }
+
+    const std::string& shader_0_hash() const {
+      return shader_0_hash_;
+    }
+
+    const ShaderTranslator::VariableMap& attrib_map_0() const {
+      return attrib_map_0_;
+    }
+
+    const ShaderTranslator::VariableMap& uniform_map_0() const {
+      return uniform_map_0_;
+    }
+
+    const std::string& shader_1_hash() const {
+      return shader_1_hash_;
+    }
+
+    const ShaderTranslator::VariableMap& attrib_map_1() const {
+      return attrib_map_1_;
+    }
+
+    const ShaderTranslator::VariableMap& uniform_map_1() const {
+      return uniform_map_1_;
+    }
 
    private:
     friend class base::RefCounted<ProgramCacheValue>;
 
     ~ProgramCacheValue();
 
+    const GLsizei length_;
+    const GLenum format_;
+    const scoped_ptr<const char[]> data_;
+    const std::string program_hash_;
+    const std::string shader_0_hash_;
+    const ShaderTranslator::VariableMap attrib_map_0_;
+    const ShaderTranslator::VariableMap uniform_map_0_;
+    const std::string shader_1_hash_;
+    const ShaderTranslator::VariableMap attrib_map_1_;
+    const ShaderTranslator::VariableMap uniform_map_1_;
+    MemoryProgramCache* const program_cache_;
+
     DISALLOW_COPY_AND_ASSIGN(ProgramCacheValue);
   };
 
-  typedef base::hash_map<std::string,
-                         scoped_refptr<ProgramCacheValue> > StoreMap;
+  friend class ProgramCacheValue;
+
+  typedef base::MRUCache<std::string,
+                         scoped_refptr<ProgramCacheValue> > ProgramMRUCache;
 
   const size_t max_size_bytes_;
   size_t curr_size_bytes_;
-  StoreMap store_;
-  ProgramCacheLruHelper eviction_helper_;
+  ProgramMRUCache store_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryProgramCache);
 };

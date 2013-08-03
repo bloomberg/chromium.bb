@@ -199,7 +199,6 @@
         'command_buffer/service/program_manager_unittest.cc',
         'command_buffer/service/query_manager_unittest.cc',
         'command_buffer/service/renderbuffer_manager_unittest.cc',
-        'command_buffer/service/program_cache_lru_helper_unittest.cc',
         'command_buffer/service/program_cache_unittest.cc',
         'command_buffer/service/shader_manager_unittest.cc',
         'command_buffer/service/shader_translator_unittest.cc',

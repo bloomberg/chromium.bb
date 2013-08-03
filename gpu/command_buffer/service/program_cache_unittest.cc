@@ -22,7 +22,7 @@ class NoBackendProgramCache : public ProgramCache {
       Shader* /* shader_b */,
       const ShaderTranslatorInterface* /* translator_b */,
       const LocationMap* /* bind_attrib_location_map */,
-      const ShaderCacheCallback& /* callback */) const OVERRIDE {
+      const ShaderCacheCallback& /* callback */) OVERRIDE {
     return PROGRAM_LOAD_SUCCESS;
   }
   virtual void SaveLinkedProgram(

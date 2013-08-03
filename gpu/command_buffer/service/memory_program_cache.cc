@@ -90,18 +90,21 @@ void RunShaderCallback(const ShaderCacheCallback& callback,
 
 MemoryProgramCache::MemoryProgramCache()
     : max_size_bytes_(GetCacheSizeBytes()),
-      curr_size_bytes_(0) { }
+      curr_size_bytes_(0),
+      store_(ProgramMRUCache::NO_AUTO_EVICT) {
+}
 
 MemoryProgramCache::MemoryProgramCache(const size_t max_cache_size_bytes)
     : max_size_bytes_(max_cache_size_bytes),
-      curr_size_bytes_(0) {}
+      curr_size_bytes_(0),
+      store_(ProgramMRUCache::NO_AUTO_EVICT) {
+}
 
 MemoryProgramCache::~MemoryProgramCache() {}
 
 void MemoryProgramCache::ClearBackend() {
-  curr_size_bytes_ = 0;
-  store_.clear();
-  eviction_helper_.Clear();
+  store_.Clear();
+  DCHECK_EQ(0U, curr_size_bytes_);
 }
 
 ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
@@ -111,7 +114,7 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     Shader* shader_b,
     const ShaderTranslatorInterface* translator_b,
     const LocationMap* bind_attrib_location_map,
-    const ShaderCacheCallback& shader_callback) const {
+    const ShaderCacheCallback& shader_callback) {
   char a_sha[kHashLength];
   char b_sha[kHashLength];
   ComputeShaderHash(
@@ -126,24 +129,24 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
                      sha);
   const std::string sha_string(sha, kHashLength);
 
-  StoreMap::const_iterator found = store_.find(sha_string);
+  ProgramMRUCache::iterator found = store_.Get(sha_string);
   if (found == store_.end()) {
     return PROGRAM_LOAD_FAILURE;
   }
   const scoped_refptr<ProgramCacheValue> value = found->second;
   glProgramBinary(program,
-                  value->format,
-                  static_cast<const GLvoid*>(value->data.get()),
-                  value->length);
+                  value->format(),
+                  static_cast<const GLvoid*>(value->data()),
+                  value->length());
   GLint success = 0;
   glGetProgramiv(program, GL_LINK_STATUS, &success);
   if (success == GL_FALSE) {
     return PROGRAM_LOAD_FAILURE;
   }
-  shader_a->set_attrib_map(value->attrib_map_0);
-  shader_a->set_uniform_map(value->uniform_map_0);
-  shader_b->set_attrib_map(value->attrib_map_1);
-  shader_b->set_uniform_map(value->uniform_map_1);
+  shader_a->set_attrib_map(value->attrib_map_0());
+  shader_a->set_uniform_map(value->uniform_map_0());
+  shader_b->set_attrib_map(value->attrib_map_1());
+  shader_b->set_uniform_map(value->uniform_map_1());
 
   if (!shader_callback.is_null() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -151,8 +154,8 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     scoped_ptr<GpuProgramProto> proto(
         GpuProgramProto::default_instance().New());
     proto->set_sha(sha, kHashLength);
-    proto->set_format(value->format);
-    proto->set_program(value->data.get(), value->length);
+    proto->set_format(value->format());
+    proto->set_program(value->data(), value->length());
 
     FillShaderProto(proto->mutable_vertex_shader(), a_sha, shader_a);
     FillShaderProto(proto->mutable_fragment_shader(), b_sha, shader_b);
@@ -201,23 +204,15 @@ void MemoryProgramCache::SaveLinkedProgram(
   UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeBeforeKb",
                        curr_size_bytes_ / 1024);
 
-  if (store_.find(sha_string) != store_.end()) {
-    const StoreMap::iterator found = store_.find(sha_string);
-    const ProgramCacheValue* evicting = found->second.get();
-    curr_size_bytes_ -= evicting->length;
-    Evict(sha_string, evicting->shader_0_hash, evicting->shader_1_hash);
-    store_.erase(found);
-  }
+  // Evict any cached program with the same key in favor of the least recently
+  // accessed.
+  ProgramMRUCache::iterator existing = store_.Peek(sha_string);
+  if(existing != store_.end())
+    store_.Erase(existing);
 
   while (curr_size_bytes_ + length > max_size_bytes_) {
-    DCHECK(!eviction_helper_.IsEmpty());
-    const std::string* program = eviction_helper_.PeekKey();
-    const StoreMap::iterator found = store_.find(*program);
-    const ProgramCacheValue* evicting = found->second.get();
-    curr_size_bytes_ -= evicting->length;
-    Evict(*program, evicting->shader_0_hash, evicting->shader_1_hash);
-    store_.erase(found);
-    eviction_helper_.PopKey();
+    DCHECK(!store_.empty());
+    store_.Erase(store_.rbegin());
   }
 
   if (!shader_callback.is_null() &&
@@ -234,24 +229,21 @@ void MemoryProgramCache::SaveLinkedProgram(
     RunShaderCallback(shader_callback, proto.get(), sha_string);
   }
 
-  store_[sha_string] = new ProgramCacheValue(length,
-                                             format,
-                                             binary.release(),
-                                             a_sha,
-                                             shader_a->attrib_map(),
-                                             shader_a->uniform_map(),
-                                             b_sha,
-                                             shader_b->attrib_map(),
-                                             shader_b->uniform_map());
-  curr_size_bytes_ += length;
-  eviction_helper_.KeyUsed(sha_string);
+  store_.Put(sha_string,
+             new ProgramCacheValue(length,
+                                   format,
+                                   binary.release(),
+                                   sha_string,
+                                   a_sha,
+                                   shader_a->attrib_map(),
+                                   shader_a->uniform_map(),
+                                   b_sha,
+                                   shader_b->attrib_map(),
+                                   shader_b->uniform_map(),
+                                   this));
 
   UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
                          curr_size_bytes_ / 1024);
-
-  LinkedProgramCacheSuccess(sha_string,
-                            std::string(a_sha, kHashLength),
-                            std::string(b_sha, kHashLength));
 }
 
 void MemoryProgramCache::LoadProgram(const std::string& program) {
@@ -284,51 +276,63 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
     scoped_ptr<char[]> binary(new char[proto->program().length()]);
     memcpy(binary.get(), proto->program().c_str(), proto->program().length());
 
-    store_[proto->sha()] = new ProgramCacheValue(proto->program().length(),
-        proto->format(), binary.release(),
-        proto->vertex_shader().sha().c_str(), vertex_attribs, vertex_uniforms,
-        proto->fragment_shader().sha().c_str(), fragment_attribs,
-            fragment_uniforms);
+    store_.Put(proto->sha(),
+               new ProgramCacheValue(proto->program().length(),
+                                     proto->format(),
+                                     binary.release(),
+                                     proto->sha(),
+                                     proto->vertex_shader().sha().c_str(),
+                                     vertex_attribs,
+                                     vertex_uniforms,
+                                     proto->fragment_shader().sha().c_str(),
+                                     fragment_attribs,
+                                     fragment_uniforms,
+                                     this));
 
     ShaderCompilationSucceededSha(proto->sha());
     ShaderCompilationSucceededSha(proto->vertex_shader().sha());
     ShaderCompilationSucceededSha(proto->fragment_shader().sha());
 
-    curr_size_bytes_ += proto->program().length();
-    eviction_helper_.KeyUsed(proto->sha());
-
     UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
                          curr_size_bytes_ / 1024);
-
-    LinkedProgramCacheSuccess(proto->sha(),
-                              proto->vertex_shader().sha(),
-                              proto->fragment_shader().sha());
   } else {
     LOG(ERROR) << "Failed to parse proto file.";
   }
 }
 
 MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
-    GLsizei _length,
-    GLenum _format,
-    const char* _data,
-    const char* _shader_0_hash,
-    const ShaderTranslator::VariableMap& _attrib_map_0,
-    const ShaderTranslator::VariableMap& _uniform_map_0,
-    const char* _shader_1_hash,
-    const ShaderTranslator::VariableMap& _attrib_map_1,
-    const ShaderTranslator::VariableMap& _uniform_map_1)
-    : length(_length),
-      format(_format),
-      data(_data),
-      shader_0_hash(_shader_0_hash, kHashLength),
-      attrib_map_0(_attrib_map_0),
-      uniform_map_0(_uniform_map_0),
-      shader_1_hash(_shader_1_hash, kHashLength),
-      attrib_map_1(_attrib_map_1),
-      uniform_map_1(_uniform_map_1) {}
+    GLsizei length,
+    GLenum format,
+    const char* data,
+    const std::string& program_hash,
+    const char* shader_0_hash,
+    const ShaderTranslator::VariableMap& attrib_map_0,
+    const ShaderTranslator::VariableMap& uniform_map_0,
+    const char* shader_1_hash,
+    const ShaderTranslator::VariableMap& attrib_map_1,
+    const ShaderTranslator::VariableMap& uniform_map_1,
+    MemoryProgramCache* program_cache)
+    : length_(length),
+      format_(format),
+      data_(data),
+      program_hash_(program_hash),
+      shader_0_hash_(shader_0_hash, kHashLength),
+      attrib_map_0_(attrib_map_0),
+      uniform_map_0_(uniform_map_0),
+      shader_1_hash_(shader_1_hash, kHashLength),
+      attrib_map_1_(attrib_map_1),
+      uniform_map_1_(uniform_map_1),
+      program_cache_(program_cache) {
+  program_cache_->curr_size_bytes_ += length_;
+  program_cache_->LinkedProgramCacheSuccess(program_hash,
+                                            shader_0_hash_,
+                                            shader_1_hash_);
+}
 
-MemoryProgramCache::ProgramCacheValue::~ProgramCacheValue() {}
+MemoryProgramCache::ProgramCacheValue::~ProgramCacheValue() {
+  program_cache_->curr_size_bytes_ -= length_;
+  program_cache_->Evict(program_hash_, shader_0_hash_, shader_1_hash_);
+}
 
 }  // namespace gles2
 }  // namespace gpu

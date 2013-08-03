@@ -100,7 +100,7 @@ class MockProgramCache : public ProgramCache {
   MockProgramCache();
   virtual ~MockProgramCache();
 
-  MOCK_CONST_METHOD7(LoadLinkedProgram, ProgramLoadResult(
+  MOCK_METHOD7(LoadLinkedProgram, ProgramLoadResult(
       GLuint program,
       Shader* shader_a,
       const ShaderTranslatorInterface* translator_a,

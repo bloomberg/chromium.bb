@@ -68,7 +68,7 @@ class GPU_EXPORT ProgramCache {
       Shader* shader_b,
       const ShaderTranslatorInterface* translator_b,
       const LocationMap* bind_attrib_location_map,
-      const ShaderCacheCallback& shader_callback) const = 0;
+      const ShaderCacheCallback& shader_callback) = 0;
 
   // Saves the program into the cache.  If successful, the implementation should
   // call LinkedProgramCacheSuccess.

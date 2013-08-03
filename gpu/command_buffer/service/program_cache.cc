@@ -15,9 +15,9 @@ ProgramCache::ProgramCache() {}
 ProgramCache::~ProgramCache() {}
 
 void ProgramCache::Clear() {
+  ClearBackend();
   shader_status_.clear();
   link_status_.clear();
-  ClearBackend();
 }
 
 ProgramCache::CompiledShaderStatus ProgramCache::GetShaderCompilationStatus(
