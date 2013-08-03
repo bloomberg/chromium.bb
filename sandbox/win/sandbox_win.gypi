@@ -183,21 +183,25 @@
       'include_dirs': [
         '../..',
       ],
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)',
-          'files': [
-            'wow_helper/wow_helper.exe',
-            'wow_helper/wow_helper.pdb',
-          ],
-        },
-      ],
       'direct_dependent_settings': {
         'include_dirs': [
           'src',
           '../..',
         ],
       },
+      'target_conditions': [
+        ['target_arch=="ia32"', {
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)',
+              'files': [
+                'wow_helper/wow_helper.exe',
+                'wow_helper/wow_helper.pdb',
+              ],
+            },
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'sbox_integration_tests',
