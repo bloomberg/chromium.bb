@@ -34,6 +34,7 @@ class FakeLayerTreeHost : protected LayerTreeHost {
   virtual void SetNeedsFullTreeSync() OVERRIDE {}
 
   using LayerTreeHost::SetRootLayer;
+  using LayerTreeHost::root_layer;
 
   LayerImpl* CommitAndCreateLayerImplTree() {
     scoped_ptr<LayerImpl> old_root_layer_impl =
@@ -50,6 +51,7 @@ class FakeLayerTreeHost : protected LayerTreeHost {
     return active_tree()->root_layer();
   }
 
+  FakeLayerTreeHostImpl* host_impl() { return &host_impl_; }
   LayerTreeImpl* active_tree() { return host_impl_.active_tree(); }
 
  private:

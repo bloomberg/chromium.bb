@@ -15,6 +15,7 @@
 #include "cc/output/filter_operations.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/occlusion_tracker_test_common.h"
@@ -132,7 +133,7 @@ class TestOcclusionTrackerWithClip
 
 struct OcclusionTrackerTestMainThreadTypes {
   typedef Layer LayerType;
-  typedef LayerTreeHost HostType;
+  typedef FakeLayerTreeHost HostType;
   typedef RenderSurface RenderSurfaceType;
   typedef TestContentLayer ContentLayerType;
   typedef scoped_refptr<Layer> LayerPtrType;
@@ -200,7 +201,7 @@ int OcclusionTrackerTestImplThreadTypes::next_layer_impl_id = 1;
 template <typename Types> class OcclusionTrackerTest : public testing::Test {
  protected:
   explicit OcclusionTrackerTest(bool opaque_layers)
-      : host_impl_(&proxy_), opaque_layers_(opaque_layers) {}
+      : opaque_layers_(opaque_layers), host_(FakeLayerTreeHost::Create()) {}
 
   virtual void RunMyTest() = 0;
 
@@ -224,6 +225,9 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
     DCHECK(!root_.get());
     root_ = Types::PassLayerPtr(&layer);
+
+    SetRootLayerOnMainThread(layer_ptr);
+
     return layer_ptr;
   }
 
@@ -411,6 +415,12 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   const gfx::Transform identity_matrix;
 
  private:
+  void SetRootLayerOnMainThread(Layer* root) {
+    host_->SetRootLayer(scoped_refptr<Layer>(root));
+  }
+
+  void SetRootLayerOnMainThread(LayerImpl* root) {}
+
   void SetBaseProperties(typename Types::LayerType* layer,
                          const gfx::Transform& transform,
                          gfx::PointF position,
@@ -456,9 +466,8 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
     owning_layer->SetMaskLayer(layer.Pass());
   }
 
-  FakeImplProxy proxy_;
-  FakeLayerTreeHostImpl host_impl_;
   bool opaque_layers_;
+  scoped_ptr<FakeLayerTreeHost> host_;
   // These hold ownership of the layers for the duration of the test.
   typename Types::LayerPtrType root_;
   scoped_ptr<RenderSurfaceLayerList> render_surface_layer_list_;
@@ -471,15 +480,15 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 };
 
 template <>
-LayerTreeHost*
+FakeLayerTreeHost*
 OcclusionTrackerTest<OcclusionTrackerTestMainThreadTypes>::GetHost() {
-  return NULL;
+  return host_.get();
 }
 
 template <>
 LayerTreeImpl*
 OcclusionTrackerTest<OcclusionTrackerTestImplThreadTypes>::GetHost() {
-  return host_impl_.active_tree();
+  return host_->host_impl()->active_tree();
 }
 
 #define RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName)                          \

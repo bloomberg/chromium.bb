@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "cc/layers/layer.h"
+#include "cc/test/fake_layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -136,6 +137,9 @@ TEST(LayerIteratorTest, SimpleTree) {
   root_layer->AddChild(third);
   root_layer->AddChild(fourth);
 
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root_layer);
+
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
       root_layer.get(), root_layer->bounds(), &render_surface_layer_list);
@@ -175,6 +179,9 @@ TEST(LayerIteratorTest, ComplexTree) {
   root2->AddChild(root23);
   root22->AddChild(root221);
   root23->AddChild(root231);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root_layer);
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
@@ -228,6 +235,9 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   root22->AddChild(root221);
   root23->SetOpacity(0.5f);
   root23->AddChild(root231);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root_layer);
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(

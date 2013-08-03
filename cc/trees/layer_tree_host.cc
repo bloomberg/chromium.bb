@@ -560,8 +560,10 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
   if (root_layer_.get())
     root_layer_->SetLayerTreeHost(NULL);
   root_layer_ = root_layer;
-  if (root_layer_.get())
+  if (root_layer_.get()) {
+    DCHECK(!root_layer_->parent());
     root_layer_->SetLayerTreeHost(this);
+  }
 
   if (hud_layer_.get())
     hud_layer_->RemoveFromParent();
@@ -677,6 +679,8 @@ bool LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue,
 
   if (!root_layer())
     return false;
+
+  DCHECK(!root_layer()->parent());
 
   if (contents_texture_manager_ && memory_allocation_limit_bytes) {
     contents_texture_manager_->SetMaxMemoryLimitBytes(

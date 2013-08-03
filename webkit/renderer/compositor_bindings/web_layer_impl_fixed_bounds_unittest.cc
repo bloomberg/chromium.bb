@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "cc/layers/picture_image_layer.h"
+#include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -125,6 +126,9 @@ void CompareFixedBoundsLayerAndNormalLayer(
   normal_layer->setSublayerTransform(sublayer_transform.matrix());
   normal_layer->setPosition(position);
   root_layer->addChild(normal_layer);
+
+  scoped_ptr<cc::FakeLayerTreeHost> host = cc::FakeLayerTreeHost::Create();
+  host->SetRootLayer(root_layer->layer());
 
   {
     cc::RenderSurfaceLayerList render_surface_layer_list;

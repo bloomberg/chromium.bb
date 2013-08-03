@@ -111,18 +111,19 @@ TEST(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   scoped_refptr<Layer> scrollbar_layer =
       ScrollbarLayer::Create(scrollbar.Pass(),
                              layer_tree_root->id());
-  layer_tree_root->AddChild(content_layer);
-  layer_tree_root->AddChild(scrollbar_layer);
 
   layer_tree_root->SetScrollable(true);
   layer_tree_root->SetScrollOffset(gfx::Vector2d(10, 20));
   layer_tree_root->SetMaxScrollOffset(gfx::Vector2d(30, 50));
   layer_tree_root->SetBounds(gfx::Size(100, 200));
-  layer_tree_root->SavePaintProperties();
   content_layer->SetBounds(gfx::Size(100, 200));
-  content_layer->SavePaintProperties();
 
   host->SetRootLayer(layer_tree_root);
+  layer_tree_root->AddChild(content_layer);
+  layer_tree_root->AddChild(scrollbar_layer);
+
+  layer_tree_root->SavePaintProperties();
+  content_layer->SavePaintProperties();
 
   LayerImpl* layer_impl_tree_root = host->CommitAndCreateLayerImplTree();
 

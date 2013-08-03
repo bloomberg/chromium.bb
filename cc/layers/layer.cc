@@ -417,6 +417,8 @@ void Layer::CalculateContentsScale(
     float* contents_scale_x,
     float* contents_scale_y,
     gfx::Size* content_bounds) {
+  DCHECK(layer_tree_host_);
+
   *contents_scale_x = 1;
   *contents_scale_y = 1;
   *content_bounds = bounds();
@@ -726,6 +728,8 @@ static void PostCopyCallbackToMainThread(
 }
 
 void Layer::PushPropertiesTo(LayerImpl* layer) {
+  DCHECK(layer_tree_host_);
+
   layer->SetAnchorPoint(anchor_point_);
   layer->SetAnchorPointZ(anchor_point_z_);
   layer->SetBackgroundColor(background_color_);
@@ -836,6 +840,8 @@ bool Layer::DrawsContent() const {
 }
 
 void Layer::SavePaintProperties() {
+  DCHECK(layer_tree_host_);
+
   // TODO(reveman): Save all layer properties that we depend on not
   // changing until PushProperties() has been called. crbug.com/231016
   paint_properties_.bounds = bounds_;
@@ -843,6 +849,7 @@ void Layer::SavePaintProperties() {
 
 bool Layer::Update(ResourceUpdateQueue* queue,
                    const OcclusionTracker* occlusion) {
+  DCHECK(layer_tree_host_);
   return false;
 }
 
