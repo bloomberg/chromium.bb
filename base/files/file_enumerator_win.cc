@@ -133,10 +133,8 @@ FilePath FileEnumerator::Next() {
       if (recursive_) {
         // If |cur_file| is a directory, and we are doing recursive searching,
         // add it to pending_paths_ so we scan it after we finish scanning this
-        // directory. However, don't do recursion through reparse points or we
-        // may end up with an infinite cycle.
-        if (!(find_data_.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
-          pending_paths_.push(cur_file);
+        // directory.
+        pending_paths_.push(cur_file);
       }
       if (file_type_ & FileEnumerator::DIRECTORIES)
         return cur_file;
