@@ -127,7 +127,7 @@ AwDrawSWFunctionTable* g_sw_draw_functions = NULL;
 // as a fallback mechanism, which will have an important performance impact.
 bool g_is_skia_version_compatible = false;
 
-const int64 kFallbackTickTimeoutInMilliseconds = 500;
+const int64 kFallbackTickTimeoutInMilliseconds = 20;
 
 class ScopedAllowGL {
  public:
