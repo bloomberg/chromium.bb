@@ -427,7 +427,7 @@ class NinjaWriter:
             self.xcode_settings, self.GypPathToNinja,
             lambda path, lang: self.GypPathToUniqueOutput(path + '-' + lang))
       link_deps = self.WriteSources(
-          config_name, config, sources, compile_depends_stamp, pch,
+          self.ninja, config_name, config, sources, compile_depends_stamp, pch,
           case_sensitive_filesystem, spec)
       # Some actions/rules output 'sources' that are already object files.
       link_deps += [self.GypPathToNinja(f)
@@ -720,7 +720,7 @@ class NinjaWriter:
                                 ('env', env)])
     bundle_depends.append(out)
 
-  def WriteSources(self, config_name, config, sources, predepends,
+  def WriteSources(self, ninja_file, config_name, config, sources, predepends,
                    precompiled_header, case_sensitive_filesystem, spec):
     """Write build rules to compile all of |sources|."""
     if self.toolset == 'host':
@@ -751,17 +751,18 @@ class NinjaWriter:
           obj += '.' + self.toolset
         pdbpath = os.path.normpath(os.path.join(obj, self.base_dir,
                                                 self.name + '.pdb'))
-      self.WriteVariableList('pdbname', [pdbpath])
-      self.WriteVariableList('pchprefix', [self.name])
+      self.WriteVariableList(ninja_file, 'pdbname', [pdbpath])
+      self.WriteVariableList(ninja_file, 'pchprefix', [self.name])
     else:
       cflags = config.get('cflags', [])
       cflags_c = config.get('cflags_c', [])
       cflags_cc = config.get('cflags_cc', [])
 
     defines = config.get('defines', []) + extra_defines
-    self.WriteVariableList('defines', [Define(d, self.flavor) for d in defines])
+    self.WriteVariableList(ninja_file, 'defines',
+                          [Define(d, self.flavor) for d in defines])
     if self.flavor == 'win':
-      self.WriteVariableList('rcflags',
+      self.WriteVariableList(ninja_file, 'rcflags',
           [QuoteShellArgument(self.ExpandSpecial(f), self.flavor)
            for f in self.msvs_settings.GetRcflags(config_name,
                                                   self.GypPathToNinja)])
@@ -771,7 +772,7 @@ class NinjaWriter:
       include_dirs = self.msvs_settings.AdjustIncludeDirs(include_dirs,
                                                           config_name)
     env = self.GetSortedXcodeEnv()
-    self.WriteVariableList('includes',
+    self.WriteVariableList(ninja_file, 'includes',
         [QuoteShellArgument('-I' + self.GypPathToNinja(i, env), self.flavor)
          for i in include_dirs])
 
@@ -781,17 +782,20 @@ class NinjaWriter:
       for ext, var in [('c', 'cflags_pch_c'), ('cc', 'cflags_pch_cc'),
                        ('m', 'cflags_pch_objc'), ('mm', 'cflags_pch_objcc')]:
         include = precompiled_header.GetInclude(ext)
-        if include: self.ninja.variable(var, include)
+        if include: ninja_file.variable(var, include)
 
-    self.WriteVariableList('cflags', map(self.ExpandSpecial, cflags))
-    self.WriteVariableList('cflags_c', map(self.ExpandSpecial, cflags_c))
-    self.WriteVariableList('cflags_cc', map(self.ExpandSpecial, cflags_cc))
+    self.WriteVariableList(ninja_file, 'cflags',
+                           map(self.ExpandSpecial, cflags))
+    self.WriteVariableList(ninja_file, 'cflags_c',
+                           map(self.ExpandSpecial, cflags_c))
+    self.WriteVariableList(ninja_file, 'cflags_cc',
+                           map(self.ExpandSpecial, cflags_cc))
     if self.flavor == 'mac':
-      self.WriteVariableList('cflags_objc', map(self.ExpandSpecial,
-                                                cflags_objc))
-      self.WriteVariableList('cflags_objcc', map(self.ExpandSpecial,
-                                                 cflags_objcc))
-    self.ninja.newline()
+      self.WriteVariableList(ninja_file, 'cflags_objc',
+                             map(self.ExpandSpecial, cflags_objc))
+      self.WriteVariableList(ninja_file, 'cflags_objcc',
+                             map(self.ExpandSpecial, cflags_objcc))
+    ninja_file.newline()
     outputs = []
     for source in sources:
       filename, ext = os.path.splitext(source)
@@ -835,17 +839,17 @@ class NinjaWriter:
         variables, output, implicit = precompiled_header.GetFlagsModifications(
             input, output, implicit, command, cflags_c, cflags_cc,
             self.ExpandSpecial)
-      self.ninja.build(output, command, input,
+      ninja_file.build(output, command, input,
                        implicit=[gch for _, _, gch in implicit],
                        order_only=predepends, variables=variables)
       outputs.append(output)
 
-    self.WritePchTargets(pch_commands)
+    self.WritePchTargets(ninja_file, pch_commands)
 
-    self.ninja.newline()
+    ninja_file.newline()
     return outputs
 
-  def WritePchTargets(self, pch_commands):
+  def WritePchTargets(self, ninja_file, pch_commands):
     """Writes ninja rules to compile prefix headers."""
     if not pch_commands:
       return
@@ -860,9 +864,9 @@ class NinjaWriter:
 
       map = { 'c': 'cc', 'cc': 'cxx', 'm': 'objc', 'mm': 'objcxx', }
       cmd = map.get(lang)
-      self.ninja.build(gch, cmd, input, variables=[(var_name, lang_flag)])
+      ninja_file.build(gch, cmd, input, variables=[(var_name, lang_flag)])
 
-  def WriteLink(self, spec, config_name, config, link_deps):
+  def WriteLink(self, ninja_file, spec, config_name, config, link_deps):
     """Write out a link step. Fills out target.binary. """
 
     command = {
@@ -920,7 +924,7 @@ class NinjaWriter:
           self.ComputeOutputFileName(spec))
       ldflags, manifest_files = self.msvs_settings.GetLdflags(config_name,
           self.GypPathToNinja, self.ExpandSpecial, manifest_name, is_executable)
-      self.WriteVariableList('manifests', manifest_files)
+      self.WriteVariableList(ninja_file, 'manifests', manifest_files)
       command_suffix = _GetWinLinkRuleNameSuffix(
           self.msvs_settings.IsEmbedManifest(config_name),
           self.msvs_settings.IsLinkIncremental(config_name))
@@ -935,7 +939,7 @@ class NinjaWriter:
           rpath += self.toolset
         ldflags.append('-Wl,-rpath=\$$ORIGIN/%s' % rpath)
         ldflags.append('-Wl,-rpath-link=%s' % rpath)
-    self.WriteVariableList('ldflags',
+    self.WriteVariableList(ninja_file, 'ldflags',
                            gyp.common.uniquer(map(self.ExpandSpecial,
                                                   ldflags)))
 
@@ -958,7 +962,7 @@ class NinjaWriter:
     elif self.flavor == 'win':
       libraries = self.msvs_settings.AdjustLibraries(libraries)
 
-    self.WriteVariableList('libs', library_dirs + libraries)
+    self.WriteVariableList(ninja_file, 'libs', library_dirs + libraries)
 
     self.target.binary = output
 
@@ -979,7 +983,7 @@ class NinjaWriter:
     if len(solibs):
       extra_bindings.append(('solibs', gyp.common.EncodePOSIXShellList(solibs)))
 
-    self.ninja.build(output, command + command_suffix, link_deps,
+    ninja_file.build(output, command + command_suffix, link_deps,
                      implicit=list(implicit_deps),
                      variables=extra_bindings)
 
@@ -1009,7 +1013,7 @@ class NinjaWriter:
         self.ninja.build(self.target.binary, 'alink', link_deps,
                          order_only=compile_deps, variables=variables)
     else:
-      self.WriteLink(spec, config_name, config, link_deps)
+      self.WriteLink(self.ninja, spec, config_name, config, link_deps)
     return self.target.binary
 
   def WriteMacBundle(self, spec, mac_bundle_depends):
@@ -1199,11 +1203,11 @@ class NinjaWriter:
     else:
       return self.GypPathToUniqueOutput(filename, qualified=False)
 
-  def WriteVariableList(self, var, values):
+  def WriteVariableList(self, ninja_file, var, values):
     assert not isinstance(values, str)
     if values is None:
       values = []
-    self.ninja.variable(var, ' '.join(values))
+    ninja_file.variable(var, ' '.join(values))
 
   def WriteNewNinjaRule(self, name, args, description, is_cygwin, env):
     """Write out a new ninja "rule" statement for a given command.
