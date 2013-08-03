@@ -1061,9 +1061,12 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
         base::Bind(&LogMediaSourceError, media_log_));
     demuxer_.reset(chunk_demuxer_);
 
-    // Disable GpuVideoDecoder creation until it supports codec config changes.
+#if !defined(OS_CHROMEOS) || !defined(ARCH_CPU_X86_FAMILY)
+    // Disable GpuVideoDecoder creation on platforms other than CrOS x86 until
+    // they support codec config changes.
     // TODO(acolwell): Remove this once http://crbug.com/151045 is fixed.
     gpu_factories_ = NULL;
+#endif
 
     // Disable preroll increases on underflow since the web application has no
     // way to detect that this is happening and runs the risk of triggering

@@ -136,10 +136,23 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
       "Media.GpuVideoDecoderInitializeStatus",
       BindToCurrentLoop(orig_status_cb));
 
-  if (config_.IsValidConfig()) {
+  bool previously_initialized = config_.IsValidConfig();
+#if !defined(OS_CHROMEOS) || !defined(ARCH_CPU_X86_FAMILY)
+  if (previously_initialized) {
     // TODO(xhwang): Make GpuVideoDecoder reinitializable.
     // See http://crbug.com/233608
     DVLOG(1) << "GpuVideoDecoder reinitialization not supported.";
+    status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
+    return;
+  }
+#endif
+  DVLOG(1) << "(Re)initializing GVD with config: "
+           << config.AsHumanReadableString();
+
+  // TODO(posciak): destroy and create a new VDA on codec/profile change
+  // (http://crbug.com/260224).
+  if (previously_initialized && (config_.profile() != config.profile())) {
+    DVLOG(1) << "Codec or profile changed, cannot reinitialize.";
     status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
@@ -149,14 +162,22 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  config_ = config;
+  needs_bitstream_conversion_ = (config.codec() == kCodecH264);
+
+  if (previously_initialized) {
+    // Reinitialization with a different config (but same codec and profile).
+    // VDA should handle it by detecting this in-stream by itself,
+    // no need to notify it.
+    status_cb.Run(PIPELINE_OK);
+    return;
+  }
+
   vda_.reset(factories_->CreateVideoDecodeAccelerator(config.profile(), this));
   if (!vda_) {
     status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
-
-  config_ = config;
-  needs_bitstream_conversion_ = (config.codec() == kCodecH264);
 
   DVLOG(3) << "GpuVideoDecoder::Initialize() succeeded.";
   status_cb.Run(PIPELINE_OK);
