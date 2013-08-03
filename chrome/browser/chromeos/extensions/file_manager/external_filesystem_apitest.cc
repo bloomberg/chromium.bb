@@ -45,6 +45,7 @@
 
 using extensions::Extension;
 
+namespace file_manager {
 namespace {
 
 // Root dirs for file systems expected by the test extensions.
@@ -303,7 +304,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
   // FileSystemExtensionApiTestBase OVERRIDE.
   virtual void AddTestMountPoint() OVERRIDE {
-    drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+    test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   }
 
  protected:
@@ -431,3 +432,4 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, AppFileHandler) {
 }
 
 }  // namespace
+}  // namespace file_manager

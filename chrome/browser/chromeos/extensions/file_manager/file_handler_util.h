@@ -21,6 +21,8 @@ namespace fileapi {
 class FileSystemURL;
 }
 
+namespace file_manager {
+// TODO(satorux): Rename 'file_handler_util' to 'file_tasks'. crbug.com/267337
 namespace file_handler_util {
 
 // Tasks are stored as a vector in order of priorities.
@@ -106,5 +108,6 @@ bool ExecuteFileTask(Profile* profile,
                      const FileTaskFinishedCallback& done);
 
 }  // namespace file_handler_util
+}  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_HANDLER_UTIL_H_

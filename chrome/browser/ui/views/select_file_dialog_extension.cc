@@ -333,9 +333,9 @@ void SelectFileDialogExtension::SelectFileImpl(
   // (crbug.com/178013 #9-#11). In such a case, we use the last selected
   // directory as a workaround. Real fix is tracked at crbug.com/110119.
   if (default_dialog_path.IsAbsolute() &&
-      (file_manager_util::ConvertFileToRelativeFileSystemPath(
+      (file_manager::util::ConvertFileToRelativeFileSystemPath(
            profile_, kFileBrowserDomain, default_dialog_path, &virtual_path) ||
-       file_manager_util::ConvertFileToRelativeFileSystemPath(
+       file_manager::util::ConvertFileToRelativeFileSystemPath(
            profile_, kFileBrowserDomain, fallback_path, &virtual_path))) {
     virtual_path = base::FilePath("/").Append(virtual_path);
   } else {
@@ -346,7 +346,7 @@ void SelectFileDialogExtension::SelectFileImpl(
   has_multiple_file_type_choices_ =
       file_types ? file_types->extensions.size() > 1 : true;
 
-  GURL file_browser_url = file_manager_util::GetFileBrowserUrlWithParams(
+  GURL file_browser_url = file_manager::util::GetFileBrowserUrlWithParams(
       type, title, virtual_path, file_types, file_type_index,
       default_extension);
 
@@ -356,7 +356,7 @@ void SelectFileDialogExtension::SelectFileImpl(
       kFileManagerWidth,
       kFileManagerHeight,
 #if defined(USE_AURA)
-      file_manager_util::GetTitleFromType(type),
+      file_manager::util::GetTitleFromType(type),
 #else
       // HTML-based header used.
       string16(),

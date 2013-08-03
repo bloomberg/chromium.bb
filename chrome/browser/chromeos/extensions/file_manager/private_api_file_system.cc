@@ -72,7 +72,7 @@ base::DictionaryValue* CreateValueFromDisk(
   std::string mount_path;
   if (!volume->mount_path().empty()) {
     base::FilePath relative_mount_path;
-    file_manager_util::ConvertFileToRelativeFileSystemPath(
+    util::ConvertFileToRelativeFileSystemPath(
         profile, extension_id, base::FilePath(volume->mount_path()),
         &relative_mount_path);
     mount_path = relative_mount_path.value();

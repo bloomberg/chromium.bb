@@ -40,6 +40,7 @@ using content::BrowserThread;
 using drive::DriveIntegrationService;
 using drive::DriveIntegrationServiceFactory;
 
+namespace file_manager {
 namespace {
 
 const char kPathChanged[] = "changed";
@@ -164,7 +165,7 @@ scoped_ptr<base::DictionaryValue> JobInfoToDictionaryValue(
   DCHECK(IsActiveFileTransferJobInfo(job_info));
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-  GURL url = file_manager_util::ConvertRelativePathToFileSystemUrl(
+  GURL url = util::ConvertRelativePathToFileSystemUrl(
       job_info.file_path, extension_id);
   result->SetString("fileUrl", url.spec());
   result->SetString("transferState", job_status);
@@ -708,7 +709,7 @@ void FileManagerEventRouter::DispatchMountEvent(
       mount_info.mount_condition) {
     // Convert mount point path to relative path with the external file system
     // exposed within File API.
-    if (file_manager_util::ConvertFileToRelativeFileSystemPath(
+    if (util::ConvertFileToRelativeFileSystemPath(
             profile_,
             kFileBrowserDomain,
             base::FilePath(mount_info.mount_path),
@@ -746,8 +747,8 @@ void FileManagerEventRouter::ShowRemovableDeviceInFileManager(
       dcim_path,
       IsGooglePhotosInstalled(profile_) ?
         base::Bind(&base::DoNothing) :
-        base::Bind(&file_manager_util::ViewRemovableDrive, mount_path),
-      base::Bind(&file_manager_util::ViewRemovableDrive, mount_path));
+        base::Bind(&util::ViewRemovableDrive, mount_path),
+      base::Bind(&util::ViewRemovableDrive, mount_path));
 }
 
 void FileManagerEventRouter::OnDiskAdded(
@@ -870,3 +871,5 @@ void FileManagerEventRouter::OnFormatCompleted(
                                      device_path);
   }
 }
+
+}  // namespace file_manager

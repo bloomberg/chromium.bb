@@ -17,7 +17,7 @@ using ::testing::_;
 using ::testing::InSequence;
 using ::testing::StrEq;
 
-namespace chromeos {
+namespace file_manager {
 
 namespace {
 
@@ -241,4 +241,4 @@ TEST(FileManagerMountNotificationsTest, MulitpleFail) {
       device_label, false, false, false);
 }
 
-}  // namespace chromeos.
+}  // namespace file_manager.

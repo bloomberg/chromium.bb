@@ -54,8 +54,8 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using extensions::api::file_browser_handler_internal::FileEntryInfo;
-using file_handler::FileSelector;
-using file_handler::FileSelectorFactory;
+using file_manager::FileSelector;
+using file_manager::FileSelectorFactory;
 
 namespace SelectFile =
     extensions::api::file_browser_handler_internal::SelectFile;
@@ -103,7 +103,7 @@ class FileSelectorImpl : public FileSelector,
   virtual ~FileSelectorImpl() OVERRIDE;
 
  protected:
-  // file_handler::FileSelectr overrides.
+  // file_manager::FileSelectr overrides.
   // Shows save as dialog with suggested name in window bound to |browser|.
   // |allowed_extensions| specifies the file extensions allowed to be shown,
   // and selected. Extensions should not include '.'.

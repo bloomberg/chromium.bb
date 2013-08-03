@@ -14,6 +14,8 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
+namespace file_manager {
+
 // Observes PowerManager and updates its state when the system suspends and
 // resumes. After the system resumes it will stay in "is_resuming" state for
 // couple of seconds. This is to give DiskManager time to process device
@@ -67,5 +69,7 @@ class MountedDiskMonitor
 
   DISALLOW_COPY_AND_ASSIGN(MountedDiskMonitor);
 };
+
+}  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_MOUNTED_DISK_MONITOR_H_

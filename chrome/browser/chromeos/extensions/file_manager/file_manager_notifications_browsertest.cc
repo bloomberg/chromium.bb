@@ -16,7 +16,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
+namespace file_manager {
 
 class FileManagerNotificationsTest : public InProcessBrowserTest {
  public:
@@ -176,4 +176,4 @@ IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, IdenticalNotificationIds) {
   notifications_->UnregisterDevice("path");
 }
 
-}  // namespace chromeos.
+}  // namespace file_manager.

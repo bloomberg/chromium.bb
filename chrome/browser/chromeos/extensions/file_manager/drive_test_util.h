@@ -7,13 +7,15 @@
 
 class Profile;
 
-namespace drive_test_util {
+namespace file_manager {
+namespace test_util {
 
 // Waits until Drive mount point for |profile| is added. Drive mount point is
 // added by the browser but tests should use this function to ensure that the
 // Drive mount point is added before accessing Drive.
 void WaitUntilDriveMountPointIsAdded(Profile* profile);
 
-}  // namespace drive_test_util
+}  // namespace test_util
+}  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_DRIVE_TEST_UTIL_H_

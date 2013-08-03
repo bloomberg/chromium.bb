@@ -21,7 +21,7 @@
 class Browser;
 class FileBrowserHandlerInternalSelectFileFunction;
 
-namespace file_handler {
+namespace file_manager {
 
 // Interface that is used by FileBrowserHandlerInternalSelectFileFunction to
 // select the file path that should be reported back to the extension function
@@ -66,8 +66,13 @@ class FileSelectorFactory {
   virtual FileSelector* CreateFileSelector() const = 0;
 };
 
-}  // namespace file_handler
+}  // namespace file_manager
 
+
+// Note that this class is not in 'file_manager' class to be consistent with
+// all other extension functions registered in
+// chrome/common/extensions/api/generated_api.cc being in the global namespace.
+//
 // The fileBrowserHandlerInternal.selectFile extension function implementation.
 // See the file description for more info.
 class FileBrowserHandlerInternalSelectFileFunction
@@ -83,7 +88,7 @@ class FileBrowserHandlerInternalSelectFileFunction
   // invoked by user gesture.
   // Created object will take the ownership of the |file_selector_factory|.
   FileBrowserHandlerInternalSelectFileFunction(
-      file_handler::FileSelectorFactory* file_selector_factory,
+      file_manager::FileSelectorFactory* file_selector_factory,
       bool enable_user_gesture_check);
 
   // Called by FileSelector implementation when the user selects the file's
@@ -136,7 +141,7 @@ class FileBrowserHandlerInternalSelectFileFunction
 
   // Factory used to create FileSelector to be used for prompting user to select
   // file.
-  scoped_ptr<file_handler::FileSelectorFactory> file_selector_factory_;
+  scoped_ptr<file_manager::FileSelectorFactory> file_selector_factory_;
   // Whether user gesture check is disabled. This should be true only in tests.
   bool user_gesture_check_enabled_;
 

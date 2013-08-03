@@ -13,6 +13,8 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/weak_ptr.h"
 
+namespace file_manager {
+
 // This class is used to remember what extensions are watching |virtual_path|.
 class FileWatcherExtensions {
  public:
@@ -61,5 +63,7 @@ class FileWatcherExtensions {
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<FileWatcherExtensions> weak_ptr_factory_;
 };
+
+}  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_WATCHER_EXTENSIONS_H_

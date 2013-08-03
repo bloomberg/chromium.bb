@@ -82,7 +82,8 @@ const char kFileBrowserPlayTaskId[] = "play";
 
 const char kVideoPlayerAppName[] = "videoplayer";
 
-namespace file_manager_util {
+namespace file_manager {
+namespace util {
 namespace {
 
 const char kCRXExtension[] = ".crx";
@@ -870,4 +871,5 @@ std::string GetMimeTypeForPath(const base::FilePath& file_path) {
   }
 }
 
-}  // namespace file_manager_util
+}  // namespace util
+}  // namespace file_manager

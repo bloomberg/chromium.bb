@@ -87,7 +87,7 @@ void GetMimeTypesForFileURLs(const std::vector<base::FilePath>& file_paths,
   for (std::vector<base::FilePath>::const_iterator iter = file_paths.begin();
        iter != file_paths.end(); ++iter) {
     files->insert(
-        std::make_pair(*iter, file_manager_util::GetMimeTypeForPath(*iter)));
+        std::make_pair(*iter, util::GetMimeTypeForPath(*iter)));
   }
 }
 
@@ -641,7 +641,7 @@ bool ViewFilesFunction::RunImpl() {
 
   if (browser) {
     for (size_t i = 0; i < files.size(); ++i) {
-      bool handled = file_manager_util::ExecuteBuiltinHandler(
+      bool handled = util::ExecuteBuiltinHandler(
           browser, files[i], internal_task_id);
       if (!handled && files.size() == 1)
         success = false;

@@ -61,7 +61,7 @@ class SetPreferencesFunction : public SyncExtensionFunction {
 // Implements the chrome.fileBrowserPrivate.zipSelection method.
 // Creates a zip file for the selected files.
 class ZipSelectionFunction : public LoggedAsyncExtensionFunction,
-                             public extensions::ZipFileCreator::Observer {
+                             public ZipFileCreator::Observer {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.zipSelection",
                              FILEBROWSERPRIVATE_ZIPSELECTION)
@@ -78,7 +78,7 @@ class ZipSelectionFunction : public LoggedAsyncExtensionFunction,
   virtual void OnZipDone(bool success) OVERRIDE;
 
  private:
-  scoped_refptr<extensions::ZipFileCreator> zip_file_creator_;
+  scoped_refptr<ZipFileCreator> zip_file_creator_;
 };
 
 // Implements the chrome.fileBrowserPrivate.zoom method.

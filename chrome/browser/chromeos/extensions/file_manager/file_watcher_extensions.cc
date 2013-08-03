@@ -11,6 +11,7 @@
 
 using content::BrowserThread;
 
+namespace file_manager {
 namespace {
 
 // Creates a base::FilePathWatcher and starts watching at |watch_path| with
@@ -115,3 +116,5 @@ void FileWatcherExtensions::OnWatcherStarted(
     callback.Run(false);
   }
 }
+
+}  // namespace file_manager

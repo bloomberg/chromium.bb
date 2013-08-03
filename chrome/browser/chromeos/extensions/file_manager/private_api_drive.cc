@@ -742,7 +742,7 @@ bool GetShareUrlFunction::RunImpl() {
 
   integration_service->file_system()->GetShareUrl(
       drive_path,
-      file_manager_util::GetFileBrowserExtensionUrl(),  // embed origin
+      util::GetFileBrowserExtensionUrl(),  // embed origin
       base::Bind(&GetShareUrlFunction::OnGetShareUrl, this));
   return true;
 }

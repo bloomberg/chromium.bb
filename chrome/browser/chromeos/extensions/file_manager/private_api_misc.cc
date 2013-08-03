@@ -158,11 +158,10 @@ bool ZipSelectionFunction::RunImpl() {
     src_relative_paths.push_back(relative_path);
   }
 
-  zip_file_creator_ =
-      new extensions::ZipFileCreator(this,
-                                     src_dir,
-                                     src_relative_paths,
-                                     dest_file);
+  zip_file_creator_ = new ZipFileCreator(this,
+                                         src_dir,
+                                         src_relative_paths,
+                                         dest_file);
 
   // Keep the refcount until the zipping is complete on utility process.
   AddRef();

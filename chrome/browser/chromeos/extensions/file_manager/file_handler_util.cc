@@ -49,6 +49,7 @@ using content::WebContents;
 using extensions::Extension;
 using fileapi::FileSystemURL;
 
+namespace file_manager {
 namespace file_handler_util {
 
 const char kTaskFile[] = "file";
@@ -810,4 +811,5 @@ void ExtensionTaskExecutor::SetupHandlerHostFileAccessPermissions(
   }
 }
 
-} // namespace file_handler_util
+}  // namespace file_handler_util
+}  // namespace file_manager

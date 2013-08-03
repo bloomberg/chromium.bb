@@ -67,7 +67,7 @@ void ExpectFileContentEquals(const base::FilePath& selected_path,
 // When |SelectFile| is called, it will check that file name suggestion is as
 // expected, and respond to the extension function with specified selection
 // results.
-class MockFileSelector : public file_handler::FileSelector {
+class MockFileSelector : public file_manager::FileSelector {
  public:
   MockFileSelector(const base::FilePath& suggested_name,
                    const std::vector<std::string>& allowed_extensions,
@@ -80,7 +80,7 @@ class MockFileSelector : public file_handler::FileSelector {
   }
   virtual ~MockFileSelector() {}
 
-  // file_handler::FileSelector implementation.
+  // file_manager::FileSelector implementation.
   // |browser| is not used.
   virtual void SelectFile(
       const base::FilePath& suggested_name,
@@ -124,7 +124,7 @@ class MockFileSelector : public file_handler::FileSelector {
 // Mocks file selector factory for the test.
 // When |CreateFileSelector| is invoked it will create mock file selector for
 // the extension function with test parameters from the object ctor.
-class MockFileSelectorFactory : public file_handler::FileSelectorFactory {
+class MockFileSelectorFactory : public file_manager::FileSelectorFactory {
  public:
   explicit MockFileSelectorFactory(const TestCase& test_case)
       : suggested_name_(test_case.suggested_name),
@@ -134,8 +134,8 @@ class MockFileSelectorFactory : public file_handler::FileSelectorFactory {
   }
   virtual ~MockFileSelectorFactory() {}
 
-  // file_handler::FileSelectorFactory implementation.
-  virtual file_handler::FileSelector* CreateFileSelector() const OVERRIDE {
+  // file_manager::FileSelectorFactory implementation.
+  virtual file_manager::FileSelector* CreateFileSelector() const OVERRIDE {
     return new MockFileSelector(suggested_name_,
                                 allowed_extensions_,
                                 success_,

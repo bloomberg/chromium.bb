@@ -18,10 +18,13 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
-class FileManagerNotifications;
-class MountedDiskMonitor;
 class PrefChangeRegistrar;
 class Profile;
+
+namespace file_manager {
+
+class FileManagerNotifications;
+class MountedDiskMonitor;
 
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
@@ -165,5 +168,7 @@ class FileManagerEventRouter
   base::WeakPtrFactory<FileManagerEventRouter> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FileManagerEventRouter);
 };
+
+}  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_EVENT_ROUTER_H_

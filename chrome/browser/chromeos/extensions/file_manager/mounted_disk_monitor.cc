@@ -12,6 +12,7 @@
 using chromeos::DBusThreadManager;
 using chromeos::disks::DiskMountManager;
 
+namespace file_manager {
 namespace {
 
 // Time span of the resuming process. All unmount events sent during this
@@ -112,3 +113,5 @@ void MountedDiskMonitor::Reset() {
   unmounted_while_resuming_.clear();
   is_resuming_ = false;
 }
+
+}  // namespace file_manager

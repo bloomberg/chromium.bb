@@ -36,7 +36,7 @@ FileTaskExecutor::~FileTaskExecutor() {
 
 void FileTaskExecutor::Execute(
     const std::vector<FileSystemURL>& file_urls,
-    const file_handler_util::FileTaskFinishedCallback& done) {
+    const file_manager::file_handler_util::FileTaskFinishedCallback& done) {
   std::vector<base::FilePath> paths;
   for (size_t i = 0; i < file_urls.size(); ++i) {
     base::FilePath path = util::ExtractDrivePathFromFileSystemUrl(file_urls[i]);

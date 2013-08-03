@@ -11,7 +11,8 @@
 #include "content/public/browser/browser_context.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 
-namespace drive_test_util {
+namespace file_manager {
+namespace test_util {
 
 namespace {
 
@@ -77,4 +78,5 @@ void WaitUntilDriveMountPointIsAdded(Profile* profile) {
   LOG(INFO) << "Drive mount point found.";
 }
 
-}  // namespace drive_test_util
+}  // namespace test_util
+}  // namespace file_manager

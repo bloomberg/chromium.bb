@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host_client.h"
 
-namespace extensions {
+namespace file_manager {
 
 // ZipFileCreator creates a ZIP file from a specified list of files and
 // directories under a common parent directory. This is done in a sandboxed
@@ -88,6 +88,6 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
   bool got_response_;
 };
 
-}  // namespace extensions
+}  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_ZIP_FILE_CREATOR_H_

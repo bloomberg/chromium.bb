@@ -8,10 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
-class FileManagerEventRouter;
 class Profile;
 
 namespace file_manager {
+
+class FileManagerEventRouter;
 
 // Manages and registers the fileBrowserPrivate API with the extension system.
 class FileBrowserPrivateAPI : public BrowserContextKeyedService {

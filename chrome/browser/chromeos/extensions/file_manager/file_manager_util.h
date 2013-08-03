@@ -19,7 +19,8 @@ extern const char kFileBrowserGalleryTaskId[];
 extern const char kFileBrowserWatchTaskId[];
 
 // File manager helper methods.
-namespace file_manager_util {
+namespace file_manager {
+namespace util {
 
 // Gets base file browser url.
 GURL GetFileBrowserExtensionUrl();
@@ -96,6 +97,7 @@ bool ShouldBeOpenedWithPlugin(Profile* profile, const char* file_extension);
 // Returns the MIME type of |file_path|.
 std::string GetMimeTypeForPath(const base::FilePath& file_path);
 
-}  // namespace file_manager_util
+}  // namespace util
+}  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_UTIL_H_

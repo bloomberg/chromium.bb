@@ -23,7 +23,7 @@
 using content::BrowserThread;
 using content::UtilityProcessHost;
 
-namespace extensions {
+namespace file_manager {
 
 ZipFileCreator::ZipFileCreator(
     Observer* observer,
@@ -123,4 +123,4 @@ void ZipFileCreator::ReportDone(bool success) {
   observer_->OnZipDone(success);
 }
 
-}  // namespace extensions
+}  // namespace file_manager

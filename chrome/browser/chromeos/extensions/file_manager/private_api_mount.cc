@@ -41,7 +41,7 @@ base::DictionaryValue* CreateValueFromMountPoint(
   base::FilePath relative_mount_path;
   // Convert mount point path to relative path with the external file system
   // exposed within File API.
-  if (file_manager_util::ConvertFileToRelativeFileSystemPath(
+  if (util::ConvertFileToRelativeFileSystemPath(
           profile,
           extension_id,
           base::FilePath(mount_point_info.mount_path),

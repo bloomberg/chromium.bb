@@ -151,7 +151,7 @@ void MediaPlayer::PopupMediaPlayer() {
 }
 
 GURL MediaPlayer::GetMediaPlayerUrl() {
-  return file_manager_util::GetMediaPlayerUrl();
+  return file_manager::util::GetMediaPlayerUrl();
 }
 
 Browser* MediaPlayer::GetBrowser() {

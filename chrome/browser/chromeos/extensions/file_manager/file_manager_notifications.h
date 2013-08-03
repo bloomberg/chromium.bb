@@ -16,6 +16,8 @@
 
 class Profile;
 
+namespace file_manager {
+
 class FileManagerNotifications
     : public base::SupportsWeakPtr<FileManagerNotifications> {
  public:
@@ -93,5 +95,7 @@ class FileManagerNotifications
 
   DISALLOW_COPY_AND_ASSIGN(FileManagerNotifications);
 };
+
+}  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_NOTIFICATIONS_H_

@@ -16,6 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace file_manager {
 namespace {
 
 struct NotificationTypeInfo {
@@ -169,7 +170,7 @@ class FileManagerNotifications::NotificationMessage {
     // TODO(mukai): refactor here to invoke NotificationUIManager directly.
     const string16 replace_id = UTF8ToUTF16(notification_id);
     DesktopNotificationService::AddIconNotification(
-        file_manager_util::GetFileBrowserExtensionUrl(), GetTitle(type),
+        util::GetFileBrowserExtensionUrl(), GetTitle(type),
         message, icon, replace_id,
         new Delegate(host->AsWeakPtr(), notification_id), profile);
   }
@@ -383,3 +384,5 @@ string16 FileManagerNotifications::GetNotificationMessageForTest(
     return string16();
   return it->second->message();
 }
+
+}  // namespace file_manager
