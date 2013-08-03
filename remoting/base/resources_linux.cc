@@ -22,7 +22,7 @@ bool LoadResources(const std::string& pref_locale) {
   if (ui::ResourceBundle::HasSharedInstance()) {
     ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(pref_locale);
   } else {
-    // Retrive the path to the module containing this function.
+    // Retrieve the path to the module containing this function.
     Dl_info info;
     CHECK(dladdr(reinterpret_cast<void*>(&LoadResources), &info) != 0);
 

@@ -2410,7 +2410,7 @@
         'base/rate_counter.h',
         'base/resources.h',
         'base/resources_linux.cc',
-        'base/resources_mac.mm',
+        'base/resources_mac.cc',
         'base/resources_win.cc',
         'base/rsa_key_pair.cc',
         'base/rsa_key_pair.h',

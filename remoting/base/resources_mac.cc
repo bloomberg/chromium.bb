@@ -2,19 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-
 #include "remoting/base/resources.h"
+
+#include <dlfcn.h>
+
+#include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
-
-// A dummy class used to locate the host plugin's bundle.
-@interface NSBundleLocator : NSObject
-@end
-
-@implementation NSBundleLocator
-@end
 
 namespace remoting {
 
@@ -22,9 +18,15 @@ bool LoadResources(const std::string& pref_locale) {
   if (ui::ResourceBundle::HasSharedInstance()) {
     ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(pref_locale);
   } else {
-    // Use the plugin's bundle instead of the hosting app bundle.
-    base::mac::SetOverrideFrameworkBundle(
-        [NSBundle bundleForClass:[NSBundleLocator class]]);
+    // Retrieve the path to the module containing this function.
+    Dl_info info;
+    CHECK(dladdr(reinterpret_cast<void*>(&LoadResources), &info) != 0);
+
+    // Use the plugin's bundle instead of the hosting app bundle. The three
+    // DirName() calls strip "Contents/MacOS/<binary>" from the path.
+    base::FilePath path =
+        base::FilePath(info.dli_fname).DirName().DirName().DirName();
+    base::mac::SetOverrideFrameworkBundlePath(path);
 
     // Override the locale with the value from Cocoa.
     if (pref_locale.empty())
