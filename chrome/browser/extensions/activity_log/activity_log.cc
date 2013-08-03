@@ -117,10 +117,14 @@ bool GetUrlForTabId(int tab_id,
 }
 
 // Translate tab IDs to URLs in tabs API calls.  Mutates the Action object in
-// place.  Translate tab IDs to URLs in tabs API calls.  It will swap out the
-// int in args with a URL as a string.  There is a small chance that the URL
-// translation could be wrong, if the tab has already been navigated by the
-// time of invocation.
+// place.  There is a small chance that the URL translation could be wrong, if
+// the tab has already been navigated by the time of invocation.
+//
+// If a single tab ID is translated to a URL, the URL is stored into arg_url
+// where it can more easily be searched for in the database.  For APIs that
+// take a list of tab IDs, replace each tab ID with the URL in the argument
+// list; we can only extract a single URL into arg_url so arbitrarily pull out
+// the first one.
 void LookupTabIds(scoped_refptr<extensions::Action> action, Profile* profile) {
   const std::string& api_call = action->api_name();
   if (api_call == "tabs.get" ||                 // api calls, ID as int
@@ -144,6 +148,7 @@ void LookupTabIds(scoped_refptr<extensions::Action> action, Profile* profile) {
     base::ListValue* id_list;
     base::ListValue* args = action->mutable_args();
     if (args->GetInteger(0, &tab_id)) {
+      // Single tab ID to translate.
       GURL url;
       bool is_incognito;
       if (GetUrlForTabId(tab_id, profile, &url, &is_incognito)) {
@@ -152,13 +157,19 @@ void LookupTabIds(scoped_refptr<extensions::Action> action, Profile* profile) {
       }
     } else if ((api_call == "tabs.move" || api_call == "tabs.remove") &&
                args->GetList(0, &id_list)) {
+      // Array of tab IDs to translate.
       for (int i = 0; i < static_cast<int>(id_list->GetSize()); ++i) {
         if (id_list->GetInteger(i, &tab_id)) {
           GURL url;
           bool is_incognito;
           if (GetUrlForTabId(tab_id, profile, &url, &is_incognito) &&
-              !is_incognito)
+              !is_incognito) {
             id_list->Set(i, new base::StringValue(url.spec()));
+            if (i == 0) {
+              action->set_arg_url(url);
+              action->set_arg_incognito(is_incognito);
+            }
+          }
         } else {
           LOG(ERROR) << "The tab ID array is malformed at index " << i;
         }

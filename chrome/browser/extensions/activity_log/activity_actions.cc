@@ -205,7 +205,6 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
     }
 
     case ACTION_DOM_EVENT:
-    case ACTION_DOM_XHR:
     case ACTION_DOM_ACCESS:
     case ACTION_CONTENT_SCRIPT:
     case ACTION_WEB_REQUEST: {
@@ -267,9 +266,6 @@ std::string Action::PrintForDebug() {
       break;
     case ACTION_DOM_EVENT:
       result += "dom_event";
-      break;
-    case ACTION_DOM_XHR:
-      result += "dom_xhr";
       break;
     case ACTION_DOM_ACCESS:
       result += "dom_access";

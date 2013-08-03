@@ -58,6 +58,11 @@ void AddActionToExtensionActivityLog(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&AddActionToExtensionActivityLog, profile, action));
   } else {
+    // If the action included a URL, check whether it is for an incognito
+    // profile.  The check is performed here so that it can safely be done from
+    // the UI thread.
+    if (action->page_url().is_valid() || !action->page_title().empty())
+      action->set_page_incognito(profile->IsOffTheRecord());
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
     activity_log->LogAction(action);
@@ -517,23 +522,10 @@ void ChromeRenderMessageFilter::OnAddAPIActionToExtensionActivityLog(
 void ChromeRenderMessageFilter::OnAddDOMActionToExtensionActivityLog(
     const std::string& extension_id,
     const ExtensionHostMsg_DOMAction_Params& params) {
-  extensions::Action::ActionType type;
-  switch (params.call_type) {
-    case extensions::DomActionType::INSERTED:
-      type = extensions::Action::ACTION_CONTENT_SCRIPT;
-      break;
-    case extensions::DomActionType::XHR:
-      type = extensions::Action::ACTION_DOM_XHR;
-      break;
-    default:
-      type = extensions::Action::ACTION_DOM_ACCESS;
-      break;
-  }
-
   scoped_refptr<extensions::Action> action = new extensions::Action(
-      extension_id, base::Time::Now(), type, params.api_call);
+      extension_id, base::Time::Now(), extensions::Action::ACTION_DOM_ACCESS,
+      params.api_call);
   action->set_args(make_scoped_ptr(params.arguments.DeepCopy()));
-  // TODO(mvrable): Check for incognito pages
   action->set_page_url(params.url);
   action->set_page_title(base::UTF16ToUTF8(params.url_title));
   action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,

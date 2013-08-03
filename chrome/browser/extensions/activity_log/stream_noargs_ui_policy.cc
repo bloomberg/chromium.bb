@@ -11,7 +11,12 @@ namespace constants = activity_log_constants;
 
 namespace {
 
-// We should log the arguments to these API calls.
+// We should log the arguments to these API calls.  Be careful when
+// constructing this whitelist to not keep arguments that might compromise
+// privacy by logging too much data to the activity log.
+//
+// TODO(mvrable): The contents of this whitelist should be reviewed and
+// expanded as needed.
 const char* kAlwaysLog[] = {"extension.connect", "extension.sendMessage",
                             "tabs.executeScript", "tabs.insertCSS"};
 
@@ -32,7 +37,6 @@ scoped_refptr<Action> StreamWithoutArgsUIPolicy::ProcessArguments(
     scoped_refptr<Action> action) const {
   if (action->action_type() == Action::ACTION_DOM_ACCESS ||
       action->action_type() == Action::ACTION_DOM_EVENT ||
-      action->action_type() == Action::ACTION_DOM_XHR ||
       arg_whitelist_api_.find(action->api_name()) != arg_whitelist_api_.end()) {
     // No stripping of arguments
   } else {

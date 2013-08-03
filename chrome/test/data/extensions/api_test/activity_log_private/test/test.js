@@ -189,9 +189,7 @@ testCases.push({
                                'api_tab_updated_incognito',
                                function response() { });
   },
-  // TODO(mvrable): set this back to true to test the URL values when incognito
-  // cleaning is working correctly for HTMLDocument.write (crbug.com/253368).
-  is_incognito: false,
+  is_incognito: true,
   expected_activity: [
     'windows.create',
     'tabs.onUpdated',
@@ -299,9 +297,7 @@ testCases.push({
                                'dom_tab_updated_incognito',
                                function response() { });
   },
-  // TODO(mvrable): set this back to true to test the URL values when incognito
-  // cleaning is working correctly for DOM logging (crbug.com/253368).
-  is_incognito: false,
+  is_incognito: true,
   expected_activity: domExpectedActivityIncognito
 });
 

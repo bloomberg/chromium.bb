@@ -33,8 +33,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
     ACTION_CONTENT_SCRIPT = 3,
     ACTION_DOM_ACCESS = 4,
     ACTION_DOM_EVENT = 5,
-    ACTION_DOM_XHR = 6,
-    ACTION_WEB_REQUEST = 7,
+    ACTION_WEB_REQUEST = 6,
   };
 
   // A useful shorthand for methods that take or return collections of Action
