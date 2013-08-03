@@ -104,11 +104,13 @@ bool RestoreFromPickle(PickleIterator* iterator,
   }
 
   // |web_contents| takes ownership of these entries after this call.
-  web_contents->GetController().Restore(
+  content::NavigationController& controller = web_contents->GetController();
+  controller.Restore(
       selected_entry,
       content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
       &restored_entries.get());
   DCHECK_EQ(0u, restored_entries.size());
+  controller.LoadIfNecessary();
 
   return true;
 }

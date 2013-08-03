@@ -150,8 +150,7 @@ public class AwContents {
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
 
-    private boolean mIsPaused;
-    private boolean mIsVisible;  // Equivalent to windowVisible && viewVisible && !mIsPaused.
+    private boolean mIsVisible;  // Equivalent to windowVisible && viewVisible.
     private boolean mIsAttachedToWindow;
     private Bitmap mFavicon;
     private boolean mHasRequestedVisitedHistoryFromClient;
@@ -545,6 +544,9 @@ public class AwContents {
         mContentViewCore.setUpdateFrameInfoListener(new AwContentUpdateFrameInfoListener());
         mSettings.setWebContents(nativeWebContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
+
+        // The only call to onShow. onHide should never be called.
+        mContentViewCore.onShow();
    }
 
     /**
@@ -572,7 +574,7 @@ public class AwContents {
         // Save existing view state.
         final boolean wasAttached = mIsAttachedToWindow;
         final boolean wasVisible = getContainerViewVisible();
-        final boolean wasPaused = mIsPaused;
+        final boolean wasPaused = mUnimplementedIsPaused;
         final boolean wasFocused = mWindowFocused;
 
         // Properly clean up existing mContentViewCore and mNativeAwContents.
@@ -1011,31 +1013,27 @@ public class AwContents {
         ContentViewStatics.setWebKitSharedTimersSuspended(false);
     }
 
+    private boolean mUnimplementedIsPaused;
+
     /**
      * @see android.webkit.WebView#onPause()
      */
     public void onPause() {
-        mIsPaused = true;
-        updateVisibilityState();
-        mContentViewCore.onActivityPause();
+        mUnimplementedIsPaused = true;
     }
 
     /**
      * @see android.webkit.WebView#onResume()
      */
     public void onResume() {
-        mIsPaused = false;
-        updateVisibilityState();
-        // Not calling mContentViewCore.onActivityResume because it is the same
-        // as onShow, but we do not want to call onShow yet, since AwContents
-        // visibility depends on other things. TODO(boliu): Clean this up.
+        mUnimplementedIsPaused = false;
     }
 
     /**
      * @see android.webkit.WebView#isPaused()
      */
     public boolean isPaused() {
-        return mIsPaused;
+        return mUnimplementedIsPaused;
     }
 
     /**
@@ -1341,11 +1339,6 @@ public class AwContents {
         mContentViewCore.onAttachedToWindow();
         nativeOnAttachedToWindow(mNativeAwContents, mContainerView.getWidth(),
                 mContainerView.getHeight());
-
-        // This is for the case where this is created by restoreState, which
-        // needs to call to NavigationController::LoadIfNecessary to actually
-        // load the restored page.
-        if (!mIsPaused) onResume();
     }
 
     /**
@@ -1418,7 +1411,7 @@ public class AwContents {
         boolean windowVisible = mContainerView.getWindowVisibility() == View.VISIBLE;
         boolean viewVisible = mContainerView.getVisibility() == View.VISIBLE;
 
-        return windowVisible && viewVisible && !mIsPaused;
+        return windowVisible && viewVisible;
     }
 
     private void setVisibilityInternal(boolean visible) {
@@ -1426,11 +1419,6 @@ public class AwContents {
         // visibility. In general, callers should use updateVisibilityState
         // instead.
         mIsVisible = visible;
-        if (mIsVisible) {
-            mContentViewCore.onShow();
-        } else {
-            mContentViewCore.onHide();
-        }
         nativeSetVisibility(mNativeAwContents, mIsVisible);
     }
 
