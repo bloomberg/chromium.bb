@@ -230,7 +230,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
           child_id, route_id, prerender::FINAL_STATUS_INVALID_HTTP_METHOD);
       return false;
     }
-    if (!prerender::PrerenderManager::DoesURLHaveValidScheme(url)) {
+    if (!prerender::PrerenderManager::DoesSubresourceURLHaveValidScheme(url)) {
       ReportUnsupportedPrerenderScheme(url);
       prerender_tracker_->TryCancelOnIOThread(
           child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);

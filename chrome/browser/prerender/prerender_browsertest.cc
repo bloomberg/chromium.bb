@@ -2834,6 +2834,22 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToDestURL();
 }
 
+// Ensure that about:blank is permitted for any subresource.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderAllowAboutBlankSubresource) {
+  GURL image_url = GURL("about:blank");
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
+  std::string replacement_path;
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_image.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
 // Checks that non-http/https/chrome-extension subresource cancels the prerender
 // on redirect.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,

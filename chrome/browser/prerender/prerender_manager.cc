@@ -57,6 +57,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/favicon_url.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -902,6 +903,11 @@ bool PrerenderManager::DoesURLHaveValidScheme(const GURL& url) {
   return (IsWebURL(url) ||
           url.SchemeIs(extensions::kExtensionScheme) ||
           url.SchemeIs("data"));
+}
+
+// static
+bool PrerenderManager::DoesSubresourceURLHaveValidScheme(const GURL& url) {
+  return DoesURLHaveValidScheme(url) || url == GURL(content::kAboutBlankURL);
 }
 
 DictionaryValue* PrerenderManager::GetAsValue() const {

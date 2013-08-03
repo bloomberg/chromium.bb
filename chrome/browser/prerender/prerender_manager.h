@@ -244,6 +244,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Returns true iff the scheme of the URL given is valid for prerendering.
   static bool DoesURLHaveValidScheme(const GURL& url);
 
+  // Returns true iff the scheme of the subresource URL given is valid for
+  // prerendering.
+  static bool DoesSubresourceURLHaveValidScheme(const GURL& url);
+
   // Returns a Value object containing the active pages being prerendered, and
   // a history of pages which were prerendered. The caller is responsible for
   // deleting the return value.
