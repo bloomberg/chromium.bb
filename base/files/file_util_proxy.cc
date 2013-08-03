@@ -22,7 +22,6 @@ void CallWithTranslatedParameter(const FileUtilProxy::StatusCallback& callback,
   callback.Run(value ? PLATFORM_FILE_OK : PLATFORM_FILE_ERROR_FAILED);
 }
 
-#if !defined(OS_NACL)
 // Helper classes or routines for individual methods.
 class CreateOrOpenHelper {
  public:
@@ -101,14 +100,12 @@ class CreateTemporaryHelper {
   PlatformFileError error_;
   DISALLOW_COPY_AND_ASSIGN(CreateTemporaryHelper);
 };
-#endif  // !defined(OS_NACL)
 
 class GetFileInfoHelper {
  public:
   GetFileInfoHelper()
       : error_(PLATFORM_FILE_OK) {}
 
-#if !defined(OS_NACL)
   void RunWorkForFilePath(const FilePath& file_path) {
     if (!PathExists(file_path)) {
       error_ = PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -117,7 +114,6 @@ class GetFileInfoHelper {
     if (!file_util::GetFileInfo(file_path, &file_info_))
       error_ = PLATFORM_FILE_ERROR_FAILED;
   }
-#endif  // !defined(OS_NACL)
 
   void RunWorkForPlatformFile(PlatformFile file) {
     if (!GetPlatformFileInfo(file, &file_info_))
@@ -191,7 +187,6 @@ class WriteHelper {
   DISALLOW_COPY_AND_ASSIGN(WriteHelper);
 };
 
-#if !defined(OS_NACL)
 PlatformFileError CreateOrOpenAdapter(
     const FilePath& file_path, int file_flags,
     PlatformFile* file_handle, bool* created) {
@@ -205,7 +200,6 @@ PlatformFileError CreateOrOpenAdapter(
   *file_handle = CreatePlatformFile(file_path, file_flags, created, &error);
   return error;
 }
-#endif  // !defined(OS_NACL)
 
 PlatformFileError CloseAdapter(PlatformFile file_handle) {
   if (!ClosePlatformFile(file_handle)) {
@@ -214,7 +208,6 @@ PlatformFileError CloseAdapter(PlatformFile file_handle) {
   return PLATFORM_FILE_OK;
 }
 
-#if !defined(OS_NACL)
 PlatformFileError DeleteAdapter(const FilePath& file_path, bool recursive) {
   if (!PathExists(file_path)) {
     return PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -227,11 +220,9 @@ PlatformFileError DeleteAdapter(const FilePath& file_path, bool recursive) {
   }
   return PLATFORM_FILE_OK;
 }
-#endif  // !defined(OS_NACL)
 
 }  // namespace
 
-#if !defined(OS_NACL)
 // static
 bool FileUtilProxy::CreateOrOpen(
     TaskRunner* task_runner,
@@ -256,7 +247,6 @@ bool FileUtilProxy::CreateTemporary(
            additional_file_flags),
       Bind(&CreateTemporaryHelper::Reply, Owned(helper), callback));
 }
-#endif  // !defined(OS_NACL)
 
 // static
 bool FileUtilProxy::Close(
@@ -269,7 +259,6 @@ bool FileUtilProxy::Close(
       file_handle, callback);
 }
 
-#if !defined(OS_NACL)
 // Retrieves the information about a file. It is invalid to pass NULL for the
 // callback.
 bool FileUtilProxy::GetFileInfo(
@@ -283,7 +272,6 @@ bool FileUtilProxy::GetFileInfo(
            Unretained(helper), file_path),
       Bind(&GetFileInfoHelper::Reply, Owned(helper), callback));
 }
-#endif  // !defined(OS_NACL)
 
 // static
 bool FileUtilProxy::GetFileInfoFromPlatformFile(
@@ -298,7 +286,6 @@ bool FileUtilProxy::GetFileInfoFromPlatformFile(
       Bind(&GetFileInfoHelper::Reply, Owned(helper), callback));
 }
 
-#if !defined(OS_NACL)
 // static
 bool FileUtilProxy::DeleteFile(TaskRunner* task_runner,
                                const FilePath& file_path,
@@ -309,7 +296,6 @@ bool FileUtilProxy::DeleteFile(TaskRunner* task_runner,
       Bind(&DeleteAdapter, file_path, recursive),
       callback);
 }
-#endif  // !defined(OS_NACL)
 
 // static
 bool FileUtilProxy::Read(
@@ -346,7 +332,6 @@ bool FileUtilProxy::Write(
       Bind(&WriteHelper::Reply, Owned(helper), callback));
 }
 
-#if !defined(OS_NACL)
 // static
 bool FileUtilProxy::Touch(
     TaskRunner* task_runner,
@@ -415,7 +400,6 @@ bool FileUtilProxy::RelayCreateOrOpen(
       Bind(&CreateOrOpenHelper::RunWork, Unretained(helper), open_task),
       Bind(&CreateOrOpenHelper::Reply, Owned(helper), callback));
 }
-#endif  // !defined(OS_NACL)
 
 // static
 bool FileUtilProxy::RelayClose(

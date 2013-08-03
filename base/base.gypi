@@ -707,6 +707,7 @@
                'file_util_posix.cc',
                'files/file_enumerator_posix.cc',
                'files/file_path_watcher_kqueue.cc',
+               'files/file_util_proxy.cc',
                'memory/shared_memory_posix.cc',
                'native_library_posix.cc',
                'path_service.cc',
