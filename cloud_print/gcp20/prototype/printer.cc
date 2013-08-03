@@ -350,8 +350,7 @@ void Printer::OnGetAuthCodeResponseParsed(const std::string& refresh_token,
   reg_info_.state = RegistrationInfo::DEV_REG_REGISTERED;
   reg_info_.refresh_token = refresh_token;
   RememberAccessToken(access_token, access_token_expires_in_seconds);
-
-  ConnectXmpp();
+  TryConnect();
 }
 
 void Printer::OnAccesstokenReceviced(const std::string& access_token,
