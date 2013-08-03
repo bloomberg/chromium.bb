@@ -1647,7 +1647,7 @@ public class AwContents {
     @CalledByNative
     private void setAwAutofillManagerDelegate(AwAutofillManagerDelegate delegate) {
         mAwAutofillManagerDelegate = delegate;
-        delegate.init(mContentViewCore, mDIPScale);
+        delegate.init(mContentViewCore);
     }
 
     @CalledByNative

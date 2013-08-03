@@ -43,6 +43,7 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsoluteLayout;
 import android.widget.FrameLayout;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -508,24 +509,35 @@ import java.util.Map;
             }
 
             @Override
+            @SuppressWarnings("deprecation")  // AbsoluteLayout.LayoutParams
             public void setAnchorViewPosition(
                     View view, float x, float y, float width, float height) {
                 assert(view.getParent() == mContainerView);
+
                 float scale = (float) DeviceDisplayInfo.create(getContext()).getDIPScale();
 
                 // The anchor view should not go outside the bounds of the ContainerView.
-                int scaledX = Math.round(x * scale);
-                int scaledWidth = Math.round(width * scale);
-                if (scaledWidth + scaledX > mContainerView.getWidth()) {
-                    scaledWidth = mContainerView.getWidth() - scaledX;
-                }
-
-                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                int leftMargin = Math.round(x * scale);
+                int topMargin = Math.round(mRenderCoordinates.getContentOffsetYPix() + y * scale);
+                // ContentViewCore currently only supports these two container view types.
+                if (mContainerView instanceof FrameLayout) {
+                    int scaledWidth = Math.round(width * scale);
+                    if (scaledWidth + leftMargin > mContainerView.getWidth()) {
+                        scaledWidth = mContainerView.getWidth() - leftMargin;
+                    }
+                    FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                         scaledWidth, Math.round(height * scale));
-                lp.leftMargin = scaledX;
-                lp.topMargin = (int) mRenderCoordinates.getContentOffsetYPix() +
-                        Math.round(y * scale);
-                view.setLayoutParams(lp);
+                    lp.leftMargin = leftMargin;
+                    lp.topMargin = topMargin;
+                    view.setLayoutParams(lp);
+                } else if (mContainerView instanceof AbsoluteLayout) {
+                    android.widget.AbsoluteLayout.LayoutParams lp =
+                            new android.widget.AbsoluteLayout.LayoutParams((int)width,
+                                    (int)height, leftMargin, topMargin);
+                    view.setLayoutParams(lp);
+                } else {
+                    Log.e(TAG, "Unknown layout " + mContainerView.getClass().getName());
+                }
             }
 
             @Override
