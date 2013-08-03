@@ -1439,13 +1439,17 @@ ExternalTabContainer* ExternalTabContainer::Create(
 // static
 ExternalTabContainer* ExternalTabContainer::GetContainerForTab(
     content::WebContents* web_contents) {
-  HWND webcontents_view_window = views::HWNDForNativeWindow(
+  HWND window = views::HWNDForNativeWindow(
       web_contents->GetView()->GetNativeView());
-  HWND parent_window = ::GetParent(webcontents_view_window);
-  if (!::IsWindow(parent_window))
+#if !defined(USE_AURA)
+  // In the non-Aura case, it is the parent of the WebContents's view that has
+  // the property set.
+  window = ::GetParent(window);
+  if (!::IsWindow(window))
     return NULL;
+#endif
   return reinterpret_cast<ExternalTabContainerWin*>(
-      ui::ViewProp::GetValue(parent_window, kWindowObjectKey));
+      ui::ViewProp::GetValue(window, kWindowObjectKey));
 }
 
 // static
