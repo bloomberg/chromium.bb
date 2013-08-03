@@ -255,23 +255,6 @@ namespace WTF {
             m_buffer = static_cast<T*>(fastMalloc(sizeToAllocate));
         }
 
-        bool tryAllocateBuffer(size_t newCapacity)
-        {
-            ASSERT(newCapacity);
-            // Using "unsigned" is not a limitation because Chromium's max malloc() is 2GB even on 64-bit.
-            if (newCapacity > std::numeric_limits<unsigned>::max() / sizeof(T))
-                return false;
-
-            size_t sizeToAllocate = fastMallocGoodSize(newCapacity * sizeof(T));
-            T* newBuffer;
-            if (tryFastMalloc(sizeToAllocate).getValue(newBuffer)) {
-                m_capacity = sizeToAllocate / sizeof(T);
-                m_buffer = newBuffer;
-                return true;
-            }
-            return false;
-        }
-
         bool shouldReallocateBuffer(size_t newCapacity) const
         {
             return VectorTraits<T>::canMoveWithMemcpy && m_capacity && newCapacity;
@@ -369,7 +352,6 @@ namespace WTF {
         void restoreInlineBufferIfNeeded() { }
 
         using Base::allocateBuffer;
-        using Base::tryAllocateBuffer;
         using Base::shouldReallocateBuffer;
         using Base::reallocateBuffer;
         using Base::deallocateBuffer;
@@ -419,15 +401,6 @@ namespace WTF {
                 m_buffer = inlineBuffer();
                 m_capacity = inlineCapacity;
             }
-        }
-
-        bool tryAllocateBuffer(size_t newCapacity)
-        {
-            if (newCapacity > inlineCapacity)
-                return Base::tryAllocateBuffer(newCapacity);
-            m_buffer = inlineBuffer();
-            m_capacity = inlineCapacity;
-            return true;
         }
 
         void deallocateBuffer(T* bufferToDeallocate)
@@ -593,7 +566,6 @@ namespace WTF {
         void grow(size_t size);
         void resize(size_t size);
         void reserveCapacity(size_t newCapacity);
-        bool tryReserveCapacity(size_t newCapacity);
         void reserveInitialCapacity(size_t initialCapacity);
         void shrinkCapacity(size_t newCapacity);
         void shrinkToFit() { shrinkCapacity(size()); }
@@ -605,7 +577,6 @@ namespace WTF {
         template<typename U> void uncheckedAppend(const U& val);
         template<size_t otherCapacity> void append(const Vector<T, otherCapacity>&);
         template<typename U, size_t otherCapacity> void appendVector(const Vector<U, otherCapacity>&);
-        template<typename U> bool tryAppend(const U*, size_t);
 
         template<typename U> void insert(size_t position, const U*, size_t);
         template<typename U> void insert(size_t position, const U&);
@@ -652,8 +623,6 @@ namespace WTF {
     private:
         void expandCapacity(size_t newMinCapacity);
         const T* expandCapacity(size_t newMinCapacity, const T*);
-        bool tryExpandCapacity(size_t newMinCapacity);
-        const T* tryExpandCapacity(size_t newMinCapacity, const T*);
         template<typename U> U* expandCapacity(size_t newMinCapacity, U*);
         template<typename U> void appendSlowCase(const U&);
 
@@ -663,7 +632,6 @@ namespace WTF {
         using Base::swap;
         using Base::allocateBuffer;
         using Base::deallocateBuffer;
-        using Base::tryAllocateBuffer;
         using Base::shouldReallocateBuffer;
         using Base::reallocateBuffer;
         using Base::restoreInlineBufferIfNeeded;
@@ -845,26 +813,6 @@ namespace WTF {
         return begin() + index;
     }
 
-    template<typename T, size_t inlineCapacity>
-    bool Vector<T, inlineCapacity>::tryExpandCapacity(size_t newMinCapacity)
-    {
-        return tryReserveCapacity(std::max(newMinCapacity, std::max(static_cast<size_t>(16), capacity() + capacity() / 4 + 1)));
-    }
-
-    template<typename T, size_t inlineCapacity>
-    const T* Vector<T, inlineCapacity>::tryExpandCapacity(size_t newMinCapacity, const T* ptr)
-    {
-        if (ptr < begin() || ptr >= end()) {
-            if (!tryExpandCapacity(newMinCapacity))
-                return 0;
-            return ptr;
-        }
-        size_t index = ptr - begin();
-        if (!tryExpandCapacity(newMinCapacity))
-            return 0;
-        return begin() + index;
-    }
-
     template<typename T, size_t inlineCapacity> template<typename U>
     inline U* Vector<T, inlineCapacity>::expandCapacity(size_t newMinCapacity, U* ptr)
     {
@@ -920,21 +868,6 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity>
-    bool Vector<T, inlineCapacity>::tryReserveCapacity(size_t newCapacity)
-    {
-        if (newCapacity <= capacity())
-            return true;
-        T* oldBuffer = begin();
-        T* oldEnd = end();
-        if (!Base::tryAllocateBuffer(newCapacity))
-            return false;
-        ASSERT(begin());
-        TypeOperations::move(oldBuffer, oldEnd, begin());
-        Base::deallocateBuffer(oldBuffer);
-        return true;
-    }
-
-    template<typename T, size_t inlineCapacity>
     inline void Vector<T, inlineCapacity>::reserveInitialCapacity(size_t initialCapacity)
     {
         ASSERT(!m_size);
@@ -987,25 +920,6 @@ namespace WTF {
         for (size_t i = 0; i < dataSize; ++i)
             new (NotNull, &dest[i]) T(data[i]);
         m_size = newSize;
-    }
-
-    template<typename T, size_t inlineCapacity> template<typename U>
-    bool Vector<T, inlineCapacity>::tryAppend(const U* data, size_t dataSize)
-    {
-        size_t newSize = m_size + dataSize;
-        if (newSize > capacity()) {
-            data = tryExpandCapacity(newSize, data);
-            if (!data)
-                return false;
-            ASSERT(begin());
-        }
-        if (newSize < m_size)
-            return false;
-        T* dest = end();
-        for (size_t i = 0; i < dataSize; ++i)
-            new (NotNull, &dest[i]) T(data[i]);
-        m_size = newSize;
-        return true;
     }
 
     template<typename T, size_t inlineCapacity> template<typename U>
