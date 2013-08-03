@@ -1,0 +1,11 @@
+{
+  "name": "chrome.mediaGalleries.copyTo_access",
+  "version": "0.1",
+  "description": "test copyTo access for chrome.mediaGalleries.getMediaFileSystems",
+  "app": {
+    "background": {
+      "scripts": ["no_access/copy_to_common.js", "test.js"]
+    }
+  },
+  "permissions": [{"mediaGalleries": ["copyTo", "allAutoDetected"]}]
+}
