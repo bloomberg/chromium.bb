@@ -95,7 +95,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static const char defaultAcceptHeader[] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+static const char defaultAcceptHeader[] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
 
 bool isBackForwardLoadType(FrameLoadType type)
 {
