@@ -69,7 +69,10 @@ class BrowserNonClientFrameViewAsh
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, WindowHeader);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, ImmersiveMode);
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+                           NonImmersiveFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+                           ImmersiveFullscreen);
 
   // Distance between top of window and client area.
   int NonClientTopBorderHeight(bool force_restored) const;
@@ -88,6 +91,10 @@ class BrowserNonClientFrameViewAsh
   // Returns true if there is anything to paint. Some fullscreen windows do not
   // need their frames painted.
   bool ShouldPaint() const;
+
+  // Paints the header background when the frame is in immersive fullscreen and
+  // tab light bar is visible.
+  void PaintImmersiveLightbarStyleHeader(gfx::Canvas* canvas);
 
   void PaintToolbarBackground(gfx::Canvas* canvas);
 

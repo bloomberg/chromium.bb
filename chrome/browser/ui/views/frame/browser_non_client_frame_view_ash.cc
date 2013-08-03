@@ -218,6 +218,12 @@ void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
 void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   if (!ShouldPaint())
     return;
+
+  if (UseImmersiveLightbarHeaderStyle()) {
+    PaintImmersiveLightbarStyleHeader(canvas);
+    return;
+  }
+
   // The primary header image changes based on window activation state and
   // theme, so we look it up for each paint.
   int theme_frame_image_id = GetThemeFrameImageId();
@@ -456,9 +462,27 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
-  // Immersive mode windows are fullscreen, but need to paint during a reveal.
-  return !frame()->IsFullscreen() ||
-      browser_view()->immersive_mode_controller()->IsRevealed();
+  if (!frame()->IsFullscreen())
+    return true;
+
+  // There is nothing to paint for traditional (tab) fullscreen.
+  ImmersiveModeController* immersive_controller =
+      browser_view()->immersive_mode_controller();
+  if (!immersive_controller->IsEnabled())
+    return false;
+
+  // Need to paint during an immersive fullscreen reveal or when the immersive
+  // light bar is visible.
+  return immersive_controller->IsRevealed() ||
+      !immersive_controller->ShouldHideTabIndicators();
+}
+
+void BrowserNonClientFrameViewAsh::PaintImmersiveLightbarStyleHeader(
+    gfx::Canvas* canvas) {
+  // The light bar header is not themed because theming it does not look good.
+  gfx::ImageSkia* frame_image = GetThemeProvider()->GetImageSkiaNamed(
+      IDR_AURA_WINDOW_HEADER_BASE_MINIMAL);
+  canvas->TileImageInt(*frame_image, 0, 0, width(), frame_image->height());
 }
 
 void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {

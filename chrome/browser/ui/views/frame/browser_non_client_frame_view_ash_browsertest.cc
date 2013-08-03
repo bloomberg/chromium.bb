@@ -8,6 +8,9 @@
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
 #include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
@@ -77,7 +80,54 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, WindowHeader) {
   EXPECT_FALSE(app_frame_view->UseShortHeader());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
+// Test that the frame view does not do any painting in non-immersive
+// fullscreen.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
+                       NonImmersiveFullscreen) {
+  // We know we're using Views, so static cast.
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  content::WebContents* web_contents = browser_view->GetActiveWebContents();
+  Widget* widget = browser_view->GetWidget();
+  // We know we're using Ash, so static cast.
+  BrowserNonClientFrameViewAsh* frame_view =
+      static_cast<BrowserNonClientFrameViewAsh*>(
+          widget->non_client_view()->frame_view());
+
+  // Frame paints by default.
+  EXPECT_TRUE(frame_view->ShouldPaint());
+
+  // No painting should occur in non-immersive fullscreen. (We enter into tab
+  // fullscreen here because tab fullscreen is non-immersive even when
+  // ImmersiveFullscreenConfiguration::UseImmersiveFullscreen()) returns
+  // true.
+  {
+    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously.
+    scoped_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
+    browser()->fullscreen_controller()->ToggleFullscreenModeForTab(
+        web_contents, true);
+    waiter->Wait();
+  }
+  EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
+  EXPECT_FALSE(frame_view->ShouldPaint());
+
+  // Frame abuts top of window.
+  EXPECT_EQ(0, frame_view->NonClientTopBorderHeight(false));
+
+  // The frame should be painted again when fullscreen is exited and the caption
+  // buttons should be visible.
+  {
+    scoped_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
+    chrome::ToggleFullscreenMode(browser());
+    waiter->Wait();
+  }
+  EXPECT_TRUE(frame_view->ShouldPaint());
+  EXPECT_TRUE(frame_view->size_button_->visible());
+  EXPECT_TRUE(frame_view->close_button_->visible());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   if (!ImmersiveFullscreenConfiguration::UseImmersiveFullscreen())
     return;
 
@@ -93,6 +143,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
       static_cast<ImmersiveModeControllerAsh*>(
           browser_view->immersive_mode_controller());
   immersive_mode_controller->DisableAnimationsForTest();
+  immersive_mode_controller->SetForceHideTabIndicatorsForTest(true);
 
   // Immersive mode starts disabled.
   ASSERT_FALSE(widget->IsFullscreen());
@@ -102,34 +153,56 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
   EXPECT_TRUE(frame_view->ShouldPaint());
 
   // Going fullscreen enables immersive mode.
-  browser_view->EnterFullscreen(GURL(), FEB_TYPE_NONE);
+  chrome::ToggleFullscreenMode(browser());
   EXPECT_TRUE(immersive_mode_controller->IsEnabled());
 
-  // TODO(jamescook): When adding back the slide-out animation for immersive
-  // mode, this is a good place to test the button visibility.
+  // An immersive reveal shows the buttons and the top of the frame.
+  immersive_mode_controller->StartRevealForTest(true);
+  EXPECT_TRUE(immersive_mode_controller->IsRevealed());
+  EXPECT_TRUE(frame_view->ShouldPaint());
+  EXPECT_TRUE(frame_view->size_button_->visible());
+  EXPECT_TRUE(frame_view->close_button_->visible());
+  EXPECT_TRUE(frame_view->UseShortHeader());
+  EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
+
+  // End the reveal. As the header does not paint a light bar when the
+  // top-of-window views are not revealed, nothing should be painted.
+  immersive_mode_controller->SetMouseHoveredForTest(false);
+  EXPECT_FALSE(immersive_mode_controller->IsRevealed());
+  EXPECT_FALSE(frame_view->ShouldPaint());
 
   // Frame abuts top of window.
   EXPECT_EQ(0, frame_view->NonClientTopBorderHeight(false));
 
-  // An immersive reveal shows the buttons and the top of the frame.
+  // Repeat test but with the tab light bar visible when the top-of-window views
+  // are not revealed.
+  immersive_mode_controller->SetForceHideTabIndicatorsForTest(false);
+
+  // Immersive reveal should have same behavior as before.
   immersive_mode_controller->StartRevealForTest(true);
+  EXPECT_TRUE(immersive_mode_controller->IsRevealed());
+  EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->size_button_->visible());
   EXPECT_TRUE(frame_view->close_button_->visible());
-  EXPECT_TRUE(frame_view->ShouldPaint());
+  EXPECT_TRUE(frame_view->UseShortHeader());
+  EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
 
-  // Ending reveal hides them again.
+  // Ending the reveal should hide the caption buttons and the header should
+  // be in the lightbar style.
   immersive_mode_controller->SetMouseHoveredForTest(false);
-  EXPECT_FALSE(immersive_mode_controller->IsRevealed());
+  EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_FALSE(frame_view->size_button_->visible());
   EXPECT_FALSE(frame_view->close_button_->visible());
-  EXPECT_FALSE(frame_view->ShouldPaint());
+  EXPECT_TRUE(frame_view->UseShortHeader());
+  EXPECT_TRUE(frame_view->UseImmersiveLightbarHeaderStyle());
 
   // Exiting fullscreen exits immersive mode.
   browser_view->ExitFullscreen();
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
 
   // Exiting immersive mode makes controls and frame visible again.
+  EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->size_button_->visible());
   EXPECT_TRUE(frame_view->close_button_->visible());
-  EXPECT_TRUE(frame_view->ShouldPaint());
+  EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
 }
