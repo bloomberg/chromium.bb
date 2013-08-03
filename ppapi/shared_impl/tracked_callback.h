@@ -98,11 +98,6 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   // completion.
   bool aborted() const { return aborted_; }
 
-  // Returns true if this is a blocking callback.
-  bool is_blocking() {
-    return !callback_.func;
-  }
-
   // Determines if the given callback is pending. A callback is pending if it
   // has not completed and has not been aborted. When receiving a plugin call,
   // use this to detect if |callback| represents an operation in progress. When
@@ -118,6 +113,10 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   static bool IsScheduledToRun(const scoped_refptr<TrackedCallback>& callback);
 
  protected:
+  bool is_blocking() {
+    return !callback_.func;
+  }
+
   bool is_required() {
     return (callback_.func &&
             !(callback_.flags & PP_COMPLETIONCALLBACK_FLAG_OPTIONAL));
