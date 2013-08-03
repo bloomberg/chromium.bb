@@ -760,7 +760,7 @@ class NinjaWriter:
 
     defines = config.get('defines', []) + extra_defines
     self.WriteVariableList(ninja_file, 'defines',
-                          [Define(d, self.flavor) for d in defines])
+                           [Define(d, self.flavor) for d in defines])
     if self.flavor == 'win':
       self.WriteVariableList(ninja_file, 'rcflags',
           [QuoteShellArgument(self.ExpandSpecial(f), self.flavor)
@@ -940,8 +940,7 @@ class NinjaWriter:
         ldflags.append('-Wl,-rpath=\$$ORIGIN/%s' % rpath)
         ldflags.append('-Wl,-rpath-link=%s' % rpath)
     self.WriteVariableList(ninja_file, 'ldflags',
-                           gyp.common.uniquer(map(self.ExpandSpecial,
-                                                  ldflags)))
+                           gyp.common.uniquer(map(self.ExpandSpecial, ldflags)))
 
     library_dirs = config.get('library_dirs', [])
     if self.flavor == 'win':
@@ -964,7 +963,7 @@ class NinjaWriter:
 
     self.WriteVariableList(ninja_file, 'libs', library_dirs + libraries)
 
-    self.target.binary = output
+    linked_binary = output
 
     if command in ('solink', 'solink_module'):
       extra_bindings.append(('soname', os.path.split(output)[1]))
@@ -986,6 +985,7 @@ class NinjaWriter:
     ninja_file.build(output, command + command_suffix, link_deps,
                      implicit=list(implicit_deps),
                      variables=extra_bindings)
+    return linked_binary
 
   def WriteTarget(self, spec, config_name, config, link_deps, compile_deps):
     if spec['type'] == 'none':
@@ -1013,7 +1013,8 @@ class NinjaWriter:
         self.ninja.build(self.target.binary, 'alink', link_deps,
                          order_only=compile_deps, variables=variables)
     else:
-      self.WriteLink(self.ninja, spec, config_name, config, link_deps)
+      self.target.binary = self.WriteLink(
+          self.ninja, spec, config_name, config, link_deps)
     return self.target.binary
 
   def WriteMacBundle(self, spec, mac_bundle_depends):
