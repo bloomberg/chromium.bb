@@ -37,6 +37,9 @@ class BrowserViewRenderer {
     // Called to trigger view invalidations.
     virtual void PostInvalidate() = 0;
 
+    // Synchronously call back to SetGlobalVisibleRect with current value.
+    virtual void UpdateGlobalVisibleRect() = 0;
+
     // Called to get view's absolute location on the screen.
     virtual gfx::Point GetLocationOnScreen() = 0;
 
@@ -95,11 +98,14 @@ class BrowserViewRenderer {
   virtual bool OnDraw(jobject java_canvas,
                       bool is_hardware_canvas,
                       const gfx::Vector2d& scroll,
-                      const gfx::Rect& clip,
-                      const gfx::Rect& visible_rect) = 0;
+                      const gfx::Rect& clip) = 0;
+
   // Called in response to a prior Client::RequestDrawGL() call. See
   // AwDrawGLInfo documentation for more details of the contract.
   virtual void DrawGL(AwDrawGLInfo* draw_info) = 0;
+
+  // The global visible rect changed and this is the new value.
+  virtual void SetGlobalVisibleRect(const gfx::Rect& visible_rect) = 0;
 
   // CapturePicture API methods.
   virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture(

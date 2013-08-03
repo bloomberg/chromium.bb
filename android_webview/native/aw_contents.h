@@ -109,11 +109,13 @@ class AwContents : public FindHelper::Listener,
               jint clip_left,
               jint clip_top,
               jint clip_right,
-              jint clip_bottom,
-              jint visible_left,
-              jint visible_top,
-              jint visible_right,
-              jint visible_bottom);
+              jint clip_bottom);
+  void SetGlobalVisibleRect(JNIEnv* env,
+                            jobject obj,
+                            jint visible_left,
+                            jint visible_top,
+                            jint visible_right,
+                            jint visible_bottom);
   jint GetAwDrawGLViewContext(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jobject> CapturePicture(JNIEnv* env,
                                                             jobject obj,
@@ -152,6 +154,7 @@ class AwContents : public FindHelper::Listener,
   // BrowserViewRenderer::Client implementation.
   virtual bool RequestDrawGL(jobject canvas) OVERRIDE;
   virtual void PostInvalidate() OVERRIDE;
+  virtual void UpdateGlobalVisibleRect() OVERRIDE;
   virtual void OnNewPicture() OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;
   virtual void ScrollContainerViewTo(gfx::Vector2d new_value) OVERRIDE;

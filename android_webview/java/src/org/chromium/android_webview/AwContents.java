@@ -169,8 +169,6 @@ public class AwContents {
     // picture listener API has not yet been enabled, or if it is using invalidation-only mode.
     private Callable<Picture> mPictureListenerContentProvider;
 
-    private final Rect mLastGlobalVisibleBounds = new Rect();
-
     private boolean mContainerViewFocused;
     private boolean mWindowFocused;
 
@@ -414,20 +412,6 @@ public class AwContents {
         }
     }
 
-    //--------------------------------------------------------------------------------------------
-    private class ScrollChangeListener implements ViewTreeObserver.OnScrollChangedListener {
-        @Override
-        public void onScrollChanged() {
-            // We do this to cover the case that when the view hierarchy is scrolled,
-            // more of the containing view  becomes visible (i.e. a containing view
-            // with a width/height of "wrap_content" and dimensions greater than
-            // that of the screen).
-            AwContents.this.updateGlobalVisibleBounds();
-         }
-    };
-
-    private ScrollChangeListener mScrollChangeListener;
-
     /**
      * @param browserContext the browsing context to associate this view contents with.
      * @param containerView the view-hierarchy item this object will be bound to.
@@ -544,6 +528,7 @@ public class AwContents {
         mContentViewCore.setUpdateFrameInfoListener(new AwContentUpdateFrameInfoListener());
         mSettings.setWebContents(nativeWebContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
+        updateGlobalVisibleRect();
 
         // The only call to onShow. onHide should never be called.
         mContentViewCore.onShow();
@@ -643,8 +628,16 @@ public class AwContents {
         return nativeGetAwDrawGLViewContext(mNativeAwContents);
     }
 
-    private void updateGlobalVisibleBounds() {
-        mContainerView.getGlobalVisibleRect(mLastGlobalVisibleBounds);
+    // This is only to avoid heap allocations inside updateGLobalVisibleRect. It should treated
+    // as a local variable in the function and not used anywhere else.
+    private static final Rect sLocalGlobalVisibleRect = new Rect();
+
+    @CalledByNative
+    private void updateGlobalVisibleRect() {
+        mContainerView.getGlobalVisibleRect(sLocalGlobalVisibleRect);
+        nativeSetGlobalVisibleRect(mNativeAwContents, sLocalGlobalVisibleRect.left,
+                sLocalGlobalVisibleRect.top, sLocalGlobalVisibleRect.right,
+                sLocalGlobalVisibleRect.bottom);
     }
 
     //--------------------------------------------------------------------------------------------
@@ -666,9 +659,7 @@ public class AwContents {
         if (!nativeOnDraw(mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
                     mContainerView.getScrollX(), mContainerView.getScrollY(),
                     mClipBoundsTemporary.left, mClipBoundsTemporary.top,
-                    mClipBoundsTemporary.right, mClipBoundsTemporary.bottom,
-                    mLastGlobalVisibleBounds.left, mLastGlobalVisibleBounds.top,
-                    mLastGlobalVisibleBounds.right, mLastGlobalVisibleBounds.bottom)) {
+                    mClipBoundsTemporary.right, mClipBoundsTemporary.bottom)) {
             Log.w(TAG, "nativeOnDraw failed; clearing to background color.");
             canvas.drawColor(getEffectiveBackgroundColor());
         }
@@ -1331,10 +1322,6 @@ public class AwContents {
      */
     public void onAttachedToWindow() {
         mIsAttachedToWindow = true;
-        if (mScrollChangeListener == null) {
-            mScrollChangeListener = new ScrollChangeListener();
-        }
-        mContainerView.getViewTreeObserver().addOnScrollChangedListener(mScrollChangeListener);
 
         mContentViewCore.onAttachedToWindow();
         nativeOnAttachedToWindow(mNativeAwContents, mContainerView.getWidth(),
@@ -1348,12 +1335,6 @@ public class AwContents {
         mIsAttachedToWindow = false;
         if (mNativeAwContents != 0) {
             nativeOnDetachedFromWindow(mNativeAwContents);
-        }
-
-        if (mScrollChangeListener != null) {
-            mContainerView.getViewTreeObserver().removeOnScrollChangedListener(
-                    mScrollChangeListener);
-            mScrollChangeListener = null;
         }
 
         mContentViewCore.onDetachedFromWindow();
@@ -1757,8 +1738,9 @@ public class AwContents {
     private native void nativeAddVisitedLinks(int nativeAwContents, String[] visitedLinks);
     private native boolean nativeOnDraw(int nativeAwContents, Canvas canvas,
             boolean isHardwareAccelerated, int scrollX, int ScrollY,
-            int clipLeft, int clipTop, int clipRight, int clipBottom,
-            int visibleLeft, int visibleTop, int visibleRight, int visibleBottom);
+            int clipLeft, int clipTop, int clipRight, int clipBottom);
+    private native void nativeSetGlobalVisibleRect(int nativeAwContents, int visibleLeft,
+            int visibleTop, int visibleRight, int visibleBottom);
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);
     private native void nativeFindNext(int nativeAwContents, boolean forward);
     private native void nativeClearMatches(int nativeAwContents);
