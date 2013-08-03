@@ -1877,13 +1877,7 @@ void ExtensionService::UnloadExtension(
   extension_runtime_data_.erase(extension_id);
 
   if (disabled_extensions_.Contains(extension->id())) {
-    UnloadedExtensionInfo details(extension.get(), reason);
-    details.already_disabled = true;
     disabled_extensions_.Remove(extension->id());
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_UNLOADED,
-        content::Source<Profile>(profile_),
-        content::Details<UnloadedExtensionInfo>(&details));
     // Make sure the profile cleans up its RequestContexts when an already
     // disabled extension is unloaded (since they are also tracking the disabled
     // extensions).

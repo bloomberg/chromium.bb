@@ -35,8 +35,6 @@ void ExtensionWebUIOverrideRegistrar::Observe(
         profile_, URLOverrides::GetChromeURLOverrides(extension));
 
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
-    if (content::Details<UnloadedExtensionInfo>(details)->already_disabled)
-      return;
     const Extension* extension =
         content::Details<UnloadedExtensionInfo>(details)->extension;
     ExtensionWebUI::UnregisterChromeURLOverrides(
