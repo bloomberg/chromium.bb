@@ -26,7 +26,7 @@ package StaticString;
 use strict;
 use Hasher;
 
-sub GenerateStrings($)
+sub GenerateStringDecls($)
 {
     my $stringsRef = shift;
     my %strings = %$stringsRef;
@@ -36,49 +36,35 @@ sub GenerateStrings($)
     push(@result, "\n");
 
     while ( my ($name, $value) = each %strings ) {
-        push(@result, "static const LChar ${name}String8[] = \"${value}\";\n");
+        my $length = length($value);
+        push(@result, <<END);
+static struct {
+    const char header[sizeof(StringImpl)];
+    const char data[$length + 1];
+} ${name}Data = {
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    "${value}",
+};
+END
     }
+
+    return join "", @result;
+}
+
+sub GenerateStringImpls($)
+{
+    my $stringsRef = shift;
+    my %strings = %$stringsRef;
+
+    my @result = ();
 
     push(@result, "\n");
 
     while ( my ($name, $value) = each %strings ) {
         my $length = length($value);
         my $hash = Hasher::GenerateHashValue($value);
-        push(@result, <<END);
-static StringImpl::StaticASCIILiteral ${name}Data = {
-    ${name}String8,
-    StringImpl::StaticASCIILiteral::s_initialRefCount,
-    $length,
-    StringImpl::StaticASCIILiteral::s_initialFlags | (${hash} << StringImpl::StaticASCIILiteral::s_hashShift)
-};
-END
+        push(@result, "    StringImpl* ${name}Impl = new ((void*)&${name}Data.header) StringImpl($length, $hash, StringImpl::StaticString);\n");
     }
-
-    push(@result, "\n");
-
-    while ( my ($name, $value) = each %strings ) {
-        push(@result, "static StringImpl* ${name}Impl = reinterpret_cast<StringImpl*>(&${name}Data);\n");
-    }
-
-    push(@result, "\n");
-
-    return join "", @result;
-}
-
-sub GenerateStringAsserts($)
-{
-    my $stringsRef = shift;
-    my %strings = %$stringsRef;
-
-    my @result = ();
-
-    push(@result, "#ifndef NDEBUG\n");
-
-    while ( my ($name, $value) = each %strings ) {
-        push(@result, "    ${name}Impl->assertHashIsCorrect();\n");
-    }
-
-    push(@result, "#endif // NDEBUG\n");
 
     push(@result, "\n");
 

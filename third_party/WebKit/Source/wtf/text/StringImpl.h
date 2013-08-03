@@ -115,49 +115,52 @@ private:
     // Used to construct static strings, which have an special refCount that can never hit zero.
     // This means that the static string will never be destroyed, which is important because
     // static strings will be shared across threads & ref-counted in a non-threadsafe manner.
-    enum ConstructStaticStringTag { ConstructStaticString };
-    StringImpl(const LChar* characters, unsigned length, ConstructStaticStringTag)
-        : m_data8(characters)
-        , m_refCount(s_refCountFlagIsStaticString)
-        , m_length(length)
+    enum ConstructEmptyStringTag { ConstructEmptyString };
+    explicit StringImpl(ConstructEmptyStringTag)
+        : m_refCount(s_refCountFlagIsStaticString)
+        , m_length(0)
         , m_hashAndFlags(s_hashFlag8BitBuffer)
     {
         // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
         // with impunity. The empty string is special because it is never entered into
         // AtomicString's HashKey, but still needs to compare correctly.
         STRING_STATS_ADD_8BIT_STRING(m_length);
-
         hash();
     }
 
     // FIXME: there has to be a less hacky way to do this.
     enum Force8Bit { Force8BitConstructor };
     StringImpl(unsigned length, Force8Bit)
-        : m_data8(reinterpret_cast<const LChar*>(this + 1))
-        , m_refCount(s_refCountIncrement)
+        : m_refCount(s_refCountIncrement)
         , m_length(length)
         , m_hashAndFlags(s_hashFlag8BitBuffer)
     {
-        ASSERT(m_data8);
         ASSERT(m_length);
-
         STRING_STATS_ADD_8BIT_STRING(m_length);
     }
 
     StringImpl(unsigned length)
-        : m_data16(reinterpret_cast<const UChar*>(this + 1))
-        , m_refCount(s_refCountIncrement)
+        : m_refCount(s_refCountIncrement)
         , m_length(length)
         , m_hashAndFlags(0)
     {
-        ASSERT(m_data16);
         ASSERT(m_length);
-
         STRING_STATS_ADD_16BIT_STRING(m_length);
     }
 
 public:
     ~StringImpl();
+
+    enum StaticStringTag { StaticString };
+    StringImpl(unsigned length, unsigned hash, StaticStringTag)
+        : m_refCount(s_refCountFlagIsStaticString)
+        , m_length(length)
+        , m_hashAndFlags(hash << s_flagCount | s_hashFlag8BitBuffer)
+    {
+#ifndef NDEBUG
+        assertHashIsCorrect();
+#endif
+    }
 
     static PassRefPtr<StringImpl> create(const UChar*, unsigned length);
     static PassRefPtr<StringImpl> create(const LChar*, unsigned length);
@@ -192,8 +195,8 @@ public:
     unsigned length() const { return m_length; }
     bool is8Bit() const { return m_hashAndFlags & s_hashFlag8BitBuffer; }
 
-    ALWAYS_INLINE const LChar* characters8() const { ASSERT(is8Bit()); return m_data8; }
-    ALWAYS_INLINE const UChar* characters16() const { ASSERT(!is8Bit()); return m_data16; }
+    ALWAYS_INLINE const LChar* characters8() const { ASSERT(is8Bit()); return reinterpret_cast<const LChar*>(this + 1); }
+    ALWAYS_INLINE const UChar* characters16() const { ASSERT(!is8Bit()); return reinterpret_cast<const UChar*>(this + 1); }
 
     template <typename CharType>
     ALWAYS_INLINE const CharType * getCharacters() const;
@@ -219,7 +222,7 @@ private:
     {
         ASSERT(!hasHash());
         // Multiple clients assume that StringHasher is the canonical string hash function.
-        ASSERT(hash == (is8Bit() ? StringHasher::computeHashAndMaskTop8Bits(m_data8, m_length) : StringHasher::computeHashAndMaskTop8Bits(m_data16, m_length)));
+        ASSERT(hash == (is8Bit() ? StringHasher::computeHashAndMaskTop8Bits(characters8(), m_length) : StringHasher::computeHashAndMaskTop8Bits(characters16(), m_length)));
         ASSERT(!(hash & (s_flagMask << (8 * sizeof(hash) - s_flagCount)))); // Verify that enough high bits are empty.
 
         hash <<= s_flagCount;
@@ -321,8 +324,8 @@ public:
     {
         ASSERT_WITH_SECURITY_IMPLICATION(i < m_length);
         if (is8Bit())
-            return m_data8[i];
-        return m_data16[i];
+            return characters8()[i];
+        return characters16()[i];
     }
     UChar32 characterStartingAt(unsigned);
 
@@ -439,19 +442,6 @@ private:
     static StringStats m_stringStats;
 #endif
 
-public:
-    struct StaticASCIILiteral {
-        // These member variables must match the layout of StringImpl.
-        const LChar* m_data8;
-        unsigned m_refCount;
-        unsigned m_length;
-        unsigned m_hashAndFlags;
-
-        static const unsigned s_initialRefCount = s_refCountFlagIsStaticString;
-        static const unsigned s_initialFlags = s_hashFlag8BitBuffer;
-        static const unsigned s_hashShift = s_flagCount;
-    };
-
 #ifndef NDEBUG
     void assertHashIsCorrect()
     {
@@ -461,17 +451,10 @@ public:
 #endif
 
 private:
-    // These member variables must match the layout of StaticASCIILiteral.
-    union {  // Pointers first: crbug.com/232031
-        const LChar* m_data8;
-        const UChar* m_data16;
-    };
     unsigned m_refCount;
     unsigned m_length;
     mutable unsigned m_hashAndFlags;
 };
-
-COMPILE_ASSERT(sizeof(StringImpl) == sizeof(StringImpl::StaticASCIILiteral), StringImpl_should_match_its_StaticASCIILiteral);
 
 template <>
 ALWAYS_INLINE const LChar* StringImpl::getCharacters<LChar>() const { return characters8(); }
@@ -742,8 +725,8 @@ static inline bool isSpaceOrNewline(UChar c)
 inline PassRefPtr<StringImpl> StringImpl::isolatedCopy() const
 {
     if (is8Bit())
-        return create(m_data8, m_length);
-    return create(m_data16, m_length);
+        return create(characters8(), m_length);
+    return create(characters16(), m_length);
 }
 
 struct StringHash;

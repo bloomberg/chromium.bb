@@ -621,7 +621,7 @@ sub printNamesCppFile
 
     print F "DEFINE_GLOBAL(AtomicString, ${lowerNamespace}NamespaceURI)\n\n";
 
-    print F StaticString::GenerateStrings(\%allStrings);
+    print F StaticString::GenerateStringDecls(\%allStrings);
 
     if (keys %allTags) {
         print F "// Tags\n";
@@ -661,7 +661,7 @@ sub printNamesCppFile
     print(F "    // Namespace\n");
     print(F "    new ((void*)&${lowerNamespace}NamespaceURI) AtomicString(${lowerNamespace}NS);\n");
     print(F "\n");
-    print F StaticString::GenerateStringAsserts(\%allStrings);
+    print F StaticString::GenerateStringImpls(\%allStrings);
 
     if (keys %allTags) {
         my $tagsNamespace = $parameters{tagsNullNamespace} ? "nullAtom" : "${lowerNamespace}NS";
@@ -1265,7 +1265,7 @@ sub createGenericNamesFile
     printLicenseHeader($F);
     printCppHead($F, $basePrefix, $baseName, "WTF");
 
-    print F StaticString::GenerateStrings(\%parameters);
+    print F StaticString::GenerateStringDecls(\%parameters);
 
     while ( my ($name, $identifier) = each %parameters ) {
         print F "DEFINE_GLOBAL(AtomicString, $name)\n";
@@ -1274,7 +1274,7 @@ sub createGenericNamesFile
     printInit($F, 0);
 
     print F "\n";
-    print F StaticString::GenerateStringAsserts(\%parameters);
+    print F StaticString::GenerateStringImpls(\%parameters);
 
     while ( my ($name, $identifier) = each %parameters ) {
         print F "    new ((void*)&$name) AtomicString(${name}Impl);\n";
@@ -1284,4 +1284,3 @@ sub createGenericNamesFile
     close F;
     exit 0;
 }
-
