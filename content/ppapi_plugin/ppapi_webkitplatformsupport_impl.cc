@@ -19,14 +19,13 @@
 #include "third_party/WebKit/public/platform/win/WebSandboxSupport.h"
 #elif defined(OS_MACOSX)
 #include "third_party/WebKit/public/platform/mac/WebSandboxSupport.h"
+#elif defined(OS_ANDROID)
+#include "third_party/WebKit/public/platform/android/WebSandboxSupport.h"
 #elif defined(OS_POSIX)
-#if !defined(OS_ANDROID)
 #include "content/common/child_process_sandbox_support_impl_linux.h"
-#include "third_party/icu/source/common/unicode/utf16.h"
-#endif
 #include "third_party/WebKit/public/platform/linux/WebFontFamily.h"
 #include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
-
+#include "third_party/icu/source/common/unicode/utf16.h"
 #endif
 
 using WebKit::WebSandboxSupport;
@@ -48,6 +47,8 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
 #elif defined(OS_MACOSX)
   virtual bool loadFont(
       NSFont* srcFont, CGFontRef* out, uint32_t* fontID);
+#elif defined(OS_ANDROID)
+  // Empty class.
 #elif defined(OS_POSIX)
   virtual void getFontFamilyForCharacters(
       const WebKit::WebUChar* characters,
@@ -98,29 +99,7 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 
 #elif defined(OS_ANDROID)
 
-// TODO(jrg): resolve (and implement?) PPAPI SandboxSupport for Android.
-
-void
-PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
-    const WebUChar* characters,
-    size_t num_characters,
-    const char* preferred_locale,
-    WebKit::WebFontFamily* family) {
-  NOTIMPLEMENTED();
-}
-
-void
-PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
-    WebUChar32* character,
-    const char* preferred_locale,
-    WebKit::WebFontFamily* family) {
-  NOTIMPLEMENTED();
-}
-
-void PpapiWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
-    const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
-  NOTIMPLEMENTED();
-}
+// Empty class.
 
 #elif defined(OS_POSIX)
 
