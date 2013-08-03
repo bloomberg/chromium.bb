@@ -25,6 +25,9 @@ DEP_LINKFLAGS = (['-Wl,--whole-archive'] + LIBGCC +
 if env.Bit('bitcode'):
   env.Append(CCFLAGS=['-allow-asm'])
 
+cpp11_env = env.Clone()
+cpp11_env.Append(CCFLAGS=['-std=c++11'])
+
 # All the libraries were already included via -l switches in LINKFLAGS.
 # But we use them again in LIBS so scons knows about the dependencies.
 # _LIBFLAGS is the internal variable that puts the expansion of LIBS
@@ -68,6 +71,11 @@ AddIntrinsicTest(env, 'synchronization_sync.c', '0',
                  # TODO(jfb) Blocked on bugs 3579 and 2981.
                  is_broken=env.Bit('target_x86_32'))
 AddIntrinsicTest(env, 'synchronization_volatile.c', '0')
+if env.Bit('bitcode'):
+  # The following test was only made to work on LLVM for
+  # PNaCl. Command-line flags and libraries need to be updated for GCC
+  # support.
+  AddIntrinsicTest(cpp11_env, 'synchronization_cpp11.cc', '0')
 
 # This test redirects C function calls to llvm instrinsic functions,
 # so they only work w/ PNaCl.
