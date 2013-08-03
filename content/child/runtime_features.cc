@@ -10,6 +10,7 @@
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
+#include "base/android/build_info.h"
 #endif
 
 using WebKit::WebRuntimeFeatures;
@@ -18,11 +19,19 @@ namespace content {
 
 static void SetRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_ANDROID)
+#if !defined(GOOGLE_TV)
+  // MSE/EME implementation needs Android MediaCodec API that was introduced
+  // in JellyBrean.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 16) {
+    WebRuntimeFeatures::enableWebKitMediaSource(false);
+    WebRuntimeFeatures::enableLegacyEncryptedMedia(false);
+  }
+#endif  // !defined(GOOGLE_TV)
   bool enable_webaudio = false;
 #if defined(ARCH_CPU_ARMEL)
   enable_webaudio =
       ((android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0);
-#endif
+#endif  // defined(ARCH_CPU_ARMEL)
   WebRuntimeFeatures::enableWebAudio(enable_webaudio);
   // Android does not support the Gamepad API.
   WebRuntimeFeatures::enableGamepad(false);
@@ -30,7 +39,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enablePagePopup(false);
   // datalist on Android is not enabled
   WebRuntimeFeatures::enableDataListElement(false);
-#endif
+#endif  // defined(OS_ANDROID)
 }
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
