@@ -46,6 +46,7 @@ EXTRA_ENV = {
                   '-m ${LD_EMUL} ' +
                   '--eh-frame-hdr ' +
                   '-static ' +
+                  '--build-id ' +
                   '${!USE_IRT ? --rosegment-gap=32}',
 
   'NEEDED_LIBRARIES': '',
@@ -92,6 +93,9 @@ LDPatterns = [
   # layout of the various sections and segments because the corner cases in gold
   # may not all be worked out yet. They can be added (and tested!) as needed.
   ( ('(-Ttext=.*)'),              PassThrough),
+  ( ('(-Trodata=.*)'),            PassThrough),
+  ( ('(-Ttext-segment=.*)'),      PassThrough),
+  ( ('(-Trodata-segment=.*)'),    PassThrough),
   ( ('(--section-start)', '(.+)'),PassThrough),
   ( ('(-e)','(.*)'),              PassThrough),
   ( '(--entry=.*)',               PassThrough),

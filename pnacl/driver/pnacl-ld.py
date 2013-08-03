@@ -221,6 +221,11 @@ LDPatterns = [
 
   # Flags to pass to the native linker.
   ( '-Wn,(.*)', "env.append('LD_FLAGS_NATIVE', *($0.split(',')))"),
+  ( ('(-Ttext-segment=.*)'), AddToNativeFlags),
+  ( ('(-Trodata-segment=.*)'), AddToNativeFlags),
+  ( ('(--section-start)', '(.+)'), AddToNativeFlags),
+  ( ('(--build-id)'), AddToNativeFlags),
+
   # Flags to pass to translate
   ( '-Wt,(.*)', "env.append('TRANSLATE_FLAGS_USER', *($0.split(',')))"),
 
