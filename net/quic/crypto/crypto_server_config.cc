@@ -137,7 +137,7 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
   }
 
   char orbit_bytes[kOrbitSize];
-  if (options.orbit.size() == kOrbitSize) {
+  if (options.orbit.size() == sizeof(orbit_bytes)) {
     memcpy(orbit_bytes, options.orbit.data(), sizeof(orbit_bytes));
   } else {
     DCHECK(options.orbit.empty());
@@ -722,14 +722,14 @@ void QuicCryptoServerConfig::BuildRejection(
   // kREJOverheadBytes is a very rough estimate of how much of a REJ
   // message is taken up by things other than the certificates.
   const size_t kREJOverheadBytes = 112;
-  // kMaxUnverifiedSize is the number of bytes that the certificate chain
+  // max_unverified_size is the number of bytes that the certificate chain
   // and signature can consume before we will demand a valid source-address
   // token.
-  const size_t kMaxUnverifiedSize = client_hello.size() - kREJOverheadBytes;
+  const size_t max_unverified_size = client_hello.size() - kREJOverheadBytes;
   COMPILE_ASSERT(kClientHelloMinimumSize >= kREJOverheadBytes,
                  overhead_calculation_may_underflow);
   if (info.valid_source_address_token ||
-      signature.size() + compressed.size() < kMaxUnverifiedSize) {
+      signature.size() + compressed.size() < max_unverified_size) {
     out->SetStringPiece(kCertificateTag, compressed);
     out->SetStringPiece(kPROF, signature);
   }
