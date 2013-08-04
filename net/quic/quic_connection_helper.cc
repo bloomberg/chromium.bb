@@ -109,12 +109,15 @@ void QuicConnectionHelper::ClearAckAlarm() {
 
 void QuicConnectionHelper::SetSendAlarm(QuicTime alarm_time) {
   send_alarm_registered_ = true;
+  int64 delay_us = alarm_time.Subtract(clock_->Now()).ToMicroseconds();
+  if (delay_us < 0) {
+    delay_us = 0;
+  }
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&QuicConnectionHelper::OnSendAlarm,
                  weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMicroseconds(
-          alarm_time.Subtract(QuicTime::Zero()).ToMicroseconds()));
+      base::TimeDelta::FromMicroseconds(delay_us));
 }
 
 void QuicConnectionHelper::SetTimeoutAlarm(QuicTime::Delta delay) {
