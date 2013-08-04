@@ -4,7 +4,6 @@ Main style:
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 #main  { (parse-comments.html:25 -> parse-comments.html:25:1)
 /-- overloaded --/ /-- disabled --/ Comment: value;

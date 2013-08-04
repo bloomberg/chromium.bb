@@ -6,7 +6,6 @@ Tests that computed styles expand and allow tracing to style rules.
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 #inspected  { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:1)
 background: gray;
@@ -64,7 +63,6 @@ font-family: Courier;
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 #inspected  { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:1)
 background: gray;

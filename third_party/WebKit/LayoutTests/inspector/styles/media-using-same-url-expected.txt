@@ -4,7 +4,6 @@ Main style:
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 media="screen" (media-using-same-url.html)
 @media not print (media-using-same-url.html:13 -> media-using-same-url.html:13:1)

@@ -4,7 +4,6 @@ Main style:
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 media="all" (media-queries.html)
 @media screen (media-queries.css:5 -> media-queries.css:5:5)

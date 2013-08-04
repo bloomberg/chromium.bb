@@ -6,7 +6,6 @@ Before pasting:
 element.style  { ()
 font-size: 12px;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
@@ -18,7 +17,6 @@ element.style  { ()
 margin-left: 1px;
 font-size: 12px;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
@@ -32,7 +30,6 @@ font-size: 12px;
 margin-top: 1px;
 color: red;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
@@ -47,7 +44,6 @@ font-size: 12px;
 /-- overloaded --/ moo: zoo;
 color: red;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;

@@ -5,7 +5,6 @@ I'm red.
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 h1  { (parse-utf8-bom-main.css:3 -> parse-utf8-bom-main.css:3:1)
 color: red;

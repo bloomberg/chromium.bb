@@ -13,7 +13,6 @@ text-align: right;
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 #inspected  { (inactive-properties.html:20 -> inactive-properties.html:20:1)
 /-- overloaded --/ text-align: left;

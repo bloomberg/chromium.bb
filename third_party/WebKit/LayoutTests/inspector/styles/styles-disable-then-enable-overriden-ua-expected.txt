@@ -5,7 +5,6 @@ Before disable
 element.style  { ()
 margin: 10px;
 
-======== Matched CSS Rules ========
 [expanded] 
 #container  { (user stylesheet)
 /-- overloaded --/ margin: 8px;
@@ -20,7 +19,6 @@ After disable
 element.style  { ()
 /-- overloaded --/ /-- disabled --/ margin: 10px;
 
-======== Matched CSS Rules ========
 [expanded] 
 #container  { (user stylesheet)
 margin: 8px;
@@ -35,7 +33,6 @@ After enable
 element.style  { ()
 margin: 10px;
 
-======== Matched CSS Rules ========
 [expanded] 
 #container  { (user stylesheet)
 /-- overloaded --/ margin: 8px;

@@ -6,7 +6,6 @@ Before append:
 element.style  { ()
 font-size: 12px;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
@@ -18,7 +17,6 @@ element.style  { ()
 margin-left: 3px;
 font-size: 12px;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
@@ -32,7 +30,6 @@ font-size: 12px;
 color: red;
 font-weight: bold;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
@@ -47,7 +44,6 @@ font-size: 12px;
 color: red;
 font-weight: bold;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;

@@ -22,7 +22,6 @@ border: 1px solid black;
     border-left-style: solid;
     border-left-width: 1px;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
@@ -35,7 +34,6 @@ Running: testSetStyleCSSText
 element.style  { ()
 color: rgb(192, 255, 238);
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
@@ -61,7 +59,6 @@ border: 3px dashed green;
     border-left-style: dashed;
     border-left-width: 3px;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
@@ -73,7 +70,6 @@ Running: testSetViaAncestorClass
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 .red div:first-child  { (styles-update-from-js.html:4 -> styles-update-from-js.html:4:1)
 background-color: red;
@@ -94,7 +90,6 @@ Running: testSetViaSiblingAttr
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 div[foo="bar"] + div  { (styles-update-from-js.html:8 -> styles-update-from-js.html:8:1)
 background-color: blue;

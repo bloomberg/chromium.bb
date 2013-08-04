@@ -10,7 +10,6 @@ display: block;
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 #inspected  { (css-variables.html:4 -> css-variables.html:4:1)
 var-a: green;

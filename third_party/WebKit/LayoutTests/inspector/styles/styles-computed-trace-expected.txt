@@ -55,7 +55,6 @@ element.style  { ()
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 button[Attributes Style]  { ()
 display: none;

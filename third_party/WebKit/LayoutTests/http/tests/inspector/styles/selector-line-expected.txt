@@ -4,7 +4,6 @@ Text
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 #container #inspected  { (selector-line.scss:4 -> selector-line.scss:4:5)
 color: green;

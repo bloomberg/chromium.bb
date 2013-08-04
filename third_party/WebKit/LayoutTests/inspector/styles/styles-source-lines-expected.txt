@@ -3,7 +3,6 @@ Tests that proper source lines are reported for the parsed styles.
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 media="screen" (styles-source-lines.html)
 #main, .at_line_49  { (styles-source-lines.html:49 -> styles-source-lines.html:49:1)

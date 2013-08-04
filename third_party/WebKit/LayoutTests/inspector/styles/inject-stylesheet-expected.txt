@@ -29,7 +29,6 @@ display: block;
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 media="screen" (inject-stylesheet.html)
 #main  { (inject-stylesheet.html:5 -> inject-stylesheet.html:5:3)
@@ -92,7 +91,6 @@ margin-top: 8px;
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 #iframebody  { (user stylesheet)
 background: red;

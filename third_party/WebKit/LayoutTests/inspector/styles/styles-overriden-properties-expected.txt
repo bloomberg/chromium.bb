@@ -3,7 +3,6 @@ Tests that overriding shorthands within rule are visible.
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 #main  { (styles-override…perties.html:4 -> styles-overriden-properties.html:4:1)
 /-- overloaded --/ background: #000;

@@ -58,7 +58,6 @@ Page reloaded.
 element.style  { ()
 color: red;
 
-======== Matched CSS Rules ========
 [expanded] 
 .inline-style-created-by-script-with-source-url  { (inlineStyleCrea…ByScript.css:1 -> inlineStyleCreatedByScript.css:1:1)
 /-- overloaded --/ color: grey;

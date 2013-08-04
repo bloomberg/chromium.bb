@@ -11,7 +11,6 @@ inspected  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
 color: maroon;
 : ;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;

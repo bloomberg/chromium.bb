@@ -60,7 +60,6 @@ element.style  { ()
 /-- overloaded --/ display: none;
 -webkit-font-smoothing: subpixel-antialiased;
 
-======== Matched CSS Rules ========
 [expanded] 
 #container .foo  { (elements-panel-styles.css:17 -> elements-panel-styles.css:17:1)
 font-style: italic !important;

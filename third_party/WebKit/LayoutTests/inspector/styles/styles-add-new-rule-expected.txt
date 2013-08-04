@@ -7,7 +7,6 @@ After adding new rule (inspected):
 element.style  { ()
 font-size: 12px;
 
-======== Matched CSS Rules ========
 [expanded] 
 foo, [$#inspected$], bar  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
 color: maroon;
@@ -22,7 +21,6 @@ After adding new rule (other):
 element.style  { ()
 color: red;
 
-======== Matched CSS Rules ========
 [expanded] 
 #other  { (inspector-stylesheet:4 -> inspector-stylesheet:4:1)
 

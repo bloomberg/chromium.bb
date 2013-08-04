@@ -10,7 +10,6 @@ WebInspector.settings.showUserAgentStyles = true
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 h1  { (show-user-agent-styles.html:5 -> show-user-agent-styles.html:5:1)
 background-color: red;
@@ -32,7 +31,6 @@ WebInspector.settings.showUserAgentStyles = false
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 h1  { (show-user-agent-styles.html:5 -> show-user-agent-styles.html:5:1)
 background-color: red;

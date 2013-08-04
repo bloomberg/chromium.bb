@@ -5,7 +5,6 @@ Tests that elements panel shows proper inline style locations in the sidebar pan
 element.style  { ()
 display: none;
 
-======== Matched CSS Rules ========
 [expanded] 
 .foo  { (styles-source-l…-inline.html:7 -> styles-source-lines-inline.html:7:1)
 color: blue;

@@ -4,7 +4,6 @@ Tests that CSSParser correctly parses declarations with unterminated comments.
 element.style  { ()
 color: red /* foo: bar;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
@@ -14,7 +13,6 @@ display: block;
 element.style  { ()
 color: green;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;

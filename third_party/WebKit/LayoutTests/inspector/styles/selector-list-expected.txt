@@ -4,7 +4,6 @@ Text
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:14 -> selector-list.html:14:5)
 color: green;

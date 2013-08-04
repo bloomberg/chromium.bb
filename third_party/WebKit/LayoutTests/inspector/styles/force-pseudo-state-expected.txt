@@ -6,7 +6,6 @@ DIV with :hover and :active
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 div:active, a:active  { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
 font-weight: bold;
@@ -37,7 +36,6 @@ DIV with :active and :focus
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 div:active, a:active  { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
 font-weight: bold;
@@ -88,7 +86,6 @@ DIV with no forced state
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;

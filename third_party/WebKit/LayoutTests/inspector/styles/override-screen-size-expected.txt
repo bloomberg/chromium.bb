@@ -8,7 +8,6 @@ Main style:
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 media="screen" (override-screen-size.html)
 @media (max-device-height: 960px) and (max-device-width: 480px) (override-screen-size.html:9 -> override-screen-size.html:9:1)
@@ -34,7 +33,6 @@ Main style:
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;

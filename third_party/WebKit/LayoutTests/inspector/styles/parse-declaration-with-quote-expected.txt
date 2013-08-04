@@ -4,7 +4,6 @@ Tests that CSSParser correctly parses declarations with unterminated strings. Bl
 element.style  { ()
 /-- overloaded --/ color: red'foo;
 
-======== Matched CSS Rules ========
 [expanded] 
 div  { (user agent stylesheet)
 display: block;

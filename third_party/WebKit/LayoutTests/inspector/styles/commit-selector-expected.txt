@@ -6,7 +6,6 @@ Text
 element.style  { ()
 color: red;
 
-======== Matched CSS Rules ========
 [expanded] 
 #inspected  { (commit-selector.html:4 -> commit-selector.html:4:1)
 /-- overloaded --/ color: green;
@@ -21,7 +20,6 @@ display: block;
 element.style  { ()
 color: red;
 
-======== Matched CSS Rules ========
 [expanded] 
 hr, #inspected  { (commit-selector.html:4 -> commit-selector.html:4:1)
 /-- overloaded --/ color: green;
@@ -36,7 +34,6 @@ display: block;
 element.style  { ()
 color: red;
 
-======== Matched CSS Rules ========
 [expanded] [no-affect] 
 #inspectedChanged  { (commit-selector.html:4 -> commit-selector.html:4:1)
 color: green;

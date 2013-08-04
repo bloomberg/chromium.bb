@@ -6,7 +6,6 @@ After adding new rule:
 element.style  { ()
 font-size: 12px;
 
-======== Matched CSS Rules ========
 [expanded] 
 div.foo  { (inspector-stylesheet:2 -> inspector-stylesheet:2:1)
 
@@ -27,7 +26,6 @@ After undo:
 element.style  { ()
 color: red;
 
-======== Matched CSS Rules ========
 [expanded] 
 div.foo  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
 
@@ -45,7 +43,6 @@ After redo:
 element.style  { ()
 font-size: 12px;
 
-======== Matched CSS Rules ========
 [expanded] 
 div.foo  { (inspector-stylesheet:3 -> inspector-stylesheet:3:1)
 

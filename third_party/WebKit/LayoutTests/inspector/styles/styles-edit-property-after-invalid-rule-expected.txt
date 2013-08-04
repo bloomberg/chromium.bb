@@ -4,7 +4,6 @@ Initial value
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 media="screen" (styles-edit-property-after-invalid-rule.html)
 #container  { (styles-edit-pro…d-rule.html:10 -> styles-edit-property-after-invalid-rule.html:10:1)
@@ -19,7 +18,6 @@ After changing property
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 media="screen" (styles-edit-property-after-invalid-rule.html)
 #container  { (styles-edit-pro…d-rule.html:10 -> styles-edit-property-after-invalid-rule.html:10:1)

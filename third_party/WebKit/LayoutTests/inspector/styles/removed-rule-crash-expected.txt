@@ -4,7 +4,6 @@ Before disable
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 #container  { (removed-rule-crash.html:4 -> removed-rule-crash.html:4:1)
 font-weight: bold;

@@ -6,7 +6,6 @@ Main frame style:
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 media="screen" (styles-iframe.html)
 #main  { (styles-iframe.html:5 -> styles-iframe.html:5:3)
@@ -21,7 +20,6 @@ iframe style:
 [expanded] 
 element.style  { ()
 
-======== Matched CSS Rules ========
 [expanded] 
 media="screen" (styles-iframe-data.html)
 body  { (styles-iframe-data.html:4 -> styles-iframe-data.html:4:3)
