@@ -872,9 +872,6 @@ webkit.org/b/111524 [ Debug ] fast/dom/HTMLDocument/document-special-properties.
 
 webkit.org/b/111872 fast/dom/title-directionality-removeChild.html [ Failure Pass ]
 
-# Subtle pixel difference in debug only.
-webkit.org/b/112058 [ Debug SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
-
 webkit.org/b/112193 fast/dom/Window/window-postmessage-clone.html [ Failure Pass ]
 
 webkit.org/b/112621 [ Win Linux ] fast/forms/datalist/update-range-with-datalist.html [ ImageOnlyFailure Pass ]
@@ -1190,7 +1187,7 @@ crbug.com/244123 [ Win ] fast/forms/suggestion-picker/week-suggestion-picker-key
 crbug.com/244341 css3/filters/composited-during-animation-layertree.html [ Failure Pass ]
 crbug.com/245566 editing/execCommand/delete-no-scroll.html [ Pass Timeout ]
 crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
-crbug.com/247575 fast/text/international/hindi-spacing.html [ ImageOnlyFailure Pass ]
+crbug.com/247575 [ Linux MountainLion Win ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure Pass ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
@@ -1317,3 +1314,6 @@ crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-
 
 Bug(dpranke) [ Win7 Release ] http/tests/inspector/appcache/appcache-swap.html [ Pass Timeout ]
 Bug(dpranke) [ Win ] http/tests/appcache/online-whitelist.html [ Pass Failure ] 
+
+Bug(dpranke) [ SnowLeopard ] svg/as-image/animated-svg-as-image.html [ ImageOnlyFailure ]
+Bug(dpranke) [ SnowLeopard ] svg/carto.net/window.svg [ ImageOnlyFailure ]
