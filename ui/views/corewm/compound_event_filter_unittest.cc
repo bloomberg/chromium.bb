@@ -48,6 +48,45 @@ class ConsumeGestureEventFilter : public ui::EventHandler {
 
 typedef aura::test::AuraTestBase CompoundEventFilterTest;
 
+TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
+  scoped_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
+  aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(&delegate, 1234,
+      gfx::Rect(5, 5, 100, 100), root_window()));
+  window->Show();
+  window->SetCapture();
+
+  aura::test::TestCursorClient cursor_client(root_window());
+
+  // Send key event to hide the cursor.
+  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, true);
+  root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(&key);
+  EXPECT_FALSE(cursor_client.IsCursorVisible());
+
+  // Mouse enter event should not show the cursor.
+  ui::MouseEvent enter(ui::ET_MOUSE_ENTERED, gfx::Point(10, 10),
+                       gfx::Point(10, 10), 0);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&enter);
+  EXPECT_FALSE(cursor_client.IsCursorVisible());
+
+  // Mouse move event will show the cursor.
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                      gfx::Point(10, 10), 0);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&move);
+  EXPECT_TRUE(cursor_client.IsCursorVisible());
+
+  // Send key event to hide the cursor again.
+  root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(&key);
+  EXPECT_FALSE(cursor_client.IsCursorVisible());
+
+  // Mouse exit event should not show the cursor.
+  ui::MouseEvent exit(ui::ET_MOUSE_EXITED, gfx::Point(10, 10),
+                      gfx::Point(10, 10), 0);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit);
+  EXPECT_FALSE(cursor_client.IsCursorVisible());
+}
+
 TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   scoped_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
   aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
