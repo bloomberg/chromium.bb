@@ -90,7 +90,8 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
             ConvertUTF8ToJavaString(env, params.extra_headers);
     ScopedJavaLocalRef<jbyteArray> post_data;
     if (params.uses_post &&
-        !params.browser_initiated_post_data.get()->front()) {
+        params.browser_initiated_post_data.get() &&
+        params.browser_initiated_post_data.get()->size()) {
       post_data = base::android::ToJavaByteArray(
           env,
           reinterpret_cast<const uint8*>(
