@@ -31,6 +31,7 @@
 #ifndef WrapperTypeInfo_h
 #define WrapperTypeInfo_h
 
+#include "wtf/Assertions.h"
 #include <v8.h>
 
 namespace WebCore {

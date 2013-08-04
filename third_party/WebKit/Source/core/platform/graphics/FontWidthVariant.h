@@ -26,6 +26,8 @@
 #ifndef FontWidthVariant_h
 #define FontWidthVariant_h
 
+#include "wtf/Assertions.h"
+
 namespace WebCore {
 
 enum FontWidthVariant {

@@ -31,6 +31,7 @@
 #if ENABLE(WEB_AUDIO)
 
 #include "core/platform/audio/Distance.h"
+#include "wtf/Assertions.h"
 
 #include <math.h>
 #include <algorithm>

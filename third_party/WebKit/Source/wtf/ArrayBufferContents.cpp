@@ -28,6 +28,7 @@
 #include "wtf/ArrayBufferContents.h"
 
 #include "wtf/ArrayBufferDeallocationObserver.h"
+#include "wtf/Assertions.h"
 #include <string.h>
 
 namespace WTF {
@@ -43,9 +44,6 @@ ArrayBufferContents::ArrayBufferContents(unsigned numElements, unsigned elementB
     , m_deallocationObserver(0)
 {
     // Do not allow 32-bit overflow of the total size.
-    // FIXME: Why not? The tryFastCalloc function already checks its arguments,
-    // and will fail if there is any overflow, so why should we include a
-    // redudant unnecessarily restrictive check here?
     if (numElements) {
         unsigned totalSize = numElements * elementByteSize;
         if (totalSize / numElements != elementByteSize) {
@@ -53,11 +51,8 @@ ArrayBufferContents::ArrayBufferContents(unsigned numElements, unsigned elementB
             return;
         }
     }
-    if (allocateMemory(numElements * elementByteSize, policy, m_data)) {
-        m_sizeInBytes = numElements * elementByteSize;
-        return;
-    }
-    m_data = 0;
+    allocateMemory(numElements * elementByteSize, policy, m_data);
+    m_sizeInBytes = numElements * elementByteSize;
 }
 
 ArrayBufferContents::ArrayBufferContents(void* data, unsigned sizeInBytes)
@@ -70,8 +65,7 @@ ArrayBufferContents::ArrayBufferContents(void* data, unsigned sizeInBytes)
         m_sizeInBytes = 0;
         // Allow null data if size is 0 bytes, make sure m_data is valid pointer.
         // (fastMalloc guarantees valid pointer for size 0)
-        if (!allocateMemory(0, ZeroInitialize, m_data))
-            ASSERT_NOT_REACHED();
+        allocateMemory(0, ZeroInitialize, m_data);
     }
 }
 
@@ -109,13 +103,11 @@ void ArrayBufferContents::copyTo(ArrayBufferContents& other)
     other.m_sizeInBytes = m_sizeInBytes;
 }
 
-bool ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
+void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
 {
-    if (policy == ZeroInitialize) {
-        return WTF::tryFastCalloc(size, 1).getValue(data);
-    }
-    ASSERT(policy == DontInitialize);
-    return WTF::tryFastMalloc(size).getValue(data);
+    data = WTF::fastMalloc(size);
+    if (policy == ZeroInitialize)
+        memset(data, '\0', size);
 }
 
 void ArrayBufferContents::freeMemory(void * data)

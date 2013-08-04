@@ -106,9 +106,8 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
     virtual void* Allocate(size_t size) OVERRIDE
     {
         void* data;
-        if (WTF::ArrayBufferContents::allocateMemory(size, WTF::ArrayBufferContents::ZeroInitialize, data))
-            return data;
-        return 0;
+        WTF::ArrayBufferContents::allocateMemory(size, WTF::ArrayBufferContents::ZeroInitialize, data);
+        return data;
     }
 
     virtual void Free(void* data)

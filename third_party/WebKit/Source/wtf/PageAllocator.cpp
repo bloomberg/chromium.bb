@@ -31,6 +31,7 @@
 #include "config.h"
 #include "wtf/PageAllocator.h"
 
+#include "wtf/Assertions.h"
 #include "wtf/CPU.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 

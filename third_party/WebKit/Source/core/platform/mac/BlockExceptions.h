@@ -24,6 +24,7 @@
  */
 
 #import <Foundation/NSException.h>
+#import <wtf/Assertions.h>
 
 NO_RETURN_DUE_TO_ASSERT void ReportBlockedObjCException(NSException *);
 

@@ -28,6 +28,8 @@
 
 #include "core/platform/audio/VectorMath.h"
 
+#include "wtf/Assertions.h"
+
 #if OS(DARWIN)
 #include <Accelerate/Accelerate.h>
 #endif

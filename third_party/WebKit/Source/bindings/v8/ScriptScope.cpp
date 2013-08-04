@@ -32,6 +32,7 @@
 #include "bindings/v8/ScriptScope.h"
 
 #include "bindings/v8/ScriptState.h"
+#include "wtf/Assertions.h"
 
 #include <v8.h>
 

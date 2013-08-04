@@ -31,6 +31,8 @@
 #include "config.h"
 #include "NavigationPolicy.h"
 
+#include "wtf/Assertions.h"
+
 namespace WebCore {
 
 bool navigationPolicyFromMouseEvent(unsigned short button, bool ctrl, bool shift, bool alt, bool meta, NavigationPolicy* policy)

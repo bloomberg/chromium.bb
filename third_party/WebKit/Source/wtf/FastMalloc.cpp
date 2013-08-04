@@ -92,6 +92,7 @@
 #else
 #include <pthread.h>
 #endif
+#include <stdlib.h>
 #include <string.h>
 
 #ifndef NO_TCMALLOC_SAMPLES
@@ -185,22 +186,6 @@ void fastMallocAllow()
 
 namespace WTF {
 
-
-namespace Internal {
-#if !ENABLE(WTF_MALLOC_VALIDATION)
-void fastMallocMatchFailed(void*);
-#else
-COMPILE_ASSERT(((sizeof(ValidationHeader) % sizeof(AllocAlignmentInteger)) == 0), ValidationHeader_must_produce_correct_alignment);
-#endif
-
-NO_RETURN_DUE_TO_CRASH void fastMallocMatchFailed(void*)
-{
-    CRASH();
-}
-
-} // namespace Internal
-
-
 void* fastZeroedMalloc(size_t n)
 {
     void* result = fastMalloc(n);
@@ -214,15 +199,6 @@ char* fastStrDup(const char* src)
     char* dup = static_cast<char*>(fastMalloc(len));
     memcpy(dup, src, len);
     return dup;
-}
-
-TryMallocReturnValue tryFastZeroedMalloc(size_t n)
-{
-    void* result;
-    if (!tryFastMalloc(n).getValue(result))
-        return 0;
-    memset(result, 0, n);
-    return result;
 }
 
 } // namespace WTF
@@ -246,82 +222,21 @@ size_t fastMallocGoodSize(size_t bytes)
 #endif
 }
 
-TryMallocReturnValue tryFastMalloc(size_t n)
-{
-    ASSERT(!isForbidden());
-
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    if (std::numeric_limits<size_t>::max() - Internal::ValidationBufferSize <= n)  // If overflow would occur...
-        return 0;
-
-    void* result = malloc(n + Internal::ValidationBufferSize);
-    if (!result)
-        return 0;
-    Internal::ValidationHeader* header = static_cast<Internal::ValidationHeader*>(result);
-    header->m_size = n;
-    header->m_type = Internal::AllocTypeMalloc;
-    header->m_prefix = static_cast<unsigned>(Internal::ValidationPrefix);
-    result = header + 1;
-    *Internal::fastMallocValidationSuffix(result) = Internal::ValidationSuffix;
-    fastMallocValidate(result);
-    return result;
-#else
-    return malloc(n);
-#endif
-}
-
 void* fastMalloc(size_t n)
 {
     ASSERT(!isForbidden());
 
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    TryMallocReturnValue returnValue = tryFastMalloc(n);
-    void* result;
-    if (!returnValue.getValue(result))
-        CRASH();
-#else
     void* result = malloc(n);
-#endif
-
     ASSERT(result);  // We expect tcmalloc underneath, which would crash instead of getting here.
 
     return result;
-}
-
-TryMallocReturnValue tryFastCalloc(size_t n_elements, size_t element_size)
-{
-    ASSERT(!isForbidden());
-
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    size_t totalBytes = n_elements * element_size;
-    if (n_elements > 1 && element_size && (totalBytes / element_size) != n_elements)
-        return 0;
-
-    TryMallocReturnValue returnValue = tryFastMalloc(totalBytes);
-    void* result;
-    if (!returnValue.getValue(result))
-        return 0;
-    memset(result, 0, totalBytes);
-    fastMallocValidate(result);
-    return result;
-#else
-    return calloc(n_elements, element_size);
-#endif
 }
 
 void* fastCalloc(size_t n_elements, size_t element_size)
 {
     ASSERT(!isForbidden());
 
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    TryMallocReturnValue returnValue = tryFastCalloc(n_elements, element_size);
-    void* result;
-    if (!returnValue.getValue(result))
-        CRASH();
-#else
     void* result = calloc(n_elements, element_size);
-#endif
-
     ASSERT(result);  // We expect tcmalloc underneath, which would crash instead of getting here.
 
     return result;
@@ -331,57 +246,14 @@ void fastFree(void* p)
 {
     ASSERT(!isForbidden());
 
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    if (!p)
-        return;
-
-    fastMallocMatchValidateFree(p, Internal::AllocTypeMalloc);
-    Internal::ValidationHeader* header = Internal::fastMallocValidationHeader(p);
-    memset(p, 0xCC, header->m_size);
-    free(header);
-#else
     free(p);
-#endif
-}
-
-TryMallocReturnValue tryFastRealloc(void* p, size_t n)
-{
-    ASSERT(!isForbidden());
-
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    if (p) {
-        if (std::numeric_limits<size_t>::max() - Internal::ValidationBufferSize <= n)  // If overflow would occur...
-            return 0;
-        fastMallocValidate(p);
-        Internal::ValidationHeader* result = static_cast<Internal::ValidationHeader*>(realloc(Internal::fastMallocValidationHeader(p), n + Internal::ValidationBufferSize));
-        if (!result)
-            return 0;
-        result->m_size = n;
-        result = result + 1;
-        *fastMallocValidationSuffix(result) = Internal::ValidationSuffix;
-        fastMallocValidate(result);
-        return result;
-    } else {
-        return fastMalloc(n);
-    }
-#else
-    return realloc(p, n);
-#endif
 }
 
 void* fastRealloc(void* p, size_t n)
 {
     ASSERT(!isForbidden());
 
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    TryMallocReturnValue returnValue = tryFastRealloc(p, n);
-    void* result;
-    if (!returnValue.getValue(result))
-        CRASH();
-#else
     void* result = realloc(p, n);
-#endif
-
     ASSERT(result);  // We expect tcmalloc underneath, which would crash instead of getting here.
 
     return result;
@@ -415,7 +287,6 @@ extern "C"  const int jscore_fastmalloc_introspection = 0;
 #include <pthread.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #if OS(UNIX)
 #include <unistd.h>
@@ -431,6 +302,8 @@ extern "C"  const int jscore_fastmalloc_introspection = 0;
 #include "MallocZoneSupport.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
+#else
+#include "wtf/CurrentTime.h"
 #endif
 
 #if HAVE(DISPATCH_H)
@@ -3486,31 +3359,27 @@ static inline void* SpanToMallocResult(Span *span) {
   return CheckedMallocResult(result);
 }
 
-template <bool crashOnFailure>
 static ALWAYS_INLINE void* do_malloc(size_t size) {
-  void* ret = NULL;
+    void* ret = 0;
 
     ASSERT(!isForbidden());
 
-  // The following call forces module initialization
-  TCMalloc_ThreadCache* heap = TCMalloc_ThreadCache::GetCache();
-  if (size > kMaxSize) {
-    // Use page-level allocator
-    SpinLockHolder h(&pageheap_lock);
-    Span* span = pageheap->New(pages(size));
-    if (span != NULL) {
-      ret = SpanToMallocResult(span);
+    // The following call forces module initialization
+    TCMalloc_ThreadCache* heap = TCMalloc_ThreadCache::GetCache();
+    if (size > kMaxSize) {
+        // Use page-level allocator
+        SpinLockHolder h(&pageheap_lock);
+        Span* span = pageheap->New(pages(size));
+        if (span)
+            ret = SpanToMallocResult(span);
+    } else {
+        // The common case, and also the simplest. This just pops the
+        // size-appropriate freelist, afer replenishing it if it's empty.
+        ret = CheckedMallocResult(heap->Allocate(size));
     }
-  } else {
-    // The common case, and also the simplest.  This just pops the
-    // size-appropriate freelist, afer replenishing it if it's empty.
-    ret = CheckedMallocResult(heap->Allocate(size));
-  }
-  if (!ret) {
-    if (crashOnFailure) // This branch should be optimized out by the compiler.
+    if (!ret)
         CRASH();
-  }
-  return ret;
+    return ret;
 }
 
 static ALWAYS_INLINE void do_free(void* ptr) {
@@ -3597,159 +3466,39 @@ static inline struct mallinfo do_mallinfo() {
 //         heap-checker.cc depends on this to start a stack trace from
 //         the call to the (de)allocation function.
 
-#define do_malloc do_malloc<crashOnFailure>
-
-template <bool crashOnFailure>
-ALWAYS_INLINE void* malloc(size_t);
-
 void* fastMalloc(size_t size)
 {
-    return malloc<true>(size);
+    return do_malloc(size);
 }
 
-TryMallocReturnValue tryFastMalloc(size_t size)
+void fastFree(void* ptr)
 {
-    return malloc<false>(size);
-}
-
-template <bool crashOnFailure>
-ALWAYS_INLINE
-void* malloc(size_t size) {
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    if (std::numeric_limits<size_t>::max() - Internal::ValidationBufferSize <= size)  // If overflow would occur...
-        return 0;
-    void* result = do_malloc(size + Internal::ValidationBufferSize);
-    if (!result)
-        return 0;
-
-    Internal::ValidationHeader* header = static_cast<Internal::ValidationHeader*>(result);
-    header->m_size = size;
-    header->m_type = Internal::AllocTypeMalloc;
-    header->m_prefix = static_cast<unsigned>(Internal::ValidationPrefix);
-    result = header + 1;
-    *Internal::fastMallocValidationSuffix(result) = Internal::ValidationSuffix;
-    fastMallocValidate(result);
-#else
-    void* result = do_malloc(size);
-#endif
-
-  return result;
-}
-
-void free(void* ptr) {
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    if (!ptr)
-        return;
-
-    fastMallocValidate(ptr);
-    Internal::ValidationHeader* header = Internal::fastMallocValidationHeader(ptr);
-    memset(ptr, 0xCC, header->m_size);
-    do_free(header);
-#else
     do_free(ptr);
-#endif
 }
-
-template <bool crashOnFailure>
-ALWAYS_INLINE void* calloc(size_t, size_t);
 
 void* fastCalloc(size_t n, size_t elem_size)
 {
-    void* result = calloc<true>(n, elem_size);
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    fastMallocValidate(result);
-#endif
-    return result;
-}
-
-TryMallocReturnValue tryFastCalloc(size_t n, size_t elem_size)
-{
-    void* result = calloc<false>(n, elem_size);
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    fastMallocValidate(result);
-#endif
-    return result;
-}
-
-template <bool crashOnFailure>
-ALWAYS_INLINE
-void* calloc(size_t n, size_t elem_size) {
   size_t totalBytes = n * elem_size;
 
   // Protect against overflow
   if (n > 1 && elem_size && (totalBytes / elem_size) != n)
     return 0;
 
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    void* result = malloc<crashOnFailure>(totalBytes);
-    if (!result)
-        return 0;
-
-    memset(result, 0, totalBytes);
-    fastMallocValidate(result);
-#else
     void* result = do_malloc(totalBytes);
-    if (result != NULL) {
-        memset(result, 0, totalBytes);
-    }
-#endif
+    memset(result, 0, totalBytes);
 
   return result;
 }
 
-// Since cfree isn't used anywhere, we don't compile it in.
-template <bool crashOnFailure>
-ALWAYS_INLINE void* realloc(void*, size_t);
-
 void* fastRealloc(void* old_ptr, size_t new_size)
 {
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    fastMallocValidate(old_ptr);
-#endif
-    void* result = realloc<true>(old_ptr, new_size);
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    fastMallocValidate(result);
-#endif
-    return result;
-}
-
-TryMallocReturnValue tryFastRealloc(void* old_ptr, size_t new_size)
-{
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    fastMallocValidate(old_ptr);
-#endif
-    void* result = realloc<false>(old_ptr, new_size);
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    fastMallocValidate(result);
-#endif
-    return result;
-}
-
-template <bool crashOnFailure>
-ALWAYS_INLINE
-void* realloc(void* old_ptr, size_t new_size) {
   if (old_ptr == NULL) {
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    void* result = malloc<crashOnFailure>(new_size);
-#else
-    void* result = do_malloc(new_size);
-#endif
-    return result;
+    return do_malloc(new_size);
   }
   if (new_size == 0) {
     free(old_ptr);
     return NULL;
   }
-
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    if (std::numeric_limits<size_t>::max() - Internal::ValidationBufferSize <= new_size)  // If overflow would occur...
-        return 0;
-    Internal::ValidationHeader* header = Internal::fastMallocValidationHeader(old_ptr);
-    fastMallocValidate(old_ptr);
-    old_ptr = header;
-    header->m_size = new_size;
-    new_size += Internal::ValidationBufferSize;
-#endif
 
   // Get the size of the old entry
   const PageID p = reinterpret_cast<uintptr_t>(old_ptr) >> kPageShift;
@@ -3773,29 +3522,16 @@ void* realloc(void* old_ptr, size_t new_size) {
   if ((new_size > old_size) || (AllocationSize(new_size) < old_size)) {
     // Need to reallocate
     void* new_ptr = do_malloc(new_size);
-    if (new_ptr == NULL) {
-      return NULL;
-    }
     memcpy(new_ptr, old_ptr, ((old_size < new_size) ? old_size : new_size));
     // We could use a variant of do_free() that leverages the fact
     // that we already know the sizeclass of old_ptr.  The benefit
     // would be small, so don't bother.
     do_free(old_ptr);
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    new_ptr = static_cast<Internal::ValidationHeader*>(new_ptr) + 1;
-    *Internal::fastMallocValidationSuffix(new_ptr) = Internal::ValidationSuffix;
-#endif
     return new_ptr;
   } else {
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    old_ptr = static_cast<Internal::ValidationHeader*>(old_ptr) + 1; // Set old_ptr back to the user pointer.
-    *Internal::fastMallocValidationSuffix(old_ptr) = Internal::ValidationSuffix;
-#endif
     return old_ptr;
   }
 }
-
-#undef do_malloc
 
 void releaseFastMallocFreeMemory()
 {

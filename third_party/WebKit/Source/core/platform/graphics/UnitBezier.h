@@ -26,6 +26,7 @@
 #ifndef UnitBezier_h
 #define UnitBezier_h
 
+#include "wtf/Assertions.h"
 #include <math.h>
 
 namespace WebCore {

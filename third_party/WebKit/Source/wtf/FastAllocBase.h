@@ -47,8 +47,6 @@
 //    };
 //
 
-#include <new>
-#include <stdint.h>
 #include "wtf/Assertions.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/StdLibExtras.h"
@@ -60,27 +58,21 @@ public: \
     \
     void* operator new(size_t size) \
     { \
-        void* p = ::WTF::fastMalloc(size); \
-         ::WTF::fastMallocMatchValidateMalloc(p, ::WTF::Internal::AllocTypeClassNew); \
-        return p; \
+        return ::WTF::fastMalloc(size); \
     } \
     \
     void operator delete(void* p) \
     { \
-        ::WTF::fastMallocMatchValidateFree(p, ::WTF::Internal::AllocTypeClassNew); \
         ::WTF::fastFree(p); \
     } \
     \
     void* operator new[](size_t size) \
     { \
-        void* p = ::WTF::fastMalloc(size); \
-        ::WTF::fastMallocMatchValidateMalloc(p, ::WTF::Internal::AllocTypeClassNewArray); \
-        return p; \
+        return ::WTF::fastMalloc(size); \
     } \
     \
     void operator delete[](void* p) \
     { \
-         ::WTF::fastMallocMatchValidateFree(p, ::WTF::Internal::AllocTypeClassNewArray); \
          ::WTF::fastFree(p); \
     } \
     void* operator new(size_t, NotNullTag, void* location) \

@@ -80,15 +80,15 @@
 
 namespace WebCore {
 
-// Allocates new storage via tryFastMalloc.
+// Allocates new storage via fastMalloc.
 // Returns NULL if array failed to convert for any reason.
 static float* jsArrayToFloatArray(v8::Handle<v8::Array> array, uint32_t len)
 {
     // Convert the data element-by-element.
-    float* data = 0;
-    if (len > std::numeric_limits<uint32_t>::max() / sizeof(float)
-        || !tryFastMalloc(len * sizeof(float)).getValue(data))
+    if (len > std::numeric_limits<uint32_t>::max() / sizeof(float))
         return 0;
+    float* data = static_cast<float*>(fastMalloc(len * sizeof(float)));
+
     for (uint32_t i = 0; i < len; i++) {
         v8::Local<v8::Value> val = array->Get(i);
         if (!val->IsNumber()) {
@@ -100,15 +100,15 @@ static float* jsArrayToFloatArray(v8::Handle<v8::Array> array, uint32_t len)
     return data;
 }
 
-// Allocates new storage via tryFastMalloc.
+// Allocates new storage via fastMalloc.
 // Returns NULL if array failed to convert for any reason.
 static int* jsArrayToIntArray(v8::Handle<v8::Array> array, uint32_t len)
 {
     // Convert the data element-by-element.
-    int* data = 0;
-    if (len > std::numeric_limits<uint32_t>::max() / sizeof(int)
-        || !tryFastMalloc(len * sizeof(int)).getValue(data))
+    if (len > std::numeric_limits<uint32_t>::max() / sizeof(int))
         return 0;
+    int* data = static_cast<int*>(fastMalloc(len * sizeof(int)));
+
     for (uint32_t i = 0; i < len; i++) {
         v8::Local<v8::Value> val = array->Get(i);
         bool ok;

@@ -72,6 +72,8 @@ public:
 };
 
 #if WEBKIT_IMPLEMENTATION
+#include "wtf/Assertions.h"
+
 COMPILE_ASSERT(sizeof(WebDeviceMotionData) == (10 * sizeof(double) + 2 * sizeof(char)), WebDeviceMotionData_has_wrong_size);
 #endif
 

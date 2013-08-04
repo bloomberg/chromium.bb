@@ -26,6 +26,7 @@
 #ifndef ArrayValue_h
 #define ArrayValue_h
 
+#include "wtf/Assertions.h"
 #include <v8.h>
 
 namespace WebCore {
