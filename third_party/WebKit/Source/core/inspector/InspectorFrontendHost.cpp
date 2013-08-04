@@ -314,6 +314,24 @@ PassRefPtr<DOMFileSystem> InspectorFrontendHost::isolatedFileSystem(const String
     return DOMFileSystem::create(context, fileSystemName, FileSystemTypeIsolated, KURL(ParsedURLString, rootURL), AsyncFileSystem::create());
 }
 
+void InspectorFrontendHost::indexPath(int requestId, const String& fileSystemPath)
+{
+    if (m_client)
+        m_client->indexPath(requestId, fileSystemPath);
+}
+
+void InspectorFrontendHost::stopIndexing(int requestId)
+{
+    if (m_client)
+        m_client->stopIndexing(requestId);
+}
+
+void InspectorFrontendHost::searchInPath(int requestId, const String& fileSystemPath, const String& query)
+{
+    if (m_client)
+        m_client->searchInPath(requestId, fileSystemPath, query);
+}
+
 bool InspectorFrontendHost::isUnderTest()
 {
     return m_client && m_client->isUnderTest();

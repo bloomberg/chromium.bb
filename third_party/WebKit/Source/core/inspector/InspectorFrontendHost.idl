@@ -66,6 +66,9 @@
     void addFileSystem();
     void removeFileSystem(DOMString fileSystemPath);
     DOMFileSystem isolatedFileSystem(DOMString fileSystemId, DOMString registeredName);
+    void indexPath(long requestId, DOMString fileSystemPath);
+    void stopIndexing(long requestId);
+    void searchInPath(long requestId, DOMString fileSystemPath, DOMString query);
 
     boolean isUnderTest();
 

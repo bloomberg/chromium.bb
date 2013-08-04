@@ -73,6 +73,9 @@ public:
     virtual void requestFileSystems();
     virtual void addFileSystem();
     virtual void removeFileSystem(const String& fileSystemPath);
+    virtual void indexPath(int requestId, const String& fileSystemPath);
+    virtual void stopIndexing(int requestId);
+    virtual void searchInPath(int requestId, const String& fileSystemPath, const String& query);
 
     virtual bool isUnderTest();
 

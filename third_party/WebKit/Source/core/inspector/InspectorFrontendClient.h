@@ -70,6 +70,9 @@ public:
     virtual void requestFileSystems() = 0;
     virtual void addFileSystem() = 0;
     virtual void removeFileSystem(const String& fileSystemPath) = 0;
+    virtual void indexPath(int requestId, const String& fileSystemPath) = 0;
+    virtual void stopIndexing(int requestId) = 0;
+    virtual void searchInPath(int requestId, const String& fileSystemPath, const String& query) = 0;
 
     virtual bool isUnderTest() = 0;
 };

@@ -58,7 +58,9 @@ InspectorTest.MockProgressIndicator.prototype = {
             totalWork = Math.round(totalWork * roundFactor) / roundFactor;
 
         InspectorTest.addResult("progress: `" + this._title + "' " + worked + " out of " + totalWork + " done.");
-    }
+    },
+    
+    addEventListener: function(eventType, listener, thisObject) { },
 }
 
 }

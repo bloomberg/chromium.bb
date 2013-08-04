@@ -103,7 +103,7 @@ function test()
     var scssPath = namePrefix + "scss";
     fileSystem.setFileContent(scssPath, scssContent, function() {});
     InspectorTest.addMockUISourceCodeToWorkspace(scssURL, WebInspector.resourceTypes.Stylesheet, scssContent);
-    manager.fileSystemWorkspaceProvider._simpleProjectDelegates[fileSystemProjectId]._addFile(scssPath);
+    manager.fileSystemWorkspaceProvider._projectDelegates[fileSystemProjectId]._addFile(scssPath);
 
     function afterBind()
     {

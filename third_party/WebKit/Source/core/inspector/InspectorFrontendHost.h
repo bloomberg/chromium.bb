@@ -84,6 +84,9 @@ public:
     void addFileSystem();
     void removeFileSystem(const String& fileSystemPath);
     PassRefPtr<DOMFileSystem> isolatedFileSystem(const String& fileSystemName, const String& rootURL);
+    void indexPath(int requestId, const String& fileSystemPath);
+    void stopIndexing(int requestId);
+    void searchInPath(int requestId, const String& fileSystemPath, const String& query);
 
     bool isUnderTest();
 

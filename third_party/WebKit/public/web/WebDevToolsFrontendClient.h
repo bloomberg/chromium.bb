@@ -58,6 +58,10 @@ public:
     virtual void addFileSystem() { }
     virtual void removeFileSystem(const WebString& fileSystemPath) { }
 
+    virtual void indexPath(int requestId, const WebString& fileSystemPath) { }
+    virtual void stopIndexing(int requestId) { }
+    virtual void searchInPath(int requestId, const WebString& fileSystemPath, const WebString& query) { }
+
     virtual bool isUnderTest() { return false; }
 
 protected:

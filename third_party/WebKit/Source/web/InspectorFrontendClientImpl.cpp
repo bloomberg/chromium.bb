@@ -137,6 +137,21 @@ void InspectorFrontendClientImpl::requestFileSystems()
     m_client->requestFileSystems();
 }
 
+void InspectorFrontendClientImpl::indexPath(int requestId, const String& fileSystemPath)
+{
+    m_client->indexPath(requestId, fileSystemPath);
+}
+
+void InspectorFrontendClientImpl::stopIndexing(int requestId)
+{
+    m_client->stopIndexing(requestId);
+}
+
+void InspectorFrontendClientImpl::searchInPath(int requestId, const String& fileSystemPath, const String& query)
+{
+    m_client->searchInPath(requestId, fileSystemPath, query);
+}
+
 void InspectorFrontendClientImpl::addFileSystem()
 {
     m_client->addFileSystem();

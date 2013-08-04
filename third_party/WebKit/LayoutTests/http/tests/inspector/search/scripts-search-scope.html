@@ -19,7 +19,8 @@ function test()
     {
         var searchResults = [];
         var scope = new WebInspector.ScriptsSearchScope(WebInspector.workspace);
-        scope.performSearch(searchConfig, searchResultCallback, searchFinishedCallback);
+        var progress = new WebInspector.Progress();
+        scope.performSearch(searchConfig, progress, searchResultCallback, searchFinishedCallback);
 
         function searchResultCallback(searchResult)
         {
