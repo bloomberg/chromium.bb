@@ -7,6 +7,7 @@
 #include <android/keycodes.h>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "components/web_contents_delegate_android/color_chooser_android.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -85,9 +86,22 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jstring> java_url =
         ConvertUTF8ToJavaString(env, url.spec());
+    ScopedJavaLocalRef<jstring> extra_headers =
+            ConvertUTF8ToJavaString(env, params.extra_headers);
+    ScopedJavaLocalRef<jbyteArray> post_data;
+    if (params.uses_post &&
+        !params.browser_initiated_post_data.get()->front()) {
+      post_data = base::android::ToJavaByteArray(
+          env,
+          reinterpret_cast<const uint8*>(
+              params.browser_initiated_post_data.get()->front()),
+          params.browser_initiated_post_data.get()->size());
+    }
     Java_WebContentsDelegateAndroid_openNewTab(env,
                                                obj.obj(),
                                                java_url.obj(),
+                                               extra_headers.obj(),
+                                               post_data.obj(),
                                                disposition == OFF_THE_RECORD);
     return NULL;
   }
