@@ -507,6 +507,7 @@ public:
     virtual void focus(bool restorePreviousSelection = true, FocusDirection = FocusDirectionNone);
     virtual void updateFocusAppearance(bool restorePreviousSelection);
     virtual void blur();
+    virtual bool isKeyboardFocusable() const;
     virtual bool isMouseFocusable() const;
     virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection);
     virtual void dispatchBlurEvent(Element* newFocusedElement);
@@ -987,6 +988,11 @@ inline const StylePropertySet* Element::presentationAttributeStyle()
 inline bool isShadowHost(const Node* node)
 {
     return node && node->isElementNode() && toElement(node)->shadow();
+}
+
+inline bool isShadowHost(const Element* element)
+{
+    return element && element->shadow();
 }
 
 inline size_t ElementData::length() const

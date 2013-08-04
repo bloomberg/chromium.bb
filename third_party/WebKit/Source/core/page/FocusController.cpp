@@ -61,6 +61,8 @@ namespace WebCore {
 using namespace HTMLNames;
 using namespace std;
 
+// FIXME: Some of Node* return values and Node* arguments should be Element*.
+
 FocusNavigationScope::FocusNavigationScope(TreeScope* treeScope)
     : m_rootTreeScope(treeScope)
 {
@@ -139,13 +141,19 @@ static inline bool isNonFocusableShadowHost(Node* node)
 static inline bool isNonKeyboardFocusableShadowHost(Node* node)
 {
     ASSERT(node);
-    return !node->isKeyboardFocusable() && isShadowHost(node) && !hasCustomFocusLogic(node);
+    if (!node->isElementNode())
+        return false;
+    Element* element = toElement(node);
+    return !element->isKeyboardFocusable() && isShadowHost(element) && !hasCustomFocusLogic(element);
 }
 
 static inline bool isKeyboardFocusableShadowHost(Node* node)
 {
     ASSERT(node);
-    return node->isKeyboardFocusable() && isShadowHost(node) && !hasCustomFocusLogic(node);
+    if (!node->isElementNode())
+        return false;
+    Element* element = toElement(node);
+    return element->isKeyboardFocusable() && isShadowHost(element) && !hasCustomFocusLogic(element);
 }
 
 static inline int adjustedTabIndex(Node* node)
@@ -157,7 +165,7 @@ static inline int adjustedTabIndex(Node* node)
 static inline bool shouldVisit(Node* node)
 {
     ASSERT(node);
-    return node->isKeyboardFocusable() || isNonKeyboardFocusableShadowHost(node);
+    return (node->isElementNode() && toElement(node)->isKeyboardFocusable()) || isNonKeyboardFocusableShadowHost(node);
 }
 
 FocusController::FocusController(Page* page)
@@ -320,10 +328,11 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, bool
         // FIXME: May need a way to focus a document here.
         return false;
 
-    if (node->isFrameOwnerElement() && (!node->isPluginElement() || !node->isKeyboardFocusable())) {
+    Element* element = toElement(node.get());
+    if (element->isFrameOwnerElement() && (!element->isPluginElement() || !element->isKeyboardFocusable())) {
         // We focus frames rather than frame owners.
         // FIXME: We should not focus frames that have no scrollbars, as focusing them isn't useful to the user.
-        HTMLFrameOwnerElement* owner = static_cast<HTMLFrameOwnerElement*>(node.get());
+        HTMLFrameOwnerElement* owner = static_cast<HTMLFrameOwnerElement*>(element);
         if (!owner->contentFrame())
             return false;
 
@@ -335,7 +344,7 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, bool
     // FIXME: It would be nice to just be able to call setFocusedElement(node)
     // here, but we can't do that because some elements (e.g. HTMLInputElement
     // and HTMLTextAreaElement) do extra work in their focus() methods.
-    Document* newDocument = node->document();
+    Document* newDocument = element->document();
 
     if (newDocument != document) {
         // Focus is going away from this document, so clear the focused node.
@@ -346,13 +355,13 @@ bool FocusController::advanceFocusInDocumentOrder(FocusDirection direction, bool
         setFocusedFrame(newDocument->frame());
 
     if (caretBrowsing) {
-        Position position = firstPositionInOrBeforeNode(node.get());
+        Position position = firstPositionInOrBeforeNode(element);
         VisibleSelection newSelection(position, position, DOWNSTREAM);
         if (frame->selection()->shouldChangeSelection(newSelection))
             frame->selection()->setSelection(newSelection);
     }
 
-    toElement(node.get())->focus(false, direction);
+    element->focus(false, direction);
     return true;
 }
 

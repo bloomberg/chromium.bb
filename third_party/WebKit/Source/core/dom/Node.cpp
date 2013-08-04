@@ -872,11 +872,6 @@ bool Node::isFocusable() const
     return rendererIsFocusable();
 }
 
-bool Node::isKeyboardFocusable() const
-{
-    return isFocusable() && tabIndex() >= 0;
-}
-
 Node* Node::focusDelegate()
 {
     return this;

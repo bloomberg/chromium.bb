@@ -2076,6 +2076,11 @@ void Element::blur()
     }
 }
 
+bool Element::isKeyboardFocusable() const
+{
+    return isFocusable() && tabIndex() >= 0;
+}
+
 bool Element::isMouseFocusable() const
 {
     return isFocusable();
