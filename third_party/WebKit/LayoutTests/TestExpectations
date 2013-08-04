@@ -1312,8 +1312,11 @@ crbug.com/267206 [ Lion MountainLion ] fast/scrolling/scrollbar-tickmarks-hittes
 crbug.com/267296 [ Win ] http/tests/htmlimports/import-script-nosniff.html  [ Pass Crash ]
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
 
-Bug(dpranke) [ Win7 Release ] http/tests/inspector/appcache/appcache-swap.html [ Pass Timeout ]
-Bug(dpranke) [ Win ] http/tests/appcache/online-whitelist.html [ Pass Failure ] 
+crbug.com/268111 [ Win7 Release ] http/tests/inspector/appcache/appcache-swap.html [ Pass Timeout ]
+crbug.com/268111 [ Win ] http/tests/appcache/online-whitelist.html [ Pass Failure ]
 
-Bug(dpranke) [ SnowLeopard ] svg/as-image/animated-svg-as-image.html [ ImageOnlyFailure ]
-Bug(dpranke) [ SnowLeopard ] svg/carto.net/window.svg [ ImageOnlyFailure ]
+crbug.com/264088 [ SnowLeopard ] svg/as-image/animated-svg-as-image.html [ ImageOnlyFailure ]
+crbug.com/264088 [ SnowLeopard ] svg/carto.net/window.svg [ ImageOnlyFailure ]
+crbug.com/264088 [ Mac ] canvas/philip/tests/2d.text.draw.baseline.ideographic.html [ Failure ]
+crbug.com/264088 [ Mac ] virtual/gpu/canvas/philip/tests/2d.text.draw.baseline.ideographic.html [ Failure ]
+crbug.com/264088 [ SnowLeopard ] media/video-frame-size-change.html [ ImageOnlyFailure Pass ]
