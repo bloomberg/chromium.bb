@@ -149,7 +149,7 @@ BASE_EXPORT bool ReadFileToString(const base::FilePath& path,
 #if defined(OS_POSIX)
 // Read exactly |bytes| bytes from file descriptor |fd|, storing the result
 // in |buffer|. This function is protected against EINTR and partial reads.
-// Returns true iff |bytes| bytes have been successfuly read from |fd|.
+// Returns true iff |bytes| bytes have been successfully read from |fd|.
 BASE_EXPORT bool ReadFromFD(int fd, char* buffer, size_t bytes);
 
 // Creates a symbolic link at |symlink| pointing to |target|.  Returns
@@ -217,7 +217,7 @@ BASE_EXPORT bool CreateTemporaryFileInDir(const base::FilePath& dir,
 
 // Create and open a temporary file.  File is opened for read/write.
 // The full path is placed in |path|.
-// Returns a handle to the opened file or NULL if an error occured.
+// Returns a handle to the opened file or NULL if an error occurred.
 BASE_EXPORT FILE* CreateAndOpenTemporaryFile(base::FilePath* path);
 // Like above but for shmem files.  Only useful for POSIX.
 // The executable flag says the file needs to support using
@@ -358,7 +358,7 @@ BASE_EXPORT base::FilePath MakeUniqueDirectory(const base::FilePath& path);
 // * Exist.
 // * Are owned by a specific user.
 // * Are not writable by all users.
-// * Are owned by a memeber of a given set of groups, or are not writable by
+// * Are owned by a member of a given set of groups, or are not writable by
 //   their group.
 // * Are not symbolic links.
 // This is useful for checking that a config file is administrator-controlled.
@@ -453,7 +453,7 @@ BASE_EXPORT bool CopyFileUnsafe(const FilePath& from_path,
 // Copy from_path to to_path recursively and then delete from_path recursively.
 // Returns true if all operations succeed.
 // This function simulates Move(), but unlike Move() it works across volumes.
-// This fuction is not transactional.
+// This function is not transactional.
 BASE_EXPORT bool CopyAndDeleteDirectory(const FilePath& from_path,
                                         const FilePath& to_path);
 #endif  // defined(OS_WIN)
