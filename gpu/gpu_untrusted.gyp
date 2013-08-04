@@ -23,6 +23,7 @@
             'nlib_target': 'libgles2_implementation_untrusted.a',
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
           },
           'defines': [
             'GLES2_IMPL_IMPLEMENTATION',
@@ -46,6 +47,7 @@
             'nlib_target': 'libcommand_buffer_common_untrusted.a',
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
           },
           'includes': [
             'command_buffer_common.gypi',
@@ -64,6 +66,7 @@
             'nlib_target': 'libgles2_cmd_helper_untrusted.a',
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
           },
           'includes': [
             'gles2_cmd_helper.gypi',
@@ -82,6 +85,7 @@
             'nlib_target': 'libcommand_buffer_client_untrusted.a',
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
           },
           'includes': [
             'command_buffer_client.gypi',
@@ -100,6 +104,7 @@
             'nlib_target': 'libgpu_ipc_untrusted.a',
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
           },
           'includes': [
             'gpu_ipc.gypi',

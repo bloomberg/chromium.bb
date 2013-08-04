@@ -152,14 +152,14 @@
                     'inputs': ['>(out_glibc64)'],
                     'action': [
                       '--library-path=>(libdir_glibc64)',
-                      '--library-path=<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64',
+                      '--library-path=>(tc_lib_dir_glibc64)',
                     ],
                   }],
                   ['enable_x86_32==1', {
                     'inputs': ['>(out_glibc32)'],
                     'action': [
                       '--library-path=>(libdir_glibc32)',
-                      '--library-path=<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32',
+                      '--library-path=>(tc_lib_dir_glibc32)',
                     ],
                   }],
                   # TODO(ncbray) handle arm case.  We don't have ARM glibc yet.

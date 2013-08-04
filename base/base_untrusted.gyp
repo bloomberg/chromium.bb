@@ -22,6 +22,7 @@
             'nlib_target': 'libbase_untrusted.a',
             'build_glibc': 1,
             'build_newlib': 1,
+            'build_irt': 1,
             'sources': [
               'base_switches.cc',
               'base_switches.h',

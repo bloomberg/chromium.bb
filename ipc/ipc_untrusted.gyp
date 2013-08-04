@@ -22,6 +22,7 @@
             'nlib_target': 'libipc_untrusted.a',
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
           },
           'dependencies': [
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',

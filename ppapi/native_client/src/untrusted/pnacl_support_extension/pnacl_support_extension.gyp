@@ -54,14 +54,14 @@
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_pnacl_llc_nexe',
                     ],
                     'inputs': [
-                      '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-32/libpnacl_irt_shim.a',
-                      '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-64/libpnacl_irt_shim.a',
+                      '>(tc_lib_dir_pnacl_translate)/lib-x86-32/libpnacl_irt_shim.a',
+                      '>(tc_lib_dir_pnacl_translate)/lib-x86-64/libpnacl_irt_shim.a',
                     ],
                     'variables': {
                       'lib_overrides': [
                         # Use the two freshly generated shims.
-                        '--lib_override=ia32,<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-32/libpnacl_irt_shim.a',
-                        '--lib_override=x64,<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-64/libpnacl_irt_shim.a',
+                        '--lib_override=ia32,>(tc_lib_dir_pnacl_translate)/lib-x86-32/libpnacl_irt_shim.a',
+                        '--lib_override=x64,>(tc_lib_dir_pnacl_translate)/lib-x86-64/libpnacl_irt_shim.a',
                       ],
                     },
                 }],
@@ -81,12 +81,12 @@
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_pnacl_llc_nexe',
                         ],
                         'inputs': [
-                          '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-arm/libpnacl_irt_shim.a',
+                          '>(tc_lib_dir_pnacl_translate)/lib-arm/libpnacl_irt_shim.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=arm,<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-arm/libpnacl_irt_shim.a',
+                            '--lib_override=arm,>(tc_lib_dir_pnacl_translate)/lib-arm/libpnacl_irt_shim.a',
                           ],
                         },
                       }],
@@ -103,12 +103,12 @@
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_pnacl_llc_nexe',
                         ],
                         'inputs': [
-                          '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-32/libpnacl_irt_shim.a',
+                          '>(tc_lib_dir_pnacl_translate)/lib-x86-32/libpnacl_irt_shim.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=ia32,<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-32/libpnacl_irt_shim.a',
+                            '--lib_override=ia32,>(tc_lib_dir_pnacl_translate)/lib-x86-32/libpnacl_irt_shim.a',
                           ],
                         },
                       }],
@@ -125,12 +125,12 @@
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_pnacl_llc_nexe',
                         ],
                         'inputs': [
-                          '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-64/libpnacl_irt_shim.a',
+                          '>(tc_lib_dir_pnacl_translate)/lib-x86-64/libpnacl_irt_shim.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=x64,<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-64/libpnacl_irt_shim.a',
+                            '--lib_override=x64,>(tc_lib_dir_pnacl_translate)/lib-x86-64/libpnacl_irt_shim.a',
                           ],
                         },
                       }],

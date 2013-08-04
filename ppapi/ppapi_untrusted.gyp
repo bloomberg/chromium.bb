@@ -97,31 +97,35 @@
         'translate_flags': [
           '-O0',
         ],
-        # TODO(bradchen): get rid of extra_deps64 and extra_deps32
-        # once native_client/build/untrusted.gypi no longer needs them.
-        'extra_deps_newlib64': [
-          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_cpp.a',
-          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi.a',
+        'conditions': [
+          ['target_arch!="arm"', {
+            'extra_deps_newlib64': [
+              '>(tc_lib_dir_newlib64)/libppapi_cpp.a',
+              '>(tc_lib_dir_newlib64)/libppapi.a',
+            ],
+            'extra_deps_newlib32': [
+              '>(tc_lib_dir_newlib32)/libppapi_cpp.a',
+              '>(tc_lib_dir_newlib32)/libppapi.a',
+            ],
+            'extra_deps_glibc64': [
+              '>(tc_lib_dir_glibc64)/libppapi_cpp.so',
+              '>(tc_lib_dir_glibc64)/libppapi.so',
+            ],
+            'extra_deps_glibc32': [
+              '>(tc_lib_dir_glibc32)/libppapi_cpp.so',
+              '>(tc_lib_dir_glibc32)/libppapi.so',
+            ],
+          }],
+          ['target_arch=="arm"', {
+            'extra_deps_arm': [
+              '>(tc_lib_dir_newlib_arm)/libppapi_cpp.a',
+              '>(tc_lib_dir_newlib_arm)/libppapi.a',
+            ],
+          }],
         ],
-        'extra_deps_newlib32': [
-          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_cpp.a',
-          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi.a',
-        ],
-        'extra_deps_glibc64': [
-          '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libppapi_cpp.so',
-          '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libppapi.so',
-        ],
-        'extra_deps_glibc32': [
-          '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libppapi_cpp.so',
-          '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libppapi.so',
-        ],
-        'extra_deps_arm': [
-          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppapi_cpp.a',
-          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppapi.a',
-        ],
-        'extra_deps_pnacl': [
-          '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib/libppapi_cpp.a',
-          '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib/libppapi.a',
+        'extra_deps_pnacl_newlib': [
+          '>(tc_lib_dir_pnacl_newlib)/libppapi_cpp.a',
+          '>(tc_lib_dir_pnacl_newlib)/libppapi.a',
         ],
         'sources': [
           '<@(test_common_source_files)',
@@ -157,8 +161,8 @@
               '--objdump=>(nacl_objdump)',
               '--library-path=>(libdir_glibc64)',
               '--library-path=>(libdir_glibc32)',
-              '--library-path=<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32',
-              '--library-path=<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64',
+              '--library-path=>(tc_lib_dir_glibc32)',
+              '--library-path=>(tc_lib_dir_glibc64)',
               '--output=>(nmf_glibc)',
               '--stage-dependencies=<(PRODUCT_DIR)',
             ],
