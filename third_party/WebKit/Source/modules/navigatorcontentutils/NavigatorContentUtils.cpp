@@ -47,9 +47,11 @@ static void initProtocolHandlerWhitelist()
     static const char* protocols[] = {
         "bitcoin",
         "geo",
+        "im",
         "irc",
-        "mailto",
+        "ircs",
         "magnet",
+        "mailto",
         "mms",
         "news",
         "nntp",
@@ -60,6 +62,7 @@ static void initProtocolHandlerWhitelist()
         "tel",
         "urn",
         "webcal",
+        "webtai",
         "xmpp",
     };
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(protocols); ++i)
