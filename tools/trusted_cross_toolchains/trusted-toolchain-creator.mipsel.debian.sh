@@ -227,6 +227,8 @@ DownloadOrCopyAndInstallToolchain() {
   local filename=`ls | grep gmp\-`
   rm -f gmp
   ln -s ${filename} gmp
+  # Fix gmp configure problem with flex.
+  sed -i "s/m4-not-needed/m4/" gmp/configure
 
   local tarball="${TMP}/${MPFR_URL##*/}"
   DownloadOrCopyAndVerify ${MPFR_URL} ${MPFR_SHA1SUM}
