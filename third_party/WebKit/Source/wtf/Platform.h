@@ -136,7 +136,6 @@
 #endif /* !defined(HAVE_ACCESSIBILITY) */
 
 #if OS(UNIX)
-#define HAVE_ERRNO_H 1
 #define HAVE_MMAP 1
 #define HAVE_SIGNAL_H 1
 #define HAVE_STRINGS_H 1

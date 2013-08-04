@@ -411,14 +411,12 @@ extern "C"  const int jscore_fastmalloc_introspection = 0;
 #include "TCSpinLock.h"
 #include "TCSystemAlloc.h"
 #include <algorithm>
+#include <errno.h>
 #include <pthread.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#if HAVE(ERRNO_H)
-#include <errno.h>
-#endif
 #if OS(UNIX)
 #include <unistd.h>
 #endif
@@ -2962,12 +2960,10 @@ ALWAYS_INLINE void TCMalloc_Central_FreeList::Populate() {
     if (span) pageheap->RegisterSizeClass(span, size_class_);
   }
   if (span == NULL) {
-#if HAVE(ERRNO_H)
-    MESSAGE("allocation failed: %d\n", errno);
-#elif OS(WINDOWS)
+#if OS(WINDOWS)
     MESSAGE("allocation failed: %d\n", ::GetLastError());
 #else
-    MESSAGE("allocation failed\n");
+    MESSAGE("allocation failed: %d\n", errno);
 #endif
     lock_.Lock();
     return;

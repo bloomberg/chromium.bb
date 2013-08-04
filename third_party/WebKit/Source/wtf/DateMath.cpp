@@ -90,10 +90,6 @@
 #include <windows.h>
 #endif
 
-#if HAVE(ERRNO_H)
-#include <errno.h>
-#endif
-
 #if HAVE(SYS_TIME_H)
 #include <sys/time.h>
 #endif

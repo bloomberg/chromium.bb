@@ -107,11 +107,8 @@
 #include "ThreadSpecific.h"
 #endif
 
-#include <process.h>
-
-#if HAVE(ERRNO_H)
 #include <errno.h>
-#endif
+#include <process.h>
 
 namespace WTF {
 
@@ -223,11 +220,7 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
     OwnPtr<ThreadFunctionInvocation> invocation = adoptPtr(new ThreadFunctionInvocation(entryPoint, data));
     HANDLE threadHandle = reinterpret_cast<HANDLE>(_beginthreadex(0, 0, wtfThreadEntryPoint, invocation.get(), 0, &threadIdentifier));
     if (!threadHandle) {
-#if !HAVE(ERRNO_H)
-        LOG_ERROR("Failed to create thread at entry point %p with data %p.", entryPoint, data);
-#else
         LOG_ERROR("Failed to create thread at entry point %p with data %p: %ld", entryPoint, data, errno);
-#endif
         return 0;
     }
 
