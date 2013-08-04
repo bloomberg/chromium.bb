@@ -33,6 +33,7 @@ const char kHelpMessage[] =
     "  --domain-name=<name>      sets, should ends with '.local'\n"
     "  --http-port=<value>       sets port for HTTP server\n"
     "  --service-name=<name>     sets DNS service name\n"
+    "  --state-path=<path>       sets path to file with registration state\n"
     "  --ttl=<value>             sets TTL for DNS announcements\n"
     "\n"
     "WARNING: mDNS probing is not implemented\n";

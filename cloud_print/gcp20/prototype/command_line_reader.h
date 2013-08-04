@@ -12,9 +12,14 @@
 namespace command_line_reader {
 
 uint16 ReadHttpPort(uint16 default_value);
+
 uint32 ReadTtl(uint32 default_value);
+
 std::string ReadServiceNamePrefix(const std::string& default_value);
+
 std::string ReadDomainName(const std::string& default_value);
+
+std::string ReadStatePath(const std::string& default_value);
 
 }  // namespace command_line_reader
 

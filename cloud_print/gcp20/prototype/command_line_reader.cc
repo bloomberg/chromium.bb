@@ -10,11 +10,17 @@
 
 namespace command_line_reader {
 
+const char kHttpPortSwitch[] = "http-port";
+const char kTtlSwitch[] = "ttl";
+const char kServiceNameSwitch[] = "service-name";
+const char kDomainNameSwitch[] = "domain-name";
+const char kStatePathSwitch[] = "state-path";
+
 uint16 ReadHttpPort(uint16 default_value) {
   uint32 http_port = 0;
 
   std::string http_port_string =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII("http-port");
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kHttpPortSwitch);
 
   if (!base::StringToUint(http_port_string, &http_port))
     http_port = default_value;
@@ -32,7 +38,8 @@ uint32 ReadTtl(uint32 default_value) {
   uint32 ttl = 0;
 
   if (!base::StringToUint(
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII("ttl"), &ttl)) {
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kTtlSwitch),
+      &ttl)) {
     ttl = default_value;
   }
 
@@ -42,14 +49,14 @@ uint32 ReadTtl(uint32 default_value) {
 
 std::string ReadServiceNamePrefix(const std::string& default_value) {
   std::string service_name =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII("service-name");
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kServiceNameSwitch);
 
   return service_name.empty() ? default_value : service_name;
 }
 
 std::string ReadDomainName(const std::string& default_value) {
   std::string domain_name =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII("domain-name");
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kDomainNameSwitch);
 
   if (domain_name.empty())
     return default_value;
@@ -67,6 +74,15 @@ std::string ReadDomainName(const std::string& default_value) {
   }
 
   return domain_name;
+}
+
+std::string ReadStatePath(const std::string& default_value) {
+  std::string filename =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kStatePathSwitch);
+
+  if (filename.empty())
+    return default_value;
+  return filename;
 }
 
 }  // namespace command_line_reader

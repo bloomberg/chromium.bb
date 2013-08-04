@@ -181,8 +181,8 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   std::vector<std::string> CreateTxt() const;
 
   // Saving and loading registration info from file.
-  void SaveToFile(const base::FilePath& file_path) const;
-  bool LoadFromFile(const base::FilePath& file_path);
+  void SaveToFile() const;
+  bool LoadFromFile();
 
   // Adds |OnIdle| method to the MessageLoop.
   void PostOnIdle();

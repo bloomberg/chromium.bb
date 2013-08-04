@@ -22,8 +22,7 @@
 #include "net/base/net_util.h"
 #include "net/base/url_util.h"
 
-const base::FilePath::CharType kPrinterStatePath[] =
-    FILE_PATH_LITERAL("printer_state.json");
+const char kPrinterStatePathDefault[] = "printer_state.json";
 
 namespace {
 
@@ -145,7 +144,7 @@ bool Printer::Start() {
   if (!http_server_.Start(port))
     return false;
 
-  if (!LoadFromFile(base::FilePath(kPrinterStatePath)))
+  if (!LoadFromFile())
     reg_info_ = RegistrationInfo();
 
   // Starting DNS-SD server.
@@ -537,7 +536,7 @@ void Printer::RememberAccessToken(const std::string& access_token,
                                             kTimeToNextAccessTokenUpdate);
   access_token_update_ = Time::Now() + TimeDelta::FromSeconds(time_to_update);
   VLOG(1) << "Current access_token: " << access_token;
-  SaveToFile(base::FilePath(kPrinterStatePath));
+  SaveToFile();
 }
 
 PrivetHttpServer::RegistrationErrorStatus Printer::CheckCommonRegErrors(
@@ -597,7 +596,11 @@ std::vector<std::string> Printer::CreateTxt() const {
   return txt;
 }
 
-void Printer::SaveToFile(const base::FilePath& file_path) const {
+void Printer::SaveToFile() const {
+  base::FilePath file_path;
+  file_path = file_path.AppendASCII(
+      command_line_reader::ReadStatePath(kPrinterStatePathDefault));
+
   base::DictionaryValue json;
   // TODO(maksymb): Get rid of in-place constants.
   if (IsRegistered()) {
@@ -624,9 +627,14 @@ void Printer::SaveToFile(const base::FilePath& file_path) const {
   LOG(INFO) << "State written to file.";
 }
 
-bool Printer::LoadFromFile(const base::FilePath& file_path) {
-  if (!base::PathExists(file_path))
+bool Printer::LoadFromFile() {
+  base::FilePath file_path;
+  file_path = file_path.AppendASCII(
+      command_line_reader::ReadStatePath(kPrinterStatePathDefault));
+  if (!base::PathExists(file_path)) {
+    LOG(INFO) << "Registration info is not found. Printer is unregistered.";
     return false;
+  }
 
   LOG(INFO) << "Loading registration info from file.";
   std::string json_str;
