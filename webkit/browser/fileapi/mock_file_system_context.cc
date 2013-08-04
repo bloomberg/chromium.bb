@@ -8,7 +8,6 @@
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/fileapi/test_file_system_backend.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
@@ -30,7 +29,8 @@ FileSystemContext* CreateFileSystemContextWithAdditionalProvidersForTesting(
     ScopedVector<FileSystemBackend> additional_providers,
     const base::FilePath& base_path) {
   return new FileSystemContext(
-      FileSystemTaskRunners::CreateMockTaskRunners(),
+      base::MessageLoopProxy::current().get(),
+      base::MessageLoopProxy::current().get(),
       ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new quota::MockSpecialStoragePolicy()).get(),
       quota_manager_proxy,

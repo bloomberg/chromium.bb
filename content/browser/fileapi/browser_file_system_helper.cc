@@ -23,7 +23,6 @@
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_options.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/quota/quota_manager.h"
 
 namespace content {
@@ -58,11 +57,6 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
   scoped_refptr<base::SequencedTaskRunner> file_task_runner =
       pool->GetSequencedTaskRunner(pool->GetNamedSequenceToken("FileAPI"));
 
-  scoped_ptr<fileapi::FileSystemTaskRunners> task_runners(
-      new fileapi::FileSystemTaskRunners(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
-          file_task_runner.get()));
-
   // Setting up additional filesystem backends.
   ScopedVector<fileapi::FileSystemBackend> additional_backends;
   GetContentClient()->browser()->GetAdditionalFileSystemBackends(
@@ -72,7 +66,8 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       new fileapi::FileSystemContext(
-          task_runners.Pass(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
+          file_task_runner.get(),
           BrowserContext::GetMountPoints(browser_context),
           browser_context->GetSpecialStoragePolicy(),
           quota_manager_proxy,
@@ -126,7 +121,7 @@ void SyncGetPlatformPath(fileapi::FileSystemContext* context,
                          int process_id,
                          const GURL& path,
                          base::FilePath* platform_path) {
-  DCHECK(context->task_runners()->file_task_runner()->
+  DCHECK(context->default_file_task_runner()->
          RunsTasksOnCurrentThread());
   DCHECK(platform_path);
   *platform_path = base::FilePath();

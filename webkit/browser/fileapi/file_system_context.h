@@ -24,6 +24,8 @@
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace chrome {
@@ -53,7 +55,6 @@ class FileSystemOperation;
 class FileSystemOperationRunner;
 class FileSystemOptions;
 class FileSystemQuotaUtil;
-class FileSystemTaskRunners;
 class FileSystemURL;
 class IsolatedFileSystemBackend;
 class MountPoints;
@@ -75,11 +76,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // permission policy.
   static int GetPermissionPolicy(FileSystemType type);
 
-  // task_runners->file_task_runner() is used as default TaskRunner.
+  // file_task_runner is used as default TaskRunner.
   // Unless a FileSystemBackend is overridden in CreateFileSystemOperation,
   // it is used for all file operations and file related meta operations.
-  // The code assumes that
-  // task_runners->file_task_runner()->RunsTasksOnCurrentThread()
+  // The code assumes that file_task_runner->RunsTasksOnCurrentThread()
   // returns false if the current task is not running on the thread that allows
   // blocking file operations (like SequencedWorkerPool implementation does).
   //
@@ -93,7 +93,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // If none is given, this context only handles HTML5 Sandbox FileSystem
   // and Drag-and-drop Isolated FileSystem requests.
   FileSystemContext(
-      scoped_ptr<FileSystemTaskRunners> task_runners,
+      base::SingleThreadTaskRunner* io_task_runner,
+      base::SequencedTaskRunner* file_task_runner,
       ExternalMountPoints* external_mount_points,
       quota::SpecialStoragePolicy* special_storage_policy,
       quota::QuotaManagerProxy* quota_manager_proxy,
@@ -201,7 +202,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // Creates a new FileSystemOperationRunner.
   scoped_ptr<FileSystemOperationRunner> CreateFileSystemOperationRunner();
 
-  FileSystemTaskRunners* task_runners() { return task_runners_.get(); }
+  base::SequencedTaskRunner* default_file_task_runner() {
+    return default_file_task_runner_.get();
+  }
 
   FileSystemOperationRunner* operation_runner() {
     return operation_runner_.get();
@@ -272,7 +275,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
     return sandbox_backend_.get();
   }
 
-  scoped_ptr<FileSystemTaskRunners> task_runners_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> default_file_task_runner_;
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
 

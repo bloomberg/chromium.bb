@@ -21,7 +21,6 @@
 #include "webkit/browser/fileapi/file_system_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_impl.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/isolated_file_util.h"
@@ -294,7 +293,7 @@ FileSystemBackend::CreateFileStreamWriter(
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal);
   return scoped_ptr<fileapi::FileStreamWriter>(
       new fileapi::LocalFileStreamWriter(
-          context->task_runners()->file_task_runner(), url.path(), offset));
+          context->default_file_task_runner(), url.path(), offset));
 }
 
 bool FileSystemBackend::GetVirtualPath(

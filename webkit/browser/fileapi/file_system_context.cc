@@ -19,7 +19,6 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_quota_client.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/isolated_file_system_backend.h"
@@ -98,18 +97,20 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
 }
 
 FileSystemContext::FileSystemContext(
-    scoped_ptr<FileSystemTaskRunners> task_runners,
+    base::SingleThreadTaskRunner* io_task_runner,
+    base::SequencedTaskRunner* file_task_runner,
     ExternalMountPoints* external_mount_points,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
     ScopedVector<FileSystemBackend> additional_backends,
     const base::FilePath& partition_path,
     const FileSystemOptions& options)
-    : task_runners_(task_runners.Pass()),
+    : io_task_runner_(io_task_runner),
+      default_file_task_runner_(file_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
       sandbox_context_(new SandboxContext(
           quota_manager_proxy,
-          task_runners_->file_task_runner(),
+          file_task_runner,
           partition_path,
           special_storage_policy,
           options)),
@@ -120,8 +121,6 @@ FileSystemContext::FileSystemContext(
       external_mount_points_(external_mount_points),
       partition_path_(partition_path),
       operation_runner_(new FileSystemOperationRunner(this)) {
-  DCHECK(task_runners_.get());
-
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(CreateQuotaClient(
             this, options.is_incognito()));
@@ -154,7 +153,7 @@ FileSystemContext::FileSystemContext(
 
 bool FileSystemContext::DeleteDataForOriginOnFileThread(
     const GURL& origin_url) {
-  DCHECK(task_runners_->file_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(default_file_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(origin_url == origin_url.GetOrigin());
 
   bool success = true;
@@ -287,7 +286,7 @@ void FileSystemContext::DeleteFileSystem(
   }
 
   base::PostTaskAndReplyWithResult(
-      task_runners()->file_task_runner(),
+      default_file_task_runner(),
       FROM_HERE,
       // It is safe to pass Unretained(quota_util) since context owns it.
       base::Bind(&FileSystemQuotaUtil::DeleteOriginDataOnFileThread,
@@ -350,8 +349,8 @@ FileSystemContext::~FileSystemContext() {
 }
 
 void FileSystemContext::DeleteOnCorrectThread() const {
-  if (!task_runners_->io_task_runner()->RunsTasksOnCurrentThread() &&
-      task_runners_->io_task_runner()->DeleteSoon(FROM_HERE, this)) {
+  if (!io_task_runner_->RunsTasksOnCurrentThread() &&
+      io_task_runner_->DeleteSoon(FROM_HERE, this)) {
     return;
   }
   delete this;

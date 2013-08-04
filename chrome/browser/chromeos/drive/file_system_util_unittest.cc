@@ -16,7 +16,6 @@
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
@@ -99,7 +98,8 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
       fileapi::ExternalMountPoints::CreateRefCounted();
   scoped_refptr<fileapi::FileSystemContext> context(
       new fileapi::FileSystemContext(
-          fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
+          base::MessageLoopProxy::current().get(),
+          base::MessageLoopProxy::current().get(),
           mount_points.get(),
           NULL,  // special_storage_policy
           NULL,  // quota_manager_proxy,

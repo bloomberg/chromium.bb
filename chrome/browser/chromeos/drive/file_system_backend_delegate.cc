@@ -17,7 +17,6 @@
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
 using content::BrowserThread;
@@ -58,7 +57,7 @@ FileSystemBackendDelegate::CreateFileStreamReader(
   return scoped_ptr<webkit_blob::FileStreamReader>(
       new internal::WebkitFileStreamReaderImpl(
           base::Bind(&util::GetFileSystemByProfileId, profile_id_),
-          context->task_runners()->file_task_runner(),
+          context->default_file_task_runner(),
           file_path, offset, expected_modification_time));
 }
 
@@ -77,7 +76,7 @@ FileSystemBackendDelegate::CreateFileStreamWriter(
   return scoped_ptr<fileapi::FileStreamWriter>(
       new internal::WebkitFileStreamWriterImpl(
           base::Bind(&util::GetFileSystemByProfileId, profile_id_),
-          context->task_runners()->file_task_runner(),file_path, offset));
+          context->default_file_task_runner(),file_path, offset));
 }
 
 }  // namespace drive

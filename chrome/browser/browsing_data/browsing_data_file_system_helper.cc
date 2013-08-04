@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
@@ -57,7 +56,7 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
 
   // Returns the file task runner for the |filesystem_context_|.
   base::SequencedTaskRunner* file_task_runner() {
-    return filesystem_context_->task_runners()->file_task_runner();
+    return filesystem_context_->default_file_task_runner();
   }
 
   // Keep a reference to the FileSystemContext object for the current profile

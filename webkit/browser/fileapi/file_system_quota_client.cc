@@ -20,7 +20,6 @@
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -199,7 +198,7 @@ void FileSystemQuotaClient::DeleteOriginData(
 }
 
 base::SequencedTaskRunner* FileSystemQuotaClient::file_task_runner() const {
-  return file_system_context_->task_runners()->file_task_runner();
+  return file_system_context_->default_file_task_runner();
 }
 
 }  // namespace fileapi

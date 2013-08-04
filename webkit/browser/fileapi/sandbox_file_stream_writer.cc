@@ -13,7 +13,6 @@
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/local_file_stream_writer.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -139,7 +138,7 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
   }
   DCHECK(!local_file_writer_.get());
   local_file_writer_.reset(new LocalFileStreamWriter(
-      file_system_context_->task_runners()->file_task_runner(), platform_path,
+      file_system_context_->default_file_task_runner(), platform_path,
       initial_offset_));
 
   quota::QuotaManagerProxy* quota_manager_proxy =

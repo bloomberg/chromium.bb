@@ -21,7 +21,6 @@
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
@@ -130,7 +129,8 @@ class NativeMediaFileUtilTest : public testing::Test {
         data_dir_.path(), base::MessageLoopProxy::current().get()));
 
     file_system_context_ = new fileapi::FileSystemContext(
-        fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
+        base::MessageLoopProxy::current().get(),
+        base::MessageLoopProxy::current().get(),
         fileapi::ExternalMountPoints::CreateRefCounted().get(),
         storage_policy.get(),
         NULL,

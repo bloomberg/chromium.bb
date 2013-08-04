@@ -14,7 +14,6 @@
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/syncable/file_change.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/local_origin_change_observer.h"
@@ -93,7 +92,7 @@ void LocalFileSyncContext::GetFileForLocalSync(
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   std::deque<FileSystemURL>* urls = new std::deque<FileSystemURL>;
-  file_system_context->task_runners()->file_task_runner()->PostTaskAndReply(
+  file_system_context->default_file_task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::GetNextURLsForSyncOnFileThread,
                  this, make_scoped_refptr(file_system_context),
@@ -109,10 +108,10 @@ void LocalFileSyncContext::ClearChangesForURL(
     const base::Closure& done_callback) {
   // This is initially called on UI thread and to be relayed to FILE thread.
   DCHECK(file_system_context);
-  if (!file_system_context->task_runners()->file_task_runner()->
+  if (!file_system_context->default_file_task_runner()->
           RunsTasksOnCurrentThread()) {
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-    file_system_context->task_runners()->file_task_runner()->PostTask(
+    file_system_context->default_file_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&LocalFileSyncContext::ClearChangesForURL,
                    this, make_scoped_refptr(file_system_context),
@@ -296,10 +295,10 @@ void LocalFileSyncContext::RecordFakeLocalChange(
     const SyncStatusCallback& callback) {
   // This is called on UI thread and to be relayed to FILE thread.
   DCHECK(file_system_context);
-  if (!file_system_context->task_runners()->file_task_runner()->
+  if (!file_system_context->default_file_task_runner()->
           RunsTasksOnCurrentThread()) {
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-    file_system_context->task_runners()->file_task_runner()->PostTask(
+    file_system_context->default_file_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&LocalFileSyncContext::RecordFakeLocalChange,
                    this, make_scoped_refptr(file_system_context),
@@ -348,10 +347,10 @@ void LocalFileSyncContext::HasPendingLocalChanges(
     const HasPendingLocalChangeCallback& callback) {
   // This gets called on UI thread and relays the task on FILE thread.
   DCHECK(file_system_context);
-  if (!file_system_context->task_runners()->file_task_runner()->
+  if (!file_system_context->default_file_task_runner()->
           RunsTasksOnCurrentThread()) {
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-    file_system_context->task_runners()->file_task_runner()->PostTask(
+    file_system_context->default_file_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&LocalFileSyncContext::HasPendingLocalChanges,
                    this, make_scoped_refptr(file_system_context),
@@ -468,7 +467,7 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
     scoped_ptr<LocalFileChangeTracker>* tracker_ptr(
         new scoped_ptr<LocalFileChangeTracker>);
     base::PostTaskAndReplyWithResult(
-        file_system_context->task_runners()->file_task_runner(),
+        file_system_context->default_file_task_runner(),
         FROM_HERE,
         base::Bind(&LocalFileSyncContext::InitializeChangeTrackerOnFileThread,
                    this, tracker_ptr,
@@ -505,7 +504,7 @@ SyncStatusCode LocalFileSyncContext::InitializeChangeTrackerOnFileThread(
   DCHECK(origins_with_changes);
   tracker_ptr->reset(new LocalFileChangeTracker(
           file_system_context->partition_path(),
-          file_system_context->task_runners()->file_task_runner()));
+          file_system_context->default_file_task_runner()));
   const SyncStatusCode status = (*tracker_ptr)->Initialize(file_system_context);
   if (status != SYNC_STATUS_OK)
     return status;
@@ -582,7 +581,7 @@ void LocalFileSyncContext::GetNextURLsForSyncOnFileThread(
     FileSystemContext* file_system_context,
     std::deque<FileSystemURL>* urls) {
   DCHECK(file_system_context);
-  DCHECK(file_system_context->task_runners()->file_task_runner()->
+  DCHECK(file_system_context->default_file_task_runner()->
              RunsTasksOnCurrentThread());
   SyncFileSystemBackend* backend =
       SyncFileSystemBackend::GetBackend(file_system_context);
@@ -644,14 +643,14 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
     const LocalFileSyncInfoCallback& callback) {
   // This gets called on UI thread and relays the task on FILE thread.
   DCHECK(file_system_context);
-  if (!file_system_context->task_runners()->file_task_runner()->
+  if (!file_system_context->default_file_task_runner()->
           RunsTasksOnCurrentThread()) {
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     if (shutdown_on_ui_) {
       callback.Run(SYNC_STATUS_ABORT, LocalFileSyncInfo());
       return;
     }
-    file_system_context->task_runners()->file_task_runner()->PostTask(
+    file_system_context->default_file_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&LocalFileSyncContext::DidGetWritingStatusForSync,
                    this, make_scoped_refptr(file_system_context),

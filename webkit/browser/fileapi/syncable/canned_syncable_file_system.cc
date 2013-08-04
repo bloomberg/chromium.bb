@@ -20,7 +20,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
@@ -237,9 +236,8 @@ void CannedSyncableFileSystem::SetUp() {
   additional_backends.push_back(new SyncFileSystemBackend());
 
   file_system_context_ = new FileSystemContext(
-      make_scoped_ptr(
-          new fileapi::FileSystemTaskRunners(io_task_runner_.get(),
-                                             file_task_runner_.get())),
+      io_task_runner_.get(),
+      file_task_runner_.get(),
       fileapi::ExternalMountPoints::CreateRefCounted().get(),
       storage_policy.get(),
       quota_manager_->proxy(),

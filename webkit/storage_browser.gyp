@@ -144,8 +144,6 @@
         'browser/fileapi/file_system_quota_client.cc',
         'browser/fileapi/file_system_quota_client.h',
         'browser/fileapi/file_system_quota_util.h',
-        'browser/fileapi/file_system_task_runners.cc',
-        'browser/fileapi/file_system_task_runners.h',
         'browser/fileapi/file_system_url.cc',
         'browser/fileapi/file_system_url.h',
         'browser/fileapi/file_system_url_request_job.cc',

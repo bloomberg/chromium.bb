@@ -30,7 +30,6 @@
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
@@ -234,7 +233,8 @@ class PicasaFileUtilTest : public testing::Test {
         new TestPicasaFileUtil(picasa_data_provider_.get())));
 
     file_system_context_ = new fileapi::FileSystemContext(
-        fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
+        base::MessageLoopProxy::current().get(),
+        base::MessageLoopProxy::current().get(),
         fileapi::ExternalMountPoints::CreateRefCounted().get(),
         storage_policy.get(),
         NULL,

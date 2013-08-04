@@ -13,7 +13,6 @@
 #include "webkit/browser/blob/local_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 
 using webkit_blob::LocalFileStreamReader;
 
@@ -118,7 +117,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
 
   local_file_reader_.reset(
       new LocalFileStreamReader(
-          file_system_context_->task_runners()->file_task_runner(),
+          file_system_context_->default_file_task_runner(),
           platform_path, initial_offset_, expected_modification_time_));
 
   callback.Run();
