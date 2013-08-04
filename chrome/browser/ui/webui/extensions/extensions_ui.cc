@@ -14,6 +14,8 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h"
@@ -73,7 +75,13 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource::Add(profile, source);
 }
 
-ExtensionsUI::~ExtensionsUI() {
+ExtensionsUI::~ExtensionsUI() {}
+
+// static
+base::RefCountedMemory* ExtensionsUI::GetFaviconResourceBytes(
+    ui::ScaleFactor scale_factor) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.LoadDataResourceBytesForScale(IDR_EXTENSIONS_FAVICON, scale_factor);
 }
 
 }  // namespace extensions

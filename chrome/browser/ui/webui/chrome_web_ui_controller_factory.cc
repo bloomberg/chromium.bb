@@ -589,8 +589,15 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return DownloadsUI::GetFaviconResourceBytes(scale_factor);
 
   // Android doesn't use the Options pages.
-  if (page_url.host() == chrome::kChromeUISettingsFrameHost)
+  if (page_url.host() == chrome::kChromeUISettingsHost ||
+      page_url.host() == chrome::kChromeUISettingsFrameHost)
     return options::OptionsUI::GetFaviconResourceBytes(scale_factor);
+
+#if defined(ENABLE_EXTENSIONS)
+  if (page_url.host() == chrome::kChromeUIExtensionsHost ||
+      page_url.host() == chrome::kChromeUIExtensionsFrameHost)
+    return extensions::ExtensionsUI::GetFaviconResourceBytes(scale_factor);
+#endif
 
   // Android doesn't use the plugins pages.
   if (page_url.host() == chrome::kChromeUIPluginsHost)
