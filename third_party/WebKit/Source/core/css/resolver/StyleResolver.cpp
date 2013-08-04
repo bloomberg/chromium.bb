@@ -36,6 +36,7 @@
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSDefaultStyleSheets.h"
@@ -632,9 +633,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     return state.takeStyle();
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle* elementStyle, const StyleKeyframe* keyframe, KeyframeValue& keyframeValue)
+PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle* elementStyle, const StyleKeyframe* keyframe)
 {
-    ASSERT(!RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     ASSERT(document()->frame());
     ASSERT(documentSettings());
 
@@ -681,18 +681,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
-    // Add all the animating properties to the keyframe.
-    if (const StylePropertySet* styleDeclaration = keyframe->properties()) {
-        unsigned propertyCount = styleDeclaration->propertyCount();
-        for (unsigned i = 0; i < propertyCount; ++i) {
-            CSSPropertyID property = styleDeclaration->propertyAt(i).id();
-            // Timing-function within keyframes is special, because it is not animated; it just
-            // describes the timing function between this keyframe and the next.
-            if (property != CSSPropertyWebkitAnimationTimingFunction)
-                keyframeValue.addProperty(property);
-        }
-    }
-
     document()->didAccessStyleResolver();
 
     return state.takeStyle();
@@ -717,6 +705,7 @@ const StyleRuleKeyframes* StyleResolver::matchScopedKeyframesRule(const Element*
 
 void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* elementStyle, KeyframeList& list)
 {
+    ASSERT(!RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     list.clear();
 
     // Get the keyframesRule for this name
@@ -734,7 +723,8 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
         const StyleKeyframe* keyframe = keyframes[i].get();
 
         KeyframeValue keyframeValue(0, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, keyframe, keyframeValue));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, keyframe));
+        keyframeValue.addProperties(keyframe->properties());
 
         // Add this keyframe style to all the indicated key times
         Vector<float> keys;
@@ -754,7 +744,8 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
             zeroPercentKeyframe->setKeyText("0%");
         }
         KeyframeValue keyframeValue(0, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, zeroPercentKeyframe, keyframeValue));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, zeroPercentKeyframe));
+        keyframeValue.addProperties(zeroPercentKeyframe->properties());
         list.insert(keyframeValue);
     }
 
@@ -766,12 +757,13 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
             hundredPercentKeyframe->setKeyText("100%");
         }
         KeyframeValue keyframeValue(1, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, hundredPercentKeyframe, keyframeValue));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, hundredPercentKeyframe));
+        keyframeValue.addProperties(hundredPercentKeyframe->properties());
         list.insert(keyframeValue);
     }
 }
 
-void StyleResolver::resolveKeyframes(Element* element, const StringImpl* name, KeyframeAnimationEffect::KeyframeVector& keyframes)
+void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style, const StringImpl* name, KeyframeAnimationEffect::KeyframeVector& keyframes)
 {
     const StyleRuleKeyframes* keyframesRule = matchScopedKeyframesRule(element, name);
     if (!keyframesRule)
@@ -781,6 +773,7 @@ void StyleResolver::resolveKeyframes(Element* element, const StringImpl* name, K
     const Vector<RefPtr<StyleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
     for (unsigned i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
+        RefPtr<RenderStyle> keyframeStyle = styleForKeyframe(element, style, styleKeyframe);
 
         Vector<float> offsets;
         styleKeyframe->getKeys(offsets);
@@ -792,7 +785,7 @@ void StyleResolver::resolveKeyframes(Element* element, const StringImpl* name, K
             for (unsigned k = 0; k < properties->propertyCount(); k++) {
                 CSSPropertyID property = properties->propertyAt(k).id();
                 // FIXME: CSSValue needs to be resolved.
-                keyframe->setPropertyValue(property, AnimatableValue::create(properties->getPropertyCSSValue(property).get()).get());
+                keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, keyframeStyle.get()).get());
             }
             keyframes.append(keyframe);
         }

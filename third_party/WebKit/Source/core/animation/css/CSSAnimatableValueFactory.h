@@ -28,53 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef CSSAnimatableValueFactory_h
+#define CSSAnimatableValueFactory_h
+
+#include "CSSPropertyNames.h"
 #include "core/animation/AnimatableValue.h"
-#include "core/animation/AnimatableNeutral.h"
-#include "core/animation/DeferredAnimatableValue.h"
-#include <algorithm>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-const AnimatableValue* AnimatableValue::neutralValue()
-{
-    static AnimatableNeutral* neutralSentinelValue = AnimatableNeutral::create().leakRef();
-    return neutralSentinelValue;
-}
+class RenderStyle;
 
-const AnimatableValue* AnimatableValue::deferredSnapshotValue()
-{
-    static DeferredAnimatableValue* deferredAnimatableValueSentinel = DeferredAnimatableValue::create().leakRef();
-    return deferredAnimatableValueSentinel;
-}
-
-PassRefPtr<AnimatableValue> AnimatableValue::interpolate(const AnimatableValue* left, const AnimatableValue* right, double fraction)
-{
-    ASSERT(left);
-    ASSERT(right);
-    ASSERT(!left->isNeutral());
-    ASSERT(!right->isNeutral());
-
-    if (fraction && fraction != 1 && left->isSameType(right))
-        return left->interpolateTo(right, fraction);
-
-    return defaultInterpolateTo(left, right, fraction);
-}
-
-PassRefPtr<AnimatableValue> AnimatableValue::add(const AnimatableValue* left, const AnimatableValue* right)
-{
-    ASSERT(left);
-    ASSERT(right);
-
-    if (left->isNeutral())
-        return takeConstRef(right);
-    if (right->isNeutral())
-        return takeConstRef(left);
-
-    if (left->isSameType(right))
-        return left->addWith(right);
-
-    return defaultAddWith(left, right);
-}
+class CSSAnimatableValueFactory {
+public:
+    static PassRefPtr<AnimatableValue> create(CSSPropertyID, const RenderStyle*);
+};
 
 } // namespace WebCore
+
+#endif // CSSAnimatableValueFactory_h

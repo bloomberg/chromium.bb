@@ -20,10 +20,26 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/KeyframeList.h"
 
+#include "core/css/StylePropertySet.h"
+#include "core/rendering/RenderObject.h"
+
 namespace WebCore {
+
+void KeyframeValue::addProperties(const StylePropertySet* propertySet)
+{
+    if (!propertySet)
+        return;
+    unsigned propertyCount = propertySet->propertyCount();
+    for (unsigned i = 0; i < propertyCount; ++i) {
+        CSSPropertyID property = propertySet->propertyAt(i).id();
+        // Timing-function within keyframes is special, because it is not animated; it just
+        // describes the timing function between this keyframe and the next.
+        if (property != CSSPropertyWebkitAnimationTimingFunction)
+            addProperty(property);
+    }
+}
 
 KeyframeList::~KeyframeList()
 {

@@ -554,6 +554,8 @@
             'animation/TimedItem.h',
             'animation/TimedItemCalculations.h',
             'animation/Timing.h',
+            'animation/css/CSSAnimatableValueFactory.cpp',
+            'animation/css/CSSAnimatableValueFactory.h',
             'animation/css/CSSAnimations.cpp',
             'animation/css/CSSAnimations.h',
             'css/BasicShapeFunctions.cpp',

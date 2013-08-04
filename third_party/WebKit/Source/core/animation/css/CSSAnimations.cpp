@@ -178,7 +178,7 @@ void CSSAnimations::update(Element* element, const RenderStyle* style)
             }
 
             KeyframeAnimationEffect::KeyframeVector keyframes;
-            element->document()->styleResolver()->resolveKeyframes(element, animationName.impl(), keyframes);
+            element->document()->styleResolver()->resolveKeyframes(element, style, animationName.impl(), keyframes);
             if (!keyframes.isEmpty()) {
                 Timing timing;
                 timingFromAnimationData(animationData, timing);

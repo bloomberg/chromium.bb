@@ -36,6 +36,7 @@ namespace WebCore {
 
 class RenderObject;
 class RenderStyle;
+class StylePropertySet;
 
 class KeyframeValue {
 public:
@@ -45,6 +46,7 @@ public:
     {
     }
 
+    void addProperties(const StylePropertySet*);
     void addProperty(CSSPropertyID prop) { m_properties.add(prop); }
     bool containsProperty(CSSPropertyID prop) const { return m_properties.contains(prop); }
     const HashSet<CSSPropertyID>& properties() const { return m_properties; }
