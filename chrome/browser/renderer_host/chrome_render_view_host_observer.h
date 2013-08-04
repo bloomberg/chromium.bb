@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_VIEW_HOST_OBSERVER_H_
 #define CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_VIEW_HOST_OBSERVER_H_
 
+#include <string>
+
 #include "content/public/browser/render_view_host_observer.h"
 
 class Profile;
+class SkBitmap;
 
 namespace chrome_browser_net {
 class Predictor;
@@ -32,14 +35,17 @@ class ChromeRenderViewHostObserver : public content::RenderViewHostObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-   // Does extension-specific initialization when a new renderer process is
-   // created by a RenderViewHost.
+  // Does extension-specific initialization when a new renderer process is
+  // created by a RenderViewHost.
   void InitRenderViewForExtensions();
   // Gets the extension or app (if any) that is associated with the RVH.
   const extensions::Extension* GetExtension();
   // Cleans up when a RenderViewHost is removed, or on destruction.
   void RemoveRenderViewHostForExtensions(content::RenderViewHost* rvh);
+
   void OnFocusedNodeTouched(bool editable);
+
+  void OnRequestThumbnailForContextNodeACK(const SkBitmap& bitmap);
 
   Profile* profile_;
   chrome_browser_net::Predictor* predictor_;

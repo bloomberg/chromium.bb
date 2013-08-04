@@ -237,6 +237,9 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // Copy to the clipboard an image located at a point in the RenderView
   void CopyImageAt(int x, int y);
 
+  // Get an image located at a point in the RenderView for search.
+  void GetImageThumbnailForSearch();
+
   // Launch the inspector targeting a point in the RenderView
   void Inspect(int x, int y);
 

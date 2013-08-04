@@ -16,6 +16,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -65,6 +67,7 @@
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -92,6 +95,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
@@ -114,6 +119,10 @@ using extensions::MenuItem;
 using extensions::MenuManager;
 
 namespace {
+
+const int kImageSearchThumbnailMinSize = 300 * 300;
+const int kImageSearchThumbnailMaxWidth = 600;
+const int kImageSearchThumbnailMaxHeight = 600;
 
 // Maps UMA enumeration to IDC. IDC could be changed so we can't use
 // just them and |UMA_HISTOGRAM_CUSTOM_ENUMERATION|.
@@ -181,8 +190,9 @@ const struct UmaEnumCommandIdPair {
   { 54, IDC_SPELLCHECK_MENU },
   { 55, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE },
   { 56, IDC_SPELLCHECK_LANGUAGES_FIRST },
+  { 57, IDC_CONTENT_CONTEXT_SEARCHIMAGENEWTAB },
   // Add new items here and use |enum_id| from the next line.
-  { 57, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
+  { 58, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
@@ -843,6 +853,19 @@ void RenderViewContextMenu::AppendImageItems() {
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
                                   IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
   AppendPrintItem();
+  const TemplateURL* const default_provider =
+      TemplateURLServiceFactory::GetForProfile(profile_)->
+          GetDefaultSearchProvider();
+  if (!default_provider)
+    return;
+  SearchTermsData search_terms;
+  if (!default_provider->image_url().empty() &&
+      default_provider->image_url_ref().IsValidUsingTermsData(search_terms)) {
+    menu_model_.AddItem(
+        IDC_CONTENT_CONTEXT_SEARCHIMAGENEWTAB,
+        l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
+                                   default_provider->short_name()));
+  }
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
@@ -1253,6 +1276,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     }
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
+    case IDC_CONTENT_CONTEXT_SEARCHIMAGENEWTAB:
       // The images shown in the most visited thumbnails do not currently open
       // in a new tab as they should. Disabling this context menu option for
       // now, as a quick hack, before we resolve this issue (Issue = 2608).
@@ -1604,6 +1628,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_COPYIMAGE:
       CopyImageAt(params_.x, params_.y);
+      break;
+
+    case IDC_CONTENT_CONTEXT_SEARCHIMAGENEWTAB:
+      GetImageThumbnailForSearch();
       break;
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
@@ -2032,6 +2060,15 @@ void RenderViewContextMenu::OpenURL(
 
 void RenderViewContextMenu::CopyImageAt(int x, int y) {
   source_web_contents_->GetRenderViewHost()->CopyImageAt(x, y);
+}
+
+void RenderViewContextMenu::GetImageThumbnailForSearch() {
+  source_web_contents_->GetRenderViewHost()->Send(
+       new ChromeViewMsg_RequestThumbnailForContextNode(
+           source_web_contents_->GetRenderViewHost()->GetRoutingID(),
+           kImageSearchThumbnailMinSize,
+           gfx::Size(kImageSearchThumbnailMaxWidth,
+                     kImageSearchThumbnailMaxHeight)));
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {

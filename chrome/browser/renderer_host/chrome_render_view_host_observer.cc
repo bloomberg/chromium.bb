@@ -4,12 +4,20 @@
 
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 
+#include <vector>
+
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -18,18 +26,27 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/page_transition_types.h"
 #include "extensions/common/constants.h"
+#include "net/http/http_request_headers.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/window_open_disposition.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #endif  // OS_WIN
 
 using content::ChildProcessSecurityPolicy;
+using content::OpenURLParams;
 using content::RenderViewHost;
 using content::SiteInstance;
+using content::WebContents;
 using extensions::Extension;
 using extensions::Manifest;
 
@@ -75,6 +92,8 @@ bool ChromeRenderViewHostObserver::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewHostObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusedNodeTouched,
                         OnFocusedNodeTouched)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
+                        OnRequestThumbnailForContextNodeACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -181,4 +200,56 @@ void ChromeRenderViewHostObserver::OnFocusedNodeTouched(bool editable) {
     base::win::DismissVirtualKeyboard();
 #endif
   }
+}
+
+// Handles the image thumbnail for the context node, composes a image search
+// request based on the received thumbnail and opens the request in a new tab.
+void ChromeRenderViewHostObserver::OnRequestThumbnailForContextNodeACK(
+    const SkBitmap& bitmap) {
+  const int kDefaultQualityForImageSearch = 90;
+  WebContents* web_contents =
+      WebContents::FromRenderViewHost(render_view_host());
+  if (!web_contents)
+    return;
+
+  std::vector<unsigned char> data;
+  if (!gfx::JPEGCodec::Encode(
+      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+      gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
+      static_cast<int>(bitmap.rowBytes()), kDefaultQualityForImageSearch,
+      &data))
+    return;
+
+  const TemplateURL* const default_provider =
+      TemplateURLServiceFactory::GetForProfile(profile_)->
+          GetDefaultSearchProvider();
+  DCHECK(default_provider);
+  TemplateURLRef::SearchTermsArgs search_args =
+      TemplateURLRef::SearchTermsArgs(base::string16());
+  search_args.image_thumbnail_content = std::string(data.begin(),
+                                                    data.end());
+  // TODO(jnd): Add a method in WebContentsViewDelegate to get the image URL
+  // from the ContextMenuParams which creates current context menu.
+  search_args.image_url = GURL();
+  TemplateURLRef::PostContent post_content;
+  GURL result(default_provider->image_url_ref().ReplaceSearchTerms(
+      search_args, &post_content));
+  if (!result.is_valid())
+    return;
+
+  OpenURLParams open_url_params(result, content::Referrer(), NEW_FOREGROUND_TAB,
+                                content::PAGE_TRANSITION_LINK, false);
+  const std::string& content_type = post_content.first;
+  std::string& post_data = post_content.second;
+  if (!post_data.empty()) {
+    DCHECK(!content_type.empty());
+    open_url_params.uses_post = true;
+    open_url_params.browser_initiated_post_data =
+        base::RefCountedString::TakeString(&post_data);
+    open_url_params.extra_headers += base::StringPrintf(
+        "%s: %s\r\n", net::HttpRequestHeaders::kContentType,
+        content_type.c_str());
+  }
+
+  web_contents->OpenURL(open_url_params);
 }
