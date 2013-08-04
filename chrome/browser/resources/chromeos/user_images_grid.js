@@ -43,10 +43,10 @@ cr.define('options', function() {
   };
 
   /**
-   * Internal URL scheme.
+   * Path for internal URLs.
    * @const
    */
-  var CHROME_SCHEME = 'chrome://';
+  var CHROME_THEME_PATH = 'chrome://theme';
 
   /**
    * Creates a new user images grid item.
@@ -69,9 +69,10 @@ cr.define('options', function() {
     decorate: function() {
       GridItem.prototype.decorate.call(this);
       var imageEl = cr.doc.createElement('img');
-      // Force 1x scale for internal URLs. Grid elements are much smaller
+      // Force 1x scale for chrome://theme URLs. Grid elements are much smaller
       // than actual images so there is no need in full scale on HDPI.
-      if (this.dataItem.url.slice(0, CHROME_SCHEME.length) == CHROME_SCHEME)
+      var url = this.dataItem.url;
+      if (url.slice(0, CHROME_THEME_PATH.length) == CHROME_THEME_PATH)
         imageEl.src = this.dataItem.url + '@1x';
       else
         imageEl.src = this.dataItem.url;
@@ -200,7 +201,7 @@ cr.define('options', function() {
     updatePreview_: function() {
       var url = this.selectedItemUrl;
       if (url && this.previewImage_) {
-        if (url.slice(0, CHROME_SCHEME.length) == CHROME_SCHEME)
+        if (url.slice(0, CHROME_THEME_PATH.length) == CHROME_THEME_PATH)
           this.previewImage_.src = url + '@' + window.devicePixelRatio + 'x';
         else
           this.previewImage_.src = url;

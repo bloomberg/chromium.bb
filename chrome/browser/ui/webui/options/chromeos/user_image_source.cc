@@ -11,9 +11,9 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/url_constants.h"
 #include "grit/theme_resources.h"
+#include "net/base/escape.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/webui/web_ui_util.h"
 #include "url/url_parse.h"
 
 namespace {
@@ -24,14 +24,15 @@ namespace {
 const char kKeyAnimated[] = "animated";
 
 // Parses the user image URL, which looks like
-// "chrome://userimage/user@host?key1=value1&...&key_n=value_n@<scale>x",
-// to user email, optional parameters and scale factor.
+// "chrome://userimage/user@host?key1=value1&...&key_n=value_n",
+// to user email and optional parameters.
 void ParseRequest(const GURL& url,
                   std::string* email,
-                  bool* is_image_animated,
-                  ui::ScaleFactor* scale_factor) {
+                  bool* is_image_animated) {
   DCHECK(url.is_valid());
-  webui::ParsePathAndScale(url, email, scale_factor);
+  *email = net::UnescapeURLComponent(url.path().substr(1),
+                                    (net::UnescapeRule::URL_SPECIAL_CHARS |
+                                     net::UnescapeRule::SPACES));
   std::string url_spec = url.possibly_invalid_spec();
   url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
   url_parse::Component key, value;
@@ -92,10 +93,9 @@ void UserImageSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   std::string email;
   bool is_image_animated = false;
-  ui::ScaleFactor scale_factor;
   GURL url(chrome::kChromeUIUserImageURL + path);
-  ParseRequest(url, &email, &is_image_animated, &scale_factor);
-  callback.Run(GetUserImage(email, is_image_animated, scale_factor));
+  ParseRequest(url, &email, &is_image_animated);
+  callback.Run(GetUserImage(email, is_image_animated, ui::SCALE_FACTOR_100P));
 }
 
 std::string UserImageSource::GetMimeType(const std::string& path) const {
@@ -103,10 +103,9 @@ std::string UserImageSource::GetMimeType(const std::string& path) const {
   // drag the image they get no extension.
   std::string email;
   bool is_image_animated = false;
-  ui::ScaleFactor scale_factor;
 
   GURL url(chrome::kChromeUIUserImageURL + path);
-  ParseRequest(url, &email, &is_image_animated, &scale_factor);
+  ParseRequest(url, &email, &is_image_animated);
 
   if (is_image_animated) {
     const chromeos::User* user = chromeos::UserManager::Get()->FindUser(email);
