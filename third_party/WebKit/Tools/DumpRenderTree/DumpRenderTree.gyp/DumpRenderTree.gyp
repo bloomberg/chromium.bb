@@ -42,9 +42,9 @@
         ],
     },
     'includes': [
-        '../DumpRenderTree.gypi',
         '../../../Source/core/features.gypi',
         '../../../Source/testing/runner/runner.gypi',
+        '../../../Source/testing/plugin/plugin.gypi',
     ],
     'targets': [
         {
@@ -241,7 +241,7 @@
             ],
             'include_dirs': [
                 '<(DEPTH)',
-                '<(tools_dir)/DumpRenderTree/TestNetscapePlugIn',
+                '<(source_dir)/testing/plugin/',
                 '<(tools_dir)/DumpRenderTree/chromium/TestNetscapePlugIn/ForwardingHeaders',
             ],
             'conditions': [
@@ -257,7 +257,7 @@
                     },
                     'xcode_settings': {
                         'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
-                        'INFOPLIST_FILE': '<(tools_dir)/DumpRenderTree/TestNetscapePlugIn/mac/Info.plist',
+                        'INFOPLIST_FILE': '<(source_dir)/testing/plugin/mac/Info.plist',
                     },
                 }],
                 ['os_posix == 1 and OS != "mac"', {
@@ -271,8 +271,8 @@
                         'snprintf=_snprintf',
                     ],
                     'sources': [
-                        '<(tools_dir)/DumpRenderTree/TestNetscapePlugIn/win/TestNetscapePlugin.def',
-                        '<(tools_dir)/DumpRenderTree/TestNetscapePlugIn/win/TestNetscapePlugin.rc',
+                        '<(source_dir)/testing/plugin/win/TestNetscapePlugin.def',
+                        '<(source_dir)/testing/plugin/win/TestNetscapePlugin.rc',
                     ],
                     # The .rc file requires that the name of the dll is npTestNetscapePlugIn.dll.
                     'product_name': 'npTestNetscapePlugIn',
