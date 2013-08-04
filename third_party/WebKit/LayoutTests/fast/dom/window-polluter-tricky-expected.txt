@@ -1,0 +1,8 @@
+PASS window.Taco is document.getElementById('Taco')
+PASS window.Bravo is document.getElementById('Bravo')
+PASS document.Taco is document.getElementById('Taco')
+PASS document.Bravo is document.getElementById('Bravo')
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

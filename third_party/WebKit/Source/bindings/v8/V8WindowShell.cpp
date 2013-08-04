@@ -423,21 +423,30 @@ void V8WindowShell::updateDocument()
     updateSecurityOrigin();
 }
 
-static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const AtomicString& key, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+static v8::Handle<v8::Value> namedPropertyValueForNode(Node* node, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (!htmlDocument->hasNamedItem(key.impl()) && !htmlDocument->hasExtraNamedItem(key.impl()))
+    if (node->hasTagName(HTMLNames::iframeTag)) {
+        if (Frame* frame = frame = toHTMLIFrameElement(node)->contentFrame())
+            return toV8(frame->domWindow(), creationContext, isolate);
+    }
+    return toV8(node, creationContext, isolate);
+}
+
+static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const AtomicString& propertyName, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    if (propertyName.isNull() || !htmlDocument->documentNamedItemMap().contains(propertyName.impl()))
         return v8Undefined();
 
-    RefPtr<HTMLCollection> items = htmlDocument->documentNamedItems(key);
-    if (items->isEmpty())
-        return v8Undefined();
+    if (!htmlDocument->documentNamedItemMap().mightContainMultiple(propertyName.impl())) {
+        Node* node = htmlDocument->documentNamedItemMap().getElementByDocumentNamedItem(propertyName.impl(), htmlDocument);
+        return namedPropertyValueForNode(node, creationContext, isolate);
+    }
 
+    RefPtr<HTMLCollection> items = htmlDocument->documentNamedItems(propertyName.impl());
+    ASSERT(!items->isEmpty());
     if (items->hasExactlyOneItem()) {
         Node* node = items->item(0);
-        Frame* frame = 0;
-        if (node->hasTagName(HTMLNames::iframeTag) && (frame = toHTMLIFrameElement(node)->contentFrame()))
-            return toV8(frame->domWindow(), creationContext, isolate);
-        return toV8(node, creationContext, isolate);
+        return namedPropertyValueForNode(node, creationContext, isolate);
     }
     return toV8(items.release(), creationContext, isolate);
 }
@@ -483,7 +492,7 @@ void V8WindowShell::namedItemRemoved(HTMLDocument* document, const AtomicString&
     if (m_context.isEmpty())
         return;
 
-    if (document->hasNamedItem(name.impl()) || document->hasExtraNamedItem(name.impl()))
+    if (name.isNull() || document->documentNamedItemMap().contains(name.impl()))
         return;
 
     v8::HandleScope handleScope(m_isolate);

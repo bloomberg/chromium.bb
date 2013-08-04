@@ -56,10 +56,16 @@ public:
 
     Element* adjustedFocusedElement();
     Element* getElementById(const AtomicString&) const;
-    bool hasElementWithId(StringImpl* id) const;
+    bool hasElementWithId(const AtomicString&) const;
     bool containsMultipleElementsWithId(const AtomicString& id) const;
     void addElementById(const AtomicString& elementId, Element*);
     void removeElementById(const AtomicString& elementId, Element*);
+
+    Element* getElementByName(const AtomicString&) const;
+    bool hasElementWithName(const AtomicString&) const;
+    bool containsMultipleElementsWithName(const AtomicString&) const;
+    void addElementByName(const AtomicString&, Element*);
+    void removeElementByName(const AtomicString&, Element*);
 
     Document* documentScope() const { return m_documentScope; }
 
@@ -166,6 +172,7 @@ private:
     int m_guardRefCount;
 
     OwnPtr<DocumentOrderedMap> m_elementsById;
+    OwnPtr<DocumentOrderedMap> m_elementsByName;
     OwnPtr<DocumentOrderedMap> m_imageMapsByName;
     OwnPtr<DocumentOrderedMap> m_labelsByForAttribute;
 
@@ -174,15 +181,27 @@ private:
     mutable RefPtr<DOMSelection> m_selection;
 };
 
-inline bool TreeScope::hasElementWithId(StringImpl* id) const
+inline bool TreeScope::hasElementWithId(const AtomicString& id) const
 {
-    ASSERT(id);
-    return m_elementsById && m_elementsById->contains(id);
+    ASSERT(id.impl());
+    return m_elementsById && m_elementsById->contains(id.impl());
 }
 
 inline bool TreeScope::containsMultipleElementsWithId(const AtomicString& id) const
 {
-    return m_elementsById && m_elementsById->containsMultiple(id.impl());
+    return m_elementsById && m_elementsById->mightContainMultiple(id.impl());
+}
+
+inline bool TreeScope::hasElementWithName(const AtomicString& id) const
+{
+    ASSERT(id.impl());
+    return m_elementsByName && m_elementsByName->contains(id.impl());
+}
+
+inline bool TreeScope::containsMultipleElementsWithName(const AtomicString& name) const
+{
+    ASSERT(name.impl());
+    return m_elementsByName && m_elementsByName->mightContainMultiple(name.impl());
 }
 
 Node* nodeFromPoint(Document*, int x, int y, LayoutPoint* localPoint = 0);

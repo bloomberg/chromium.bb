@@ -220,44 +220,6 @@ void HTMLDocument::setVlinkColor(const String& value)
 // not part of the DOM
 // --------------------------------------------------------------------------
 
-void HTMLDocument::addItemToMap(HashCountedSet<StringImpl*>& map, const AtomicString& name)
-{
-    if (name.isEmpty())
-        return;
-    map.add(name.impl());
-    if (Frame* f = frame())
-        f->script()->namedItemAdded(this, name);
-}
-
-void HTMLDocument::removeItemFromMap(HashCountedSet<StringImpl*>& map, const AtomicString& name)
-{
-    if (name.isEmpty())
-        return;
-    map.remove(name.impl());
-    if (Frame* f = frame())
-        f->script()->namedItemRemoved(this, name);
-}
-
-void HTMLDocument::addNamedItem(const AtomicString& name)
-{
-    addItemToMap(m_namedItemCounts, name);
-}
-
-void HTMLDocument::removeNamedItem(const AtomicString& name)
-{
-    removeItemFromMap(m_namedItemCounts, name);
-}
-
-void HTMLDocument::addExtraNamedItem(const AtomicString& name)
-{
-    addItemToMap(m_extraNamedItemCounts, name);
-}
-
-void HTMLDocument::removeExtraNamedItem(const AtomicString& name)
-{
-    removeItemFromMap(m_extraNamedItemCounts, name);
-}
-
 static void addLocalNameToSet(HashSet<StringImpl*>* set, const QualifiedName& qName)
 {
     set->add(qName.localName().impl());
@@ -323,6 +285,20 @@ bool HTMLDocument::isCaseSensitiveAttribute(const QualifiedName& attributeName)
     static HashSet<StringImpl*>* htmlCaseInsensitiveAttributesSet = createHtmlCaseInsensitiveAttributesSet();
     bool isPossibleHTMLAttr = !attributeName.hasPrefix() && (attributeName.namespaceURI() == nullAtom);
     return !isPossibleHTMLAttr || !htmlCaseInsensitiveAttributesSet->contains(attributeName.localName().impl());
+}
+
+void HTMLDocument::addNamedDocumentItem(const AtomicString& key, Element* element)
+{
+    m_documentNamedItem.add(key.impl(), element);
+    if (Frame* frame = this->frame())
+        frame->script()->namedItemAdded(this, key);
+}
+
+void HTMLDocument::removeNamedDocumentItem(const AtomicString& key, Element* element)
+{
+    m_documentNamedItem.remove(key.impl(), element);
+    if (Frame* frame = this->frame())
+        frame->script()->namedItemRemoved(this, key);
 }
 
 void HTMLDocument::clear()

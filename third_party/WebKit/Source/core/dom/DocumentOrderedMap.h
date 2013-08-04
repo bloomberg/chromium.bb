@@ -47,12 +47,15 @@ public:
     void clear();
 
     bool contains(StringImpl*) const;
-    bool containsMultiple(StringImpl*) const;
+    bool mightContainMultiple(StringImpl*) const;
     // concrete instantiations of the get<>() method template
     Element* getElementById(StringImpl*, const TreeScope*) const;
+    Element* getElementByName(StringImpl*, const TreeScope*) const;
     Element* getElementByMapName(StringImpl*, const TreeScope*) const;
     Element* getElementByLowercasedMapName(StringImpl*, const TreeScope*) const;
     Element* getElementByLabelForAttribute(StringImpl*, const TreeScope*) const;
+    Element* getElementByWindowNamedItem(StringImpl*, const TreeScope*) const;
+    Element* getElementByDocumentNamedItem(StringImpl*, const TreeScope*) const;
 
     void checkConsistency() const;
 
@@ -73,9 +76,9 @@ inline bool DocumentOrderedMap::contains(StringImpl* id) const
     return m_map.contains(id) || m_duplicateCounts.contains(id);
 }
 
-inline bool DocumentOrderedMap::containsMultiple(StringImpl* id) const
+inline bool DocumentOrderedMap::mightContainMultiple(StringImpl* id) const
 {
-    return m_duplicateCounts.contains(id);
+    return (m_map.contains(id) ? 1 : 0) + m_duplicateCounts.count(id) > 1;
 }
 
 } // namespace WebCore
