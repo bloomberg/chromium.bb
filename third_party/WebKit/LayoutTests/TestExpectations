@@ -2,6 +2,7 @@
 
 webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Pass Timeout ]
 
+# This test can't just be rebaselined because it has absolute file paths in the output.
 crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure ]
 
 crbug.com/247466 [ Win Debug ] inspector/debugger/live-edit-breakpoints.html [ Skip ]
@@ -432,8 +433,6 @@ crbug.com/58257 [ Win ] http/tests/misc/last-modified-parsing.html [ Pass Timeou
 crbug.com/58735 http/tests/misc/prefetch-purpose.html [ Pass Timeout ]
 
 # Vertical text needs to be implemented in platforms other than OS X.
-crbug.com/65877 [ Mac ] fast/writing-mode/japanese-ruby-vertical-lr.html [ Failure ]
-crbug.com/65877 [ Mac ] fast/writing-mode/japanese-ruby-vertical-rl.html [ Failure ]
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-lr.html [ Failure Pass ]
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-rl.html [ Failure Pass ]
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-horizontal-bt.html [ Failure Pass ]
@@ -453,11 +452,8 @@ crbug.com/66087 [ Win ] http/tests/misc/no-last-modified.html [ Pass Timeout ]
 # Needs V8 investigation.  Skipped due to concern that this may be corrupting
 # memory and thus leading to unpredictable results.
 crbug.com/66099 fast/js/array-sort-modifying-tostring.html [ Pass Timeout ]
-
-crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure ]
-crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order.html [ Failure ]
-crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure Timeout ]
-crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failure Timeout ]
+crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order-preload.html [ Pass Timeout ]
+crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Pass Timeout ]
 
 # The test is just too slow and has never passed since its introduction on Dbg build.
 webkit.org/b/90363 [ Debug ] fast/overflow/lots-of-sibling-inline-boxes.html [ Timeout ]
@@ -497,8 +493,6 @@ webkit.org/b/58193 [ Win7 ] http/tests/local/fileapi/send-sliced-dragged-file.ht
 webkit.org/b/56702 [ Win ] http/tests/navigation/ping-cross-origin-from-https.html [ Failure Pass Timeout ]
 
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
-
-crbug.com/82281 fast/xpath/xpath-iterator-result-should-mark-its-nodeset.html [ Failure ]
 
 # Flaky since added by r86478
 crbug.com/82881 http/tests/appcache/interrupted-update.html [ Failure Pass ]
@@ -587,9 +581,6 @@ crbug.com/244884 fast/layers/no-clipping-overflow-hidden-hardware-acceleration.h
 # Skipped until setTouchPointRadius get implemented
 crbug.com/261276 touchadjustment/focusout-on-touch.html [ Skip ]
 
-webkit.org/b/78159 compositing/iframes/scrolling-iframe.html [ Failure ]
-webkit.org/b/78159 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Failure ]
-
 webkit.org/b/91946 fast/events/rtl-scrollbar.html [ Failure Pass ]
 
 crbug.com/249595 animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure Pass ]
@@ -598,8 +589,6 @@ webkit.org/b/81145 [ Mac ] fast/frames/invalid.html [ ImageOnlyFailure Pass ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
-
-crbug.com/261277 fast/events/touch/gesture/pad-gesture-fling.html [ Failure ]
 
 webkit.org/b/81638 [ Mac Debug ] editing/selection/iframe.html [ ImageOnlyFailure Pass ]
 
@@ -769,10 +758,6 @@ webkit.org/b/101093 [ Mac ] fast/sub-pixel/float-wrap-zoom.html [ ImageOnlyFailu
 
 webkit.org/b/78830 [ Win Linux ] svg/repaint/image-with-clip-path.svg [ ImageOnlyFailure Pass ]
 
-# Only ready for JSC so far, not fixed in v8 yet.
-webkit.org/b/97499 http/tests/security/script-crossorigin-onerror-information.html [ Failure ]
-webkit.org/b/97499 http/tests/security/script-no-crossorigin-onerror-should-be-sanitized.html [ Failure ]
-
 webkit.org/b/100023 [ Mac ] fast/sub-pixel/file-upload-control-at-fractional-offset.html [ ImageOnlyFailure ]
 
 webkit.org/b/100806 [ Win7 ] fast/css/font-face-download-error.html [ Failure Pass ]
@@ -840,16 +825,6 @@ crbug.com/225184 [ Win7 ] svg/as-image/image-respects-pageScaleFactor.html [ Fai
 crbug.com/225184 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure ]
 crbug.com/225184 [ Win ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure Pass ]
 
-# Viewport tag tests involving "height" parameter.
-crbug.com/242336 fast/viewport/viewport-2.html [ Failure ]
-crbug.com/242336 fast/viewport/viewport-31.html [ Failure ]
-crbug.com/242336 fast/viewport/viewport-32.html [ Failure ]
-crbug.com/242336 fast/viewport/viewport-40.html [ Failure ]
-crbug.com/242336 fast/viewport/viewport-41.html [ Failure ]
-crbug.com/242336 fast/viewport/viewport-48.html [ Failure ]
-crbug.com/242336 fast/viewport/viewport-53.html [ Failure ]
-crbug.com/242336 fast/viewport/viewport-117.html [ Failure ]
-
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 crbug.com/227473 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure Pass ]
 crbug.com/227473 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure Pass ]
@@ -877,8 +852,6 @@ webkit.org/b/112980 [ Win Mac ] fast/frames/seamless/seamless-form-post-override
 webkit.org/b/112980 http/tests/navigation/lockedhistory-iframe.html [ Failure Pass ]
 webkit.org/b/112980 http/tests/navigation/changing-frame-hierarchy-in-onload.html [ Failure Pass ]
 webkit.org/b/112984 [ Win ] fast/mediastream/RTCPeerConnection-statsSelector.html [ Failure Pass ]
-webkit.org/b/113128 fast/files/xhr-response-blob.html [ Failure ]
-webkit.org/b/113178 [ Linux ] fast/css/font-family-pictograph.html [ Failure ]
 
 webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ ImageOnlyFailure ]
 
