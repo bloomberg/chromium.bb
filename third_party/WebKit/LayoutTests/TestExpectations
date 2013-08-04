@@ -327,10 +327,6 @@ crbug.com/14009 [ Win ] http/tests/misc/dns-prefetch-control.html [ Pass Timeout
 webkit.org/b/110296 [ Linux ] fast/multicol/newmulticol/column-rules-fixed-height.html [ ImageOnlyFailure ]
 crbug.com/250935 [ Win ] fast/multicol/shrink-to-column-height-for-pagination.html [ ImageOnlyFailure Pass ]
 
-# There seems to be some endemic MountainLion reftest failure.
-# In theory, this shouldn't happen with reftests. Indicates a likely genuine
-# MountainLion Blink bug.
-
 webkit.org/b/111141 fast/regions/seamless-iframe-flowed-into-regions.html [ ImageOnlyFailure ]
 
 # The following are flaky in that some times the timeout or crash, but we think
@@ -1298,14 +1294,6 @@ crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-chang
 crbug.com/261998 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
-
-crbug.com/266798 [ Win ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ ImageOnlyFailure ]
-crbug.com/266798 [ Win ] transforms/3d/point-mapping/3d-point-mapping-origins.html [ ImageOnlyFailure ]
-crbug.com/266798 [ Win ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ ImageOnlyFailure ]
-crbug.com/266798 [ Win ] transforms/3d/point-mapping/3d-point-mapping.html [ ImageOnlyFailure ]
-crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ ImageOnlyFailure ]
-crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/canvas-text-alignment.html [ ImageOnlyFailure ]
-crbug.com/266798 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
 
 crbug.com/267206 [ Lion MountainLion ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
