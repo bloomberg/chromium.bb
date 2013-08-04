@@ -44,6 +44,7 @@
     'includes': [
         '../DumpRenderTree.gypi',
         '../../../Source/core/features.gypi',
+        '../../../Source/testing/runner/runner.gypi',
     ],
     'targets': [
         {
