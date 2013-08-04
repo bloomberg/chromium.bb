@@ -109,8 +109,10 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         break;
     }
 
-    if (!shouldUseSmoothing() || isRunningLayoutTest())
+    if (!shouldUseSmoothing() || isRunningLayoutTest()) {
         shouldSmoothFonts = false;
+        shouldAntialias = false;
+    }
 
     const GlyphBufferGlyph* glyphs = glyphBuffer.glyphs(from);
     SkScalar x = SkFloatToScalar(point.x());
