@@ -138,10 +138,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // nonzero.
   PP_Instance pp_instance() const { return pp_instance_; }
 
-  ::ppapi::PPP_Instance_Combined* instance_interface() const {
-    return instance_interface_.get();
-  }
-
   ::ppapi::thunk::ResourceCreationAPI& resource_creation() {
     return *resource_creation_.get();
   }
@@ -645,6 +641,11 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   MouseLockDispatcher* GetMouseLockDispatcher();
   MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter();
   void UnSetAndDeleteLockTargetAdapter();
+
+  void DidDataFromWebURLResponse(
+      const WebKit::WebURLResponse& response,
+      int pending_host_id,
+      const ppapi::URLResponseInfoData& data);
 
   PepperHelperImpl* helper_;
   RenderViewImpl* render_view_;

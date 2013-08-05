@@ -99,14 +99,6 @@ class PepperHelperImpl : public PepperHelper,
   // Retrieve current gamepad data.
   void SampleGamepads(WebKit::WebGamepads* data);
 
-  // Notifies the plugin of the document load. This should initiate the call to
-  // PPP_Instance.HandleDocumentLoad.
-  //
-  // The loader object should set itself on the PluginInstance as the document
-  // loader using set_document_loader.
-  void HandleDocumentLoad(PepperPluginInstanceImpl* instance,
-                          const WebKit::WebURLResponse& response);
-
   // Sets up the renderer host and out-of-process proxy for an external plugin
   // module. Returns the renderer host, or NULL if it couldn't be created.
   RendererPpapiHost* CreateExternalPluginModule(
@@ -183,12 +175,6 @@ class PepperHelperImpl : public PepperHelper,
       base::ProcessId plugin_pid,
       int plugin_child_id,
       bool is_external);
-
-  void DidDataFromWebURLResponse(
-      PP_Instance pp_instance,
-      const WebKit::WebURLResponse& response,
-      int pending_host_id,
-      const ppapi::URLResponseInfoData& data);
 
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;

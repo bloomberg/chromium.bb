@@ -23,12 +23,15 @@
 #include "content/renderer/pepper/event_conversion.h"
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/pepper/gfx_conversion.h"
+#include "content/renderer/pepper/host_dispatcher_wrapper.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_helper_impl.h"
+#include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
+#include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
@@ -38,6 +41,7 @@
 #include "content/renderer/pepper/ppp_pdf.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/url_request_info_util.h"
+#include "content/renderer/pepper/url_response_info_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -58,6 +62,8 @@
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/host/ppapi_host.h"
+#include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/url_loader_resource.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_gamepad_shared.h"
@@ -711,23 +717,54 @@ bool PepperPluginInstanceImpl::Initialize(
 bool PepperPluginInstanceImpl::HandleDocumentLoad(
     const WebKit::WebURLResponse& response) {
   DCHECK(!document_loader_);
-  if (!nacl_document_load_) {
-    if (module()->is_crashed()) {
-      // Don't create a resource for a crashed plugin.
-      container()->element().document().frame()->stopLoading();
-      return false;
-    }
-    helper_->HandleDocumentLoad(this, response);
-    // If the load was not abandoned, document_loader_ will now be set. It's
-    // possible that the load was canceled by now and document_loader_ was
-    // already nulled out.
-  } else {
+  if (nacl_document_load_) {
     // The NaCl proxy isn't available, so save the response and record document
     // load notifications for later replay.
     nacl_document_response_ = response;
     nacl_document_loader_.reset(new NaClDocumentLoader());
     document_loader_ = nacl_document_loader_.get();
+    return true;
   }
+
+  if (module()->is_crashed()) {
+    // Don't create a resource for a crashed plugin.
+    container()->element().document().frame()->stopLoading();
+    return false;
+  }
+
+  DCHECK(!document_loader_);
+
+  // Create a loader resource host for this load. Note that we have to set
+  // the document_loader before issuing the in-process
+  // PPP_Instance.HandleDocumentLoad call below, since this may reentrantly
+  // call into the instance and expect it to be valid.
+  RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
+  PepperURLLoaderHost* loader_host =
+      new PepperURLLoaderHost(host_impl, true, pp_instance(), 0);
+  // TODO(teravest): Remove set_document_loader() from instance and clean up
+  // this relationship.
+  set_document_loader(loader_host);
+  loader_host->didReceiveResponse(NULL, response);
+
+  // This host will be pending until the resource object attaches to it.
+  //
+  // PpapiHost now owns the pointer to loader_host, so we don't have to worry
+  // about managing it.
+  int pending_host_id = host_impl->GetPpapiHost()->AddPendingResourceHost(
+      scoped_ptr<ppapi::host::ResourceHost>(loader_host));
+  DCHECK(pending_host_id);
+
+  DataFromWebURLResponse(
+      pp_instance(),
+      response,
+      base::Bind(&PepperPluginInstanceImpl::DidDataFromWebURLResponse,
+                 AsWeakPtr(),
+                 response,
+                 pending_host_id));
+
+  // If the load was not abandoned, document_loader_ will now be set. It's
+  // possible that the load was canceled by now and document_loader_ was
+  // already nulled out.
   return true;
 }
 
@@ -2821,6 +2858,38 @@ void PepperPluginInstanceImpl::UnSetAndDeleteLockTargetAdapter() {
   if (lock_target_.get()) {
     GetMouseLockDispatcher()->OnLockTargetDestroyed(lock_target_.get());
     lock_target_.reset();
+  }
+}
+
+void PepperPluginInstanceImpl::DidDataFromWebURLResponse(
+    const WebKit::WebURLResponse& response,
+    int pending_host_id,
+    const ppapi::URLResponseInfoData& data) {
+  RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
+
+  if (host_impl->in_process_router()) {
+    // Running in-process, we can just create the resource and call the
+    // PPP_Instance function directly.
+    scoped_refptr<ppapi::proxy::URLLoaderResource> loader_resource(
+        new ppapi::proxy::URLLoaderResource(
+            host_impl->in_process_router()->GetPluginConnection(pp_instance()),
+            pp_instance(), pending_host_id, data));
+
+    PP_Resource loader_pp_resource = loader_resource->GetReference();
+    if (!instance_interface_->HandleDocumentLoad(
+            pp_instance(), loader_pp_resource))
+      loader_resource->Close();
+    // We don't pass a ref into the plugin, if it wants one, it will have taken
+    // an additional one.
+    ppapi::PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(
+        loader_pp_resource);
+  } else {
+    // Running out-of-process. Initiate an IPC call to notify the plugin
+    // process.
+    ppapi::proxy::HostDispatcher* dispatcher =
+        ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
+    dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
+        ppapi::API_ID_PPP_INSTANCE, pp_instance(), pending_host_id, data));
   }
 }
 
