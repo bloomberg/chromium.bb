@@ -48,20 +48,6 @@ XMLTreeViewer::XMLTreeViewer(Document* document)
 {
 }
 
-bool XMLTreeViewer::hasNoStyleInformation() const
-{
-    if (m_document->sawElementsInKnownNamespaces() || m_document->transformSourceDocument())
-        return false;
-
-    if (!m_document->frame() || !m_document->frame()->page())
-        return false;
-
-    if (m_document->frame()->tree()->parent())
-        return false; // This document is not in a top frame
-
-    return true;
-}
-
 void XMLTreeViewer::transformDocumentToTreeView()
 {
     m_document->setIsViewSource(true);

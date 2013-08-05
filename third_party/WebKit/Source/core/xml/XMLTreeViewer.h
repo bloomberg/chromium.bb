@@ -38,7 +38,6 @@ public:
     explicit XMLTreeViewer(Document*);
     virtual ~XMLTreeViewer() {};
 
-    bool hasNoStyleInformation() const;
     void transformDocumentToTreeView();
 
 private:

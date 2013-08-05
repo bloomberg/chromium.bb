@@ -97,6 +97,20 @@ static inline AtomicString toAtomicString(const xmlChar* string)
     return AtomicString::fromUTF8(reinterpret_cast<const char*>(string));
 }
 
+static inline bool hasNoStyleInformation(Document* document)
+{
+    if (document->sawElementsInKnownNamespaces() || document->transformSourceDocument())
+        return false;
+
+    if (!document->frame() || !document->frame()->page())
+        return false;
+
+    if (document->frame()->tree()->parent())
+        return false; // This document is not in a top frame
+
+    return true;
+}
+
 class PendingStartElementNSCallback FINAL : public XMLDocumentParser::PendingCallback {
 public:
     PendingStartElementNSCallback(const AtomicString& localName, const AtomicString& prefix, const AtomicString& uri,
@@ -1439,9 +1453,9 @@ void XMLDocumentParser::doEnd()
         }
     }
 
-    XMLTreeViewer xmlTreeViewer(document());
-    bool xmlViewerMode = !m_sawError && !m_sawCSS && !m_sawXSLTransform && xmlTreeViewer.hasNoStyleInformation();
+    bool xmlViewerMode = !m_sawError && !m_sawCSS && !m_sawXSLTransform && hasNoStyleInformation(document());
     if (xmlViewerMode) {
+        XMLTreeViewer xmlTreeViewer(document());
         xmlTreeViewer.transformDocumentToTreeView();
     } else if (m_sawXSLTransform) {
         xmlDocPtr doc = xmlDocPtrForString(document()->fetcher(), m_originalSourceForTransform.toString(), document()->url().string());
