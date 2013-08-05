@@ -24,11 +24,11 @@ const char kHttpsScheme[] = "https";
 const char kJavaScriptScheme[] = "javascript";
 const char kMailToScheme[] = "mailto";
 const char kMetadataScheme[] = "metadata";
-const char kSwappedOutScheme[] = "swappedout";
 }  // namespace chrome
 
 namespace content {
 
+const char kSwappedOutScheme[] = "swappedout";
 const char kViewSourceScheme[] = "view-source";
 
 const char kAboutBlankURL[] = "about:blank";
