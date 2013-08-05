@@ -1741,6 +1741,7 @@
         'common/metrics/metrics_log_base_unittest.cc',
         'common/metrics/metrics_log_manager_unittest.cc',
         'common/metrics/metrics_util_unittest.cc',
+        'common/metrics/variations/variations_associated_data_unittest.cc',
         'common/metrics/variations/variations_util_unittest.cc',
         'common/multi_process_lock_unittest.cc',
         'common/net/url_fixer_upper_unittest.cc',

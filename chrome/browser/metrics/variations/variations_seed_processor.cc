@@ -12,7 +12,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
-#include "chrome/common/metrics/variations/variations_util.h"
+#include "chrome/common/metrics/variations/variations_associated_data.h"
 
 namespace chrome_variations {
 

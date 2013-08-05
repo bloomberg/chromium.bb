@@ -400,6 +400,8 @@
         'common/metrics/metrics_util.h',
         'common/metrics/variations/uniformity_field_trials.cc',
         'common/metrics/variations/uniformity_field_trials.h',
+        'common/metrics/variations/variations_associated_data.cc',
+        'common/metrics/variations/variations_associated_data.h',
         'common/metrics/variations/variations_util.cc',
         'common/metrics/variations/variations_util.h',
         'common/multi_process_lock.h',
