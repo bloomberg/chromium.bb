@@ -184,7 +184,8 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   util.recurseAndResolveEntries(entries, !this.move, function(result) {
     self.pendingDirectories = result.dirEntries;
     self.pendingFiles = result.fileEntries;
-    self.pendingBytes = result.fileBytes;
+    self.totalBytes = result.fileBytes;
+    self.completedBytes = 0;
 
     callback();
   });
@@ -238,7 +239,6 @@ FileCopyManager.Task.prototype.markEntryComplete = function(entry, size) {
       if (this.pendingFiles[i].inProgress) {
         this.completedFiles.push(entry);
         this.completedBytes += size;
-        this.pendingBytes -= size;
         this.pendingFiles.splice(i, 1);
         return;
       }
@@ -255,10 +255,8 @@ FileCopyManager.Task.prototype.markEntryComplete = function(entry, size) {
  * @param {number} size Number of bytes that has been copied since last update.
  */
 FileCopyManager.Task.prototype.updateFileCopyProgress = function(entry, size) {
-  if (entry.isFile && this.pendingFiles && this.pendingFiles[0].inProgress) {
+  if (entry.isFile && this.pendingFiles && this.pendingFiles[0].inProgress)
     this.completedBytes += size;
-    this.pendingBytes -= size;
-  }
 };
 
 /**
@@ -383,7 +381,7 @@ FileCopyManager.prototype.getStatus = function() {
     var pendingDirectories = task.pendingDirectories.length;
     rv.pendingFiles += pendingFiles;
     rv.pendingDirectories += pendingDirectories;
-    rv.pendingBytes += task.pendingBytes;
+    rv.pendingBytes += (task.totalBytes - task.completedBytes);
 
     rv.completedFiles += task.completedFiles.length;
     rv.completedDirectories += task.completedDirectories.length;
@@ -865,7 +863,7 @@ FileCopyManager.prototype.processCopyEntry_ = function(
             if (targetRelativePath != originalPath) {
               task.registerRename(originalPath, targetRelativePath);
             }
-            onCopyComplete(targetEntry);
+            onCopyComplete(targetEntry, 0);
           },
           util.flog('Error getting dir: ' + targetRelativePath,
                     onFilesystemError));
@@ -1345,8 +1343,9 @@ FileCopyManager.prototype.zipSelection = function(dirEntry, selectionEntries) {
   zipTask.zip = true;
   zipTask.setEntries(selectionEntries, function() {
     // TODO: per-entry zip progress update with accurate byte count.
-    // For now just set pendingBytes to zero so that the progress bar is full.
-    zipTask.pendingBytes = 0;
+    // For now just set completedBytes to same value as totalBytes so that the
+    // progress bar is full.
+    zipTask.completedBytes = zip.Task.totalBytes;
     self.copyTasks_.push(zipTask);
     if (self.copyTasks_.length == 1) {
       // Assume self.cancelRequested_ == false.
