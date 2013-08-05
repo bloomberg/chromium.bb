@@ -560,8 +560,12 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, DISABLED_StartPlayout) {
 // This test is failing on ARM linux: http://crbug.com/238490
 #define MAYBE_StartRecording DISABLED_StartRecording
 #else
-#define MAYBE_StartRecording StartRecording
+// Flakily hangs on all other platforms as well: crbug.com/268376.
+// When the flakiness has been fixed, you probably want to leave it disabled
+// on the above platforms.
+#define MAYBE_StartRecording DISABLED_StartRecording
 #endif
+
 TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartRecording) {
   if (!has_input_devices_ || !has_output_devices_) {
     LOG(WARNING) << "Missing audio devices.";
