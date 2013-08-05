@@ -84,6 +84,13 @@ public:
     Resource(const ResourceRequest&, Type);
     virtual ~Resource();
 
+    // Determines the order in which CachedResources are evicted
+    // from the decoded resources cache.
+    enum CacheLiveResourcePriority {
+        CacheLiveResourcePriorityLow = 0,
+        CacheLiveResourcePriorityHigh
+    };
+
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 
     virtual void setEncoding(const String&) { }
@@ -168,6 +175,8 @@ public:
     void setInCache(bool inCache) { m_inCache = inCache; }
     bool inCache() const { return m_inCache; }
 
+    void setCacheLiveResourcePriority(CacheLiveResourcePriority);
+    unsigned cacheLiveResourcePriority() const { return m_cacheLiveResourcePriority; }
     bool inLiveDecodedResourcesList() { return m_inLiveDecodedResourcesList; }
 
     void clearLoader();
@@ -311,7 +320,7 @@ private:
     unsigned m_preloadCount;
 
     unsigned m_preloadResult : 2; // PreloadResult
-
+    unsigned m_cacheLiveResourcePriority : 2; // CacheLiveResourcePriority
     unsigned m_inLiveDecodedResourcesList : 1;
     unsigned m_requestedFromNetworkingLayer : 1;
 

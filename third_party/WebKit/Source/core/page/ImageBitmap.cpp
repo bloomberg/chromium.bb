@@ -9,6 +9,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
+#include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "wtf/RefPtr.h"
 
@@ -16,7 +17,7 @@ using namespace std;
 
 namespace WebCore {
 
-static inline IntRect normalizeRect(const IntRect rect)
+static inline IntRect normalizeRect(const IntRect& rect)
 {
     return IntRect(min(rect.x(), rect.maxX()),
         min(rect.y(), rect.maxY()),
@@ -24,26 +25,28 @@ static inline IntRect normalizeRect(const IntRect rect)
         max(rect.height(), -rect.height()));
 }
 
-static inline PassRefPtr<BitmapImage> cropImage(Image* image, IntRect cropRect)
+static inline PassRefPtr<Image> cropImage(Image* image, const IntRect& cropRect)
 {
     SkBitmap cropped;
     image->nativeImageForCurrentFrame()->bitmap().extractSubset(&cropped, cropRect);
     return BitmapImage::create(NativeImageSkia::create(cropped));
 }
 
-ImageBitmap::ImageBitmap(HTMLImageElement* image, IntRect cropRect)
-    : m_bitmapOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
-    , m_size(cropRect.size())
+ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
+    : m_cropRect(cropRect)
+    , m_imageElement(image)
 {
-    Image* bitmapImage = image->cachedImage()->image();
-    m_bitmap = cropImage(bitmapImage, cropRect).get();
+    m_imageElement->addClient(this);
+
+    IntSize bitmapSize = intersection(cropRect, IntRect(0, 0, image->width(), image->height())).size();
+    m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())), bitmapSize);
 
     ScriptWrappable::init(this);
 }
 
-ImageBitmap::ImageBitmap(HTMLVideoElement* video, IntRect cropRect)
-    : m_bitmapOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
-    , m_size(cropRect.size())
+ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
+    : m_cropRect(cropRect)
+    , m_imageElement(0)
 {
     IntRect videoRect = IntRect(IntPoint(), video->player()->naturalSize());
     IntRect srcRect = intersection(cropRect, videoRect);
@@ -54,14 +57,15 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, IntRect cropRect)
     c->clip(dstRect);
     c->translate(-srcRect.x(), -srcRect.y());
     video->paintCurrentFrameInContext(c, videoRect);
-    m_bitmap = static_cast<BitmapImage*>(m_buffer->copyImage(DontCopyBackingStore).get());
+    m_bitmap = m_buffer->copyImage(DontCopyBackingStore);
+    m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())), srcRect.size());
 
     ScriptWrappable::init(this);
 }
 
-ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, IntRect cropRect)
-    : m_bitmapOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
-    , m_size(cropRect.size())
+ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
+    : m_cropRect(cropRect)
+    , m_imageElement(0)
 {
     IntSize canvasSize = canvas->size();
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), canvasSize));
@@ -69,14 +73,15 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, IntRect cropRect)
 
     m_buffer = ImageBuffer::create(canvasSize);
     m_buffer->context()->drawImageBuffer(canvas->buffer(), dstRect, srcRect);
-    m_bitmap = static_cast<BitmapImage*>(m_buffer->copyImage(DontCopyBackingStore).get());
+    m_bitmap = m_buffer->copyImage(DontCopyBackingStore);
+    m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())), srcRect.size());
 
     ScriptWrappable::init(this);
 }
 
-ImageBitmap::ImageBitmap(ImageData* data, IntRect cropRect)
-    : m_bitmapOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
-    , m_size(cropRect.size())
+ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
+    : m_cropRect(cropRect)
+    , m_imageElement(0)
 {
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
 
@@ -84,55 +89,83 @@ ImageBitmap::ImageBitmap(ImageData* data, IntRect cropRect)
     if (srcRect.width() > 0 && srcRect.height() > 0)
         m_buffer->putByteArray(Unmultiplied, data->data(), data->size(), srcRect, IntPoint(min(0, -cropRect.x()), min(0, -cropRect.y())));
 
-    m_bitmap = static_cast<BitmapImage*>(m_buffer->copyImage(DontCopyBackingStore).get());
+    m_bitmap = m_buffer->copyImage(DontCopyBackingStore);
+    m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())),  srcRect.size());
 
     ScriptWrappable::init(this);
 }
 
-ImageBitmap::ImageBitmap(ImageBitmap* bitmap, IntRect cropRect)
-    : m_bitmapOffset(max(0, bitmap->bitmapOffset().x() - cropRect.x()), max(0, bitmap->bitmapOffset().y() - cropRect.y()))
-    , m_size(cropRect.size())
+ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
+    : m_cropRect(cropRect)
+    , m_imageElement(bitmap->imageElement())
 {
-    Image* bitmapImage = bitmap->bitmapImage();
-    cropRect.moveBy(IntPoint(-bitmap->bitmapOffset().x(), -bitmap->bitmapOffset().y()));
-    m_bitmap = cropImage(bitmapImage, cropRect).get();
-
+    IntRect oldBitmapRect = bitmap->bitmapRect();
+    IntSize bitmapSize = intersection(cropRect, oldBitmapRect).size();
+    IntPoint bitmapOffset(max(0, oldBitmapRect.x() - cropRect.x()), max(0, oldBitmapRect.y() - cropRect.y()));
+    m_bitmapRect = IntRect(bitmapOffset, bitmapSize);
+    if (m_imageElement) {
+        m_imageElement->addClient(this);
+        m_bitmap = 0;
+    } else {
+        IntRect adjustedCropRect(IntPoint(cropRect.x() -oldBitmapRect.x(), cropRect.y() - oldBitmapRect.y()), cropRect.size());
+        m_bitmap = cropImage(bitmap->bitmapImage().get(), adjustedCropRect);
+    }
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, IntRect cropRect)
+ImageBitmap::~ImageBitmap()
+{
+    if (m_imageElement)
+        m_imageElement->removeClient(this);
+}
+
+PassRefPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     RefPtr<ImageBitmap> imageBitmap(adoptRef(new ImageBitmap(image, normalizedCropRect)));
     return imageBitmap.release();
 }
 
-PassRefPtr<ImageBitmap> ImageBitmap::create(HTMLVideoElement* video, IntRect cropRect)
+PassRefPtr<ImageBitmap> ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     RefPtr<ImageBitmap> imageBitmap(adoptRef(new ImageBitmap(video, normalizedCropRect)));
     return imageBitmap.release();
 }
 
-PassRefPtr<ImageBitmap> ImageBitmap::create(HTMLCanvasElement* canvas, IntRect cropRect)
+PassRefPtr<ImageBitmap> ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     RefPtr<ImageBitmap> imageBitmap(adoptRef(new ImageBitmap(canvas, normalizedCropRect)));
     return imageBitmap.release();
 }
 
-PassRefPtr<ImageBitmap> ImageBitmap::create(ImageData* data, IntRect cropRect)
+PassRefPtr<ImageBitmap> ImageBitmap::create(ImageData* data, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     RefPtr<ImageBitmap> imageBitmap(adoptRef(new ImageBitmap(data, normalizedCropRect)));
     return imageBitmap.release();
 }
 
-PassRefPtr<ImageBitmap> ImageBitmap::create(ImageBitmap* bitmap, IntRect cropRect)
+PassRefPtr<ImageBitmap> ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     RefPtr<ImageBitmap> imageBitmap(adoptRef(new ImageBitmap(bitmap, normalizedCropRect)));
     return imageBitmap.release();
+}
+
+void ImageBitmap::notifyImageSourceChanged()
+{
+    m_bitmap = cropImage(m_imageElement->cachedImage()->image(), m_cropRect);
+    m_imageElement = 0;
+}
+
+PassRefPtr<Image> ImageBitmap::bitmapImage() const
+{
+    ASSERT((m_imageElement || m_bitmap) && (!m_imageElement || !m_bitmap));
+    if (m_imageElement)
+        return cropImage(m_imageElement->cachedImage()->image(), m_cropRect);
+    return m_bitmap;
 }
 
 }
