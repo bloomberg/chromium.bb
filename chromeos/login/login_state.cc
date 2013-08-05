@@ -81,6 +81,25 @@ bool LoginState::IsUserLoggedIn() const {
   return GetLoggedInState() == LOGGED_IN_ACTIVE;
 }
 
+bool LoginState::IsGuestUser() const {
+  if (GetLoggedInState() != LOGGED_IN_ACTIVE)
+    return false;
+  switch (logged_in_user_type_) {
+    case LOGGED_IN_USER_NONE:
+    case LOGGED_IN_USER_REGULAR:
+    case LOGGED_IN_USER_OWNER:
+    case LOGGED_IN_USER_LOCALLY_MANAGED:
+    case LOGGED_IN_USER_KIOSK_APP:
+      return false;
+    case LOGGED_IN_USER_GUEST:
+    case LOGGED_IN_USER_RETAIL_MODE:
+    case LOGGED_IN_USER_PUBLIC_ACCOUNT:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool LoginState::IsUserAuthenticated() const {
   LoggedInUserType type = logged_in_user_type_;
   return type == chromeos::LoginState::LOGGED_IN_USER_REGULAR ||

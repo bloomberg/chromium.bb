@@ -158,6 +158,10 @@ void CertLoader::InitializeTokenAndLoadCertificates() {
   CHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "InitializeTokenAndLoadCertificates: " << tpm_token_state_;
 
+  // Treat TPM as disabled for guest users since they do not store certs.
+  if (LoginState::IsInitialized() && LoginState::Get()->IsGuestUser())
+    tpm_token_state_ = TPM_DISABLED;
+
   switch (tpm_token_state_) {
     case TPM_STATE_UNKNOWN: {
       crypto_task_runner_->PostTaskAndReply(

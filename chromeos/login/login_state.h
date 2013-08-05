@@ -60,6 +60,9 @@ class CHROMEOS_EXPORT LoginState {
   // Returns true if |logged_in_state_| is active.
   bool IsUserLoggedIn() const;
 
+  // Returns true if logged in and is a guest, retail, public, or kiosk user.
+  bool IsGuestUser() const;
+
   // Returns true if the user is an authenticated user (i.e. non public account)
   bool IsUserAuthenticated() const;
 
