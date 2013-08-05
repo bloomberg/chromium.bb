@@ -158,9 +158,14 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
     if (!urlString.isEmpty())
         m_frame->document()->updateURLForPushOrReplaceState(fullURL);
 
+    if (m_frame->loader()->documentLoader()->wasOnloadHandled())
+        m_frame->loader()->client()->postProgressStartedNotification();
     m_frame->loader()->documentLoader()->clearRedirectChain();
     m_frame->loader()->documentLoader()->appendRedirect(fullURL);
     m_frame->loader()->client()->dispatchDidNavigateWithinPage();
+
+    if (m_frame->loader()->documentLoader()->wasOnloadHandled())
+        m_frame->loader()->client()->postProgressFinishedNotification();
 }
 
 } // namespace WebCore

@@ -3552,4 +3552,43 @@ TEST_F(WebFrameTest, WebNodeImageContents)
 //    EXPECT_EQ(bitmap.getColor(0, 0), SK_ColorBLUE);
 }
 
+class TestStartStopCallbackWebViewClient : public WebViewClient {
+public:
+    TestStartStopCallbackWebViewClient()
+        : m_startLoadingCount(0)
+        , m_stopLoadingCount(0)
+    {
+    }
+
+    virtual void didStartLoading()
+    {
+        m_startLoadingCount++;
+    }
+
+    virtual void didStopLoading()
+    {
+        m_stopLoadingCount++;
+    }
+
+    int startLoadingCount() const { return m_startLoadingCount; }
+    int stopLoadingCount() const { return m_stopLoadingCount; }
+
+private:
+    int m_startLoadingCount;
+    int m_stopLoadingCount;
+};
+
+TEST_F(WebFrameTest, PushStateStartsAndStops)
+{
+    registerMockedHttpURLLoad("push_state.html");
+    TestStartStopCallbackWebViewClient client;
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "push_state.html", true, 0, &client);
+    runPendingTasks();
+
+    EXPECT_EQ(client.startLoadingCount(), 2);
+    EXPECT_EQ(client.stopLoadingCount(), 2);
+    m_webView->close();
+    m_webView = 0;
+}
+
 } // namespace
