@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
+#include "chrome/browser/managed_mode/managed_users.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 

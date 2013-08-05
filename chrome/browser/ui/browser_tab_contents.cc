@@ -13,6 +13,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/password_manager/password_generation_manager.h"
@@ -51,10 +52,6 @@
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
-#endif
-
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #endif
 
 #if defined(ENABLE_PRINTING)
@@ -158,11 +155,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
   if (profile->IsManaged()) {
-#if defined(ENABLE_MANAGED_USERS)
     ManagedModeNavigationObserver::CreateForWebContents(web_contents);
-#else
-    NOTREACHED();
-#endif
   }
 
 #if defined(ENABLE_PRINTING)

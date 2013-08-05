@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_observer.h"
+#include "chrome/browser/managed_mode/managed_users.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "sync/api/syncable_service.h"
 

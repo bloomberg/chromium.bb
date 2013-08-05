@@ -65,10 +65,6 @@
 #include "chrome/browser/platform_util.h"
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#endif
-
 using content::BrowserThread;
 
 namespace {
@@ -440,6 +436,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   // show the app cards.
   if (profile_->IsManaged())
     should_show_apps_page_ = false;
+
   load_time_data.SetBoolean("showApps", should_show_apps_page_);
   load_time_data.SetBoolean("showWebStoreIcon",
                             !prefs->GetBoolean(prefs::kHideWebStoreIcon));

@@ -29,10 +29,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
-#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/glue/device_info.h"
@@ -58,6 +54,13 @@
 #include "sync/protocol/history_delete_directive_specifics.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/android/tab_model/tab_model.h"

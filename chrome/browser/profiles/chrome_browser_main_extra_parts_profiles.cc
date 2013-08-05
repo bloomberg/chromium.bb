@@ -113,6 +113,7 @@
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -267,6 +268,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   InstantServiceFactory::GetInstance();
 #if defined(ENABLE_MANAGED_USERS)
   ManagedUserServiceFactory::GetInstance();
+  ManagedUserSyncServiceFactory::GetInstance();
 #endif
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();

@@ -163,11 +163,6 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // Sets the query options for a monthly query, |offset| months ago.
   void SetQueryTimeInMonths(int offset, history::QueryOptions* options);
 
-#if defined(ENABLE_MANAGED_USERS)
-  // Updates the UI according to the elevation state of the managed user.
-  void ManagedUserSetElevated();
-#endif
-
   content::NotificationRegistrar registrar_;
 
   // Consumer for search requests to the history service.

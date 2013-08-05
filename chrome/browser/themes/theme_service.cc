@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/managed_mode/managed_user_theme.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
@@ -32,10 +33,6 @@
 
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
-#endif
-
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_theme.h"
 #endif
 
 using content::BrowserThread;
@@ -558,11 +555,7 @@ bool ThemeService::IsManagedUser() const {
 }
 
 void ThemeService::SetManagedUserTheme() {
-#if defined(ENABLE_MANAGED_USERS)
   SetCustomDefaultTheme(new ManagedUserTheme);
-#else
-  NOTREACHED();
-#endif
 }
 
 void ThemeService::OnInfobarDisplayed() {

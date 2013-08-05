@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/managed_mode/managed_users.h"
 #include "content/public/browser/resource_throttle.h"
 
 class ManagedModeURLFilter;

@@ -29,6 +29,9 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -63,6 +66,7 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -84,15 +88,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
 
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_registration_utility.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
-#endif
-
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
-#include "chromeos/chromeos_switches.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -104,7 +101,6 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/options/chromeos/timezone_options_util.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/gfx/image/image_skia.h"
@@ -126,8 +122,8 @@ namespace options {
 namespace {
 
 // Constants for the new tab button field trial.
- const char kProfileResetTrialName[] = "ManualResetProfile";
- const char kProfileResetTrialEnableGroupName[] = "Enable";
+const char kProfileResetTrialName[] = "ManualResetProfile";
+const char kProfileResetTrialEnableGroupName[] = "Enable";
 
 bool ShouldShowMultiProfilesUserList(chrome::HostDesktopType desktop_type) {
 #if defined(OS_CHROMEOS)

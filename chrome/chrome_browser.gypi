@@ -959,6 +959,7 @@
         'browser/managed_mode/managed_user_sync_service_observer.h',
         'browser/managed_mode/managed_user_theme.cc',
         'browser/managed_mode/managed_user_theme.h',
+        'browser/managed_mode/managed_users.h',
         'browser/media/audio_stream_indicator.cc',
         'browser/media/audio_stream_indicator.h',
         'browser/media/chrome_midi_permission_context.cc',

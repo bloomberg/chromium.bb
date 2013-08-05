@@ -56,10 +56,6 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/nigori.h"
 
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#endif
-
 static const int kSaveChangesIntervalSeconds = 10;
 static const base::FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");

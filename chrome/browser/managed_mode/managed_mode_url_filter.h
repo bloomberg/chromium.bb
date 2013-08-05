@@ -13,6 +13,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
+#include "chrome/browser/managed_mode/managed_users.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 
 namespace policy {

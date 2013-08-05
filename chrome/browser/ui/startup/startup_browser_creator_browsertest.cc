@@ -15,6 +15,9 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
@@ -39,12 +42,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
-#endif  // defined(ENABLE_MANAGED_USERS)
 
 #if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
 #include "base/callback.h"
@@ -1004,7 +1001,6 @@ class ManagedModeBrowserCreatorTest : public InProcessBrowserTest {
   }
 };
 
-#if defined(ENABLE_MANAGED_USERS)
 IN_PROC_BROWSER_TEST_F(ManagedModeBrowserCreatorTest,
                        StartupManagedModeProfile) {
   // Make this a managed profile.
@@ -1032,8 +1028,6 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBrowserCreatorTest,
   // There should be only one tab.
   EXPECT_EQ(1, tab_strip->count());
 }
-
-#endif  // defined(ENABLE_MANAGED_USERS)
 
 #endif  // !defined(OS_CHROMEOS)
 
