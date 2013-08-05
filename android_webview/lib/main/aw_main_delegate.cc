@@ -59,6 +59,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(switches::kHideScrollbars);
   cl->AppendSwitch(switches::kDisableOverscrollEdgeEffect);
 
+  // Not yet secure in single-process mode.
+  cl->AppendSwitch(switches::kDisableExperimentalWebGL);
+
   return false;
 }
 

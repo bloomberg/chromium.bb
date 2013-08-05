@@ -7,6 +7,7 @@
 #include <android/bitmap.h>
 
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/android/jni_android.h"
@@ -111,9 +112,10 @@ bool RenderPictureToCanvas(SkPicture* picture, SkCanvas* canvas) {
   return true;
 }
 
-// TODO(boliu): Remove this when hardware mode is ready.
 bool HardwareEnabled() {
- return CommandLine::ForCurrentProcess()->HasSwitch("testing-webview-gl-mode");
+  static bool g_hw_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableWebViewGLMode);
+  return g_hw_enabled;
 }
 
 // Provides software rendering functions from the Android glue layer.

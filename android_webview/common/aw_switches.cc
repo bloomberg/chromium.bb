@@ -8,6 +8,6 @@ namespace switches {
 
 const char kDisableSimpleCache[] = "disable-simple-cache";
 
-const char kUseZeroCopyBuffers[] = "use-zero-copy-buffers";
+const char kDisableWebViewGLMode[] = "disable-webview-gl-mode";
 
 }  // namespace switches

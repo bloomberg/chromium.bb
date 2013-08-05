@@ -10,8 +10,8 @@ namespace switches {
 // When set, falls back to using the old disk cache.
 extern const char kDisableSimpleCache[];
 
-// Uses zero-copy buffers in graphics pipeline.
-extern const char kUseZeroCopyBuffers[];
+// When set, forces use of fallback SW path even on HW canvas.
+extern const char kDisableWebViewGLMode[];
 
 }  // namespace switches
 
