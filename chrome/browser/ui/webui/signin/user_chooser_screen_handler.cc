@@ -8,6 +8,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "content/public/browser/web_contents.h"
@@ -190,9 +190,8 @@ void UserChooserScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 }
 
 void UserChooserScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
-  // TODO(noms): Once guest mode is ready, should launch a guest browser.
-  chrome::NewIncognitoWindow(chrome::FindBrowserWithWebContents(
-      web_ui()->GetWebContents()));
+  AvatarMenuModel::SwitchToGuestProfileWindow(
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 
 void UserChooserScreenHandler::HandleLaunchUser(const base::ListValue* args) {
