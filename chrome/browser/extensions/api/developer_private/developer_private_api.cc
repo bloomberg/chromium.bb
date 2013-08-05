@@ -168,7 +168,6 @@ void DeveloperPrivateEventRouter::Observe(
   CHECK(profile);
   CHECK(profile_->IsSameProfile(profile));
   developer::EventData event_data;
-  std::string extension_id;
   const Extension* extension = NULL;
 
   switch (type) {
