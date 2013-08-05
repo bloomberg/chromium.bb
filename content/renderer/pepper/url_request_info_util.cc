@@ -119,22 +119,14 @@ bool EnsureFileRefObjectsPopulated(::ppapi::URLRequestInfoData* data) {
 
 }  // namespace
 
-void CreateWebURLRequest(
-    scoped_ptr<ppapi::URLRequestInfoData> data,
-    WebFrame* frame,
-    CreateWebURLRequestCallback callback) {
-  scoped_ptr<WebURLRequest> dest(new WebURLRequest);
-
+bool CreateWebURLRequest(::ppapi::URLRequestInfoData* data,
+                         WebFrame* frame,
+                         WebURLRequest* dest) {
   // In the out-of-process case, we've received the URLRequestInfoData
   // from the untrusted plugin and done no validation on it. We need to be
   // sure it's not being malicious by checking everything for consistency.
-  if (!ValidateURLRequestData(*data) ||
-      !EnsureFileRefObjectsPopulated(data.get())) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, base::Passed(&data), false, base::Passed(&dest)));
-    return;
-  }
+  if (!ValidateURLRequestData(*data) || !EnsureFileRefObjectsPopulated(data))
+    return false;
 
   dest->initialize();
   dest->setTargetType(WebURLRequest::TargetIsObject);
@@ -169,15 +161,8 @@ void CreateWebURLRequest(
                                  item.start_offset,
                                  item.number_of_bytes,
                                  item.expected_last_modified_time,
-                                 &http_body)) {
-          base::MessageLoop::current()->PostTask(
-              FROM_HERE,
-              base::Bind(callback,
-                         base::Passed(&data),
-                         false,
-                         base::Passed(&dest)));
-          return;
-        }
+                                 &http_body))
+          return false;
       } else {
         DCHECK(!item.data.empty());
         http_body.appendData(WebData(item.data));
@@ -206,9 +191,8 @@ void CreateWebURLRequest(
         WebString::fromUTF8(data->custom_user_agent),
         was_after_preconnect_request));
   }
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, base::Passed(&data), true, base::Passed(&dest)));
+
+  return true;
 }
 
 bool URLRequestRequiresUniversalAccess(

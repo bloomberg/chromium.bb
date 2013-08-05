@@ -15,7 +15,6 @@
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
 
 namespace WebKit {
 class WebFrame;
@@ -72,11 +71,6 @@ class PepperURLLoaderHost
                         const ppapi::URLRequestInfoData& request_data);
   int32_t InternalOnHostMsgOpen(ppapi::host::HostMessageContext* context,
                                 const ppapi::URLRequestInfoData& request_data);
-  void DidCreateWebURLRequest(
-      scoped_ptr<ppapi::URLRequestInfoData> filled_in_request_data,
-      bool success,
-      scoped_ptr<WebKit::WebURLRequest> web_request);
-
   int32_t OnHostMsgSetDeferLoading(ppapi::host::HostMessageContext* context,
                                    bool defers_loading);
   int32_t OnHostMsgClose(ppapi::host::HostMessageContext* context);
