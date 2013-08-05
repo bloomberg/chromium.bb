@@ -272,12 +272,10 @@ void UpdateScreen::OnPortalDetectionCompleted(
   if (state_ == STATE_ERROR) {
     // In the case of online state hide error message and proceed to
     // the update stage. Otherwise, update error message content.
-    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
-      HideErrorMessage();
+    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)
       StartUpdateCheck();
-    } else {
+    else
       UpdateErrorMessage(network, status);
-    }
   } else if (state_ == STATE_FIRST_PORTAL_CHECK) {
     // In the case of online state immediately proceed to the update
     // stage. Otherwise, prepare and show error message.
@@ -477,6 +475,14 @@ void UpdateScreen::OnActorDestroyed(UpdateScreenActor* actor) {
     actor_ = NULL;
 }
 
+void UpdateScreen::OnConnectToNetworkRequested(
+    const std::string& service_path) {
+  if (state_ == STATE_ERROR) {
+    LOG(WARNING) << "Hiding error message since AP was reselected";
+    StartUpdateCheck();
+  }
+}
+
 ErrorScreen* UpdateScreen::GetErrorScreen() {
   return get_screen_observer()->GetErrorScreen();
 }
@@ -485,6 +491,8 @@ void UpdateScreen::StartUpdateCheck() {
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
   if (detector)
     detector->RemoveObserver(this);
+  if (state_ == STATE_ERROR)
+    HideErrorMessage();
   state_ = STATE_UPDATE;
   DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
   VLOG(1) << "Initiate update check";

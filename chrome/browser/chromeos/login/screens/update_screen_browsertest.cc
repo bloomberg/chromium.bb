@@ -346,4 +346,46 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
   NotifyPortalDetectionCompleted();
 }
 
+IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
+  EXPECT_CALL(*mock_screen_observer_,
+              OnExit(ScreenObserver::UPDATE_NOUPDATE))
+      .Times(1);
+  update_screen_->CancelUpdate();
+
+  // Change ethernet state to portal.
+  NetworkPortalDetector::CaptivePortalState portal_state;
+  portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
+  portal_state.response_code = 200;
+  SetDetectionResults(kStubEthernetServicePath, portal_state);
+
+  // Update screen will show error message about portal state because
+  // ethernet is behind captive portal.
+  EXPECT_CALL(*mock_error_screen_actor_,
+              SetUIState(ErrorScreen::UI_STATE_UPDATE))
+      .Times(1);
+  EXPECT_CALL(*mock_error_screen_actor_,
+              SetErrorState(ErrorScreen::ERROR_STATE_PORTAL, std::string()))
+      .Times(1);
+  EXPECT_CALL(*mock_error_screen_actor_, FixCaptivePortal())
+      .Times(1);
+  EXPECT_CALL(*mock_screen_observer_, ShowErrorScreen())
+      .Times(1);
+
+  update_screen_->StartNetworkCheck();
+
+  // User re-selects the same network manually. In this case, hide
+  // offline message and skip network check. Since ethernet is still
+  // behind portal, update engine fails to update.
+  EXPECT_CALL(*mock_screen_observer_, HideErrorScreen(update_screen_))
+      .Times(1);
+  fake_update_engine_client_->set_update_check_result(
+      chromeos::UpdateEngineClient::UPDATE_RESULT_FAILED);
+  EXPECT_CALL(*mock_screen_observer_,
+              OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE))
+      .Times(1);
+
+  update_screen_->OnConnectToNetworkRequested(kStubEthernetServicePath);
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
 }  // namespace chromeos

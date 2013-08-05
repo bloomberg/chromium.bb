@@ -8,16 +8,27 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 
 namespace chromeos {
 
-class NetworkDropdown;
-
-class NetworkDropdownHandler : public BaseScreenHandler {
+class NetworkDropdownHandler : public BaseScreenHandler,
+                               public NetworkDropdown::Actor {
  public:
+  class Observer {
+   public:
+    virtual ~Observer() {}
+    virtual void OnConnectToNetworkRequested(
+        const std::string& service_path) = 0;
+  };
+
   NetworkDropdownHandler();
   virtual ~NetworkDropdownHandler();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // BaseScreenHandler implementation:
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
@@ -27,6 +38,10 @@ class NetworkDropdownHandler : public BaseScreenHandler {
   virtual void RegisterMessages() OVERRIDE;
 
  private:
+  // NetworkDropdown::Actor implementation:
+  virtual void OnConnectToNetworkRequested(
+      const std::string& service_path) OVERRIDE;
+
   // Handles choosing of the network menu item.
   void HandleNetworkItemChosen(double id);
   // Handles network drop-down showing.
@@ -38,6 +53,8 @@ class NetworkDropdownHandler : public BaseScreenHandler {
   void HandleNetworkDropdownRefresh();
 
   scoped_ptr<NetworkDropdown> dropdown_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDropdownHandler);
 };

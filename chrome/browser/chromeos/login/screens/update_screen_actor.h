@@ -25,6 +25,8 @@ class UpdateScreenActor {
     // Force cancel update.
     virtual void CancelUpdate() = 0;
     virtual void OnActorDestroyed(UpdateScreenActor* actor) = 0;
+    virtual void OnConnectToNetworkRequested(
+        const std::string& service_path) = 0;
   };
 
   virtual ~UpdateScreenActor() {}

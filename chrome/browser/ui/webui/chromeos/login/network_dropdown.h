@@ -26,7 +26,14 @@ class NetworkDropdown : public NetworkMenu::Delegate,
                         public NetworkStateHandlerObserver,
                         public ash::network_icon::AnimationObserver {
  public:
-  NetworkDropdown(content::WebUI* web_ui, bool oobe);
+  class Actor {
+   public:
+    virtual ~Actor() {}
+    virtual void OnConnectToNetworkRequested(
+        const std::string& service_path) = 0;
+  };
+
+  NetworkDropdown(Actor* actor, content::WebUI* web_ui, bool oobe);
   virtual ~NetworkDropdown();
 
   // This method should be called, when item with the given id is chosen.
@@ -36,6 +43,8 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual void OpenButtonOptions() OVERRIDE;
   virtual bool ShouldOpenButtonOptions() const OVERRIDE;
+  virtual void OnConnectToNetworkRequested(
+      const std::string& service_path) OVERRIDE;
 
   // NetworkStateHandlerObserver
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
@@ -60,6 +69,8 @@ class NetworkDropdown : public NetworkMenu::Delegate,
 
   // The Network menu.
   scoped_ptr<NetworkMenuWebUI> network_menu_;
+
+  Actor* actor_;
 
   content::WebUI* web_ui_;
 

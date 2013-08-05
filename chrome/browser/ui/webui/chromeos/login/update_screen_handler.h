@@ -5,14 +5,18 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_UPDATE_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_UPDATE_SCREEN_HANDLER_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/screens/update_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 
 namespace chromeos {
 
 class UpdateScreenHandler : public UpdateScreenActor,
-                            public BaseScreenHandler {
+                            public BaseScreenHandler,
+                            public NetworkDropdownHandler::Observer {
  public:
   UpdateScreenHandler();
   virtual ~UpdateScreenHandler();
@@ -38,6 +42,10 @@ class UpdateScreenHandler : public UpdateScreenActor,
   virtual void RegisterMessages() OVERRIDE;
 
  private:
+  // NetworkDropdownHandler::Observer implementation:
+  virtual void OnConnectToNetworkRequested(
+      const std::string& service_path) OVERRIDE;
+
 #if !defined(OFFICIAL_BUILD)
   // Called when user presses Escape to cancel update.
   void HandleUpdateCancel();

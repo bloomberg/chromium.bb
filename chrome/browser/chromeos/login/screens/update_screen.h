@@ -44,6 +44,8 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   // UpdateScreenActor::Delegate implementation:
   virtual void CancelUpdate() OVERRIDE;
   virtual void OnActorDestroyed(UpdateScreenActor* actor) OVERRIDE;
+  virtual void OnConnectToNetworkRequested(
+      const std::string& service_path) OVERRIDE;
 
   // Starts network check. Made virtual to simplify mocking.
   virtual void StartNetworkCheck();
@@ -78,6 +80,7 @@ class UpdateScreen: public UpdateEngineClient::Observer,
  private:
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestBasic);
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestUpdateAvailable);
+  FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestAPReselection);
 
   enum State {
     STATE_IDLE = 0,

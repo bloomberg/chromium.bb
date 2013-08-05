@@ -26,13 +26,11 @@ class ErrorScreenHandler;
 class KioskAppMenuHandler;
 class KioskEnableScreenActor;
 class NativeWindowDelegate;
+class NetworkDropdownHandler;
 class NetworkStateInformer;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 class UpdateScreenHandler;
-}
-
-namespace chromeos {
 
 // A custom WebUI that defines datasource for out-of-box-experience (OOBE) UI:
 // - welcome screen (setup language/keyboard/network).
@@ -122,6 +120,10 @@ class OobeUI : public OobeDisplay,
 
   // Reference to CoreOobeHandler that handles common requests of Oobe page.
   CoreOobeHandler* core_handler_;
+
+  // Reference to NetworkDropdownHandler that handles interaction with
+  // network dropdown.
+  NetworkDropdownHandler* network_dropdown_handler_;
 
   // Screens actors. Note, OobeUI owns them via |handlers_|, not directly here.
   UpdateScreenHandler* update_screen_handler_;

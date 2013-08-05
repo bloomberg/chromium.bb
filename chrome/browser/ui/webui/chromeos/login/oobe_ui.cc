@@ -146,6 +146,8 @@ const char OobeUI::kScreenWrongHWID[]       = "wrong-hwid";
 
 OobeUI::OobeUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
+      core_handler_(NULL),
+      network_dropdown_handler_(NULL),
       update_screen_handler_(NULL),
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),
@@ -170,10 +172,12 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   AddScreenHandler(core_handler_);
   core_handler_->SetDelegate(this);
 
-  AddScreenHandler(new NetworkDropdownHandler);
+  network_dropdown_handler_ = new NetworkDropdownHandler();
+  AddScreenHandler(network_dropdown_handler_);
 
   update_screen_handler_ = new UpdateScreenHandler();
   AddScreenHandler(update_screen_handler_);
+  network_dropdown_handler_->AddObserver(update_screen_handler_);
 
   NetworkScreenHandler* network_screen_handler =
       new NetworkScreenHandler(core_handler_);
@@ -262,6 +266,7 @@ OobeUI::OobeUI(content::WebUI* web_ui)
 
 OobeUI::~OobeUI() {
   core_handler_->SetDelegate(NULL);
+  network_dropdown_handler_->RemoveObserver(update_screen_handler_);
 }
 
 void OobeUI::ShowScreen(WizardScreen* screen) {

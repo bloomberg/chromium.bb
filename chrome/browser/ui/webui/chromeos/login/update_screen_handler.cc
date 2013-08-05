@@ -142,6 +142,12 @@ void UpdateScreenHandler::RegisterMessages() {
 #endif
 }
 
+void UpdateScreenHandler::OnConnectToNetworkRequested(
+    const std::string& service_path) {
+  if (screen_)
+    screen_->OnConnectToNetworkRequested(service_path);
+}
+
 #if !defined(OFFICIAL_BUILD)
 void UpdateScreenHandler::HandleUpdateCancel() {
   screen_->CancelUpdate();

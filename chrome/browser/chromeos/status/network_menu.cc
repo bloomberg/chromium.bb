@@ -222,6 +222,7 @@ void NetworkMenuModel::ConnectToNetworkAt(int index) {
   network_connect::ConnectResult result =
       network_connect::ConnectToNetwork(
           service_path, owner_->delegate()->GetNativeWindow());
+  owner_->delegate()->OnConnectToNetworkRequested(service_path);
   if (result == network_connect::NETWORK_NOT_FOUND) {
     // If we are attempting to connect to a network that no longer exists,
     // display a notification.
@@ -668,6 +669,9 @@ int MoreMenuModel::GetCommandIdAt(int index) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenu
+
+NetworkMenu::Delegate::~Delegate() {
+}
 
 NetworkMenu::NetworkMenu(Delegate* delegate)
     : delegate_(delegate),
