@@ -510,11 +510,15 @@ void TileManager::AssignGpuMemoryToTiles(
   size_t bytes_left = bytes_allocatable;
   size_t resources_left = resources_allocatable;
   bool oomed = false;
+
+  unsigned schedule_priority = 1u;
   for (TileRefVector::const_iterator it = sorted_tiles.begin();
        it != sorted_tiles.end();
        ++it) {
     Tile* tile = it->get();
     ManagedTileState& mts = tile->managed_state();
+
+    mts.scheduled_priority = schedule_priority++;
 
     mts.raster_mode = DetermineRasterMode(tile);
 

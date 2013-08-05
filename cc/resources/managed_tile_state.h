@@ -156,6 +156,9 @@ class CC_EXPORT ManagedTileState {
   float time_to_needed_in_seconds;
   float distance_to_visible_in_pixels;
   bool visible_and_ready_to_draw;
+
+  // Priority for this state from the last time we assigned memory.
+  unsigned scheduled_priority;
 };
 
 }  // namespace cc
