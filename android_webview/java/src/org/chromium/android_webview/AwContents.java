@@ -1401,6 +1401,8 @@ public class AwContents {
         // visibility. In general, callers should use updateVisibilityState
         // instead.
         mIsVisible = visible;
+
+        if (mNativeAwContents == 0) return;
         nativeSetVisibility(mNativeAwContents, mIsVisible);
     }
 
