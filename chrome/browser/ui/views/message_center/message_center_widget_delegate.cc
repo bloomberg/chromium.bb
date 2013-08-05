@@ -95,6 +95,7 @@ void MessageCenterWidgetDelegate::OnWidgetActivationChanged(
 }
 
 void MessageCenterWidgetDelegate::OnWidgetClosing(views::Widget* widget) {
+  SetIsClosing(true);
   tray_->MarkMessageCenterHidden();
 }
 

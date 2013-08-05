@@ -805,7 +805,8 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
     : message_center_(message_center),
       tray_(tray),
       top_down_(top_down),
-      settings_visible_(initially_settings_visible) {
+      settings_visible_(initially_settings_visible),
+      is_closing_(false) {
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
   set_background(views::Background::CreateSolidBackground(
@@ -845,11 +846,15 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
 }
 
 MessageCenterView::~MessageCenterView() {
-  message_center_->RemoveObserver(this);
+  if (!is_closing_)
+    message_center_->RemoveObserver(this);
 }
 
 void MessageCenterView::SetNotifications(
     const NotificationList::Notifications& notifications)  {
+  if (is_closing_)
+    return;
+
   message_views_.clear();
   int index = 0;
   for (NotificationList::Notifications::const_iterator iter =
@@ -864,6 +869,9 @@ void MessageCenterView::SetNotifications(
 }
 
 void MessageCenterView::SetSettingsVisible(bool visible) {
+  if (is_closing_)
+    return;
+
   if (visible == settings_visible_)
     return;
 
@@ -907,7 +915,18 @@ void MessageCenterView::SetSettingsVisible(bool visible) {
   settings_transition_animation_->Start();
 }
 
+void MessageCenterView::SetIsClosing(bool is_closing) {
+  is_closing_ = is_closing;
+  if (is_closing)
+    message_center_->RemoveObserver(this);
+  else
+    message_center_->AddObserver(this);
+}
+
 void MessageCenterView::ClearAllNotifications() {
+  if (is_closing_)
+    return;
+
   scroller_->SetEnabled(false);
   button_bar_->SetAllButtonsEnabled(false);
   message_list_view_->ClearAllNotifications(scroller_->GetVisibleRect());
@@ -924,6 +943,9 @@ size_t MessageCenterView::NumMessageViewsForTest() const {
 }
 
 void MessageCenterView::Layout() {
+  if (is_closing_)
+    return;
+
   int button_height = button_bar_->GetHeightForWidth(width());
   // Skip unnecessary re-layout of contents during the resize animation.
   if (settings_transition_animation_ &&
@@ -1022,6 +1044,9 @@ bool MessageCenterView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 }
 
 void MessageCenterView::OnMouseExited(const ui::MouseEvent& event) {
+  if (is_closing_)
+    return;
+
   message_list_view_->ResetRepositionSession();
   NotificationsChanged();
 }

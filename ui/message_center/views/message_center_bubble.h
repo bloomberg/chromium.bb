@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_bubble_base.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace message_center {
 
@@ -16,6 +17,7 @@ class MessageCenterView;
 // Bubble for message center.
 class MESSAGE_CENTER_EXPORT MessageCenterBubble
     : public MessageBubbleBase,
+      public views::WidgetObserver,
       public base::SupportsWeakPtr<MessageCenterBubble> {
  public:
   MessageCenterBubble(MessageCenter* message_center,
@@ -25,6 +27,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble
   virtual ~MessageCenterBubble();
 
   void SetSettingsVisible();
+
+  // Overridden from views::WidgetObserver:
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // Overridden from MessageBubbleBase:
   virtual views::TrayBubbleView::InitParams GetInitParams(

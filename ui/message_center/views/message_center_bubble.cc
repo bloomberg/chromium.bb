@@ -91,6 +91,7 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
 void MessageCenterBubble::InitializeContents(
     views::TrayBubbleView* new_bubble_view) {
   set_bubble_view(new_bubble_view);
+  bubble_view()->GetWidget()->AddObserver(this);
   message_center_view_ = new MessageCenterView(
       message_center(),
       tray(),
@@ -118,6 +119,12 @@ void MessageCenterBubble::UpdateBubbleView() {
   message_center_view_->SetNotifications(notifications);
   bubble_view()->GetWidget()->Show();
   bubble_view()->UpdateBubble();
+}
+
+void MessageCenterBubble::OnWidgetClosing(views::Widget* widget) {
+  bubble_view()->GetWidget()->RemoveObserver(this);
+  if (message_center_view_)
+    message_center_view_->SetIsClosing(true);
 }
 
 void MessageCenterBubble::OnMouseEnteredView() {

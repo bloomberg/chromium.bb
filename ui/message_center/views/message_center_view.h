@@ -56,6 +56,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   void SetSettingsVisible(bool visible);
   bool settings_visible() const { return settings_visible_; }
 
+  void SetIsClosing(bool is_closing);
+
  protected:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
@@ -99,6 +101,10 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   int source_height_;
   int target_height_;
   scoped_ptr<ui::MultiAnimation> settings_transition_animation_;
+
+  // True when the widget is closing so that further operations should be
+  // ignored.
+  bool is_closing_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterView);
 };
