@@ -213,9 +213,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/freetype2': [ # http://crbug.com/177319
         'UNKNOWN',
     ],
-    'third_party/gles2_book': [  # http://crbug.com/98130
-        'UNKNOWN',
-    ],
     'third_party/gles2_conform/GTF_ES': [  # http://crbug.com/98131
         'UNKNOWN',
     ],
