@@ -130,7 +130,7 @@ TrigramChar TrigramCharForChar(char c) {
   return g_trigram_chars.Get()[uc];
 }
 
-Trigram TrigramAtIndex(vector<TrigramChar> trigram_chars, size_t index) {
+Trigram TrigramAtIndex(const vector<TrigramChar>& trigram_chars, size_t index) {
   static int kTrigramCharacterCountSquared =
       kTrigramCharacterCount * kTrigramCharacterCount;
   if (trigram_chars[index] == kUndefinedTrigramChar ||
