@@ -2271,11 +2271,14 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
                 node = host;
         }
         for (; node; node = node->parentNode()) {
-            if (node->isElementNode() && node->isFocusable()) {
+            if (!node->isElementNode())
+                continue;
+            Element* element = toElement(node);
+            if (element->isFocusable()) {
                 // Found a focusable parent node. Set the active match as the
                 // selection and focus to the focusable node.
                 frame()->selection()->setSelection(m_activeMatch.get());
-                frame()->document()->setFocusedElement(toElement(node));
+                frame()->document()->setFocusedElement(element);
                 return;
             }
         }
@@ -2284,12 +2287,14 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         // This, for example, sets focus to the first link if you search for
         // text and text that is within one or more links.
         node = m_activeMatch->firstNode();
-        while (node && node != m_activeMatch->pastLastNode()) {
-            if (node->isFocusable()) {
-                frame()->document()->setFocusedElement(toElement(node));
+        for (; node && node != m_activeMatch->pastLastNode(); node = NodeTraversal::next(node)) {
+            if (!node->isElementNode())
+                continue;
+            Element* element = toElement(node);
+            if (element->isFocusable()) {
+                frame()->document()->setFocusedElement(element);
                 return;
             }
-            node = NodeTraversal::next(node);
         }
 
         // No node related to the active match was focusable, so set the

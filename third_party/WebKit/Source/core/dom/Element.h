@@ -507,6 +507,8 @@ public:
     virtual void focus(bool restorePreviousSelection = true, FocusDirection = FocusDirectionNone);
     virtual void updateFocusAppearance(bool restorePreviousSelection);
     virtual void blur();
+    // Whether the node can actually be focused.
+    bool isFocusable() const;
     virtual bool isKeyboardFocusable() const;
     virtual bool isMouseFocusable() const;
     virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection);

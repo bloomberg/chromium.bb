@@ -156,8 +156,10 @@ bool WebNode::isTextNode() const
 
 bool WebNode::isFocusable() const
 {
+    if (!m_private->isElementNode())
+        return false;
     m_private->document()->updateLayoutIgnorePendingStylesheets();
-    return m_private->isFocusable();
+    return toElement(m_private.get())->isFocusable();
 }
 
 bool WebNode::isContentEditable() const

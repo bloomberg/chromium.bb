@@ -127,15 +127,18 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
         document->focusedElement()->dispatchFocusEvent(0, FocusDirectionNone);
 }
 
-static inline bool hasCustomFocusLogic(Node* node)
+static inline bool hasCustomFocusLogic(Element* element)
 {
-    return node->isHTMLElement() && toHTMLElement(node)->hasCustomFocusLogic();
+    return element->isHTMLElement() && toHTMLElement(element)->hasCustomFocusLogic();
 }
 
 static inline bool isNonFocusableShadowHost(Node* node)
 {
     ASSERT(node);
-    return !node->isFocusable() && isShadowHost(node) && !hasCustomFocusLogic(node);
+    if (!node->isElementNode())
+        return false;
+    Element* element = toElement(node);
+    return !element->isFocusable() && isShadowHost(element) && !hasCustomFocusLogic(element);
 }
 
 static inline bool isNonKeyboardFocusableShadowHost(Node* node)

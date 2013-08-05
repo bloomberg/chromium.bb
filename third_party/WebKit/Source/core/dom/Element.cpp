@@ -2075,6 +2075,11 @@ void Element::blur()
     }
 }
 
+bool Element::isFocusable() const
+{
+    return inDocument() && supportsFocus() && !isInert() && rendererIsFocusable();
+}
+
 bool Element::isKeyboardFocusable() const
 {
     return isFocusable() && tabIndex() >= 0;

@@ -435,8 +435,6 @@ public:
     // rendererIsFocusable(), this method may be called when layout is not up to
     // date, so it must not use the renderer to determine focusability.
     virtual bool supportsFocus() const;
-    // Whether the node can actually be focused.
-    bool isFocusable() const;
     virtual Node* focusDelegate();
     // This is called only when the node is focused.
     virtual bool shouldHaveFocusAppearance() const;

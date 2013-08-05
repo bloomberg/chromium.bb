@@ -211,7 +211,7 @@ AccessibilityRole AccessibilityNodeObject::determineAccessibilityRole()
         return ParagraphRole;
     if (isHTMLLabelElement(node()))
         return LabelRole;
-    if (node()->isFocusable())
+    if (node()->isElementNode() && toElement(node())->isFocusable())
         return GroupRole;
 
     return UnknownRole;
