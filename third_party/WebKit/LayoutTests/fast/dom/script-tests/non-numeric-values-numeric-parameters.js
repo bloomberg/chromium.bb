@@ -186,7 +186,7 @@ function createHTMLTableRowElement()
 // CharacterData
 
 shouldBe("nonNumericPolicy('document.createTextNode(\"a\").substringData(x, 0)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('document.createTextNode(\"a\").substringData(0, x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('document.createTextNode(\"a\").substringData(0, x)')", "'any type allowed (but not omitted)'");
 shouldBe("nonNumericPolicy('document.createTextNode(\"a\").insertData(x, \"b\")')", "'any type allowed'");
 shouldBe("nonNumericPolicy('document.createTextNode(\"a\").deleteData(x, 0)')", "'any type allowed'");
 shouldBe("nonNumericPolicy('document.createTextNode(\"a\").deleteData(0, x)')", "'any type allowed (but not omitted)'");

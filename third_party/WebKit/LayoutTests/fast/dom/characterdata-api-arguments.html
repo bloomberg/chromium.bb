@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="help" href="http://www.w3.org/TR/2012/WD-dom-20121206/#interface-characterdata" />
+<link rel="help" href="http://www.w3.org/TR/2012/WD-dom-20121206/#interface-characterdata">
 <script src="../js/resources/js-test-pre.js"></script>
 </head>
 <body>
@@ -70,7 +70,10 @@ shouldBeEqualToString("text.data", "aaaa");
 // substringData()
 text.data = "abcdefg";
 shouldBeEqualToString("text.substringData(4, 3)", "efg");
+shouldThrow("text.substringData()", "'TypeError: Not enough arguments'");
+shouldThrow("text.substringData(0)", "'TypeError: Not enough arguments'");
 shouldBeEqualToString("text.substringData(4, 999)", "efg"); // Length argument is too large, should be adjusted.
+shouldBeEqualToString("text.substringData(4, -1)", "efg"); // Length argument is too large (after wrapping), should be adjusted.
 shouldThrow("text.substringData(-1, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // Wraps to 4294967295 which is greater than the data length
 shouldBeEqualToString("text.substringData(-4294967294, 3)", "cde"); // Wraps to 2, which is a valid offset.
 

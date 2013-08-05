@@ -50,7 +50,10 @@ PASS text.data is "abtestcdefg"
 PASS text.replaceData(1, 999, 'aaa') did not throw exception.
 PASS text.data is "aaaa"
 PASS text.substringData(4, 3) is "efg"
+PASS text.substringData() threw exception TypeError: Not enough arguments.
+PASS text.substringData(0) threw exception TypeError: Not enough arguments.
 PASS text.substringData(4, 999) is "efg"
+PASS text.substringData(4, -1) is "efg"
 PASS text.substringData(-1, 2) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS text.substringData(-4294967294, 3) is "cde"
 PASS successfullyParsed is true
