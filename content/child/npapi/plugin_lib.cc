@@ -263,8 +263,10 @@ void FreePluginLibraryHelper(const base::FilePath& path,
     bool reloaded = false;
     if (g_loaded_libs) {
       for (size_t i = 0; i < g_loaded_libs->size(); ++i) {
-        if ((*g_loaded_libs)[i]->plugin_info().path == path)
+        if ((*g_loaded_libs)[i]->plugin_info().path == path) {
           reloaded = true;
+          break;
+        }
       }
     }
     if (!reloaded)
