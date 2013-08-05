@@ -78,6 +78,13 @@ const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
 const SkColor kHoveredButtonBackgroundColor = SkColorSetRGB(243, 243, 243);
 #endif
 
+// Progress bar.
+const int kProgressBarThickness = 5;
+const int kProgressBarTopPadding = 16;
+const int kProgressBarCornerRadius = 3;
+const SkColor kProgressBarBackgroundColor = SkColorSetRGB(216, 216, 216);
+const SkColor kProgressBarSliceColor = SkColorSetRGB(120, 120, 120);
+
 // Line limits.
 const int kTitleLineLimit = 3;
 const int kMessageCollapsedLineLimit = 3;

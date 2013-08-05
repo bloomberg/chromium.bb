@@ -19,12 +19,6 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 
-const CGFloat kProgressBarThickness = 8;
-const CGFloat kProgressBarTopPadding = 12;
-const SkColor kProgressBarBackgroundColor = SkColorSetRGB(230, 230, 230);
-const SkColor kProgressBarBackgroundBorderColor = SkColorSetRGB(208, 208, 208);
-const SkColor kProgressBarSliceColor = SkColorSetRGB(78, 156, 245);
-const SkColor kProgressBarSliceBorderColor = SkColorSetRGB(110, 188, 249);
 
 @interface MCNotificationProgressBar : NSProgressIndicator
 @end
@@ -37,17 +31,21 @@ const SkColor kProgressBarSliceBorderColor = SkColorSetRGB(110, 188, 249);
   NSDivideRect(dirtyRect, &sliceRect, &remainderRect,
                NSWidth(dirtyRect) * progressFraction, NSMinXEdge);
 
-  // For slice part.
-  [gfx::SkColorToCalibratedNSColor(kProgressBarSliceBorderColor)
-      drawSwatchInRect:sliceRect];
-  [gfx::SkColorToCalibratedNSColor(kProgressBarSliceColor)
-      drawSwatchInRect:NSInsetRect(sliceRect, 1.0, 1.0)];
+  NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:dirtyRect
+      xRadius:message_center::kProgressBarCornerRadius
+      yRadius:message_center::kProgressBarCornerRadius];
+  [gfx::SkColorToCalibratedNSColor(message_center::kProgressBarBackgroundColor)
+      set];
+  [path fill];
 
-  // For remainder part.
-  [gfx::SkColorToCalibratedNSColor(kProgressBarBackgroundBorderColor)
-      drawSwatchInRect:remainderRect];
-  [gfx::SkColorToCalibratedNSColor(kProgressBarBackgroundColor)
-      drawSwatchInRect:NSInsetRect(remainderRect, 1.0, 1.0)];
+  if (progressFraction == 0.0)
+    return;
+
+  path = [NSBezierPath bezierPathWithRoundedRect:sliceRect
+      xRadius:message_center::kProgressBarCornerRadius
+      yRadius:message_center::kProgressBarCornerRadius];
+  [gfx::SkColorToCalibratedNSColor(message_center::kProgressBarSliceColor) set];
+  [path fill];
 }
 @end
 
@@ -364,8 +362,9 @@ const SkColor kProgressBarSliceBorderColor = SkColorSetRGB(110, 188, 249);
   if (notification->type() == message_center::NOTIFICATION_TYPE_PROGRESS) {
     progressBarFrame = [self currentContentRect];
     progressBarFrame.origin.y = NSMinY(messageFrame) -
-        kProgressBarTopPadding - kProgressBarThickness;
-    progressBarFrame.size.height = kProgressBarThickness;
+        message_center::kProgressBarTopPadding -
+        message_center::kProgressBarThickness;
+    progressBarFrame.size.height = message_center::kProgressBarThickness;
     progressBarView_.reset(
         [[MCNotificationProgressBar alloc] initWithFrame:progressBarFrame]);
     // Setting indeterminate to NO does not work with custom drawRect.
