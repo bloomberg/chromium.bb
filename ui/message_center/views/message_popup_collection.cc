@@ -315,25 +315,25 @@ int MessagePopupCollection::GetBaseLine(ToastContentsView* last_toast) {
   int base;
 
   if (top_down) {
-    if (!last_toast)
+    if (!last_toast) {
       base = work_area_.y();
-    else
-      base = toasts_.back()->bounds().bottom();
-
-    if (!first_item_has_no_margin_)
-      base += kToastMarginY;
-    else
-      base -= kNoToastMarginBorderAndShadowOffset;
+      if (!first_item_has_no_margin_)
+        base += kToastMarginY;
+      else
+        base -= kNoToastMarginBorderAndShadowOffset;
+    } else {
+      base = toasts_.back()->bounds().bottom() + kToastMarginY;
+    }
   } else {
-    if (!last_toast)
+    if (!last_toast) {
       base = work_area_.bottom();
-    else
-      base = toasts_.back()->origin().y();
-
-    if (!first_item_has_no_margin_)
-      base -= kToastMarginY;
-    else
-      base += kNoToastMarginBorderAndShadowOffset;
+      if (!first_item_has_no_margin_)
+        base -= kToastMarginY;
+      else
+        base += kNoToastMarginBorderAndShadowOffset;
+    } else {
+      base = toasts_.back()->origin().y() - kToastMarginY;
+    }
   }
   return base;
 }
