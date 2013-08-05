@@ -453,10 +453,8 @@ crbug.com/66087 [ Win ] http/tests/misc/no-last-modified.html [ Pass Timeout ]
 # memory and thus leading to unpredictable results.
 crbug.com/66099 fast/js/array-sort-modifying-tostring.html [ Pass Timeout ]
 # The result here is flaky. So a rebaseline won't make these [ Pass Timeout ].
-crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure ]
-crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order.html [ Failure ]
-crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure Timeout ]
-crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failure Timeout ]
+crbug.com/66751 http/tests/local/link-stylesheet-load-order-preload.html [ Failure Timeout ]
+crbug.com/66751 http/tests/local/link-stylesheet-load-order.html [ Failure Timeout ]
 
 # The result here is flaky. So a rebaseline won't make this pass.
 crbug.com/261277 fast/events/touch/gesture/pad-gesture-fling.html [ Failure ]
