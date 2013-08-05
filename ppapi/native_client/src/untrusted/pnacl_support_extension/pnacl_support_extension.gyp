@@ -141,7 +141,7 @@
               'python', 'pnacl_component_crx_gen.py',
               '--dest=<(PRODUCT_DIR)/pnacl',
               '<@(lib_overrides)',
-              '--installer_only=<(target_arch)',
+              '--target_arch=<(target_arch)',
               '--info_template_path=../../../../../native_client/pnacl/driver/pnacl_info_template.json',
               # ABI Version Number.
               '0.0.0.1',
