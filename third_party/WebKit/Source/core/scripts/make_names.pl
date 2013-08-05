@@ -1085,7 +1085,7 @@ END
 
     printWrapperFunctions($F);
 
-        print F <<END
+    print F <<END
 v8::Handle<v8::Object> createV8$parameters{namespace}Wrapper($parameters{namespace}Element* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     typedef HashMap<WTF::StringImpl*, Create$parameters{namespace}ElementWrapperFunction> FunctionMap;
@@ -1116,21 +1116,21 @@ END
     }
 
     Create$parameters{namespace}ElementWrapperFunction createWrapperFunction = map.get(element->localName().impl());
-    if (element->isCustomElement())
-        return CustomElementWrapper<$parameters{namespace}Element, V8$parameters{namespace}Element>::wrap(element, creationContext, isolate, createWrapperFunction);
-    if (createWrapperFunction)
-    {
 END
 ;
     if ($parameters{namespace} eq "HTML") {
         print F <<END
-        if (createWrapperFunction == createHTMLElementWrapper)
-           return V8HTMLElement::createWrapper(element, creationContext, isolate);
+    if (createWrapperFunction == createHTMLElementWrapper)
+        createWrapperFunction = createV8HTMLDirectWrapper;
 END
+;
     }
     print F <<END
+    if (element->isCustomElement())
+        return CustomElementWrapper<$parameters{namespace}Element, V8$parameters{namespace}Element>::wrap(element, creationContext, isolate, createWrapperFunction);
+
+    if (createWrapperFunction)
         return createWrapperFunction(element, creationContext, isolate);
-    }
 END
 ;
     if ($parameters{namespace} eq "SVG") {
