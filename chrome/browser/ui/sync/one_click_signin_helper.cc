@@ -299,6 +299,7 @@ void ClearPendingEmailOnIOThread(content::ResourceContext* context) {
 // or its an implicit sign in via another Google property.  In the former case,
 // "service" is also checked to make sure its "chromiumsync".
 signin::Source GetSigninSource(const GURL& url, GURL* continue_url) {
+  DCHECK(url.is_valid());
   std::string value;
   net::GetValueForKeyInQuery(url, "service", &value);
   bool possibly_an_explicit_signin = value == "chromiumsync";
