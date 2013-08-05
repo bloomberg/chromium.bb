@@ -19,35 +19,49 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
+struct UpdateOperation::LocalState {
+  LocalState() : content_is_same(false) {
+  }
+
+  ResourceEntry entry;
+  base::FilePath drive_file_path;
+  base::FilePath cache_file_path;
+  bool content_is_same;
+};
+
 namespace {
 
 // Gets locally stored information about the specified file.
 FileError GetFileLocalState(internal::ResourceMetadata* metadata,
                             internal::FileCache* cache,
                             const std::string& resource_id,
-                            ResourceEntry* entry,
-                            base::FilePath* drive_file_path,
-                            base::FilePath* cache_file_path,
-                            bool* content_is_same) {
-  FileError error = metadata->GetResourceEntryById(resource_id, entry);
+                            UpdateOperation::ContentCheckMode check,
+                            UpdateOperation::LocalState* local_state) {
+  FileError error = metadata->GetResourceEntryById(resource_id,
+                                                   &local_state->entry);
   if (error != FILE_ERROR_OK)
     return error;
 
-  if (entry->file_info().is_directory())
+  if (local_state->entry.file_info().is_directory())
     return FILE_ERROR_NOT_A_FILE;
 
-  *drive_file_path = metadata->GetFilePath(resource_id);
-  if (drive_file_path->empty())
+  local_state->drive_file_path = metadata->GetFilePath(resource_id);
+  if (local_state->drive_file_path.empty())
     return FILE_ERROR_NOT_FOUND;
 
-  error = cache->GetFile(resource_id, cache_file_path);
+  error = cache->GetFile(resource_id, &local_state->cache_file_path);
   if (error != FILE_ERROR_OK)
     return error;
 
-  const std::string& md5 = util::GetMd5Digest(*cache_file_path);
-  *content_is_same = (md5 == entry->file_specific_info().md5());
-  if (*content_is_same)
-    cache->ClearDirty(resource_id, md5);
+  if (check == UpdateOperation::RUN_CONTENT_CHECK) {
+    const std::string& md5 = util::GetMd5Digest(local_state->cache_file_path);
+    local_state->content_is_same =
+        (md5 == local_state->entry.file_specific_info().md5());
+    if (local_state->content_is_same)
+      cache->ClearDirty(resource_id, md5);
+  } else {
+    local_state->content_is_same = false;
+  }
 
   return FILE_ERROR_OK;
 }
@@ -77,16 +91,6 @@ FileError UpdateFileLocalState(
 
 }  // namespace
 
-struct UpdateOperation::LocalState {
-  LocalState() : content_is_same(false) {
-  }
-
-  ResourceEntry entry;
-  base::FilePath drive_file_path;
-  base::FilePath cache_file_path;
-  bool content_is_same;
-};
-
 UpdateOperation::UpdateOperation(
     base::SequencedTaskRunner* blocking_task_runner,
     OperationObserver* observer,
@@ -109,6 +113,7 @@ UpdateOperation::~UpdateOperation() {
 void UpdateOperation::UpdateFileByResourceId(
     const std::string& resource_id,
     const ClientContext& context,
+    ContentCheckMode check,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -121,10 +126,8 @@ void UpdateOperation::UpdateFileByResourceId(
                  metadata_,
                  cache_,
                  resource_id,
-                 &local_state->entry,
-                 &local_state->drive_file_path,
-                 &local_state->cache_file_path,
-                 &local_state->content_is_same),
+                 check,
+                 local_state),
       base::Bind(&UpdateOperation::UpdateFileAfterGetLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  context,

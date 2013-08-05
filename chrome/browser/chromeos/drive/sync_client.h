@@ -47,6 +47,10 @@ class SyncClient {
   enum SyncType {
     FETCH,  // Fetch a file from the Drive server.
     UPLOAD,  // Upload a file to the Drive server.
+    UPLOAD_NO_CONTENT_CHECK,  // Upload a file without checking if the file is
+                              // really modified. This type is used for upload
+                              // retry tasks that should have already run the
+                              // check at least once.
   };
 
   SyncClient(base::SequencedTaskRunner* blocking_task_runner,

@@ -48,6 +48,14 @@ class UpdateOperation {
                   internal::FileCache* cache);
   ~UpdateOperation();
 
+  // Flags to specify whether the md5 checksum should be compared to the value
+  // stored in metadata. If |RUN_CONTENT_CHECK| is set, the check is run and the
+  // upload takes place only when there is a mismatch in the checksum.
+  enum ContentCheckMode {
+    NO_CONTENT_CHECK,
+    RUN_CONTENT_CHECK,
+  };
+
   // Updates a file by the given |resource_id| on the Drive server by
   // uploading an updated version. Used for uploading dirty files. The file
   // should already be present in the cache.
@@ -55,11 +63,12 @@ class UpdateOperation {
   // |callback| must not be null.
   void UpdateFileByResourceId(const std::string& resource_id,
                               const ClientContext& context,
+                              ContentCheckMode check,
                               const FileOperationCallback& callback);
 
- private:
   struct LocalState;
 
+ private:
   void UpdateFileAfterGetLocalState(const ClientContext& context,
                                     const FileOperationCallback& callback,
                                     const LocalState* local_state,

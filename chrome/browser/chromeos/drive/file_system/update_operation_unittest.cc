@@ -70,6 +70,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_PersistentFile) {
   operation_->UpdateFileByResourceId(
       kResourceId,
       ClientContext(USER_INITIATED),
+      UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -105,6 +106,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_NonexistentFile) {
   operation_->UpdateFileByResourceId(
       "file:nonexistent_resource_id",
       ClientContext(USER_INITIATED),
+      UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
@@ -144,6 +146,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
   operation_->UpdateFileByResourceId(
       kResourceId,
       ClientContext(USER_INITIATED),
+      UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -189,6 +192,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
   operation_->UpdateFileByResourceId(
       kResourceId,
       ClientContext(USER_INITIATED),
+      UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -203,6 +207,30 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_Md5) {
   test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
   EXPECT_FALSE(cache_entry.is_dirty());
+
+  // Once again mark the cache file dirty.
+  error = FILE_ERROR_FAILED;
+  cache()->MarkDirtyOnUIThread(
+      kResourceId,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // And call UpdateFileByResourceId again.
+  // In this case, NO_CONTENT_CHECK is set, so the actual uploading should run
+  // no matter the content is changed or not.
+  original_changestamp = fake_service()->largest_changestamp();
+  error = FILE_ERROR_FAILED;
+  operation_->UpdateFileByResourceId(
+      kResourceId,
+      ClientContext(USER_INITIATED),
+      UpdateOperation::NO_CONTENT_CHECK,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Make sure that the server is receiving a change.
+  EXPECT_LE(original_changestamp, fake_service()->largest_changestamp());
 }
 
 }  // namespace file_system

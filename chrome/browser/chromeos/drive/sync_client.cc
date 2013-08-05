@@ -141,6 +141,7 @@ void SyncClient::AddTaskToQueue(SyncType type,
       }
       break;
     case UPLOAD:
+    case UPLOAD_NO_CONTENT_CHECK:
       if (upload_list_.find(resource_id) == upload_list_.end()) {
         upload_list_.insert(resource_id);
       } else {
@@ -180,10 +181,13 @@ void SyncClient::StartTask(SyncType type, const std::string& resource_id) {
       }
       break;
     case UPLOAD:
+    case UPLOAD_NO_CONTENT_CHECK:
       DVLOG(1) << "Uploading " << resource_id;
       update_operation_->UpdateFileByResourceId(
           resource_id,
           ClientContext(BACKGROUND),
+          type == UPLOAD ? file_system::UpdateOperation::RUN_CONTENT_CHECK
+                         : file_system::UpdateOperation::NO_CONTENT_CHECK,
           base::Bind(&SyncClient::OnUploadFileComplete,
                      weak_ptr_factory_.GetWeakPtr(),
                      resource_id));
@@ -201,7 +205,7 @@ void SyncClient::OnGetResourceIdsOfBacklog(
   for (size_t i = 0; i < to_upload->size(); ++i) {
     const std::string& resource_id = (*to_upload)[i];
     DVLOG(1) << "Queuing to upload: " << resource_id;
-    AddTaskToQueue(UPLOAD, resource_id);
+    AddTaskToQueue(UPLOAD_NO_CONTENT_CHECK, resource_id);
   }
 
   for (size_t i = 0; i < to_fetch->size(); ++i) {
@@ -325,7 +329,7 @@ void SyncClient::OnUploadFileComplete(const std::string& resource_id,
     switch (error) {
       case FILE_ERROR_NO_CONNECTION:
         // Re-queue the task so that we'll retry once the connection is back.
-        AddTaskToQueue(UPLOAD, resource_id);
+        AddTaskToQueue(UPLOAD_NO_CONTENT_CHECK, resource_id);
         break;
       default:
         LOG(WARNING) << "Failed to upload " << resource_id << ": "
