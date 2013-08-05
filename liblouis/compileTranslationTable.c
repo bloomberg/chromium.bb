@@ -4596,7 +4596,7 @@ findTable (const char *tableName)
   /* See if table on installed or program path. */
 #ifdef _WIN32
   strcpy (trialPath, lou_getProgramPath ());
-  strcat (trialPath, "\\share\\liblouss\\tables\\");
+  strcat (trialPath, "\\share\\liblouis\\tables\\");
 #else
   strcpy (trialPath, TABLESDIR);
   strcat (trialPath, pathEnd);
