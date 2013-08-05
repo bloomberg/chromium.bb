@@ -1039,7 +1039,7 @@ String AccessibilityNodeObject::textUnderElement() const
     if (node && node->isTextNode())
         return toText(node)->wholeText();
 
-    String result;
+    StringBuilder builder;
     for (AccessibilityObject* child = firstChild(); child; child = child->nextSibling()) {
         if (!shouldUseAccessiblityObjectInnerText(child))
             continue;
@@ -1048,15 +1048,15 @@ String AccessibilityNodeObject::textUnderElement() const
             Vector<AccessibilityText> textOrder;
             toAccessibilityNodeObject(child)->alternativeText(textOrder);
             if (textOrder.size() > 0) {
-                result.append(textOrder[0].text);
+                builder.append(textOrder[0].text);
                 continue;
             }
         }
 
-        result.append(child->textUnderElement());
+        builder.append(child->textUnderElement());
     }
 
-    return result;
+    return builder.toString();
 }
 
 String AccessibilityNodeObject::accessibilityDescription() const
