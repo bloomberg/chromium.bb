@@ -273,7 +273,7 @@ class BlinkIDLParser(IDLParser):
             p[0] = self.BuildProduction('ExtAttributes', p, 1, items)
 
     # [b50] Allow optional trailing comma
-    # FIXME: Blink-only, but bug filed to change spec:
+    # Blink-only, marked as WONTFIX in Web IDL spec:
     # https://www.w3.org/Bugs/Public/show_bug.cgi?id=22156
     def p_ExtendedAttributes(self, p):
         """ExtendedAttributes : ',' ExtendedAttribute ExtendedAttributes
