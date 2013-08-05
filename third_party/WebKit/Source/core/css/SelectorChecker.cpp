@@ -108,6 +108,9 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
         if (context.selector->isCustomPseudoElement()) {
             if (!matchesCustomPseudoElement(context.element, context.selector))
                 return SelectorFailsLocally;
+        } else if (context.selector->isContentPseudoElement()) {
+            if (!context.element->isInShadowTree() || !context.element->isInsertionPoint())
+                return SelectorFailsLocally;
         } else {
             if ((!context.elementStyle && m_mode == ResolvingStyle) || m_mode == QueryingRules)
                 return SelectorFailsLocally;
@@ -157,7 +160,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
 
     switch (relation) {
     case CSSSelector::Descendant:
-        if (context.selector->relationIsForShadowDistributed()) {
+        if (context.selector->relationIsAffectedByPseudoContent()) {
             for (Element* element = context.element; element; element = element->parentElement()) {
                 if (matchForShadowDistributed(element, siblingTraversalStrategy, ignoreDynamicPseudo, nextContext) == SelectorMatches)
                     return SelectorMatches;
@@ -176,7 +179,7 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
         }
         return SelectorFailsCompletely;
     case CSSSelector::Child:
-        if (context.selector->relationIsForShadowDistributed())
+        if (context.selector->relationIsAffectedByPseudoContent())
             return matchForShadowDistributed(context.element, siblingTraversalStrategy, ignoreDynamicPseudo, nextContext);
         nextContext.element = context.element->parentElement();
         if (!nextContext.element)

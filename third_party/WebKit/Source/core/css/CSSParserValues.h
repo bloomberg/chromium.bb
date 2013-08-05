@@ -211,7 +211,8 @@ public:
     void setMatch(CSSSelector::Match value) { m_selector->m_match = value; }
     void setRelation(CSSSelector::Relation value) { m_selector->m_relation = value; }
     void setForPage() { m_selector->setForPage(); }
-    void setRelationIsForShadowDistributed() { m_selector->setRelationIsForShadowDistributed(); }
+    void setRelationIsAffectedByPseudoContent() { m_selector->setRelationIsAffectedByPseudoContent(); }
+    bool relationIsAffectedByPseudoContent() const { return m_selector->relationIsAffectedByPseudoContent(); }
     void setMatchUserAgentOnly() { m_selector->setMatchUserAgentOnly(); }
 
     void adoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& selectorVector);
@@ -220,6 +221,7 @@ public:
     void setFunctionArgumentSelector(CSSParserSelector* selector) { m_functionArgumentSelector = selector; }
     bool isDistributedPseudoElement() const { return m_selector->isDistributedPseudoElement(); }
     CSSParserSelector* findDistributedPseudoElementSelector() const;
+    bool isContentPseudoElement() const { return m_selector->isContentPseudoElement(); }
 
     CSSSelector::PseudoType pseudoType() const { return m_selector->pseudoType(); }
     bool isCustomPseudoElement() const { return m_selector->isCustomPseudoElement(); }

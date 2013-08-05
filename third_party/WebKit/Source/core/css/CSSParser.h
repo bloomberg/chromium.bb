@@ -344,6 +344,8 @@ public:
     QualifiedName determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName);
 
     CSSParserSelector* rewriteSpecifiersWithElementName(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector*, bool isNamespacePlaceholder = false);
+    CSSParserSelector* rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector* specifiers, bool tagIsForNamespaceRule);
+    CSSParserSelector* rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector* specifiers, bool tagIsForNamespaceRule);
     CSSParserSelector* rewriteSpecifiersWithNamespaceIfNeeded(CSSParserSelector*);
     CSSParserSelector* rewriteSpecifiers(CSSParserSelector*, CSSParserSelector*);
     CSSParserSelector* rewriteSpecifiersForShadowDistributed(CSSParserSelector* specifiers, CSSParserSelector* distributedPseudoElementSelector);

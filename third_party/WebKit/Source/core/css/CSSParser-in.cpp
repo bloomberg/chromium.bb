@@ -11208,14 +11208,21 @@ CSSParserSelector* CSSParser::rewriteSpecifiersWithElementName(const AtomicStrin
         return rewriteSpecifiersForShadowDistributed(specifiers, distributedPseudoElementSelector);
     }
 
-    if (!specifiers->needsCrossingTreeScopeBoundary()) {
-        if (tag == anyQName())
-            return specifiers;
-        specifiers->prependTagSelector(tag, tagIsForNamespaceRule);
-        return specifiers;
-    }
+    if (specifiers->needsCrossingTreeScopeBoundary())
+        return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, elementName, specifiers, tagIsForNamespaceRule);
 
-    // We should treat ::cue in the same way as custom pseudo element.
+    if (specifiers->isContentPseudoElement())
+        return rewriteSpecifiersWithElementNameForContentPseudoElement(tag, elementName, specifiers, tagIsForNamespaceRule);
+
+    if (tag == anyQName())
+        return specifiers;
+    if (!(specifiers->pseudoType() == CSSSelector::PseudoCue))
+        specifiers->prependTagSelector(tag, tagIsForNamespaceRule);
+    return specifiers;
+}
+
+CSSParserSelector* CSSParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
+{
     CSSParserSelector* lastShadowPseudo = specifiers;
     CSSParserSelector* history = specifiers;
     while (history->tagHistory()) {
@@ -11238,6 +11245,30 @@ CSSParserSelector* CSSParser::rewriteSpecifiersWithElementName(const AtomicStrin
     return specifiers;
 }
 
+CSSParserSelector* CSSParser::rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
+{
+    CSSParserSelector* last = specifiers;
+    CSSParserSelector* history = specifiers;
+    while (history->tagHistory()) {
+        history = history->tagHistory();
+        if (history->isContentPseudoElement() || history->relationIsAffectedByPseudoContent())
+            last = history;
+    }
+
+    if (last->tagHistory()) {
+        if (tag != anyQName())
+            last->tagHistory()->prependTagSelector(tag, tagIsForNamespaceRule);
+        return specifiers;
+    }
+
+    // For shadow-ID pseudo-elements to be correctly matched, the ShadowPseudo combinator has to be used.
+    // We therefore create a new Selector with that combinator here in any case, even if matching any (host) element in any namespace (i.e. '*').
+    OwnPtr<CSSParserSelector> elementNameSelector = adoptPtr(new CSSParserSelector(tag));
+    last->setTagHistory(elementNameSelector.release());
+    last->setRelation(CSSSelector::SubSelector);
+    return specifiers;
+}
+
 CSSParserSelector* CSSParser::rewriteSpecifiersForShadowDistributed(CSSParserSelector* specifiers, CSSParserSelector* distributedPseudoElementSelector)
 {
     CSSParserSelector* argumentSelector = distributedPseudoElementSelector->functionArgumentSelector();
@@ -11257,7 +11288,7 @@ CSSParserSelector* CSSParser::rewriteSpecifiersForShadowDistributed(CSSParserSel
     case CSSSelector::Child:
     case CSSSelector::Descendant:
         end->setTagHistory(sinkFloatingSelector(specifiers));
-        end->setRelationIsForShadowDistributed();
+        end->setRelationIsAffectedByPseudoContent();
         return argumentSelector;
     default:
         return 0;
@@ -11271,9 +11302,17 @@ CSSParserSelector* CSSParser::rewriteSpecifiers(CSSParserSelector* specifiers, C
         newSpecifier->appendTagHistory(CSSSelector::ShadowPseudo, sinkFloatingSelector(specifiers));
         return newSpecifier;
     }
+    if (newSpecifier->isContentPseudoElement()) {
+        newSpecifier->appendTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(specifiers));
+        return newSpecifier;
+    }
     if (specifiers->needsCrossingTreeScopeBoundary()) {
         // Specifiers for unknown pseudo element go right behind it in the chain.
         specifiers->insertTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier), CSSSelector::ShadowPseudo);
+        return specifiers;
+    }
+    if (specifiers->isContentPseudoElement()) {
+        specifiers->insertTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier), CSSSelector::SubSelector);
         return specifiers;
     }
     specifiers->appendTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier));

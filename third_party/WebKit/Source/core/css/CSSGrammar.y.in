@@ -1182,6 +1182,8 @@ selector:
         while (end->tagHistory())
             end = end->tagHistory();
         end->setRelation(CSSSelector::Descendant);
+        if ($1->isContentPseudoElement())
+            end->setRelationIsAffectedByPseudoContent();
         end->setTagHistory(parser->sinkFloatingSelector($1));
     }
     | selector combinator simple_selector {
@@ -1190,6 +1192,8 @@ selector:
         while (end->tagHistory())
             end = end->tagHistory();
         end->setRelation($2);
+        if ($1->isContentPseudoElement())
+            end->setRelationIsAffectedByPseudoContent();
         end->setTagHistory(parser->sinkFloatingSelector($1));
     }
     ;

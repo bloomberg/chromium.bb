@@ -161,7 +161,8 @@ namespace WebCore {
             PseudoSeamlessDocument,
             PseudoDistributed,
             PseudoPart,
-            PseudoUnresolved
+            PseudoUnresolved,
+            PseudoContent
         };
 
         enum MarginBoxType {
@@ -219,6 +220,7 @@ namespace WebCore {
         bool isSiblingSelector() const;
         bool isAttributeSelector() const;
         bool isDistributedPseudoElement() const;
+        bool isContentPseudoElement() const;
 
         Relation relation() const { return static_cast<Relation>(m_relation); }
 
@@ -232,8 +234,8 @@ namespace WebCore {
         bool isForPage() const { return m_isForPage; }
         void setForPage() { m_isForPage = true; }
 
-        bool relationIsForShadowDistributed() const { return m_relationIsForShadowDistributed; }
-        void setRelationIsForShadowDistributed() { m_relationIsForShadowDistributed = true; }
+        bool relationIsAffectedByPseudoContent() const { return m_relationIsAffectedByPseudoContent; }
+        void setRelationIsAffectedByPseudoContent() { m_relationIsAffectedByPseudoContent = true; }
 
         unsigned m_relation           : 3; // enum Relation
         mutable unsigned m_match      : 4; // enum Match
@@ -246,7 +248,7 @@ namespace WebCore {
         unsigned m_hasRareData            : 1;
         unsigned m_isForPage              : 1;
         unsigned m_tagIsForNamespaceRule  : 1;
-        unsigned m_relationIsForShadowDistributed  : 1;
+        unsigned m_relationIsAffectedByPseudoContent  : 1;
 
         unsigned specificityForOneSelector() const;
         unsigned specificityForPage() const;
@@ -341,6 +343,11 @@ inline bool CSSSelector::isDistributedPseudoElement() const
     return m_match == PseudoElement && pseudoType() == PseudoDistributed;
 }
 
+inline bool CSSSelector::isContentPseudoElement() const
+{
+    return m_match == PseudoElement && pseudoType() == PseudoContent;
+}
+
 inline void CSSSelector::setValue(const AtomicString& value)
 {
     ASSERT(m_match != Tag);
@@ -369,7 +376,7 @@ inline CSSSelector::CSSSelector()
     , m_hasRareData(false)
     , m_isForPage(false)
     , m_tagIsForNamespaceRule(false)
-    , m_relationIsForShadowDistributed(false)
+    , m_relationIsAffectedByPseudoContent(false)
 {
 }
 
@@ -383,7 +390,7 @@ inline CSSSelector::CSSSelector(const QualifiedName& tagQName, bool tagIsForName
     , m_hasRareData(false)
     , m_isForPage(false)
     , m_tagIsForNamespaceRule(tagIsForNamespaceRule)
-    , m_relationIsForShadowDistributed(false)
+    , m_relationIsAffectedByPseudoContent(false)
 {
     m_data.m_tagQName = tagQName.impl();
     m_data.m_tagQName->ref();
@@ -399,7 +406,7 @@ inline CSSSelector::CSSSelector(const CSSSelector& o)
     , m_hasRareData(o.m_hasRareData)
     , m_isForPage(o.m_isForPage)
     , m_tagIsForNamespaceRule(o.m_tagIsForNamespaceRule)
-    , m_relationIsForShadowDistributed(o.m_relationIsForShadowDistributed)
+    , m_relationIsAffectedByPseudoContent(o.m_relationIsAffectedByPseudoContent)
 {
     if (o.m_match == Tag) {
         m_data.m_tagQName = o.m_data.m_tagQName;

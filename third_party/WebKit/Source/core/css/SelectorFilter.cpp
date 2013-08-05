@@ -140,7 +140,7 @@ bool SelectorFilter::fastRejectSelector(const CSSSelector* selector) const
     size_t remainingHashesToCheck = 4;
 
     CSSSelector::Relation relation = selector->relation();
-    bool relationIsForShadowDistributed = selector->relationIsForShadowDistributed();
+    bool relationIsAffectedByPseudoContent = selector->relationIsAffectedByPseudoContent();
 
     // Skip the topmost selector. It is handled quickly by the rule hashes.
     bool skipOverSubselectors = true;
@@ -164,7 +164,7 @@ bool SelectorFilter::fastRejectSelector(const CSSSelector* selector) const
             break;
         case CSSSelector::Descendant:
         case CSSSelector::Child:
-            if (relationIsForShadowDistributed) {
+            if (relationIsAffectedByPseudoContent) {
                 skipOverSubselectors = true;
                 break;
             }
@@ -179,7 +179,7 @@ bool SelectorFilter::fastRejectSelector(const CSSSelector* selector) const
         }
 
         relation = selector->relation();
-        relationIsForShadowDistributed = selector->relationIsForShadowDistributed();
+        relationIsAffectedByPseudoContent = selector->relationIsAffectedByPseudoContent();
     }
 
     return false;

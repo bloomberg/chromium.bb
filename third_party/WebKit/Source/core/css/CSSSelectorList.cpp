@@ -183,7 +183,7 @@ class SelectorHasShadowDistributed {
 public:
     bool operator()(const CSSSelector* selector)
     {
-        return selector->relationIsForShadowDistributed();
+        return selector->relationIsAffectedByPseudoContent();
     }
 };
 
