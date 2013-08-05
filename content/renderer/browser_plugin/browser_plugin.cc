@@ -1357,7 +1357,7 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
     browser_plugin_manager()->Send(
         new BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent(
             render_view_routing_id_,
-            instance_id_,
+            guest_instance_id_,
             edit_commands_));
     edit_commands_.clear();
   }
