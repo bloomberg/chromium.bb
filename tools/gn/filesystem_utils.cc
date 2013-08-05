@@ -100,6 +100,24 @@ SourceFileType GetSourceFileType(const SourceFile& file,
 const char* GetExtensionForOutputType(Target::OutputType type,
                                       Settings::TargetOS os) {
   switch (os) {
+    case Settings::MAC:
+      switch (type) {
+        case Target::NONE:
+          NOTREACHED();
+          return "";
+        case Target::EXECUTABLE:
+          return "";
+        case Target::SHARED_LIBRARY:
+          return "dylib";
+        case Target::STATIC_LIBRARY:
+          return "a";
+        case Target::LOADABLE_MODULE:
+          return "dylib";  // TODO(brettw) what's this?
+        default:
+          NOTREACHED();
+      }
+      break;
+
     case Settings::WIN:
       switch (type) {
         case Target::NONE:

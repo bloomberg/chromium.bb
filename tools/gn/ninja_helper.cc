@@ -114,6 +114,14 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
     return ret;
   }
 
+  // This is prepended to the output file name.
+  const char* prefix;
+  if (target->settings()->IsWin()) {
+    prefix = "";
+  } else {
+    prefix = "lib";
+  }
+
   const char* extension;
   if (target->output_type() == Target::NONE ||
       target->output_type() == Target::COPY_FILES ||
@@ -136,20 +144,26 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
            target->output_type() == Target::STATIC_LIBRARY)) ||
       (target->settings()->IsWin() &&
        target->output_type() == Target::SHARED_LIBRARY)) {
-    // Generate a name like "<toolchain>/<name>.<extension>".
+    // Generate a name like "<toolchain>/<prefix><name>.<extension>".
+    ret.value().append(prefix);
     ret.value().append(target->label().name());
-    ret.value().push_back('.');
-    ret.value().append(extension);
+    if (extension[0]) {
+      ret.value().push_back('.');
+      ret.value().append(extension);
+    }
     return ret;
   }
 
   // Libraries go into the library subdirectory like
-  // "<toolchain>/lib/<name>.<extension>".
+  // "<toolchain>/lib/<prefix><name>.<extension>".
   if (target->output_type() == Target::SHARED_LIBRARY) {
     ret.value().append(kLibDirWithSlash);
+    ret.value().append(prefix);
     ret.value().append(target->label().name());
-    ret.value().push_back('.');
-    ret.value().append(extension);
+    if (extension[0]) {
+      ret.value().push_back('.');
+      ret.value().append(extension);
+    }
     return ret;
   }
 
@@ -159,7 +173,9 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
   AppendStringPiece(&ret.value(),
                     target->label().dir().SourceAbsoluteWithOneSlash());
   ret.value().append(target->label().name());
-  ret.value().push_back('.');
-  ret.value().append(extension);
+  if (extension[0]) {
+    ret.value().push_back('.');
+    ret.value().append(extension);
+  }
   return ret;
 }

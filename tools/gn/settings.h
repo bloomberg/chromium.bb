@@ -52,6 +52,7 @@ class Settings {
   const Toolchain* toolchain() const { return toolchain_; }
 
   bool IsMac() const { return target_os_ == MAC; }
+  bool IsLinux() const { return target_os_ == LINUX; }
   bool IsWin() const { return target_os_ == WIN; }
 
   TargetOS target_os() const { return target_os_; }

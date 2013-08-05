@@ -77,7 +77,9 @@ NinjaTargetWriter::~NinjaTargetWriter() {
 }
 
 void NinjaTargetWriter::Run() {
-  out_ << "arch = environment.x86\n";
+  // TODO(brettw) have a better way to do the environment setup on Windows.
+  if (target_->settings()->IsWin())
+    out_ << "arch = environment.x86\n";
 
   if (target_->output_type() == Target::COPY_FILES) {
     WriteCopyRules();
@@ -418,10 +420,10 @@ void NinjaTargetWriter::WriteLinkerStuff(
   // Linker flags, append manifest flag on Windows to reference our file.
   out_ << "ldflags =";
   RecursiveTargetConfigStringsToStream(target_, &ConfigValues::ldflags, out_);
-  if (settings_->IsWin())
+  // HACK ERASEME BRETTW FIXME
+  if (settings_->IsWin()) {
     out_ << " /MANIFEST /ManifestFile:";
     path_output_.WriteFile(out_, windows_manifest);
-  {  // HACK ERASEME BRETTW FIXME
     out_ << " /DEBUG /MACHINE:X86 /LIBPATH:\"C:\\Program Files (x86)\\Windows Kits\\8.0\\Lib\\win8\\um\\x86\" /DELAYLOAD:dbghelp.dll /DELAYLOAD:dwmapi.dll /DELAYLOAD:shell32.dll /DELAYLOAD:uxtheme.dll /safeseh /dynamicbase /ignore:4199 /ignore:4221 /nxcompat /SUBSYSTEM:CONSOLE /INCREMENTAL /FIXED:NO /DYNAMICBASE:NO wininet.lib dnsapi.lib version.lib msimg32.lib ws2_32.lib usp10.lib psapi.lib dbghelp.lib winmm.lib shlwapi.lib kernel32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib user32.lib uuid.lib odbc32.lib odbccp32.lib delayimp.lib /NXCOMPAT";
   }
   out_ << std::endl;
@@ -441,7 +443,7 @@ void NinjaTargetWriter::WriteLinkerStuff(
     if (settings_->IsWin()) {
       internal_output_file = OutputFile(target_->label().name() + ".dll");
     } else {
-      NOTREACHED();  // TODO(brettw) write this.
+      internal_output_file = external_output_file;
     }
   } else {
     internal_output_file = external_output_file;

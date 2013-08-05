@@ -4,9 +4,12 @@
 
 #include <algorithm>
 #include <set>
+#include <sstream>
 
+#include "base/command_line.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/config.h"
+#include "tools/gn/config_values_extractors.h"
 #include "tools/gn/item.h"
 #include "tools/gn/item_node.h"
 #include "tools/gn/label.h"
@@ -23,56 +26,6 @@ struct CompareTargetLabel {
     return a->label() < b->label();
   }
 };
-
-const Target* GetTargetForDesc(const std::vector<std::string>& args) {
-  // Deliberately leaked to avoid expensive process teardown.
-  Setup* setup = new Setup;
-  if (!setup->DoSetup())
-    return NULL;
-
-  // FIXME(brettw): set the output dir to be a sandbox one to avoid polluting
-  // the real output dir with files written by the build scripts.
-
-  // Do the actual load. This will also write out the target ninja files.
-  if (!setup->Run())
-    return NULL;
-
-  // Need to resolve the label after we know the default toolchain.
-  // TODO(brettw) find the current directory and resolve the input label
-  // relative to that.
-  Label default_toolchain = setup->build_settings().toolchain_manager()
-      .GetDefaultToolchainUnlocked();
-  Value arg_value(NULL, args[0]);
-  Err err;
-  Label label = Label::Resolve(SourceDir(), default_toolchain, arg_value, &err);
-  if (err.has_error()) {
-    err.PrintToStdout();
-    return NULL;
-  }
-
-  ItemNode* node;
-  {
-    base::AutoLock lock(setup->build_settings().item_tree().lock());
-    node = setup->build_settings().item_tree().GetExistingNodeLocked(label);
-  }
-  if (!node) {
-    Err(Location(), "",
-        "I don't know about this \"" + label.GetUserVisibleName(false) +
-        "\"").PrintToStdout();
-    return NULL;
-  }
-
-  const Target* target = node->item()->AsTarget();
-  if (!target) {
-    Err(Location(), "Not a target.",
-        "The \"" + label.GetUserVisibleName(false) + "\" thing\n"
-        "is not a target. Somebody should probably implement this command for "
-        "other\nitem types.");
-    return NULL;
-  }
-
-  return target;
-}
 
 void RecursiveCollectDeps(const Target* target, std::set<Label>* result) {
   if (result->find(target->label()) != result->end())
@@ -99,6 +52,153 @@ void RecursivePrintDeps(const Target* target,
   }
 }
 
+void PrintDeps(const Target* target, bool display_header) {
+  Label toolchain_label = target->label().GetToolchainLabel();
+
+  // Tree mode is separate.
+  if (CommandLine::ForCurrentProcess()->HasSwitch("tree")) {
+    if (display_header)
+      OutputString("\nDependency tree:\n");
+    RecursivePrintDeps(target, toolchain_label, 1);
+    return;
+  }
+
+  // Collect the deps to display.
+  std::vector<Label> deps;
+  if (CommandLine::ForCurrentProcess()->HasSwitch("all")) {
+    if (display_header)
+      OutputString("\nAll recursive dependencies:\n");
+
+    std::set<Label> all_deps;
+    RecursiveCollectDeps(target, &all_deps);
+    for (std::set<Label>::iterator i = all_deps.begin();
+         i != all_deps.end(); ++i)
+      deps.push_back(*i);
+  } else {
+    if (display_header) {
+      OutputString("\nDirect dependencies "
+                   "(try also \"--all\" and \"--tree\"):\n");
+    }
+
+    const std::vector<const Target*>& target_deps = target->deps();
+    for (size_t i = 0; i < target_deps.size(); i++)
+      deps.push_back(target_deps[i]->label());
+  }
+
+  std::sort(deps.begin(), deps.end());
+  for (size_t i = 0; i < deps.size(); i++)
+    OutputString("  " + deps[i].GetUserVisibleName(toolchain_label) + "\n");
+}
+
+void PrintConfigs(const Target* target, bool display_header) {
+  // Configs (don't sort since the order determines how things are processed).
+  if (display_header)
+    OutputString("\nConfigs (in order applying):\n");
+
+  Label toolchain_label = target->label().GetToolchainLabel();
+  const std::vector<const Config*>& configs = target->configs();
+  for (size_t i = 0; i < configs.size(); i++) {
+    OutputString("  " +
+        configs[i]->label().GetUserVisibleName(toolchain_label) + "\n");
+  }
+}
+
+void PrintSources(const Target* target, bool display_header) {
+  if (display_header)
+    OutputString("\nSources:\n");
+
+  Target::FileList sources = target->sources();
+  std::sort(sources.begin(), sources.end());
+  for (size_t i = 0; i < sources.size(); i++)
+    OutputString("  " + sources[i].value() + "\n");
+}
+
+// Attempts to attribute the gen dependency of the given target to some source
+// code and outputs the string to the output stream.
+//
+// The attribution of the source of the dependencies is stored in the ItemNode
+// which is the parallel structure to the target dependency map, so we have
+// to jump through a few loops to find everything.
+void OutputSourceOfDep(const Target* target,
+                       const Label& dep_label,
+                       std::ostream& out) {
+  ItemTree& item_tree = target->settings()->build_settings()->item_tree();
+  base::AutoLock lock(item_tree.lock());
+
+  ItemNode* target_node = item_tree.GetExistingNodeLocked(target->label());
+  CHECK(target_node);
+  ItemNode* dep_node = item_tree.GetExistingNodeLocked(dep_label);
+  CHECK(dep_node);
+
+  const ItemNode::ItemNodeMap& direct_deps = target_node->direct_dependencies();
+  ItemNode::ItemNodeMap::const_iterator found = direct_deps.find(dep_node);
+  if (found == direct_deps.end())
+    return;
+
+  const Location& location = found->second.begin();
+  out << "       (Added by " + location.file()->name().value() << ":"
+      << location.line_number() << ")\n";
+}
+
+// Templatized writer for writing out different config value types.
+template<typename T> struct DescValueWriter {};
+template<> struct DescValueWriter<std::string> {
+  void operator()(const std::string& str, std::ostream& out) const {
+    out << "    " << str << "\n";
+  }
+};
+template<> struct DescValueWriter<SourceFile> {
+  void operator()(const SourceFile& file, std::ostream& out) const {
+    out << "    " << file.value() << "\n";
+  }
+};
+template<> struct DescValueWriter<SourceDir> {
+  void operator()(const SourceDir& dir, std::ostream& out) const {
+    out << "    " << dir.value() << "\n";
+  }
+};
+
+// Writes a given config value type to the string, optionally with attribution.
+// This should match RecursiveTargetConfigToStream in the order it traverses.
+template<typename T> void OutputRecursiveTargetConfig(
+    const Target* target,
+    const char* header_name,
+    const std::vector<T>& (ConfigValues::* getter)() const) {
+  bool display_blame = CommandLine::ForCurrentProcess()->HasSwitch("blame");
+
+  DescValueWriter<T> writer;
+  std::ostringstream out;
+
+  // First write the values from the config itself.
+  if (!(target->config_values().*getter)().empty()) {
+    if (display_blame)
+      out << "  From " << target->label().GetUserVisibleName(false) << "\n";
+    ConfigValuesToStream(target->config_values(), getter, writer, out);
+  }
+
+  // TODO(brettw) annotate where forced config includes came from!
+
+  // Then write the configs in order.
+  for (size_t i = 0; i < target->configs().size(); i++) {
+    const Config* config = target->configs()[i];
+    const ConfigValues& values = config->config_values();
+
+    if (!(values.*getter)().empty()) {
+      if (display_blame) {
+        out << "  From " << config->label().GetUserVisibleName(false) << "\n";
+        OutputSourceOfDep(target, config->label(), out);
+      }
+      ConfigValuesToStream(values, getter, writer, out);
+    }
+  }
+
+  std::string out_str = out.str();
+  if (!out_str.empty()) {
+    OutputString(std::string(header_name) + "\n");
+    OutputString(out_str);
+  }
+}
+
 }  // namespace
 
 // desc ------------------------------------------------------------------------
@@ -107,24 +207,101 @@ const char kDesc[] = "desc";
 const char kDesc_HelpShort[] =
     "desc: Show lots of insightful information about a target.";
 const char kDesc_Help[] =
-    "gn desc <target label>\n"
-    "  Displays all recursive dependencies for a given labeled target.\n"
+    "gn desc <target label> [<what to show>] [--blame] [--all | --tree]\n"
+    "  Displays information about a given labeled target.\n"
     "\n"
-    "  See \"gn help\" for the common command-line switches.\n"
+    "Possibilities for <what to show>:\n"
+    "  (If unspecified an overall summary will be displayed.)\n"
+    "\n"
+    "  sources\n"
+    "      Source files.\n"
+    "\n"
+    "  configs\n"
+    "      Shows configs applied to the given target, sorted in the order\n"
+    "      they're specified. This includes both configs specified in the\n"
+    "      \"configs\" variable, as well as configs pushed onto this target\n"
+    "      via dependencies specifying \"all\" or \"direct\" dependent\n"
+    "      configs.\n"
+    "\n"
+    "  deps [--all | --tree]\n"
+    "      Show immediate (or, when \"--all\" or \"--tree\" is specified,\n"
+    "      recursive) dependencies of the given target. \"--tree\" shows them\n"
+    "      in a tree format. Otherwise, they will be sorted alphabetically.\n"
+    "\n"
+    "  defines    [--blame]\n"
+    "  includes   [--blame]\n"
+    "  cflags     [--blame]\n"
+    "  cflags_cc  [--blame]\n"
+    "  cflags_cxx [--blame]\n"
+    "  ldflags    [--blame]\n"
+    "      Shows the given values taken from the target and all configs\n"
+    "      applying. See \"--blame\" below.\n"
+    "\n"
+    "  --blame\n"
+    "      Used with any value specified by a config, this will name\n"
+    "      the config that specified the value.\n"
+    "\n"
+    "Note:\n"
+    "  This command will show the full name of directories and source files,\n"
+    "  but when directories and source paths are written to the build file,\n"
+    "  they will be adjusted to be relative to the build directory. So the\n"
+    "  values for paths displayed by this command won't match (but should\n"
+    "  mean the same thing.\n"
     "\n"
     "Examples:\n"
-    "  gn desc //base:base\n";
+    "  gn desc //base:base\n"
+    "      Summarizes the given target.\n"
+    "\n"
+    "  gn desc :base_unittests deps --tree\n"
+    "      Shows a dependency tree of the \"base_unittests\" project in\n"
+    "      the current directory.\n"
+    "\n"
+    "  gn desc //base defines --blame\n"
+    "      Shows defines set for the //base:base target, annotated by where\n"
+    "      each one was set from.\n";
 
 int RunDesc(const std::vector<std::string>& args) {
-  if (args.size() != 1) {
+  if (args.size() != 1 && args.size() != 2) {
     Err(Location(), "You're holding it wrong.",
-        "Usage: \"gn desc <target_name>\"").PrintToStdout();
+        "Usage: \"gn desc <target_name> <what to display>\"").PrintToStdout();
     return 1;
   }
 
   const Target* target = GetTargetForDesc(args);
   if (!target)
     return 1;
+
+#define CONFIG_VALUE_HANDLER(name) \
+    } else if (what == #name) { \
+      OutputRecursiveTargetConfig(target, #name, &ConfigValues::name);
+
+  if (args.size() == 2) {
+    // User specified one thing to display.
+    const std::string& what = args[1];
+    if (what == "configs") {
+      PrintConfigs(target, false);
+    } else if (what == "sources") {
+      PrintSources(target, false);
+    } else if (what == "deps") {
+      PrintDeps(target, false);
+
+    CONFIG_VALUE_HANDLER(defines)
+    CONFIG_VALUE_HANDLER(includes)
+    CONFIG_VALUE_HANDLER(cflags)
+    CONFIG_VALUE_HANDLER(cflags_c)
+    CONFIG_VALUE_HANDLER(cflags_cc)
+    CONFIG_VALUE_HANDLER(ldflags)
+
+    } else {
+      OutputString("Don't know how to display \"" + what + "\".\n");
+      return 1;
+    }
+
+#undef CONFIG_VALUE_HANDLER
+    return 0;
+  }
+
+  // Display summary.
 
   // Generally we only want to display toolchains on labels when the toolchain
   // is different than the default one for this target (which we always print
@@ -141,105 +318,12 @@ int RunDesc(const std::vector<std::string>& args) {
   OutputString(std::string(
       std::max(title_target.size(), title_toolchain.size()), '=') + "\n");
 
-  OutputString("Sources:\n");
-  const Target::FileList& sources = target->sources();
-  for (size_t i = 0; i < sources.size(); i++)
-    OutputString("  " + sources[i].value() + "\n");
-
-  // Configs (don't sort since the order determines how things are processed).
-  OutputString("\nConfigs:\n");
-  const std::vector<const Config*>& configs = target->configs();
-  for (size_t i = 0; i < configs.size(); i++) {
-    OutputString("  " +
-        configs[i]->label().GetUserVisibleName(target_toolchain) + "\n");
-  }
-
-  // Deps. Sorted for convenience. Sort the labels rather than the strings so
-  // that "//foo:bar" comes before "//foo/third_party:bar".
-  OutputString("\nDirect dependencies:\n"
-               "(Use \"gn deps\" or \"gn tree\" to display recursive deps.)\n");
-  const std::vector<const Target*>& deps = target->deps();
-  std::vector<Label> sorted_deps;
-  for (size_t i = 0; i < deps.size(); i++)
-    sorted_deps.push_back(deps[i]->label());
-  std::sort(sorted_deps.begin(), sorted_deps.end());
-  for (size_t i = 0; i < sorted_deps.size(); i++) {
-    OutputString("  " + sorted_deps[i].GetUserVisibleName(target_toolchain) +
-                 "\n");
-  }
-  return 0;
-}
-
-// deps ------------------------------------------------------------------------
-
-const char kDeps[] = "deps";
-const char kDeps_HelpShort[] =
-    "deps: Show all recursive dependencies of a target.";
-const char kDeps_Help[] =
-    "gn deps <target label>\n"
-    "  Displays all recursive dependencies for a given labeled target.\n"
-    "\n"
-    "  See \"gn help\" for the common command-line switches.\n"
-    "\n"
-    "Examples:\n"
-    "  gn deps //base:base\n";
-
-int RunDeps(const std::vector<std::string>& args) {
-  if (args.size() != 1) {
-    Err(Location(), "You're holding it wrong.",
-        "Usage: \"gn deps <target_name>\"").PrintToStdout();
-    return 1;
-  }
-
-  const Target* target = GetTargetForDesc(args);
-  if (!target)
-    return 1;
-
-  // Generally we only want to display toolchains on labels when the toolchain
-  // is different than the default one for this target (which we always print
-  // in the header).
-  Label target_toolchain = target->label().GetToolchainLabel();
-
-  std::set<Label> all_deps;
-  RecursiveCollectDeps(target, &all_deps);
-
-  OutputString("Recursive dependencies of " +
-               target->label().GetUserVisibleName(true) + "\n",
-               DECORATION_YELLOW);
-
-  for (std::set<Label>::iterator i = all_deps.begin();
-       i != all_deps.end(); ++i)
-    OutputString("  " + i->GetUserVisibleName(target_toolchain) + "\n");
-  return 0;
-}
-
-// tree ------------------------------------------------------------------------
-
-const char kTree[] = "tree";
-const char kTree_HelpShort[] =
-    "tree: Show dependency tree for a target.";
-const char kTree_Help[] =
-    "gn tree <target label>\n"
-    "  Displays a dependecy tree for the given labeled target.\n"
-    "\n"
-    "  See \"gn help\" for the common command-line switches.\n"
-    "\n"
-    "Examples:\n"
-    "  gn tree //base:base\n";
-
-int RunTree(const std::vector<std::string>& args) {
-  if (args.size() != 1) {
-    Err(Location(), "You're holding it wrong.",
-        "Usage: \"gn tree <target_name>\"").PrintToStdout();
-    return 1;
-  }
-
-  const Target* target = GetTargetForDesc(args);
-  if (!target)
-    return 1;
-
-  OutputString(target->label().GetUserVisibleName(false) + "\n");
-  RecursivePrintDeps(target, target->label().GetToolchainLabel(), 1);
+  PrintSources(target, true);
+  PrintConfigs(target, true);
+  OutputString("\n  (Use \"gn desc <label> <thing you want to see>\" to show "
+               "the actual values\n   applied by the different configs. "
+               "See \"gn help desc\" for more.)\n");
+  PrintDeps(target, true);
 
   return 0;
 }

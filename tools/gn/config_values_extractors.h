@@ -24,21 +24,26 @@ inline void ConfigValuesToStream(
     writer(v[i], out);
 };
 
+// Writes a given config value that applies to a given target. This collects
+// all values from the target itself and all configs that apply, and writes
+// then in order.
 template<typename T, class Writer>
 inline void RecursiveTargetConfigToStream(
     const Target* target,
     const std::vector<T>& (ConfigValues::* getter)() const,
     const Writer& writer,
     std::ostream& out) {
-  // Write all configs in reverse order (to get oldest first, which will look
-  // more normal in the output).
-  for (int i = static_cast<int>(target->configs().size() - 1); i >= 0; i--) {
+  // Note: if you make any changes to this, also change the writer in the
+  // implementation of the "desc" command.
+
+  // First write the values from the config itself.
+  ConfigValuesToStream(target->config_values(), getter, writer, out);
+
+  // Then write the configs in order.
+  for (size_t i = 0; i < target->configs().size(); i++) {
     ConfigValuesToStream(target->configs()[i]->config_values(), getter,
                          writer, out);
   }
-
-  // Last write from the config from the Target itself, if any.
-  ConfigValuesToStream(target->config_values(), getter, writer, out);
 }
 
 // Writes the values out as strings with no transformation.

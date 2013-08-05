@@ -1,8 +1,4 @@
 config("my_msvs") {
-  includes = [ "../.." ]
-  cflags = [
-       "/Od", "/WX", "/Zi", "/Gy", "/GS", "/RTC1", "/EHsc",
-  ]
   defines = [
       "CHROMIUM_BUILD",
       "TOOLKIT_VIEWS=1",

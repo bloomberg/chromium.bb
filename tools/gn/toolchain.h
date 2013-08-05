@@ -27,6 +27,8 @@ class Toolchain : public Item {
     TYPE_NONE = 0,
     TYPE_CC,
     TYPE_CXX,
+    TYPE_OBJC,
+    TYPE_OBJCXX,
     TYPE_ASM,
     TYPE_ALINK,
     TYPE_SOLINK,
@@ -40,6 +42,8 @@ class Toolchain : public Item {
 
   static const char* kToolCc;
   static const char* kToolCxx;
+  static const char* kToolObjC;
+  static const char* kToolObjCxx;
   static const char* kToolAsm;
   static const char* kToolAlink;
   static const char* kToolSolink;

@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "tools/gn/err.h"
 #include "tools/gn/item.h"
 #include "tools/gn/item_node.h"
@@ -23,13 +24,25 @@ SourceFile DirToBuildFile(const SourceDir& dir) {
 }
 
 void SetSystemVars(const Settings& settings, Scope* scope) {
-  // FIXME(brettw) port.
+#if defined(OS_WIN)
   scope->SetValue("is_win", Value(NULL, 1), NULL);
-  scope->SetValue("is_linux", Value(NULL, 0), NULL);
   scope->SetValue("is_posix", Value(NULL, 0), NULL);
+#else
+  scope->SetValue("is_win", Value(NULL, 0), NULL);
+  scope->SetValue("is_posix", Value(NULL, 1), NULL);
+#endif
+
+#if defined(OS_MACOSX)
+  scope->SetValue("is_mac", Value(NULL, 1), NULL);
+#else
   scope->SetValue("is_mac", Value(NULL, 0), NULL);
-  scope->SetValue("is_android", Value(NULL, 0), NULL);
-  scope->SetValue("is_ios", Value(NULL, 0), NULL);
+#endif
+
+#if defined(OS_LINUX)
+  scope->SetValue("is_linux", Value(NULL, 1), NULL);
+#else
+  scope->SetValue("is_linux", Value(NULL, 0), NULL);
+#endif
 
   // Set this value without the terminating slash because the code expects
   // $root_output_dir/foo to work.

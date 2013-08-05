@@ -13,9 +13,11 @@
 # Use "is_*" names for intrinsic platform descriptions and build modes, and
 # "use_*" names for optional features libraries, and configurations.
 declare_args() {
+  is_android = 0
   is_component_build = 1
   is_chromeos = 0
   is_debug = 1
+  is_ios = 0
   use_ash = 0
   use_aura = 0
   use_ozone = 0
@@ -151,19 +153,24 @@ if (is_component_build) {
 native_compiler_configs = [
   "//build/config:my_msvs",  # TODO(brettw) eraseme
 
+  "//build/config/compiler:compiler",
   "//build/config/compiler:chromium_code",
-  "//build/config/compiler:disable_annoying_warnings",
+  "//build/config/compiler:default_warnings",
   "//build/config/compiler:no_rtti",
   "//build/config/compiler:runtime_library",
 ]
 if (is_win) {
   native_compiler_configs += "//build/config/win:sdk"
+} else if (is_mac) {
+  # TODO(brettw) this should be in an if (is_clang) block instead but I haven't
+  # written an is_clang flag yet.
+  native_compiler_configs += "//build/config/clang:find_bad_constructs"
 }
 
 if (is_debug) {
   native_compiler_configs += "//build/config:debug"
 } else {
-  native_compiler_configs += "//build/config::release"
+  native_compiler_configs += "//build/config:release"
 }
 
 set_defaults("executable") {
@@ -184,4 +191,6 @@ set_defaults("shared_library") {
 
 if (is_win) {
   set_default_toolchain("//build/config/win:32")
+} else if (is_mac) {
+  set_default_toolchain("//build/config/mac:clang")
 }

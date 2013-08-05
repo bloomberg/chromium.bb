@@ -43,7 +43,7 @@ class ItemTree {
   ~ItemTree();
 
   // This lock must be held when calling the "Locked" functions below.
-  base::Lock& lock() { return lock_; }
+  base::Lock& lock() const { return lock_; }
 
   // Returns NULL if the item is not found.
   //

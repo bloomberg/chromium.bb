@@ -29,10 +29,14 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   CommandLine::Init(argc, argv);
 
-  std::vector<std::string> args = GetArgs(*CommandLine::ForCurrentProcess());
+  const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
+  std::vector<std::string> args = GetArgs(cmdline);
 
   std::string command;
-  if (args.empty()) {
+  if (cmdline.HasSwitch("help")) {
+    // Make "--help" default to help command.
+    command = commands::kHelp;
+  } else if (args.empty()) {
     command = commands::kGen;
   } else {
     command = args[0];
