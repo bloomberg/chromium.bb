@@ -208,7 +208,7 @@ void ThemeSyncableService::SetCurrentThemeFromThemeSpecifics(
     string id(theme_specifics.custom_theme_id());
     GURL update_url(theme_specifics.custom_theme_update_url());
     DVLOG(1) << "Applying theme " << id << " with update_url " << update_url;
-    ExtensionServiceInterface* extensions_service =
+    ExtensionService* extensions_service =
         extensions::ExtensionSystem::Get(profile_)->extension_service();
     CHECK(extensions_service);
     const extensions::Extension* extension =
@@ -218,8 +218,12 @@ void ThemeSyncableService::SetCurrentThemeFromThemeSpecifics(
         DVLOG(1) << "Extension " << id << " is not a theme; aborting";
         return;
       }
-      if (!extensions_service->IsExtensionEnabled(id)) {
-        DVLOG(1) << "Theme " << id << " is not enabled; aborting";
+      int disabled_reasons =
+          extensions_service->extension_prefs()->GetDisableReasons(id);
+      if (!extensions_service->IsExtensionEnabled(id) &&
+          disabled_reasons != extensions::Extension::DISABLE_USER_ACTION) {
+        DVLOG(1) << "Theme " << id << " is disabled with reason "
+                 << disabled_reasons << "; aborting";
         return;
       }
       // An enabled theme extension with the given id was found, so
