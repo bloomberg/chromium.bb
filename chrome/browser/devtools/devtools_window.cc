@@ -42,6 +42,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
@@ -71,6 +72,7 @@ base::LazyInstance<DevToolsWindowList>::Leaky
 
 using base::Bind;
 using base::Callback;
+using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
@@ -236,6 +238,11 @@ DevToolsWindow::~DevToolsWindow() {
                                               this);
   DCHECK(it != instances.end());
   instances.erase(it);
+
+  IndexingJobsMap::const_iterator jobs_it = indexing_jobs_.begin();
+  for (; jobs_it != indexing_jobs_.end(); ++jobs_it)
+    jobs_it->second->Stop();
+  indexing_jobs_.clear();
 }
 
 // static
@@ -546,6 +553,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   frontend_host_.reset(
       DevToolsClientHost::CreateDevToolsFrontendHost(web_contents_, this));
   file_helper_.reset(new DevToolsFileHelper(web_contents_, profile));
+  file_system_indexer_ = new DevToolsFileSystemIndexer();
 
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
@@ -970,6 +978,58 @@ void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
                      &file_system_path_value);
 }
 
+void DevToolsWindow::IndexPath(int request_id,
+                               const std::string& file_system_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
+  if (!file_helper_->IsFileSystemAdded(file_system_path)) {
+    IndexingDone(request_id, file_system_path);
+    return;
+  }
+  scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob> indexing_job =
+      file_system_indexer_->IndexPath(
+          file_system_path,
+          Bind(&DevToolsWindow::IndexingTotalWorkCalculated,
+               weak_factory_.GetWeakPtr(),
+               request_id,
+               file_system_path),
+          Bind(&DevToolsWindow::IndexingWorked,
+               weak_factory_.GetWeakPtr(),
+               request_id,
+               file_system_path),
+          Bind(&DevToolsWindow::IndexingDone,
+               weak_factory_.GetWeakPtr(),
+               request_id,
+               file_system_path));
+  indexing_jobs_[request_id] = indexing_job;
+}
+
+void DevToolsWindow::StopIndexing(int request_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  IndexingJobsMap::iterator it = indexing_jobs_.find(request_id);
+  if (it == indexing_jobs_.end())
+    return;
+  it->second->Stop();
+  indexing_jobs_.erase(it);
+}
+
+void DevToolsWindow::SearchInPath(int request_id,
+                                  const std::string& file_system_path,
+                                  const std::string& query) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
+  if (!file_helper_->IsFileSystemAdded(file_system_path)) {
+    SearchCompleted(request_id, file_system_path, std::vector<std::string>());
+    return;
+  }
+  file_system_indexer_->SearchInPath(file_system_path,
+                                     query,
+                                     Bind(&DevToolsWindow::SearchCompleted,
+                                          weak_factory_.GetWeakPtr(),
+                                          request_id,
+                                          file_system_path));
+}
+
 void DevToolsWindow::FileSavedAs(const std::string& url) {
   StringValue url_value(url);
   CallClientFunction("InspectorFrontendAPI.savedURL", &url_value);
@@ -1001,6 +1061,62 @@ void DevToolsWindow::FileSystemAdded(
                      file_system_value);
   if (file_system_value)
     delete file_system_value;
+}
+
+void DevToolsWindow::IndexingTotalWorkCalculated(
+    int request_id,
+    const std::string& file_system_path,
+    int total_work) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::FundamentalValue request_id_value(request_id);
+  StringValue file_system_path_value(file_system_path);
+  base::FundamentalValue total_work_value(total_work);
+  CallClientFunction("InspectorFrontendAPI.indexingTotalWorkCalculated",
+                     &request_id_value,
+                     &file_system_path_value,
+                     &total_work_value);
+}
+
+void DevToolsWindow::IndexingWorked(int request_id,
+                                    const std::string& file_system_path,
+                                    int worked) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::FundamentalValue request_id_value(request_id);
+  StringValue file_system_path_value(file_system_path);
+  base::FundamentalValue worked_value(worked);
+  CallClientFunction("InspectorFrontendAPI.indexingWorked",
+                     &request_id_value,
+                     &file_system_path_value,
+                     &worked_value);
+}
+
+void DevToolsWindow::IndexingDone(int request_id,
+                                  const std::string& file_system_path) {
+  indexing_jobs_.erase(request_id);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::FundamentalValue request_id_value(request_id);
+  StringValue file_system_path_value(file_system_path);
+  CallClientFunction("InspectorFrontendAPI.indexingDone",
+                     &request_id_value,
+                     &file_system_path_value);
+}
+
+void DevToolsWindow::SearchCompleted(
+    int request_id,
+    const std::string& file_system_path,
+    const std::vector<std::string>& file_paths) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ListValue file_paths_value;
+  std::vector<std::string>::const_iterator it = file_paths.begin();
+  for (; it != file_paths.end(); ++it) {
+    file_paths_value.AppendString(*it);
+  }
+  base::FundamentalValue request_id_value(request_id);
+  StringValue file_system_path_value(file_system_path);
+  CallClientFunction("InspectorFrontendAPI.searchCompleted",
+                     &request_id_value,
+                     &file_system_path_value,
+                     &file_paths_value);
 }
 
 void DevToolsWindow::ShowDevToolsConfirmInfoBar(
@@ -1190,7 +1306,8 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
 
 void DevToolsWindow::CallClientFunction(const std::string& function_name,
                                         const Value* arg1,
-                                        const Value* arg2) {
+                                        const Value* arg2,
+                                        const Value* arg3) {
   std::string params;
   if (arg1) {
     std::string json;
@@ -1199,6 +1316,10 @@ void DevToolsWindow::CallClientFunction(const std::string& function_name,
     if (arg2) {
       base::JSONWriter::Write(arg2, &json);
       params.append(", " + json);
+      if (arg3) {
+        base::JSONWriter::Write(arg3, &json);
+        params.append(", " + json);
+      }
     }
   }
   string16 javascript = ASCIIToUTF16(function_name + "(" + params + ");");

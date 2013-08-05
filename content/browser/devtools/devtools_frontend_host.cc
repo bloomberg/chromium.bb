@@ -77,6 +77,9 @@ bool DevToolsFrontendHost::OnMessageReceived(
                         OnRequestFileSystems)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_AddFileSystem, OnAddFileSystem)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RemoveFileSystem, OnRemoveFileSystem)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_IndexPath, OnIndexPath)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_StopIndexing, OnStopIndexing)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_SearchInPath, OnSearchInPath)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -145,6 +148,21 @@ void DevToolsFrontendHost::OnAddFileSystem() {
 void DevToolsFrontendHost::OnRemoveFileSystem(
     const std::string& file_system_path) {
   delegate_->RemoveFileSystem(file_system_path);
+}
+
+void DevToolsFrontendHost::OnIndexPath(int request_id,
+                                       const std::string& file_system_path) {
+  delegate_->IndexPath(request_id, file_system_path);
+}
+
+void DevToolsFrontendHost::OnStopIndexing(int request_id) {
+  delegate_->StopIndexing(request_id);
+}
+
+void DevToolsFrontendHost::OnSearchInPath(int request_id,
+                                          const std::string& file_system_path,
+                                          const std::string& query) {
+  delegate_->SearchInPath(request_id, file_system_path, query);
 }
 
 void DevToolsFrontendHost::OnRequestSetDockSide(const std::string& side) {

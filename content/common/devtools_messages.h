@@ -152,6 +152,21 @@ IPC_MESSAGE_ROUTED0(DevToolsHostMsg_AddFileSystem)
 IPC_MESSAGE_ROUTED1(DevToolsHostMsg_RemoveFileSystem,
                     std::string /* file_system_path */)
 
+// Performs file system indexing for given |file_system_path| and sends progress
+// callbacks.
+IPC_MESSAGE_ROUTED2(DevToolsHostMsg_IndexPath,
+                    int /* request_id */,
+                    std::string /* file_system_path */)
+
+// Stops file system indexing.
+IPC_MESSAGE_ROUTED1(DevToolsHostMsg_StopIndexing, int /* request_id */)
+
+// Performs trigram search for given |query| in |file_system_path|.
+IPC_MESSAGE_ROUTED3(DevToolsHostMsg_SearchInPath,
+                    int /* request_id */,
+                    std::string /* file_system_path */,
+                    std::string /* query */)
+
 // Updates agent runtime state stored in devtools manager in order to support
 // cross-navigation instrumentation.
 IPC_MESSAGE_ROUTED1(DevToolsHostMsg_SaveAgentRuntimeState,

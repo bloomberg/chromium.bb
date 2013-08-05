@@ -87,6 +87,10 @@ class DevToolsFileHelper {
   // Removes isolated file system for given |file_system_path|.
   void RemoveFileSystem(const std::string& file_system_path);
 
+  // Returns whether access to the folder on given |file_system_path| was
+  // granted.
+  bool IsFileSystemAdded(const std::string& file_system_path);
+
  private:
   void SaveAsFileSelected(const std::string& url,
                           const std::string& content,

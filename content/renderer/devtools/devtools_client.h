@@ -56,7 +56,14 @@ class CONTENT_EXPORT DevToolsClient
   virtual void requestFileSystems() OVERRIDE;
   virtual void addFileSystem() OVERRIDE;
   virtual void removeFileSystem(
-      const WebKit::WebString& fileSystemPath) OVERRIDE;
+      const WebKit::WebString& file_system_path) OVERRIDE;
+  virtual void indexPath(int request_id,
+                         const WebKit::WebString& file_system_path) OVERRIDE;
+  virtual void stopIndexing(int request_id) OVERRIDE;
+  virtual void searchInPath(int request_id,
+                            const WebKit::WebString& file_system_path,
+                            const WebKit::WebString& query) OVERRIDE;
+
   virtual bool isUnderTest() OVERRIDE;
 
   void OnDispatchOnInspectorFrontend(const std::string& message);

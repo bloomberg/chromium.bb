@@ -51,6 +51,11 @@ class DevToolsFrontendHost : public DevToolsClientHost,
   void OnRequestFileSystems();
   void OnAddFileSystem();
   void OnRemoveFileSystem(const std::string& file_system_path);
+  void OnIndexPath(int request_id, const std::string& file_system_path);
+  void OnStopIndexing(int request_id);
+  void OnSearchInPath(int request_id,
+                      const std::string& file_system_path,
+                      const std::string& query);
 
   DevToolsFrontendHostDelegate* delegate_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrontendHost);

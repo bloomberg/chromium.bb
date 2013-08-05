@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/devtools/devtools_file_helper.h"
+#include "chrome/browser/devtools/devtools_file_system_indexer.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_frontend_host_delegate.h"
@@ -191,6 +192,12 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void RequestFileSystems() OVERRIDE;
   virtual void AddFileSystem() OVERRIDE;
   virtual void RemoveFileSystem(const std::string& file_system_path) OVERRIDE;
+  virtual void IndexPath(int request_id,
+                         const std::string& file_system_path) OVERRIDE;
+  virtual void StopIndexing(int request_id) OVERRIDE;
+  virtual void SearchInPath(int request_id,
+                            const std::string& file_system_path,
+                            const std::string& query) OVERRIDE;
 
   // DevToolsFileHelper callbacks.
   void FileSavedAs(const std::string& url);
@@ -198,6 +205,16 @@ class DevToolsWindow : private content::NotificationObserver,
   void FileSystemsLoaded(
       const std::vector<DevToolsFileHelper::FileSystem>& file_systems);
   void FileSystemAdded(const DevToolsFileHelper::FileSystem& file_system);
+  void IndexingTotalWorkCalculated(int request_id,
+                                   const std::string& file_system_path,
+                                   int total_work);
+  void IndexingWorked(int request_id,
+                      const std::string& file_system_path,
+                      int worked);
+  void IndexingDone(int request_id, const std::string& file_system_path);
+  void SearchCompleted(int request_id,
+                       const std::string& file_system_path,
+                       const std::vector<std::string>& file_paths);
   void ShowDevToolsConfirmInfoBar(
       const string16& message,
       const base::Callback<void(bool)>& callback);
@@ -214,7 +231,8 @@ class DevToolsWindow : private content::NotificationObserver,
   void AddDevToolsExtensionsToClient();
   void CallClientFunction(const std::string& function_name,
                           const base::Value* arg1 = NULL,
-                          const base::Value* arg2 = NULL);
+                          const base::Value* arg2 = NULL,
+                          const base::Value* arg3 = NULL);
   void UpdateBrowserToolbar();
   bool IsDocked();
   void Restore();
@@ -235,6 +253,12 @@ class DevToolsWindow : private content::NotificationObserver,
   scoped_ptr<content::DevToolsClientHost> frontend_host_;
   base::WeakPtrFactory<DevToolsWindow> weak_factory_;
   scoped_ptr<DevToolsFileHelper> file_helper_;
+  scoped_refptr<DevToolsFileSystemIndexer> file_system_indexer_;
+  typedef std::map<
+      int,
+      scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob> >
+      IndexingJobsMap;
+  IndexingJobsMap indexing_jobs_;
   int width_;
   int height_;
   DevToolsDockSide dock_side_before_minimized_;

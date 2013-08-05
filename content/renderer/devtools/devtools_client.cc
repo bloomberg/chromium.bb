@@ -104,9 +104,26 @@ void DevToolsClient::addFileSystem() {
   Send(new DevToolsHostMsg_AddFileSystem(routing_id()));
 }
 
-void DevToolsClient::removeFileSystem(const WebString& fileSystemPath) {
+void DevToolsClient::removeFileSystem(const WebString& file_system_path) {
   Send(new DevToolsHostMsg_RemoveFileSystem(routing_id(),
-                                            fileSystemPath.utf8()));
+                                            file_system_path.utf8()));
+}
+
+void DevToolsClient::indexPath(int request_id,
+                               const WebKit::WebString& file_system_path) {
+  Send(new DevToolsHostMsg_IndexPath(
+      routing_id(), request_id, file_system_path.utf8()));
+}
+
+void DevToolsClient::stopIndexing(int request_id) {
+  Send(new DevToolsHostMsg_StopIndexing(routing_id(), request_id));
+}
+
+void DevToolsClient::searchInPath(int request_id,
+                                  const WebKit::WebString& file_system_path,
+                                  const WebKit::WebString& query) {
+  Send(new DevToolsHostMsg_SearchInPath(
+      routing_id(), request_id, file_system_path.utf8(), query.utf8()));
 }
 
 bool DevToolsClient::isUnderTest() {

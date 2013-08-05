@@ -54,6 +54,19 @@ class DevToolsFrontendHostDelegate {
   // Removes a previously added devtools filesystem given by |file_system_path|.
   virtual void RemoveFileSystem(const std::string& file_system_path) = 0;
 
+  // Performs file system indexing for given |file_system_path| and sends
+  // progress callbacks.
+  virtual void IndexPath(int request_id,
+                         const std::string& file_system_path) = 0;
+
+  // Stops file system indexing.
+  virtual void StopIndexing(int request_id) = 0;
+
+  // Performs trigram search for given |query| in |file_system_path|.
+  virtual void SearchInPath(int request_id,
+                            const std::string& file_system_path,
+                            const std::string& query) = 0;
+
   // This method is called when the contents inspected by this devtools frontend
   // is closing.
   virtual void InspectedContentsClosing() = 0;

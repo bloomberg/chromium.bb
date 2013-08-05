@@ -4,6 +4,7 @@
 
 #include "chrome/browser/devtools/devtools_file_helper.h"
 
+#include <set>
 #include <vector>
 
 #include "base/bind.h"
@@ -44,6 +45,7 @@ using content::BrowserThread;
 using content::DownloadManager;
 using content::RenderViewHost;
 using content::WebContents;
+using std::set;
 
 namespace {
 
@@ -176,6 +178,17 @@ DevToolsFileHelper::FileSystem CreateFileSystemStruct(
   return DevToolsFileHelper::FileSystem(file_system_name,
                                         root_url,
                                         file_system_path);
+}
+
+set<std::string> GetAddedFileSystemPaths(Profile* profile) {
+  const DictionaryValue* file_systems_paths_value =
+      profile->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
+  set<std::string> result;
+  for (DictionaryValue::Iterator it(*file_systems_paths_value); !it.IsAtEnd();
+       it.Advance()) {
+    result.insert(it.key());
+  }
+  return result;
 }
 
 }  // namespace
@@ -347,12 +360,11 @@ void DevToolsFileHelper::AddUserConfirmedFileSystem(
 
 void DevToolsFileHelper::RequestFileSystems(
     const RequestFileSystemsCallback& callback) {
-  const DictionaryValue* file_systems_paths_value =
-      profile_->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
+  set<std::string> file_system_paths = GetAddedFileSystemPaths(profile_);
+  set<std::string>::const_iterator it = file_system_paths.begin();
   std::vector<FileSystem> file_systems;
-  for (DictionaryValue::Iterator it(*file_systems_paths_value); !it.IsAtEnd();
-       it.Advance()) {
-    std::string file_system_path = it.key();
+  for (; it != file_system_paths.end(); ++it) {
+    std::string file_system_path = *it;
     base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system_path);
 
     std::string registered_name;
@@ -377,4 +389,11 @@ void DevToolsFileHelper::RemoveFileSystem(const std::string& file_system_path) {
                               prefs::kDevToolsFileSystemPaths);
   DictionaryValue* file_systems_paths_value = update.Get();
   file_systems_paths_value->RemoveWithoutPathExpansion(file_system_path, NULL);
+}
+
+bool DevToolsFileHelper::IsFileSystemAdded(
+    const std::string& file_system_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  set<std::string> file_system_paths = GetAddedFileSystemPaths(profile_);
+  return file_system_paths.find(file_system_path) != file_system_paths.end();
 }
