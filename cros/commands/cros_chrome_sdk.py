@@ -270,7 +270,7 @@ class SDKFetcher(object):
     """Builds the cache key tuple for an SDK component."""
     version_section = version
     if self.sdk_path is not None:
-      version_section = self.sdk_path.replace('/', '%')
+      version_section = self.sdk_path.replace('/', '__')
     return (self.board, version_section, component)
 
   @contextlib.contextmanager
