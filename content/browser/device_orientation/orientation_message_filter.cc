@@ -5,13 +5,13 @@
 #include "content/browser/device_orientation/orientation_message_filter.h"
 
 #include "content/browser/device_orientation/device_data.h"
-#include "content/common/device_orientation_messages.h"
+#include "content/common/device_orientation/device_orientation_messages.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
 
 OrientationMessageFilter::OrientationMessageFilter()
-    :  DeviceOrientationMessageFilter(DeviceData::kTypeOrientation) {
+    :  DeviceOrientationMessageFilterOld(DeviceData::kTypeOrientation) {
 }
 
 OrientationMessageFilter::~OrientationMessageFilter() {

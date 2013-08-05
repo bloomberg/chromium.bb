@@ -8,6 +8,7 @@
 #include "content/common/shared_memory_seqlock_buffer.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
 
+// TODO(timvolodine): move this file to content/common/device_orientation/.
 namespace content {
 
 typedef SharedMemorySeqLockBuffer<WebKit::WebDeviceMotionData>

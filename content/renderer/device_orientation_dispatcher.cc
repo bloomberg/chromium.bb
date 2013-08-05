@@ -4,7 +4,7 @@
 
 #include "content/renderer/device_orientation_dispatcher.h"
 
-#include "content/common/device_orientation_messages.h"
+#include "content/common/device_orientation/device_orientation_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebDeviceOrientation.h"
 #include "third_party/WebKit/public/web/WebDeviceOrientationController.h"

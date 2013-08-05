@@ -17,15 +17,15 @@ class ObserverDelegate;
 
 class Provider;
 
-class DeviceOrientationMessageFilter : public BrowserMessageFilter {
+class DeviceOrientationMessageFilterOld : public BrowserMessageFilter {
  public:
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE = 0;
 
  protected:
-  DeviceOrientationMessageFilter(DeviceData::Type device_data_type);
-  virtual ~DeviceOrientationMessageFilter();
+  DeviceOrientationMessageFilterOld(DeviceData::Type device_data_type);
+  virtual ~DeviceOrientationMessageFilterOld();
 
   void OnStartUpdating(int render_view_id);
   void OnStopUpdating(int render_view_id);

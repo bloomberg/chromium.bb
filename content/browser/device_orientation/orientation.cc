@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "content/common/device_orientation_messages.h"
+#include "content/common/device_orientation/device_orientation_messages.h"
 
 namespace content {
 

@@ -14,6 +14,7 @@ include_rules = [
   "-third_party/WebKit",
   "+third_party/WebKit/public/platform/WebCString.h",
   "+third_party/WebKit/public/platform/WebDeviceMotionData.h",
+  "+third_party/WebKit/public/platform/WebDeviceOrientationData.h",
   "+third_party/WebKit/public/platform/WebFloatPoint.h",
   "+third_party/WebKit/public/platform/WebFloatRect.h",
   "+third_party/WebKit/public/platform/WebGamepads.h",

@@ -11,7 +11,7 @@
 
 namespace content {
 
-class OrientationMessageFilter : public DeviceOrientationMessageFilter {
+class OrientationMessageFilter : public DeviceOrientationMessageFilterOld {
  public:
   OrientationMessageFilter();
 

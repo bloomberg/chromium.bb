@@ -42,34 +42,13 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
  public:
   DeviceMotionEventPumpForTesting() { }
   virtual ~DeviceMotionEventPumpForTesting() { }
-  void OnDidStartDeviceMotion(base::SharedMemoryHandle handle);
-  bool SetListener(WebKit::WebDeviceMotionListener*);
-  bool StartFetchingDeviceMotion();
-  bool StopFetchingDeviceMotion();
+
+  void OnDidStart(base::SharedMemoryHandle renderer_handle) {
+    DeviceMotionEventPump::OnDidStart(renderer_handle);
+  }
+  virtual bool SendStartMessage() OVERRIDE { return true; }
+  virtual bool SendStopMessage() OVERRIDE { return true; }
 };
-
-bool DeviceMotionEventPumpForTesting::StartFetchingDeviceMotion() {
-  state_ = PENDING_START;
-  return true;
-}
-
-bool DeviceMotionEventPumpForTesting::StopFetchingDeviceMotion() {
-  if (timer_.IsRunning())
-    timer_.Stop();
-  state_ = STOPPED;
-  return true;
-}
-
-bool DeviceMotionEventPumpForTesting::SetListener(
-    WebKit::WebDeviceMotionListener* listener) {
-  listener_ = listener;
-  return (listener_) ? StartFetchingDeviceMotion() : StopFetchingDeviceMotion();
-}
-
-void DeviceMotionEventPumpForTesting::OnDidStartDeviceMotion(
-    base::SharedMemoryHandle handle) {
-  DeviceMotionEventPump::OnDidStartDeviceMotion(handle);
-}
 
 // Always failing in the win try bot. See http://crbug.com/256782.
 #if defined(OS_WIN)
@@ -102,9 +81,9 @@ TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPolling) {
   data.allAvailableSensorsAreActive = true;
 
   motion_pump->SetListener(listener.get());
-  motion_pump->OnDidStartDeviceMotion(handle);
+  motion_pump->OnDidStart(handle);
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-      DeviceMotionEventPump::GetDelayMillis() * 2));
+      motion_pump->GetDelayMillis() * 2));
   RunAllPendingInMessageLoop();
   motion_pump->SetListener(0);
 
@@ -159,9 +138,9 @@ TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPollingNotAllSensorsActive) {
   data.allAvailableSensorsAreActive = false;
 
   motion_pump->SetListener(listener.get());
-  motion_pump->OnDidStartDeviceMotion(handle);
+  motion_pump->OnDidStart(handle);
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-      DeviceMotionEventPump::GetDelayMillis() * 2));
+      motion_pump->GetDelayMillis() * 2));
   RunAllPendingInMessageLoop();
   motion_pump->SetListener(0);
 

@@ -34,6 +34,7 @@ class WebGraphicsContext3DProvider;
 
 namespace content {
 class DeviceMotionEventPump;
+class DeviceOrientationEventPump;
 class GamepadSharedMemoryReader;
 class QuotaMessageFilter;
 class RendererClipboardClient;
@@ -139,6 +140,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const WebKit::WebString& host, const WebKit::WebString& languages);
   virtual void setDeviceMotionListener(
       WebKit::WebDeviceMotionListener* listener) OVERRIDE;
+  virtual void setDeviceOrientationListener(
+      WebKit::WebDeviceOrientationListener* listener) OVERRIDE;
   virtual WebKit::WebCrypto* crypto() OVERRIDE;
   virtual void queryStorageUsageAndQuota(
       const WebKit::WebURL& storage_partition,
@@ -202,6 +205,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
   scoped_ptr<DeviceMotionEventPump> device_motion_event_pump_;
+  scoped_ptr<DeviceOrientationEventPump> device_orientation_event_pump_;
 
   scoped_refptr<base::MessageLoopProxy> child_thread_loop_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;

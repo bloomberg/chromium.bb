@@ -43,6 +43,8 @@
 #include "content/browser/browser_plugin/browser_plugin_geolocation_permission_context.h"
 #include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/device_orientation/device_motion_message_filter.h"
+#include "content/browser/device_orientation/device_orientation_message_filter.h"
 #include "content/browser/device_orientation/orientation_message_filter.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
@@ -65,7 +67,6 @@
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
-#include "content/browser/renderer_host/device_motion_browser_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
 #include "content/browser/renderer_host/gamepad_browser_message_filter.h"
 #include "content/browser/renderer_host/gpu_message_filter.h"
@@ -718,7 +719,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetQuotaManager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
   channel_->AddFilter(new GamepadBrowserMessageFilter());
-  channel_->AddFilter(new DeviceMotionBrowserMessageFilter());
+  channel_->AddFilter(new DeviceMotionMessageFilter());
+  channel_->AddFilter(new DeviceOrientationMessageFilter());
   channel_->AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   channel_->AddFilter(new HistogramMessageFilter());
 #if defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))

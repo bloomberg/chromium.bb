@@ -10,16 +10,16 @@
 
 namespace content {
 
-DeviceOrientationMessageFilter::DeviceOrientationMessageFilter(
+DeviceOrientationMessageFilterOld::DeviceOrientationMessageFilterOld(
     DeviceData::Type device_data_type)
     : provider_(NULL),
       device_data_type_(device_data_type) {
 }
 
-DeviceOrientationMessageFilter::~DeviceOrientationMessageFilter() {
+DeviceOrientationMessageFilterOld::~DeviceOrientationMessageFilterOld() {
 }
 
-void DeviceOrientationMessageFilter::OnStartUpdating(int render_view_id) {
+void DeviceOrientationMessageFilterOld::OnStartUpdating(int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!provider_.get())
@@ -29,7 +29,7 @@ void DeviceOrientationMessageFilter::OnStartUpdating(int render_view_id) {
       device_data_type_, provider_.get(), render_view_id, this);
 }
 
-void DeviceOrientationMessageFilter::OnStopUpdating(int render_view_id) {
+void DeviceOrientationMessageFilterOld::OnStopUpdating(int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   observers_map_.erase(render_view_id);

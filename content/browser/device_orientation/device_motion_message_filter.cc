@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/device_motion_browser_message_filter.h"
+#include "content/browser/device_orientation/device_motion_message_filter.h"
 
 #include "content/browser/device_orientation/device_motion_service.h"
-#include "content/common/device_motion_messages.h"
+#include "content/common/device_orientation/device_motion_messages.h"
 
 namespace content {
 
-DeviceMotionBrowserMessageFilter::DeviceMotionBrowserMessageFilter()
+DeviceMotionMessageFilter::DeviceMotionMessageFilter()
     : is_started_(false) {
 }
 
-DeviceMotionBrowserMessageFilter::~DeviceMotionBrowserMessageFilter() {
+DeviceMotionMessageFilter::~DeviceMotionMessageFilter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (is_started_)
     DeviceMotionService::GetInstance()->RemoveConsumer();
 }
 
-bool DeviceMotionBrowserMessageFilter::OnMessageReceived(
+bool DeviceMotionMessageFilter::OnMessageReceived(
     const IPC::Message& message,
     bool* message_was_ok) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(DeviceMotionBrowserMessageFilter,
+  IPC_BEGIN_MESSAGE_MAP_EX(DeviceMotionMessageFilter,
                            message,
                            *message_was_ok)
     IPC_MESSAGE_HANDLER(DeviceMotionHostMsg_StartPolling,
@@ -35,7 +35,7 @@ bool DeviceMotionBrowserMessageFilter::OnMessageReceived(
   return handled;
 }
 
-void DeviceMotionBrowserMessageFilter::OnDeviceMotionStartPolling() {
+void DeviceMotionMessageFilter::OnDeviceMotionStartPolling() {
   DCHECK(!is_started_);
   if (is_started_)
     return;
@@ -44,7 +44,7 @@ void DeviceMotionBrowserMessageFilter::OnDeviceMotionStartPolling() {
   DidStartDeviceMotionPolling();
 }
 
-void DeviceMotionBrowserMessageFilter::OnDeviceMotionStopPolling() {
+void DeviceMotionMessageFilter::OnDeviceMotionStopPolling() {
   DCHECK(is_started_);
   if (!is_started_)
     return;
@@ -52,7 +52,7 @@ void DeviceMotionBrowserMessageFilter::OnDeviceMotionStopPolling() {
   DeviceMotionService::GetInstance()->RemoveConsumer();
 }
 
-void DeviceMotionBrowserMessageFilter::DidStartDeviceMotionPolling() {
+void DeviceMotionMessageFilter::DidStartDeviceMotionPolling() {
   Send(new DeviceMotionMsg_DidStartPolling(
       DeviceMotionService::GetInstance()->GetSharedMemoryHandleForProcess(
           PeerHandle())));
