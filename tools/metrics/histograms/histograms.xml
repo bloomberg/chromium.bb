@@ -1133,6 +1133,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="CertificateType">
+  <summary>
+    Information about the certificate algorithms and sizes in use on the web, to
+    examine compliance with the CA/Browser Forum requirements and security best
+    practice.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.SearchSelectExempt" enum="SearchEngine">
   <obsolete>
     Deprecated 8/2013. No longer tracked.
@@ -22420,6 +22428,41 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinishDoc"/>
   <affected-histogram name="PLT.BeginToFirstPaint"/>
   <affected-histogram name="PLT.CommitToFirstPaint"/>
+</fieldtrial>
+
+<fieldtrial name="CertificateTypeAlgorithms" separator=".">
+  <group name="DH" label="DH"/>
+  <group name="DSA" label="DSA"/>
+  <group name="ECDH" label="ECDH"/>
+  <group name="ECDSA" label="ECDSA"/>
+  <group name="RSA" label="RSA"/>
+  <group name="Unknown" label="SPKI unrecognized by cert library"/>
+  <group name="Unsupported" label="Un-histogrammed type - please fix"/>
+  <affected-histogram name="CertificateType.BR.Intermediate"/>
+  <affected-histogram name="CertificateType.BR.Leaf"/>
+  <affected-histogram name="CertificateType.BR.Root"/>
+  <affected-histogram name="CertificateType.NonBR.Intermediate"/>
+  <affected-histogram name="CertificateType.NonBR.Leaf"/>
+  <affected-histogram name="CertificateType.NonBR.Root"/>
+</fieldtrial>
+
+<fieldtrial name="CertificateTypeBRValidity" separator=".">
+  <group name="BR"
+      label="The *leaf* certificate of the chain expires after 2013-12-31,
+             meaning that it should be in scope for the Baseline
+             Requirement's key size requirements"/>
+  <group name="NonBR"
+      label="The *leaf* certificate of the chain expires on or before
+             2013-12-31"/>
+  <affected-histogram name="CertificateType"/>
+</fieldtrial>
+
+<fieldtrial name="CertificateTypeChainPosition" separator=".">
+  <group name="Intermediate" label="Intermediate's SPKI"/>
+  <group name="Leaf" label="Leaf's SPKI"/>
+  <group name="Root" label="Root's SPKI"/>
+  <affected-histogram name="CertificateType.BR"/>
+  <affected-histogram name="CertificateType.NonBR"/>
 </fieldtrial>
 
 <fieldtrial name="ConnCountImpact">

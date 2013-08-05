@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -34,6 +35,69 @@ namespace net {
 
 namespace {
 
+// Constants used to build histogram names
+const char kLeafCert[] = "Leaf";
+const char kIntermediateCert[] = "Intermediate";
+const char kRootCert[] = "Root";
+// Matches the order of X509Certificate::PublicKeyType
+const char* const kCertTypeStrings[] = {
+    "Unknown",
+    "RSA",
+    "DSA",
+    "ECDSA",
+    "DH",
+    "ECDH"
+};
+// Histogram buckets for RSA/DSA/DH key sizes.
+const int kRsaDsaKeySizes[] = {512, 768, 1024, 1536, 2048, 3072, 4096, 8192,
+                               16384};
+// Histogram buckets for ECDSA/ECDH key sizes. The list is based upon the FIPS
+// 186-4 approved curves.
+const int kEccKeySizes[] = {163, 192, 224, 233, 256, 283, 384, 409, 521, 571};
+
+const char* CertTypeToString(int cert_type) {
+  if (cert_type < 0 ||
+      static_cast<size_t>(cert_type) >= arraysize(kCertTypeStrings)) {
+    return "Unsupported";
+  }
+  return kCertTypeStrings[cert_type];
+}
+
+void RecordPublicKeyHistogram(const char* chain_position,
+                              bool after_baseline_date,
+                              size_t size_bits,
+                              X509Certificate::PublicKeyType cert_type) {
+  std::string histogram_name =
+      base::StringPrintf("CertificateType.%s.%s.%s",
+                         after_baseline_date ? "BR" : "NonBR",
+                         chain_position,
+                         CertTypeToString(cert_type));
+  // Do not use UMA_HISTOGRAM_... macros here, as it caches the Histogram
+  // instance and thus only works if |histogram_name| is constant.
+  base::HistogramBase* counter = NULL;
+
+  // Histogram buckets are contingent upon the underlying algorithm being used.
+  if (cert_type == X509Certificate::kPublicKeyTypeECDH ||
+      cert_type == X509Certificate::kPublicKeyTypeECDSA) {
+    // Typical key sizes match SECP/FIPS 186-3 recommendations for prime and
+    // binary curves - which range from 163 bits to 571 bits.
+    counter = base::CustomHistogram::FactoryGet(
+        histogram_name,
+        base::CustomHistogram::ArrayToCustomRanges(kEccKeySizes,
+                                                   arraysize(kEccKeySizes)),
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+  } else {
+    // Key sizes < 1024 bits should cause errors, while key sizes > 16K are not
+    // uniformly supported by the underlying cryptographic libraries.
+    counter = base::CustomHistogram::FactoryGet(
+        histogram_name,
+        base::CustomHistogram::ArrayToCustomRanges(kRsaDsaKeySizes,
+                                                   arraysize(kRsaDsaKeySizes)),
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+  }
+  counter->Add(size_bits);
+}
+
 // Returns true if |type| is |kPublicKeyTypeRSA| or |kPublicKeyTypeDSA|, and
 // if |size_bits| is < 1024. Note that this means there may be false
 // negatives: keys for other algorithms and which are weak will pass this
@@ -46,6 +110,45 @@ bool IsWeakKey(X509Certificate::PublicKeyType type, size_t size_bits) {
     default:
       return false;
   }
+}
+
+// Returns true if |cert| contains a known-weak key. Additionally, histograms
+// the observed keys for future tightening of the definition of what
+// constitutes a weak key.
+bool ExaminePublicKeys(const scoped_refptr<X509Certificate>& cert,
+                       bool should_histogram) {
+  // The effective date of the CA/Browser Forum's Baseline Requirements -
+  // 2014-01-01 00:00:00 UTC.
+  const base::Time kBaselineEffectiveDate =
+      base::Time::FromInternalValue(GG_INT64_C(13033008000000000));
+
+  size_t size_bits = 0;
+  X509Certificate::PublicKeyType type = X509Certificate::kPublicKeyTypeUnknown;
+  bool weak_key = false;
+  bool after_baseline_date = cert->valid_expiry() >= kBaselineEffectiveDate;
+
+  X509Certificate::GetPublicKeyInfo(cert->os_cert_handle(), &size_bits, &type);
+  if (should_histogram)
+    RecordPublicKeyHistogram(kLeafCert, after_baseline_date, size_bits, type);
+  if (IsWeakKey(type, size_bits))
+    weak_key = true;
+
+  const X509Certificate::OSCertHandles& intermediates =
+      cert->GetIntermediateCertificates();
+  for (size_t i = 0; i < intermediates.size(); ++i) {
+    X509Certificate::GetPublicKeyInfo(intermediates[i], &size_bits, &type);
+    if (should_histogram) {
+      RecordPublicKeyHistogram(
+          (i < intermediates.size() - 1) ? kIntermediateCert : kRootCert,
+          after_baseline_date,
+          size_bits,
+          type);
+    }
+    if (!weak_key && IsWeakKey(type, size_bits))
+      weak_key = true;
+  }
+
+  return weak_key;
 }
 
 }  // namespace
@@ -103,24 +206,8 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   }
 
   // Check for weak keys in the entire verified chain.
-  size_t size_bits = 0;
-  X509Certificate::PublicKeyType type =
-      X509Certificate::kPublicKeyTypeUnknown;
-  bool weak_key = false;
-
-  X509Certificate::GetPublicKeyInfo(
-      verify_result->verified_cert->os_cert_handle(), &size_bits, &type);
-  if (IsWeakKey(type, size_bits)) {
-    weak_key = true;
-  } else {
-    const X509Certificate::OSCertHandles& intermediates =
-        verify_result->verified_cert->GetIntermediateCertificates();
-    for (size_t i = 0; i < intermediates.size(); ++i) {
-      X509Certificate::GetPublicKeyInfo(intermediates[i], &size_bits, &type);
-      if (IsWeakKey(type, size_bits))
-        weak_key = true;
-    }
-  }
+  bool weak_key = ExaminePublicKeys(verify_result->verified_cert,
+                                    verify_result->is_issued_by_known_root);
 
   if (weak_key) {
     verify_result->cert_status |= CERT_STATUS_WEAK_KEY;
