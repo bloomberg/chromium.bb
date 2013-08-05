@@ -1288,3 +1288,5 @@ crbug.com/264088 [ Mac ] virtual/gpu/canvas/philip/tests/2d.text.draw.baseline.i
 crbug.com/264088 [ SnowLeopard ] media/video-frame-size-change.html [ ImageOnlyFailure Pass ]
 
 crbug.com/268231 [ Mac Debug ] http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Pass Failure ]
+
+crbug.com/268246 http/tests/inspector/search/scripts-search-scope.html [ Pass Failure ]
