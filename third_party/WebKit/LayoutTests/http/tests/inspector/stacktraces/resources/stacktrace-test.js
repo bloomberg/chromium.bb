@@ -1,12 +1,13 @@
 function test() {
     InspectorTest.addConsoleSniffer(addMessage);
 
-    function addMessage(message) {
-        var indices = WebInspector.consoleView._visibleMessagesIndices;
-        for (var i = 0; i < indices.length; ++i) {
-            var m = WebInspector.console.messages[indices[i]];
-            InspectorTest.addResult("Message[" + i + "]: " + WebInspector.displayNameForURL(m.url) + ":" + m.line + " " + m.message);
-            var trace = m.stackTrace;
+    function addMessage() {
+        for (var i = 0; i < WebInspector.console.messages.length; ++i) {
+            var message = WebInspector.console.messages[i];
+            if (!WebInspector.console.filter.shouldBeVisible(message))
+                continue;
+            InspectorTest.addResult("Message[" + i + "]: " + WebInspector.displayNameForURL(message.url) + ":" + message.line + " " + message.message);
+            var trace = message.stackTrace;
             if (!trace) {
                 InspectorTest.addResult("FAIL: no stack trace attached to message #" + i);
             } else {
