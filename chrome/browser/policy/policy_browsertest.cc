@@ -1299,11 +1299,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
 
 // There's a bug filed for flakiness on windows: http://crbug.com/248464.
 // Unfortunately, the bug doesn't contain any actionable information, so this
-// test is temporarily marked FLAKY to get some cycles on the builders in order
-// to gather data on the nature of the flakes.
-// TODO(mnissler): Flip back to DISABLED after obtaining logs from flaky runs.
+// test is temporarily enabled to get some cycles on the builders in order to
+// gather data on the nature of the flakes.
 #if defined(OS_WIN)
-#define MAYBE_ExtensionInstallBlacklist FLAKY_ExtensionInstallBlacklist
+// TODO(mnissler): Flip back to DISABLED after obtaining logs from flaky runs.
+#define MAYBE_ExtensionInstallBlacklist ExtensionInstallBlacklist
 #else
 #define MAYBE_ExtensionInstallBlacklist ExtensionInstallBlacklist
 #endif
