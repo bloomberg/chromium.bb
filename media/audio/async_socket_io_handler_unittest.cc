@@ -20,11 +20,13 @@ class TestSocketReader {
   // callbacks should not be counted.
   TestSocketReader(base::CancelableSyncSocket* socket,
                    int number_of_reads_before_quit,
-                   bool issue_reads_from_callback)
+                   bool issue_reads_from_callback,
+                   bool expect_eof)
       : socket_(socket), buffer_(),
         number_of_reads_before_quit_(number_of_reads_before_quit),
         callbacks_received_(0),
-        issue_reads_from_callback_(issue_reads_from_callback) {
+        issue_reads_from_callback_(issue_reads_from_callback),
+        expect_eof_(expect_eof) {
     io_handler.Initialize(socket_->handle(),
                           base::Bind(&TestSocketReader::OnRead,
                                      base::Unretained(this)));
@@ -41,7 +43,11 @@ class TestSocketReader {
 
  private:
   void OnRead(int bytes_read) {
-    EXPECT_GT(bytes_read, 0);
+    if (!expect_eof_) {
+      EXPECT_GT(bytes_read, 0);
+    } else {
+      EXPECT_GE(bytes_read, 0);
+    }
     ++callbacks_received_;
     if (number_of_reads_before_quit_ == callbacks_received_) {
       base::MessageLoop::current()->Quit();
@@ -56,6 +62,7 @@ class TestSocketReader {
   int number_of_reads_before_quit_;
   int callbacks_received_;
   bool issue_reads_from_callback_;
+  bool expect_eof_;
 };
 
 // Workaround to be able to use a base::Closure for sending data.
@@ -76,7 +83,7 @@ TEST(AsyncSocketIoHandlerTest, AsynchronousReadWithMessageLoop) {
   base::CancelableSyncSocket pair[2];
   ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&pair[0], &pair[1]));
 
-  TestSocketReader reader(&pair[0], 1, false);
+  TestSocketReader reader(&pair[0], 1, false, false);
   EXPECT_TRUE(reader.IssueRead());
 
   pair[1].Send(kAsyncSocketIoTestString, kAsyncSocketIoTestStringLength);
@@ -94,7 +101,7 @@ TEST(AsyncSocketIoHandlerTest, SynchronousReadWithMessageLoop) {
   base::CancelableSyncSocket pair[2];
   ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&pair[0], &pair[1]));
 
-  TestSocketReader reader(&pair[0], -1, false);
+  TestSocketReader reader(&pair[0], -1, false, false);
 
   pair[1].Send(kAsyncSocketIoTestString, kAsyncSocketIoTestStringLength);
   base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
@@ -122,7 +129,7 @@ TEST(AsyncSocketIoHandlerTest, ReadFromCallback) {
   ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&pair[0], &pair[1]));
 
   const int kReadOperationCount = 10;
-  TestSocketReader reader(&pair[0], kReadOperationCount, true);
+  TestSocketReader reader(&pair[0], kReadOperationCount, true, false);
   EXPECT_TRUE(reader.IssueRead());
 
   // Issue sends on an interval to satisfy the Read() requirements.
@@ -138,6 +145,23 @@ TEST(AsyncSocketIoHandlerTest, ReadFromCallback) {
   base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(100 + milliseconds));
+
+  base::MessageLoop::current()->Run();
+  EXPECT_EQ(kReadOperationCount, reader.callbacks_received());
+}
+
+// Calls Read() then close other end, check that a correct callback is received.
+TEST(AsyncSocketIoHandlerTest, ReadThenClose) {
+  base::MessageLoopForIO loop;
+
+  base::CancelableSyncSocket pair[2];
+  ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&pair[0], &pair[1]));
+
+  const int kReadOperationCount = 1;
+  TestSocketReader reader(&pair[0], kReadOperationCount, false, true);
+  EXPECT_TRUE(reader.IssueRead());
+
+  pair[1].Close();
 
   base::MessageLoop::current()->Run();
   EXPECT_EQ(kReadOperationCount, reader.callbacks_received());
