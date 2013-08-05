@@ -461,6 +461,10 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
   std::vector<SubsampleEntry> subsamples;
   if (runs_->is_encrypted()) {
     decrypt_config = runs_->GetDecryptConfig();
+    if (!decrypt_config) {
+      *err = true;
+      return false;
+    }
     subsamples = decrypt_config->subsamples();
   }
 
