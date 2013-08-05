@@ -9,8 +9,8 @@
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/logging.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
@@ -137,12 +137,12 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
   integration_service->drive_app_registry()->GetAppsForFile(
       file_path_, file_specific_info.content_mime_type(), &drive_apps);
   if (!drive_apps.empty()) {
-    std::string default_task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
+    std::string default_task_id = file_tasks::GetDefaultTaskIdFromPrefs(
         profile_,
         file_specific_info.content_mime_type(),
         file_path_.Extension());
     std::string default_app_id;
-    file_handler_util::CrackTaskID(
+    file_tasks::CrackTaskID(
         default_task_id, &default_app_id, NULL, NULL);
 
     ListValue* apps = new ListValue();

@@ -6,8 +6,8 @@
 
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
@@ -77,8 +77,8 @@ void LogDefaultTask(const std::set<std::string>& mime_types,
 std::string MakeWebAppTaskId(const std::string& app_id) {
   // TODO(gspencer): For now, the action id is always "open-with", but we
   // could add any actions that the drive app supports.
-  return file_handler_util::MakeTaskID(
-      app_id, file_handler_util::kTaskDrive, "open-with");
+  return file_tasks::MakeTaskID(
+      app_id, file_tasks::kTaskDrive, "open-with");
 }
 
 // Gets the mime types for the given file paths.
@@ -149,7 +149,7 @@ bool ExecuteTaskFunction::RunImpl() {
   std::string extension_id;
   std::string task_type;
   std::string action_id;
-  if (!file_handler_util::CrackTaskID(
+  if (!file_tasks::CrackTaskID(
           task_id, &extension_id, &task_type, &action_id)) {
     LOG(WARNING) << "Invalid task " << task_id;
     return false;
@@ -179,7 +179,7 @@ bool ExecuteTaskFunction::RunImpl() {
   }
 
   int32 tab_id = util::GetTabId(dispatcher());
-  return file_handler_util::ExecuteFileTask(
+  return file_tasks::ExecuteFileTask(
       profile(),
       source_url(),
       extension_->id(),
@@ -275,7 +275,7 @@ void GetFileTasksFunction::FindDefaultDriveTasks(
 
   for (size_t i = 0; i < file_info_list.size(); ++i) {
     const FileInfo& file_info = file_info_list[i];
-    std::string task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
+    std::string task_id = file_tasks::GetDefaultTaskIdFromPrefs(
         profile_, file_info.mime_type, file_info.file_path.Extension());
     if (task_info_map.find(task_id) != task_info_map.end())
       default_tasks->insert(task_id);
@@ -365,7 +365,7 @@ bool GetFileTasksFunction::FindAppTasks(
   std::set<std::string> default_tasks;
   for (PathAndMimeTypeSet::iterator it = files.begin(); it != files.end();
        ++it) {
-    default_tasks.insert(file_handler_util::GetDefaultTaskIdFromPrefs(
+    default_tasks.insert(file_tasks::GetDefaultTaskIdFromPrefs(
         profile_, it->second, it->first.Extension()));
   }
 
@@ -390,8 +390,8 @@ bool GetFileTasksFunction::FindAppTasks(
     for (FileHandlerList::iterator i = file_handlers.begin();
          i != file_handlers.end(); ++i) {
       DictionaryValue* task = new DictionaryValue;
-      std::string task_id = file_handler_util::MakeTaskID(
-          extension->id(), file_handler_util::kTaskApp, (*i)->id);
+      std::string task_id = file_tasks::MakeTaskID(
+          extension->id(), file_tasks::kTaskApp, (*i)->id);
       task->SetString("taskId", task_id);
       task->SetString("title", (*i)->title);
       if (!(*default_already_set) && ContainsKey(default_tasks, task_id)) {
@@ -505,16 +505,16 @@ bool GetFileTasksFunction::RunImpl() {
   // the extension tasks to the Drive task list. We know there aren't duplicates
   // because they're entirely different kinds of tasks, but there could be both
   // kinds of tasks for a file type (an image file, for instance).
-  file_handler_util::FileBrowserHandlerList common_tasks;
-  file_handler_util::FileBrowserHandlerList default_tasks;
-  if (!file_handler_util::FindCommonTasks(profile_, file_urls, &common_tasks))
+  file_tasks::FileBrowserHandlerList common_tasks;
+  file_tasks::FileBrowserHandlerList default_tasks;
+  if (!file_tasks::FindCommonTasks(profile_, file_urls, &common_tasks))
     return false;
-  file_handler_util::FindDefaultTasks(profile_, file_paths,
+  file_tasks::FindDefaultTasks(profile_, file_paths,
                                       common_tasks, &default_tasks);
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  for (file_handler_util::FileBrowserHandlerList::const_iterator iter =
+  for (file_tasks::FileBrowserHandlerList::const_iterator iter =
            common_tasks.begin();
        iter != common_tasks.end();
        ++iter) {
@@ -523,8 +523,8 @@ bool GetFileTasksFunction::RunImpl() {
     const Extension* extension = service->GetExtensionById(extension_id, false);
     CHECK(extension);
     DictionaryValue* task = new DictionaryValue;
-    task->SetString("taskId", file_handler_util::MakeTaskID(
-        extension_id, file_handler_util::kTaskFile, handler->id()));
+    task->SetString("taskId", file_tasks::MakeTaskID(
+        extension_id, file_tasks::kTaskFile, handler->id()));
     task->SetString("title", handler->title());
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.
@@ -601,7 +601,7 @@ bool SetDefaultTaskFunction::RunImpl() {
     return true;
   }
 
-  file_handler_util::UpdateDefaultTask(profile_, task_id, suffixes, mime_types);
+  file_tasks::UpdateDefaultTask(profile_, task_id, suffixes, mime_types);
 
   return true;
 }

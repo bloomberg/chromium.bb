@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -50,7 +50,7 @@ using extensions::Extension;
 using fileapi::FileSystemURL;
 
 namespace file_manager {
-namespace file_handler_util {
+namespace file_tasks {
 
 const char kTaskFile[] = "file";
 const char kTaskDrive[] = "drive";
@@ -256,9 +256,6 @@ std::string MakeTaskID(const std::string& extension_id,
                             action_id.c_str());
 }
 
-// Breaks down task_id that is used between getFileTasks() and executeTask() on
-// its building blocks. task_id field the following structure:
-//     <extension-id>|<task-type>|<task-action-id>
 bool CrackTaskID(const std::string& task_id,
                  std::string* extension_id,
                  std::string* task_type,
@@ -334,7 +331,7 @@ void FindDefaultTasks(Profile* profile,
   std::set<std::string> default_ids;
   for (std::vector<base::FilePath>::const_iterator it = files_list.begin();
        it != files_list.end(); ++it) {
-    std::string task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
+    std::string task_id = file_tasks::GetDefaultTaskIdFromPrefs(
         profile, "", it->Extension());
     if (!task_id.empty())
       default_ids.insert(task_id);
@@ -811,5 +808,5 @@ void ExtensionTaskExecutor::SetupHandlerHostFileAccessPermissions(
   }
 }
 
-}  // namespace file_handler_util
+}  // namespace file_tasks
 }  // namespace file_manager

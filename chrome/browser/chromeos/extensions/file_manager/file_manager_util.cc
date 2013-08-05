@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/media/media_player.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -292,7 +292,7 @@ void ExecuteHandler(Profile* profile,
   std::vector<FileSystemURL> urls;
   urls.push_back(file_system_context->CrackURL(url));
 
-  file_handler_util::ExecuteFileTask(
+  file_tasks::ExecuteFileTask(
       profile,
       source_url,
       kFileBrowserDomain,
@@ -301,7 +301,7 @@ void ExecuteHandler(Profile* profile,
       task_type,
       action_id,
       urls,
-      file_handler_util::FileTaskFinishedCallback());
+      file_tasks::FileTaskFinishedCallback());
 }
 
 void OpenFileBrowserImpl(const base::FilePath& path,
@@ -316,7 +316,7 @@ void OpenFileBrowserImpl(const base::FilePath& path,
   // Some values of |action_id| are not listed in the manifest and are used
   // to parametrize the behavior when opening the Files app window.
   ExecuteHandler(profile, kFileBrowserDomain, action_id, url,
-                 file_handler_util::kTaskFile);
+                 file_tasks::kTaskFile);
 }
 
 Browser* GetBrowserForUrl(GURL target_url) {
@@ -370,11 +370,11 @@ bool ExecuteDefaultAppHandler(Profile* profile,
     for (FileHandlerList::iterator i = file_handlers.begin();
          i != file_handlers.end(); ++i) {
       const extensions::FileHandlerInfo* handler = *i;
-      std::string task_id = file_handler_util::MakeTaskID(extension->id(),
-          file_handler_util::kTaskApp, handler->id);
+      std::string task_id = file_tasks::MakeTaskID(extension->id(),
+          file_tasks::kTaskApp, handler->id);
       if (task_id == default_task_id) {
         ExecuteHandler(profile, extension->id(), handler->id, url,
-                       file_handler_util::kTaskApp);
+                       file_tasks::kTaskApp);
         return true;
 
       } else if (!first_handler) {
@@ -385,7 +385,7 @@ bool ExecuteDefaultAppHandler(Profile* profile,
   }
   if (first_handler) {
     ExecuteHandler(profile, extension_for_first_handler->id(),
-                   first_handler->id, url, file_handler_util::kTaskApp);
+                   first_handler->id, url, file_tasks::kTaskApp);
     return true;
   }
   return false;
@@ -411,14 +411,14 @@ bool ExecuteExtensionHandler(Profile* profile,
         action_id == kFileBrowserPlayTaskId ||
         action_id == kFileBrowserWatchTaskId) {
       ExecuteHandler(profile, extension_id, action_id, url,
-                     file_handler_util::kTaskFile);
+                     file_tasks::kTaskFile);
       return true;
     }
     return ExecuteBuiltinHandler(browser, path, action_id);
   }
 
   ExecuteHandler(profile, extension_id, action_id, url,
-                 file_handler_util::kTaskFile);
+                 file_tasks::kTaskFile);
   return true;
 }
 
@@ -428,7 +428,7 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
     return false;
 
   std::string mime_type = GetMimeTypeForPath(path);
-  std::string default_task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
+  std::string default_task_id = file_tasks::GetDefaultTaskIdFromPrefs(
       profile, mime_type, path.Extension());
   const FileBrowserHandler* handler;
 
@@ -440,15 +440,15 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
   // 4. non-default app
   // 5. non-default extension
   // Note that there can be at most one of default extension and default app.
-  if (!file_handler_util::GetTaskForURLAndPath(profile, url, path, &handler)) {
+  if (!file_tasks::GetTaskForURLAndPath(profile, url, path, &handler)) {
     return ExecuteDefaultAppHandler(
         profile, path, url, mime_type, default_task_id);
   }
 
-  std::string handler_task_id = file_handler_util::MakeTaskID(
-        handler->extension_id(), file_handler_util::kTaskFile, handler->id());
+  std::string handler_task_id = file_tasks::MakeTaskID(
+        handler->extension_id(), file_tasks::kTaskFile, handler->id());
   if (handler_task_id != default_task_id &&
-      !file_handler_util::IsFallbackTask(handler) &&
+      !file_tasks::IsFallbackTask(handler) &&
       ExecuteDefaultAppHandler(
           profile, path, url, mime_type, default_task_id)) {
     return true;
