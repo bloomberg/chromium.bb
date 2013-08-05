@@ -60,6 +60,8 @@ void FeedbackServiceImpl::GetSystemInformation(
   system_information_callback_ = callback;
 
   SystemInformationList sys_info_list;
+  // TODO(rkc): Figure out what other Chrome system information we can add and
+  // add it here.
   system_information_callback_.Run(sys_info_list);
 }
 

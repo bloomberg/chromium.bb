@@ -22,7 +22,8 @@ class FeedbackPrivateAPI : public ProfileKeyedAPI {
   FeedbackService* GetService() const;
   void RequestFeedback(const std::string& description_template,
                        const std::string& category_tag,
-                       const GURL& page_url);
+                       const GURL& page_url,
+                       const gfx::Rect& screen_size);
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<FeedbackPrivateAPI>* GetFactoryInstance();
@@ -37,6 +38,19 @@ class FeedbackPrivateAPI : public ProfileKeyedAPI {
 
   Profile* const profile_;
   FeedbackService* service_;
+};
+
+// Feedback strings.
+class FeedbackPrivateGetStringsFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("feedbackPrivate.getStrings",
+                             FEEDBACKPRIVATE_GETSTRINGS)
+
+ protected:
+  virtual ~FeedbackPrivateGetStringsFunction() {}
+
+  // SyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class FeedbackPrivateGetUserEmailFunction : public SyncExtensionFunction {
