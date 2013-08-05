@@ -297,6 +297,10 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
    * is_untrusted (which is based on %cs) because we need to handle
    * the case where %gs is set to the untrusted-code value but %cs is
    * not.
+   *
+   * GCC's stack protector (-fstack-protector) will make use of %gs even before
+   * we have a chance to restore it. It is important that this function is not
+   * compiled with -fstack-protector.
    */
   if (natp != NULL) {
     NaClSetGs(natp->user.trusted_gs);

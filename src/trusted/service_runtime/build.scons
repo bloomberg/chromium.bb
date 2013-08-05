@@ -229,7 +229,6 @@ if env.Bit('windows'):
 
 if env.Bit('linux'):
   ldr_inputs += [
-      'linux/nacl_signal.c',
       'linux/thread_suspension.c',
       'posix/nacl_signal_stack.c',
       'posix/sel_addrspace_posix.c'
@@ -244,6 +243,16 @@ if env.Bit('linux'):
     ldr_inputs += ['linux/nacl_signal_64.c']
   else:
     raise Exception("Unsupported target")
+
+  nacl_signal_env = env.Clone()
+  if env.Bit('target_x86_32'):
+    # nacl_signal.c needs to be compiled without the stack protector
+    # on i386.
+    # See https://code.google.com/p/nativeclient/issues/detail?id=3581.
+    nacl_signal_env.FilterOut(CCFLAGS=['-fstack-protector',
+                                       '-fstack-protector-all'])
+    nacl_signal_env.Append(CCFLAGS=['-fno-stack-protector'])
+  ldr_inputs += [nacl_signal_env.ComponentObject('linux/nacl_signal.c')]
 
 if env.Bit('mac'):
   ldr_inputs += [

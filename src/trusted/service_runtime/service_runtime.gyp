@@ -201,11 +201,6 @@
                 'posix/sel_addrspace_posix.c',
                ],
             }],
-            ['OS=="linux" or OS=="FreeBSD"', {
-              'sources': [
-                'linux/nacl_signal.c',
-               ],
-            }],
             ['OS=="win"', {
               'sources': [
                 'win/nacl_signal_stack.c',
@@ -270,6 +265,11 @@
           'dependencies': [
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:nccopy_x86_64',
+          ],
+        }],
+        ['OS=="linux" or OS=="FreeBSD"', {
+          'dependencies': [
+            'nacl_signal',
           ],
         }],
       ],
@@ -414,5 +414,32 @@
         },
       ],
     }],
-  ]
+    ['OS=="linux" or OS=="FreeBSD"', {
+      'targets': [
+        {
+          # This has to be an independent target in order to benefit from
+          # specific flags.
+          'target_name': 'nacl_signal',
+          'type': 'static_library',
+          'conditions': [
+            ['target_arch=="ia32"', {
+              # nacl_signal.c needs to be compiled without the stack
+              # protector on i386.
+              # See https://code.google.com/p/nativeclient/issues/detail?id=3581.
+              'cflags!': [
+                '-fstack-protector',
+                '-fstack-protector-all',
+              ],
+              'cflags': [
+                '-fno-stack-protector',
+              ],
+            }],
+          ],
+          'sources': [
+            'linux/nacl_signal.c',
+          ],
+        },
+      ],
+    }],
+  ],
 }
