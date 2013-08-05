@@ -2121,13 +2121,16 @@ def CMDformat(parser, args):
   diff_cmd += ['*' + ext for ext in CLANG_EXTS]
   diff_output = RunGit(diff_cmd)
 
+  top_dir = RunGit(["rev-parse", "--show-toplevel"]).rstrip('\n')
+
   if opts.full:
     # diff_output is a list of files to send to clang-format.
     files = diff_output.splitlines()
     if not files:
       print "Nothing to format."
       return 0
-    RunCommand(['clang-format', '-i', '-style', 'Chromium'] + files)
+    RunCommand(['clang-format', '-i', '-style', 'Chromium'] + files,
+               cwd=top_dir)
   else:
     # diff_output is a patch to send to clang-format-diff.py
     cfd_path = os.path.join('/usr', 'lib', 'clang-format',
@@ -2135,7 +2138,7 @@ def CMDformat(parser, args):
     if not os.path.exists(cfd_path):
       DieWithError('Could not find clang-format-diff at %s.' % cfd_path)
     cmd = [sys.executable, cfd_path, '-style', 'Chromium']
-    RunCommand(cmd, stdin=diff_output)
+    RunCommand(cmd, stdin=diff_output, cwd=top_dir)
 
   return 0
 
