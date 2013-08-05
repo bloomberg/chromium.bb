@@ -498,6 +498,7 @@ static void ParseRequestCookieLine(
       ++i;  // Skip '='.
       std::string::const_iterator cookie_value_beginning = i;
       if (*i == '"') {
+        ++i;  // Skip '"'.
         while (i != header_value.end() && *i != '"') ++i;
         if (i == header_value.end()) return;
         ++i;  // Skip '"'.

@@ -1615,7 +1615,7 @@ TEST(ExtensionWebRequestHelpersTest,
      TestMergeOnBeforeSendHeadersResponses_Cookies) {
   net::HttpRequestHeaders base_headers;
   base_headers.AddHeaderFromString(
-      "Cookie: name=value; name2=value2; name3=value3");
+      "Cookie: name=value; name2=value2; name3=\"value3\"");
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
   ExtensionWarningSet warning_set;
