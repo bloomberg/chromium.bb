@@ -38,7 +38,7 @@ FileWatcher.prototype.dispose = function() {
   chrome.fileBrowserPrivate.onDirectoryChanged.removeListener(
       this.onDirectoryChangedBound_);
   if (this.watchedDirectoryEntry_)
-    this.resetWatchedEntry_();
+    this.resetWatchedEntry_(function() {}, function() {});
 };
 
 /**
