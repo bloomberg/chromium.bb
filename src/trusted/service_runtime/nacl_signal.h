@@ -150,10 +150,6 @@ void NaClSignalContextToHandler(void *raw_ctx,
 int NaClSignalContextIsUntrusted(struct NaClAppThread *natp,
                                  const struct NaClSignalContext *sig_ctx);
 
-void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
-                                       int *is_untrusted,
-                                       struct NaClAppThread **result_thread);
-
 int NaClSignalCheckSandboxInvariants(const struct NaClSignalContext *regs,
                                      struct NaClAppThread *natp);
 

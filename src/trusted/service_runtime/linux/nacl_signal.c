@@ -19,6 +19,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
@@ -46,6 +47,75 @@ static NaClSignalHandler g_handler_func;
 
 void NaClSignalHandlerSet(NaClSignalHandler func) {
   g_handler_func = func;
+}
+
+/*
+ * Returns, via is_untrusted, whether the signal happened while
+ * executing untrusted code.
+ *
+ * Returns, via result_thread, the NaClAppThread that untrusted code
+ * was running in.
+ *
+ * Note that this should only be called from the thread in which the
+ * signal occurred, because on x86-64 it reads a thread-local variable
+ * (nacl_current_thread).
+ */
+static void GetCurrentThread(const struct NaClSignalContext *sig_ctx,
+                             int *is_untrusted,
+                             struct NaClAppThread **result_thread) {
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  /*
+   * For x86-32, if %cs does not match, it is untrusted code.
+   *
+   * Note that this check might not be valid on Mac OS X, because
+   * thread_get_state() does not return the value of NaClGetGlobalCs()
+   * for a thread suspended inside a syscall.  However, this code is
+   * not used on Mac OS X.
+   */
+  *is_untrusted = (NaClGetGlobalCs() != sig_ctx->cs);
+  *result_thread = NaClAppThreadGetFromIndex(sig_ctx->gs >> 3);
+#elif (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) || \
+      NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
+      NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  struct NaClAppThread *natp = NaClTlsGetCurrentThread();
+  if (natp == NULL) {
+    *is_untrusted = 0;
+    *result_thread = NULL;
+  } else {
+    /*
+     * Get the address of an arbitrary local, stack-allocated variable,
+     * just for the purpose of doing a sanity check.
+     */
+    void *pointer_into_stack = &natp;
+    /*
+     * Sanity check: Make sure the stack we are running on is not
+     * allocated in untrusted memory.  This checks that the alternate
+     * signal stack is correctly set up, because otherwise, if it is
+     * not set up, the test case would not detect that.
+     *
+     * There is little point in doing a CHECK instead of a DCHECK,
+     * because if we are running off an untrusted stack, we have already
+     * lost.
+     */
+    DCHECK(!NaClIsUserAddr(natp->nap, (uintptr_t) pointer_into_stack));
+    *is_untrusted = NaClIsUserAddr(natp->nap, sig_ctx->prog_ctr);
+    *result_thread = natp;
+  }
+#else
+# error Unsupported architecture
+#endif
+
+  /*
+   * Trusted code could accidentally jump into sandbox address space,
+   * so don't rely on prog_ctr on its own for determining whether a
+   * crash comes from untrusted code.  We don't want to restore
+   * control to an untrusted exception handler if trusted code
+   * crashes.
+   */
+  if (*is_untrusted &&
+      ((*result_thread)->suspend_state & NACL_APP_THREAD_UNTRUSTED) == 0) {
+    *is_untrusted = 0;
+  }
 }
 
 static void FindAndRunHandler(int sig, siginfo_t *info, void *uc) {
@@ -195,7 +265,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
 #endif
 
   NaClSignalContextFromHandler(&sig_ctx, uc);
-  NaClSignalContextGetCurrentThread(&sig_ctx, &is_untrusted, &natp);
+  GetCurrentThread(&sig_ctx, &is_untrusted, &natp);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   /*
