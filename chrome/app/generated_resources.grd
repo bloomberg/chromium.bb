@@ -15251,6 +15251,9 @@ You need to be signed in to use this feature.
     <message name="IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LINK" desc="Text for the sign-in promo link, shown after the (disabled) 'Supervised user' checkbox in the create-profile dialog when the current user is not signed in.">
       Sign in now
     </message>
+    <message name="IDS_PROFILES_CREATE_MANAGED_FROM_EXISTING_LABEL" desc="Label for the 'Select an exisiting managed user' checkbox. During managed user creation a custodian will have an option to select an existing managed profile rather creating a new one.">
+      Select an existing managed user: 
+    </message>
     <message name="IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX" desc="Create Shortcut checkbox when creating a new profile">
       Create a desktop shortcut for this user
     </message>

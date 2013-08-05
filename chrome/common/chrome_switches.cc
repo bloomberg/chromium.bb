@@ -21,6 +21,11 @@ namespace switches {
 // all work out.
 // -----------------------------------------------------------------------------
 
+// Allows choosing an existing managed user profile during the managed
+// user creation flow.
+const char kAllowCreateExistingManagedUsers[] =
+    "allow-create-existing-managed-users";
+
 // Allows third-party content included on a page to prompt for a HTTP basic
 // auth username/password pair.
 const char kAllowCrossOriginAuthPrompt[]    = "allow-cross-origin-auth-prompt";

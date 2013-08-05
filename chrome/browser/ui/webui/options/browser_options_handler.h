@@ -154,14 +154,11 @@ class BrowserOptionsHandler
   void CreateProfile(const base::ListValue* args);
 
   // After a new managed-user profile has been created, registers the user with
-  // the management server. This is a class method to ensure that the
-  // registration service (on the custodian's profile, along with this WebUI
-  // class) still exists after the new managed profile has been created
-  // asynchronously.
-  void RegisterNewManagedUser(const ProfileManager::CreateCallback& callback,
-                              const std::string& managed_user_id,
-                              Profile* new_profile,
-                              Profile::CreateStatus status);
+  // the management server.
+  void RegisterManagedUser(const ProfileManager::CreateCallback& callback,
+                           const std::string& managed_user_id,
+                           Profile* new_profile,
+                           Profile::CreateStatus status);
 
   // Records UMA histograms relevant to profile creation.
   void RecordProfileCreationMetrics(Profile::CreateStatus status);
@@ -309,6 +306,9 @@ class BrowserOptionsHandler
   // Setup the accessibility features for ChromeOS.
   void SetupAccessibilityFeatures();
 #endif
+
+  bool IsValidExistingManagedUserId(
+      const std::string& existing_managed_user_id) const;
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.

@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -96,6 +97,8 @@ void ManageProfileHandler::GetLocalizedValues(
         IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LABEL },
     { "manageProfilesManagedNotSignedInLink",
         IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LINK },
+    { "manageProfilesSelectExistingManagedProfileLabel",
+        IDS_PROFILES_CREATE_MANAGED_FROM_EXISTING_LABEL},
     { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
     { "deleteProfileMessage", IDS_PROFILES_DELETE_MESSAGE },
@@ -120,6 +123,11 @@ void ManageProfileHandler::GetLocalizedValues(
                                 ProfileShortcutManager::IsFeatureEnabled());
   localized_strings->SetBoolean("managedUsersEnabled",
                                 ManagedUserService::AreManagedUsersEnabled());
+
+  localized_strings->SetBoolean(
+      "allowCreateExistingManagedUsers",
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowCreateExistingManagedUsers));
 }
 
 void ManageProfileHandler::InitializeHandler() {
@@ -168,6 +176,9 @@ void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("removeProfileShortcut",
       base::Bind(&ManageProfileHandler::RemoveProfileShortcut,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("requestExistingManagedUsers",
+      base::Bind(&ManageProfileHandler::RequestExistingManagedUsers,
+                 base::Unretained(this)));
 }
 
 void ManageProfileHandler::Observe(
@@ -207,6 +218,35 @@ void ManageProfileHandler::RequestNewProfileDefaults(const ListValue* args) {
 
   web_ui()->CallJavascriptFunction(
       "ManageProfileOverlay.receiveNewProfileDefaults", profile_info);
+}
+
+void ManageProfileHandler::RequestExistingManagedUsers(const ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (profile->IsManaged())
+    return;
+
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  std::set<std::string> managed_user_ids;
+  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i)
+    managed_user_ids.insert(cache.GetManagedUserIdOfProfileAtIndex(i));
+
+  DictionaryValue* dict =
+      DictionaryPrefUpdate(profile->GetPrefs(), prefs::kManagedUsers).Get();
+  DictionaryValue id_names_dict;
+  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    if (managed_user_ids.find(it.key()) != managed_user_ids.end())
+      continue;
+    const DictionaryValue* value = NULL;
+    bool success = it.value().GetAsDictionary(&value);
+    DCHECK(success);
+    std::string name;
+    value->GetString("name", &name);
+    id_names_dict.SetString(it.key(), name);
+  }
+
+  web_ui()->CallJavascriptFunction(
+      "CreateProfileOverlay.receiveExistingManagedUsers", id_names_dict);
 }
 
 void ManageProfileHandler::SendProfileIcons(

@@ -46,7 +46,8 @@ ManagedUserRegistrationUtility::ManagedUserRegistrationUtility(
       prefs_(prefs),
       token_fetcher_(token_fetcher.Pass()),
       managed_user_sync_service_(service),
-      pending_managed_user_acknowledged_(false) {
+      pending_managed_user_acknowledged_(false),
+      is_existing_managed_user_(false) {
   managed_user_sync_service_->AddObserver(this);
 }
 
@@ -83,27 +84,39 @@ void ManagedUserRegistrationUtility::Register(
     const RegistrationCallback& callback) {
   DCHECK(pending_managed_user_id_.empty());
   callback_ = callback;
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNoManagedUserRegistrationTimeout)) {
-    registration_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kRegistrationTimeoutMS),
-        base::Bind(
-            &ManagedUserRegistrationUtility::AbortPendingRegistration,
-            weak_ptr_factory_.GetWeakPtr(),
-            true,  // Run the callback.
-            GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED)));
-  }
-
   pending_managed_user_id_ = managed_user_id;
-  managed_user_sync_service_->AddManagedUser(pending_managed_user_id_,
-                                             base::UTF16ToUTF8(info.name),
-                                             info.master_key);
+  StartRegistrationTimer();
+
+  const DictionaryValue* dict = prefs_->GetDictionary(prefs::kManagedUsers);
+  is_existing_managed_user_ = dict->HasKey(managed_user_id);
+  if (!is_existing_managed_user_) {
+    managed_user_sync_service_->AddManagedUser(pending_managed_user_id_,
+                                               base::UTF16ToUTF8(info.name),
+                                               info.master_key);
+  } else {
+    // User already exists, don't wait for acknowledgment.
+    OnManagedUserAcknowledged(managed_user_id);
+  }
 
   browser_sync::DeviceInfo::GetClientName(
       base::Bind(&ManagedUserRegistrationUtility::FetchToken,
                  weak_ptr_factory_.GetWeakPtr(), info.name));
+}
+
+void ManagedUserRegistrationUtility::StartRegistrationTimer() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoManagedUserRegistrationTimeout)) {
+    return;
+  }
+
+  registration_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kRegistrationTimeoutMS),
+      base::Bind(
+          &ManagedUserRegistrationUtility::AbortPendingRegistration,
+          weak_ptr_factory_.GetWeakPtr(),
+          true,  // Run the callback.
+          GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED)));
 }
 
 void ManagedUserRegistrationUtility::CancelPendingRegistration() {
@@ -172,7 +185,10 @@ void ManagedUserRegistrationUtility::CompleteRegistration(
   if (callback_.is_null())
     return;
 
-  if (pending_managed_user_token_.empty()) {
+  // We check that the user being registered is not an existing managed
+  // user before deleting it from sync to avoid accidental deletion of
+  // existing managed users by just canceling the registration for example.
+  if (pending_managed_user_token_.empty() && !is_existing_managed_user_) {
     DCHECK(!pending_managed_user_id_.empty());
     // Remove the pending managed user if we weren't successful.
     DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
