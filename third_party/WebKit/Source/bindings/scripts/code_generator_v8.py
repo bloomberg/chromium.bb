@@ -59,6 +59,23 @@ CALLBACK_INTERFACE_H_INCLUDES = set([
 ])
 
 
+INTERFACE_CPP_INCLUDES = set([
+    'RuntimeEnabledFeatures.h',
+    'bindings/v8/ScriptController.h',
+    'bindings/v8/V8Binding.h',
+    'core/dom/ContextFeatures.h',
+    'core/dom/Document.h',
+    'core/page/Frame.h',
+    'core/platform/chromium/TraceEvent.h',
+    'wtf/UnusedParam.h',
+])
+
+
+INTERFACE_H_INCLUDES = set([
+    'bindings/v8/V8Binding.h',
+])
+
+
 CPP_TYPE_SPECIAL_CONVERSION_RULES = {
     'float': 'float',
     'double': 'double',
@@ -94,25 +111,6 @@ def apply_template(path_to_template, contents):
     jinja_env = jinja2.Environment(trim_blocks=True, loader=jinja2.FileSystemLoader([dirname]))
     template = jinja_env.get_template(basename)
     return template.render(contents)
-
-
-def cpp_type(data_type, pointer_type):
-    """Returns the C++ type corresponding to the IDL type.
-
-    Args:
-        pointer_type:
-            'raw': return raw pointer form (e.g. Foo*)
-            'RefPtr': return RefPtr form (e.g. RefPtr<Foo>)
-    """
-    if data_type in CPP_TYPE_SPECIAL_CONVERSION_RULES:
-        return CPP_TYPE_SPECIAL_CONVERSION_RULES[data_type]
-    if sequence_type(data_type):
-        return 'Vector<%s >' % cpp_type(sequence_type(data_type), 'RefPtr')
-    if pointer_type == 'raw':
-        return data_type + '*'
-    if pointer_type == 'RefPtr':
-        return 'RefPtr<%s>' % data_type
-    return ''
 
 
 def cpp_value_to_js_value(data_type, cpp_value, isolate, creation_context=''):
@@ -153,6 +151,10 @@ def includes_for_type(data_type):
     return set(['V8%s.h' % data_type])
 
 
+def includes_for_cpp_class(class_name, relative_dir_posix):
+    return set([posixpath.join('bindings', relative_dir_posix, class_name + '.h')])
+
+
 def includes_for_operation(operation):
     includes = includes_for_type(operation.data_type)
     for parameter in operation.arguments:
@@ -171,8 +173,40 @@ def sequence_type(data_type):
     return matched.group(1)
 
 
+def cpp_type(data_type, pointer_type):
+    """Returns the C++ type corresponding to the IDL type.
+
+    Args:
+        pointer_type:
+            'raw': return raw pointer form (e.g. Foo*)
+            'RefPtr': return RefPtr form (e.g. RefPtr<Foo>)
+            'PassRefPtr': return PassRefPtr form (e.g. RefPtr<Foo>)
+    """
+    if data_type in CPP_TYPE_SPECIAL_CONVERSION_RULES:
+        return CPP_TYPE_SPECIAL_CONVERSION_RULES[data_type]
+    if sequence_type(data_type):
+        return 'Vector<%s >' % cpp_type(sequence_type(data_type), 'RefPtr')
+    if pointer_type == 'raw':
+        return data_type + '*'
+    if pointer_type in ['RefPtr', 'PassRefPtr']:
+        return '%s<%s>' % (pointer_type, data_type)
+    raise Exception('Unrecognized pointer type: "%s"' % pointer_type)
+
+
+def v8_type(data_type):
+    return 'V8' + data_type
+
+
+def cpp_method_name(attribute_or_operation):
+    return attribute_or_operation.extended_attributes.get('ImplementedAs', attribute_or_operation.name)
+
+
+def cpp_class_name(interface):
+    return interface.extended_attributes.get('ImplementedAs', interface.name)
+
+
 def v8_class_name(interface):
-    return 'V8' + interface.name
+    return v8_type(interface.name)
 
 
 class CodeGeneratorV8:
@@ -191,12 +225,6 @@ class CodeGeneratorV8:
                 self.interface = definitions.interfaces[interface_name]
             except KeyError:
                 raise Exception('%s not in IDL definitions' % interface_name)
-
-    def cpp_class_header_filename(self):
-        """Returns relative path (starting with bindings/) of webcore header of the interface"""
-        # FIXME: Support ImplementedAs
-        header_basename = self.interface_name + '.h'
-        return posixpath.join('bindings', self.relative_dir_posix, header_basename)
 
     def generate_cpp_to_js_conversion(self, data_type, cpp_value, format_string, isolate, creation_context=''):
         """Returns a statement that converts a C++ value to a JS value.
@@ -225,17 +253,17 @@ class CodeGeneratorV8:
     def write_header_and_cpp(self):
         header_basename = v8_class_name(self.interface) + '.h'
         cpp_basename = v8_class_name(self.interface) + '.cpp'
-        template_contents = {
-            'conditional_string': generate_conditional_string(self.interface),
-        }
         if self.interface.is_callback:
-            template_contents.update(self.generate_callback_interface())
-            header_file_text = apply_template('templates/callback.h', template_contents)
-            cpp_file_text = apply_template('templates/callback.cpp', template_contents)
+            header_template = 'templates/callback_interface.h'
+            cpp_template = 'templates/callback_interface.cpp'
+            template_contents = self.generate_callback_interface()
         else:
-            # FIXME: Implement.
-            header_file_text = ''
-            cpp_file_text = ''
+            header_template = 'templates/interface.h'
+            cpp_template = 'templates/interface.cpp'
+            template_contents = self.generate_interface()
+        template_contents['conditional_string'] = generate_conditional_string(self.interface)
+        header_file_text = apply_template(header_template, template_contents)
+        cpp_file_text = apply_template(cpp_template, template_contents)
         self.write_header_code(header_basename, header_file_text)
         self.write_cpp_code(cpp_basename, cpp_file_text)
 
@@ -249,10 +277,39 @@ class CodeGeneratorV8:
         with open(cpp_filename, 'w') as cpp_file:
             cpp_file.write(cpp_file_text)
 
+    def generate_attribute(self, attribute):
+        self.cpp_includes |= includes_for_type(attribute.data_type)
+        return {
+            'name': attribute.name,
+            'conditional_string': generate_conditional_string(attribute),
+            'cpp_method_name': cpp_method_name(attribute),
+            'cpp_type': cpp_type(attribute.data_type, pointer_type='RefPtr'),
+            'v8_type': v8_type(attribute.data_type),
+        }
+
+    def generate_interface(self):
+        self.header_includes = INTERFACE_H_INCLUDES
+        self.header_includes |= includes_for_cpp_class(cpp_class_name(self.interface), self.relative_dir_posix)
+        self.cpp_includes = INTERFACE_CPP_INCLUDES
+
+        template_contents = {
+            'interface_name': self.interface.name,
+            'cpp_class_name': cpp_class_name(self.interface),
+            'v8_class_name': v8_class_name(self.interface),
+            'attributes': [self.generate_attribute(attribute) for attribute in self.interface.attributes],
+            # Size 0 constant array is not allowed in VC++
+            'number_of_attributes': 'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class_name(self.interface) if self.interface.attributes else '0',
+            'attribute_templates': v8_class_name(self.interface) + 'Attributes' if self.interface.attributes else '0',
+        }
+        # Add includes afterwards, as they are modified by generate_attribute etc.
+        template_contents['header_includes'] = sorted(list(self.header_includes))
+        template_contents['cpp_includes'] = sorted(list(self.cpp_includes))
+        return template_contents
+
     def generate_callback_interface(self):
-        self.cpp_includes = CALLBACK_INTERFACE_CPP_INCLUDES
         self.header_includes = CALLBACK_INTERFACE_H_INCLUDES
-        self.header_includes.add(self.cpp_class_header_filename())
+        self.header_includes |= includes_for_cpp_class(cpp_class_name(self.interface), self.relative_dir_posix)
+        self.cpp_includes = CALLBACK_INTERFACE_CPP_INCLUDES
 
         def generate_argument(argument):
             receiver = 'v8::Handle<v8::Value> %sHandle = %%s;' % argument.name
@@ -274,7 +331,7 @@ class CodeGeneratorV8:
                     raise Exception("We don't yet support callbacks that return non-boolean values.")
                 arguments = [generate_argument(argument) for argument in operation.arguments]
             method = {
-                'return_type': cpp_type(operation.data_type, 'RefPtr'),
+                'return_cpp_type': cpp_type(operation.data_type, 'RefPtr'),
                 'name': operation.name,
                 'arguments': arguments,
                 'argument_declaration': ', '.join([argument_declaration(argument) for argument in operation.arguments]),

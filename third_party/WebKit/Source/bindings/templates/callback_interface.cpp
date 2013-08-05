@@ -54,7 +54,7 @@ namespace WebCore {
 
 {% for method in methods %}
 {% if not method.custom %}
-{{method.return_type}} {{v8_class_name}}::{{method.name}}({{method.argument_declaration}})
+{{method.return_cpp_type}} {{v8_class_name}}::{{method.name}}({{method.argument_declaration}})
 {
     if (!canInvokeCallback())
         return true;
