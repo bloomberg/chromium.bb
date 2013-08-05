@@ -86,6 +86,15 @@ LayoutUnit RenderTextControlSingleLine::computeLogicalHeightLimit() const
     return containerElement() ? contentLogicalHeight() : logicalHeight();
 }
 
+// 'end' must be an ancestor of 'start.'
+static void setNeedsLayoutInRange(RenderObject* start, RenderObject* end)
+{
+    ASSERT(start);
+    ASSERT(start != end);
+    for (RenderObject* renderer = start; renderer != end; renderer = renderer->parent())
+        renderer->setNeedsLayout(true, MarkOnlyThis);
+}
+
 void RenderTextControlSingleLine::layout()
 {
     StackStats::LayoutCheckPoint layoutCheckPoint;
@@ -107,11 +116,11 @@ void RenderTextControlSingleLine::layout()
     // To ensure consistency between layouts, we need to reset any conditionally overriden height.
     if (innerTextRenderer && !innerTextRenderer->style()->logicalHeight().isAuto()) {
         innerTextRenderer->style()->setLogicalHeight(Length(Auto));
-        innerTextRenderer->setNeedsLayout(true, MarkOnlyThis);
+        setNeedsLayoutInRange(innerTextRenderer, this);
     }
     if (innerBlockRenderer && !innerBlockRenderer->style()->logicalHeight().isAuto()) {
         innerBlockRenderer->style()->setLogicalHeight(Length(Auto));
-        innerBlockRenderer->setNeedsLayout(true, MarkOnlyThis);
+        setNeedsLayoutInRange(innerBlockRenderer, this);
     }
 
     RenderBlock::layoutBlock(false);

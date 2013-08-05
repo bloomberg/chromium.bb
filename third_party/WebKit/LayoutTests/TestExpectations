@@ -104,8 +104,6 @@ webkit.org/b/83260 fast/text/international/embed-bidi-style-in-isolate-crash.htm
 
 crbug.com/266213 [ Debug ] fast/frames/invalid-frameset.html [ Crash ]
 crbug.com/266213 [ Debug ] tables/table-section-overflow-clip-crash.html [ Crash ]
-crbug.com/266213 [ Debug ] fast/forms/searchfield-heights.html [ Crash ]
-crbug.com/266213 [ Debug ] fast/forms/search-vertical-alignment.html [ Crash ]
 
 # -----------------------------------------------------------------
 # Inspector tests
