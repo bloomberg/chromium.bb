@@ -39,14 +39,14 @@ GEN('#endif');
  * Test if the SUID sandbox is enabled.
  */
 TEST_F('SandboxStatusUITest', 'MAYBE_testSUIDSandboxEnabled', function() {
-    var suidyesstring = 'SUID Sandbox\tYes';
-    var suidnostring = 'SUID Sandbox\tNo';
-    var suidyes = document.body.innerText.match(suidyesstring);
-    var suidno = document.body.innerText.match(suidnostring);
+  var suidyesstring = 'SUID Sandbox\tYes';
+  var suidnostring = 'SUID Sandbox\tNo';
+  var suidyes = document.body.innerText.match(suidyesstring);
+  var suidno = document.body.innerText.match(suidnostring);
 
-    expectEquals(null, suidno);
-    assertFalse(suidyes === null);
-    expectEquals(suidyesstring, suidyes[0]);
+  expectEquals(null, suidno);
+  assertFalse(suidyes === null);
+  expectEquals(suidyesstring, suidyes[0]);
 });
 
 // The seccomp-bpf sandbox is also not compatible with ASAN.
@@ -66,12 +66,62 @@ GEN('#endif');
  * Test if the seccomp-bpf sandbox is enabled.
  */
 TEST_F('SandboxStatusUITest', 'MAYBE_testBPFSandboxEnabled', function() {
-    var bpfyesstring = 'Seccomp-BPF sandbox\tYes';
-    var bpfnostring = 'Seccomp-BPF sandbox\tNo';
-    var bpfyes = document.body.innerText.match(bpfyesstring);
-    var bpfno = document.body.innerText.match(bpfnostring);
+  var bpfyesstring = 'Seccomp-BPF sandbox\tYes';
+  var bpfnostring = 'Seccomp-BPF sandbox\tNo';
+  var bpfyes = document.body.innerText.match(bpfyesstring);
+  var bpfno = document.body.innerText.match(bpfnostring);
 
-    expectEquals(null, bpfno);
-    assertFalse(bpfyes === null);
-    expectEquals(bpfyesstring, bpfyes[0]);
+  expectEquals(null, bpfno);
+  assertFalse(bpfyes === null);
+  expectEquals(bpfyesstring, bpfyes[0]);
+});
+
+/**
+ * TestFixture for GPU Sandbox testing.
+ * @extends {testing.Test}
+ * @constructor
+ */
+function GPUSandboxStatusUITest() {}
+
+GPUSandboxStatusUITest.prototype = {
+  __proto__: testing.Test.prototype,
+  /**
+   * Browse to the options page & call our preLoad().
+   */
+  browsePreload: 'chrome://gpu',
+  isAsync: true,
+};
+
+// This test is disabled because it can only pass on real hardware. We
+// arrange for it to run on real hardware in specific configurations
+// (such as Chrome OS hardware, via Autotest), then run it with
+// --gtest_also_run_disabled_tests on those configurations.
+
+/**
+ * Test if the GPU sandbox is enabled.
+ */
+TEST_F('GPUSandboxStatusUITest', 'DISABLED_testGPUSandboxEnabled', function() {
+  var gpuyesstring = 'Sandboxed\ttrue';
+  var gpunostring = 'Sandboxed\tfalse';
+
+  var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      for (var i = 0; i < mutation.addedNodes.length; i++) {
+        // Here we can inspect each of the added nodes. We expect
+        // to find one that contains one of the GPU status strings.
+        var addedNode = mutation.addedNodes[i];
+        // Check for both. If it contains neither, it's an unrelated
+        // mutation event we don't care about. But if it contains one,
+        // pass or fail accordingly.
+        var gpuyes = addedNode.innerText.match(gpuyesstring);
+        var gpuno = addedNode.innerText.match(gpunostring);
+        if (gpuyes || gpuno) {
+          expectEquals(null, gpuno);
+          expectTrue(gpuyes && (gpuyes[0] == gpuyesstring));
+          testDone();
+        }
+      }
+    })
+  });
+  observer.observe(document.getElementById('basic-info'), {childList: true});
 });
