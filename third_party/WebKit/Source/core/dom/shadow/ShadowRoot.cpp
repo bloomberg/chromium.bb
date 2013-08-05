@@ -161,7 +161,7 @@ void ShadowRoot::recalcStyle(StyleChange change)
     // When we're set to lazyAttach we'll have a SubtreeStyleChange and we'll need
     // to promote the change to a Force for all our descendants so they get a
     // recalc and will attach.
-    if (styleChangeType() == SubtreeStyleChange)
+    if (styleChangeType() >= SubtreeStyleChange)
         change = Force;
 
     // FIXME: This doesn't handle :hover + div properly like Element::recalcStyle does.

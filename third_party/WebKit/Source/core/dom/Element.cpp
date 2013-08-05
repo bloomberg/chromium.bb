@@ -1502,7 +1502,7 @@ bool Element::recalcStyle(StyleChange change)
             change = Force;
         }
 
-        if (styleChangeType() == SubtreeStyleChange)
+        if (styleChangeType() >= SubtreeStyleChange)
             change = Force;
         else if (change != Force)
             change = localChange;
@@ -1542,7 +1542,7 @@ bool Element::recalcStyle(StyleChange change)
             if (forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling)
                 element->setNeedsStyleRecalc();
 
-            bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == SubtreeStyleChange;
+            bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() >= SubtreeStyleChange;
             forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
             forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
 
@@ -1671,7 +1671,7 @@ static void inline checkForEmptyStyleChange(Element* element, RenderStyle* style
 static void checkForSiblingStyleChanges(Element* e, RenderStyle* style, bool finishedParsingCallback,
                                         Node* beforeChange, Node* afterChange, int childCountDelta)
 {
-    if (!e->attached() || e->document()->hasPendingForcedStyleRecalc() || e->styleChangeType() == SubtreeStyleChange)
+    if (!e->attached() || e->document()->hasPendingForcedStyleRecalc() || e->styleChangeType() >= SubtreeStyleChange)
         return;
 
     // :empty selector.

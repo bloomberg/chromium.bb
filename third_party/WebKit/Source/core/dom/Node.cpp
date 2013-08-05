@@ -846,7 +846,7 @@ void Node::lazyAttach(ShouldSetAttached shouldSetAttached)
     }
     markAncestorsWithChildNeedsStyleRecalc();
     for (Node* node = this; node; node = NodeTraversal::next(node, this)) {
-        node->setStyleChange(SubtreeStyleChange);
+        node->setStyleChange(LazyAttachStyleChange);
         node->setChildNeedsStyleRecalc();
         // FIXME: This flag is only used by HTMLFrameElementBase and doesn't look needed.
         if (shouldSetAttached == SetAttached)

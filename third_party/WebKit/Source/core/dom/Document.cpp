@@ -1557,7 +1557,7 @@ bool Document::hasPendingStyleRecalc() const
 
 bool Document::hasPendingForcedStyleRecalc() const
 {
-    return hasPendingStyleRecalc() && styleChangeType() == SubtreeStyleChange;
+    return hasPendingStyleRecalc() && styleChangeType() >= SubtreeStyleChange;
 }
 
 void Document::styleRecalcTimerFired(Timer<Document>*)
@@ -1632,7 +1632,7 @@ void Document::recalcStyle(StyleChange change)
         if (!renderer())
             goto bailOut;
 
-        if (styleChangeType() == SubtreeStyleChange)
+        if (styleChangeType() >= SubtreeStyleChange)
             change = Force;
 
         // Recalculating the root style (on the document) is not needed in the common case.

@@ -90,6 +90,7 @@ enum StyleChangeType {
     NoStyleChange = 0,
     LocalStyleChange = 1 << nodeStyleChangeShift,
     SubtreeStyleChange = 2 << nodeStyleChangeShift,
+    LazyAttachStyleChange = 3 << nodeStyleChangeShift,
 };
 
 // If the style change is from the renderer then we'll call setStyle on the
@@ -928,6 +929,9 @@ inline void Node::lazyReattachIfAttached()
 
 inline void Node::lazyReattach(ShouldSetAttached shouldSetAttached)
 {
+    if (styleChangeType() == LazyAttachStyleChange)
+        return;
+
     AttachContext context;
     context.performingReattach = true;
 
