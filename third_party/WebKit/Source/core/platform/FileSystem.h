@@ -55,7 +55,6 @@ struct FileMetadata;
 bool getFileSize(const String&, long long& result);
 bool getFileModificationTime(const String&, time_t& result);
 bool getFileMetadata(const String&, FileMetadata&);
-String pathGetFileName(const String&);
 String directoryName(const String&);
 
 inline double invalidFileTime() { return std::numeric_limits<double>::quiet_NaN(); }
