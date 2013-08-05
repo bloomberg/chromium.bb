@@ -311,7 +311,12 @@ function toggleHelpBox() {
 }
 
 function diagnoseErrors() {
-  location = "chrome-extension://kodldpbjkkmmnilagfdheibampofhaom/index.html";
+  var extension_id = "idddmepepmjcgiedknnmlbadcokidhoa";
+  var diagnose_frame = document.getElementById('diagnose-frame');
+  diagnose_frame.innerHTML =
+      '<iframe src="+chrome-extension://' + extension_id +
+      '/index.html"></iframe>';
+
 }
 
 // Subframes use a different layout but the same html file.  This is to make it
@@ -364,6 +369,7 @@ document.addEventListener("DOMContentLoaded", swapButtonOrder);
     </div>
     <button id="diagnose-button" onclick="diagnoseErrors()"
       jscontent="diagnose" jsdisplay="diagnose"></button>
+    <div id="diagnose-frame" class="hidden"></div>
     <div class="error-code" jscontent="errorCode"></div>
    </div>
   </div>

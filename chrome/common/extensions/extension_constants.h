@@ -254,6 +254,7 @@ namespace extension_misc {
   extern const char kChromeVoxExtensionPath[];
   // Path to preinstalled Connectivity Diagnostics extension.
   extern const char kConnectivityDiagnosticsPath[];
+  extern const char kConnectivityDiagnosticsLauncherPath[];
   // Path to preinstalled speech synthesis extension.
   extern const char kSpeechSynthesisExtensionPath[];
   // The extension id of the speech synthesis extension.

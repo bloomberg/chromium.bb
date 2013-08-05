@@ -284,6 +284,7 @@
         <include name="IDR_CHROMEVOX_MANIFEST" file="resources\chromeos\access_chromevox\manifest.json" type="BINDATA" />
         <!-- manifest file of Connectivity Diagnostics app -->
         <include name="IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST" file="resources\chromeos\connectivity_diagnostics\manifest.json" type="BINDATA" />
+        <include name="IDR_CONNECTIVITY_DIAGNOSTICS_LAUNCHER_MANIFEST" file="resources\chromeos\connectivity_diagnostics_launcher\manifest.json" type="BINDATA" />
         <!-- manifest file of built-in speech synthesis extension -->
         <include name="IDR_SPEECH_SYNTHESIS_MANIFEST" file="resources\chromeos\speech_synthesis\manifest.json" type="BINDATA" />
         <include name="IDR_DIAGNOSTICS_MAIN_CSS" file="resources\chromeos\diagnostics\main.css" type="BINDATA" />

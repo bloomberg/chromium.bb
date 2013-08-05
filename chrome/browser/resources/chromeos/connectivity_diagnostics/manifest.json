@@ -23,5 +23,10 @@
    "experimental",
    "http://*.google.com/*",
    "http://www.yahoo.com/*"
-  ]
+  ],
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  }
 }

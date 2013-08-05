@@ -127,6 +127,8 @@ const char kChromeVoxExtensionPath[] =
     "/usr/share/chromeos-assets/accessibility/extensions/access_chromevox";
 const char kConnectivityDiagnosticsPath[] =
     "/usr/share/chromeos-assets/connectivity_diagnostics";
+const char kConnectivityDiagnosticsLauncherPath[] =
+    "/usr/share/chromeos-assets/connectivity_diagnostics_launcher";
 const char kSpeechSynthesisExtensionPath[] =
     "/usr/share/chromeos-assets/speech_synthesis/patts";
 const char kSpeechSynthesisExtensionId[] =
