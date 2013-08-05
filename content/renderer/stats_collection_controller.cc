@@ -64,7 +64,7 @@ void ConvertLoadTimeToJSON(
     // in base::SysInfo::Uptime().
     item.SetDouble("load_start_ms", load_start_time.ToInternalValue() / 1000);
   }
-  if (load_stop_time.is_null() || load_stop_time.is_null()) {
+  if (load_start_time.is_null() || load_stop_time.is_null()) {
     item.Set("load_duration_ms", base::Value::CreateNullValue());
   } else {
     item.SetDouble("load_duration_ms",
