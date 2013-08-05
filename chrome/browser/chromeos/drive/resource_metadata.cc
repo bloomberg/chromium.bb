@@ -640,8 +640,7 @@ FileError ResourceMetadata::RefreshDirectory(
       directory_fetch_info.changestamp());
   storage_->PutEntry(directory);
 
-  // First, go through the entry map. We'll handle existing entries and new
-  // entries in the loop. We'll process deleted entries afterwards.
+  // Go through the entry map. Handle existing entries and new entries.
   for (ResourceEntryMap::const_iterator it = entry_map.begin();
        it != entry_map.end(); ++it) {
     if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
@@ -663,19 +662,6 @@ FileError ResourceMetadata::RefreshDirectory(
 
     if (!PutEntryUnderDirectory(CreateEntryWithProperBaseName(entry)))
       return FILE_ERROR_FAILED;
-  }
-
-  // Go through the existing entries and remove deleted entries.
-  std::vector<std::string> children;
-  storage_->GetChildren(directory.resource_id(), &children);
-  for (size_t i = 0; i < children.size(); ++i) {
-    if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-      return FILE_ERROR_NO_LOCAL_SPACE;
-
-    if (entry_map.count(children[i]) == 0) {
-      if (!RemoveEntryRecursively(children[i]))
-        return FILE_ERROR_FAILED;
-    }
   }
 
   if (out_file_path)

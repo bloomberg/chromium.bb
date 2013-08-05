@@ -537,7 +537,7 @@ TEST_F(ResourceMetadataTestOnUIThread, RenameEntry) {
   EXPECT_EQ(base::FilePath(), drive_file_path);
 }
 
-TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_EmtpyMap) {
+TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_EmptyMap) {
   base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/root/dir1"));
   const int64 kNewChangestamp = kTestChangestamp + 1;
 
@@ -582,9 +582,6 @@ TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_EmtpyMap) {
   // Read the directory again.
   entries = ReadDirectoryByPathSync(base::FilePath(kDirectoryPath));
   ASSERT_TRUE(entries.get());
-  // All entries ("file4", "file5", "dir3") should be gone now, as
-  // RefreshDirectory() was called with an empty map.
-  ASSERT_TRUE(entries->empty());
 }
 
 TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_NonEmptyMap) {
@@ -673,14 +670,13 @@ TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_NonEmptyMap) {
   // Read the directory again.
   entries = ReadDirectoryByPathSync(kDirectoryPath);
   ASSERT_TRUE(entries.get());
-  // "file4", "file5", should be gone now. "dir3" should remain. "new_file"
-  // "new_directory", "dir2" should now be added.
-  ASSERT_EQ(4U, entries->size());
+  // "new_file", "new_directory", "dir2" should now be added.
   base_names = GetSortedBaseNames(*entries);
-  EXPECT_EQ("dir2", base_names[0]);
-  EXPECT_EQ("dir3", base_names[1]);
-  EXPECT_EQ("new_directory", base_names[2]);
-  EXPECT_EQ("new_file", base_names[3]);
+  EXPECT_EQ(1, std::count(base_names.begin(), base_names.end(), "dir2"));
+  EXPECT_EQ(1,
+            std::count(base_names.begin(), base_names.end(), "new_directory"));
+  EXPECT_EQ(1,
+            std::count(base_names.begin(), base_names.end(), "new_file"));
 
   // Get the new directory.
   scoped_ptr<ResourceEntry> new_directory_proto;
@@ -762,7 +758,8 @@ TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_WrongParentResourceId) {
   scoped_ptr<ResourceEntryVector> entries;
   entries = ReadDirectoryByPathSync(kDirectoryPath);
   ASSERT_TRUE(entries.get());
-  ASSERT_TRUE(entries->empty());
+  std::vector<std::string> base_names = GetSortedBaseNames(*entries);
+  EXPECT_EQ(0, std::count(base_names.begin(), base_names.end(), "new_file"));
 }
 
 TEST_F(ResourceMetadataTestOnUIThread, AddEntry) {
