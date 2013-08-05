@@ -1,0 +1,47 @@
+Name: OpenGL ES 2.0 Programming Guide
+Short Name: opengles-book
+URL: http://opengles-book.com/
+Version: unknown
+Security Critical: no
+License: MIT
+
+Description:
+Code samples from OpenGL ES 2.0 Programming Guide.
+Authors: Aaftab Munshi, Dan Ginsburg, Dave Shreiner
+Publisher: Addison-Wesley Professional
+ISBN: 0321502795
+
+Sample code is MIT licensed - http://www.opengles-book.com/downloads.html
+
+Local Modifications:
+  Removed files that chromium did not need:
+    - Bin/*
+    - Common/Doc/*
+    - Common/Include/EGL/*
+    - Common/Include/GLES2/*
+    - Common/Include/KD/*
+    - Common/Lib/*
+    - Common/Source/esUtil_win32.c
+    - Common/Source/Win32/esUtil_TGA.c
+    - Lib/*
+    - *.vcproj, *.sln
+
+  Added header files for individual examples so that they can be compiled as
+  static libraries:
+    - Chapter_2/Hello_Triangle/Hello_Triangle.h
+    - Chapter_8/Simple_VertexShader/Simple_VertexShader.h
+    - Chapter_9/MipMap2D/MipMap2D.h
+    - Chapter_9/Simple_Texture2D/Simple_Texture2D.h
+    - Chapter_9/Simple_TextureCubemap/Simple_TextureCubemap.h
+    - Chapter_9/TextureWrap/TextureWrap.h
+    - Chapter_11/Stencil_Test/Stencil_Test.h
+    
+  Initialized local variables:
+    - Chapter_11/Stencil_Test/Stencil_Test.c
+    - Common/Source/esShader.c
+    
+  Improvements in Chapter_11/Stencil_Test:
+    - Fixed depth and color values in Stencil Test
+    - Removed redundant glGetIntegerv in draw loop
+    - Restore stencil-mask state after every frame
+
