@@ -106,18 +106,13 @@ class SamplesDataSource(object):
       for filename in sorted(files):
         if filename.rsplit('/')[-1] != 'manifest.json':
           continue
+
         # This is a little hacky, but it makes a sample page.
         sample_path = filename.rsplit('/', 1)[-2]
         sample_files = [path for path in files
                         if path.startswith(sample_path + '/')]
         js_files = [path for path in sample_files if path.endswith('.js')]
-        try:
-          js_contents = file_system.Read(js_files).Get()
-        except FileNotFoundError as e:
-          logging.warning('Error fetching samples files: %s. Was a file '
-                          'deleted from a sample? This warning should go away '
-                          'in 5 minutes.' % e)
-          continue
+        js_contents = file_system.Read(js_files).Get()
         api_items = set()
         for js in js_contents.values():
           api_items.update(self._GetAPIItems(js))
@@ -139,15 +134,6 @@ class SamplesDataSource(object):
             'name': ref_data['text'],
             'link': ref_data['href']
           })
-        try:
-          manifest_data = self._GetDataFromManifest(sample_path, file_system)
-        except FileNotFoundError as e:
-          logging.warning('Error getting data from samples manifest: %s. If '
-                          'this file was deleted from a sample this message '
-                          'should go away in 5 minutes.' % e)
-          continue
-        if manifest_data is None:
-          continue
 
         sample_base_path = sample_path.split('/', 1)[1]
         if is_apps:
@@ -159,6 +145,7 @@ class SamplesDataSource(object):
           icon_base = sample_base_path
           download_url = sample_base_path + '.zip'
 
+        manifest_data = self._GetDataFromManifest(sample_path, file_system)
         if manifest_data['icon'] is None:
           icon_path = '%s/static/%s' % (self._base_path, DEFAULT_ICON_PATH)
         else:

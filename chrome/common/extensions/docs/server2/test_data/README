@@ -15,4 +15,9 @@ branch_utility/second.json
   - File has been formatted for readability. To view a readable version of the
     data at the above URL, remove '&json=1'.
 
-These URLs can also be found within url_constants.py.
+subversion_file_system/public_extensions_214898
+  Downloaded from:
+      http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/templates/public/extensions/?pathrev=214898
+  - Subversion ViewVC list of files in c/c/e/d/templates/public/extensions where
+    the most recent operation in that directory is deleting a file.
+  - Used in SubversionFileSystemTest.testDirectoryVersionOnDelection.

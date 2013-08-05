@@ -9,53 +9,53 @@ import sys
 import unittest
 
 from fake_url_fetcher import FakeUrlFetcher
-from file_system import StatInfo
+from file_system import FileNotFoundError, StatInfo
 from future import Future
 from subversion_file_system import SubversionFileSystem
+import test_util
+
+_SHARED_FILE_SYSTEM_TEST_DATA = os.path.join(
+    sys.path[0], 'test_data', 'file_system')
+_SUBVERSION_FILE_SYSTEM_TEST_DATA = os.path.join(
+    sys.path[0], 'test_data', 'subversion_file_system')
+
+def _CreateSubversionFileSystem(path):
+  fetcher = FakeUrlFetcher(path)
+  return SubversionFileSystem(fetcher, fetcher, path)
 
 class SubversionFileSystemTest(unittest.TestCase):
-  def setUp(self):
-    self._base_path = os.path.join(sys.path[0], 'test_data', 'file_system')
-
-  def _CreateSubversionFileSystem(self):
-    fetcher = FakeUrlFetcher(self._base_path)
-    return SubversionFileSystem(fetcher, fetcher, self._base_path)
-
-  def _ReadLocalFile(self, filename):
-    with open(os.path.join(self._base_path, filename), 'r') as f:
-      return f.read()
-
   def testReadFiles(self):
     expected = {
       'test1.txt': 'test1\n',
       'test2.txt': 'test2\n',
       'test3.txt': 'test3\n',
     }
-    file_system = self._CreateSubversionFileSystem()
+    file_system = _CreateSubversionFileSystem(_SHARED_FILE_SYSTEM_TEST_DATA)
     self.assertEqual(
         expected,
         file_system.Read(['test1.txt', 'test2.txt', 'test3.txt']).Get())
 
   def testListDir(self):
     expected = ['dir/'] + ['file%d.html' % i for i in range(7)]
-    file_system = self._CreateSubversionFileSystem()
+    file_system = _CreateSubversionFileSystem(_SHARED_FILE_SYSTEM_TEST_DATA)
     self.assertEqual(expected, sorted(file_system.ReadSingle('list/')))
 
   def testListSubDir(self):
     expected = ['empty.txt'] + ['file%d.html' % i for i in range(3)]
-    file_system = self._CreateSubversionFileSystem()
+    file_system = _CreateSubversionFileSystem(_SHARED_FILE_SYSTEM_TEST_DATA)
     self.assertEqual(expected, sorted(file_system.ReadSingle('list/dir/')))
 
   def testDirStat(self):
-    file_system = self._CreateSubversionFileSystem()
+    file_system = _CreateSubversionFileSystem(_SHARED_FILE_SYSTEM_TEST_DATA)
     stat_info = file_system.Stat('stat/')
     expected = StatInfo(
       '151113',
-      child_versions=json.loads(self._ReadLocalFile('stat_result.json')))
+      child_versions=json.loads(test_util.ReadFile('%s/stat_result.json' %
+          _SHARED_FILE_SYSTEM_TEST_DATA)))
     self.assertEqual(expected, stat_info)
 
   def testFileStat(self):
-    file_system = self._CreateSubversionFileSystem()
+    file_system = _CreateSubversionFileSystem(_SHARED_FILE_SYSTEM_TEST_DATA)
     stat_info = file_system.Stat('stat/extension_api.h')
     self.assertEqual(StatInfo('146163'), stat_info)
 
@@ -67,10 +67,12 @@ class SubversionFileSystemTest(unittest.TestCase):
         self.last_fetched = None
 
       def FetchAsync(self, path):
+        class ThrowsValueError(object):
+          def Get(): raise ValueError()
         self.last_fetched = path
-        raise ValueError()
+        return ThrowsValueError()
 
-      def Fetch(self, path):
+      def Fetch(self, path, **kwargs):
         self.last_fetched = path
         raise ValueError()
 
@@ -83,16 +85,31 @@ class SubversionFileSystemTest(unittest.TestCase):
                                            svn_path,
                                            revision=42)
 
-    self.assertRaises(ValueError, svn_file_system.ReadSingle, 'dir/file')
+    self.assertRaises(FileNotFoundError, svn_file_system.ReadSingle, 'dir/file')
     self.assertEqual('dir/file?p=42', file_fetcher.last_fetched)
     # Stat() will always stat directories.
-    self.assertRaises(ValueError, svn_file_system.Stat, 'dir/file')
+    self.assertRaises(FileNotFoundError, svn_file_system.Stat, 'dir/file')
     self.assertEqual('dir/?pathrev=42', stat_fetcher.last_fetched)
 
-    self.assertRaises(ValueError, svn_file_system.ReadSingle, 'dir/')
+    self.assertRaises(FileNotFoundError, svn_file_system.ReadSingle, 'dir/')
     self.assertEqual('dir/?p=42', file_fetcher.last_fetched)
-    self.assertRaises(ValueError, svn_file_system.Stat, 'dir/')
+    self.assertRaises(FileNotFoundError, svn_file_system.Stat, 'dir/')
     self.assertEqual('dir/?pathrev=42', stat_fetcher.last_fetched)
+
+  def testDirectoryVersionOnDeletion(self):
+    '''Tests the case when the most recent operation on a directory is the
+    deletion of a file. Here it is not enough to take the maximum version of all
+    files in the directory, as we used to, for obvious reasons.
+    '''
+    file_system = _CreateSubversionFileSystem(_SUBVERSION_FILE_SYSTEM_TEST_DATA)
+    dir_stat = file_system.Stat('docs_public_extensions_214898/')
+    self.assertEqual('214692', dir_stat.version)
+
+  def testEmptyDirectory(self):
+    file_system = _CreateSubversionFileSystem(_SUBVERSION_FILE_SYSTEM_TEST_DATA)
+    dir_stat = file_system.Stat('api_icons_214898/')
+    self.assertEqual('193838', dir_stat.version)
+    self.assertEqual({}, dir_stat.child_versions)
 
 if __name__ == '__main__':
   unittest.main()
