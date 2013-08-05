@@ -49,6 +49,7 @@
   },
   'conditions': [
     ['target_arch!="arm"', {
+      # Common defaults for all x86 nacl-gcc targets
       'target_defaults': {
         'conditions': [
           ['OS=="win"', {
@@ -85,6 +86,7 @@
           'nso_target': '',
           'build_newlib': 0,
           'build_glibc': 0,
+          'build_irt': 0,
           'disable_glibc%': 0,
           'extra_args': [],
           'enable_x86_32': 1,
@@ -94,8 +96,8 @@
           'tc_lib_dir_newlib64': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
           'tc_lib_dir_glibc32': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32',
           'tc_lib_dir_glibc64': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64',
-          'tc_lib_dir_irt32': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
-          'tc_lib_dir_irt64': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
+          'tc_lib_dir_irt32': '<(SHARED_INTERMEDIATE_DIR)/tc_irt/lib32',
+          'tc_lib_dir_irt64': '<(SHARED_INTERMEDIATE_DIR)/tc_irt/lib64',
           'tc_include_dir_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include',
           'tc_include_dir_glibc': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/include',
           'extra_deps_newlib64': [],
@@ -121,7 +123,7 @@
         },
       },
     }, {
-      # ARM case
+      # Common defaults for all ARM nacl-gcc targets
       'target_defaults': {
         'defines': [],
         'sources': [],
@@ -137,6 +139,7 @@
           'force_arm_pnacl': 0,
           'build_newlib': 0,
           'build_glibc': 0,
+          'build_irt': 0,
           'disable_glibc%': 1,
           'extra_args': [],
           'enable_x86_32': 0,
@@ -145,7 +148,7 @@
           'extra_deps_newlib_arm': [],
           'native_sources': [],
           'tc_lib_dir_newlib_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
-          'tc_lib_dir_irt_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
+          'tc_lib_dir_irt_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_irt/libarm',
           'tc_include_dir_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include',
           'include_dirs': ['<(DEPTH)'],
           'defines': [
@@ -168,6 +171,7 @@
     }],
     ['target_arch!="arm"', {
       'target_defaults': {
+        # x86-64 newlib nexe action
         'target_conditions': [
            ['nexe_target!="" and build_newlib!=0 and enable_x86_64!=0', {
              'variables': {
@@ -200,7 +204,7 @@
                    '--name', '>(out_newlib64)',
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m64 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_newlib64) ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
@@ -208,6 +212,7 @@
                },
              ],
            }],
+           # x86-64 newlib library action
            ['nlib_target!="" and build_newlib!=0 and enable_x86_64!=0', {
              'variables': {
                 'tool_name': 'newlib',
@@ -239,7 +244,7 @@
                    '--name', '>(out_newlib64)',
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m64 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_newlib64) ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
@@ -247,6 +252,87 @@
                },
              ],
            }],
+           # x86-64 IRT nexe action
+           ['nexe_target!="" and build_irt!=0 and enable_x86_64!=0', {
+             'variables': {
+                'tool_name': 'irt',
+                'out_newlib64%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
+                'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
+                'source_list_newlib64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
+             },
+             'actions': [
+               {
+                 'action_name': 'build IRT x86-64 nexe',
+                 'msvs_cygwin_shell': 0,
+                 'description': 'building >(out_newlib64)',
+                 'inputs': [
+                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps_newlib64)',
+                    '>(source_list_newlib64)',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                 ],
+                 'outputs': ['>(out_newlib64)'],
+                 'action': [
+                   '>(python_exe)',
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                   '>@(extra_args)',
+                   '--arch', 'x86-64',
+                   '--build', 'newlib_nexe',
+                   '--root', '<(DEPTH)',
+                   '--name', '>(out_newlib64)',
+                   '--objdir', '>(objdir_newlib64)',
+                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                   '--compile_flags=-m64 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--defines=^(defines) >(_defines)',
+                   '--link_flags=-B>(tc_lib_dir_irt64) ^(link_flags) >(_link_flags)',
+                   '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
+                 ],
+               },
+             ],
+           }],
+           # x86-64 IRT library action
+           ['nlib_target!="" and build_irt!=0 and enable_x86_64!=0', {
+             'variables': {
+                'tool_name': 'irt',
+                'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
+                'source_list_newlib64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
+                'out_newlib64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
+             },
+             'actions': [
+               {
+                 'action_name': 'build irt x86-64 nlib',
+                 'msvs_cygwin_shell': 0,
+                 'description': 'building >(out_newlib64)',
+                 'inputs': [
+                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps_newlib64)',
+                    '>(source_list_newlib64)',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                 ],
+                 'outputs': ['>(out_newlib64)'],
+                 'action': [
+                   '>(python_exe)',
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                   '>@(extra_args)',
+                   '--arch', 'x86-64',
+                   '--build', 'newlib_nlib',
+                   '--root', '<(DEPTH)',
+                   '--name', '>(out_newlib64)',
+                   '--objdir', '>(objdir_newlib64)',
+                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                   '--compile_flags=-m64 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--defines=^(defines) >(_defines)',
+                   '--link_flags=-B>(tc_lib_dir_irt64) ^(link_flags) >(_link_flags)',
+                   '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
+                 ],
+               },
+             ],
+           }],
+           # x86-32 newlib nexe action
            ['nexe_target!="" and build_newlib!=0 and enable_x86_32!=0', {
              'variables': {
                 'tool_name': 'newlib',
@@ -278,7 +364,7 @@
                    '--name', '>(out_newlib32)',
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m32 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_newlib32) ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
@@ -286,6 +372,7 @@
                },
              ],
            }],
+           # x86-32 newlib library action
            ['nlib_target!="" and build_newlib!=0 and enable_x86_32!=0', {
              'variables': {
                 'tool_name': 'newlib',
@@ -317,7 +404,7 @@
                    '--name', '>(out_newlib32)',
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m32 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_newlib32) ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
@@ -325,13 +412,93 @@
                },
              ],
            }],
+           # x86-32 IRT nexe build
+           ['nexe_target!="" and build_irt!=0 and enable_x86_32!=0', {
+             'variables': {
+                'tool_name': 'irt',
+                'out_newlib32%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
+                'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
+                'source_list_newlib32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
+             },
+             'actions': [
+               {
+                 'action_name': 'build IRT x86-32 nexe',
+                 'msvs_cygwin_shell': 0,
+                 'description': 'building >(out_newlib32)',
+                 'inputs': [
+                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps_newlib32)',
+                    '>(source_list_newlib32)',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                 ],
+                 'outputs': ['>(out_newlib32)'],
+                 'action': [
+                   '>(python_exe)',
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                   '>@(extra_args)',
+                   '--arch', 'x86-32',
+                   '--build', 'newlib_nexe',
+                   '--root', '<(DEPTH)',
+                   '--name', '>(out_newlib32)',
+                   '--objdir', '>(objdir_newlib32)',
+                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                   '--compile_flags=-m32 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--defines=^(defines) >(_defines)',
+                   '--link_flags=-m32 -B>(tc_lib_dir_irt32) ^(link_flags) >(_link_flags)',
+                   '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
+                 ],
+               },
+             ],
+           }],
+           # x86-32 IRT library build
+           ['nlib_target!="" and build_irt!=0 and enable_x86_32!=0', {
+             'variables': {
+                'tool_name': 'irt',
+                'out_newlib32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
+                'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
+                'source_list_newlib32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
+             },
+             'actions': [
+               {
+                 'action_name': 'build IRT x86-32 nlib',
+                 'msvs_cygwin_shell': 0,
+                 'description': 'building >(out_newlib32)',
+                 'inputs': [
+                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps_newlib32)',
+                    '>(source_list_newlib32)',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                 ],
+                 'outputs': ['>(out_newlib32)'],
+                 'action': [
+                   '>(python_exe)',
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                   '>@(extra_args)',
+                   '--arch', 'x86-32',
+                   '--build', 'newlib_nlib',
+                   '--root', '<(DEPTH)',
+                   '--name', '>(out_newlib32)',
+                   '--objdir', '>(objdir_newlib32)',
+                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                   '--compile_flags=-m32 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--defines=^(defines) >(_defines)',
+                   '--link_flags=-m32 -B>(tc_lib_dir_irt32) ^(link_flags) >(_link_flags)',
+                   '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
+                 ],
+               },
+             ],
+           }],
         ],
       },
-    }],
+    }], # end x86 gcc nexe/nlib actions
     ['target_arch=="arm"', {
       'target_defaults': {
         'target_conditions': [
-          # GCC ARM build (the default)
+          # arm newlib nexe action
           ['force_arm_pnacl==0 and nexe_target!="" and build_newlib!=0', {
             'variables': {
                'tool_name': 'newlib',
@@ -363,7 +530,7 @@
                   '--name', '>(out_newlib_arm)',
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_arm) ^(link_flags) >(_link_flags)',
                   '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
@@ -371,7 +538,7 @@
               },
             ],
           }],
-          # GCC ARM library build (the default)
+          # arm newlib library action
           ['force_arm_pnacl==0 and nlib_target!="" and build_newlib!=0', {
             'variables': {
               'tool_name': 'newlib',
@@ -403,9 +570,89 @@
                   '--name', '>(out_newlib_arm)',
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_arm) ^(link_flags) >(_link_flags)',
+                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
+                ],
+              },
+            ],
+          }],
+          # arm irt nexe action
+          ['force_arm_pnacl==0 and nexe_target!="" and build_irt!=0', {
+            'variables': {
+               'tool_name': 'irt',
+               'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
+               'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
+               'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
+            },
+            'actions': [
+              {
+                'action_name': 'build IRT arm nexe',
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib_arm)',
+                'inputs': [
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps_newlib_arm)',
+                   '>(source_list_newlib_arm)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
+                ],
+                'outputs': ['>(out_newlib_arm)'],
+                'action': [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '>@(extra_args)',
+                  '--arch', 'arm',
+                  '--build', 'newlib_nexe',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_newlib_arm)',
+                  '--objdir', '>(objdir_newlib_arm)',
+                  '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_irt_arm) ^(link_flags) >(_link_flags)',
+                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
+                ],
+              },
+            ],
+          }],
+          # arm IRT library action
+          ['force_arm_pnacl==0 and nlib_target!="" and build_irt!=0', {
+            'variables': {
+              'tool_name': 'irt',
+              'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
+              'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
+              'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
+            },
+            'actions': [
+              {
+                'action_name': 'build IRT arm nlib',
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_newlib_arm)',
+                'inputs': [
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps_newlib_arm)',
+                   '>(source_list_newlib_arm)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
+                ],
+                'outputs': ['>(out_newlib_arm)'],
+                'action': [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '>@(extra_args)',
+                  '--arch', 'arm',
+                  '--build', 'newlib_nlib',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_newlib_arm)',
+                  '--objdir', '>(objdir_newlib_arm)',
+                  '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_irt_arm) ^(link_flags) >(_link_flags)',
                   '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
                 ],
               },
@@ -453,11 +700,12 @@
               },
             ],
           }],
-        ],
+        ], # end target_conditions for arm newlib (nexe/nlib, force_arm_pnacl)
       },
-    }],
+    }], # end target_arch = arm
     ['target_arch!="arm"', {
       'target_defaults': {
+        # x86-64 glibc nexe action
         'target_conditions': [
            ['nexe_target!="" and build_glibc!=0 and enable_x86_64!=0 and disable_glibc==0', {
              'variables': {
@@ -498,6 +746,7 @@
                },
              ],
            }],
+           # x86-32 glibc nexe action
            ['nexe_target!="" and build_glibc!=0 and enable_x86_32!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
@@ -537,6 +786,7 @@
                },
              ],
            }],
+           # x86-64 glibc static library action
            ['nlib_target!="" and build_glibc!=0 and enable_x86_64!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
@@ -576,6 +826,7 @@
                },
              ],
            }],
+           # x86-32 glibc static library action
            ['nlib_target!="" and build_glibc!=0 and enable_x86_32!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
@@ -615,6 +866,7 @@
                },
              ],
            }],
+           # x86-64 glibc shared library action
            ['nso_target!="" and build_glibc!=0 and enable_x86_64!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
@@ -654,6 +906,7 @@
                },
              ],
            }],
+           # x86-32 glibc shared library action
            ['nso_target!="" and build_glibc!=0 and enable_x86_32!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
@@ -693,10 +946,11 @@
                },
              ],
            }],
-        ],
+        ], # end target_conditions for glibc (nexe/nlib/nso, x86-32/64)
       },
-    }],
+    }], # end target_arch != arm
   ],
+  # Common defaults for pnacl targets
   'target_defaults': {
     'gcc_compile_flags': [],
     'pnacl_compile_flags': [],
@@ -728,6 +982,7 @@
       ],
     },
     'target_conditions': [
+      # pnacl actions for building pexes and translating them
       ['nexe_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0', {
         'variables': {
             'out_pnacl_newlib_x86_32_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32.nexe',
@@ -851,6 +1106,7 @@
             }],
           ],
       }],
+      # pnacl action for building libraries
       ['nlib_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0', {
         'variables': {
           'tool_name': 'pnacl_newlib',
@@ -890,6 +1146,6 @@
           },
         ],
       }],
-    ],
+    ], # end target_conditions for pnacl pexe/plib
   },
 }

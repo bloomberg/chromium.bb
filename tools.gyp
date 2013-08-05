@@ -260,20 +260,17 @@
             'prep_nacl_sdk'
           ],
           'variables': {
-            'nlib_target': 'crt_init_dummy',
+            'nlib_target': 'crti.o',
             'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
             'enable_x86_32': 0,
             'extra_args': [
               '--compile',
               '--no-suffix',
               '--strip=_x86_64'
             ],
-            'out_newlib64':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crti.o',
-            'objdir_newlib64':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
           },
           'sources': [
             'src/untrusted/stubs/crti_x86_64.S',
@@ -287,20 +284,17 @@
             'prep_nacl_sdk'
           ],
           'variables': {
-            'nlib_target': 'crt_fini_dummy',
+            'nlib_target': 'crtn.o',
             'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
             'enable_x86_32': 0,
             'extra_args': [
               '--compile',
               '--no-suffix',
               '--strip=_x86_64'
             ],
-            'out_newlib64':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crtn.o',
-            'objdir_newlib64':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
           },
           'sources': [
             'src/untrusted/stubs/crtn_x86_64.S'
@@ -318,20 +312,17 @@
             'prep_nacl_sdk'
           ],
           'variables': {
-            'nlib_target': 'crt_init_dummy',
+            'nlib_target': 'crti.o',
             'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
             'enable_x86_64': 0,
             'extra_args': [
               '--compile',
               '--no-suffix',
               '--strip=_x86_32'
             ],
-            'out_newlib32':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/crti.o',
-            'objdir_newlib32':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
           },
           'sources': [
             'src/untrusted/stubs/crti_x86_32.S',
@@ -345,20 +336,17 @@
             'prep_nacl_sdk'
           ],
           'variables': {
-            'nlib_target': 'crt_fini_dummy',
+            'nlib_target': 'crtn.o',
             'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
             'enable_x86_64': 0,
             'extra_args': [
               '--compile',
               '--no-suffix',
               '--strip=_x86_32'
             ],
-            'out_newlib32':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/crtn.o',
-            'objdir_newlib32':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
           },
           'sources': [
             'src/untrusted/stubs/crtn_x86_32.S'
@@ -376,19 +364,16 @@
             'prep_nacl_sdk'
           ],
           'variables': {
-            'nlib_target': 'crt_init_dummy',
+            'nlib_target': 'crti.o',
             'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
             'extra_args': [
               '--compile',
               '--no-suffix',
               '--strip=_arm'
             ],
-            'out_newlib_arm':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/crti.o',
-            'objdir_newlib_arm':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
           },
           'sources': [
             'src/untrusted/stubs/crti_arm.S',
@@ -402,19 +387,16 @@
             'prep_nacl_sdk'
           ],
           'variables': {
-            'nlib_target': 'crt_fini_dummy',
+            'nlib_target': 'crtn.o',
             'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
+            'build_irt': 1,
             'extra_args': [
               '--compile',
               '--no-suffix',
               '--strip=_arm'
             ],
-            'out_newlib_arm':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/crtn.o',
-            'objdir_newlib_arm':
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
           },
           'sources': [
             'src/untrusted/stubs/crtn_arm.S'

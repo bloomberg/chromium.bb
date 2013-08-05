@@ -53,6 +53,7 @@
         'nso_target': 'libsrpc.so',
         'build_glibc': 1,
         'build_newlib': 1,
+        'build_irt': 1,
         'sources': [
           'invoke.c',
           'module_init_fini.c',

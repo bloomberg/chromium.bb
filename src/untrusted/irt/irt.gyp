@@ -57,7 +57,8 @@
       'variables': {
         'nexe_target': 'irt_core',
         'build_glibc': 0,
-        'build_newlib': 1,
+        'build_newlib': 0,
+        'build_irt': 1,
       },
       'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
       'link_flags': [
@@ -93,6 +94,7 @@
         'nlib_target': 'libirt_browser.a',
         'build_glibc': 0,
         'build_newlib': 1,
+        'build_irt': 1,
       },
       'sources': ['<@(irt_sources)', '<@(irt_browser)'],
       'include_dirs': ['../../../../ppapi'],
