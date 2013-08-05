@@ -99,6 +99,12 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
         return;
     }
 
+    // 3. If the updating attribute equals true, then throw an INVALID_STATE_ERR exception and abort these steps.
+    if (m_updating) {
+        es.throwDOMException(InvalidStateError);
+        return;
+    }
+
     // 4. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
     // 4.1 Set the readyState attribute of the parent media source to "open"
     // 4.2 Queue a task to fire a simple event named sourceopen at the parent media source.
