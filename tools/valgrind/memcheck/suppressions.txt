@@ -7207,3 +7207,13 @@
    fun:_ZN4base14WeakPtrFactoryINS_12_GLOBAL__N_16TargetEE10GetWeakPtrEv
    fun:_ZN4base45WeakPtrTest_MoveOwnershipAfterInvalidate_Test8TestBodyEv
 }
+{
+  bug_268368
+  Memcheck:Leak
+  fun:calloc
+  fun:_dlerror_run
+  ...
+  fun:_ZN4base17LoadNativeLibraryERKNS_8FilePathEPSs
+  fun:_ZN7content10PluginList17ReadWebPluginInfoERKN4base8FilePathEPNS_13WebPluginInfoE
+  fun:_ZN7content10PluginList14ReadPluginInfoERKN4base8FilePathEPNS_13WebPluginInfoE
+}
