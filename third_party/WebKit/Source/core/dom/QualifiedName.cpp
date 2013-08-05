@@ -100,12 +100,8 @@ QualifiedName::QualifiedNameImpl::~QualifiedNameImpl()
 String QualifiedName::toString() const
 {
     String local = localName();
-    if (hasPrefix()) {
-        String result = prefix().string();
-        result.append(":");
-        result.append(local);
-        return result;
-    }
+    if (hasPrefix())
+        return prefix().string() + ":" + local;
     return local;
 }
 
