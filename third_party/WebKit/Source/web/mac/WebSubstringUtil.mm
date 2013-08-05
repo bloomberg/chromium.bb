@@ -35,6 +35,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "WebFrameImpl.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
@@ -73,8 +74,7 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFr
         if (!numCharacters)
             continue;
 
-        ExceptionCode exception = 0;
-        Node* container = it.range()->startContainer(exception);
+        Node* container = it.range()->startContainer(IGNORE_EXCEPTION_STATE);
         RenderObject* renderer = container->renderer();
         ASSERT(renderer);
         if (!renderer)
