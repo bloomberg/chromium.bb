@@ -126,17 +126,7 @@ cr.define('options.system.bluetooth', function() {
       // list.
       this.autoExpands = true;
       this.fixedHeight = true;
-      this.addEventListener('blur', this.onBlur_);
       this.clear();
-    },
-
-    /**
-     * When the list loses focus, unselect all items in the list.
-     * @private
-     */
-    onBlur_: function() {
-      // TODO(kevers): Should this be pushed up to the list class?
-      this.selectionModel.unselectAll();
     },
 
     /**

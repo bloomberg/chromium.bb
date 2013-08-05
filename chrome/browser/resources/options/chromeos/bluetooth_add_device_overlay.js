@@ -49,12 +49,6 @@ cr.define('options', function() {
         chrome.send('updateBluetoothDevice', [address, 'connect']);
       };
 
-      $('bluetooth-add-device-apply-button').onmousedown = function(event) {
-        // Prevent 'blur' event, which would reset the list selection,
-        // thereby disabling the apply button.
-        event.preventDefault();
-      };
-
       $('bluetooth-unpaired-devices-list').addEventListener('change',
                                                             function() {
         var item = $('bluetooth-unpaired-devices-list').selectedItem;
