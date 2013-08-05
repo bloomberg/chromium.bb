@@ -23,6 +23,7 @@ class WEBKIT_GLUE_EXPORT WebFileUtilitiesImpl :
       const WebKit::WebString& path,
       WebKit::WebFileInfo& result);
   virtual WebKit::WebString directoryName(const WebKit::WebString& path);
+  virtual WebKit::WebString baseName(const WebKit::WebString& path);
   virtual WebKit::WebURL filePathToURL(const WebKit::WebString& path);
   virtual base::PlatformFile openFile(const WebKit::WebString& path, int mode);
   virtual void closeFile(base::PlatformFile& handle);

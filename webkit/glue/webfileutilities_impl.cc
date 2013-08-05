@@ -45,6 +45,10 @@ WebString WebFileUtilitiesImpl::directoryName(const WebString& path) {
   return base::FilePath::FromUTF16Unsafe(path).DirName().AsUTF16Unsafe();
 }
 
+WebString WebFileUtilitiesImpl::baseName(const WebString& path) {
+  return base::FilePath::FromUTF16Unsafe(path).BaseName().AsUTF16Unsafe();
+}
+
 WebKit::WebURL WebFileUtilitiesImpl::filePathToURL(const WebString& path) {
   return net::FilePathToFileURL(base::FilePath::FromUTF16Unsafe(path));
 }
