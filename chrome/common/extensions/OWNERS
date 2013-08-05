@@ -9,10 +9,6 @@ miket@chromium.org
 mpcomplete@chromium.org
 yoz@chromium.org
 
-# For API documentation
-mkearney@chromium.org
-kathyw@chromium.org
-
 # For security review of IPC message files.
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=cdn@chromium.org
