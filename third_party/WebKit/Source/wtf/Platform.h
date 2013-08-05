@@ -166,7 +166,6 @@
 #endif
 
 #if OS(DARWIN)
-#define HAVE_SYS_TIMEB_H 1
 #define HAVE_DISPATCH_H 1
 #define HAVE_MADV_FREE 1
 #define HAVE_PTHREAD_SETNAME_NP 1
@@ -174,7 +173,6 @@
 #endif /* OS(DARWIN) */
 
 #if OS(WINDOWS)
-#define HAVE_SYS_TIMEB_H 1
 #define HAVE_ALIGNED_MALLOC 1
 #define HAVE_ISDEBUGGERPRESENT 1
 #define HAVE_VIRTUALALLOC 1
