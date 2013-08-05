@@ -26,6 +26,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+
+// NavigationObserver ---------------------------------------------------------
+
 namespace {
 
 class NavigationObserver : public content::NotificationObserver,
@@ -34,7 +37,7 @@ class NavigationObserver : public content::NotificationObserver,
   explicit NavigationObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
         message_loop_runner_(new content::MessageLoopRunner),
-        info_bar_shown_(false),
+        infobar_shown_(false),
         infobar_service_(InfoBarService::FromWebContents(web_contents)) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
@@ -47,12 +50,8 @@ class NavigationObserver : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    // Accept in the infobar.
-    InfoBarDelegate* infobar = infobar_service_->infobar_at(0);
-    ConfirmInfoBarDelegate* confirm_infobar =
-        infobar->AsConfirmInfoBarDelegate();
-    confirm_infobar->Accept();
-    info_bar_shown_ = true;
+    infobar_service_->infobar_at(0)->AsConfirmInfoBarDelegate()->Accept();
+    infobar_shown_ = true;
   }
 
   // content::WebContentsObserver:
@@ -64,7 +63,7 @@ class NavigationObserver : public content::NotificationObserver,
     message_loop_runner_->Quit();
   }
 
-  bool infobar_shown() { return info_bar_shown_; }
+  bool infobar_shown() const { return infobar_shown_; }
 
   void Wait() {
     message_loop_runner_->Run();
@@ -72,18 +71,27 @@ class NavigationObserver : public content::NotificationObserver,
 
  private:
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  bool info_bar_shown_;
+  bool infobar_shown_;
   content::NotificationRegistrar registrar_;
   InfoBarService* infobar_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
 };
 
 }  // namespace
 
+
+// PasswordManagerBrowserTest -------------------------------------------------
+
 class PasswordManagerBrowserTest : public InProcessBrowserTest {
  public:
+  PasswordManagerBrowserTest() {}
+  virtual ~PasswordManagerBrowserTest() {}
+
+  // InProcessBrowserTest:
   virtual void SetUpOnMainThread() OVERRIDE {
     // Use TestPasswordStore to remove a possible race. Normally the
-    // PasswordStore does it's database manipulation on the DB thread, which
+    // PasswordStore does its database manipulation on the DB thread, which
     // creates a possible race during navigation. Specifically the
     // PasswordManager will ignore any forms in a page if the load from the
     // PasswordStore has not completed.
@@ -99,7 +107,13 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
   content::RenderViewHost* RenderViewHost() {
     return WebContents()->GetRenderViewHost();
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTest);
 };
+
+
+// Actual tests ---------------------------------------------------------------
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForXHRSubmit) {
 #if defined(OS_WIN) && defined(USE_ASH)

@@ -51,8 +51,8 @@ class PermissionQueueControllerTests : public ChromeRenderViewHostTestHarness,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
-    // Delete the removed infobar.  In normal Chrome code, this would be handled
-    // by the InfoBarContainer.  It's safe to do this even if the queue
+    // Delete the removed infobar. In normal Chrome code, this would be handled
+    // by the InfoBarContainer. It's safe to do this even if the queue
     // controller Observe() function has not yet been called; see comments in
     // PermissionQueueController::Observe().
     // TODO(pkasting): This will no longer be necessary once the InfoBarService

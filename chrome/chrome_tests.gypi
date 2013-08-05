@@ -1446,6 +1446,7 @@
         'browser/media/chrome_webrtc_browsertest.cc',
         'browser/media/chrome_webrtc_video_quality_browsertest.cc',
         'browser/media/webrtc_browsertest_base.cc',
+        'browser/media/webrtc_browsertest_base.h',
         'browser/media/webrtc_browsertest_common.cc',
         'browser/media_galleries/fileapi/itunes_finder_win_browsertest.cc',
         'browser/media_galleries/fileapi/media_file_validator_unittest.cc',

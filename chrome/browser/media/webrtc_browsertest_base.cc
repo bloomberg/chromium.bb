@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -21,19 +20,72 @@ const char WebRtcTestBase::kAudioOnlyCallConstraints[] = "'{audio: true}'";
 const char WebRtcTestBase::kVideoOnlyCallConstraints[] = "'{video: true}'";
 const char WebRtcTestBase::kFailedWithErrorPermissionDenied[] =
     "failed-with-error-PERMISSION_DENIED";
-const char WebRtcTestBase::kOkGotStream[] = "ok-got-stream";
 
-// Convenience method which executes the provided javascript in the context
-// of the provided web contents and returns what it evaluated to.
-static std::string ExecuteJavascript(const std::string& javascript,
-                                     content::WebContents* tab_contents) {
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      tab_contents, javascript, &result));
-  return result;
+WebRtcTestBase::WebRtcTestBase() {
 }
 
-MediaStreamInfoBarDelegate* WebRtcTestBase::GetUserMediaAndWaitForInfobar(
+WebRtcTestBase::~WebRtcTestBase() {
+}
+
+void WebRtcTestBase::GetUserMediaAndAccept(content::WebContents* tab_contents) {
+  GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
+                                               kAudioVideoCallConstraints);
+}
+
+void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
+    content::WebContents* tab_contents,
+    const std::string& constraints) {
+  MediaStreamInfoBarDelegate* infobar =
+      GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
+  infobar->Accept();
+  CloseInfoBarInTab(tab_contents, infobar);
+
+  // Wait for WebRTC to call the success callback.
+  const char kOkGotStream[] = "ok-got-stream";
+  EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()", kOkGotStream,
+                               tab_contents));
+}
+
+void WebRtcTestBase::GetUserMediaAndDeny(content::WebContents* tab_contents) {
+  return GetUserMediaWithSpecificConstraintsAndDeny(tab_contents,
+                                                    kAudioVideoCallConstraints);
+}
+
+void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
+    content::WebContents* tab_contents,
+    const std::string& constraints) {
+  MediaStreamInfoBarDelegate* infobar =
+      GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
+  infobar->Cancel();
+  CloseInfoBarInTab(tab_contents, infobar);
+
+  // Wait for WebRTC to call the fail callback.
+  EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
+                               kFailedWithErrorPermissionDenied, tab_contents));
+}
+
+void WebRtcTestBase::GetUserMediaAndDismiss(
+    content::WebContents* tab_contents) {
+  MediaStreamInfoBarDelegate* infobar =
+      GetUserMediaAndWaitForInfoBar(tab_contents, kAudioVideoCallConstraints);
+  infobar->InfoBarDismissed();
+  CloseInfoBarInTab(tab_contents, infobar);
+
+  // A dismiss should be treated like a deny.
+  EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
+                               kFailedWithErrorPermissionDenied, tab_contents));
+}
+
+void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
+                                  const std::string& constraints) {
+  // Request user media: this will launch the media stream info bar.
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab_contents, "getUserMedia(" + constraints + ");", &result));
+  EXPECT_EQ("ok-requested", result);
+}
+
+MediaStreamInfoBarDelegate* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
     content::WebContents* tab_contents,
     const std::string& constraints) {
   content::WindowedNotificationObserver infobar_added(
@@ -46,12 +98,12 @@ MediaStreamInfoBarDelegate* WebRtcTestBase::GetUserMediaAndWaitForInfobar(
   // Wait for the bar to pop up, then return it.
   infobar_added.Wait();
   content::Details<InfoBarAddedDetails> details(infobar_added.details());
-  MediaStreamInfoBarDelegate* media_infobar =
-      details.ptr()->AsMediaStreamInfoBarDelegate();
-  return media_infobar;
+  MediaStreamInfoBarDelegate* infobar = details->AsMediaStreamInfoBarDelegate();
+  EXPECT_TRUE(infobar);
+  return infobar;
 }
 
-void WebRtcTestBase::CloseInfobarInTab(content::WebContents* tab_contents,
+void WebRtcTestBase::CloseInfoBarInTab(content::WebContents* tab_contents,
                                        MediaStreamInfoBarDelegate* infobar) {
   content::WindowedNotificationObserver infobar_removed(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -63,68 +115,3 @@ void WebRtcTestBase::CloseInfobarInTab(content::WebContents* tab_contents,
 
   infobar_removed.Wait();
 }
-
-void WebRtcTestBase::GetUserMediaAndAccept(content::WebContents* tab_contents) {
-  GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
-                                               kAudioVideoCallConstraints);
-}
-
-void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
-    content::WebContents* tab_contents, const std::string& constraints) {
-  MediaStreamInfoBarDelegate* media_infobar =
-      GetUserMediaAndWaitForInfobar(tab_contents, constraints);
-
-  media_infobar->Accept();
-
-  CloseInfobarInTab(tab_contents, media_infobar);
-
-  // Wait for WebRTC to call the success callback.
-  EXPECT_TRUE(PollingWaitUntil(
-      "obtainGetUserMediaResult()", kOkGotStream, tab_contents));
-}
-
-void WebRtcTestBase::GetUserMediaAndDeny(content::WebContents* tab_contents) {
-  return GetUserMediaWithSpecificConstraintsAndDeny(tab_contents,
-                                                    kAudioVideoCallConstraints);
-}
-
-void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
-    content::WebContents* tab_contents,
-    const std::string& constraints) {
-  MediaStreamInfoBarDelegate* media_infobar =
-      GetUserMediaAndWaitForInfobar(tab_contents, constraints);
-
-  media_infobar->Cancel();
-
-  CloseInfobarInTab(tab_contents, media_infobar);
-
-  // Wait for WebRTC to call the fail callback.
-  EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
-                               kFailedWithErrorPermissionDenied,
-                               tab_contents));
-}
-
-void WebRtcTestBase::GetUserMediaAndDismiss(
-    content::WebContents* tab_contents) {
-  MediaStreamInfoBarDelegate* media_infobar =
-      GetUserMediaAndWaitForInfobar(tab_contents, kAudioVideoCallConstraints);
-
-  media_infobar->InfoBarDismissed();
-
-  CloseInfobarInTab(tab_contents, media_infobar);
-
-  // A dismiss should be treated like a deny.
-  EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
-                               kFailedWithErrorPermissionDenied,
-                               tab_contents));
-}
-
-void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
-                                  const std::string& constraints) {
-  // Request user media: this will launch the media stream info bar.
-  EXPECT_EQ("ok-requested",
-            ExecuteJavascript(
-                base::StringPrintf("getUserMedia(%s);", constraints.c_str()),
-                tab_contents));
-}
-

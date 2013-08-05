@@ -26,12 +26,14 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
-static const char kMainWebrtcTestHtmlPage[] =
-    "files/webrtc/webrtc_jsep01_test.html";
 
-// Media stream infobar test for WebRTC.
-class MediaStreamInfobarTest : public WebRtcTestBase {
+// MediaStreamInfoBarTest -----------------------------------------------------
+
+class MediaStreamInfoBarTest : public WebRtcTestBase {
  public:
+  MediaStreamInfoBarTest() {}
+  virtual ~MediaStreamInfoBarTest() {}
+
   // InProcessBrowserTest:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // This test expects to run with fake devices but real UI.
@@ -39,32 +41,41 @@ class MediaStreamInfobarTest : public WebRtcTestBase {
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream))
         << "Since this test tests the UI we want the real UI!";
   }
+
  protected:
   content::WebContents* LoadTestPageInTab() {
     EXPECT_TRUE(test_server()->Start());
 
+    const char kMainWebrtcTestHtmlPage[] =
+        "files/webrtc/webrtc_jsep01_test.html";
     ui_test_utils::NavigateToURL(
         browser(), test_server()->GetURL(kMainWebrtcTestHtmlPage));
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamInfoBarTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestAllowingUserMedia) {
+
+// Actual tests ---------------------------------------------------------------
+
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAllowingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   GetUserMediaAndAccept(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestDenyingUserMedia) {
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDenyingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   GetUserMediaAndDeny(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestDismissingInfobar) {
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDismissingInfobar) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   GetUserMediaAndDismiss(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                        TestAcceptThenDenyWhichShouldBeSticky) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
@@ -87,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
   EXPECT_EQ(0u, infobar_service->infobar_count());
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestAcceptIsNotSticky) {
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAcceptIsNotSticky) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If accept were sticky the second call would hang because it hangs if an
@@ -96,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestAcceptIsNotSticky) {
   GetUserMediaAndAccept(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestDismissIsNotSticky) {
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDismissIsNotSticky) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If dismiss were sticky the second call would hang because it hangs if an
@@ -105,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestDismissIsNotSticky) {
   GetUserMediaAndDismiss(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                        TestDenyingThenClearingStickyException) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
@@ -114,8 +125,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
   HostContentSettingsMap* settings_map =
       browser()->profile()->GetHostContentSettingsMap();
 
-  settings_map->ClearSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  settings_map->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
   settings_map->ClearSettingsForOneType(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 
@@ -123,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
   GetUserMediaAndDeny(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                        DenyingMicDoesNotCauseStickyDenyForCameras) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
@@ -134,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
                                                kVideoOnlyCallConstraints);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                        DenyingCameraDoesNotCauseStickyDenyForMics) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
@@ -145,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
                                                kAudioOnlyCallConstraints);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                        DenyingMicStillSucceedsWithCameraForAudioVideoCalls) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 

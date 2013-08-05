@@ -29,9 +29,6 @@ class MediaSettingChangedInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
-  int icon_;
-  int message_text_;
-
   DISALLOW_COPY_AND_ASSIGN(MediaSettingChangedInfoBarDelegate);
 };
 

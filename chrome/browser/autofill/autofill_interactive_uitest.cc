@@ -30,7 +30,6 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
-using content::RenderViewHost;
 
 // TODO(csharp): Most of this file was just copied from autofill_browsertests.cc
 // The repeated code should be moved into a helper file, instead of being
@@ -38,42 +37,14 @@ using content::RenderViewHost;
 
 namespace autofill {
 
-static const char* kDataURIPrefix = "data:text/html;charset=utf-8,";
-static const char* kTestFormString =
-    "<form action=\"http://www.example.com/\" method=\"POST\">"
-    "<label for=\"firstname\">First name:</label>"
-    " <input type=\"text\" id=\"firstname\""
-    "        onFocus=\"domAutomationController.send(true)\"><br>"
-    "<label for=\"lastname\">Last name:</label>"
-    " <input type=\"text\" id=\"lastname\"><br>"
-    "<label for=\"address1\">Address line 1:</label>"
-    " <input type=\"text\" id=\"address1\"><br>"
-    "<label for=\"address2\">Address line 2:</label>"
-    " <input type=\"text\" id=\"address2\"><br>"
-    "<label for=\"city\">City:</label>"
-    " <input type=\"text\" id=\"city\"><br>"
-    "<label for=\"state\">State:</label>"
-    " <select id=\"state\">"
-    " <option value=\"\" selected=\"yes\">--</option>"
-    " <option value=\"CA\">California</option>"
-    " <option value=\"TX\">Texas</option>"
-    " </select><br>"
-    "<label for=\"zip\">ZIP code:</label>"
-    " <input type=\"text\" id=\"zip\"><br>"
-    "<label for=\"country\">Country:</label>"
-    " <select id=\"country\">"
-    " <option value=\"\" selected=\"yes\">--</option>"
-    " <option value=\"CA\">Canada</option>"
-    " <option value=\"US\">United States</option>"
-    " </select><br>"
-    "<label for=\"phone\">Phone number:</label>"
-    " <input type=\"text\" id=\"phone\"><br>"
-    "</form>";
+
+// AutofillManagerTestDelegateImpl --------------------------------------------
 
 class AutofillManagerTestDelegateImpl
     : public autofill::AutofillManagerTestDelegate {
  public:
   AutofillManagerTestDelegateImpl() {}
+  virtual ~AutofillManagerTestDelegateImpl() {}
 
   // autofill::AutofillManagerTestDelegate:
   virtual void DidPreviewFormData() OVERRIDE {
@@ -106,6 +77,9 @@ class AutofillManagerTestDelegateImpl
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateImpl);
 };
 
+
+// WindowedPersonalDataManagerObserver ----------------------------------------
+
 class WindowedPersonalDataManagerObserver
     : public PersonalDataManagerObserver,
       public content::NotificationObserver {
@@ -122,8 +96,11 @@ class WindowedPersonalDataManagerObserver
   }
 
   virtual ~WindowedPersonalDataManagerObserver() {
-    if (infobar_service_ && infobar_service_->infobar_count() > 0)
-      infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
+    if (infobar_service_) {
+      while (infobar_service_->infobar_count() > 0) {
+        infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
+      }
+    }
   }
 
   // PersonalDataManagerObserver:
@@ -143,14 +120,9 @@ class WindowedPersonalDataManagerObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    // Accept in the infobar.
     infobar_service_ = InfoBarService::FromWebContents(
         browser_->tab_strip_model()->GetActiveWebContents());
-    InfoBarDelegate* infobar = infobar_service_->infobar_at(0);
-
-    ConfirmInfoBarDelegate* confirm_infobar =
-        infobar->AsConfirmInfoBarDelegate();
-    confirm_infobar->Accept();
+    infobar_service_->infobar_at(0)->AsConfirmInfoBarDelegate()->Accept();
   }
 
   void Wait() {
@@ -168,7 +140,12 @@ class WindowedPersonalDataManagerObserver
   Browser* browser_;
   content::NotificationRegistrar registrar_;
   InfoBarService* infobar_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowedPersonalDataManagerObserver);
 };
+
+
+// TestAutofillExternalDelegate -----------------------------------------------
 
 class TestAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
@@ -179,6 +156,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
                                  autofill_driver),
         keyboard_listener_(NULL) {
   }
+
   virtual ~TestAutofillExternalDelegate() {}
 
   // AutofillExternalDelegate:
@@ -204,9 +182,13 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillExternalDelegate);
 };
 
+
+// AutofillInteractiveTest ----------------------------------------------------
+
 class AutofillInteractiveTest : public InProcessBrowserTest {
  protected:
   AutofillInteractiveTest() {}
+  virtual ~AutofillInteractiveTest() {}
 
   // InProcessBrowserTest:
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -325,14 +307,51 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     test_delegate_.Wait();
   }
 
+ private:
   AutofillManagerTestDelegateImpl test_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillInteractiveTest);
 };
 
+
+// Actual tests ---------------------------------------------------------------
+
 // Potentially flaky, see http://crbug.com/150084
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DISABLED_AutofillSelectViaTab) {
   CreateTestProfile();
 
   // Load the test page.
+  const char kDataURIPrefix[] = "data:text/html;charset=utf-8,";
+  const char kTestFormString[] =
+      "<form action=\"http://www.example.com/\" method=\"POST\">"
+      "<label for=\"firstname\">First name:</label>"
+      " <input type=\"text\" id=\"firstname\""
+      "        onFocus=\"domAutomationController.send(true)\"><br>"
+      "<label for=\"lastname\">Last name:</label>"
+      " <input type=\"text\" id=\"lastname\"><br>"
+      "<label for=\"address1\">Address line 1:</label>"
+      " <input type=\"text\" id=\"address1\"><br>"
+      "<label for=\"address2\">Address line 2:</label>"
+      " <input type=\"text\" id=\"address2\"><br>"
+      "<label for=\"city\">City:</label>"
+      " <input type=\"text\" id=\"city\"><br>"
+      "<label for=\"state\">State:</label>"
+      " <select id=\"state\">"
+      " <option value=\"\" selected=\"yes\">--</option>"
+      " <option value=\"CA\">California</option>"
+      " <option value=\"TX\">Texas</option>"
+      " </select><br>"
+      "<label for=\"zip\">ZIP code:</label>"
+      " <input type=\"text\" id=\"zip\"><br>"
+      "<label for=\"country\">Country:</label>"
+      " <select id=\"country\">"
+      " <option value=\"\" selected=\"yes\">--</option>"
+      " <option value=\"CA\">Canada</option>"
+      " <option value=\"US\">United States</option>"
+      " </select><br>"
+      "<label for=\"phone\">Phone number:</label>"
+      " <input type=\"text\" id=\"phone\"><br>"
+      "</form>";
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
       GURL(std::string(kDataURIPrefix) + kTestFormString)));
 

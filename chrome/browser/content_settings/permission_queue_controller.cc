@@ -259,7 +259,7 @@ void PermissionQueueController::ShowQueuedInfoBarForTab(
   DCHECK(!AlreadyShowingInfoBarForTab(id));
 
   // We can get here for example during tab shutdown, when the InfoBarService is
-  // removing all existing infobars, thus calling back to Observe().  In this
+  // removing all existing infobars, thus calling back to Observe(). In this
   // case the service still exists, and is supplied as the source of the
   // notification we observed, but is no longer accessible from its WebContents.
   // In this case we should just go ahead and cancel further infobars for this
