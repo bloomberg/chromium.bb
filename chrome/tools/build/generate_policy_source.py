@@ -40,6 +40,11 @@ class PolicyDetails:
     'string-enum':  ('TYPE_STRING',       'string',       'String'),
   }
 
+  class EnumItem:
+    def __init__(self, item):
+      self.caption = PolicyDetails._RemovePlaceholders(item['caption'])
+      self.value = item['value']
+
   def __init__(self, policy, os, is_chromium_os):
     self.id = policy['id']
     self.name = policy['name']
@@ -69,14 +74,21 @@ class PolicyDetails:
         PolicyDetails.TYPE_MAP[policy['type']]
 
     self.desc = '\n'.join(
-        map(str.strip, self._RemovePlaceholders(policy['desc']).splitlines()))
-    self.caption = self._RemovePlaceholders(policy['caption'])
-    self.items = policy.get('items')
+        map(str.strip,
+            PolicyDetails._RemovePlaceholders(policy['desc']).splitlines()))
+    self.caption = PolicyDetails._RemovePlaceholders(policy['caption'])
+
+    items = policy.get('items')
+    if items is None:
+      self.items = None
+    else:
+      self.items = [ PolicyDetails.EnumItem(entry) for entry in items ]
 
   PH_PATTERN = re.compile('<ph[^>]*>([^<]*|[^<]*<ex>([^<]*)</ex>[^<]*)</ph>')
 
   # Simplistic grit placeholder stripper.
-  def _RemovePlaceholders(self, text):
+  @staticmethod
+  def _RemovePlaceholders(text):
     result = ''
     pos = 0
     for m in PolicyDetails.PH_PATTERN.finditer(text):
@@ -373,7 +385,7 @@ def _WritePolicyProto(f, policy, fields):
   if policy.items is not None:
     _OutputComment(f, '\nValid values:')
     for item in policy.items:
-      _OutputComment(f, '  %s: %s' % (str(item['value']), item['caption']))
+      _OutputComment(f, '  %s: %s' % (str(item.value), item.caption))
   f.write('message %sProto {\n' % policy.name)
   f.write('  optional PolicyOptions policy_options = 1;\n')
   f.write('  optional %s %s = 2;\n' % (policy.protobuf_type, policy.name))
