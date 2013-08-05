@@ -124,8 +124,6 @@
 
           'shared_impl/private/ppb_char_set_shared.cc',
           'shared_impl/private/ppb_char_set_shared.h',
-          'shared_impl/private/ppb_tcp_server_socket_shared.cc',
-          'shared_impl/private/ppb_tcp_server_socket_shared.h',
           'shared_impl/private/ppb_x509_certificate_private_shared.cc',
           'shared_impl/private/ppb_x509_certificate_private_shared.h',
           'shared_impl/private/tcp_socket_private_impl.cc',
@@ -325,7 +323,6 @@
               'shared_impl/ppb_opengles2_shared.cc',
               'shared_impl/private/ppb_host_resolver_shared.cc',
               'shared_impl/private/net_address_private_impl.cc',
-              'shared_impl/private/ppb_tcp_server_socket_shared.cc',
               'shared_impl/private/tcp_socket_private_impl.cc',
               'shared_impl/private/udp_socket_private_impl.cc',
               'thunk/ppb_graphics_3d_thunk.cc',

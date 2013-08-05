@@ -729,29 +729,6 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPBTCPSocket_SetOptionACK,
                     uint32 /* socket_id */,
                     int32_t /* result */)
 
-// PPB_TCPServerSocket_Private.
-
-// |socket_resource| should not be used as Resource in browser. The
-// only purpose of this argument is to be echoed back.
-// |status| == PP_ERROR_NOSPACE means that the socket table is full
-// and new socket can't be initialized.
-// |status| == PP_ERROR_FAILED means that socket is correctly
-// initialized (if needed) but Listen call is failed.
-// |status| == PP_OK means that socket is correctly initialized (if
-// needed) and Listen call succeeds.
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPServerSocket_ListenACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    PP_Resource /* socket_resource */,
-                    uint32 /* socket_id */,
-                    PP_NetAddress_Private /* local_addr */,
-                    int32_t /* status */)
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPServerSocket_AcceptACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* server_socket_id */,
-                    uint32 /* accepted_socket_id */,
-                    PP_NetAddress_Private /* local_addr */,
-                    PP_NetAddress_Private /* remote_addr */)
-
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 // PPP_Instance_Private.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,
@@ -1226,19 +1203,6 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_SetOption,
                      PP_TCPSocket_Option /* name */,
                      ppapi::SocketOptionData /* value */)
 
-// PPB_TCPServerSocket_Private.
-IPC_MESSAGE_CONTROL5(PpapiHostMsg_PPBTCPServerSocket_Listen,
-                     int32 /* routing_id */,
-                     uint32 /* plugin_dispatcher_id */,
-                     PP_Resource /* socket_resource */,
-                     PP_NetAddress_Private /* addr */,
-                     int32_t /* backlog */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPServerSocket_Accept,
-                     int32 /* tcp_client_socket_routing_id */,
-                     uint32 /* server_socket_id */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPServerSocket_Destroy,
-                     uint32 /* socket_id */)
-
 // PPB_X509Certificate_Private
 IPC_SYNC_MESSAGE_CONTROL1_2(PpapiHostMsg_PPBX509Certificate_ParseDER,
                             std::vector<char> /* der */,
@@ -1603,6 +1567,23 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_GetDefaultPrintSettings)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply,
                      PP_PrintSettings_Dev /* print_settings */)
+
+// TCP Server Socket -----------------------------------------------------------
+// Creates a PPB_TCPServerSocket_Private resource.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPServerSocket_CreatePrivate)
+
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_TCPServerSocket_Listen,
+                     PP_NetAddress_Private /* addr */,
+                     int32_t /* backlog */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TCPServerSocket_ListenReply,
+                     PP_NetAddress_Private /* local_addr */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_TCPServerSocket_Accept,
+                     uint32 /* plugin_dispatcher_id */)
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_TCPServerSocket_AcceptReply,
+                     uint32 /* accepted_socket_id */,
+                     PP_NetAddress_Private /* local_addr */,
+                     PP_NetAddress_Private /* remote_addr */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPServerSocket_StopListening)
 
 // UDP Socket ------------------------------------------------------------------
 // Creates a PPB_UDPSocket resource.

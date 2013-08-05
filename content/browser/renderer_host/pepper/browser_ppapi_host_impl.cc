@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 
-#include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/common/pepper_renderer_instance_data.h"
 #include "content/public/browser/render_view_host.h"
@@ -23,17 +22,20 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
     int render_process_id,
     int render_view_id,
     const base::FilePath& profile_directory) {
-  // The plugin name and path shouldn't be needed for NaCl apps.
-  BrowserPpapiHostImpl* browser_ppapi_host =
-      new BrowserPpapiHostImpl(sender, permissions, std::string(),
-                               base::FilePath(), profile_directory, true);
-  browser_ppapi_host->set_plugin_process_handle(plugin_child_process);
-
-  channel->AddFilter(
+  scoped_refptr<PepperMessageFilter> pepper_message_filter(
       new PepperMessageFilter(permissions,
                               host_resolver,
                               render_process_id,
                               render_view_id));
+
+  // The plugin name and path shouldn't be needed for external plugins.
+  BrowserPpapiHostImpl* browser_ppapi_host =
+      new BrowserPpapiHostImpl(sender, permissions, std::string(),
+                               base::FilePath(), profile_directory, true,
+                               pepper_message_filter);
+  browser_ppapi_host->set_plugin_process_handle(plugin_child_process);
+
+  channel->AddFilter(pepper_message_filter);
   channel->AddFilter(browser_ppapi_host->message_filter().get());
   channel->AddFilter(new TraceMessageFilter());
 
@@ -46,7 +48,8 @@ BrowserPpapiHostImpl::BrowserPpapiHostImpl(
     const std::string& plugin_name,
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
-    bool external_plugin)
+    bool external_plugin,
+    const scoped_refptr<PepperMessageFilter>& pepper_message_filter)
     : ppapi_host_(new ppapi::host::PpapiHost(sender, permissions)),
       plugin_process_handle_(base::kNullProcessHandle),
       plugin_name_(plugin_name),
@@ -55,7 +58,7 @@ BrowserPpapiHostImpl::BrowserPpapiHostImpl(
       external_plugin_(external_plugin) {
   message_filter_ = new HostMessageFilter(ppapi_host_.get());
   ppapi_host_->AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
-      new ContentBrowserPepperHostFactory(this)));
+      new ContentBrowserPepperHostFactory(this, pepper_message_filter)));
 }
 
 BrowserPpapiHostImpl::~BrowserPpapiHostImpl() {

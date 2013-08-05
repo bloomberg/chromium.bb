@@ -16,7 +16,8 @@ BrowserPpapiHostTest::BrowserPpapiHostTest()
                         std::string(),
                         base::FilePath(),
                         base::FilePath(),
-                        false));
+                        false,
+                        NULL));
   ppapi_host_->set_plugin_process_handle(base::GetCurrentProcessHandle());
 }
 

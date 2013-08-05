@@ -23,7 +23,6 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
-#include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 #include "ui/base/ime/text_input_type.h"
@@ -199,16 +198,6 @@ class PepperHelperImpl : public PepperHelper,
   void OnTCPSocketSetOptionACK(uint32 plugin_dispatcher_id,
                                uint32 socket_id,
                                int32_t result);
-  void OnTCPServerSocketListenACK(uint32 plugin_dispatcher_id,
-                                  PP_Resource socket_resource,
-                                  uint32 socket_id,
-                                  const PP_NetAddress_Private& local_addr,
-                                  int32_t status);
-  void OnTCPServerSocketAcceptACK(uint32 plugin_dispatcher_id,
-                                  uint32 socket_id,
-                                  uint32 accepted_socket_id,
-                                  const PP_NetAddress_Private& local_addr,
-                                  const PP_NetAddress_Private& remote_addr);
   void OnPpapiBrokerChannelCreated(int request_id,
                                    base::ProcessId broker_pid,
                                    const IPC::ChannelHandle& handle);
@@ -262,8 +251,6 @@ class PepperHelperImpl : public PepperHelper,
   IDMap<AsyncOpenFileCallback> pending_async_open_files_;
 
   IDMap<PPB_TCPSocket_Private_Impl> tcp_sockets_;
-
-  IDMap<ppapi::PPB_TCPServerSocket_Shared> tcp_server_sockets_;
 
   typedef IDMap<scoped_refptr<PepperBroker>, IDMapOwnPointer> BrokerMap;
   BrokerMap pending_connect_broker_;

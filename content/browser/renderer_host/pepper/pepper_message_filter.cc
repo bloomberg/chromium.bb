@@ -16,7 +16,6 @@
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
-#include "content/browser/renderer_host/pepper/pepper_tcp_server_socket.h"
 #include "content/browser/renderer_host/pepper/pepper_tcp_socket.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -93,13 +92,6 @@ PepperMessageFilter::PepperMessageFilter(
   DCHECK(host_resolver);
 }
 
-void PepperMessageFilter::OverrideThreadForMessage(
-    const IPC::Message& message,
-    BrowserThread::ID* thread) {
-  if (message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID)
-    *thread = BrowserThread::UI;
-}
-
 bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                                             bool* message_was_ok) {
   bool handled = true;
@@ -117,14 +109,6 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Write, OnTCPWrite)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Disconnect, OnTCPDisconnect)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_SetOption, OnTCPSetOption)
-
-    // TCP Server messages.
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Listen,
-                        OnTCPServerListen)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Accept,
-                        OnTCPServerAccept)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Destroy,
-                        RemoveTCPServerSocket)
 
     // NetworkMonitor messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBNetworkMonitor_Start,
@@ -183,19 +167,6 @@ uint32 PepperMessageFilter::AddAcceptedTCPSocket(
                             true /* private_api */));
   }
   return tcp_socket_id;
-}
-
-void PepperMessageFilter::RemoveTCPServerSocket(uint32 socket_id) {
-  TCPServerSocketMap::iterator iter = tcp_server_sockets_.find(socket_id);
-  if (iter == tcp_server_sockets_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  // Destroy the TCPServerSocket instance will cancel any pending completion
-  // callback. From this point on, there won't be any messages associated with
-  // this socket sent to the plugin side.
-  tcp_server_sockets_.erase(iter);
 }
 
 PepperMessageFilter::~PepperMessageFilter() {
@@ -373,73 +344,6 @@ void PepperMessageFilter::OnTCPSetOption(uint32 socket_id,
   iter->second->SetOption(name, value);
 }
 
-void PepperMessageFilter::OnTCPServerListen(int32 routing_id,
-                                            uint32 plugin_dispatcher_id,
-                                            PP_Resource socket_resource,
-                                            const PP_NetAddress_Private& addr,
-                                            int32_t backlog) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool allowed = CanUseSocketAPIs(
-      routing_id,
-      pepper_socket_utils::CreateSocketPermissionRequest(
-          content::SocketPermissionRequest::TCP_LISTEN, addr),
-      true /* private_api */);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&PepperMessageFilter::DoTCPServerListen,
-                                     this,
-                                     allowed,
-                                     routing_id,
-                                     plugin_dispatcher_id,
-                                     socket_resource,
-                                     addr,
-                                     backlog));
-}
-
-void PepperMessageFilter::DoTCPServerListen(bool allowed,
-                                            int32 routing_id,
-                                            uint32 plugin_dispatcher_id,
-                                            PP_Resource socket_resource,
-                                            const PP_NetAddress_Private& addr,
-                                            int32_t backlog) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!allowed) {
-    Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(
-        routing_id,
-        plugin_dispatcher_id,
-        socket_resource,
-        0,
-        NetAddressPrivateImpl::kInvalidNetAddress,
-        PP_ERROR_FAILED));
-    return;
-  }
-  uint32 socket_id = GenerateSocketID();
-  if (socket_id == kInvalidSocketID) {
-    Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(
-        routing_id,
-        plugin_dispatcher_id,
-        socket_resource,
-        0,
-        NetAddressPrivateImpl::kInvalidNetAddress,
-        PP_ERROR_NOSPACE));
-    return;
-  }
-  PepperTCPServerSocket* socket = new PepperTCPServerSocket(
-      this, routing_id, plugin_dispatcher_id, socket_resource, socket_id);
-  tcp_server_sockets_[socket_id] = linked_ptr<PepperTCPServerSocket>(socket);
-  socket->Listen(addr, backlog);
-}
-
-void PepperMessageFilter::OnTCPServerAccept(int32 tcp_client_socket_routing_id,
-                                            uint32 server_socket_id) {
-  TCPServerSocketMap::iterator iter =
-      tcp_server_sockets_.find(server_socket_id);
-  if (iter == tcp_server_sockets_.end()) {
-    NOTREACHED();
-    return;
-  }
-  iter->second->Accept(tcp_client_socket_routing_id);
-}
-
 void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
   // Support all in-process plugins, and ones with "private" permissions.
   if (plugin_type_ != PLUGIN_TYPE_IN_PROCESS &&
@@ -486,7 +390,7 @@ uint32 PepperMessageFilter::GenerateSocketID() {
   // PepperSocketMessageHandler object, because for each plugin or renderer
   // process, there is at most one PepperMessageFilter (in other words, at most
   // one PepperSocketMessageHandler) talking to it.
-  if (tcp_sockets_.size() + tcp_server_sockets_.size() >= kMaxSocketsAllowed)
+  if (tcp_sockets_.size() >= kMaxSocketsAllowed)
     return kInvalidSocketID;
 
   uint32 socket_id = kInvalidSocketID;
@@ -495,8 +399,7 @@ uint32 PepperMessageFilter::GenerateSocketID() {
     // the counter overflows.
     socket_id = next_socket_id_++;
   } while (socket_id == kInvalidSocketID ||
-           tcp_sockets_.find(socket_id) != tcp_sockets_.end() ||
-           tcp_server_sockets_.find(socket_id) != tcp_server_sockets_.end());
+           tcp_sockets_.find(socket_id) != tcp_sockets_.end());
 
   return socket_id;
 }

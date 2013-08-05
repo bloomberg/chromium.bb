@@ -31,25 +31,13 @@
 using ppapi::host::NetErrorToPepperError;
 using ppapi::NetAddressPrivateImpl;
 
-namespace content {
-
 namespace {
 
-bool CanUseSocketAPIs(const SocketPermissionRequest& request,
-                      bool external_plugin,
-                      bool private_api,
-                      int render_process_id,
-                      int render_view_id) {
-  RenderViewHost* render_view_host = RenderViewHost::FromID(render_process_id,
-                                                            render_view_id);
-  return render_view_host &&
-      pepper_socket_utils::CanUseSocketAPIs(external_plugin,
-                                            private_api,
-                                            request,
-                                            render_view_host);
-}
+size_t g_num_instances = 0;
 
 }  // namespace
+
+namespace content {
 
 PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
     BrowserPpapiHostImpl* host,
@@ -62,6 +50,7 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
       private_api_(private_api),
       render_process_id_(0),
       render_view_id_(0) {
+  ++g_num_instances;
   DCHECK(host);
 
   if (!host->GetRenderViewIDsForInstance(instance,
@@ -73,6 +62,12 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
 
 PepperUDPSocketMessageFilter::~PepperUDPSocketMessageFilter() {
   Close();
+  --g_num_instances;
+}
+
+// static
+size_t PepperUDPSocketMessageFilter::GetNumInstances() {
+  return g_num_instances;
 }
 
 scoped_refptr<base::TaskRunner>
@@ -177,8 +172,9 @@ int32_t PepperUDPSocketMessageFilter::OnMsgBind(
   SocketPermissionRequest request =
       pepper_socket_utils::CreateSocketPermissionRequest(
           SocketPermissionRequest::UDP_BIND, addr);
-  if (!CanUseSocketAPIs(request, external_plugin_, private_api_,
-                        render_process_id_, render_view_id_)) {
+  if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_, private_api_,
+                                             request, render_process_id_,
+                                             render_view_id_)) {
     return PP_ERROR_NOACCESS;
   }
 
@@ -239,8 +235,9 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSendTo(
   SocketPermissionRequest request =
       pepper_socket_utils::CreateSocketPermissionRequest(
           SocketPermissionRequest::UDP_SEND_TO, addr);
-  if (!CanUseSocketAPIs(request, external_plugin_, private_api_,
-                        render_process_id_, render_view_id_)) {
+  if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_, private_api_,
+                                             request, render_process_id_,
+                                             render_view_id_)) {
     return PP_ERROR_NOACCESS;
   }
 

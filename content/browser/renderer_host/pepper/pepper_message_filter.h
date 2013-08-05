@@ -48,7 +48,6 @@ class SocketOptionData;
 
 namespace content {
 class BrowserContext;
-class PepperTCPServerSocket;
 class PepperTCPSocket;
 class ResourceContext;
 
@@ -77,9 +76,6 @@ class PepperMessageFilter
                       int render_view_id);
 
   // BrowserMessageFilter methods.
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -100,7 +96,6 @@ class PepperMessageFilter
   uint32 AddAcceptedTCPSocket(int32 routing_id,
                               uint32 plugin_dispatcher_id,
                               net::StreamSocket* socket);
-  void RemoveTCPServerSocket(uint32 socket_id);
 
   const net::SSLConfig& ssl_config() { return ssl_config_; }
 
@@ -115,8 +110,6 @@ class PepperMessageFilter
 
   // Containers for sockets keyed by socked_id.
   typedef std::map<uint32, linked_ptr<PepperTCPSocket> > TCPSocketMap;
-  typedef std::map<uint32,
-                   linked_ptr<PepperTCPServerSocket> > TCPServerSocketMap;
 
   // Set of disptachers ID's that have subscribed for NetworkMonitor
   // notifications.
@@ -149,13 +142,6 @@ class PepperMessageFilter
   void OnTCPSetOption(uint32 socket_id,
                       PP_TCPSocket_Option name,
                       const ppapi::SocketOptionData& value);
-  void OnTCPServerListen(int32 routing_id,
-                         uint32 plugin_dispatcher_id,
-                         PP_Resource socket_resource,
-                         const PP_NetAddress_Private& addr,
-                         int32_t backlog);
-  void OnTCPServerAccept(int32 tcp_client_socket_routing_id,
-                         uint32 server_socket_id);
 
   void OnNetworkMonitorStart(uint32 plugin_dispatcher_id);
   void OnNetworkMonitorStop(uint32 plugin_dispatcher_id);
@@ -169,12 +155,6 @@ class PepperMessageFilter
                                   uint32 socket_id,
                                   const PP_NetAddress_Private& net_addr,
                                   bool allowed);
-  void DoTCPServerListen(bool allowed,
-                         int32 routing_id,
-                         uint32 plugin_dispatcher_id,
-                         PP_Resource socket_resource,
-                         const PP_NetAddress_Private& addr,
-                         int32_t backlog);
   void OnX509CertificateParseDER(const std::vector<char>& der,
                                  bool* succeeded,
                                  ppapi::PPB_X509Certificate_Fields* result);
@@ -237,7 +217,6 @@ class PepperMessageFilter
   uint32 next_socket_id_;
 
   TCPSocketMap tcp_sockets_;
-  TCPServerSocketMap tcp_server_sockets_;
 
   NetworkMonitorIdSet network_monitor_ids_;
 

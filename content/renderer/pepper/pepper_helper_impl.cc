@@ -50,7 +50,6 @@
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/ppb_tcp_server_socket_private_impl.h"
 #include "content/renderer/pepper/ppb_tcp_socket_private_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/resource_helper.h"
@@ -639,10 +638,6 @@ void PepperHelperImpl::UnregisterTCPSocket(uint32 socket_id) {
     tcp_sockets_.Remove(socket_id);
 }
 
-void PepperHelperImpl::TCPServerSocketStopListening(uint32 socket_id) {
-  tcp_server_sockets_.Remove(socket_id);
-}
-
 void PepperHelperImpl::HandleDocumentLoad(
     PepperPluginInstanceImpl* instance,
     const WebKit::WebURLResponse& response) {
@@ -732,10 +727,6 @@ bool PepperHelperImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_WriteACK, OnTCPSocketWriteACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SetOptionACK,
                         OnTCPSocketSetOptionACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_ListenACK,
-                        OnTCPServerSocketListenACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_AcceptACK,
-                        OnTCPServerSocketAcceptACK)
     IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
                         OnPpapiBrokerChannelCreated)
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenPepperFile_ACK, OnAsyncFileOpened)
@@ -799,45 +790,6 @@ void PepperHelperImpl::OnTCPSocketSetOptionACK(
   PPB_TCPSocket_Private_Impl* socket = tcp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnSetOptionCompleted(result);
-}
-
-void PepperHelperImpl::OnTCPServerSocketListenACK(
-    uint32 plugin_dispatcher_id,
-    PP_Resource socket_resource,
-    uint32 socket_id,
-    const PP_NetAddress_Private& local_addr,
-    int32_t status) {
-  ppapi::thunk::EnterResource<ppapi::thunk::PPB_TCPServerSocket_Private_API>
-      enter(socket_resource, true);
-  if (enter.succeeded()) {
-    ppapi::PPB_TCPServerSocket_Shared* socket =
-        static_cast<ppapi::PPB_TCPServerSocket_Shared*>(enter.object());
-    if (status == PP_OK)
-      tcp_server_sockets_.AddWithID(socket, socket_id);
-    socket->OnListenCompleted(socket_id, local_addr, status);
-  } else if (socket_id != 0 && status == PP_OK) {
-    // StopListening was called before completion of Listen.
-    Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id));
-  }
-}
-
-void PepperHelperImpl::OnTCPServerSocketAcceptACK(
-    uint32 plugin_dispatcher_id,
-    uint32 server_socket_id,
-    uint32 accepted_socket_id,
-    const PP_NetAddress_Private& local_addr,
-    const PP_NetAddress_Private& remote_addr) {
-  ppapi::PPB_TCPServerSocket_Shared* socket =
-      tcp_server_sockets_.Lookup(server_socket_id);
-  if (socket) {
-    bool succeeded = (accepted_socket_id != 0);
-    socket->OnAcceptCompleted(succeeded,
-                              accepted_socket_id,
-                              local_addr,
-                              remote_addr);
-  } else if (accepted_socket_id != 0) {
-    Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(accepted_socket_id));
-  }
 }
 
 void PepperHelperImpl::DidDataFromWebURLResponse(

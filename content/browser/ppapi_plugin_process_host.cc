@@ -220,7 +220,8 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
 
   host_impl_.reset(new BrowserPpapiHostImpl(this, permissions_, info.name,
                                             info.path, profile_data_directory,
-                                            false));
+                                            false,
+                                            filter_));
 
   process_->GetHost()->AddFilter(filter_.get());
   process_->GetHost()->AddFilter(host_impl_->message_filter().get());
@@ -243,7 +244,8 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
   host_impl_.reset(new BrowserPpapiHostImpl(this, permissions,
                                             std::string(), base::FilePath(),
                                             base::FilePath(),
-                                            false));
+                                            false,
+                                            NULL));
 }
 
 bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {

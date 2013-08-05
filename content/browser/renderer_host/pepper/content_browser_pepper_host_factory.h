@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_PEPPER_CONTENT_BROWSER_PEPPER_HOST_FACTORY_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "ppapi/host/host_factory.h"
 
 namespace ppapi {
@@ -19,7 +21,11 @@ class BrowserPpapiHostImpl;
 class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
  public:
   // Non-owning pointer to the filter must outlive this class.
-  explicit ContentBrowserPepperHostFactory(BrowserPpapiHostImpl* host);
+  ContentBrowserPepperHostFactory(
+      BrowserPpapiHostImpl* host,
+      // TODO (ygorshenin@): remove this once TCP sockets are
+      // converted to the new design.
+      const scoped_refptr<PepperMessageFilter>& pepper_message_filter);
   virtual ~ContentBrowserPepperHostFactory();
 
   virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
@@ -33,6 +39,8 @@ class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
 
   // Non-owning pointer.
   BrowserPpapiHostImpl* host_;
+
+  scoped_refptr<PepperMessageFilter> pepper_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentBrowserPepperHostFactory);
 };

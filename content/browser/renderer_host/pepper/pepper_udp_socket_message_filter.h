@@ -50,6 +50,8 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
                                PP_Instance instance,
                                bool private_api);
 
+  static size_t GetNumInstances();
+
  protected:
   virtual ~PepperUDPSocketMessageFilter();
 
