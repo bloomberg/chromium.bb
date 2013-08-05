@@ -33,13 +33,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-static const base::FilePath::CharType kPeerConnectionServer[] =
-#if defined(OS_WIN)
-    FILE_PATH_LITERAL("peerconnection_server.exe");
-#else
-    FILE_PATH_LITERAL("peerconnection_server");
-#endif
-
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
 
@@ -76,16 +69,13 @@ class WebrtcBrowserTest : public WebRtcTestBase {
     base::Closure on_channel_closing_;
   };
 
-  WebrtcBrowserTest() : peerconnection_server_(0) {}
-
-  virtual void SetUp() OVERRIDE {
-    RunPeerConnectionServer();
-    InProcessBrowserTest::SetUp();
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
+    peerconnection_server_.Start();
   }
 
-  virtual void TearDown() OVERRIDE {
-    ShutdownPeerConnectionServer();
-    InProcessBrowserTest::TearDown();
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    peerconnection_server_.Stop();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -191,26 +181,7 @@ class WebrtcBrowserTest : public WebRtcTestBase {
   }
 
  private:
-  void RunPeerConnectionServer() {
-    base::FilePath peerconnection_server;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &peerconnection_server));
-    peerconnection_server = peerconnection_server.Append(kPeerConnectionServer);
-
-    EXPECT_TRUE(base::PathExists(peerconnection_server)) <<
-        "Missing peerconnection_server. You must build "
-        "it so it ends up next to the browser test binary.";
-    EXPECT_TRUE(base::LaunchProcess(
-        CommandLine(peerconnection_server),
-        base::LaunchOptions(),
-        &peerconnection_server_)) << "Failed to launch peerconnection_server.";
-  }
-
-  void ShutdownPeerConnectionServer() {
-    EXPECT_TRUE(base::KillProcess(peerconnection_server_, 0, false)) <<
-        "Failed to shut down peerconnection_server!";
-  }
-
-  base::ProcessHandle peerconnection_server_;
+  PeerConnectionServerRunner peerconnection_server_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,

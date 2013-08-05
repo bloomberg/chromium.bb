@@ -30,13 +30,6 @@
 #include "net/test/python_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
-static const base::FilePath::CharType kPeerConnectionServer[] =
-#if defined(OS_WIN)
-    FILE_PATH_LITERAL("peerconnection_server.exe");
-#else
-    FILE_PATH_LITERAL("peerconnection_server");
-#endif
-
 static const base::FilePath::CharType kFrameAnalyzerExecutable[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("frame_analyzer.exe");
@@ -81,7 +74,7 @@ static const char kPyWebSocketPortNumber[] = "12221";
 // Test the video quality of the WebRTC output.
 //
 // Prerequisites: This test case must run on a machine with a virtual webcam
-// that plays video from the reference file located in <the running users home
+// that plays video from the reference file located in <the running user's home
 // folder>/kWorkingDirName/kReferenceYuvFileName.
 //
 // You must also compile the chromium_builder_webrtc target before you run this
@@ -102,13 +95,11 @@ static const char kPyWebSocketPortNumber[] = "12221";
 class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
  public:
   WebrtcVideoQualityBrowserTest()
-      : peerconnection_server_(0),
-        pywebsocket_server_(0),
+      : pywebsocket_server_(0),
         environment_(base::Environment::Create()) {}
 
-  virtual void SetUp() OVERRIDE {
-    RunPeerConnectionServer();
-    InProcessBrowserTest::SetUp();
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    peerconnection_server_.Start();
 
     // Ensure we have the stuff we need.
     EXPECT_TRUE(base::PathExists(GetWorkingDir()))
@@ -121,9 +112,8 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
         << "comparison: " << reference_file.value();
   }
 
-  virtual void TearDown() OVERRIDE {
-    ShutdownPeerConnectionServer();
-    InProcessBrowserTest::TearDown();
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    peerconnection_server_.Stop();
     ShutdownPyWebSocketServer();
   }
 
@@ -378,25 +368,6 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
   }
 
  private:
-  void RunPeerConnectionServer() {
-    // TODO(phoglund): de-dupe later: next line differs from original.
-    base::FilePath peerconnection_server =
-        GetBrowserDir().Append(kPeerConnectionServer);
-
-    EXPECT_TRUE(base::PathExists(peerconnection_server))
-        << "Missing peerconnection_server. You must build "
-           "it so it ends up next to the browser test binary.";
-    EXPECT_TRUE(base::LaunchProcess(CommandLine(peerconnection_server),
-                                    base::LaunchOptions(),
-                                    &peerconnection_server_))
-        << "Failed to launch peerconnection_server.";
-  }
-
-  void ShutdownPeerConnectionServer() {
-    EXPECT_TRUE(base::KillProcess(peerconnection_server_, 0, false))
-        << "Failed to shut down peerconnection_server!";
-  }
-
   base::FilePath GetSourceDir() {
     base::FilePath source_dir;
     PathService::Get(base::DIR_SOURCE_ROOT, &source_dir);
@@ -417,7 +388,7 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
     return complete_command;
   }
 
-  base::ProcessHandle peerconnection_server_;
+  PeerConnectionServerRunner peerconnection_server_;
   base::ProcessHandle pywebsocket_server_;
   scoped_ptr<base::Environment> environment_;
 };
@@ -431,7 +402,6 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
 
 IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
                        MAYBE_MANUAL_TestVGAVideoQuality) {
-  // TODO(phoglund): de-dupe from chrome_webrtc_browsertest.cc.
   StartPyWebSocketServer();
 
   EXPECT_TRUE(test_server()->Start());
@@ -445,7 +415,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
   chrome::AddBlankTabAt(browser(), -1, true);
   content::WebContents* right_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  // TODO(phoglund): (de-dupe later) different from original flow.
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(kCapturingWebrtcHtmlPage));
   GetUserMediaAndAccept(right_tab);
@@ -462,7 +431,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
   // sending frames take quite a bit of time.
   int polling_interval_msec = 1000;
 
-  // TODO(phoglund): (de-dupe later) different from original flow.
   EXPECT_TRUE(PollingWaitUntil(
       "doneFrameCapturing()", "done-capturing", right_tab,
       polling_interval_msec));
@@ -474,7 +442,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
   AssertNoAsynchronousErrors(left_tab);
   AssertNoAsynchronousErrors(right_tab);
 
-  // TODO(phoglund): (de-dupe later) different from original flow.
   EXPECT_TRUE(PollingWaitUntil(
       "haveMoreFramesToSend()", "no-more-frames", right_tab,
       polling_interval_msec));

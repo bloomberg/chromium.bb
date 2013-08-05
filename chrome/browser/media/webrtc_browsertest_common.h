@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/process/process_handle.h"
+
 namespace content {
 class WebContents;
 }
@@ -24,5 +26,19 @@ bool PollingWaitUntil(const std::string& javascript,
                       const std::string& evaluates_to,
                       content::WebContents* tab_contents,
                       int poll_interval_msec);
+
+class PeerConnectionServerRunner {
+ public:
+  PeerConnectionServerRunner(): server_pid_(0) {}
+  ~PeerConnectionServerRunner() {}
+
+  bool Start();
+  bool Stop();
+
+  static void KillAllPeerConnectionServersOnCurrentSystem();
+
+ private:
+  base::ProcessHandle server_pid_;
+};
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_BROWSERTEST_COMMON_H_
