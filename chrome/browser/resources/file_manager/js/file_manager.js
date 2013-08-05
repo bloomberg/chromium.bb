@@ -1074,9 +1074,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.metadataCache_,
         false  /* Don't show dot files by default. */);
 
-    this.fileWatcher_ = new FileWatcher(
-        this.filesystem_.root,
-        this.metadataCache_);
+    this.fileWatcher_ = new FileWatcher(this.metadataCache_);
     this.fileWatcher_.addEventListener(
         'watcher-metadata-changed',
         this.onWatcherMetadataChanged_.bind(this));
