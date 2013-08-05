@@ -6,7 +6,6 @@
 
 import itertools
 import StringIO
-import PIL
 from PIL import Image
 
 
@@ -29,9 +28,9 @@ def _AreTheSameSize(images):
 
 
 def _GetDifferenceWithMask(image1, image2, mask=None,
-                           masked_color=(0, 0, 0),
-                           same_color=(0, 0, 0),
-                           different_color=(255, 255, 255)):
+                           masked_color=(0, 0, 0, 255),
+                           same_color=(0, 0, 0, 255),
+                           different_color=(255, 255, 255, 255)):
   """Returns an image representing the difference between the two images.
 
   This function computes the difference between two images taking into
@@ -57,15 +56,15 @@ def _GetDifferenceWithMask(image1, image2, mask=None,
   """
   image_mask = mask
   if not mask:
-    image_mask = PIL.Image.new('RGB', image1.size, (0, 0, 0))
+    image_mask = Image.new('RGBA', image1.size, (0, 0, 0, 255))
   if not _AreTheSameSize([image1, image2, image_mask]):
     raise Exception('images and mask must be the same size.')
-  image_diff = PIL.Image.new('RGB', image1.size, (0, 0, 0))
+  image_diff = Image.new('RGBA', image1.size, (0, 0, 0, 255))
   data = []
   for m, px1, px2 in itertools.izip(image_mask.getdata(),
                                     image1.getdata(),
                                     image2.getdata()):
-    if m == (255, 255, 255):
+    if m == (255, 255, 255, 255):
       data.append(masked_color)
     elif px1 == px2:
       data.append(same_color)
@@ -97,15 +96,41 @@ def CreateMask(images):
   """
   if len(images) < 2:
     raise Exception('mask must be created from two or more images.')
-  mask = Image.new('RGB', images[0].size, (0, 0, 0))
+  mask = Image.new('RGBA', images[0].size, (0, 0, 0, 255))
   image = images[0]
   for other_image in images[1:]:
     mask = _GetDifferenceWithMask(
         image,
         other_image,
         mask,
-        masked_color=(255, 255, 255))
+        masked_color=(255, 255, 255, 255))
   return mask
+
+
+def AddMasks(masks):
+  """Combines a list of mask images into one mask image.
+
+  Args:
+    masks: a list of mask-images.
+
+  Returns:
+    a new mask that represents the sum of the masked
+      regions of the passed in list of mask-images.
+
+  Raises:
+    Exception: if masks is an empty list, or if masks are not the same size.
+  """
+  if not masks:
+    raise Exception('masks must be a list containing at least one image.')
+  if len(masks) > 1 and not _AreTheSameSize(masks):
+    raise Exception('masks in list must be of the same size.')
+  white = (255, 255, 255, 255)
+  black = (0, 0, 0, 255)
+  masks_data = [mask.getdata() for mask in masks]
+  image = Image.new('RGBA', masks[0].size, black)
+  image.putdata([white if white in px_set else black
+                 for px_set in itertools.izip(*masks_data)])
+  return image
 
 
 def VisualizeImageDifferences(image1, image2, mask=None):
@@ -134,6 +159,60 @@ def VisualizeImageDifferences(image1, image2, mask=None):
   return _GetDifferenceWithMask(image1, image2, mask)
 
 
+def InflateMask(image, passes):
+  """A function that adds layers of pixels around the white edges of a mask.
+
+  This function evaluates a 'frontier' of valid pixels indices. Initially,
+    this frontier contains all indices in the image. However, with each pass
+    only the pixels' indices which were added to the mask by inflation
+    are added to the next pass's frontier. This gives the algorithm a
+    large upfront cost that scales negligably when the number of passes
+    is increased.
+
+  Args:
+    image: the RGBA PIL.Image mask to inflate.
+    passes: the number of passes to inflate the image by.
+
+  Returns:
+    A RGBA PIL.Image.
+  """
+  inflated = Image.new('RGBA', image.size)
+  new_dataset = list(image.getdata())
+  old_dataset = list(image.getdata())
+
+  frontier = set(range(len(old_dataset)))
+  new_frontier = set()
+
+  l = [-1, 1]
+
+  def _ShadeHorizontal(index, px):
+    col = index % image.size[0]
+    if px == (255, 255, 255, 255):
+      for x in l:
+        if 0 <= col + x < image.size[0]:
+          if old_dataset[index + x] != (255, 255, 255, 255):
+            new_frontier.add(index + x)
+          new_dataset[index + x] = (255, 255, 255, 255)
+
+  def _ShadeVertical(index, px):
+    row = index / image.size[0]
+    if px == (255, 255, 255, 255):
+      for x in l:
+        if 0 <= row + x < image.size[1]:
+          if old_dataset[index + image.size[0] * x] != (255, 255, 255, 255):
+            new_frontier.add(index + image.size[0] * x)
+          new_dataset[index + image.size[0] * x] = (255, 255, 255, 255)
+
+  for _ in range(passes):
+    for index in frontier:
+      _ShadeHorizontal(index, old_dataset[index])
+      _ShadeVertical(index, old_dataset[index])
+    old_dataset, new_dataset = new_dataset, new_dataset
+    frontier, new_frontier = new_frontier, set()
+  inflated.putdata(new_dataset)
+  return inflated
+
+
 def TotalDifferentPixels(image1, image2, mask=None):
   """Computes the number of different pixels between two images.
 
@@ -151,13 +230,13 @@ def TotalDifferentPixels(image1, image2, mask=None):
   """
   image_mask = mask
   if not mask:
-    image_mask = PIL.Image.new('RGB', image1.size, (0, 0, 0))
+    image_mask = Image.new('RGBA', image1.size, (0, 0, 0, 255))
   if _AreTheSameSize([image1, image2, image_mask]):
     total_diff = 0
     for px1, px2, m in itertools.izip(image1.getdata(),
                                       image2.getdata(),
                                       image_mask.getdata()):
-      if m == (255, 255, 255):
+      if m == (255, 255, 255, 255):
         continue
       elif px1 != px2:
         total_diff += 1
@@ -217,6 +296,4 @@ def DeserializeImage(encoded_image):
   Returns:
     an RGB image
   """
-  return PIL.Image.open(StringIO.StringIO(encoded_image.decode('base64')))
-
-
+  return Image.open(StringIO.StringIO(encoded_image.decode('base64')))
