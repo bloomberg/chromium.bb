@@ -2345,7 +2345,7 @@ void CanvasRenderingContext2D::drawSystemFocusRing(Element* element)
 
     updateFocusRingAccessibility(m_path, element);
     if (element->focused())
-        drawFocusRing(m_path, element);
+        drawFocusRing(m_path);
 }
 
 bool CanvasRenderingContext2D::drawCustomFocusRing(Element* element)
@@ -2388,7 +2388,7 @@ void CanvasRenderingContext2D::updateFocusRingAccessibility(const Path& path, El
     }
 }
 
-void CanvasRenderingContext2D::drawFocusRing(const Path& path, Element* element)
+void CanvasRenderingContext2D::drawFocusRing(const Path& path)
 {
     GraphicsContext* c = drawingContext();
     if (!c)
@@ -2399,9 +2399,11 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path, Element* element)
     c->clearShadow();
     c->setCompositeOperation(CompositeSourceOver, BlendModeNormal);
 
-    RefPtr<RenderStyle> style(RenderStyle::createDefaultStyle());
+    // These should match the style defined in html.css.
     Color focusRingColor = RenderTheme::focusRingColor();
-    c->drawFocusRing(path, style->outlineWidth(), style->outlineOffset(), focusRingColor);
+    const int focusRingWidth = 5;
+    const int focusRingOutline = 0;
+    c->drawFocusRing(path, focusRingWidth, focusRingOutline, focusRingColor);
     didDraw(path.boundingRect());
 
     c->restore();
