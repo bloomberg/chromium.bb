@@ -315,14 +315,14 @@
             'targets': [{
                 'target_name': 'LayoutTestHelper',
                 'type': 'executable',
-                'sources': ['<(tools_dir)/DumpRenderTree/chromium/LayoutTestHelperWin.cpp'],
+                'sources': ['<(source_dir)/testing/helper/LayoutTestHelperWin.cpp'],
             }],
         }],
         ['OS=="mac"', {
             'targets': [{
                 'target_name': 'LayoutTestHelper',
                 'type': 'executable',
-                'sources': ['<(tools_dir)/DumpRenderTree/chromium/LayoutTestHelper.mm'],
+                'sources': ['<(source_dir)/testing/helper/LayoutTestHelperMac.mm'],
                 'link_settings': {
                     'libraries': [
                         '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
