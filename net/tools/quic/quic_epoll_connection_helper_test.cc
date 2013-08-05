@@ -15,6 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using net::test::GetMinStreamFrameSize;
 using net::test::FramerVisitorCapturingFrames;
 using net::test::MockSendAlgorithm;
 using net::test::QuicConnectionPeer;
@@ -102,7 +103,7 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
     QuicFrames frames;
     QuicFrame frame(&frame1_);
     frames.push_back(frame);
-    return framer_.ConstructFrameDataPacket(header_, frames).packet;
+    return framer_.BuildUnsizedDataPacket(header_, frames).packet;
   }
 
   QuicGuid guid_;
@@ -128,7 +129,7 @@ TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRetransmission) {
   const size_t packet_size =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, kIncludeVersion,
                           PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP) +
-      QuicFramer::GetMinStreamFrameSize() + arraysize(buffer) - 1;
+      GetMinStreamFrameSize(framer_.version()) + arraysize(buffer) - 1;
   EXPECT_CALL(*send_algorithm_,
               SentPacket(_, 1, packet_size, NOT_RETRANSMISSION));
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(1, packet_size));

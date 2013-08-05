@@ -28,6 +28,8 @@ class ProofVerifier;
 
 namespace tools {
 
+class QuicEpollConnectionHelper;
+
 namespace test {
 class QuicClientPeer;
 }  // namespace test
@@ -138,6 +140,9 @@ class QuicClient : public EpollCallbackInterface {
   void SetChannelIDSigner(ChannelIDSigner* signer) {
     crypto_config_.SetChannelIDSigner(signer);
   }
+
+ protected:
+  virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
 
  private:
   friend class net::tools::test::QuicClientPeer;

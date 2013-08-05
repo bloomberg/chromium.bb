@@ -288,7 +288,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     QuicFrames frames;
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(
-        framer_.ConstructFrameDataPacket(header_, frames).packet);
+        framer_.BuildUnsizedDataPacket(header_, frames).packet);
     return framer_.EncryptPacket(
         ENCRYPTION_NONE, header.packet_sequence_number, *packet);
   }

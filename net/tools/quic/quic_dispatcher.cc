@@ -167,7 +167,8 @@ void QuicDispatcher::Shutdown() {
 void QuicDispatcher::OnConnectionClose(QuicGuid guid, QuicErrorCode error) {
   SessionMap::iterator it = session_map_.find(guid);
   if (it == session_map_.end()) {
-    LOG(DFATAL) << "GUID " << guid << " Does not exist in the session map.";
+    LOG(DFATAL) << "GUID " << guid << " does not exist in the session map.  "
+                << "Error: " << QuicUtils::ErrorToString(error);
     return;
   }
 

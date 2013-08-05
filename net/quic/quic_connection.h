@@ -32,7 +32,7 @@
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_packet_generator.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_received_entropy_manager.h"
+#include "net/quic/quic_received_packet_manager.h"
 #include "net/quic/quic_sent_entropy_manager.h"
 #include "net/quic/quic_stats.h"
 
@@ -329,9 +329,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   const QuicClock* clock() const { return clock_; }
   QuicRandom* random_generator() const { return random_generator_; }
 
-  // Updates the internal state concerning which packets have been acked.
-  void RecordPacketReceived(const QuicPacketHeader& header);
-
   // Called by a RetransmissionAlarm when the timer goes off.  If the peer
   // appears to be sending truncated acks, this returns false to indicate
   // failure, otherwise it calls MaybeRetransmitPacket and returns true.
@@ -412,12 +409,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   const QuicDecrypter* alternative_decrypter() const;
 
  protected:
-  // Deletes all missing packets before least unacked. The connection won't
-  // process any packets with sequence number before |least_unacked| that it
-  // received after this call. Returns true if there were missing packets before
-  // |least_unacked| unacked, false otherwise.
-  bool DontWaitForPacketsBefore(QuicPacketSequenceNumber least_unacked);
-
   // Send a packet to the peer using encryption |level|. If |sequence_number|
   // is present in the |retransmission_map_|, then contents of this packet will
   // be retransmitted with a new sequence number if it's not acked by the peer.
@@ -569,15 +560,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   void HandleAckForSentFecPackets(const QuicAckFrame& incoming_ack,
                                   SequenceNumberSet* acked_packets);
 
-  // These two are called by OnAckFrame.
-  //
-  // Updates internal state based on incoming_ack.received_info
-  void UpdatePacketInformationReceivedByPeer(
-      const QuicAckFrame& incoming_ack);
-  // Updates internal state based on incoming_ack.sent_info
-  void UpdatePacketInformationSentByPeer(const QuicAckFrame& incoming_ack);
-
-  void UpdateOutgoingAck();
+  // Update the |sent_info| for an outgoing ack.
+  void UpdateSentPacketInfo(SentPacketInfo* sent_info);
 
   void MaybeSendAckInResponseToPacket();
 
@@ -606,20 +590,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicPacketHeader last_header_;
   std::vector<QuicStreamFrame> last_stream_frames_;
 
-  QuicAckFrame outgoing_ack_;
   QuicCongestionFeedbackFrame outgoing_congestion_feedback_;
 
   // Track some peer state so we can do less bookkeeping
   // Largest sequence sent by the peer which had an ack frame (latest ack info).
   QuicPacketSequenceNumber largest_seen_packet_with_ack_;
-  // Largest sequence number that the peer has observed. Mostly received,
-  // missing in case of truncated acks.
-  QuicPacketSequenceNumber peer_largest_observed_packet_;
-  // Least sequence number which the peer is still waiting for.
-  QuicPacketSequenceNumber least_packet_awaited_by_peer_;
-  // Least sequence number of the the packet sent by the peer for which it
-  // hasn't received an ack.
-  QuicPacketSequenceNumber peer_least_packet_awaiting_ack_;
 
   // When new packets are created which may be retransmitted, they are added
   // to this map, which contains owning pointers to the contained frames.
@@ -662,7 +637,7 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   FecGroupMap group_map_;
 
-  QuicReceivedEntropyManager received_entropy_manager_;
+  QuicReceivedPacketManager received_packet_manager_;
   QuicSentEntropyManager sent_entropy_manager_;
 
   QuicConnectionVisitorInterface* visitor_;
@@ -681,14 +656,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicConnectionStats stats_;
 
   // The time that we got a packet for this connection.
+  // This is used for timeouts, and does not indicate the packet was processed.
   QuicTime time_of_last_received_packet_;
 
   // The time that we last sent a packet for this connection.
   QuicTime time_of_last_sent_packet_;
-
-  // Member holding the time we received the largest_observed sequence number.
-  // Needed for calculating delta_time_largest_observed.
-  QuicTime time_largest_observed_;
 
   // Congestion manager which controls the rate the connection sends packets
   // as well as collecting and generating congestion feedback.

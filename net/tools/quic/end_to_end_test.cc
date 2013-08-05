@@ -134,6 +134,7 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
   virtual QuicTestClient* CreateQuicClient() {
     QuicTestClient* client = new QuicTestClient(server_address_,
                                                 server_hostname_,
+                                                false,  // not secure
                                                 client_config_,
                                                 version_);
     client->Connect();
@@ -211,10 +212,10 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
   QuicVersion version_;
 };
 
-// Run all end to end tests with QUIC version 6.
+// Run all end to end tests with QUIC version 6 and 7.
 INSTANTIATE_TEST_CASE_P(EndToEndTests,
                         EndToEndTest,
-                        ::testing::Values(QUIC_VERSION_6));
+                        ::testing::Values(QUIC_VERSION_6, QUIC_VERSION_7));
 
 TEST_P(EndToEndTest, SimpleRequestResponse) {
   // TODO(rtenneti): Delete this when NSS is supported.
@@ -335,9 +336,12 @@ TEST_P(EndToEndTest, RequestOverMultiplePackets) {
   // are added.
 
   // TODO(rch) handle this better when we have different encryption options.
-  size_t stream_data = 3;
-  size_t stream_payload_size = QuicFramer::GetMinStreamFrameSize() +
-      stream_data;
+  const size_t kStreamDataLength = 3;
+  const QuicStreamId kStreamId = 1u;
+  const QuicStreamOffset kStreamOffset = 0u;
+  size_t stream_payload_size =
+      QuicFramer::GetMinStreamFrameSize(
+          GetParam(), kStreamId, kStreamOffset, true) + kStreamDataLength;
   size_t min_payload_size =
       std::max(kCongestionFeedbackFrameSize, stream_payload_size);
   size_t ciphertext_size = NullEncrypter().GetCiphertextSize(min_payload_size);
@@ -367,9 +371,12 @@ TEST_P(EndToEndTest, MultipleFramesRandomOrder) {
   // are added.
 
   // TODO(rch) handle this better when we have different encryption options.
-  size_t stream_data = 3;
-  size_t stream_payload_size = QuicFramer::GetMinStreamFrameSize() +
-      stream_data;
+  const size_t kStreamDataLength = 3;
+  const QuicStreamId kStreamId = 1u;
+  const QuicStreamOffset kStreamOffset = 0u;
+  size_t stream_payload_size =
+      QuicFramer::GetMinStreamFrameSize(
+          GetParam(), kStreamId, kStreamOffset, true) + kStreamDataLength;
   size_t min_payload_size =
       std::max(kCongestionFeedbackFrameSize, stream_payload_size);
   size_t ciphertext_size = NullEncrypter().GetCiphertextSize(min_payload_size);

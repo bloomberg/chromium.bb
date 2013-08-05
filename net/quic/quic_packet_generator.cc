@@ -89,7 +89,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     DCHECK(data.empty() || packet_creator_->BytesFree() == 0u);
 
     // TODO(ianswett): Restore packet reordering.
-    if (should_flush_ || !packet_creator_->HasRoomForStreamFrame()) {
+    if (should_flush_ || !packet_creator_->HasRoomForStreamFrame(id, offset)) {
       SerializeAndSendPacket();
     }
 

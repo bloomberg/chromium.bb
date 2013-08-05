@@ -12,9 +12,12 @@
 using base::StringPiece;
 using base::hash_map;
 using base::hash_set;
+using std::make_pair;
 using std::vector;
 
 namespace net {
+
+const size_t kMaxPrematurelyClosedStreamsTracked = 20;
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
 
@@ -104,9 +107,21 @@ bool QuicSession::OnPacket(const IPEndPoint& self_address,
                << header.public_header.guid;
     return false;
   }
+
   for (size_t i = 0; i < frames.size(); ++i) {
     // TODO(rch) deal with the error case of stream id 0
-    if (IsClosedStream(frames[i].stream_id)) continue;
+    if (IsClosedStream(frames[i].stream_id)) {
+      // If we get additional frames for a stream where we didn't process
+      // headers, it's highly likely our compression context will end up
+      // permanently out of sync with the peer's, so we give up and close the
+      // connection.
+      if (ContainsKey(prematurely_closed_streams_, frames[i].stream_id)) {
+        connection()->SendConnectionClose(
+            QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
+        return false;
+      }
+      continue;
+    }
 
     ReliableQuicStream* stream = GetStream(frames[i].stream_id);
     if (stream == NULL) return false;
@@ -218,6 +233,13 @@ void QuicSession::CloseStream(QuicStreamId stream_id) {
     return;
   }
   ReliableQuicStream* stream = it->second;
+  if (!stream->headers_decompressed()) {
+    if (prematurely_closed_streams_.size() ==
+        kMaxPrematurelyClosedStreamsTracked) {
+      prematurely_closed_streams_.erase(prematurely_closed_streams_.begin());
+    }
+    prematurely_closed_streams_.insert(make_pair(stream->id(), true));
+  }
   closed_streams_.push_back(it->second);
   stream_map_.erase(it);
   stream->OnClose();

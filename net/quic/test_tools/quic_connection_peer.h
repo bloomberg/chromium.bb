@@ -36,7 +36,7 @@ class QuicConnectionPeer {
   static void SetSendAlgorithm(QuicConnection* connection,
                                SendAlgorithmInterface* send_algorithm);
 
-  static QuicAckFrame* GetOutgoingAck(QuicConnection* connection);
+  static QuicAckFrame* CreateAckFrame(QuicConnection* connection);
 
   static QuicConnectionVisitorInterface* GetVisitor(
       QuicConnection* connection);

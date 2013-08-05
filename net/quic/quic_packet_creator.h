@@ -71,12 +71,13 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   // The overhead the framing will add for a packet with one frame.
   static size_t StreamFramePacketOverhead(
+      QuicVersion version,
       QuicGuidLength guid_length,
       bool include_version,
       QuicSequenceNumberLength sequence_number_length,
       InFecGroup is_in_fec_group);
 
-  bool HasRoomForStreamFrame() const;
+  bool HasRoomForStreamFrame(QuicStreamId id, QuicStreamOffset offset) const;
 
   // Converts a raw payload to a frame which fits into the currently open
   // packet if there is one.  Returns the number of bytes consumed from data.

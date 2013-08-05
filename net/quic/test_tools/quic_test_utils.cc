@@ -372,7 +372,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   QuicFrame frame(&stream_frame);
   QuicFrames frames;
   frames.push_back(frame);
-  return quic_framer.ConstructFrameDataPacket(header, frames).packet;
+  return quic_framer.BuildUnsizedDataPacket(header, frames).packet;
 }
 
 QuicPacket* ConstructHandshakePacket(QuicGuid guid, QuicTag tag) {
@@ -381,13 +381,15 @@ QuicPacket* ConstructHandshakePacket(QuicGuid guid, QuicTag tag) {
   return ConstructPacketFromHandshakeMessage(guid, message, false);
 }
 
-size_t GetPacketLengthForOneStream(
-    bool include_version, InFecGroup is_in_fec_group, size_t* payload_length) {
+size_t GetPacketLengthForOneStream(QuicVersion version,
+                                   bool include_version,
+                                   InFecGroup is_in_fec_group,
+                                   size_t* payload_length) {
   *payload_length = 1;
   const size_t stream_length =
       NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          PACKET_8BYTE_GUID, include_version,
+          version, PACKET_8BYTE_GUID, include_version,
           PACKET_6BYTE_SEQUENCE_NUMBER, is_in_fec_group);
   const size_t ack_length = NullEncrypter().GetCiphertextSize(
       QuicFramer::GetMinAckFrameSize()) +
@@ -399,8 +401,14 @@ size_t GetPacketLengthForOneStream(
 
   return NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          PACKET_8BYTE_GUID, include_version,
+          version, PACKET_8BYTE_GUID, include_version,
           PACKET_6BYTE_SEQUENCE_NUMBER, is_in_fec_group);
+}
+
+size_t GetMinStreamFrameSize(QuicVersion version) {
+  return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize +
+      (version == QUIC_VERSION_6 ?
+          (kQuicStreamFinSize + kQuicStreamPayloadLengthSize) : 0);
 }
 
 QuicPacketEntropyHash TestEntropyCalculator::EntropyHash(

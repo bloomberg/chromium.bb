@@ -77,7 +77,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
     frames.push_back(QuicFrame(&ack));
     frames.push_back(QuicFrame(&feedback));
     scoped_ptr<QuicPacket> packet(
-        framer.ConstructFrameDataPacket(header, frames).packet);
+        framer.BuildUnsizedDataPacket(header, frames).packet);
     return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
         ENCRYPTION_NONE, header.packet_sequence_number, *packet));
   }
@@ -110,7 +110,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
     QuicFrames frames;
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(
-        framer.ConstructFrameDataPacket(header, frames).packet);
+        framer.BuildUnsizedDataPacket(header, frames).packet);
     return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
         ENCRYPTION_NONE, header.packet_sequence_number, *packet));
   }

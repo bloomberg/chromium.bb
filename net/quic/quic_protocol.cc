@@ -127,8 +127,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
   switch (version) {
     case QUIC_VERSION_6:
       return MakeQuicTag('Q', '0', '0', '6');
-    // case QUIC_VERSION_7
-      // return MakeQuicTag('Q', '0', '0', '7');
+    case QUIC_VERSION_7:
+      return MakeQuicTag('Q', '0', '0', '7');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -139,12 +139,12 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
 
 QuicVersion QuicTagToQuicVersion(const QuicTag version_tag) {
   const QuicTag quic_tag_v6 = MakeQuicTag('Q', '0', '0', '6');
-  // const QuicTag quic_tag_v7 = MakeQuicTag('Q', '0', '0', '7');
+  const QuicTag quic_tag_v7 = MakeQuicTag('Q', '0', '0', '7');
 
   if (version_tag == quic_tag_v6) {
     return QUIC_VERSION_6;
-  // } else if (version_tag == quic_tag_v7) {
-    // return QUIC_VERSION_7;
+  } else if (version_tag == quic_tag_v7) {
+    return QUIC_VERSION_7;
   } else {
     // Reading from the client so this should not be considered an ERROR.
     DLOG(INFO) << "Unsupported QuicTag version: "
@@ -159,8 +159,8 @@ string QuicVersionToString(const QuicVersion version) {
   switch (version) {
     case QUIC_VERSION_6:
       return "QUIC_VERSION_6";
-    // case QUIC_VERSION_7:
-      // return "QUIC_VERSION_7";
+    case QUIC_VERSION_7:
+      return "QUIC_VERSION_7";
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }

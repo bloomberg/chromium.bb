@@ -155,8 +155,8 @@ bool QuicClient::StartConnect() {
       server_hostname_,
       config_,
       new QuicConnection(guid, server_address_,
-                         new QuicEpollConnectionHelper(fd_, &epoll_server_),
-                         false, version_),
+                         CreateQuicConnectionHelper(), false,
+                         version_),
       &crypto_config_));
   return session_->CryptoConnect();
 }
@@ -243,6 +243,10 @@ QuicPacketCreator::Options* QuicClient::options() {
 bool QuicClient::connected() const {
   return session_.get() && session_->connection() &&
       session_->connection()->connected();
+}
+
+QuicEpollConnectionHelper* QuicClient::CreateQuicConnectionHelper() {
+  return new QuicEpollConnectionHelper(fd_, &epoll_server_);
 }
 
 bool QuicClient::ReadAndProcessPacket() {

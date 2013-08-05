@@ -218,7 +218,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   packet.rejected_sequence_number = 19191;
   packet.nonce_proof = 132232;
   scoped_ptr<QuicEncryptedPacket> encrypted(
-      QuicFramer::ConstructPublicResetPacket(packet));
+      QuicFramer::BuildPublicResetPacket(packet));
   EXPECT_CALL(*session1_, ConnectionClose(QUIC_PUBLIC_RESET, true)).Times(1)
       .WillOnce(WithoutArgs(Invoke(
           reinterpret_cast<MockServerConnection*>(session1_->connection()),

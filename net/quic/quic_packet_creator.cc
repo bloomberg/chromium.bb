@@ -77,12 +77,15 @@ void QuicPacketCreator::StopSendingVersion() {
   }
 }
 
-bool QuicPacketCreator::HasRoomForStreamFrame() const {
-  return BytesFree() > QuicFramer::GetMinStreamFrameSize();
+bool QuicPacketCreator::HasRoomForStreamFrame(QuicStreamId id,
+                                              QuicStreamOffset offset) const {
+  return BytesFree() >
+      QuicFramer::GetMinStreamFrameSize(framer_->version(), id, offset, true);
 }
 
 // static
 size_t QuicPacketCreator::StreamFramePacketOverhead(
+    QuicVersion version,
     QuicGuidLength guid_length,
     bool include_version,
     QuicSequenceNumberLength sequence_number_length,
@@ -90,7 +93,7 @@ size_t QuicPacketCreator::StreamFramePacketOverhead(
   return GetPacketHeaderSize(guid_length, include_version,
                              sequence_number_length, is_in_fec_group) +
       // Assumes this is a stream with a single lone packet.
-      QuicFramer::GetMinStreamFrameSize(1, 0, true);
+      QuicFramer::GetMinStreamFrameSize(version, 1u, 0u, true);
 }
 
 size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
@@ -100,17 +103,17 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                             QuicFrame* frame) {
   DCHECK_GT(options_.max_packet_length,
             StreamFramePacketOverhead(
-                PACKET_8BYTE_GUID, kIncludeVersion,
+                framer_->version(), PACKET_8BYTE_GUID, kIncludeVersion,
                 PACKET_6BYTE_SEQUENCE_NUMBER, IN_FEC_GROUP));
-  DCHECK(HasRoomForStreamFrame());
+  DCHECK(HasRoomForStreamFrame(id, offset));
 
   const size_t free_bytes = BytesFree();
   size_t bytes_consumed = 0;
 
   if (data.size() != 0) {
     size_t min_last_stream_frame_size =
-        QuicFramer::GetMinStreamFrameSize(id, offset, true);
-    // Comparing against the last stream frame size including the length
+        QuicFramer::GetMinStreamFrameSize(framer_->version(), id, offset, true);
+    // Comparing against the last stream frame size including the frame length
     // guarantees that all the bytes will fit.  Otherwise there is a
     // discontinuity where the packet goes one byte over due to the length data.
     if (data.size() + min_last_stream_frame_size + kQuicStreamPayloadLengthSize
@@ -119,6 +122,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
       bytes_consumed =
           min<size_t>(free_bytes - min_last_stream_frame_size, data.size());
     } else {
+      DCHECK_LT(data.size(), BytesFree());
       bytes_consumed = data.size();
     }
 
@@ -171,7 +175,7 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   QuicPacketHeader header;
   FillPacketHeader(fec_group_number_, false, false, &header);
 
-  SerializedPacket serialized = framer_->ConstructFrameDataPacket(
+  SerializedPacket serialized = framer_->BuildDataPacket(
       header, queued_frames_, packet_size_);
   queued_frames_.clear();
   packet_size_ = GetPacketHeaderSize(options_.send_guid_length,
@@ -192,7 +196,7 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   QuicFecData fec_data;
   fec_data.fec_group = fec_group_->min_protected_packet();
   fec_data.redundancy = fec_group_->payload_parity();
-  SerializedPacket serialized = framer_->ConstructFecPacket(header, fec_data);
+  SerializedPacket serialized = framer_->BuildFecPacket(header, fec_data);
   fec_group_.reset(NULL);
   fec_group_number_ = 0;
   // Reset packet_size_, since the next packet may not have an FEC group.
@@ -221,7 +225,7 @@ QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
   header.version_flag = true;
   header.versions = supported_versions;
   QuicEncryptedPacket* encrypted =
-      framer_->ConstructVersionNegotiationPacket(header, supported_versions);
+      framer_->BuildVersionNegotiationPacket(header, supported_versions);
   DCHECK(encrypted);
   DCHECK_GE(options_.max_packet_length, encrypted->length());
   return encrypted;

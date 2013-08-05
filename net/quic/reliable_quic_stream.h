@@ -116,6 +116,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // Gets the SSL connection information.
   bool GetSSLInfo(SSLInfo* ssl_info);
 
+  bool headers_decompressed() const { return headers_decompressed_; }
+
  protected:
   // Returns a pair with the number of bytes consumed from data, and a boolean
   // indicating if the fin bit was consumed.  This does not indicate the data

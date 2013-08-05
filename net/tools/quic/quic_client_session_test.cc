@@ -33,7 +33,6 @@ class ToolsQuicClientSessionTest : public ::testing::Test {
     session_.reset(new QuicClientSession(kServerHostname, QuicConfig(),
                                          connection_, &crypto_config_));
     session_->config()->SetDefaults();
-    session_->config()->set_max_streams_per_connection(1, 1);
   }
 
   void CompleteCryptoHandshake() {
@@ -56,7 +55,8 @@ TEST_F(ToolsQuicClientSessionTest, CryptoConnect) {
   CompleteCryptoHandshake();
 }
 
-TEST_F(ToolsQuicClientSessionTest, DISABLED_MaxNumConnections) {
+TEST_F(ToolsQuicClientSessionTest, MaxNumStreams) {
+  session_->config()->set_max_streams_per_connection(1, 1);
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;

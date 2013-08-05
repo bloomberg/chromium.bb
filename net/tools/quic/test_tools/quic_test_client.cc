@@ -10,6 +10,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
 #include "url/gurl.h"
 
@@ -88,43 +89,81 @@ BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers,
   return headers;
 }
 
+// A quic client which allows mocking out writes.
+class QuicEpollClient : public QuicClient {
+ public:
+  typedef QuicClient Super;
+
+  QuicEpollClient(IPEndPoint server_address,
+             const string& server_hostname,
+             const QuicVersion version)
+      : Super(server_address, server_hostname, version) {
+  }
+
+  QuicEpollClient(IPEndPoint server_address,
+             const string& server_hostname,
+             const QuicConfig& config,
+             const QuicVersion version)
+      : Super(server_address, server_hostname, config, version) {
+  }
+
+  virtual ~QuicEpollClient() {
+    if (connected()) {
+      Disconnect();
+    }
+  }
+
+  virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper() OVERRIDE {
+    if (writer_.get() != NULL) {
+      writer_->set_fd(fd());
+      return new QuicEpollConnectionHelper(writer_.get(), epoll_server());
+    } else {
+      return Super::CreateQuicConnectionHelper();
+    }
+  }
+
+  void UseWriter(QuicTestWriter* writer) { writer_.reset(writer); }
+
+ private:
+  scoped_ptr<QuicTestWriter> writer_;
+};
+
 QuicTestClient::QuicTestClient(IPEndPoint address, const string& hostname,
                                const QuicVersion version)
-    : client_(address, hostname, version) {
-  Initialize(address, hostname);
+    : client_(new QuicEpollClient(address, hostname, version)) {
+  Initialize(address, hostname, true);
 }
 
 QuicTestClient::QuicTestClient(IPEndPoint address,
                                const string& hostname,
                                bool secure,
                                const QuicVersion version)
-    : client_(address, hostname, version) {
-  Initialize(address, hostname);
-  secure_ = secure;
-  // TODO(alyssar, agl) uncomment here and below when default certs are allowed.
-  // ExpectCertificates(secure_);
+    : client_(new QuicEpollClient(address, hostname, version)) {
+  Initialize(address, hostname, secure);
 }
 
 QuicTestClient::QuicTestClient(IPEndPoint address,
                                const string& hostname,
+                               bool secure,
                                const QuicConfig& config,
                                const QuicVersion version)
-    : client_(address, hostname, config, version) {
-  Initialize(address, hostname);
+    : client_(new QuicEpollClient(address, hostname, config, version)) {
+  Initialize(address, hostname, secure);
 }
 
-void QuicTestClient::Initialize(IPEndPoint address, const string& hostname) {
+void QuicTestClient::Initialize(IPEndPoint address,
+                                const string& hostname,
+                                bool secure) {
   server_address_ = address;
   stream_ = NULL;
   stream_error_ = QUIC_STREAM_NO_ERROR;
-  connection_error_ = QUIC_NO_ERROR;
   bytes_read_ = 0;
   bytes_written_= 0;
   never_connected_ = true;
-  secure_ = true;
+  secure_ = secure;
   auto_reconnect_ = false;
   proof_verifier_ = NULL;
-  // ExpectCertificates(secure_);
+  ExpectCertificates(secure_);
 }
 
 QuicTestClient::~QuicTestClient() {
@@ -136,10 +175,10 @@ QuicTestClient::~QuicTestClient() {
 void QuicTestClient::ExpectCertificates(bool on) {
   if (on) {
     proof_verifier_ = new RecordingProofVerifier;
-    client_.SetProofVerifier(proof_verifier_);
+    client_->SetProofVerifier(proof_verifier_);
   } else {
     proof_verifier_ = NULL;
-    client_.SetProofVerifier(NULL);
+    client_->SetProofVerifier(NULL);
   }
 }
 
@@ -155,7 +194,7 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   if (!connected()) {
     GURL url(message.headers()->request_uri().as_string());
     if (!url.host().empty()) {
-      client_.set_server_hostname(url.host());
+      client_->set_server_hostname(url.host());
     }
   }
 
@@ -203,7 +242,7 @@ QuicReliableClientStream* QuicTestClient::GetOrCreateStream() {
     }
   }
   if (!stream_) {
-    stream_ = client_.CreateReliableClientStream();
+    stream_ = client_->CreateReliableClientStream();
     if (stream_ != NULL) {
       stream_->set_visitor(this);
     }
@@ -217,7 +256,7 @@ const string& QuicTestClient::cert_common_name() const {
 }
 
 bool QuicTestClient::connected() const {
-  return client_.connected();
+  return client_->connected();
 }
 
 void QuicTestClient::WaitForResponse() {
@@ -225,13 +264,13 @@ void QuicTestClient::WaitForResponse() {
     // The client has likely disconnected.
     return;
   }
-  client_.WaitForStreamToClose(stream_->id());
+  client_->WaitForStreamToClose(stream_->id());
 }
 
 void QuicTestClient::Connect() {
   DCHECK(!connected());
-  client_.Initialize();
-  client_.Connect();
+  client_->Initialize();
+  client_->Connect();
   never_connected_ = false;
 }
 
@@ -241,16 +280,15 @@ void QuicTestClient::ResetConnection() {
 }
 
 void QuicTestClient::Disconnect() {
-  client_.Disconnect();
+  client_->Disconnect();
 }
 
 IPEndPoint QuicTestClient::LocalSocketAddress() const {
-  return client_.client_address();
+  return client_->client_address();
 }
 
 void QuicTestClient::ClearPerRequestState() {
   stream_error_ = QUIC_STREAM_NO_ERROR;
-  connection_error_ = QUIC_NO_ERROR;
   stream_ = NULL;
   response_ = "";
   headers_.Clear();
@@ -261,7 +299,7 @@ void QuicTestClient::ClearPerRequestState() {
 void QuicTestClient::WaitForInitialResponse() {
   DCHECK(stream_ != NULL);
   while (stream_ && stream_->stream_bytes_read() == 0) {
-    client_.WaitForEvents();
+    client_->WaitForEvents();
   }
 }
 
@@ -288,10 +326,14 @@ void QuicTestClient::OnClose(ReliableQuicStream* stream) {
   response_ = stream_->data();
   headers_.CopyFrom(stream_->headers());
   stream_error_ = stream_->stream_error();
-  connection_error_ = stream_->connection_error();
   bytes_read_ = stream_->stream_bytes_read();
   bytes_written_ = stream_->stream_bytes_written();
   stream_ = NULL;
+}
+
+void QuicTestClient::UseWriter(QuicTestWriter* writer) {
+  DCHECK(!connected());
+  reinterpret_cast<QuicEpollClient*>(client_.get())->UseWriter(writer);
 }
 
 }  // namespace test

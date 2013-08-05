@@ -33,6 +33,32 @@ const QuicPacketSequenceNumber k1ByteSequenceNumberMask =
 const QuicGuid k1ByteGuidMask = GG_UINT64_C(0x00000000000000FF);
 const QuicGuid k4ByteGuidMask = GG_UINT64_C(0x00000000FFFFFFFF);
 
+// Mask to determine if it's a special frame type(Stream, Ack, or
+// Congestion Control) by checking if the first bit is 0, then shifting right.
+const uint8 kQuicFrameType0BitMask = 0x01;
+
+// Default frame type shift and mask.
+const uint8 kQuicDefaultFrameTypeShift = 3;
+const uint8 kQuicDefaultFrameTypeMask = 0x07;
+
+// Stream frame relative shifts and masks for interpreting the stream flags.
+// StreamID may be 1, 2, 3, or 4 bytes.
+const uint8 kQuicStreamIdShift = 2;
+const uint8 kQuicStreamIDLengthMask = 0x03;
+
+// Offset may be 0, 2, 3, 4, 5, 6, 7, 8 bytes.
+const uint8 kQuicStreamOffsetShift = 3;
+const uint8 kQuicStreamOffsetMask = 0x07;
+
+// Data length may be 0 or 2 bytes.
+const uint8 kQuicStreamDataLengthShift = 1;
+const uint8 kQuicStreamDataLengthMask = 0x01;
+
+// Fin bit may be set or not.
+const uint8 kQuicStreamFinShift = 1;
+const uint8 kQuicStreamFinMask = 0x01;
+
+
 const uint32 kInvalidDeltaTime = 0xffffffff;
 
 // Returns the absolute value of the difference between |a| and |b|.
@@ -72,28 +98,19 @@ QuicFramer::QuicFramer(QuicVersion version,
 
 QuicFramer::~QuicFramer() {}
 
-bool CanTruncate(const QuicFrame& frame) {
-  if (frame.type == ACK_FRAME ||
-      frame.type == CONNECTION_CLOSE_FRAME) {
-    return true;
-  }
-  return false;
-}
-
 // static
-size_t QuicFramer::GetMinStreamFrameSize() {
-  return kQuicFrameTypeSize + kQuicStreamIdSize +
-      kQuicStreamFinSize + kQuicStreamOffsetSize + kQuicStreamPayloadLengthSize;
-}
-
-// static
-size_t QuicFramer::GetMinStreamFrameSize(QuicStreamId stream_id,
+size_t QuicFramer::GetMinStreamFrameSize(QuicVersion version,
+                                         QuicStreamId stream_id,
                                          QuicStreamOffset offset,
-                                         bool last_frame) {
-  // TODO(ianswett): Remove kQuicStreamFinSize for the next STREAM framing.
+                                         bool last_frame_in_packet) {
+  if (version == QUIC_VERSION_6) {
+    return kQuicFrameTypeSize + kQuicMaxStreamIdSize +
+        kQuicStreamFinSize + kQuicMaxStreamOffsetSize +
+        kQuicStreamPayloadLengthSize;
+  }
   return kQuicFrameTypeSize + GetStreamIdSize(stream_id) +
-      GetStreamOffsetSize(offset) + kQuicStreamFinSize +
-      kQuicStreamPayloadLengthSize;
+      GetStreamOffsetSize(offset) +
+      (last_frame_in_packet ? 0 : kQuicStreamPayloadLengthSize);
 }
 
 // static
@@ -106,7 +123,7 @@ size_t QuicFramer::GetMinAckFrameSize() {
 
 // static
 size_t QuicFramer::GetMinRstStreamFrameSize() {
-  return kQuicFrameTypeSize + kQuicStreamIdSize + kQuicErrorCodeSize +
+  return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicErrorCodeSize +
       kQuicErrorDetailsLengthSize;
 }
 
@@ -119,7 +136,7 @@ size_t QuicFramer::GetMinConnectionCloseFrameSize() {
 // static
 size_t QuicFramer::GetMinGoAwayFrameSize() {
   return kQuicFrameTypeSize + kQuicErrorCodeSize + kQuicErrorDetailsLengthSize +
-      kQuicStreamIdSize;
+      kQuicMaxStreamIdSize;
 }
 
 // static
@@ -134,12 +151,51 @@ size_t QuicFramer::GetMaxUnackedPackets(QuicPacketHeader header) {
 
 // static
 size_t QuicFramer::GetStreamIdSize(QuicStreamId stream_id) {
+  // Sizes are 1 through 4 bytes.
+  for (int i = 1; i <= 4; ++i) {
+    stream_id >>= 8;
+    if (stream_id == 0) {
+      return i;
+    }
+  }
+  LOG(DFATAL) << "Failed to determine StreamIDSize.";
   return 4;
 }
 
 // static
 size_t QuicFramer::GetStreamOffsetSize(QuicStreamOffset offset) {
+  // 0 is a special case.
+  if (offset == 0) {
+    return 0;
+  }
+  // 2 through 8 are the remaining sizes.
+  offset >>= 8;
+  for (int i = 2; i <= 8; ++i) {
+    offset >>= 8;
+    if (offset == 0) {
+      return i;
+    }
+  }
+  LOG(DFATAL) << "Failed to determine StreamOffsetSize.";
   return 8;
+}
+
+// static
+size_t QuicFramer::GetVersionNegotiationPacketSize(size_t number_versions) {
+  return kPublicFlagsSize + PACKET_8BYTE_GUID +
+      number_versions * kQuicVersionSize;
+}
+
+// static
+bool QuicFramer::CanTruncate(const QuicFrame& frame, size_t free_bytes) {
+  // TODO(ianswett): GetMinConnectionCloseFrameSize may be incorrect, because
+  // checking for it here results in frames not being added, but the resulting
+  // frames do actually fit.
+  if ((frame.type == ACK_FRAME || frame.type == CONNECTION_CLOSE_FRAME) &&
+          free_bytes >= GetMinAckFrameSize()) {
+    return true;
+  }
+  return false;
 }
 
 bool QuicFramer::IsSupportedVersion(const QuicVersion version) const {
@@ -151,11 +207,6 @@ bool QuicFramer::IsSupportedVersion(const QuicVersion version) const {
   return false;
 }
 
-size_t QuicFramer::GetVersionNegotiationPacketSize(size_t number_versions) {
-  return kPublicFlagsSize + PACKET_8BYTE_GUID +
-      number_versions * kQuicVersionSize;
-}
-
 size_t QuicFramer::GetSerializedFrameLength(
     const QuicFrame& frame, size_t free_bytes, bool first_frame) {
   if (frame.type == PADDING_FRAME) {
@@ -164,20 +215,21 @@ size_t QuicFramer::GetSerializedFrameLength(
   }
   // See if it fits as the non-last frame.
   size_t frame_len = ComputeFrameLength(frame, false);
+  // STREAM frames save two bytes when they're the last frame in the packet.
+  if (frame_len > free_bytes && frame.type == STREAM_FRAME) {
+    frame_len = ComputeFrameLength(frame, true);
+  }
   if (frame_len > free_bytes) {
     // Only truncate the first frame in a packet, so if subsequent ones go
     // over, stop including more frames.
     if (!first_frame) {
       return 0;
     }
-    if (CanTruncate(frame)) {
+    if (CanTruncate(frame, free_bytes)) {
       // Truncate the frame so the packet will not exceed kMaxPacketSize.
       // Note that we may not use every byte of the writer in this case.
-      if (free_bytes >= GetMinAckFrameSize()) {
-        DLOG(INFO) << "Truncating large frame";
-        return free_bytes;
-      }
-      return 0;
+      DLOG(INFO) << "Truncating large frame";
+      return free_bytes;
     }
   }
   return frame_len;
@@ -193,7 +245,7 @@ QuicPacketEntropyHash QuicFramer::GetPacketEntropyHash(
   return 1 << (header.packet_sequence_number % 8);
 }
 
-SerializedPacket QuicFramer::ConstructFrameDataPacket(
+SerializedPacket QuicFramer::BuildUnsizedDataPacket(
     const QuicPacketHeader& header,
     const QuicFrames& frames) {
   const size_t max_plaintext_size = GetMaxPlaintextSize(kMaxPacketSize);
@@ -205,15 +257,15 @@ SerializedPacket QuicFramer::ConstructFrameDataPacket(
     DCHECK(frame_size);
     packet_size += frame_size;
   }
-  return ConstructFrameDataPacket(header, frames, packet_size);
+  return BuildDataPacket(header, frames, packet_size);
 }
 
-SerializedPacket QuicFramer::ConstructFrameDataPacket(
+SerializedPacket QuicFramer::BuildDataPacket(
     const QuicPacketHeader& header,
     const QuicFrames& frames,
     size_t packet_size) {
   QuicDataWriter writer(packet_size);
-  SerializedPacket kNoPacket = SerializedPacket(0, NULL, 0, NULL);
+  const SerializedPacket kNoPacket(0, NULL, 0, NULL);
   if (!WritePacketHeader(header, &writer)) {
     return kNoPacket;
   }
@@ -221,7 +273,8 @@ SerializedPacket QuicFramer::ConstructFrameDataPacket(
   for (size_t i = 0; i < frames.size(); ++i) {
     const QuicFrame& frame = frames[i];
 
-    if (!writer.WriteUInt8(frame.type)) {
+    const bool last_frame_in_packet = i == (frames.size() - 1);
+    if (!AppendTypeByte(frame, last_frame_in_packet, &writer)) {
       return kNoPacket;
     }
 
@@ -230,9 +283,15 @@ SerializedPacket QuicFramer::ConstructFrameDataPacket(
         writer.WritePadding();
         break;
       case STREAM_FRAME:
-        if (!AppendStreamFramePayload(
-                *frame.stream_frame, &writer)) {
-          return kNoPacket;
+        if (quic_version_ == QUIC_VERSION_6) {
+          if (!AppendV6StreamFramePayload(*frame.stream_frame, &writer)) {
+            return kNoPacket;
+          }
+        } else {
+          if (!AppendStreamFramePayload(
+              *frame.stream_frame, last_frame_in_packet, &writer)) {
+            return kNoPacket;
+          }
         }
         break;
       case ACK_FRAME:
@@ -287,9 +346,8 @@ SerializedPacket QuicFramer::ConstructFrameDataPacket(
                           GetPacketEntropyHash(header), NULL);
 }
 
-SerializedPacket QuicFramer::ConstructFecPacket(
-    const QuicPacketHeader& header,
-    const QuicFecData& fec) {
+SerializedPacket QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
+                                            const QuicFecData& fec) {
   DCHECK_EQ(IN_FEC_GROUP, header.is_in_fec_group);
   DCHECK_NE(0u, header.fec_group);
   size_t len = GetPacketHeaderSize(header);
@@ -315,7 +373,7 @@ SerializedPacket QuicFramer::ConstructFecPacket(
 }
 
 // static
-QuicEncryptedPacket* QuicFramer::ConstructPublicResetPacket(
+QuicEncryptedPacket* QuicFramer::BuildPublicResetPacket(
     const QuicPublicResetPacket& packet) {
   DCHECK(packet.public_header.reset_flag);
   size_t len = GetPublicResetPacketSize();
@@ -345,7 +403,7 @@ QuicEncryptedPacket* QuicFramer::ConstructPublicResetPacket(
   return new QuicEncryptedPacket(writer.take(), len, true);
 }
 
-QuicEncryptedPacket* QuicFramer::ConstructVersionNegotiationPacket(
+QuicEncryptedPacket* QuicFramer::BuildVersionNegotiationPacket(
     const QuicPacketPublicHeader& header,
     const QuicVersionVector& supported_versions) {
   DCHECK(header.version_flag);
@@ -796,6 +854,11 @@ bool QuicFramer::ProcessPacketHeader(
       set_detailed_error("Unable to read first fec protected packet offset.");
       return RaiseError(QUIC_INVALID_PACKET_HEADER);
     }
+    if (first_fec_protected_packet_offset >= header->packet_sequence_number) {
+      set_detailed_error("First fec protected packet offset must be less "
+                         "than the sequence number.");
+      return RaiseError(QUIC_INVALID_PACKET_HEADER);
+    }
     header->fec_group =
         header->packet_sequence_number - first_fec_protected_packet_offset;
   }
@@ -834,58 +897,112 @@ bool QuicFramer::ProcessFrameData() {
       set_detailed_error("Unable to read frame type.");
       return RaiseError(QUIC_INVALID_FRAME_DATA);
     }
+
+    if (quic_version_ >= QUIC_VERSION_7) {
+      if ((frame_type & kQuicFrameType0BitMask) == 0) {
+        QuicStreamFrame frame;
+        if (!ProcessStreamFrame(frame_type, &frame)) {
+          return RaiseError(QUIC_INVALID_FRAME_DATA);
+        }
+        if (!visitor_->OnStreamFrame(frame)) {
+          DLOG(INFO) << "Visitor asked to stop further processing.";
+          // Returning true since there was no parsing error.
+          return true;
+        }
+        continue;
+      }
+
+      frame_type >>= 1;
+      if ((frame_type & kQuicFrameType0BitMask) == 0) {
+        QuicAckFrame frame;
+        if (!ProcessAckFrame(&frame)) {
+          return RaiseError(QUIC_INVALID_FRAME_DATA);
+        }
+        if (!visitor_->OnAckFrame(frame)) {
+          DLOG(INFO) << "Visitor asked to stop further processing.";
+          // Returning true since there was no parsing error.
+          return true;
+        }
+        continue;
+      }
+
+      frame_type >>= 1;
+      if ((frame_type & kQuicFrameType0BitMask) == 0) {
+        QuicCongestionFeedbackFrame frame;
+        if (!ProcessQuicCongestionFeedbackFrame(&frame)) {
+          return RaiseError(QUIC_INVALID_FRAME_DATA);
+        }
+        if (!visitor_->OnCongestionFeedbackFrame(frame)) {
+          DLOG(INFO) << "Visitor asked to stop further processing.";
+          // Returning true since there was no parsing error.
+          return true;
+        }
+        continue;
+      }
+
+      frame_type >>= 1;
+    }
+
     switch (frame_type) {
       case PADDING_FRAME:
         // We're done with the packet
         return true;
+      // STREAM_FRAME, ACK_FRAME, and CONGESTION_FEEDBACK handled above for
+      // QUIC_VERSION_7 and later.
       case STREAM_FRAME: {
         QuicStreamFrame frame;
-        if (!ProcessStreamFrame(&frame)) {
+        if (!ProcessV6StreamFrame(&frame)) {
           return RaiseError(QUIC_INVALID_FRAME_DATA);
         }
         if (!visitor_->OnStreamFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stopped further processing.";
+          DLOG(INFO) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
-        break;
+        continue;
       }
+
       case ACK_FRAME: {
         QuicAckFrame frame;
         if (!ProcessAckFrame(&frame)) {
           return RaiseError(QUIC_INVALID_FRAME_DATA);
         }
         if (!visitor_->OnAckFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stopped further processing.";
+          DLOG(INFO) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
+          // TODO(ianswett): Consider continuing to process frames, since there
+          // was not a parsing error.
           return true;
         }
-        break;
+        continue;
       }
+
       case CONGESTION_FEEDBACK_FRAME: {
         QuicCongestionFeedbackFrame frame;
         if (!ProcessQuicCongestionFeedbackFrame(&frame)) {
           return RaiseError(QUIC_INVALID_FRAME_DATA);
         }
         if (!visitor_->OnCongestionFeedbackFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stopped further processing.";
+          DLOG(INFO) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
-        break;
+        continue;
       }
+
       case RST_STREAM_FRAME: {
         QuicRstStreamFrame frame;
         if (!ProcessRstStreamFrame(&frame)) {
           return RaiseError(QUIC_INVALID_RST_STREAM_DATA);
         }
         if (!visitor_->OnRstStreamFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stopped further processing.";
+          DLOG(INFO) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
-        break;
+        continue;
       }
+
       case CONNECTION_CLOSE_FRAME: {
         QuicConnectionCloseFrame frame;
         if (!ProcessConnectionCloseFrame(&frame)) {
@@ -893,42 +1010,90 @@ bool QuicFramer::ProcessFrameData() {
         }
 
         if (!visitor_->OnAckFrame(frame.ack_frame)) {
-          DLOG(INFO) << "Visitor asked to stopped further processing.";
+          DLOG(INFO) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
 
         if (!visitor_->OnConnectionCloseFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stopped further processing.";
+          DLOG(INFO) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
-        break;
+        continue;
       }
+
       case GOAWAY_FRAME: {
         QuicGoAwayFrame goaway_frame;
         if (!ProcessGoAwayFrame(&goaway_frame)) {
           return RaiseError(QUIC_INVALID_GOAWAY_DATA);
         }
         if (!visitor_->OnGoAwayFrame(goaway_frame)) {
-          DLOG(INFO) << "Visitor asked to stopped further processing.";
+          DLOG(INFO) << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
           return true;
         }
-        break;
+        continue;
       }
-      default:
-        set_detailed_error("Illegal frame type.");
-        DLOG(WARNING) << "Illegal frame type: "
-                      << static_cast<int>(frame_type);
-        return RaiseError(QUIC_INVALID_FRAME_DATA);
+
+      set_detailed_error("Illegal frame type.");
+      DLOG(WARNING) << "Illegal frame type: "
+                    << static_cast<int>(frame_type);
+      return RaiseError(QUIC_INVALID_FRAME_DATA);
     }
   }
 
   return true;
 }
 
-bool QuicFramer::ProcessStreamFrame(QuicStreamFrame* frame) {
+bool QuicFramer::ProcessStreamFrame(uint8 frame_type,
+                                    QuicStreamFrame* frame) {
+  uint8 stream_flags = frame_type >> 1;
+  // Read from right to left: StreamID, Offset, Data Length, Fin.
+  const uint8 stream_id_length = (stream_flags & kQuicStreamIDLengthMask) + 1;
+  stream_flags >>= kQuicStreamIdShift;
+
+  uint8 offset_length = (stream_flags & kQuicStreamOffsetMask);
+  // There is no encoding for 1 byte, only 0 and 2 through 8.
+  if (offset_length > 0) {
+    offset_length += 1;
+  }
+  stream_flags >>= kQuicStreamOffsetShift;
+
+  bool has_data_length =
+      (stream_flags & kQuicStreamDataLengthMask) == kQuicStreamDataLengthMask;
+  stream_flags >>= kQuicStreamDataLengthShift;
+
+  frame->fin = (stream_flags & kQuicStreamFinMask) == kQuicStreamFinShift;
+
+  frame->stream_id = 0;
+  if (!reader_->ReadBytes(&frame->stream_id, stream_id_length)) {
+    set_detailed_error("Unable to read stream_id.");
+    return false;
+  }
+
+  frame->offset = 0;
+  if (!reader_->ReadBytes(&frame->offset, offset_length)) {
+    set_detailed_error("Unable to read offset.");
+    return false;
+  }
+
+  if (has_data_length) {
+    if (!reader_->ReadStringPiece16(&frame->data)) {
+      set_detailed_error("Unable to read frame data.");
+      return false;
+    }
+  } else {
+    if (!reader_->ReadStringPiece(&frame->data, reader_->BytesRemaining())) {
+      set_detailed_error("Unable to read frame data.");
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool QuicFramer::ProcessV6StreamFrame(QuicStreamFrame* frame) {
   if (!reader_->ReadUInt32(&frame->stream_id)) {
     set_detailed_error("Unable to read stream_id.");
     return false;
@@ -1361,12 +1526,14 @@ bool QuicFramer::DecryptPayload(const QuicPacketHeader& header,
   return true;
 }
 
-size_t QuicFramer::ComputeFrameLength(const QuicFrame& frame, bool last_frame) {
+size_t QuicFramer::ComputeFrameLength(const QuicFrame& frame,
+                                      bool last_frame_in_packet) {
   switch (frame.type) {
     case STREAM_FRAME:
-      return GetMinStreamFrameSize(frame.stream_frame->stream_id,
+      return GetMinStreamFrameSize(quic_version_,
+                                   frame.stream_frame->stream_id,
                                    frame.stream_frame->offset,
-                                   last_frame) +
+                                   last_frame_in_packet) +
           frame.stream_frame->data.size();
     case ACK_FRAME: {
       const QuicAckFrame& ack = *frame.ack_frame;
@@ -1432,6 +1599,59 @@ size_t QuicFramer::ComputeFrameLength(const QuicFrame& frame, bool last_frame) {
   return 0;
 }
 
+bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
+                                bool last_frame_in_packet,
+                                QuicDataWriter* writer) {
+  if (quic_version_ == QUIC_VERSION_6) {
+    return writer->WriteUInt8(frame.type);
+  }
+
+  uint8 type_byte = 0;
+  switch (frame.type) {
+    case STREAM_FRAME: {
+      if (frame.stream_frame == NULL) {
+        LOG(DFATAL) << "Failed to append STREAM frame with no stream_frame.";
+      }
+      // Fin bit.
+      type_byte |= frame.stream_frame->fin ? kQuicStreamFinMask : 0;
+
+      // Data Length bit.
+      type_byte <<= kQuicStreamDataLengthShift;
+      type_byte |= last_frame_in_packet ? 0 : kQuicStreamDataLengthMask;
+
+      // Offset 3 bits.
+      type_byte <<= kQuicStreamOffsetShift;
+      const size_t offset_len = GetStreamOffsetSize(frame.stream_frame->offset);
+      if (offset_len > 0) {
+        type_byte |= offset_len - 1;
+      }
+
+      // stream id 2 bits.
+      type_byte <<= kQuicStreamIdShift;
+      type_byte |= GetStreamIdSize(frame.stream_frame->stream_id) - 1;
+
+      type_byte <<= 1;  // Leaves the last bit as a 0.
+      break;
+    }
+    case ACK_FRAME: {
+      // TODO(ianswett): Use extra 5 bits in the ack framing.
+      type_byte = 0x01;
+      break;
+    }
+    case CONGESTION_FEEDBACK_FRAME: {
+      // TODO(ianswett): Use extra 5 bits in the congestion feedback framing.
+      type_byte = 0x03;
+      break;
+    }
+    default:
+      type_byte =
+          frame.type << kQuicDefaultFrameTypeShift | kQuicDefaultFrameTypeMask;
+      break;
+  }
+
+  return writer->WriteUInt8(type_byte);
+}
+
 // static
 bool QuicFramer::AppendPacketSequenceNumber(
     QuicSequenceNumberLength sequence_number_length,
@@ -1466,6 +1686,27 @@ bool QuicFramer::AppendPacketSequenceNumber(
 }
 
 bool QuicFramer::AppendStreamFramePayload(
+    const QuicStreamFrame& frame,
+    bool last_frame_in_packet,
+    QuicDataWriter* writer) {
+  if (!writer->WriteBytes(&frame.stream_id, GetStreamIdSize(frame.stream_id))) {
+    return false;
+  }
+  if (!writer->WriteBytes(&frame.offset, GetStreamOffsetSize(frame.offset))) {
+    return false;
+  }
+  if (!last_frame_in_packet) {
+    if (!writer->WriteUInt16(frame.data.size())) {
+      return false;
+    }
+  }
+  if (!writer->WriteBytes(frame.data.data(), frame.data.size())) {
+    return false;
+  }
+  return true;
+}
+
+bool QuicFramer::AppendV6StreamFramePayload(
     const QuicStreamFrame& frame,
     QuicDataWriter* writer) {
   if (!writer->WriteUInt32(frame.stream_id)) {

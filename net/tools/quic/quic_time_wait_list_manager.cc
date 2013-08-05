@@ -93,7 +93,7 @@ class QuicTimeWaitListManager::QueuedPacket {
 QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicPacketWriter* writer,
     EpollServer* epoll_server)
-    : framer_(QUIC_VERSION_6,
+    : framer_(QuicVersionMax(),
               QuicTime::Zero(),  // unused
               true),
       epoll_server_(epoll_server),
@@ -239,7 +239,7 @@ void QuicTimeWaitListManager::SendPublicReset(
   QueuedPacket* queued_packet = new QueuedPacket(
       server_address,
       client_address,
-      framer_.ConstructPublicResetPacket(packet));
+      framer_.BuildPublicResetPacket(packet));
   // Takes ownership of the packet.
   SendOrQueuePacket(queued_packet);
 }

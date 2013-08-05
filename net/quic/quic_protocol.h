@@ -186,14 +186,16 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_6 = 6,  // Current version.
+  QUIC_VERSION_6 = 6,
+  QUIC_VERSION_7 = 7,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
 // This should be ordered such that the highest supported version is the first
 // element, with subsequent elements in descending order (versions can be
 // skipped as necessary).
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_6};
+static const QuicVersion kSupportedQuicVersions[] =
+    {QUIC_VERSION_7, QUIC_VERSION_6};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 

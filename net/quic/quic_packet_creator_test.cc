@@ -177,6 +177,35 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameFinOnly) {
   delete frame.stream_frame;
 }
 
+TEST_F(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
+  QuicStreamId kStreamId = 1u;
+  QuicStreamOffset kOffset = 1u;
+  for (int i = 0; i < 100; ++i) {
+    creator_.options()->max_packet_length = i;
+    const size_t max_plaintext_size = client_framer_.GetMaxPlaintextSize(i);
+    const bool should_have_room = max_plaintext_size >
+        (QuicFramer::GetMinStreamFrameSize(
+             client_framer_.version(), kStreamId, kOffset, true) +
+         GetPacketHeaderSize(creator_.options()->send_guid_length,
+                             kIncludeVersion,
+                             creator_.options()->send_sequence_number_length,
+                             NOT_IN_FEC_GROUP));
+    ASSERT_EQ(should_have_room,
+              creator_.HasRoomForStreamFrame(kStreamId, kOffset));
+    if (should_have_room) {
+      QuicFrame frame;
+      size_t bytes_consumed = creator_.CreateStreamFrame(
+          kStreamId, "testdata", kOffset, false, &frame);
+      EXPECT_LT(0u, bytes_consumed);
+      ASSERT_TRUE(creator_.AddSavedFrame(frame));
+      SerializedPacket serialized_packet = creator_.SerializePacket();
+      ASSERT_TRUE(serialized_packet.packet);
+      delete serialized_packet.packet;
+      delete serialized_packet.retransmittable_frames;
+    }
+  }
+}
+
 TEST_F(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
   QuicPacketCreatorPeer::SetIsServer(&creator_, true);
   QuicVersionVector versions;
@@ -226,6 +255,7 @@ TEST_P(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
   // A string larger than fits into a frame.
   size_t payload_length;
   creator_.options()->max_packet_length = GetPacketLengthForOneStream(
+      client_framer_.version(),
       QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
       NOT_IN_FEC_GROUP, &payload_length);
   QuicFrame frame;

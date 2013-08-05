@@ -126,7 +126,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
 
     QuicFrames frames;
     frames.push_back(QuicFrame(&frame_));
-    return framer_.ConstructFrameDataPacket(header_, frames).packet;
+    return framer_.BuildUnsizedDataPacket(header_, frames).packet;
   }
 
   // Returns a newly created packet to send ack data.
@@ -147,7 +147,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
     frames.push_back(QuicFrame(&ack));
     frames.push_back(QuicFrame(&feedback));
     scoped_ptr<QuicPacket> packet(
-        framer_.ConstructFrameDataPacket(header_, frames).packet);
+        framer_.BuildUnsizedDataPacket(header_, frames).packet);
     return framer_.EncryptPacket(
         ENCRYPTION_NONE, header_.packet_sequence_number, *packet);
   }
@@ -196,7 +196,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
     QuicFrames frames;
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(
-        framer_.ConstructFrameDataPacket(header_, frames).packet);
+        framer_.BuildUnsizedDataPacket(header_, frames).packet);
     return framer_.EncryptPacket(
         ENCRYPTION_NONE, header_.packet_sequence_number, *packet);
   }

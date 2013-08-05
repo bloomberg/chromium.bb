@@ -33,12 +33,13 @@ const size_t kQuicErrorCodeSize = 4;
 // Number of bytes reserved to denote the length of error details field.
 const size_t kQuicErrorDetailsLengthSize = 2;
 
-// Number of bytes reserved for stream id
-const size_t kQuicStreamIdSize = 4;
+// Maximum number of bytes reserved for stream id.
+const size_t kQuicMaxStreamIdSize = 4;
 // Number of bytes reserved for fin flag in stream frame.
+// TODO(ianswett): Remove once QUIC_VERSION_6 and before are removed.
 const size_t kQuicStreamFinSize = 1;
-// Number of bytes reserved for byte offset in stream frame.
-const size_t kQuicStreamOffsetSize = 8;
+// Maximum number of bytes reserved for byte offset in stream frame.
+const size_t kQuicMaxStreamOffsetSize = 8;
 // Number of bytes reserved to store payload length in stream frame.
 const size_t kQuicStreamPayloadLengthSize = 2;
 
@@ -226,12 +227,11 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool ProcessRevivedPacket(QuicPacketHeader* header,
                             base::StringPiece payload);
 
-  // Size in bytes of all stream frame fields without the payload.
-  static size_t GetMinStreamFrameSize();
-  // Size in bytes of all stream frame fields without the payload.
-  static size_t GetMinStreamFrameSize(QuicStreamId stream_id,
+  // Largest size in bytes of all stream frame fields without the payload.
+  static size_t GetMinStreamFrameSize(QuicVersion version,
+                                      QuicStreamId stream_id,
                                       QuicStreamOffset offset,
-                                      bool last_frame);
+                                      bool last_frame_in_packet);
   // Size in bytes of all ack frame fields without the missing packets.
   static size_t GetMinAckFrameSize();
   // Size in bytes of all reset stream frame without the error details.
@@ -249,7 +249,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Size in bytes required to serialize the stream offset.
   static size_t GetStreamOffsetSize(QuicStreamOffset offset);
   // Size in bytes required for a serialized version negotiation packet
-  size_t GetVersionNegotiationPacketSize(size_t number_versions);
+  static size_t GetVersionNegotiationPacketSize(size_t number_versions);
+
+
+  static bool CanTruncate(const QuicFrame& frame, size_t free_bytes);
 
   // Returns the number of bytes added to the packet for the specified frame,
   // and 0 if the frame doesn't fit.  Includes the header size for the first
@@ -269,27 +272,27 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // and is populated with the fields in |header| and |frames|, or is NULL if
   // the packet could not be created.
   // TODO(ianswett): Used for testing only.
-  SerializedPacket ConstructFrameDataPacket(const QuicPacketHeader& header,
-                                            const QuicFrames& frames);
+  SerializedPacket BuildUnsizedDataPacket(const QuicPacketHeader& header,
+                                          const QuicFrames& frames);
 
   // Returns a SerializedPacket whose |packet| member is owned by the caller,
   // is created from the first |num_frames| frames, or is NULL if the packet
   // could not be created.  The packet must be of size |packet_size|.
-  SerializedPacket ConstructFrameDataPacket(const QuicPacketHeader& header,
-                                            const QuicFrames& frames,
-                                            size_t packet_size);
+  SerializedPacket BuildDataPacket(const QuicPacketHeader& header,
+                                   const QuicFrames& frames,
+                                   size_t packet_size);
 
   // Returns a SerializedPacket whose |packet| member is owned by the caller,
   // and is populated with the fields in |header| and |fec|, or is NULL if the
   // packet could not be created.
-  SerializedPacket ConstructFecPacket(const QuicPacketHeader& header,
-                                      const QuicFecData& fec);
+  SerializedPacket BuildFecPacket(const QuicPacketHeader& header,
+                                  const QuicFecData& fec);
 
   // Returns a new public reset packet, owned by the caller.
-  static QuicEncryptedPacket* ConstructPublicResetPacket(
+  static QuicEncryptedPacket* BuildPublicResetPacket(
       const QuicPublicResetPacket& packet);
 
-  QuicEncryptedPacket* ConstructVersionNegotiationPacket(
+  QuicEncryptedPacket* BuildVersionNegotiationPacket(
       const QuicPacketPublicHeader& header,
       const QuicVersionVector& supported_versions);
 
@@ -361,7 +364,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicSequenceNumberLength sequence_number_length,
       QuicPacketSequenceNumber* sequence_number);
   bool ProcessFrameData();
-  bool ProcessStreamFrame(QuicStreamFrame* frame);
+  bool ProcessStreamFrame(uint8 frame_type, QuicStreamFrame* frame);
+  bool ProcessV6StreamFrame(QuicStreamFrame* frame);
   bool ProcessAckFrame(QuicAckFrame* frame);
   bool ProcessReceivedInfo(ReceivedPacketInfo* received_info);
   bool ProcessSentInfo(SentPacketInfo* sent_info);
@@ -381,15 +385,21 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicPacketSequenceNumber packet_sequence_number) const;
 
   // Computes the wire size in bytes of the payload of |frame|.
-  size_t ComputeFrameLength(const QuicFrame& frame, bool last_frame);
+  size_t ComputeFrameLength(const QuicFrame& frame, bool last_frame_in_packet);
 
   static bool AppendPacketSequenceNumber(
       QuicSequenceNumberLength sequence_number_length,
       QuicPacketSequenceNumber packet_sequence_number,
       QuicDataWriter* writer);
 
+  bool AppendTypeByte(const QuicFrame& frame,
+                      bool last_frame_in_packet,
+                      QuicDataWriter* writer);
   bool AppendStreamFramePayload(const QuicStreamFrame& frame,
+                                bool last_frame_in_packet,
                                 QuicDataWriter* builder);
+  bool AppendV6StreamFramePayload(const QuicStreamFrame& frame,
+                                  QuicDataWriter* builder);
   bool AppendAckFramePayload(const QuicAckFrame& frame,
                              QuicDataWriter* builder);
   bool AppendQuicCongestionFeedbackFramePayload(

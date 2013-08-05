@@ -34,10 +34,8 @@ void QuicConnectionPeer::SetSendAlgorithm(
 }
 
 // static
-QuicAckFrame* QuicConnectionPeer::GetOutgoingAck(
-    QuicConnection* connection) {
-  connection->UpdateOutgoingAck();
-  return &connection->outgoing_ack_;
+QuicAckFrame* QuicConnectionPeer::CreateAckFrame(QuicConnection* connection) {
+  return connection->CreateAckFrame();
 }
 
 // static
@@ -106,7 +104,7 @@ bool QuicConnectionPeer::IsValidEntropy(
 QuicPacketEntropyHash QuicConnectionPeer::ReceivedEntropyHash(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
-  return connection->received_entropy_manager_.EntropyHash(
+  return connection->received_packet_manager_.EntropyHash(
       sequence_number);
 }
 

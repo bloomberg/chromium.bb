@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/linked_hash_map.h"
 #include "net/quic/blocked_list.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_crypto_stream.h"
@@ -172,6 +173,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   ReliableQuicStream* GetIncomingReliableStream(QuicStreamId stream_id);
 
+  ReliableQuicStream* GetStream(const QuicStreamId stream_id);
+
   // This is called after every call other than OnConnectionClose from the
   // QuicConnectionVisitor to allow post-processing once the work has been done.
   // In this case, it deletes streams given that it's safe to do so (no other
@@ -204,9 +207,12 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   typedef base::hash_map<QuicStreamId, ReliableQuicStream*> ReliableStreamMap;
 
-  ReliableQuicStream* GetStream(const QuicStreamId stream_id);
-
   scoped_ptr<QuicConnection> connection_;
+
+  // Tracks the last 20 streams which closed without decompressing headers.
+  // This is for best-effort detection of an unrecoverable compression context.
+  // Ideally this would be a linked_hash_set as the boolean is unused.
+  linked_hash_map<QuicStreamId, bool> prematurely_closed_streams_;
 
   // A shim to stand between the connection and the session, to handle stream
   // deletions.

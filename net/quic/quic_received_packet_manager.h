@@ -1,0 +1,124 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Manages the packet entropy calculation for both sent and received packets
+// for a connection.
+
+#ifndef NET_QUIC_QUIC_RECEIVED_PACKET_MANAGER_H_
+#define NET_QUIC_QUIC_RECEIVED_PACKET_MANAGER_H_
+
+#include "net/quic/quic_framer.h"
+#include "net/quic/quic_protocol.h"
+
+namespace net {
+
+namespace test {
+class QuicReceivedPacketManagerPeer;
+}  // namespace test
+
+// Records all received packets by a connection and tracks their entropy.
+// Also calculates the correct entropy for the framer when it truncates an ack
+// frame being serialized.
+class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
+    public QuicReceivedEntropyHashCalculatorInterface {
+ public:
+  QuicReceivedPacketManager();
+  virtual ~QuicReceivedPacketManager();
+
+  // Updates the internal state concerning which packets have been acked.
+  void RecordPacketReceived(const QuicPacketHeader& header,
+                            QuicTime receipt_time);
+
+  // Checks if we're still waiting for the packet with |sequence_number|.
+  bool IsAwaitingPacket(QuicPacketSequenceNumber sequence_number);
+
+  // Update the |received_info| for an outgoing ack.
+  void UpdateReceivedPacketInfo(ReceivedPacketInfo* received_info,
+                                QuicTime approximate_now);
+
+  // QuicReceivedEntropyHashCalculatorInterface
+  // Called by QuicFramer, when the outgoing ack gets truncated, to recalculate
+  // the received entropy hash for the truncated ack frame.
+  virtual QuicPacketEntropyHash EntropyHash(
+      QuicPacketSequenceNumber sequence_number) const OVERRIDE;
+
+  // These two are called by OnAckFrame.
+  //
+  // Updates internal state based on |incoming_ack.received_info|.
+  void UpdatePacketInformationReceivedByPeer(const QuicAckFrame& incoming_ack);
+  // Updates internal state based on |incoming_ack.sent_info|.
+  void UpdatePacketInformationSentByPeer(const QuicAckFrame& incoming_ack);
+
+  QuicPacketSequenceNumber peer_largest_observed_packet() {
+    return peer_largest_observed_packet_;
+  }
+
+  QuicPacketSequenceNumber least_packet_awaited_by_peer() {
+    return least_packet_awaited_by_peer_;
+  }
+
+  QuicPacketSequenceNumber peer_least_packet_awaiting_ack() {
+    return peer_least_packet_awaiting_ack_;
+  }
+
+ private:
+  friend class test::QuicReceivedPacketManagerPeer;
+
+  typedef std::map<QuicPacketSequenceNumber,
+                   QuicPacketEntropyHash> ReceivedEntropyMap;
+
+  // Record the received entropy hash against |sequence_number|.
+  void RecordPacketEntropyHash(QuicPacketSequenceNumber sequence_number,
+                               QuicPacketEntropyHash entropy_hash);
+
+  // Recalculate the entropy hash and clears old packet entropies,
+  // now that the sender sent us the |entropy_hash| for packets up to,
+  // but not including, |peer_least_unacked|.
+  void RecalculateEntropyHash(QuicPacketSequenceNumber peer_least_unacked,
+                              QuicPacketEntropyHash entropy_hash);
+
+  // Deletes all missing packets before least unacked. The connection won't
+  // process any packets with sequence number before |least_unacked| that it
+  // received after this call. Returns true if there were missing packets before
+  // |least_unacked| unacked, false otherwise.
+  bool DontWaitForPacketsBefore(QuicPacketSequenceNumber least_unacked);
+
+  // TODO(satyamshekhar): Can be optimized using an interval set like data
+  // structure.
+  // Map of received sequence numbers to their corresponding entropy.
+  // Every received packet has an entry, and packets without the entropy bit set
+  // have an entropy value of 0.
+  // TODO(ianswett): When the entropy flag is off, the entropy should not be 0.
+  ReceivedEntropyMap packets_entropy_;
+
+  // Cumulative hash of entropy of all received packets.
+  QuicPacketEntropyHash packets_entropy_hash_;
+
+  // The largest sequence number cleared by RecalculateEntropyHash.
+  // Received entropy cannot be calculated for numbers less than it.
+  QuicPacketSequenceNumber largest_sequence_number_;
+
+
+  // Track some peer state so we can do less bookkeeping.
+  // Largest sequence number that the peer has observed. Mostly received,
+  // missing in case of truncated acks.
+  QuicPacketSequenceNumber peer_largest_observed_packet_;
+  // Least sequence number which the peer is still waiting for.
+  QuicPacketSequenceNumber least_packet_awaited_by_peer_;
+  // Least sequence number of the the packet sent by the peer for which it
+  // hasn't received an ack.
+  QuicPacketSequenceNumber peer_least_packet_awaiting_ack_;
+
+  // Received packet information used to produce acks.
+  ReceivedPacketInfo received_info_;
+
+  // The time we received the largest_observed sequence number, or zero if
+  // no sequence numbers have been received since UpdateReceivedPacketInfo.
+  // Needed for calculating delta_time_largest_observed.
+  QuicTime time_largest_observed_;
+};
+
+}  // namespace net
+
+#endif  // NET_QUIC_QUIC_RECEIVED_PACKET_MANAGER_H_

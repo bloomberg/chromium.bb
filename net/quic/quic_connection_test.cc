@@ -428,7 +428,6 @@ class TestConnection : public QuicConnection {
   }
 
   using QuicConnection::SendOrQueuePacket;
-  using QuicConnection::DontWaitForPacketsBefore;
   using QuicConnection::SelectMutualVersion;
 
  private:
@@ -464,7 +463,8 @@ class QuicConnectionTest : public ::testing::Test {
   }
 
   QuicAckFrame* outgoing_ack() {
-    return QuicConnectionPeer::GetOutgoingAck(&connection_);
+    outgoing_ack_.reset(QuicConnectionPeer::CreateAckFrame(&connection_));
+    return outgoing_ack_.get();
   }
 
   QuicAckFrame* last_ack() {
@@ -601,7 +601,7 @@ class QuicConnectionTest : public ::testing::Test {
     }
     fec_data.redundancy = data_packet->FecProtectedData();
     scoped_ptr<QuicPacket> fec_packet(
-        framer_.ConstructFecPacket(header_, fec_data).packet);
+        framer_.BuildFecPacket(header_, fec_data).packet);
     scoped_ptr<QuicEncryptedPacket> encrypted(
         framer_.EncryptPacket(ENCRYPTION_NONE, number, *fec_packet));
 
@@ -662,7 +662,7 @@ class QuicConnectionTest : public ::testing::Test {
     QuicFrame frame(&frame1_);
     frames.push_back(frame);
     QuicPacket* packet =
-        framer_.ConstructFrameDataPacket(header_, frames).packet;
+        framer_.BuildUnsizedDataPacket(header_, frames).packet;
     EXPECT_TRUE(packet != NULL);
     return packet;
   }
@@ -686,7 +686,7 @@ class QuicConnectionTest : public ::testing::Test {
     QuicFrame frame(&qccf);
     frames.push_back(frame);
     QuicPacket* packet =
-        framer_.ConstructFrameDataPacket(header_, frames).packet;
+        framer_.BuildUnsizedDataPacket(header_, frames).packet;
     EXPECT_TRUE(packet != NULL);
     return packet;
   }
@@ -712,6 +712,7 @@ class QuicConnectionTest : public ::testing::Test {
   QuicPacketHeader revived_header_;
   QuicStreamFrame frame1_;
   QuicStreamFrame frame2_;
+  scoped_ptr<QuicAckFrame> outgoing_ack_;
   bool accept_packet_;
 
  private:
@@ -939,13 +940,6 @@ TEST_F(QuicConnectionTest, AckAll) {
   ProcessAckPacket(&frame1, true);
 }
 
-TEST_F(QuicConnectionTest, DontWaitForPacketsBefore) {
-  ProcessPacket(2);
-  ProcessPacket(7);
-  EXPECT_TRUE(connection_.DontWaitForPacketsBefore(4));
-  EXPECT_EQ(3u, outgoing_ack()->received_info.missing_packets.size());
-}
-
 TEST_F(QuicConnectionTest, BasicSending) {
   EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(6);
   QuicPacketSequenceNumber last_packet;
@@ -1006,15 +1000,15 @@ TEST_F(QuicConnectionTest, FECSending) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(
-          kIncludeVersion, IN_FEC_GROUP, &payload_length);
+      GetPacketLengthForOneStream(connection_.version(), kIncludeVersion,
+                                  IN_FEC_GROUP, &payload_length);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
   // Send 4 data packets and 2 FEC packets.
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(6);
-  // TODO(ianswett): The first stream frame will consume 2 fewer bytes.
-  const string payload(payload_length * 4, 'a');
+  // The first stream frame will consume 2 fewer bytes than the other three.
+  const string payload(payload_length * 4 - 6, 'a');
   connection_.SendStreamData(1, payload, 0, !kFin);
   // Expect the FEC group to be closed after SendStreamData.
   EXPECT_FALSE(creator_.ShouldSendFec(true));
@@ -1024,8 +1018,8 @@ TEST_F(QuicConnectionTest, FECQueueing) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(
-          kIncludeVersion, IN_FEC_GROUP, &payload_length);
+      GetPacketLengthForOneStream(connection_.version(), kIncludeVersion,
+                                  IN_FEC_GROUP, &payload_length);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
@@ -1947,8 +1941,8 @@ TEST_F(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(
-          kIncludeVersion, NOT_IN_FEC_GROUP, &payload_length);
+      GetPacketLengthForOneStream(connection_.version(), kIncludeVersion,
+                                  NOT_IN_FEC_GROUP, &payload_length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_,
@@ -1964,13 +1958,13 @@ TEST_F(QuicConnectionTest, LoopThroughSendingPackets) {
   // All packets carry version info till version is negotiated.
   size_t payload_length;
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(
-          kIncludeVersion, NOT_IN_FEC_GROUP, &payload_length);
+      GetPacketLengthForOneStream(connection_.version(), kIncludeVersion,
+                                  NOT_IN_FEC_GROUP, &payload_length);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(7);
-  // TODO(ianswett): The first stream frame will consume 2 fewer bytes.
-  const string payload(payload_length * 7, 'a');
+  // The first stream frame will consume 2 fewer bytes than the other six.
+  const string payload(payload_length * 7 - 12, 'a');
   EXPECT_EQ(payload.size(),
             connection_.SendStreamData(1, payload, 0, !kFin).bytes_consumed);
 }
@@ -2001,7 +1995,7 @@ TEST_F(QuicConnectionTest, PublicReset) {
   header.public_header.version_flag = false;
   header.rejected_sequence_number = 10101;
   scoped_ptr<QuicEncryptedPacket> packet(
-      framer_.ConstructPublicResetPacket(header));
+      framer_.BuildPublicResetPacket(header));
   EXPECT_CALL(visitor_, ConnectionClose(QUIC_PUBLIC_RESET, true));
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *packet);
 }
@@ -2144,7 +2138,7 @@ TEST_F(QuicConnectionTest, SendVersionNegotiationPacket) {
   QuicFrame frame(&frame1_);
   frames.push_back(frame);
   scoped_ptr<QuicPacket> packet(
-      framer_.ConstructFrameDataPacket(header, frames).packet);
+      framer_.BuildUnsizedDataPacket(header, frames).packet);
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
@@ -2281,7 +2275,7 @@ TEST_F(QuicConnectionTest, DontProcessFramesIfPacketClosedConnection) {
   frames.push_back(stream_frame);
   frames.push_back(close_frame);
   scoped_ptr<QuicPacket> packet(
-      framer_.ConstructFrameDataPacket(header_, frames).packet);
+      framer_.BuildUnsizedDataPacket(header_, frames).packet);
   EXPECT_TRUE(NULL != packet.get());
   scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
       ENCRYPTION_NONE, 1, *packet));
@@ -2293,26 +2287,32 @@ TEST_F(QuicConnectionTest, DontProcessFramesIfPacketClosedConnection) {
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
 }
 
-//// The QUIC_VERSION_X versions are deliberately set, rather than using all
-//// values in kSupportedQuicVersions.
-//TEST_F(QuicConnectionTest, SelectMutualVersion) {
-//  // Set the connection to speak QUIC_VERSION_6.
-//  connection_.set_version(QUIC_VERSION_6);
-//  EXPECT_EQ(connection_.version(), QUIC_VERSION_6);
-//
-//  // Pass in available versions which includes a higher mutually supported
-//  // version.  The higher mutually supported version should be selected.
-//  EXPECT_TRUE(
-//      connection_.SelectMutualVersion({QUIC_VERSION_6, QUIC_VERSION_7}));
-//  EXPECT_EQ(connection_.version(), QUIC_VERSION_7);
-//
-//  // Expect that the lower version is selected.
-//  EXPECT_TRUE(connection_.SelectMutualVersion({QUIC_VERSION_6}));
-//  EXPECT_EQ(connection_.version(), QUIC_VERSION_6);
-//
-//  // Shouldn't be able to find a mutually supported version.
-//  EXPECT_FALSE(connection_.SelectMutualVersion({QUIC_VERSION_UNSUPPORTED}));
-//}
+// The QUIC_VERSION_X versions are deliberately set, rather than using all
+// values in kSupportedQuicVersions.
+TEST_F(QuicConnectionTest, SelectMutualVersion) {
+  // Set the connection to speak QUIC_VERSION_6.
+  connection_.set_version(QUIC_VERSION_6);
+  EXPECT_EQ(connection_.version(), QUIC_VERSION_6);
+
+  // Pass in available versions which includes a higher mutually supported
+  // version.  The higher mutually supported version should be selected.
+  QuicVersionVector available_versions;
+  available_versions.push_back(QUIC_VERSION_6);
+  available_versions.push_back(QUIC_VERSION_7);
+  EXPECT_TRUE(connection_.SelectMutualVersion(available_versions));
+  EXPECT_EQ(connection_.version(), QUIC_VERSION_7);
+
+  // Expect that the lower version is selected.
+  QuicVersionVector lower_version;
+  lower_version.push_back(QUIC_VERSION_6);
+  EXPECT_TRUE(connection_.SelectMutualVersion(lower_version));
+  EXPECT_EQ(connection_.version(), QUIC_VERSION_6);
+
+  // Shouldn't be able to find a mutually supported version.
+  QuicVersionVector unsupported_version;
+  unsupported_version.push_back(QUIC_VERSION_UNSUPPORTED);
+  EXPECT_FALSE(connection_.SelectMutualVersion(unsupported_version));
+}
 
 TEST_F(QuicConnectionTest, ConnectionCloseWhenNotWriteBlocked) {
   helper_->set_blocked(false);  // Already default.

@@ -8,10 +8,12 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_client.h"
+#include "net/tools/quic/quic_packet_writer.h"
 
 namespace net {
 
@@ -20,6 +22,14 @@ class ProofVerifier;
 namespace tools {
 
 namespace test {
+
+// Allows setting a writer for the client's QuicConnectionHelper, to allow
+// fine-grained control of writes.
+class QuicTestWriter : public QuicPacketWriter {
+ public:
+  virtual ~QuicTestWriter() {}
+  virtual void set_fd(int fd) = 0;
+};
 
 class HTTPMessage;
 
@@ -34,6 +44,7 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
                  const QuicVersion version);
   QuicTestClient(IPEndPoint server_address,
                  const string& server_hostname,
+                 bool secure,
                  const QuicConfig& config,
                  const QuicVersion version);
 
@@ -55,7 +66,7 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   // Wraps data in a quic packet and sends it.
   ssize_t SendData(string data, bool last_data);
 
-  QuicPacketCreator::Options* options() { return client_.options(); }
+  QuicPacketCreator::Options* options() { return client_->options(); }
 
   const BalsaHeaders *response_headers() const {return &headers_;}
 
@@ -75,15 +86,17 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   // From ReliableQuicStream::Visitor
   virtual void OnClose(ReliableQuicStream* stream) OVERRIDE;
 
-  void SetNextStreamId(QuicStreamId id);
+  // Configures client_ to take ownership of and use the writer.
+  // Must be called before initial connect.
+  void UseWriter(QuicTestWriter* writer);
 
   // Returns NULL if the maximum number of streams have already been created.
   QuicReliableClientStream* GetOrCreateStream();
 
   QuicRstStreamErrorCode stream_error() { return stream_error_; }
-  QuicErrorCode connection_error() { return connection_error_; }
+  QuicErrorCode connection_error() { return client()->session()->error(); }
 
-  QuicClient* client() { return &client_; }
+  QuicClient* client() { return client_.get(); }
 
   // cert_common_name returns the common name value of the server's certificate,
   // or the empty string if no certificate was presented.
@@ -95,15 +108,14 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   void set_auto_reconnect(bool reconnect) { auto_reconnect_ = reconnect; }
 
  private:
-  void Initialize(IPEndPoint address, const string& hostname);
+  void Initialize(IPEndPoint address, const string& hostname, bool secure);
 
   IPEndPoint server_address_;
   IPEndPoint client_address_;
-  QuicClient client_;  // The actual client
+  scoped_ptr<QuicClient> client_;  // The actual client
   QuicReliableClientStream* stream_;
 
   QuicRstStreamErrorCode stream_error_;
-  QuicErrorCode connection_error_;
 
   BalsaHeaders headers_;
   string response_;
