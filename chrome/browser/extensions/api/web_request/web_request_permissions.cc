@@ -39,8 +39,10 @@ bool IsSensitiveURL(const GURL& url) {
       bool match = true;
       for (std::string::const_iterator i = host.begin() + strlen(kClient),
                end = host.end() - strlen(kGoogleCom); i != end; ++i) {
-        if (!isdigit(*i))
+        if (!isdigit(*i)) {
           match = false;
+          break;
+        }
       }
       sensitive_chrome_url = sensitive_chrome_url || match;
     }
