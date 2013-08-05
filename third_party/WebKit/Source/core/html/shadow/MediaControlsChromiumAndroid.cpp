@@ -24,8 +24,9 @@
  */
 
 #include "config.h"
-
 #include "core/html/shadow/MediaControlsChromiumAndroid.h"
+
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 
 namespace WebCore {
 
@@ -92,6 +93,6 @@ void MediaControlsChromiumAndroid::playbackStopped()
 void MediaControlsChromiumAndroid::insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement> textTrackContainer)
 {
     // Insert it before the overlay play button so it always displays behind it.
-    m_overlayEnclosure->insertBefore(textTrackContainer, m_overlayPlayButton, ASSERT_NO_EXCEPTION, AttachLazily);
+    m_overlayEnclosure->insertBefore(textTrackContainer, m_overlayPlayButton, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
 }
 }

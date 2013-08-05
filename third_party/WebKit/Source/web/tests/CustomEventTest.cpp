@@ -35,6 +35,7 @@
 #include "WebFrameImpl.h"
 #include "WebView.h"
 #include "WebViewImpl.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
@@ -99,8 +100,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     WebView* webView = FrameTestHelpers::createWebViewAndLoad(baseURL + path);
     WebFrameImpl* frame = static_cast<WebFrameImpl*>(webView->mainFrame());
 
-    ExceptionCode ec;
-    WebDOMEvent event = frame->frame()->document()->createEvent("CustomEvent", ec);
+    WebDOMEvent event = frame->frame()->document()->createEvent("CustomEvent", IGNORE_EXCEPTION_STATE);
     WebDOMCustomEvent customEvent = event.to<WebDOMCustomEvent>();
 
     v8::HandleScope handleScope;

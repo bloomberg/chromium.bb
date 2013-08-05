@@ -27,6 +27,7 @@
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/BaseChooserOnlyDateAndTimeInputType.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDivElement.h"
@@ -76,7 +77,7 @@ void BaseChooserOnlyDateAndTimeInputType::updateAppearance()
         // Need to put something to keep text baseline.
         displayValue = ASCIILiteral(" ");
     }
-    toHTMLElement(node)->setInnerText(displayValue, ASSERT_NO_EXCEPTION);
+    toHTMLElement(node)->setInnerText(displayValue, ASSERT_NO_EXCEPTION_STATE);
 }
 
 void BaseChooserOnlyDateAndTimeInputType::setValue(const String& value, bool valueChanged, TextFieldEventBehavior eventBehavior)

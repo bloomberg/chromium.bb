@@ -36,6 +36,7 @@
 #include "WebInputEventConversion.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/IntRect.h"
@@ -186,7 +187,7 @@ TEST(LinkHighlightTest, resetDuringNodeRemoval)
     ASSERT_TRUE(highlightLayer);
     EXPECT_TRUE(highlightLayer->linkHighlight());
 
-    touchNode->remove(IGNORE_EXCEPTION);
+    touchNode->remove(IGNORE_EXCEPTION_STATE);
     webViewImpl->layout();
     EXPECT_FALSE(highlightLayer->linkHighlight());
 

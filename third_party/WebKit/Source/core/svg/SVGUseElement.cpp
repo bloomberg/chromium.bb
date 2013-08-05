@@ -28,6 +28,7 @@
 
 #include "SVGNames.h"
 #include "XLinkNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
 #include "core/dom/NodeTraversal.h"
@@ -514,7 +515,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     // Eventually dump shadow tree
 #ifdef DUMP_SHADOW_TREE
     RefPtr<XMLSerializer> serializer = XMLSerializer::create();
-    String markup = serializer->serializeToString(shadowTreeRootElement, ASSERT_NO_EXCEPTION);
+    String markup = serializer->serializeToString(shadowTreeRootElement, ASSERT_NO_EXCEPTION_STATE);
     fprintf(stderr, "Dumping <use> shadow tree markup:\n%s\n", markup.latin1().data());
 #endif
 }

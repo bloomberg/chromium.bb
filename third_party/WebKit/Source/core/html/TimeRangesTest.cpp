@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/html/TimeRanges.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include <gtest/gtest.h>
 
 #include <sstream>
@@ -42,7 +43,7 @@ static std::string ToString(const TimeRanges& ranges)
     std::stringstream ss;
     ss << "{";
     for (unsigned i = 0; i < ranges.length(); ++i)
-        ss << " [" << ranges.start(i, IGNORE_EXCEPTION) << "," << ranges.end(i, IGNORE_EXCEPTION) << ")";
+        ss << " [" << ranges.start(i, IGNORE_EXCEPTION_STATE) << "," << ranges.end(i, IGNORE_EXCEPTION_STATE) << ")";
     ss << " }";
 
     return ss.str();
@@ -74,7 +75,7 @@ TEST(TimeRanges, AddOrder)
 
     // Add the values in rangeA to rangeB in reverse order.
     for (int i = rangeA->length() - 1; i >= 0; --i)
-        rangeB->add(rangeA->start(i, IGNORE_EXCEPTION), rangeA->end(i, IGNORE_EXCEPTION));
+        rangeB->add(rangeA->start(i, IGNORE_EXCEPTION_STATE), rangeA->end(i, IGNORE_EXCEPTION_STATE));
 
     ASSERT_RANGE(expected, rangeB);
 }

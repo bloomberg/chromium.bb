@@ -35,6 +35,7 @@
 #include "core/html/track/TextTrackRegion.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ClientRect.h"
 #include "core/html/DOMTokenList.h"
 #include "core/html/HTMLDivElement.h"
@@ -214,7 +215,7 @@ void TextTrackRegion::updateParametersFromRegion(TextTrackRegion* region)
     m_regionAnchor = FloatPoint(region->regionAnchorX(), region->regionAnchorY());
     m_viewportAnchor = FloatPoint(region->viewportAnchorX(), region->viewportAnchorY());
 
-    setScroll(region->scroll(), ASSERT_NO_EXCEPTION);
+    setScroll(region->scroll(), ASSERT_NO_EXCEPTION_STATE);
 }
 
 void TextTrackRegion::setRegionSettings(const String& input)
@@ -372,7 +373,7 @@ void TextTrackRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
     double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
     float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
 
-    m_cueContainer->classList()->remove(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION);
+    m_cueContainer->classList()->remove(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION_STATE);
 
     m_currentTop += boxHeight;
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop, m_currentTop, CSSPrimitiveValue::CSS_PX);
@@ -384,7 +385,7 @@ void TextTrackRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayB
     if (m_cueContainer->contains(displayBox.get()))
         return;
 
-    m_cueContainer->appendChild(displayBox, ASSERT_NO_EXCEPTION, AttachNow);
+    m_cueContainer->appendChild(displayBox, ASSERT_NO_EXCEPTION_STATE, AttachNow);
     displayLastTextTrackCueBox();
 }
 
@@ -399,7 +400,7 @@ void TextTrackRegion::displayLastTextTrackCueBox()
 
     // If it's a scrolling region, add the scrolling class.
     if (isScrollingRegion())
-        m_cueContainer->classList()->add(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION);
+        m_cueContainer->classList()->add(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION_STATE);
 
     float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
 
