@@ -361,6 +361,85 @@ TEST(WTF_PartitionAlloc, MultiPageAllocs)
     TestShutdown();
 }
 
+// Test the generic allocation functions that can handle arbitrary sizes and
+// reallocing etc.
+TEST(WTF_PartitionAlloc, GenericAlloc)
+{
+    TestSetup();
+
+    void* ptr = partitionAllocGeneric(&root, 1);
+    EXPECT_TRUE(ptr);
+    partitionFreeGeneric(ptr, 1);
+    ptr = partitionAllocGeneric(&root, WTF::kMaxAllocation + 1);
+    EXPECT_TRUE(ptr);
+    partitionFreeGeneric(ptr, WTF::kMaxAllocation + 1);
+
+    ptr = partitionAllocGeneric(&root, 1);
+    EXPECT_TRUE(ptr);
+    void* origPtr = ptr;
+    char* charPtr = static_cast<char*>(ptr);
+    *charPtr = 'A';
+
+    // Change the size of the realloc, remaining inside the same bucket.
+    void* newPtr = partitionReallocGeneric(&root, ptr, 1, 2);
+    EXPECT_EQ(ptr, newPtr);
+    newPtr = partitionReallocGeneric(&root, ptr, 2, 1);
+    EXPECT_EQ(ptr, newPtr);
+
+    // Change the size of the realloc, switching buckets.
+    newPtr = partitionReallocGeneric(&root, ptr, 1, WTF::kAllocationGranularity + 1);
+    EXPECT_TRUE(newPtr != ptr);
+    // Check that the realloc copied correctly.
+    char* newCharPtr = static_cast<char*>(newPtr);
+    EXPECT_EQ(*newCharPtr, 'A');
+    *newCharPtr = 'B';
+    // The realloc moved. To check that the old allocation was freed, we can
+    // do an alloc of the old allocation size and check that the old allocation
+    // address is at the head of the freelist and reused.
+    void* reusedPtr = partitionAllocGeneric(&root, 1);
+    EXPECT_EQ(reusedPtr, origPtr);
+    partitionFreeGeneric(reusedPtr, 1);
+
+    // Downsize the realloc.
+    ptr = newPtr;
+    newPtr = partitionReallocGeneric(&root, ptr, WTF::kAllocationGranularity + 1, 1);
+    EXPECT_EQ(newPtr, origPtr);
+    newCharPtr = static_cast<char*>(newPtr);
+    EXPECT_EQ(*newCharPtr, 'B');
+    *newCharPtr = 'C';
+
+    // Upsize the realloc to outside the partition.
+    ptr = newPtr;
+    newPtr = partitionReallocGeneric(&root, ptr, 1, WTF::kMaxAllocation + 1);
+    EXPECT_TRUE(newPtr != ptr);
+    newCharPtr = static_cast<char*>(newPtr);
+    EXPECT_EQ(*newCharPtr, 'C');
+    *newCharPtr = 'D';
+
+    // Upsize and downsize the realloc, remaining outside the partition.
+    ptr = newPtr;
+    newPtr = partitionReallocGeneric(&root, ptr, WTF::kMaxAllocation + 1, WTF::kMaxAllocation * 10);
+    newCharPtr = static_cast<char*>(newPtr);
+    EXPECT_EQ(*newCharPtr, 'D');
+    *newCharPtr = 'E';
+    ptr = newPtr;
+    newPtr = partitionReallocGeneric(&root, ptr, WTF::kMaxAllocation * 10, WTF::kMaxAllocation * 2);
+    newCharPtr = static_cast<char*>(newPtr);
+    EXPECT_EQ(*newCharPtr, 'E');
+    *newCharPtr = 'F';
+
+    // Downsize the realloc to inside the partition.
+    ptr = newPtr;
+    newPtr = partitionReallocGeneric(&root, ptr, WTF::kMaxAllocation * 2, 1);
+    EXPECT_TRUE(newPtr != ptr);
+    EXPECT_EQ(newPtr, origPtr);
+    newCharPtr = static_cast<char*>(newPtr);
+    EXPECT_EQ(*newCharPtr, 'F');
+
+    partitionFreeGeneric(newPtr, 1);
+    TestShutdown();
+}
+
 #if OS(UNIX)
 
 // Test correct handling if our mapping collides with another.

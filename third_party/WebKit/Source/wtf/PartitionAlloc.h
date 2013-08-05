@@ -41,8 +41,13 @@
 // system heap. If the contained objects are all freed, physical memory is
 // returned to the system but the address space remains reserved.
 //
-// Allocations using this API are only supported from the Blink main thread.
-// This is ASSERT()ed in Debug builds.
+// Allocations and frees against a single partition must be single threaded.
+// Allocations must not exceed a max size, typically 4088 bytes at this time.
+// Allocation sizes must be aligned to the system pointer size.
+// The separate APIs partitionAllocGeneric and partitionFreeGeneric are
+// provided, and they do not have the above three restrictions. In return, you
+// take a small performance hit and are also obliged to keep track of
+// allocation sizes, and pass them to partitionFreeGeneric.
 //
 // This allocator is designed to be extremely fast, thanks to the following
 // properties and design:
@@ -53,7 +58,7 @@
 // - Each partition page (which is usually multiple physical pages) has a header
 // structure which allows fast mapping of free() address to an underlying
 // bucket.
-// - No support for threading yet, leading to simpler design.
+// - Supports a lock-free API for fast performance in single-threaded cases.
 // - The freelist for a given bucket is split across a number of partition
 // pages, enabling various simple tricks to try and minimize fragmentation.
 // - Fine-grained bucket sizes leading to less waste and better packing.
@@ -72,19 +77,24 @@
 // - Per-object bucketing (instead of per-size) is mostly available at the API,
 // but not used yet.
 // - No randomness of freelist entries or bucket position.
+// - No specific protection against corruption of page header metadata.
 
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
+#include "wtf/FastMalloc.h"
+#include "wtf/SpinLock.h"
 
 #include <stdlib.h>
 
 namespace WTF {
 
 // Allocation granularity of sizeof(void*) bytes.
-static const size_t kBucketShift = (sizeof(void*) == 8) ? 3 : 2;
-// Support allocations up to kMaxAllocation bytes.
-static const size_t kMaxAllocation = 4096;
-static const size_t kNumBuckets = kMaxAllocation / (1 << kBucketShift);
+static const size_t kAllocationGranularity = sizeof(void*);
+static const size_t kAllocationGranularityMask = kAllocationGranularity - 1;
+static const size_t kBucketShift = (kAllocationGranularity == 8) ? 3 : 2;
+// Supports allocations up to 4088 (one bucket is used for metadata).
+static const size_t kMaxAllocationOrder = 12;
+static const size_t kMaxAllocation = (1 << kMaxAllocationOrder) - kAllocationGranularity;
+static const size_t kNumBuckets = (1 << kMaxAllocationOrder) / (1 << kBucketShift);
 // Underlying partition storage pages are a power-of-two size. It is typical
 // for a partition page to be based on multiple system pages. We rarely deal
 // with system pages. Most references to "page" refer to partition pages. We
@@ -126,6 +136,7 @@ struct PartitionBucket {
 };
 
 struct PartitionRoot {
+    int lock;
     PartitionPageHeader seedPage;
     PartitionBucket seedBucket;
     PartitionBucket buckets[kNumBuckets];
@@ -140,6 +151,7 @@ WTF_EXPORT bool partitionAllocShutdown(PartitionRoot*);
 
 WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionBucket*);
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPageHeader*);
+WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRoot*, void*, size_t, size_t);
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
 {
@@ -179,8 +191,6 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
 
 ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
 {
-    ASSERT(isMainThread());
-    ASSERT(size);
     size_t index = size >> kBucketShift;
     ASSERT(index < kNumBuckets);
     ASSERT(size == index << kBucketShift);
@@ -192,12 +202,8 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
 #endif
 }
 
-ALWAYS_INLINE void partitionFree(void* ptr)
+ALWAYS_INLINE PartitionPageHeader* partitionPointerToPage(void* ptr)
 {
-    ASSERT(isMainThread());
-#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-    free(ptr);
-#else
     uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(ptr);
     // Checks that the pointer is after the page header. You can't free the
     // page header!
@@ -205,12 +211,60 @@ ALWAYS_INLINE void partitionFree(void* ptr)
     PartitionPageHeader* page = reinterpret_cast<PartitionPageHeader*>(pointerAsUint & kPartitionPageBaseMask);
     // Checks that the pointer is a multiple of bucket size.
     ASSERT(!(((pointerAsUint & kPartitionPageOffsetMask) - sizeof(PartitionPageHeader)) % partitionBucketSize(page->bucket)));
+    return page;
+}
+
+ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPageHeader* page)
+{
     PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
     entry->next = partitionFreelistMask(page->freelistHead);
     page->freelistHead = entry;
     --page->numAllocatedSlots;
     if (UNLIKELY(page->numAllocatedSlots <= 0))
         partitionFreeSlowPath(page);
+}
+
+ALWAYS_INLINE void partitionFree(void* ptr)
+{
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+    free(ptr);
+#else
+    PartitionPageHeader* page = partitionPointerToPage(ptr);
+    partitionFreeWithPage(ptr, page);
+#endif
+}
+
+ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
+{
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+    return malloc(size);
+#else
+    if (LIKELY(size <= kMaxAllocation)) {
+        size += kAllocationGranularityMask;
+        size &= ~kAllocationGranularityMask;
+        spinLockLock(&root->lock);
+        void* ret = partitionAlloc(root, size);
+        spinLockUnlock(&root->lock);
+        return ret;
+    }
+    return WTF::fastMalloc(size);
+#endif
+}
+
+ALWAYS_INLINE void partitionFreeGeneric(void* ptr, size_t size)
+{
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+    free(ptr);
+#else
+    if (LIKELY(size <= kMaxAllocation)) {
+        PartitionPageHeader* page = partitionPointerToPage(ptr);
+        PartitionRoot* root = page->bucket->root;
+        spinLockLock(&root->lock);
+        partitionFreeWithPage(ptr, page);
+        spinLockUnlock(&root->lock);
+        return;
+    }
+    return WTF::fastFree(ptr);
 #endif
 }
 
@@ -221,5 +275,8 @@ using WTF::partitionAllocInit;
 using WTF::partitionAllocShutdown;
 using WTF::partitionAlloc;
 using WTF::partitionFree;
+using WTF::partitionAllocGeneric;
+using WTF::partitionFreeGeneric;
+using WTF::partitionReallocGeneric;
 
 #endif // WTF_PartitionAlloc_h

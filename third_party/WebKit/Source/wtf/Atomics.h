@@ -44,25 +44,25 @@ namespace WTF {
 
 #if OS(WINDOWS)
 
-inline int atomicIncrement(int volatile* addend) { return InterlockedIncrement(reinterpret_cast<long volatile*>(addend)); }
-inline int atomicDecrement(int volatile* addend) { return InterlockedDecrement(reinterpret_cast<long volatile*>(addend)); }
+ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return InterlockedIncrement(reinterpret_cast<long volatile*>(addend)); }
+ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return InterlockedDecrement(reinterpret_cast<long volatile*>(addend)); }
 
-inline int64_t atomicIncrement(int64_t volatile* addend) { return InterlockedIncrement64(reinterpret_cast<long long volatile*>(addend)); }
-inline int64_t atomicDecrement(int64_t volatile* addend) { return InterlockedDecrement64(reinterpret_cast<long long volatile*>(addend)); }
+ALWAYS_INLINE int64_t atomicIncrement(int64_t volatile* addend) { return InterlockedIncrement64(reinterpret_cast<long long volatile*>(addend)); }
+ALWAYS_INLINE int64_t atomicDecrement(int64_t volatile* addend) { return InterlockedDecrement64(reinterpret_cast<long long volatile*>(addend)); }
 
 #elif OS(ANDROID)
 
 // Note, __atomic_{inc, dec}() return the previous value of addend's content.
-inline int atomicIncrement(int volatile* addend) { return __atomic_inc(addend) + 1; }
-inline int atomicDecrement(int volatile* addend) { return __atomic_dec(addend) - 1; }
+ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return __atomic_inc(addend) + 1; }
+ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return __atomic_dec(addend) - 1; }
 
 #else
 
-inline int atomicIncrement(int volatile* addend) { return __sync_add_and_fetch(addend, 1); }
-inline int atomicDecrement(int volatile* addend) { return __sync_sub_and_fetch(addend, 1); }
+ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return __sync_add_and_fetch(addend, 1); }
+ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return __sync_sub_and_fetch(addend, 1); }
 
-inline int64_t atomicIncrement(int64_t volatile* addend) { return __sync_add_and_fetch(addend, 1); }
-inline int64_t atomicDecrement(int64_t volatile* addend) { return __sync_sub_and_fetch(addend, 1); }
+ALWAYS_INLINE int64_t atomicIncrement(int64_t volatile* addend) { return __sync_add_and_fetch(addend, 1); }
+ALWAYS_INLINE int64_t atomicDecrement(int64_t volatile* addend) { return __sync_sub_and_fetch(addend, 1); }
 
 #endif
 

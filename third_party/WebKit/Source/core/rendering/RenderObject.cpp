@@ -124,11 +124,13 @@ RenderObjectAncestorLineboxDirtySet* RenderObject::s_ancestorLineboxDirtySet = 0
 
 void* RenderObject::operator new(size_t sz)
 {
+    ASSERT(isMainThread());
     return partitionAlloc(Partitions::getRenderingPartition(), sz);
 }
 
 void RenderObject::operator delete(void* ptr)
 {
+    ASSERT(isMainThread());
     partitionFree(ptr);
 }
 

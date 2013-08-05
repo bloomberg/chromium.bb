@@ -46,6 +46,7 @@ void partitionAllocInit(PartitionRoot* root)
 {
     ASSERT(!root->initialized);
     root->initialized = true;
+    root->lock = 0;
     size_t i;
     for (i = 0; i < kNumBuckets; ++i) {
         PartitionBucket* bucket = &root->buckets[i];
@@ -321,6 +322,36 @@ void partitionFreeSlowPath(PartitionPageHeader* page)
         ASSERT(page->numAllocatedSlots == partitionBucketSlots(bucket) - 1);
         --bucket->numFullPages;
     }
+}
+
+void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t oldSize, size_t newSize)
+{
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+    return realloc(ptr, newSize);
+#else
+    size_t oldIndex = oldSize >> kBucketShift;
+    if (oldIndex > kNumBuckets)
+        oldIndex = kNumBuckets;
+    size_t newIndex = newSize >> kBucketShift;
+    if (newIndex > kNumBuckets)
+        newIndex = kNumBuckets;
+
+    if (oldIndex == newIndex) {
+        // Same bucket. But kNumBuckets indicates the fastMalloc "bucket" so in
+        // that case we're not done; we have to forward to fastRealloc.
+        if (oldIndex == kNumBuckets)
+            return WTF::fastRealloc(ptr, newSize);
+        return ptr;
+    }
+    // This realloc cannot be resized in-place. Sadness.
+    void* ret = partitionAllocGeneric(root, newSize);
+    size_t copySize = oldSize;
+    if (newSize < oldSize)
+        copySize = newSize;
+    memcpy(ret, ptr, copySize);
+    partitionFreeGeneric(ptr, oldSize);
+    return ret;
+#endif
 }
 
 #ifndef NDEBUG

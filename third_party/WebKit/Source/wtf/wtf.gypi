@@ -112,6 +112,7 @@
             'SHA1.h',
             'SaturatedArithmetic.h',
             'SizeLimits.cpp',
+            'SpinLock.h',
             'StaticConstructors.h',
             'StdLibExtras.h',
             'StringExtras.h',
@@ -213,6 +214,7 @@
         'wtf_unittest_files': [
             'PartitionAllocTest.cpp',
             'SHA1Test.cpp',
+            'SpinLockTest.cpp',
             'testing/WTFTestHelpers.h',
             'tests/CString.cpp',
             'tests/CheckedArithmeticOperations.cpp',

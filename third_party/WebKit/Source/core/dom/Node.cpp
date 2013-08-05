@@ -99,11 +99,13 @@ using namespace HTMLNames;
 
 void* Node::operator new(size_t size)
 {
+    ASSERT(isMainThread());
     return partitionAlloc(Partitions::getObjectModelPartition(), size);
 }
 
 void Node::operator delete(void* ptr)
 {
+    ASSERT(isMainThread());
     partitionFree(ptr);
 }
 
