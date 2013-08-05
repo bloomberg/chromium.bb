@@ -1571,7 +1571,12 @@ void RenderLayerBacking::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Graphics
         paintFlags |= RenderLayer::PaintLayerPaintingSkipRootBackground;
 
     InspectorInstrumentation::willPaint(paintInfo.renderLayer->renderer());
-    context->save();
+
+    // Note carefully: in theory it is appropriate to invoke context->save() here
+    // and restore the context after painting. For efficiency, we are assuming that
+    // it is equivalent to manually undo this offset translation, which means we are
+    // assuming that the context's space was not affected by the RenderLayer
+    // painting code.
 
     LayoutSize offset = paintInfo.offsetFromRenderer;
     context->translate(-offset);
@@ -1594,7 +1599,9 @@ void RenderLayerBacking::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Graphics
 
     ASSERT(!paintInfo.renderLayer->m_usedTransparency);
 
-    context->restore();
+    // Manually restore the context to its original state by applying the opposite translation.
+    context->translate(offset);
+
     InspectorInstrumentation::didPaint(paintInfo.renderLayer->renderer(), context, clip);
 }
 
