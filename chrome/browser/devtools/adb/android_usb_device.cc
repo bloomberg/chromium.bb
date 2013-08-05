@@ -149,11 +149,11 @@ static void RespondOnUIThread(const AndroidUsbDevicesCallback& callback,
   callback.Run(devices);
 }
 
-static void EnumerateOnFileThread(UsbService* service,
-                                  crypto::RSAPrivateKey* rsa_key,
+static void EnumerateOnFileThread(crypto::RSAPrivateKey* rsa_key,
                                   const AndroidUsbDevicesCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
+  UsbService* service = UsbService::GetInstance();
   AndroidUsbDevices& devices = g_devices.Get();
 
   UsbDevices usb_devices;
@@ -207,10 +207,9 @@ static void EnumerateOnFileThread(UsbService* service,
 void AndroidUsbDevice::Enumerate(crypto::RSAPrivateKey* rsa_key,
                                  const AndroidUsbDevicesCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UsbService* service = UsbService::GetInstance();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&EnumerateOnFileThread, service, rsa_key, callback));
+      base::Bind(&EnumerateOnFileThread, rsa_key, callback));
 }
 
 AndroidUsbDevice::AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
