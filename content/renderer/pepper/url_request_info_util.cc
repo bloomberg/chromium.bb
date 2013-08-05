@@ -10,7 +10,6 @@
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppb_file_ref_impl.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "net/http/http_util.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
@@ -57,10 +56,6 @@ bool AppendFileRefToBody(
     return false;
   const PPB_FileRef_Impl* file_ref =
       static_cast<PPB_FileRef_Impl*>(file_ref_api);
-
-  PepperHelperImpl* helper = ResourceHelper::GetHelper(file_ref_resource);
-  if (!helper)
-    return false;
 
   base::FilePath platform_path;
   switch (file_ref->GetFileSystemType()) {

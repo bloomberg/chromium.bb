@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "content/renderer/pepper/common.h"
+#include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_broker.h"
 #include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -56,7 +56,7 @@ int32_t PPB_Broker_Impl::Connect(
   }
 
   PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
+      HostGlobals::Get()->GetInstance(pp_instance());
   if (!plugin_instance)
     return PP_ERROR_FAILED;
 
@@ -84,7 +84,7 @@ int32_t PPB_Broker_Impl::GetHandle(int32_t* handle) {
 
 GURL PPB_Broker_Impl::GetDocumentUrl() {
   PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
+      HostGlobals::Get()->GetInstance(pp_instance());
   return plugin_instance->container()->element().document().url();
 }
 

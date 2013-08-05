@@ -17,8 +17,9 @@
 
 namespace content {
 
-PepperBrowserConnection::PepperBrowserConnection(PepperHelperImpl* helper)
-    : helper_(helper),
+PepperBrowserConnection::PepperBrowserConnection(RenderView* render_view)
+    : RenderViewObserver(render_view),
+      RenderViewObserverTracker<PepperBrowserConnection>(render_view),
       next_sequence_number_(1) {
 }
 
@@ -45,19 +46,17 @@ void PepperBrowserConnection::DidCreateInProcessInstance(
     int render_view_id,
     const GURL& document_url,
     const GURL& plugin_url) {
-  helper_->render_view()->Send(
-      new ViewHostMsg_DidCreateInProcessInstance(
-          instance,
-          // Browser provides the render process id.
-          PepperRendererInstanceData(0,
-                                     render_view_id,
-                                     document_url,
-                                     plugin_url)));
+  Send(new ViewHostMsg_DidCreateInProcessInstance(
+      instance,
+      // Browser provides the render process id.
+      PepperRendererInstanceData(0,
+                                  render_view_id,
+                                  document_url,
+                                  plugin_url)));
 }
 
 void PepperBrowserConnection::DidDeleteInProcessInstance(PP_Instance instance) {
-  helper_->render_view()->Send(
-      new ViewHostMsg_DidDeleteInProcessInstance(instance));
+  Send(new ViewHostMsg_DidDeleteInProcessInstance(instance));
 }
 
 void PepperBrowserConnection::SendBrowserCreate(
@@ -68,8 +67,8 @@ void PepperBrowserConnection::SendBrowserCreate(
   int32_t sequence_number = GetNextSequence();
   pending_create_map_[sequence_number] = callback;
   ppapi::proxy::ResourceMessageCallParams params(0, sequence_number);
-  helper_->Send(new PpapiHostMsg_CreateResourceHostFromHost(
-      helper_->routing_id(),
+  Send(new PpapiHostMsg_CreateResourceHostFromHost(
+      routing_id(),
       child_process_id,
       params,
       instance,
@@ -82,8 +81,8 @@ void PepperBrowserConnection::SendBrowserFileRefGetInfo(
     const FileRefGetInfoCallback& callback) {
   int32_t sequence_number = GetNextSequence();
   get_info_map_[sequence_number] = callback;
-  helper_->Send(new PpapiHostMsg_FileRef_GetInfoForRenderer(
-      helper_->routing_id(), child_process_id, sequence_number, resources));
+  Send(new PpapiHostMsg_FileRef_GetInfoForRenderer(
+      routing_id(), child_process_id, sequence_number, resources));
 }
 
 void PepperBrowserConnection::OnMsgCreateResourceHostFromHostReply(

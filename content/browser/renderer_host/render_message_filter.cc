@@ -444,6 +444,8 @@ base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
   if (message.type() == ViewHostMsg_GetAudioHardwareConfig::ID)
     return audio_manager_->GetMessageLoop().get();
 #endif
+  if (message.type() == ViewHostMsg_AsyncOpenPepperFile::ID)
+    return BrowserThread::GetBlockingPool();
   return NULL;
 }
 
@@ -989,12 +991,10 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
   Send(reply_msg);
 }
 
-void RenderMessageFilter::OnAsyncOpenPepperFile(const IPC::Message& msg,
+void RenderMessageFilter::OnAsyncOpenPepperFile(int routing_id,
                                                 const base::FilePath& path,
                                                 int pp_open_flags,
                                                 int message_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
   int platform_file_flags = 0;
   if (!CanOpenWithPepperFlags(pp_open_flags, render_process_id_, path) ||
       !ppapi::PepperFileOpenFlagsToPlatformFileFlags(
@@ -1007,18 +1007,6 @@ void RenderMessageFilter::OnAsyncOpenPepperFile(const IPC::Message& msg,
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, base::Bind(
-          &RenderMessageFilter::AsyncOpenPepperFileOnFileThread, this,
-          path, platform_file_flags, message_id, msg.routing_id()));
-}
-
-void RenderMessageFilter::AsyncOpenPepperFileOnFileThread(
-    const base::FilePath& path,
-    int platform_file_flags,
-    int message_id,
-    int routing_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
   base::PlatformFile file = base::CreatePlatformFile(
       path, platform_file_flags, NULL, &error_code);
@@ -1027,14 +1015,8 @@ void RenderMessageFilter::AsyncOpenPepperFileOnFileThread(
           IPC::GetFileHandleForProcess(file, PeerHandle(), true) :
           IPC::InvalidPlatformFileForTransit();
 
-  IPC::Message* reply = new ViewMsg_AsyncOpenPepperFile_ACK(
-      routing_id,
-      error_code,
-      file_for_transit,
-      message_id);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(base::IgnoreResult(&RenderMessageFilter::Send), this, reply));
+  Send(new ViewMsg_AsyncOpenPepperFile_ACK(
+      routing_id, error_code, file_for_transit, message_id));
 }
 
 void RenderMessageFilter::OnMediaLogEvents(

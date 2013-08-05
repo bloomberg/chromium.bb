@@ -8,20 +8,15 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "ipc/ipc_listener.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 
 namespace content {
 
-class PepperHelperImpl;
-
-class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl {
+class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl,
+                                   public IPC::Listener {
  public:
   static PP_Resource CreateResource(PP_Instance instance);
-  static PP_Resource CreateConnectedSocket(
-      PP_Instance instance,
-      uint32 socket_id,
-      const PP_NetAddress_Private& local_addr,
-      const PP_NetAddress_Private& remote_addr);
 
   virtual void SendConnect(const std::string& host, uint16_t port) OVERRIDE;
   virtual void SendConnectWithNetAddress(
@@ -38,10 +33,36 @@ class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl {
                              const ::ppapi::SocketOptionData& value) OVERRIDE;
 
  private:
-  PPB_TCPSocket_Private_Impl(PP_Instance instance, uint32 socket_id);
+  PPB_TCPSocket_Private_Impl(PP_Instance instance,
+                             uint32 socket_id,
+                             int routing_id);
   virtual ~PPB_TCPSocket_Private_Impl();
 
-  static PepperHelperImpl* GetHelper(PP_Instance instance);
+  // IPC::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  void OnTCPSocketConnectACK(uint32 plugin_dispatcher_id,
+                             uint32 socket_id,
+                             int32_t result,
+                             const PP_NetAddress_Private& local_addr,
+                             const PP_NetAddress_Private& remote_addr);
+  void OnTCPSocketSSLHandshakeACK(
+      uint32 plugin_dispatcher_id,
+      uint32 socket_id,
+      bool succeeded,
+      const ppapi::PPB_X509Certificate_Fields& certificate_fields);
+  void OnTCPSocketReadACK(uint32 plugin_dispatcher_id,
+                          uint32 socket_id,
+                          int32_t result,
+                          const std::string& data);
+  void OnTCPSocketWriteACK(uint32 plugin_dispatcher_id,
+                           uint32 socket_id,
+                           int32_t result);
+  void OnTCPSocketSetOptionACK(uint32 plugin_dispatcher_id,
+                               uint32 socket_id,
+                               int32_t result);
+
+  int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_TCPSocket_Private_Impl);
 };

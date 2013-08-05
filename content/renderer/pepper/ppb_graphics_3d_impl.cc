@@ -8,10 +8,10 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_view_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/c/ppp_graphics_3d.h"
@@ -205,7 +205,7 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
     //
     // Don't need to check for NULL from GetPluginInstance since when we're
     // bound, we know our instance is valid.
-    ResourceHelper::GetPluginInstance(this)->CommitBackingTexture();
+    HostGlobals::Get()->GetInstance(pp_instance())->CommitBackingTexture();
     commit_pending_ = true;
   } else {
     // Wait for the command to complete on the GPU to allow for throttling.
@@ -239,7 +239,7 @@ bool PPB_Graphics3D_Impl::Init(PPB_Graphics3D_API* share_context,
 bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
                                   const int32_t* attrib_list) {
   PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
+      HostGlobals::Get()->GetInstance(pp_instance());
   if (!plugin_instance)
     return false;
 
@@ -280,7 +280,7 @@ void PPB_Graphics3D_Impl::OnConsoleMessage(const std::string& message,
   if (!bound_to_instance_)
     return;
   WebPluginContainer* container =
-      ResourceHelper::GetPluginInstance(this)->container();
+      HostGlobals::Get()->GetInstance(pp_instance())->container();
   if (!container)
     return;
   WebFrame* frame = container->element().document().frame();
@@ -303,8 +303,10 @@ void PPB_Graphics3D_Impl::OnSwapBuffers() {
 void PPB_Graphics3D_Impl::OnContextLost() {
   // Don't need to check for NULL from GetPluginInstance since when we're
   // bound, we know our instance is valid.
-  if (bound_to_instance_)
-    ResourceHelper::GetPluginInstance(this)->BindGraphics(pp_instance(), 0);
+  if (bound_to_instance_) {
+    HostGlobals::Get()->GetInstance(pp_instance())->BindGraphics(
+        pp_instance(), 0);
+  }
 
   // Send context lost to plugin. This may have been caused by a PPAPI call, so
   // avoid re-entering.
@@ -318,7 +320,8 @@ void PPB_Graphics3D_Impl::SendContextLost() {
   // By the time we run this, the instance may have been deleted, or in the
   // process of being deleted. Even in the latter case, we don't want to send a
   // callback after DidDestroy.
-  PepperPluginInstanceImpl* instance = ResourceHelper::GetPluginInstance(this);
+  PepperPluginInstanceImpl* instance =
+      HostGlobals::Get()->GetInstance(pp_instance());
   if (!instance || !instance->container())
     return;
 

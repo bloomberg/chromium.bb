@@ -10,9 +10,12 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/shared_impl/file_io_state_manager.h"
@@ -26,7 +29,8 @@ namespace content {
 class QuotaFileIO;
 
 class PepperFileIOHost : public ppapi::host::ResourceHost,
-                         public base::SupportsWeakPtr<PepperFileIOHost> {
+                         public base::SupportsWeakPtr<PepperFileIOHost>,
+                         public IPC::Listener {
  public:
   typedef base::Callback<void (base::PlatformFileError)>
       NotifyCloseFileCallback;
@@ -42,6 +46,14 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
  private:
+  // IPC::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  void OnAsyncFileOpened(
+      base::PlatformFileError error_code,
+      IPC::PlatformFileForTransit file_for_transit,
+      int message_id);
+
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
                         PP_Resource file_ref_resource,
                         int32_t open_flags);
@@ -123,6 +135,13 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   base::WeakPtrFactory<PepperFileIOHost> weak_factory_;
 
   ppapi::FileIOStateManager state_manager_;
+
+  int routing_id_;
+
+  typedef base::Callback<void (base::PlatformFileError, base::PassPlatformFile)>
+      AsyncOpenFileCallback;
+
+  IDMap<AsyncOpenFileCallback> pending_async_open_files_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFileIOHost);
 };

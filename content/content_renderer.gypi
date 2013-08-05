@@ -389,8 +389,6 @@
     'renderer/pepper/renderer_restrict_dispatch_group.h',
     'renderer/pepper/resource_creation_impl.cc',
     'renderer/pepper/resource_creation_impl.h',
-    'renderer/pepper/resource_helper.cc',
-    'renderer/pepper/resource_helper.h',
     'renderer/pepper/url_request_info_util.cc',
     'renderer/pepper/url_request_info_util.h',
     'renderer/pepper/url_response_info_util.cc',

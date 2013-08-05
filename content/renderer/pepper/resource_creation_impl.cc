@@ -17,7 +17,6 @@
 #include "content/renderer/pepper/ppb_tcp_socket_private_impl.h"
 #include "content/renderer/pepper/ppb_video_decoder_impl.h"
 #include "content/renderer/pepper/ppb_x509_certificate_private_impl.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"

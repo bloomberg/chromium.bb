@@ -9,10 +9,10 @@
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/event_conversion.h"
+#include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
 #include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
@@ -53,12 +53,12 @@ PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {
 
 void PPB_Scrollbar_Impl::Init(bool vertical) {
   PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
+      HostGlobals::Get()->GetInstance(pp_instance());
   if (!plugin_instance)
     return;
   scrollbar_.reset(WebPluginScrollbar::createForPlugin(
       vertical ? WebScrollbar::Vertical : WebScrollbar::Horizontal,
-      ResourceHelper::GetPluginInstance(this)->container(),
+      plugin_instance->container(),
       static_cast<WebKit::WebPluginScrollbarClient*>(this)));
 }
 
@@ -169,7 +169,8 @@ void PPB_Scrollbar_Impl::SetLocationInternal(const PP_Rect* location) {
 }
 
 void PPB_Scrollbar_Impl::valueChanged(WebKit::WebPluginScrollbar* scrollbar) {
-  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  PluginModule* plugin_module =
+      HostGlobals::Get()->GetInstance(pp_instance())->module();
   if (!plugin_module)
     return;
 
@@ -190,7 +191,8 @@ void PPB_Scrollbar_Impl::valueChanged(WebKit::WebPluginScrollbar* scrollbar) {
 }
 
 void PPB_Scrollbar_Impl::overlayChanged(WebPluginScrollbar* scrollbar) {
-  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  PluginModule* plugin_module =
+      HostGlobals::Get()->GetInstance(pp_instance())->module();
   if (!plugin_module)
     return;
 

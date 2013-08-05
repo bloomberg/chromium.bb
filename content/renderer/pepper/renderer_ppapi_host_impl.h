@@ -29,7 +29,6 @@ class ResourceCreationAPI;
 
 namespace content {
 
-class PepperBrowserConnection;
 class PepperInProcessRouter;
 class PepperPluginInstanceImpl;
 class PluginModule;
@@ -71,8 +70,6 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
   // happen automatically.
   scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
       CreateInProcessResourceCreationAPI(PepperPluginInstanceImpl* instance);
-
-  PepperBrowserConnection* GetBrowserConnection(PP_Instance instance) const;
 
   PepperPluginInstanceImpl* GetPluginInstanceImpl(PP_Instance instance) const;
 

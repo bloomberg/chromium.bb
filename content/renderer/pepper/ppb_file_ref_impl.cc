@@ -9,13 +9,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_helper_impl.h"
-#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "net/base/escape.h"
 #include "ppapi/c/pp_errors.h"
@@ -220,34 +219,41 @@ PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
                                    PP_Resource file_system)
     : PPB_FileRef_Shared(::ppapi::OBJECT_IS_IMPL, info),
       file_system_(file_system),
-      external_file_system_path_() {
+      external_file_system_path_(),
+      routing_id_(MSG_ROUTING_NONE) {
+  if (RenderThreadImpl::current()) {  // NULL in tests.
+    routing_id_ = RenderThreadImpl::current()->GenerateRoutingID();
+    ChildThread::current()->AddRoute(routing_id_, this);
+  }
 }
 
 PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
                                    const base::FilePath& external_file_path)
     : PPB_FileRef_Shared(::ppapi::OBJECT_IS_IMPL, info),
       file_system_(),
-      external_file_system_path_(external_file_path) {
+      external_file_system_path_(external_file_path),
+      routing_id_(MSG_ROUTING_NONE) {
+  if (RenderThreadImpl::current()) {  // NULL in tests.
+    routing_id_ = RenderThreadImpl::current()->GenerateRoutingID();
+    ChildThread::current()->AddRoute(routing_id_, this);
+  }
 }
 
 PPB_FileRef_Impl::~PPB_FileRef_Impl() {
+  if (RenderThreadImpl::current())
+    ChildThread::current()->RemoveRoute(routing_id_);
 }
 
 // static
 PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Instance instance,
                                                    PP_Resource pp_file_system,
                                                    const std::string& path) {
-  PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::PPInstanceToPluginInstance(instance);
-  if (!plugin_instance || !plugin_instance->helper())
-    return 0;
-
-  PepperFileSystemHost* host = GetFileSystemHostInternal(
+  PepperFileSystemHost* fs_host = GetFileSystemHostInternal(
       instance, pp_file_system);
-  if (!host)
+  if (!fs_host)
     return 0;
 
-  PP_FileSystemType type = host->GetType();
+  PP_FileSystemType type = fs_host->GetType();
   if (type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
       type != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
       type != PP_FILESYSTEMTYPE_EXTERNAL &&
@@ -422,6 +428,37 @@ GURL PPB_FileRef_Impl::GetFileSystemURL() const {
       virtual_path.substr(1)));
 }
 
+bool PPB_FileRef_Impl::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PPB_FileRef_Impl, msg)
+    IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenPepperFile_ACK, OnAsyncFileOpened)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void PPB_FileRef_Impl::OnAsyncFileOpened(
+    base::PlatformFileError error_code,
+    IPC::PlatformFileForTransit file_for_transit,
+    int message_id) {
+  AsyncOpenFileCallback* callback =
+      pending_async_open_files_.Lookup(message_id);
+  DCHECK(callback);
+  pending_async_open_files_.Remove(message_id);
+
+  base::PlatformFile file =
+      IPC::PlatformFileForTransitToPlatformFile(file_for_transit);
+  callback->Run(error_code, base::PassPlatformFile(&file));
+  // Make sure we won't leak file handle if the requester has died.
+  if (file != base::kInvalidPlatformFileValue) {
+    base::FileUtilProxy::Close(
+        RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
+        file,
+        base::FileUtilProxy::StatusCallback());
+  }
+  delete callback;
+}
+
 bool PPB_FileRef_Impl::IsValidNonExternalFileSystem() const {
   PepperFileSystemHost* host = GetFileSystemHost();
   return HasValidFileSystem() && host &&
@@ -442,11 +479,6 @@ int32_t PPB_FileRef_Impl::Query(PP_FileInfo* info,
 int32_t PPB_FileRef_Impl::QueryInHost(
     linked_ptr<PP_FileInfo> info,
     scoped_refptr<TrackedCallback> callback) {
-  scoped_refptr<PepperPluginInstanceImpl> plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
-  if (!plugin_instance.get())
-    return PP_ERROR_FAILED;
-
   if (!file_system_) {
     // External file system
     // We have to do something totally different for external file systems.
@@ -454,11 +486,14 @@ int32_t PPB_FileRef_Impl::QueryInHost(
     // TODO(teravest): Use the SequencedWorkerPool instead.
     scoped_refptr<base::TaskRunner> task_runner =
         RenderThreadImpl::current()->GetFileThreadMessageLoopProxy();
-    if (!plugin_instance->helper()->AsyncOpenFile(
-            GetSystemPath(),
-            PP_FILEOPENFLAG_READ,
-            base::Bind(&QueryCallback, task_runner, info, callback)))
-      return PP_ERROR_FAILED;
+
+    int message_id = pending_async_open_files_.Add(new AsyncOpenFileCallback(
+        base::Bind(&QueryCallback, task_runner, info, callback)));
+    RenderThreadImpl::current()->Send(new ViewHostMsg_AsyncOpenPepperFile(
+        routing_id_,
+        GetSystemPath(),
+        PP_FILEOPENFLAG_READ,
+        message_id));
   } else {
     // Non-external file system
     if (!HasValidFileSystem())

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "content/renderer/pepper/common.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 

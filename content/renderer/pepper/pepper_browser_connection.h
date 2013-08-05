@@ -11,19 +11,20 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
 namespace content {
 
-class PepperHelperImpl;
-
 // This class represents a connection from the renderer to the browser for
 // sending/receiving pepper ResourceHost related messages. When the browser
 // and renderer communicate about ResourceHosts, they should pass the plugin
 // process ID to identify which plugin they are talking about.
-class PepperBrowserConnection {
+class PepperBrowserConnection
+    : public RenderViewObserver,
+      public RenderViewObserverTracker<PepperBrowserConnection> {
  public:
   typedef base::Callback<void(int)> PendingResourceIDCallback;
   typedef base::Callback<void(
@@ -32,10 +33,10 @@ class PepperBrowserConnection {
       const std::vector<std::string>&,
       const std::vector<base::FilePath>&)> FileRefGetInfoCallback;
 
-  explicit PepperBrowserConnection(PepperHelperImpl* helper);
+  explicit PepperBrowserConnection(RenderView* render_view);
   virtual ~PepperBrowserConnection();
 
-  bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // TODO(teravest): Instead of having separate methods per message, we should
   // add generic functionality similar to PluginResource::Call().
@@ -77,9 +78,6 @@ class PepperBrowserConnection {
 
   // Return the next sequence number.
   int32_t GetNextSequence();
-
-  // The plugin helper that owns us.
-  PepperHelperImpl* helper_;
 
   // Sequence number to track pending callbacks.
   int32_t next_sequence_number_;

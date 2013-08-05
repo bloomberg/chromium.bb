@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/shared_impl/ppb_network_list_private_shared.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"

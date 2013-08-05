@@ -4,10 +4,10 @@
 
 #include "content/renderer/pepper/ppb_widget_impl.h"
 
+#include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "ppapi/c/dev/ppp_widget_dev.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_input_event_api.h"
@@ -65,7 +65,7 @@ void PPB_Widget_Impl::SetScale(float scale) {
 
 void PPB_Widget_Impl::Invalidate(const PP_Rect* dirty) {
   PepperPluginInstanceImpl* plugin_instance =
-      ResourceHelper::GetPluginInstance(this);
+      HostGlobals::Get()->GetInstance(pp_instance());
   if (!plugin_instance)
     return;
   const PPP_Widget_Dev* widget = static_cast<const PPP_Widget_Dev*>(

@@ -8,7 +8,6 @@
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/socket_option_data.h"
@@ -16,69 +15,42 @@
 namespace content {
 
 PPB_TCPSocket_Private_Impl::PPB_TCPSocket_Private_Impl(
-    PP_Instance instance, uint32 socket_id)
-    : ::ppapi::TCPSocketPrivateImpl(instance, socket_id) {
+    PP_Instance instance,
+    uint32 socket_id,
+    int routing_id)
+    : ::ppapi::TCPSocketPrivateImpl(instance, socket_id),
+      routing_id_(routing_id) {
+  ChildThread::current()->AddRoute(routing_id, this);
 }
 
 PPB_TCPSocket_Private_Impl::~PPB_TCPSocket_Private_Impl() {
+  ChildThread::current()->RemoveRoute(routing_id_);
   Disconnect();
 }
 
 PP_Resource PPB_TCPSocket_Private_Impl::CreateResource(PP_Instance instance) {
-  PepperHelperImpl* helper = GetHelper(instance);
-  if (!helper)
-    return 0;
-
+  int routing_id = RenderThreadImpl::current()->GenerateRoutingID();
   uint32 socket_id = 0;
-  helper->Send(new PpapiHostMsg_PPBTCPSocket_CreatePrivate(
-      helper->routing_id(), 0, &socket_id));
+  RenderThreadImpl::current()->Send(new PpapiHostMsg_PPBTCPSocket_CreatePrivate(
+      routing_id, 0, &socket_id));
   if (!socket_id)
     return 0;
 
-  return (new PPB_TCPSocket_Private_Impl(instance, socket_id))->GetReference();
-}
-
-PP_Resource PPB_TCPSocket_Private_Impl::CreateConnectedSocket(
-    PP_Instance instance,
-    uint32 socket_id,
-    const PP_NetAddress_Private& local_addr,
-    const PP_NetAddress_Private& remote_addr) {
-  PepperHelperImpl* helper = GetHelper(instance);
-  if (!helper)
-    return 0;
-
-  PPB_TCPSocket_Private_Impl* socket =
-      new PPB_TCPSocket_Private_Impl(instance, socket_id);
-
-  socket->connection_state_ = PPB_TCPSocket_Private_Impl::CONNECTED;
-  socket->local_addr_ = local_addr;
-  socket->remote_addr_ = remote_addr;
-
-  helper->RegisterTCPSocket(socket, socket_id);
-
-  return socket->GetReference();
+  return (new PPB_TCPSocket_Private_Impl(
+      instance, socket_id, routing_id))->GetReference();
 }
 
 void PPB_TCPSocket_Private_Impl::SendConnect(const std::string& host,
                                              uint16_t port) {
-  PepperHelperImpl* helper = GetHelper(pp_instance());
-  if (!helper)
-    return;
-
-  helper->RegisterTCPSocket(this, socket_id_);
-  helper->Send(new PpapiHostMsg_PPBTCPSocket_Connect(
-      helper->routing_id(), socket_id_, host, port));
+  RenderThreadImpl::current()->Send(new PpapiHostMsg_PPBTCPSocket_Connect(
+      routing_id_, socket_id_, host, port));
 }
 
 void PPB_TCPSocket_Private_Impl::SendConnectWithNetAddress(
     const PP_NetAddress_Private& addr) {
-  PepperHelperImpl* helper = GetHelper(pp_instance());
-  if (!helper)
-    return;
-
-  helper->RegisterTCPSocket(this, socket_id_);
-  helper->Send(new PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress(
-      helper->routing_id(), socket_id_, addr));
+  RenderThreadImpl::current()->Send(
+      new PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress(
+          routing_id_, socket_id_, addr));
 }
 
 void PPB_TCPSocket_Private_Impl::SendSSLHandshake(
@@ -86,58 +58,85 @@ void PPB_TCPSocket_Private_Impl::SendSSLHandshake(
     uint16_t server_port,
     const std::vector<std::vector<char> >& trusted_certs,
     const std::vector<std::vector<char> >& untrusted_certs) {
-  PepperHelperImpl* helper = GetHelper(pp_instance());
-  if (!helper)
-    return;
-
-  helper->Send(new PpapiHostMsg_PPBTCPSocket_SSLHandshake(
+  RenderThreadImpl::current()->Send(new PpapiHostMsg_PPBTCPSocket_SSLHandshake(
       socket_id_, server_name, server_port, trusted_certs, untrusted_certs));
 }
 
 void PPB_TCPSocket_Private_Impl::SendRead(int32_t bytes_to_read) {
-  PepperHelperImpl* helper = GetHelper(pp_instance());
-  if (!helper)
-    return;
-
-  helper->Send(new PpapiHostMsg_PPBTCPSocket_Read(
+  RenderThreadImpl::current()->Send(new PpapiHostMsg_PPBTCPSocket_Read(
       socket_id_, bytes_to_read));
 }
 
 
 void PPB_TCPSocket_Private_Impl::SendWrite(const std::string& buffer) {
-  PepperHelperImpl* helper = GetHelper(pp_instance());
-  if (!helper)
-    return;
-
-  helper->Send(new PpapiHostMsg_PPBTCPSocket_Write(
-      socket_id_, buffer));
+  RenderThreadImpl::current()->Send(
+      new PpapiHostMsg_PPBTCPSocket_Write(socket_id_, buffer));
 }
 
 void PPB_TCPSocket_Private_Impl::SendDisconnect() {
-  PepperHelperImpl* helper = GetHelper(pp_instance());
-  if (!helper)
-    return;
-
-  helper->Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id_));
+  RenderThreadImpl::current()->Send(
+      new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id_));
 }
 
 void PPB_TCPSocket_Private_Impl::SendSetOption(
     PP_TCPSocket_Option name,
     const ::ppapi::SocketOptionData& value) {
-  PepperHelperImpl* helper = GetHelper(pp_instance());
-  if (!helper)
-    return;
-
-  helper->Send(new PpapiHostMsg_PPBTCPSocket_SetOption(
-      socket_id_, name, value));
+  RenderThreadImpl::current()->Send(
+      new PpapiHostMsg_PPBTCPSocket_SetOption(socket_id_, name, value));
 }
 
-PepperHelperImpl* PPB_TCPSocket_Private_Impl::GetHelper(PP_Instance instance) {
-  PepperPluginInstanceImpl* plugin_instance =
-      HostGlobals::Get()->GetInstance(instance);
-  if (!plugin_instance)
-    return NULL;
-  return plugin_instance->helper();
+bool PPB_TCPSocket_Private_Impl::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PPB_TCPSocket_Private_Impl, message)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ConnectACK, OnTCPSocketConnectACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SSLHandshakeACK,
+                        OnTCPSocketSSLHandshakeACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ReadACK, OnTCPSocketReadACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_WriteACK, OnTCPSocketWriteACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SetOptionACK,
+                        OnTCPSocketSetOptionACK)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void PPB_TCPSocket_Private_Impl::OnTCPSocketConnectACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    int32_t result,
+    const PP_NetAddress_Private& local_addr,
+    const PP_NetAddress_Private& remote_addr) {
+  OnConnectCompleted(result, local_addr, remote_addr);
+}
+
+void PPB_TCPSocket_Private_Impl::OnTCPSocketSSLHandshakeACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    bool succeeded,
+    const ppapi::PPB_X509Certificate_Fields& certificate_fields) {
+  OnSSLHandshakeCompleted(succeeded, certificate_fields);
+}
+
+void PPB_TCPSocket_Private_Impl::OnTCPSocketReadACK(uint32 plugin_dispatcher_id,
+                                                    uint32 socket_id,
+                                                    int32_t result,
+                                                    const std::string& data) {
+  OnReadCompleted(result, data);
+}
+
+void PPB_TCPSocket_Private_Impl::OnTCPSocketWriteACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    int32_t result) {
+  OnWriteCompleted(result);
+}
+
+void PPB_TCPSocket_Private_Impl::OnTCPSocketSetOptionACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    int32_t result) {
+  OnSetOptionCompleted(result);
 }
 
 }  // namespace content

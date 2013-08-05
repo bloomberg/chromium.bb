@@ -122,21 +122,6 @@ RendererPpapiHostImpl::CreateInProcessResourceCreationAPI(
       new PepperInProcessResourceCreation(this, instance));
 }
 
-PepperBrowserConnection*
-RendererPpapiHostImpl::GetBrowserConnection(PP_Instance instance) const {
-  PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
-  if (!instance_object)
-    return NULL;
-
-  // Since we're the embedder, we can make assumptions about the helper on
-  // the instance.
-  PepperHelperImpl* helper = instance_object->helper();
-  if (!helper)
-    return NULL;
-
-  return helper->pepper_browser_connection();
-}
-
 PepperPluginInstanceImpl* RendererPpapiHostImpl::GetPluginInstanceImpl(
     PP_Instance instance) const {
   return GetAndValidateInstance(instance);
@@ -245,8 +230,10 @@ void RendererPpapiHostImpl::CreateBrowserResourceHost(
     PP_Instance instance,
     const IPC::Message& nested_msg,
     const base::Callback<void(int)>& callback) const {
-  PepperBrowserConnection* browser_connection = GetBrowserConnection(instance);
-  if (browser_connection == NULL) {
+  RenderView* render_view = GetRenderViewForInstance(instance);
+  PepperBrowserConnection* browser_connection =
+      PepperBrowserConnection::Get(render_view);
+  if (!browser_connection) {
     callback.Run(0);
   } else {
     browser_connection->SendBrowserCreate(module_->GetPluginChildId(),

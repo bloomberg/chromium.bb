@@ -13,6 +13,7 @@
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/common/fileapi/file_system_messages.h"
+#include "content/common/view_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -20,7 +21,6 @@
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "content/renderer/pepper/quota_file_io.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -148,11 +148,14 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
       quota_policy_(quota::kQuotaLimitTypeUnknown),
       is_running_in_process_(host->IsRunningInProcess()),
       open_flags_(0),
-      weak_factory_(this) {
+      weak_factory_(this),
+      routing_id_(RenderThreadImpl::current()->GenerateRoutingID()) {
+      ChildThread::current()->AddRoute(routing_id_, this);
 }
 
 PepperFileIOHost::~PepperFileIOHost() {
   OnHostMsgClose(NULL);
+  ChildThread::current()->RemoveRoute(routing_id_);
 }
 
 int32_t PepperFileIOHost::OnResourceMessageReceived(
@@ -185,6 +188,37 @@ int32_t PepperFileIOHost::OnResourceMessageReceived(
                                         OnHostMsgRequestOSFileHandle)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
+}
+
+bool PepperFileIOHost::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PepperFileIOHost, msg)
+    IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenPepperFile_ACK, OnAsyncFileOpened)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void PepperFileIOHost::OnAsyncFileOpened(
+    base::PlatformFileError error_code,
+    IPC::PlatformFileForTransit file_for_transit,
+    int message_id) {
+  AsyncOpenFileCallback* callback =
+      pending_async_open_files_.Lookup(message_id);
+  DCHECK(callback);
+  pending_async_open_files_.Remove(message_id);
+
+  base::PlatformFile file =
+      IPC::PlatformFileForTransitToPlatformFile(file_for_transit);
+  callback->Run(error_code, base::PassPlatformFile(&file));
+  // Make sure we won't leak file handle if the requester has died.
+  if (file != base::kInvalidPlatformFileValue) {
+    base::FileUtilProxy::Close(
+        RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
+        file,
+        base::FileUtilProxy::StatusCallback());
+  }
+  delete callback;
 }
 
 int32_t PepperFileIOHost::OnHostMsgOpen(
@@ -229,20 +263,18 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
         weak_factory_.GetWeakPtr(),
         context->MakeReplyMessageContext());
     file_system_dispatcher->OpenFile(
-      file_system_url_, platform_file_flags,
-      base::Bind(&DidOpenFileSystemURL, callback),
-      base::Bind(&DidFailOpenFileSystemURL, callback));
+        file_system_url_, platform_file_flags,
+        base::Bind(&DidOpenFileSystemURL, callback),
+        base::Bind(&DidFailOpenFileSystemURL, callback));
   } else {
-    PepperHelperImpl* helper = static_cast<PepperPluginInstanceImpl*>(
-        PepperPluginInstance::Get(pp_instance()))->helper();
-    if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL || !helper)
+    if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL)
       return PP_ERROR_FAILED;
-    if (!helper->AsyncOpenFile(
-            file_ref->GetSystemPath(), open_flags,
-            base::Bind(&PepperFileIOHost::ExecutePlatformOpenFileCallback,
-                       weak_factory_.GetWeakPtr(),
-                       context->MakeReplyMessageContext())))
-      return PP_ERROR_FAILED;
+    int message_id = pending_async_open_files_.Add(new AsyncOpenFileCallback(
+        base::Bind(&PepperFileIOHost::ExecutePlatformOpenFileCallback,
+                    weak_factory_.GetWeakPtr(),
+                    context->MakeReplyMessageContext())));
+    RenderThreadImpl::current()->Send(new ViewHostMsg_AsyncOpenPepperFile(
+        routing_id_, file_ref->GetSystemPath(), open_flags, message_id));
   }
 
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);

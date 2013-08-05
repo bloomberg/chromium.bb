@@ -8,7 +8,6 @@
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/pepper_platform_audio_output.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_output_controller.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -74,7 +73,7 @@ bool PPB_Audio_Impl::Init(PP_Resource config,
     return false;
   SetCallback(callback, user_data);
 
-  PepperPluginInstanceImpl* instance = ResourceHelper::GetPluginInstance(this);
+  PepperPluginInstance* instance = PepperPluginInstance::Get(pp_instance());
   if (!instance)
     return false;
 
@@ -124,7 +123,7 @@ int32_t PPB_Audio_Impl::Open(
     return PP_ERROR_FAILED;
   config_ = config;
 
-  PepperPluginInstanceImpl* instance = ResourceHelper::GetPluginInstance(this);
+  PepperPluginInstance* instance = PepperPluginInstance::Get(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
 

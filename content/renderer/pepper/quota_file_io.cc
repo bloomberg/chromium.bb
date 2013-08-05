@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/resource_helper.h"
 
 using base::PlatformFile;
 using base::PlatformFileError;

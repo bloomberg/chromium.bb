@@ -11,12 +11,13 @@
 #include "base/metrics/histogram.h"
 #include "content/renderer/media/pepper_platform_video_decoder.h"
 #include "content/renderer/pepper/common.h"
+#include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
@@ -98,7 +99,8 @@ namespace content {
 PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PP_Instance instance)
     : PPB_VideoDecoder_Shared(instance),
       ppp_videodecoder_(NULL) {
-  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  PluginModule* plugin_module =
+      HostGlobals::Get()->GetInstance(pp_instance())->module();
   if (plugin_module) {
     ppp_videodecoder_ = static_cast<const PPP_VideoDecoder_Dev*>(
         plugin_module->GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));

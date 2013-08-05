@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/pepper/common.h"
-#include "content/renderer/pepper/resource_helper.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
@@ -255,9 +254,6 @@ bool ImageDataSimpleBackend::Init(PPB_ImageData_Impl* impl,
                                   bool init_to_zero) {
   skia_bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
                          impl->width(), impl->height());
-  PepperHelperImpl* plugin_delegate = ResourceHelper::GetHelper(impl);
-  if (!plugin_delegate)
-    return false;
   shared_memory_.reset(RenderThread::Get()->HostAllocateSharedMemoryBuffer(
       skia_bitmap_.getSize()).release());
   return !!shared_memory_.get();

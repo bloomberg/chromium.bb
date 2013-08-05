@@ -8,8 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/id_map.h"
 #include "base/memory/linked_ptr.h"
+#include "base/platform_file.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
@@ -29,7 +34,8 @@ using ::ppapi::StringVar;
 
 class PepperFileSystemHost;
 
-class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared {
+class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared,
+                         public IPC::Listener {
  public:
   PPB_FileRef_Impl(const ::ppapi::PPB_FileRef_CreateInfo& info,
                    PP_Resource file_system);
@@ -95,6 +101,14 @@ class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared {
  private:
   virtual ~PPB_FileRef_Impl();
 
+  // IPC::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  void OnAsyncFileOpened(
+      base::PlatformFileError error_code,
+      IPC::PlatformFileForTransit file_for_transit,
+      int message_id);
+
   // Many mutation functions are allow only to non-external filesystems, This
   // function returns true if the filesystem is opened and isn't external as an
   // access check for these functions.
@@ -125,6 +139,13 @@ class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared {
   // Lazily initialized var created from the external path. This is so we can
   // return the identical string object every time it is requested.
   scoped_refptr<StringVar> external_path_var_;
+
+  int routing_id_;
+
+  typedef base::Callback<void (base::PlatformFileError, base::PassPlatformFile)>
+      AsyncOpenFileCallback;
+
+  IDMap<AsyncOpenFileCallback> pending_async_open_files_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileRef_Impl);
 };
