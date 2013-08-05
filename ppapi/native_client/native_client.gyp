@@ -128,6 +128,9 @@
               '-Wl,<(NACL_RODATA_FLAG)=<(NACL_IRT_DATA_START)',
               '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
             ],
+            'extra_args': [
+              '--strip-all',
+            ],
             'conditions': [
               # untrusted.gypi and build_nexe.py currently build
               # both x86-32 and x86-64 whenever target_arch is some
@@ -142,12 +145,7 @@
                 {
                   'enable_x86_32': 0
                 }
-              ]
-            ],
-            'extra_args': [
-              '--strip-all',
-            ],
-            'conditions': [
+              ],
               ['target_arch!="arm"', {
                 'extra_deps_newlib64': [
                   '>(tc_lib_dir_irt64)/libppapi_proxy_untrusted.a',
