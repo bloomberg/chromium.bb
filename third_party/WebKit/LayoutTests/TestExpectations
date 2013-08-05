@@ -1226,7 +1226,7 @@ crbug.com/260655 [ Linux Debug ] inspector/profiler/canvas2d/canvas2d-gradient-c
 
 crbug.com/248146 [ Linux ] editing/selection/after-line-wrap.html [ ImageOnlyFailure ]
 crbug.com/248146 [ Linux ] fast/text/whitespace/nbsp-mode-and-linewraps.html [ ImageOnlyFailure ]
-crbug.com/250970 fast/events/simulated-key-state.html [ Crash Timeout ]
+crbug.com/250970 [ Debug ] fast/events/simulated-key-state.html [ Crash Timeout ]
 
 crbug.com/254332 [ Linux ] fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse.html [ ImageOnlyFailure Pass ]
@@ -1281,15 +1281,8 @@ crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-
 crbug.com/268111 [ Win7 Release ] http/tests/inspector/appcache/appcache-swap.html [ Pass Timeout ]
 crbug.com/268111 [ Win ] http/tests/appcache/online-whitelist.html [ Pass Failure ]
 
-crbug.com/264088 [ SnowLeopard ] svg/as-image/animated-svg-as-image.html [ ImageOnlyFailure ]
-crbug.com/264088 [ SnowLeopard ] svg/carto.net/window.svg [ ImageOnlyFailure ]
-crbug.com/264088 [ Mac ] canvas/philip/tests/2d.text.draw.baseline.ideographic.html [ Failure ]
-crbug.com/264088 [ Mac ] virtual/gpu/canvas/philip/tests/2d.text.draw.baseline.ideographic.html [ Failure ]
-crbug.com/264088 [ SnowLeopard ] media/video-frame-size-change.html [ ImageOnlyFailure Pass ]
-
 crbug.com/268231 [ Mac Debug ] http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Pass Failure ]
 
 crbug.com/268246 http/tests/inspector/search/scripts-search-scope.html [ Pass Failure ]
 
-crbug.com/268251 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ ImageOnlyFailure ]
-
+crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-shared-basic.html [ Failure Pass ]
