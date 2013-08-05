@@ -394,14 +394,18 @@ size_t WebAppShortcutCreator::CreateShortcutsIn(
     return 0;
 
   base::FilePath app_name = GetShortcutName();
-  base::FilePath staging_path =
-      scoped_temp_dir.path().Append(app_name);
+  base::FilePath staging_path = scoped_temp_dir.path().Append(app_name);
   if (!BuildShortcut(staging_path))
     return 0;
 
   for (std::vector<base::FilePath>::const_iterator it = folders.begin();
        it != folders.end(); ++it) {
     const base::FilePath& dst_path = *it;
+    if (!file_util::CreateDirectory(dst_path)) {
+      LOG(ERROR) << "Creating directory " << dst_path.value() << " failed.";
+      return succeeded;
+    }
+
     if (!base::CopyDirectory(staging_path, dst_path, true)) {
       LOG(ERROR) << "Copying app to dst path: " << dst_path.value()
                  << " failed";
@@ -417,42 +421,48 @@ size_t WebAppShortcutCreator::CreateShortcutsIn(
 
 bool WebAppShortcutCreator::CreateShortcuts(
     ShortcutCreationReason creation_reason) {
-  base::FilePath dst_path = GetDestinationPath();
-  if (dst_path.empty() || !base::DirectoryExists(dst_path.DirName())) {
+  const base::FilePath applications_path = GetDestinationPath();
+  if (applications_path.empty() ||
+      !base::DirectoryExists(applications_path.DirName())) {
     LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
     return false;
   }
 
-  if (!file_util::CreateDirectory(app_data_path_)) {
-    LOG(ERROR) << "Creating app_data_path " << app_data_path_.value()
-               << " failed.";
-    return false;
-  }
+  UpdateAppShortcutsSubdirLocalizedName(applications_path);
 
-  if (!file_util::CreateDirectory(dst_path)) {
-    LOG(ERROR) << "Creating directory " << dst_path.value() << " failed.";
-    return false;
-  }
-
-  UpdateAppShortcutsSubdirLocalizedName(dst_path);
+  // If non-nil, this path is added to the OSX Dock after creating shortcuts.
+  NSString* path_to_add_to_dock = nil;
 
   std::vector<base::FilePath> paths;
-  paths.push_back(app_data_path_);
-  paths.push_back(dst_path);
+
+  // For the app list shim, place a copy in Chrome's user data dir for use in
+  // the OSX Dock, and do not create the copy in the profile dir. This is done
+  // because the kAppLauncherHasBeenEnabled preference is tied to the local
+  // state, rather than per-profile.
+  const bool is_app_list = info_.extension_id == app_mode::kAppListModeId;
+  if (is_app_list) {
+    base::FilePath user_data_dir;
+    CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+    path_to_add_to_dock = base::SysUTF8ToNSString(
+        user_data_dir.Append(GetShortcutName()).AsUTF8Unsafe());
+    paths.push_back(user_data_dir);
+  } else {
+    paths.push_back(app_data_path_);
+  }
+  paths.push_back(applications_path);
+
   size_t success_count = CreateShortcutsIn(paths);
   if (success_count == 0)
     return false;
 
-  UpdateInternalBundleIdentifier();
+  if (!is_app_list)
+    UpdateInternalBundleIdentifier();
 
   if (success_count != paths.size())
     return false;
 
-  if (info_.extension_id == app_mode::kAppListModeId) {
-    NSString* internal_app_list_app_path = base::SysUTF8ToNSString(
-        app_data_path_.Append(GetShortcutName()).AsUTF8Unsafe());
-    dock::AddIcon(internal_app_list_app_path, nil);
-  }
+  if (path_to_add_to_dock)
+    dock::AddIcon(path_to_add_to_dock, nil);
 
   if (creation_reason == SHORTCUT_CREATION_BY_USER)
     RevealAppShimInFinder();
