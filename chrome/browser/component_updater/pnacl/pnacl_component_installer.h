@@ -7,7 +7,7 @@
 
 #include <list>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -47,6 +47,8 @@ class PnaclComponentInstaller : public ComponentInstaller {
   // updater service.
   void ReRegisterPnacl();
 
+  CrxComponent GetCrxComponent();
+
   // Return true if PNaCl installs are separated by user.
   bool per_user() const { return per_user_; }
 
@@ -66,17 +68,20 @@ class PnaclComponentInstaller : public ComponentInstaller {
   ComponentUpdateService* cus() const { return cus_; }
 
   typedef base::Callback<void(bool)> InstallCallback;
-  void AddInstallCallback(const InstallCallback& cb);
 
-  void NotifyInstallError();
-
-  void NotifyInstallSuccess();
+  // Ask the component updater service to do a first-install for PNaCl.
+  // The |installed| callback will be run with |true| on success,
+  // or run with |false| on an error. The callback is called on the UI thread.
+  void RequestFirstInstall(const InstallCallback& installed);
 
  private:
-  // Cancel a particular callback after a timeout.
-  void CancelCallback(int callback_num);
+  friend class PnaclUpdaterObserver;
 
-  void NotifyAllWithResult(bool status);
+  // Called when a RequestFirstInstall completed successfully.
+  void NotifyInstallSuccess();
+
+  // Called when a RequestFirstInstall will not happen, or an error occurred.
+  void NotifyInstallError();
 
   bool per_user_;
   bool updates_disabled_;
@@ -84,26 +89,12 @@ class PnaclComponentInstaller : public ComponentInstaller {
   base::FilePath current_profile_path_;
   base::Version current_version_;
   ComponentUpdateService* cus_;
-  // Counter to issue identifiers to each callback.
-  int callback_nums_;
-  // List of callbacks to issue when an install completes successfully.
-  std::list<std::pair<InstallCallback, int> > install_callbacks_;
+  // The one callback to call when there is a RequestFirstInstall.
+  InstallCallback install_callback_;
   // Component updater service observer, to determine when an on-demand
   // install request failed.
   scoped_ptr<PnaclUpdaterObserver> updater_observer_;
   DISALLOW_COPY_AND_ASSIGN(PnaclComponentInstaller);
 };
-
-// Returns true if this browser is compatible with the given Pnacl component
-// manifest, with the version specified in the manifest in |version_out|.
-bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
-                                 base::Version* version_out);
-
-// Ask the given component updater service to do a first-install for PNaCl.
-// The |installed| callback will be run with |true| on success,
-// or run with |false| on an error. The callback is called on the UI thread.
-void RequestFirstInstall(ComponentUpdateService* cus,
-                         PnaclComponentInstaller* pci,
-                         const base::Callback<void(bool)>& installed);
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_

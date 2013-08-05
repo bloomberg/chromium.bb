@@ -61,8 +61,10 @@ ppapi::host::HostFactory* NaClBrowserDelegateImpl::CreatePpapiHostFactory(
 
 void NaClBrowserDelegateImpl::TryInstallPnacl(
     const base::Callback<void(bool)>& installed) {
-  ComponentUpdateService* cus = g_browser_process->component_updater();
   PnaclComponentInstaller* pci =
       g_browser_process->pnacl_component_installer();
-  RequestFirstInstall(cus, pci, installed);
+  if (pci)
+    pci->RequestFirstInstall(installed);
+  else
+    installed.Run(false);
 }

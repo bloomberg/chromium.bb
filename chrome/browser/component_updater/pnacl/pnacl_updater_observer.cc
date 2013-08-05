@@ -4,28 +4,46 @@
 
 #include "chrome/browser/component_updater/pnacl/pnacl_updater_observer.h"
 
-#include "base/logging.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
-#include "content/public/browser/notification_service.h"
+#include "content/public/browser/browser_thread.h"
 
-PnaclUpdaterObserver::PnaclUpdaterObserver(
-    PnaclComponentInstaller* installer) : pnacl_installer_(installer) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
-                 content::NotificationService::AllSources());
+using content::BrowserThread;
+
+PnaclUpdaterObserver::PnaclUpdaterObserver(PnaclComponentInstaller* pci)
+    : must_observe_(false), pnacl_installer_(pci) {}
+
+PnaclUpdaterObserver::~PnaclUpdaterObserver() {}
+
+void PnaclUpdaterObserver::EnsureObserving() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  must_observe_ = true;
 }
 
-PnaclUpdaterObserver::~PnaclUpdaterObserver() { }
+void PnaclUpdaterObserver::StopObserving() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  must_observe_ = false;
+}
 
-void PnaclUpdaterObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING) {
-    // If the component updater sleeps before a NotifyInstallSuccess,
-    // then requests for installs were likely skipped, or an error occurred.
-    pnacl_installer_->NotifyInstallError();
-    return;
+void PnaclUpdaterObserver::OnEvent(Events event, int extra) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (must_observe_) {
+    switch (event) {
+      default:
+        break;
+      case COMPONENT_UPDATE_READY:
+        // If the component updater says there is an UPDATE_READY w/ source
+        // being the PNaCl ID, then installation is handed off to the PNaCl
+        // installer and we can stop observing. The installer will be the one
+        // to run the callback w/ success or failure.
+        must_observe_ = false;
+        break;
+      case COMPONENT_UPDATER_SLEEPING:
+        // If the component updater sleeps before an UPDATE_READY for this
+        // component, then requests for installs were likely skipped,
+        // an error occurred, or there was no new update.
+        must_observe_ = false;
+        pnacl_installer_->NotifyInstallError();
+        break;
+    }
   }
 }

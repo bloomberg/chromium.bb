@@ -137,8 +137,6 @@ base::DictionaryValue* ReadComponentManifest(
   return ReadJSONManifest(manifest_path);
 }
 
-}  // namespace
-
 // Check that the component's manifest is for PNaCl, and check the
 // PNaCl manifest indicates this is the correct arch-specific package.
 bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
@@ -188,11 +186,12 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
   return true;
 }
 
+}  // namespace
+
 PnaclComponentInstaller::PnaclComponentInstaller()
     : per_user_(false),
       updates_disabled_(false),
-      cus_(NULL),
-      callback_nums_(0) {
+      cus_(NULL) {
 #if defined(OS_CHROMEOS)
   per_user_ = true;
 #endif
@@ -299,52 +298,47 @@ bool PnaclComponentInstaller::GetInstalledFile(
   return true;
 }
 
-void PnaclComponentInstaller::AddInstallCallback(
-    const InstallCallback& cb) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int num = ++callback_nums_;
-  install_callbacks_.push_back(std::make_pair(cb, num));
-}
-
-void PnaclComponentInstaller::CancelCallback(int num) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  for (std::list<std::pair<InstallCallback, int> >::iterator
-           i = install_callbacks_.begin(),
-           e = install_callbacks_.end(); i != e; ++i) {
-    if (i->second == num) {
-      i->first.Run(false);
-      install_callbacks_.erase(i);
-      return;
-    }
-  }
-}
-
-void PnaclComponentInstaller::NotifyAllWithResult(bool status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  while (!install_callbacks_.empty()) {
-    install_callbacks_.front().first.Run(status);
-    install_callbacks_.pop_front();
-  }
-}
-
 void PnaclComponentInstaller::NotifyInstallError() {
-  if (!install_callbacks_.empty()) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&PnaclComponentInstaller::NotifyAllWithResult,
+        base::Bind(&PnaclComponentInstaller::NotifyInstallError,
                    // Unretained because installer lives until process shutdown.
-                   base::Unretained(this), false));
+                   base::Unretained(this)));
+    return;
+  }
+  if (!install_callback_.is_null()) {
+    updater_observer_->StopObserving();
+    install_callback_.Run(false);
+    install_callback_.Reset();
   }
 }
 
 void PnaclComponentInstaller::NotifyInstallSuccess() {
-  if (!install_callbacks_.empty()) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&PnaclComponentInstaller::NotifyAllWithResult,
+        base::Bind(&PnaclComponentInstaller::NotifyInstallSuccess,
                    // Unretained because installer lives until process shutdown.
-                   base::Unretained(this), true));
+                   base::Unretained(this)));
+    return;
   }
+  if (!install_callback_.is_null()) {
+    updater_observer_->StopObserving();
+    install_callback_.Run(true);
+    install_callback_.Reset();
+  }
+}
+
+CrxComponent PnaclComponentInstaller::GetCrxComponent() {
+  CrxComponent pnacl_component;
+  pnacl_component.version = current_version();
+  pnacl_component.name = "pnacl";
+  pnacl_component.installer = this;
+  pnacl_component.observer = updater_observer_.get();
+  SetPnaclHash(&pnacl_component);
+
+  return pnacl_component;
 }
 
 namespace {
@@ -352,12 +346,8 @@ namespace {
 void FinishPnaclUpdateRegistration(const Version& current_version,
                                    PnaclComponentInstaller* pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CrxComponent pnacl_component;
-  pnacl_component.version = current_version;
-  pnacl_component.name = "pnacl";
-  pnacl_component.installer = pci;
   pci->set_current_version(current_version);
-  SetPnaclHash(&pnacl_component);
+  CrxComponent pnacl_component = pci->GetCrxComponent();
 
   ComponentUpdateService::Status status =
       pci->cus()->RegisterComponent(pnacl_component);
@@ -481,22 +471,21 @@ void PnaclComponentInstaller::ReRegisterPnacl() {
       base::Bind(&GetProfileInformation, this));
 }
 
-void RequestFirstInstall(ComponentUpdateService* cus,
-                         PnaclComponentInstaller* pci,
-                          const base::Callback<void(bool)>& installed) {
+void PnaclComponentInstaller::RequestFirstInstall(const InstallCallback& cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Version null_version(kNullVersion);
-  CrxComponent pnacl_component;
-  pci->set_current_version(null_version);
-  pnacl_component.version = null_version;
-  pnacl_component.name = "pnacl";
-  pnacl_component.installer = pci;
-  SetPnaclHash(&pnacl_component);
-  ComponentUpdateService::Status status = cus->CheckForUpdateSoon(
-      pnacl_component);
-  if (status != ComponentUpdateService::kOk) {
-    installed.Run(false);
+  // Only one request can happen at once.
+  if (!install_callback_.is_null()) {
+    cb.Run(false);
     return;
   }
-  pci->AddInstallCallback(installed);
+  set_current_version(Version(kNullVersion));
+  CrxComponent pnacl_component = GetCrxComponent();
+  ComponentUpdateService::Status status = cus_->CheckForUpdateSoon(
+      pnacl_component);
+  if (status != ComponentUpdateService::kOk) {
+    cb.Run(false);
+    return;
+  }
+  install_callback_ = cb;
+  updater_observer_->EnsureObserving();
 }

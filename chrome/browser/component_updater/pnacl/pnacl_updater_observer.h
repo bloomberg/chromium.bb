@@ -6,25 +6,24 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_UPDATER_OBSERVER_H_
 
 #include "base/compiler_specific.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/component_updater/component_updater_service.h"
 
 class PnaclComponentInstaller;
 
 // Monitors the component updater service, so that the callbacks registered
 // against the PnaclComponentInstaller can be notified of events.
-class PnaclUpdaterObserver : public content::NotificationObserver {
+class PnaclUpdaterObserver : public ComponentObserver {
  public:
-  explicit PnaclUpdaterObserver(PnaclComponentInstaller* installer);
+  explicit PnaclUpdaterObserver(PnaclComponentInstaller* pci);
   virtual ~PnaclUpdaterObserver();
 
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE;
+  virtual void OnEvent(Events event, int extra) OVERRIDE;
+
+  void EnsureObserving();
+  void StopObserving();
 
  private:
-  content::NotificationRegistrar registrar_;
+  bool must_observe_;
   PnaclComponentInstaller* pnacl_installer_;
   DISALLOW_COPY_AND_ASSIGN(PnaclUpdaterObserver);
 };
