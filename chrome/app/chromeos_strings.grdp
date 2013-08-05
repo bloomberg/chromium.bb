@@ -522,7 +522,7 @@ Press any key to continue exploring.
     Continue
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_START_BUTTON_TEXT" desc="Text shown on start button in supervised user creation dialog.">
-    Create supervised user.
+    Create supervised user
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_NEXT_BUTTON_TEXT" desc="Text shown on next button in supervised user creation dialog.">
     Next
