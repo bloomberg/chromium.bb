@@ -424,9 +424,14 @@ class OmniboxEditModel {
   // autocomplete text that has not yet been accepted.
   string16 user_text_;
 
-  // We keep track of when the user last focused on the omnibox, but reset it
-  // to null when user input occurs.
-  base::TimeTicks last_omnibox_focus_without_user_input_;
+  // We keep track of when the user last focused on the omnibox.
+  base::TimeTicks last_omnibox_focus_;
+
+  // Whether any user input has occurred since focusing on the omnibox. This is
+  // used along with |last_omnibox_focus_| to calculate the time between a user
+  // focusing on the omnibox and editing. It is initialized to true since
+  // there was no focus event.
+  bool user_input_since_focus_;
 
   // We keep track of when the user began modifying the omnibox text.
   // This should be valid whenever user_input_in_progress_ is true.

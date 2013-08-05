@@ -9332,6 +9332,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.FocusToOpenTime" units="ms">
+  <summary>
+    The length of time between when a user focused on the omnibox and opened an
+    omnibox match (which could be what they typed or a suggestion).
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.ProviderTime" units="ms">
   <summary>
     The length of time taken by the named provider&quot;s synchronous pass.

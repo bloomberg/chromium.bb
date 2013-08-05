@@ -97,6 +97,10 @@ const char kEnteredKeywordModeHistogram[] = "Omnibox.EnteredKeywordMode";
 // between focusing and editing the omnibox.
 const char kFocusToEditTimeHistogram[] = "Omnibox.FocusToEditTime";
 
+// Histogram name which counts the number of milliseconds a user takes
+// between focusing and opening an omnibox match.
+const char kFocusToOpenTimeHistogram[] = "Omnibox.FocusToOpenTime";
+
 void RecordPercentageMatchHistogram(const string16& old_text,
                                     const string16& new_text,
                                     bool search_term_replacement_active,
@@ -164,6 +168,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       controller_(controller),
       focus_state_(OMNIBOX_FOCUS_NONE),
       user_input_in_progress_(false),
+      user_input_since_focus_(true),
       just_deleted_text_(false),
       has_temporary_text_(false),
       paste_state_(NONE),
@@ -414,14 +419,11 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
 }
 
 void OmniboxEditModel::SetInputInProgress(bool in_progress) {
-  if (in_progress && !last_omnibox_focus_without_user_input_.is_null()) {
+  if (in_progress && !user_input_since_focus_) {
     base::TimeTicks now = base::TimeTicks::Now();
-    DCHECK(last_omnibox_focus_without_user_input_ <= now);
-    UMA_HISTOGRAM_TIMES(kFocusToEditTimeHistogram,
-                        now - last_omnibox_focus_without_user_input_);
-    // We only want to count the time from focus to the first user input, so
-    // reset |last_omnibox_focus_without_user_input_| to null.
-    last_omnibox_focus_without_user_input_ = base::TimeTicks();
+    DCHECK(last_omnibox_focus_ <= now);
+    UMA_HISTOGRAM_TIMES(kFocusToEditTimeHistogram, now - last_omnibox_focus_);
+    user_input_since_focus_ = true;
   }
 
   if (user_input_in_progress_ == in_progress)
@@ -658,6 +660,9 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         content::Source<Profile>(profile_),
         content::Details<OmniboxLog>(&log));
     HISTOGRAM_ENUMERATION("Omnibox.EventCount", 1, 2);
+    DCHECK(!last_omnibox_focus_.is_null())
+        << "An omnibox focus should have occurred before opening a match.";
+    UMA_HISTOGRAM_TIMES(kFocusToOpenTimeHistogram, now - last_omnibox_focus_);
   }
 
   TemplateURL* template_url = match.GetTemplateURL(profile_, false);
@@ -794,7 +799,8 @@ void OmniboxEditModel::ClearKeyword(const string16& visible_text) {
 }
 
 void OmniboxEditModel::OnSetFocus(bool control_down) {
-  last_omnibox_focus_without_user_input_ = base::TimeTicks::Now();
+  last_omnibox_focus_ = base::TimeTicks::Now();
+  user_input_since_focus_ = false;
 
   // If the omnibox lost focus while the caret was hidden and then regained
   // focus, OnSetFocus() is called and should restore visibility. Note that
