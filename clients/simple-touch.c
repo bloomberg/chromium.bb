@@ -95,7 +95,7 @@ shm_format(void *data, struct wl_shm *wl_shm, uint32_t format)
 		touch->has_argb = 1;
 }
 
-struct wl_shm_listener shm_listenter = {
+struct wl_shm_listener shm_listener = {
 	shm_format
 };
 
@@ -257,7 +257,7 @@ handle_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		touch->shm = wl_registry_bind(registry, name,
 					      &wl_shm_interface, 1);
-		wl_shm_add_listener(touch->shm, &shm_listenter, touch);
+		wl_shm_add_listener(touch->shm, &shm_listener, touch);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		touch->seat = wl_registry_bind(registry, name,
 					       &wl_seat_interface, 1);

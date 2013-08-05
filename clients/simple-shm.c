@@ -294,7 +294,7 @@ shm_format(void *data, struct wl_shm *wl_shm, uint32_t format)
 	d->formats |= (1 << format);
 }
 
-struct wl_shm_listener shm_listenter = {
+struct wl_shm_listener shm_listener = {
 	shm_format
 };
 
@@ -314,7 +314,7 @@ registry_handle_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_registry_bind(registry,
 					  id, &wl_shm_interface, 1);
-		wl_shm_add_listener(d->shm, &shm_listenter, d);
+		wl_shm_add_listener(d->shm, &shm_listener, d);
 	}
 }
 
