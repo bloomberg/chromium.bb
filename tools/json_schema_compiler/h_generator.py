@@ -289,6 +289,7 @@ class _Generator(object):
     event_namespace = cpp_util.Classname(event.name)
     (c.Append('namespace %s {' % event_namespace)
       .Append()
+      .Concat(self._GenerateEventNameConstant(event))
       .Concat(self._GenerateCreateCallbackArguments(event))
       .Eblock('}  // namespace %s' % event_namespace)
     )
@@ -363,6 +364,15 @@ class _Generator(object):
           param, self._type_helper.GetCppType(param.type_)))
     c.Append('scoped_ptr<base::ListValue> Create(%s);' %
              ', '.join(declaration_list))
+    return c
+
+  def _GenerateEventNameConstant(self, event):
+    """Generates a constant string array for the event name.
+    """
+    c = Code()
+    c.Append('extern const char kEventName[];  // "%s.%s"' % (
+                 self._namespace.name, event.name))
+    c.Append()
     return c
 
   def _GenerateFunctionResults(self, callback):

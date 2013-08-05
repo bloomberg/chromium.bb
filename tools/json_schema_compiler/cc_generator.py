@@ -150,10 +150,9 @@ class _Generator(object):
         items.append('%s(0.0)' % prop.unix_name)
       elif t.property_type == PropertyType.BOOLEAN:
         items.append('%s(false)' % prop.unix_name)
-      elif t.property_type == PropertyType.BINARY:
-        items.append('%s(NULL)' % prop.unix_name)
       elif (t.property_type == PropertyType.ANY or
             t.property_type == PropertyType.ARRAY or
+            t.property_type == PropertyType.BINARY or  # mapped to std::string
             t.property_type == PropertyType.CHOICES or
             t.property_type == PropertyType.ENUM or
             t.property_type == PropertyType.OBJECT or
@@ -424,6 +423,7 @@ class _Generator(object):
     event_namespace = cpp_util.Classname(event.name)
     (c.Append('namespace %s {' % event_namespace)
       .Append()
+      .Cblock(self._GenerateEventNameConstant(None, event))
       .Cblock(self._GenerateCreateCallbackArguments(None, event))
       .Append('}  // namespace %s' % event_namespace)
     )
@@ -824,6 +824,14 @@ class _Generator(object):
         'declaration_list': ', '.join(declaration_list),
         'param_names': ', '.join(param.unix_name for param in params)
     })
+    return c
+
+  def _GenerateEventNameConstant(self, function_scope, event):
+    """Generates a constant string array for the event name.
+    """
+    c = Code()
+    c.Append('const char kEventName[] = "%s.%s";' % (
+                 self._namespace.name, event.name))
     return c
 
   def _InitializePropertyToDefault(self, prop, dst):
