@@ -23,9 +23,10 @@
 #include "core/dom/Text.h"
 
 #include "SVGNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/ScopedEventQueue.h"
@@ -50,14 +51,14 @@ PassRefPtr<Text> Text::createEditingText(Document* document, const String& data)
     return adoptRef(new Text(document, data, CreateEditingText));
 }
 
-PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionCode& ec)
+PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
 
     // IndexSizeError: Raised if the specified offset is negative or greater than
     // the number of 16-bit units in data.
     if (offset > length()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return 0;
     }
 
@@ -69,8 +70,8 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionCode& ec)
     didModifyData(oldStr);
 
     if (parentNode())
-        parentNode()->insertBefore(newText.get(), nextSibling(), ec);
-    if (ec)
+        parentNode()->insertBefore(newText.get(), nextSibling(), es);
+    if (es.hadException())
         return 0;
 
     if (parentNode())
@@ -154,7 +155,7 @@ PassRefPtr<Text> Text::replaceWholeText(const String& newText)
     for (RefPtr<Node> n = startText; n && n != this && n->isTextNode() && n->parentNode() == parent;) {
         RefPtr<Node> nodeToRemove(n.release());
         n = nodeToRemove->nextSibling();
-        parent->removeChild(nodeToRemove.get(), IGNORE_EXCEPTION);
+        parent->removeChild(nodeToRemove.get(), IGNORE_EXCEPTION_STATE);
     }
 
     if (this != endText) {
@@ -162,13 +163,13 @@ PassRefPtr<Text> Text::replaceWholeText(const String& newText)
         for (RefPtr<Node> n = nextSibling(); n && n != onePastEndText && n->isTextNode() && n->parentNode() == parent;) {
             RefPtr<Node> nodeToRemove(n.release());
             n = nodeToRemove->nextSibling();
-            parent->removeChild(nodeToRemove.get(), IGNORE_EXCEPTION);
+            parent->removeChild(nodeToRemove.get(), IGNORE_EXCEPTION_STATE);
         }
     }
 
     if (newText.isEmpty()) {
         if (parent && parentNode() == parent)
-            parent->removeChild(this, IGNORE_EXCEPTION);
+            parent->removeChild(this, IGNORE_EXCEPTION_STATE);
         return 0;
     }
 

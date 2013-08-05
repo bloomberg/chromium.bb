@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ContentDistributor.h"
@@ -106,9 +107,9 @@ ShadowRoot* ShadowRoot::bindingsOlderShadowRoot() const
     return older;
 }
 
-PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionCode& ec)
+PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& es)
 {
-    ec = DataCloneError;
+    es.throwDOMException(DataCloneError);
     return 0;
 }
 
@@ -117,15 +118,15 @@ String ShadowRoot::innerHTML() const
     return createMarkup(this, ChildrenOnly);
 }
 
-void ShadowRoot::setInnerHTML(const String& markup, ExceptionCode& ec)
+void ShadowRoot::setInnerHTML(const String& markup, ExceptionState& es)
 {
     if (isOrphan()) {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return;
     }
 
-    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, ec))
-        replaceChildrenWithFragment(this, fragment.release(), ec);
+    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, es))
+        replaceChildrenWithFragment(this, fragment.release(), es);
 }
 
 bool ShadowRoot::childTypeAllowed(NodeType type) const

@@ -30,9 +30,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class TimeRanges;
-
-typedef int ExceptionCode;
 
 class MediaControllerInterface {
 public:
@@ -45,7 +44,7 @@ public:
 
     virtual double duration() const = 0;
     virtual double currentTime() const = 0;
-    virtual void setCurrentTime(double, ExceptionCode&) = 0;
+    virtual void setCurrentTime(double, ExceptionState&) = 0;
 
     virtual bool paused() const = 0;
     virtual void play() = 0;
@@ -58,7 +57,7 @@ public:
     virtual void setPlaybackRate(double) = 0;
 
     virtual double volume() const = 0;
-    virtual void setVolume(double, ExceptionCode&) = 0;
+    virtual void setVolume(double, ExceptionState&) = 0;
 
     virtual bool muted() const = 0;
     virtual void setMuted(bool) = 0;

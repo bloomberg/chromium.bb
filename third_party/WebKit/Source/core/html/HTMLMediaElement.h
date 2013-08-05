@@ -46,6 +46,7 @@ class MediaElementAudioSourceNode;
 #endif
 class ContentType;
 class Event;
+class ExceptionState;
 class HTMLSourceElement;
 class HTMLTrackElement;
 class KURL;
@@ -121,7 +122,7 @@ public:
 
 // playback state
     double currentTime() const;
-    void setCurrentTime(double, ExceptionCode&);
+    void setCurrentTime(double, ExceptionState&);
     double initialTime() const;
     double startTime() const;
     double duration() const;
@@ -155,11 +156,11 @@ public:
 //  Media Source.
     void closeMediaSource();
 
-    void webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionCode&);
-    void webkitGenerateKeyRequest(const String& keySystem, ExceptionCode&);
-    void webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionCode&);
-    void webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, ExceptionCode&);
-    void webkitCancelKeyRequest(const String& keySystem, const String& sessionId, ExceptionCode&);
+    void webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState&);
+    void webkitGenerateKeyRequest(const String& keySystem, ExceptionState&);
+    void webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState&);
+    void webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, ExceptionState&);
+    void webkitCancelKeyRequest(const String& keySystem, const String& sessionId, ExceptionState&);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeyadded);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeyerror);
@@ -175,7 +176,7 @@ public:
     bool controls() const;
     void setControls(bool);
     double volume() const;
-    void setVolume(double, ExceptionCode&);
+    void setVolume(double, ExceptionState&);
     bool muted() const;
     void setMuted(bool);
 
@@ -187,9 +188,9 @@ public:
 
     double percentLoaded() const;
 
-    PassRefPtr<TextTrack> addTextTrack(const String& kind, const String& label, const String& language, ExceptionCode&);
-    PassRefPtr<TextTrack> addTextTrack(const String& kind, const String& label, ExceptionCode& ec) { return addTextTrack(kind, label, emptyString(), ec); }
-    PassRefPtr<TextTrack> addTextTrack(const String& kind, ExceptionCode& ec) { return addTextTrack(kind, emptyString(), emptyString(), ec); }
+    PassRefPtr<TextTrack> addTextTrack(const String& kind, const String& label, const String& language, ExceptionState&);
+    PassRefPtr<TextTrack> addTextTrack(const String& kind, const String& label, ExceptionState& es) { return addTextTrack(kind, label, emptyString(), es); }
+    PassRefPtr<TextTrack> addTextTrack(const String& kind, ExceptionState& es) { return addTextTrack(kind, emptyString(), emptyString(), es); }
 
     TextTrackList* textTracks();
     CueList currentlyActiveCues() const { return m_currentlyActiveCues; }
@@ -383,7 +384,7 @@ private:
     void startProgressEventTimer();
     void stopPeriodicTimers();
 
-    void seek(double time, ExceptionCode&);
+    void seek(double time, ExceptionState&);
     void finishSeek();
     void checkIfSeekNeeded();
     void addPlayedRange(double start, double end);

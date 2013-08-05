@@ -90,8 +90,8 @@ public:
     CanvasRenderingContext* getContext(const String&, CanvasContextAttributes* attributes = 0);
 
     static String toEncodingMimeType(const String& mimeType);
-    String toDataURL(const String& mimeType, const double* quality, ExceptionCode&);
-    String toDataURL(const String& mimeType, ExceptionCode& ec) { return toDataURL(mimeType, 0, ec); }
+    String toDataURL(const String& mimeType, const double* quality, ExceptionState&);
+    String toDataURL(const String& mimeType, ExceptionState& es) { return toDataURL(mimeType, 0, es); }
 
     // Used for rendering
     void didDraw(const FloatRect&);

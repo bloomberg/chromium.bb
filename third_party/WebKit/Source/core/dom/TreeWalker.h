@@ -33,33 +33,33 @@
 
 namespace WebCore {
 
-    typedef int ExceptionCode;
+class ExceptionState;
 
-    class TreeWalker : public ScriptWrappable, public RefCounted<TreeWalker>, public Traversal {
-    public:
-        static PassRefPtr<TreeWalker> create(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
-        {
-            return adoptRef(new TreeWalker(rootNode, whatToShow, filter));
-        }
+class TreeWalker : public ScriptWrappable, public RefCounted<TreeWalker>, public Traversal {
+public:
+    static PassRefPtr<TreeWalker> create(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
+    {
+        return adoptRef(new TreeWalker(rootNode, whatToShow, filter));
+    }
 
-        Node* currentNode() const { return m_current.get(); }
-        void setCurrentNode(PassRefPtr<Node>, ExceptionCode&);
+    Node* currentNode() const { return m_current.get(); }
+    void setCurrentNode(PassRefPtr<Node>, ExceptionState&);
 
-        Node* parentNode(ScriptState*);
-        Node* firstChild(ScriptState*);
-        Node* lastChild(ScriptState*);
-        Node* previousSibling(ScriptState*);
-        Node* nextSibling(ScriptState*);
-        Node* previousNode(ScriptState*);
-        Node* nextNode(ScriptState*);
+    Node* parentNode(ScriptState*);
+    Node* firstChild(ScriptState*);
+    Node* lastChild(ScriptState*);
+    Node* previousSibling(ScriptState*);
+    Node* nextSibling(ScriptState*);
+    Node* previousNode(ScriptState*);
+    Node* nextNode(ScriptState*);
 
-    private:
-        TreeWalker(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
+private:
+    TreeWalker(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
 
-        Node* setCurrent(PassRefPtr<Node>);
+    Node* setCurrent(PassRefPtr<Node>);
 
-        RefPtr<Node> m_current;
-    };
+    RefPtr<Node> m_current;
+};
 
 } // namespace WebCore
 

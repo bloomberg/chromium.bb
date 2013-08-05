@@ -29,6 +29,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class SVGGlyphElement;
 
 class SVGAltGlyphElement FINAL : public SVGTextPositioningElement,
@@ -37,9 +38,9 @@ public:
     static PassRefPtr<SVGAltGlyphElement> create(const QualifiedName&, Document*);
 
     const AtomicString& glyphRef() const;
-    void setGlyphRef(const AtomicString&, ExceptionCode&);
+    void setGlyphRef(const AtomicString&, ExceptionState&);
     const AtomicString& format() const;
-    void setFormat(const AtomicString&, ExceptionCode&);
+    void setFormat(const AtomicString&, ExceptionState&);
 
     bool hasValidGlyphElements(Vector<String>& glyphNames) const;
 

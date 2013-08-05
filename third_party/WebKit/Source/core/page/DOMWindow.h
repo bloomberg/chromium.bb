@@ -77,8 +77,6 @@ namespace WebCore {
 
     typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
 
-    typedef int ExceptionCode;
-
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
     class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTarget, public FrameDestructionObserver, public Supplementable<DOMWindow> {
@@ -339,8 +337,8 @@ namespace WebCore {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(deviceorientation);
 
         // HTML 5 key/value storage
-        Storage* sessionStorage(ExceptionCode&) const;
-        Storage* localStorage(ExceptionCode&) const;
+        Storage* sessionStorage(ExceptionState&) const;
+        Storage* localStorage(ExceptionState&) const;
         Storage* optionalSessionStorage() const { return m_sessionStorage.get(); }
         Storage* optionalLocalStorage() const { return m_localStorage.get(); }
 

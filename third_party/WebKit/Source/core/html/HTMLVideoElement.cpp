@@ -28,6 +28,7 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
@@ -219,7 +220,7 @@ bool HTMLVideoElement::hasAvailableVideoFrame() const
     return player()->hasVideo() && player()->readyState() >= MediaPlayer::HaveCurrentData;
 }
 
-void HTMLVideoElement::webkitEnterFullscreen(ExceptionCode& ec)
+void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& es)
 {
     if (isFullscreen())
         return;
@@ -227,7 +228,7 @@ void HTMLVideoElement::webkitEnterFullscreen(ExceptionCode& ec)
     // Generate an exception if this isn't called in response to a user gesture, or if the
     // element does not support fullscreen.
     if ((userGestureRequiredForFullscreen() && !ScriptController::processingUserGesture()) || !supportsFullscreen()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
 

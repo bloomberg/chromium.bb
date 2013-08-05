@@ -25,6 +25,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class MeterValueElement;
 class RenderMeter;
 
@@ -39,22 +40,22 @@ public:
     };
 
     double min() const;
-    void setMin(double, ExceptionCode&);
+    void setMin(double, ExceptionState&);
 
     double max() const;
-    void setMax(double, ExceptionCode&);
+    void setMax(double, ExceptionState&);
 
     double value() const;
-    void setValue(double, ExceptionCode&);
+    void setValue(double, ExceptionState&);
 
     double low() const;
-    void setLow(double, ExceptionCode&);
+    void setLow(double, ExceptionState&);
 
     double high() const;
-    void setHigh(double, ExceptionCode&);
+    void setHigh(double, ExceptionState&);
 
     double optimum() const;
-    void setOptimum(double, ExceptionCode&);
+    void setOptimum(double, ExceptionState&);
 
     double valueRatio() const;
     GaugeRegion gaugeRegion() const;

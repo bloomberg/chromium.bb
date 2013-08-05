@@ -30,12 +30,14 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 class HTMLTableSectionElement FINAL : public HTMLTablePartElement {
 public:
     static PassRefPtr<HTMLTableSectionElement> create(const QualifiedName&, Document*);
 
-    PassRefPtr<HTMLElement> insertRow(int index, ExceptionCode&);
-    void deleteRow(int index, ExceptionCode&);
+    PassRefPtr<HTMLElement> insertRow(int index, ExceptionState&);
+    void deleteRow(int index, ExceptionState&);
 
     int numRows() const;
 

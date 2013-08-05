@@ -27,10 +27,10 @@
 #include "core/editing/CompositeEditCommand.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
 #include "core/dom/ScopedEventQueue.h"
@@ -890,7 +890,7 @@ void CompositeEditCommand::removePlaceholderAt(const Position& p)
 PassRefPtr<Node> CompositeEditCommand::insertNewDefaultParagraphElementAt(const Position& position)
 {
     RefPtr<Element> paragraphElement = createDefaultParagraphElement(document());
-    paragraphElement->appendChild(createBreakElement(document()), IGNORE_EXCEPTION);
+    paragraphElement->appendChild(createBreakElement(document()), IGNORE_EXCEPTION_STATE);
     insertNodeAt(paragraphElement, position);
     return paragraphElement.release();
 }

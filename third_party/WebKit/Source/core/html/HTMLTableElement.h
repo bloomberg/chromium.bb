@@ -30,6 +30,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class HTMLCollection;
 class HTMLTableCaptionElement;
 class HTMLTableRowsCollection;
@@ -41,13 +42,13 @@ public:
     static PassRefPtr<HTMLTableElement> create(const QualifiedName&, Document*);
 
     HTMLTableCaptionElement* caption() const;
-    void setCaption(PassRefPtr<HTMLTableCaptionElement>, ExceptionCode&);
+    void setCaption(PassRefPtr<HTMLTableCaptionElement>, ExceptionState&);
 
     HTMLTableSectionElement* tHead() const;
-    void setTHead(PassRefPtr<HTMLTableSectionElement>, ExceptionCode&);
+    void setTHead(PassRefPtr<HTMLTableSectionElement>, ExceptionState&);
 
     HTMLTableSectionElement* tFoot() const;
-    void setTFoot(PassRefPtr<HTMLTableSectionElement>, ExceptionCode&);
+    void setTFoot(PassRefPtr<HTMLTableSectionElement>, ExceptionState&);
 
     PassRefPtr<HTMLElement> createTHead();
     void deleteTHead();
@@ -56,8 +57,8 @@ public:
     PassRefPtr<HTMLElement> createTBody();
     PassRefPtr<HTMLElement> createCaption();
     void deleteCaption();
-    PassRefPtr<HTMLElement> insertRow(int index, ExceptionCode&);
-    void deleteRow(int index, ExceptionCode&);
+    PassRefPtr<HTMLElement> insertRow(int index, ExceptionState&);
+    void deleteRow(int index, ExceptionState&);
 
     PassRefPtr<HTMLCollection> rows();
     PassRefPtr<HTMLCollection> tBodies();

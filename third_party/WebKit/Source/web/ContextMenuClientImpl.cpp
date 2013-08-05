@@ -44,10 +44,10 @@
 #include "WebSpellCheckClient.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/editing/Editor.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLFormElement.h"
@@ -164,7 +164,7 @@ static String selectMisspellingAsync(Frame* selectedFrame, DocumentMarker& marke
     marker = *markers[0];
 
     // Cloning a range fails only for invalid ranges.
-    RefPtr<Range> markerRange = selectionRange->cloneRange(ASSERT_NO_EXCEPTION);
+    RefPtr<Range> markerRange = selectionRange->cloneRange(ASSERT_NO_EXCEPTION_STATE);
     markerRange->setStart(markerRange->startContainer(), marker.startOffset());
     markerRange->setEnd(markerRange->endContainer(), marker.endOffset());
 

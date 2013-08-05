@@ -26,6 +26,7 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/rendering/RenderMarquee.h"
 
@@ -127,10 +128,10 @@ int HTMLMarqueeElement::scrollAmount() const
     return ok && scrollAmount >= 0 ? scrollAmount : RenderStyle::initialMarqueeIncrement().intValue();
 }
 
-void HTMLMarqueeElement::setScrollAmount(int scrollAmount, ExceptionCode& ec)
+void HTMLMarqueeElement::setScrollAmount(int scrollAmount, ExceptionState& es)
 {
     if (scrollAmount < 0)
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
     else
         setIntegralAttribute(scrollamountAttr, scrollAmount);
 }
@@ -142,10 +143,10 @@ int HTMLMarqueeElement::scrollDelay() const
     return ok && scrollDelay >= 0 ? scrollDelay : RenderStyle::initialMarqueeSpeed();
 }
 
-void HTMLMarqueeElement::setScrollDelay(int scrollDelay, ExceptionCode& ec)
+void HTMLMarqueeElement::setScrollDelay(int scrollDelay, ExceptionState& es)
 {
     if (scrollDelay < 0)
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
     else
         setIntegralAttribute(scrolldelayAttr, scrollDelay);
 }
@@ -157,10 +158,10 @@ int HTMLMarqueeElement::loop() const
     return ok && loopValue > 0 ? loopValue : -1;
 }
 
-void HTMLMarqueeElement::setLoop(int loop, ExceptionCode& ec)
+void HTMLMarqueeElement::setLoop(int loop, ExceptionState& es)
 {
     if (loop <= 0 && loop != -1)
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
     else
         setIntegralAttribute(loopAttr, loop);
 }

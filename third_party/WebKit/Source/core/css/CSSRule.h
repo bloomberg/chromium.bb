@@ -31,7 +31,6 @@ namespace WebCore {
 class CSSStyleSheet;
 class StyleRuleBase;
 struct CSSParserContext;
-typedef int ExceptionCode;
 
 class CSSRule : public RefCounted<CSSRule> {
 public:

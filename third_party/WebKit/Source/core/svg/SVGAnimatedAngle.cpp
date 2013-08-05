@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGAnimatedAngle.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGMarkerElement.h"
 
@@ -34,7 +34,7 @@ SVGAnimatedAngleAnimator::SVGAnimatedAngleAnimator(SVGAnimationElement* animatio
 static inline SVGAngle& sharedSVGAngle(const String& valueAsString)
 {
     DEFINE_STATIC_LOCAL(SVGAngle, sharedAngle, ());
-    sharedAngle.setValueAsString(valueAsString, ASSERT_NO_EXCEPTION);
+    sharedAngle.setValueAsString(valueAsString, ASSERT_NO_EXCEPTION_STATE);
     return sharedAngle;
 }
 
@@ -150,9 +150,9 @@ void SVGAnimatedAngleAnimator::calculateAnimatedValue(float percentage, unsigned
 float SVGAnimatedAngleAnimator::calculateDistance(const String& fromString, const String& toString)
 {
     SVGAngle from = SVGAngle();
-    from.setValueAsString(fromString, ASSERT_NO_EXCEPTION);
+    from.setValueAsString(fromString, ASSERT_NO_EXCEPTION_STATE);
     SVGAngle to = SVGAngle();
-    to.setValueAsString(toString, ASSERT_NO_EXCEPTION);
+    to.setValueAsString(toString, ASSERT_NO_EXCEPTION_STATE);
     return fabsf(to.value() - from.value());
 }
 

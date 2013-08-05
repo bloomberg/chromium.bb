@@ -33,6 +33,7 @@
 #include "core/html/TextFieldInputType.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/BeforeTextInsertedEvent.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/NodeRenderStyle.h"
@@ -245,30 +246,30 @@ void TextFieldInputType::createShadowSubtree()
 
     m_innerText = TextControlInnerTextElement::create(document);
     if (!createsContainer) {
-        element()->userAgentShadowRoot()->appendChild(m_innerText, IGNORE_EXCEPTION);
+        element()->userAgentShadowRoot()->appendChild(m_innerText, IGNORE_EXCEPTION_STATE);
         return;
     }
 
     ShadowRoot* shadowRoot = element()->userAgentShadowRoot();
     m_container = TextControlInnerContainer::create(document);
     m_container->setPseudo(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
-    shadowRoot->appendChild(m_container, IGNORE_EXCEPTION);
+    shadowRoot->appendChild(m_container, IGNORE_EXCEPTION_STATE);
 
     m_innerBlock = TextControlInnerElement::create(document);
-    m_innerBlock->appendChild(m_innerText, IGNORE_EXCEPTION);
-    m_container->appendChild(m_innerBlock, IGNORE_EXCEPTION);
+    m_innerBlock->appendChild(m_innerText, IGNORE_EXCEPTION_STATE);
+    m_container->appendChild(m_innerBlock, IGNORE_EXCEPTION_STATE);
 
 #if ENABLE(INPUT_SPEECH)
     ASSERT(!m_speechButton);
     if (element()->isSpeechEnabled()) {
         m_speechButton = InputFieldSpeechButtonElement::create(document);
-        m_container->appendChild(m_speechButton, IGNORE_EXCEPTION);
+        m_container->appendChild(m_speechButton, IGNORE_EXCEPTION_STATE);
     }
 #endif
 
     if (shouldHaveSpinButton) {
         m_innerSpinButton = SpinButtonElement::create(document, *this);
-        m_container->appendChild(m_innerSpinButton, IGNORE_EXCEPTION);
+        m_container->appendChild(m_innerSpinButton, IGNORE_EXCEPTION_STATE);
     }
 }
 
@@ -419,7 +420,7 @@ void TextFieldInputType::updatePlaceholderText()
     String placeholderText = element()->strippedPlaceholder();
     if (placeholderText.isEmpty()) {
         if (m_placeholder) {
-            m_placeholder->parentNode()->removeChild(m_placeholder.get(), ASSERT_NO_EXCEPTION);
+            m_placeholder->parentNode()->removeChild(m_placeholder.get(), ASSERT_NO_EXCEPTION_STATE);
             m_placeholder.clear();
         }
         return;
@@ -427,9 +428,9 @@ void TextFieldInputType::updatePlaceholderText()
     if (!m_placeholder) {
         m_placeholder = HTMLDivElement::create(element()->document());
         m_placeholder->setPseudo(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
-        element()->userAgentShadowRoot()->insertBefore(m_placeholder, m_container ? m_container->nextSibling() : innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION);
+        element()->userAgentShadowRoot()->insertBefore(m_placeholder, m_container ? m_container->nextSibling() : innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION_STATE);
     }
-    m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION);
+    m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION_STATE);
     element()->fixPlaceholderRenderer(m_placeholder.get(), m_container ? m_container.get() : m_innerText.get());
 }
 

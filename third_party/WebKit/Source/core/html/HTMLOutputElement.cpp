@@ -32,7 +32,7 @@
 #include "core/html/HTMLOutputElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 
 namespace WebCore {
 
@@ -138,7 +138,7 @@ void HTMLOutputElement::setTextContentInternal(const String& value)
 {
     ASSERT(!m_isSetTextContentInProgress);
     m_isSetTextContentInProgress = true;
-    setTextContent(value, IGNORE_EXCEPTION);
+    setTextContent(value, IGNORE_EXCEPTION_STATE);
 }
 
 } // namespace

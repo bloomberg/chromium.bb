@@ -41,6 +41,7 @@
 #include "WebNodeList.h"
 #include "WebPluginContainer.h"
 #include "WebPluginContainerImpl.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Event.h"
@@ -203,7 +204,10 @@ WebNodeList WebNode::getElementsByTagName(const WebString& tag) const
 
 WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) const
 {
-    return WebElement(m_private->querySelector(tag, ec));
+    TrackExceptionState es;
+    WebElement element(m_private->querySelector(tag, es));
+    ec = es;
+    return element;
 }
 
 WebElement WebNode::rootEditableElement() const
@@ -218,9 +222,9 @@ bool WebNode::focused() const
 
 bool WebNode::remove()
 {
-    ExceptionCode exceptionCode = 0;
-    m_private->remove(exceptionCode);
-    return !exceptionCode;
+    TrackExceptionState es;
+    m_private->remove(es);
+    return !es.hadException();
 }
 
 bool WebNode::hasNonEmptyBoundingBox() const

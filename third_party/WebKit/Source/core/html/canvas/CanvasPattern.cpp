@@ -26,14 +26,15 @@
 #include "config.h"
 #include "core/html/canvas/CanvasPattern.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-void CanvasPattern::parseRepetitionType(const String& type, bool& repeatX, bool& repeatY, ExceptionCode& ec)
+void CanvasPattern::parseRepetitionType(const String& type, bool& repeatX, bool& repeatY, ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
     if (type.isEmpty() || type == "repeat") {
         repeatX = true;
         repeatY = true;
@@ -54,7 +55,7 @@ void CanvasPattern::parseRepetitionType(const String& type, bool& repeatX, bool&
         repeatY = true;
         return;
     }
-    ec = SyntaxError;
+    es.throwDOMException(SyntaxError);
 }
 
 CanvasPattern::CanvasPattern(PassRefPtr<Image> image, bool repeatX, bool repeatY, bool originClean)

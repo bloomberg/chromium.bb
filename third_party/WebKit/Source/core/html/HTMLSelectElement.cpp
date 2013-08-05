@@ -29,10 +29,11 @@
 #include "core/html/HTMLSelectElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/NodeRenderingContext.h"
@@ -210,7 +211,7 @@ int HTMLSelectElement::activeSelectionEndListIndex() const
     return lastSelectedListIndex();
 }
 
-void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, ExceptionCode& ec)
+void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, ExceptionState& es)
 {
     // Make sure the element is ref'd and deref'd so we don't leak it.
     RefPtr<HTMLElement> protectNewChild(element);
@@ -218,7 +219,7 @@ void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, Exception
     if (!element || !(element->hasLocalName(optionTag) || element->hasLocalName(hrTag)))
         return;
 
-    insertBefore(element, before, ec, AttachLazily);
+    insertBefore(element, before, es, AttachLazily);
     setNeedsValidityCheck();
 }
 
@@ -228,7 +229,7 @@ void HTMLSelectElement::remove(int optionIndex)
     if (listIndex < 0)
         return;
 
-    listItems()[listIndex]->remove(IGNORE_EXCEPTION);
+    listItems()[listIndex]->remove(IGNORE_EXCEPTION_STATE);
 }
 
 void HTMLSelectElement::remove(HTMLOptionElement* option)
@@ -236,7 +237,7 @@ void HTMLSelectElement::remove(HTMLOptionElement* option)
     if (option->ownerSelectElement() != this)
         return;
 
-    option->remove(IGNORE_EXCEPTION);
+    option->remove(IGNORE_EXCEPTION_STATE);
 }
 
 String HTMLSelectElement::value() const
@@ -416,32 +417,32 @@ Node* HTMLSelectElement::item(unsigned index)
     return options()->item(index);
 }
 
-void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, ExceptionCode& ec)
+void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
     if (index > maxSelectItems - 1)
         index = maxSelectItems - 1;
     int diff = index - length();
     RefPtr<HTMLElement> before = 0;
     // Out of array bounds? First insert empty dummies.
     if (diff > 0) {
-        setLength(index, ec);
+        setLength(index, es);
         // Replace an existing entry?
     } else if (diff < 0) {
         before = toHTMLElement(options()->item(index+1));
         remove(index);
     }
     // Finally add the new element.
-    if (!ec) {
-        add(option, before.get(), ec);
+    if (!es.hadException()) {
+        add(option, before.get(), es);
         if (diff >= 0 && option->selected())
             optionSelectionStateChanged(option, true);
     }
 }
 
-void HTMLSelectElement::setLength(unsigned newLen, ExceptionCode& ec)
+void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
     if (newLen > maxSelectItems)
         newLen = maxSelectItems;
     int diff = length() - newLen;
@@ -450,8 +451,8 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionCode& ec)
         do {
             RefPtr<Element> option = document()->createElement(optionTag, false);
             ASSERT(option);
-            add(toHTMLElement(option.get()), 0, ec);
-            if (ec)
+            add(toHTMLElement(option.get()), 0, es);
+            if (es.hadException())
                 break;
         } while (++diff);
     } else {
@@ -472,7 +473,7 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionCode& ec)
         for (size_t i = 0; i < itemsToRemove.size(); ++i) {
             Element* item = itemsToRemove[i].get();
             if (item->parentNode())
-                item->parentNode()->removeChild(item, ec);
+                item->parentNode()->removeChild(item, es);
         }
     }
     setNeedsValidityCheck();
@@ -1569,17 +1570,17 @@ void HTMLSelectElement::finishParsingChildren()
     updateListItemSelectedStates();
 }
 
-bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionCode& ec)
+bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionState& es)
 {
     if (!value) {
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
         return false;
     }
-    setOption(index, value.get(), ec);
+    setOption(index, value.get(), es);
     return true;
 }
 
-bool HTMLSelectElement::anonymousIndexedSetterRemove(unsigned index, ExceptionCode& ec)
+bool HTMLSelectElement::anonymousIndexedSetterRemove(unsigned index, ExceptionState& es)
 {
     remove(index);
     return true;

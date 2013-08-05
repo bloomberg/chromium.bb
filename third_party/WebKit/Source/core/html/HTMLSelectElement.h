@@ -34,6 +34,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class HTMLOptionElement;
 
 class HTMLSelectElement FINAL : public HTMLFormControlElementWithState, public TypeAheadDataSource {
@@ -59,7 +60,7 @@ public:
 
     bool usesMenuList() const;
 
-    void add(HTMLElement*, HTMLElement* beforeElement, ExceptionCode&);
+    void add(HTMLElement*, HTMLElement* beforeElement, ExceptionState&);
     void remove(int index);
     void remove(HTMLOptionElement*);
 
@@ -84,8 +85,8 @@ public:
 
     void setSize(int);
 
-    void setOption(unsigned index, HTMLOptionElement*, ExceptionCode&);
-    void setLength(unsigned, ExceptionCode&);
+    void setOption(unsigned index, HTMLOptionElement*, ExceptionState&);
+    void setLength(unsigned, ExceptionState&);
 
     Node* namedItem(const AtomicString& name);
     Node* item(unsigned index);
@@ -108,8 +109,8 @@ public:
     // For use in the implementation of HTMLOptionElement.
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
     bool isParsingInProgress() const { return m_isParsingInProgress; }
-    bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionCode&);
-    bool anonymousIndexedSetterRemove(unsigned, ExceptionCode&);
+    bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionState&);
+    bool anonymousIndexedSetterRemove(unsigned, ExceptionState&);
 
 protected:
     HTMLSelectElement(const QualifiedName&, Document*, HTMLFormElement*, bool createdByParser);

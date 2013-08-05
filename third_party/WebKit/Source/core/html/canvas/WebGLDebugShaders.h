@@ -32,9 +32,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class WebGLShader;
-
-typedef int ExceptionCode;
 
 class WebGLDebugShaders : public WebGLExtension, public ScriptWrappable {
 public:
@@ -45,7 +44,7 @@ public:
     virtual ~WebGLDebugShaders();
     virtual ExtensionName getName() const;
 
-    String getTranslatedShaderSource(WebGLShader*, ExceptionCode&);
+    String getTranslatedShaderSource(WebGLShader*, ExceptionState&);
 
 private:
     WebGLDebugShaders(WebGLRenderingContext*);

@@ -23,6 +23,7 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSHelper.h"
@@ -591,12 +592,12 @@ double CSSPrimitiveValue::computeLengthDouble(const RenderStyle* style, const Re
     return result * multiplier;
 }
 
-void CSSPrimitiveValue::setFloatValue(unsigned short, double, ExceptionCode& ec)
+void CSSPrimitiveValue::setFloatValue(unsigned short, double, ExceptionState& es)
 {
     // Keeping values immutable makes optimizations easier and allows sharing of the primitive value objects.
     // No other engine supports mutating style through this API. Computed style is always read-only anyway.
     // Supporting setter would require making primitive value copy-on-write and taking care of style invalidation.
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
 double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(unsigned short unitType)
@@ -651,16 +652,16 @@ double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(unsigned short u
     return factor;
 }
 
-double CSSPrimitiveValue::getDoubleValue(unsigned short unitType, ExceptionCode& ec) const
+double CSSPrimitiveValue::getDoubleValue(unsigned short unitType, ExceptionState& es) const
 {
     double result = 0;
     bool success = getDoubleValueInternal(static_cast<UnitTypes>(unitType), &result);
     if (!success) {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return 0.0;
     }
 
-    ec = 0;
+    es.clearException();
     return result;
 }
 
@@ -752,17 +753,17 @@ bool CSSPrimitiveValue::getDoubleValueInternal(UnitTypes requestedUnitType, doub
     return true;
 }
 
-void CSSPrimitiveValue::setStringValue(unsigned short, const String&, ExceptionCode& ec)
+void CSSPrimitiveValue::setStringValue(unsigned short, const String&, ExceptionState& es)
 {
     // Keeping values immutable makes optimizations easier and allows sharing of the primitive value objects.
     // No other engine supports mutating style through this API. Computed style is always read-only anyway.
     // Supporting setter would require making primitive value copy-on-write and taking care of style invalidation.
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
-String CSSPrimitiveValue::getStringValue(ExceptionCode& ec) const
+String CSSPrimitiveValue::getStringValue(ExceptionState& es) const
 {
-    ec = 0;
+    es.clearException();
     switch (m_primitiveUnitType) {
         case CSS_STRING:
         case CSS_ATTR:
@@ -774,7 +775,7 @@ String CSSPrimitiveValue::getStringValue(ExceptionCode& ec) const
         case CSS_PROPERTY_ID:
             return propertyName(m_value.propertyID);
         default:
-            ec = InvalidAccessError;
+            es.throwDOMException(InvalidAccessError);
             break;
     }
 
@@ -800,44 +801,44 @@ String CSSPrimitiveValue::getStringValue() const
     return String();
 }
 
-Counter* CSSPrimitiveValue::getCounterValue(ExceptionCode& ec) const
+Counter* CSSPrimitiveValue::getCounterValue(ExceptionState& es) const
 {
-    ec = 0;
+    es.clearException();
     if (m_primitiveUnitType != CSS_COUNTER) {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return 0;
     }
 
     return m_value.counter;
 }
 
-Rect* CSSPrimitiveValue::getRectValue(ExceptionCode& ec) const
+Rect* CSSPrimitiveValue::getRectValue(ExceptionState& es) const
 {
-    ec = 0;
+    es.clearException();
     if (m_primitiveUnitType != CSS_RECT) {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return 0;
     }
 
     return m_value.rect;
 }
 
-Quad* CSSPrimitiveValue::getQuadValue(ExceptionCode& ec) const
+Quad* CSSPrimitiveValue::getQuadValue(ExceptionState& es) const
 {
-    ec = 0;
+    es.clearException();
     if (m_primitiveUnitType != CSS_QUAD) {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return 0;
     }
 
     return m_value.quad;
 }
 
-PassRefPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionCode& ec) const
+PassRefPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionState& es) const
 {
-    ec = 0;
+    es.clearException();
     if (m_primitiveUnitType != CSS_RGBCOLOR) {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return 0;
     }
 
@@ -845,11 +846,11 @@ PassRefPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionCode& ec) cons
     return RGBColor::create(m_value.rgbcolor);
 }
 
-Pair* CSSPrimitiveValue::getPairValue(ExceptionCode& ec) const
+Pair* CSSPrimitiveValue::getPairValue(ExceptionState& es) const
 {
-    ec = 0;
+    es.clearException();
     if (m_primitiveUnitType != CSS_PAIR) {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return 0;
     }
 

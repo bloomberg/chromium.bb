@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/xml/XPathEvaluator.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
 #include "core/xml/NativeXPathNSResolver.h"
@@ -38,11 +39,9 @@ namespace WebCore {
 
 using namespace XPath;
 
-PassRefPtr<XPathExpression> XPathEvaluator::createExpression(const String& expression,
-                                                             XPathNSResolver* resolver,
-                                                             ExceptionCode& ec)
+PassRefPtr<XPathExpression> XPathEvaluator::createExpression(const String& expression, XPathNSResolver* resolver, ExceptionState& es)
 {
-    return XPathExpression::createExpression(expression, resolver, ec);
+    return XPathExpression::createExpression(expression, resolver, es);
 }
 
 PassRefPtr<XPathNSResolver> XPathEvaluator::createNSResolver(Node* nodeResolver)
@@ -50,24 +49,20 @@ PassRefPtr<XPathNSResolver> XPathEvaluator::createNSResolver(Node* nodeResolver)
     return NativeXPathNSResolver::create(nodeResolver);
 }
 
-PassRefPtr<XPathResult> XPathEvaluator::evaluate(const String& expression,
-                                                 Node* contextNode,
-                                                 XPathNSResolver* resolver,
-                                                 unsigned short type,
-                                                 XPathResult* result,
-                                                 ExceptionCode& ec)
+PassRefPtr<XPathResult> XPathEvaluator::evaluate(const String& expression, Node* contextNode,
+    XPathNSResolver* resolver, unsigned short type, XPathResult* result, ExceptionState& es)
 {
     if (!isValidContextNode(contextNode)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
 
-    ec = 0;
-    RefPtr<XPathExpression> expr = createExpression(expression, resolver, ec);
-    if (ec)
+    es.clearException();
+    RefPtr<XPathExpression> expr = createExpression(expression, resolver, es);
+    if (es.hadException())
         return 0;
 
-    return expr->evaluate(contextNode, type, result, ec);
+    return expr->evaluate(contextNode, type, result, es);
 }
 
 }

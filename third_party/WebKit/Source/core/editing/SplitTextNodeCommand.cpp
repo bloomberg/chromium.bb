@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/editing/SplitTextNodeCommand.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Text.h"
@@ -54,7 +55,7 @@ void SplitTextNodeCommand::doApply()
     if (!parent || !parent->rendererIsEditable())
         return;
 
-    String prefixText = m_text2->substringData(0, m_offset, IGNORE_EXCEPTION);
+    String prefixText = m_text2->substringData(0, m_offset, IGNORE_EXCEPTION_STATE);
     if (prefixText.isEmpty())
         return;
 
@@ -74,10 +75,10 @@ void SplitTextNodeCommand::doUnapply()
 
     String prefixText = m_text1->data();
 
-    m_text2->insertData(0, prefixText, ASSERT_NO_EXCEPTION);
+    m_text2->insertData(0, prefixText, ASSERT_NO_EXCEPTION_STATE);
 
     document()->markers()->copyMarkers(m_text1.get(), 0, prefixText.length(), m_text2.get(), 0);
-    m_text1->remove(ASSERT_NO_EXCEPTION);
+    m_text1->remove(ASSERT_NO_EXCEPTION_STATE);
 }
 
 void SplitTextNodeCommand::doReapply()
@@ -94,11 +95,11 @@ void SplitTextNodeCommand::doReapply()
 
 void SplitTextNodeCommand::insertText1AndTrimText2()
 {
-    ExceptionCode ec = 0;
-    m_text2->parentNode()->insertBefore(m_text1.get(), m_text2.get(), ec);
-    if (ec)
+    TrackExceptionState es;
+    m_text2->parentNode()->insertBefore(m_text1.get(), m_text2.get(), es);
+    if (es.hadException())
         return;
-    m_text2->deleteData(0, m_offset, ec);
+    m_text2->deleteData(0, m_offset, es);
 }
 
 #ifndef NDEBUG

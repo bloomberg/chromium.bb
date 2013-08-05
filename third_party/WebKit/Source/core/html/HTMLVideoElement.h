@@ -30,6 +30,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class HTMLImageLoader;
 
 class HTMLVideoElement FINAL : public HTMLMediaElement {
@@ -44,14 +45,14 @@ public:
     unsigned videoHeight() const;
 
     // Fullscreen
-    void webkitEnterFullscreen(ExceptionCode&);
+    void webkitEnterFullscreen(ExceptionState&);
     void webkitExitFullscreen();
     bool webkitSupportsFullscreen();
     bool webkitDisplayingFullscreen();
 
     // FIXME: Maintain "FullScreen" capitalization scheme for backwards compatibility.
     // https://bugs.webkit.org/show_bug.cgi?id=36081
-    void webkitEnterFullScreen(ExceptionCode& ec) { webkitEnterFullscreen(ec); }
+    void webkitEnterFullScreen(ExceptionState& es) { webkitEnterFullscreen(es); }
     void webkitExitFullScreen() { webkitExitFullscreen(); }
 
     // Statistics

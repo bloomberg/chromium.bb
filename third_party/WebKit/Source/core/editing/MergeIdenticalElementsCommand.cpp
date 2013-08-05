@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/editing/MergeIdenticalElementsCommand.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
 
 namespace WebCore {
@@ -53,9 +54,9 @@ void MergeIdenticalElementsCommand::doApply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_element2->insertBefore(children[i].release(), m_atChild.get(), IGNORE_EXCEPTION);
+        m_element2->insertBefore(children[i].release(), m_atChild.get(), IGNORE_EXCEPTION_STATE);
 
-    m_element1->remove(IGNORE_EXCEPTION);
+    m_element1->remove(IGNORE_EXCEPTION_STATE);
 }
 
 void MergeIdenticalElementsCommand::doUnapply()
@@ -69,10 +70,10 @@ void MergeIdenticalElementsCommand::doUnapply()
     if (!parent || !parent->rendererIsEditable())
         return;
 
-    ExceptionCode ec = 0;
+    TrackExceptionState es;
 
-    parent->insertBefore(m_element1.get(), m_element2.get(), ec);
-    if (ec)
+    parent->insertBefore(m_element1.get(), m_element2.get(), es);
+    if (es.hadException())
         return;
 
     Vector<RefPtr<Node> > children;
@@ -81,7 +82,7 @@ void MergeIdenticalElementsCommand::doUnapply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_element1->appendChild(children[i].release(), ec);
+        m_element1->appendChild(children[i].release(), es);
 }
 
 #ifndef NDEBUG

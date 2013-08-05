@@ -35,8 +35,7 @@
 namespace WebCore {
 
 class CSSStyleDeclaration;
-
-typedef int ExceptionCode;
+class ExceptionState;
 
 class CSSVariablesMap : public RefCounted<CSSVariablesMap> {
 public:
@@ -50,9 +49,9 @@ public:
     unsigned size() const;
     String get(const AtomicString& name) const;
     bool has(const AtomicString& name) const;
-    void set(const AtomicString& name, const String& value, ExceptionCode&) const;
+    void set(const AtomicString& name, const String& value, ExceptionState&) const;
     bool remove(const AtomicString& name) const;
-    void clear(ExceptionCode&) const;
+    void clear(ExceptionState&) const;
 
     void clearStyleDeclaration() { m_styleDeclaration = 0; }
 

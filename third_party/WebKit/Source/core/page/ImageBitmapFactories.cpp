@@ -33,6 +33,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8ImageBitmap.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -70,148 +71,148 @@ static ScriptObject resolveImageBitmap(PassRefPtr<ImageBitmap> imageBitmap)
     return resolver->promise();
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLImageElement* image, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLImageElement* image, ExceptionState& es)
 {
     LayoutSize s = sizeFor(image);
-    return createImageBitmap(eventTarget, image, 0, 0, s.width(), s.height(), ec);
+    return createImageBitmap(eventTarget, image, 0, 0, s.width(), s.height(), es);
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLImageElement* image, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLImageElement* image, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!image) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return ScriptObject();
     }
     if (!image->cachedImage()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return ScriptObject();
     }
     if (image->cachedImage()->image()->isSVGImage()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return ScriptObject();
     }
     if (!sw || !sh) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return ScriptObject();
     }
     if (!image->cachedImage()->image()->hasSingleSecurityOrigin()) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return ScriptObject();
     }
     if (!image->cachedImage()->passesAccessControlCheck(eventTarget->toDOMWindow()->document()->securityOrigin())
     && eventTarget->toDOMWindow()->document()->securityOrigin()->taintsCanvas(image->src())) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return ScriptObject();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
     return resolveImageBitmap(ImageBitmap::create(image, IntRect(sx, sy, sw, sh)));
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLVideoElement* video, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLVideoElement* video, ExceptionState& es)
 {
     IntSize s = sizeFor(video);
-    return createImageBitmap(eventTarget, video, 0, 0, s.width(), s.height(), ec);
+    return createImageBitmap(eventTarget, video, 0, 0, s.width(), s.height(), es);
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLVideoElement* video, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLVideoElement* video, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!video) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return ScriptObject();
     }
     if (!video->player()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return ScriptObject();
     }
     if (video->networkState() == HTMLMediaElement::NETWORK_EMPTY) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return ScriptObject();
     }
     if (video->player()->readyState() <= MediaPlayer::HaveMetadata) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return ScriptObject();
     }
     if (!sw || !sh) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return ScriptObject();
     }
     if (!video->hasSingleSecurityOrigin()) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return ScriptObject();
     }
     if (!video->player()->didPassCORSAccessCheck() && eventTarget->toDOMWindow()->document()->securityOrigin()->taintsCanvas(video->currentSrc())) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return ScriptObject();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
     return resolveImageBitmap(ImageBitmap::create(video, IntRect(sx, sy, sw, sh)));
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, CanvasRenderingContext2D* context, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, CanvasRenderingContext2D* context, ExceptionState& es)
 {
-    return createImageBitmap(eventTarget, context->canvas(), ec);
+    return createImageBitmap(eventTarget, context->canvas(), es);
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, CanvasRenderingContext2D* context, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, CanvasRenderingContext2D* context, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
-    return createImageBitmap(eventTarget, context->canvas(), sx, sy, sw, sh, ec);
+    return createImageBitmap(eventTarget, context->canvas(), sx, sy, sw, sh, es);
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLCanvasElement* canvas, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLCanvasElement* canvas, ExceptionState& es)
 {
-    return createImageBitmap(eventTarget, canvas, 0, 0, canvas->width(), canvas->height(), ec);
+    return createImageBitmap(eventTarget, canvas, 0, 0, canvas->width(), canvas->height(), es);
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLCanvasElement* canvas, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLCanvasElement* canvas, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!canvas) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return ScriptObject();
     }
     if (!canvas->originClean()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return ScriptObject();
     }
     if (!sw || !sh) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return ScriptObject();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
     return resolveImageBitmap(ImageBitmap::create(canvas, IntRect(sx, sy, sw, sh)));
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, ImageData* data, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, ImageData* data, ExceptionState& es)
 {
-    return createImageBitmap(eventTarget, data, 0, 0, data->width(), data->height(), ec);
+    return createImageBitmap(eventTarget, data, 0, 0, data->width(), data->height(), es);
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, ImageData* data, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, ImageData* data, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!data) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return ScriptObject();
     }
     if (!sw || !sh) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return ScriptObject();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
     return resolveImageBitmap(ImageBitmap::create(data, IntRect(sx, sy, sw, sh)));
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, ImageBitmap* bitmap, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, ImageBitmap* bitmap, ExceptionState& es)
 {
-    return createImageBitmap(eventTarget, bitmap, 0, 0, bitmap->width(), bitmap->height(), ec);
+    return createImageBitmap(eventTarget, bitmap, 0, 0, bitmap->width(), bitmap->height(), es);
 }
 
-ScriptObject createImageBitmap(EventTarget* eventTarget, ImageBitmap* bitmap, int sx, int sy, int sw, int sh, ExceptionCode& ec)
+ScriptObject createImageBitmap(EventTarget* eventTarget, ImageBitmap* bitmap, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!bitmap) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return ScriptObject();
     }
     if (!sw || !sh) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return ScriptObject();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082

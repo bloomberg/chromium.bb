@@ -24,6 +24,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 template<typename PropertyType>
 class SVGStaticListPropertyTearOff : public SVGListProperty<PropertyType> {
 public:
@@ -42,39 +44,39 @@ public:
     }
 
     // SVGList API
-    void clear(ExceptionCode& ec)
+    void clear(ExceptionState& es)
     {
-        Base::clearValues(ec);
+        Base::clearValues(es);
     }
 
-    ListItemType initialize(const ListItemType& newItem, ExceptionCode& ec)
+    ListItemType initialize(const ListItemType& newItem, ExceptionState& es)
     {
-        return Base::initializeValues(newItem, ec);
+        return Base::initializeValues(newItem, es);
     }
 
-    ListItemType getItem(unsigned index, ExceptionCode& ec)
+    ListItemType getItem(unsigned index, ExceptionState& es)
     {
-        return Base::getItemValues(index, ec);
+        return Base::getItemValues(index, es);
     }
 
-    ListItemType insertItemBefore(const ListItemType& newItem, unsigned index, ExceptionCode& ec)
+    ListItemType insertItemBefore(const ListItemType& newItem, unsigned index, ExceptionState& es)
     {
-        return Base::insertItemBeforeValues(newItem, index, ec);
+        return Base::insertItemBeforeValues(newItem, index, es);
     }
 
-    ListItemType replaceItem(const ListItemType& newItem, unsigned index, ExceptionCode& ec)
+    ListItemType replaceItem(const ListItemType& newItem, unsigned index, ExceptionState& es)
     {
-        return Base::replaceItemValues(newItem, index, ec);
+        return Base::replaceItemValues(newItem, index, es);
     }
 
-    ListItemType removeItem(unsigned index, ExceptionCode& ec)
+    ListItemType removeItem(unsigned index, ExceptionState& es)
     {
-        return Base::removeItemValues(index, ec);
+        return Base::removeItemValues(index, es);
     }
 
-    ListItemType appendItem(const ListItemType& newItem, ExceptionCode& ec)
+    ListItemType appendItem(const ListItemType& newItem, ExceptionState& es)
     {
-        return Base::appendItemValues(newItem, ec);
+        return Base::appendItemValues(newItem, es);
     }
 
 private:

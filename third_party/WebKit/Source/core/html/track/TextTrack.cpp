@@ -30,9 +30,9 @@
  */
 
 #include "config.h"
-
 #include "core/html/track/TextTrack.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TextTrackCueList.h"
@@ -244,7 +244,7 @@ void TextTrack::addCue(PassRefPtr<TextTrackCue> prpCue)
     // list of cues.
     TextTrack* cueTrack = cue->track();
     if (cueTrack && cueTrack != this)
-        cueTrack->removeCue(cue.get(), ASSERT_NO_EXCEPTION);
+        cueTrack->removeCue(cue.get(), ASSERT_NO_EXCEPTION_STATE);
 
     // 2. Add cue to the method's TextTrack object's text track's text track list of cues.
     cue->setTrack(this);
@@ -254,7 +254,7 @@ void TextTrack::addCue(PassRefPtr<TextTrackCue> prpCue)
         m_client->textTrackAddCue(this, cue.get());
 }
 
-void TextTrack::removeCue(TextTrackCue* cue, ExceptionCode& ec)
+void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& es)
 {
     if (!cue)
         return;
@@ -266,13 +266,13 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionCode& ec)
     // 1. If the given cue is not currently listed in the method's TextTrack
     // object's text track's text track list of cues, then throw a NotFoundError exception.
     if (cue->track() != this) {
-        ec = NotFoundError;
+        es.throwDOMException(NotFoundError);
         return;
     }
 
     // 2. Remove cue from the method's TextTrack object's text track's text track list of cues.
     if (!m_cues || !m_cues->remove(cue)) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
 
@@ -321,7 +321,7 @@ void TextTrack::addRegion(PassRefPtr<TextTrackRegion> prpRegion)
     // region from that text track list of regions.
     TextTrack* regionTrack = region->track();
     if (regionTrack && regionTrack != this)
-        regionTrack->removeRegion(region.get(), ASSERT_NO_EXCEPTION);
+        regionTrack->removeRegion(region.get(), ASSERT_NO_EXCEPTION_STATE);
 
     // 2. If the method's TextTrack object's text track list of regions contains
     // a region with the same identifier as region replace the values of that
@@ -339,7 +339,7 @@ void TextTrack::addRegion(PassRefPtr<TextTrackRegion> prpRegion)
     regionList->add(region);
 }
 
-void TextTrack::removeRegion(TextTrackRegion* region, ExceptionCode &ec)
+void TextTrack::removeRegion(TextTrackRegion* region, ExceptionCode &es)
 {
     if (!region)
         return;
@@ -347,12 +347,12 @@ void TextTrack::removeRegion(TextTrackRegion* region, ExceptionCode &ec)
     // 1. If the given region is not currently listed in the method's TextTrack
     // object's text track list of regions, then throw a NotFoundError exception.
     if (region->track() != this) {
-        ec = NotFoundError;
+        es.throwDOMException(NotFoundError);
         return;
     }
 
     if (!m_regions || !m_regions->remove(region)) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
 

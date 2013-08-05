@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/html/HTMLDialogElement.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderBlock.h"
@@ -56,10 +57,10 @@ PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(const QualifiedName& tag
     return adoptRef(new HTMLDialogElement(tagName, document));
 }
 
-void HTMLDialogElement::close(const String& returnValue, ExceptionCode& ec)
+void HTMLDialogElement::close(const String& returnValue, ExceptionState& es)
 {
     if (!fastHasAttribute(openAttr)) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     setBooleanAttribute(openAttr, false);
@@ -112,10 +113,10 @@ void HTMLDialogElement::show()
     reposition();
 }
 
-void HTMLDialogElement::showModal(ExceptionCode& ec)
+void HTMLDialogElement::showModal(ExceptionState& es)
 {
     if (fastHasAttribute(openAttr) || !inDocument()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     document()->addToTopLayer(this);

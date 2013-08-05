@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/editing/AppendNodeCommand.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 
 namespace WebCore {
 
@@ -60,7 +60,7 @@ void AppendNodeCommand::doApply()
     if (!m_parent->rendererIsEditable() && m_parent->attached())
         return;
 
-    m_parent->appendChild(m_node.get(), IGNORE_EXCEPTION, AttachLazily);
+    m_parent->appendChild(m_node.get(), IGNORE_EXCEPTION_STATE, AttachLazily);
 
     if (AXObjectCache::accessibilityEnabled())
         sendAXTextChangedIgnoringLineBreaks(m_node.get(), AXObjectCache::AXTextInserted);
@@ -75,7 +75,7 @@ void AppendNodeCommand::doUnapply()
     if (AXObjectCache::accessibilityEnabled())
         sendAXTextChangedIgnoringLineBreaks(m_node.get(), AXObjectCache::AXTextDeleted);
 
-    m_node->remove(IGNORE_EXCEPTION);
+    m_node->remove(IGNORE_EXCEPTION_STATE);
 }
 
 #ifndef NDEBUG

@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-
 #include "core/css/CSSGroupingRule.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"
@@ -57,13 +57,13 @@ CSSGroupingRule::~CSSGroupingRule()
     }
 }
 
-unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, ExceptionCode& ec)
+unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, ExceptionState& es)
 {
     ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
 
     if (index > m_groupRule->childRules().size()) {
         // IndexSizeError: Raised if the specified index is not a valid insertion point.
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return 0;
     }
 
@@ -72,7 +72,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     RefPtr<StyleRuleBase> newRule = parser.parseRule(styleSheet ? styleSheet->contents() : 0, ruleString);
     if (!newRule) {
         // SyntaxError: Raised if the specified rule has a syntax error and is unparsable.
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return 0;
     }
 
@@ -84,7 +84,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
         // HierarchyRequestError: Raised if the rule cannot be inserted at the specified
         // index, e.g., if an @import rule is inserted after a standard rule set or other
         // at-rule.
-        ec = HierarchyRequestError;
+        es.throwDOMException(HierarchyRequestError);
         return 0;
     }
     CSSStyleSheet::RuleMutationScope mutationScope(this);
@@ -95,14 +95,14 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     return index;
 }
 
-void CSSGroupingRule::deleteRule(unsigned index, ExceptionCode& ec)
+void CSSGroupingRule::deleteRule(unsigned index, ExceptionState& es)
 {
     ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
 
     if (index >= m_groupRule->childRules().size()) {
         // IndexSizeError: Raised if the specified index does not correspond to a
         // rule in the media rule list.
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 

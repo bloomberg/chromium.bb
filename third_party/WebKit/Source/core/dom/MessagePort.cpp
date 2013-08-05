@@ -28,6 +28,7 @@
 #include "core/dom/MessagePort.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
@@ -169,7 +170,7 @@ void MessagePort::dispatchMessages()
         OwnPtr<MessagePortArray> ports = MessagePort::entanglePorts(*m_scriptExecutionContext, channels.release());
         RefPtr<Event> evt = MessageEvent::create(ports.release(), message.release());
 
-        dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
+        dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION_STATE);
     }
 }
 

@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/css/CSSVariablesMap.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSStyleDeclaration.h"
 
 namespace WebCore {
@@ -54,10 +55,10 @@ bool CSSVariablesMap::has(const AtomicString& name) const
     return false;
 }
 
-void CSSVariablesMap::set(const AtomicString& name, const String& value, ExceptionCode& ec) const
+void CSSVariablesMap::set(const AtomicString& name, const String& value, ExceptionState& es) const
 {
     if (m_styleDeclaration)
-        m_styleDeclaration->setVariableValue(name, value, ec);
+        m_styleDeclaration->setVariableValue(name, value, es);
 }
 
 bool CSSVariablesMap::remove(const AtomicString& name) const
@@ -67,10 +68,10 @@ bool CSSVariablesMap::remove(const AtomicString& name) const
     return false;
 }
 
-void CSSVariablesMap::clear(ExceptionCode& ec) const
+void CSSVariablesMap::clear(ExceptionState& es) const
 {
     if (m_styleDeclaration)
-        return m_styleDeclaration->clearVariables(ec);
+        return m_styleDeclaration->clearVariables(es);
 }
 
 } // namespace WebCore

@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/CharacterData.h"
@@ -415,9 +416,9 @@ void FrameSelection::respondToNodeModification(Node* node, bool baseRemoved, boo
         else
             m_selection.setWithoutValidation(m_selection.end(), m_selection.start());
     } else if (RefPtr<Range> range = m_selection.firstRange()) {
-        ExceptionCode ec = 0;
-        Range::CompareResults compareResult = range->compareNode(node, ec);
-        if (!ec && (compareResult == Range::NODE_BEFORE_AND_AFTER || compareResult == Range::NODE_INSIDE)) {
+        TrackExceptionState es;
+        Range::CompareResults compareResult = range->compareNode(node, es);
+        if (!es.hadException() && (compareResult == Range::NODE_BEFORE_AND_AFTER || compareResult == Range::NODE_INSIDE)) {
             // If we did nothing here, when this node's renderer was destroyed, the rect that it
             // occupied would be invalidated, but, selection gaps that change as a result of
             // the removal wouldn't be invalidated.
@@ -1676,9 +1677,9 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, bool clo
 
     // Non-collapsed ranges are not allowed to start at the end of a line that is wrapped,
     // they start at the beginning of the next line instead
-    ExceptionCode ec = 0;
-    bool collapsed = range->collapsed(ec);
-    if (ec)
+    TrackExceptionState es;
+    bool collapsed = range->collapsed(es);
+    if (es.hadException())
         return false;
 
     // FIXME: Can we provide extentAffinity?

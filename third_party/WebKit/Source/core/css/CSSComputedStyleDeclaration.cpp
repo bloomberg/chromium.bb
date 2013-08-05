@@ -28,6 +28,7 @@
 #include "FontFamilyNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "StylePropertyShorthand.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSArrayFunctionValue.h"
 #include "core/css/CSSAspectRatioValue.h"
@@ -1228,9 +1229,9 @@ String CSSComputedStyleDeclaration::cssText() const
     return result.toString();
 }
 
-void CSSComputedStyleDeclaration::setCssText(const String&, ExceptionCode& ec)
+void CSSComputedStyleDeclaration::setCssText(const String&, ExceptionState& es)
 {
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
 static CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize)
@@ -2983,14 +2984,14 @@ bool CSSComputedStyleDeclaration::isPropertyImplicit(const String&)
     return false;
 }
 
-void CSSComputedStyleDeclaration::setProperty(const String&, const String&, const String&, ExceptionCode& ec)
+void CSSComputedStyleDeclaration::setProperty(const String&, const String&, const String&, ExceptionState& es)
 {
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
-String CSSComputedStyleDeclaration::removeProperty(const String&, ExceptionCode& ec)
+String CSSComputedStyleDeclaration::removeProperty(const String&, ExceptionState& es)
 {
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
     return String();
 }
 
@@ -3004,9 +3005,9 @@ String CSSComputedStyleDeclaration::getPropertyValueInternal(CSSPropertyID prope
     return getPropertyValue(propertyID);
 }
 
-void CSSComputedStyleDeclaration::setPropertyInternal(CSSPropertyID, const String&, bool, ExceptionCode& ec)
+void CSSComputedStyleDeclaration::setPropertyInternal(CSSPropertyID, const String&, bool, ExceptionState& es)
 {
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
 const HashMap<AtomicString, String>* CSSComputedStyleDeclaration::variableMap() const
@@ -3042,10 +3043,10 @@ String CSSComputedStyleDeclaration::variableValue(const AtomicString& name) cons
     return it->value;
 }
 
-void CSSComputedStyleDeclaration::setVariableValue(const AtomicString&, const String&, ExceptionCode& ec)
+void CSSComputedStyleDeclaration::setVariableValue(const AtomicString&, const String&, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
 bool CSSComputedStyleDeclaration::removeVariable(const AtomicString&)
@@ -3054,10 +3055,10 @@ bool CSSComputedStyleDeclaration::removeVariable(const AtomicString&)
     return false;
 }
 
-void CSSComputedStyleDeclaration::clearVariables(ExceptionCode& ec)
+void CSSComputedStyleDeclaration::clearVariables(ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
 PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getBackgroundShorthandValue() const

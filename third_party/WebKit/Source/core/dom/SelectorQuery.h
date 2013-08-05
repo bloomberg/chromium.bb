@@ -33,11 +33,10 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
-
 class CSSSelector;
 class Document;
 class Element;
+class ExceptionState;
 class Node;
 class NodeList;
 class SimpleNodeList;
@@ -89,7 +88,7 @@ private:
 class SelectorQueryCache {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    SelectorQuery* add(const AtomicString&, Document*, ExceptionCode&);
+    SelectorQuery* add(const AtomicString&, Document*, ExceptionState&);
     void invalidate();
 
 private:

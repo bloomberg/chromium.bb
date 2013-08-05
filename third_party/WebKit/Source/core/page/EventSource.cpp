@@ -34,6 +34,7 @@
 #include "core/page/EventSource.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
@@ -71,16 +72,16 @@ inline EventSource::EventSource(ScriptExecutionContext* context, const KURL& url
     eventSourceInit.get("withCredentials", m_withCredentials);
 }
 
-PassRefPtr<EventSource> EventSource::create(ScriptExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionCode& ec)
+PassRefPtr<EventSource> EventSource::create(ScriptExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionState& es)
 {
     if (url.isEmpty()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return 0;
     }
 
     KURL fullURL = context->completeURL(url);
     if (!fullURL.isValid()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return 0;
     }
 
@@ -92,7 +93,7 @@ PassRefPtr<EventSource> EventSource::create(ScriptExecutionContext* context, con
     }
     if (!shouldBypassMainWorldContentSecurityPolicy && !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
         // FIXME: Should this be throwing an exception?
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return 0;
     }
 

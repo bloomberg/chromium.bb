@@ -24,6 +24,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 template<typename PropertyType>
 class SVGListPropertyTearOff : public SVGListProperty<PropertyType> {
 public:
@@ -78,39 +80,39 @@ public:
     }
 
     // SVGList API
-    void clear(ExceptionCode& ec)
+    void clear(ExceptionState& es)
     {
-        Base::clearValuesAndWrappers(ec);
+        Base::clearValuesAndWrappers(es);
     }
 
-    PassListItemTearOff initialize(PassListItemTearOff passNewItem, ExceptionCode& ec)
+    PassListItemTearOff initialize(PassListItemTearOff passNewItem, ExceptionState& es)
     {
-        return Base::initializeValuesAndWrappers(passNewItem, ec);
+        return Base::initializeValuesAndWrappers(passNewItem, es);
     }
 
-    PassListItemTearOff getItem(unsigned index, ExceptionCode& ec)
+    PassListItemTearOff getItem(unsigned index, ExceptionState& es)
     {
-        return Base::getItemValuesAndWrappers(m_animatedProperty.get(), index, ec);
+        return Base::getItemValuesAndWrappers(m_animatedProperty.get(), index, es);
     }
 
-    PassListItemTearOff insertItemBefore(PassListItemTearOff passNewItem, unsigned index, ExceptionCode& ec)
+    PassListItemTearOff insertItemBefore(PassListItemTearOff passNewItem, unsigned index, ExceptionState& es)
     {
-        return Base::insertItemBeforeValuesAndWrappers(passNewItem, index, ec);
+        return Base::insertItemBeforeValuesAndWrappers(passNewItem, index, es);
     }
 
-    PassListItemTearOff replaceItem(PassListItemTearOff passNewItem, unsigned index, ExceptionCode& ec)
+    PassListItemTearOff replaceItem(PassListItemTearOff passNewItem, unsigned index, ExceptionState& es)
     {
-        return Base::replaceItemValuesAndWrappers(passNewItem, index, ec);
+        return Base::replaceItemValuesAndWrappers(passNewItem, index, es);
     }
 
-    PassListItemTearOff removeItem(unsigned index, ExceptionCode& ec)
+    PassListItemTearOff removeItem(unsigned index, ExceptionState& es)
     {
-        return Base::removeItemValuesAndWrappers(m_animatedProperty.get(), index, ec);
+        return Base::removeItemValuesAndWrappers(m_animatedProperty.get(), index, es);
     }
 
-    PassListItemTearOff appendItem(PassListItemTearOff passNewItem, ExceptionCode& ec)
+    PassListItemTearOff appendItem(PassListItemTearOff passNewItem, ExceptionState& es)
     {
-        return Base::appendItemValuesAndWrappers(passNewItem, ec);
+        return Base::appendItemValuesAndWrappers(passNewItem, es);
     }
 
 protected:

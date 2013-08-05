@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
@@ -36,20 +37,20 @@ SVGPreserveAspectRatio::SVGPreserveAspectRatio()
 {
 }
 
-void SVGPreserveAspectRatio::setAlign(unsigned short align, ExceptionCode& ec)
+void SVGPreserveAspectRatio::setAlign(unsigned short align, ExceptionState& es)
 {
     if (align == SVG_PRESERVEASPECTRATIO_UNKNOWN || align > SVG_PRESERVEASPECTRATIO_XMAXYMAX) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
 
     m_align = static_cast<SVGPreserveAspectRatioType>(align);
 }
 
-void SVGPreserveAspectRatio::setMeetOrSlice(unsigned short meetOrSlice, ExceptionCode& ec)
+void SVGPreserveAspectRatio::setMeetOrSlice(unsigned short meetOrSlice, ExceptionState& es)
 {
     if (meetOrSlice == SVG_MEETORSLICE_UNKNOWN || meetOrSlice > SVG_MEETORSLICE_SLICE) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
 

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/InspectorFileSystemAgent.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
@@ -494,7 +495,7 @@ bool FileContentRequest::didGetFile(File* file)
     m_reader->setOnload(this);
     m_reader->setOnerror(this);
 
-    m_reader->readAsArrayBuffer(blob.get(), IGNORE_EXCEPTION);
+    m_reader->readAsArrayBuffer(blob.get(), IGNORE_EXCEPTION_STATE);
     return true;
 }
 

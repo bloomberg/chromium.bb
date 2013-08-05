@@ -24,6 +24,7 @@
 #include "core/html/HTMLTitleElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -148,7 +149,7 @@ void HTMLTitleElement::setText(const String &value)
         if (numChildren > 0)
             removeChildren();
 
-        appendChild(document()->createTextNode(valueCopy.impl()), IGNORE_EXCEPTION);
+        appendChild(document()->createTextNode(valueCopy.impl()), IGNORE_EXCEPTION_STATE);
     }
 }
 

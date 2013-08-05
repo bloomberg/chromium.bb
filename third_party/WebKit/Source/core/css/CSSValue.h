@@ -29,6 +29,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class StyleSheetContents;
 
 enum CssTextFormattingFlags { QuoteCSSStringIfNeeded, AlwaysQuoteCSSString };
@@ -60,7 +61,7 @@ public:
     Type cssValueType() const;
 
     String cssText() const;
-    void setCssText(const String&, ExceptionCode&) { } // FIXME: Not implemented.
+    void setCssText(const String&, ExceptionState&) { } // FIXME: Not implemented.
     String serializeResolvingVariables(const HashMap<AtomicString, String>&) const;
 
     bool isPrimitiveValue() const { return m_classType == PrimitiveClass; }

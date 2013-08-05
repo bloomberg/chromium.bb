@@ -36,11 +36,10 @@ class CSSRuleList;
 class CSSStyleSheet;
 class CachedCSSStyleSheet;
 class Document;
+class ExceptionState;
 class MediaQuerySet;
 class SecurityOrigin;
 class StyleSheetContents;
-
-typedef int ExceptionCode;
 
 class CSSStyleSheet : public StyleSheet {
 public:
@@ -59,14 +58,14 @@ public:
     virtual void setDisabled(bool) OVERRIDE;
 
     PassRefPtr<CSSRuleList> cssRules();
-    unsigned insertRule(const String& rule, unsigned index, ExceptionCode&);
-    void deleteRule(unsigned index, ExceptionCode&);
+    unsigned insertRule(const String& rule, unsigned index, ExceptionState&);
+    void deleteRule(unsigned index, ExceptionState&);
 
     // IE Extensions
     PassRefPtr<CSSRuleList> rules();
-    int addRule(const String& selector, const String& style, int index, ExceptionCode&);
-    int addRule(const String& selector, const String& style, ExceptionCode&);
-    void removeRule(unsigned index, ExceptionCode& ec) { deleteRule(index, ec); }
+    int addRule(const String& selector, const String& style, int index, ExceptionState&);
+    int addRule(const String& selector, const String& style, ExceptionState&);
+    void removeRule(unsigned index, ExceptionState& es) { deleteRule(index, es); }
 
     // For CSSRuleList.
     unsigned length() const;

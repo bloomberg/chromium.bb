@@ -49,6 +49,7 @@ class Color;
 class DateComponents;
 class DragData;
 class Event;
+class ExceptionState;
 class FileList;
 class FormDataList;
 class HTMLElement;
@@ -60,8 +61,6 @@ class Node;
 class RenderObject;
 class RenderStyle;
 class TouchEvent;
-
-typedef int ExceptionCode;
 
 struct ClickHandlingState {
     WTF_MAKE_FAST_ALLOCATED;
@@ -136,10 +135,10 @@ public:
     virtual String fallbackValue() const; // Checked last, if both internal storage and value attribute are missing.
     virtual String defaultValue() const; // Checked after even fallbackValue, only when the valueWithDefault function is called.
     virtual double valueAsDate() const;
-    virtual void setValueAsDate(double, ExceptionCode&) const;
+    virtual void setValueAsDate(double, ExceptionState&) const;
     virtual double valueAsDouble() const;
-    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionCode&) const;
-    virtual void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionCode&) const;
+    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const;
+    virtual void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState&) const;
 
     // Validation functions
     virtual String validationMessage() const;
@@ -164,7 +163,7 @@ public:
     bool stepMismatch(const String&) const;
     virtual bool getAllowedValueStep(Decimal*) const;
     virtual StepRange createStepRange(AnyStepHandling) const;
-    virtual void stepUp(int, ExceptionCode&);
+    virtual void stepUp(int, ExceptionState&);
     virtual void stepUpFromRenderer(int);
     virtual String badInputText() const;
     virtual String typeMismatchText() const;
@@ -309,7 +308,7 @@ protected:
 
 private:
     // Helper for stepUp()/stepDown(). Adds step value * count to the current value.
-    void applyStep(int count, AnyStepHandling, TextFieldEventBehavior, ExceptionCode&);
+    void applyStep(int count, AnyStepHandling, TextFieldEventBehavior, ExceptionState&);
 
     // Raw pointer because the HTMLInputElement object owns this InputType object.
     HTMLInputElement* m_element;

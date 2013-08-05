@@ -29,6 +29,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 enum SVGLengthAdjustType {
     SVGLengthAdjustUnknown,
     SVGLengthAdjustSpacing,
@@ -76,13 +78,13 @@ public:
 
     unsigned getNumberOfChars();
     float getComputedTextLength();
-    float getSubStringLength(unsigned charnum, unsigned nchars, ExceptionCode&);
-    SVGPoint getStartPositionOfChar(unsigned charnum, ExceptionCode&);
-    SVGPoint getEndPositionOfChar(unsigned charnum, ExceptionCode&);
-    SVGRect getExtentOfChar(unsigned charnum, ExceptionCode&);
-    float getRotationOfChar(unsigned charnum, ExceptionCode&);
+    float getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState&);
+    SVGPoint getStartPositionOfChar(unsigned charnum, ExceptionState&);
+    SVGPoint getEndPositionOfChar(unsigned charnum, ExceptionState&);
+    SVGRect getExtentOfChar(unsigned charnum, ExceptionState&);
+    float getRotationOfChar(unsigned charnum, ExceptionState&);
     int getCharNumAtPosition(const SVGPoint&);
-    void selectSubString(unsigned charnum, unsigned nchars, ExceptionCode&);
+    void selectSubString(unsigned charnum, unsigned nchars, ExceptionState&);
 
     static SVGTextContentElement* elementFromRenderer(RenderObject*);
 

@@ -34,8 +34,7 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
-
+class ExceptionState;
 class Node;
 class XPathNSResolver;
 class XPathResult;
@@ -49,8 +48,8 @@ public:
     static PassRefPtr<XPathExpression> create() { return adoptRef(new XPathExpression); }
     ~XPathExpression();
 
-    static PassRefPtr<XPathExpression> createExpression(const String& expression, XPathNSResolver*, ExceptionCode&);
-    PassRefPtr<XPathResult> evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionCode&);
+    static PassRefPtr<XPathExpression> createExpression(const String& expression, XPathNSResolver*, ExceptionState&);
+    PassRefPtr<XPathResult> evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState&);
 
 private:
     XPathExpression()

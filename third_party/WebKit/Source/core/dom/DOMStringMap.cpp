@@ -32,7 +32,7 @@ DOMStringMap::~DOMStringMap()
 {
 }
 
-bool DOMStringMap::namedPropertyQuery(const AtomicString& name, ExceptionCode& ec)
+bool DOMStringMap::namedPropertyQuery(const AtomicString& name, ExceptionState&)
 {
     return contains(name);
 }

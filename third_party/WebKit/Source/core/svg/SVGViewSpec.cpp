@@ -18,10 +18,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGViewSpec.h"
 
 #include "SVGNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGFitToViewBox.h"
@@ -103,10 +103,10 @@ const AtomicString& SVGViewSpec::transformIdentifier()
     return s_identifier;
 }
 
-void SVGViewSpec::setZoomAndPan(unsigned short, ExceptionCode& ec)
+void SVGViewSpec::setZoomAndPan(unsigned short, ExceptionState& es)
 {
     // SVGViewSpec and all of its content is read-only.
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
 void SVGViewSpec::setTransformString(const String& transform)

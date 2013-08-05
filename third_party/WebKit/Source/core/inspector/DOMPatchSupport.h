@@ -31,7 +31,6 @@
 #ifndef DOMPatchSupport_h
 #define DOMPatchSupport_h
 
-#include "core/dom/ExceptionCode.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -43,8 +42,8 @@ namespace WebCore {
 class ContainerNode;
 class DOMEditor;
 class Document;
+class ExceptionState;
 class Node;
-
 
 class DOMPatchSupport {
     WTF_MAKE_NONCOPYABLE(DOMPatchSupport);
@@ -55,19 +54,19 @@ public:
     virtual ~DOMPatchSupport();
 
     void patchDocument(const String& markup);
-    Node* patchNode(Node*, const String& markup, ExceptionCode&);
+    Node* patchNode(Node*, const String& markup, ExceptionState&);
 
 private:
     struct Digest;
     typedef Vector<pair<Digest*, size_t> > ResultMap;
     typedef HashMap<String, Digest*> UnusedNodesMap;
 
-    bool innerPatchNode(Digest* oldNode, Digest* newNode, ExceptionCode&);
+    bool innerPatchNode(Digest* oldNode, Digest* newNode, ExceptionState&);
     std::pair<ResultMap, ResultMap> diff(const Vector<OwnPtr<Digest> >& oldChildren, const Vector<OwnPtr<Digest> >& newChildren);
-    bool innerPatchChildren(ContainerNode*, const Vector<OwnPtr<Digest> >& oldChildren, const Vector<OwnPtr<Digest> >& newChildren, ExceptionCode&);
+    bool innerPatchChildren(ContainerNode*, const Vector<OwnPtr<Digest> >& oldChildren, const Vector<OwnPtr<Digest> >& newChildren, ExceptionState&);
     PassOwnPtr<Digest> createDigest(Node*, UnusedNodesMap*);
-    bool insertBeforeAndMarkAsUsed(ContainerNode*, Digest*, Node* anchor, ExceptionCode&);
-    bool removeChildAndMoveToNew(Digest*, ExceptionCode&);
+    bool insertBeforeAndMarkAsUsed(ContainerNode*, Digest*, Node* anchor, ExceptionState&);
+    bool removeChildAndMoveToNew(Digest*, ExceptionState&);
     void markNodeAsUsed(Digest*);
 #ifdef DEBUG_DOM_PATCH_SUPPORT
     void dumpMap(const ResultMap&, const String& name);

@@ -35,6 +35,9 @@ namespace WebCore {
 class CSSPrimitiveValue;
 class CSSValueList;
 class Color;
+class CustomFilterNumberParameter;
+class CustomFilterParameter;
+class ExceptionState;
 class MutableStylePropertySet;
 class Node;
 class RenderObject;
@@ -43,9 +46,6 @@ class SVGPaint;
 class ShadowData;
 class StylePropertySet;
 class StylePropertyShorthand;
-
-class CustomFilterNumberParameter;
-class CustomFilterParameter;
 
 enum EUpdateLayout { DoNotUpdateLayout = false, UpdateLayout = true };
 
@@ -93,20 +93,20 @@ private:
     virtual String getPropertyPriority(const String& propertyName);
     virtual String getPropertyShorthand(const String& propertyName);
     virtual bool isPropertyImplicit(const String& propertyName);
-    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionCode&);
-    virtual String removeProperty(const String& propertyName, ExceptionCode&);
+    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&);
+    virtual String removeProperty(const String& propertyName, ExceptionState&);
     virtual String cssText() const;
-    virtual void setCssText(const String&, ExceptionCode&);
+    virtual void setCssText(const String&, ExceptionState&);
     virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID);
     virtual String getPropertyValueInternal(CSSPropertyID);
-    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionCode&);
+    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&);
 
     const HashMap<AtomicString, String>* variableMap() const;
     virtual unsigned variableCount() const OVERRIDE;
     virtual String variableValue(const AtomicString& name) const OVERRIDE;
-    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionCode&) OVERRIDE;
+    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionState&) OVERRIDE;
     virtual bool removeVariable(const AtomicString& name) OVERRIDE;
-    virtual void clearVariables(ExceptionCode&) OVERRIDE;
+    virtual void clearVariables(ExceptionState&) OVERRIDE;
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
 

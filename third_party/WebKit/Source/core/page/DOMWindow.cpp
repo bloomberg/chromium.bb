@@ -33,6 +33,7 @@
 #include <algorithm>
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
@@ -49,7 +50,6 @@
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/MessageEvent.h"
 #include "core/dom/PageTransitionEvent.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
@@ -629,7 +629,7 @@ Location* DOMWindow::location() const
     return m_location.get();
 }
 
-Storage* DOMWindow::sessionStorage(ExceptionCode& ec) const
+Storage* DOMWindow::sessionStorage(ExceptionState& es) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return 0;
@@ -639,13 +639,13 @@ Storage* DOMWindow::sessionStorage(ExceptionCode& ec) const
         return 0;
 
     if (!document->securityOrigin()->canAccessLocalStorage()) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return 0;
     }
 
     if (m_sessionStorage) {
         if (!m_sessionStorage->area()->canAccessStorage(m_frame)) {
-            ec = SecurityError;
+            es.throwDOMException(SecurityError);
             return 0;
         }
         return m_sessionStorage.get();
@@ -657,7 +657,7 @@ Storage* DOMWindow::sessionStorage(ExceptionCode& ec) const
 
     OwnPtr<StorageArea> storageArea = page->sessionStorage()->storageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_frame)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return 0;
     }
 
@@ -665,7 +665,7 @@ Storage* DOMWindow::sessionStorage(ExceptionCode& ec) const
     return m_sessionStorage.get();
 }
 
-Storage* DOMWindow::localStorage(ExceptionCode& ec) const
+Storage* DOMWindow::localStorage(ExceptionState& es) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return 0;
@@ -675,13 +675,13 @@ Storage* DOMWindow::localStorage(ExceptionCode& ec) const
         return 0;
 
     if (!document->securityOrigin()->canAccessLocalStorage()) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return 0;
     }
 
     if (m_localStorage) {
         if (!m_localStorage->area()->canAccessStorage(m_frame)) {
-            ec = SecurityError;
+            es.throwDOMException(SecurityError);
             return 0;
         }
         return m_localStorage.get();
@@ -696,7 +696,7 @@ Storage* DOMWindow::localStorage(ExceptionCode& ec) const
 
     OwnPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_frame)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return 0;
     }
 
@@ -1389,8 +1389,8 @@ static void didAddStorageEventListener(DOMWindow* window)
     // notifications about storage events that might be triggered in other processes. Rather
     // than subscribe to these notifications explicitly, we subscribe to them implicitly to
     // simplify the work done by the system.
-    window->localStorage(IGNORE_EXCEPTION);
-    window->sessionStorage(IGNORE_EXCEPTION);
+    window->localStorage(IGNORE_EXCEPTION_STATE);
+    window->sessionStorage(IGNORE_EXCEPTION_STATE);
 }
 
 bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)

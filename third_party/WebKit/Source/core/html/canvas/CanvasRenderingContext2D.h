@@ -49,6 +49,7 @@ class CanvasPattern;
 class CanvasStyle;
 class DOMPath;
 class Element;
+class ExceptionState;
 class FloatRect;
 class GraphicsContext;
 class HTMLCanvasElement;
@@ -58,7 +59,6 @@ class ImageBitmap;
 class ImageData;
 class TextMetrics;
 
-typedef int ExceptionCode;
 typedef HashMap<String, RefPtr<MutableStylePropertySet> > MutableStylePropertyMap;
 
 class CanvasRenderingContext2D : public CanvasRenderingContext, public CanvasPathMethods {
@@ -162,22 +162,22 @@ public:
 
     void clearShadow();
 
-    void drawImage(ImageBitmap*, float x, float y, ExceptionCode&);
-    void drawImage(ImageBitmap*, float x, float y, float width, float height, ExceptionCode&);
-    void drawImage(ImageBitmap*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionCode&);
-    void drawImage(HTMLImageElement*, float x, float y, ExceptionCode&);
-    void drawImage(HTMLImageElement*, float x, float y, float width, float height, ExceptionCode&);
-    void drawImage(HTMLImageElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionCode&);
-    void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionCode&);
-    void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator&, const BlendMode&, ExceptionCode&);
-    void drawImage(HTMLCanvasElement*, float x, float y, ExceptionCode&);
-    void drawImage(HTMLCanvasElement*, float x, float y, float width, float height, ExceptionCode&);
-    void drawImage(HTMLCanvasElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionCode&);
-    void drawImage(HTMLCanvasElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionCode&);
-    void drawImage(HTMLVideoElement*, float x, float y, ExceptionCode&);
-    void drawImage(HTMLVideoElement*, float x, float y, float width, float height, ExceptionCode&);
-    void drawImage(HTMLVideoElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionCode&);
-    void drawImage(HTMLVideoElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionCode&);
+    void drawImage(ImageBitmap*, float x, float y, ExceptionState&);
+    void drawImage(ImageBitmap*, float x, float y, float width, float height, ExceptionState&);
+    void drawImage(ImageBitmap*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
+    void drawImage(HTMLImageElement*, float x, float y, ExceptionState&);
+    void drawImage(HTMLImageElement*, float x, float y, float width, float height, ExceptionState&);
+    void drawImage(HTMLImageElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
+    void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState&);
+    void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator&, const BlendMode&, ExceptionState&);
+    void drawImage(HTMLCanvasElement*, float x, float y, ExceptionState&);
+    void drawImage(HTMLCanvasElement*, float x, float y, float width, float height, ExceptionState&);
+    void drawImage(HTMLCanvasElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
+    void drawImage(HTMLCanvasElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState&);
+    void drawImage(HTMLVideoElement*, float x, float y, ExceptionState&);
+    void drawImage(HTMLVideoElement*, float x, float y, float width, float height, ExceptionState&);
+    void drawImage(HTMLVideoElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
+    void drawImage(HTMLVideoElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState&);
 
     void drawImageFromRect(HTMLImageElement*, float sx = 0, float sy = 0, float sw = 0, float sh = 0,
                            float dx = 0, float dy = 0, float dw = 0, float dh = 0, const String& compositeOperation = emptyString());
@@ -186,19 +186,19 @@ public:
 
     void setCompositeOperation(const String&);
 
-    PassRefPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1, ExceptionCode&);
-    PassRefPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionCode&);
-    PassRefPtr<CanvasPattern> createPattern(HTMLImageElement*, const String& repetitionType, ExceptionCode&);
-    PassRefPtr<CanvasPattern> createPattern(HTMLCanvasElement*, const String& repetitionType, ExceptionCode&);
+    PassRefPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1, ExceptionState&);
+    PassRefPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
+    PassRefPtr<CanvasPattern> createPattern(HTMLImageElement*, const String& repetitionType, ExceptionState&);
+    PassRefPtr<CanvasPattern> createPattern(HTMLCanvasElement*, const String& repetitionType, ExceptionState&);
 
-    PassRefPtr<ImageData> createImageData(PassRefPtr<ImageData>, ExceptionCode&) const;
-    PassRefPtr<ImageData> createImageData(float width, float height, ExceptionCode&) const;
-    PassRefPtr<ImageData> getImageData(float sx, float sy, float sw, float sh, ExceptionCode&) const;
-    PassRefPtr<ImageData> webkitGetImageDataHD(float sx, float sy, float sw, float sh, ExceptionCode&) const;
-    void putImageData(ImageData*, float dx, float dy, ExceptionCode&);
-    void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionCode&);
-    void webkitPutImageDataHD(ImageData*, float dx, float dy, ExceptionCode&);
-    void webkitPutImageDataHD(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionCode&);
+    PassRefPtr<ImageData> createImageData(PassRefPtr<ImageData>, ExceptionState&) const;
+    PassRefPtr<ImageData> createImageData(float width, float height, ExceptionState&) const;
+    PassRefPtr<ImageData> getImageData(float sx, float sy, float sw, float sh, ExceptionState&) const;
+    PassRefPtr<ImageData> webkitGetImageDataHD(float sx, float sy, float sw, float sh, ExceptionState&) const;
+    void putImageData(ImageData*, float dx, float dy, ExceptionState&);
+    void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState&);
+    void webkitPutImageDataHD(ImageData*, float dx, float dy, ExceptionState&);
+    void webkitPutImageDataHD(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState&);
 
     float webkitBackingStorePixelRatio() const { return canvas()->deviceScaleFactor(); }
 
@@ -322,8 +322,8 @@ private:
     template<class T> void fullCanvasCompositedFill(const T&);
     template<class T> void fullCanvasCompositedDrawImage(T*, const FloatRect&, const FloatRect&, CompositeOperator);
 
-    PassRefPtr<ImageData> getImageData(ImageBuffer::CoordinateSystem, float sx, float sy, float sw, float sh, ExceptionCode&) const;
-    void putImageData(ImageData*, ImageBuffer::CoordinateSystem, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionCode&);
+    PassRefPtr<ImageData> getImageData(ImageBuffer::CoordinateSystem, float sx, float sy, float sw, float sh, ExceptionState&) const;
+    void putImageData(ImageData*, ImageBuffer::CoordinateSystem, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState&);
 
     bool focusRingCallIsValid(const Path&, Element*);
     void updateFocusRingAccessibility(const Path&, Element*);

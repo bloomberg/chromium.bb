@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/editing/InsertIntoTextNodeCommand.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/Text.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderText.h"
@@ -61,7 +61,7 @@ void InsertIntoTextNodeCommand::doApply()
             renderText->momentarilyRevealLastTypedCharacter(m_offset + m_text.length() - 1);
     }
 
-    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION);
+    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION_STATE);
 
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->nodeTextChangeNotification(m_node.get(), AXObjectCache::AXTextInserted, m_offset, m_text);
@@ -76,7 +76,7 @@ void InsertIntoTextNodeCommand::doUnapply()
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->nodeTextChangeNotification(m_node.get(), AXObjectCache::AXTextDeleted, m_offset, m_text);
 
-    m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION);
+    m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION_STATE);
 }
 
 #ifndef NDEBUG

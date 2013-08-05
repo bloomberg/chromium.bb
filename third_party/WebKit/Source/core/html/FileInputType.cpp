@@ -23,6 +23,7 @@
 #include "core/html/FileInputType.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Event.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -259,7 +260,7 @@ void FileInputType::createShadowSubtree()
     button->setType(InputTypeNames::button());
     button->setAttribute(valueAttr, element()->multiple() ? fileButtonChooseMultipleFilesLabel() : fileButtonChooseFileLabel());
     button->setPseudo(AtomicString("-webkit-file-upload-button", AtomicString::ConstructFromLiteral));
-    element()->userAgentShadowRoot()->appendChild(button.release(), IGNORE_EXCEPTION);
+    element()->userAgentShadowRoot()->appendChild(button.release(), IGNORE_EXCEPTION_STATE);
 }
 
 void FileInputType::disabledAttributeChanged()

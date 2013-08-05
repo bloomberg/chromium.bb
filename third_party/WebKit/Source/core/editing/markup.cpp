@@ -32,6 +32,7 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/StylePropertySet.h"
@@ -40,7 +41,6 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
@@ -496,7 +496,7 @@ static bool isElementPresentational(const Node* node)
 
 static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
 {
-    Node* commonAncestor = range->commonAncestorContainer(IGNORE_EXCEPTION);
+    Node* commonAncestor = range->commonAncestorContainer(IGNORE_EXCEPTION_STATE);
     ASSERT(commonAncestor);
     Node* specialCommonAncestor = 0;
     if (shouldAnnotate == AnnotateForInterchange) {
@@ -549,10 +549,10 @@ static String createMarkupInternal(Document* document, const Range* range, const
     ASSERT(updatedRange);
     DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, (ASCIILiteral("<br class=\"" AppleInterchangeNewline "\">")));
 
-    bool collapsed = updatedRange->collapsed(ASSERT_NO_EXCEPTION);
+    bool collapsed = updatedRange->collapsed(ASSERT_NO_EXCEPTION_STATE);
     if (collapsed)
         return emptyString();
-    Node* commonAncestor = updatedRange->commonAncestorContainer(ASSERT_NO_EXCEPTION);
+    Node* commonAncestor = updatedRange->commonAncestorContainer(ASSERT_NO_EXCEPTION_STATE);
     if (!commonAncestor)
         return emptyString();
 
@@ -577,7 +577,7 @@ static String createMarkupInternal(Document* document, const Range* range, const
         accumulator.appendString(interchangeNewlineString);
         startNode = visibleStart.next().deepEquivalent().deprecatedNode();
 
-        if (pastEnd && Range::compareBoundaryPoints(startNode, 0, pastEnd, 0, ASSERT_NO_EXCEPTION) >= 0)
+        if (pastEnd && Range::compareBoundaryPoints(startNode, 0, pastEnd, 0, ASSERT_NO_EXCEPTION_STATE) >= 0)
             return interchangeNewlineString;
     }
 
@@ -682,7 +682,7 @@ static void trimFragment(DocumentFragment* fragment, Node* nodeBeforeContext, No
         }
         next = NodeTraversal::nextSkippingChildren(node.get());
         ASSERT(!node->contains(nodeAfterContext));
-        node->parentNode()->removeChild(node.get(), ASSERT_NO_EXCEPTION);
+        node->parentNode()->removeChild(node.get(), ASSERT_NO_EXCEPTION_STATE);
         if (nodeBeforeContext == node)
             break;
     }
@@ -690,7 +690,7 @@ static void trimFragment(DocumentFragment* fragment, Node* nodeBeforeContext, No
     ASSERT(nodeAfterContext->parentNode());
     for (RefPtr<Node> node = nodeAfterContext; node; node = next) {
         next = NodeTraversal::nextSkippingChildren(node.get());
-        node->parentNode()->removeChild(node.get(), ASSERT_NO_EXCEPTION);
+        node->parentNode()->removeChild(node.get(), ASSERT_NO_EXCEPTION_STATE);
     }
 }
 
@@ -720,7 +720,7 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document* docum
         positionAfterNode(nodeBeforeContext.get()).parentAnchoredEquivalent(),
         positionBeforeNode(nodeAfterContext.get()).parentAnchoredEquivalent());
 
-    Node* commonAncestor = range->commonAncestorContainer(ASSERT_NO_EXCEPTION);
+    Node* commonAncestor = range->commonAncestorContainer(ASSERT_NO_EXCEPTION_STATE);
     Node* specialCommonAncestor = ancestorToRetainStructureAndAppearanceWithNoRenderer(commonAncestor);
 
     // When there's a special common ancestor outside of the fragment, we must include it as well to
@@ -728,7 +728,7 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document* docum
     // TD, we need to include the enclosing TABLE tag as well.
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
     if (specialCommonAncestor)
-        fragment->appendChild(specialCommonAncestor, ASSERT_NO_EXCEPTION);
+        fragment->appendChild(specialCommonAncestor, ASSERT_NO_EXCEPTION_STATE);
     else
         fragment->takeAllChildrenFrom(toContainerNode(commonAncestor));
 
@@ -751,7 +751,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
     Document* document = paragraph->document();
 
     if (string.isEmpty()) {
-        paragraph->appendChild(createBlockPlaceholderElement(document), ASSERT_NO_EXCEPTION);
+        paragraph->appendChild(createBlockPlaceholderElement(document), ASSERT_NO_EXCEPTION_STATE);
         return;
     }
 
@@ -768,11 +768,11 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
         // append the non-tab textual part
         if (!s.isEmpty()) {
             if (!tabText.isEmpty()) {
-                paragraph->appendChild(createTabSpanElement(document, tabText), ASSERT_NO_EXCEPTION);
+                paragraph->appendChild(createTabSpanElement(document, tabText), ASSERT_NO_EXCEPTION_STATE);
                 tabText = emptyString();
             }
             RefPtr<Node> textNode = document->createTextNode(stringWithRebalancedWhitespace(s, first, i + 1 == numEntries));
-            paragraph->appendChild(textNode.release(), ASSERT_NO_EXCEPTION);
+            paragraph->appendChild(textNode.release(), ASSERT_NO_EXCEPTION_STATE);
         }
 
         // there is a tab after every entry, except the last entry
@@ -780,7 +780,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
         if (i + 1 != numEntries)
             tabText.append('\t');
         else if (!tabText.isEmpty())
-            paragraph->appendChild(createTabSpanElement(document, tabText), ASSERT_NO_EXCEPTION);
+            paragraph->appendChild(createTabSpanElement(document, tabText), ASSERT_NO_EXCEPTION_STATE);
 
         first = false;
     }
@@ -821,11 +821,11 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
 
     RenderObject* renderer = styleNode->renderer();
     if (renderer && renderer->style()->preserveNewline()) {
-        fragment->appendChild(document->createTextNode(string), ASSERT_NO_EXCEPTION);
+        fragment->appendChild(document->createTextNode(string), ASSERT_NO_EXCEPTION_STATE);
         if (string.endsWith('\n')) {
             RefPtr<Element> element = createBreakElement(document);
             element->setAttribute(classAttr, AppleInterchangeNewline);
-            fragment->appendChild(element.release(), ASSERT_NO_EXCEPTION);
+            fragment->appendChild(element.release(), ASSERT_NO_EXCEPTION_STATE);
         }
         return fragment.release();
     }
@@ -867,7 +867,7 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
                 element = createDefaultParagraphElement(document);
             fillContainerFromString(element.get(), s);
         }
-        fragment->appendChild(element.release(), ASSERT_NO_EXCEPTION);
+        fragment->appendChild(element.release(), ASSERT_NO_EXCEPTION_STATE);
     }
     return fragment.release();
 }
@@ -882,8 +882,8 @@ PassRefPtr<DocumentFragment> createFragmentFromNodes(Document *document, const V
     size_t size = nodes.size();
     for (size_t i = 0; i < size; ++i) {
         RefPtr<Element> element = createDefaultParagraphElement(document);
-        element->appendChild(nodes[i], ASSERT_NO_EXCEPTION);
-        fragment->appendChild(element.release(), ASSERT_NO_EXCEPTION);
+        element->appendChild(nodes[i], ASSERT_NO_EXCEPTION_STATE);
+        fragment->appendChild(element.release(), ASSERT_NO_EXCEPTION_STATE);
     }
 
     return fragment.release();
@@ -943,7 +943,7 @@ String urlToMarkup(const KURL& url, const String& title)
     return markup.toString();
 }
 
-PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, ExceptionCode& ec)
+PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, ExceptionState& es)
 {
     Document* document = contextElement->hasTagName(templateTag) ? contextElement->document()->ensureTemplateDocument() : contextElement->document();
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
@@ -955,7 +955,7 @@ PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& marku
 
     bool wasValid = fragment->parseXML(markup, contextElement, parserContentPolicy);
     if (!wasValid) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return 0;
     }
     return fragment.release();
@@ -990,27 +990,27 @@ static inline void removeElementPreservingChildren(PassRefPtr<DocumentFragment> 
     RefPtr<Node> nextChild;
     for (RefPtr<Node> child = element->firstChild(); child; child = nextChild) {
         nextChild = child->nextSibling();
-        element->removeChild(child.get(), ASSERT_NO_EXCEPTION);
-        fragment->insertBefore(child, element, ASSERT_NO_EXCEPTION);
+        element->removeChild(child.get(), ASSERT_NO_EXCEPTION_STATE);
+        fragment->insertBefore(child, element, ASSERT_NO_EXCEPTION_STATE);
     }
-    fragment->removeChild(element, ASSERT_NO_EXCEPTION);
+    fragment->removeChild(element, ASSERT_NO_EXCEPTION_STATE);
 }
 
-PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTMLElement* element, ParserContentPolicy parserContentPolicy, ExceptionCode& ec)
+PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTMLElement* element, ParserContentPolicy parserContentPolicy, ExceptionState& es)
 {
     ASSERT(element);
     if (element->ieForbidsInsertHTML()) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
 
     if (element->hasLocalName(colTag) || element->hasLocalName(colgroupTag) || element->hasLocalName(framesetTag)
         || element->hasLocalName(headTag) || element->hasLocalName(styleTag) || element->hasLocalName(titleTag)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
 
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, element, parserContentPolicy, ec);
+    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, element, parserContentPolicy, es);
     if (!fragment)
         return 0;
 
@@ -1042,7 +1042,7 @@ static inline bool hasOneTextChild(ContainerNode* node)
     return hasOneChild(node) && node->firstChild()->isTextNode();
 }
 
-void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFragment> fragment, ExceptionCode& ec)
+void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFragment> fragment, ExceptionState& es)
 {
     RefPtr<ContainerNode> containerNode(container);
 
@@ -1059,15 +1059,15 @@ void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFr
     }
 
     if (hasOneChild(containerNode.get())) {
-        containerNode->replaceChild(fragment, containerNode->firstChild(), ec);
+        containerNode->replaceChild(fragment, containerNode->firstChild(), es);
         return;
     }
 
     containerNode->removeChildren();
-    containerNode->appendChild(fragment, ec);
+    containerNode->appendChild(fragment, es);
 }
 
-void replaceChildrenWithText(ContainerNode* container, const String& text, ExceptionCode& ec)
+void replaceChildrenWithText(ContainerNode* container, const String& text, ExceptionState& es)
 {
     RefPtr<ContainerNode> containerNode(container);
 
@@ -1081,12 +1081,12 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
     RefPtr<Text> textNode = Text::create(containerNode->document(), text);
 
     if (hasOneChild(containerNode.get())) {
-        containerNode->replaceChild(textNode.release(), containerNode->firstChild(), ec);
+        containerNode->replaceChild(textNode.release(), containerNode->firstChild(), es);
         return;
     }
 
     containerNode->removeChildren();
-    containerNode->appendChild(textNode.release(), ec);
+    containerNode->appendChild(textNode.release(), es);
 }
 
 }

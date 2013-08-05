@@ -31,6 +31,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class GenericCueData;
 
 // A "generic" cue is a non-WebVTT cue, so it is not positioned/sized with the WebVTT logic.
@@ -45,8 +46,8 @@ public:
 
     virtual PassRefPtr<TextTrackCueBox> createDisplayTree() OVERRIDE;
 
-    virtual void setLine(int, ExceptionCode&) OVERRIDE;
-    virtual void setPosition(int, ExceptionCode&) OVERRIDE;
+    virtual void setLine(int, ExceptionState&) OVERRIDE;
+    virtual void setPosition(int, ExceptionState&) OVERRIDE;
 
     bool useDefaultPosition() const { return m_defaultPosition; }
 

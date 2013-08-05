@@ -21,6 +21,7 @@
 #include "config.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -112,13 +113,13 @@ bool HTMLFrameOwnerElement::isKeyboardFocusable() const
     return m_contentFrame && HTMLElement::isKeyboardFocusable();
 }
 
-SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionCode& ec) const
+SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& es) const
 {
     Document* doc = contentDocument();
     if (doc && doc->isSVGDocument())
         return toSVGDocument(doc);
     // Spec: http://www.w3.org/TR/SVG/struct.html#InterfaceGetSVGDocument
-    ec = NotSupportedError;
+    es.throwDOMException(NotSupportedError);
     return 0;
 }
 

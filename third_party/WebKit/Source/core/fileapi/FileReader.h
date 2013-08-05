@@ -44,9 +44,8 @@
 namespace WebCore {
 
 class Blob;
+class ExceptionState;
 class ScriptExecutionContext;
-
-typedef int ExceptionCode;
 
 class FileReader : public RefCounted<FileReader>, public ScriptWrappable, public ActiveDOMObject, public EventTarget, public FileReaderLoaderClient {
 public:
@@ -60,11 +59,11 @@ public:
         DONE = 2
     };
 
-    void readAsArrayBuffer(Blob*, ExceptionCode&);
-    void readAsBinaryString(Blob*, ExceptionCode&);
-    void readAsText(Blob*, const String& encoding, ExceptionCode&);
-    void readAsText(Blob*, ExceptionCode&);
-    void readAsDataURL(Blob*, ExceptionCode&);
+    void readAsArrayBuffer(Blob*, ExceptionState&);
+    void readAsBinaryString(Blob*, ExceptionState&);
+    void readAsText(Blob*, const String& encoding, ExceptionState&);
+    void readAsText(Blob*, ExceptionState&);
+    void readAsDataURL(Blob*, ExceptionState&);
     void abort();
 
     void doAbort();
@@ -109,7 +108,7 @@ private:
     virtual EventTargetData* ensureEventTargetData() { return &m_eventTargetData; }
 
     void terminate();
-    void readInternal(Blob*, FileReaderLoader::ReadType, ExceptionCode&);
+    void readInternal(Blob*, FileReaderLoader::ReadType, ExceptionState&);
     void fireErrorEvent(int httpStatusCode);
     void fireEvent(const AtomicString& type);
 

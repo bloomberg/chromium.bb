@@ -28,6 +28,7 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/TransformBuilder.h"
@@ -42,17 +43,17 @@ CSSMatrix::CSSMatrix(const TransformationMatrix& m)
     ScriptWrappable::init(this);
 }
 
-CSSMatrix::CSSMatrix(const String& s, ExceptionCode& ec)
+CSSMatrix::CSSMatrix(const String& s, ExceptionState& es)
 {
     ScriptWrappable::init(this);
-    setMatrixValue(s, ec);
+    setMatrixValue(s, es);
 }
 
 CSSMatrix::~CSSMatrix()
 {
 }
 
-void CSSMatrix::setMatrixValue(const String& string, ExceptionCode& ec)
+void CSSMatrix::setMatrixValue(const String& string, ExceptionState& es)
 {
     if (string.isEmpty())
         return;
@@ -69,7 +70,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionCode& ec)
 
         TransformOperations operations;
         if (!TransformBuilder::createTransformOperations(value.get(), 0, 0, operations)) {
-            ec = SyntaxError;
+            es.throwDOMException(SyntaxError);
             return;
         }
 
@@ -78,7 +79,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionCode& ec)
         TransformationMatrix t;
         for (unsigned i = 0; i < operations.operations().size(); ++i) {
             if (operations.operations()[i].get()->apply(t, IntSize(0, 0))) {
-                ec = SyntaxError;
+                es.throwDOMException(SyntaxError);
                 return;
             }
         }
@@ -86,7 +87,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionCode& ec)
         // set the matrix
         m_matrix = t;
     } else { // There is something there but parsing failed.
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
     }
 }
 
@@ -99,10 +100,10 @@ PassRefPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) const
     return CSSMatrix::create(TransformationMatrix(m_matrix).multiply(secondMatrix->m_matrix));
 }
 
-PassRefPtr<CSSMatrix> CSSMatrix::inverse(ExceptionCode& ec) const
+PassRefPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& es) const
 {
     if (!m_matrix.isInvertible()) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
 

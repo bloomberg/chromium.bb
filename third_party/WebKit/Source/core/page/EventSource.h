@@ -44,6 +44,7 @@
 namespace WebCore {
 
 class Dictionary;
+class ExceptionState;
 class MessageEvent;
 class ResourceResponse;
 class TextResourceDecoder;
@@ -52,7 +53,7 @@ class ThreadableLoader;
 class EventSource : public RefCounted<EventSource>, public ScriptWrappable, public EventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<EventSource> create(ScriptExecutionContext*, const String& url, const Dictionary&, ExceptionCode&);
+    static PassRefPtr<EventSource> create(ScriptExecutionContext*, const String& url, const Dictionary&, ExceptionState&);
     virtual ~EventSource();
 
     static const unsigned long long defaultReconnectDelay;

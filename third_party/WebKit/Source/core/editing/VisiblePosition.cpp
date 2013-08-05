@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
@@ -697,9 +698,9 @@ bool setStart(Range *r, const VisiblePosition &visiblePosition)
     if (!r)
         return false;
     Position p = visiblePosition.deepEquivalent().parentAnchoredEquivalent();
-    int code = 0;
-    r->setStart(p.containerNode(), p.offsetInContainerNode(), code);
-    return code == 0;
+    TrackExceptionState es;
+    r->setStart(p.containerNode(), p.offsetInContainerNode(), es);
+    return !es.hadException();
 }
 
 bool setEnd(Range *r, const VisiblePosition &visiblePosition)
@@ -707,9 +708,9 @@ bool setEnd(Range *r, const VisiblePosition &visiblePosition)
     if (!r)
         return false;
     Position p = visiblePosition.deepEquivalent().parentAnchoredEquivalent();
-    int code = 0;
-    r->setEnd(p.containerNode(), p.offsetInContainerNode(), code);
-    return code == 0;
+    TrackExceptionState es;
+    r->setEnd(p.containerNode(), p.offsetInContainerNode(), es);
+    return !es.hadException();
 }
 
 Element* enclosingBlockFlowElement(const VisiblePosition &visiblePosition)

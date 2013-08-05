@@ -34,6 +34,7 @@
 #include "HTMLNames.h"
 #include "MathMLNames.h"
 #include "SVGNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/CustomElement.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/Element.h"
@@ -44,9 +45,9 @@
 
 namespace WebCore {
 
-void CustomElementRegistrationContext::registerElement(Document* document, CustomElementConstructorBuilder* constructorBuilder, const AtomicString& type, ExceptionCode& ec)
+void CustomElementRegistrationContext::registerElement(Document* document, CustomElementConstructorBuilder* constructorBuilder, const AtomicString& type, ExceptionState& es)
 {
-    CustomElementDefinition* definition = m_registry.registerElement(document, constructorBuilder, type, ec);
+    CustomElementDefinition* definition = m_registry.registerElement(document, constructorBuilder, type, es);
 
     if (!definition)
         return;

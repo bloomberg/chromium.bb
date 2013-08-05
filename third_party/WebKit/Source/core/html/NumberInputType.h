@@ -35,6 +35,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 class NumberInputType : public TextFieldInputType {
 public:
     static PassOwnPtr<InputType> create(HTMLInputElement*);
@@ -45,8 +47,8 @@ private:
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
     virtual double valueAsDouble() const OVERRIDE;
-    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionCode&) const OVERRIDE;
-    virtual void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionCode&) const OVERRIDE;
+    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const OVERRIDE;
+    virtual void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState&) const OVERRIDE;
     virtual bool typeMismatchFor(const String&) const OVERRIDE;
     virtual bool typeMismatch() const OVERRIDE;
     virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const OVERRIDE;

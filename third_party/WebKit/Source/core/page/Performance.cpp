@@ -256,12 +256,12 @@ EventTargetData* Performance::ensureEventTargetData()
     return &m_eventTargetData;
 }
 
-void Performance::mark(const String& markName, ExceptionCode& ec)
+void Performance::mark(const String& markName, ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
     if (!m_userTiming)
         m_userTiming = UserTiming::create(this);
-    m_userTiming->mark(markName, ec);
+    m_userTiming->mark(markName, es);
 }
 
 void Performance::clearMarks(const String& markName)
@@ -271,12 +271,12 @@ void Performance::clearMarks(const String& markName)
     m_userTiming->clearMarks(markName);
 }
 
-void Performance::measure(const String& measureName, const String& startMark, const String& endMark, ExceptionCode& ec)
+void Performance::measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
     if (!m_userTiming)
         m_userTiming = UserTiming::create(this);
-    m_userTiming->measure(measureName, startMark, endMark, ec);
+    m_userTiming->measure(measureName, startMark, endMark, es);
 }
 
 void Performance::clearMeasures(const String& measureName)

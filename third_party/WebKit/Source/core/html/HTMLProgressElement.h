@@ -25,6 +25,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class ProgressValueElement;
 class RenderProgress;
 
@@ -36,10 +37,10 @@ public:
     static PassRefPtr<HTMLProgressElement> create(const QualifiedName&, Document*);
 
     double value() const;
-    void setValue(double, ExceptionCode&);
+    void setValue(double, ExceptionState&);
 
     double max() const;
-    void setMax(double, ExceptionCode&);
+    void setMax(double, ExceptionState&);
 
     double position() const;
 

@@ -48,6 +48,7 @@ class DOMTokenList;
 class Element;
 class ElementRareData;
 class ElementShadow;
+class ExceptionState;
 class Image;
 class InputMethodContext;
 class IntSize;
@@ -274,9 +275,9 @@ public:
     const AtomicString& getAttribute(const AtomicString& name) const;
     const AtomicString& getAttributeNS(const AtomicString& namespaceURI, const AtomicString& localName) const;
 
-    void setAttribute(const AtomicString& name, const AtomicString& value, ExceptionCode&);
-    static bool parseAttributeName(QualifiedName&, const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionCode&);
-    void setAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& value, ExceptionCode&);
+    void setAttribute(const AtomicString& name, const AtomicString& value, ExceptionState&);
+    static bool parseAttributeName(QualifiedName&, const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&);
+    void setAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& value, ExceptionState&);
 
     bool isIdAttributeName(const QualifiedName&) const;
     const AtomicString& getIdAttribute() const;
@@ -342,9 +343,9 @@ public:
 
     PassRefPtr<Attr> getAttributeNode(const AtomicString& name);
     PassRefPtr<Attr> getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName);
-    PassRefPtr<Attr> setAttributeNode(Attr*, ExceptionCode&);
-    PassRefPtr<Attr> setAttributeNodeNS(Attr*, ExceptionCode&);
-    PassRefPtr<Attr> removeAttributeNode(Attr*, ExceptionCode&);
+    PassRefPtr<Attr> setAttributeNode(Attr*, ExceptionState&);
+    PassRefPtr<Attr> setAttributeNodeNS(Attr*, ExceptionState&);
+    PassRefPtr<Attr> removeAttributeNode(Attr*, ExceptionState&);
 
     PassRefPtr<Attr> attrIfExists(const QualifiedName&);
     PassRefPtr<Attr> ensureAttr(const QualifiedName&);
@@ -438,7 +439,7 @@ public:
 
     ElementShadow* shadow() const;
     ElementShadow* ensureShadow();
-    PassRefPtr<ShadowRoot> createShadowRoot(ExceptionCode&);
+    PassRefPtr<ShadowRoot> createShadowRoot(ExceptionState&);
     ShadowRoot* shadowRoot() const;
 
     bool hasAuthorShadowRoot() const { return shadowRoot(); }
@@ -544,7 +545,7 @@ public:
 
     virtual bool matchesReadOnlyPseudoClass() const { return false; }
     virtual bool matchesReadWritePseudoClass() const { return false; }
-    bool webkitMatchesSelector(const String& selectors, ExceptionCode&);
+    bool webkitMatchesSelector(const String& selectors, ExceptionState&);
     virtual bool shouldAppearIndeterminate() const { return false; }
 
     DOMTokenList* classList();
@@ -720,7 +721,7 @@ private:
 
     void scrollByUnits(int units, ScrollGranularity);
 
-    virtual void setPrefix(const AtomicString&, ExceptionCode&) OVERRIDE FINAL;
+    virtual void setPrefix(const AtomicString&, ExceptionState&) OVERRIDE FINAL;
     virtual NodeType nodeType() const OVERRIDE FINAL;
     virtual bool childTypeAllowed(NodeType) const OVERRIDE FINAL;
 

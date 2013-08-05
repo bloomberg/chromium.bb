@@ -28,6 +28,7 @@
 #include "core/html/shadow/DateTimeEditElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/Text.h"
 #include "core/html/DateTimeFieldsState.h"
@@ -409,7 +410,7 @@ void DateTimeEditBuilder::visitLiteral(const String& text)
             element->appendChild(Text::create(m_editElement.document(), String(&rightToLeftMark, 1)));
     }
     element->appendChild(Text::create(m_editElement.document(), text));
-    m_editElement.fieldsWrapperElement()->appendChild(element, ASSERT_NO_EXCEPTION, AttachLazily);
+    m_editElement.fieldsWrapperElement()->appendChild(element, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
 }
 
 DateTimeNumericFieldElement::Step DateTimeEditBuilder::createStep(double msPerFieldUnit, double msPerFieldSize) const
@@ -463,7 +464,7 @@ void DateTimeEditElement::addField(PassRefPtr<DateTimeFieldElement> field)
     if (m_fields.size() == m_fields.capacity())
         return;
     m_fields.append(field.get());
-    fieldsWrapperElement()->appendChild(field, ASSERT_NO_EXCEPTION, AttachLazily);
+    fieldsWrapperElement()->appendChild(field, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
 }
 
 bool DateTimeEditElement::anyEditableFieldsHaveValues() const
@@ -652,7 +653,7 @@ void DateTimeEditElement::layout(const LayoutParameters& layoutParameters, const
     if (!firstChild()) {
         RefPtr<HTMLDivElement> element = HTMLDivElement::create(document());
         element->setPseudo(fieldsWrapperPseudoId);
-        appendChild(element.get(), ASSERT_NO_EXCEPTION, AttachLazily);
+        appendChild(element.get(), ASSERT_NO_EXCEPTION_STATE, AttachLazily);
     }
     Element* fieldsWrapper = fieldsWrapperElement();
 

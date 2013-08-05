@@ -29,6 +29,7 @@
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "XMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSParser.h"
@@ -315,17 +316,17 @@ String HTMLElement::outerHTML() const
     return createMarkup(this);
 }
 
-void HTMLElement::setInnerHTML(const String& html, ExceptionCode& ec)
+void HTMLElement::setInnerHTML(const String& html, ExceptionState& es)
 {
-    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, ec)) {
+    if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, es)) {
         ContainerNode* container = this;
         if (hasLocalName(templateTag))
             container = toHTMLTemplateElement(this)->content();
-        replaceChildrenWithFragment(container, fragment.release(), ec);
+        replaceChildrenWithFragment(container, fragment.release(), es);
     }
 }
 
-static void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionCode& ec)
+static void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionState& es)
 {
     ASSERT(node && node->isTextNode());
     Node* next = node->nextSibling();
@@ -336,34 +337,34 @@ static void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionCode& ec)
     RefPtr<Text> textNext = toText(next);
     textNode->appendData(textNext->data());
     if (textNext->parentNode()) // Might have been removed by mutation event.
-        textNext->remove(ec);
+        textNext->remove(es);
 }
 
-void HTMLElement::setOuterHTML(const String& html, ExceptionCode& ec)
+void HTMLElement::setOuterHTML(const String& html, ExceptionState& es)
 {
     Node* p = parentNode();
     if (!p || !p->isHTMLElement()) {
-        ec = NoModificationAllowedError;
+        es.throwDOMException(NoModificationAllowedError);
         return;
     }
     RefPtr<HTMLElement> parent = toHTMLElement(p);
     RefPtr<Node> prev = previousSibling();
     RefPtr<Node> next = nextSibling();
 
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, ec);
-    if (ec)
+    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, es);
+    if (es.hadException())
         return;
 
-    parent->replaceChild(fragment.release(), this, ec);
+    parent->replaceChild(fragment.release(), this, es);
     RefPtr<Node> node = next ? next->previousSibling() : 0;
-    if (!ec && node && node->isTextNode())
-        mergeWithNextTextNode(node.release(), ec);
+    if (!es.hadException() && node && node->isTextNode())
+        mergeWithNextTextNode(node.release(), es);
 
-    if (!ec && prev && prev->isTextNode())
-        mergeWithNextTextNode(prev.release(), ec);
+    if (!es.hadException() && prev && prev->isTextNode())
+        mergeWithNextTextNode(prev.release(), es);
 }
 
-PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionCode& ec)
+PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionState& es)
 {
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document());
     unsigned int i, length = text.length();
@@ -377,13 +378,13 @@ PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, Exc
               break;
         }
 
-        fragment->appendChild(Text::create(document(), text.substring(start, i - start)), ec);
-        if (ec)
+        fragment->appendChild(Text::create(document(), text.substring(start, i - start)), es);
+        if (es.hadException())
             return 0;
 
         if (c == '\r' || c == '\n') {
-            fragment->appendChild(HTMLBRElement::create(document()), ec);
-            if (ec)
+            fragment->appendChild(HTMLBRElement::create(document()), es);
+            if (es.hadException())
                 return 0;
             // Make sure \r\n doesn't result in two line breaks.
             if (c == '\r' && i + 1 < length && text[i + 1] == '\n')
@@ -396,17 +397,17 @@ PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, Exc
     return fragment;
 }
 
-void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
+void HTMLElement::setInnerText(const String& text, ExceptionState& es)
 {
     if (ieForbidsInsertHTML()) {
-        ec = NoModificationAllowedError;
+        es.throwDOMException(NoModificationAllowedError);
         return;
     }
     if (hasLocalName(colTag) || hasLocalName(colgroupTag) || hasLocalName(framesetTag) ||
         hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) ||
         hasLocalName(tbodyTag) || hasLocalName(tfootTag) || hasLocalName(theadTag) ||
         hasLocalName(trTag)) {
-        ec = NoModificationAllowedError;
+        es.throwDOMException(NoModificationAllowedError);
         return;
     }
 
@@ -417,7 +418,7 @@ void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
             removeChildren();
             return;
         }
-        replaceChildrenWithText(this, text, ec);
+        replaceChildrenWithText(this, text, es);
         return;
     }
 
@@ -427,69 +428,69 @@ void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
     RenderObject* r = renderer();
     if (r && r->style()->preserveNewline()) {
         if (!text.contains('\r')) {
-            replaceChildrenWithText(this, text, ec);
+            replaceChildrenWithText(this, text, es);
             return;
         }
         String textWithConsistentLineBreaks = text;
         textWithConsistentLineBreaks.replace("\r\n", "\n");
         textWithConsistentLineBreaks.replace('\r', '\n');
-        replaceChildrenWithText(this, textWithConsistentLineBreaks, ec);
+        replaceChildrenWithText(this, textWithConsistentLineBreaks, es);
         return;
     }
 
     // Add text nodes and <br> elements.
-    ec = 0;
-    RefPtr<DocumentFragment> fragment = textToFragment(text, ec);
-    if (!ec)
-        replaceChildrenWithFragment(this, fragment.release(), ec);
+    es.clearException();
+    RefPtr<DocumentFragment> fragment = textToFragment(text, es);
+    if (!es.hadException())
+        replaceChildrenWithFragment(this, fragment.release(), es);
 }
 
-void HTMLElement::setOuterText(const String &text, ExceptionCode& ec)
+void HTMLElement::setOuterText(const String &text, ExceptionState& es)
 {
     if (ieForbidsInsertHTML()) {
-        ec = NoModificationAllowedError;
+        es.throwDOMException(NoModificationAllowedError);
         return;
     }
     if (hasLocalName(colTag) || hasLocalName(colgroupTag) || hasLocalName(framesetTag) ||
         hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) ||
         hasLocalName(tbodyTag) || hasLocalName(tfootTag) || hasLocalName(theadTag) ||
         hasLocalName(trTag)) {
-        ec = NoModificationAllowedError;
+        es.throwDOMException(NoModificationAllowedError);
         return;
     }
 
     ContainerNode* parent = parentNode();
     if (!parent) {
-        ec = NoModificationAllowedError;
+        es.throwDOMException(NoModificationAllowedError);
         return;
     }
 
     RefPtr<Node> prev = previousSibling();
     RefPtr<Node> next = nextSibling();
     RefPtr<Node> newChild;
-    ec = 0;
+    es.clearException();
 
     // Convert text to fragment with <br> tags instead of linebreaks if needed.
     if (text.contains('\r') || text.contains('\n'))
-        newChild = textToFragment(text, ec);
+        newChild = textToFragment(text, es);
     else
         newChild = Text::create(document(), text);
 
     if (!this || !parentNode())
-        ec = HierarchyRequestError;
-    if (ec)
+        es.throwDOMException(HierarchyRequestError);
+    if (es.hadException())
         return;
-    parent->replaceChild(newChild.release(), this, ec);
+    parent->replaceChild(newChild.release(), this, es);
 
     RefPtr<Node> node = next ? next->previousSibling() : 0;
-    if (!ec && node && node->isTextNode())
-        mergeWithNextTextNode(node.release(), ec);
+    if (!es.hadException() && node && node->isTextNode())
+        mergeWithNextTextNode(node.release(), es);
 
-    if (!ec && prev && prev->isTextNode())
-        mergeWithNextTextNode(prev.release(), ec);
+    if (!es.hadException() && prev && prev->isTextNode())
+        mergeWithNextTextNode(prev.release(), es);
 }
 
-Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, ExceptionCode& ec)
+Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, ExceptionState& es)
 {
     // In Internet Explorer if the element has no parent and where is "beforeBegin" or "afterEnd",
     // a document fragment is created and the elements appended in the correct order. This document
@@ -500,81 +501,81 @@ Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, Exception
 
     if (equalIgnoringCase(where, "beforeBegin")) {
         if (ContainerNode* parent = this->parentNode()) {
-            parent->insertBefore(newChild, this, ec, AttachLazily);
-            if (!ec)
+            parent->insertBefore(newChild, this, es, AttachLazily);
+            if (!es.hadException())
                 return newChild;
         }
         return 0;
     }
 
     if (equalIgnoringCase(where, "afterBegin")) {
-        insertBefore(newChild, firstChild(), ec, AttachLazily);
-        return ec ? 0 : newChild;
+        insertBefore(newChild, firstChild(), es, AttachLazily);
+        return es.hadException() ? 0 : newChild;
     }
 
     if (equalIgnoringCase(where, "beforeEnd")) {
-        appendChild(newChild, ec, AttachLazily);
-        return ec ? 0 : newChild;
+        appendChild(newChild, es, AttachLazily);
+        return es.hadException() ? 0 : newChild;
     }
 
     if (equalIgnoringCase(where, "afterEnd")) {
         if (ContainerNode* parent = this->parentNode()) {
-            parent->insertBefore(newChild, nextSibling(), ec, AttachLazily);
-            if (!ec)
+            parent->insertBefore(newChild, nextSibling(), es, AttachLazily);
+            if (!es.hadException())
                 return newChild;
         }
         return 0;
     }
 
     // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
-    ec = NotSupportedError;
+    es.throwDOMException(NotSupportedError);
     return 0;
 }
 
-Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChild, ExceptionCode& ec)
+Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChild, ExceptionState& es)
 {
     if (!newChild) {
         // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
         return 0;
     }
 
-    Node* returnValue = insertAdjacent(where, newChild, ec);
+    Node* returnValue = insertAdjacent(where, newChild, es);
     return toElement(returnValue);
 }
 
 // Step 3 of http://www.whatwg.org/specs/web-apps/current-work/multipage/apis-in-html-documents.html#insertadjacenthtml()
-static Element* contextElementForInsertion(const String& where, Element* element, ExceptionCode& ec)
+static Element* contextElementForInsertion(const String& where, Element* element, ExceptionState& es)
 {
     if (equalIgnoringCase(where, "beforeBegin") || equalIgnoringCase(where, "afterEnd")) {
         ContainerNode* parent = element->parentNode();
         if (parent && !parent->isElementNode()) {
-            ec = NoModificationAllowedError;
+            es.throwDOMException(NoModificationAllowedError);
             return 0;
         }
         return toElement(parent);
     }
     if (equalIgnoringCase(where, "afterBegin") || equalIgnoringCase(where, "beforeEnd"))
         return element;
-    ec =  SyntaxError;
+    es.throwDOMException(SyntaxError);
     return 0;
 }
 
-void HTMLElement::insertAdjacentHTML(const String& where, const String& markup, ExceptionCode& ec)
+void HTMLElement::insertAdjacentHTML(const String& where, const String& markup, ExceptionState& es)
 {
-    Element* contextElement = contextElementForInsertion(where, this, ec);
+    Element* contextElement = contextElementForInsertion(where, this, es);
     if (!contextElement)
         return;
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement, AllowScriptingContent, ec);
+    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement, AllowScriptingContent, es);
     if (!fragment)
         return;
-    insertAdjacent(where, fragment.get(), ec);
+    insertAdjacent(where, fragment.get(), es);
 }
 
-void HTMLElement::insertAdjacentText(const String& where, const String& text, ExceptionCode& ec)
+void HTMLElement::insertAdjacentText(const String& where, const String& text, ExceptionState& es)
 {
     RefPtr<Text> textNode = document()->createTextNode(text);
-    insertAdjacent(where, textNode.get(), ec);
+    insertAdjacent(where, textNode.get(), es);
 }
 
 void HTMLElement::applyAlignmentAttributeToStyle(const AtomicString& alignment, MutableStylePropertySet* style)
@@ -661,7 +662,7 @@ String HTMLElement::contentEditable() const
     return "inherit";
 }
 
-void HTMLElement::setContentEditable(const String& enabled, ExceptionCode& ec)
+void HTMLElement::setContentEditable(const String& enabled, ExceptionState& es)
 {
     if (equalIgnoringCase(enabled, "true"))
         setAttribute(contenteditableAttr, "true");
@@ -672,7 +673,7 @@ void HTMLElement::setContentEditable(const String& enabled, ExceptionCode& ec)
     else if (equalIgnoringCase(enabled, "inherit"))
         removeAttribute(contenteditableAttr);
     else
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
 }
 
 bool HTMLElement::draggable() const

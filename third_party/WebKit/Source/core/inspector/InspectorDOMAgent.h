@@ -46,18 +46,20 @@
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
-class ContainerNode;
+
 class CharacterData;
+class ContainerNode;
 class DOMEditor;
 class Document;
 class Element;
 class Event;
+class ExceptionState;
+class HTMLElement;
 class InspectorClient;
 class InspectorFrontend;
 class InspectorHistory;
 class InspectorOverlay;
 class InspectorPageAgent;
-class HTMLElement;
 class InspectorState;
 class InstrumentingAgents;
 class NameNodeMap;
@@ -103,7 +105,7 @@ public:
         return adoptPtr(new InspectorDOMAgent(instrumentingAgents, pageAgent, inspectorState, injectedScriptManager, overlay, client));
     }
 
-    static String toErrorString(const ExceptionCode&);
+    static String toErrorString(ExceptionState&);
 
     ~InspectorDOMAgent();
 

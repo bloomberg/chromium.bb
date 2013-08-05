@@ -27,6 +27,7 @@
 #include "core/editing/VisibleUnits.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
@@ -457,11 +458,11 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     Vector<UChar, 1024> string;
     unsigned suffixLength = 0;
 
-    ExceptionCode ec = 0;
+    TrackExceptionState es;
     if (requiresContextForWordBoundary(c.characterBefore())) {
         RefPtr<Range> forwardsScanRange(d->createRange());
-        forwardsScanRange->setEndAfter(boundary, ec);
-        forwardsScanRange->setStart(end.deprecatedNode(), end.deprecatedEditingOffset(), ec);
+        forwardsScanRange->setEndAfter(boundary, es);
+        forwardsScanRange->setStart(end.deprecatedNode(), end.deprecatedEditingOffset(), es);
         TextIterator forwardsIterator(forwardsScanRange.get());
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
@@ -475,11 +476,11 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         }
     }
 
-    searchRange->setStart(start.deprecatedNode(), start.deprecatedEditingOffset(), ec);
-    searchRange->setEnd(end.deprecatedNode(), end.deprecatedEditingOffset(), ec);
+    searchRange->setStart(start.deprecatedNode(), start.deprecatedEditingOffset(), es);
+    searchRange->setEnd(end.deprecatedNode(), end.deprecatedEditingOffset(), es);
 
-    ASSERT(!ec);
-    if (ec)
+    ASSERT(!es.hadException());
+    if (es.hadException())
         return VisiblePosition();
 
     SimplifiedBackwardsTextIterator it(searchRange.get());
@@ -539,7 +540,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
 
     if (requiresContextForWordBoundary(c.characterAfter())) {
         RefPtr<Range> backwardsScanRange(d->createRange());
-        backwardsScanRange->setEnd(start.deprecatedNode(), start.deprecatedEditingOffset(), IGNORE_EXCEPTION);
+        backwardsScanRange->setEnd(start.deprecatedNode(), start.deprecatedEditingOffset(), IGNORE_EXCEPTION_STATE);
         SimplifiedBackwardsTextIterator backwardsIterator(backwardsScanRange.get());
         while (!backwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
@@ -554,8 +555,8 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         }
     }
 
-    searchRange->selectNodeContents(boundary, IGNORE_EXCEPTION);
-    searchRange->setStart(start.deprecatedNode(), start.deprecatedEditingOffset(), IGNORE_EXCEPTION);
+    searchRange->selectNodeContents(boundary, IGNORE_EXCEPTION_STATE);
+    searchRange->setStart(start.deprecatedNode(), start.deprecatedEditingOffset(), IGNORE_EXCEPTION_STATE);
     TextIterator it(searchRange.get(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
     unsigned next = 0;
     bool inTextSecurityMode = start.deprecatedNode() && start.deprecatedNode()->renderer() && start.deprecatedNode()->renderer()->style()->textSecurity() != TSNONE;

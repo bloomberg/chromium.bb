@@ -25,9 +25,9 @@
 
 #include "config.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/Range.h"
 #include "core/editing/FormatBlockCommand.h"
 #include "core/editing/VisibleUnits.h"
@@ -100,7 +100,7 @@ Element* FormatBlockCommand::elementForFormatBlockCommand(Range* range)
     if (!range)
         return 0;
 
-    Node* commonAncestor = range->commonAncestorContainer(IGNORE_EXCEPTION);
+    Node* commonAncestor = range->commonAncestorContainer(IGNORE_EXCEPTION_STATE);
     while (commonAncestor && !isElementForFormatBlock(commonAncestor))
         commonAncestor = commonAncestor->parentNode();
 

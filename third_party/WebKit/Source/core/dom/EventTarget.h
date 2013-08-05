@@ -39,12 +39,13 @@
 namespace WebCore {
 
     class AudioContext;
-    class DedicatedWorkerGlobalScope;
     class DOMApplicationCache;
     class DOMWindow;
+    class DedicatedWorkerGlobalScope;
     class Event;
     class EventListener;
     class EventSource;
+    class ExceptionState;
     class FileReader;
     class FileWriter;
     class IDBDatabase;
@@ -70,8 +71,6 @@ namespace WebCore {
     class Worker;
     class XMLHttpRequest;
     class XMLHttpRequestUpload;
-
-    typedef int ExceptionCode;
 
     struct FiringEventIterator {
         FiringEventIterator(const AtomicString& eventType, size_t& iterator, size_t& end)
@@ -112,7 +111,7 @@ namespace WebCore {
         virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);
         virtual void removeAllEventListeners();
         virtual bool dispatchEvent(PassRefPtr<Event>);
-        bool dispatchEvent(PassRefPtr<Event>, ExceptionCode&); // DOM API
+        bool dispatchEvent(PassRefPtr<Event>, ExceptionState&); // DOM API
         virtual void uncaughtExceptionInEventHandler();
 
         // Used for legacy "onEvent" attribute APIs.

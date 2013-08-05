@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityRenderObject.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityImageMapLink.h"
 #include "core/accessibility/AccessibilitySVGRoot.h"
@@ -1892,7 +1893,7 @@ VisiblePosition AccessibilityRenderObject::visiblePositionForIndex(int index) co
         return VisiblePosition(firstPositionInOrBeforeNode(node), DOWNSTREAM);
 
     RefPtr<Range> range = Range::create(m_renderer->document());
-    range->selectNodeContents(node, IGNORE_EXCEPTION);
+    range->selectNodeContents(node, IGNORE_EXCEPTION_STATE);
     CharacterIterator it(range.get());
     it.advance(index - 1);
     return VisiblePosition(Position(it.range()->endContainer(), it.range()->endOffset(), Position::PositionIsOffsetInAnch\
@@ -1918,8 +1919,8 @@ int AccessibilityRenderObject::indexForVisiblePosition(const VisiblePosition& po
         return 0;
 
     RefPtr<Range> range = Range::create(m_renderer->document());
-    range->setStart(node, 0, IGNORE_EXCEPTION);
-    range->setEnd(indexPosition, IGNORE_EXCEPTION);
+    range->setStart(node, 0, IGNORE_EXCEPTION_STATE);
+    range->setEnd(indexPosition, IGNORE_EXCEPTION_STATE);
 
     return TextIterator::rangeLength(range.get());
 }
@@ -2017,7 +2018,7 @@ PlainTextRange AccessibilityRenderObject::ariaSelectedTextRange() const
 
     VisibleSelection visibleSelection = selection();
     RefPtr<Range> currentSelectionRange = visibleSelection.toNormalizedRange();
-    if (!currentSelectionRange || !currentSelectionRange->intersectsNode(node, IGNORE_EXCEPTION))
+    if (!currentSelectionRange || !currentSelectionRange->intersectsNode(node, IGNORE_EXCEPTION_STATE))
         return PlainTextRange();
 
     int start = indexForVisiblePosition(visibleSelection.start());

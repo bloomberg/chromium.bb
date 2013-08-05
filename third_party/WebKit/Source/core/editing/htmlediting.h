@@ -36,6 +36,7 @@ namespace WebCore {
 
 class Document;
 class Element;
+class ExceptionState;
 class HTMLElement;
 class Node;
 class Position;
@@ -186,7 +187,7 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
 
 // Functions returning Range
 
-PassRefPtr<Range> createRange(PassRefPtr<Document>, const VisiblePosition& start, const VisiblePosition& end, ExceptionCode&);
+PassRefPtr<Range> createRange(PassRefPtr<Document>, const VisiblePosition& start, const VisiblePosition& end, ExceptionState&);
 
 // -------------------------------------------------------------------------
 // HTMLElement

@@ -29,6 +29,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class CSSRuleList;
 
 class CSSGroupingRule : public CSSRule {
@@ -39,8 +40,8 @@ public:
 
     CSSRuleList* cssRules() const;
 
-    unsigned insertRule(const String& rule, unsigned index, ExceptionCode&);
-    void deleteRule(unsigned index, ExceptionCode&);
+    unsigned insertRule(const String& rule, unsigned index, ExceptionState&);
+    void deleteRule(unsigned index, ExceptionState&);
 
     // For CSSRuleList
     unsigned length() const;

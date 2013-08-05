@@ -21,13 +21,13 @@
 #ifndef TextCheckingHelper_h
 #define TextCheckingHelper_h
 
-#include "core/dom/ExceptionCode.h"
 #include "core/page/EditorClient.h"
 #include "core/platform/text/TextChecking.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
+class ExceptionState;
 class Range;
 class Position;
 struct TextCheckingResult;
@@ -40,7 +40,7 @@ public:
 
     int rangeLength() const;
     PassRefPtr<Range> subrange(int characterOffset, int characterCount) const;
-    int offsetTo(const Position&, ExceptionCode&) const;
+    int offsetTo(const Position&, ExceptionState&) const;
     void expandRangeToNextEnd();
 
     const String& text() const;

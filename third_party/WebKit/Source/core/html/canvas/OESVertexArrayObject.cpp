@@ -27,6 +27,7 @@
 
 #include "core/html/canvas/OESVertexArrayObject.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 #include "core/platform/graphics/Extensions3D.h"
@@ -87,9 +88,9 @@ GC3Dboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* ar
     return extensions->isVertexArrayOES(arrayObject->object());
 }
 
-void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject, ExceptionCode& ec)
+void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject, ExceptionState& es)
 {
-    UNUSED_PARAM(ec);
+    UNUSED_PARAM(es);
     if (isLost())
         return;
 

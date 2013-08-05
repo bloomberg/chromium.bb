@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-
 #include "core/svg/animation/SVGSMILElement.h"
 
 #include "SVGNames.h"
 #include "XLinkNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventListener.h"
 #include "core/platform/FloatConversion.h"
@@ -195,7 +195,7 @@ static inline QualifiedName constructQualifiedName(const SVGElement* svgElement,
 
     String prefix;
     String localName;
-    if (!Document::parseQualifiedName(attributeName, prefix, localName, ASSERT_NO_EXCEPTION))
+    if (!Document::parseQualifiedName(attributeName, prefix, localName, ASSERT_NO_EXCEPTION_STATE))
         return anyQName();
 
     String namespaceURI = svgElement->lookupNamespaceURI(prefix);

@@ -22,6 +22,7 @@
 #include "core/html/HTMLSummaryElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -54,8 +55,8 @@ RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
 
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
-    root->appendChild(DetailsMarkerControl::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
-    root->appendChild(HTMLContentElement::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
+    root->appendChild(DetailsMarkerControl::create(document()), ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+    root->appendChild(HTMLContentElement::create(document()), ASSERT_NO_EXCEPTION_STATE, AttachLazily);
 }
 
 HTMLDetailsElement* HTMLSummaryElement::detailsElement() const

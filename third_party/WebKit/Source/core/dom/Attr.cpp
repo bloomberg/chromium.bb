@@ -24,6 +24,8 @@
 #include "core/dom/Attr.h"
 
 #include "XMLNSNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScopedEventQueue.h"
@@ -89,16 +91,16 @@ void Attr::createTextChild()
     }
 }
 
-void Attr::setPrefix(const AtomicString& prefix, ExceptionCode& ec)
+void Attr::setPrefix(const AtomicString& prefix, ExceptionState& es)
 {
-    ec = 0;
-    checkSetPrefix(prefix, ec);
-    if (ec)
+    es.clearException();
+    checkSetPrefix(prefix, es);
+    if (es.hadException())
         return;
 
     if ((prefix == xmlnsAtom && namespaceURI() != XMLNSNames::xmlnsNamespaceURI)
         || static_cast<Attr*>(this)->qualifiedName() == xmlnsAtom) {
-        ec = NamespaceError;
+        es.throwDOMException(NamespaceError);
         return;
     }
 
@@ -124,7 +126,7 @@ void Attr::setValue(const AtomicString& value)
     invalidateNodeListCachesInAncestors(&m_name, m_element);
 }
 
-void Attr::setValue(const AtomicString& value, ExceptionCode&)
+void Attr::setValue(const AtomicString& value, ExceptionState&)
 {
     if (m_element)
         m_element->willModifyAttribute(qualifiedName(), this->value(), value);
@@ -137,7 +139,7 @@ void Attr::setValue(const AtomicString& value, ExceptionCode&)
 
 void Attr::setNodeValue(const String& v)
 {
-    setValue(v, IGNORE_EXCEPTION);
+    setValue(v, IGNORE_EXCEPTION_STATE);
 }
 
 PassRefPtr<Node> Attr::cloneNode(bool /*deep*/)

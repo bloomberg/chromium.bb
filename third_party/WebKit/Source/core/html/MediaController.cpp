@@ -24,9 +24,10 @@
  */
 
 #include "config.h"
-
 #include "core/html/MediaController.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
@@ -157,7 +158,7 @@ double MediaController::currentTime() const
     return m_position;
 }
 
-void MediaController::setCurrentTime(double time, ExceptionCode& ec)
+void MediaController::setCurrentTime(double time, ExceptionState& es)
 {
     // When the user agent is to seek the media controller to a particular new playback position,
     // it must follow these steps:
@@ -173,7 +174,7 @@ void MediaController::setCurrentTime(double time, ExceptionCode& ec)
 
     // Seek each slaved media element to the new playback position relative to the media element timeline.
     for (size_t index = 0; index < m_mediaElements.size(); ++index)
-        m_mediaElements[index]->seek(time, ec);
+        m_mediaElements[index]->seek(time, es);
 
     scheduleTimeupdateEvent();
 }
@@ -251,7 +252,7 @@ void MediaController::setPlaybackRate(double rate)
     scheduleEvent(eventNames().ratechangeEvent);
 }
 
-void MediaController::setVolume(double level, ExceptionCode& ec)
+void MediaController::setVolume(double level, ExceptionState& es)
 {
     if (m_volume == level)
         return;
@@ -259,7 +260,7 @@ void MediaController::setVolume(double level, ExceptionCode& ec)
     // If the new value is outside the range 0.0 to 1.0 inclusive, then, on setting, an
     // IndexSizeError exception must be raised instead.
     if (level < 0 || level > 1) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
@@ -481,7 +482,7 @@ void MediaController::bringElementUpToSpeed(HTMLMediaElement* element)
     // When the user agent is to bring a media element up to speed with its new media controller,
     // it must seek that media element to the MediaController's media controller position relative
     // to the media element's timeline.
-    element->seek(currentTime(), IGNORE_EXCEPTION);
+    element->seek(currentTime(), IGNORE_EXCEPTION_STATE);
 }
 
 bool MediaController::isBlocked() const
@@ -547,7 +548,7 @@ void MediaController::asyncEventTimerFired(Timer<MediaController>*)
     m_pendingEvents.swap(pendingEvents);
     size_t count = pendingEvents.size();
     for (size_t index = 0; index < count; ++index)
-        dispatchEvent(pendingEvents[index].release(), IGNORE_EXCEPTION);
+        dispatchEvent(pendingEvents[index].release(), IGNORE_EXCEPTION_STATE);
 }
 
 void MediaController::clearPositionTimerFired(Timer<MediaController>*)

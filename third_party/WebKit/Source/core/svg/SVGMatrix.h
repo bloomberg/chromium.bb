@@ -20,12 +20,11 @@
 #ifndef SVGMatrix_h
 #define SVGMatrix_h
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 
 namespace WebCore {
-
-typedef int ExceptionCode;
 
 // Only used in the bindings.
 class SVGMatrix : public AffineTransform {
@@ -104,23 +103,23 @@ public:
         return static_cast<SVGMatrix>(copy);
     }
 
-    SVGMatrix inverse(ExceptionCode& ec) const
+    SVGMatrix inverse(ExceptionState& es) const
     {
         AffineTransform transform = AffineTransform::inverse();
         if (!isInvertible()) {
             // FIXME: This used to have a more specific error message:
             // "An attempt was made to invert a matrix that is not invertible."
             // When switching to SVG2 style exceptions we lost this information.
-            ec = InvalidStateError;
+            es.throwDOMException(InvalidStateError);
         }
 
         return transform;
     }
 
-    SVGMatrix rotateFromVector(double x, double y, ExceptionCode& ec)
+    SVGMatrix rotateFromVector(double x, double y, ExceptionState& es)
     {
         if (!x || !y)
-            ec = InvalidAccessError;
+            es.throwDOMException(InvalidAccessError);
 
         AffineTransform copy = *this;
         copy.rotateFromVector(x, y);

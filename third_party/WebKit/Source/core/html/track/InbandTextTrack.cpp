@@ -26,12 +26,12 @@
 #include "config.h"
 #include "core/html/track/InbandTextTrack.h"
 
-#include <math.h>
-#include "core/dom/ExceptionCodePlaceholder.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/html/track/TextTrackCueGeneric.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "wtf/UnusedParam.h"
+#include <math.h>
 
 namespace WebCore {
 
@@ -151,22 +151,22 @@ void InbandTextTrack::addGenericCue(InbandTextTrackPrivate* trackPrivate, Generi
     cue->setFontName(cueData->fontName());
 
     if (cueData->position() > 0)
-        cue->setPosition(lround(cueData->position()), IGNORE_EXCEPTION);
+        cue->setPosition(lround(cueData->position()), IGNORE_EXCEPTION_STATE);
     if (cueData->line() > 0)
-        cue->setLine(lround(cueData->line()), IGNORE_EXCEPTION);
+        cue->setLine(lround(cueData->line()), IGNORE_EXCEPTION_STATE);
     if (cueData->size() > 0)
-        cue->setSize(lround(cueData->size()), IGNORE_EXCEPTION);
+        cue->setSize(lround(cueData->size()), IGNORE_EXCEPTION_STATE);
     if (cueData->backgroundColor().alpha())
         cue->setBackgroundColor(cueData->backgroundColor().rgb());
     if (cueData->foregroundColor().alpha())
         cue->setForegroundColor(cueData->foregroundColor().rgb());
 
     if (cueData->align() == GenericCueData::Start)
-        cue->setAlign(ASCIILiteral("start"), IGNORE_EXCEPTION);
+        cue->setAlign(ASCIILiteral("start"), IGNORE_EXCEPTION_STATE);
     else if (cueData->align() == GenericCueData::Middle)
-        cue->setAlign(ASCIILiteral("middle"), IGNORE_EXCEPTION);
+        cue->setAlign(ASCIILiteral("middle"), IGNORE_EXCEPTION_STATE);
     else if (cueData->align() == GenericCueData::End)
-        cue->setAlign(ASCIILiteral("end"), IGNORE_EXCEPTION);
+        cue->setAlign(ASCIILiteral("end"), IGNORE_EXCEPTION_STATE);
     cue->setSnapToLines(false);
 
     if (hasCue(cue.get())) {

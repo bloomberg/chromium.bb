@@ -28,6 +28,7 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/DocumentWriter.h"
@@ -67,7 +68,7 @@ inline MockPagePopup::MockPagePopup(PagePopupClient* client, const IntRect& orig
     m_iframe->setInlineStyleProperty(CSSPropertyLeft, originBoundsInRootView.x(), CSSPrimitiveValue::CSS_PX, true);
     m_iframe->setInlineStyleProperty(CSSPropertyTop, originBoundsInRootView.maxY(), CSSPrimitiveValue::CSS_PX, true);
     if (document->body())
-        document->body()->appendChild(m_iframe.get(), ASSERT_NO_EXCEPTION, AttachLazily);
+        document->body()->appendChild(m_iframe.get(), ASSERT_NO_EXCEPTION_STATE, AttachLazily);
     Frame* contentFrame = m_iframe->contentFrame();
     DocumentWriter* writer = contentFrame->loader()->activeDocumentLoader()->beginWriting("text/html", "UTF-8");
     const char scriptToSetUpPagePopupController[] = "<script>window.pagePopupController = parent.internals.pagePopupController;</script>";

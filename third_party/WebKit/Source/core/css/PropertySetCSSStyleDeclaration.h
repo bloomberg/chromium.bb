@@ -32,12 +32,13 @@
 
 namespace WebCore {
 
-class CSSRule;
 class CSSProperty;
+class CSSRule;
 class CSSValue;
+class Element;
+class ExceptionState;
 class MutableStylePropertySet;
 class StyleSheetContents;
-class Element;
 
 class PropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
 public:
@@ -59,19 +60,19 @@ private:
     virtual String getPropertyPriority(const String& propertyName) OVERRIDE;
     virtual String getPropertyShorthand(const String& propertyName) OVERRIDE;
     virtual bool isPropertyImplicit(const String& propertyName) OVERRIDE;
-    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionCode&) OVERRIDE;
-    virtual String removeProperty(const String& propertyName, ExceptionCode&) OVERRIDE;
+    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) OVERRIDE;
+    virtual String removeProperty(const String& propertyName, ExceptionState&) OVERRIDE;
     virtual String cssText() const OVERRIDE;
-    virtual void setCssText(const String&, ExceptionCode&) OVERRIDE;
+    virtual void setCssText(const String&, ExceptionState&) OVERRIDE;
     virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) OVERRIDE;
     virtual String getPropertyValueInternal(CSSPropertyID) OVERRIDE;
-    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionCode&) OVERRIDE;
+    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) OVERRIDE;
 
     virtual unsigned variableCount() const OVERRIDE;
     virtual String variableValue(const AtomicString& name) const OVERRIDE;
-    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionCode&) OVERRIDE;
+    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionState&) OVERRIDE;
     virtual bool removeVariable(const AtomicString& name) OVERRIDE;
-    virtual void clearVariables(ExceptionCode&) OVERRIDE;
+    virtual void clearVariables(ExceptionState&) OVERRIDE;
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
     virtual PassRefPtr<MutableStylePropertySet> copyProperties() const OVERRIDE;

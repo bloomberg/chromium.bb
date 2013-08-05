@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/dom/SelectorQuery.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/SelectorChecker.h"
@@ -479,7 +480,7 @@ PassRefPtr<Element> SelectorQuery::queryFirst(Node* rootNode) const
     return m_selectors.queryFirst(rootNode);
 }
 
-SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, Document* document, ExceptionCode& ec)
+SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, Document* document, ExceptionState& es)
 {
     HashMap<AtomicString, OwnPtr<SelectorQuery> >::iterator it = m_entries.find(selectors);
     if (it != m_entries.end())
@@ -490,13 +491,13 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, Document* 
     parser.parseSelector(selectors, selectorList);
 
     if (!selectorList.first() || selectorList.hasInvalidSelector()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return 0;
     }
 
     // throw a NamespaceError if the selector includes any namespace prefixes.
     if (selectorList.selectorsNeedNamespaceResolution()) {
-        ec = NamespaceError;
+        es.throwDOMException(NamespaceError);
         return 0;
     }
 

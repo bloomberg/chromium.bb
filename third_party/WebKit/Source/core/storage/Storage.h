@@ -35,38 +35,38 @@
 
 namespace WebCore {
 
-    class Frame;
-    typedef int ExceptionCode;
+class ExceptionState;
+class Frame;
 
-    class Storage : public ScriptWrappable, public RefCounted<Storage>, public DOMWindowProperty {
-    public:
-        static PassRefPtr<Storage> create(Frame*, PassOwnPtr<StorageArea>);
-        ~Storage();
+class Storage : public ScriptWrappable, public RefCounted<Storage>, public DOMWindowProperty {
+public:
+    static PassRefPtr<Storage> create(Frame*, PassOwnPtr<StorageArea>);
+    ~Storage();
 
-        unsigned length(ExceptionCode& ec) const { return m_storageArea->length(ec, m_frame); }
-        String key(unsigned index, ExceptionCode& ec) const { return m_storageArea->key(index, ec, m_frame); }
-        String getItem(const String& key, ExceptionCode& ec) const { return m_storageArea->getItem(key, ec, m_frame); }
-        void setItem(const String& key, const String& value, ExceptionCode& ec) { m_storageArea->setItem(key, value, ec, m_frame); }
-        void removeItem(const String& key, ExceptionCode& ec) { m_storageArea->removeItem(key, ec, m_frame); }
-        void clear(ExceptionCode& ec) { m_storageArea->clear(ec, m_frame); }
-        bool contains(const String& key, ExceptionCode& ec) const { return m_storageArea->contains(key, ec, m_frame); }
+    unsigned length(ExceptionState& ec) const { return m_storageArea->length(ec, m_frame); }
+    String key(unsigned index, ExceptionState& ec) const { return m_storageArea->key(index, ec, m_frame); }
+    String getItem(const String& key, ExceptionState& ec) const { return m_storageArea->getItem(key, ec, m_frame); }
+    void setItem(const String& key, const String& value, ExceptionState& ec) { m_storageArea->setItem(key, value, ec, m_frame); }
+    void removeItem(const String& key, ExceptionState& ec) { m_storageArea->removeItem(key, ec, m_frame); }
+    void clear(ExceptionState& ec) { m_storageArea->clear(ec, m_frame); }
+    bool contains(const String& key, ExceptionState& ec) const { return m_storageArea->contains(key, ec, m_frame); }
 
-        StorageArea* area() const { return m_storageArea.get(); }
+    StorageArea* area() const { return m_storageArea.get(); }
 
-        String anonymousIndexedGetter(unsigned, ExceptionCode&);
-        String anonymousNamedGetter(const AtomicString&, ExceptionCode&);
-        bool anonymousNamedSetter(const AtomicString& name, const AtomicString& value, ExceptionCode&);
-        bool anonymousIndexedSetter(unsigned, const AtomicString&, ExceptionCode&);
-        bool anonymousNamedDeleter(const AtomicString&, ExceptionCode&);
-        bool anonymousIndexedDeleter(unsigned, ExceptionCode&);
-        void namedPropertyEnumerator(Vector<String>&, ExceptionCode&);
-        bool namedPropertyQuery(const AtomicString&, ExceptionCode&);
+    String anonymousIndexedGetter(unsigned, ExceptionState&);
+    String anonymousNamedGetter(const AtomicString&, ExceptionState&);
+    bool anonymousNamedSetter(const AtomicString& name, const AtomicString& value, ExceptionState&);
+    bool anonymousIndexedSetter(unsigned, const AtomicString&, ExceptionState&);
+    bool anonymousNamedDeleter(const AtomicString&, ExceptionState&);
+    bool anonymousIndexedDeleter(unsigned, ExceptionState&);
+    void namedPropertyEnumerator(Vector<String>&, ExceptionState&);
+    bool namedPropertyQuery(const AtomicString&, ExceptionState&);
 
-    private:
-        Storage(Frame*, PassOwnPtr<StorageArea>);
+private:
+    Storage(Frame*, PassOwnPtr<StorageArea>);
 
-        OwnPtr<StorageArea> m_storageArea;
-    };
+    OwnPtr<StorageArea> m_storageArea;
+};
 
 } // namespace WebCore
 

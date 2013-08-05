@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/page/History.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -138,14 +139,14 @@ KURL History::urlForState(const String& urlString)
     return KURL(baseURL, urlString);
 }
 
-void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const String& title, const String& urlString, StateObjectType stateObjectType, ExceptionCode& ec)
+void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const String& title, const String& urlString, StateObjectType stateObjectType, ExceptionState& es)
 {
     if (!m_frame || !m_frame->page())
         return;
 
     KURL fullURL = urlForState(urlString);
     if (!fullURL.isValid() || !m_frame->document()->securityOrigin()->canRequest(fullURL)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
 

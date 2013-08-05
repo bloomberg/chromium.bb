@@ -34,9 +34,8 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
-
 class Document;
+class ExceptionState;
 class Node;
 
 class XPathResult : public RefCounted<XPathResult>, public ScriptWrappable {
@@ -57,19 +56,19 @@ public:
     static PassRefPtr<XPathResult> create(Document* document, const XPath::Value& value) { return adoptRef(new XPathResult(document, value)); }
     ~XPathResult();
 
-    void convertTo(unsigned short type, ExceptionCode&);
+    void convertTo(unsigned short type, ExceptionState&);
 
     unsigned short resultType() const;
 
-    double numberValue(ExceptionCode&) const;
-    String stringValue(ExceptionCode&) const;
-    bool booleanValue(ExceptionCode&) const;
-    Node* singleNodeValue(ExceptionCode&) const;
+    double numberValue(ExceptionState&) const;
+    String stringValue(ExceptionState&) const;
+    bool booleanValue(ExceptionState&) const;
+    Node* singleNodeValue(ExceptionState&) const;
 
     bool invalidIteratorState() const;
-    unsigned long snapshotLength(ExceptionCode&) const;
-    Node* iterateNext(ExceptionCode&);
-    Node* snapshotItem(unsigned long index, ExceptionCode&);
+    unsigned long snapshotLength(ExceptionState&) const;
+    Node* iterateNext(ExceptionState&);
+    Node* snapshotItem(unsigned long index, ExceptionState&);
 
     const XPath::Value& value() const { return m_value; }
 

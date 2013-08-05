@@ -33,10 +33,9 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class WebGLRenderingContext;
 class WebGLVertexArrayObjectOES;
-
-typedef int ExceptionCode;
 
 class OESVertexArrayObject : public WebGLExtension, public ScriptWrappable {
 public:
@@ -50,7 +49,7 @@ public:
     PassRefPtr<WebGLVertexArrayObjectOES> createVertexArrayOES();
     void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);
     GC3Dboolean isVertexArrayOES(WebGLVertexArrayObjectOES*);
-    void bindVertexArrayOES(WebGLVertexArrayObjectOES*, ExceptionCode&);
+    void bindVertexArrayOES(WebGLVertexArrayObjectOES*, ExceptionState&);
 
 private:
     OESVertexArrayObject(WebGLRenderingContext*);

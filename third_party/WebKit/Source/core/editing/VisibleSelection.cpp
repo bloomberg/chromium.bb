@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/VisibleSelection.h"
 
-#include <stdio.h>
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
@@ -40,6 +40,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
+#include <stdio.h>
 
 namespace WebCore {
 
@@ -214,14 +215,14 @@ static PassRefPtr<Range> makeSearchRange(const Position& pos)
         return 0;
 
     RefPtr<Range> searchRange(Range::create(d));
-    ExceptionCode ec = 0;
+    TrackExceptionState es;
 
     Position start(pos.parentAnchoredEquivalent());
-    searchRange->selectNodeContents(boundary, ec);
-    searchRange->setStart(start.containerNode(), start.offsetInContainerNode(), ec);
+    searchRange->selectNodeContents(boundary, es);
+    searchRange->setStart(start.containerNode(), start.offsetInContainerNode(), es);
 
-    ASSERT(!ec);
-    if (ec)
+    ASSERT(!es.hadException());
+    if (es.hadException())
         return 0;
 
     return searchRange.release();

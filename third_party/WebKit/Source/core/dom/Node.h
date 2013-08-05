@@ -55,6 +55,7 @@ class Event;
 class EventContext;
 class EventDispatchMediator;
 class EventListener;
+class ExceptionState;
 class FloatPoint;
 class Frame;
 class HTMLInputElement;
@@ -81,8 +82,6 @@ class RenderStyle;
 class ShadowRoot;
 class TagNodeList;
 class TouchEvent;
-
-typedef int ExceptionCode;
 
 const int nodeStyleChangeShift = 14;
 
@@ -193,7 +192,7 @@ public:
     // ChildNode interface API
     Element* previousElementSibling() const;
     Element* nextElementSibling() const;
-    void remove(ExceptionCode&);
+    void remove(ExceptionState&);
 
     Node* pseudoAwareNextSibling() const;
     Node* pseudoAwarePreviousSibling() const;
@@ -205,17 +204,17 @@ public:
     // These should all actually return a node, but this is only important for language bindings,
     // which will already know and hold a ref on the right node to return. Returning bool allows
     // these methods to be more efficient since they don't need to return a ref
-    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode&, AttachBehavior = AttachNow);
-    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode&, AttachBehavior = AttachNow);
-    void removeChild(Node* child, ExceptionCode&);
-    void appendChild(PassRefPtr<Node> newChild, ExceptionCode&, AttachBehavior = AttachNow);
+    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState&, AttachBehavior = AttachNow);
+    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState&, AttachBehavior = AttachNow);
+    void removeChild(Node* child, ExceptionState&);
+    void appendChild(PassRefPtr<Node> newChild, ExceptionState&, AttachBehavior = AttachNow);
 
     bool hasChildNodes() const { return firstChild(); }
     virtual PassRefPtr<Node> cloneNode(bool deep = true) = 0;
     virtual const AtomicString& localName() const;
     virtual const AtomicString& namespaceURI() const;
     virtual const AtomicString& prefix() const;
-    virtual void setPrefix(const AtomicString&, ExceptionCode&);
+    virtual void setPrefix(const AtomicString&, ExceptionState&);
     void normalize();
 
     bool isSameNode(Node* other) const { return this == other; }
@@ -226,7 +225,7 @@ public:
     String lookupNamespacePrefix(const AtomicString& namespaceURI, const Element* originalElement) const;
 
     String textContent(bool convertBRsToNewlines = false) const;
-    void setTextContent(const String&, ExceptionCode&);
+    void setTextContent(const String&, ExceptionState&);
 
     Node* lastDescendant() const;
     Node* firstDescendant() const;
@@ -515,7 +514,7 @@ public:
     unsigned childNodeCount() const;
     Node* childNode(unsigned index) const;
 
-    void checkSetPrefix(const AtomicString& prefix, ExceptionCode&);
+    void checkSetPrefix(const AtomicString& prefix, ExceptionState&);
     bool isDescendantOf(const Node*) const;
     bool contains(const Node*) const;
     bool containsIncludingShadowDOM(const Node*) const;
@@ -640,8 +639,8 @@ public:
     virtual bool willRespondToMouseClickEvents();
     virtual bool willRespondToTouchEvents();
 
-    PassRefPtr<Element> querySelector(const AtomicString& selectors, ExceptionCode&);
-    PassRefPtr<NodeList> querySelectorAll(const AtomicString& selectors, ExceptionCode&);
+    PassRefPtr<Element> querySelector(const AtomicString& selectors, ExceptionState&);
+    PassRefPtr<NodeList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
 
     unsigned short compareDocumentPosition(const Node*) const;
 

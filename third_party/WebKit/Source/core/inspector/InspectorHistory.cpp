@@ -31,7 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorHistory.h"
 
-#include "core/dom/ExceptionCodePlaceholder.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
 
 namespace WebCore {
@@ -42,11 +43,11 @@ class UndoableStateMark : public InspectorHistory::Action {
 public:
     UndoableStateMark() : InspectorHistory::Action("[UndoableState]") { }
 
-    virtual bool perform(ExceptionCode&) { return true; }
+    virtual bool perform(ExceptionState&) { return true; }
 
-    virtual bool undo(ExceptionCode&) { return true; }
+    virtual bool undo(ExceptionState&) { return true; }
 
-    virtual bool redo(ExceptionCode&) { return true; }
+    virtual bool redo(ExceptionState&) { return true; }
 
     virtual bool isUndoableStateMark() { return true; }
 };
@@ -84,9 +85,9 @@ InspectorHistory::InspectorHistory() : m_afterLastActionIndex(0) { }
 
 InspectorHistory::~InspectorHistory() { }
 
-bool InspectorHistory::perform(PassOwnPtr<Action> action, ExceptionCode& ec)
+bool InspectorHistory::perform(PassOwnPtr<Action> action, ExceptionState& es)
 {
-    if (!action->perform(ec))
+    if (!action->perform(es))
         return false;
 
     if (!action->mergeId().isEmpty() && m_afterLastActionIndex > 0 && action->mergeId() == m_history[m_afterLastActionIndex - 1]->mergeId())
@@ -101,17 +102,17 @@ bool InspectorHistory::perform(PassOwnPtr<Action> action, ExceptionCode& ec)
 
 void InspectorHistory::markUndoableState()
 {
-    perform(adoptPtr(new UndoableStateMark()), IGNORE_EXCEPTION);
+    perform(adoptPtr(new UndoableStateMark()), IGNORE_EXCEPTION_STATE);
 }
 
-bool InspectorHistory::undo(ExceptionCode& ec)
+bool InspectorHistory::undo(ExceptionState& es)
 {
     while (m_afterLastActionIndex > 0 && m_history[m_afterLastActionIndex - 1]->isUndoableStateMark())
         --m_afterLastActionIndex;
 
     while (m_afterLastActionIndex > 0) {
         Action* action = m_history[m_afterLastActionIndex - 1].get();
-        if (!action->undo(ec)) {
+        if (!action->undo(es)) {
             reset();
             return false;
         }
@@ -123,14 +124,14 @@ bool InspectorHistory::undo(ExceptionCode& ec)
     return true;
 }
 
-bool InspectorHistory::redo(ExceptionCode& ec)
+bool InspectorHistory::redo(ExceptionState& es)
 {
     while (m_afterLastActionIndex < m_history.size() && m_history[m_afterLastActionIndex]->isUndoableStateMark())
         ++m_afterLastActionIndex;
 
     while (m_afterLastActionIndex < m_history.size()) {
         Action* action = m_history[m_afterLastActionIndex].get();
-        if (!action->redo(ec)) {
+        if (!action->redo(es)) {
             reset();
             return false;
         }

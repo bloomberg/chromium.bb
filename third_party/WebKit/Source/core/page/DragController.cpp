@@ -28,12 +28,12 @@
 #include "core/page/DragController.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Clipboard.h"
 #include "core/dom/ClipboardAccessPolicy.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 #include "core/dom/TextEvent.h"
@@ -169,9 +169,9 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
                         title = url;
                 }
                 RefPtr<Node> anchorText = document->createTextNode(title);
-                anchor->appendChild(anchorText, IGNORE_EXCEPTION);
+                anchor->appendChild(anchorText, IGNORE_EXCEPTION_STATE);
                 RefPtr<DocumentFragment> fragment = document->createDocumentFragment();
-                fragment->appendChild(anchor, IGNORE_EXCEPTION);
+                fragment->appendChild(anchor, IGNORE_EXCEPTION_STATE);
                 return fragment.get();
             }
         }
@@ -443,7 +443,7 @@ bool DragController::dispatchTextInputEventFor(Frame* innerFrame, DragData* drag
     ASSERT(m_page->dragCaretController()->hasCaret());
     String text = m_page->dragCaretController()->isContentRichlyEditable() ? "" : dragData->asPlainText(innerFrame);
     Node* target = innerFrame->editor()->findEventTargetFrom(m_page->dragCaretController()->caretPosition());
-    return target->dispatchEvent(TextEvent::createForDrop(innerFrame->domWindow(), text), IGNORE_EXCEPTION);
+    return target->dispatchEvent(TextEvent::createForDrop(innerFrame->domWindow(), text), IGNORE_EXCEPTION_STATE);
 }
 
 bool DragController::concludeEditDrag(DragData* dragData)
@@ -686,7 +686,7 @@ static void prepareClipboardForImageDrag(Frame* source, Clipboard* clipboard, El
 {
     if (node->isContentRichlyEditable()) {
         RefPtr<Range> range = source->document()->createRange();
-        range->selectNode(node, ASSERT_NO_EXCEPTION);
+        range->selectNode(node, ASSERT_NO_EXCEPTION_STATE);
         source->selection()->setSelection(VisibleSelection(range.get(), DOWNSTREAM));
     }
     clipboard->declareAndWriteDragImage(node, !linkURL.isEmpty() ? linkURL : imageURL, label, source);

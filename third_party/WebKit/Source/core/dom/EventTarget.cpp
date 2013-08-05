@@ -33,6 +33,7 @@
 #include "core/dom/EventTarget.h"
 
 #include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
@@ -140,10 +141,10 @@ bool EventTarget::clearAttributeEventListener(const AtomicString& eventType, DOM
     return removeEventListener(eventType, listener, false);
 }
 
-bool EventTarget::dispatchEvent(PassRefPtr<Event> event, ExceptionCode& ec)
+bool EventTarget::dispatchEvent(PassRefPtr<Event> event, ExceptionState& es)
 {
     if (!event || event->type().isEmpty() || event->isBeingDispatched()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return false;
     }
 

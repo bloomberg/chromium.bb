@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-
 #include "core/html/track/TextTrackList.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/EventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/InbandTextTrack.h"
@@ -263,7 +263,7 @@ void TextTrackList::asyncEventTimerFired(Timer<TextTrackList>*)
     m_pendingEvents.swap(pendingEvents);
     size_t count = pendingEvents.size();
     for (size_t index = 0; index < count; ++index)
-        dispatchEvent(pendingEvents[index].release(), IGNORE_EXCEPTION);
+        dispatchEvent(pendingEvents[index].release(), IGNORE_EXCEPTION_STATE);
     --m_dispatchingEvents;
 }
 

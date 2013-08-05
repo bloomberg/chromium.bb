@@ -37,6 +37,7 @@
 #include "public/platform/WebVector.h"
 #include "ApplicationCacheHostInternal.h"
 #include "WebFrameImpl.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ProgressEvent.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -215,14 +216,12 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int total, int done)
 {
     if (m_domApplicationCache) {
         const AtomicString& eventType = DOMApplicationCache::toEventType(id);
-        ExceptionCode ec = 0;
         RefPtr<Event> event;
         if (id == PROGRESS_EVENT)
             event = ProgressEvent::create(eventType, true, done, total);
         else
             event = Event::create(eventType, false, false);
-        m_domApplicationCache->dispatchEvent(event, ec);
-        ASSERT(!ec);
+        m_domApplicationCache->dispatchEvent(event, ASSERT_NO_EXCEPTION_STATE);
     }
 }
 

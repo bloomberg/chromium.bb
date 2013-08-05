@@ -37,6 +37,7 @@ namespace WebCore {
 
 class CanvasRenderingContext2D;
 class EventTarget;
+class ExceptionState;
 class HTMLCanvasElement;
 class HTMLImageElement;
 class HTMLVideoElement;
@@ -45,20 +46,18 @@ class ImageData;
 
 namespace ImageBitmapFactories {
 
-typedef int ExceptionCode;
-
-ScriptObject createImageBitmap(EventTarget*, HTMLImageElement*, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, HTMLImageElement*, int sx, int sy, int sw, int sh, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, HTMLVideoElement*, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, HTMLVideoElement*, int sx, int sy, int sw, int sh, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, CanvasRenderingContext2D*, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, CanvasRenderingContext2D*, int sx, int sy, int sw, int sh, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, HTMLCanvasElement*, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, HTMLCanvasElement*, int sx, int sy, int sw, int sh, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, ImageData*, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, ImageData*, int sx, int sy, int sw, int sh, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, ImageBitmap*, ExceptionCode&);
-ScriptObject createImageBitmap(EventTarget*, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionCode&);
+ScriptObject createImageBitmap(EventTarget*, HTMLImageElement*, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, HTMLImageElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, HTMLVideoElement*, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, HTMLVideoElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, CanvasRenderingContext2D*, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, CanvasRenderingContext2D*, int sx, int sy, int sw, int sh, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, HTMLCanvasElement*, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, HTMLCanvasElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, ImageData*, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, ImageData*, int sx, int sy, int sw, int sh, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, ImageBitmap*, ExceptionState&);
+ScriptObject createImageBitmap(EventTarget*, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionState&);
 
 } // namesapce ImageBitmapFactories
 } // namespace WebCore

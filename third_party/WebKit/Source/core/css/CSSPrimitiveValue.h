@@ -32,14 +32,15 @@
 
 namespace WebCore {
 
+class CSSBasicShape;
 class CSSCalcValue;
 class Counter;
+class ExceptionState;
 class Pair;
 class Quad;
 class RGBColor;
 class Rect;
 class RenderStyle;
-class CSSBasicShape;
 
 struct Length;
 
@@ -261,40 +262,40 @@ public:
     // use with care!!!
     void setPrimitiveType(unsigned short type) { m_primitiveUnitType = type; }
 
-    double getDoubleValue(unsigned short unitType, ExceptionCode&) const;
+    double getDoubleValue(unsigned short unitType, ExceptionState&) const;
     double getDoubleValue(unsigned short unitType) const;
     double getDoubleValue() const;
 
-    void setFloatValue(unsigned short unitType, double floatValue, ExceptionCode&);
-    float getFloatValue(unsigned short unitType, ExceptionCode& ec) const { return getValue<float>(unitType, ec); }
+    void setFloatValue(unsigned short unitType, double floatValue, ExceptionState&);
+    float getFloatValue(unsigned short unitType, ExceptionState& es) const { return getValue<float>(unitType, es); }
     float getFloatValue(unsigned short unitType) const { return getValue<float>(unitType); }
     float getFloatValue() const { return getValue<float>(); }
 
-    int getIntValue(unsigned short unitType, ExceptionCode& ec) const { return getValue<int>(unitType, ec); }
+    int getIntValue(unsigned short unitType, ExceptionState& es) const { return getValue<int>(unitType, es); }
     int getIntValue(unsigned short unitType) const { return getValue<int>(unitType); }
     int getIntValue() const { return getValue<int>(); }
 
-    template<typename T> inline T getValue(unsigned short unitType, ExceptionCode& ec) const { return clampTo<T>(getDoubleValue(unitType, ec)); }
+    template<typename T> inline T getValue(unsigned short unitType, ExceptionState& es) const { return clampTo<T>(getDoubleValue(unitType, es)); }
     template<typename T> inline T getValue(unsigned short unitType) const { return clampTo<T>(getDoubleValue(unitType)); }
     template<typename T> inline T getValue() const { return clampTo<T>(getDoubleValue()); }
 
-    void setStringValue(unsigned short stringType, const String& stringValue, ExceptionCode&);
-    String getStringValue(ExceptionCode&) const;
+    void setStringValue(unsigned short stringType, const String& stringValue, ExceptionState&);
+    String getStringValue(ExceptionState&) const;
     String getStringValue() const;
 
-    Counter* getCounterValue(ExceptionCode&) const;
+    Counter* getCounterValue(ExceptionState&) const;
     Counter* getCounterValue() const { return m_primitiveUnitType != CSS_COUNTER ? 0 : m_value.counter; }
 
-    Rect* getRectValue(ExceptionCode&) const;
+    Rect* getRectValue(ExceptionState&) const;
     Rect* getRectValue() const { return m_primitiveUnitType != CSS_RECT ? 0 : m_value.rect; }
 
-    Quad* getQuadValue(ExceptionCode&) const;
+    Quad* getQuadValue(ExceptionState&) const;
     Quad* getQuadValue() const { return m_primitiveUnitType != CSS_QUAD ? 0 : m_value.quad; }
 
-    PassRefPtr<RGBColor> getRGBColorValue(ExceptionCode&) const;
+    PassRefPtr<RGBColor> getRGBColorValue(ExceptionState&) const;
     RGBA32 getRGBA32Value() const { return m_primitiveUnitType != CSS_RGBCOLOR ? 0 : m_value.rgbcolor; }
 
-    Pair* getPairValue(ExceptionCode&) const;
+    Pair* getPairValue(ExceptionState&) const;
     Pair* getPairValue() const { return m_primitiveUnitType != CSS_PAIR ? 0 : m_value.pair; }
 
     CSSBasicShape* getShapeValue() const { return m_primitiveUnitType != CSS_SHAPE ? 0 : m_value.shape; }

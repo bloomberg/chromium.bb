@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/xml/XPathResult.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathEvaluator.h"
@@ -66,7 +67,7 @@ XPathResult::~XPathResult()
 {
 }
 
-void XPathResult::convertTo(unsigned short type, ExceptionCode& ec)
+void XPathResult::convertTo(unsigned short type, ExceptionState& es)
 {
     switch (type) {
         case ANY_TYPE:
@@ -88,14 +89,14 @@ void XPathResult::convertTo(unsigned short type, ExceptionCode& ec)
         case ANY_UNORDERED_NODE_TYPE:
         case FIRST_ORDERED_NODE_TYPE: // This is correct - singleNodeValue() will take care of ordering.
             if (!m_value.isNodeSet()) {
-                ec = TypeError;
+                es.throwDOMException(TypeError);
                 return;
             }
             m_resultType = type;
             break;
         case ORDERED_NODE_ITERATOR_TYPE:
             if (!m_value.isNodeSet()) {
-                ec = TypeError;
+                es.throwDOMException(TypeError);
                 return;
             }
             m_nodeSet.sort();
@@ -103,7 +104,7 @@ void XPathResult::convertTo(unsigned short type, ExceptionCode& ec)
             break;
         case ORDERED_NODE_SNAPSHOT_TYPE:
             if (!m_value.isNodeSet()) {
-                ec = TypeError;
+                es.throwDOMException(TypeError);
                 return;
             }
             m_value.toNodeSet().sort();
@@ -117,37 +118,37 @@ unsigned short XPathResult::resultType() const
     return m_resultType;
 }
 
-double XPathResult::numberValue(ExceptionCode& ec) const
+double XPathResult::numberValue(ExceptionState& es) const
 {
     if (resultType() != NUMBER_TYPE) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return 0.0;
     }
     return m_value.toNumber();
 }
 
-String XPathResult::stringValue(ExceptionCode& ec) const
+String XPathResult::stringValue(ExceptionState& es) const
 {
     if (resultType() != STRING_TYPE) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return String();
     }
     return m_value.toString();
 }
 
-bool XPathResult::booleanValue(ExceptionCode& ec) const
+bool XPathResult::booleanValue(ExceptionState& es) const
 {
     if (resultType() != BOOLEAN_TYPE) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return false;
     }
     return m_value.toBoolean();
 }
 
-Node* XPathResult::singleNodeValue(ExceptionCode& ec) const
+Node* XPathResult::singleNodeValue(ExceptionState& es) const
 {
     if (resultType() != ANY_UNORDERED_NODE_TYPE && resultType() != FIRST_ORDERED_NODE_TYPE) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return 0;
     }
 
@@ -167,25 +168,25 @@ bool XPathResult::invalidIteratorState() const
     return m_document->domTreeVersion() != m_domTreeVersion;
 }
 
-unsigned long XPathResult::snapshotLength(ExceptionCode& ec) const
+unsigned long XPathResult::snapshotLength(ExceptionState& es) const
 {
     if (resultType() != UNORDERED_NODE_SNAPSHOT_TYPE && resultType() != ORDERED_NODE_SNAPSHOT_TYPE) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return 0;
     }
 
     return m_value.toNodeSet().size();
 }
 
-Node* XPathResult::iterateNext(ExceptionCode& ec)
+Node* XPathResult::iterateNext(ExceptionState& es)
 {
     if (resultType() != UNORDERED_NODE_ITERATOR_TYPE && resultType() != ORDERED_NODE_ITERATOR_TYPE) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return 0;
     }
 
     if (invalidIteratorState()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return 0;
     }
 
@@ -199,10 +200,10 @@ Node* XPathResult::iterateNext(ExceptionCode& ec)
     return node;
 }
 
-Node* XPathResult::snapshotItem(unsigned long index, ExceptionCode& ec)
+Node* XPathResult::snapshotItem(unsigned long index, ExceptionState& es)
 {
     if (resultType() != UNORDERED_NODE_SNAPSHOT_TYPE && resultType() != ORDERED_NODE_SNAPSHOT_TYPE) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return 0;
     }
 

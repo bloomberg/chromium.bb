@@ -26,7 +26,6 @@
 #ifndef PerformanceUserTiming_h
 #define PerformanceUserTiming_h
 
-#include "core/dom/ExceptionCode.h"
 #include "core/page/PerformanceTiming.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
@@ -36,6 +35,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class Performance;
 class PerformanceEntry;
 
@@ -46,10 +46,10 @@ class UserTiming : public RefCounted<UserTiming> {
 public:
     static PassRefPtr<UserTiming> create(Performance* performance) { return adoptRef(new UserTiming(performance)); }
 
-    void mark(const String& markName, ExceptionCode&);
+    void mark(const String& markName, ExceptionState&);
     void clearMarks(const String& markName);
 
-    void measure(const String& measureName, const String& startMark, const String& endMark, ExceptionCode&);
+    void measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState&);
     void clearMeasures(const String& measureName);
 
     Vector<RefPtr<PerformanceEntry> > getMarks() const;
@@ -61,7 +61,7 @@ public:
 private:
     explicit UserTiming(Performance*);
 
-    double findExistingMarkStartTime(const String& markName, ExceptionCode&);
+    double findExistingMarkStartTime(const String& markName, ExceptionState&);
     Performance* m_performance;
     PerformanceEntryMap m_marksMap;
     PerformanceEntryMap m_measuresMap;

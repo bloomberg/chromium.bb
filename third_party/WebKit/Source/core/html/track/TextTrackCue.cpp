@@ -35,6 +35,7 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Event.h"
 #include "core/dom/NodeTraversal.h"
@@ -221,7 +222,7 @@ TextTrackCue::TextTrackCue(ScriptExecutionContext* context, double start, double
 
 TextTrackCue::~TextTrackCue()
 {
-    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
+    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION_STATE);
 }
 
 PassRefPtr<TextTrackCueBox> TextTrackCue::createDisplayTree()
@@ -270,11 +271,11 @@ void TextTrackCue::setId(const String& id)
     cueDidChange();
 }
 
-void TextTrackCue::setStartTime(double value, ExceptionCode& ec)
+void TextTrackCue::setStartTime(double value, ExceptionState& es)
 {
     // NaN, Infinity and -Infinity values should trigger a TypeError.
     if (std::isinf(value) || std::isnan(value)) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return;
     }
 
@@ -287,11 +288,11 @@ void TextTrackCue::setStartTime(double value, ExceptionCode& ec)
     cueDidChange();
 }
 
-void TextTrackCue::setEndTime(double value, ExceptionCode& ec)
+void TextTrackCue::setEndTime(double value, ExceptionState& es)
 {
     // NaN, Infinity and -Infinity values should trigger a TypeError.
     if (std::isinf(value) || std::isnan(value)) {
-        ec = TypeError;
+        es.throwDOMException(TypeError);
         return;
     }
 
@@ -329,7 +330,7 @@ const String& TextTrackCue::vertical() const
     }
 }
 
-void TextTrackCue::setVertical(const String& value, ExceptionCode& ec)
+void TextTrackCue::setVertical(const String& value, ExceptionState& es)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-vertical
     // On setting, the text track cue writing direction must be set to the value given
@@ -345,7 +346,7 @@ void TextTrackCue::setVertical(const String& value, ExceptionCode& ec)
     else if (value == verticalGrowingRightKeyword())
         direction = VerticalGrowingRight;
     else
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
 
     if (direction == m_writingDirection)
         return;
@@ -365,13 +366,13 @@ void TextTrackCue::setSnapToLines(bool value)
     cueDidChange();
 }
 
-void TextTrackCue::setLine(int position, ExceptionCode& ec)
+void TextTrackCue::setLine(int position, ExceptionState& es)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-line
     // On setting, if the text track cue snap-to-lines flag is not set, and the new
     // value is negative or greater than 100, then throw an IndexSizeError exception.
     if (!m_snapToLines && (position < 0 || position > 100)) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
@@ -385,13 +386,13 @@ void TextTrackCue::setLine(int position, ExceptionCode& ec)
     cueDidChange();
 }
 
-void TextTrackCue::setPosition(int position, ExceptionCode& ec)
+void TextTrackCue::setPosition(int position, ExceptionState& es)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-position
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception.
     // Otherwise, set the text track cue text position to the new value.
     if (position < 0 || position > 100) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
@@ -404,13 +405,13 @@ void TextTrackCue::setPosition(int position, ExceptionCode& ec)
     cueDidChange();
 }
 
-void TextTrackCue::setSize(int size, ExceptionCode& ec)
+void TextTrackCue::setSize(int size, ExceptionState& es)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-size
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError
     // exception. Otherwise, set the text track cue size to the new value.
     if (size < 0 || size > 100) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
@@ -438,7 +439,7 @@ const String& TextTrackCue::align() const
     }
 }
 
-void TextTrackCue::setAlign(const String& value, ExceptionCode& ec)
+void TextTrackCue::setAlign(const String& value, ExceptionState& es)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-align
     // On setting, the text track cue alignment must be set to the value given in the
@@ -454,7 +455,7 @@ void TextTrackCue::setAlign(const String& value, ExceptionCode& ec)
     else if (value == endKeyword())
         alignment = End;
     else
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
 
     if (alignment == m_cueAlignment)
         return;
@@ -504,7 +505,7 @@ void TextTrackCue::copyWebVTTNodeToDOMTree(ContainerNode* webVTTNode, ContainerN
             clonedNode = toWebVTTElement(node)->createEquivalentHTMLElement(ownerDocument());
         else
             clonedNode = node->cloneNode(false);
-        parent->appendChild(clonedNode, ASSERT_NO_EXCEPTION);
+        parent->appendChild(clonedNode, ASSERT_NO_EXCEPTION_STATE);
         if (node->isContainerNode())
             copyWebVTTNodeToDOMTree(toContainerNode(node), toContainerNode(clonedNode.get()));
     }
@@ -803,7 +804,7 @@ PassRefPtr<TextTrackCueBox> TextTrackCue::getDisplayTree(const IntSize& videoSiz
 
     // Note: This is contained by default in m_cueBackgroundBox.
     m_cueBackgroundBox->setPseudo(cueShadowPseudoId());
-    displayTree->appendChild(m_cueBackgroundBox, ASSERT_NO_EXCEPTION, AttachLazily);
+    displayTree->appendChild(m_cueBackgroundBox, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
 
     // FIXME(BUG 79916): Runs of children of WebVTT Ruby Objects that are not
     // WebVTT Ruby Text Objects must be wrapped in anonymous boxes whose
@@ -834,7 +835,7 @@ void TextTrackCue::removeDisplayTree()
         region->willRemoveTextTrackCueBox(m_displayTree.get());
 #endif
 
-    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
+    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION_STATE);
 }
 
 std::pair<double, double> TextTrackCue::getPositionCoordinates() const

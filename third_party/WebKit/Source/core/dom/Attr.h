@@ -31,6 +31,7 @@
 namespace WebCore {
 
 class CSSStyleDeclaration;
+class ExceptionState;
 class MutableStylePropertySet;
 
 // Attr can have Text children
@@ -50,7 +51,7 @@ public:
     Element* ownerElement() const { return m_element; }
 
     const AtomicString& value() const;
-    void setValue(const AtomicString&, ExceptionCode&);
+    void setValue(const AtomicString&, ExceptionState&);
     void setValue(const AtomicString&);
 
     const QualifiedName& qualifiedName() const { return m_name; }
@@ -75,7 +76,7 @@ private:
     virtual const AtomicString& namespaceURI() const OVERRIDE { return m_name.namespaceURI(); }
     virtual const AtomicString& prefix() const OVERRIDE { return m_name.prefix(); }
 
-    virtual void setPrefix(const AtomicString&, ExceptionCode&);
+    virtual void setPrefix(const AtomicString&, ExceptionState&);
 
     virtual String nodeValue() const OVERRIDE { return value(); }
     virtual void setNodeValue(const String&);

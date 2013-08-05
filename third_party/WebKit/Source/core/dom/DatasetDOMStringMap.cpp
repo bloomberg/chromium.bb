@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/dom/DatasetDOMStringMap.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
@@ -176,20 +177,20 @@ bool DatasetDOMStringMap::contains(const String& name)
     return false;
 }
 
-void DatasetDOMStringMap::setItem(const String& name, const String& value, ExceptionCode& ec)
+void DatasetDOMStringMap::setItem(const String& name, const String& value, ExceptionState& es)
 {
     if (!isValidPropertyName(name)) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 
-    m_element->setAttribute(convertPropertyNameToAttributeName(name), value, ec);
+    m_element->setAttribute(convertPropertyNameToAttributeName(name), value, es);
 }
 
-void DatasetDOMStringMap::deleteItem(const String& name, ExceptionCode& ec)
+void DatasetDOMStringMap::deleteItem(const String& name, ExceptionState& es)
 {
     if (!isValidPropertyName(name)) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 

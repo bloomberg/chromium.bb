@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
+class ExceptionState;
 
 class CanvasGradient : public RefCounted<CanvasGradient>, public ScriptWrappable {
 public:
@@ -50,7 +50,7 @@ public:
 
     Gradient* gradient() const { return m_gradient.get(); }
 
-    void addColorStop(float value, const String& color, ExceptionCode&);
+    void addColorStop(float value, const String& color, ExceptionState&);
 
 private:
     CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);

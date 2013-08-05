@@ -25,10 +25,9 @@
  */
 
 #include "config.h"
-
 #include "core/html/shadow/MediaControls.h"
 
-#include "core/dom/ExceptionCodePlaceholder.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 
 namespace WebCore {
 
@@ -360,7 +359,7 @@ void MediaControls::createTextTrackDisplay()
         m_textDisplayContainer->setMediaController(m_mediaController);
 
     // Insert it before the first controller element so it always displays behind the controls.
-    insertBefore(textDisplayContainer.release(), m_panel, IGNORE_EXCEPTION, AttachLazily);
+    insertBefore(textDisplayContainer.release(), m_panel, IGNORE_EXCEPTION_STATE, AttachLazily);
 }
 
 void MediaControls::showTextTrackDisplay()

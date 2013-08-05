@@ -45,6 +45,7 @@ void ExceptionState::clearException()
 void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)
 {
     ASSERT(ec);
+    ASSERT(m_isolate);
     m_code = ec;
     setException(V8ThrowException::createDOMException(ec, message, m_isolate));
 }
@@ -61,6 +62,7 @@ void ExceptionState::setException(v8::Handle<v8::Value> exception)
 
 void ExceptionState::throwTypeError(const String& message)
 {
+    ASSERT(m_isolate);
     m_code = TypeError;
     setException(V8ThrowException::createTypeError(message, m_isolate));
 }

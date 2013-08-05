@@ -21,6 +21,7 @@
 #include "config.h"
 #include "core/html/HTMLOptionsCollection.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLOptionElement.h"
@@ -40,34 +41,34 @@ PassRefPtr<HTMLOptionsCollection> HTMLOptionsCollection::create(Node* select, Co
     return adoptRef(new HTMLOptionsCollection(select));
 }
 
-void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, ExceptionCode& ec)
+void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, ExceptionState& es)
 {
-    add(element, length(), ec);
+    add(element, length(), es);
 }
 
-void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, int index, ExceptionCode& ec)
+void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, int index, ExceptionState& es)
 {
     HTMLOptionElement* newOption = element.get();
 
     if (!newOption) {
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
         return;
     }
 
     if (index < -1) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
-    ec = 0;
+    es.clearException();
     HTMLSelectElement* select = toHTMLSelectElement(ownerNode());
 
     if (index == -1 || unsigned(index) >= length())
-        select->add(newOption, 0, ec);
+        select->add(newOption, 0, es);
     else
-        select->add(newOption, toHTMLOptionElement(item(index)), ec);
+        select->add(newOption, toHTMLOptionElement(item(index)), es);
 
-    ASSERT(!ec);
+    ASSERT(!es.hadException());
 }
 
 void HTMLOptionsCollection::remove(int index)
@@ -85,9 +86,9 @@ void HTMLOptionsCollection::setSelectedIndex(int index)
     toHTMLSelectElement(ownerNode())->setSelectedIndex(index);
 }
 
-void HTMLOptionsCollection::setLength(unsigned length, ExceptionCode& ec)
+void HTMLOptionsCollection::setLength(unsigned length, ExceptionState& es)
 {
-    toHTMLSelectElement(ownerNode())->setLength(length, ec);
+    toHTMLSelectElement(ownerNode())->setLength(length, es);
 }
 
 void HTMLOptionsCollection::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Node>& returnValue1)
@@ -108,21 +109,21 @@ void HTMLOptionsCollection::anonymousNamedGetter(const AtomicString& name, bool&
     returnValue0 = NamedNodesCollection::create(namedItems);
 }
 
-bool HTMLOptionsCollection::anonymousIndexedSetterRemove(unsigned index, ExceptionCode& ec)
+bool HTMLOptionsCollection::anonymousIndexedSetterRemove(unsigned index, ExceptionState& es)
 {
     HTMLSelectElement* base = toHTMLSelectElement(ownerNode());
     base->remove(index);
     return true;
 }
 
-bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionCode& ec)
+bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionState& es)
 {
     HTMLSelectElement* base = toHTMLSelectElement(ownerNode());
     if (!value) {
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
         return true;
     }
-    base->setOption(index, value.get(), ec);
+    base->setOption(index, value.get(), es);
     return true;
 }
 

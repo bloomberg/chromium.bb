@@ -20,7 +20,7 @@
 #ifndef SVGPathSegListPropertyTearOff_h
 #define SVGPathSegListPropertyTearOff_h
 
-#include "core/dom/ExceptionCode.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/svg/SVGPathSegList.h"
 #include "core/svg/properties/SVGAnimatedListPropertyTearOff.h"
 
@@ -66,49 +66,49 @@ public:
     }
 
     // SVGList API
-    void clear(ExceptionCode&);
+    void clear(ExceptionState&);
 
-    PassListItemType initialize(PassListItemType passNewItem, ExceptionCode& ec)
+    PassListItemType initialize(PassListItemType passNewItem, ExceptionState& es)
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            ec = TypeError;
+            es.throwTypeError();
             return 0;
         }
 
         clearContextAndRoles();
         ListItemType newItem = passNewItem;
-        return Base::initializeValues(newItem, ec);
+        return Base::initializeValues(newItem, es);
     }
 
-    PassListItemType getItem(unsigned index, ExceptionCode&);
+    PassListItemType getItem(unsigned index, ExceptionState&);
 
-    PassListItemType insertItemBefore(PassListItemType passNewItem, unsigned index, ExceptionCode& ec)
+    PassListItemType insertItemBefore(PassListItemType passNewItem, unsigned index, ExceptionState& es)
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            ec = TypeError;
+            es.throwTypeError();
             return 0;
         }
 
         ListItemType newItem = passNewItem;
-        return Base::insertItemBeforeValues(newItem, index, ec);
+        return Base::insertItemBeforeValues(newItem, index, es);
     }
 
-    PassListItemType replaceItem(PassListItemType, unsigned index, ExceptionCode&);
+    PassListItemType replaceItem(PassListItemType, unsigned index, ExceptionState&);
 
-    PassListItemType removeItem(unsigned index, ExceptionCode&);
+    PassListItemType removeItem(unsigned index, ExceptionState&);
 
-    PassListItemType appendItem(PassListItemType passNewItem, ExceptionCode& ec)
+    PassListItemType appendItem(PassListItemType passNewItem, ExceptionState& es)
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            ec = TypeError;
+            es.throwTypeError();
             return 0;
         }
 
         ListItemType newItem = passNewItem;
-        return Base::appendItemValues(newItem, ec);
+        return Base::appendItemValues(newItem, es);
     }
 
 private:

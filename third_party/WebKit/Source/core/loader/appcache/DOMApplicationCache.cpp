@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/loader/appcache/DOMApplicationCache.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
@@ -68,18 +69,18 @@ unsigned short DOMApplicationCache::status() const
     return cacheHost->status();
 }
 
-void DOMApplicationCache::update(ExceptionCode& ec)
+void DOMApplicationCache::update(ExceptionState& es)
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost || !cacheHost->update())
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
 }
 
-void DOMApplicationCache::swapCache(ExceptionCode& ec)
+void DOMApplicationCache::swapCache(ExceptionState& es)
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost || !cacheHost->swapCache())
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
 }
 
 void DOMApplicationCache::abort()

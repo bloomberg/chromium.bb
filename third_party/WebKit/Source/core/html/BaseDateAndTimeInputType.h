@@ -36,6 +36,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 // A super class of date, datetime, datetime-local, month, time, and week types.
 class BaseDateAndTimeInputType : public InputType {
 protected:
@@ -52,9 +54,9 @@ private:
     virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const = 0;
     virtual DateComponents::Type dateType() const = 0;
     virtual double valueAsDate() const OVERRIDE;
-    virtual void setValueAsDate(double, ExceptionCode&) const OVERRIDE;
+    virtual void setValueAsDate(double, ExceptionState&) const OVERRIDE;
     virtual double valueAsDouble() const OVERRIDE;
-    virtual void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionCode&) const OVERRIDE;
+    virtual void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState&) const OVERRIDE;
     virtual bool typeMismatchFor(const String&) const OVERRIDE;
     virtual bool typeMismatch() const OVERRIDE;
     virtual bool valueMissing(const String&) const OVERRIDE;

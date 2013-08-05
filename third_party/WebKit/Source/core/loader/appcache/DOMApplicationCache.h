@@ -37,6 +37,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class Frame;
 class KURL;
 
@@ -48,8 +49,8 @@ public:
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
 
     unsigned short status() const;
-    void update(ExceptionCode&);
-    void swapCache(ExceptionCode&);
+    void update(ExceptionState&);
+    void swapCache(ExceptionState&);
     void abort();
 
     // EventTarget impl

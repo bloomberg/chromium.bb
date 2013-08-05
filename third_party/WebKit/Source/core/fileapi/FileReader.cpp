@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/fileapi/FileReader.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ProgressEvent.h"
@@ -97,27 +98,27 @@ void FileReader::stop()
     terminate();
 }
 
-void FileReader::readAsArrayBuffer(Blob* blob, ExceptionCode& ec)
+void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& es)
 {
     if (!blob)
         return;
 
     LOG(FileAPI, "FileReader: reading as array buffer: %s %s\n", utf8BlobURL(blob).data(), utf8FilePath(blob).data());
 
-    readInternal(blob, FileReaderLoader::ReadAsArrayBuffer, ec);
+    readInternal(blob, FileReaderLoader::ReadAsArrayBuffer, es);
 }
 
-void FileReader::readAsBinaryString(Blob* blob, ExceptionCode& ec)
+void FileReader::readAsBinaryString(Blob* blob, ExceptionState& es)
 {
     if (!blob)
         return;
 
     LOG(FileAPI, "FileReader: reading as binary: %s %s\n", utf8BlobURL(blob).data(), utf8FilePath(blob).data());
 
-    readInternal(blob, FileReaderLoader::ReadAsBinaryString, ec);
+    readInternal(blob, FileReaderLoader::ReadAsBinaryString, es);
 }
 
-void FileReader::readAsText(Blob* blob, const String& encoding, ExceptionCode& ec)
+void FileReader::readAsText(Blob* blob, const String& encoding, ExceptionState& es)
 {
     if (!blob)
         return;
@@ -125,29 +126,29 @@ void FileReader::readAsText(Blob* blob, const String& encoding, ExceptionCode& e
     LOG(FileAPI, "FileReader: reading as text: %s %s\n", utf8BlobURL(blob).data(), utf8FilePath(blob).data());
 
     m_encoding = encoding;
-    readInternal(blob, FileReaderLoader::ReadAsText, ec);
+    readInternal(blob, FileReaderLoader::ReadAsText, es);
 }
 
-void FileReader::readAsText(Blob* blob, ExceptionCode& ec)
+void FileReader::readAsText(Blob* blob, ExceptionState& es)
 {
-    readAsText(blob, String(), ec);
+    readAsText(blob, String(), es);
 }
 
-void FileReader::readAsDataURL(Blob* blob, ExceptionCode& ec)
+void FileReader::readAsDataURL(Blob* blob, ExceptionState& es)
 {
     if (!blob)
         return;
 
     LOG(FileAPI, "FileReader: reading as data URL: %s %s\n", utf8BlobURL(blob).data(), utf8FilePath(blob).data());
 
-    readInternal(blob, FileReaderLoader::ReadAsDataURL, ec);
+    readInternal(blob, FileReaderLoader::ReadAsDataURL, es);
 }
 
-void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, ExceptionCode& ec)
+void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, ExceptionState& es)
 {
     // If multiple concurrent read methods are called on the same FileReader, InvalidStateError should be thrown when the state is LOADING.
     if (m_state == LOADING) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
 

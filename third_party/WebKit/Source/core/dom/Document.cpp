@@ -37,6 +37,8 @@
 #include "XMLNames.h"
 #include "bindings/v8/CustomElementConstructorBuilder.h"
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/DocumentTimeline.h"
@@ -68,7 +70,6 @@
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/HashChangeEvent.h"
 #include "core/dom/NamedFlowCollection.h"
 #include "core/dom/NodeFilter.h"
@@ -690,10 +691,10 @@ void Document::childrenChanged(bool changedByParser, Node* beforeChange, Node* a
     clearStyleResolver();
 }
 
-PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionCode& ec)
+PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionState& es)
 {
     if (!isValidName(name)) {
-        ec = InvalidCharacterError;
+        es.throwDOMException(InvalidCharacterError);
         return 0;
     }
 
@@ -703,10 +704,10 @@ PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionC
     return createElement(QualifiedName(nullAtom, name, nullAtom), false);
 }
 
-PassRefPtr<Element> Document::createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionCode& ec)
+PassRefPtr<Element> Document::createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState& es)
 {
     if (!isValidName(localName)) {
-        ec = InvalidCharacterError;
+        es.throwDOMException(InvalidCharacterError);
         return 0;
     }
 
@@ -715,7 +716,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
     if (CustomElementRegistrationContext::isCustomTagName(localName) && registrationContext())
         element = registrationContext()->createCustomTagElement(this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
     else
-        element = createElement(localName, ec);
+        element = createElement(localName, es);
 
     if (!typeExtension.isNull() && !typeExtension.isEmpty())
         CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
@@ -723,15 +724,15 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
     return element;
 }
 
-PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionCode& ec)
+PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionState& es)
 {
     String prefix, localName;
-    if (!parseQualifiedName(qualifiedName, prefix, localName, ec))
+    if (!parseQualifiedName(qualifiedName, prefix, localName, es))
         return 0;
 
     QualifiedName qName(prefix, localName, namespaceURI);
     if (!hasValidNamespaceForElements(qName)) {
-        ec = NamespaceError;
+        es.throwDOMException(NamespaceError);
         return 0;
     }
 
@@ -739,7 +740,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     if (CustomElementRegistrationContext::isCustomTagName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(this, qName);
     else
-        element = createElementNS(namespaceURI, qualifiedName, ec);
+        element = createElementNS(namespaceURI, qualifiedName, es);
 
     if (!typeExtension.isNull() && !typeExtension.isEmpty())
         CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
@@ -747,20 +748,20 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     return element;
 }
 
-ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, ExceptionCode& ec)
+ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, ExceptionState& es)
 {
-    return registerElement(state, name, Dictionary(), ec);
+    return registerElement(state, name, Dictionary(), es);
 }
 
-ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, const Dictionary& options, ExceptionCode& ec)
+ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, const Dictionary& options, ExceptionState& es)
 {
     if (!registrationContext()) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return ScriptValue();
     }
 
     CustomElementConstructorBuilder constructorBuilder(state, &options);
-    registrationContext()->registerElement(this, &constructorBuilder, name, ec);
+    registrationContext()->registerElement(this, &constructorBuilder, name, es);
     return constructorBuilder.bindingsReturnValue();
 }
 
@@ -795,23 +796,23 @@ PassRefPtr<Comment> Document::createComment(const String& data)
     return Comment::create(this, data);
 }
 
-PassRefPtr<CDATASection> Document::createCDATASection(const String& data, ExceptionCode& ec)
+PassRefPtr<CDATASection> Document::createCDATASection(const String& data, ExceptionState& es)
 {
     if (isHTMLDocument()) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
     return CDATASection::create(this, data);
 }
 
-PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const String& target, const String& data, ExceptionCode& ec)
+PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const String& target, const String& data, ExceptionState& es)
 {
     if (!isValidName(target)) {
-        ec = InvalidCharacterError;
+        es.throwDOMException(InvalidCharacterError);
         return 0;
     }
     if (isHTMLDocument()) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
     return ProcessingInstruction::create(this, target, data);
@@ -827,12 +828,12 @@ PassRefPtr<CSSStyleDeclaration> Document::createCSSStyleDeclaration()
     return MutableStylePropertySet::create()->ensureCSSStyleDeclaration();
 }
 
-PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCode& ec)
+PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
 
     if (!importedNode) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
 
@@ -840,9 +841,9 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
     case TEXT_NODE:
         return createTextNode(importedNode->nodeValue());
     case CDATA_SECTION_NODE:
-        return createCDATASection(importedNode->nodeValue(), ec);
+        return createCDATASection(importedNode->nodeValue(), es);
     case PROCESSING_INSTRUCTION_NODE:
-        return createProcessingInstruction(importedNode->nodeName(), importedNode->nodeValue(), ec);
+        return createProcessingInstruction(importedNode->nodeName(), importedNode->nodeValue(), es);
     case COMMENT_NODE:
         return createComment(importedNode->nodeValue());
     case ELEMENT_NODE: {
@@ -850,7 +851,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
         // FIXME: The following check might be unnecessary. Is it possible that
         // oldElement has mismatched prefix/namespace?
         if (!hasValidNamespaceForElements(oldElement->tagQName())) {
-            ec = NamespaceError;
+            es.throwDOMException(NamespaceError);
             return 0;
         }
         RefPtr<Element> newElement = createElement(oldElement->tagQName(), false);
@@ -859,11 +860,11 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
 
         if (deep) {
             for (Node* oldChild = oldElement->firstChild(); oldChild; oldChild = oldChild->nextSibling()) {
-                RefPtr<Node> newChild = importNode(oldChild, true, ec);
-                if (ec)
+                RefPtr<Node> newChild = importNode(oldChild, true, es);
+                if (es.hadException())
                     return 0;
-                newElement->appendChild(newChild.release(), ec);
-                if (ec)
+                newElement->appendChild(newChild.release(), es);
+                if (es.hadException())
                     return 0;
             }
         }
@@ -882,11 +883,11 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
         RefPtr<DocumentFragment> newFragment = createDocumentFragment();
         if (deep) {
             for (Node* oldChild = oldFragment->firstChild(); oldChild; oldChild = oldChild->nextSibling()) {
-                RefPtr<Node> newChild = importNode(oldChild, true, ec);
-                if (ec)
+                RefPtr<Node> newChild = importNode(oldChild, true, es);
+                if (es.hadException())
                     return 0;
-                newFragment->appendChild(newChild.release(), ec);
-                if (ec)
+                newFragment->appendChild(newChild.release(), es);
+                if (es.hadException())
                     return 0;
             }
         }
@@ -902,14 +903,14 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
     case XPATH_NAMESPACE_NODE:
         break;
     }
-    ec = NotSupportedError;
+    es.throwDOMException(NotSupportedError);
     return 0;
 }
 
-PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionCode& ec)
+PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& es)
 {
     if (!source) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
 
@@ -921,32 +922,32 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionCode& ec)
     case DOCUMENT_NODE:
     case DOCUMENT_TYPE_NODE:
     case XPATH_NAMESPACE_NODE:
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     case ATTRIBUTE_NODE: {
         Attr* attr = toAttr(source.get());
         if (attr->ownerElement())
-            attr->ownerElement()->removeAttributeNode(attr, ec);
+            attr->ownerElement()->removeAttributeNode(attr, es);
         attr->setSpecified(true);
         break;
     }
     default:
         if (source->isShadowRoot()) {
             // ShadowRoot cannot disconnect itself from the host node.
-            ec = HierarchyRequestError;
+            es.throwDOMException(HierarchyRequestError);
             return 0;
         }
 
         if (source->isFrameOwnerElement()) {
             HTMLFrameOwnerElement* frameOwnerElement = toFrameOwnerElement(source.get());
             if (frame() && frame()->tree()->isDescendantOf(frameOwnerElement->contentFrame())) {
-                ec = HierarchyRequestError;
+                es.throwDOMException(HierarchyRequestError);
                 return 0;
             }
         }
         if (source->parentNode()) {
-            source->parentNode()->removeChild(source.get(), ec);
-            if (ec)
+            source->parentNode()->removeChild(source.get(), es);
+            if (es.hadException())
                 return 0;
         }
     }
@@ -1040,15 +1041,15 @@ NamedFlowCollection* Document::namedFlows()
     return m_namedFlows.get();
 }
 
-PassRefPtr<Element> Document::createElementNS(const String& namespaceURI, const String& qualifiedName, ExceptionCode& ec)
+PassRefPtr<Element> Document::createElementNS(const String& namespaceURI, const String& qualifiedName, ExceptionState& es)
 {
     String prefix, localName;
-    if (!parseQualifiedName(qualifiedName, prefix, localName, ec))
+    if (!parseQualifiedName(qualifiedName, prefix, localName, es))
         return 0;
 
     QualifiedName qName(prefix, localName, namespaceURI);
     if (!hasValidNamespaceForElements(qName)) {
-        ec = NamespaceError;
+        es.throwDOMException(NamespaceError);
         return 0;
     }
 
@@ -1132,25 +1133,25 @@ void Document::setContentLanguage(const String& language)
     setNeedsStyleRecalc();
 }
 
-void Document::setXMLVersion(const String& version, ExceptionCode& ec)
+void Document::setXMLVersion(const String& version, ExceptionState& es)
 {
     if (!implementation()->hasFeature("XML", String())) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
 
     if (!XMLDocumentParser::supportsXMLVersion(version)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
 
     m_xmlVersion = version;
 }
 
-void Document::setXMLStandalone(bool standalone, ExceptionCode& ec)
+void Document::setXMLStandalone(bool standalone, ExceptionState& es)
 {
     if (!implementation()->hasFeature("XML", String())) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
 
@@ -1313,7 +1314,7 @@ void Document::setTitle(const String& title)
     else if (!m_titleElement) {
         if (HTMLElement* headElement = head()) {
             m_titleElement = createElement(titleTag, false);
-            headElement->appendChild(m_titleElement, ASSERT_NO_EXCEPTION, AttachLazily);
+            headElement->appendChild(m_titleElement, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
         }
     }
 
@@ -1446,20 +1447,20 @@ PassRefPtr<Range> Document::createRange()
     return Range::create(this);
 }
 
-PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionCode& ec)
+PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionState& es)
 {
     // FIXME: Probably this should be handled within the bindings layer and TypeError should be thrown.
     if (!root) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
     return NodeIterator::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
 }
 
-PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, ExceptionCode& ec)
+PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, ExceptionState& es)
 {
     if (!root) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
     // FIXME: It might be a good idea to emit a warning if |whatToShow| contains a bit that is not defined in
@@ -1467,20 +1468,20 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
     return NodeIterator::create(root, whatToShow, PassRefPtr<NodeFilter>());
 }
 
-PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionCode& ec)
+PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionState& es)
 {
     if (!root) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
     // FIXME: Ditto.
     return NodeIterator::create(root, whatToShow, filter);
 }
 
-PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionCode& ec)
+PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionState& es)
 {
     if (!root) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
     // FIXME: Warn if |expandEntityReferences| is specified. This optional argument is deprecated in DOM4.
@@ -1488,38 +1489,38 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
     return NodeIterator::create(root, whatToShow, filter);
 }
 
-PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionCode& ec)
+PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionState& es)
 {
     if (!root) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
     return TreeWalker::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
 }
 
-PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, ExceptionCode& ec)
+PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, ExceptionState& es)
 {
     if (!root) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
     return TreeWalker::create(root, whatToShow, PassRefPtr<NodeFilter>());
 }
 
-PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionCode& ec)
+PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionState& es)
 {
     if (!root) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
     return TreeWalker::create(root, whatToShow, filter);
 }
 
-PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionCode& ec)
+PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionState& es)
 {
     UNUSED_PARAM(expandEntityReferences);
     if (!root) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
     return TreeWalker::create(root, whatToShow, filter);
@@ -2141,17 +2142,17 @@ HTMLElement* Document::body() const
     return 0;
 }
 
-void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionCode& ec)
+void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionState& es)
 {
     RefPtr<HTMLElement> newBody = prpNewBody;
 
     if (!newBody || !documentElement()) {
-        ec = HierarchyRequestError;
+        es.throwDOMException(HierarchyRequestError);
         return;
     }
 
     if (!newBody->hasTagName(bodyTag) && !newBody->hasTagName(framesetTag)) {
-        ec = HierarchyRequestError;
+        es.throwDOMException(HierarchyRequestError);
         return;
     }
 
@@ -2160,9 +2161,9 @@ void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionCode& ec)
         return;
 
     if (oldBody)
-        documentElement()->replaceChild(newBody.release(), oldBody, ec, AttachLazily);
+        documentElement()->replaceChild(newBody.release(), oldBody, es, AttachLazily);
     else
-        documentElement()->appendChild(newBody.release(), ec, AttachLazily);
+        documentElement()->appendChild(newBody.release(), es, AttachLazily);
 }
 
 HTMLHeadElement* Document::head()
@@ -2722,7 +2723,7 @@ void Document::processHttpEquivSetCookie(const String& content)
         return;
 
     // Exception (for sandboxed documents) ignored.
-    toHTMLDocument(this)->setCookie(content, IGNORE_EXCEPTION);
+    toHTMLDocument(this)->setCookie(content, IGNORE_EXCEPTION_STATE);
 }
 
 void Document::processHttpEquivXFrameOptions(const String& content)
@@ -3471,13 +3472,13 @@ void Document::enqueueDocumentEvent(PassRefPtr<Event> event)
     m_eventQueue->enqueueEvent(event);
 }
 
-PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionCode& ec)
+PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionState& es)
 {
     RefPtr<Event> event = EventFactory::create(eventType);
     if (event)
         return event.release();
 
-    ec = NotSupportedError;
+    es.throwDOMException(NotSupportedError);
     return 0;
 }
 
@@ -3539,7 +3540,7 @@ HTMLFrameOwnerElement* Document::ownerElement() const
     return frame()->ownerElement();
 }
 
-String Document::cookie(ExceptionCode& ec) const
+String Document::cookie(ExceptionState& es) const
 {
     if (page() && !page()->settings()->cookieEnabled())
         return String();
@@ -3549,7 +3550,7 @@ String Document::cookie(ExceptionCode& ec) const
     // browsing context.
 
     if (!securityOrigin()->canAccessCookies()) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return String();
     }
 
@@ -3560,7 +3561,7 @@ String Document::cookie(ExceptionCode& ec) const
     return cookies(this, cookieURL);
 }
 
-void Document::setCookie(const String& value, ExceptionCode& ec)
+void Document::setCookie(const String& value, ExceptionState& es)
 {
     if (page() && !page()->settings()->cookieEnabled())
         return;
@@ -3570,7 +3571,7 @@ void Document::setCookie(const String& value, ExceptionCode& ec)
     // browsing context.
 
     if (!securityOrigin()->canAccessCookies()) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
 
@@ -3593,10 +3594,10 @@ String Document::domain() const
     return securityOrigin()->domain();
 }
 
-void Document::setDomain(const String& newDomain, ExceptionCode& ec)
+void Document::setDomain(const String& newDomain, ExceptionState& es)
 {
     if (SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(securityOrigin()->protocol())) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
 
@@ -3622,14 +3623,14 @@ void Document::setDomain(const String& newDomain, ExceptionCode& ec)
     int newLength = newDomain.length();
     // e.g. newDomain = webkit.org (10) and domain() = www.webkit.org (14)
     if (newLength >= oldLength) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
 
     String test = domain();
     // Check that it's a subdomain, not e.g. "ebkit.org"
     if (test[oldLength - newLength - 1] != '.') {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
 
@@ -3637,7 +3638,7 @@ void Document::setDomain(const String& newDomain, ExceptionCode& ec)
     // and we check that it's the same thing as newDomain
     test.remove(0, oldLength - newLength);
     if (test != newDomain) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
 
@@ -3744,7 +3745,7 @@ bool Document::isValidName(const String& name)
 }
 
 template<typename CharType>
-static bool parseQualifiedNameInternal(const String& qualifiedName, const CharType* characters, unsigned length, String& prefix, String& localName, ExceptionCode& ec)
+static bool parseQualifiedNameInternal(const String& qualifiedName, const CharType* characters, unsigned length, String& prefix, String& localName, ExceptionState& es)
 {
     bool nameStart = true;
     bool sawColon = false;
@@ -3755,7 +3756,7 @@ static bool parseQualifiedNameInternal(const String& qualifiedName, const CharTy
         U16_NEXT(characters, i, length, c)
         if (c == ':') {
             if (sawColon) {
-                ec = NamespaceError;
+                es.throwDOMException(NamespaceError);
                 return false; // multiple colons: not allowed
             }
             nameStart = true;
@@ -3763,13 +3764,13 @@ static bool parseQualifiedNameInternal(const String& qualifiedName, const CharTy
             colonPos = i - 1;
         } else if (nameStart) {
             if (!isValidNameStart(c)) {
-                ec = InvalidCharacterError;
+                es.throwDOMException(InvalidCharacterError);
                 return false;
             }
             nameStart = false;
         } else {
             if (!isValidNamePart(c)) {
-                ec = InvalidCharacterError;
+                es.throwDOMException(InvalidCharacterError);
                 return false;
             }
         }
@@ -3781,32 +3782,32 @@ static bool parseQualifiedNameInternal(const String& qualifiedName, const CharTy
     } else {
         prefix = qualifiedName.substring(0, colonPos);
         if (prefix.isEmpty()) {
-            ec = NamespaceError;
+            es.throwDOMException(NamespaceError);
             return false;
         }
         localName = qualifiedName.substring(colonPos + 1);
     }
 
     if (localName.isEmpty()) {
-        ec = NamespaceError;
+        es.throwDOMException(NamespaceError);
         return false;
     }
 
     return true;
 }
 
-bool Document::parseQualifiedName(const String& qualifiedName, String& prefix, String& localName, ExceptionCode& ec)
+bool Document::parseQualifiedName(const String& qualifiedName, String& prefix, String& localName, ExceptionState& es)
 {
     unsigned length = qualifiedName.length();
 
     if (!length) {
-        ec = InvalidCharacterError;
+        es.throwDOMException(InvalidCharacterError);
         return false;
     }
 
     if (qualifiedName.is8Bit())
-        return parseQualifiedNameInternal(qualifiedName, qualifiedName.characters8(), length, prefix, localName, ec);
-    return parseQualifiedNameInternal(qualifiedName, qualifiedName.characters16(), length, prefix, localName, ec);
+        return parseQualifiedNameInternal(qualifiedName, qualifiedName.characters8(), length, prefix, localName, es);
+    return parseQualifiedNameInternal(qualifiedName, qualifiedName.characters16(), length, prefix, localName, es);
 }
 
 void Document::setDecoder(PassRefPtr<TextResourceDecoder> decoder)
@@ -3988,21 +3989,21 @@ Document* Document::topDocument() const
     return doc;
 }
 
-PassRefPtr<Attr> Document::createAttribute(const String& name, ExceptionCode& ec)
+PassRefPtr<Attr> Document::createAttribute(const String& name, ExceptionState& es)
 {
-    return createAttributeNS(String(), name, ec, true);
+    return createAttributeNS(String(), name, es, true);
 }
 
-PassRefPtr<Attr> Document::createAttributeNS(const String& namespaceURI, const String& qualifiedName, ExceptionCode& ec, bool shouldIgnoreNamespaceChecks)
+PassRefPtr<Attr> Document::createAttributeNS(const String& namespaceURI, const String& qualifiedName, ExceptionState& es, bool shouldIgnoreNamespaceChecks)
 {
     String prefix, localName;
-    if (!parseQualifiedName(qualifiedName, prefix, localName, ec))
+    if (!parseQualifiedName(qualifiedName, prefix, localName, es))
         return 0;
 
     QualifiedName qName(prefix, localName, namespaceURI);
 
     if (!shouldIgnoreNamespaceChecks && !hasValidNamespaceForAttributes(qName)) {
-        ec = NamespaceError;
+        es.throwDOMException(NamespaceError);
         return 0;
     }
 

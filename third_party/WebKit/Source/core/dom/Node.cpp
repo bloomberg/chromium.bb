@@ -27,6 +27,8 @@
 
 #include "HTMLNames.h"
 #include "XMLNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Attribute.h"
@@ -46,7 +48,6 @@
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/GestureEvent.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/LiveNodeList.h"
@@ -510,42 +511,42 @@ Node* Node::pseudoAwareLastChild() const
     return lastChild();
 }
 
-void Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode& ec, AttachBehavior attachBehavior)
+void Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& es, AttachBehavior attachBehavior)
 {
     if (isContainerNode())
-        toContainerNode(this)->insertBefore(newChild, refChild, ec, attachBehavior);
+        toContainerNode(this)->insertBefore(newChild, refChild, es, attachBehavior);
     else
-        ec = HierarchyRequestError;
+        es.throwDOMException(HierarchyRequestError);
 }
 
-void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode& ec, AttachBehavior attachBehavior)
+void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es, AttachBehavior attachBehavior)
 {
     if (isContainerNode())
-        toContainerNode(this)->replaceChild(newChild, oldChild, ec, attachBehavior);
+        toContainerNode(this)->replaceChild(newChild, oldChild, es, attachBehavior);
     else
-        ec = HierarchyRequestError;
+        es.throwDOMException(HierarchyRequestError);
 }
 
-void Node::removeChild(Node* oldChild, ExceptionCode& ec)
+void Node::removeChild(Node* oldChild, ExceptionState& es)
 {
     if (isContainerNode())
-        toContainerNode(this)->removeChild(oldChild, ec);
+        toContainerNode(this)->removeChild(oldChild, es);
     else
-        ec = NotFoundError;
+        es.throwDOMException(NotFoundError);
 }
 
-void Node::appendChild(PassRefPtr<Node> newChild, ExceptionCode& ec, AttachBehavior attachBehavior)
+void Node::appendChild(PassRefPtr<Node> newChild, ExceptionState& es, AttachBehavior attachBehavior)
 {
     if (isContainerNode())
-        toContainerNode(this)->appendChild(newChild, ec, attachBehavior);
+        toContainerNode(this)->appendChild(newChild, es, attachBehavior);
     else
-        ec = HierarchyRequestError;
+        es.throwDOMException(HierarchyRequestError);
 }
 
-void Node::remove(ExceptionCode& ec)
+void Node::remove(ExceptionState& es)
 {
     if (ContainerNode* parent = parentNode())
-        parent->removeChild(this, ec);
+        parent->removeChild(this, es);
 }
 
 void Node::normalize()
@@ -575,7 +576,7 @@ void Node::normalize()
         if (!text->length()) {
             // Care must be taken to get the next node before removing the current node.
             node = NodeTraversal::nextPostOrder(node.get());
-            text->remove(IGNORE_EXCEPTION);
+            text->remove(IGNORE_EXCEPTION_STATE);
             continue;
         }
 
@@ -587,7 +588,7 @@ void Node::normalize()
 
             // Remove empty text nodes.
             if (!nextText->length()) {
-                nextText->remove(IGNORE_EXCEPTION);
+                nextText->remove(IGNORE_EXCEPTION_STATE);
                 continue;
             }
 
@@ -595,7 +596,7 @@ void Node::normalize()
             unsigned offset = text->length();
             text->appendData(nextText->data());
             document()->textNodesMerged(nextText.get(), offset);
-            nextText->remove(IGNORE_EXCEPTION);
+            nextText->remove(IGNORE_EXCEPTION_STATE);
         }
 
         node = NodeTraversal::nextPostOrder(node.get());
@@ -608,12 +609,12 @@ const AtomicString& Node::prefix() const
     return nullAtom;
 }
 
-void Node::setPrefix(const AtomicString& /*prefix*/, ExceptionCode& ec)
+void Node::setPrefix(const AtomicString& /*prefix*/, ExceptionState& es)
 {
     // The spec says that for nodes other than elements and attributes, prefix is always null.
     // It does not say what to do when the user tries to set the prefix on another type of
     // node, however Mozilla throws a NamespaceError exception.
-    ec = NamespaceError;
+    es.throwDOMException(NamespaceError);
 }
 
 const AtomicString& Node::localName() const
@@ -952,13 +953,13 @@ void Node::clearNodeLists()
     rareData()->clearNodeLists();
 }
 
-void Node::checkSetPrefix(const AtomicString& prefix, ExceptionCode& ec)
+void Node::checkSetPrefix(const AtomicString& prefix, ExceptionState& es)
 {
     // Perform error checking as required by spec for setting Node.prefix. Used by
     // Element::setPrefix() and Attr::setPrefix()
 
     if (!prefix.isEmpty() && !Document::isValidName(prefix)) {
-        ec = InvalidCharacterError;
+        es.throwDOMException(InvalidCharacterError);
         return;
     }
 
@@ -967,7 +968,7 @@ void Node::checkSetPrefix(const AtomicString& prefix, ExceptionCode& ec)
     const AtomicString& nodeNamespaceURI = namespaceURI();
     if ((nodeNamespaceURI.isEmpty() && !prefix.isEmpty())
         || (prefix == xmlAtom && nodeNamespaceURI != XMLNames::xmlNamespaceURI)) {
-        ec = NamespaceError;
+        es.throwDOMException(NamespaceError);
         return;
     }
     // Attribute-specific checks are in Attr::setPrefix().
@@ -1359,27 +1360,27 @@ PassRefPtr<RadioNodeList> Node::radioNodeList(const AtomicString& name)
     return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<RadioNodeList>(this, RadioNodeListType, name);
 }
 
-PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionCode& ec)
+PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionState& es)
 {
     if (selectors.isEmpty()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return 0;
     }
 
-    SelectorQuery* selectorQuery = document()->selectorQueryCache()->add(selectors, document(), ec);
+    SelectorQuery* selectorQuery = document()->selectorQueryCache()->add(selectors, document(), es);
     if (!selectorQuery)
         return 0;
     return selectorQuery->queryFirst(this);
 }
 
-PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, ExceptionCode& ec)
+PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, ExceptionState& es)
 {
     if (selectors.isEmpty()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return 0;
     }
 
-    SelectorQuery* selectorQuery = document()->selectorQueryCache()->add(selectors, document(), ec);
+    SelectorQuery* selectorQuery = document()->selectorQueryCache()->add(selectors, document(), es);
     if (!selectorQuery)
         return 0;
     return selectorQuery->queryAll(this);
@@ -1670,7 +1671,7 @@ String Node::textContent(bool convertBRsToNewlines) const
     return isNullString ? String() : content.toString();
 }
 
-void Node::setTextContent(const String& text, ExceptionCode& ec)
+void Node::setTextContent(const String& text, ExceptionState& es)
 {
     switch (nodeType()) {
         case TEXT_NODE:
@@ -1687,7 +1688,7 @@ void Node::setTextContent(const String& text, ExceptionCode& ec)
             ChildListMutationScope mutation(this);
             container->removeChildren();
             if (!text.isEmpty())
-                container->appendChild(document()->createTextNode(text), ec, AttachLazily);
+                container->appendChild(document()->createTextNode(text), es, AttachLazily);
             return;
         }
         case DOCUMENT_NODE:
@@ -2582,7 +2583,7 @@ void Node::removedLastRef()
 void Node::textRects(Vector<IntRect>& rects) const
 {
     RefPtr<Range> range = Range::create(document());
-    range->selectNodeContents(const_cast<Node*>(this), IGNORE_EXCEPTION);
+    range->selectNodeContents(const_cast<Node*>(this), IGNORE_EXCEPTION_STATE);
     range->textRects(rects);
 }
 

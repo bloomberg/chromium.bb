@@ -33,10 +33,9 @@ class CSSProperty;
 class CSSRule;
 class CSSStyleSheet;
 class CSSValue;
+class ExceptionState;
 class MutableStylePropertySet;
 class VariablesIterator;
-
-typedef int ExceptionCode;
 
 class CSSStyleDeclaration : public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CSSStyleDeclaration); WTF_MAKE_FAST_ALLOCATED;
@@ -48,7 +47,7 @@ public:
 
     virtual CSSRule* parentRule() const = 0;
     virtual String cssText() const = 0;
-    virtual void setCssText(const String&, ExceptionCode&) = 0;
+    virtual void setCssText(const String&, ExceptionState&) = 0;
     virtual unsigned length() const = 0;
     virtual String item(unsigned index) const = 0;
     virtual PassRefPtr<CSSValue> getPropertyCSSValue(const String& propertyName) = 0;
@@ -56,22 +55,22 @@ public:
     virtual String getPropertyPriority(const String& propertyName) = 0;
     virtual String getPropertyShorthand(const String& propertyName) = 0;
     virtual bool isPropertyImplicit(const String& propertyName) = 0;
-    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionCode&) = 0;
-    virtual String removeProperty(const String& propertyName, ExceptionCode&) = 0;
+    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) = 0;
+    virtual String removeProperty(const String& propertyName, ExceptionState&) = 0;
 
     PassRefPtr<CSSVariablesMap> var();
     virtual unsigned variableCount() const = 0;
     virtual String variableValue(const AtomicString& name) const = 0;
-    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionCode&) = 0;
+    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionState&) = 0;
     virtual bool removeVariable(const AtomicString& name) = 0;
-    virtual void clearVariables(ExceptionCode&) = 0;
+    virtual void clearVariables(ExceptionState&) = 0;
 
     // CSSPropertyID versions of the CSSOM functions to support bindings and editing.
     // Use the non-virtual methods in the concrete subclasses when possible.
     // The CSSValue returned by this function should not be exposed to the web as it may be used by multiple documents at the same time.
     virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) = 0;
     virtual String getPropertyValueInternal(CSSPropertyID) = 0;
-    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionCode&) = 0;
+    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) = 0;
 
     virtual PassRefPtr<MutableStylePropertySet> copyProperties() const = 0;
 

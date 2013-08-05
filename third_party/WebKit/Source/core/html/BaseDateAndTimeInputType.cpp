@@ -52,7 +52,7 @@ double BaseDateAndTimeInputType::valueAsDate() const
     return valueAsDouble();
 }
 
-void BaseDateAndTimeInputType::setValueAsDate(double value, ExceptionCode&) const
+void BaseDateAndTimeInputType::setValueAsDate(double value, ExceptionState&) const
 {
     element()->setValue(serializeWithMilliseconds(value));
 }
@@ -63,7 +63,7 @@ double BaseDateAndTimeInputType::valueAsDouble() const
     return value.isFinite() ? value.toDouble() : DateComponents::invalidMilliseconds();
 }
 
-void BaseDateAndTimeInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionCode&) const
+void BaseDateAndTimeInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionState&) const
 {
     element()->setValue(serialize(newValue), eventBehavior);
 }

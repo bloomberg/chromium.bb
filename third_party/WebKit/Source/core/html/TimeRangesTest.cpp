@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/html/TimeRanges.h"
 
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include <gtest/gtest.h>
 
 #include <sstream>

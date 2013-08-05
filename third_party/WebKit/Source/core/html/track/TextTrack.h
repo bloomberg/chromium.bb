@@ -28,12 +28,12 @@
 #define TextTrack_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/html/track/TrackBase.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
+class ExceptionState;
 class HTMLMediaElement;
 class TextTrack;
 class TextTrackCue;
@@ -99,13 +99,13 @@ public:
     TextTrackClient* client() { return m_client; }
 
     void addCue(PassRefPtr<TextTrackCue>);
-    void removeCue(TextTrackCue*, ExceptionCode&);
+    void removeCue(TextTrackCue*, ExceptionState&);
     bool hasCue(TextTrackCue*);
 
 #if ENABLE(WEBVTT_REGIONS)
     TextTrackRegionList* regions();
     void addRegion(PassRefPtr<TextTrackRegion>);
-    void removeRegion(TextTrackRegion*, ExceptionCode&);
+    void removeRegion(TextTrackRegion*, ExceptionState&);
 #endif
 
     void cueWillChange(TextTrackCue*);

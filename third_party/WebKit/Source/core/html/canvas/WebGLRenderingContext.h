@@ -45,32 +45,33 @@ namespace WebCore {
 
 class ANGLEInstancedArrays;
 class DrawingBuffer;
-class WebGLDrawBuffers;
 class EXTFragDepth;
 class EXTTextureFilterAnisotropic;
+class ExceptionState;
 class HTMLImageElement;
 class HTMLVideoElement;
 class ImageBuffer;
 class ImageData;
 class IntSize;
+class OESElementIndexUint;
 class OESStandardDerivatives;
 class OESTextureFloat;
-class OESTextureHalfFloat;
 class OESTextureFloatLinear;
+class OESTextureHalfFloat;
 class OESTextureHalfFloatLinear;
 class OESVertexArrayObject;
-class OESElementIndexUint;
 class WebGLActiveInfo;
 class WebGLBuffer;
-class WebGLContextGroup;
-class WebGLContextObject;
 class WebGLCompressedTextureATC;
 class WebGLCompressedTexturePVRTC;
 class WebGLCompressedTextureS3TC;
 class WebGLContextAttributes;
+class WebGLContextGroup;
+class WebGLContextObject;
 class WebGLDebugRendererInfo;
 class WebGLDebugShaders;
 class WebGLDepthTexture;
+class WebGLDrawBuffers;
 class WebGLExtension;
 class WebGLFramebuffer;
 class WebGLLoseContext;
@@ -78,13 +79,11 @@ class WebGLObject;
 class WebGLProgram;
 class WebGLRenderbuffer;
 class WebGLShader;
-class WebGLSharedObject;
 class WebGLShaderPrecisionFormat;
+class WebGLSharedObject;
 class WebGLTexture;
 class WebGLUniformLocation;
 class WebGLVertexArrayObjectOES;
-
-typedef int ExceptionCode;
 
 class WebGLRenderingContext : public CanvasRenderingContext, public ActiveDOMObject, private Page::MultisamplingChangedObserver {
 public:
@@ -97,24 +96,24 @@ public:
     int drawingBufferWidth() const;
     int drawingBufferHeight() const;
 
-    void activeTexture(GC3Denum texture, ExceptionCode&);
-    void attachShader(WebGLProgram*, WebGLShader*, ExceptionCode&);
-    void bindAttribLocation(WebGLProgram*, GC3Duint index, const String& name, ExceptionCode&);
-    void bindBuffer(GC3Denum target, WebGLBuffer*, ExceptionCode&);
-    void bindFramebuffer(GC3Denum target, WebGLFramebuffer*, ExceptionCode&);
-    void bindRenderbuffer(GC3Denum target, WebGLRenderbuffer*, ExceptionCode&);
-    void bindTexture(GC3Denum target, WebGLTexture*, ExceptionCode&);
+    void activeTexture(GC3Denum texture, ExceptionState&);
+    void attachShader(WebGLProgram*, WebGLShader*, ExceptionState&);
+    void bindAttribLocation(WebGLProgram*, GC3Duint index, const String& name, ExceptionState&);
+    void bindBuffer(GC3Denum target, WebGLBuffer*, ExceptionState&);
+    void bindFramebuffer(GC3Denum target, WebGLFramebuffer*, ExceptionState&);
+    void bindRenderbuffer(GC3Denum target, WebGLRenderbuffer*, ExceptionState&);
+    void bindTexture(GC3Denum target, WebGLTexture*, ExceptionState&);
     void blendColor(GC3Dfloat red, GC3Dfloat green, GC3Dfloat blue, GC3Dfloat alpha);
     void blendEquation(GC3Denum mode);
     void blendEquationSeparate(GC3Denum modeRGB, GC3Denum modeAlpha);
     void blendFunc(GC3Denum sfactor, GC3Denum dfactor);
     void blendFuncSeparate(GC3Denum srcRGB, GC3Denum dstRGB, GC3Denum srcAlpha, GC3Denum dstAlpha);
 
-    void bufferData(GC3Denum target, long long size, GC3Denum usage, ExceptionCode&);
-    void bufferData(GC3Denum target, ArrayBuffer* data, GC3Denum usage, ExceptionCode&);
-    void bufferData(GC3Denum target, ArrayBufferView* data, GC3Denum usage, ExceptionCode&);
-    void bufferSubData(GC3Denum target, long long offset, ArrayBuffer* data, ExceptionCode&);
-    void bufferSubData(GC3Denum target, long long offset, ArrayBufferView* data, ExceptionCode&);
+    void bufferData(GC3Denum target, long long size, GC3Denum usage, ExceptionState&);
+    void bufferData(GC3Denum target, ArrayBuffer* data, GC3Denum usage, ExceptionState&);
+    void bufferData(GC3Denum target, ArrayBufferView* data, GC3Denum usage, ExceptionState&);
+    void bufferSubData(GC3Denum target, long long offset, ArrayBuffer* data, ExceptionState&);
+    void bufferSubData(GC3Denum target, long long offset, ArrayBufferView* data, ExceptionState&);
 
     GC3Denum checkFramebufferStatus(GC3Denum target);
     void clear(GC3Dbitfield mask);
@@ -122,7 +121,7 @@ public:
     void clearDepth(GC3Dfloat);
     void clearStencil(GC3Dint);
     void colorMask(GC3Dboolean red, GC3Dboolean green, GC3Dboolean blue, GC3Dboolean alpha);
-    void compileShader(WebGLShader*, ExceptionCode&);
+    void compileShader(WebGLShader*, ExceptionState&);
 
     void compressedTexImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width,
                               GC3Dsizei height, GC3Dint border, ArrayBufferView* data);
@@ -136,7 +135,7 @@ public:
     PassRefPtr<WebGLFramebuffer> createFramebuffer();
     PassRefPtr<WebGLProgram> createProgram();
     PassRefPtr<WebGLRenderbuffer> createRenderbuffer();
-    PassRefPtr<WebGLShader> createShader(GC3Denum type, ExceptionCode&);
+    PassRefPtr<WebGLShader> createShader(GC3Denum type, ExceptionState&);
     PassRefPtr<WebGLTexture> createTexture();
 
     void cullFace(GC3Denum mode);
@@ -151,46 +150,46 @@ public:
     void depthFunc(GC3Denum);
     void depthMask(GC3Dboolean);
     void depthRange(GC3Dfloat zNear, GC3Dfloat zFar);
-    void detachShader(WebGLProgram*, WebGLShader*, ExceptionCode&);
+    void detachShader(WebGLProgram*, WebGLShader*, ExceptionState&);
     void disable(GC3Denum cap);
-    void disableVertexAttribArray(GC3Duint index, ExceptionCode&);
-    void drawArrays(GC3Denum mode, GC3Dint first, GC3Dsizei count, ExceptionCode&);
-    void drawElements(GC3Denum mode, GC3Dsizei count, GC3Denum type, long long offset, ExceptionCode&);
+    void disableVertexAttribArray(GC3Duint index, ExceptionState&);
+    void drawArrays(GC3Denum mode, GC3Dint first, GC3Dsizei count, ExceptionState&);
+    void drawElements(GC3Denum mode, GC3Dsizei count, GC3Denum type, long long offset, ExceptionState&);
 
     void drawArraysInstancedANGLE(GC3Denum mode, GC3Dint first, GC3Dsizei count, GC3Dsizei primcount);
     void drawElementsInstancedANGLE(GC3Denum mode, GC3Dsizei count, GC3Denum type, GC3Dintptr offset, GC3Dsizei primcount);
 
     void enable(GC3Denum cap);
-    void enableVertexAttribArray(GC3Duint index, ExceptionCode&);
+    void enableVertexAttribArray(GC3Duint index, ExceptionState&);
     void finish();
     void flush();
-    void framebufferRenderbuffer(GC3Denum target, GC3Denum attachment, GC3Denum renderbuffertarget, WebGLRenderbuffer*, ExceptionCode&);
-    void framebufferTexture2D(GC3Denum target, GC3Denum attachment, GC3Denum textarget, WebGLTexture*, GC3Dint level, ExceptionCode&);
+    void framebufferRenderbuffer(GC3Denum target, GC3Denum attachment, GC3Denum renderbuffertarget, WebGLRenderbuffer*, ExceptionState&);
+    void framebufferTexture2D(GC3Denum target, GC3Denum attachment, GC3Denum textarget, WebGLTexture*, GC3Dint level, ExceptionState&);
     void frontFace(GC3Denum mode);
     void generateMipmap(GC3Denum target);
 
-    PassRefPtr<WebGLActiveInfo> getActiveAttrib(WebGLProgram*, GC3Duint index, ExceptionCode&);
-    PassRefPtr<WebGLActiveInfo> getActiveUniform(WebGLProgram*, GC3Duint index, ExceptionCode&);
-    bool getAttachedShaders(WebGLProgram*, Vector<RefPtr<WebGLShader> >&, ExceptionCode&);
+    PassRefPtr<WebGLActiveInfo> getActiveAttrib(WebGLProgram*, GC3Duint index, ExceptionState&);
+    PassRefPtr<WebGLActiveInfo> getActiveUniform(WebGLProgram*, GC3Duint index, ExceptionState&);
+    bool getAttachedShaders(WebGLProgram*, Vector<RefPtr<WebGLShader> >&, ExceptionState&);
     GC3Dint getAttribLocation(WebGLProgram*, const String& name);
-    WebGLGetInfo getBufferParameter(GC3Denum target, GC3Denum pname, ExceptionCode&);
+    WebGLGetInfo getBufferParameter(GC3Denum target, GC3Denum pname, ExceptionState&);
     PassRefPtr<WebGLContextAttributes> getContextAttributes();
     GC3Denum getError();
     PassRefPtr<WebGLExtension> getExtension(const String& name);
-    WebGLGetInfo getFramebufferAttachmentParameter(GC3Denum target, GC3Denum attachment, GC3Denum pname, ExceptionCode&);
-    WebGLGetInfo getParameter(GC3Denum pname, ExceptionCode&);
-    WebGLGetInfo getProgramParameter(WebGLProgram*, GC3Denum pname, ExceptionCode&);
-    String getProgramInfoLog(WebGLProgram*, ExceptionCode&);
-    WebGLGetInfo getRenderbufferParameter(GC3Denum target, GC3Denum pname, ExceptionCode&);
-    WebGLGetInfo getShaderParameter(WebGLShader*, GC3Denum pname, ExceptionCode&);
-    String getShaderInfoLog(WebGLShader*, ExceptionCode&);
-    PassRefPtr<WebGLShaderPrecisionFormat> getShaderPrecisionFormat(GC3Denum shaderType, GC3Denum precisionType, ExceptionCode&);
-    String getShaderSource(WebGLShader*, ExceptionCode&);
+    WebGLGetInfo getFramebufferAttachmentParameter(GC3Denum target, GC3Denum attachment, GC3Denum pname, ExceptionState&);
+    WebGLGetInfo getParameter(GC3Denum pname, ExceptionState&);
+    WebGLGetInfo getProgramParameter(WebGLProgram*, GC3Denum pname, ExceptionState&);
+    String getProgramInfoLog(WebGLProgram*, ExceptionState&);
+    WebGLGetInfo getRenderbufferParameter(GC3Denum target, GC3Denum pname, ExceptionState&);
+    WebGLGetInfo getShaderParameter(WebGLShader*, GC3Denum pname, ExceptionState&);
+    String getShaderInfoLog(WebGLShader*, ExceptionState&);
+    PassRefPtr<WebGLShaderPrecisionFormat> getShaderPrecisionFormat(GC3Denum shaderType, GC3Denum precisionType, ExceptionState&);
+    String getShaderSource(WebGLShader*, ExceptionState&);
     Vector<String> getSupportedExtensions();
-    WebGLGetInfo getTexParameter(GC3Denum target, GC3Denum pname, ExceptionCode&);
-    WebGLGetInfo getUniform(WebGLProgram*, const WebGLUniformLocation*, ExceptionCode&);
-    PassRefPtr<WebGLUniformLocation> getUniformLocation(WebGLProgram*, const String&, ExceptionCode&);
-    WebGLGetInfo getVertexAttrib(GC3Duint index, GC3Denum pname, ExceptionCode&);
+    WebGLGetInfo getTexParameter(GC3Denum target, GC3Denum pname, ExceptionState&);
+    WebGLGetInfo getUniform(WebGLProgram*, const WebGLUniformLocation*, ExceptionState&);
+    PassRefPtr<WebGLUniformLocation> getUniformLocation(WebGLProgram*, const String&, ExceptionState&);
+    WebGLGetInfo getVertexAttrib(GC3Duint index, GC3Denum pname, ExceptionState&);
     long long getVertexAttribOffset(GC3Duint index, GC3Denum pname);
 
     void hint(GC3Denum target, GC3Denum mode);
@@ -204,14 +203,14 @@ public:
     GC3Dboolean isTexture(WebGLTexture*);
 
     void lineWidth(GC3Dfloat);
-    void linkProgram(WebGLProgram*, ExceptionCode&);
+    void linkProgram(WebGLProgram*, ExceptionState&);
     void pixelStorei(GC3Denum pname, GC3Dint param);
     void polygonOffset(GC3Dfloat factor, GC3Dfloat units);
-    void readPixels(GC3Dint x, GC3Dint y, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, ArrayBufferView* pixels, ExceptionCode&);
+    void readPixels(GC3Dint x, GC3Dint y, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, ArrayBufferView* pixels, ExceptionState&);
     void renderbufferStorage(GC3Denum target, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height);
     void sampleCoverage(GC3Dfloat value, GC3Dboolean invert);
     void scissor(GC3Dint x, GC3Dint y, GC3Dsizei width, GC3Dsizei height);
-    void shaderSource(WebGLShader*, const String&, ExceptionCode&);
+    void shaderSource(WebGLShader*, const String&, ExceptionState&);
     void stencilFunc(GC3Denum func, GC3Dint ref, GC3Duint mask);
     void stencilFuncSeparate(GC3Denum face, GC3Denum func, GC3Dint ref, GC3Duint mask);
     void stencilMask(GC3Duint);
@@ -220,80 +219,80 @@ public:
     void stencilOpSeparate(GC3Denum face, GC3Denum fail, GC3Denum zfail, GC3Denum zpass);
 
     void texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
-                    GC3Dsizei width, GC3Dsizei height, GC3Dint border,
-                    GC3Denum format, GC3Denum type, ArrayBufferView*, ExceptionCode&);
+        GC3Dsizei width, GC3Dsizei height, GC3Dint border,
+        GC3Denum format, GC3Denum type, ArrayBufferView*, ExceptionState&);
     void texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
-                    GC3Denum format, GC3Denum type, ImageData*, ExceptionCode&);
+        GC3Denum format, GC3Denum type, ImageData*, ExceptionState&);
     void texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
-                    GC3Denum format, GC3Denum type, HTMLImageElement*, ExceptionCode&);
+        GC3Denum format, GC3Denum type, HTMLImageElement*, ExceptionState&);
     void texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
-                    GC3Denum format, GC3Denum type, HTMLCanvasElement*, ExceptionCode&);
+        GC3Denum format, GC3Denum type, HTMLCanvasElement*, ExceptionState&);
     void texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
-                    GC3Denum format, GC3Denum type, HTMLVideoElement*, ExceptionCode&);
+        GC3Denum format, GC3Denum type, HTMLVideoElement*, ExceptionState&);
 
     void texParameterf(GC3Denum target, GC3Denum pname, GC3Dfloat param);
     void texParameteri(GC3Denum target, GC3Denum pname, GC3Dint param);
 
     void texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
-                       GC3Dsizei width, GC3Dsizei height,
-                       GC3Denum format, GC3Denum type, ArrayBufferView*, ExceptionCode&);
+        GC3Dsizei width, GC3Dsizei height,
+        GC3Denum format, GC3Denum type, ArrayBufferView*, ExceptionState&);
     void texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
-                       GC3Denum format, GC3Denum type, ImageData*, ExceptionCode&);
+        GC3Denum format, GC3Denum type, ImageData*, ExceptionState&);
     void texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
-                       GC3Denum format, GC3Denum type, HTMLImageElement*, ExceptionCode&);
+        GC3Denum format, GC3Denum type, HTMLImageElement*, ExceptionState&);
     void texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
-                       GC3Denum format, GC3Denum type, HTMLCanvasElement*, ExceptionCode&);
+        GC3Denum format, GC3Denum type, HTMLCanvasElement*, ExceptionState&);
     void texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
-                       GC3Denum format, GC3Denum type, HTMLVideoElement*, ExceptionCode&);
+        GC3Denum format, GC3Denum type, HTMLVideoElement*, ExceptionState&);
 
-    void uniform1f(const WebGLUniformLocation* location, GC3Dfloat x, ExceptionCode&);
-    void uniform1fv(const WebGLUniformLocation* location, Float32Array* v, ExceptionCode&);
-    void uniform1fv(const WebGLUniformLocation* location, GC3Dfloat* v, GC3Dsizei size, ExceptionCode&);
-    void uniform1i(const WebGLUniformLocation* location, GC3Dint x, ExceptionCode&);
-    void uniform1iv(const WebGLUniformLocation* location, Int32Array* v, ExceptionCode&);
-    void uniform1iv(const WebGLUniformLocation* location, GC3Dint* v, GC3Dsizei size, ExceptionCode&);
-    void uniform2f(const WebGLUniformLocation* location, GC3Dfloat x, GC3Dfloat y, ExceptionCode&);
-    void uniform2fv(const WebGLUniformLocation* location, Float32Array* v, ExceptionCode&);
-    void uniform2fv(const WebGLUniformLocation* location, GC3Dfloat* v, GC3Dsizei size, ExceptionCode&);
-    void uniform2i(const WebGLUniformLocation* location, GC3Dint x, GC3Dint y, ExceptionCode&);
-    void uniform2iv(const WebGLUniformLocation* location, Int32Array* v, ExceptionCode&);
-    void uniform2iv(const WebGLUniformLocation* location, GC3Dint* v, GC3Dsizei size, ExceptionCode&);
-    void uniform3f(const WebGLUniformLocation* location, GC3Dfloat x, GC3Dfloat y, GC3Dfloat z, ExceptionCode&);
-    void uniform3fv(const WebGLUniformLocation* location, Float32Array* v, ExceptionCode&);
-    void uniform3fv(const WebGLUniformLocation* location, GC3Dfloat* v, GC3Dsizei size, ExceptionCode&);
-    void uniform3i(const WebGLUniformLocation* location, GC3Dint x, GC3Dint y, GC3Dint z, ExceptionCode&);
-    void uniform3iv(const WebGLUniformLocation* location, Int32Array* v, ExceptionCode&);
-    void uniform3iv(const WebGLUniformLocation* location, GC3Dint* v, GC3Dsizei size, ExceptionCode&);
-    void uniform4f(const WebGLUniformLocation* location, GC3Dfloat x, GC3Dfloat y, GC3Dfloat z, GC3Dfloat w, ExceptionCode&);
-    void uniform4fv(const WebGLUniformLocation* location, Float32Array* v, ExceptionCode&);
-    void uniform4fv(const WebGLUniformLocation* location, GC3Dfloat* v, GC3Dsizei size, ExceptionCode&);
-    void uniform4i(const WebGLUniformLocation* location, GC3Dint x, GC3Dint y, GC3Dint z, GC3Dint w, ExceptionCode&);
-    void uniform4iv(const WebGLUniformLocation* location, Int32Array* v, ExceptionCode&);
-    void uniform4iv(const WebGLUniformLocation* location, GC3Dint* v, GC3Dsizei size, ExceptionCode&);
-    void uniformMatrix2fv(const WebGLUniformLocation* location, GC3Dboolean transpose, Float32Array* value, ExceptionCode&);
-    void uniformMatrix2fv(const WebGLUniformLocation* location, GC3Dboolean transpose, GC3Dfloat* value, GC3Dsizei size, ExceptionCode&);
-    void uniformMatrix3fv(const WebGLUniformLocation* location, GC3Dboolean transpose, Float32Array* value, ExceptionCode&);
-    void uniformMatrix3fv(const WebGLUniformLocation* location, GC3Dboolean transpose, GC3Dfloat* value, GC3Dsizei size, ExceptionCode&);
-    void uniformMatrix4fv(const WebGLUniformLocation* location, GC3Dboolean transpose, Float32Array* value, ExceptionCode&);
-    void uniformMatrix4fv(const WebGLUniformLocation* location, GC3Dboolean transpose, GC3Dfloat* value, GC3Dsizei size, ExceptionCode&);
+    void uniform1f(const WebGLUniformLocation*, GC3Dfloat x, ExceptionState&);
+    void uniform1fv(const WebGLUniformLocation*, Float32Array* v, ExceptionState&);
+    void uniform1fv(const WebGLUniformLocation*, GC3Dfloat* v, GC3Dsizei, ExceptionState&);
+    void uniform1i(const WebGLUniformLocation*, GC3Dint x, ExceptionState&);
+    void uniform1iv(const WebGLUniformLocation*, Int32Array* v, ExceptionState&);
+    void uniform1iv(const WebGLUniformLocation*, GC3Dint* v, GC3Dsizei, ExceptionState&);
+    void uniform2f(const WebGLUniformLocation*, GC3Dfloat x, GC3Dfloat y, ExceptionState&);
+    void uniform2fv(const WebGLUniformLocation*, Float32Array* v, ExceptionState&);
+    void uniform2fv(const WebGLUniformLocation*, GC3Dfloat* v, GC3Dsizei, ExceptionState&);
+    void uniform2i(const WebGLUniformLocation*, GC3Dint x, GC3Dint y, ExceptionState&);
+    void uniform2iv(const WebGLUniformLocation*, Int32Array* v, ExceptionState&);
+    void uniform2iv(const WebGLUniformLocation*, GC3Dint* v, GC3Dsizei, ExceptionState&);
+    void uniform3f(const WebGLUniformLocation*, GC3Dfloat x, GC3Dfloat y, GC3Dfloat z, ExceptionState&);
+    void uniform3fv(const WebGLUniformLocation*, Float32Array* v, ExceptionState&);
+    void uniform3fv(const WebGLUniformLocation*, GC3Dfloat* v, GC3Dsizei, ExceptionState&);
+    void uniform3i(const WebGLUniformLocation*, GC3Dint x, GC3Dint y, GC3Dint z, ExceptionState&);
+    void uniform3iv(const WebGLUniformLocation*, Int32Array* v, ExceptionState&);
+    void uniform3iv(const WebGLUniformLocation*, GC3Dint* v, GC3Dsizei, ExceptionState&);
+    void uniform4f(const WebGLUniformLocation*, GC3Dfloat x, GC3Dfloat y, GC3Dfloat z, GC3Dfloat w, ExceptionState&);
+    void uniform4fv(const WebGLUniformLocation*, Float32Array* v, ExceptionState&);
+    void uniform4fv(const WebGLUniformLocation*, GC3Dfloat* v, GC3Dsizei, ExceptionState&);
+    void uniform4i(const WebGLUniformLocation*, GC3Dint x, GC3Dint y, GC3Dint z, GC3Dint w, ExceptionState&);
+    void uniform4iv(const WebGLUniformLocation*, Int32Array* v, ExceptionState&);
+    void uniform4iv(const WebGLUniformLocation*, GC3Dint* v, GC3Dsizei, ExceptionState&);
+    void uniformMatrix2fv(const WebGLUniformLocation*, GC3Dboolean transpose, Float32Array* value, ExceptionState&);
+    void uniformMatrix2fv(const WebGLUniformLocation*, GC3Dboolean transpose, GC3Dfloat* value, GC3Dsizei, ExceptionState&);
+    void uniformMatrix3fv(const WebGLUniformLocation*, GC3Dboolean transpose, Float32Array* value, ExceptionState&);
+    void uniformMatrix3fv(const WebGLUniformLocation*, GC3Dboolean transpose, GC3Dfloat* value, GC3Dsizei, ExceptionState&);
+    void uniformMatrix4fv(const WebGLUniformLocation*, GC3Dboolean transpose, Float32Array* value, ExceptionState&);
+    void uniformMatrix4fv(const WebGLUniformLocation*, GC3Dboolean transpose, GC3Dfloat* value, GC3Dsizei, ExceptionState&);
 
-    void useProgram(WebGLProgram*, ExceptionCode&);
-    void validateProgram(WebGLProgram*, ExceptionCode&);
+    void useProgram(WebGLProgram*, ExceptionState&);
+    void validateProgram(WebGLProgram*, ExceptionState&);
 
     void vertexAttrib1f(GC3Duint index, GC3Dfloat x);
     void vertexAttrib1fv(GC3Duint index, Float32Array* values);
-    void vertexAttrib1fv(GC3Duint index, GC3Dfloat* values, GC3Dsizei size);
+    void vertexAttrib1fv(GC3Duint index, GC3Dfloat* values, GC3Dsizei);
     void vertexAttrib2f(GC3Duint index, GC3Dfloat x, GC3Dfloat y);
     void vertexAttrib2fv(GC3Duint index, Float32Array* values);
-    void vertexAttrib2fv(GC3Duint index, GC3Dfloat* values, GC3Dsizei size);
+    void vertexAttrib2fv(GC3Duint index, GC3Dfloat* values, GC3Dsizei);
     void vertexAttrib3f(GC3Duint index, GC3Dfloat x, GC3Dfloat y, GC3Dfloat z);
     void vertexAttrib3fv(GC3Duint index, Float32Array* values);
-    void vertexAttrib3fv(GC3Duint index, GC3Dfloat* values, GC3Dsizei size);
+    void vertexAttrib3fv(GC3Duint index, GC3Dfloat* values, GC3Dsizei);
     void vertexAttrib4f(GC3Duint index, GC3Dfloat x, GC3Dfloat y, GC3Dfloat z, GC3Dfloat w);
     void vertexAttrib4fv(GC3Duint index, Float32Array* values);
-    void vertexAttrib4fv(GC3Duint index, GC3Dfloat* values, GC3Dsizei size);
+    void vertexAttrib4fv(GC3Duint index, GC3Dfloat* values, GC3Dsizei);
     void vertexAttribPointer(GC3Duint index, GC3Dint size, GC3Denum type, GC3Dboolean normalized,
-                             GC3Dsizei stride, long long offset, ExceptionCode&);
+        GC3Dsizei stride, long long offset, ExceptionState&);
 
     void vertexAttribDivisorANGLE(GC3Duint index, GC3Duint divisor);
 
@@ -374,7 +373,7 @@ public:
     void addCompressedTextureFormat(GC3Denum);
     void removeAllCompressedTextureFormats();
 
-    PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy, ExceptionCode&);
+    PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy, ExceptionState&);
 
     WebGLRenderbuffer* ensureEmulatedStencilBuffer(GC3Denum target, WebGLRenderbuffer*);
 
@@ -646,10 +645,10 @@ public:
     // Helper to restore state that clearing the framebuffer may destroy.
     void restoreStateAfterClear();
 
-    void texImage2DBase(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, const void* pixels, ExceptionCode&);
-    void texImage2DImpl(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Denum format, GC3Denum type, Image*, GraphicsContext3D::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha, ExceptionCode&);
-    void texSubImage2DBase(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, const void* pixels, ExceptionCode&);
-    void texSubImage2DImpl(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset, GC3Denum format, GC3Denum type, Image*, GraphicsContext3D::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha, ExceptionCode&);
+    void texImage2DBase(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, const void* pixels, ExceptionState&);
+    void texImage2DImpl(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Denum format, GC3Denum type, Image*, GraphicsContext3D::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha, ExceptionState&);
+    void texSubImage2DBase(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, const void* pixels, ExceptionState&);
+    void texSubImage2DImpl(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset, GC3Denum format, GC3Denum type, Image*, GraphicsContext3D::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha, ExceptionState&);
 
     void handleTextureCompleteness(const char*, bool);
     void createFallbackBlackTextures1x1();
@@ -802,13 +801,13 @@ public:
     WebGLBuffer* validateBufferDataParameters(const char* functionName, GC3Denum target, GC3Denum usage);
 
     // Helper function for tex{Sub}Image2D to make sure image is ready and wouldn't taint Origin.
-    bool validateHTMLImageElement(const char* functionName, HTMLImageElement*, ExceptionCode&);
+    bool validateHTMLImageElement(const char* functionName, HTMLImageElement*, ExceptionState&);
 
     // Helper function for tex{Sub}Image2D to make sure canvas is ready and wouldn't taint Origin.
-    bool validateHTMLCanvasElement(const char* functionName, HTMLCanvasElement*, ExceptionCode&);
+    bool validateHTMLCanvasElement(const char* functionName, HTMLCanvasElement*, ExceptionState&);
 
     // Helper function for tex{Sub}Image2D to make sure video is ready wouldn't taint Origin.
-    bool validateHTMLVideoElement(const char* functionName, HTMLVideoElement*, ExceptionCode&);
+    bool validateHTMLVideoElement(const char* functionName, HTMLVideoElement*, ExceptionState&);
 
     // Helper function to validate drawArrays(Instanced) calls
     bool validateDrawArrays(const char* functionName, GC3Denum mode, GC3Dint first, GC3Dsizei count);

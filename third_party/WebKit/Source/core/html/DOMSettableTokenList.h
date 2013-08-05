@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
+class ExceptionState;
 
 class DOMSettableTokenList : public DOMTokenList, public RefCounted<DOMSettableTokenList> {
     WTF_MAKE_FAST_ALLOCATED;
@@ -49,8 +49,8 @@ public:
     virtual unsigned length() const OVERRIDE { return m_tokens.size(); }
     virtual const AtomicString item(unsigned index) const OVERRIDE;
 
-    virtual void add(const Vector<String>&, ExceptionCode&) OVERRIDE;
-    virtual void remove(const Vector<String>&, ExceptionCode&) OVERRIDE;
+    virtual void add(const Vector<String>&, ExceptionState&) OVERRIDE;
+    virtual void remove(const Vector<String>&, ExceptionState&) OVERRIDE;
 
     virtual AtomicString value() const OVERRIDE { return m_value; }
     virtual void setValue(const AtomicString&) OVERRIDE;

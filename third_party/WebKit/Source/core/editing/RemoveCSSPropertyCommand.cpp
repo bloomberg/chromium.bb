@@ -26,10 +26,10 @@
 #include "config.h"
 #include "core/editing/RemoveCSSPropertyCommand.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Element.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {
@@ -55,12 +55,12 @@ void RemoveCSSPropertyCommand::doApply()
 
     // Mutate using the CSSOM wrapper so we get the same event behavior as a script.
     // Setting to null string removes the property. We don't have internal version of removeProperty.
-    m_element->style()->setPropertyInternal(m_property, String(), false, IGNORE_EXCEPTION);
+    m_element->style()->setPropertyInternal(m_property, String(), false, IGNORE_EXCEPTION_STATE);
 }
 
 void RemoveCSSPropertyCommand::doUnapply()
 {
-    m_element->style()->setPropertyInternal(m_property, m_oldValue, m_important, IGNORE_EXCEPTION);
+    m_element->style()->setPropertyInternal(m_property, m_oldValue, m_important, IGNORE_EXCEPTION_STATE);
 }
 
 #ifndef NDEBUG

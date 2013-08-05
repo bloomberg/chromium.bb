@@ -32,9 +32,9 @@
 #include "core/inspector/InspectorResourceAgent.h"
 
 #include "InspectorFrontend.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorClient.h"
@@ -656,11 +656,11 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
     if (cachedResource)
         memoryCache()->remove(cachedResource);
 
-    xhr->open(xhrReplayData->method(), xhrReplayData->url(), xhrReplayData->async(), IGNORE_EXCEPTION);
+    xhr->open(xhrReplayData->method(), xhrReplayData->url(), xhrReplayData->async(), IGNORE_EXCEPTION_STATE);
     HTTPHeaderMap::const_iterator end = xhrReplayData->headers().end();
     for (HTTPHeaderMap::const_iterator it = xhrReplayData->headers().begin(); it!= end; ++it)
-        xhr->setRequestHeader(it->key, it->value, IGNORE_EXCEPTION);
-    xhr->sendForInspectorXHRReplay(xhrReplayData->formData(), IGNORE_EXCEPTION);
+        xhr->setRequestHeader(it->key, it->value, IGNORE_EXCEPTION_STATE);
+    xhr->sendForInspectorXHRReplay(xhrReplayData->formData(), IGNORE_EXCEPTION_STATE);
 }
 
 void InspectorResourceAgent::canClearBrowserCache(ErrorString*, bool* result)

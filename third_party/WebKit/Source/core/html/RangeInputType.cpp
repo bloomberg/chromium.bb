@@ -34,8 +34,8 @@
 
 #include <limits>
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/ScopedEventQueue.h"
@@ -104,7 +104,7 @@ double RangeInputType::valueAsDouble() const
     return parseToDoubleForNumberType(element()->value());
 }
 
-void RangeInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionCode&) const
+void RangeInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionState&) const
 {
     element()->setValue(serialize(newValue), eventBehavior);
 }
@@ -231,7 +231,7 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event)
     if (newValue != current) {
         EventQueueScope scope;
         TextFieldEventBehavior eventBehavior = DispatchChangeEvent;
-        setValueAsDecimal(newValue, eventBehavior, IGNORE_EXCEPTION);
+        setValueAsDecimal(newValue, eventBehavior, IGNORE_EXCEPTION_STATE);
 
         if (AXObjectCache* cache = element()->document()->existingAXObjectCache())
             cache->postNotification(element(), AXObjectCache::AXValueChanged, true);
@@ -248,10 +248,10 @@ void RangeInputType::createShadowSubtree()
     Document* document = element()->document();
     RefPtr<HTMLDivElement> track = HTMLDivElement::create(document);
     track->setPseudo(AtomicString("-webkit-slider-runnable-track", AtomicString::ConstructFromLiteral));
-    track->appendChild(SliderThumbElement::create(document), IGNORE_EXCEPTION);
+    track->appendChild(SliderThumbElement::create(document), IGNORE_EXCEPTION_STATE);
     RefPtr<HTMLElement> container = SliderContainerElement::create(document);
-    container->appendChild(track.release(), IGNORE_EXCEPTION);
-    element()->userAgentShadowRoot()->appendChild(container.release(), IGNORE_EXCEPTION);
+    container->appendChild(track.release(), IGNORE_EXCEPTION_STATE);
+    element()->userAgentShadowRoot()->appendChild(container.release(), IGNORE_EXCEPTION_STATE);
 }
 
 RenderObject* RangeInputType::createRenderer(RenderStyle*) const

@@ -20,14 +20,13 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGTRefElement.h"
 
 #include "SVGNames.h"
 #include "XLinkNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/MutationEvent.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/Text.h"
@@ -151,7 +150,7 @@ SVGTRefElement::~SVGTRefElement()
 void SVGTRefElement::updateReferencedText(Element* target)
 {
     if (target)
-        replaceChildrenWithText(userAgentShadowRoot(), target->textContent(), ASSERT_NO_EXCEPTION);
+        replaceChildrenWithText(userAgentShadowRoot(), target->textContent(), ASSERT_NO_EXCEPTION_STATE);
     else
         userAgentShadowRoot()->removeChildren();
 }

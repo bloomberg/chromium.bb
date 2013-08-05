@@ -27,6 +27,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class RenderText;
 class ScriptExecutionContext;
 
@@ -38,7 +39,7 @@ public:
     static PassRefPtr<Text> createWithLengthLimit(Document*, const String&, unsigned positionInString, unsigned lengthLimit = defaultLengthLimit);
     static PassRefPtr<Text> createEditingText(Document*, const String&);
 
-    PassRefPtr<Text> splitText(unsigned offset, ExceptionCode&);
+    PassRefPtr<Text> splitText(unsigned offset, ExceptionState&);
 
     // DOM Level 3: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-1312295772
 

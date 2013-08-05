@@ -25,6 +25,8 @@
 #include "config.h"
 #include "core/html/DOMSettableTokenList.h"
 
+#include "bindings/v8/ExceptionState.h"
+
 namespace WebCore {
 
 DOMSettableTokenList::DOMSettableTokenList()
@@ -50,9 +52,9 @@ bool DOMSettableTokenList::containsInternal(const AtomicString& token) const
     return m_tokens.contains(token);
 }
 
-void DOMSettableTokenList::add(const Vector<String>& tokens, ExceptionCode& ec)
+void DOMSettableTokenList::add(const Vector<String>& tokens, ExceptionState& es)
 {
-    DOMTokenList::add(tokens, ec);
+    DOMTokenList::add(tokens, es);
 
     for (size_t i = 0; i < tokens.size(); ++i) {
         if (m_tokens.isNull())
@@ -71,9 +73,9 @@ void DOMSettableTokenList::addInternal(const AtomicString& token)
         m_tokens.add(token);
 }
 
-void DOMSettableTokenList::remove(const Vector<String>& tokens, ExceptionCode& ec)
+void DOMSettableTokenList::remove(const Vector<String>& tokens, ExceptionState& es)
 {
-    DOMTokenList::remove(tokens, ec);
+    DOMTokenList::remove(tokens, es);
     for (size_t i = 0; i < tokens.size(); ++i)
         m_tokens.remove(tokens[i]);
 }

@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
+class ExceptionState;
 
 class TimeRanges : public RefCounted<TimeRanges>, public ScriptWrappable {
 public:
@@ -53,8 +53,8 @@ public:
     void unionWith(const TimeRanges*);
 
     unsigned length() const { return m_ranges.size(); }
-    double start(unsigned index, ExceptionCode&) const;
-    double end(unsigned index, ExceptionCode&) const;
+    double start(unsigned index, ExceptionState&) const;
+    double end(unsigned index, ExceptionState&) const;
 
     void add(double start, double end);
 

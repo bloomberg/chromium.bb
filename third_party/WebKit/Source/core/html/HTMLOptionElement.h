@@ -29,6 +29,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class HTMLDataListElement;
 class HTMLSelectElement;
 
@@ -37,10 +38,10 @@ public:
     static PassRefPtr<HTMLOptionElement> create(Document*);
     static PassRefPtr<HTMLOptionElement> create(const QualifiedName&, Document*);
     static PassRefPtr<HTMLOptionElement> createForJSConstructor(Document*, const String& data, const String& value,
-       bool defaultSelected, bool selected, ExceptionCode&);
+        bool defaultSelected, bool selected, ExceptionState&);
 
     virtual String text() const;
-    void setText(const String&, ExceptionCode&);
+    void setText(const String&, ExceptionState&);
 
     int index() const;
 

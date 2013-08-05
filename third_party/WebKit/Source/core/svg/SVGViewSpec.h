@@ -29,6 +29,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class SVGElement;
 class SVGTransformListPropertyTearOff;
 
@@ -60,7 +61,7 @@ public:
 
     SVGZoomAndPanType zoomAndPan() const { return m_zoomAndPan; }
     void setZoomAndPan(unsigned short zoomAndPan) { setZoomAndPanBaseValue(zoomAndPan); }
-    void setZoomAndPan(unsigned short, ExceptionCode&);
+    void setZoomAndPan(unsigned short, ExceptionState&);
     void setZoomAndPanBaseValue(unsigned short zoomAndPan) { m_zoomAndPan = SVGZoomAndPan::parseFromNumber(zoomAndPan); }
 
     SVGElement* contextElement() const { return m_contextElement; }

@@ -33,6 +33,7 @@
 
 #include "CSSPropertyNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -122,8 +123,8 @@ void ColorInputType::createShadowSubtree()
     wrapperElement->setPseudo(AtomicString("-webkit-color-swatch-wrapper", AtomicString::ConstructFromLiteral));
     RefPtr<HTMLDivElement> colorSwatch = HTMLDivElement::create(document);
     colorSwatch->setPseudo(AtomicString("-webkit-color-swatch", AtomicString::ConstructFromLiteral));
-    wrapperElement->appendChild(colorSwatch.release(), ASSERT_NO_EXCEPTION);
-    element()->userAgentShadowRoot()->appendChild(wrapperElement.release(), ASSERT_NO_EXCEPTION);
+    wrapperElement->appendChild(colorSwatch.release(), ASSERT_NO_EXCEPTION_STATE);
+    element()->userAgentShadowRoot()->appendChild(wrapperElement.release(), ASSERT_NO_EXCEPTION_STATE);
 
     updateColorSwatch();
 }

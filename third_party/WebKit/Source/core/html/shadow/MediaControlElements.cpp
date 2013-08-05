@@ -28,11 +28,10 @@
  */
 
 #include "config.h"
-
 #include "core/html/shadow/MediaControlElements.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/EventNames.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/MouseEvent.h"
 #include "core/html/DOMTokenList.h"
@@ -163,7 +162,7 @@ void MediaControlPanelElement::setPosition(const LayoutPoint& position)
     setInlineStyleProperty(CSSPropertyMarginLeft, 0.0, CSSPrimitiveValue::CSS_PX);
     setInlineStyleProperty(CSSPropertyMarginTop, 0.0, CSSPrimitiveValue::CSS_PX);
 
-    classList()->add("dragged", IGNORE_EXCEPTION);
+    classList()->add("dragged", IGNORE_EXCEPTION_STATE);
 }
 
 void MediaControlPanelElement::resetPosition()
@@ -173,7 +172,7 @@ void MediaControlPanelElement::resetPosition()
     removeInlineStyleProperty(CSSPropertyMarginLeft);
     removeInlineStyleProperty(CSSPropertyMarginTop);
 
-    classList()->remove("dragged", IGNORE_EXCEPTION);
+    classList()->remove("dragged", IGNORE_EXCEPTION_STATE);
 
     m_cumulativeDragOffset.setX(0);
     m_cumulativeDragOffset.setY(0);
@@ -501,7 +500,7 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
 
     double time = value().toDouble();
     if (event->type() == eventNames().inputEvent && time != mediaController()->currentTime())
-        mediaController()->setCurrentTime(time, IGNORE_EXCEPTION);
+        mediaController()->setCurrentTime(time, IGNORE_EXCEPTION_STATE);
 
     RenderSlider* slider = toRenderSlider(renderer());
     if (slider && slider->inDragMode())
@@ -749,9 +748,10 @@ void MediaControlTextTrackContainerElement::updateDisplay()
             // WebVTT region whose region identifier is identical to cue's text
             // track cue region identifier, run the following substeps:
 #endif
-            if (displayBox->hasChildNodes() && !contains(displayBox.get()))
+            if (displayBox->hasChildNodes() && !contains(displayBox.get())) {
                 // Note: the display tree of a cue is removed when the active flag of the cue is unset.
-                appendChild(displayBox, ASSERT_NO_EXCEPTION, AttachNow);
+                appendChild(displayBox, ASSERT_NO_EXCEPTION_STATE, AttachNow);
+            }
 #if ENABLE(WEBVTT_REGIONS)
         } else {
             // Let region be the WebVTT region whose region identifier

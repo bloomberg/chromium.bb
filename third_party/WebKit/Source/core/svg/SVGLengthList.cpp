@@ -21,6 +21,8 @@
 #include "config.h"
 #include "core/svg/SVGLengthList.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -29,7 +31,7 @@ namespace WebCore {
 template<typename CharType>
 void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, SVGLengthMode mode)
 {
-    ExceptionCode ec = 0;
+    TrackExceptionState es;
 
     while (ptr < end) {
         const CharType* start = ptr;
@@ -42,8 +44,8 @@ void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, SVG
         String valueString(start, ptr - start);
         if (valueString.isEmpty())
             return;
-        length.setValueAsString(valueString, ec);
-        if (ec)
+        length.setValueAsString(valueString, es);
+        if (es.hadException())
             return;
         append(length);
         skipOptionalSVGSpacesOrDelimiter(ptr, end);

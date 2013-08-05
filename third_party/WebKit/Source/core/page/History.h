@@ -38,7 +38,7 @@ namespace WebCore {
 class Frame;
 class KURL;
 class ScriptExecutionContext;
-typedef int ExceptionCode;
+class ExceptionState;
 
 class History : public ScriptWrappable, public RefCounted<History>, public DOMWindowProperty {
 public:
@@ -61,7 +61,7 @@ public:
         StateObjectPush,
         StateObjectReplace
     };
-    void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, StateObjectType, ExceptionCode&);
+    void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, StateObjectType, ExceptionState&);
 
 private:
     explicit History(Frame*);

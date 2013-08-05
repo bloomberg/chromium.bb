@@ -29,6 +29,7 @@
 namespace WebCore {
 
 class BeforeTextInsertedEvent;
+class ExceptionState;
 class VisibleSelection;
 
 class HTMLTextAreaElement FINAL : public HTMLTextFormControlElement {
@@ -46,7 +47,7 @@ public:
     void setDefaultValue(const String&);
     int textLength() const { return value().length(); }
     virtual int maxLength() const;
-    void setMaxLength(int, ExceptionCode&);
+    void setMaxLength(int, ExceptionState&);
     // For ValidityState
     virtual String validationMessage() const OVERRIDE;
     virtual bool valueMissing() const OVERRIDE;

@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/dom/DecodedDataDocumentParser.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/loader/TextResourceDecoder.h"
@@ -74,7 +75,7 @@ void TitleEncodingFixer::fixTitleEncoding()
     CString originalBytes = titleElement->textContent().latin1();
     OwnPtr<TextCodec> codec = newTextCodec(m_document->decoder()->encoding());
     String correctlyDecodedTitle = codec->decode(originalBytes.data(), originalBytes.length(), true);
-    titleElement->setTextContent(correctlyDecodedTitle, IGNORE_EXCEPTION);
+    titleElement->setTextContent(correctlyDecodedTitle, IGNORE_EXCEPTION_STATE);
 }
 
 }

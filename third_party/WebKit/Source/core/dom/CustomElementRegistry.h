@@ -34,7 +34,6 @@
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementDescriptor.h"
 #include "core/dom/CustomElementDescriptorHash.h"
-#include "core/dom/ExceptionCode.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
@@ -45,6 +44,7 @@ namespace WebCore {
 
 class CustomElementConstructorBuilder;
 class Document;
+class ExceptionState;
 
 class CustomElementRegistry {
     WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
@@ -54,7 +54,7 @@ protected:
     CustomElementRegistry() { }
     virtual ~CustomElementRegistry() { }
 
-    CustomElementDefinition* registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& name, ExceptionCode&);
+    CustomElementDefinition* registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& name, ExceptionState&);
     CustomElementDefinition* find(const CustomElementDescriptor&) const;
 
 private:

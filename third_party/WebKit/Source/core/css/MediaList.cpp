@@ -20,6 +20,7 @@
 #include "config.h"
 #include "core/css/MediaList.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaFeatureNames.h"
@@ -195,26 +196,26 @@ String MediaList::item(unsigned index) const
     return String();
 }
 
-void MediaList::deleteMedium(const String& medium, ExceptionCode& ec)
+void MediaList::deleteMedium(const String& medium, ExceptionState& es)
 {
     CSSStyleSheet::RuleMutationScope mutationScope(m_parentRule);
 
     bool success = m_mediaQueries->remove(medium);
     if (!success) {
-        ec = NotFoundError;
+        es.throwDOMException(NotFoundError);
         return;
     }
     if (m_parentStyleSheet)
         m_parentStyleSheet->didMutate();
 }
 
-void MediaList::appendMedium(const String& medium, ExceptionCode& ec)
+void MediaList::appendMedium(const String& medium, ExceptionState& es)
 {
     CSSStyleSheet::RuleMutationScope mutationScope(m_parentRule);
 
     bool success = m_mediaQueries->add(medium);
     if (!success) {
-        ec = InvalidCharacterError;
+        es.throwDOMException(InvalidCharacterError);
         return;
     }
 

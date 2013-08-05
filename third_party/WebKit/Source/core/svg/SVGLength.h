@@ -21,6 +21,7 @@
 #ifndef SVGLength_h
 #define SVGLength_h
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/platform/animation/AnimationUtilities.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGParsingError.h"
@@ -29,9 +30,8 @@
 namespace WebCore {
 
 class CSSPrimitiveValue;
+class ExceptionState;
 class QualifiedName;
-
-typedef int ExceptionCode;
 
 enum SVGLengthNegativeValuesMode {
     AllowNegativeLengths,
@@ -69,9 +69,9 @@ public:
     static SVGLength construct(SVGLengthMode, const String&, SVGParsingError&, SVGLengthNegativeValuesMode = AllowNegativeLengths);
 
     float value(const SVGLengthContext&) const;
-    float value(const SVGLengthContext&, ExceptionCode&) const;
-    void setValue(float, const SVGLengthContext&, ExceptionCode&);
-    void setValue(const SVGLengthContext&, float, SVGLengthMode, SVGLengthType, ExceptionCode&);
+    float value(const SVGLengthContext&, ExceptionState&) const;
+    void setValue(float, const SVGLengthContext&, ExceptionState&);
+    void setValue(const SVGLengthContext&, float, SVGLengthMode, SVGLengthType, ExceptionState&);
 
     float valueInSpecifiedUnits() const { return m_valueInSpecifiedUnits; }
     void setValueInSpecifiedUnits(float value) { m_valueInSpecifiedUnits = value; }
@@ -79,11 +79,11 @@ public:
     float valueAsPercentage() const;
 
     String valueAsString() const;
-    void setValueAsString(const String&, ExceptionCode&);
-    void setValueAsString(const String&, SVGLengthMode, ExceptionCode&);
+    void setValueAsString(const String&, ExceptionState&);
+    void setValueAsString(const String&, SVGLengthMode, ExceptionState&);
 
-    void newValueSpecifiedUnits(unsigned short, float valueInSpecifiedUnits, ExceptionCode&);
-    void convertToSpecifiedUnits(unsigned short, const SVGLengthContext&, ExceptionCode&);
+    void newValueSpecifiedUnits(unsigned short, float valueInSpecifiedUnits, ExceptionState&);
+    void convertToSpecifiedUnits(unsigned short, const SVGLengthContext&, ExceptionState&);
 
     // Helper functions
     inline bool isRelative() const
@@ -114,13 +114,13 @@ public:
             return *this;
 
         SVGLength length;
-        ExceptionCode ec = 0;
+        TrackExceptionState es;
 
         if (fromType == LengthTypePercentage || toType == LengthTypePercentage) {
             float fromPercent = from.valueAsPercentage() * 100;
             float toPercent = valueAsPercentage() * 100;
-            length.newValueSpecifiedUnits(LengthTypePercentage, WebCore::blend(fromPercent, toPercent, progress), ec);
-            if (ec)
+            length.newValueSpecifiedUnits(LengthTypePercentage, WebCore::blend(fromPercent, toPercent, progress), es);
+            if (es.hadException())
                 return SVGLength();
             return length;
         }
@@ -129,10 +129,10 @@ public:
             float fromValue = from.valueInSpecifiedUnits();
             float toValue = valueInSpecifiedUnits();
             if (isZero())
-                length.newValueSpecifiedUnits(fromType, WebCore::blend(fromValue, toValue, progress), ec);
+                length.newValueSpecifiedUnits(fromType, WebCore::blend(fromValue, toValue, progress), es);
             else
-                length.newValueSpecifiedUnits(toType, WebCore::blend(fromValue, toValue, progress), ec);
-            if (ec)
+                length.newValueSpecifiedUnits(toType, WebCore::blend(fromValue, toValue, progress), es);
+            if (es.hadException())
                 return SVGLength();
             return length;
         }
@@ -141,18 +141,18 @@ public:
         ASSERT(!from.isRelative());
 
         SVGLengthContext nonRelativeLengthContext(0);
-        float fromValueInUserUnits = nonRelativeLengthContext.convertValueToUserUnits(from.valueInSpecifiedUnits(), from.unitMode(), fromType, ec);
-        if (ec)
+        float fromValueInUserUnits = nonRelativeLengthContext.convertValueToUserUnits(from.valueInSpecifiedUnits(), from.unitMode(), fromType, es);
+        if (es.hadException())
             return SVGLength();
 
-        float fromValue = nonRelativeLengthContext.convertValueFromUserUnits(fromValueInUserUnits, unitMode(), toType, ec);
-        if (ec)
+        float fromValue = nonRelativeLengthContext.convertValueFromUserUnits(fromValueInUserUnits, unitMode(), toType, es);
+        if (es.hadException())
             return SVGLength();
 
         float toValue = valueInSpecifiedUnits();
-        length.newValueSpecifiedUnits(toType, WebCore::blend(fromValue, toValue, progress), ec);
+        length.newValueSpecifiedUnits(toType, WebCore::blend(fromValue, toValue, progress), es);
 
-        if (ec)
+        if (es.hadException())
             return SVGLength();
         return length;
     }

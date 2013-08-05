@@ -31,6 +31,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class ScriptExecutionContext;
 class XPathExpression;
 class XPathNSResolver;
@@ -43,11 +44,11 @@ public:
     static DocumentXPathEvaluator* from(ScriptExecutionContext*);
 
     static PassRefPtr<XPathExpression> createExpression(ScriptExecutionContext*,
-        const String& expression, XPathNSResolver*, ExceptionCode&);
+        const String& expression, XPathNSResolver*, ExceptionState&);
     static PassRefPtr<XPathNSResolver> createNSResolver(ScriptExecutionContext*, Node* nodeResolver);
     static PassRefPtr<XPathResult> evaluate(ScriptExecutionContext*,
         const String& expression, Node* contextNode, XPathNSResolver*,
-        unsigned short type, XPathResult*, ExceptionCode&);
+        unsigned short type, XPathResult*, ExceptionState&);
 
 private:
     DocumentXPathEvaluator();

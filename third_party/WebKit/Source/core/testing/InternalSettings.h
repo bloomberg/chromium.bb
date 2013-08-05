@@ -36,10 +36,9 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
-
-class Frame;
 class Document;
+class ExceptionState;
+class Frame;
 class Page;
 class Settings;
 
@@ -80,28 +79,28 @@ public:
     virtual ~InternalSettings();
     void resetToConsistentState();
 
-    void setStandardFontFamily(const String& family, const String& script, ExceptionCode&);
-    void setSerifFontFamily(const String& family, const String& script, ExceptionCode&);
-    void setSansSerifFontFamily(const String& family, const String& script, ExceptionCode&);
-    void setFixedFontFamily(const String& family, const String& script, ExceptionCode&);
-    void setCursiveFontFamily(const String& family, const String& script, ExceptionCode&);
-    void setFantasyFontFamily(const String& family, const String& script, ExceptionCode&);
-    void setPictographFontFamily(const String& family, const String& script, ExceptionCode&);
+    void setStandardFontFamily(const String& family, const String& script, ExceptionState&);
+    void setSerifFontFamily(const String& family, const String& script, ExceptionState&);
+    void setSansSerifFontFamily(const String& family, const String& script, ExceptionState&);
+    void setFixedFontFamily(const String& family, const String& script, ExceptionState&);
+    void setCursiveFontFamily(const String& family, const String& script, ExceptionState&);
+    void setFantasyFontFamily(const String& family, const String& script, ExceptionState&);
+    void setPictographFontFamily(const String& family, const String& script, ExceptionState&);
 
-    void setDefaultVideoPosterURL(const String& url, ExceptionCode&);
-    void setEditingBehavior(const String&, ExceptionCode&);
-    void setImagesEnabled(bool, ExceptionCode&);
-    void setMediaTypeOverride(const String& mediaType, ExceptionCode&);
-    void setMockScrollbarsEnabled(bool, ExceptionCode&);
-    void setTextAutosizingEnabled(bool, ExceptionCode&);
-    void setTextAutosizingFontScaleFactor(float fontScaleFactor, ExceptionCode&);
-    void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionCode&);
-    void setTouchEventEmulationEnabled(bool, ExceptionCode&);
-    void setUsesOverlayScrollbars(bool, ExceptionCode&);
+    void setDefaultVideoPosterURL(const String& url, ExceptionState&);
+    void setEditingBehavior(const String&, ExceptionState&);
+    void setImagesEnabled(bool, ExceptionState&);
+    void setMediaTypeOverride(const String& mediaType, ExceptionState&);
+    void setMockScrollbarsEnabled(bool, ExceptionState&);
+    void setTextAutosizingEnabled(bool, ExceptionState&);
+    void setTextAutosizingFontScaleFactor(float fontScaleFactor, ExceptionState&);
+    void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState&);
+    void setTouchEventEmulationEnabled(bool, ExceptionState&);
+    void setUsesOverlayScrollbars(bool, ExceptionState&);
 
     // FIXME: This is a temporary flag and should be removed once accelerated
     // overflow scroll is ready (crbug.com/254111).
-    void setCompositorDrivenAcceleratedScrollingEnabled(bool, ExceptionCode&);
+    void setCompositorDrivenAcceleratedScrollingEnabled(bool, ExceptionState&);
 
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start. These setters should

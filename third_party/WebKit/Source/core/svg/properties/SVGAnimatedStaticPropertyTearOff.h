@@ -24,6 +24,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 template<typename PropertyType>
 class SVGAnimatedStaticPropertyTearOff : public SVGAnimatedProperty {
 public:
@@ -41,7 +43,7 @@ public:
         return m_property;
     }
 
-    virtual void setBaseVal(const PropertyType& property, ExceptionCode&)
+    virtual void setBaseVal(const PropertyType& property, ExceptionState&)
     {
         m_property = property;
         commitChange();

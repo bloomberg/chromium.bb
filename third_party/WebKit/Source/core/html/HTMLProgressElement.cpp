@@ -23,6 +23,8 @@
 #include "core/html/HTMLProgressElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -97,10 +99,10 @@ double HTMLProgressElement::value() const
     return !std::isfinite(value) || value < 0 ? 0 : std::min(value, max());
 }
 
-void HTMLProgressElement::setValue(double value, ExceptionCode& ec)
+void HTMLProgressElement::setValue(double value, ExceptionState& es)
 {
     if (!std::isfinite(value)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
     setAttribute(valueAttr, String::number(value >= 0 ? value : 0));
@@ -112,10 +114,10 @@ double HTMLProgressElement::max() const
     return !std::isfinite(max) || max <= 0 ? 1 : max;
 }
 
-void HTMLProgressElement::setMax(double max, ExceptionCode& ec)
+void HTMLProgressElement::setMax(double max, ExceptionState& es)
 {
     if (!std::isfinite(max)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
     setAttribute(maxAttr, String::number(max > 0 ? max : 1));
@@ -155,9 +157,9 @@ void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     RefPtr<ProgressValueElement> value = ProgressValueElement::create(document());
     m_value = value.get();
     m_value->setWidthPercentage(HTMLProgressElement::IndeterminatePosition * 100);
-    bar->appendChild(m_value, ASSERT_NO_EXCEPTION);
+    bar->appendChild(m_value, ASSERT_NO_EXCEPTION_STATE);
 
-    inner->appendChild(bar, ASSERT_NO_EXCEPTION);
+    inner->appendChild(bar, ASSERT_NO_EXCEPTION_STATE);
 }
 
 bool HTMLProgressElement::shouldAppearIndeterminate() const

@@ -31,12 +31,12 @@
 #include "config.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DataTransferItem.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
-
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 
@@ -90,10 +90,10 @@ void ChromiumDataObject::clearAll()
     m_itemList.clear();
 }
 
-void ChromiumDataObject::add(const String& data, const String& type, ExceptionCode& ec)
+void ChromiumDataObject::add(const String& data, const String& type, ExceptionState& es)
 {
     if (!internalAddStringItem(ChromiumDataObjectItem::createFromString(type, data)))
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
 }
 
 void ChromiumDataObject::add(PassRefPtr<File> file, ScriptExecutionContext* context)
@@ -155,7 +155,7 @@ String ChromiumDataObject::getData(const String& type) const
 bool ChromiumDataObject::setData(const String& type, const String& data)
 {
     clearData(type);
-    add(data, type, ASSERT_NO_EXCEPTION);
+    add(data, type, ASSERT_NO_EXCEPTION_STATE);
     return true;
 }
 

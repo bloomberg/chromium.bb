@@ -28,6 +28,7 @@
 #include "config.h"
 #include "core/rendering/RenderMediaControlsChromium.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/platform/graphics/Gradient.h"
@@ -215,8 +216,8 @@ static bool paintMediaSlider(RenderObject* object, const PaintInfo& paintInfo, c
         return true;
 
     for (unsigned i = 0; i < bufferedTimeRanges->length(); ++i) {
-        float start = bufferedTimeRanges->start(i, ASSERT_NO_EXCEPTION);
-        float end = bufferedTimeRanges->end(i, ASSERT_NO_EXCEPTION);
+        float start = bufferedTimeRanges->start(i, ASSERT_NO_EXCEPTION_STATE);
+        float end = bufferedTimeRanges->end(i, ASSERT_NO_EXCEPTION_STATE);
         if (std::isnan(start) || std::isnan(end) || start > currentTime || end < currentTime)
             continue;
         int startPosition = int(start * rect.width() / duration);

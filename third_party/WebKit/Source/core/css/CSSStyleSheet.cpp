@@ -23,6 +23,7 @@
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSCharsetRule.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSParser.h"
@@ -244,27 +245,27 @@ PassRefPtr<CSSRuleList> CSSStyleSheet::rules()
     return nonCharsetRules.release();
 }
 
-unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, ExceptionCode& ec)
+unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, ExceptionState& es)
 {
     ASSERT(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
 
-    ec = 0;
+    es.clearException();
     if (index > length()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return 0;
     }
     CSSParser p(m_contents->parserContext(), UseCounter::getFrom(this));
     RefPtr<StyleRuleBase> rule = p.parseRule(m_contents.get(), ruleString);
 
     if (!rule) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return 0;
     }
     RuleMutationScope mutationScope(this);
 
     bool success = m_contents->wrapperInsertRule(rule, index);
     if (!success) {
-        ec = HierarchyRequestError;
+        es.throwDOMException(HierarchyRequestError);
         return 0;
     }
     if (!m_childRuleCSSOMWrappers.isEmpty())
@@ -273,13 +274,13 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
     return index;
 }
 
-void CSSStyleSheet::deleteRule(unsigned index, ExceptionCode& ec)
+void CSSStyleSheet::deleteRule(unsigned index, ExceptionState& es)
 {
     ASSERT(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
 
-    ec = 0;
+    es.clearException();
     if (index >= length()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
     RuleMutationScope mutationScope(this);
@@ -293,7 +294,7 @@ void CSSStyleSheet::deleteRule(unsigned index, ExceptionCode& ec)
     }
 }
 
-int CSSStyleSheet::addRule(const String& selector, const String& style, int index, ExceptionCode& ec)
+int CSSStyleSheet::addRule(const String& selector, const String& style, int index, ExceptionState& es)
 {
     StringBuilder text;
     text.append(selector);
@@ -302,15 +303,15 @@ int CSSStyleSheet::addRule(const String& selector, const String& style, int inde
     if (!style.isEmpty())
         text.append(' ');
     text.append('}');
-    insertRule(text.toString(), index, ec);
+    insertRule(text.toString(), index, es);
 
     // As per Microsoft documentation, always return -1.
     return -1;
 }
 
-int CSSStyleSheet::addRule(const String& selector, const String& style, ExceptionCode& ec)
+int CSSStyleSheet::addRule(const String& selector, const String& style, ExceptionState& es)
 {
-    return addRule(selector, style, length(), ec);
+    return addRule(selector, style, length(), es);
 }
 
 

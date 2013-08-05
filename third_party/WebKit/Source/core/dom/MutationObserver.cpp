@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-
 #include "core/dom/MutationObserver.h"
 
 #include <algorithm>
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MutationCallback.h"
@@ -81,10 +81,10 @@ bool MutationObserver::validateOptions(MutationObserverOptions options)
         && ((options & CharacterData) || !(options & CharacterDataOldValue));
 }
 
-void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, ExceptionCode& ec)
+void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, ExceptionState& es)
 {
     if (!node) {
-        ec = NotFoundError;
+        es.throwDOMException(NotFoundError);
         return;
     }
 
@@ -111,7 +111,7 @@ void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, 
         options |= AttributeFilter;
 
     if (!validateOptions(options)) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 

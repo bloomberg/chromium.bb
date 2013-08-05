@@ -23,6 +23,8 @@
 #include "core/html/HTMLMeterElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -75,10 +77,10 @@ double HTMLMeterElement::min() const
     return parseToDoubleForNumberType(getAttribute(minAttr), 0);
 }
 
-void HTMLMeterElement::setMin(double min, ExceptionCode& ec)
+void HTMLMeterElement::setMin(double min, ExceptionState& es)
 {
     if (!std::isfinite(min)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
     setAttribute(minAttr, String::number(min));
@@ -89,10 +91,10 @@ double HTMLMeterElement::max() const
     return std::max(parseToDoubleForNumberType(getAttribute(maxAttr), std::max(1.0, min())), min());
 }
 
-void HTMLMeterElement::setMax(double max, ExceptionCode& ec)
+void HTMLMeterElement::setMax(double max, ExceptionState& es)
 {
     if (!std::isfinite(max)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
     setAttribute(maxAttr, String::number(max));
@@ -104,10 +106,10 @@ double HTMLMeterElement::value() const
     return std::min(std::max(value, min()), max());
 }
 
-void HTMLMeterElement::setValue(double value, ExceptionCode& ec)
+void HTMLMeterElement::setValue(double value, ExceptionState& es)
 {
     if (!std::isfinite(value)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
     setAttribute(valueAttr, String::number(value));
@@ -119,10 +121,10 @@ double HTMLMeterElement::low() const
     return std::min(std::max(low, min()), max());
 }
 
-void HTMLMeterElement::setLow(double low, ExceptionCode& ec)
+void HTMLMeterElement::setLow(double low, ExceptionState& es)
 {
     if (!std::isfinite(low)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
     setAttribute(lowAttr, String::number(low));
@@ -134,10 +136,10 @@ double HTMLMeterElement::high() const
     return std::min(std::max(high, low()), max());
 }
 
-void HTMLMeterElement::setHigh(double high, ExceptionCode& ec)
+void HTMLMeterElement::setHigh(double high, ExceptionState& es)
 {
     if (!std::isfinite(high)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
     setAttribute(highAttr, String::number(high));
@@ -149,10 +151,10 @@ double HTMLMeterElement::optimum() const
     return std::min(std::max(optimum, min()), max());
 }
 
-void HTMLMeterElement::setOptimum(double optimum, ExceptionCode& ec)
+void HTMLMeterElement::setOptimum(double optimum, ExceptionState& es)
 {
     if (!std::isfinite(optimum)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
     setAttribute(optimumAttr, String::number(optimum));
@@ -231,9 +233,9 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     m_value = MeterValueElement::create(document());
     m_value->setWidthPercentage(0);
     m_value->updatePseudo();
-    bar->appendChild(m_value, ASSERT_NO_EXCEPTION);
+    bar->appendChild(m_value, ASSERT_NO_EXCEPTION_STATE);
 
-    inner->appendChild(bar, ASSERT_NO_EXCEPTION);
+    inner->appendChild(bar, ASSERT_NO_EXCEPTION_STATE);
 }
 
 } // namespace

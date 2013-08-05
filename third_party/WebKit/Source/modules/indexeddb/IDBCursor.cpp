@@ -253,7 +253,7 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ScriptExecutionContext* context
     }
 
     RefPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_currentPrimaryKey, es);
-    ASSERT(!es);
+    ASSERT(!es.hadException());
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange, request);

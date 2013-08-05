@@ -34,6 +34,7 @@
 
 #include <limits>
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
@@ -122,31 +123,31 @@ double NumberInputType::valueAsDouble() const
     return parseToDoubleForNumberType(element()->value());
 }
 
-void NumberInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionCode& ec) const
+void NumberInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionState& es) const
 {
     // FIXME: We should use numeric_limits<double>::max for number input type.
     const double floatMax = numeric_limits<float>::max();
     if (newValue < -floatMax) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     if (newValue > floatMax) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     element()->setValue(serializeForNumberType(newValue), eventBehavior);
 }
 
-void NumberInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionCode& ec) const
+void NumberInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionState& es) const
 {
     // FIXME: We should use numeric_limits<double>::max for number input type.
     const Decimal floatMax = Decimal::fromDouble(numeric_limits<float>::max());
     if (newValue < -floatMax) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     if (newValue > floatMax) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     element()->setValue(serializeForNumberType(newValue), eventBehavior);

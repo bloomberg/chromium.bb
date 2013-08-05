@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
+class ExceptionState;
 
 class SVGAngle {
     WTF_MAKE_FAST_ALLOCATED;
@@ -49,11 +49,11 @@ public:
     void setValueInSpecifiedUnits(float valueInSpecifiedUnits) { m_valueInSpecifiedUnits = valueInSpecifiedUnits; }
     float valueInSpecifiedUnits() const { return m_valueInSpecifiedUnits; }
 
-    void setValueAsString(const String&, ExceptionCode&);
+    void setValueAsString(const String&, ExceptionState&);
     String valueAsString() const;
 
-    void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionCode&);
-    void convertToSpecifiedUnits(unsigned short unitType, ExceptionCode&);
+    void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState&);
+    void convertToSpecifiedUnits(unsigned short unitType, ExceptionState&);
 
 private:
     SVGAngleType m_unitType;

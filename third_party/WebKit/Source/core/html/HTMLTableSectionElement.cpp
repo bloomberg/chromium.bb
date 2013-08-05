@@ -26,6 +26,7 @@
 #include "core/html/HTMLTableSectionElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLTableElement.h"
@@ -55,30 +56,30 @@ const StylePropertySet* HTMLTableSectionElement::additionalPresentationAttribute
 
 // these functions are rather slow, since we need to get the row at
 // the index... but they aren't used during usual HTML parsing anyway
-PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionCode& ec)
+PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionState& es)
 {
     RefPtr<HTMLTableRowElement> row;
     RefPtr<HTMLCollection> children = rows();
     int numRows = children ? (int)children->length() : 0;
     if (index < -1 || index > numRows)
-        ec = IndexSizeError; // per the DOM
+        es.throwDOMException(IndexSizeError); // per the DOM
     else {
         row = HTMLTableRowElement::create(trTag, document());
         if (numRows == index || index == -1)
-            appendChild(row, ec, AttachLazily);
+            appendChild(row, es, AttachLazily);
         else {
             Node* n;
             if (index < 1)
                 n = firstChild();
             else
                 n = children->item(index);
-            insertBefore(row, n, ec, AttachLazily);
+            insertBefore(row, n, es, AttachLazily);
         }
     }
     return row.release();
 }
 
-void HTMLTableSectionElement::deleteRow(int index, ExceptionCode& ec)
+void HTMLTableSectionElement::deleteRow(int index, ExceptionState& es)
 {
     RefPtr<HTMLCollection> children = rows();
     int numRows = children ? (int)children->length() : 0;
@@ -86,9 +87,9 @@ void HTMLTableSectionElement::deleteRow(int index, ExceptionCode& ec)
         index = numRows - 1;
     if (index >= 0 && index < numRows) {
         RefPtr<Node> row = children->item(index);
-        HTMLElement::removeChild(row.get(), ec);
+        HTMLElement::removeChild(row.get(), es);
     } else {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
     }
 }
 

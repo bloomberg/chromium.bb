@@ -28,6 +28,7 @@
 #include "core/html/HTMLOptionElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
@@ -66,15 +67,15 @@ PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(const QualifiedName& tag
 }
 
 PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document* document, const String& data, const String& value,
-        bool defaultSelected, bool selected, ExceptionCode& ec)
+    bool defaultSelected, bool selected, ExceptionState& es)
 {
     RefPtr<HTMLOptionElement> element = adoptRef(new HTMLOptionElement(optionTag, document));
 
     RefPtr<Text> text = Text::create(document, data.isNull() ? "" : data);
 
-    ec = 0;
-    element->appendChild(text.release(), ec);
-    if (ec)
+    es.clearException();
+    element->appendChild(text.release(), es);
+    if (es.hadException())
         return 0;
 
     if (!value.isNull())
@@ -128,7 +129,7 @@ String HTMLOptionElement::text() const
     return document->displayStringModifiedByEncoding(text).stripWhiteSpace(isHTMLSpace).simplifyWhiteSpace(isHTMLSpace);
 }
 
-void HTMLOptionElement::setText(const String &text, ExceptionCode& ec)
+void HTMLOptionElement::setText(const String &text, ExceptionState& es)
 {
     RefPtr<Node> protectFromMutationEvents(this);
 
@@ -145,7 +146,7 @@ void HTMLOptionElement::setText(const String &text, ExceptionCode& ec)
         toText(child)->setData(text);
     else {
         removeChildren();
-        appendChild(Text::create(document(), text), ec, AttachLazily);
+        appendChild(Text::create(document(), text), es, AttachLazily);
     }
 
     if (selectIsMenuList && select->selectedIndex() != oldSelectedIndex)

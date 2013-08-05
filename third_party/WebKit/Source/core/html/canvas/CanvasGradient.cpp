@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/html/canvas/CanvasGradient.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasStyle.h"
@@ -45,16 +46,16 @@ CanvasGradient::CanvasGradient(const FloatPoint& p0, float r0, const FloatPoint&
     ScriptWrappable::init(this);
 }
 
-void CanvasGradient::addColorStop(float value, const String& color, ExceptionCode& ec)
+void CanvasGradient::addColorStop(float value, const String& color, ExceptionState& es)
 {
     if (!(value >= 0 && value <= 1.0f)) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
     RGBA32 rgba = 0;
     if (!parseColorOrCurrentColor(rgba, color, 0 /*canvas*/)) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 

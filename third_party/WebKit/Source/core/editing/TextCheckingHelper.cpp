@@ -27,6 +27,8 @@
 #include "config.h"
 #include "core/editing/TextCheckingHelper.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Range.h"
@@ -97,7 +99,7 @@ static void findMisspellings(TextCheckerClient* client, const UChar* text, int s
 
 static PassRefPtr<Range> expandToParagraphBoundary(PassRefPtr<Range> range)
 {
-    RefPtr<Range> paragraphRange = range->cloneRange(IGNORE_EXCEPTION);
+    RefPtr<Range> paragraphRange = range->cloneRange(IGNORE_EXCEPTION_STATE);
     setStart(paragraphRange.get(), startOfParagraph(range->startPosition()));
     setEnd(paragraphRange.get(), endOfParagraph(range->endPosition()));
     return paragraphRange;
@@ -158,12 +160,12 @@ PassRefPtr<Range> TextCheckingParagraph::subrange(int characterOffset, int chara
     return TextIterator::subrange(paragraphRange().get(), characterOffset, characterCount);
 }
 
-int TextCheckingParagraph::offsetTo(const Position& position, ExceptionCode& ec) const
+int TextCheckingParagraph::offsetTo(const Position& position, ExceptionState& es) const
 {
     ASSERT(m_checkingRange);
-    RefPtr<Range> range = offsetAsRange()->cloneRange(ASSERT_NO_EXCEPTION);
-    range->setEnd(position.containerNode(), position.computeOffsetInContainerNode(), ec);
-    if (ec)
+    RefPtr<Range> range = offsetAsRange()->cloneRange(ASSERT_NO_EXCEPTION_STATE);
+    range->setEnd(position.containerNode(), position.computeOffsetInContainerNode(), es);
+    if (es.hadException())
         return 0;
     return TextIterator::rangeLength(range.get());
 }
@@ -304,7 +306,7 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
     // Expand the search range to encompass entire paragraphs, since text checking needs that much context.
     // Determine the character offset from the start of the paragraph to the start of the original search range,
     // since we will want to ignore results in this area.
-    RefPtr<Range> paragraphRange = m_range->cloneRange(IGNORE_EXCEPTION);
+    RefPtr<Range> paragraphRange = m_range->cloneRange(IGNORE_EXCEPTION_STATE);
     setStart(paragraphRange.get(), startOfParagraph(m_range->startPosition()));
     int totalRangeLength = TextIterator::rangeLength(paragraphRange.get());
     setEnd(paragraphRange.get(), endOfParagraph(m_range->startPosition()));

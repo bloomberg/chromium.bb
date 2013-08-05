@@ -25,10 +25,9 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class SVGElement;
 class SVGLength;
-
-typedef int ExceptionCode;
 
 enum SVGLengthType {
     LengthTypeUnknown = 0,
@@ -64,22 +63,22 @@ public:
     static FloatPoint resolvePoint(const SVGElement*, SVGUnitTypes::SVGUnitType, const SVGLength& x, const SVGLength& y);
     static float resolveLength(const SVGElement*, SVGUnitTypes::SVGUnitType, const SVGLength&);
 
-    float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit, ExceptionCode&) const;
-    float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit, ExceptionCode&) const;
+    float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit, ExceptionState&) const;
+    float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit, ExceptionState&) const;
 
     bool determineViewport(float& width, float& height) const;
 
 private:
     SVGLengthContext(const SVGElement*, const FloatRect& viewport);
 
-    float convertValueFromUserUnitsToPercentage(float value, SVGLengthMode, ExceptionCode&) const;
-    float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, ExceptionCode&) const;
+    float convertValueFromUserUnitsToPercentage(float value, SVGLengthMode, ExceptionState&) const;
+    float convertValueFromPercentageToUserUnits(float value, SVGLengthMode, ExceptionState&) const;
 
-    float convertValueFromUserUnitsToEMS(float value, ExceptionCode&) const;
-    float convertValueFromEMSToUserUnits(float value, ExceptionCode&) const;
+    float convertValueFromUserUnitsToEMS(float value, ExceptionState&) const;
+    float convertValueFromEMSToUserUnits(float value, ExceptionState&) const;
 
-    float convertValueFromUserUnitsToEXS(float value, ExceptionCode&) const;
-    float convertValueFromEXSToUserUnits(float value, ExceptionCode&) const;
+    float convertValueFromUserUnitsToEXS(float value, ExceptionState&) const;
+    float convertValueFromEXSToUserUnits(float value, ExceptionState&) const;
 
     const SVGElement* m_context;
     FloatRect m_overridenViewport;

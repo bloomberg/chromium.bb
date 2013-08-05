@@ -32,9 +32,9 @@
 #include "core/editing/ReplaceNodeWithSpanCommand.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLElement.h"
-
 #include "wtf/Assertions.h"
 
 namespace WebCore {
@@ -52,17 +52,17 @@ static void swapInNodePreservingAttributesAndChildren(HTMLElement* newNode, HTML
 {
     ASSERT(nodeToReplace->inDocument());
     RefPtr<ContainerNode> parentNode = nodeToReplace->parentNode();
-    parentNode->insertBefore(newNode, nodeToReplace, ASSERT_NO_EXCEPTION);
+    parentNode->insertBefore(newNode, nodeToReplace, ASSERT_NO_EXCEPTION_STATE);
 
     NodeVector children;
     getChildNodes(nodeToReplace, children);
     for (size_t i = 0; i < children.size(); ++i)
-        newNode->appendChild(children[i], ASSERT_NO_EXCEPTION);
+        newNode->appendChild(children[i], ASSERT_NO_EXCEPTION_STATE);
 
     // FIXME: Fix this to send the proper MutationRecords when MutationObservers are present.
     newNode->cloneDataFromElement(*nodeToReplace);
 
-    parentNode->removeChild(nodeToReplace, ASSERT_NO_EXCEPTION);
+    parentNode->removeChild(nodeToReplace, ASSERT_NO_EXCEPTION_STATE);
 }
 
 void ReplaceNodeWithSpanCommand::doApply()

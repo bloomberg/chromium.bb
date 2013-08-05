@@ -31,11 +31,11 @@
 
 #include "XMLViewerCSS.h"
 #include "XMLViewerJS.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/Text.h"
 #include "core/page/Frame.h"
 
@@ -58,7 +58,7 @@ void XMLTreeViewer::transformDocumentToTreeView()
 
     String cssString(reinterpret_cast<const char*>(XMLViewer_css), sizeof(XMLViewer_css));
     RefPtr<Text> text = m_document->createTextNode(cssString);
-    m_document->getElementById("xml-viewer-style")->appendChild(text, IGNORE_EXCEPTION, AttachLazily);
+    m_document->getElementById("xml-viewer-style")->appendChild(text, IGNORE_EXCEPTION_STATE, AttachLazily);
 }
 
 } // namespace WebCore

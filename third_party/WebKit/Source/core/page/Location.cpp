@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/page/Location.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/loader/FrameLoader.h"
@@ -151,13 +152,13 @@ void Location::setHref(DOMWindow* activeWindow, DOMWindow* firstWindow, const St
     setLocation(url, activeWindow, firstWindow);
 }
 
-void Location::setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& protocol, ExceptionCode& ec)
+void Location::setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& protocol, ExceptionState& es)
 {
     if (!m_frame)
         return;
     KURL url = m_frame->document()->url();
     if (!url.setProtocol(protocol)) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
     setLocation(url.string(), activeWindow, firstWindow);

@@ -27,6 +27,7 @@
 #include "core/editing/SplitElementCommand.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
 #include "wtf/Assertions.h"
 
@@ -51,13 +52,13 @@ void SplitElementCommand::executeApply()
     for (Node* node = m_element2->firstChild(); node != m_atChild; node = node->nextSibling())
         children.append(node);
 
-    ExceptionCode ec = 0;
+    TrackExceptionState es;
 
     ContainerNode* parent = m_element2->parentNode();
     if (!parent || !parent->rendererIsEditable())
         return;
-    parent->insertBefore(m_element1.get(), m_element2.get(), ec);
-    if (ec)
+    parent->insertBefore(m_element1.get(), m_element2.get(), es);
+    if (es.hadException())
         return;
 
     // Delete id attribute from the second element because the same id cannot be used for more than one element
@@ -65,7 +66,7 @@ void SplitElementCommand::executeApply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_element1->appendChild(children[i], ec);
+        m_element1->appendChild(children[i], es);
 }
 
 void SplitElementCommand::doApply()
@@ -88,13 +89,13 @@ void SplitElementCommand::doUnapply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_element2->insertBefore(children[i].get(), refChild.get(), IGNORE_EXCEPTION);
+        m_element2->insertBefore(children[i].get(), refChild.get(), IGNORE_EXCEPTION_STATE);
 
     // Recover the id attribute of the original element.
     if (m_element1->hasAttribute(HTMLNames::idAttr))
         m_element2->setAttribute(HTMLNames::idAttr, m_element1->getAttribute(HTMLNames::idAttr));
 
-    m_element1->remove(IGNORE_EXCEPTION);
+    m_element1->remove(IGNORE_EXCEPTION_STATE);
 }
 
 void SplitElementCommand::doReapply()

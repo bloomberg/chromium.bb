@@ -27,10 +27,10 @@
 #ifndef Internals_h
 #define Internals_h
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeList.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include <wtf/ArrayBuffer.h>
@@ -48,24 +48,23 @@ class DOMWindow;
 class Document;
 class DocumentMarker;
 class Element;
+class ExceptionState;
 class Frame;
 class GCObservation;
 class InspectorFrontendChannelDummy;
-class InternalRuntimeFlags;
 class InternalProfilers;
+class InternalRuntimeFlags;
 class InternalSettings;
 class LayerRectList;
+class MallocStatistics;
 class Node;
 class Page;
 class PagePopupController;
 class Range;
 class ScriptExecutionContext;
-class ShadowRoot;
-class MallocStatistics;
 class SerializedScriptValue;
+class ShadowRoot;
 class TypeConversions;
-
-typedef int ExceptionCode;
 
 class Internals : public RefCounted<Internals>
     , public ContextLifecycleObserver
@@ -76,7 +75,7 @@ public:
 
     static void resetToConsistentState(Page*);
 
-    String elementRenderTreeAsText(Element*, ExceptionCode&);
+    String elementRenderTreeAsText(Element*, ExceptionState&);
 
     String address(Node*);
 
@@ -87,123 +86,123 @@ public:
 
     void crash();
 
-    size_t numberOfScopedHTMLStyleChildren(const Node*, ExceptionCode&) const;
-    PassRefPtr<CSSComputedStyleDeclaration> computedStyleIncludingVisitedInfo(Node*, ExceptionCode&) const;
+    size_t numberOfScopedHTMLStyleChildren(const Node*, ExceptionState&) const;
+    PassRefPtr<CSSComputedStyleDeclaration> computedStyleIncludingVisitedInfo(Node*, ExceptionState&) const;
 
-    ShadowRoot* ensureShadowRoot(Element* host, ExceptionCode&);
-    ShadowRoot* shadowRoot(Element* host, ExceptionCode&);
-    ShadowRoot* youngestShadowRoot(Element* host, ExceptionCode&);
-    ShadowRoot* oldestShadowRoot(Element* host, ExceptionCode&);
-    ShadowRoot* youngerShadowRoot(Node* shadow, ExceptionCode&);
-    ShadowRoot* olderShadowRoot(Node* shadow, ExceptionCode&);
-    String shadowRootType(const Node*, ExceptionCode&) const;
-    bool hasShadowInsertionPoint(const Node*, ExceptionCode&) const;
-    bool hasContentElement(const Node*, ExceptionCode&) const;
-    size_t countElementShadow(const Node*, ExceptionCode&) const;
-    Element* includerFor(Node*, ExceptionCode&);
-    String shadowPseudoId(Element*, ExceptionCode&);
-    void setShadowPseudoId(Element*, const String&, ExceptionCode&);
+    ShadowRoot* ensureShadowRoot(Element* host, ExceptionState&);
+    ShadowRoot* shadowRoot(Element* host, ExceptionState&);
+    ShadowRoot* youngestShadowRoot(Element* host, ExceptionState&);
+    ShadowRoot* oldestShadowRoot(Element* host, ExceptionState&);
+    ShadowRoot* youngerShadowRoot(Node* shadow, ExceptionState&);
+    ShadowRoot* olderShadowRoot(Node* shadow, ExceptionState&);
+    String shadowRootType(const Node*, ExceptionState&) const;
+    bool hasShadowInsertionPoint(const Node*, ExceptionState&) const;
+    bool hasContentElement(const Node*, ExceptionState&) const;
+    size_t countElementShadow(const Node*, ExceptionState&) const;
+    Element* includerFor(Node*, ExceptionState&);
+    String shadowPseudoId(Element*, ExceptionState&);
+    void setShadowPseudoId(Element*, const String&, ExceptionState&);
 
     // CSS Animation / Transition testing.
     unsigned numberOfActiveAnimations() const;
-    void suspendAnimations(Document*, ExceptionCode&) const;
-    void resumeAnimations(Document*, ExceptionCode&) const;
-    void pauseAnimations(double pauseTime, ExceptionCode&);
+    void suspendAnimations(Document*, ExceptionState&) const;
+    void resumeAnimations(Document*, ExceptionState&) const;
+    void pauseAnimations(double pauseTime, ExceptionState&);
 
-    PassRefPtr<Element> createContentElement(ExceptionCode&);
-    bool isValidContentSelect(Element* insertionPoint, ExceptionCode&);
-    Node* treeScopeRootNode(Node*, ExceptionCode&);
-    Node* parentTreeScope(Node*, ExceptionCode&);
-    bool hasSelectorForIdInShadow(Element* host, const String& idValue, ExceptionCode&);
-    bool hasSelectorForClassInShadow(Element* host, const String& className, ExceptionCode&);
-    bool hasSelectorForAttributeInShadow(Element* host, const String& attributeName, ExceptionCode&);
-    bool hasSelectorForPseudoClassInShadow(Element* host, const String& pseudoClass, ExceptionCode&);
-    unsigned short compareTreeScopePosition(const Node*, const Node*, ExceptionCode&) const;
+    PassRefPtr<Element> createContentElement(ExceptionState&);
+    bool isValidContentSelect(Element* insertionPoint, ExceptionState&);
+    Node* treeScopeRootNode(Node*, ExceptionState&);
+    Node* parentTreeScope(Node*, ExceptionState&);
+    bool hasSelectorForIdInShadow(Element* host, const String& idValue, ExceptionState&);
+    bool hasSelectorForClassInShadow(Element* host, const String& className, ExceptionState&);
+    bool hasSelectorForAttributeInShadow(Element* host, const String& attributeName, ExceptionState&);
+    bool hasSelectorForPseudoClassInShadow(Element* host, const String& pseudoClass, ExceptionState&);
+    unsigned short compareTreeScopePosition(const Node*, const Node*, ExceptionState&) const;
 
-    bool attached(Node*, ExceptionCode&);
+    bool attached(Node*, ExceptionState&);
 
     // FIXME: Rename these functions if walker is prefered.
-    Node* nextSiblingByWalker(Node*, ExceptionCode&);
-    Node* firstChildByWalker(Node*, ExceptionCode&);
-    Node* lastChildByWalker(Node*, ExceptionCode&);
-    Node* nextNodeByWalker(Node*, ExceptionCode&);
-    Node* previousNodeByWalker(Node*, ExceptionCode&);
+    Node* nextSiblingByWalker(Node*, ExceptionState&);
+    Node* firstChildByWalker(Node*, ExceptionState&);
+    Node* lastChildByWalker(Node*, ExceptionState&);
+    Node* nextNodeByWalker(Node*, ExceptionState&);
+    Node* previousNodeByWalker(Node*, ExceptionState&);
 
     String visiblePlaceholder(Element*);
     void selectColorInColorChooser(Element*, const String& colorValue);
-    Vector<String> formControlStateOfPreviousHistoryItem(ExceptionCode&);
-    void setFormControlStateOfPreviousHistoryItem(const Vector<String>&, ExceptionCode&);
-    void setEnableMockPagePopup(bool, ExceptionCode&);
+    Vector<String> formControlStateOfPreviousHistoryItem(ExceptionState&);
+    void setFormControlStateOfPreviousHistoryItem(const Vector<String>&, ExceptionState&);
+    void setEnableMockPagePopup(bool, ExceptionState&);
     PassRefPtr<PagePopupController> pagePopupController();
 
-    PassRefPtr<ClientRect> unscaledViewportRect(ExceptionCode&);
+    PassRefPtr<ClientRect> unscaledViewportRect(ExceptionState&);
 
-    PassRefPtr<ClientRect> absoluteCaretBounds(ExceptionCode&);
+    PassRefPtr<ClientRect> absoluteCaretBounds(ExceptionState&);
 
-    PassRefPtr<ClientRect> boundingBox(Element*, ExceptionCode&);
+    PassRefPtr<ClientRect> boundingBox(Element*, ExceptionState&);
 
-    PassRefPtr<ClientRectList> inspectorHighlightRects(Document*, ExceptionCode&);
+    PassRefPtr<ClientRectList> inspectorHighlightRects(Document*, ExceptionState&);
 
-    unsigned markerCountForNode(Node*, const String&, ExceptionCode&);
-    PassRefPtr<Range> markerRangeForNode(Node*, const String& markerType, unsigned index, ExceptionCode&);
-    String markerDescriptionForNode(Node*, const String& markerType, unsigned index, ExceptionCode&);
+    unsigned markerCountForNode(Node*, const String&, ExceptionState&);
+    PassRefPtr<Range> markerRangeForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
+    String markerDescriptionForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     void addTextMatchMarker(const Range*, bool isActive);
 
-    void setScrollViewPosition(Document*, long x, long y, ExceptionCode&);
-    void setPagination(Document* document, const String& mode, int gap, ExceptionCode& ec) { setPagination(document, mode, gap, 0, ec); }
-    void setPagination(Document*, const String& mode, int gap, int pageLength, ExceptionCode&);
-    String configurationForViewport(Document*, float devicePixelRatio, int deviceWidth, int deviceHeight, int availableWidth, int availableHeight, ExceptionCode&);
+    void setScrollViewPosition(Document*, long x, long y, ExceptionState&);
+    void setPagination(Document* document, const String& mode, int gap, ExceptionState& ec) { setPagination(document, mode, gap, 0, ec); }
+    void setPagination(Document*, const String& mode, int gap, int pageLength, ExceptionState&);
+    String configurationForViewport(Document*, float devicePixelRatio, int deviceWidth, int deviceHeight, int availableWidth, int availableHeight, ExceptionState&);
 
-    bool wasLastChangeUserEdit(Element* textField, ExceptionCode&);
-    bool elementShouldAutoComplete(Element* inputElement, ExceptionCode&);
-    String suggestedValue(Element* inputElement, ExceptionCode&);
-    void setSuggestedValue(Element* inputElement, const String&, ExceptionCode&);
-    void setEditingValue(Element* inputElement, const String&, ExceptionCode&);
-    void setAutofilled(Element*, bool enabled, ExceptionCode&);
-    void scrollElementToRect(Element*, long x, long y, long w, long h, ExceptionCode&);
+    bool wasLastChangeUserEdit(Element* textField, ExceptionState&);
+    bool elementShouldAutoComplete(Element* inputElement, ExceptionState&);
+    String suggestedValue(Element* inputElement, ExceptionState&);
+    void setSuggestedValue(Element* inputElement, const String&, ExceptionState&);
+    void setEditingValue(Element* inputElement, const String&, ExceptionState&);
+    void setAutofilled(Element*, bool enabled, ExceptionState&);
+    void scrollElementToRect(Element*, long x, long y, long w, long h, ExceptionState&);
 
-    void paintControlTints(Document*, ExceptionCode&);
+    void paintControlTints(Document*, ExceptionState&);
 
-    PassRefPtr<Range> rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength, ExceptionCode&);
-    unsigned locationFromRange(Element* scope, const Range*, ExceptionCode&);
-    unsigned lengthFromRange(Element* scope, const Range*, ExceptionCode&);
-    String rangeAsText(const Range*, ExceptionCode&);
+    PassRefPtr<Range> rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength, ExceptionState&);
+    unsigned locationFromRange(Element* scope, const Range*, ExceptionState&);
+    unsigned lengthFromRange(Element* scope, const Range*, ExceptionState&);
+    String rangeAsText(const Range*, ExceptionState&);
 
-    PassRefPtr<DOMPoint> touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionCode&);
-    Node* touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionCode&);
-    PassRefPtr<DOMPoint> touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionCode&);
-    Node* touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionCode&);
-    PassRefPtr<ClientRect> bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document*, ExceptionCode&);
+    PassRefPtr<DOMPoint> touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionState&);
+    Node* touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionState&);
+    PassRefPtr<DOMPoint> touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionState&);
+    Node* touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionState&);
+    PassRefPtr<ClientRect> bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document*, ExceptionState&);
 
-    int lastSpellCheckRequestSequence(Document*, ExceptionCode&);
-    int lastSpellCheckProcessedSequence(Document*, ExceptionCode&);
+    int lastSpellCheckRequestSequence(Document*, ExceptionState&);
+    int lastSpellCheckProcessedSequence(Document*, ExceptionState&);
 
     Vector<String> userPreferredLanguages() const;
     void setUserPreferredLanguages(const Vector<String>&);
 
-    unsigned wheelEventHandlerCount(Document*, ExceptionCode&);
-    unsigned touchEventHandlerCount(Document*, ExceptionCode&);
-    LayerRectList* touchEventTargetLayerRects(Document*, ExceptionCode&);
-    unsigned touchEventTargetLayerRectsUpdateCount(Document*, ExceptionCode&);
+    unsigned wheelEventHandlerCount(Document*, ExceptionState&);
+    unsigned touchEventHandlerCount(Document*, ExceptionState&);
+    LayerRectList* touchEventTargetLayerRects(Document*, ExceptionState&);
+    unsigned touchEventTargetLayerRectsUpdateCount(Document*, ExceptionState&);
     virtual void touchEventTargetRectsChanged(const LayerHitTestRects&);
 
     // This is used to test rect based hit testing like what's done on touch screens.
     PassRefPtr<NodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
-        unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowShadowContent, bool allowChildFrameContent, ExceptionCode&) const;
+        unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowShadowContent, bool allowChildFrameContent, ExceptionState&) const;
 
     void emitInspectorDidBeginFrame();
     void emitInspectorDidCancelFrame();
 
-    bool hasSpellingMarker(Document*, int from, int length, ExceptionCode&);
-    bool hasGrammarMarker(Document*, int from, int length, ExceptionCode&);
-    void setContinuousSpellCheckingEnabled(bool enabled, ExceptionCode&);
+    bool hasSpellingMarker(Document*, int from, int length, ExceptionState&);
+    bool hasGrammarMarker(Document*, int from, int length, ExceptionState&);
+    void setContinuousSpellCheckingEnabled(bool enabled, ExceptionState&);
 
-    bool isOverwriteModeEnabled(Document*, ExceptionCode&);
-    void toggleOverwriteModeEnabled(Document*, ExceptionCode&);
+    bool isOverwriteModeEnabled(Document*, ExceptionState&);
+    void toggleOverwriteModeEnabled(Document*, ExceptionState&);
 
-    unsigned numberOfScrollableAreas(Document*, ExceptionCode&);
+    unsigned numberOfScrollableAreas(Document*, ExceptionState&);
 
-    bool isPageBoxVisible(Document*, int pageNumber, ExceptionCode&);
+    bool isPageBoxVisible(Document*, int pageNumber, ExceptionState&);
 
     static const char* internalsId;
 
@@ -212,24 +211,24 @@ public:
     InternalProfilers* profilers();
     unsigned workerThreadCount() const;
 
-    void setDeviceProximity(Document*, const String& eventType, double value, double min, double max, ExceptionCode&);
+    void setDeviceProximity(Document*, const String& eventType, double value, double min, double max, ExceptionState&);
 
-    String layerTreeAsText(Document*, unsigned flags, ExceptionCode&) const;
-    String layerTreeAsText(Document*, ExceptionCode&) const;
-    String elementLayerTreeAsText(Element*, unsigned flags, ExceptionCode&) const;
-    String elementLayerTreeAsText(Element*, ExceptionCode&) const;
+    String layerTreeAsText(Document*, unsigned flags, ExceptionState&) const;
+    String layerTreeAsText(Document*, ExceptionState&) const;
+    String elementLayerTreeAsText(Element*, unsigned flags, ExceptionState&) const;
+    String elementLayerTreeAsText(Element*, ExceptionState&) const;
 
-    PassRefPtr<NodeList> paintOrderListBeforePromote(Element*, ExceptionCode&);
-    PassRefPtr<NodeList> paintOrderListAfterPromote(Element*, ExceptionCode&);
+    PassRefPtr<NodeList> paintOrderListBeforePromote(Element*, ExceptionState&);
+    PassRefPtr<NodeList> paintOrderListAfterPromote(Element*, ExceptionState&);
 
-    void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionCode&);
+    void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionState&);
 
-    String repaintRectsAsText(Document*, ExceptionCode&) const;
-    String scrollingStateTreeAsText(Document*, ExceptionCode&) const;
-    String mainThreadScrollingReasons(Document*, ExceptionCode&) const;
-    PassRefPtr<ClientRectList> nonFastScrollableRects(Document*, ExceptionCode&) const;
+    String repaintRectsAsText(Document*, ExceptionState&) const;
+    String scrollingStateTreeAsText(Document*, ExceptionState&) const;
+    String mainThreadScrollingReasons(Document*, ExceptionState&) const;
+    PassRefPtr<ClientRectList> nonFastScrollableRects(Document*, ExceptionState&) const;
 
-    void garbageCollectDocumentResources(Document*, ExceptionCode&) const;
+    void garbageCollectDocumentResources(Document*, ExceptionState&) const;
     void evictAllResources() const;
 
     void allowRoundingHacks() const;
@@ -243,7 +242,7 @@ public:
     PassRefPtr<DOMWindow> openDummyInspectorFrontend(const String& url);
     void closeDummyInspectorFrontend();
     Vector<unsigned long> setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);
-    void setInspectorResourcesDataSizeLimits(int maximumResourcesContentSize, int maximumSingleResourceContentSize, ExceptionCode&);
+    void setInspectorResourcesDataSizeLimits(int maximumResourcesContentSize, int maximumSingleResourceContentSize, ExceptionState&);
 
     String counterValue(Element*);
 
@@ -252,13 +251,13 @@ public:
     Vector<String> allIconURLs(Document*) const;
 
     int numberOfPages(float pageWidthInPixels = 800, float pageHeightInPixels = 600);
-    String pageProperty(String, int, ExceptionCode& = ASSERT_NO_EXCEPTION) const;
-    String pageSizeAndMarginsInPixels(int, int, int, int, int, int, int, ExceptionCode& = ASSERT_NO_EXCEPTION) const;
+    String pageProperty(String, int, ExceptionState& = ASSERT_NO_EXCEPTION_STATE) const;
+    String pageSizeAndMarginsInPixels(int, int, int, int, int, int, int, ExceptionState& = ASSERT_NO_EXCEPTION_STATE) const;
 
-    void setDeviceScaleFactor(float scaleFactor, ExceptionCode&);
-    void setPageScaleFactor(float scaleFactor, int x, int y, ExceptionCode&);
+    void setDeviceScaleFactor(float scaleFactor, ExceptionState&);
+    void setPageScaleFactor(float scaleFactor, int x, int y, ExceptionState&);
 
-    void setIsCursorVisible(Document*, bool, ExceptionCode&);
+    void setIsCursorVisible(Document*, bool, ExceptionState&);
 
     void webkitWillEnterFullScreenForElement(Document*, Element*);
     void webkitDidEnterFullScreenForElement(Document*, Element*);
@@ -273,28 +272,28 @@ public:
 
     Vector<String> getReferencedFilePaths() const;
 
-    void startTrackingRepaints(Document*, ExceptionCode&);
-    void stopTrackingRepaints(Document*, ExceptionCode&);
+    void startTrackingRepaints(Document*, ExceptionState&);
+    void stopTrackingRepaints(Document*, ExceptionState&);
 
     PassRefPtr<ArrayBuffer> serializeObject(PassRefPtr<SerializedScriptValue>) const;
     PassRefPtr<SerializedScriptValue> deserializeBuffer(PassRefPtr<ArrayBuffer>) const;
 
     void setUsesOverlayScrollbars(bool enabled);
 
-    String getCurrentCursorInfo(Document*, ExceptionCode&);
+    String getCurrentCursorInfo(Document*, ExceptionState&);
 
-    String markerTextForListItem(Element*, ExceptionCode&);
+    String markerTextForListItem(Element*, ExceptionState&);
 
     void forceReload(bool endToEnd);
 
     void enableMockSpeechSynthesizer();
 
-    String getImageSourceURL(Element*, ExceptionCode&);
+    String getImageSourceURL(Element*, ExceptionState&);
 
     bool isSelectPopupVisible(Node*);
 
-    PassRefPtr<ClientRect> selectionBounds(ExceptionCode&);
-    String baseURL(Document*, ExceptionCode&);
+    PassRefPtr<ClientRect> selectionBounds(ExceptionState&);
+    String baseURL(Document*, ExceptionState&);
 
     bool loseSharedGraphicsContext3D();
 
@@ -304,7 +303,7 @@ private:
     Frame* frame() const;
     Vector<String> iconURLs(Document*, int iconTypesMask) const;
 
-    DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionCode&);
+    DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionState&);
     RefPtr<DOMWindow> m_frontendWindow;
     OwnPtr<InspectorFrontendChannelDummy> m_frontendChannel;
     RefPtr<InternalRuntimeFlags> m_runtimeFlags;

@@ -40,13 +40,16 @@
 namespace WebCore {
 
 class Blob;
-class Document;
 class DOMFormData;
+class Document;
+class ExceptionState;
 class ResourceRequest;
 class SecurityOrigin;
 class SharedBuffer;
 class TextResourceDecoder;
 class ThreadableLoader;
+
+typedef int ExceptionCode;
 
 class XMLHttpRequest : public ScriptWrappable, public RefCounted<XMLHttpRequest>, public EventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
@@ -82,46 +85,46 @@ public:
     virtual ScriptExecutionContext* scriptExecutionContext() const;
 
     const KURL& url() const { return m_url; }
-    String statusText(ExceptionCode&) const;
-    int status(ExceptionCode&) const;
+    String statusText(ExceptionState&) const;
+    int status(ExceptionState&) const;
     State readyState() const;
     bool withCredentials() const { return m_includeCredentials; }
-    void setWithCredentials(bool, ExceptionCode&);
-    void open(const String& method, const KURL&, ExceptionCode&);
-    void open(const String& method, const KURL&, bool async, ExceptionCode&);
-    void open(const String& method, const KURL&, bool async, const String& user, ExceptionCode&);
-    void open(const String& method, const KURL&, bool async, const String& user, const String& password, ExceptionCode&);
-    void send(ExceptionCode&);
-    void send(Document*, ExceptionCode&);
-    void send(const String&, ExceptionCode&);
-    void send(Blob*, ExceptionCode&);
-    void send(DOMFormData*, ExceptionCode&);
-    void send(ArrayBuffer*, ExceptionCode&);
-    void send(ArrayBufferView*, ExceptionCode&);
+    void setWithCredentials(bool, ExceptionState&);
+    void open(const String& method, const KURL&, ExceptionState&);
+    void open(const String& method, const KURL&, bool async, ExceptionState&);
+    void open(const String& method, const KURL&, bool async, const String& user, ExceptionState&);
+    void open(const String& method, const KURL&, bool async, const String& user, const String& password, ExceptionState&);
+    void send(ExceptionState&);
+    void send(Document*, ExceptionState&);
+    void send(const String&, ExceptionState&);
+    void send(Blob*, ExceptionState&);
+    void send(DOMFormData*, ExceptionState&);
+    void send(ArrayBuffer*, ExceptionState&);
+    void send(ArrayBufferView*, ExceptionState&);
     void abort();
-    void setRequestHeader(const AtomicString& name, const String& value, ExceptionCode&);
+    void setRequestHeader(const AtomicString& name, const String& value, ExceptionState&);
     void overrideMimeType(const String& override);
-    String getAllResponseHeaders(ExceptionCode&) const;
-    String getResponseHeader(const AtomicString& name, ExceptionCode&) const;
-    ScriptString responseText(ExceptionCode&);
-    Document* responseXML(ExceptionCode&);
-    Blob* responseBlob(ExceptionCode&);
+    String getAllResponseHeaders(ExceptionState&) const;
+    String getResponseHeader(const AtomicString& name, ExceptionState&) const;
+    ScriptString responseText(ExceptionState&);
+    Document* responseXML(ExceptionState&);
+    Blob* responseBlob(ExceptionState&);
     unsigned long timeout() const { return m_timeoutMilliseconds; }
-    void setTimeout(unsigned long timeout, ExceptionCode&);
+    void setTimeout(unsigned long timeout, ExceptionState&);
 
-    void sendForInspectorXHRReplay(PassRefPtr<FormData>, ExceptionCode&);
+    void sendForInspectorXHRReplay(PassRefPtr<FormData>, ExceptionState&);
 
     // Expose HTTP validation methods for other untrusted requests.
     static bool isAllowedHTTPMethod(const String&);
     static String uppercaseKnownHTTPMethod(const String&);
     static bool isAllowedHTTPHeader(const String&);
 
-    void setResponseType(const String&, ExceptionCode&);
+    void setResponseType(const String&, ExceptionState&);
     String responseType();
     ResponseTypeCode responseTypeCode() const { return m_responseTypeCode; }
 
     // response attribute has custom getter.
-    ArrayBuffer* responseArrayBuffer(ExceptionCode&);
+    ArrayBuffer* responseArrayBuffer(ExceptionState&);
 
     void setLastSendLineNumber(unsigned lineNumber) { m_lastSendLineNumber = lineNumber; }
     void setLastSendURL(const String& url) { m_lastSendURL = url; }
@@ -163,8 +166,8 @@ private:
 
     bool areMethodAndURLValidForSend();
 
-    bool initSend(ExceptionCode&);
-    void sendBytesData(const void*, size_t, ExceptionCode&);
+    bool initSend(ExceptionState&);
+    void sendBytesData(const void*, size_t, ExceptionState&);
 
     String getRequestHeader(const AtomicString& name) const;
     void setRequestHeaderInternal(const AtomicString& name, const String& value);
@@ -178,7 +181,7 @@ private:
     void clearResponseBuffers();
     void clearRequest();
 
-    void createRequest(ExceptionCode&);
+    void createRequest(ExceptionState&);
 
     void genericError();
     void networkError();

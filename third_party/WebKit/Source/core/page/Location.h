@@ -39,10 +39,9 @@
 namespace WebCore {
 
 class DOMWindow;
+class ExceptionState;
 class Frame;
 class KURL;
-
-typedef int ExceptionCode;
 
 class Location : public ScriptWrappable, public RefCounted<Location>, public DOMWindowProperty {
 public:
@@ -55,7 +54,7 @@ public:
     void replace(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
     void reload(DOMWindow* activeWindow);
 
-    void setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&, ExceptionCode&);
+    void setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&, ExceptionState&);
     String protocol() const;
     void setHost(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
     String host() const;

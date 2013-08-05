@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
@@ -53,7 +53,6 @@
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WebSocketHandshake.h"
-
 #include "wtf/ArrayBuffer.h"
 #include "wtf/Deque.h"
 #include "wtf/FastMalloc.h"
@@ -435,7 +434,7 @@ bool MainThreadWebSocketChannel::processBuffer()
             if (!m_handshake->serverSetCookie().isEmpty()) {
                 if (cookiesEnabled(m_document)) {
                     // Exception (for sandboxed documents) ignored.
-                    m_document->setCookie(m_handshake->serverSetCookie(), IGNORE_EXCEPTION);
+                    m_document->setCookie(m_handshake->serverSetCookie(), IGNORE_EXCEPTION_STATE);
                 }
             }
             // FIXME: handle set-cookie2.

@@ -27,9 +27,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class SVGElement;
-
-typedef int ExceptionCode;
 
 class SVGLocatable {
 public:
@@ -44,7 +43,7 @@ public:
     virtual SVGRect getBBox(StyleUpdateStrategy) = 0;
     virtual AffineTransform getCTM(StyleUpdateStrategy) = 0;
     virtual AffineTransform getScreenCTM(StyleUpdateStrategy) = 0;
-    AffineTransform getTransformToElement(SVGElement*, ExceptionCode&, StyleUpdateStrategy = AllowStyleUpdate);
+    AffineTransform getTransformToElement(SVGElement*, ExceptionState&, StyleUpdateStrategy = AllowStyleUpdate);
 
     static SVGElement* nearestViewportElement(const SVGElement*);
     static SVGElement* farthestViewportElement(const SVGElement*);

@@ -28,6 +28,7 @@
 #include "core/platform/chromium/ClipboardChromium.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/DataTransferItemList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -62,9 +63,9 @@ public:
 
     virtual size_t length() const;
     virtual PassRefPtr<DataTransferItem> item(unsigned long index) OVERRIDE;
-    virtual void deleteItem(unsigned long index, ExceptionCode&) OVERRIDE;
+    virtual void deleteItem(unsigned long index, ExceptionState&) OVERRIDE;
     virtual void clear() OVERRIDE;
-    virtual void add(const String& data, const String& type, ExceptionCode&) OVERRIDE;
+    virtual void add(const String& data, const String& type, ExceptionState&) OVERRIDE;
     virtual void add(PassRefPtr<File>) OVERRIDE;
 
 private:
@@ -103,10 +104,10 @@ PassRefPtr<DataTransferItem> DataTransferItemListPolicyWrapper::item(unsigned lo
     return DataTransferItemPolicyWrapper::create(m_clipboard, item);
 }
 
-void DataTransferItemListPolicyWrapper::deleteItem(unsigned long index, ExceptionCode& ec)
+void DataTransferItemListPolicyWrapper::deleteItem(unsigned long index, ExceptionState& es)
 {
     if (!m_clipboard->canWriteData()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     m_dataObject->deleteItem(index);
@@ -119,11 +120,11 @@ void DataTransferItemListPolicyWrapper::clear()
     m_dataObject->clearAll();
 }
 
-void DataTransferItemListPolicyWrapper::add(const String& data, const String& type, ExceptionCode& ec)
+void DataTransferItemListPolicyWrapper::add(const String& data, const String& type, ExceptionState& es)
 {
     if (!m_clipboard->canWriteData())
         return;
-    m_dataObject->add(data, type, ec);
+    m_dataObject->add(data, type, es);
 }
 
 void DataTransferItemListPolicyWrapper::add(PassRefPtr<File> file)

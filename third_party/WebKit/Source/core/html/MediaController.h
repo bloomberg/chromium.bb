@@ -38,8 +38,9 @@
 namespace WebCore {
 
 class Clock;
-class HTMLMediaElement;
 class Event;
+class ExceptionState;
+class HTMLMediaElement;
 class ScriptExecutionContext;
 
 class MediaController : public RefCounted<MediaController>, public ScriptWrappable, public MediaControllerInterface, public EventTarget {
@@ -59,7 +60,7 @@ public:
 
     virtual double duration() const;
     virtual double currentTime() const;
-    virtual void setCurrentTime(double, ExceptionCode&);
+    virtual void setCurrentTime(double, ExceptionState&);
 
     virtual bool paused() const { return m_paused; }
     virtual void play();
@@ -73,7 +74,7 @@ public:
     virtual void setPlaybackRate(double);
 
     virtual double volume() const { return m_volume; }
-    virtual void setVolume(double, ExceptionCode&);
+    virtual void setVolume(double, ExceptionState&);
 
     virtual bool muted() const { return m_muted; }
     virtual void setMuted(bool);

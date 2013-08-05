@@ -24,6 +24,7 @@
 #include "core/html/HTMLScriptElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
@@ -93,7 +94,7 @@ void HTMLScriptElement::setText(const String &value)
     if (numChildren > 0)
         removeChildren();
 
-    appendChild(document()->createTextNode(value.impl()), IGNORE_EXCEPTION);
+    appendChild(document()->createTextNode(value.impl()), IGNORE_EXCEPTION_STATE);
 }
 
 void HTMLScriptElement::setAsync(bool async)

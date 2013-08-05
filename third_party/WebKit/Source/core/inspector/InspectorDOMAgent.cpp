@@ -33,6 +33,8 @@
 
 #include "HTMLNames.h"
 #include "InspectorFrontend.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CharacterData.h"
@@ -212,10 +214,10 @@ void RevalidateStyleAttributeTask::onTimer(Timer<RevalidateStyleAttributeTask>*)
     m_elements.clear();
 }
 
-String InspectorDOMAgent::toErrorString(const ExceptionCode& ec)
+String InspectorDOMAgent::toErrorString(ExceptionState& es)
 {
-    if (ec)
-        return DOMException::getErrorName(ec);
+    if (es.hadException())
+        return DOMException::getErrorName(es);
     return "";
 }
 
@@ -541,9 +543,9 @@ void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, cons
     if (!node)
         return;
 
-    ExceptionCode ec = 0;
-    RefPtr<Element> element = node->querySelector(selectors, ec);
-    if (ec) {
+    TrackExceptionState es;
+    RefPtr<Element> element = node->querySelector(selectors, es);
+    if (es.hadException()) {
         *errorString = "DOM Error while querying";
         return;
     }
@@ -558,9 +560,9 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
     if (!node)
         return;
 
-    ExceptionCode ec = 0;
-    RefPtr<NodeList> nodes = node->querySelectorAll(selectors, ec);
-    if (ec) {
+    TrackExceptionState es;
+    RefPtr<NodeList> nodes = node->querySelectorAll(selectors, es);
+    if (es.hadException()) {
         *errorString = "DOM Error while querying";
         return;
     }
@@ -741,9 +743,9 @@ void InspectorDOMAgent::setNodeName(ErrorString* errorString, int nodeId, const 
     if (!oldNode || !oldNode->isElementNode())
         return;
 
-    ExceptionCode ec = 0;
-    RefPtr<Element> newElem = oldNode->document()->createElement(tagName, ec);
-    if (ec)
+    TrackExceptionState es;
+    RefPtr<Element> newElem = oldNode->document()->createElement(tagName, es);
+    if (es.hadException())
         return;
 
     // Copy over the original node's attributes.
@@ -976,15 +978,15 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         // XPath evaluation
         for (Vector<Document*>::iterator it = docs.begin(); it != docs.end(); ++it) {
             Document* document = *it;
-            ExceptionCode ec = 0;
-            RefPtr<XPathResult> result = DocumentXPathEvaluator::evaluate(document, whitespaceTrimmedQuery, document, 0, XPathResult::ORDERED_NODE_SNAPSHOT_TYPE, 0, ec);
-            if (ec || !result)
+            TrackExceptionState es;
+            RefPtr<XPathResult> result = DocumentXPathEvaluator::evaluate(document, whitespaceTrimmedQuery, document, 0, XPathResult::ORDERED_NODE_SNAPSHOT_TYPE, 0, es);
+            if (es.hadException() || !result)
                 continue;
 
-            unsigned long size = result->snapshotLength(ec);
-            for (unsigned long i = 0; !ec && i < size; ++i) {
-                Node* node = result->snapshotItem(i, ec);
-                if (ec)
+            unsigned long size = result->snapshotLength(es);
+            for (unsigned long i = 0; !es.hadException() && i < size; ++i) {
+                Node* node = result->snapshotItem(i, es);
+                if (es.hadException())
                     break;
 
                 if (node->nodeType() == Node::ATTRIBUTE_NODE)
@@ -996,9 +998,9 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         // Selector evaluation
         for (Vector<Document*>::iterator it = docs.begin(); it != docs.end(); ++it) {
             Document* document = *it;
-            ExceptionCode ec = 0;
-            RefPtr<NodeList> nodeList = document->querySelectorAll(whitespaceTrimmedQuery, ec);
-            if (ec || !nodeList)
+            TrackExceptionState es;
+            RefPtr<NodeList> nodeList = document->querySelectorAll(whitespaceTrimmedQuery, es);
+            if (es.hadException() || !nodeList)
                 continue;
 
             unsigned size = nodeList->length();
@@ -1239,16 +1241,16 @@ void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetE
 
 void InspectorDOMAgent::undo(ErrorString* errorString)
 {
-    ExceptionCode ec = 0;
-    m_history->undo(ec);
-    *errorString = InspectorDOMAgent::toErrorString(ec);
+    TrackExceptionState es;
+    m_history->undo(es);
+    *errorString = InspectorDOMAgent::toErrorString(es);
 }
 
 void InspectorDOMAgent::redo(ErrorString* errorString)
 {
-    ExceptionCode ec = 0;
-    m_history->redo(ec);
-    *errorString = InspectorDOMAgent::toErrorString(ec);
+    TrackExceptionState es;
+    m_history->redo(es);
+    *errorString = InspectorDOMAgent::toErrorString(es);
 }
 
 void InspectorDOMAgent::markUndoableState(ErrorString*)

@@ -33,9 +33,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class FloatRect;
-
-typedef int ExceptionCode;
 
 class CanvasPathMethods {
 public:
@@ -46,8 +45,8 @@ public:
     void lineTo(float x, float y);
     void quadraticCurveTo(float cpx, float cpy, float x, float y);
     void bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y);
-    void arcTo(float x0, float y0, float x1, float y1, float radius, ExceptionCode&);
-    void arc(float x, float y, float r, float sa, float ea, bool anticlockwise, ExceptionCode&);
+    void arcTo(float x0, float y0, float x1, float y1, float radius, ExceptionState&);
+    void arc(float x, float y, float r, float sa, float ea, bool anticlockwise, ExceptionState&);
     void rect(float x, float y, float width, float height);
 
     virtual bool isTransformInvertible() const { return true; }

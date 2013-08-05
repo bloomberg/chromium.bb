@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-
 #include "core/html/canvas/WebGLDebugShaders.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/canvas/WebGLShader.h"
 #include "core/platform/graphics/Extensions3D.h"
@@ -53,9 +53,9 @@ PassRefPtr<WebGLDebugShaders> WebGLDebugShaders::create(WebGLRenderingContext* c
     return adoptRef(new WebGLDebugShaders(context));
 }
 
-String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader, ExceptionCode& ec)
+String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader, ExceptionState& es)
 {
-    UNUSED_PARAM(ec);
+    UNUSED_PARAM(es);
     if (isLost())
         return String();
     if (!m_context->validateWebGLObject("getTranslatedShaderSource", shader))

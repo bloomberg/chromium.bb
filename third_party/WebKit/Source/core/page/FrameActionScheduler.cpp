@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/page/FrameActionScheduler.h"
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Event.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/Node.h"
 #include "wtf/Vector.h"
 
@@ -45,7 +45,7 @@ public:
     {
         // Only dispatch events to nodes that are in the document
         if (m_eventTarget->inDocument())
-            m_eventTarget->dispatchEvent(m_event, IGNORE_EXCEPTION);
+            m_eventTarget->dispatchEvent(m_event, IGNORE_EXCEPTION_STATE);
     }
 
 private:

@@ -31,16 +31,15 @@
 #ifndef DOMEditor_h
 #define DOMEditor_h
 
-#include "core/dom/ExceptionCode.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class Element;
+class ExceptionState;
 class InspectorHistory;
 class Node;
 class Text;
-
 
 typedef String ErrorString;
 
@@ -50,14 +49,14 @@ public:
     explicit DOMEditor(InspectorHistory*);
     ~DOMEditor();
 
-    bool insertBefore(Node* parentNode, PassRefPtr<Node>, Node* anchorNode, ExceptionCode&);
-    bool removeChild(Node* parentNode, Node*, ExceptionCode&);
-    bool setAttribute(Element*, const String& name, const String& value, ExceptionCode&);
-    bool removeAttribute(Element*, const String& name, ExceptionCode&);
-    bool setOuterHTML(Node*, const String& html, Node** newNode, ExceptionCode&);
-    bool replaceWholeText(Text*, const String& text, ExceptionCode&);
-    bool replaceChild(Node* parentNode, PassRefPtr<Node> newNode, Node* oldNode, ExceptionCode&);
-    bool setNodeValue(Node* parentNode, const String& value, ExceptionCode&);
+    bool insertBefore(Node* parentNode, PassRefPtr<Node>, Node* anchorNode, ExceptionState&);
+    bool removeChild(Node* parentNode, Node*, ExceptionState&);
+    bool setAttribute(Element*, const String& name, const String& value, ExceptionState&);
+    bool removeAttribute(Element*, const String& name, ExceptionState&);
+    bool setOuterHTML(Node*, const String& html, Node** newNode, ExceptionState&);
+    bool replaceWholeText(Text*, const String& text, ExceptionState&);
+    bool replaceChild(Node* parentNode, PassRefPtr<Node> newNode, Node* oldNode, ExceptionState&);
+    bool setNodeValue(Node* parentNode, const String& value, ExceptionState&);
 
     bool insertBefore(Node* parentNode, PassRefPtr<Node>, Node* anchorNode, ErrorString*);
     bool removeChild(Node* parentNode, Node*, ErrorString*);

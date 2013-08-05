@@ -28,6 +28,7 @@
 #include "StorageAreaProxy.h"
 
 #include "StorageNamespaceProxy.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
@@ -61,74 +62,75 @@ StorageAreaProxy::~StorageAreaProxy()
 {
 }
 
-unsigned StorageAreaProxy::length(ExceptionCode& ec, Frame* frame)
+unsigned StorageAreaProxy::length(ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return 0;
     }
-    ec = 0;
+    es.clearException();
     return m_storageArea->length();
 }
 
-String StorageAreaProxy::key(unsigned index, ExceptionCode& ec, Frame* frame)
+String StorageAreaProxy::key(unsigned index, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return String();
     }
-    ec = 0;
+    es.clearException();
     return m_storageArea->key(index);
 }
 
-String StorageAreaProxy::getItem(const String& key, ExceptionCode& ec, Frame* frame)
+String StorageAreaProxy::getItem(const String& key, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return String();
     }
-    ec = 0;
+    es.clearException();
     return m_storageArea->getItem(key);
 }
 
-void StorageAreaProxy::setItem(const String& key, const String& value, ExceptionCode& ec, Frame* frame)
+void StorageAreaProxy::setItem(const String& key, const String& value, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
     WebKit::WebStorageArea::Result result = WebKit::WebStorageArea::ResultOK;
     m_storageArea->setItem(key, value, frame->document()->url(), result);
-    ec = (result == WebKit::WebStorageArea::ResultOK) ? 0 : QuotaExceededError;
+    if (result != WebKit::WebStorageArea::ResultOK)
+        es.throwDOMException(QuotaExceededError);
 }
 
-void StorageAreaProxy::removeItem(const String& key, ExceptionCode& ec, Frame* frame)
+void StorageAreaProxy::removeItem(const String& key, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
-    ec = 0;
+    es.clearException();
     m_storageArea->removeItem(key, frame->document()->url());
 }
 
-void StorageAreaProxy::clear(ExceptionCode& ec, Frame* frame)
+void StorageAreaProxy::clear(ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
-    ec = 0;
+    es.clearException();
     m_storageArea->clear(frame->document()->url());
 }
 
-bool StorageAreaProxy::contains(const String& key, ExceptionCode& ec, Frame* frame)
+bool StorageAreaProxy::contains(const String& key, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return false;
     }
-    return !getItem(key, ec, frame).isNull();
+    return !getItem(key, es, frame).isNull();
 }
 
 bool StorageAreaProxy::canAccessStorage(Frame* frame)

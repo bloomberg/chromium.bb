@@ -33,14 +33,15 @@
 #ifndef DOMWindowBase64_h
 #define DOMWindowBase64_h
 
-#include "core/dom/ExceptionCode.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
+class ExceptionState;
+
 namespace DOMWindowBase64 {
-String btoa(void*, const String& stringToEncode, ExceptionCode&);
-String atob(void*, const String& encodedString, ExceptionCode&);
+String btoa(void*, const String& stringToEncode, ExceptionState&);
+String atob(void*, const String& encodedString, ExceptionState&);
 }
 
 } // namespace WebCore

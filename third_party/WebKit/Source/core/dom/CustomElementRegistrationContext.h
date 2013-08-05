@@ -34,7 +34,6 @@
 #include "core/dom/CustomElementDescriptor.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
@@ -47,6 +46,7 @@ class CustomElementConstructorBuilder;
 class CustomElementDefinition;
 class Document;
 class Element;
+class ExceptionState;
 
 class CustomElementRegistrationContext : public RefCounted<CustomElementRegistrationContext> {
 public:
@@ -61,7 +61,7 @@ public:
     static bool isCustomTagName(const AtomicString& localName);
 
     // Definitions
-    void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, ExceptionCode&);
+    void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, ExceptionState&);
 
     // Instance creation
     PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&);

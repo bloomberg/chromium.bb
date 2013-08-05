@@ -31,10 +31,10 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class Frame;
 class SecurityOrigin;
 class StorageSyncManager;
-typedef int ExceptionCode;
 enum StorageType { LocalStorage, SessionStorage };
 
 class StorageArea {
@@ -43,13 +43,13 @@ public:
 
     // The HTML5 DOM Storage API
     // FIXME: We should pass Document instead of Frame. Also, that parameter should go first.
-    virtual unsigned length(ExceptionCode&, Frame* sourceFrame) = 0;
-    virtual String key(unsigned index, ExceptionCode&, Frame* sourceFrame) = 0;
-    virtual String getItem(const String& key, ExceptionCode&, Frame* sourceFrame) = 0;
-    virtual void setItem(const String& key, const String& value, ExceptionCode&, Frame* sourceFrame) = 0;
-    virtual void removeItem(const String& key, ExceptionCode&, Frame* sourceFrame) = 0;
-    virtual void clear(ExceptionCode&, Frame* sourceFrame) = 0;
-    virtual bool contains(const String& key, ExceptionCode&, Frame* sourceFrame) = 0;
+    virtual unsigned length(ExceptionState&, Frame* sourceFrame) = 0;
+    virtual String key(unsigned index, ExceptionState&, Frame* sourceFrame) = 0;
+    virtual String getItem(const String& key, ExceptionState&, Frame* sourceFrame) = 0;
+    virtual void setItem(const String& key, const String& value, ExceptionState&, Frame* sourceFrame) = 0;
+    virtual void removeItem(const String& key, ExceptionState&, Frame* sourceFrame) = 0;
+    virtual void clear(ExceptionState&, Frame* sourceFrame) = 0;
+    virtual bool contains(const String& key, ExceptionState&, Frame* sourceFrame) = 0;
 
     virtual bool canAccessStorage(Frame*) = 0;
 

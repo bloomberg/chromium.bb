@@ -30,23 +30,22 @@
 
 #include <math.h>
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "core/html/canvas/WebGLContextAttributes.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/page/Frame.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/RenderHTMLCanvas.h"
-
-#include "core/html/canvas/WebGLContextAttributes.h"
-#include "core/html/canvas/WebGLRenderingContext.h"
-
 #include "public/platform/Platform.h"
 
 namespace WebCore {
@@ -368,10 +367,10 @@ String HTMLCanvasElement::toEncodingMimeType(const String& mimeType)
     return lowercaseMimeType;
 }
 
-String HTMLCanvasElement::toDataURL(const String& mimeType, const double* quality, ExceptionCode& ec)
+String HTMLCanvasElement::toDataURL(const String& mimeType, const double* quality, ExceptionState& es)
 {
     if (!m_originClean) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return String();
     }
 

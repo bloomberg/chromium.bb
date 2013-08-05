@@ -28,6 +28,7 @@
 #include "config.h"
 #include "core/xml/XPathParser.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathNSResolver.h"
@@ -463,7 +464,7 @@ bool Parser::expandQName(const String& qName, String& localName, String& namespa
     return true;
 }
 
-Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSResolver> resolver, ExceptionCode& ec)
+Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSResolver> resolver, ExceptionState& es)
 {
     reset(statement);
 
@@ -501,9 +502,9 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSRe
         m_topExpr = 0;
 
         if (m_gotNamespaceError)
-            ec = NamespaceError;
+            es.throwDOMException(NamespaceError);
         else
-            ec = SyntaxError;
+            es.throwDOMException(SyntaxError);
         return 0;
     }
 

@@ -41,7 +41,7 @@ namespace WebCore {
 class Clipboard;
 class File;
 
-typedef int ExceptionCode;
+class ExceptionState;
 
 class DataTransferItemList : public RefCounted<DataTransferItemList>, public ScriptWrappable {
 public:
@@ -54,9 +54,9 @@ public:
 
     virtual size_t length() const = 0;
     virtual PassRefPtr<DataTransferItem> item(unsigned long index) = 0;
-    virtual void deleteItem(unsigned long index, ExceptionCode&) = 0;
+    virtual void deleteItem(unsigned long index, ExceptionState&) = 0;
     virtual void clear() = 0;
-    virtual void add(const String& data, const String& type, ExceptionCode&) = 0;
+    virtual void add(const String& data, const String& type, ExceptionState&) = 0;
     virtual void add(PassRefPtr<File>) = 0;
 };
 

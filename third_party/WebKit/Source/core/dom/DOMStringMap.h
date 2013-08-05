@@ -26,6 +26,7 @@
 #ifndef DOMStringMap_h
 #define DOMStringMap_h
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
@@ -34,7 +35,6 @@
 namespace WebCore {
 
 class Element;
-typedef int ExceptionCode;
 
 class DOMStringMap : public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(DOMStringMap); WTF_MAKE_FAST_ALLOCATED;
@@ -47,29 +47,29 @@ public:
     virtual void getNames(Vector<String>&) = 0;
     virtual String item(const String& name) = 0;
     virtual bool contains(const String& name) = 0;
-    virtual void setItem(const String& name, const String& value, ExceptionCode&) = 0;
-    virtual void deleteItem(const String& name, ExceptionCode&) = 0;
-    bool anonymousNamedSetter(const String& name, const String& value, ExceptionCode& ec)
+    virtual void setItem(const String& name, const String& value, ExceptionState&) = 0;
+    virtual void deleteItem(const String& name, ExceptionState&) = 0;
+    bool anonymousNamedSetter(const String& name, const String& value, ExceptionState& es)
     {
-        setItem(name, value, ec);
+        setItem(name, value, es);
         return true;
     }
-    bool anonymousNamedDeleter(const AtomicString& name, ExceptionCode& ec)
+    bool anonymousNamedDeleter(const AtomicString& name, ExceptionState& es)
     {
-        deleteItem(name, ec);
-        bool result = !ec;
+        deleteItem(name, es);
+        bool result = !es.hadException();
         // DOMStringMap deleter should ignore exception.
         // Behavior of Firefox and Opera are same.
         // delete document.body.dataset["-foo"] // false instead of DOM Exception 12
         // LayoutTests/fast/dom/HTMLSelectElement/select-selectedIndex-multiple.html
-        ec = 0;
+        es.clearException();
         return result;
     }
-    void namedPropertyEnumerator(Vector<String>& names, ExceptionCode&)
+    void namedPropertyEnumerator(Vector<String>& names, ExceptionState&)
     {
         getNames(names);
     }
-    bool namedPropertyQuery(const AtomicString&, ExceptionCode&);
+    bool namedPropertyQuery(const AtomicString&, ExceptionState&);
 
     virtual Element* element() = 0;
 

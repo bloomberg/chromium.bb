@@ -32,6 +32,7 @@
 #define ExceptionStatePlaceholder_h
 
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,6 +46,14 @@ public:
     ExceptionState& returnThis() { return *this; }
     virtual void throwDOMException(const ExceptionCode&, const String& message = String()) OVERRIDE FINAL { };
     virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL { }
+};
+
+class TrackExceptionState : public ExceptionState {
+public:
+    TrackExceptionState(): ExceptionState(0) { }
+    ExceptionState& returnThis() { return *this; }
+    virtual void throwDOMException(const ExceptionCode& ec, const String& message = String()) OVERRIDE FINAL { m_code = ec; };
+    virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL { m_code = TypeError; }
 };
 
 #define IGNORE_EXCEPTION_STATE (::WebCore::IgnorableExceptionState().returnThis())

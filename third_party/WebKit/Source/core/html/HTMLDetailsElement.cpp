@@ -22,6 +22,7 @@
 #include "core/html/HTMLDetailsElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -63,14 +64,14 @@ RenderObject* HTMLDetailsElement::createRenderer(RenderStyle*)
 void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
     RefPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(summaryTag, document());
-    defaultSummary->appendChild(Text::create(document(), defaultDetailsSummaryText()), ASSERT_NO_EXCEPTION);
+    defaultSummary->appendChild(Text::create(document(), defaultDetailsSummaryText()), ASSERT_NO_EXCEPTION_STATE);
 
     RefPtr<HTMLContentElement> content = HTMLContentElement::create(document());
     content->setSelect(summaryQuerySelector());
     content->appendChild(defaultSummary);
 
-    root->appendChild(content, ASSERT_NO_EXCEPTION, AttachLazily);
-    root->appendChild(HTMLContentElement::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
+    root->appendChild(content, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+    root->appendChild(HTMLContentElement::create(document()), ASSERT_NO_EXCEPTION_STATE, AttachLazily);
 }
 
 Element* HTMLDetailsElement::findMainSummary() const

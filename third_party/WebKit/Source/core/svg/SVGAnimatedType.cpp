@@ -18,9 +18,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGAnimatedType.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGPathByteStream.h"
 
@@ -280,9 +281,9 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
         break;
     case AnimatedLength: {
         ASSERT(m_data.length);
-        ExceptionCode ec = 0;
-        m_data.length->setValueAsString(value, SVGLength::lengthModeForAnimatedLengthAttribute(attrName), ec);
-        return !ec;
+        TrackExceptionState es;
+        m_data.length->setValueAsString(value, SVGLength::lengthModeForAnimatedLengthAttribute(attrName), es);
+        return !es.hadException();
     }
     case AnimatedLengthList:
         ASSERT(m_data.lengthList);

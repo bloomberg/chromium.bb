@@ -28,26 +28,25 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class HTMLOptionElement;
 class HTMLSelectElement;
-
-typedef int ExceptionCode;
 
 class HTMLOptionsCollection : public HTMLCollection {
 public:
     static PassRefPtr<HTMLOptionsCollection> create(Node*, CollectionType);
 
-    void add(PassRefPtr<HTMLOptionElement>, ExceptionCode&);
-    void add(PassRefPtr<HTMLOptionElement>, int index, ExceptionCode&);
+    void add(PassRefPtr<HTMLOptionElement>, ExceptionState&);
+    void add(PassRefPtr<HTMLOptionElement>, int index, ExceptionState&);
     void remove(int index);
 
     int selectedIndex() const;
     void setSelectedIndex(int);
 
-    void setLength(unsigned, ExceptionCode&);
+    void setLength(unsigned, ExceptionState&);
     void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<NodeList>&, bool&, RefPtr<Node>&);
-    bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionCode&);
-    bool anonymousIndexedSetterRemove(unsigned, ExceptionCode&);
+    bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionState&);
+    bool anonymousIndexedSetterRemove(unsigned, ExceptionState&);
 
 private:
     HTMLOptionsCollection(Node*);

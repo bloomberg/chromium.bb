@@ -31,13 +31,13 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/TreeScope.h"
 #include "wtf/DoublyLinkedList.h"
 
 namespace WebCore {
 
 class ElementShadow;
+class ExceptionState;
 class InsertionPoint;
 class ScopeContentDistribution;
 
@@ -69,7 +69,7 @@ public:
     ElementShadow* owner() const { return host() ? host()->shadow() : 0; }
 
     String innerHTML() const;
-    void setInnerHTML(const String&, ExceptionCode&);
+    void setInnerHTML(const String&, ExceptionState&);
 
     Element* activeElement() const;
 
@@ -102,8 +102,8 @@ public:
 
     ShadowRootType type() const { return static_cast<ShadowRootType>(m_type); }
 
-    PassRefPtr<Node> cloneNode(bool, ExceptionCode&);
-    PassRefPtr<Node> cloneNode(ExceptionCode& ec) { return cloneNode(true, ec); }
+    PassRefPtr<Node> cloneNode(bool, ExceptionState&);
+    PassRefPtr<Node> cloneNode(ExceptionState& es) { return cloneNode(true, es); }
 
 private:
     ShadowRoot(Document*, ShadowRootType);

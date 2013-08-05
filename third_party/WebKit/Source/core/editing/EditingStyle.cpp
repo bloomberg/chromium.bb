@@ -29,6 +29,7 @@
 
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSRuleList.h"
@@ -1242,7 +1243,7 @@ PassRefPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const VisibleSelect
     // and find the background color of the common ancestor.
     if (shouldUseBackgroundColorInEffect && (selection.isRange() || hasTransparentBackgroundColor(style->m_mutableStyle.get()))) {
         RefPtr<Range> range(selection.toNormalizedRange());
-        if (PassRefPtr<CSSValue> value = backgroundColorInEffect(range->commonAncestorContainer(IGNORE_EXCEPTION)))
+        if (PassRefPtr<CSSValue> value = backgroundColorInEffect(range->commonAncestorContainer(IGNORE_EXCEPTION_STATE)))
             style->setProperty(CSSPropertyBackgroundColor, value->cssText());
     }
 

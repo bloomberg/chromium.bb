@@ -35,6 +35,7 @@ class WebStorageNamespace;
 
 namespace WebCore {
 
+class ExceptionState;
 class Frame;
 class KURL;
 class Page;
@@ -47,13 +48,13 @@ public:
     virtual ~StorageAreaProxy();
 
     // The HTML5 DOM Storage API
-    virtual unsigned length(ExceptionCode&, Frame* sourceFrame);
-    virtual String key(unsigned index, ExceptionCode&, Frame* sourceFrame);
-    virtual String getItem(const String& key, ExceptionCode&, Frame* sourceFrame);
-    virtual void setItem(const String& key, const String& value, ExceptionCode&, Frame* sourceFrame);
-    virtual void removeItem(const String& key, ExceptionCode&, Frame* sourceFrame);
-    virtual void clear(ExceptionCode&, Frame* sourceFrame);
-    virtual bool contains(const String& key, ExceptionCode&, Frame* sourceFrame);
+    virtual unsigned length(ExceptionState&, Frame* sourceFrame);
+    virtual String key(unsigned index, ExceptionState&, Frame* sourceFrame);
+    virtual String getItem(const String& key, ExceptionState&, Frame* sourceFrame);
+    virtual void setItem(const String& key, const String& value, ExceptionState&, Frame* sourceFrame);
+    virtual void removeItem(const String& key, ExceptionState&, Frame* sourceFrame);
+    virtual void clear(ExceptionState&, Frame* sourceFrame);
+    virtual bool contains(const String& key, ExceptionState&, Frame* sourceFrame);
 
     virtual bool canAccessStorage(Frame*);
 

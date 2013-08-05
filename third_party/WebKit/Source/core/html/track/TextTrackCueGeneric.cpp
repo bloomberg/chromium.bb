@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-
 #include "core/html/track/TextTrackCueGeneric.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/TextTrackCue.h"
 
@@ -116,16 +116,16 @@ PassRefPtr<TextTrackCueBox> TextTrackCueGeneric::createDisplayTree()
     return TextTrackCueGenericBoxElement::create(ownerDocument(), this);
 }
 
-void TextTrackCueGeneric::setLine(int line, ExceptionCode& ec)
+void TextTrackCueGeneric::setLine(int line, ExceptionState& es)
 {
     m_defaultPosition = false;
-    TextTrackCue::setLine(line, ec);
+    TextTrackCue::setLine(line, es);
 }
 
-void TextTrackCueGeneric::setPosition(int position, ExceptionCode& ec)
+void TextTrackCueGeneric::setPosition(int position, ExceptionState& es)
 {
     m_defaultPosition = false;
-    TextTrackCue::setPosition(position, ec);
+    TextTrackCue::setPosition(position, es);
 }
 
 void TextTrackCueGeneric::videoSizeDidChange(const IntSize& videoSize)

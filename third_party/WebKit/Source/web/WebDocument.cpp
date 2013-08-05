@@ -41,6 +41,7 @@
 #include "WebFrameImpl.h"
 #include "WebNodeCollection.h"
 #include "WebNodeList.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSParserMode.h"
 #include "core/css/StyleSheetContents.h"
@@ -224,9 +225,9 @@ WebElement WebDocument::fullScreenElement() const
 
 WebDOMEvent WebDocument::createEvent(const WebString& eventType)
 {
-    ExceptionCode ec = 0;
-    WebDOMEvent event(unwrap<Document>()->createEvent(eventType, ec));
-    if (ec)
+    TrackExceptionState es;
+    WebDOMEvent event(unwrap<Document>()->createEvent(eventType, es));
+    if (es.hadException())
         return WebDOMEvent();
     return event;
 }
@@ -238,9 +239,9 @@ WebReferrerPolicy WebDocument::referrerPolicy() const
 
 WebElement WebDocument::createElement(const WebString& tagName)
 {
-    ExceptionCode ec = 0;
-    WebElement element(unwrap<Document>()->createElement(tagName, ec));
-    if (ec)
+    TrackExceptionState es;
+    WebElement element(unwrap<Document>()->createElement(tagName, es));
+    if (es.hadException())
         return WebElement();
     return element;
 }

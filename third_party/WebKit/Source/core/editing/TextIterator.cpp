@@ -28,8 +28,8 @@
 #include "core/editing/TextIterator.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -1377,8 +1377,8 @@ PassRefPtr<Range> CharacterIterator::range() const
             Node* n = r->startContainer();
             ASSERT(n == r->endContainer());
             int offset = r->startOffset() + m_runOffset;
-            r->setStart(n, offset, ASSERT_NO_EXCEPTION);
-            r->setEnd(n, offset + 1, ASSERT_NO_EXCEPTION);
+            r->setStart(n, offset, ASSERT_NO_EXCEPTION_STATE);
+            r->setEnd(n, offset + 1, ASSERT_NO_EXCEPTION_STATE);
         }
     }
     return r.release();
@@ -1476,8 +1476,8 @@ PassRefPtr<Range> BackwardsCharacterIterator::range() const
             Node* n = r->startContainer();
             ASSERT(n == r->endContainer());
             int offset = r->endOffset() - m_runOffset;
-            r->setStart(n, offset - 1, ASSERT_NO_EXCEPTION);
-            r->setEnd(n, offset, ASSERT_NO_EXCEPTION);
+            r->setStart(n, offset - 1, ASSERT_NO_EXCEPTION_STATE);
+            r->setEnd(n, offset, ASSERT_NO_EXCEPTION_STATE);
         }
     }
     return r.release();
@@ -1575,8 +1575,7 @@ void WordAwareIterator::advance()
 
         // Start gobbling chunks until we get to a suitable stopping point
         m_textIterator.appendTextTo(m_buffer);
-        int exception = 0;
-        m_range->setEnd(m_textIterator.range()->endContainer(), m_textIterator.range()->endOffset(), exception);
+        m_range->setEnd(m_textIterator.range()->endContainer(), m_textIterator.range()->endOffset(), IGNORE_EXCEPTION_STATE);
     }
 }
 
@@ -2247,8 +2246,8 @@ PassRefPtr<Range> TextIterator::rangeFromLocationAndLength(ContainerNode* scope,
     if (rangeLocation == 0 && rangeLength == 0 && it.atEnd()) {
         textRunRange = it.range();
 
-        resultRange->setStart(textRunRange->startContainer(), 0, ASSERT_NO_EXCEPTION);
-        resultRange->setEnd(textRunRange->startContainer(), 0, ASSERT_NO_EXCEPTION);
+        resultRange->setStart(textRunRange->startContainer(), 0, ASSERT_NO_EXCEPTION_STATE);
+        resultRange->setEnd(textRunRange->startContainer(), 0, ASSERT_NO_EXCEPTION_STATE);
 
         return resultRange.release();
     }
@@ -2270,40 +2269,38 @@ PassRefPtr<Range> TextIterator::rangeFromLocationAndLength(ContainerNode* scope,
                 it.advance();
                 if (!it.atEnd()) {
                     RefPtr<Range> range = it.range();
-                    textRunRange->setEnd(range->startContainer(), range->startOffset(), ASSERT_NO_EXCEPTION);
+                    textRunRange->setEnd(range->startContainer(), range->startOffset(), ASSERT_NO_EXCEPTION_STATE);
                 } else {
                     Position runStart = textRunRange->startPosition();
                     Position runEnd = VisiblePosition(runStart).next().deepEquivalent();
                     if (runEnd.isNotNull())
-                        textRunRange->setEnd(runEnd.containerNode(), runEnd.computeOffsetInContainerNode(), ASSERT_NO_EXCEPTION);
+                        textRunRange->setEnd(runEnd.containerNode(), runEnd.computeOffsetInContainerNode(), ASSERT_NO_EXCEPTION_STATE);
                 }
             }
         }
 
         if (foundStart) {
             startRangeFound = true;
-            int exception = 0;
             if (textRunRange->startContainer()->isTextNode()) {
                 int offset = rangeLocation - docTextPosition;
-                resultRange->setStart(textRunRange->startContainer(), offset + textRunRange->startOffset(), exception);
+                resultRange->setStart(textRunRange->startContainer(), offset + textRunRange->startOffset(), IGNORE_EXCEPTION_STATE);
             } else {
                 if (rangeLocation == docTextPosition)
-                    resultRange->setStart(textRunRange->startContainer(), textRunRange->startOffset(), exception);
+                    resultRange->setStart(textRunRange->startContainer(), textRunRange->startOffset(), IGNORE_EXCEPTION_STATE);
                 else
-                    resultRange->setStart(textRunRange->endContainer(), textRunRange->endOffset(), exception);
+                    resultRange->setStart(textRunRange->endContainer(), textRunRange->endOffset(), IGNORE_EXCEPTION_STATE);
             }
         }
 
         if (foundEnd) {
-            int exception = 0;
             if (textRunRange->startContainer()->isTextNode()) {
                 int offset = rangeEnd - docTextPosition;
-                resultRange->setEnd(textRunRange->startContainer(), offset + textRunRange->startOffset(), exception);
+                resultRange->setEnd(textRunRange->startContainer(), offset + textRunRange->startOffset(), IGNORE_EXCEPTION_STATE);
             } else {
                 if (rangeEnd == docTextPosition)
-                    resultRange->setEnd(textRunRange->startContainer(), textRunRange->startOffset(), exception);
+                    resultRange->setEnd(textRunRange->startContainer(), textRunRange->startOffset(), IGNORE_EXCEPTION_STATE);
                 else
-                    resultRange->setEnd(textRunRange->endContainer(), textRunRange->endOffset(), exception);
+                    resultRange->setEnd(textRunRange->endContainer(), textRunRange->endOffset(), IGNORE_EXCEPTION_STATE);
             }
             docTextPosition += len;
             break;
@@ -2315,8 +2312,7 @@ PassRefPtr<Range> TextIterator::rangeFromLocationAndLength(ContainerNode* scope,
         return 0;
 
     if (rangeLength != 0 && rangeEnd > docTextPosition) { // rangeEnd is out of bounds
-        int exception = 0;
-        resultRange->setEnd(textRunRange->endContainer(), textRunRange->endOffset(), exception);
+        resultRange->setEnd(textRunRange->endContainer(), textRunRange->endOffset(), IGNORE_EXCEPTION_STATE);
     }
 
     return resultRange.release();
@@ -2344,7 +2340,7 @@ bool TextIterator::getLocationAndLengthFromRange(Node* scope, const Range* range
     ASSERT(testRange->startContainer() == scope);
     location = TextIterator::rangeLength(testRange.get());
 
-    testRange->setEnd(range->endContainer(), range->endOffset(), IGNORE_EXCEPTION);
+    testRange->setEnd(range->endContainer(), range->endOffset(), IGNORE_EXCEPTION_STATE);
     ASSERT(testRange->startContainer() == scope);
     length = TextIterator::rangeLength(testRange.get()) - location;
     return true;
@@ -2382,8 +2378,8 @@ String plainText(const Range* r, TextIteratorBehavior defaultBehavior, bool isDi
 
 static PassRefPtr<Range> collapsedToBoundary(const Range* range, bool forward)
 {
-    RefPtr<Range> result = range->cloneRange(ASSERT_NO_EXCEPTION);
-    result->collapse(!forward, ASSERT_NO_EXCEPTION);
+    RefPtr<Range> result = range->cloneRange(ASSERT_NO_EXCEPTION_STATE);
+    result->collapse(!forward, ASSERT_NO_EXCEPTION_STATE);
     return result.release();
 }
 
@@ -2397,7 +2393,7 @@ static size_t findPlainText(CharacterIterator& it, const String& target, FindOpt
     if (buffer.needsMoreContext()) {
         RefPtr<Range> startRange = it.range();
         RefPtr<Range> beforeStartRange = startRange->ownerDocument()->createRange();
-        beforeStartRange->setEnd(startRange->startContainer(), startRange->startOffset(), IGNORE_EXCEPTION);
+        beforeStartRange->setEnd(startRange->startContainer(), startRange->startOffset(), IGNORE_EXCEPTION_STATE);
         for (SimplifiedBackwardsTextIterator backwardsIterator(beforeStartRange.get()); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
             Vector<UChar, 1024> characters;
             backwardsIterator.prependTextTo(characters);

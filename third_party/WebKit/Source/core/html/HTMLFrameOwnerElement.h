@@ -26,6 +26,7 @@
 namespace WebCore {
 
 class DOMWindow;
+class ExceptionState;
 class Frame;
 class RenderPart;
 class SVGDocument;
@@ -48,7 +49,7 @@ public:
     // RenderObject when using fallback content.
     RenderPart* renderPart() const;
 
-    SVGDocument* getSVGDocument(ExceptionCode&) const;
+    SVGDocument* getSVGDocument(ExceptionState&) const;
 
     virtual ScrollbarMode scrollingMode() const { return ScrollbarAuto; }
 

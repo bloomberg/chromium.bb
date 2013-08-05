@@ -28,17 +28,19 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 class CharacterData : public Node {
 public:
     void atomize();
     String data() const { return m_data; }
     void setData(const String&);
     unsigned length() const { return m_data.length(); }
-    String substringData(unsigned offset, unsigned count, ExceptionCode&);
+    String substringData(unsigned offset, unsigned count, ExceptionState&);
     void appendData(const String&);
-    void insertData(unsigned offset, const String&, ExceptionCode&);
-    void deleteData(unsigned offset, unsigned count, ExceptionCode&);
-    void replaceData(unsigned offset, unsigned count, const String&, ExceptionCode&);
+    void insertData(unsigned offset, const String&, ExceptionState&);
+    void deleteData(unsigned offset, unsigned count, ExceptionState&);
+    void replaceData(unsigned offset, unsigned count, const String&, ExceptionState&);
 
     bool containsOnlyWhitespace() const;
 

@@ -33,6 +33,7 @@ namespace WebCore {
 
 class CheckedRadioButtons;
 class DragData;
+class ExceptionState;
 class FileList;
 class HTMLDataListElement;
 class HTMLImageLoader;
@@ -76,10 +77,10 @@ public:
     Decimal findClosestTickMarkValue(const Decimal&);
 
     // Implementations of HTMLInputElement::stepUp() and stepDown().
-    void stepUp(int, ExceptionCode&);
-    void stepDown(int, ExceptionCode&);
-    void stepUp(ExceptionCode& ec) { stepUp(1, ec); }
-    void stepDown(ExceptionCode& ec) { stepDown(1, ec); }
+    void stepUp(int, ExceptionState&);
+    void stepDown(int, ExceptionState&);
+    void stepUp(ExceptionState& es) { stepUp(1, es); }
+    void stepDown(ExceptionState& es) { stepDown(1, es); }
     // stepUp()/stepDown() for user-interaction.
     bool isSteppable() const;
 
@@ -147,7 +148,7 @@ public:
     void setType(const String&);
 
     String value() const;
-    void setValue(const String&, ExceptionCode&, TextFieldEventBehavior = DispatchNoEvent);
+    void setValue(const String&, ExceptionState&, TextFieldEventBehavior = DispatchNoEvent);
     void setValue(const String&, TextFieldEventBehavior = DispatchNoEvent);
     void setValueForUser(const String&);
     // Checks if the specified string would be a valid value.
@@ -168,23 +169,23 @@ public:
     void setEditingValue(const String&);
 
     double valueAsDate() const;
-    void setValueAsDate(double, ExceptionCode&);
+    void setValueAsDate(double, ExceptionState&);
 
     double valueAsNumber() const;
-    void setValueAsNumber(double, ExceptionCode&, TextFieldEventBehavior = DispatchNoEvent);
+    void setValueAsNumber(double, ExceptionState&, TextFieldEventBehavior = DispatchNoEvent);
 
     String valueWithDefault() const;
 
     void setValueFromRenderer(const String&);
 
-    int selectionStartForBinding(ExceptionCode&) const;
-    int selectionEndForBinding(ExceptionCode&) const;
-    String selectionDirectionForBinding(ExceptionCode&) const;
-    void setSelectionStartForBinding(int, ExceptionCode&);
-    void setSelectionEndForBinding(int, ExceptionCode&);
-    void setSelectionDirectionForBinding(const String&, ExceptionCode&);
-    void setSelectionRangeForBinding(int start, int end, ExceptionCode&);
-    void setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionCode&);
+    int selectionStartForBinding(ExceptionState&) const;
+    int selectionEndForBinding(ExceptionState&) const;
+    String selectionDirectionForBinding(ExceptionState&) const;
+    void setSelectionStartForBinding(int, ExceptionState&);
+    void setSelectionEndForBinding(int, ExceptionState&);
+    void setSelectionDirectionForBinding(const String&, ExceptionState&);
+    void setSelectionRangeForBinding(int start, int end, ExceptionState&);
+    void setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionState&);
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
     virtual RenderObject* createRenderer(RenderStyle*);
@@ -209,12 +210,12 @@ public:
     String alt() const;
 
     void setSize(unsigned);
-    void setSize(unsigned, ExceptionCode&);
+    void setSize(unsigned, ExceptionState&);
 
     KURL src() const;
 
     virtual int maxLength() const;
-    void setMaxLength(int, ExceptionCode&);
+    void setMaxLength(int, ExceptionState&);
 
     bool multiple() const;
 
@@ -282,8 +283,8 @@ public:
 
     virtual bool matchesReadOnlyPseudoClass() const OVERRIDE;
     virtual bool matchesReadWritePseudoClass() const OVERRIDE;
-    virtual void setRangeText(const String& replacement, ExceptionCode&) OVERRIDE;
-    virtual void setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionCode&) OVERRIDE;
+    virtual void setRangeText(const String& replacement, ExceptionState&) OVERRIDE;
+    virtual void setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState&) OVERRIDE;
 
     bool hasImageLoader() const { return m_imageLoader; }
     HTMLImageLoader* imageLoader();

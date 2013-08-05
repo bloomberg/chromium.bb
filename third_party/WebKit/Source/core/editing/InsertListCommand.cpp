@@ -24,10 +24,11 @@
  */
 
 #include "config.h"
-#include "HTMLNames.h"
-#include "core/dom/Element.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/editing/InsertListCommand.h"
+
+#include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/dom/Element.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -233,9 +234,9 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const Qu
             // Restore the start and the end of current selection if they started inside listNode
             // because moveParagraphWithClones could have removed them.
             if (rangeStartIsInList && newList)
-                currentSelection->setStart(newList, 0, IGNORE_EXCEPTION);
+                currentSelection->setStart(newList, 0, IGNORE_EXCEPTION_STATE);
             if (rangeEndIsInList && newList)
-                currentSelection->setEnd(newList, lastOffsetInNode(newList.get()), IGNORE_EXCEPTION);
+                currentSelection->setEnd(newList, lastOffsetInNode(newList.get()), IGNORE_EXCEPTION_STATE);
 
             setEndingSelection(VisiblePosition(firstPositionInNode(newList.get())));
 

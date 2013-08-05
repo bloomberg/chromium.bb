@@ -31,15 +31,16 @@
 namespace WebCore {
 
 class Document;
+class ExceptionState;
 class QualifiedName;
 
 class HTMLDialogElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLDialogElement> create(const QualifiedName&, Document*);
 
-    void close(const String& returnValue, ExceptionCode&);
+    void close(const String& returnValue, ExceptionState&);
     void show();
-    void showModal(ExceptionCode&);
+    void showModal(ExceptionState&);
 
     String returnValue() const { return m_returnValue; }
     void setReturnValue(const String& returnValue) { m_returnValue = returnValue; }

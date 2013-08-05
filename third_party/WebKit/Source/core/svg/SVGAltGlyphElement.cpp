@@ -27,6 +27,7 @@
 
 #include "SVGNames.h"
 #include "XLinkNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/svg/RenderSVGTSpan.h"
@@ -55,9 +56,9 @@ PassRefPtr<SVGAltGlyphElement> SVGAltGlyphElement::create(const QualifiedName& t
     return adoptRef(new SVGAltGlyphElement(tagName, document));
 }
 
-void SVGAltGlyphElement::setGlyphRef(const AtomicString&, ExceptionCode& ec)
+void SVGAltGlyphElement::setGlyphRef(const AtomicString&, ExceptionState& es)
 {
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
 const AtomicString& SVGAltGlyphElement::glyphRef() const
@@ -65,9 +66,9 @@ const AtomicString& SVGAltGlyphElement::glyphRef() const
     return fastGetAttribute(SVGNames::glyphRefAttr);
 }
 
-void SVGAltGlyphElement::setFormat(const AtomicString&, ExceptionCode& ec)
+void SVGAltGlyphElement::setFormat(const AtomicString&, ExceptionState& es)
 {
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
 const AtomicString& SVGAltGlyphElement::format() const

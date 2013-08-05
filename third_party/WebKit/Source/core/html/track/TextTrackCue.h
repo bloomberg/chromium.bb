@@ -40,6 +40,7 @@
 namespace WebCore {
 
 class DocumentFragment;
+class ExceptionState;
 class ScriptExecutionContext;
 class TextTrack;
 class TextTrackCue;
@@ -90,31 +91,31 @@ public:
     void setId(const String&);
 
     double startTime() const { return m_startTime; }
-    void setStartTime(double, ExceptionCode&);
+    void setStartTime(double, ExceptionState&);
 
     double endTime() const { return m_endTime; }
-    void setEndTime(double, ExceptionCode&);
+    void setEndTime(double, ExceptionState&);
 
     bool pauseOnExit() const { return m_pauseOnExit; }
     void setPauseOnExit(bool);
 
     const String& vertical() const;
-    void setVertical(const String&, ExceptionCode&);
+    void setVertical(const String&, ExceptionState&);
 
     bool snapToLines() const { return m_snapToLines; }
     void setSnapToLines(bool);
 
     int line() const { return m_linePosition; }
-    virtual void setLine(int, ExceptionCode&);
+    virtual void setLine(int, ExceptionState&);
 
     int position() const { return m_textPosition; }
-    virtual void setPosition(int, ExceptionCode&);
+    virtual void setPosition(int, ExceptionState&);
 
     int size() const { return m_cueSize; }
-    virtual void setSize(int, ExceptionCode&);
+    virtual void setSize(int, ExceptionState&);
 
     const String& align() const;
-    void setAlign(const String&, ExceptionCode&);
+    void setAlign(const String&, ExceptionState&);
 
     const String& text() const { return m_content; }
     void setText(const String&);

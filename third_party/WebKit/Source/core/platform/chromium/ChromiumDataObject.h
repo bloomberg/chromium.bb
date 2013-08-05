@@ -42,10 +42,9 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class KURL;
 class SharedBuffer;
-
-typedef int ExceptionCode;
 
 // A data object for holding data that would be in a clipboard or moved
 // during a drag-n-drop operation.  This is the data that WebCore is aware
@@ -63,7 +62,7 @@ public:
     // FIXME: Implement V8DataTransferItemList::indexedPropertyDeleter to get this called.
     void deleteItem(unsigned long index);
     void clearAll();
-    void add(const String& data, const String& type, ExceptionCode&);
+    void add(const String& data, const String& type, ExceptionState&);
     void add(PassRefPtr<File>, ScriptExecutionContext*);
 
     // WebCore helpers.

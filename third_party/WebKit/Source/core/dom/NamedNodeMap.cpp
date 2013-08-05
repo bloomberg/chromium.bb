@@ -25,6 +25,7 @@
 #include "config.h"
 #include "core/dom/NamedNodeMap.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -59,45 +60,45 @@ PassRefPtr<Node> NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI, 
     return m_element->getAttributeNodeNS(namespaceURI, localName);
 }
 
-PassRefPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionCode& ec)
+PassRefPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& es)
 {
     size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(name, shouldIgnoreAttributeCase(m_element)) : notFound;
     if (index == notFound) {
-        ec = NotFoundError;
+        es.throwDOMException(NotFoundError);
         return 0;
     }
     return m_element->detachAttribute(index);
 }
 
-PassRefPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionCode& ec)
+PassRefPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState& es)
 {
     size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(QualifiedName(nullAtom, localName, namespaceURI)) : notFound;
     if (index == notFound) {
-        ec = NotFoundError;
+        es.throwDOMException(NotFoundError);
         return 0;
     }
     return m_element->detachAttribute(index);
 }
 
-PassRefPtr<Node> NamedNodeMap::setNamedItem(Node* node, ExceptionCode& ec)
+PassRefPtr<Node> NamedNodeMap::setNamedItem(Node* node, ExceptionState& es)
 {
     if (!node) {
-        ec = NotFoundError;
+        es.throwDOMException(NotFoundError);
         return 0;
     }
 
     // Not mentioned in spec: throw a HIERARCHY_REQUEST_ERROR if the user passes in a non-attribute node
     if (!node->isAttributeNode()) {
-        ec = HierarchyRequestError;
+        es.throwDOMException(HierarchyRequestError);
         return 0;
     }
 
-    return m_element->setAttributeNode(toAttr(node), ec);
+    return m_element->setAttributeNode(toAttr(node), es);
 }
 
-PassRefPtr<Node> NamedNodeMap::setNamedItemNS(Node* node, ExceptionCode& ec)
+PassRefPtr<Node> NamedNodeMap::setNamedItemNS(Node* node, ExceptionState& es)
 {
-    return setNamedItem(node, ec);
+    return setNamedItem(node, es);
 }
 
 PassRefPtr<Node> NamedNodeMap::item(unsigned index) const

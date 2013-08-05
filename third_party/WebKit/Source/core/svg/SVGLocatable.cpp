@@ -21,10 +21,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGLocatable.h"
 
 #include "SVGNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/rendering/RenderObject.h"
 #include "core/svg/SVGGraphicsElement.h"
@@ -97,14 +97,14 @@ AffineTransform SVGLocatable::computeCTM(SVGElement* element, CTMScope mode, Sty
     return ctm;
 }
 
-AffineTransform SVGLocatable::getTransformToElement(SVGElement* target, ExceptionCode& ec, StyleUpdateStrategy styleUpdateStrategy)
+AffineTransform SVGLocatable::getTransformToElement(SVGElement* target, ExceptionState& es, StyleUpdateStrategy styleUpdateStrategy)
 {
     AffineTransform ctm = getCTM(styleUpdateStrategy);
 
     if (target && target->isSVGGraphicsElement()) {
         AffineTransform targetCTM = toSVGGraphicsElement(target)->getCTM(styleUpdateStrategy);
         if (!targetCTM.isInvertible()) {
-            ec = InvalidStateError;
+            es.throwDOMException(InvalidStateError);
             return ctm;
         }
         ctm = targetCTM.inverse() * ctm;

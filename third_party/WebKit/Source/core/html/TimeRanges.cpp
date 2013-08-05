@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-
 #include "core/html/TimeRanges.h"
 
-#include <math.h>
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
+#include <math.h>
 
 using namespace WebCore;
 using namespace std;
@@ -102,19 +102,19 @@ void TimeRanges::unionWith(const TimeRanges* other)
     m_ranges.swap(unioned->m_ranges);
 }
 
-double TimeRanges::start(unsigned index, ExceptionCode& ec) const
+double TimeRanges::start(unsigned index, ExceptionState& es) const
 {
     if (index >= length()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return 0;
     }
     return m_ranges[index].m_start;
 }
 
-double TimeRanges::end(unsigned index, ExceptionCode& ec) const
+double TimeRanges::end(unsigned index, ExceptionState& es) const
 {
     if (index >= length()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return 0;
     }
     return m_ranges[index].m_end;
@@ -166,7 +166,7 @@ void TimeRanges::add(double start, double end)
 bool TimeRanges::contain(double time) const
 {
     for (unsigned n = 0; n < length(); n++) {
-        if (time >= start(n, IGNORE_EXCEPTION) && time <= end(n, IGNORE_EXCEPTION))
+        if (time >= start(n, IGNORE_EXCEPTION_STATE) && time <= end(n, IGNORE_EXCEPTION_STATE))
             return true;
     }
     return false;
@@ -177,8 +177,8 @@ double TimeRanges::nearest(double time) const
     double closest = 0;
     unsigned count = length();
     for (unsigned ndx = 0; ndx < count; ndx++) {
-        double startTime = start(ndx, IGNORE_EXCEPTION);
-        double endTime = end(ndx, IGNORE_EXCEPTION);
+        double startTime = start(ndx, IGNORE_EXCEPTION_STATE);
+        double endTime = end(ndx, IGNORE_EXCEPTION_STATE);
         if (time >= startTime && time <= endTime)
             return time;
         if (fabs(startTime - time) < closest)

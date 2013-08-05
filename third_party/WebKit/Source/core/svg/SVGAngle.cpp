@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/svg/SVGAngle.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/MathExtras.h"
@@ -149,7 +150,7 @@ static bool parseValue(const String& value, float& valueInSpecifiedUnits, SVGAng
     return true;
 }
 
-void SVGAngle::setValueAsString(const String& value, ExceptionCode& ec)
+void SVGAngle::setValueAsString(const String& value, ExceptionState& es)
 {
     if (value.isEmpty()) {
         m_unitType = SVG_ANGLETYPE_UNSPECIFIED;
@@ -162,7 +163,7 @@ void SVGAngle::setValueAsString(const String& value, ExceptionCode& ec)
     bool success = value.is8Bit() ? parseValue<LChar>(value, valueInSpecifiedUnits, unitType)
                                   : parseValue<UChar>(value, valueInSpecifiedUnits, unitType);
     if (!success) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 
@@ -170,10 +171,10 @@ void SVGAngle::setValueAsString(const String& value, ExceptionCode& ec)
     m_valueInSpecifiedUnits = valueInSpecifiedUnits;
 }
 
-void SVGAngle::newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionCode& ec)
+void SVGAngle::newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState& es)
 {
     if (unitType == SVG_ANGLETYPE_UNKNOWN || unitType > SVG_ANGLETYPE_GRAD) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
 
@@ -183,10 +184,10 @@ void SVGAngle::newValueSpecifiedUnits(unsigned short unitType, float valueInSpec
     m_valueInSpecifiedUnits = valueInSpecifiedUnits;
 }
 
-void SVGAngle::convertToSpecifiedUnits(unsigned short unitType, ExceptionCode& ec)
+void SVGAngle::convertToSpecifiedUnits(unsigned short unitType, ExceptionState& es)
 {
     if (unitType == SVG_ANGLETYPE_UNKNOWN || m_unitType == SVG_ANGLETYPE_UNKNOWN || unitType > SVG_ANGLETYPE_GRAD) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
 

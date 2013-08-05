@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/html/canvas/DataView.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/canvas/CheckedInt.h"
 #include "wtf/CPU.h"
@@ -129,10 +130,10 @@ static void flipBytesIfNeeded(char* value, size_t size, bool littleEndian)
 }
 
 template<typename T>
-T DataView::getData(unsigned byteOffset, bool littleEndian, ExceptionCode& ec) const
+T DataView::getData(unsigned byteOffset, bool littleEndian, ExceptionState& es) const
 {
     if (beyondRange<T>(byteOffset)) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return 0;
     }
 
@@ -144,10 +145,10 @@ T DataView::getData(unsigned byteOffset, bool littleEndian, ExceptionCode& ec) c
 }
 
 template<typename T>
-void DataView::setData(unsigned byteOffset, T value, bool littleEndian, ExceptionCode& ec)
+void DataView::setData(unsigned byteOffset, T value, bool littleEndian, ExceptionState& es)
 {
     if (beyondRange<T>(byteOffset)) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
@@ -158,84 +159,84 @@ void DataView::setData(unsigned byteOffset, T value, bool littleEndian, Exceptio
     memcpy(static_cast<char*>(m_baseAddress) + byteOffset, tempValue.bytes, sizeof(T));
 }
 
-int8_t DataView::getInt8(unsigned byteOffset, ExceptionCode& ec)
+int8_t DataView::getInt8(unsigned byteOffset, ExceptionState& es)
 {
-    return getData<int8_t>(byteOffset, false, ec);
+    return getData<int8_t>(byteOffset, false, es);
 }
 
-uint8_t DataView::getUint8(unsigned byteOffset, ExceptionCode& ec)
+uint8_t DataView::getUint8(unsigned byteOffset, ExceptionState& es)
 {
-    return getData<uint8_t>(byteOffset, false, ec);
+    return getData<uint8_t>(byteOffset, false, es);
 }
 
-int16_t DataView::getInt16(unsigned byteOffset, bool littleEndian, ExceptionCode& ec)
+int16_t DataView::getInt16(unsigned byteOffset, bool littleEndian, ExceptionState& es)
 {
-    return getData<int16_t>(byteOffset, littleEndian, ec);
+    return getData<int16_t>(byteOffset, littleEndian, es);
 }
 
-uint16_t DataView::getUint16(unsigned byteOffset, bool littleEndian, ExceptionCode& ec)
+uint16_t DataView::getUint16(unsigned byteOffset, bool littleEndian, ExceptionState& es)
 {
-    return getData<uint16_t>(byteOffset, littleEndian, ec);
+    return getData<uint16_t>(byteOffset, littleEndian, es);
 }
 
-int32_t DataView::getInt32(unsigned byteOffset, bool littleEndian, ExceptionCode& ec)
+int32_t DataView::getInt32(unsigned byteOffset, bool littleEndian, ExceptionState& es)
 {
-    return getData<int32_t>(byteOffset, littleEndian, ec);
+    return getData<int32_t>(byteOffset, littleEndian, es);
 }
 
-uint32_t DataView::getUint32(unsigned byteOffset, bool littleEndian, ExceptionCode& ec)
+uint32_t DataView::getUint32(unsigned byteOffset, bool littleEndian, ExceptionState& es)
 {
-    return getData<uint32_t>(byteOffset, littleEndian, ec);
+    return getData<uint32_t>(byteOffset, littleEndian, es);
 }
 
-float DataView::getFloat32(unsigned byteOffset, bool littleEndian, ExceptionCode& ec)
+float DataView::getFloat32(unsigned byteOffset, bool littleEndian, ExceptionState& es)
 {
-    return getData<float>(byteOffset, littleEndian, ec);
+    return getData<float>(byteOffset, littleEndian, es);
 }
 
-double DataView::getFloat64(unsigned byteOffset, bool littleEndian, ExceptionCode& ec)
+double DataView::getFloat64(unsigned byteOffset, bool littleEndian, ExceptionState& es)
 {
-    return getData<double>(byteOffset, littleEndian, ec);
+    return getData<double>(byteOffset, littleEndian, es);
 }
 
-void DataView::setInt8(unsigned byteOffset, int8_t value, ExceptionCode& ec)
+void DataView::setInt8(unsigned byteOffset, int8_t value, ExceptionState& es)
 {
-    setData<int8_t>(byteOffset, value, false, ec);
+    setData<int8_t>(byteOffset, value, false, es);
 }
 
-void DataView::setUint8(unsigned byteOffset, uint8_t value, ExceptionCode& ec)
+void DataView::setUint8(unsigned byteOffset, uint8_t value, ExceptionState& es)
 {
-    setData<uint8_t>(byteOffset, value, false, ec);
+    setData<uint8_t>(byteOffset, value, false, es);
 }
 
-void DataView::setInt16(unsigned byteOffset, short value, bool littleEndian, ExceptionCode& ec)
+void DataView::setInt16(unsigned byteOffset, short value, bool littleEndian, ExceptionState& es)
 {
-    setData<int16_t>(byteOffset, value, littleEndian, ec);
+    setData<int16_t>(byteOffset, value, littleEndian, es);
 }
 
-void DataView::setUint16(unsigned byteOffset, uint16_t value, bool littleEndian, ExceptionCode& ec)
+void DataView::setUint16(unsigned byteOffset, uint16_t value, bool littleEndian, ExceptionState& es)
 {
-    setData<uint16_t>(byteOffset, value, littleEndian, ec);
+    setData<uint16_t>(byteOffset, value, littleEndian, es);
 }
 
-void DataView::setInt32(unsigned byteOffset, int32_t value, bool littleEndian, ExceptionCode& ec)
+void DataView::setInt32(unsigned byteOffset, int32_t value, bool littleEndian, ExceptionState& es)
 {
-    setData<int32_t>(byteOffset, value, littleEndian, ec);
+    setData<int32_t>(byteOffset, value, littleEndian, es);
 }
 
-void DataView::setUint32(unsigned byteOffset, uint32_t value, bool littleEndian, ExceptionCode& ec)
+void DataView::setUint32(unsigned byteOffset, uint32_t value, bool littleEndian, ExceptionState& es)
 {
-    setData<uint32_t>(byteOffset, value, littleEndian, ec);
+    setData<uint32_t>(byteOffset, value, littleEndian, es);
 }
 
-void DataView::setFloat32(unsigned byteOffset, float value, bool littleEndian, ExceptionCode& ec)
+void DataView::setFloat32(unsigned byteOffset, float value, bool littleEndian, ExceptionState& es)
 {
-    setData<float>(byteOffset, value, littleEndian, ec);
+    setData<float>(byteOffset, value, littleEndian, es);
 }
 
-void DataView::setFloat64(unsigned byteOffset, double value, bool littleEndian, ExceptionCode& ec)
+void DataView::setFloat64(unsigned byteOffset, double value, bool littleEndian, ExceptionState& es)
 {
-    setData<double>(byteOffset, value, littleEndian, ec);
+    setData<double>(byteOffset, value, littleEndian, es);
 }
 
 void DataView::neuter()

@@ -33,38 +33,40 @@
 #include "config.h"
 #include "core/page/DOMWindowBase64.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/text/Base64.h"
 
 namespace WebCore {
 
 namespace DOMWindowBase64 {
 
-String btoa(void*, const String& stringToEncode, ExceptionCode& ec)
+String btoa(void*, const String& stringToEncode, ExceptionState& es)
 {
     if (stringToEncode.isNull())
         return String();
 
     if (!stringToEncode.containsOnlyLatin1()) {
-        ec = InvalidCharacterError;
+        es.throwDOMException(InvalidCharacterError);
         return String();
     }
 
     return base64Encode(stringToEncode.latin1());
 }
 
-String atob(void*, const String& encodedString, ExceptionCode& ec)
+String atob(void*, const String& encodedString, ExceptionState& es)
 {
     if (encodedString.isNull())
         return String();
 
     if (!encodedString.containsOnlyLatin1()) {
-        ec = InvalidCharacterError;
+        es.throwDOMException(InvalidCharacterError);
         return String();
     }
 
     Vector<char> out;
     if (!base64Decode(encodedString, out, Base64FailOnInvalidCharacter, Base64StrictPaddingValidation)) {
-        ec = InvalidCharacterError;
+        es.throwDOMException(InvalidCharacterError);
         return String();
     }
 

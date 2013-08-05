@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
+class ExceptionState;
 
 class CSSMatrix : public ScriptWrappable, public RefCounted<CSSMatrix> {
 public:
@@ -41,9 +41,9 @@ public:
     {
         return adoptRef(new CSSMatrix(m));
     }
-    static PassRefPtr<CSSMatrix> create(const String& s, ExceptionCode& ec)
+    static PassRefPtr<CSSMatrix> create(const String& s, ExceptionState& es)
     {
-        return adoptRef(new CSSMatrix(s, ec));
+        return adoptRef(new CSSMatrix(s, es));
     }
 
     virtual ~CSSMatrix();
@@ -96,7 +96,7 @@ public:
     void setM43(double f) { m_matrix.setM43(f); }
     void setM44(double f) { m_matrix.setM44(f); }
 
-    void setMatrixValue(const String&, ExceptionCode&);
+    void setMatrixValue(const String&, ExceptionState&);
 
     // The following math function return a new matrix with the
     // specified operation applied. The this value is not modified.
@@ -105,7 +105,7 @@ public:
     PassRefPtr<CSSMatrix> multiply(CSSMatrix* secondMatrix) const;
 
     // Return the inverse of this matrix. Throw an exception if the matrix is not invertible
-    PassRefPtr<CSSMatrix> inverse(ExceptionCode&) const;
+    PassRefPtr<CSSMatrix> inverse(ExceptionState&) const;
 
     // Return this matrix translated by the passed values.
     // Passing a NaN will use a value of 0. This allows the 3D form to used for 2D operations
@@ -151,7 +151,7 @@ public:
 
 protected:
     CSSMatrix(const TransformationMatrix&);
-    CSSMatrix(const String&, ExceptionCode&);
+    CSSMatrix(const String&, ExceptionState&);
 
     TransformationMatrix m_matrix;
 };

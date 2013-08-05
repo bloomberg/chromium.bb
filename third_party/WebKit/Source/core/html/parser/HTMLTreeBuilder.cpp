@@ -33,6 +33,7 @@
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -672,7 +673,7 @@ void HTMLTreeBuilder::processStartTagForInBody(AtomicHTMLToken* token)
         }
         if (!m_framesetOk)
             return;
-        m_tree.openElements()->bodyElement()->remove(ASSERT_NO_EXCEPTION);
+        m_tree.openElements()->bodyElement()->remove(ASSERT_NO_EXCEPTION_STATE);
         m_tree.openElements()->popUntil(m_tree.openElements()->bodyElement());
         m_tree.openElements()->popHTMLBodyElement();
         ASSERT(m_tree.openElements()->top() == m_tree.openElements()->htmlElement());

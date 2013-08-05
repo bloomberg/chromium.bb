@@ -20,6 +20,7 @@
 #include "config.h"
 #include "core/xml/XMLSerializer.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/editing/markup.h"
@@ -27,7 +28,7 @@
 
 namespace WebCore {
 
-String XMLSerializer::serializeToString(Node* node, ExceptionCode& ec)
+String XMLSerializer::serializeToString(Node* node, ExceptionState& es)
 {
     if (!node)
         return String();
@@ -38,7 +39,7 @@ String XMLSerializer::serializeToString(Node* node, ExceptionCode& ec)
         // with it.  It should be the only type of node where this is possible.
         ASSERT(node->nodeType() == Node::DOCUMENT_TYPE_NODE);
 
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return String();
     }
 

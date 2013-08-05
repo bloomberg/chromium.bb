@@ -28,8 +28,9 @@
 
 #include "HTMLElementFactory.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/PositionIterator.h"
 #include "core/dom/Range.h"
@@ -96,7 +97,7 @@ int comparePositions(const Position& a, const Position& b)
             bias = 1;
     }
 
-    int result = Range::compareBoundaryPoints(nodeA, offsetA, nodeB, offsetB, IGNORE_EXCEPTION);
+    int result = Range::compareBoundaryPoints(nodeA, offsetA, nodeB, offsetB, IGNORE_EXCEPTION_STATE);
     return result ? result : bias;
 }
 
@@ -523,13 +524,13 @@ VisiblePosition visiblePositionAfterNode(Node* node)
 // Create a range object with two visible positions, start and end.
 // create(PassRefPtr<Document>, const Position&, const Position&); will use deprecatedEditingOffset
 // Use this function instead of create a regular range object (avoiding editing offset).
-PassRefPtr<Range> createRange(PassRefPtr<Document> document, const VisiblePosition& start, const VisiblePosition& end, ExceptionCode& ec)
+PassRefPtr<Range> createRange(PassRefPtr<Document> document, const VisiblePosition& start, const VisiblePosition& end, ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
     RefPtr<Range> selectedRange = Range::create(document);
-    selectedRange->setStart(start.deepEquivalent().containerNode(), start.deepEquivalent().computeOffsetInContainerNode(), ec);
-    if (!ec)
-        selectedRange->setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), ec);
+    selectedRange->setStart(start.deepEquivalent().containerNode(), start.deepEquivalent().computeOffsetInContainerNode(), es);
+    if (!es.hadException())
+        selectedRange->setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), es);
     return selectedRange.release();
 }
 
@@ -896,7 +897,7 @@ PassRefPtr<Element> createTabSpanElement(Document* document, PassRefPtr<Node> pr
     if (!tabTextNode)
         tabTextNode = document->createEditingTextNode("\t");
 
-    spanElement->appendChild(tabTextNode.release(), ASSERT_NO_EXCEPTION);
+    spanElement->appendChild(tabTextNode.release(), ASSERT_NO_EXCEPTION_STATE);
 
     return spanElement.release();
 }
@@ -1090,7 +1091,7 @@ bool isNodeVisiblyContainedWithin(Node* node, const Range* selectedRange)
     ASSERT(node);
     ASSERT(selectedRange);
     // If the node is inside the range, then it surely is contained within
-    if (selectedRange->compareNode(node, IGNORE_EXCEPTION) == Range::NODE_INSIDE)
+    if (selectedRange->compareNode(node, IGNORE_EXCEPTION_STATE) == Range::NODE_INSIDE)
         return true;
 
     bool startIsVisuallySame = visiblePositionBeforeNode(node) == selectedRange->startPosition();

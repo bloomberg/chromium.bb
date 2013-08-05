@@ -28,12 +28,13 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/html/HTMLTableCaptionElement.h"
 #include "core/html/HTMLTableRowElement.h"
 #include "core/html/HTMLTableRowsCollection.h"
@@ -76,10 +77,10 @@ HTMLTableCaptionElement* HTMLTableElement::caption() const
     return 0;
 }
 
-void HTMLTableElement::setCaption(PassRefPtr<HTMLTableCaptionElement> newCaption, ExceptionCode& ec)
+void HTMLTableElement::setCaption(PassRefPtr<HTMLTableCaptionElement> newCaption, ExceptionState& es)
 {
     deleteCaption();
-    insertBefore(newCaption, firstChild(), ec);
+    insertBefore(newCaption, firstChild(), es);
 }
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const
@@ -91,7 +92,7 @@ HTMLTableSectionElement* HTMLTableElement::tHead() const
     return 0;
 }
 
-void HTMLTableElement::setTHead(PassRefPtr<HTMLTableSectionElement> newHead, ExceptionCode& ec)
+void HTMLTableElement::setTHead(PassRefPtr<HTMLTableSectionElement> newHead, ExceptionState& es)
 {
     deleteTHead();
 
@@ -100,7 +101,7 @@ void HTMLTableElement::setTHead(PassRefPtr<HTMLTableSectionElement> newHead, Exc
         if (child->isElementNode() && !child->hasTagName(captionTag) && !child->hasTagName(colgroupTag))
             break;
 
-    insertBefore(newHead, child, ec);
+    insertBefore(newHead, child, es);
 }
 
 HTMLTableSectionElement* HTMLTableElement::tFoot() const
@@ -112,7 +113,7 @@ HTMLTableSectionElement* HTMLTableElement::tFoot() const
     return 0;
 }
 
-void HTMLTableElement::setTFoot(PassRefPtr<HTMLTableSectionElement> newFoot, ExceptionCode& ec)
+void HTMLTableElement::setTFoot(PassRefPtr<HTMLTableSectionElement> newFoot, ExceptionState& es)
 {
     deleteTFoot();
 
@@ -121,7 +122,7 @@ void HTMLTableElement::setTFoot(PassRefPtr<HTMLTableSectionElement> newFoot, Exc
         if (child->isElementNode() && !child->hasTagName(captionTag) && !child->hasTagName(colgroupTag) && !child->hasTagName(theadTag))
             break;
 
-    insertBefore(newFoot, child, ec);
+    insertBefore(newFoot, child, es);
 }
 
 PassRefPtr<HTMLElement> HTMLTableElement::createTHead()
@@ -129,13 +130,13 @@ PassRefPtr<HTMLElement> HTMLTableElement::createTHead()
     if (HTMLTableSectionElement* existingHead = tHead())
         return existingHead;
     RefPtr<HTMLTableSectionElement> head = HTMLTableSectionElement::create(theadTag, document());
-    setTHead(head, IGNORE_EXCEPTION);
+    setTHead(head, IGNORE_EXCEPTION_STATE);
     return head.release();
 }
 
 void HTMLTableElement::deleteTHead()
 {
-    removeChild(tHead(), IGNORE_EXCEPTION);
+    removeChild(tHead(), IGNORE_EXCEPTION_STATE);
 }
 
 PassRefPtr<HTMLElement> HTMLTableElement::createTFoot()
@@ -143,20 +144,21 @@ PassRefPtr<HTMLElement> HTMLTableElement::createTFoot()
     if (HTMLTableSectionElement* existingFoot = tFoot())
         return existingFoot;
     RefPtr<HTMLTableSectionElement> foot = HTMLTableSectionElement::create(tfootTag, document());
-    setTFoot(foot, IGNORE_EXCEPTION);
+    setTFoot(foot, IGNORE_EXCEPTION_STATE);
     return foot.release();
 }
 
 void HTMLTableElement::deleteTFoot()
 {
-    removeChild(tFoot(), IGNORE_EXCEPTION);
+    removeChild(tFoot(), IGNORE_EXCEPTION_STATE);
 }
 
 PassRefPtr<HTMLElement> HTMLTableElement::createTBody()
 {
     RefPtr<HTMLTableSectionElement> body = HTMLTableSectionElement::create(tbodyTag, document());
     Node* referenceElement = lastBody() ? lastBody()->nextSibling() : 0;
-    insertBefore(body, referenceElement, ASSERT_NO_EXCEPTION);
+
+    insertBefore(body, referenceElement, ASSERT_NO_EXCEPTION_STATE);
     return body.release();
 }
 
@@ -165,13 +167,13 @@ PassRefPtr<HTMLElement> HTMLTableElement::createCaption()
     if (HTMLTableCaptionElement* existingCaption = caption())
         return existingCaption;
     RefPtr<HTMLTableCaptionElement> caption = HTMLTableCaptionElement::create(captionTag, document());
-    setCaption(caption, IGNORE_EXCEPTION);
+    setCaption(caption, IGNORE_EXCEPTION_STATE);
     return caption.release();
 }
 
 void HTMLTableElement::deleteCaption()
 {
-    removeChild(caption(), IGNORE_EXCEPTION);
+    removeChild(caption(), IGNORE_EXCEPTION_STATE);
 }
 
 HTMLTableSectionElement* HTMLTableElement::lastBody() const
@@ -183,10 +185,10 @@ HTMLTableSectionElement* HTMLTableElement::lastBody() const
     return 0;
 }
 
-PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionCode& ec)
+PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& es)
 {
     if (index < -1) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return 0;
     }
 
@@ -201,7 +203,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionCode& ec
             row = HTMLTableRowsCollection::rowAfter(this, lastRow.get());
             if (!row) {
                 if (i != index) {
-                    ec = IndexSizeError;
+                    es.throwDOMException(IndexSizeError);
                     return 0;
                 }
                 break;
@@ -218,18 +220,18 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionCode& ec
         if (!parent) {
             RefPtr<HTMLTableSectionElement> newBody = HTMLTableSectionElement::create(tbodyTag, document());
             RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(document());
-            newBody->appendChild(newRow, ec);
-            appendChild(newBody.release(), ec, AttachLazily);
+            newBody->appendChild(newRow, es);
+            appendChild(newBody.release(), es, AttachLazily);
             return newRow.release();
         }
     }
 
     RefPtr<HTMLTableRowElement> newRow = HTMLTableRowElement::create(document());
-    parent->insertBefore(newRow, row.get(), ec, AttachLazily);
+    parent->insertBefore(newRow, row.get(), es, AttachLazily);
     return newRow.release();
 }
 
-void HTMLTableElement::deleteRow(int index, ExceptionCode& ec)
+void HTMLTableElement::deleteRow(int index, ExceptionState& es)
 {
     HTMLTableRowElement* row = 0;
     if (index == -1)
@@ -242,10 +244,10 @@ void HTMLTableElement::deleteRow(int index, ExceptionCode& ec)
         }
     }
     if (!row) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
-    row->remove(ec);
+    row->remove(es);
 }
 
 static inline bool isTableCellAncestor(Node* n)

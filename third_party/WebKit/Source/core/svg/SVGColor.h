@@ -28,6 +28,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class RGBColor;
 
 class SVGColor : public CSSValue {
@@ -70,9 +71,9 @@ public:
         return color;
     }
 
-    void setRGBColor(const String& rgbColor, ExceptionCode&);
-    void setRGBColorICCColor(const String& rgbColor, const String& iccColor, ExceptionCode&);
-    void setColor(unsigned short colorType, const String& rgbColor, const String& iccColor, ExceptionCode&);
+    void setRGBColor(const String& rgbColor, ExceptionState&);
+    void setRGBColorICCColor(const String& rgbColor, const String& iccColor, ExceptionState&);
+    void setColor(unsigned short colorType, const String& rgbColor, const String& iccColor, ExceptionState&);
 
     String customCssText() const;
 

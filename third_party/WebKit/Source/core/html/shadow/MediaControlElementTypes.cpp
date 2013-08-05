@@ -33,8 +33,8 @@
 
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/StylePropertySet.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/MouseEvent.h"
 
 namespace WebCore {
@@ -185,7 +185,7 @@ void MediaControlVolumeSliderElement::defaultEventHandler(Event* event)
 
     double volume = value().toDouble();
     if (volume != mediaController()->volume())
-        mediaController()->setVolume(volume, ASSERT_NO_EXCEPTION);
+        mediaController()->setVolume(volume, ASSERT_NO_EXCEPTION_STATE);
     if (m_clearMutedOnUserInteraction)
         mediaController()->setMuted(false);
 }

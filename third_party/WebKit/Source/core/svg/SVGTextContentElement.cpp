@@ -19,13 +19,14 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGTextContentElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "SVGNames.h"
 #include "XMLNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/editing/FrameSelection.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderObject.h"
@@ -93,7 +94,7 @@ PassRefPtr<SVGAnimatedLength> SVGTextContentElement::textLength()
 {
     DEFINE_STATIC_LOCAL(SVGLength, defaultTextLength, (LengthModeOther));
     if (m_specifiedTextLength == defaultTextLength)
-        m_textLength.value.newValueSpecifiedUnits(LengthTypeNumber, getComputedTextLength(), ASSERT_NO_EXCEPTION);
+        m_textLength.value.newValueSpecifiedUnits(LengthTypeNumber, getComputedTextLength(), ASSERT_NO_EXCEPTION_STATE);
 
     m_textLength.shouldSynchronize = true;
     return static_pointer_cast<SVGAnimatedLength>(lookupOrCreateTextLengthWrapper(this));
@@ -112,61 +113,61 @@ float SVGTextContentElement::getComputedTextLength()
     return SVGTextQuery(renderer()).textLength();
 }
 
-float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchars, ExceptionCode& ec)
+float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState& es)
 {
     document()->updateLayoutIgnorePendingStylesheets();
 
     unsigned numberOfChars = getNumberOfChars();
     if (charnum >= numberOfChars) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return 0.0f;
     }
 
     return SVGTextQuery(renderer()).subStringLength(charnum, nchars);
 }
 
-SVGPoint SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionCode& ec)
+SVGPoint SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& es)
 {
     document()->updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return FloatPoint();
     }
 
     return SVGTextQuery(renderer()).startPositionOfCharacter(charnum);
 }
 
-SVGPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionCode& ec)
+SVGPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& es)
 {
     document()->updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return FloatPoint();
     }
 
     return SVGTextQuery(renderer()).endPositionOfCharacter(charnum);
 }
 
-SVGRect SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionCode& ec)
+SVGRect SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& es)
 {
     document()->updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return SVGRect();
     }
 
     return SVGTextQuery(renderer()).extentOfCharacter(charnum);
 }
 
-float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionCode& ec)
+float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState& es)
 {
     document()->updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return 0.0f;
     }
 
@@ -179,11 +180,11 @@ int SVGTextContentElement::getCharNumAtPosition(const SVGPoint& point)
     return SVGTextQuery(renderer()).characterNumberAtPosition(point);
 }
 
-void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, ExceptionCode& ec)
+void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, ExceptionState& es)
 {
     unsigned numberOfChars = getNumberOfChars();
     if (charnum >= numberOfChars) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 

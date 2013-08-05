@@ -20,9 +20,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPaint.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -63,9 +63,9 @@ void SVGPaint::setUri(const String&)
     // The setters are the most problematic part so we remove the support for those first.
 }
 
-void SVGPaint::setPaint(unsigned short, const String&, const String&, const String&, ExceptionCode& ec)
+void SVGPaint::setPaint(unsigned short, const String&, const String&, const String&, ExceptionState& es)
 {
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
 String SVGPaint::customCssText() const

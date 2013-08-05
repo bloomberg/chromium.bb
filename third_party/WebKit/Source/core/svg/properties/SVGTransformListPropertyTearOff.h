@@ -20,6 +20,8 @@
 #ifndef SVGTransformListPropertyTearOff_h
 #define SVGTransformListPropertyTearOff_h
 
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/properties/SVGListPropertyTearOff.h"
 
@@ -37,21 +39,21 @@ public:
         return adoptRef(new SVGTransformListPropertyTearOff(animatedProperty, role, values, wrappers));
     }
 
-    PassRefPtr<SVGPropertyTearOff<SVGTransform> > createSVGTransformFromMatrix(SVGPropertyTearOff<SVGMatrix>* matrix, ExceptionCode& ec)
+    PassRefPtr<SVGPropertyTearOff<SVGTransform> > createSVGTransformFromMatrix(SVGPropertyTearOff<SVGMatrix>* matrix, ExceptionState& es)
     {
         ASSERT(m_values);
         if (!matrix) {
-            ec = TypeMismatchError;
+            es.throwDOMException(TypeMismatchError);
             return 0;
         }
         return SVGPropertyTearOff<SVGTransform>::create(m_values->createSVGTransformFromMatrix(matrix->propertyReference()));
     }
 
-    PassRefPtr<SVGPropertyTearOff<SVGTransform> > consolidate(ExceptionCode& ec)
+    PassRefPtr<SVGPropertyTearOff<SVGTransform> > consolidate(ExceptionState& es)
     {
         ASSERT(m_values);
         ASSERT(m_wrappers);
-        if (!canAlterList(ec))
+        if (!canAlterList(es))
             return 0;
 
         ASSERT(m_values->size() == m_wrappers->size());

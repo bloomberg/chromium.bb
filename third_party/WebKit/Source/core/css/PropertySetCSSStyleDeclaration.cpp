@@ -24,6 +24,7 @@
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StylePropertySet.h"
@@ -148,13 +149,13 @@ String PropertySetCSSStyleDeclaration::cssText() const
     return m_propertySet->asText();
 }
 
-void PropertySetCSSStyleDeclaration::setCssText(const String& text, ExceptionCode& ec)
+void PropertySetCSSStyleDeclaration::setCssText(const String& text, ExceptionState& es)
 {
     StyleAttributeMutationScope mutationScope(this);
     willMutate();
 
-    ec = 0;
-    // FIXME: Detect syntax errors and set ec.
+    es.clearException();
+    // FIXME: Detect syntax errors and set es.
     m_propertySet->parseDeclaration(text, contextStyleSheet());
 
     didMutate(PropertyChanged);
@@ -205,7 +206,7 @@ bool PropertySetCSSStyleDeclaration::isPropertyImplicit(const String& propertyNa
     return m_propertySet->isPropertyImplicit(propertyID);
 }
 
-void PropertySetCSSStyleDeclaration::setProperty(const String& propertyName, const String& value, const String& priority, ExceptionCode& ec)
+void PropertySetCSSStyleDeclaration::setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState& es)
 {
     StyleAttributeMutationScope mutationScope(this);
     CSSPropertyID propertyID = cssPropertyID(propertyName);
@@ -216,7 +217,7 @@ void PropertySetCSSStyleDeclaration::setProperty(const String& propertyName, con
 
     willMutate();
 
-    ec = 0;
+    es.clearException();
     bool changed = m_propertySet->setProperty(propertyID, value, important, contextStyleSheet());
 
     didMutate(changed ? PropertyChanged : NoChanges);
@@ -228,7 +229,7 @@ void PropertySetCSSStyleDeclaration::setProperty(const String& propertyName, con
     }
 }
 
-String PropertySetCSSStyleDeclaration::removeProperty(const String& propertyName, ExceptionCode& ec)
+String PropertySetCSSStyleDeclaration::removeProperty(const String& propertyName, ExceptionState& es)
 {
     StyleAttributeMutationScope mutationScope(this);
     CSSPropertyID propertyID = cssPropertyID(propertyName);
@@ -237,7 +238,7 @@ String PropertySetCSSStyleDeclaration::removeProperty(const String& propertyName
 
     willMutate();
 
-    ec = 0;
+    es.clearException();
     String result;
     bool changed = m_propertySet->removeProperty(propertyID, &result);
 
@@ -258,12 +259,12 @@ String PropertySetCSSStyleDeclaration::getPropertyValueInternal(CSSPropertyID pr
     return m_propertySet->getPropertyValue(propertyID);
 }
 
-void PropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID propertyID, const String& value, bool important, ExceptionCode& ec)
+void PropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID propertyID, const String& value, bool important, ExceptionState& es)
 {
     StyleAttributeMutationScope mutationScope(this);
     willMutate();
 
-    ec = 0;
+    es.clearException();
     bool changed = m_propertySet->setProperty(propertyID, value, important, contextStyleSheet());
 
     didMutate(changed ? PropertyChanged : NoChanges);
@@ -284,7 +285,7 @@ String PropertySetCSSStyleDeclaration::variableValue(const AtomicString& name) c
     return m_propertySet->variableValue(name);
 }
 
-void PropertySetCSSStyleDeclaration::setVariableValue(const AtomicString& name, const String& value, ExceptionCode&)
+void PropertySetCSSStyleDeclaration::setVariableValue(const AtomicString& name, const String& value, ExceptionState&)
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
     StyleAttributeMutationScope mutationScope(this);
@@ -307,7 +308,7 @@ bool PropertySetCSSStyleDeclaration::removeVariable(const AtomicString& name)
     return changed;
 }
 
-void PropertySetCSSStyleDeclaration::clearVariables(ExceptionCode&)
+void PropertySetCSSStyleDeclaration::clearVariables(ExceptionState&)
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
     StyleAttributeMutationScope mutationScope(this);

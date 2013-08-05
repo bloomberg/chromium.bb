@@ -28,6 +28,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 class SVGPaint : public SVGColor {
 public:
     enum SVGPaintType {
@@ -88,7 +90,7 @@ public:
     String uri() const { return m_uri; }
 
     void setUri(const String&);
-    void setPaint(unsigned short paintType, const String& uri, const String& rgbColor, const String& iccColor, ExceptionCode&);
+    void setPaint(unsigned short paintType, const String& uri, const String& rgbColor, const String& iccColor, ExceptionState&);
 
     String customCssText() const;
 

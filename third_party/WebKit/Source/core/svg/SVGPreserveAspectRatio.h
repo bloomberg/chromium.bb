@@ -26,9 +26,8 @@
 namespace WebCore {
 
 class AffineTransform;
+class ExceptionState;
 class FloatRect;
-
-typedef int ExceptionCode;
 
 class SVGPreserveAspectRatio {
     WTF_MAKE_FAST_ALLOCATED;
@@ -55,10 +54,10 @@ public:
 
     SVGPreserveAspectRatio();
 
-    void setAlign(unsigned short align, ExceptionCode&);
+    void setAlign(unsigned short align, ExceptionState&);
     unsigned short align() const { return m_align; }
 
-    void setMeetOrSlice(unsigned short, ExceptionCode&);
+    void setMeetOrSlice(unsigned short, ExceptionState&);
     unsigned short meetOrSlice() const { return m_meetOrSlice; }
 
     void transformRect(FloatRect& destRect, FloatRect& srcRect);

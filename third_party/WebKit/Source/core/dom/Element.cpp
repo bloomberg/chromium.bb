@@ -32,6 +32,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "XMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/css/CSSParser.h"
@@ -825,10 +826,10 @@ const AtomicString& Element::getAttributeNS(const AtomicString& namespaceURI, co
     return getAttribute(QualifiedName(nullAtom, localName, namespaceURI));
 }
 
-void Element::setAttribute(const AtomicString& localName, const AtomicString& value, ExceptionCode& ec)
+void Element::setAttribute(const AtomicString& localName, const AtomicString& value, ExceptionState& es)
 {
     if (!Document::isValidName(localName)) {
-        ec = InvalidCharacterError;
+        es.throwDOMException(InvalidCharacterError);
         return;
     }
 
@@ -1163,11 +1164,11 @@ String Element::nodeNamePreservingCase() const
     return m_tagName.toString();
 }
 
-void Element::setPrefix(const AtomicString& prefix, ExceptionCode& ec)
+void Element::setPrefix(const AtomicString& prefix, ExceptionState& es)
 {
-    ec = 0;
-    checkSetPrefix(prefix, ec);
-    if (ec)
+    es.clearException();
+    checkSetPrefix(prefix, es);
+    if (es.hadException())
         return;
 
     m_tagName.setPrefix(prefix.isEmpty() ? AtomicString() : prefix);
@@ -1582,7 +1583,7 @@ void Element::didAffectSelector(AffectedSelectorMask mask)
         elementShadow->didAffectSelector(mask);
 }
 
-PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionCode& ec)
+PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& es)
 {
     if (alwaysCreateUserAgentShadowRoot())
         ensureUserAgentShadowRoot();
@@ -1594,7 +1595,7 @@ PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionCode& ec)
     // subtrees won't work well in that element. Until they are fixed, we disable
     // adding author shadow root for them.
     if (!areAuthorShadowsAllowed()) {
-        ec = HierarchyRequestError;
+        es.throwDOMException(HierarchyRequestError);
         return 0;
     }
     return ensureShadow()->addShadowRoot(this, ShadowRoot::AuthorShadowRoot);
@@ -1810,10 +1811,10 @@ const Vector<RefPtr<Attr> >& Element::attrNodeList()
     return *attrNodeListForElement(this);
 }
 
-PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionCode& ec)
+PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& es)
 {
     if (!attrNode) {
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
         return 0;
     }
 
@@ -1824,7 +1825,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionCode& ec)
     // InUseAttributeError: Raised if node is an Attr that is already an attribute of another Element object.
     // The DOM user must explicitly clone Attr nodes to re-use them in other elements.
     if (attrNode->ownerElement()) {
-        ec = InUseAttributeError;
+        es.throwDOMException(InUseAttributeError);
         return 0;
     }
 
@@ -1848,19 +1849,19 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionCode& ec)
     return oldAttrNode.release();
 }
 
-PassRefPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionCode& ec)
+PassRefPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionState& es)
 {
-    return setAttributeNode(attr, ec);
+    return setAttributeNode(attr, es);
 }
 
-PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionCode& ec)
+PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& es)
 {
     if (!attr) {
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
         return 0;
     }
     if (attr->ownerElement() != this) {
-        ec = NotFoundError;
+        es.throwDOMException(NotFoundError);
         return 0;
     }
 
@@ -1870,7 +1871,7 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionCode& ec)
 
     size_t index = elementData()->getAttrIndex(attr);
     if (index == notFound) {
-        ec = NotFoundError;
+        es.throwDOMException(NotFoundError);
         return 0;
     }
 
@@ -1879,17 +1880,17 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionCode& ec)
     return guard.release();
 }
 
-bool Element::parseAttributeName(QualifiedName& out, const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionCode& ec)
+bool Element::parseAttributeName(QualifiedName& out, const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& es)
 {
     String prefix, localName;
-    if (!Document::parseQualifiedName(qualifiedName, prefix, localName, ec))
+    if (!Document::parseQualifiedName(qualifiedName, prefix, localName, es))
         return false;
-    ASSERT(!ec);
+    ASSERT(!es.hadException());
 
     QualifiedName qName(prefix, localName, namespaceURI);
 
     if (!Document::hasValidNamespaceForAttributes(qName)) {
-        ec = NamespaceError;
+        es.throwDOMException(NamespaceError);
         return false;
     }
 
@@ -1897,10 +1898,10 @@ bool Element::parseAttributeName(QualifiedName& out, const AtomicString& namespa
     return true;
 }
 
-void Element::setAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& value, ExceptionCode& ec)
+void Element::setAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& value, ExceptionState& es)
 {
     QualifiedName parsedName = anyName;
-    if (!parseAttributeName(parsedName, namespaceURI, qualifiedName, ec))
+    if (!parseAttributeName(parsedName, namespaceURI, qualifiedName, es))
         return;
     setAttribute(parsedName, value);
 }
@@ -2501,14 +2502,14 @@ RenderObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
     return 0;
 }
 
-bool Element::webkitMatchesSelector(const String& selector, ExceptionCode& ec)
+bool Element::webkitMatchesSelector(const String& selector, ExceptionState& es)
 {
     if (selector.isEmpty()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return false;
     }
 
-    SelectorQuery* selectorQuery = document()->selectorQueryCache()->add(selector, document(), ec);
+    SelectorQuery* selectorQuery = document()->selectorQueryCache()->add(selector, document(), es);
     if (!selectorQuery)
         return false;
     return selectorQuery->matches(this);

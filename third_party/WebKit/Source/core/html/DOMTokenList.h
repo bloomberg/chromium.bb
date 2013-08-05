@@ -32,8 +32,7 @@
 namespace WebCore {
 
 class Element;
-
-typedef int ExceptionCode;
+class ExceptionState;
 
 class DOMTokenList : public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(DOMTokenList); WTF_MAKE_FAST_ALLOCATED;
@@ -50,13 +49,13 @@ public:
     virtual unsigned length() const = 0;
     virtual const AtomicString item(unsigned index) const = 0;
 
-    bool contains(const AtomicString&, ExceptionCode&) const;
-    virtual void add(const Vector<String>&, ExceptionCode&);
-    void add(const AtomicString&, ExceptionCode&);
-    virtual void remove(const Vector<String>&, ExceptionCode&);
-    void remove(const AtomicString&, ExceptionCode&);
-    bool toggle(const AtomicString&, ExceptionCode&);
-    bool toggle(const AtomicString&, bool force, ExceptionCode&);
+    bool contains(const AtomicString&, ExceptionState&) const;
+    virtual void add(const Vector<String>&, ExceptionState&);
+    void add(const AtomicString&, ExceptionState&);
+    virtual void remove(const Vector<String>&, ExceptionState&);
+    void remove(const AtomicString&, ExceptionState&);
+    bool toggle(const AtomicString&, ExceptionState&);
+    bool toggle(const AtomicString&, bool force, ExceptionState&);
 
     AtomicString toString() const { return value(); }
 
@@ -70,8 +69,8 @@ protected:
     virtual bool containsInternal(const AtomicString&) const = 0;
     virtual void removeInternal(const AtomicString&);
 
-    static bool validateToken(const AtomicString&, ExceptionCode&);
-    static bool validateTokens(const Vector<String>&, ExceptionCode&);
+    static bool validateToken(const AtomicString&, ExceptionState&);
+    static bool validateTokens(const Vector<String>&, ExceptionState&);
     static String addToken(const AtomicString&, const AtomicString&);
     static String addTokens(const AtomicString&, const Vector<String>&);
     static String removeToken(const AtomicString&, const AtomicString&);

@@ -20,7 +20,7 @@
 #ifndef SVGAnimatedEnumerationPropertyTearOff_h
 #define SVGAnimatedEnumerationPropertyTearOff_h
 
-#include "core/dom/ExceptionCode.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/svg/properties/SVGAnimatedStaticPropertyTearOff.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
 
@@ -29,14 +29,14 @@ namespace WebCore {
 template<typename EnumType>
 class SVGAnimatedEnumerationPropertyTearOff : public SVGAnimatedStaticPropertyTearOff<unsigned> {
 public:
-    virtual void setBaseVal(const unsigned& property, ExceptionCode& ec)
+    virtual void setBaseVal(const unsigned& property, ExceptionState& es)
     {
         // All SVG enumeration values, that are allowed to be set via SVG DOM start with 1, 0 corresponds to unknown and is not settable through SVG DOM.
         if (!property || property > SVGPropertyTraits<EnumType>::highestEnumValue()) {
-            ec = TypeError;
+            es.throwTypeError();
             return;
         }
-        SVGAnimatedStaticPropertyTearOff<unsigned>::setBaseVal(property, ec);
+        SVGAnimatedStaticPropertyTearOff<unsigned>::setBaseVal(property, es);
     }
 
     static PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<EnumType> > create(SVGElement* contextElement, const QualifiedName& attributeName, AnimatedPropertyType animatedPropertyType, EnumType& property)

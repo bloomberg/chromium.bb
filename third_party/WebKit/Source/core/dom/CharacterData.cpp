@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/dom/CharacterData.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
@@ -56,10 +57,10 @@ void CharacterData::setData(const String& data)
     document()->textRemoved(this, 0, oldLength);
 }
 
-String CharacterData::substringData(unsigned offset, unsigned count, ExceptionCode& ec)
+String CharacterData::substringData(unsigned offset, unsigned count, ExceptionState& es)
 {
     if (offset > length()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return String();
     }
 
@@ -116,10 +117,10 @@ void CharacterData::appendData(const String& data)
     // FIXME: Should we call textInserted here?
 }
 
-void CharacterData::insertData(unsigned offset, const String& data, ExceptionCode& ec)
+void CharacterData::insertData(unsigned offset, const String& data, ExceptionState& es)
 {
     if (offset > length()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
@@ -131,10 +132,10 @@ void CharacterData::insertData(unsigned offset, const String& data, ExceptionCod
     document()->textInserted(this, offset, data.length());
 }
 
-void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionCode& ec)
+void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& es)
 {
     if (offset > length()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
@@ -152,10 +153,10 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionCode& e
     document()->textRemoved(this, offset, realCount);
 }
 
-void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionCode& ec)
+void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& es)
 {
     if (offset > length()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 

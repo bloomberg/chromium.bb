@@ -34,13 +34,12 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class Image;
-
-typedef int ExceptionCode;
 
 class CanvasPattern : public RefCounted<CanvasPattern>, public ScriptWrappable {
 public:
-    static void parseRepetitionType(const String&, bool& repeatX, bool& repeatY, ExceptionCode&);
+    static void parseRepetitionType(const String&, bool& repeatX, bool& repeatY, ExceptionState&);
 
     static PassRefPtr<CanvasPattern> create(PassRefPtr<Image> image, bool repeatX, bool repeatY, bool originClean)
     {

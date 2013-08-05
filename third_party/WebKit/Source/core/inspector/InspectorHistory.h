@@ -31,7 +31,6 @@
 #ifndef InspectorHistory_h
 #define InspectorHistory_h
 
-#include "core/dom/ExceptionCode.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -40,6 +39,7 @@ namespace WebCore {
 
 class ContainerNode;
 class Element;
+class ExceptionState;
 class Node;
 
 
@@ -56,10 +56,10 @@ public:
         virtual String mergeId();
         virtual void merge(PassOwnPtr<Action>);
 
-        virtual bool perform(ExceptionCode&) = 0;
+        virtual bool perform(ExceptionState&) = 0;
 
-        virtual bool undo(ExceptionCode&) = 0;
-        virtual bool redo(ExceptionCode&) = 0;
+        virtual bool undo(ExceptionState&) = 0;
+        virtual bool redo(ExceptionState&) = 0;
 
         virtual bool isUndoableStateMark();
     private:
@@ -69,11 +69,11 @@ public:
     InspectorHistory();
     virtual ~InspectorHistory();
 
-    bool perform(PassOwnPtr<Action>, ExceptionCode&);
+    bool perform(PassOwnPtr<Action>, ExceptionState&);
     void markUndoableState();
 
-    bool undo(ExceptionCode&);
-    bool redo(ExceptionCode&);
+    bool undo(ExceptionState&);
+    bool redo(ExceptionState&);
     void reset();
 
 private:

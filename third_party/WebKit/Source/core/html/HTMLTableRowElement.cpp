@@ -26,6 +26,7 @@
 #include "core/html/HTMLTableRowElement.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLTableCellElement.h"
@@ -117,30 +118,30 @@ int HTMLTableRowElement::sectionRowIndex() const
     return rIndex;
 }
 
-PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionCode& ec)
+PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionState& es)
 {
     RefPtr<HTMLCollection> children = cells();
     int numCells = children ? children->length() : 0;
     if (index < -1 || index > numCells) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return 0;
     }
 
     RefPtr<HTMLTableCellElement> cell = HTMLTableCellElement::create(tdTag, document());
     if (index < 0 || index >= numCells)
-        appendChild(cell, ec, AttachLazily);
+        appendChild(cell, es, AttachLazily);
     else {
         Node* n;
         if (index < 1)
             n = firstChild();
         else
             n = children->item(index);
-        insertBefore(cell, n, ec, AttachLazily);
+        insertBefore(cell, n, es, AttachLazily);
     }
     return cell.release();
 }
 
-void HTMLTableRowElement::deleteCell(int index, ExceptionCode& ec)
+void HTMLTableRowElement::deleteCell(int index, ExceptionState& es)
 {
     RefPtr<HTMLCollection> children = cells();
     int numCells = children ? children->length() : 0;
@@ -148,9 +149,9 @@ void HTMLTableRowElement::deleteCell(int index, ExceptionCode& ec)
         index = numCells-1;
     if (index >= 0 && index < numCells) {
         RefPtr<Node> cell = children->item(index);
-        HTMLElement::removeChild(cell.get(), ec);
+        HTMLElement::removeChild(cell.get(), es);
     } else {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
     }
 }
 
@@ -159,9 +160,9 @@ PassRefPtr<HTMLCollection> HTMLTableRowElement::cells()
     return ensureCachedHTMLCollection(TRCells);
 }
 
-void HTMLTableRowElement::setCells(HTMLCollection*, ExceptionCode& ec)
+void HTMLTableRowElement::setCells(HTMLCollection*, ExceptionState& es)
 {
-    ec = NoModificationAllowedError;
+    es.throwDOMException(NoModificationAllowedError);
 }
 
 }

@@ -28,12 +28,13 @@
 
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/BeforeTextInsertedEvent.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
@@ -105,7 +106,7 @@ PassRefPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(const QualifiedName&
 
 void HTMLTextAreaElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
-    root->appendChild(TextControlInnerTextElement::create(document()), ASSERT_NO_EXCEPTION);
+    root->appendChild(TextControlInnerTextElement::create(document()), ASSERT_NO_EXCEPTION_STATE);
 }
 
 const AtomicString& HTMLTextAreaElement::formControlType() const
@@ -418,14 +419,14 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
     }
     size_t size = textNodes.size();
     for (size_t i = 0; i < size; ++i)
-        removeChild(textNodes[i].get(), IGNORE_EXCEPTION);
+        removeChild(textNodes[i].get(), IGNORE_EXCEPTION_STATE);
 
     // Normalize line endings.
     String value = defaultValue;
     value.replace("\r\n", "\n");
     value.replace('\r', '\n');
 
-    insertBefore(document()->createTextNode(value), firstChild(), IGNORE_EXCEPTION);
+    insertBefore(document()->createTextNode(value), firstChild(), IGNORE_EXCEPTION_STATE);
 
     if (!m_isDirty)
         setNonDirtyValue(value);
@@ -438,10 +439,10 @@ int HTMLTextAreaElement::maxLength() const
     return ok && value >= 0 ? value : -1;
 }
 
-void HTMLTextAreaElement::setMaxLength(int newValue, ExceptionCode& ec)
+void HTMLTextAreaElement::setMaxLength(int newValue, ExceptionState& es)
 {
     if (newValue < 0)
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
     else
         setAttribute(maxlengthAttr, String::number(newValue));
 }
@@ -540,7 +541,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
     String placeholderText = strippedPlaceholder();
     if (placeholderText.isEmpty()) {
         if (m_placeholder) {
-            userAgentShadowRoot()->removeChild(m_placeholder, ASSERT_NO_EXCEPTION);
+            userAgentShadowRoot()->removeChild(m_placeholder, ASSERT_NO_EXCEPTION_STATE);
             m_placeholder = 0;
         }
         return;
@@ -549,9 +550,9 @@ void HTMLTextAreaElement::updatePlaceholderText()
         RefPtr<HTMLDivElement> placeholder = HTMLDivElement::create(document());
         m_placeholder = placeholder.get();
         m_placeholder->setPseudo(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
-        userAgentShadowRoot()->insertBefore(m_placeholder, innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION);
+        userAgentShadowRoot()->insertBefore(m_placeholder, innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION_STATE);
     }
-    m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION);
+    m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION_STATE);
     fixPlaceholderRenderer(m_placeholder, innerTextElement());
 }
 

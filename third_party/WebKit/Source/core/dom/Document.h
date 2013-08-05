@@ -64,7 +64,6 @@ class CDATASection;
 class CSSStyleDeclaration;
 class CSSStyleSheet;
 class CachedCSSStyleSheet;
-class ResourceFetcher;
 class CachedScript;
 class CanvasRenderingContext;
 class CharacterData;
@@ -77,6 +76,7 @@ class DOMNamedFlowCollection;
 class DOMSecurityPolicy;
 class DOMSelection;
 class DOMWindow;
+class DOMWrapperWorld;
 class Database;
 class DatabaseThread;
 class DocumentFragment;
@@ -92,31 +92,31 @@ class DocumentType;
 class Element;
 class Event;
 class EventListener;
-class FloatRect;
+class ExceptionState;
 class FloatQuad;
+class FloatRect;
 class FormController;
 class Frame;
 class FrameView;
+class HTMLAllCollection;
 class HTMLCanvasElement;
 class HTMLCollection;
-class HTMLAllCollection;
 class HTMLDocument;
 class HTMLElement;
 class HTMLFrameOwnerElement;
 class HTMLHeadElement;
-class HTMLImport;
 class HTMLIFrameElement;
+class HTMLImport;
 class HTMLMapElement;
 class HTMLNameCollection;
 class HTMLScriptElement;
 class HitTestRequest;
 class HitTestResult;
 class IntPoint;
+class JSNode;
 class LayoutPoint;
 class LayoutRect;
 class LiveNodeListBase;
-class DOMWrapperWorld;
-class JSNode;
 class Locale;
 class MediaQueryList;
 class MediaQueryMatcher;
@@ -132,6 +132,7 @@ class Range;
 class RegisteredEventListener;
 class RenderView;
 class RequestAnimationFrameCallback;
+class ResourceFetcher;
 class SVGDocumentExtensions;
 class ScriptElementData;
 class ScriptRunner;
@@ -307,17 +308,17 @@ public:
 
     bool hasManifest() const;
 
-    PassRefPtr<Element> createElement(const AtomicString& name, ExceptionCode&);
+    PassRefPtr<Element> createElement(const AtomicString& name, ExceptionState&);
     PassRefPtr<DocumentFragment> createDocumentFragment();
     PassRefPtr<Text> createTextNode(const String& data);
     PassRefPtr<Comment> createComment(const String& data);
-    PassRefPtr<CDATASection> createCDATASection(const String& data, ExceptionCode&);
-    PassRefPtr<ProcessingInstruction> createProcessingInstruction(const String& target, const String& data, ExceptionCode&);
-    PassRefPtr<Attr> createAttribute(const String& name, ExceptionCode&);
-    PassRefPtr<Attr> createAttributeNS(const String& namespaceURI, const String& qualifiedName, ExceptionCode&, bool shouldIgnoreNamespaceChecks = false);
-    PassRefPtr<Node> importNode(Node* importedNode, ExceptionCode& ec) { return importNode(importedNode, true, ec); }
-    PassRefPtr<Node> importNode(Node* importedNode, bool deep, ExceptionCode&);
-    PassRefPtr<Element> createElementNS(const String& namespaceURI, const String& qualifiedName, ExceptionCode&);
+    PassRefPtr<CDATASection> createCDATASection(const String& data, ExceptionState&);
+    PassRefPtr<ProcessingInstruction> createProcessingInstruction(const String& target, const String& data, ExceptionState&);
+    PassRefPtr<Attr> createAttribute(const String& name, ExceptionState&);
+    PassRefPtr<Attr> createAttributeNS(const String& namespaceURI, const String& qualifiedName, ExceptionState&, bool shouldIgnoreNamespaceChecks = false);
+    PassRefPtr<Node> importNode(Node* importedNode, ExceptionState& ec) { return importNode(importedNode, true, ec); }
+    PassRefPtr<Node> importNode(Node* importedNode, bool deep, ExceptionState&);
+    PassRefPtr<Element> createElementNS(const String& namespaceURI, const String& qualifiedName, ExceptionState&);
     PassRefPtr<Element> createElement(const QualifiedName&, bool createdByParser);
 
     bool cssStickyPositionEnabled() const;
@@ -372,8 +373,8 @@ public:
     bool hasXMLDeclaration() const { return m_hasXMLDeclaration; }
 
     void setXMLEncoding(const String& encoding) { m_xmlEncoding = encoding; } // read-only property, only to be set from XMLDocumentParser
-    void setXMLVersion(const String&, ExceptionCode&);
-    void setXMLStandalone(bool, ExceptionCode&);
+    void setXMLVersion(const String&, ExceptionState&);
+    void setXMLStandalone(bool, ExceptionState&);
     void setHasXMLDeclaration(bool hasXMLDeclaration) { m_hasXMLDeclaration = hasXMLDeclaration ? 1 : 0; }
 
     String documentURI() const { return m_documentURI; }
@@ -386,7 +387,7 @@ public:
 
     DOMSecurityPolicy* securityPolicy();
 
-    PassRefPtr<Node> adoptNode(PassRefPtr<Node> source, ExceptionCode&);
+    PassRefPtr<Node> adoptNode(PassRefPtr<Node> source, ExceptionState&);
 
     PassRefPtr<HTMLCollection> images();
     PassRefPtr<HTMLCollection> embeds();
@@ -467,15 +468,15 @@ public:
 
     PassRefPtr<Range> createRange();
 
-    PassRefPtr<NodeIterator> createNodeIterator(Node* root, ExceptionCode&);
-    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, ExceptionCode&);
-    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, ExceptionCode&);
-    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences, ExceptionCode&);
+    PassRefPtr<NodeIterator> createNodeIterator(Node* root, ExceptionState&);
+    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, ExceptionState&);
+    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, ExceptionState&);
+    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences, ExceptionState&);
 
-    PassRefPtr<TreeWalker> createTreeWalker(Node* root, ExceptionCode&);
-    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, ExceptionCode&);
-    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, ExceptionCode&);
-    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences, ExceptionCode&);
+    PassRefPtr<TreeWalker> createTreeWalker(Node* root, ExceptionState&);
+    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, ExceptionState&);
+    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, ExceptionState&);
+    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences, ExceptionState&);
 
     // Special support for editing
     PassRefPtr<CSSStyleDeclaration> createCSSStyleDeclaration();
@@ -695,7 +696,7 @@ public:
     EventListener* getWindowAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld);
     void dispatchWindowEvent(PassRefPtr<Event>, PassRefPtr<EventTarget> = 0);
 
-    PassRefPtr<Event> createEvent(const String& eventType, ExceptionCode&);
+    PassRefPtr<Event> createEvent(const String& eventType, ExceptionState&);
 
     // keep track of what types of event listeners are registered, so we don't
     // dispatch events unnecessarily
@@ -757,13 +758,13 @@ public:
     void setTitleElement(const StringWithDirection&, Element* titleElement);
     void removeTitle(Element* titleElement);
 
-    String cookie(ExceptionCode&) const;
-    void setCookie(const String&, ExceptionCode&);
+    String cookie(ExceptionState&) const;
+    void setCookie(const String&, ExceptionState&);
 
     String referrer() const;
 
     String domain() const;
-    void setDomain(const String& newDomain, ExceptionCode&);
+    void setDomain(const String& newDomain, ExceptionState&);
 
     String lastModified() const;
 
@@ -790,14 +791,14 @@ public:
     // The following breaks a qualified name into a prefix and a local name.
     // It also does a validity check, and returns false if the qualified name
     // is invalid.  It also sets ExceptionCode when name is invalid.
-    static bool parseQualifiedName(const String& qualifiedName, String& prefix, String& localName, ExceptionCode&);
+    static bool parseQualifiedName(const String& qualifiedName, String& prefix, String& localName, ExceptionState&);
 
     // Checks to make sure prefix and namespace do not conflict (per DOM Core 3)
     static bool hasValidNamespaceForElements(const QualifiedName&);
     static bool hasValidNamespaceForAttributes(const QualifiedName&);
 
     HTMLElement* body() const;
-    void setBody(PassRefPtr<HTMLElement>, ExceptionCode&);
+    void setBody(PassRefPtr<HTMLElement>, ExceptionState&);
 
     HTMLHeadElement* head();
 
@@ -979,10 +980,10 @@ public:
 
     TextAutosizer* textAutosizer() { return m_textAutosizer.get(); }
 
-    PassRefPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionCode&);
-    PassRefPtr<Element> createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionCode&);
-    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, ExceptionCode&);
-    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
+    PassRefPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
+    PassRefPtr<Element> createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionState&);
+    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, ExceptionState&);
+    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionState&);
     CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
 
     void setImport(HTMLImport*);

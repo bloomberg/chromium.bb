@@ -22,8 +22,8 @@
 #include "core/svg/SVGDocument.h"
 
 #include "SVGNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/EventNames.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderView.h"
@@ -52,18 +52,18 @@ SVGSVGElement* SVGDocument::rootElement() const
 
 void SVGDocument::dispatchZoomEvent(float prevScale, float newScale)
 {
-    RefPtr<SVGZoomEvent> event = static_pointer_cast<SVGZoomEvent>(createEvent("SVGZoomEvents", IGNORE_EXCEPTION));
+    RefPtr<SVGZoomEvent> event = static_pointer_cast<SVGZoomEvent>(createEvent("SVGZoomEvents", IGNORE_EXCEPTION_STATE));
     event->initEvent(eventNames().zoomEvent, true, false);
     event->setPreviousScale(prevScale);
     event->setNewScale(newScale);
-    rootElement()->dispatchEvent(event.release(), IGNORE_EXCEPTION);
+    rootElement()->dispatchEvent(event.release(), IGNORE_EXCEPTION_STATE);
 }
 
 void SVGDocument::dispatchScrollEvent()
 {
-    RefPtr<Event> event = createEvent("SVGEvents", IGNORE_EXCEPTION);
+    RefPtr<Event> event = createEvent("SVGEvents", IGNORE_EXCEPTION_STATE);
     event->initEvent(eventNames().scrollEvent, true, false);
-    rootElement()->dispatchEvent(event.release(), IGNORE_EXCEPTION);
+    rootElement()->dispatchEvent(event.release(), IGNORE_EXCEPTION_STATE);
 }
 
 bool SVGDocument::zoomAndPanEnabled() const

@@ -27,6 +27,7 @@
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
@@ -177,10 +178,10 @@ bool DOMImplementation::hasFeature(const String& feature, const String& version)
 }
 
 PassRefPtr<DocumentType> DOMImplementation::createDocumentType(const String& qualifiedName,
-    const String& publicId, const String& systemId, ExceptionCode& ec)
+    const String& publicId, const String& systemId, ExceptionState& es)
 {
     String prefix, localName;
-    if (!Document::parseQualifiedName(qualifiedName, prefix, localName, ec))
+    if (!Document::parseQualifiedName(qualifiedName, prefix, localName, es))
         return 0;
 
     return DocumentType::create(0, qualifiedName, publicId, systemId);
@@ -192,7 +193,7 @@ DOMImplementation* DOMImplementation::getInterface(const String& /*feature*/)
 }
 
 PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceURI,
-    const String& qualifiedName, DocumentType* doctype, ExceptionCode& ec)
+    const String& qualifiedName, DocumentType* doctype, ExceptionState& es)
 {
     RefPtr<Document> doc;
     if (namespaceURI == SVGNames::svgNamespaceURI)
@@ -207,8 +208,8 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceUR
 
     RefPtr<Node> documentElement;
     if (!qualifiedName.isEmpty()) {
-        documentElement = doc->createElementNS(namespaceURI, qualifiedName, ec);
-        if (ec)
+        documentElement = doc->createElementNS(namespaceURI, qualifiedName, es);
+        if (es.hadException())
             return 0;
     }
 
@@ -218,7 +219,7 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceUR
     // other exceptions to WrongDocumentError (based on order mentioned in spec),
     // but this matches the new DOM Core spec (http://www.w3.org/TR/domcore/).
     if (doctype && doctype->document()) {
-        ec = WrongDocumentError;
+        es.throwDOMException(WrongDocumentError);
         return 0;
     }
 

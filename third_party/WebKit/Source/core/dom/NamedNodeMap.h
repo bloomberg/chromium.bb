@@ -34,8 +34,7 @@ namespace WebCore {
 
 class Node;
 class Element;
-
-typedef int ExceptionCode;
+class ExceptionState;
 
 class NamedNodeMap : public ScriptWrappable {
     WTF_MAKE_FAST_ALLOCATED;
@@ -52,13 +51,13 @@ public:
     // Public DOM interface.
 
     PassRefPtr<Node> getNamedItem(const AtomicString&) const;
-    PassRefPtr<Node> removeNamedItem(const AtomicString& name, ExceptionCode&);
+    PassRefPtr<Node> removeNamedItem(const AtomicString& name, ExceptionState&);
 
     PassRefPtr<Node> getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const;
-    PassRefPtr<Node> removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionCode&);
+    PassRefPtr<Node> removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState&);
 
-    PassRefPtr<Node> setNamedItem(Node*, ExceptionCode&);
-    PassRefPtr<Node> setNamedItemNS(Node*, ExceptionCode&);
+    PassRefPtr<Node> setNamedItem(Node*, ExceptionState&);
+    PassRefPtr<Node> setNamedItemNS(Node*, ExceptionState&);
 
     PassRefPtr<Node> item(unsigned index) const;
     size_t length() const;

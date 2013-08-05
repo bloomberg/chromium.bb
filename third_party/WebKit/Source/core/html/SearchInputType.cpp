@@ -32,6 +32,7 @@
 #include "core/html/SearchInputType.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/InputTypeNames.h"
@@ -100,11 +101,11 @@ void SearchInputType::createShadowSubtree()
 
     RefPtr<SearchFieldDecorationElement> searchDecoration = SearchFieldDecorationElement::create(element()->document());
     m_searchDecoration = searchDecoration.get();
-    container->insertBefore(m_searchDecoration, textWrapper, IGNORE_EXCEPTION);
+    container->insertBefore(m_searchDecoration, textWrapper, IGNORE_EXCEPTION_STATE);
 
     RefPtr<SearchFieldCancelButtonElement> cancelButton = SearchFieldCancelButtonElement::create(element()->document());
     m_cancelButton = cancelButton.get();
-    container->insertBefore(m_cancelButton, textWrapper->nextSibling(), IGNORE_EXCEPTION);
+    container->insertBefore(m_cancelButton, textWrapper->nextSibling(), IGNORE_EXCEPTION_STATE);
 }
 
 HTMLElement* SearchInputType::searchDecorationElement() const

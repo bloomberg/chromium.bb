@@ -47,6 +47,7 @@
 namespace WebCore {
 
 class Document;
+class ExceptionState;
 class ResourceRequest;
 class ResourceResponse;
 class ResourceTimingInfo;
@@ -79,10 +80,10 @@ public:
     using RefCounted<Performance>::ref;
     using RefCounted<Performance>::deref;
 
-    void mark(const String& markName, ExceptionCode&);
+    void mark(const String& markName, ExceptionState&);
     void clearMarks(const String& markName);
 
-    void measure(const String& measureName, const String& startMark, const String& endMark, ExceptionCode&);
+    void measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState&);
     void clearMeasures(const String& measureName);
 
 private:

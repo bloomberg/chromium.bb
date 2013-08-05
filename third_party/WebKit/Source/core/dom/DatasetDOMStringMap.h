@@ -32,6 +32,7 @@
 namespace WebCore {
 
 class Element;
+class ExceptionState;
 
 class DatasetDOMStringMap : public DOMStringMap {
 public:
@@ -46,8 +47,8 @@ public:
     virtual void getNames(Vector<String>&);
     virtual String item(const String& name);
     virtual bool contains(const String& name);
-    virtual void setItem(const String& name, const String& value, ExceptionCode&);
-    virtual void deleteItem(const String& name, ExceptionCode&);
+    virtual void setItem(const String& name, const String& value, ExceptionState&);
+    virtual void deleteItem(const String& name, ExceptionState&);
 
     virtual Element* element() { return m_element; }
 

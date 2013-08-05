@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/xml/DocumentXPathEvaluator.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathExpression.h"
@@ -53,12 +54,12 @@ DocumentXPathEvaluator* DocumentXPathEvaluator::from(ScriptExecutionContext* con
 }
 
 PassRefPtr<XPathExpression> DocumentXPathEvaluator::createExpression(ScriptExecutionContext* context,
-    const String& expression, XPathNSResolver* resolver, ExceptionCode& ec)
+    const String& expression, XPathNSResolver* resolver, ExceptionState& es)
 {
     DocumentXPathEvaluator* suplement = from(context);
     if (!suplement->m_xpathEvaluator)
         suplement->m_xpathEvaluator = XPathEvaluator::create();
-    return suplement->m_xpathEvaluator->createExpression(expression, resolver, ec);
+    return suplement->m_xpathEvaluator->createExpression(expression, resolver, es);
 }
 
 PassRefPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(ScriptExecutionContext* context, Node* nodeResolver)
@@ -71,12 +72,12 @@ PassRefPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(ScriptExecu
 
 PassRefPtr<XPathResult> DocumentXPathEvaluator::evaluate(ScriptExecutionContext* context, const String& expression,
     Node* contextNode, XPathNSResolver* resolver, unsigned short type,
-    XPathResult* result, ExceptionCode& ec)
+    XPathResult* result, ExceptionState& es)
 {
     DocumentXPathEvaluator* suplement = from(context);
     if (!suplement->m_xpathEvaluator)
         suplement->m_xpathEvaluator = XPathEvaluator::create();
-    return suplement->m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, ec);
+    return suplement->m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, es);
 }
 
 } // namespace WebCore

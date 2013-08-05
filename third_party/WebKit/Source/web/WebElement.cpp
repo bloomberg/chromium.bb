@@ -31,6 +31,7 @@
 #include "config.h"
 #include "WebDocument.h"
 #include "WebElement.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -93,9 +94,9 @@ WebString WebElement::getAttribute(const WebString& attrName) const
 
 bool WebElement::setAttribute(const WebString& attrName, const WebString& attrValue)
 {
-    ExceptionCode exceptionCode = 0;
-    unwrap<Element>()->setAttribute(attrName, attrValue, exceptionCode);
-    return !exceptionCode;
+    TrackExceptionState es;
+    unwrap<Element>()->setAttribute(attrName, attrValue, es);
+    return !es.hadException();
 }
 
 unsigned WebElement::attributeCount() const

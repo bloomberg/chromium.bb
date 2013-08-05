@@ -26,7 +26,7 @@
 #include "core/html/PluginDocument.h"
 
 #include "HTMLNames.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/html/HTMLEmbedElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -71,7 +71,7 @@ private:
 void PluginDocumentParser::createDocumentStructure()
 {
     RefPtr<Element> rootElement = document()->createElement(htmlTag, false);
-    document()->appendChild(rootElement, IGNORE_EXCEPTION);
+    document()->appendChild(rootElement, IGNORE_EXCEPTION_STATE);
     toHTMLHtmlElement(rootElement.get())->insertedByParser();
 
     if (document()->frame() && document()->frame()->loader())
@@ -82,7 +82,7 @@ void PluginDocumentParser::createDocumentStructure()
     body->setAttribute(marginheightAttr, "0");
     body->setAttribute(styleAttr, "background-color: rgb(38,38,38)");
 
-    rootElement->appendChild(body, IGNORE_EXCEPTION);
+    rootElement->appendChild(body, IGNORE_EXCEPTION_STATE);
 
     RefPtr<Element> embedElement = document()->createElement(embedTag, false);
 
@@ -100,7 +100,7 @@ void PluginDocumentParser::createDocumentStructure()
 
     toPluginDocument(document())->setPluginNode(m_embedElement);
 
-    body->appendChild(embedElement, IGNORE_EXCEPTION);
+    body->appendChild(embedElement, IGNORE_EXCEPTION_STATE);
 
     Frame* frame = document()->frame();
     if (!frame)

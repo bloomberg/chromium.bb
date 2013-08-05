@@ -23,8 +23,8 @@
 #ifndef SVGRenderStyle_h
 #define SVGRenderStyle_h
 
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSValueList.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/Path.h"
 #include "core/rendering/style/DataRef.h"
@@ -97,28 +97,28 @@ public:
     static SVGLength initialBaselineShiftValue()
     {
         SVGLength length;
-        length.newValueSpecifiedUnits(LengthTypeNumber, 0, ASSERT_NO_EXCEPTION);
+        length.newValueSpecifiedUnits(LengthTypeNumber, 0, ASSERT_NO_EXCEPTION_STATE);
         return length;
     }
 
     static SVGLength initialKerning()
     {
         SVGLength length;
-        length.newValueSpecifiedUnits(LengthTypeNumber, 0, ASSERT_NO_EXCEPTION);
+        length.newValueSpecifiedUnits(LengthTypeNumber, 0, ASSERT_NO_EXCEPTION_STATE);
         return length;
     }
 
     static SVGLength initialStrokeDashOffset()
     {
         SVGLength length;
-        length.newValueSpecifiedUnits(LengthTypeNumber, 0, ASSERT_NO_EXCEPTION);
+        length.newValueSpecifiedUnits(LengthTypeNumber, 0, ASSERT_NO_EXCEPTION_STATE);
         return length;
     }
 
     static SVGLength initialStrokeWidth()
     {
         SVGLength length;
-        length.newValueSpecifiedUnits(LengthTypeNumber, 1, ASSERT_NO_EXCEPTION);
+        length.newValueSpecifiedUnits(LengthTypeNumber, 1, ASSERT_NO_EXCEPTION_STATE);
         return length;
     }
 

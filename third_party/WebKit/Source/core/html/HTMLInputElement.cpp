@@ -32,6 +32,7 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/BeforeTextInsertedEvent.h"
@@ -340,14 +341,14 @@ Decimal HTMLInputElement::findClosestTickMarkValue(const Decimal& value)
     return m_inputType->findClosestTickMarkValue(value);
 }
 
-void HTMLInputElement::stepUp(int n, ExceptionCode& ec)
+void HTMLInputElement::stepUp(int n, ExceptionState& es)
 {
-    m_inputType->stepUp(n, ec);
+    m_inputType->stepUp(n, es);
 }
 
-void HTMLInputElement::stepDown(int n, ExceptionCode& ec)
+void HTMLInputElement::stepDown(int n, ExceptionState& es)
 {
-    m_inputType->stepUp(-n, ec);
+    m_inputType->stepUp(-n, es);
 }
 
 void HTMLInputElement::blur()
@@ -556,73 +557,73 @@ bool HTMLInputElement::canHaveSelection() const
     return isTextField();
 }
 
-int HTMLInputElement::selectionStartForBinding(ExceptionCode& ec) const
+int HTMLInputElement::selectionStartForBinding(ExceptionState& es) const
 {
     if (!canHaveSelection()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return 0;
     }
     return HTMLTextFormControlElement::selectionStart();
 }
 
-int HTMLInputElement::selectionEndForBinding(ExceptionCode& ec) const
+int HTMLInputElement::selectionEndForBinding(ExceptionState& es) const
 {
     if (!canHaveSelection()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return 0;
     }
     return HTMLTextFormControlElement::selectionEnd();
 }
 
-String HTMLInputElement::selectionDirectionForBinding(ExceptionCode& ec) const
+String HTMLInputElement::selectionDirectionForBinding(ExceptionState& es) const
 {
     if (!canHaveSelection()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return String();
     }
     return HTMLTextFormControlElement::selectionDirection();
 }
 
-void HTMLInputElement::setSelectionStartForBinding(int start, ExceptionCode& ec)
+void HTMLInputElement::setSelectionStartForBinding(int start, ExceptionState& es)
 {
     if (!canHaveSelection()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     HTMLTextFormControlElement::setSelectionStart(start);
 }
 
-void HTMLInputElement::setSelectionEndForBinding(int end, ExceptionCode& ec)
+void HTMLInputElement::setSelectionEndForBinding(int end, ExceptionState& es)
 {
     if (!canHaveSelection()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     HTMLTextFormControlElement::setSelectionEnd(end);
 }
 
-void HTMLInputElement::setSelectionDirectionForBinding(const String& direction, ExceptionCode& ec)
+void HTMLInputElement::setSelectionDirectionForBinding(const String& direction, ExceptionState& es)
 {
     if (!canHaveSelection()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     HTMLTextFormControlElement::setSelectionDirection(direction);
 }
 
-void HTMLInputElement::setSelectionRangeForBinding(int start, int end, ExceptionCode& ec)
+void HTMLInputElement::setSelectionRangeForBinding(int start, int end, ExceptionState& es)
 {
     if (!canHaveSelection()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     HTMLTextFormControlElement::setSelectionRange(start, end);
 }
 
-void HTMLInputElement::setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionCode& ec)
+void HTMLInputElement::setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionState& es)
 {
     if (!canHaveSelection()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     HTMLTextFormControlElement::setSelectionRange(start, end, direction);
@@ -1030,10 +1031,10 @@ void HTMLInputElement::setEditingValue(const String& value)
     dispatchInputEvent();
 }
 
-void HTMLInputElement::setValue(const String& value, ExceptionCode& ec, TextFieldEventBehavior eventBehavior)
+void HTMLInputElement::setValue(const String& value, ExceptionState& es, TextFieldEventBehavior eventBehavior)
 {
     if (isFileUpload() && !value.isEmpty()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     setValue(value, eventBehavior);
@@ -1072,9 +1073,9 @@ double HTMLInputElement::valueAsDate() const
     return m_inputType->valueAsDate();
 }
 
-void HTMLInputElement::setValueAsDate(double value, ExceptionCode& ec)
+void HTMLInputElement::setValueAsDate(double value, ExceptionState& es)
 {
-    m_inputType->setValueAsDate(value, ec);
+    m_inputType->setValueAsDate(value, es);
 }
 
 double HTMLInputElement::valueAsNumber() const
@@ -1082,13 +1083,13 @@ double HTMLInputElement::valueAsNumber() const
     return m_inputType->valueAsDouble();
 }
 
-void HTMLInputElement::setValueAsNumber(double newValue, ExceptionCode& ec, TextFieldEventBehavior eventBehavior)
+void HTMLInputElement::setValueAsNumber(double newValue, ExceptionState& es, TextFieldEventBehavior eventBehavior)
 {
     if (!std::isfinite(newValue)) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return;
     }
-    m_inputType->setValueAsDouble(newValue, eventBehavior, ec);
+    m_inputType->setValueAsDouble(newValue, eventBehavior, es);
 }
 
 void HTMLInputElement::setValueFromRenderer(const String& value)
@@ -1317,10 +1318,10 @@ int HTMLInputElement::maxLength() const
     return m_maxLength;
 }
 
-void HTMLInputElement::setMaxLength(int maxLength, ExceptionCode& ec)
+void HTMLInputElement::setMaxLength(int maxLength, ExceptionState& es)
 {
     if (maxLength < 0)
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
     else
         setAttribute(maxlengthAttr, String::number(maxLength));
 }
@@ -1335,10 +1336,10 @@ void HTMLInputElement::setSize(unsigned size)
     setAttribute(sizeAttr, String::number(size));
 }
 
-void HTMLInputElement::setSize(unsigned size, ExceptionCode& ec)
+void HTMLInputElement::setSize(unsigned size, ExceptionState& es)
 {
     if (!size)
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
     else
         setSize(size);
 }
@@ -1829,24 +1830,24 @@ void ListAttributeTargetObserver::idTargetChanged()
     m_element->listAttributeTargetChanged();
 }
 
-void HTMLInputElement::setRangeText(const String& replacement, ExceptionCode& ec)
+void HTMLInputElement::setRangeText(const String& replacement, ExceptionState& es)
 {
     if (!m_inputType->supportsSelectionAPI()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
 
-    HTMLTextFormControlElement::setRangeText(replacement, ec);
+    HTMLTextFormControlElement::setRangeText(replacement, es);
 }
 
-void HTMLInputElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionCode& ec)
+void HTMLInputElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState& es)
 {
     if (!m_inputType->supportsSelectionAPI()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
 
-    HTMLTextFormControlElement::setRangeText(replacement, start, end, selectionMode, ec);
+    HTMLTextFormControlElement::setRangeText(replacement, start, end, selectionMode, es);
 }
 
 bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters& parameters)

@@ -24,13 +24,14 @@
 #ifndef ContainerNode_h
 #define ContainerNode_h
 
-#include "core/dom/ExceptionCodePlaceholder.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
+class ExceptionState;
 class FloatPoint;
 class HTMLCollection;
 
@@ -95,10 +96,10 @@ public:
     unsigned childNodeCount() const;
     Node* childNode(unsigned index) const;
 
-    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode& = ASSERT_NO_EXCEPTION, AttachBehavior = AttachNow);
-    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode& = ASSERT_NO_EXCEPTION, AttachBehavior = AttachNow);
-    void removeChild(Node* child, ExceptionCode& = ASSERT_NO_EXCEPTION);
-    void appendChild(PassRefPtr<Node> newChild, ExceptionCode& = ASSERT_NO_EXCEPTION, AttachBehavior = AttachNow);
+    void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION_STATE, AttachBehavior = AttachNow);
+    void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION_STATE, AttachBehavior = AttachNow);
+    void removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION_STATE);
+    void appendChild(PassRefPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION_STATE, AttachBehavior = AttachNow);
 
     // These methods are only used during parsing.
     // They don't send DOM mutation events or handle reparenting.
