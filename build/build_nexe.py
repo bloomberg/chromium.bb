@@ -220,7 +220,7 @@ class Builder(object):
     self.empty = options.empty
     self.strip_all = options.strip_all
     self.strip_debug = options.strip_debug
-    self.finalize_pexe = options.finalize_pexe
+    self.finalize_pexe = options.finalize_pexe and arch == 'pnacl'
     self.gomacc = GetGomaPath(self.osname, arch, toolname)
 
     self.Log('Compile options: %s' % self.compile_options)

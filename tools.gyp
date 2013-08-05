@@ -264,7 +264,7 @@
             'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
-            'build_irt': 1,
+            'build_irt': 0,
             'enable_x86_32': 0,
             'extra_args': [
               '--compile',
@@ -288,7 +288,7 @@
             'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
-            'build_irt': 1,
+            'build_irt': 0,
             'enable_x86_32': 0,
             'extra_args': [
               '--compile',
