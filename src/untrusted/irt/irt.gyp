@@ -97,12 +97,6 @@
       'sources': ['<@(irt_sources)', '<@(irt_browser)'],
       'include_dirs': ['../../../../ppapi'],
       'conditions': [
-        ['target_arch=="ia32"', {
-          'link_flags': [
-             '-r',
-             '-nostartfiles',
-          ],
-        }],
         ['target_arch=="arm"', {
           'sources': [ 'aeabi_read_tp.S' ],
         }],
