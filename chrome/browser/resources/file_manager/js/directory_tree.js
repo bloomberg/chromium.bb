@@ -88,15 +88,6 @@ DirectoryTreeUtil.updateSubElementsFromList = function(
 };
 
 /**
- * Returns true if the given directory entry is dummy.
- * @param {DirectoryEntry|Object} dirEntry DirectoryEntry to be checked.
- * @return {boolean} True if the given directory entry is dummy.
- */
-DirectoryTreeUtil.isDummyEntry = function(dirEntry) {
-  return !('createReader' in dirEntry);
-};
-
-/**
  * Finds a parent directory of the {@code path} from the {@code items}, and
  * invokes the DirectoryItem.selectPath() of the found directory.
  *
@@ -162,7 +153,7 @@ DirectoryTreeUtil.addAndRemoveDriveSpecialDirs = function(entries) {
 DirectoryTreeUtil.updateSubDirectories = function(
     item, dm, successCallback, opt_errorCallback) {
   // Tries to retrieve new entry if the cached entry is dummy.
-  if (DirectoryTreeUtil.isDummyEntry(item.entry)) {
+  if (util.isFakeDirectoryEntry(item.entry)) {
     // Fake Drive root.
     dm.resolveDirectory(
         item.fullPath,
@@ -170,7 +161,7 @@ DirectoryTreeUtil.updateSubDirectories = function(
           item.dirEntry_ = entry;
 
           // If the retrieved entry is dummy again, returns with an error.
-          if (DirectoryTreeUtil.isDummyEntry(entry)) {
+          if (util.isFakeDirectoryEntry(entry)) {
             if (opt_errorCallback)
               opt_errorCallback();
             return;

@@ -1566,12 +1566,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     return this.cachedPreviewPanelHeight_;
   };
 
-  FileManager.prototype.resolvePath = function(
-      path, resultCallback, errorCallback) {
-    return util.resolvePath(this.filesystem_.root, path, resultCallback,
-                            errorCallback);
-  };
-
   /**
    * Restores current directory and may be a selected item after page load (or
    * reload) or popping a state (after click on back/forward). If location.hash
@@ -3242,51 +3236,59 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.onOk_ = function(event) {
     if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
-      var currentDirUrl = this.getCurrentDirectoryURL();
-
-      if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
-        currentDirUrl += '/';
-
       // Save-as doesn't require a valid selection from the list, since
       // we're going to take the filename from the text input.
       var filename = this.filenameInput_.value;
       if (!filename)
         throw new Error('Missing filename!');
 
-      var self = this;
-      var checkOverwriteAndFinish = function(valid) {
-        if (!valid)
+      var directory = this.getCurrentDirectoryEntry();
+      var currentDirUrl = directory.toURL();
+      if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
+        currentDirUrl += '/';
+      this.validateFileName_(currentDirUrl, filename, function(isValid) {
+        if (!isValid)
           return;
 
-        var singleSelection = {
-          urls: [currentDirUrl + encodeURIComponent(filename)],
-          multiple: false,
-          filterIndex: self.getSelectedFilterIndex_(filename)
-        };
+        if (util.isFakeDirectoryEntry(directory)) {
+          // Can't save a file into a fake directory.
+          return;
+        }
 
-        var resolveErrorCallback = function(error) {
-          // File does not exist.
-          self.selectFilesAndClose_(singleSelection);
-        };
+        var selectFileAndClose = function() {
+          this.selectFilesAndClose_({
+            urls: [currentDirUrl + encodeURIComponent(filename)],
+            multiple: false,
+            filterIndex: this.getSelectedFilterIndex_(filename)
+          });
+        }.bind(this);
 
-        var resolveSuccessCallback = function(victim) {
-          if (victim.isDirectory) {
-            // Do not allow to overwrite directory.
-            self.alert.show(strf('DIRECTORY_ALREADY_EXISTS', filename));
-          } else {
-            self.confirm.show(strf('CONFIRM_OVERWRITE_FILE', filename),
-                              function() {
-                                // User selected Ok from the confirm dialog.
-                                self.selectFilesAndClose_(singleSelection);
-                              });
-          }
-        };
+        directory.getFile(
+            filename, {create: false},
+            function(entry) {
+              // An existing file is found. Show confirmation dialog to
+              // overwrite it. If the user select "OK" on the dialog, save it.
+              this.confirm.show(strf('CONFIRM_OVERWRITE_FILE', filename),
+                                selectFileAndClose);
+            }.bind(this),
+            function(error) {
+              if (error.code == FileError.NOT_FOUND_ERR) {
+                // The file does not exist, so it should be ok to create a
+                // new file.
+                selectFileAndClose();
+                return;
+              }
+              if (error.code == FileError.TYPE_MISMATCH_ERR) {
+                // An directory is found.
+                // Do not allow to overwrite directory.
+                this.alert.show(strf('DIRECTORY_ALREADY_EXISTS', filename));
+                return;
+              }
 
-        self.resolvePath(self.getCurrentDirectory() + '/' + filename,
-                         resolveSuccessCallback, resolveErrorCallback);
-      };
-
-      this.validateFileName_(currentDirUrl, filename, checkOverwriteAndFinish);
+              // Unexpected error.
+              console.error('File save failed: ' + error.code);
+            }.bind(this));
+      }.bind(this));
       return;
     }
 
