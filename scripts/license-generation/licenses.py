@@ -29,9 +29,11 @@ Recommended build:
   ./setup_board --board=$board
   ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev
   cd ~/trunk/chromite/scripts/license-generation
-  ./licenses.py --debug $board out.html 2>&1 | tee output.sav
+  ./licenses.py [--debug] $board out.html 2>&1 | tee output.sav
 
-The script is still experimental. Review at least ERROR output from it.
+For debugging during development, you can get a faster run of just one package
+with:
+  ./licenses.py --testpkg "dev-libs/libatomic_ops-7.2d" $board out.html
 
 The output file is meant to update
 http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/ +
@@ -46,9 +48,9 @@ UPDATE: gcl will probably fail now, because the file is too big. Before it
 gets moved somewhere else, you should just use svn diff and svn commit.
 
 Recommended way to diff the html, go outside of the cros_sdk chroot:
-grep -E -A5 '(class=title|Gentoo Package Provided Stock|Source license)' \
+grep -E -A5 '(class="title|class="homepage|Provided Stock|Source license)' \
     out.html  > /tmp/new
-grep -E -A5 '(class=title|Gentoo Package Provided Stock|Source license)' \
+grep -E -A5 '(class="title|class="homepage|Provided Stock|Source license)' \
     out-sav-new3.html  > /tmp/old
 meld /tmp/old /tmp/new (or your favourite fancy diff program)
 
@@ -61,16 +63,13 @@ Example: http://crbug.com/221281
 """
 
 import cgi
+import codecs
+import getopt
 import logging
 import os
 import portage
 import subprocess
 import sys
-
-# This keeps track of whether we have an incomplete license file due to package
-# errors during parsing.
-# Any non empty list at the end shows the list of packages that caused errors.
-OUTPUT_INCOMPLETE = []
 
 EQUERY_BASE = '/usr/local/bin/equery-%s'
 
@@ -242,7 +241,7 @@ SKIPPED_LICENSE_FILENAME_COMPONENTS = [
 # At that point, new packages will get fixed to include LICENSE instead of
 # adding workaround mappings like those below.
 # We should also fix the packages listed below so that the hardcoded
-# mappings can be obsoleted.
+# mappings can be obsoleted (i.e. FIXME for this entire list).
 PACKAGE_LICENSES = {
   # One off licenses. Should we check in a custom LICENSE file in upstream?
   'dev-python/netifaces': ['netiface'],
@@ -300,10 +299,6 @@ PACKAGE_LICENSES = {
   # 'sys-process/vixie-cron': ['vixie-cron'],
 }
 
-# FIXME(merlin): remove Old-MIT from the licenses shipped with this script
-# and portage-stable/licenses/... should be resynced against
-# http://git.chromium.org/gitweb/?p=chromiumos/overlays/portage.git;a=summary
-
 # Any license listed list here found in the ebuild will make the code look for
 # license files inside the package source code in order to get copyright
 # attribution from them.
@@ -356,25 +351,32 @@ LICENCES_IGNORE = [
 TEMPLATE_FILE = 'about_credits.tmpl'
 ENTRY_TEMPLATE_FILE = 'about_credits_entry.tmpl'
 
+class PackageLicenseError(Exception):
+  """This gets thrown any time something fails while getting license information
+  for a package. This will cause the processing to error in the end."""
+
+class PackageSkipped(Exception):
+  """This is a non error to exclude packages from license processing."""
+
 class PackageInfo:
-  def __init__(self, category=None, name=None, version=None, revision=None):
-    self.category = category
-    self.name = name
-    self.version = version
-    if revision is not None:
-      revision = str(revision).lstrip('r')
-      if revision == '0':
-        revision = None
-    self.revision = revision
+  def __init__(self):
+
+    self.revision = None
+
+    # Array of scanned license texts.
+    self.license_text_scanned = []
+
+    self.category = None
+    self.name = None
+    self.version = None
+
+    # Array of license names retrieved from ebuild or override in this code.
+    self.ebuild_license_names = []
     self.description = None
     self.homepages = []
-    self.license_names = []
-    # Made up from stock license(s).
-    self.license_text_stock = ""
-    # Read from the source code if any.
-    self.license_text_scanned = ""
-    # Shows source scanned licenses first, and then stock ones.
-    self.license_text = None
+    # This contains stock licenses names we can read from Gentoo.
+    self.stock_license_names = []
+
     # We set this if the ebuild has a BSD/MIT like license that requires
     # scanning for a LICENSE file in the source code, or a static mapping
     # in PACKAGE_LICENSES. Not finding one once this is set, is fatal.
@@ -404,32 +406,23 @@ class PackageInfo:
     subprocess.check_call(
       ['ebuild-%s' % board, path] + list(phases), **kwargs)
 
-  def ExtractLicenses(self):
+  def _ExtractLicenses(self):
     """Try to get licenses from the package by unpacking it with ebuild
     and looking for license files in the unpacked tree.
     This is only called if we couldn't get usable licenses from the ebuild,
-    or one of them is BSD/MIT like, and forces us to look for a file with
+    or one of them is BSD/MIT like which forces us to look for a file with
     copyright attribution in the source code itself.
+    It'll scan the unpacked source code for what looks like license files
+    as defined in LICENSE_FILENAMES.
     """
 
-    path = GetEbuildPath(board, self.fullnamerev)
+    path = self._GetEbuildPath(board, self.fullnamerev)
     self._RunEbuildPhases(
       path, 'clean', 'fetch',
       stdout=open('/dev/null', 'wb'),
       stderr=subprocess.STDOUT)
     self._RunEbuildPhases(path, 'unpack')
-    try:
-      self._ExtractLicense()
-    finally:
-      if not debug:
-        # In debug mode, leave unpacked trees so that we can look for files
-        # inside them.
-        self._RunEbuildPhases(path, 'clean')
 
-  def _ExtractLicense(self):
-    """Scan the unpacked source code for what looks like license files
-    as defined in LICENSE_FILENAMES.
-    """
     p = subprocess.Popen(['portageq-%s' % board, 'envvar',
                           'PORTAGE_TMPDIR'], stdout=subprocess.PIPE)
     tmpdir = p.communicate()[0].strip()
@@ -454,7 +447,7 @@ class PackageInfo:
       raise AssertionError('exit code was not 0: got %s' % ret)
 
     files = [x[len(workdir):].lstrip('/') for x in files]
-    licenses = []
+    license_files = []
     for name in files:
       if os.path.basename(name).lower() in LICENSE_FILENAMES:
         has_skipped_component = False
@@ -465,14 +458,14 @@ class PackageInfo:
             has_skipped_component = True
             break
         if not has_skipped_component:
-          licenses.append(name)
+          license_files.append(name)
 
-    if not licenses:
+    if not license_files:
       if self.need_copyright_attribution:
-        OUTPUT_INCOMPLETE.append(self.fullname)
         logging.error("%s used license with copyright attribution, but "
                       "couldn't find license file in %s",
                       self.fullnamerev, workdir)
+        raise PackageLicenseError()
       else:
         # We can get called for a license like as-is where it's preferable
         # to find a better one in the source, but not fatal if we didn't.
@@ -490,45 +483,366 @@ class PackageInfo:
     # net-misc/strongswan-5.0.2-r4: strongswan-5.0.2/COPYING
     #                               strongswan-5.0.2/LICENSE
     # sys-process/procps-3.2.8_p11: debian/copyright procps-3.2.8/COPYING
-    logging.info('License(s) for %s: %s', self.fullnamerev, ' '.join(licenses))
-    for license_file in licenses:
-      logging.debug("Adding license %s:", os.path.join(workdir, license_file))
-      self.license_text_scanned += "Source license %s:\n\n" % license_file
-      self.license_text_scanned += open(os.path.join(workdir,
-                                        license_file)).read()
-      self.license_text_scanned += "\n\n"
+    logging.info('License(s) for %s: %s', self.fullnamerev,
+                 ' '.join(license_files))
+    for license_file in sorted(license_files):
+      # Joy and pink ponies. Some license_files are encoded as latin1 while
+      # others are utf-8 and of course you can't know but only guess.
+      license_path = os.path.join(workdir, license_file)
+      try:
+        license_txt = codecs.open(license_path, encoding="utf-8").read()
+        logging.info("Adding license %s: (guessed UTF-8)", license_path)
+      except UnicodeDecodeError:
+        license_txt = codecs.open(license_path, encoding="latin1").read()
+        logging.info("Adding license %s: (guessed latin1)", license_path)
 
-  # Read stock license files specified in an ebuild.
-  def ReadStockLicense(self):
-    logging.info('%s: using stock license(s) %s',
-                 self.fullnamerev, ','.join(self.license_names))
+      self.license_text_scanned += [
+          "Scanned Source license %s:\n\n%s" % (license_file, license_txt) ]
 
-    license_texts = []
-    for license_name in self.license_names:
-      logging.debug("looking for license %s for %s", license_name,
-                    self.fullnamerev)
-      license_path = None
-      for directory in STOCK_LICENSE_DIRS:
-        path = '%s/%s' % (directory, license_name)
-        if os.access(path, os.F_OK):
-          license_path = path
-          break
-      if license_path:
-        logging.info('%s: reading license %s', self.fullnamerev, license_path)
-        license_texts.append("Gentoo Package Provided Stock License %s:" %
-                             license_name)
-        license_texts.append(open(license_path).read())
-        license_texts.append("\n\n")
-      else:
-        logging.error('%s: stock license %s could not be found in %s',
-                      self.fullnamerev, license_name,
-                      '\n'.join(STOCK_LICENSE_DIRS))
-        OUTPUT_INCOMPLETE.append(self.fullname)
+    # We used to clean up here, but there have been many instances where
+    # looking at unpacked source to see where the licenses were, was useful
+    # so let's disable this for now
+    #self._RunEbuildPhases(path, 'clean')
 
-    if license_texts:
-      self.license_text_stock += '\n'.join(license_texts)
+  def _GetEbuildPath(self, board, name):
+    """Turns (x86-alex, net-misc/wget-1.12) into
+    /mnt/host/source/src/third_party/portage-stable/net-misc/wget/wget-1.12.ebui
+    """
+    p = subprocess.Popen(
+      ['equery-%s' % board, 'which', name], stdout=subprocess.PIPE)
+    stdout = p.communicate()[0]
+    p.wait()
+    path = stdout.strip()
+    logging.debug("equery-%s which %s", board, name)
+    logging.debug("  -> %s", path)
+    if not path:
+      raise AssertionError('GetEbuildPath for %s failed.\n'
+                           'Is your tree clean? Delete /build/%s and rebuild' %
+                           (name, board))
+    return path
+
+  def _GetPackageInfo(self, fullnamewithrev):
+    """Create a PackageInfo object and populate its license, homepage and
+    description if they are valid.
+    Some packages have static license mappings applied to them.
+
+    self.ebuild_license_names will not be filled the package is skipped
+    or if there was an issue getting data from the ebuild.
+    self.stock_license_names will only get the licenses that we can paste
+    as stock licenses and scan_source_for_licenses will be set if we should
+    unpack the source to look for licenses (need_copyright_attribution will
+    make not finding one fatal later).
+    """
+
+    try:
+      self.category, self.name, self.version, self.revision = \
+        portage.versions.catpkgsplit(fullnamewithrev)
+    except TypeError:
+      raise AssertionError("portage couldn't find %s, missing version number?" %
+          fullnamewithrev)
+
+    if self.revision is not None:
+      self.revision = str(self.revision).lstrip('r')
+      if self.revision == '0':
+        self.revision = None
+
+    if self.category in SKIPPED_CATEGORIES:
+      raise PackageSkipped("%s in SKIPPED_CATEGORIES, skip package" %
+                           self.fullname)
+
+    if self.fullname in SKIPPED_PACKAGES:
+      raise PackageSkipped("%s in SKIPPED_PACKAGES, skip package" %
+                           self.fullname)
+
+    ebuild = self._GetEbuildPath(board, self.fullnamerev)
+
+    if not os.access(ebuild, os.F_OK):
+      logging.error("Can't access %s", ebuild)
+      raise PackageLicenseError()
+
+    cmd = [
+      'portageq',
+      'metadata',
+      '/build/%s' % board,
+      'ebuild',
+      self.fullnamerev,
+      'HOMEPAGE', 'LICENSE', 'DESCRIPTION',
+    ]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    lines = [s.strip() for s in p.stdout.readlines()]
+    p.wait()
+
+    if p.returncode != 0:
+      raise AssertionError("%s failed" % cmd)
+
+    # Runs:
+    # portageq metadata /build/x86-alex ebuild net-misc/wget-1.12-r2 \
+    #                                               HOMEPAGE LICENSE DESCRIPTION
+    # Returns:
+    # http://www.gnu.org/software/wget/
+    # GPL-3
+    # Network utility to retrieve files from the WWW
+
+    (self.homepages,    self.ebuild_license_names, self.description) = (
+      lines[0].split(), lines[1].split(),          lines[2:])
+
+    if self.fullname in PACKAGE_HOMEPAGES:
+      self.homepages = PACKAGE_HOMEPAGES[self.fullname]
+
+    # Packages with missing licenses or licenses that need mapping (like
+    # BSD/MIT) are hardcoded here:
+    if self.fullname in PACKAGE_LICENSES:
+      self.ebuild_license_names = PACKAGE_LICENSES[self.fullname]
+      logging.info("Static license mapping for %s: %s", self.fullnamerev,
+                   ",".join(self.ebuild_license_names))
     else:
-      logging.error('%s: couldn\'t find any stock licenses', self.fullnamerev)
+      logging.info("Read licenses from ebuild for %s: %s", self.fullnamerev,
+                   ",".join(self.ebuild_license_names))
+
+
+  def GetLicenses(self, fullnamewithrev):
+    """After populating the package info and stock licenses, this figures
+    out whether the package source should be scanned to add licenses found
+    there.
+
+    Raises: PackageSkipped, PackageLicenseErrorCall (via _GetPackageInfo).
+    """
+
+    # First populate the package basic information
+    self._GetPackageInfo(fullnamewithrev)
+
+    # The ebuild license field can look like:
+    # LICENSE="GPL-3 LGPL-3 Apache-2.0" (this means AND, as in all 3)
+    # for third_party/portage-stable/app-admin/rsyslog/rsyslog-5.8.11.ebuild
+    # LICENSE="|| ( LGPL-2.1 MPL-1.1 )"
+    # for third_party/portage-stable/x11-libs/cairo/cairo-1.8.8.ebuild
+    # LICENSE="Marvell International Ltd." <- invalid syntax to fix upstream
+    # for net-wireless/marvell_sd8787/marvell_sd8787-14.64.2.47-r16.ebuild
+
+    # The parser isn't very smart and only has basic support for the
+    # || ( X Y ) OR logic to do the following:
+    # In order to save time needlessly unpacking packages and looking or a
+    # cleartext license (which is really a crapshoot), if we have a license
+    # like BSD that requires looking for copyright attribution, but we can
+    # chose another license like GPL, we do that.
+
+    if not self.ebuild_license_names:
+      logging.error("%s: no license found in ebuild. FIXME!", self.fullnamerev)
+      # In a bind, you could comment this out. I'm making the output fail to
+      # get your attention since this error really should be fixed, but if you
+      # comment out the next line, the script will try to find a license inside
+      # the source.
+      raise PackageLicenseError()
+
+    self.ebuild_license_names = self.ebuild_license_names
+
+    # This is not invalid, but the parser can't deal with it, so if it ever
+    # happens, error out to tell the programmer to do something.
+    if "||" in self.ebuild_license_names[1:]:
+      raise AssertionError("%s: Can't parse || in the middle of a license: %s"
+                           % (self.fullnamerev,
+                              ' '.join(self.ebuild_license_names)))
+
+    self.stock_license_names = []
+    or_licenses_and_one_is_no_attribution = False
+    # We do a quick early pass first so that the longer pass below can
+    # run accordingly.
+    for license_name in [ x for x in self.ebuild_license_names
+                                if x not in LICENCES_IGNORE ]:
+      # Here we have an OR case, and one license that we can use stock, so
+      # we remember that in order to be able to skip license attributions if
+      # any were in the OR.
+      if (self.ebuild_license_names[0] == "||" and
+          license_name not in COPYRIGHT_ATTRIBUTION_LICENSES):
+        or_licenses_and_one_is_no_attribution = True
+
+    for license_name in [ x for x in self.ebuild_license_names
+                                if x not in LICENCES_IGNORE ]:
+      # Licenses like BSD or MIT can't be used as is because they do not contain
+      # copyright self. They have to be replaced by copyright file given in the
+      # source code, or manually mapped by us in PACKAGE_LICENSES
+      if license_name in COPYRIGHT_ATTRIBUTION_LICENSES:
+        # To limit needless efforts, if a package is BSD or GPL, we ignore BSD
+        # and use GPL to avoid scanning the package, but we can only do this if
+        # or_licenses_and_one_is_no_attribution has been set above.
+        # This ensures that if we have License: || (BSD3 BSD4), we will
+        # look in the source.
+        if or_licenses_and_one_is_no_attribution:
+          logging.info("%s: ignore license %s because ebuild LICENSES had %s",
+                       self.fullnamerev, license_name,
+                       ' '.join(self.ebuild_license_names))
+        else:
+          logging.info("%s: can't use %s, will scan source code for copyright",
+                       self.fullnamerev, license_name)
+          self.need_copyright_attribution = True
+          self.scan_source_for_licenses = True
+      else:
+        self.stock_license_names.append(license_name)
+        # We can't display just 2+ because it only contains text that says to
+        # read v2 or v3.
+        if license_name == 'GPL-2+':
+          self.stock_license_names.append('GPL-2')
+        if license_name == 'LGPL-2+':
+          self.stock_license_names.append('LGPL-2')
+
+      if license_name in LOOK_IN_SOURCE_LICENSES:
+        logging.info("%s: Got %s, will try to find better license in source...",
+                     self.fullnamerev, license_name)
+        self.scan_source_for_licenses = True
+    if self.stock_license_names:
+      logging.info('%s: using stock license(s) %s',
+                   self.fullnamerev, ','.join(self.stock_license_names))
+
+    # If the license(s) could not be found, or one requires copyright
+    # attribution, dig in the source code for license files:
+    # For instance:
+    # Read licenses from ebuild for net-dialup/ppp-2.4.5-r3: BSD,GPL-2
+    # We need get the substitution file for BSD and add it to GPL.
+    if not self.stock_license_names or self.scan_source_for_licenses:
+      self._ExtractLicenses()
+
+    if not self.stock_license_names and not self.license_text_scanned:
+      logging.error("""
+  %s: unable to find usable license.
+  Typically this will happen because the ebuild says it's MIT or BSD, but there
+  was no license file that this script could find to include along with a
+  copyright attribution (required for BSD/MIT).
+  Go investigate the unpacked source in /tmp/boardname/tmp/portage/..., and
+  find which license to assign. Once you found it, add a static mapping to the
+  PACKAGE_LICENSES dict if that license is not in a file, or teach this script
+  to find the license file.""",
+      self.fullname)
+      raise PackageLicenseError()
+
+
+class Licensing:
+  def __init__(self, package_fullnames,
+               entry_template_file=ENTRY_TEMPLATE_FILE):
+
+    # List of stock licenses referenced in ebuilds. Used to print a report.
+    self.stock_licenses = {}
+
+    # This keeps track of whether we have an incomplete license file due to
+    # package errors during parsing.
+    # Any non empty list at the end shows the list of packages that caused
+    # errors.
+    self.incomplete_packages = []
+
+    self.package_text = {}
+    self.entry_template = codecs.open(entry_template_file, mode='rb',
+                                      encoding="utf-8").read()
+    self.packages = [ ]
+    self._package_fullnames = package_fullnames
+
+  @property
+  def sorted_stock_licenses(self):
+    return sorted(self.stock_licenses.keys())
+
+  def LicensedPackages(self, license_name):
+    '''Return list of packages using a given license.'''
+    return self.stock_licenses[license_name]
+
+  def ProcessPackages(self):
+    """Do not call this after adding virtual packages with AddExtraPkg."""
+    for package in self._package_fullnames:
+      pkg = PackageInfo()
+      try:
+        pkg.GetLicenses(package)
+        # Keep track of which stock licenses are used by which packages.
+        for stock_license in pkg.stock_license_names:
+          try:
+            self.stock_licenses[stock_license] += [ pkg.fullnamerev ]
+          except KeyError:
+            self.stock_licenses[stock_license] = [ pkg.fullnamerev ]
+        self.packages += [ pkg ]
+      except PackageSkipped, e:
+        logging.info(e)
+      except PackageLicenseError:
+        self.incomplete_packages  += [ pkg.fullnamerev ]
+
+  def AddExtraPkg(self, pkg_data):
+    """Allow adding pre-created virtual packages. GetLicenses will not work
+    on them, so add them after having run ProcessPackages."""
+    pkg = PackageInfo()
+    pkg.category = pkg_data[0]
+    pkg.name = pkg_data[1]
+    pkg.version = pkg_data[2]
+    pkg.homepages = pkg_data[3]            # this is a list
+    pkg.stock_license_names = pkg_data[4]  # this is also a list
+    pkg.ebuild_license_names = pkg_data[4]
+    self.packages += [ pkg ]
+
+  def _ReadStockLicense(self, stock_license_name, package):
+    '''Read and return stock license file specified in an ebuild.'''
+
+    license_path = None
+    for directory in STOCK_LICENSE_DIRS:
+      path = '%s/%s' % (directory, stock_license_name)
+      if os.access(path, os.F_OK):
+        license_path = path
+        break
+    if license_path:
+      # Joy and pink ponies. Some stock licenses are encoded as latin1 while
+      # others are utf-8 and of course you can't know but only guess.
+      try:
+        license_txt = codecs.open(license_path, encoding="utf-8").read()
+        logging.info('%s: read license %s (UTF-8)', package.fullnamerev,
+                     license_path)
+      except UnicodeDecodeError:
+        license_txt = codecs.open(license_path, encoding="latin1").read()
+        logging.info('%s: read license %s (latin1)', package.fullnamerev,
+                     license_path)
+      return license_txt
+    else:
+      logging.error('%s: stock license %s could not be found in %s',
+                    package.fullnamerev, stock_license_name,
+                    '\n'.join(STOCK_LICENSE_DIRS))
+      self.incomplete_packages  += [ package.fullnamerev ]
+      return ""
+
+  def _GeneratePackageLicenseText(self, package):
+    '''Concatenate all stock gentoo licenses and licenses read the package
+    source tree, if any.'''
+
+    license_text = []
+    for license_text_scanned in package.license_text_scanned:
+      license_text.append(license_text_scanned)
+      license_text.append("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+                          "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n")
+
+    for stock_license_name in package.stock_license_names:
+      license_text.append("Gentoo Package Provided Stock License %s:" %
+                           stock_license_name)
+      license_text.append(self._ReadStockLicense(stock_license_name, package))
+      license_text.append("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+                          "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n")
+
+    # This should get caught earlier, but one extra check.
+    if not license_text:
+      raise AssertionError('Ended up with no license_text')
+
+    env = {
+      'name':    "%s-%s" % (package.name, package.version),
+      'url':     package.homepages[0] if package.homepages else '',
+      'license': '\n'.join(license_text) or 'ERROR FINDING LICENSE(S)',
+    }
+    self.package_text[package] = EvaluateTemplate(self.entry_template, env)
+
+
+  def GenerateHTMLLicenseOutput(self, output_file,
+                                output_template_file=TEMPLATE_FILE):
+    sorted_license_txt = []
+    self.packages.sort(key=lambda x:(x.name, x.version, x.revision))
+    for pkg in self.packages:
+      self._GeneratePackageLicenseText(pkg)
+      sorted_license_txt += [ self.package_text[pkg] ]
+
+    file_template = codecs.open(output_template_file, mode='rb',
+                                encoding="utf-8").read()
+    out_file = codecs.open(output_file, mode="w", encoding="utf-8")
+    out_file.write(EvaluateTemplate(file_template,
+                                    { 'entries': '\n'.join(sorted_license_txt)},
+                                    escape=False))
 
 
 def ListInstalledPackages(board):
@@ -541,182 +855,6 @@ def ListInstalledPackages(board):
   return [s.strip() for s in p.stdout.readlines()]
 
 
-def BuildMetaPackages():
-  pkgs = []
-
-  pkg = PackageInfo('x11-base', 'X.Org', '1.9.3')
-  pkg.homepages = [ 'http://www.x.org/' ]
-  pkg.license_names = [ 'X' ]
-  pkgs.append(pkg)
-
-  pkg = PackageInfo('sys-kernel', 'Linux', '2.6')
-  pkg.homepages = [ 'http://www.kernel.org/' ]
-  pkg.license_names = [ 'GPL-2' ]
-  pkgs.append(pkg)
-
-  for pkg in pkgs:
-    pkg.ReadStockLicense()
-  return pkgs
-
-
-def GetEbuildPath(board, name):
-  """Turns (x86-alex, net-misc/wget-1.12) into
-  /mnt/host/source/src/third_party/portage-stable/net-misc/wget/wget-1.12.ebuild
-  """
-  p = subprocess.Popen(
-    ['equery-%s' % board, 'which', name], stdout=subprocess.PIPE)
-  stdout = p.communicate()[0]
-  p.wait()
-  path = stdout.strip()
-  logging.debug("equery-%s which %s", board, name)
-  logging.debug("  -> %s", path)
-  if not path:
-    raise AssertionError('GetEbuildPath for %s failed.\n'
-                         'Is your tree clean? Delete /build/%s and rebuild' %
-                         (name, board))
-  return path
-
-
-def GetPackageInfo(fullnamewithrev):
-  """Create a PackageInfo object and populate its license, homepage and
-  description if they are valid.
-  Returns a package info object if the package isn't in a skip list.
-  A package without license is returned with incomplete data, a return of
-  None actually means we don't want to keep track of this package."""
-
-  #                 (category, name, version, revision)
-  info = PackageInfo(*portage.versions.catpkgsplit(fullnamewithrev))
-  # The above will error if portage returns Null because you fed a bad package
-  # name, or forgot to append the version number:
-  # TypeError: PackageInfo constructor argument after * must be a sequence,
-  #   not NoneType
-
-
-  if info.category in SKIPPED_CATEGORIES:
-    logging.info("%s in SKIPPED_CATEGORIES, skip info object creation",
-                 info.fullname)
-    return None
-
-  if info.fullname in SKIPPED_PACKAGES:
-    logging.info("%s in SKIPPED_PACKAGES, skip info object creation",
-                 info.fullname)
-    return None
-
-  ebuild = GetEbuildPath(board, info.fullnamerev)
-
-  if not os.access(ebuild, os.F_OK):
-    logging.error("Can't access %s", ebuild)
-    OUTPUT_INCOMPLETE.append(info.fullname)
-    return info
-
-  cmd = [
-    'portageq',
-    'metadata',
-    '/build/%s' % board,
-    'ebuild',
-    info.fullnamerev,
-    'HOMEPAGE', 'LICENSE', 'DESCRIPTION',
-  ]
-  p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-  lines = [s.strip() for s in p.stdout.readlines()]
-  p.wait()
-
-  if p.returncode != 0:
-    raise AssertionError("%s failed" % cmd)
-
-  # Runs:
-  # portageq metadata /build/x86-alex ebuild net-misc/wget-1.12-r2 \
-  #                                               HOMEPAGE LICENSE DESCRIPTION
-  # Returns:
-  # http://www.gnu.org/software/wget/
-  # GPL-3
-  # Network utility to retrieve files from the WWW
-
-  (info.homepages,    licenses,         info.description) = (
-    lines[0].split(), lines[1].split(), lines[2:])
-
-  # NOTE: the ebuild license field can look like:
-  # LICENSE="GPL-3 LGPL-3 Apache-2.0" (this means AND, as in all 3)
-  # for third_party/portage-stable/app-admin/rsyslog/rsyslog-5.8.11.ebuild
-  # LICENSE="|| ( LGPL-2.1 MPL-1.1 )"
-  # for third_party/portage-stable/x11-libs/cairo/cairo-1.8.8.ebuild
-  # LICENSE="Marvell International Ltd."
-  # for net-wireless/marvell_sd8787/marvell_sd8787-14.64.2.47-r16.ebuild
-
-  # The parser does not know the || ( X Y ) OR logic
-  # It partially ignores the AND logic by skipping BSD licenses
-  # And it craps out on the Marvel license trying to look for
-  # 'Marvel' (found), 'International' (not found), 'Ltd' (not found).
-  # This blows...
-
-  # Solution: show all licenses listed and ignore AND/OR.
-  # Later down, we ignore some license tokens like these (LICENCES_IGNORE):
-  # warnings '||' '(' ')' 'International' 'Ltd.'
-
-  if info.fullname in PACKAGE_HOMEPAGES:
-    info.homepages = PACKAGE_HOMEPAGES[info.fullname]
-
-  # Packages with missing licenses or licenses that need mapping (like BSD/MIT)
-  # are hardcoded here:
-  if info.fullname in PACKAGE_LICENSES:
-    licenses = PACKAGE_LICENSES[info.fullname]
-    logging.debug("Static license mapping for %s: %s", info.fullnamerev,
-                  ",".join(licenses))
-  else:
-    logging.debug("Read licenses from ebuild for %s: %s", info.fullnamerev,
-                  ",".join(licenses))
-
-  if not licenses:
-    logging.error("%s: no license found in ebuild. FIXME!", info.fullnamerev)
-    # In a bind, you could comment this out. I'm making the output fail to get
-    # your attention since this error really should be fixed, but if you comment
-    # out the next line, the script will try to find a license inside the source
-    OUTPUT_INCOMPLETE.append(info.fullname)
-
-  if "||" in licenses[1:]:
-    raise AssertionError('Cannot parse || in the middle of a license for %s: %s'
-      % (info.fullnamerev, ' '.join(licenses)))
-
-  info.license_names = []
-
-  or_licenses_and_one_is_no_attribution = False
-  for license_name in [ x for x in licenses if x not in LICENCES_IGNORE ]:
-    # Here we have an OR case, and one license that we can use stock, so
-    # we remember that in order to be able to skip license attributions if
-    # any were in the OR.
-    if (licenses[0] == "||" and
-        license_name not in COPYRIGHT_ATTRIBUTION_LICENSES):
-      or_licenses_and_one_is_no_attribution = True
-
-  for license_name in [ x for x in licenses if x not in LICENCES_IGNORE ]:
-    # Licenses like BSD or MIT can't be used as is because they do not contain
-    # copyright info. They have to be replaced by copyright file given in the
-    # source code, or manually mapped by us in PACKAGE_LICENSES
-    if license_name in COPYRIGHT_ATTRIBUTION_LICENSES:
-      # To limit needless efforts, if a package is BSD or GPL, we ignore BSD and
-      # use GPL to avoid scanning the package, but we can only do this if
-      # or_licenses_and_one_is_no_attribution has been set above.
-      # This ensures that if we have License: || (BSD3 BSD4), we will
-      # look in the source.
-      if or_licenses_and_one_is_no_attribution:
-        logging.info("%s: ignore license %s because ebuild LICENSES had %s",
-                     info.fullnamerev, license_name, ' '.join(licenses))
-      else:
-        logging.info("%s: can't use %s, will scan source code for copyright...",
-                     info.fullnamerev, license_name)
-        info.need_copyright_attribution = True
-        info.scan_source_for_licenses = True
-    else:
-      info.license_names.append(license_name)
-
-    if license_name in LOOK_IN_SOURCE_LICENSES:
-      logging.info("%s: Got %s, will try to find better license in source...",
-                   info.fullnamerev, license_name)
-      info.scan_source_for_licenses = True
-
-  return info
-
-
 def EvaluateTemplate(template, env, escape=True):
   """Expand a template with variables like {{foo}} using a
   dictionary of expansions."""
@@ -726,65 +864,36 @@ def EvaluateTemplate(template, env, escape=True):
     template = template.replace('{{%s}}' % key, val)
   return template
 
-def ProcessPkg(package):
-  # First, we try to retrieve package and license data from the ebuild, and
-  # return this in a created info object.
-  # This will also set static license mappings stored in this script.
-  info = GetPackageInfo(package)
-  # None is returned if the package is in a skip list, not if the license is
-  # invalid or missing.
-  if not info:
-    return None
 
-  if info.license_names:
-    info.ReadStockLicense()
-  else:
-    logging.warning('%s: no usable licenses in ebuild', info.fullnamerev)
-
-  # If the license(s) could not be found, or one requires copyright attribution,
-  # dig in the source code for license files:
-  # For instance:
-  # Read licenses from ebuild for net-dialup/ppp-2.4.5-r3: BSD,GPL-2
-  # We need to both get the substitution file for BSD and add it to the GPL
-  # license retrieved by ReadStockLicense.
-  if not info.license_names or info.scan_source_for_licenses:
-    info.ExtractLicenses()
-
-  # Show scanned licenses first, they're usually better.
-  info.license_text = info.license_text_scanned + info.license_text_stock
-
-  if not info.license_text:
-    logging.error("""
-%s: unable to find usable license.
-Typically this will happen because the ebuild says it's MIT or BSD, but there
-was no license file that this script could find to include along with a
-copyright attribution (required for BSD/MIT).
-Go investigate the unpacked source in /tmp/boardname/tmp/portage/..., and
-find which license to assign. Once you found it, add a static mapping to the
-PACKAGE_LICENSES dict.
-If there was a usable license file, you may also want to teach this script to
-find it if you have time.""",
-    info.fullname)
-    OUTPUT_INCOMPLETE.append(info.fullname)
-
-  return info
+def usage():
+  print >> sys.stderr, (__doc__)
+  sys.exit(1)
 
 
 if __name__ == '__main__':
   debug = False
-  if len(sys.argv) > 1 and sys.argv[1] == "--debug":
-    debug = True
-    sys.argv.pop(0)
+  testpkg = None
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], "hdt:",
+                               ["help", "debug", "testpkg="])
+  except getopt.GetoptError:
+    usage()
+  for opt, arg in opts:
+    if opt in ("-h", "--help"):
+      usage()
+    elif opt in ("-d", "--debug"):
+      debug = True
+    elif opt in ("-t", "--testpkg"):
+      testpkg = arg
+
+  if len(args) != 2:
+    usage()
+  board, output_file = args
+
+  if debug:
     logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
   else:
     logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
-
-
-  if len(sys.argv) != 3:
-    print >> sys.stderr, (__doc__)
-    sys.exit(1)
-
-  entry_template = open(ENTRY_TEMPLATE_FILE, 'rb').read()
 
   # We have a hardcoded list of skipped packages for various reasons, but we
   # also exclude any google platform package from needing a license since they
@@ -798,50 +907,42 @@ if __name__ == '__main__':
     raise AssertionError('%s exit code was not 0: got %s' % (cmd, ret))
   SKIPPED_PACKAGES += packages
 
-  # FIXME(merlin): we should have proper command line parsing and allow passing
-  # a single package to generate a license for, as an argument.
-  board = sys.argv[1]
-  packages = ListInstalledPackages(board)
+
+  # For temporary single package debugging (make sure to include trailing -ver):
+  if testpkg:
+    logging.info("Will only generate license for %s", testpkg)
+    packages = [ testpkg ]
+  else:
+    packages = ListInstalledPackages(board)
   # If the caller forgets to set $board, it'll default to beaglebone, and return
   # no packages. Catch this and give a hint that the wrong board was given.
   if not packages:
     raise AssertionError('FATAL: Could not get any packages for board %s' %
                          board)
-  # For temporary single package debugging (make sure to include trailing -ver):
-  # packages = [ "dev-libs/libatomic_ops-7.2d" ]
   logging.debug("Package list to work through:")
   logging.debug('\n'.join(packages))
   logging.debug("Will skip these packages:")
   logging.debug('\n'.join(SKIPPED_PACKAGES))
 
-  infos = filter(None, (ProcessPkg(x) for x in packages))
-  infos += BuildMetaPackages()
-  infos.sort(key=lambda x: (x.name, x.version, x.revision))
-
-  entries = []
-  seen_package_names = set()
-  for info in infos:
-    if info.name in seen_package_names:
-      continue
-    seen_package_names.add(info.name)
-    env = {
-      'name': info.name,
-      'url': info.homepages[0] if info.homepages else '',
-      'license': info.license_text or '',
-    }
-    entries.append(EvaluateTemplate(entry_template, env))
-
-  file_template = open(TEMPLATE_FILE, 'rb').read()
-  out_file = open(sys.argv[2], "w")
-  out_file.write(EvaluateTemplate(file_template,
-                                  { 'entries': '\n'.join(entries) },
-                                  escape=False))
-
-  if OUTPUT_INCOMPLETE:
+  licensing = Licensing(packages)
+  licensing.ProcessPackages()
+  if not testpkg:
+    for extra_pkg in [
+      ['x11-base', 'X.Org', '1.9.3', ['http://www.x.org/' ], [ 'X' ]],
+      ['sys-kernel', 'Linux', '2.6', [ 'http://www.kernel.org/' ], [ 'GPL-2' ]]
+    ]:
+      licensing.AddExtraPkg(extra_pkg)
+  licensing.GenerateHTMLLicenseOutput(output_file)
+  if licensing.incomplete_packages:
     raise AssertionError("""
 DO NOT USE OUTPUT!!!
 Some packages are missing due to errors, please look at errors generated during
 this run.
 List of packages with errors:
 %s
-""" % '\n'.join(OUTPUT_INCOMPLETE))
+  """ % '\n'.join(licensing.incomplete_packages))
+
+  logging.info("Non copyright attribution license usage:")
+  for license_name in licensing.sorted_stock_licenses:
+    logging.info("%s: %s", license_name,
+                 ", ".join(licensing.LicensedPackages(license_name)))
