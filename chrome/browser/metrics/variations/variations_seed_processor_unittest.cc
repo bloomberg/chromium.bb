@@ -29,6 +29,15 @@ const char kNonFlagGroupName[] = "non_flag_group";
 const char kForcingFlag1[] = "flag_test1";
 const char kForcingFlag2[] = "flag_test2";
 
+// Adds an experiment to |study| with the specified |name| and |probability|.
+Study_Experiment* AddExperiment(const std::string& name, int probability,
+                                Study* study) {
+  Study_Experiment* experiment = study->add_experiment();
+  experiment->set_name(name);
+  experiment->set_probability_weight(probability);
+  return experiment;
+}
+
 // Populates |study| with test data used for testing associating command line
 // flags with trials groups. The study will contain three groups, a default
 // group that isn't associated with a flag, and two other groups, both
@@ -43,26 +52,14 @@ Study CreateStudyWithFlagGroups(int default_group_probability,
   study.set_name(kFlagStudyName);
   study.set_default_experiment_name(kNonFlagGroupName);
 
-  Study_Experiment* experiment = study.add_experiment();
-  experiment->set_name(kNonFlagGroupName);
-  experiment->set_probability_weight(default_group_probability);
-
-  experiment = study.add_experiment();
-  experiment->set_name(kFlagGroup1Name);
-  experiment->set_probability_weight(flag_group1_probability);
-  experiment->set_forcing_flag(kForcingFlag1);
-
-  experiment = study.add_experiment();
-  experiment->set_name(kFlagGroup2Name);
-  experiment->set_probability_weight(flag_group2_probability);
-  experiment->set_forcing_flag(kForcingFlag2);
+  AddExperiment(kNonFlagGroupName, default_group_probability, &study);
+  AddExperiment(kFlagGroup1Name, flag_group1_probability, &study)
+      ->set_forcing_flag(kForcingFlag1);
+  AddExperiment(kFlagGroup2Name, flag_group2_probability, &study)
+      ->set_forcing_flag(kForcingFlag2);
 
   return study;
 }
-
-// A reference time to be used instead of base::Time::Now(). The date is
-// 2013-05-13 00:00:00.
-const base::Time kReferenceTime = base::Time::FromDoubleT(1368428400);
 
 }  // namespace
 
@@ -325,7 +322,7 @@ TEST(VariationsSeedProcessorTest, ForceGroupWithFlag1) {
   base::FieldTrialList field_trial_list(NULL);
 
   Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  VariationsSeedProcessor().CreateTrialFromStudy(study, kReferenceTime);
+  VariationsSeedProcessor().CreateTrialFromStudy(study, false);
 
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
@@ -338,7 +335,7 @@ TEST(VariationsSeedProcessorTest, ForceGroupWithFlag2) {
   base::FieldTrialList field_trial_list(NULL);
 
   Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  VariationsSeedProcessor().CreateTrialFromStudy(study, kReferenceTime);
+  VariationsSeedProcessor().CreateTrialFromStudy(study, false);
 
   EXPECT_EQ(kFlagGroup2Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
@@ -352,7 +349,7 @@ TEST(VariationsSeedProcessorTest, ForceGroup_ChooseFirstGroupWithFlag) {
   base::FieldTrialList field_trial_list(NULL);
 
   Study study = CreateStudyWithFlagGroups(100, 0, 0);
-  VariationsSeedProcessor().CreateTrialFromStudy(study, kReferenceTime);
+  VariationsSeedProcessor().CreateTrialFromStudy(study, false);
 
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
@@ -365,7 +362,7 @@ TEST(VariationsSeedProcessorTest, ForceGroup_DontChooseGroupWithFlag) {
   // them very likely to be chosen. They won't be chosen since flag groups are
   // never chosen when their flag isn't present.
   Study study = CreateStudyWithFlagGroups(1, 999, 999);
-  VariationsSeedProcessor().CreateTrialFromStudy(study, kReferenceTime);
+  VariationsSeedProcessor().CreateTrialFromStudy(study, false);
   EXPECT_EQ(kNonFlagGroupName,
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
@@ -397,19 +394,56 @@ TEST(VariationsSeedProcessorTest, IsStudyExpired) {
   }
 }
 
+TEST(VariationsSeedProcessorTest, NonExpiredStudyPrioritizedOverExpiredStudy) {
+  VariationsSeedProcessor seed_processor;
+
+  const std::string kTrialName = "A";
+  const std::string kGroup1Name = "Group1";
+
+  TrialsSeed seed;
+  Study* study1 = seed.add_study();
+  study1->set_name(kTrialName);
+  study1->set_default_experiment_name("Default");
+  AddExperiment(kGroup1Name, 100, study1);
+  AddExperiment("Default", 0, study1);
+  Study* study2 = seed.add_study();
+  *study2 = *study1;
+  ASSERT_EQ(seed.study(0).name(), seed.study(1).name());
+
+  const base::Time year_ago =
+      base::Time::Now() - base::TimeDelta::FromDays(365);
+
+  // Check that adding [expired, non-expired] activates the non-expired one.
+  ASSERT_EQ(std::string(), base::FieldTrialList::FindFullName(kTrialName));
+  {
+    base::FieldTrialList field_trial_list(NULL);
+    study1->set_expiry_date(TimeToProtoTime(year_ago));
+    seed_processor.CreateTrialsFromSeed(seed, "en-CA", base::Time::Now(),
+                                        chrome::VersionInfo(),
+                                        chrome::VersionInfo::GetChannel());
+    EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
+  }
+
+  // Check that adding [non-expired, expired] activates the non-expired one.
+  ASSERT_EQ(std::string(), base::FieldTrialList::FindFullName(kTrialName));
+  {
+    base::FieldTrialList field_trial_list(NULL);
+    study1->clear_expiry_date();
+    study2->set_expiry_date(TimeToProtoTime(year_ago));
+    seed_processor.CreateTrialsFromSeed(seed, "en-CA", base::Time::Now(),
+                                        chrome::VersionInfo(),
+                                        chrome::VersionInfo::GetChannel());
+    EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
+  }
+}
+
 TEST(VariationsSeedProcessorTest, ValidateStudy) {
   VariationsSeedProcessor seed_processor;
 
   Study study;
   study.set_default_experiment_name("def");
-
-  Study_Experiment* experiment = study.add_experiment();
-  experiment->set_name("abc");
-  experiment->set_probability_weight(100);
-
-  Study_Experiment* default_group = study.add_experiment();
-  default_group->set_name("def");
-  default_group->set_probability_weight(200);
+  AddExperiment("abc", 100, &study);
+  Study_Experiment* default_group = AddExperiment("def", 200, &study);
 
   base::FieldTrial::Probability total_probability = 0;
   bool valid = seed_processor.ValidateStudyAndComputeTotalProbability(
@@ -481,24 +515,20 @@ TEST(VariationsSeedProcessorTest, VariationParams) {
   study.set_name("Study1");
   study.set_default_experiment_name("B");
 
-  Study_Experiment* experiment1 = study.add_experiment();
-  experiment1->set_name("A");
-  experiment1->set_probability_weight(1);
+  Study_Experiment* experiment1 = AddExperiment("A", 1, &study);
   Study_Experiment_Param* param = experiment1->add_param();
   param->set_name("x");
   param->set_value("y");
 
-  Study_Experiment* experiment2 = study.add_experiment();
-  experiment2->set_name("B");
-  experiment2->set_probability_weight(0);
+  Study_Experiment* experiment2 = AddExperiment("B", 1, &study);
 
-  seed_processor.CreateTrialFromStudy(study, kReferenceTime);
+  seed_processor.CreateTrialFromStudy(study, false);
   EXPECT_EQ("y", GetVariationParamValue("Study1", "x"));
 
   study.set_name("Study2");
   experiment1->set_probability_weight(0);
   experiment2->set_probability_weight(1);
-  seed_processor.CreateTrialFromStudy(study, kReferenceTime);
+  seed_processor.CreateTrialFromStudy(study, false);
   EXPECT_EQ(std::string(), GetVariationParamValue("Study2", "x"));
 }
 
