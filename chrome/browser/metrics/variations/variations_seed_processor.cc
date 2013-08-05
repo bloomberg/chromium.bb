@@ -6,11 +6,9 @@
 
 #include <map>
 #include <set>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "base/stl_util.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
@@ -78,29 +76,11 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
     const base::Time& reference_date,
     const chrome::VersionInfo& version_info,
     chrome::VersionInfo::Channel channel) {
-  // Add expired studies (in a disabled state) only after all the non-expired
-  // studies have been added (and do not add an expired study if a corresponding
-  // non-expired study got added). This way, if there's both an expired and a
-  // non-expired study that applies, the non-expired study takes priority.
-  std::set<std::string> created_studies;
-  std::vector<const Study*> expired_studies;
-
   for (int i = 0; i < seed.study_size(); ++i) {
-    const Study& study = seed.study(i);
-    if (!ShouldAddStudy(study, locale, reference_date, version_info, channel))
-      continue;
-
-    if (IsStudyExpired(study, reference_date)) {
-      expired_studies.push_back(&study);
-    } else {
-      CreateTrialFromStudy(study, false);
-      created_studies.insert(study.name());
+    if (ShouldAddStudy(seed.study(i), locale, reference_date, version_info,
+                       channel)) {
+      CreateTrialFromStudy(seed.study(i), reference_date);
     }
-  }
-
-  for (size_t i = 0; i < expired_studies.size(); ++i) {
-    if (!ContainsKey(created_studies, expired_studies[i]->name()))
-      CreateTrialFromStudy(*expired_studies[i], true);
   }
 }
 
@@ -180,8 +160,9 @@ bool VariationsSeedProcessor::CheckStudyVersion(
   return true;
 }
 
-void VariationsSeedProcessor::CreateTrialFromStudy(const Study& study,
-                                                   bool is_expired) {
+void VariationsSeedProcessor::CreateTrialFromStudy(
+    const Study& study,
+    const base::Time& reference_date) {
   base::FieldTrial::Probability total_probability = 0;
   if (!ValidateStudyAndComputeTotalProbability(study, &total_probability))
     return;
@@ -257,7 +238,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(const Study& study,
   }
 
   trial->SetForced();
-  if (is_expired)
+  if (IsStudyExpired(study, reference_date))
     trial->Disable();
 }
 
