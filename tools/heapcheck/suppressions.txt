@@ -868,3 +868,10 @@
    fun:WTF::StringImpl::createStatic
    fun:WebCore::*Names::init
 }
+{
+   bug_268267
+   Heapcheck:Leak
+   fun:base::internal::WeakReferenceOwner::GetRef
+   fun:GetWeakPtr
+   fun:base::WeakPtrTest_MoveOwnershipAfterInvalidate_Test::TestBody
+}

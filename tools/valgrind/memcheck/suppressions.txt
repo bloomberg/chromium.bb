@@ -7199,3 +7199,11 @@
    fun:_ZN3WTF10StringImpl12createStaticEPKcjj
    fun:_ZN7WebCore*Names*init*
 }
+{
+   bug_268267
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK4base8internal18WeakReferenceOwner6GetRefEv
+   fun:_ZN4base14WeakPtrFactoryINS_12_GLOBAL__N_16TargetEE10GetWeakPtrEv
+   fun:_ZN4base45WeakPtrTest_MoveOwnershipAfterInvalidate_Test8TestBodyEv
+}
