@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="help" href="http://www.w3.org/TR/2012/WD-dom-20121206/#text">
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("Tests that the Text API arguments are correctly validated.");
+
+var text = document.createTextNode("abcdefg");
+shouldBeEqualToString("text.data", "abcdefg");
+shouldBe("text.__proto__", "Text.prototype");
+
+// Text splitText(unsigned long offset)
+shouldBeEqualToString("text.splitText(4).data", "efg");
+shouldBeEqualToString("text.data", "abcd");
+shouldThrow("text.splitText()", "'TypeError: Not enough arguments'");
+shouldBeEqualToString("text.data", "abcd");
+shouldThrow("text.splitText(999)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // offset greater than length.
+shouldBeEqualToString("text.data", "abcd");
+shouldThrow("text.splitText(-1)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'"); // offset greater than length (after wrapping)
+shouldBeEqualToString("text.data", "abcd");
+shouldBeEqualToString("text.splitText(-4294967294).data", "cd"); // Wraps to 2, which is a valid offset.
+shouldBeEqualToString("text.data", "ab");
+
+// Text replaceWholeText(DOMString content)
+text.data = "abcdefg";
+shouldBe("text.replaceWholeText('test')", "text");
+shouldBeEqualToString("text.data", "test");
+shouldBeNull("text.replaceWholeText('')");
+shouldBeEqualToString("text.data", "test");
+shouldThrow("text.replaceWholeText()", "'TypeError: Not enough arguments'");
+shouldBeEqualToString("text.data", "test");
+shouldBe("text.replaceWholeText(null)", "text");
+shouldBeEqualToString("text.data", "null");
+shouldBe("text.replaceWholeText(undefined)", "text");
+shouldBeEqualToString("text.data", "undefined");
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
