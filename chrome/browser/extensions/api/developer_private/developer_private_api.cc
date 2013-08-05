@@ -33,6 +33,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/api/developer_private.h"
@@ -62,7 +63,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
 using apps::ShellWindow;

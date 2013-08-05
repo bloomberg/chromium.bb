@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
-#include "webkit/browser/fileapi/syncable/sync_status_code.h"
+#include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
 
 namespace base {
 class FilePath;

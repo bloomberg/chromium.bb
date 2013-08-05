@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_CHANGE_PROCESSOR_H_
 
 #include "base/callback_forward.h"
-#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/sync_callbacks.h"
 
 namespace fileapi {
 class FileSystemURL;

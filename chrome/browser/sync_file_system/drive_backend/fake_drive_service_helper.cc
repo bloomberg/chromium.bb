@@ -9,10 +9,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/sync_file_system/drive_backend/api_util.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 #define FPL(path) FILE_PATH_LITERAL(path)
 

@@ -10,11 +10,11 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
+#include "chrome/browser/sync_file_system/file_change.h"
+#include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/syncable/file_change.h"
-#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
-#include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
 
 namespace sync_file_system {
 

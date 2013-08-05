@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
-#include "webkit/browser/fileapi/syncable/sync_status_code.h"
+#include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
 
 class Profile;
 

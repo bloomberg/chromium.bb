@@ -13,8 +13,8 @@
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/sync_file_system/file_change.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/syncable/file_change.h"
 
 namespace sync_file_system {
 

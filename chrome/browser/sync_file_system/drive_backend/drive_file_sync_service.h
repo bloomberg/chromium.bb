@@ -22,15 +22,15 @@
 #include "chrome/browser/sync_file_system/drive_backend/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend/local_sync_operation_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend/remote_change_handler.h"
+#include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_action.h"
+#include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "chrome/browser/sync_file_system/sync_task_manager.h"
-#include "webkit/browser/fileapi/syncable/file_change.h"
-#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
-#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 class ExtensionService;
 

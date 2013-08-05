@@ -9,9 +9,9 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 using content::BrowserThread;
 

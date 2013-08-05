@@ -11,8 +11,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 namespace sync_file_system {
 

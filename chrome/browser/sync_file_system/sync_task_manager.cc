@@ -6,7 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/location.h"
-#include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
+#include "chrome/browser/sync_file_system/sync_file_metadata.h"
 
 using fileapi::FileSystemURL;
 

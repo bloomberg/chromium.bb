@@ -19,16 +19,16 @@
 #include "chrome/browser/sync_file_system/drive_backend/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
-#include "chrome/browser/sync_file_system/local_file_sync_service.h"
+#include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
+#include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
+#include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
+#include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/syncable/canned_syncable_file_system.h"
-#include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
-#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 #define FPL(path) FILE_PATH_LITERAL(path)
 

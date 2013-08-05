@@ -17,14 +17,14 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
-#include "chrome/browser/sync_file_system/local_file_sync_service.h"
+#include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_service_state.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 
 class ProfileSyncServiceBase;
 

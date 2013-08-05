@@ -24,7 +24,9 @@
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/mock_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
+#include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,8 +34,6 @@
 #include "extensions/common/id_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 #if defined(OS_CHROMEOS)

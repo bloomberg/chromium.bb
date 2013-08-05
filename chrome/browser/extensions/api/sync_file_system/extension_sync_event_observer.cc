@@ -11,9 +11,9 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 using sync_file_system::SyncEventObserver;

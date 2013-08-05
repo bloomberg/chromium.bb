@@ -23,9 +23,9 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {

@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "chrome/browser/sync_file_system/file_change.h"
+#include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/syncable/file_change.h"
-#include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
 
 using ::testing::_;
 using ::testing::Invoke;

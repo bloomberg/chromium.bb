@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_MOCK_REMOTE_CHANGE_PROCESSOR_H_
 
 #include "base/callback.h"
+#include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
+#include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "webkit/browser/fileapi/syncable/file_change.h"
-#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 
 namespace base {
 class FilePath;

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
-#include "webkit/browser/fileapi/syncable/sync_file_status.h"
+#include "chrome/browser/sync_file_system/sync_file_status.h"
 
 namespace fileapi {
 class FileSystemURL;

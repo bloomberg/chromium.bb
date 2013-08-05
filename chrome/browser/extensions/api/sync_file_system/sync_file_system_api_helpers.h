@@ -8,10 +8,10 @@
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
+#include "chrome/browser/sync_file_system/sync_file_status.h"
+#include "chrome/browser/sync_file_system/sync_file_type.h"
 #include "chrome/browser/sync_file_system/sync_service_state.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
-#include "webkit/browser/fileapi/syncable/sync_file_status.h"
-#include "webkit/browser/fileapi/syncable/sync_file_type.h"
 
 namespace fileapi {
 class FileSystemURL;

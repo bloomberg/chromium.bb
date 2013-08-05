@@ -10,7 +10,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/api_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/logger.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 
 namespace sync_file_system {
 namespace drive_backend {

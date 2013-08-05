@@ -8,9 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/sync_file_system/drive_backend/local_sync_operation_resolver.h"
+#include "chrome/browser/sync_file_system/file_change.h"
+#include "chrome/browser/sync_file_system/sync_file_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/syncable/file_change.h"
-#include "webkit/browser/fileapi/syncable/sync_file_type.h"
 
 namespace sync_file_system {
 

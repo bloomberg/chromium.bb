@@ -12,7 +12,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/sync_file_system/drive_backend/api_util_interface.h"
-#include "webkit/browser/fileapi/syncable/sync_file_type.h"
+#include "chrome/browser/sync_file_system/sync_file_type.h"
 
 class GURL;
 class Profile;

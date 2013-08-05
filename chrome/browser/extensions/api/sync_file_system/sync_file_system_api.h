@@ -10,10 +10,10 @@
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
+#include "chrome/browser/sync_file_system/sync_file_status.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/syncable/sync_file_status.h"
-#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 #include "webkit/common/quota/quota_types.h"
 
 namespace fileapi {

@@ -10,10 +10,10 @@
 #include "chrome/browser/sync_file_system/drive_backend/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_api_util.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 namespace sync_file_system {
 

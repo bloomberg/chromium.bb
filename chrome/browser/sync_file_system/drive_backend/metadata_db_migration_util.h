@@ -8,8 +8,8 @@
 #include <string>
 
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 class GURL;
 

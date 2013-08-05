@@ -79,6 +79,7 @@
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
+#include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
@@ -138,7 +139,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/syncable/sync_file_system_backend.h"
 #include "webkit/common/webpreferences.h"
 #include "webkit/plugins/plugin_switches.h"
 

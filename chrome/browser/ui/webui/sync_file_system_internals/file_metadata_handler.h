@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 class Profile;
 

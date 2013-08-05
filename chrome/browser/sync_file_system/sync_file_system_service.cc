@@ -18,10 +18,13 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_file_sync_service.h"
-#include "chrome/browser/sync_file_system/local_file_sync_service.h"
+#include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
+#include "chrome/browser/sync_file_system/sync_file_metadata.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,9 +33,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
-#include "webkit/browser/fileapi/syncable/sync_status_code.h"
-#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 using content::BrowserThread;
 using fileapi::FileSystemURL;

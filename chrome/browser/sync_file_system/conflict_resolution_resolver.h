@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_CONFLICT_RESOLUTION_RESOLVER_H_
 
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
-#include "webkit/browser/fileapi/syncable/sync_file_type.h"
+#include "chrome/browser/sync_file_system/sync_file_type.h"
 
 namespace base {
 class Time;

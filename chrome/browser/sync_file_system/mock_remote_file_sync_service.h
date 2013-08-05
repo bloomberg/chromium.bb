@@ -14,11 +14,11 @@
 #include "chrome/browser/sync_file_system/mock_local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
+#include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
-#include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
 
 namespace sync_file_system {
 
