@@ -163,7 +163,6 @@ void SetupPrerenderFieldTrial() {
 }  // end namespace
 
 void ConfigureOmniboxPrerender();
-void ConfigureLocalPredictor();
 
 void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   enum PrerenderOption {
@@ -220,7 +219,6 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   }
 
   ConfigureOmniboxPrerender();
-  ConfigureLocalPredictor();
 }
 
 void ConfigureOmniboxPrerender() {
@@ -240,19 +238,6 @@ void ConfigureOmniboxPrerender() {
           &g_omnibox_trial_default_group_number));
   omnibox_prerender_trial->AppendGroup("OmniboxPrerenderDisabled",
                                        kDisabledProbability);
-}
-
-void ConfigureLocalPredictor() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
-    return;
-  }
-  scoped_refptr<FieldTrial> local_predictor_trial(
-      FieldTrialList::FactoryGetFieldTrial(
-          kLocalPredictorKeyName, 100, kDisabledGroup, 2013, 12, 31,
-          FieldTrial::SESSION_RANDOMIZED, NULL));
-  local_predictor_trial->AppendGroup(kEnabledGroup, 100);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
