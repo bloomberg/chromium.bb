@@ -859,7 +859,10 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
   const Extension* extension =
       service->extensions()->GetExtensionOrAppByURL(url);
   if (!extension) {
-    NOTREACHED();
+    // It's ok to return here, since we could be running a browser plugin
+    // outside an extension, and don't need to attach a
+    // BrowserPluginGuestDelegate in that case;
+    // e.g. running with flag --enable-browser-plugin-for-all-view-types.
     return;
   }
 
