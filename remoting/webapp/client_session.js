@@ -154,18 +154,40 @@ remoting.ClientSession.prototype.setOnStateChange = function(onStateChange) {
 };
 
 /**
- * Called when the connection has been established to set the initial scroll-
- * bar visibility correctly.
+ * Called when the window or desktop size or the scaling settings change,
+ * to set the scroll-bar visibility.
  *
  * TODO(jamiewalch): crbug.com/252796: Remove this once crbug.com/240772 is
  * fixed.
  */
-remoting.ClientSession.prototype.setScrollbarVisibility = function() {
+remoting.ClientSession.prototype.updateScrollbarVisibility = function() {
+  var needsVerticalScroll = false;
+  var needsHorizontalScroll = false;
+  if (!this.shrinkToFit_) {
+    // Determine whether or not horizontal or vertical scrollbars are
+    // required, taking into account their width.
+    needsVerticalScroll = window.innerHeight < this.plugin.desktopHeight;
+    needsHorizontalScroll = window.innerWidth < this.plugin.desktopWidth;
+    var kScrollBarWidth = 16;
+    if (needsHorizontalScroll && !needsVerticalScroll) {
+      needsVerticalScroll =
+          window.innerHeight - kScrollBarWidth < this.plugin.desktopHeight;
+    } else if (!needsHorizontalScroll && needsVerticalScroll) {
+      needsHorizontalScroll =
+          window.innerWidth - kScrollBarWidth < this.plugin.desktopWidth;
+    }
+  }
+
   var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
-  if (this.shrinkToFit_) {
-    htmlNode.classList.add('no-scroll');
+  if (needsHorizontalScroll) {
+    htmlNode.classList.remove('no-horizontal-scroll');
   } else {
-    htmlNode.classList.remove('no-scroll');
+    htmlNode.classList.add('no-horizontal-scroll');
+  }
+  if (needsVerticalScroll) {
+    htmlNode.classList.remove('no-vertical-scroll');
+  } else {
+    htmlNode.classList.add('no-vertical-scroll');
   }
 };
 
@@ -661,7 +683,7 @@ remoting.ClientSession.prototype.setScreenMode_ =
 
   this.shrinkToFit_ = shrinkToFit;
   this.resizeToClient_ = resizeToClient;
-  this.setScrollbarVisibility();
+  this.updateScrollbarVisibility();
 
   if (this.hostId != '') {
     var options = {};
@@ -930,6 +952,8 @@ remoting.ClientSession.prototype.onResize = function() {
   // If bump-scrolling is enabled, adjust the plugin margins to fully utilize
   // the new window area.
   this.scroll_(0, 0);
+
+  this.updateScrollbarVisibility();
 };
 
 /**
@@ -970,6 +994,7 @@ remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
               this.plugin.desktopXDpi + 'x' +
               this.plugin.desktopYDpi + ' DPI');
   this.updateDimensions();
+  this.updateScrollbarVisibility();
 };
 
 /**

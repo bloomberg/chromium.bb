@@ -28,7 +28,7 @@ body {
 }
 
 /*
-* The "app-v2" class is added to the <body> node by remoting.init if it's
+* The "app-v2" class is added to the <html> node by remoting.init if it's
 * running as a V2 app.
 */
 body.apps-v2 .apps-v1-only {
@@ -612,11 +612,20 @@ button {
   opacity: 0.75;
 }
 
-/* TODO(jamiewalch): crbug.com/252796: Remove this once crbug.com/240772
+/* TODO(jamiewalch): crbug.com/252796: Remove these once crbug.com/240772
  * is fixed. */
-.no-scroll {
-  overflow: hidden;
+.no-horizontal-scroll {
+  overflow-x: hidden !important;
 }
+
+.no-vertical-scroll {
+  overflow-y: hidden !important;
+}
+
+html.apps-v2.scrollable {
+  overflow: scroll;
+}
+
 
 /* TODO(jamiewalch): Reinstate this if we're able to get translations for
  *     "Why is this safe?" that don't overflow in any language.
