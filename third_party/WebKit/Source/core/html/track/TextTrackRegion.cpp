@@ -103,7 +103,7 @@ void TextTrackRegion::setId(const String& id)
 void TextTrackRegion::setWidth(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return;
     }
 
@@ -128,7 +128,7 @@ void TextTrackRegion::setHeight(long value, ExceptionState& es)
 void TextTrackRegion::setRegionAnchorX(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return;
     }
 
@@ -143,7 +143,7 @@ void TextTrackRegion::setRegionAnchorX(double value, ExceptionState& es)
 void TextTrackRegion::setRegionAnchorY(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return;
     }
 
@@ -158,7 +158,7 @@ void TextTrackRegion::setRegionAnchorY(double value, ExceptionState& es)
 void TextTrackRegion::setViewportAnchorX(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return;
     }
 
@@ -173,7 +173,7 @@ void TextTrackRegion::setViewportAnchorX(double value, ExceptionState& es)
 void TextTrackRegion::setViewportAnchorY(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return;
     }
 

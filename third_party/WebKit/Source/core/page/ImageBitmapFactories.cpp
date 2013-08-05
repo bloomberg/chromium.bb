@@ -80,7 +80,7 @@ ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLImageElement* image
 ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLImageElement* image, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!image) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return ScriptObject();
     }
     if (!image->cachedImage()) {
@@ -117,7 +117,7 @@ ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLVideoElement* video
 ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLVideoElement* video, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!video) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return ScriptObject();
     }
     if (!video->player()) {
@@ -166,7 +166,7 @@ ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLCanvasElement* canv
 ScriptObject createImageBitmap(EventTarget* eventTarget, HTMLCanvasElement* canvas, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!canvas) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return ScriptObject();
     }
     if (!canvas->originClean()) {
@@ -189,7 +189,7 @@ ScriptObject createImageBitmap(EventTarget* eventTarget, ImageData* data, Except
 ScriptObject createImageBitmap(EventTarget* eventTarget, ImageData* data, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!data) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return ScriptObject();
     }
     if (!sw || !sh) {
@@ -208,7 +208,7 @@ ScriptObject createImageBitmap(EventTarget* eventTarget, ImageBitmap* bitmap, Ex
 ScriptObject createImageBitmap(EventTarget* eventTarget, ImageBitmap* bitmap, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
     if (!bitmap) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return ScriptObject();
     }
     if (!sw || !sh) {

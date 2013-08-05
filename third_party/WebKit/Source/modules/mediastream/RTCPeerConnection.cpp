@@ -486,7 +486,7 @@ PassRefPtr<RTCDTMFSender> RTCPeerConnection::createDTMFSender(PassRefPtr<MediaSt
     }
 
     if (!prpTrack) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return 0;
     }
 

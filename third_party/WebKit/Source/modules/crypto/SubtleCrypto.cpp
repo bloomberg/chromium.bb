@@ -116,7 +116,7 @@ PassRefPtr<CryptoOperation> createCryptoOperation(const Dictionary& rawAlgorithm
     // All operations other than Digest require a valid Key.
     if (operationType != Digest) {
         if (!key) {
-            es.throwDOMException(TypeError);
+            es.throwTypeError();
             return 0;
         }
 
@@ -128,7 +128,7 @@ PassRefPtr<CryptoOperation> createCryptoOperation(const Dictionary& rawAlgorithm
 
     // Only Verify takes a signature.
     if (operationType == Verify && !signature) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return 0;
     }
 
@@ -203,7 +203,7 @@ ScriptObject SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extr
 
     WebKit::WebCryptoKeyUsageMask keyUsages;
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages)) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return ScriptObject();
     }
 
@@ -226,19 +226,19 @@ ScriptObject SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* k
     }
 
     if (!keyData) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return ScriptObject();
     }
 
     WebKit::WebCryptoKeyUsageMask keyUsages;
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages)) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return ScriptObject();
     }
 
     WebKit::WebCryptoKeyFormat format;
     if (!Key::parseFormat(rawFormat, format)) {
-        es.throwDOMException(TypeError);
+        es.throwTypeError();
         return ScriptObject();
     }
 
