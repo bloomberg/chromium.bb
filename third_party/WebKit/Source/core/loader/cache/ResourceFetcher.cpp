@@ -940,10 +940,9 @@ void ResourceFetcher::didLoadResource(Resource* resource)
     RefPtr<DocumentLoader> protectDocumentLoader(m_documentLoader);
     RefPtr<Document> protectDocument(m_document);
 
-    if (resource && resource->response().isHTTP() && ((!resource->errorOccurred() && !resource->wasCanceled()) || resource->response().httpStatusCode() == 304)) {
+    if (resource && resource->response().isHTTP() && ((!resource->errorOccurred() && !resource->wasCanceled()) || resource->response().httpStatusCode() == 304) && document()) {
         ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
         if (it != m_resourceTimingInfoMap.end()) {
-            ASSERT(document());
             Document* initiatorDocument = document();
             if (resource->type() == Resource::MainResource)
                 initiatorDocument = document()->parentDocument();
