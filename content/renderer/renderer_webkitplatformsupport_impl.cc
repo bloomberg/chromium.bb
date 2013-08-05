@@ -182,11 +182,6 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
       CGFontRef* container,
       uint32* font_id);
 #elif defined(OS_POSIX)
-  virtual void getFontFamilyForCharacters(
-      const WebKit::WebUChar* characters,
-      size_t num_characters,
-      const char* preferred_locale,
-      WebKit::WebFontFamily* family);
   virtual void getFontFamilyForCharacter(
       WebKit::WebUChar32 character,
       const char* preferred_locale,
@@ -579,18 +574,6 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 // whole class for android.
 
 #elif defined(OS_POSIX)
-
-void
-RendererWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
-    const WebKit::WebUChar* characters,
-    size_t num_characters,
-    const char* preferred_locale,
-    WebKit::WebFontFamily* family) {
-  DCHECK(num_characters <= 2);
-  WebKit::WebUChar32 c;
-  U16_GET(characters, 0, 0, num_characters, c);
-  getFontFamilyForCharacter(c, preferred_locale, family);
-}
 
 void
 RendererWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
