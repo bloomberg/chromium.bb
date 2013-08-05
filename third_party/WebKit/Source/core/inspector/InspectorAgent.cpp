@@ -47,8 +47,6 @@
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace std;
-
 namespace WebCore {
 
 namespace InspectorAgentState {

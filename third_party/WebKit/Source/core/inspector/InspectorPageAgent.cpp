@@ -77,8 +77,6 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/TextEncoding.h"
 
-using namespace std;
-
 namespace WebCore {
 
 namespace PageAgentState {

@@ -49,8 +49,6 @@
 #include "core/rendering/RenderTheme.h"
 #include "modules/filesystem/DOMFileSystem.h"
 
-using namespace std;
-
 namespace WebCore {
 
 class FrontendMenuProvider : public ContextMenuProvider {
