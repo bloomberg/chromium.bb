@@ -16,9 +16,11 @@
 #include "grit/locale_settings.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -30,6 +32,9 @@ namespace {
 
 const int kCookieInfoViewBorderSize = 1;
 const int kCookieInfoViewInsetSize = 3;
+
+// Adjustment to the spacing between subsequent label-field lines.
+const int kExtraLineHeightPadding = 3;
 
 }  // namespace
 
@@ -118,20 +123,24 @@ void CookieInfoView::ViewHierarchyChanged(
 }
 
 void CookieInfoView::AddLabelRow(int layout_id, views::GridLayout* layout,
-                                 views::View* label, views::View* value) {
+                                 views::Label* label,
+                                 views::Textfield* text_field) {
   layout->StartRow(0, layout_id);
   layout->AddView(label);
-  layout->AddView(value, 2, 1, views::GridLayout::FILL,
+  layout->AddView(text_field, 2, 1, views::GridLayout::FILL,
                   views::GridLayout::CENTER);
-  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-}
+  layout->AddPaddingRow(0, views::DialogDelegate::UseNewStyle() ?
+                           kExtraLineHeightPadding :
+                           views::kRelatedControlSmallVerticalSpacing);
 
-void CookieInfoView::AddControlRow(int layout_id, views::GridLayout* layout,
-                                 views::View* label, views::View* control) {
-  layout->StartRow(0, layout_id);
-  layout->AddView(label);
-  layout->AddView(control, 1, 1);
-  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+
+  // Now that the Textfield is in the view hierarchy, it can be initialized.
+  text_field->SetReadOnly(true);
+  text_field->RemoveBorder();
+  // Color these borderless text areas the same as the containing dialog.
+  text_field->SetBackgroundColor(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DialogBackground));
+  text_field->SetTextColor(SkColorSetRGB(0x78, 0x78, 0x78));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -208,33 +217,4 @@ void CookieInfoView::Init() {
               created_value_field_);
   AddLabelRow(three_column_layout_id, layout, expires_label_,
               expires_value_field_);
-
-  // Color these borderless text areas the same as the containing dialog.
-#if defined(USE_AURA) || !defined(OS_WIN)
-  SkColor text_area_background = SK_ColorWHITE;
-#else
-  SkColor text_area_background = color_utils::GetSysSkColor(COLOR_3DFACE);
-#endif
-  // Now that the Textfields are in the view hierarchy, we can initialize them.
-  name_value_field_->SetReadOnly(true);
-  name_value_field_->RemoveBorder();
-  name_value_field_->SetBackgroundColor(text_area_background);
-  content_value_field_->SetReadOnly(true);
-  content_value_field_->RemoveBorder();
-  content_value_field_->SetBackgroundColor(text_area_background);
-  domain_value_field_->SetReadOnly(true);
-  domain_value_field_->RemoveBorder();
-  domain_value_field_->SetBackgroundColor(text_area_background);
-  path_value_field_->SetReadOnly(true);
-  path_value_field_->RemoveBorder();
-  path_value_field_->SetBackgroundColor(text_area_background);
-  send_for_value_field_->SetReadOnly(true);
-  send_for_value_field_->RemoveBorder();
-  send_for_value_field_->SetBackgroundColor(text_area_background);
-  created_value_field_->SetReadOnly(true);
-  created_value_field_->RemoveBorder();
-  created_value_field_->SetBackgroundColor(text_area_background);
-  expires_value_field_->SetReadOnly(true);
-  expires_value_field_->RemoveBorder();
-  expires_value_field_->SetBackgroundColor(text_area_background);
 }

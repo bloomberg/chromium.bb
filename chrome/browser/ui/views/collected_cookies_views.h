@@ -77,6 +77,9 @@ class CollectedCookiesViews : public views::DialogDelegateView,
 
   views::View* CreateBlockedPane();
 
+  // Creates and returns a containing ScrollView around the given tree view.
+  views::View* CreateScrollView(views::TreeView* pane);
+
   void EnableControls();
 
   void ShowCookieInfo();

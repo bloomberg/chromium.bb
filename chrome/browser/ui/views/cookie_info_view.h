@@ -54,9 +54,7 @@ class CookieInfoView : public views::View {
  private:
   // Layout helper routines.
   void AddLabelRow(int layout_id, views::GridLayout* layout,
-                   views::View* label, views::View* value);
-  void AddControlRow(int layout_id, views::GridLayout* layout,
-                     views::View* label, views::View* control);
+                   views::Label* label, views::Textfield* value);
 
   // Sets up the view layout.
   void Init();
