@@ -307,6 +307,10 @@ class Panel : public ui::BaseWindow,
 
   bool IsMinimizedBySystem() const;
 
+  // Returns true if the panel is shown in the active desktop. The user could
+  // create or use multiple desktops or workspaces.
+  bool IsShownOnActiveDesktop() const;
+
   // Turns on/off the shadow effect around the window shape.
   void ShowShadow(bool show);
 

@@ -64,6 +64,7 @@ class PanelCocoa : public NativePanel {
 
   virtual void MinimizePanelBySystem() OVERRIDE;
   virtual bool IsPanelMinimizedBySystem() const OVERRIDE;
+  virtual bool IsPanelShownOnActiveDesktop() const OVERRIDE;
   virtual void ShowShadow(bool show) OVERRIDE;
   virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 

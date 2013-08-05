@@ -310,6 +310,10 @@ bool Panel::IsMinimizedBySystem() const {
   return native_panel_->IsPanelMinimizedBySystem();
 }
 
+bool Panel::IsShownOnActiveDesktop() const {
+  return native_panel_->IsPanelShownOnActiveDesktop();
+}
+
 void Panel::ShowShadow(bool show) {
   native_panel_->ShowShadow(show);
 }

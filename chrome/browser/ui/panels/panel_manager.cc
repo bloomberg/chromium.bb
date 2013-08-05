@@ -337,6 +337,11 @@ PanelCollection* PanelManager::GetCollectionForNewPanel(
       if (stack->IsMinimized())
         continue;
 
+      // Do not stack with the panel that is not shown in current virtual
+      // desktop.
+      if (!panel->IsShownOnActiveDesktop())
+        continue;
+
       if (bounds.height() <= stack->GetMaximiumAvailableBottomSpace()) {
         *positioning_mask = static_cast<PanelCollection::PositioningMask>(
             *positioning_mask | PanelCollection::COLLAPSE_TO_FIT);
@@ -370,6 +375,10 @@ PanelCollection* PanelManager::GetCollectionForNewPanel(
 
       // Do not stack with the panel that is minimized by the system.
       if (panel->IsMinimizedBySystem())
+        continue;
+
+      // Do not stack with the panel that is not shown in the active desktop.
+      if (!panel->IsShownOnActiveDesktop())
         continue;
 
       gfx::Rect work_area =

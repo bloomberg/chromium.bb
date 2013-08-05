@@ -683,6 +683,16 @@ bool PanelView::IsPanelMinimizedBySystem() const {
   return window_->IsMinimized();
 }
 
+bool PanelView::IsPanelShownOnActiveDesktop() const {
+#if defined(OS_WIN)
+  // Virtual desktop is not supported by the native Windows system.
+  return true;
+#else
+  NOTIMPLEMENTED();
+  return true;
+#endif
+}
+
 void PanelView::ShowShadow(bool show) {
 #if defined(OS_WIN)
   // The overlapped window has the shadow while the popup window does not have

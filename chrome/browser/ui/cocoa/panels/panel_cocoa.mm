@@ -283,6 +283,10 @@ bool PanelCocoa::IsPanelMinimizedBySystem() const {
   return [controller_ isMiniaturized];
 }
 
+bool PanelCocoa::IsPanelShownOnActiveDesktop() const {
+  return [[controller_ window] isOnActiveSpace];
+}
+
 void PanelCocoa::ShowShadow(bool show) {
   [controller_ showShadow:show];
 }

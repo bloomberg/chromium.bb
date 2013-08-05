@@ -88,6 +88,10 @@ class NativePanel {
   // iconic.
   virtual bool IsPanelMinimizedBySystem() const = 0;
 
+  // Returns true if the panel is shown in the active desktop. The user could
+  // create and use multiple virtual desktops or workspaces.
+  virtual bool IsPanelShownOnActiveDesktop() const = 0;
+
   // Turns on/off the shadow effect around the window shape.
   virtual void ShowShadow(bool show) = 0;
 
