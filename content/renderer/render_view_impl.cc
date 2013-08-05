@@ -1727,6 +1727,8 @@ void RenderViewImpl::OnSetName(const std::string& name) {
 
 void RenderViewImpl::OnSetEditableSelectionOffsets(int start, int end) {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  if (!ShouldHandleImeEvent())
+    return;
   ImeEventGuard guard(this);
   webview()->setEditableSelectionOffsets(start, end);
 }
@@ -1734,14 +1736,14 @@ void RenderViewImpl::OnSetEditableSelectionOffsets(int start, int end) {
 void RenderViewImpl::OnSetCompositionFromExistingText(
     int start, int end,
     const std::vector<WebKit::WebCompositionUnderline>& underlines) {
-  if (!webview())
+  if (!ShouldHandleImeEvent())
     return;
   ImeEventGuard guard(this);
   webview()->setCompositionFromExistingText(start, end, underlines);
 }
 
 void RenderViewImpl::OnExtendSelectionAndDelete(int before, int after) {
-  if (!webview())
+  if (!ShouldHandleImeEvent())
     return;
   ImeEventGuard guard(this);
   webview()->extendSelectionAndDelete(before, after);
@@ -2360,7 +2362,7 @@ void RenderViewImpl::didChangeSelection(bool is_empty_selection) {
   SyncSelectionIfRequired();
   UpdateTextInputType();
 #if defined(OS_ANDROID)
-  UpdateTextInputState(DO_NOT_SHOW_IME);
+  UpdateTextInputState(false, true);
 #endif
 }
 

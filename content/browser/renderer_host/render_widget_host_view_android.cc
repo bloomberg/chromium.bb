@@ -77,6 +77,11 @@ void InsertSyncPointAndAckForCompositor(
       route_id, output_surface_id, renderer_host_id, ack);
 }
 
+// Sends an acknowledgement to the renderer of a processed IME event.
+void SendImeEventAck(RenderWidgetHostImpl* host) {
+  host->Send(new ViewMsg_ImeEventAck(host->GetRoutingID()));
+}
+
 }  // anonymous namespace
 
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
@@ -398,6 +403,13 @@ int RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
 
 void RenderWidgetHostViewAndroid::OnTextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
+#if defined(OS_ANDROID)
+  if (params.require_ack) {
+    // Regardless of how we exit from this method, we must acknowledge that we
+    // processed the input state change.
+    base::ScopedClosureRunner ack_caller(base::Bind(&SendImeEventAck, host_));
+  }
+#endif
   if (!IsShowing())
     return;
 

@@ -199,11 +199,6 @@ class CONTENT_EXPORT RenderWidget
     return filtered_time_per_frame_;
   }
 
-  enum ShowIme {
-    DO_NOT_SHOW_IME,
-    SHOW_IME_IF_NEEDED
-  };
-
   // Handle common setup/teardown for handling IME events.
   void StartHandlingImeEvent();
   void FinishHandlingImeEvent();
@@ -326,7 +321,19 @@ class CONTENT_EXPORT RenderWidget
 #if defined(OS_ANDROID)
   void OnImeBatchStateChanged(bool is_begin);
   void OnShowImeIfNeeded();
+
+  // Whenever an IME event that needs an acknowledgement is sent to the browser,
+  // the number of outstanding IME events that needs acknowledgement should be
+  // incremented. All IME events will be dropped until we receive an ack from
+  // the browser.
+  void IncrementOutstandingImeEventAcks();
+
+  // Called by the browser process for every required IME acknowledgement.
+  void OnImeEventAck();
 #endif
+  // Returns whether we currently should handle an IME event.
+  bool ShouldHandleImeEvent();
+
   void OnSnapshot(const gfx::Rect& src_subrect);
   void OnSetBrowserRenderingStats(const BrowserRenderingStats& stats);
 
@@ -406,9 +413,13 @@ class CONTENT_EXPORT RenderWidget
   void UpdateTextInputType();
 
 #if defined(OS_ANDROID)
-  // |show_ime_if_needed| should be SHOW_IME_IF_NEEDED iff the update may cause
-  // the ime to be displayed, e.g. after a tap on an input field on mobile.
-  void UpdateTextInputState(ShowIme show_ime);
+  // |show_ime_if_needed| should be true iff the update may cause the ime to be
+  // displayed, e.g. after a tap on an input field on mobile.
+  // |send_ime_ack| should be true iff the browser side is required to
+  // acknowledge the change before the renderer handles any more IME events.
+  // This is when the event did not originate from the browser side IME, such as
+  // changes from JavaScript or autofill.
+  void UpdateTextInputState(bool show_ime_if_needed, bool send_ime_ack);
 #endif
 
   // Checks if the selection bounds have been changed. If they are changed,
@@ -716,6 +727,13 @@ class CONTENT_EXPORT RenderWidget
   ui::LatencyInfo latency_info_;
 
   uint32 next_output_surface_id_;
+
+#if defined(OS_ANDROID)
+  // A counter for number of outstanding messages from the renderer to the
+  // browser regarding IME-type events that have not been acknowledged by the
+  // browser. If this value is not 0 IME events will be dropped.
+  int outstanding_ime_acks_;
+#endif
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 

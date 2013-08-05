@@ -529,6 +529,9 @@ IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
   // true, the IME will only be shown if the type is appropriate (e.g. not
   // TEXT_INPUT_TYPE_NONE).
   IPC_STRUCT_MEMBER(bool, show_ime_if_needed)
+
+  // Whether an acknowledgement is required for this update.
+  IPC_STRUCT_MEMBER(bool, require_ack)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
@@ -1303,6 +1306,10 @@ IPC_MESSAGE_ROUTED0(ViewMsg_ShowImeIfNeeded)
 // Sent by the browser when the renderer should generate a new frame.
 IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
                     cc::BeginFrameArgs /* args */)
+
+// Sent by the browser when an IME update that requires acknowledgement has been
+// processed on the browser side.
+IPC_MESSAGE_ROUTED0(ViewMsg_ImeEventAck)
 
 #elif defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.

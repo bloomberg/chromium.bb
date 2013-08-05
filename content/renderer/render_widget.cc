@@ -226,6 +226,9 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       device_scale_factor_(screen_info_.deviceScaleFactor),
       is_threaded_compositing_enabled_(false),
       next_output_surface_id_(0),
+#if defined(OS_ANDROID)
+      outstanding_ime_acks_(0),
+#endif
       weak_ptr_factory_(this) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
@@ -389,6 +392,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeBatchStateChanged, OnImeBatchStateChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
+    IPC_MESSAGE_HANDLER(ViewMsg_ImeEventAck, OnImeEventAck)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBrowserRenderingStats,
@@ -897,7 +901,7 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
   // Allow the IME to be shown when the focus changes as a consequence
   // of a processed touch end event.
   if (input_event->type == WebInputEvent::TouchEnd && processed)
-    UpdateTextInputState(SHOW_IME_IF_NEEDED);
+    UpdateTextInputState(true, true);
 #endif
 
   handling_input_event_ = false;
@@ -1587,7 +1591,7 @@ void RenderWidget::willBeginCompositorFrame() {
   // is done.
   UpdateTextInputType();
 #if defined(OS_ANDROID)
-  UpdateTextInputState(DO_NOT_SHOW_IME);
+  UpdateTextInputState(false, true);
 #endif
   UpdateSelectionBounds();
 
@@ -1812,7 +1816,7 @@ void RenderWidget::OnImeSetComposition(
     const string16& text,
     const std::vector<WebCompositionUnderline>& underlines,
     int selection_start, int selection_end) {
-  if (!webwidget_)
+  if (!ShouldHandleImeEvent())
     return;
   ImeEventGuard guard(this);
   if (!webwidget_->setComposition(
@@ -1831,7 +1835,7 @@ void RenderWidget::OnImeSetComposition(
 void RenderWidget::OnImeConfirmComposition(const string16& text,
                                            const ui::Range& replacement_range,
                                            bool keep_selection) {
-  if (!webwidget_)
+  if (!ShouldHandleImeEvent())
     return;
   ImeEventGuard guard(this);
   handling_input_event_ = true;
@@ -2014,9 +2018,26 @@ void RenderWidget::OnImeBatchStateChanged(bool is_begin) {
 }
 
 void RenderWidget::OnShowImeIfNeeded() {
-  UpdateTextInputState(SHOW_IME_IF_NEEDED);
+  UpdateTextInputState(true, true);
+}
+
+void RenderWidget::IncrementOutstandingImeEventAcks() {
+  ++outstanding_ime_acks_;
+}
+
+void RenderWidget::OnImeEventAck() {
+  --outstanding_ime_acks_;
+  DCHECK(outstanding_ime_acks_ >= 0);
 }
 #endif
+
+bool RenderWidget::ShouldHandleImeEvent() {
+#if defined(OS_ANDROID)
+  return !!webwidget_ && outstanding_ime_acks_ == 0;
+#else
+  return !!webwidget_;
+#endif
+}
 
 void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
   if (device_scale_factor_ == device_scale_factor)
@@ -2130,7 +2151,7 @@ void RenderWidget::FinishHandlingImeEvent() {
   // ime event.
   UpdateSelectionBounds();
 #if defined(OS_ANDROID)
-  UpdateTextInputState(DO_NOT_SHOW_IME);
+  UpdateTextInputState(false, false);
 #endif
 }
 
@@ -2163,10 +2184,10 @@ void RenderWidget::UpdateTextInputType() {
 }
 
 #if defined(OS_ANDROID)
-void RenderWidget::UpdateTextInputState(ShowIme show_ime) {
+void RenderWidget::UpdateTextInputState(bool show_ime_if_needed,
+                                        bool send_ime_ack) {
   if (handling_ime_event_)
     return;
-  bool show_ime_if_needed = (show_ime == SHOW_IME_IF_NEEDED);
   if (!show_ime_if_needed && !input_method_is_active_)
     return;
   ui::TextInputType new_type = GetTextInputType();
@@ -2193,6 +2214,9 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime) {
     p.composition_end = new_info.compositionEnd;
     p.can_compose_inline = new_can_compose_inline;
     p.show_ime_if_needed = show_ime_if_needed;
+    p.require_ack = send_ime_ack;
+    if (p.require_ack)
+      IncrementOutstandingImeEventAcks();
     Send(new ViewHostMsg_TextInputStateChanged(routing_id(), p));
 
     text_input_info_ = new_info;
@@ -2373,7 +2397,7 @@ void RenderWidget::didHandleGestureEvent(
     return;
   if (event.type == WebInputEvent::GestureTap ||
       event.type == WebInputEvent::GestureLongPress) {
-    UpdateTextInputState(SHOW_IME_IF_NEEDED);
+    UpdateTextInputState(true, true);
   }
 #endif
 }
