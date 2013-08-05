@@ -68,9 +68,8 @@ class VariationsSeedProcessor {
                          const std::string& version_string);
 
   // Creates and registers a field trial from the |study| data. Disables the
-  // trial if IsStudyExpired(study, reference_date) is true.
-  void CreateTrialFromStudy(const Study& study,
-                            const base::Time& reference_date);
+  // trial if |is_expired| is true.
+  void CreateTrialFromStudy(const Study& study, bool is_expired);
 
   // Checks whether |study| is expired using the given date/time.
   bool IsStudyExpired(const Study& study, const base::Time& date_time);
