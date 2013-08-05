@@ -8373,27 +8373,56 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Skip Import
       </message>
 
-      <!-- Feedback Dialog -->
+      <!-- Report Bug or Broken Website Dialog -->
+      <message name="IDS_FEEDBACK_TITLE" desc="Dialog title for bug report dialog">
+        Whoops. Let's fix that.
+      </message>
       <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
-        Tell us what is happening.
+        Feedback
       </message>
       <message name="IDS_FEEDBACK_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
-        URL (optional):
+        Include this URL:
       </message>
       <message name="IDS_FEEDBACK_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported">
-        Email (optional):
+        Include this email:
       </message>
+      <message name="IDS_FEEDBACK_DESCRIPTION_LABEL" desc="Label for the description field">
+        Tell us what is happening. (required)
+      </message>
+      <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_FEEDBACK_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
+        Include the current screenshot:
+      </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos')">
       <message name="IDS_FEEDBACK_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
         Include this screenshot:
+      </message>
+      </if>
+      <message name="IDS_FEEDBACK_SAVED_SCREENSHOT_LABEL" desc="Label for the screenshot field if saved screenshots are being shown">
+        Include a saved screenshot:
+      </message>
+      <message name="IDS_FEEDBACK_CURRENT_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
+        Send a current page screen shot
+      </message>
+      <message name="IDS_FEEDBACK_SAVED_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
+        Send a saved screen shot
       </message>
       <message name="IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
         Send system information
       </message>
+      <message name="IDS_FEEDBACK_CHOOSE_DIFFERENT_SCREENSHOT" desc="Text for changing the screenshot selection from current to saved">
+        (Choose a different screenshot)
+      </message>
+      <message name="IDS_FEEDBACK_CHOOSE_ORIGINAL_SCREENSHOT" desc="Text for changing the screenshot selection from saved to current">
+        (Go back to original screenshot)
+      </message>
       <message name="IDS_FEEDBACK_ATTACH_FILE_NOTE" desc="Text for describing the maximum size for an attached file">
-        The attached file is uploaded to Google servers for debugging.
+        The attached file is uploaded to Google servers for debugging.&lt;br&gt;
+        Note: You can attach one file per feedback report (3 MB limit)
       </message>
       <message name="IDS_FEEDBACK_ATTACH_FILE_LABEL" desc="Text for the label for the attached filename">
-        Attach file:
+        Include this file:
       </message>
       <message name="IDS_FEEDBACK_READING_FILE" desc="Text to display if reading a file when the user clicks the send report button">
         Reading file..
@@ -8411,8 +8440,17 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         that you provide to improve any Google product or service.
         <ph name="END_BOLD">&lt;/strong&gt;</ph>
       </message>
+      <message name="IDS_FEEDBACK_INCLUDE_NEW_SCREEN_IMAGE" desc="Radio button for including a new screen image on the bug report dialog box">
+        Send last active tab screen shot
+      </message>
+      <message name="IDS_FEEDBACK_INCLUDE_NO_SCREENSHOT" desc="Radio button for not including a screen image on the bug report dialog box">
+        Do not send a screen shot
+      </message>
       <message name="IDS_FEEDBACK_NO_DESCRIPTION" desc="Message shown when no text is entered before hitting send feedback">
         Please tell us what is happening before sending the feedback.
+      </message>
+      <message name="IDS_FEEDBACK_NO_SAVED_SCREENSHOTS_HELP" desc="Message shown when no screenshots are available for selection">
+        You can select saved screenshots from here. Currently there are no screenshots available. You can press Ctrl + the "Window Switch" key together to take a screenshot. The last three screenshots that you have taken will appear here.
       </message>
       <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for OK button of the send feedback dialog">
         Send feedback

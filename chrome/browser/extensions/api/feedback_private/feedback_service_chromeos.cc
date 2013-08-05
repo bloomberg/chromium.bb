@@ -69,8 +69,16 @@ void FeedbackServiceImpl::ProcessSystemLogs(
   }
 
   for (chromeos::SystemLogsResponse::iterator it = sys_info_map->begin();
-       it != sys_info_map->end(); ++it)
-    FeedbackService::PopulateSystemInfo(&sys_info_list, it->first, it->second);
+       it != sys_info_map->end(); ++it) {
+    base::DictionaryValue sys_info_value;
+    sys_info_value.Set("key", new base::StringValue(it->first));
+    sys_info_value.Set("value", new base::StringValue(it->second));
+
+    linked_ptr<SystemInformation> sys_info(new SystemInformation());
+    SystemInformation::Populate(sys_info_value, sys_info.get());
+
+    sys_info_list.push_back(sys_info);
+  }
 
   system_information_callback_.Run(sys_info_list);
 }

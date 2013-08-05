@@ -2175,6 +2175,9 @@
             'browser/ui/sync/one_click_signin_helper_unittest.cc',
             'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
           ],
+          'sources': [
+            'browser/ui/webui/feedback_ui_unittest.cc',
+          ],
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
@@ -2499,6 +2502,7 @@
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],
             ['exclude', '^browser/ui/webui/downloads_'],
+            ['exclude', '^browser/ui/webui/feedback_'],
             ['exclude', '^browser/ui/webui/flags_'],
             ['exclude', '^browser/ui/webui/help/'],
             ['exclude', '^browser/ui/webui/options/'],

@@ -12,8 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
 
-class Profile;
-
 namespace chromeos {
 
 // Gathers log data from Debug Daemon.
@@ -42,15 +40,8 @@ class DebugDaemonLogSource : public SystemLogsSource {
                          const KeyValueMap& logs);
 
   // Read the contents of the specified user logs files and adds it to
-  // the response parameter.
-  static void ReadUserLogFiles(
-      const KeyValueMap& user_log_files,
-      const std::vector<Profile*>& last_used_profiles,
-      SystemLogsResponse* response);
-
-  // Merge the responses from ReadUserLogFiles into the main response dict and
-  // call RequestComplete to indicate that the user log files read is complete.
-  void MergeResponse(SystemLogsResponse* response);
+  // the response.
+  void ReadUserLogFiles(const KeyValueMap& user_log_files);
 
   // Sends the data to the callback_ when all the requests are completed
   void RequestCompleted();

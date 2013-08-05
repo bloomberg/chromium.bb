@@ -68,11 +68,6 @@ namespace feedbackPrivate {
     // Sends a feedback report.
     static void sendFeedback(FeedbackInfo feedback,
                              SendFeedbackCallback callback);
-
-    // Gets localized translated strings for feedback. It returns the
-    // strings as a dictionary mapping from string identifier to the
-    // translated string to use in the feedback app UI.
-    static void getStrings(GetStringsCallback callback);
   };
 
   interface Events {
