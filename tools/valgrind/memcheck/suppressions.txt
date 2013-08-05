@@ -7191,3 +7191,11 @@
    fun:_ZN15webkit_database15DatabaseTracker23GetAllOriginIdentifiersEPSt6vectorISsSaISsEE
    fun:_ZN15webkit_database12_GLOBAL__N_120GetOriginsOnDBThreadEPNS_15DatabaseTrackerEPSt3setI4GURLSt4lessIS4_ESaIS4_EE
 }
+{
+   bug_268258
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10StringImpl12createStaticEPKcjj
+   fun:_ZN7WebCore*Names*init*
+}

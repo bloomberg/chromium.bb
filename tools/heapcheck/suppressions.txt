@@ -861,3 +861,10 @@
    ...
    fun:EncodeDecodeTest_Elf_Small_Test::TestBody
 }
+{
+   bug_268258
+   Heapcheck:Leak
+   fun:WTF::fastMalloc
+   fun:WTF::StringImpl::createStatic
+   fun:WebCore::*Names::init
+}
