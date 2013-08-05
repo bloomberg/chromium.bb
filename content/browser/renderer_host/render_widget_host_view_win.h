@@ -475,7 +475,7 @@ class RenderWidgetHostViewWin
 
   // Wrapper class for IMM32 APIs.
   // (See "ui/base/ime/win/imm32_manager.h" for its details.)
-  ui::IMM32Manager imm32_manager_;
+  scoped_ptr<ui::IMM32Manager> imm32_manager_;
 
   // Represents whether or not this browser process is receiving status
   // messages about the focused edit control from a renderer process.
