@@ -31,6 +31,7 @@ function onload() {
   }
   var selectedTabName = window.location.hash.slice(1) || 'devices';
   selectTab(selectedTabName + '-tab');
+  initPortForwarding();
   chrome.send('init-ui');
 }
 
@@ -204,6 +205,237 @@ function createTerminateElement(data) {
       terminate.bind(this, data),
       true);
   return link;
+}
+
+
+function initPortForwarding() {
+  $('port-forwarding-enable').addEventListener('change', enablePortForwarding);
+
+  $('port-forwarding-config-open').addEventListener(
+      'click', openPortForwardingConfig);
+  $('port-forwarding-config-close').addEventListener(
+      'click', closePortForwardingConfig);
+  $('port-forwarding-config-done').addEventListener(
+      'click', commitPortForwardingConfig);
+}
+
+function enablePortForwarding(event) {
+  chrome.send('set-port-forwarding-enabled', [event.target.checked]);
+}
+
+function handleKey(event) {
+  switch (event.keyCode) {
+    case 13:  // Enter
+      if (event.target.nodeName == 'INPUT') {
+        var line = event.target.parentNode;
+        if (!line.classList.contains('fresh') ||
+            line.classList.contains('empty'))
+          commitPortForwardingConfig();
+        else
+          commitFreshLineIfValid(true /* select new line */);
+      } else {
+        commitPortForwardingConfig();
+      }
+      break;
+
+    case 27:
+      closePortForwardingConfig();
+      break;
+  }
+}
+
+function openPortForwardingConfig() {
+  loadPortForwardingConfig(window.portForwardingConfig);
+
+  $('port-forwarding-overlay').classList.add('open');
+  document.addEventListener('keyup', handleKey);
+
+  var freshPort = document.querySelector('.fresh .port');
+  if (freshPort)
+    freshPort.focus();
+  else
+    $('port-forwarding-config-done').focus();
+}
+
+function closePortForwardingConfig() {
+  $('port-forwarding-overlay').classList.remove('open');
+  document.removeEventListener('keyup', handleKey);
+}
+
+function loadPortForwardingConfig(config) {
+  var list = $('port-forwarding-config-list');
+  list.textContent = '';
+  for (var port in config)
+    list.appendChild(createConfigLine(port, config[port]));
+  list.appendChild(createEmptyConfigLine());
+}
+
+function commitPortForwardingConfig() {
+  if (document.querySelector(
+      '.port-forwarding-pair:not(.fresh) input.invalid'))
+    return;
+
+  if (document.querySelector(
+      '.port-forwarding-pair.fresh:not(.empty) input.invalid'))
+    return;
+
+  closePortForwardingConfig();
+  commitFreshLineIfValid();
+  var lines = document.querySelectorAll('.port-forwarding-pair');
+  var config = {};
+  for (var i = 0; i != lines.length; i++) {
+    var line = lines[i];
+    var portInput = line.querySelector('.port:not(.invalid)');
+    var locationInput = line.querySelector('.location:not(.invalid)');
+    if (portInput && locationInput)
+      config[portInput.value] = locationInput.value;
+  }
+  chrome.send('set-port-forwarding-config', [config]);
+}
+
+function updatePortForwardingEnabled(enabled) {
+  var checkbox = $('port-forwarding-enable');
+  checkbox.checked = !!enabled;
+  checkbox.disabled = false;
+}
+
+function updatePortForwardingConfig(config) {
+  window.portForwardingConfig = config;
+  $('port-forwarding-config-open').disabled = !config;
+}
+
+function createConfigLine(port, location) {
+  var line = document.createElement('div');
+  line.className = 'port-forwarding-pair';
+
+  var portInput = createConfigField(port, 'port', 'Port', validatePort);
+  line.appendChild(portInput);
+
+  var locationInput = createConfigField(
+      location, 'location', 'IP address and port', validateLocation);
+  line.appendChild(locationInput);
+  locationInput.addEventListener('keydown', function(e) {
+    if (e.keyIdentifier == 'U+0009' &&  // Tab
+        !e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey &&
+        line.classList.contains('fresh') &&
+        !line.classList.contains('empty')) {
+      // Tabbing forward on the fresh line, try create a new empty one.
+      commitFreshLineIfValid(true);
+      e.preventDefault();
+    }
+  });
+
+  var lineDelete = document.createElement('div');
+  lineDelete.className = 'close-button';
+  lineDelete.addEventListener('click', function() {
+    var newSelection = line.nextElementSibling;
+    line.parentNode.removeChild(line);
+    selectLine(newSelection);
+  });
+  line.appendChild(lineDelete);
+
+  line.addEventListener('click', selectLine.bind(null, line));
+  line.addEventListener('focus', selectLine.bind(null, line));
+
+  checkEmptyLine(line);
+
+  return line;
+}
+
+function validatePort(input) {
+  var match = input.value.match(/^(\d+)$/);
+  if (!match)
+    return false;
+  var port = parseInt(match[1]);
+  if (port < 5000 || 10000 < port)
+    return false;
+
+  var inputs = document.querySelectorAll('input.port:not(.invalid)');
+  for (var i = 0; i != inputs.length; ++i) {
+    if (inputs[i] == input)
+      break;
+    if (parseInt(inputs[i].value) == port)
+      return false;
+  }
+  return true;
+}
+
+function validateLocation(input) {
+  var match = input.value.match(/^([a-zA-Z0-9\.]+):(\d+)$/);
+  if (!match)
+    return false;
+  var port = parseInt(match[2]);
+  return port <= 10000;
+}
+
+function createEmptyConfigLine() {
+  var line = createConfigLine('', '');
+  line.classList.add('fresh');
+  return line;
+}
+
+function createConfigField(value, className, hint, validate) {
+  var input = document.createElement('input');
+  input.className = className;
+  input.type = 'text';
+  input.placeholder = hint;
+  input.value = value;
+
+  function checkInput() {
+    if (validate(input))
+      input.classList.remove('invalid');
+    else
+      input.classList.add('invalid');
+    if (input.parentNode)
+      checkEmptyLine(input.parentNode);
+  }
+  checkInput();
+
+  input.addEventListener('keyup', checkInput);
+  input.addEventListener('focus', function() {
+    selectLine(input.parentNode);
+  });
+
+  return input;
+}
+
+function checkEmptyLine(line) {
+  var inputs = line.querySelectorAll('input');
+  var empty = true;
+  for (var i = 0; i != inputs.length; i++) {
+    if (inputs[i].value != '')
+      empty = false;
+  }
+  if (empty)
+    line.classList.add('empty');
+  else
+    line.classList.remove('empty');
+}
+
+function selectLine(line) {
+  if (line.classList.contains('selected'))
+    return;
+  unselectLine();
+  line.classList.add('selected');
+}
+
+function unselectLine() {
+  var line = document.querySelector('.port-forwarding-pair.selected');
+  if (!line)
+    return;
+  line.classList.remove('selected');
+  commitFreshLineIfValid();
+}
+
+function commitFreshLineIfValid(opt_selectNew) {
+  var line = document.querySelector('.port-forwarding-pair.fresh');
+  if (line.querySelector('.invalid'))
+    return;
+  line.classList.remove('fresh');
+  var freshLine = createEmptyConfigLine();
+  line.parentNode.appendChild(freshLine);
+  if (opt_selectNew)
+    freshLine.querySelector('.port').focus();
 }
 
 document.addEventListener('DOMContentLoaded', onload);

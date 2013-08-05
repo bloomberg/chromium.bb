@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/devtools/devtools_adb_bridge.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -44,10 +45,16 @@ class InspectUI : public content::WebUIController,
   virtual void RemoteDevicesChanged(
       DevToolsAdbBridge::RemoteDevices* devices) OVERRIDE;
 
+  void UpdatePortForwardingEnabled();
+  void UpdatePortForwardingConfig();
+
   scoped_refptr<WorkerCreationDestructionListener> observer_;
 
   // A scoped container for notification registries.
-  content::NotificationRegistrar registrar_;
+  content::NotificationRegistrar notification_registrar_;
+
+  // A scoped container for preference change registries.
+  PrefChangeRegistrar pref_change_registrar_;
 
   typedef std::map<std::string, scoped_refptr<DevToolsAdbBridge::RemotePage> >
       RemotePages;

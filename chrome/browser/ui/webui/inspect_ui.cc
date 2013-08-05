@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -72,6 +73,9 @@ static const char kAdbTargetType[]  = "adb_page";
 static const char kInitUICommand[]  = "init-ui";
 static const char kInspectCommand[]  = "inspect";
 static const char kTerminateCommand[]  = "terminate";
+static const char kPortForwardingEnabledCommand[] =
+    "set-port-forwarding-enabled";
+static const char kPortForwardingConfigCommand[] = "set-port-forwarding-config";
 
 static const char kTargetTypeField[]  = "type";
 static const char kAttachedField[]  = "attached";
@@ -173,6 +177,8 @@ class InspectMessageHandler : public WebUIMessageHandler {
   void HandleInitUICommand(const ListValue* args);
   void HandleInspectCommand(const ListValue* args);
   void HandleTerminateCommand(const ListValue* args);
+  void HandlePortForwardingEnabledCommand(const ListValue* args);
+  void HandlePortForwardingConfigCommand(const ListValue* args);
 
   bool GetProcessAndRouteId(const ListValue* args,
                             int* process_id,
@@ -192,6 +198,12 @@ void InspectMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kTerminateCommand,
       base::Bind(&InspectMessageHandler::HandleTerminateCommand,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kPortForwardingEnabledCommand,
+      base::Bind(&InspectMessageHandler::HandlePortForwardingEnabledCommand,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kPortForwardingConfigCommand,
+      base::Bind(&InspectMessageHandler::HandlePortForwardingConfigCommand,
                  base::Unretained(this)));
 }
 
@@ -256,6 +268,30 @@ bool InspectMessageHandler::GetProcessAndRouteId(const ListValue* args,
     return true;
   }
   return false;
+}
+
+void InspectMessageHandler::HandlePortForwardingEnabledCommand(
+    const ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!profile)
+    return;
+
+  bool enabled;
+  if (args->GetSize() == 1 && args->GetBoolean(0, &enabled)) {
+    profile->GetPrefs()->SetBoolean(
+        prefs::kDevToolsPortForwardingEnabled, enabled);
+  }
+}
+
+void InspectMessageHandler::HandlePortForwardingConfigCommand(
+    const ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!profile)
+    return;
+
+  const DictionaryValue* dict_src;
+  if (args->GetSize() == 1 && args->GetDictionary(0, &dict_src))
+    profile->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig, *dict_src);
 }
 
 }  // namespace
@@ -365,6 +401,8 @@ InspectUI::~InspectUI() {
 void InspectUI::InitUI() {
   StartListeningNotifications();
   PopulateLists();
+  UpdatePortForwardingEnabled();
+  UpdatePortForwardingConfig();
   observer_->InitUI();
 }
 
@@ -416,15 +454,23 @@ void InspectUI::StartListeningNotifications() {
   if (adb_bridge)
     adb_bridge->AddListener(this);
 
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 content::NotificationService::AllSources());
+  notification_registrar_.Add(this,
+                              content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
+                              content::NotificationService::AllSources());
+  notification_registrar_.Add(this,
+                              content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                              content::NotificationService::AllSources());
+  notification_registrar_.Add(this,
+                              content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                              content::NotificationService::AllSources());
+
+  pref_change_registrar_.Init(profile->GetPrefs());
+  pref_change_registrar_.Add(prefs::kDevToolsPortForwardingEnabled,
+      base::Bind(&InspectUI::UpdatePortForwardingEnabled,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(prefs::kDevToolsPortForwardingConfig,
+      base::Bind(&InspectUI::UpdatePortForwardingConfig,
+                 base::Unretained(this)));
 }
 
 void InspectUI::StopListeningNotifications()
@@ -438,7 +484,8 @@ void InspectUI::StopListeningNotifications()
     adb_bridge->RemoveListener(this);
   observer_->InspectUIDestroyed();
   observer_ = NULL;
-  registrar_.RemoveAll();
+  notification_registrar_.RemoveAll();
+  pref_change_registrar_.RemoveAll();
 }
 
 content::WebUIDataSource* InspectUI::CreateInspectUIHTMLSource() {
@@ -488,4 +535,19 @@ void InspectUI::RemoteDevicesChanged(
     device_list.Append(device_data);
   }
   web_ui()->CallJavascriptFunction("populateDeviceLists", device_list);
+}
+
+void InspectUI::UpdatePortForwardingEnabled() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  const base::Value* value = profile->GetPrefs()->FindPreference(
+      prefs::kDevToolsPortForwardingEnabled)->GetValue();
+  web_ui()->CallJavascriptFunction("updatePortForwardingEnabled", *value);
+
+}
+
+void InspectUI::UpdatePortForwardingConfig() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  const base::Value* value = profile->GetPrefs()->FindPreference(
+      prefs::kDevToolsPortForwardingConfig)->GetValue();
+  web_ui()->CallJavascriptFunction("updatePortForwardingConfig", *value);
 }

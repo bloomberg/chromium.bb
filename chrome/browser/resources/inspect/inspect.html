@@ -23,6 +23,14 @@ found in the LICENSE file.
   <div id="content">
     <div id="devices-tab">
       <div class="content-header">Devices</div>
+      <div id="port-forwarding-settings">
+        <label for="port-forwarding-enable">
+          <input id="port-forwarding-enable" type="checkbox" disabled/>
+          <span>Enable port forwarding</span>
+        </label>
+        <button id="port-forwarding-config-open" disabled>
+          Configure port forwarding</button>
+      </div>
       <div id="devices"></div>
     </div>
     <div id="pages-tab">
@@ -44,6 +52,17 @@ found in the LICENSE file.
     <div id="other-tab">
       <div class="content-header">Other</div>
       <div id="others" class="list"></div>
+    </div>
+  </div>
+</div>
+<div id="port-forwarding-overlay">
+  <div id="port-forwarding-config">
+    <div id="port-forwarding-config-close" class="close-button"></div>
+    <div id="port-forwarding-config-title">Port forwarding settings</div>
+    <div id="port-forwarding-config-list">
+    </div>
+    <div id="port-forwarding-config-buttons">
+      <button id="port-forwarding-config-done">Done</button>
     </div>
   </div>
 </div>

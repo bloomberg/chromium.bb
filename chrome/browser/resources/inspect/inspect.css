@@ -103,3 +103,121 @@ a {
   color: rgb(17, 85, 204);
   text-decoration: none;
 }
+
+#port-forwarding-settings {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+}
+
+#port-forwarding-overlay {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  background-color: rgba(255, 255, 255, 0.75);
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#port-forwarding-overlay:not(.open) {
+  display: none;
+}
+
+#port-forwarding-config {
+  -webkit-border-radius: 3px;
+  background: white;
+  box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0,0,0,0.15);
+  color: #333;
+  padding: 17px;
+  position: relative;
+}
+
+.close-button {
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG');
+  height: 14px;
+  width: 14px;
+}
+
+.close-button:active {
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_P');
+}
+
+.close-button:hover {
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_H');
+}
+
+#port-forwarding-config > .close-button {
+  position: absolute;
+  right: 7px;
+  top: 7px;
+}
+
+#port-forwarding-config-title {
+  font-size: 130%;
+}
+
+#port-forwarding-config-list {
+  border: 1px solid #eee;
+  height: 180px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  overflow-x: hidden;
+}
+
+.port-forwarding-pair {
+  -webkit-flex-direction: row;
+  display: -webkit-flex;
+}
+
+.port-forwarding-pair:hover {
+  background-color: #eee;
+}
+
+.port-forwarding-pair.selected,
+.port-forwarding-pair.selected:hover {
+  background-color: #ccc;
+}
+
+.port-forwarding-pair input {
+  border: 1px solid transparent;
+  line-height: 20px;
+  margin: 4px;
+  padding: 0 3px;
+}
+
+.port-forwarding-pair.fresh:not(.selected) input {
+  border-color: #eee;
+}
+
+.port-forwarding-pair input.port {
+  width: 4em;
+}
+
+.port-forwarding-pair input.location {
+  -webkit-flex: 1;
+}
+
+.port-forwarding-pair:not(.empty) input.invalid {
+  background-color: rgb(255, 200, 200);
+}
+
+.port-forwarding-pair .close-button {
+  margin: 8px 8px;
+}
+
+.port-forwarding-pair.fresh .close-button,
+.port-forwarding-pair:not(.selected):not(:hover) .close-button:not(:hover) {
+  background-image: none;
+  pointer-events: none;
+}
+
+.port-forwarding-pair:not(.selected) .close-button:not(:hover) {
+  opacity: 0.5;
+}
+
+#port-forwarding-config-buttons > button {
+  float: right;
+}
