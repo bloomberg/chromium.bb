@@ -971,6 +971,7 @@ crbug.com/248938 [ Mac ] virtual/threaded/animations/animation-direction-reverse
 crbug.com/248938 [ Mac ] virtual/threaded/animations/animation-direction-reverse-fill-mode-hardware.html [ Pass Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/animations/animation-end-event-destroy-renderer.html [ Pass Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/animations/animation-start-event-destroy-renderer.html [ Pass Timeout ]
+crbug.com/268228 [ Mac Debug ] animations/animation-direction-reverse.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-from-to.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/missing-values-last-keyframe.html [ Pass ImageOnlyFailure Timeout ]
