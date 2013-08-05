@@ -19,17 +19,21 @@ class StatsCollector(object):
     self.total_best_record_time = 0
     self.total_pixels_rasterized = 0
     self.total_pixels_recorded = 0
+    self.trigger_event = self.FindTriggerEvent()
+    self.renderer_process = self.trigger_event.start_thread.parent
 
-  def FindTriggerTime(self):
-    measure_next_frame_event = self.timeline.GetAllEventsOfName(
-        "measureNextFrame")
-    if len(measure_next_frame_event) == 0:
+  def FindTriggerEvent(self):
+    events = [s for
+              s in self.timeline.GetAllEventsOfName(
+                  'measureNextFrame')
+              if s.parent_slice == None]
+    if len(events) != 1:
       raise LookupError, 'no measureNextFrame event found'
-    return measure_next_frame_event[0].start
+    return events[0]
 
   def FindFrameNumber(self, trigger_time):
     start_event = None
-    for event in self.timeline.GetAllEventsOfName(
+    for event in self.renderer_process.IterAllSlicesOfName(
         "LayerTreeHost::UpdateLayers"):
       if event.start > trigger_time:
         if start_event == None:
@@ -42,7 +46,7 @@ class StatsCollector(object):
     return start_event.args["source_frame_number"]
 
   def GatherRasterizeStats(self, frame_number):
-    for event in self.timeline.GetAllEventsOfName(
+    for event in self.renderer_process.IterAllSlicesOfName(
         "RasterWorkerPoolTaskImpl::RunRasterOnThread"):
       if event.args["data"]["source_frame_number"] == frame_number:
         for raster_loop_event in event.GetAllSubSlicesOfName("RasterLoop"):
@@ -59,7 +63,8 @@ class StatsCollector(object):
           self.total_best_rasterize_time += best_rasterize_time
 
   def GatherRecordStats(self, frame_number):
-    for event in self.timeline.GetAllEventsOfName("PictureLayer::Update"):
+    for event in self.renderer_process.IterAllSlicesOfName(
+        "PictureLayer::Update"):
       if event.args["source_frame_number"] == frame_number:
         for record_loop_event in event.GetAllSubSlicesOfName("RecordLoop"):
           best_record_time = float('inf')
@@ -74,7 +79,7 @@ class StatsCollector(object):
           self.total_best_record_time += best_record_time
 
   def GatherRenderingStats(self):
-    trigger_time = self.FindTriggerTime()
+    trigger_time = self.trigger_event.start
     frame_number = self.FindFrameNumber(trigger_time)
     self.GatherRasterizeStats(frame_number)
     self.GatherRecordStats(frame_number)
