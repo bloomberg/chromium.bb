@@ -44,7 +44,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
                          const string16& name,
                          const string16& username,
                          size_t icon_index,
-                         bool is_managed);
+                         const std::string& managed_user_id);
   void DeleteProfileFromCache(const base::FilePath& profile_path);
 
   // ProfileInfoInterface:
@@ -76,6 +76,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
       size_t index) const OVERRIDE;
   virtual bool ProfileIsManagedAtIndex(size_t index) const OVERRIDE;
   virtual bool ProfileIsSigninRequiredAtIndex(size_t index) const OVERRIDE;
+  virtual std::string GetManagedUserIdOfProfileAtIndex(size_t index) const
+      OVERRIDE;
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
@@ -83,13 +85,13 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetShortcutNameOfProfileAtIndex(size_t index, const string16& name);
   void SetUserNameOfProfileAtIndex(size_t index, const string16& user_name);
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
+  void SetManagedUserIdOfProfileAtIndex(size_t index, const std::string& id);
   void SetBackgroundStatusOfProfileAtIndex(size_t index,
                                            bool running_background_apps);
   void SetGAIANameOfProfileAtIndex(size_t index, const string16& name);
   void SetIsUsingGAIANameOfProfileAtIndex(size_t index, bool value);
   void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image* image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
-  void SetProfileIsManagedAtIndex(size_t index, bool value);
   void SetProfileSigninRequiredAtIndex(size_t index, bool value);
 
   // Returns unique name that can be assigned to a newly created profile.

@@ -42,7 +42,7 @@ class ProfileLoader {
       const ProfileManager::CreateCallback& callback,
       const string16& name,
       const string16& icon_url,
-      bool is_managed);
+      const std::string& managed_user_id);
 
  private:
   void OnProfileLoaded(int profile_load_sequence_id,

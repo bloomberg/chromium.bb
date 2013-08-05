@@ -125,6 +125,7 @@ class ManagedUserService : public BrowserContextKeyedService,
   // in which case the callback will be ignored.
   void RegisterAndInitSync(ManagedUserRegistrationUtility* registration_utility,
                            Profile* custodian_profile,
+                           const std::string& managed_user_id,
                            const ProfileManager::CreateCallback& callback);
 
   // Returns a pseudo-email address for systems that expect well-formed email

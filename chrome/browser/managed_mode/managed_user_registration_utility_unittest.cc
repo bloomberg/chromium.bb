@@ -214,6 +214,7 @@ TEST_F(ManagedUserRegistrationUtilityTest, Register) {
                                                       token_fetcher.Pass(),
                                                       service());
   registration_utility.Register(
+      ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(ASCIIToUTF16("Dug")),
       GetRegistrationCallback());
   EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
@@ -231,6 +232,7 @@ TEST_F(ManagedUserRegistrationUtilityTest, RegisterBeforeInitialSync) {
                                                       token_fetcher.Pass(),
                                                       service());
   registration_utility.Register(
+      ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(ASCIIToUTF16("Nemo")),
       GetRegistrationCallback());
   EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
@@ -250,6 +252,7 @@ TEST_F(ManagedUserRegistrationUtilityTest, SyncServiceShutdownBeforeRegFinish) {
                                                       token_fetcher.Pass(),
                                                       service());
   registration_utility.Register(
+      ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(ASCIIToUTF16("Remy")),
       GetRegistrationCallback());
   EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
@@ -268,6 +271,7 @@ TEST_F(ManagedUserRegistrationUtilityTest, StopSyncingBeforeRegFinish) {
                                                       token_fetcher.Pass(),
                                                       service());
   registration_utility.Register(
+      ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       ManagedUserRegistrationInfo(ASCIIToUTF16("Mike")),
       GetRegistrationCallback());
   EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());

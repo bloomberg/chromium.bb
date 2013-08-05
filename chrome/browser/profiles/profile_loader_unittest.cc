@@ -34,7 +34,7 @@ class TestProfileLoader : public ProfileLoader {
                                         const ProfileManager::CreateCallback&,
                                         const string16&,
                                         const string16&,
-                                        bool));
+                                        const std::string&));
 
   void SetCreateCallback(const base::FilePath& path,
                          const ProfileManager::CreateCallback& callback) {
@@ -82,7 +82,8 @@ TEST(ProfileLoaderTest, LoadProfileInvalidatingOtherLoads) {
   // path_1 never loads.
   EXPECT_CALL(loader, GetProfileByPath(fake_profile_path_1))
       .WillRepeatedly(Return(static_cast<Profile*>(NULL)));
-  EXPECT_CALL(loader, CreateProfileAsync(fake_profile_path_1, _, _, _, false))
+  EXPECT_CALL(loader,
+              CreateProfileAsync(fake_profile_path_1, _, _, _, std::string()))
       .WillRepeatedly(WithArgs<0, 1>(
           Invoke(&loader, &TestProfileLoader::SetCreateCallback)));
 
@@ -90,7 +91,8 @@ TEST(ProfileLoaderTest, LoadProfileInvalidatingOtherLoads) {
   EXPECT_CALL(loader, GetProfileByPath(fake_profile_path_2))
       .WillOnce(Return(static_cast<Profile*>(NULL)))
       .WillRepeatedly(Return(&profile));
-  EXPECT_CALL(loader, CreateProfileAsync(fake_profile_path_2, _, _, _, false))
+  EXPECT_CALL(loader,
+              CreateProfileAsync(fake_profile_path_2, _, _, _, std::string()))
       .WillRepeatedly(WithArgs<0, 1>(
           Invoke(&loader, &TestProfileLoader::SetCreateCallback)));
 

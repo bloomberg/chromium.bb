@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
       create_callback,
       ASCIIToUTF16("avatar_test"),
       string16(),
-      false);
+      std::string());
 
   run_loop.Run();
 

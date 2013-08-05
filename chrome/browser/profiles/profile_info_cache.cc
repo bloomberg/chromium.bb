@@ -49,6 +49,7 @@ const char kHasMigratedToGAIAInfoKey[] = "has_migrated_to_gaia_info";
 const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
 const char kIsManagedKey[] = "is_managed";
 const char kSigninRequiredKey[] = "signin_required";
+const char kManagedUserId[] = "managed_user_id";
 
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
 const char kGAIAPictureFileName[] = "Google Profile Picture.png";
@@ -175,14 +176,22 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
     : prefs_(prefs),
       user_data_dir_(user_data_dir) {
   // Populate the cache
-  const DictionaryValue* cache =
-      prefs_->GetDictionary(prefs::kProfileInfoCache);
+  DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
+  DictionaryValue* cache = update.Get();
   for (DictionaryValue::Iterator it(*cache); !it.IsAtEnd(); it.Advance()) {
-    const DictionaryValue* info = NULL;
-    it.value().GetAsDictionary(&info);
+    DictionaryValue* info = NULL;
+    cache->GetDictionaryWithoutPathExpansion(it.key(), &info);
     string16 name;
     info->GetString(kNameKey, &name);
     sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
+    // TODO(ibraaaa): delete this when we fully migrate to
+    // |prefs::kManagedUserId|.
+    bool is_managed = false;
+    info->GetBoolean(kIsManagedKey, &is_managed);
+    if (is_managed) {
+      info->SetString(kManagedUserId, "DUMMY_ID");
+      info->Remove(kIsManagedKey, NULL);
+    }
   }
 }
 
@@ -195,7 +204,7 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
                                          const string16& name,
                                          const string16& username,
                                          size_t icon_index,
-                                         bool is_managed) {
+                                         const std::string& managed_user_id) {
   std::string key = CacheKeyFromProfilePath(profile_path);
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   DictionaryValue* cache = update.Get();
@@ -206,7 +215,7 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
   info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
   // Default value for whether background apps are running is false.
   info->SetBoolean(kBackgroundAppsKey, false);
-  info->SetBoolean(kIsManagedKey, is_managed);
+  info->SetString(kManagedUserId, managed_user_id);
   cache->Set(key, info.release());
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
@@ -369,15 +378,20 @@ const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
 }
 
 bool ProfileInfoCache::ProfileIsManagedAtIndex(size_t index) const {
-  bool value = false;
-  GetInfoForProfileAtIndex(index)->GetBoolean(kIsManagedKey, &value);
-  return value;
+  return !GetManagedUserIdOfProfileAtIndex(index).empty();
 }
 
 bool ProfileInfoCache::ProfileIsSigninRequiredAtIndex(size_t index) const {
   bool value = false;
   GetInfoForProfileAtIndex(index)->GetBoolean(kSigninRequiredKey, &value);
   return value;
+}
+
+std::string ProfileInfoCache::GetManagedUserIdOfProfileAtIndex(
+    size_t index) const {
+  std::string managed_user_id;
+  GetInfoForProfileAtIndex(index)->GetString(kManagedUserId, &managed_user_id);
+  return managed_user_id;
 }
 
 void ProfileInfoCache::OnGAIAPictureLoaded(const base::FilePath& path,
@@ -490,6 +504,14 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
                     OnProfileAvatarChanged(profile_path));
+}
+
+void ProfileInfoCache::SetManagedUserIdOfProfileAtIndex(size_t index,
+                                                        const std::string& id) {
+  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetString(kManagedUserId, id);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
 }
 
 void ProfileInfoCache::SetBackgroundStatusOfProfileAtIndex(
@@ -611,13 +633,6 @@ void ProfileInfoCache::SetIsUsingGAIAPictureOfProfileAtIndex(size_t index,
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
                     OnProfileAvatarChanged(profile_path));
-}
-
-void ProfileInfoCache::SetProfileIsManagedAtIndex(size_t index, bool value) {
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetBoolean(kIsManagedKey, value);
-  // This takes ownership of |info|.
-  SetInfoForProfileAtIndex(index, info.release());
 }
 
 void ProfileInfoCache::SetProfileSigninRequiredAtIndex(size_t index,

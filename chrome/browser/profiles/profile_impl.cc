@@ -299,6 +299,9 @@ void ProfileImpl::RegisterProfilePrefs(
       prefs::kProfileAvatarIndex,
       -1,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kManagedUserId,
+                               std::string(),
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kProfileName,
                                std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -702,7 +705,9 @@ Profile* ProfileImpl::GetOriginalProfile() {
 }
 
 bool ProfileImpl::IsManaged() {
-  return GetPrefs()->GetBoolean(prefs::kProfileIsManaged);
+  // TODO(ibraaaa): migrate away from |prefs::kProfileIsManaged|.
+  return GetPrefs()->GetBoolean(prefs::kProfileIsManaged) ||
+      !GetPrefs()->GetString(prefs::kManagedUserId).empty();
 }
 
 ExtensionService* ProfileImpl::GetExtensionService() {

@@ -228,7 +228,7 @@ void OneClickSigninSyncStarter::CreateNewSignedInProfile() {
       UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(icon_index)),
       base::Bind(&OneClickSigninSyncStarter::CompleteInitForNewProfile,
                  weak_pointer_factory_.GetWeakPtr(), desktop_type_),
-      false);
+      std::string());
 }
 
 void OneClickSigninSyncStarter::CompleteInitForNewProfile(

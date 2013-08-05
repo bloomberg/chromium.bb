@@ -55,12 +55,15 @@ class ManagedUserRegistrationUtility
 
   static scoped_ptr<ManagedUserRegistrationUtility> Create(Profile* profile);
 
+  static std::string GenerateNewManagedUserId();
+
   // Registers a new managed user with the server. |info| contains necessary
   // information like the display name of the  the user. |callback| is called
   // with the result of the registration. We use the info here and not the
   // profile, because on Chrome OS the profile of the managed user does
   // not yet exist.
-  void Register(const ManagedUserRegistrationInfo& info,
+  void Register(const std::string& managed_user_id,
+                const ManagedUserRegistrationInfo& info,
                 const RegistrationCallback& callback);
 
   // ManagedUserSyncServiceObserver:

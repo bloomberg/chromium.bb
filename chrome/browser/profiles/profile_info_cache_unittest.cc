@@ -123,10 +123,10 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     const SkBitmap* icon = rb.GetImageNamed(
         ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(
             i)).ToSkBitmap();
-    bool is_managed = i == 3;
+    std::string managed_user_id = i == 3 ? "TEST_ID" : "";
 
     GetCache()->AddProfileToCache(profile_path, profile_name, string16(), i,
-                                  is_managed);
+                                  managed_user_id);
     GetCache()->SetBackgroundStatusOfProfileAtIndex(i, true);
     string16 gaia_name = ASCIIToUTF16(base::StringPrintf("gaia_%ud", i));
     GetCache()->SetGAIANameOfProfileAtIndex(i, gaia_name);
@@ -138,7 +138,8 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
         GetCache()->GetAvatarIconOfProfileAtIndex(i).ToSkBitmap();
     EXPECT_EQ(icon->width(), actual_icon->width());
     EXPECT_EQ(icon->height(), actual_icon->height());
-    EXPECT_EQ(is_managed, GetCache()->ProfileIsManagedAtIndex(i));
+    EXPECT_EQ(i == 3, GetCache()->ProfileIsManagedAtIndex(i));
+    EXPECT_EQ(managed_user_id, GetCache()->GetManagedUserIdOfProfileAtIndex(i));
   }
 
   // Reset the cache and test the it reloads correctly.
@@ -163,12 +164,12 @@ TEST_F(ProfileInfoCacheTest, DeleteProfile) {
 
   base::FilePath path_1 = GetProfilePath("path_1");
   GetCache()->AddProfileToCache(path_1, ASCIIToUTF16("name_1"), string16(),
-                                0, false);
+                                0, std::string());
   EXPECT_EQ(1u, GetCache()->GetNumberOfProfiles());
 
   base::FilePath path_2 = GetProfilePath("path_2");
   string16 name_2 = ASCIIToUTF16("name_2");
-  GetCache()->AddProfileToCache(path_2, name_2, string16(), 0, false);
+  GetCache()->AddProfileToCache(path_2, name_2, string16(), 0, std::string());
   EXPECT_EQ(2u, GetCache()->GetNumberOfProfiles());
 
   GetCache()->DeleteProfileFromCache(path_1);
@@ -181,9 +182,11 @@ TEST_F(ProfileInfoCacheTest, DeleteProfile) {
 
 TEST_F(ProfileInfoCacheTest, MutateProfile) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
+      string16(), 0, std::string());
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0, false);
+      GetProfilePath("path_2"), ASCIIToUTF16("name_2"),
+      string16(), 0, std::string());
 
   string16 new_name = ASCIIToUTF16("new_name");
   GetCache()->SetNameOfProfileAtIndex(1, new_name);
@@ -204,11 +207,11 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
 TEST_F(ProfileInfoCacheTest, Sort) {
   string16 name_a = ASCIIToUTF16("apple");
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_a"), name_a, string16(), 0, false);
+      GetProfilePath("path_a"), name_a, string16(), 0, std::string());
 
   string16 name_c = ASCIIToUTF16("cat");
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_c"), name_c, string16(), 0, false);
+      GetProfilePath("path_c"), name_c, string16(), 0, std::string());
 
   // Sanity check the initial order.
   EXPECT_EQ(name_a, GetCache()->GetNameOfProfileAtIndex(0));
@@ -217,7 +220,7 @@ TEST_F(ProfileInfoCacheTest, Sort) {
   // Add a new profile (start with a capital to test case insensitive sorting.
   string16 name_b = ASCIIToUTF16("Banana");
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_b"), name_b, string16(), 0, false);
+      GetProfilePath("path_b"), name_b, string16(), 0, std::string());
 
   // Verify the new order.
   EXPECT_EQ(name_a, GetCache()->GetNameOfProfileAtIndex(0));
@@ -243,9 +246,11 @@ TEST_F(ProfileInfoCacheTest, Sort) {
 
 TEST_F(ProfileInfoCacheTest, BackgroundModeStatus) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
+      string16(), 0, std::string());
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0, false);
+      GetProfilePath("path_2"), ASCIIToUTF16("name_2"),
+      string16(), 0, std::string());
 
   EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(0));
   EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(1));
@@ -268,9 +273,11 @@ TEST_F(ProfileInfoCacheTest, BackgroundModeStatus) {
 
 TEST_F(ProfileInfoCacheTest, HasMigrated) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
+      string16(), 0, std::string());
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0, false);
+      GetProfilePath("path_2"), ASCIIToUTF16("name_2"),
+      string16(), 0, std::string());
 
   // Sanity check.
   EXPECT_FALSE(GetCache()->GetHasMigratedToGAIAInfoOfProfileAtIndex(0));
@@ -294,10 +301,11 @@ TEST_F(ProfileInfoCacheTest, HasMigrated) {
 
 TEST_F(ProfileInfoCacheTest, GAIAName) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
+      string16(), 0, std::string());
   string16 profile_name(ASCIIToUTF16("profile name 2"));
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), profile_name, string16(), 0, false);
+      GetProfilePath("path_2"), profile_name, string16(), 0, std::string());
 
   // Sanity check.
   EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(0).empty());
@@ -326,9 +334,11 @@ TEST_F(ProfileInfoCacheTest, GAIAName) {
 
 TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
+      string16(), 0, std::string());
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0, false);
+      GetProfilePath("path_2"), ASCIIToUTF16("name_2"),
+      string16(), 0, std::string());
 
   // Sanity check.
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
@@ -369,7 +379,8 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
 
 TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0, false);
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
+      string16(), 0, std::string());
   gfx::Image gaia_image(gfx::test::CreateImage());
 
   content::WindowedNotificationObserver save_observer(
@@ -394,19 +405,22 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
     gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
 }
 
-TEST_F(ProfileInfoCacheTest, SetProfileIsManaged) {
+TEST_F(ProfileInfoCacheTest, SetManagedUserId) {
   GetCache()->AddProfileToCache(
-      GetProfilePath("test"), ASCIIToUTF16("Test"), string16(), 0, false);
+      GetProfilePath("test"), ASCIIToUTF16("Test"),
+      string16(), 0, std::string());
   EXPECT_FALSE(GetCache()->ProfileIsManagedAtIndex(0));
 
-  GetCache()->SetProfileIsManagedAtIndex(0, true);
+  GetCache()->SetManagedUserIdOfProfileAtIndex(0, "TEST_ID");
   EXPECT_TRUE(GetCache()->ProfileIsManagedAtIndex(0));
+  EXPECT_EQ("TEST_ID", GetCache()->GetManagedUserIdOfProfileAtIndex(0));
 
   ResetCache();
   EXPECT_TRUE(GetCache()->ProfileIsManagedAtIndex(0));
 
-  GetCache()->SetProfileIsManagedAtIndex(0, false);
+  GetCache()->SetManagedUserIdOfProfileAtIndex(0, std::string());
   EXPECT_FALSE(GetCache()->ProfileIsManagedAtIndex(0));
+  EXPECT_EQ("", GetCache()->GetManagedUserIdOfProfileAtIndex(0));
 }
 
 TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
@@ -416,7 +430,7 @@ TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
       ResourceBundle::GetSharedInstance().GetImageNamed(id));
 
   GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), profile_name, string16(), 0, false);
+      GetProfilePath("path_1"), profile_name, string16(), 0, std::string());
 
   // Set empty GAIA info.
   GetCache()->SetGAIANameOfProfileAtIndex(0, string16());
@@ -434,11 +448,14 @@ TEST_F(ProfileInfoCacheTest, CreateManagedTestingProfile) {
   testing_profile_manager_.CreateTestingProfile("default");
   string16 managed_user_name = ASCIIToUTF16("Supervised User");
   testing_profile_manager_.CreateTestingProfile(
-      "test1", scoped_ptr<PrefServiceSyncable>(), managed_user_name, 0, true);
+      "test1", scoped_ptr<PrefServiceSyncable>(),
+      managed_user_name, 0, "TEST_ID");
   for (size_t i = 0; i < GetCache()->GetNumberOfProfiles(); i++) {
     bool is_managed =
         GetCache()->GetNameOfProfileAtIndex(i) == managed_user_name;
     EXPECT_EQ(is_managed, GetCache()->ProfileIsManagedAtIndex(i));
+    std::string managed_user_id = is_managed ? "TEST_ID" : "";
+    EXPECT_EQ(managed_user_id, GetCache()->GetManagedUserIdOfProfileAtIndex(i));
   }
 }
 

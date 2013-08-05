@@ -1129,10 +1129,15 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
                  weak_ptr_factory_.GetWeakPtr(), GetDesktopType(),
                  managed_user);
 
+  std::string managed_user_id;
   if (managed_user && ManagedUserService::AreManagedUsersEnabled()) {
+    managed_user_id =
+        ManagedUserRegistrationUtility::GenerateNewManagedUserId();
     callbacks.push_back(
         base::Bind(&BrowserOptionsHandler::RegisterNewManagedUser,
-                   weak_ptr_factory_.GetWeakPtr(), show_user_feedback));
+                   weak_ptr_factory_.GetWeakPtr(),
+                   show_user_feedback,
+                   managed_user_id));
   } else {
     callbacks.push_back(show_user_feedback);
   }
@@ -1141,11 +1146,12 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 
   profile_path_being_created_ = ProfileManager::CreateMultiProfileAsync(
       name, icon, base::Bind(&RunProfileCreationCallbacks, callbacks),
-      managed_user);
+      managed_user_id);
 }
 
 void BrowserOptionsHandler::RegisterNewManagedUser(
     const ProfileManager::CreateCallback& callback,
+    const std::string& managed_user_id,
     Profile* new_profile,
     Profile::CreateStatus status) {
   DCHECK(profile_path_being_created_ == new_profile->GetPath());
@@ -1161,6 +1167,7 @@ void BrowserOptionsHandler::RegisterNewManagedUser(
   managed_user_service->RegisterAndInitSync(
       managed_user_registration_utility_.get(),
       Profile::FromWebUI(web_ui()),
+      managed_user_id,
       callback);
 }
 

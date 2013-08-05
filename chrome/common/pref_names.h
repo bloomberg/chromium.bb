@@ -425,6 +425,7 @@ extern const char kPasswordsUseLocalProfileId[];
 extern const char kProfileAvatarIndex[];
 extern const char kProfileName[];
 extern const char kProfileIsManaged[];
+extern const char kManagedUserId[];
 
 extern const char kInvertNotificationShown[];
 

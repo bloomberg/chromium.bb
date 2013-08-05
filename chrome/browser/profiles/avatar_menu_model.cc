@@ -207,7 +207,7 @@ void AvatarMenuModel::SwitchToGuestProfileWindow(Browser* browser) {
                                                  browser->host_desktop_type()),
                                       string16(),
                                       string16(),
-                                      false);
+                                      std::string());
 }
 
 size_t AvatarMenuModel::GetNumberOfItems() {

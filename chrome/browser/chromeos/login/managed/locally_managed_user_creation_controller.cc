@@ -158,6 +158,7 @@ void LocallyManagedUserCreationController::OnAddKeySuccess() {
   ManagedUserRegistrationInfo info(creation_context_->display_name);
   info.master_key = creation_context_->master_key;
   creation_context_->registration_utility->Register(
+      ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
       info,
       base::Bind(&LocallyManagedUserCreationController::RegistrationCallback,
                  weak_factory_.GetWeakPtr()));

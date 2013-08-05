@@ -85,7 +85,7 @@ class ProfileManager : public base::NonThreadSafe,
                           const CreateCallback& callback,
                           const string16& name,
                           const string16& icon_url,
-                          bool is_managed);
+                          const std::string& managed_user_id);
 
   // Initiates profile creation identified by |active_profile_username_hash_|.
   // If profile has already been created then the callback is called
@@ -168,7 +168,7 @@ class ProfileManager : public base::NonThreadSafe,
       const string16& name,
       const string16& icon_url,
       const CreateCallback& callback,
-      bool is_managed);
+      const std::string& managed_user_id);
 
   // Returns the full path to be used for guest profiles.
   static base::FilePath GetGuestProfilePath();

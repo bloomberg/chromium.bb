@@ -46,7 +46,7 @@ void ProfileLoader::LoadProfileInvalidatingOtherLoads(
                  weak_factory_.GetWeakPtr(),
                  profile_load_sequence_id_,
                  callback),
-      string16(), string16(), false);
+      string16(), string16(), std::string());
 }
 
 Profile* ProfileLoader::GetProfileByPath(const base::FilePath& path) {
@@ -58,9 +58,9 @@ void ProfileLoader::CreateProfileAsync(
     const ProfileManager::CreateCallback& callback,
     const string16& name,
     const string16& icon_url,
-    bool is_managed) {
+    const std::string& managed_user_id) {
   profile_manager_->CreateProfileAsync(
-      profile_path, callback, name, icon_url, is_managed);
+      profile_path, callback, name, icon_url, managed_user_id);
 }
 
 void ProfileLoader::OnProfileLoaded(int profile_load_sequence_id,

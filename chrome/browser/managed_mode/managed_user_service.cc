@@ -561,6 +561,7 @@ void ManagedUserService::Init() {
 void ManagedUserService::RegisterAndInitSync(
     ManagedUserRegistrationUtility* registration_utility,
     Profile* custodian_profile,
+    const std::string& managed_user_id,
     const ProfileManager::CreateCallback& callback) {
   DCHECK(ProfileIsManaged());
   DCHECK(!custodian_profile->IsManaged());
@@ -569,6 +570,7 @@ void ManagedUserService::RegisterAndInitSync(
       profile_->GetPrefs()->GetString(prefs::kProfileName));
   ManagedUserRegistrationInfo info(name);
   registration_utility->Register(
+      managed_user_id,
       info,
       base::Bind(&ManagedUserService::OnManagedUserRegistered,
                  weak_ptr_factory_.GetWeakPtr(), callback, custodian_profile));

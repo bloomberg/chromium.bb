@@ -97,7 +97,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_))
         << location.ToString();
     profile_info_cache_->AddProfileToCache(profile_1_path_, profile_1_name_,
-                                           string16(), 0, false);
+                                           string16(), 0, std::string());
     // Also create a non-badged shortcut for Chrome, which is conveniently done
     // by |CreateProfileShortcut()| since there is only one profile.
     profile_shortcut_manager_->CreateProfileShortcut(profile_1_path_);
@@ -185,7 +185,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_name))
         << location.ToString();
     profile_info_cache_->AddProfileToCache(profile_path, profile_name,
-                                           string16(), 0, false);
+                                           string16(), 0, std::string());
     profile_shortcut_manager_->CreateProfileShortcut(profile_path);
     RunPendingTasks();
     ValidateProfileShortcut(location, profile_name, profile_path);
@@ -358,7 +358,7 @@ TEST_F(ProfileShortcutManagerTest, CreateSecondProfileBadgesFirstShortcut) {
 
   // Create a second profile without a shortcut.
   profile_info_cache_->AddProfileToCache(profile_2_path_, profile_2_name_,
-                                         string16(), 0, false);
+                                         string16(), 0, std::string());
   RunPendingTasks();
 
   // Ensure that the second profile doesn't have a shortcut and that the first
@@ -678,7 +678,7 @@ TEST_F(ProfileShortcutManagerTest, ProfileShortcutsWithSystemLevelShortcut) {
 
   // Create the initial profile.
   profile_info_cache_->AddProfileToCache(profile_1_path_, profile_1_name_,
-                                         string16(), 0, false);
+                                         string16(), 0, std::string());
   RunPendingTasks();
   ASSERT_EQ(1U, profile_info_cache_->GetNumberOfProfiles());
 
@@ -696,7 +696,7 @@ TEST_F(ProfileShortcutManagerTest, ProfileShortcutsWithSystemLevelShortcut) {
 
   // Create a third profile without a shortcut and ensure it doesn't get one.
   profile_info_cache_->AddProfileToCache(profile_3_path_, profile_3_name_,
-                                         string16(), 0, false);
+                                         string16(), 0, std::string());
   RunPendingTasks();
   EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_3_name_));
 

@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, SwitchAppListProfiles) {
       temp_profile_dir_.path(),
       base::Bind(&AppListControllerBrowserTest::OnProfileCreated,
                  this),
-      string16(), string16(), false);
+      string16(), string16(), std::string());
   content::RunMessageLoop();  // Will stop in OnProfileCreated().
 
   AppListService* service = AppListService::Get();

@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
   base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
   profile_manager->CreateProfileAsync(new_path,
                                       base::Bind(&OnUnblockOnProfileCreation),
-                                      string16(), string16(), false);
+                                      string16(), string16(), std::string());
 
   // Spin to allow profile creation to take place, loop is terminated
   // by OnUnblockOnProfileCreation when the profile is created.
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
       string16(), // name
       string16(), // icon url
       base::Bind(ProfileCreationComplete),
-      false);
+      std::string());
   // Wait for profile to finish loading.
   content::RunMessageLoop();
   EXPECT_EQ(profile_manager->GetNumberOfProfiles(), 2U);
@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
       profile_manager->GenerateNextProfileDirectoryPath();
   profile_manager->CreateProfileAsync(path_profile2,
                                       base::Bind(&OnUnblockOnProfileCreation),
-                                      string16(), string16(), false);
+                                      string16(), string16(), std::string());
 
   // Spin to allow profile creation to take place, loop is terminated
   // by OnUnblockOnProfileCreation when the profile is created.

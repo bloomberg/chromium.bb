@@ -68,7 +68,17 @@ ManagedUserRegistrationUtility::Create(Profile* profile) {
       profile->GetPrefs(), token_fetcher.Pass(), managed_user_sync_service));
 }
 
+// static
+std::string ManagedUserRegistrationUtility::GenerateNewManagedUserId() {
+  std::string new_managed_user_id;
+  bool success = base::Base64Encode(base::RandBytesAsString(8),
+                                    &new_managed_user_id);
+  DCHECK(success);
+  return new_managed_user_id;
+}
+
 void ManagedUserRegistrationUtility::Register(
+    const std::string& managed_user_id,
     const ManagedUserRegistrationInfo& info,
     const RegistrationCallback& callback) {
   DCHECK(pending_managed_user_id_.empty());
@@ -86,10 +96,7 @@ void ManagedUserRegistrationUtility::Register(
             GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED)));
   }
 
-  std::string id_raw = base::RandBytesAsString(8);
-  bool success = base::Base64Encode(id_raw, &pending_managed_user_id_);
-  DCHECK(success);
-
+  pending_managed_user_id_ = managed_user_id;
   managed_user_sync_service_->AddManagedUser(pending_managed_user_id_,
                                              base::UTF16ToUTF8(info.name),
                                              info.master_key);

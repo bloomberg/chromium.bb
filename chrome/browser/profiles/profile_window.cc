@@ -83,7 +83,7 @@ void SwitchToProfile(
                  desktop_type),
       string16(),
       string16(),
-      false);
+      std::string());
 }
 
 }  // namespace profiles

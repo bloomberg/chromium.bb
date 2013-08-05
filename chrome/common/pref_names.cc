@@ -1245,6 +1245,9 @@ const char kProfileName[] = "profile.name";
 // Whether the profile is managed.
 const char kProfileIsManaged[] = "profile.is_managed";
 
+// The managed user ID.
+const char kManagedUserId[] = "profile.managed_user_id";
+
 // Indicates if we've already shown a notification that high contrast
 // mode is on, recommending high-contrast extensions and themes.
 const char kInvertNotificationShown[] = "invert_notification_version_2_shown";

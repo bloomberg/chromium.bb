@@ -249,7 +249,7 @@ TEST_F(ProfileMenuControllerTest, ManagedProfile) {
                                     scoped_ptr<PrefServiceSyncable>(),
                                     ASCIIToUTF16("Supervised User"),
                                     0,
-                                    true);
+                                    "TEST_ID");
   BrowserList::SetLastActive(browser());
 
   NSMenu* menu = [controller() menu];

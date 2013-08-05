@@ -159,6 +159,7 @@ class BrowserOptionsHandler
   // class) still exists after the new managed profile has been created
   // asynchronously.
   void RegisterNewManagedUser(const ProfileManager::CreateCallback& callback,
+                              const std::string& managed_user_id,
                               Profile* new_profile,
                               Profile::CreateStatus status);
 

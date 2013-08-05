@@ -76,7 +76,7 @@ void SigninNamesOnIOThreadTest::AddNewProfile(const string16& name,
 #else
   const base::FilePath profile_dir = user_data_dir.Append(name);
 #endif
-  cache->AddProfileToCache(profile_dir, name, email, 0, false);
+  cache->AddProfileToCache(profile_dir, name, email, 0, std::string());
 }
 
 }  // namespace

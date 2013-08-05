@@ -776,7 +776,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailAlreadyUsed) {
   const base::FilePath& user_data_dir = cache->GetUserDataDir();
   cache->AddProfileToCache(user_data_dir.Append(FILE_PATH_LITERAL("user")),
                            UTF8ToUTF16("user"),
-                           UTF8ToUTF16("user@gmail.com"), 0, false);
+                           UTF8ToUTF16("user@gmail.com"), 0, std::string());
 
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,

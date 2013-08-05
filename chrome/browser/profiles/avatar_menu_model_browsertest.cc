@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SwitchToProfile) {
       FILE_PATH_LITERAL("New Profile 2"));
   profile_manager->CreateProfileAsync(path_profile2,
                                       base::Bind(&OnUnblockOnProfileCreation),
-                                      string16(), string16(), false);
+                                      string16(), string16(), std::string());
 
   // Spin to allow profile creation to take place, loop is terminated
   // by OnUnblockOnProfileCreation when the profile is created.

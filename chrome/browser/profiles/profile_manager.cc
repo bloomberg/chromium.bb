@@ -476,7 +476,7 @@ void ProfileManager::CreateProfileAsync(
     const CreateCallback& callback,
     const string16& name,
     const string16& icon_url,
-    bool is_managed) {
+    const std::string& managed_user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure that this profile is not pending deletion.
@@ -502,10 +502,10 @@ void ProfileManager::CreateProfileAsync(
     if (cache.IsDefaultAvatarIconUrl(icon_url_std, &icon_index)) {
       // add profile to cache with user selected name and avatar
       cache.AddProfileToCache(profile_path, name, string16(), icon_index,
-                              is_managed);
+                              managed_user_id);
     }
 
-    if (is_managed) {
+    if (!managed_user_id.empty()) {
       content::RecordAction(
           UserMetricsAction("ManagedMode_LocallyManagedUserCreated"));
     }
@@ -540,7 +540,7 @@ void ProfileManager::CreateDefaultProfileAsync(const CreateCallback& callback) {
   // On Chrome OS |is_managed| preference will get initialized in
   // Profile::CREATE_STATUS_CREATED callback.
   profile_manager->CreateProfileAsync(
-      default_profile_dir, callback, string16(), string16(), false);
+      default_profile_dir, callback, string16(), string16(), std::string());
 }
 
 bool ProfileManager::AddProfile(Profile* profile) {
@@ -844,7 +844,7 @@ base::FilePath ProfileManager::CreateMultiProfileAsync(
     const string16& name,
     const string16& icon_url,
     const CreateCallback& callback,
-    bool is_managed) {
+    const std::string& managed_user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -855,7 +855,7 @@ base::FilePath ProfileManager::CreateMultiProfileAsync(
                                       callback,
                                       name,
                                       icon_url,
-                                      is_managed);
+                                      managed_user_id);
   return new_path;
 }
 
@@ -919,13 +919,14 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
   size_t icon_index = profile->GetPrefs()->GetInteger(
       prefs::kProfileAvatarIndex);
 
-  bool is_managed = profile->GetPrefs()->GetBoolean(prefs::kProfileIsManaged);
+  std::string managed_user_id =
+      profile->GetPrefs()->GetString(prefs::kManagedUserId);
 
   cache.AddProfileToCache(profile->GetPath(),
                           profile_name,
                           username,
                           icon_index,
-                          is_managed);
+                          managed_user_id);
 }
 
 void ProfileManager::InitProfileUserPrefs(Profile* profile) {
@@ -937,6 +938,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   bool is_managed = false;
   size_t avatar_index;
   std::string profile_name;
+  std::string managed_user_id;
   if (profile->IsGuestSession()) {
     profile_name = l10n_util::GetStringUTF8(IDS_PROFILES_GUEST_PROFILE_NAME);
     avatar_index = 0;
@@ -950,6 +952,8 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
       profile_name =
           UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index));
       is_managed = cache.ProfileIsManagedAtIndex(profile_cache_index);
+      managed_user_id =
+          cache.GetManagedUserIdOfProfileAtIndex(profile_cache_index);
     } else if (profile->GetPath() ==
                profiles::GetDefaultProfileDir(cache.GetUserDataDir())) {
       avatar_index = 0;
@@ -968,6 +972,9 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 
   if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileIsManaged))
     profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, is_managed);
+
+  if (!profile->GetPrefs()->HasPrefPath(prefs::kManagedUserId))
+    profile->GetPrefs()->SetString(prefs::kManagedUserId, managed_user_id);
 }
 
 bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
@@ -1019,7 +1026,7 @@ void ProfileManager::ScheduleProfileForDeletion(
                          callback,
                          string16(),
                          string16(),
-                         false);
+                         std::string());
     } else {
       // On the Mac, the browser process is not killed when all browser windows
       // are closed, so just in case we are deleting the active profile, and no
@@ -1033,7 +1040,7 @@ void ProfileManager::ScheduleProfileForDeletion(
                                     callback),
                          string16(),
                          string16(),
-                         false);
+                         std::string());
       return;
 #else
       // For OS_MACOSX the pref is updated in the callback to make sure that

@@ -547,7 +547,8 @@ Profile* TestingProfile::GetOriginalProfile() {
 }
 
 bool TestingProfile::IsManaged() {
-  return GetPrefs()->GetBoolean(prefs::kProfileIsManaged);
+  return GetPrefs()->GetBoolean(prefs::kProfileIsManaged) ||
+      !GetPrefs()->GetString(prefs::kManagedUserId).empty();
 }
 
 ExtensionService* TestingProfile::GetExtensionService() {

@@ -104,7 +104,7 @@ bool ShouldShowPromo(Profile* profile) {
     return false;
 
   // Don't show for managed profiles.
-  if (profile->GetPrefs()->GetBoolean(prefs::kProfileIsManaged))
+  if (profile->IsManaged())
     return false;
 
   // Display the signin promo if the user is not signed in.

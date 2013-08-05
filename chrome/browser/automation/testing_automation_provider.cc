@@ -1048,7 +1048,7 @@ void TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   new BrowserOpenedWithNewProfileNotificationObserver(this, reply_message);
   profile_manager->CreateMultiProfileAsync(
-      string16(), string16(), ProfileManager::CreateCallback(), false);
+      string16(), string16(), ProfileManager::CreateCallback(), std::string());
 }
 
 // Sample json input: { "command": "GetMultiProfileInfo" }
