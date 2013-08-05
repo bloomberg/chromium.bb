@@ -151,6 +151,36 @@ function testAPIMethodExistence() {
   document.body.appendChild(webview);
 }
 
+function testWebRequestAPIExistence() {
+  var apiPropertiesToCheck = [
+    'onBeforeRequest',
+    'onBeforeSendHeaders',
+    'onSendHeaders',
+    'onHeadersReceived',
+    'onAuthRequired',
+    'onBeforeRedirect',
+    'onResponseStarted',
+    'onCompleted',
+    'onErrorOccurred'
+  ];
+  var webview = document.createElement('webview');
+  webview.setAttribute('partition', arguments.callee.name);
+  webview.addEventListener('loadstop', function(e) {
+    for (var i = 0; i < apiPropertiesToCheck.length; ++i) {
+      embedder.test.assertEq('object',
+                             typeof webview[apiPropertiesToCheck[i]]);
+      embedder.test.assertEq(
+          'function', typeof webview[apiPropertiesToCheck[i]].addListener);
+      embedder.test.assertEq(webview[apiPropertiesToCheck[i]],
+                             webview.request[apiPropertiesToCheck[i]]);
+    }
+
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'data:text/html,webview check api');
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the loadstart, loadstop, and exit events fire as
 // expected.
 function testEventName() {
@@ -647,6 +677,7 @@ function testRemoveWebviewOnExit() {
 embedder.test.testList = {
   'testSize': testSize,
   'testAPIMethodExistence': testAPIMethodExistence,
+  'testWebRequestAPIExistence': testWebRequestAPIExistence,
   'testEventName': testEventName,
   'testDestroyOnEventListener': testDestroyOnEventListener,
   'testCannotMutateEventName': testCannotMutateEventName,

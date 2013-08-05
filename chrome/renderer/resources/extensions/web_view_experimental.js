@@ -29,27 +29,53 @@ WebView.prototype.maybeSetupExperimentalAPI_ = function() {
  */
 WebView.prototype.setupWebRequestEvents_ = function() {
   var self = this;
+  var request = {};
+  var createWebRequestEvent = function(webRequestEvent) {
+    return function() {
+      if (!self[webRequestEvent.name + '_']) {
+        self[webRequestEvent.name + '_'] =
+            new WebRequestEvent(
+                'webview.' + webRequestEvent.name,
+                webRequestEvent.parameters,
+                webRequestEvent.extraParameters, null,
+                self.browserPluginNode_.getInstanceId());
+      }
+      return self[webRequestEvent.name + '_'];
+    }
+  };
+
   // Populate the WebRequest events from the API definition.
   for (var i = 0; i < webRequestSchema.events.length; ++i) {
-    Object.defineProperty(self.webviewNode_,
-                          webRequestSchema.events[i].name, {
-      get: function(webRequestEvent) {
-        return function() {
-          if (!self[webRequestEvent.name + '_']) {
-            self[webRequestEvent.name + '_'] =
-                new WebRequestEvent(
-                    'webview.' + webRequestEvent.name,
-                    webRequestEvent.parameters,
-                    webRequestEvent.extraParameters, null,
-                    self.browserPluginNode_.getInstanceId());
-          }
-          return self[webRequestEvent.name + '_'];
+    var webRequestEvent = createWebRequestEvent(webRequestSchema.events[i]);
+    Object.defineProperty(
+        request,
+        webRequestSchema.events[i].name,
+        {
+          get: webRequestEvent,
+          configuable: false,
+          enumerable: true
         }
-      }(webRequestSchema.events[i]),
-      // No setter.
-      enumerable: true
-    });
+    );
+    Object.defineProperty(
+        this.webviewNode_,
+        webRequestSchema.events[i].name,
+        {
+          get: webRequestEvent,
+          configuable: false,
+          enumerable: true
+        }
+    );
   }
+  Object.defineProperty(
+      this.webviewNode_,
+      'request',
+      {
+        value: request,
+        configurable: false,
+        enumerable: true,
+        writable: false
+      }
+  );
 };
 
 /**

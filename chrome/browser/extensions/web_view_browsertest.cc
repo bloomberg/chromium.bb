@@ -501,6 +501,15 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAPIMethodExistence) {
              "web_view/shim");
 }
 
+// Tests the existence of WebRequest API event objects on the request
+// object, on the webview element, and hanging directly off webview.
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIExistence) {
+  TestHelper("testWebRequestAPIExistence",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
   TestHelper("testEventName",
              "DoneShimTest.PASSED",
