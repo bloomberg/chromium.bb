@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_RENDERER_PEPPER_PLUGIN_INSTANCE_H_
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/pp_resource.h"
@@ -90,10 +89,10 @@ class PepperPluginInstance {
 
   virtual bool IsRectTopmost(const gfx::Rect& rect) = 0;
 
-  virtual void Navigate(const ppapi::URLRequestInfoData& request,
-                        const char* target,
-                        bool from_user_action,
-                        const base::Callback<void(int32_t)>& callback) = 0;
+  virtual int32_t Navigate(const ppapi::URLRequestInfoData& request,
+                           const char* target,
+                           bool from_user_action) = 0;
+
 };
 
 }  // namespace content

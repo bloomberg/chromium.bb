@@ -220,16 +220,20 @@ int32_t PepperFlashRendererHost::OnNavigate(
       ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
   host_dispatcher->set_allow_plugin_reentrancy();
 
+  // Grab a weak pointer to ourselves on the stack so we can check if we are
+  // still alive.
+  base::WeakPtr<PepperFlashRendererHost> weak_ptr = weak_factory_.GetWeakPtr();
   // Keep track of reply contexts in case we are destroyed during a Navigate
   // call. Even if we are destroyed, we still need to send these replies to
   // unblock the plugin process.
   navigate_replies_.push_back(host_context->MakeReplyMessageContext());
-
-  // If the object is destroyed before the callback is invoked, the reply will
-  // be sent by the destructor.
-  plugin_instance->Navigate(data, target.c_str(), from_user_action,
-      base::Bind(&PepperFlashRendererHost::DidNavigate,
-                 weak_factory_.GetWeakPtr()));
+  plugin_instance->Navigate(data, target.c_str(), from_user_action);
+  // This object might have been destroyed by this point. If it is destroyed
+  // the reply will be sent in the destructor. Otherwise send the reply here.
+  if (weak_ptr.get()) {
+    SendReply(navigate_replies_.back(), IPC::Message());
+    navigate_replies_.pop_back();
+  }
 
   // Return PP_OK_COMPLETIONPENDING so that no reply is automatically sent.
   return PP_OK_COMPLETIONPENDING;
@@ -250,11 +254,6 @@ int32_t PepperFlashRendererHost::OnInvokePrinting(
     ppapi::host::HostMessageContext* host_context) {
   PPB_PDF_Impl::InvokePrintingForInstance(pp_instance());
   return PP_OK;
-}
-
-void PepperFlashRendererHost::DidNavigate(int32_t unused) {
-  SendReply(navigate_replies_.back(), IPC::Message());
-  navigate_replies_.pop_back();
 }
 
 }  // namespace chrome

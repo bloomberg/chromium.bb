@@ -59,8 +59,6 @@ class PepperFlashRendererHost : public ppapi::host::ResourceHost {
                           const PP_Rect& rect);
   int32_t OnInvokePrinting(ppapi::host::HostMessageContext* host_context);
 
-  void DidNavigate(int32_t unused);
-
   base::WeakPtrFactory<PepperFlashRendererHost> weak_factory_;
   // A stack of ReplyMessageContexts to track Navigate() calls which have not
   // yet been replied to.
