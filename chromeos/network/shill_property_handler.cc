@@ -485,8 +485,14 @@ void ShillPropertyHandler::GetPropertiesCallback(
   listener_->UpdateManagedStateProperties(type, path, properties);
   // Update Favorite properties for networks in the Services list.
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
-    listener_->UpdateManagedStateProperties(
-        ManagedState::MANAGED_TYPE_FAVORITE, path, properties);
+    // Only networks with a ProfilePath set are Favorites.
+    std::string profile_path;
+    properties.GetStringWithoutPathExpansion(
+        flimflam::kProfileProperty, &profile_path);
+    if (!profile_path.empty()) {
+      listener_->UpdateManagedStateProperties(
+          ManagedState::MANAGED_TYPE_FAVORITE, path, properties);
+    }
   }
   // Request IPConfig parameters for networks.
   if (type == ManagedState::MANAGED_TYPE_NETWORK &&

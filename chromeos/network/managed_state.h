@@ -67,6 +67,8 @@ class ManagedState {
   const std::string& path() const { return path_; }
   const std::string& name() const { return name_; }
   const std::string& type() const { return type_; }
+  bool update_received() const { return update_received_; }
+  void set_update_received() { update_received_ = true; }
   bool update_requested() const { return update_requested_; }
   void set_update_requested(bool update_requested) {
     update_requested_ = update_requested;
@@ -107,6 +109,9 @@ class ManagedState {
   // Common properties shared by all managed state objects.
   std::string name_;  // flimflam::kNameProperty
   std::string type_;  // flimflam::kTypeProperty
+
+  // Set to true when the an update has been received.
+  bool update_received_;
 
   // Tracks when an update has been requested.
   bool update_requested_;

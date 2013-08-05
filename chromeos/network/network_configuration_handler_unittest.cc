@@ -406,7 +406,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
-}
+}  // namespace
 
 class NetworkConfigurationHandlerStubTest : public testing::Test {
  public:
@@ -447,6 +447,10 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
     get_properties_.reset(dictionary.DeepCopy());
   }
 
+  void CreateConfigurationCallback(const std::string& service_path) {
+    create_service_path_ = service_path;
+  }
+
  protected:
   bool GetServiceStringProperty(const std::string& service_path,
                                 const std::string& key,
@@ -478,6 +482,7 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
   std::string success_callback_name_;
   std::string get_properties_path_;
   scoped_ptr<DictionaryValue> get_properties_;
+  std::string create_service_path_;
 };
 
 TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
@@ -566,6 +571,35 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
   EXPECT_TRUE(GetReceivedStringProperty(
       service_path, flimflam::kNameProperty, &name_result));
   EXPECT_EQ(expected_name, name_result);
+}
+
+TEST_F(NetworkConfigurationHandlerStubTest, StubCreateConfiguration) {
+  const std::string service_path("test_wifi");
+  base::DictionaryValue properties;
+  properties.SetStringWithoutPathExpansion(
+      flimflam::kSSIDProperty, service_path);
+  properties.SetStringWithoutPathExpansion(
+      flimflam::kNameProperty, service_path);
+  properties.SetStringWithoutPathExpansion(
+      flimflam::kGuidProperty, service_path);
+  properties.SetStringWithoutPathExpansion(
+      flimflam::kTypeProperty, flimflam::kTypeWifi);
+  properties.SetStringWithoutPathExpansion(
+      flimflam::kStateProperty, flimflam::kStateIdle);
+
+  network_configuration_handler_->CreateConfiguration(
+      properties,
+      base::Bind(
+          &NetworkConfigurationHandlerStubTest::CreateConfigurationCallback,
+          base::Unretained(this)),
+      base::Bind(&ErrorCallback, false, service_path));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_FALSE(create_service_path_.empty());
+  std::string ssid;
+  EXPECT_TRUE(GetServiceStringProperty(
+      create_service_path_, flimflam::kSSIDProperty, &ssid));
+  EXPECT_EQ(service_path, ssid);
 }
 
 }  // namespace chromeos

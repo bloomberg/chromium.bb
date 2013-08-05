@@ -276,6 +276,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   friend class NetworkStateHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, NetworkStateHandlerStub);
 
+  // NetworkState specific method for UpdateManagedStateProperties which
+  // notifies observers.
+  void UpdateNetworkStateProperties(NetworkState* network,
+                                    const base::DictionaryValue& properties);
+
   // Non-const getters for managed entries. These are const so that they can
   // be called by Get[Network|Device]State, even though they return non-const
   // pointers.
