@@ -48,7 +48,7 @@ namespace {
 // on concurrent IO (as we use one thread per IO request).
 const int kDefaultMaxWorkerThreads = 50;
 
-const char kThreadNamePrefix[] = "SimpleCacheWorker";
+const char kThreadNamePrefix[] = "SimpleCache";
 
 // Cache size when all other size heuristics failed.
 const uint64 kDefaultCacheSize = 80 * 1024 * 1024;
