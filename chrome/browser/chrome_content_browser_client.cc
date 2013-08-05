@@ -2024,10 +2024,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   HostContentSettingsMap* content_settings =
       ProfileIOData::FromResourceContext(context)->GetHostContentSettingsMap();
 
-  if ((disposition == NEW_POPUP || disposition == NEW_FOREGROUND_TAB ||
-       disposition == NEW_BACKGROUND_TAB) && !user_gesture &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePopupBlocking)) {
+  if (!user_gesture && !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisablePopupBlocking)) {
     if (content_settings->GetContentSetting(opener_url,
                                             opener_url,
                                             CONTENT_SETTINGS_TYPE_POPUPS,

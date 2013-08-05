@@ -448,4 +448,10 @@ IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, OpenerSuppressed) {
       base::FilePath(FILE_PATH_LITERAL("popup-openersuppressed.html")), false);
 }
 
+IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, ShiftClick) {
+  RunCheckTest(
+      base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor3.html")),
+      true);
+}
+
 }  // namespace

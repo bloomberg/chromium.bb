@@ -1290,7 +1290,8 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
 
     if ((params.disposition == NEW_POPUP ||
          params.disposition == NEW_FOREGROUND_TAB ||
-         params.disposition == NEW_BACKGROUND_TAB) &&
+         params.disposition == NEW_BACKGROUND_TAB ||
+         params.disposition == NEW_WINDOW) &&
         !params.user_gesture && !CommandLine::ForCurrentProcess()->HasSwitch(
                                     switches::kDisablePopupBlocking)) {
       if (popup_blocker_helper->MaybeBlockPopup(nav_params,
