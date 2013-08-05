@@ -29,6 +29,9 @@
 
 #include "HTMLNames.h"
 #include "core/css/CSSParser.h"
+#include "core/css/CSSSelectorList.h"
+#include "core/css/SelectorChecker.h"
+#include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
@@ -48,7 +51,7 @@ PassRefPtr<HTMLContentElement> HTMLContentElement::create(const QualifiedName& t
 
 HTMLContentElement::HTMLContentElement(const QualifiedName& name, Document* document)
     : InsertionPoint(name, document)
-    , m_shouldParseSelectorList(false)
+    , m_shouldParseSelect(false)
     , m_isValidSelector(true)
 {
     ASSERT(hasTagName(contentTag));
@@ -59,34 +62,13 @@ HTMLContentElement::~HTMLContentElement()
 {
 }
 
-InsertionPoint::MatchType HTMLContentElement::matchTypeFor(Node*)
+void HTMLContentElement::parseSelect()
 {
-    if (select().isNull() || select().isEmpty())
-        return AlwaysMatches;
-    if (!isSelectValid())
-        return NeverMatches;
-    return HasToMatchSelector;
-}
-
-const AtomicString& HTMLContentElement::select() const
-{
-    return getAttribute(selectAttr);
-}
-
-bool HTMLContentElement::isSelectValid()
-{
-    ensureSelectParsed();
-    return m_isValidSelector;
-}
-
-void HTMLContentElement::ensureSelectParsed()
-{
-    if (!m_shouldParseSelectorList)
-        return;
+    ASSERT(m_shouldParseSelect);
 
     CSSParser parser(document());
-    parser.parseSelector(select(), m_selectorList);
-    m_shouldParseSelectorList = false;
+    parser.parseSelector(m_select, m_selectorList);
+    m_shouldParseSelect = false;
     m_isValidSelector = validateSelect();
     if (!m_isValidSelector) {
         CSSSelectorList emptyList;
@@ -99,7 +81,8 @@ void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicS
     if (name == selectAttr) {
         if (ShadowRoot* root = containingShadowRoot())
             root->owner()->willAffectSelector();
-        m_shouldParseSelectorList = true;
+        m_shouldParseSelect = true;
+        m_select = value;
     } else
         InsertionPoint::parseAttribute(name, value);
 }
@@ -174,9 +157,9 @@ static bool validateSelector(const CSSSelector* selector)
 
 bool HTMLContentElement::validateSelect() const
 {
-    ASSERT(!m_shouldParseSelectorList);
+    ASSERT(!m_shouldParseSelect);
 
-    if (select().isNull() || select().isEmpty())
+    if (m_select.isNull() || m_select.isEmpty())
         return true;
 
     if (!m_selectorList.isValid())
@@ -189,5 +172,25 @@ bool HTMLContentElement::validateSelect() const
 
     return true;
 }
+
+static inline bool checkOneSelector(const CSSSelector* selector, const Vector<Node*>& siblings, int nth)
+{
+    Element* element = toElement(siblings[nth]);
+    SelectorChecker selectorChecker(element->document(), SelectorChecker::CollectingRules);
+    SelectorChecker::SelectorCheckingContext context(selector, element, SelectorChecker::VisitedMatchEnabled);
+    ShadowDOMSiblingTraversalStrategy strategy(siblings, nth);
+    PseudoId ignoreDynamicPseudo = NOPSEUDO;
+    return selectorChecker.match(context, ignoreDynamicPseudo, strategy) == SelectorChecker::SelectorMatches;
+}
+
+bool HTMLContentElement::matchSelector(const Vector<Node*>& siblings, int nth) const
+{
+    for (const CSSSelector* selector = selectorList().first(); selector; selector = CSSSelectorList::next(selector)) {
+        if (checkOneSelector(selector, siblings, nth))
+            return true;
+    }
+    return false;
+}
+
 }
 

@@ -35,12 +35,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static const AtomicString& summaryQuerySelector()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, selector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
-    return selector;
-};
-
 PassRefPtr<HTMLDetailsElement> HTMLDetailsElement::create(const QualifiedName& tagName, Document* document)
 {
     RefPtr<HTMLDetailsElement> details = adoptRef(new HTMLDetailsElement(tagName, document));
@@ -63,11 +57,13 @@ RenderObject* HTMLDetailsElement::createRenderer(RenderStyle*)
 
 void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
+    DEFINE_STATIC_LOCAL(AtomicString, summarySelector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
+
     RefPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(summaryTag, document());
     defaultSummary->appendChild(Text::create(document(), defaultDetailsSummaryText()), ASSERT_NO_EXCEPTION_STATE);
 
     RefPtr<HTMLContentElement> content = HTMLContentElement::create(document());
-    content->setSelect(summaryQuerySelector());
+    content->setAttribute(selectAttr, summarySelector);
     content->appendChild(defaultSummary);
 
     root->appendChild(content, ASSERT_NO_EXCEPTION_STATE, AttachLazily);

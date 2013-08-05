@@ -43,37 +43,52 @@ public:
 
     virtual ~HTMLContentElement();
 
-    void setSelect(const AtomicString&);
-    const AtomicString& select() const;
-
-    virtual MatchType matchTypeFor(Node*) OVERRIDE;
-    virtual const CSSSelectorList& selectorList() OVERRIDE;
     virtual bool canAffectSelector() const OVERRIDE { return true; }
-    virtual bool isSelectValid();
 
-protected:
-    HTMLContentElement(const QualifiedName&, Document*);
+    bool canSelectNode(const Vector<Node*>& siblings, int nth) const;
+
+    const CSSSelectorList& selectorList() const;
+    bool isSelectValid() const;
 
 private:
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    void ensureSelectParsed();
-    bool validateSelect() const;
+    HTMLContentElement(const QualifiedName&, Document*);
 
-    bool m_shouldParseSelectorList;
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
+
+    bool validateSelect() const;
+    void parseSelect();
+
+    bool matchSelector(const Vector<Node*>& siblings, int nth) const;
+
+    bool m_shouldParseSelect;
     bool m_isValidSelector;
+    AtomicString m_select;
     CSSSelectorList m_selectorList;
 };
 
-inline void HTMLContentElement::setSelect(const AtomicString& selectValue)
+inline const CSSSelectorList& HTMLContentElement::selectorList() const
 {
-    setAttribute(HTMLNames::selectAttr, selectValue);
-    m_shouldParseSelectorList = true;
+    if (m_shouldParseSelect)
+        const_cast<HTMLContentElement*>(this)->parseSelect();
+    return m_selectorList;
 }
 
-inline const CSSSelectorList& HTMLContentElement::selectorList()
+inline bool HTMLContentElement::isSelectValid() const
 {
-    ensureSelectParsed();
-    return m_selectorList;
+    if (m_shouldParseSelect)
+        const_cast<HTMLContentElement*>(this)->parseSelect();
+    return m_isValidSelector;
+}
+
+inline bool HTMLContentElement::canSelectNode(const Vector<Node*>& siblings, int nth) const
+{
+    if (m_select.isNull() || m_select.isEmpty())
+        return true;
+    if (!isSelectValid())
+        return false;
+    if (!siblings[nth]->isElementNode())
+        return false;
+    return matchSelector(siblings, nth);
 }
 
 inline bool isHTMLContentElement(const Node* node)

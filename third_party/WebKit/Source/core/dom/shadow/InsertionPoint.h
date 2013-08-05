@@ -41,12 +41,6 @@ namespace WebCore {
 
 class InsertionPoint : public HTMLElement {
 public:
-    enum MatchType {
-        AlwaysMatches,
-        NeverMatches,
-        HasToMatchSelector
-    };
-
     virtual ~InsertionPoint();
 
     bool hasDistribution() const { return !m_distribution.isEmpty(); }
@@ -56,8 +50,6 @@ public:
 
     PassRefPtr<NodeList> getDistributedNodes();
 
-    virtual MatchType matchTypeFor(Node*) { return AlwaysMatches; }
-    virtual const CSSSelectorList& selectorList() { return emptySelectorList(); }
     virtual bool canAffectSelector() const { return false; }
 
     bool resetStyleInheritance() const;
@@ -74,8 +66,6 @@ public:
     Node* last() const { return m_distribution.isEmpty() ? 0 : m_distribution.last().get(); }
     Node* nextTo(const Node* node) const { return m_distribution.nextTo(node); }
     Node* previousTo(const Node* node) const { return m_distribution.previousTo(node); }
-
-    static const CSSSelectorList& emptySelectorList();
 
     void lazyAttachDistribution(ShouldSetAttached);
 

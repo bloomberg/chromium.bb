@@ -1991,8 +1991,6 @@
             'dom/shadow/ComposedShadowTreeWalker.h',
             'dom/shadow/ContentDistributor.cpp',
             'dom/shadow/ContentDistributor.h',
-            'dom/shadow/ContentSelectorQuery.cpp',
-            'dom/shadow/ContentSelectorQuery.h',
             'dom/shadow/ElementShadow.cpp',
             'dom/shadow/ElementShadow.h',
             'dom/shadow/InsertionPoint.cpp',
