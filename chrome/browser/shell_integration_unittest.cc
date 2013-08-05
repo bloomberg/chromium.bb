@@ -4,6 +4,7 @@
 
 #include "chrome/browser/shell_integration.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <map>
 
@@ -19,6 +20,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/test/test_browser_thread.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -30,6 +32,7 @@
 #define FPL FILE_PATH_LITERAL
 
 using content::BrowserThread;
+using ::testing::ElementsAre;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 namespace {
@@ -70,6 +73,90 @@ class MockEnvironment : public base::Environment {
 };
 
 }  // namespace
+
+TEST(ShellIntegrationTest, GetDataWriteLocation) {
+  base::MessageLoop message_loop;
+  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
+  // Test that it returns $XDG_DATA_HOME.
+  {
+    MockEnvironment env;
+    env.Set("HOME", "/home/user");
+    env.Set("XDG_DATA_HOME", "/user/path");
+    base::FilePath path;
+    ASSERT_TRUE(ShellIntegrationLinux::GetDataWriteLocation(&env, &path));
+    EXPECT_EQ(base::FilePath("/user/path"), path);
+  }
+
+  // Test that $XDG_DATA_HOME falls back to $HOME/.local/share.
+  {
+    MockEnvironment env;
+    env.Set("HOME", "/home/user");
+    base::FilePath path;
+    ASSERT_TRUE(ShellIntegrationLinux::GetDataWriteLocation(&env, &path));
+    EXPECT_EQ(base::FilePath("/home/user/.local/share"), path);
+  }
+
+  // Test that if neither $XDG_DATA_HOME nor $HOME are specified, it fails.
+  {
+    MockEnvironment env;
+    base::FilePath path;
+    ASSERT_FALSE(ShellIntegrationLinux::GetDataWriteLocation(&env, &path));
+  }
+}
+
+TEST(ShellIntegrationTest, GetDataSearchLocations) {
+  base::MessageLoop message_loop;
+  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
+  // Test that it returns $XDG_DATA_HOME + $XDG_DATA_DIRS.
+  {
+    MockEnvironment env;
+    env.Set("HOME", "/home/user");
+    env.Set("XDG_DATA_HOME", "/user/path");
+    env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
+    EXPECT_THAT(
+        ShellIntegrationLinux::GetDataSearchLocations(&env),
+        ElementsAre(base::FilePath("/user/path"),
+                    base::FilePath("/system/path/1"),
+                    base::FilePath("/system/path/2")));
+  }
+
+  // Test that $XDG_DATA_HOME falls back to $HOME/.local/share.
+  {
+    MockEnvironment env;
+    env.Set("HOME", "/home/user");
+    env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
+    EXPECT_THAT(
+        ShellIntegrationLinux::GetDataSearchLocations(&env),
+        ElementsAre(base::FilePath("/home/user/.local/share"),
+                    base::FilePath("/system/path/1"),
+                    base::FilePath("/system/path/2")));
+  }
+
+  // Test that if neither $XDG_DATA_HOME nor $HOME are specified, it still
+  // succeeds.
+  {
+    MockEnvironment env;
+    env.Set("XDG_DATA_DIRS", "/system/path/1:/system/path/2");
+    EXPECT_THAT(
+        ShellIntegrationLinux::GetDataSearchLocations(&env),
+        ElementsAre(base::FilePath("/system/path/1"),
+                    base::FilePath("/system/path/2")));
+  }
+
+  // Test that $XDG_DATA_DIRS falls back to the two default paths.
+  {
+    MockEnvironment env;
+    env.Set("HOME", "/home/user");
+    env.Set("XDG_DATA_HOME", "/user/path");
+    EXPECT_THAT(
+        ShellIntegrationLinux::GetDataSearchLocations(&env),
+        ElementsAre(base::FilePath("/user/path"),
+                    base::FilePath("/usr/local/share"),
+                    base::FilePath("/usr/share")));
+  }
+}
 
 TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
   base::FilePath kProfilePath("Profile 1");
@@ -286,6 +373,45 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
             &env, kTemplateFilepath, &contents));
     EXPECT_EQ(kTestData2, contents);
   }
+}
+
+TEST(ShellIntegrationTest, GetExtensionShortcutFilename) {
+  base::FilePath kProfilePath("a/b/c/Profile Name?");
+  const char kExtensionId[] = "extensionid";
+  EXPECT_EQ(base::FilePath("chrome-extensionid-Profile_Name_.desktop"),
+            ShellIntegrationLinux::GetExtensionShortcutFilename(
+                kProfilePath, kExtensionId));
+}
+
+TEST(ShellIntegrationTest, GetExistingProfileShortcutFilenames) {
+  base::FilePath kProfilePath("a/b/c/Profile Name?");
+  const char kApp1Filename[] = "chrome-extension1-Profile_Name_.desktop";
+  const char kApp2Filename[] = "chrome-extension2-Profile_Name_.desktop";
+  const char kUnrelatedAppFilename[] = "chrome-extension-Other_Profile.desktop";
+
+  base::MessageLoop message_loop;
+  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_EQ(0,
+            file_util::WriteFile(
+                temp_dir.path().AppendASCII(kApp1Filename), "", 0));
+  ASSERT_EQ(0,
+            file_util::WriteFile(
+                temp_dir.path().AppendASCII(kApp2Filename), "", 0));
+  // This file should not be returned in the results.
+  ASSERT_EQ(0,
+            file_util::WriteFile(
+                temp_dir.path().AppendASCII(kUnrelatedAppFilename), "", 0));
+  std::vector<base::FilePath> paths =
+      ShellIntegrationLinux::GetExistingProfileShortcutFilenames(
+          kProfilePath, temp_dir.path());
+  // Path order is arbitrary. Sort the output for consistency.
+  std::sort(paths.begin(), paths.end());
+  EXPECT_THAT(paths,
+              ElementsAre(base::FilePath(kApp1Filename),
+                          base::FilePath(kApp2Filename)));
 }
 
 TEST(ShellIntegrationTest, GetWebShortcutFilename) {

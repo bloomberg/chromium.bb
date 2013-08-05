@@ -18,6 +18,19 @@ class Environment;
 
 namespace ShellIntegrationLinux {
 
+// Get the path to write user-specific application data files to, as specified
+// in the XDG Base Directory Specification:
+// http://standards.freedesktop.org/basedir-spec/latest/
+// Returns true on success, or false if no such path could be found.
+// Called on the FILE thread.
+bool GetDataWriteLocation(base::Environment* env, base::FilePath* search_path);
+
+// Get the list of paths to search for application data files, in order of
+// preference, as specified in the XDG Base Directory Specification:
+// http://standards.freedesktop.org/basedir-spec/latest/
+// Called on the FILE thread.
+std::vector<base::FilePath> GetDataSearchLocations(base::Environment* env);
+
 // Returns filename of the desktop shortcut used to launch the browser.
 std::string GetDesktopName(base::Environment* env);
 
@@ -59,6 +72,12 @@ base::FilePath GetWebShortcutFilename(const GURL& url);
 base::FilePath GetExtensionShortcutFilename(const base::FilePath& profile_path,
                                             const std::string& extension_id);
 
+// Returns a list of filenames for all existing .desktop files corresponding to
+// on |profile_path| in a given |directory|.
+std::vector<base::FilePath> GetExistingProfileShortcutFilenames(
+    const base::FilePath& profile_path,
+    const base::FilePath& directory);
+
 // Returns contents for .desktop file based on |url| and |title|. If
 // |no_display| is true, the shortcut will not be visible to the user in menus.
 std::string GetDesktopFileContents(const base::FilePath& chrome_exe_path,
@@ -88,6 +107,10 @@ bool CreateDesktopShortcut(
 // been added for the extension with |extension_id| in |profile_path|.
 void DeleteDesktopShortcuts(const base::FilePath& profile_path,
                             const std::string& extension_id);
+
+// Delete any desktop shortcuts on desktop or in the application menu that have
+// for the profile in |profile_path|.
+void DeleteAllDesktopShortcuts(const base::FilePath& profile_path);
 
 }  // namespace ShellIntegrationLinux
 

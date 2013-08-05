@@ -56,7 +56,7 @@ void UpdatePlatformShortcuts(
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
-  // TODO(mgiuca): Implement this on Linux.
+  ShellIntegrationLinux::DeleteAllDesktopShortcuts(profile_path);
 }
 
 }  // namespace internals

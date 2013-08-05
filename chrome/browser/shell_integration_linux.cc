@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/file_util_icu.h"
@@ -505,6 +506,45 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
 
 namespace ShellIntegrationLinux {
 
+bool GetDataWriteLocation(base::Environment* env, base::FilePath* search_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  std::string xdg_data_home;
+  std::string home;
+  if (env->GetVar("XDG_DATA_HOME", &xdg_data_home) && !xdg_data_home.empty()) {
+    *search_path = base::FilePath(xdg_data_home);
+    return true;
+  } else if (env->GetVar("HOME", &home) && !home.empty()) {
+    *search_path = base::FilePath(home).Append(".local").Append("share");
+    return true;
+  }
+  return false;
+}
+
+std::vector<base::FilePath> GetDataSearchLocations(base::Environment* env) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  std::vector<base::FilePath> search_paths;
+
+  base::FilePath write_location;
+  if (GetDataWriteLocation(env, &write_location))
+    search_paths.push_back(write_location);
+
+  std::string xdg_data_dirs;
+  if (env->GetVar("XDG_DATA_DIRS", &xdg_data_dirs) && !xdg_data_dirs.empty()) {
+    base::StringTokenizer tokenizer(xdg_data_dirs, ":");
+    while (tokenizer.GetNext()) {
+      base::FilePath data_dir(tokenizer.token());
+      search_paths.push_back(data_dir);
+    }
+  } else {
+    search_paths.push_back(base::FilePath("/usr/local/share"));
+    search_paths.push_back(base::FilePath("/usr/share"));
+  }
+
+  return search_paths;
+}
+
 std::string GetDesktopName(base::Environment* env) {
 #if defined(GOOGLE_CHROME_BUILD)
   return "google-chrome.desktop";
@@ -575,32 +615,7 @@ bool GetExistingShortcutContents(base::Environment* env,
                                  std::string* output) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::vector<base::FilePath> search_paths;
-
-  // Search paths as specified in the XDG Base Directory Specification.
-  // http://standards.freedesktop.org/basedir-spec/latest/
-  std::string xdg_data_home;
-  std::string home;
-  if (env->GetVar("XDG_DATA_HOME", &xdg_data_home) &&
-      !xdg_data_home.empty()) {
-    search_paths.push_back(base::FilePath(xdg_data_home));
-  } else if (env->GetVar("HOME", &home) && !home.empty()) {
-    search_paths.push_back(base::FilePath(home).Append(".local").Append(
-        "share"));
-  }
-
-  std::string xdg_data_dirs;
-  if (env->GetVar("XDG_DATA_DIRS", &xdg_data_dirs) &&
-      !xdg_data_dirs.empty()) {
-    base::StringTokenizer tokenizer(xdg_data_dirs, ":");
-    while (tokenizer.GetNext()) {
-      base::FilePath data_dir(tokenizer.token());
-      search_paths.push_back(data_dir);
-    }
-  } else {
-    search_paths.push_back(base::FilePath("/usr/local/share"));
-    search_paths.push_back(base::FilePath("/usr/share"));
-  }
+  std::vector<base::FilePath> search_paths = GetDataSearchLocations(env);
 
   for (std::vector<base::FilePath>::const_iterator i = search_paths.begin();
        i != search_paths.end(); ++i) {
@@ -654,6 +669,32 @@ base::FilePath GetExtensionShortcutFilename(const base::FilePath& profile_path,
   // (see https://bugs.freedesktop.org/show_bug.cgi?id=66605).
   ReplaceChars(filename, " ", "_", &filename);
   return base::FilePath(filename.append(".desktop"));
+}
+
+std::vector<base::FilePath> GetExistingProfileShortcutFilenames(
+    const base::FilePath& profile_path,
+    const base::FilePath& directory) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // Use a prefix, because xdg-desktop-menu requires it.
+  std::string prefix(chrome::kBrowserProcessExecutableName);
+  prefix.append("-");
+  std::string suffix("-");
+  suffix.append(profile_path.BaseName().value());
+  file_util::ReplaceIllegalCharactersInPath(&suffix, '_');
+  // Spaces in filenames break xdg-desktop-menu
+  // (see https://bugs.freedesktop.org/show_bug.cgi?id=66605).
+  ReplaceChars(suffix, " ", "_", &suffix);
+  std::string glob = prefix + "*" + suffix + ".desktop";
+
+  base::FileEnumerator files(directory, false, base::FileEnumerator::FILES,
+                             glob);
+  base::FilePath shortcut_file = files.Next();
+  std::vector<base::FilePath> shortcut_paths;
+  while (!shortcut_file.empty()) {
+    shortcut_paths.push_back(shortcut_file.BaseName());
+    shortcut_file = files.Next();
+  }
+  return shortcut_paths;
 }
 
 std::string GetDesktopFileContents(
@@ -873,6 +914,38 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
   // if it isn't in the directory.
   DeleteShortcutInApplicationsMenu(shortcut_filename,
                                    base::FilePath(kDirectoryFilename));
+}
+
+void DeleteAllDesktopShortcuts(const base::FilePath& profile_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+
+  // Delete shortcuts from Desktop.
+  base::FilePath desktop_path;
+  if (PathService::Get(base::DIR_USER_DESKTOP, &desktop_path)) {
+    std::vector<base::FilePath> shortcut_filenames_desktop =
+        GetExistingProfileShortcutFilenames(profile_path, desktop_path);
+    for (std::vector<base::FilePath>::const_iterator it =
+         shortcut_filenames_desktop.begin();
+         it != shortcut_filenames_desktop.end(); ++it) {
+      DeleteShortcutOnDesktop(*it);
+    }
+  }
+
+  // Delete shortcuts from |kDirectoryFilename|.
+  base::FilePath applications_menu;
+  if (GetDataWriteLocation(env.get(), &applications_menu)) {
+    applications_menu = applications_menu.AppendASCII("applications");
+    std::vector<base::FilePath> shortcut_filenames_app_menu =
+        GetExistingProfileShortcutFilenames(profile_path, applications_menu);
+    for (std::vector<base::FilePath>::const_iterator it =
+         shortcut_filenames_app_menu.begin();
+         it != shortcut_filenames_app_menu.end(); ++it) {
+      DeleteShortcutInApplicationsMenu(*it,
+                                       base::FilePath(kDirectoryFilename));
+    }
+  }
 }
 
 }  // namespace ShellIntegrationLinux
