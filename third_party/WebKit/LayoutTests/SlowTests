@@ -156,8 +156,6 @@ crbug.com/244481 virtual/gpu/fast/canvas/canvas-composite-canvas.html [ Slow ]
 
 crbug.com/26253 [ Win Release ] http/tests/navigation/reload-subframe-object.html [ Slow ]
 
-crbug.com/243782 [ Win Debug ] fast/js/kde/Array.html [ Slow ]
-crbug.com/243782 [ Win Debug ] fast/js/kde/Boolean.html [ Slow ]
 crbug.com/243782 [ Win Debug ] fast/js/mozilla/eval/exhaustive-fun-normalcaller-direct-normalcode.html [ Slow ]
 crbug.com/243782 [ Win Debug ] fast/js/mozilla/eval/exhaustive-fun-normalcaller-direct-strictcode.html [ Slow ]
 crbug.com/243782 [ Win Debug ] fast/js/mozilla/strict/8.12.5.html [ Slow ]
