@@ -9,6 +9,7 @@
 #include <ppapi/c/pp_instance.h>
 
 #include "nacl_io/ossocket.h"
+#include "nacl_io/osstat.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
 #include "sdk_util/macros.h"

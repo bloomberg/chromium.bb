@@ -3,7 +3,7 @@
   'SEARCH': [
     '.',
     'pepper',
-    '../third_party/newlib-extras'
+    '../third_party/newlib-extras',
   ],
   'TARGETS': [
     {
@@ -34,6 +34,27 @@
         "path.cc",
         "pepper_interface.cc",
         "real_pepper_interface.cc",
+        "syscalls/access.c",
+        "syscalls/chdir.c",
+        "syscalls/chmod.c",
+        "syscalls/chown.c",
+        "syscalls/fchown.c",
+        "syscalls/fsync.c",
+        "syscalls/ftruncate.c",
+        "syscalls/getdents.c",
+        "syscalls/getwd.c",
+        "syscalls/getcwd.c",
+        "syscalls/ioctl.c",
+        "syscalls/isatty.c",
+        "syscalls/link.c",
+        "syscalls/lchown.c",
+        "syscalls/mkdir.c",
+        "syscalls/mount.c",
+        "syscalls/remove.c",
+        "syscalls/rmdir.c",
+        "syscalls/unlink.c",
+        "syscalls/umount.c",
+        "syscalls/utime.c",
       ],
     }
   ],

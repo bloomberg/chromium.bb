@@ -137,24 +137,8 @@ EXTERN_C_BEGIN
 
 EXPAND_SYMBOL_LIST_OPERATION(DECLARE_REAL_PTR);
 
-int access(const char* path, int amode) NOTHROW {
-  return ki_access(path, amode);
-}
-
-int chdir(const char* path) NOTHROW {
-  return ki_chdir(path);
-}
-
-int chmod(const char* path, mode_t mode) NOTHROW {
-  return ki_chmod(path, mode);
-}
-
 int WRAP(chdir) (const char* pathname) {
   return (ki_chdir(pathname)) ? errno : 0;
-}
-
-int chown(const char* path, uid_t owner, gid_t group) NOTHROW {
-  return ki_chown(path, owner, group);
 }
 
 int WRAP(close)(int fd) {
@@ -170,10 +154,6 @@ int WRAP(dup2)(int fd, int newfd) NOTHROW {
   return (ki_dup2(fd, newfd) < 0) ? errno : 0;
 }
 
-int fchown(int fd, uid_t owner, gid_t group) NOTHROW {
-  return ki_fchown(fd, owner, group);
-}
-
 int WRAP(fstat)(int fd, struct nacl_abi_stat *nacl_buf) {
   struct stat buf;
   memset(&buf, 0, sizeof(struct stat));
@@ -184,28 +164,8 @@ int WRAP(fstat)(int fd, struct nacl_abi_stat *nacl_buf) {
   return 0;
 }
 
-int fsync(int fd) {
-  return ki_fsync(fd);
-}
-
-int ftruncate(int fd, off_t length) NOTHROW {
-  return ki_ftruncate(fd, length);
-}
-
-char* getcwd(char* buf, size_t size) NOTHROW {
-  return ki_getcwd(buf, size);
-}
-
 char* WRAP(getcwd)(char* buf, size_t size) {
   return ki_getcwd(buf, size);
-}
-
-char* getwd(char* buf) NOTHROW {
-  return ki_getwd(buf);
-}
-
-int getdents(int fd, void* buf, unsigned int count) NOTHROW {
-  return ki_getdents(fd, buf, count);
 }
 
 int WRAP(getdents)(int fd, dirent* nacl_buf, size_t nacl_count, size_t *nread) {
@@ -238,27 +198,7 @@ int WRAP(getdents)(int fd, dirent* nacl_buf, size_t nacl_count, size_t *nread) {
   return 0;
 }
 
-int ioctl(int d, int request, char* argp) NOTHROW {
-  return ki_ioctl(d, request, argp);
-}
-
-int isatty(int fd) NOTHROW {
-  return ki_isatty(fd);
-}
-
-int lchown(const char* path, uid_t owner, gid_t group) NOTHROW {
-  return ki_lchown(path, owner, group);
-}
-
-int link(const char* oldpath, const char* newpath) NOTHROW {
-  return ki_link(oldpath, newpath);
-}
-
-int mkdir(const char* path, mode_t mode) NOTHROW {
-  return ki_mkdir(path, mode);
-}
-
-int WRAP(mkdir) (const char* pathname, mode_t mode) {
+int WRAP(mkdir)(const char* pathname, mode_t mode) {
   return (ki_mkdir(pathname, mode)) ? errno : 0;
 }
 
@@ -269,11 +209,6 @@ int WRAP(mmap)(void** addr, size_t length, int prot, int flags, int fd,
 
   *addr = ki_mmap(*addr, length, prot, flags, fd, offset);
   return *addr == (void*)-1 ? errno : 0;
-}
-
-int mount(const char* source, const char* target, const char* filesystemtype,
-          unsigned long mountflags, const void* data) NOTHROW {
-  return ki_mount(source, target, filesystemtype, mountflags, data);
 }
 
 int WRAP(munmap)(void* addr, size_t length) {
@@ -302,14 +237,6 @@ int WRAP(read)(int fd, void *buf, size_t count, size_t *nread) {
   return (signed_nread < 0) ? errno : 0;
 }
 
-int remove(const char* path) NOTHROW {
-  return ki_remove(path);
-}
-
-int rmdir(const char* path) NOTHROW {
-  return ki_rmdir(path);
-}
-
 int WRAP(rmdir)(const char* pathname) {
   return (ki_rmdir(pathname) < 0) ? errno : 0;
 }
@@ -327,22 +254,6 @@ int WRAP(stat)(const char *pathname, struct nacl_abi_stat *nacl_buf) {
     return errno;
   stat_to_nacl_stat(&buf, nacl_buf);
   return 0;
-}
-
-int symlink(const char* oldpath, const char* newpath) NOTHROW {
-  return ki_symlink(oldpath, newpath);
-}
-
-int umount(const char* path) NOTHROW {
-  return ki_umount(path);
-}
-
-int unlink(const char* path) NOTHROW {
-  return ki_unlink(path);
-}
-
-int utime(const char* filename, const struct utimbuf* times) {
-  return ki_utime(filename, times);
 }
 
 int WRAP(write)(int fd, const void* buf, size_t count, size_t* nwrote) {

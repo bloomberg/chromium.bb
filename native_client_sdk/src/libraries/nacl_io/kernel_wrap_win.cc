@@ -57,10 +57,6 @@ int _chmod(const char* path, mode_t mode) {
   return ki_chmod(path, mode);
 }
 
-int chown(const char* path, uid_t owner, gid_t group) {
-  return ki_chown(path, owner, group);
-}
-
 int _close(int fd) {
   return ki_close(fd);
 }
@@ -75,10 +71,6 @@ int _dup(int oldfd) {
 
 int _dup2(int oldfd, int newfd) {
   return ki_dup2(oldfd, newfd);
-}
-
-int fchown(int fd, uid_t owner, gid_t group) {
-  return ki_fchown(fd, owner, group);
 }
 
 int _fstat32(int fd, struct _stat32* buf) {
@@ -109,40 +101,12 @@ int _fstat64i32(int fd, struct _stat64i32* buf) {
   return res;
 }
 
-int fsync(int fd) {
-  return ki_fsync(fd);
-}
-
-int ftruncate(int fd, off_t length) {
-  return ki_ftruncate(fd, length);
-}
-
 char* _getcwd(char* buf, int size) {
   return ki_getcwd(buf, size);
 }
 
-char* getwd(char* buf) {
-  return ki_getwd(buf);
-}
-
-int getdents(int fd, void* buf, unsigned int count) {
-  return ki_getdents(fd, buf, count);
-}
-
-int ioctl(int d, int request, char* argp) {
-  return ki_ioctl(d, request, argp);
-}
-
 int _isatty(int fd) {
   return ki_isatty(fd);
-}
-
-int lchown(const char* path, uid_t owner, gid_t group) {
-  return ki_lchown(path, owner, group);
-}
-
-int link(const char* oldpath, const char* newpath) {
-  return ki_link(oldpath, newpath);
 }
 
 off_t _lseek(int fd, off_t offset, int whence) {
@@ -151,11 +115,6 @@ off_t _lseek(int fd, off_t offset, int whence) {
 
 int _mkdir(const char* path) {
   return ki_mkdir(path, 0777);
-}
-
-int mount(const char* source, const char* target, const char* filesystemtype,
-          unsigned long mountflags, const void *data) {
-  return ki_mount(source, target, filesystemtype, mountflags, data);
 }
 
 int _open(const char* path, int oflag, ...) {
@@ -194,10 +153,6 @@ int _read_nolock(int fd, void* buf, size_t nbyte) {
     return 0;
 
   return ki_read(fd, buf, nbyte);
-}
-
-int remove(const char* path) {
-  return ki_remove(path);
 }
 
 int _rmdir(const char* path) {
@@ -243,14 +198,6 @@ int _stat32i64(const char* path, struct _stat32i64* buf) {
   int res = ki_stat(path, &ki_buf);
   CopyStat(&ki_buf, buf);
   return res;
-}
-
-int symlink(const char* oldpath, const char* newpath) {
-  return ki_symlink(oldpath, newpath);
-}
-
-int umount(const char* path) {
-  return ki_umount(path);
 }
 
 int _unlink(const char* path) {
