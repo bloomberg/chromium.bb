@@ -6,12 +6,16 @@ ExternalClearKey/EncryptedMediaTest.*
 ClearKey/EncryptedMediaTest.*
 WorkerTest.*
 MediaTest.*
+MediaSourceTest.*
 WebGLConformanceTest.*
 MessagePortTest.Tests
 EncryptedMediaTest.*
 CrossPlatformAccessibilityBrowserTest.*
 DatabaseTest.*
 ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_DuringUnload
+
+# Crashes
+ResourceDispatcherHostBrowserTest.CrossSiteAfterCrash
 
 # Failures
 RenderViewHostTest.BaseURLParam
@@ -88,10 +92,6 @@ IndexedDBBrowserTestWithVersion987654SSVData.DestroyTest
 IndexedDBBrowserTestWithCorruptLevelDB.DestroyTest
 
 BookmarkletTest.NonEmptyResult
-MediaSourceTest.Playback_AudioOnly_WebM
-MediaSourceTest.Playback_VideoAudio_WebM
-MediaSourceTest.Playback_VideoOnly_WebM
-MediaSourceTest.ConfigChangeVideo
 
 # http://crbug.com/248796
 ResourceFetcherTests.ResourceFetcher404
