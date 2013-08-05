@@ -49,6 +49,14 @@ int GetLocalPredictorPrerenderPriorityHalfLifeTimeSeconds();
 // may maintain.
 int GetLocalPredictorMaxConcurrentPrerenders();
 
+// The following functions return whether certain LocalPredictor checks should
+// be skipped, as indicated by the name.
+bool SkipLocalPredictorFragment();
+bool SkipLocalPredictorHTTPS();
+bool SkipLocalPredictorWhitelist();
+bool SkipLocalPredictorLoggedIn();
+bool SkipLocalPredictorDefaultNoPrerender();
+
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_

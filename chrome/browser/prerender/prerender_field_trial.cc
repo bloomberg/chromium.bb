@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -19,6 +20,10 @@
 
 using base::FieldTrial;
 using base::FieldTrialList;
+using base::SplitStringUsingSubstr;
+using base::StringToInt;
+using std::string;
+using std::vector;
 
 namespace prerender {
 
@@ -30,19 +35,20 @@ int g_omnibox_trial_default_group_number = kint32min;
 const char kDisabledGroup[] = "Disabled";
 const char kEnabledGroup[] = "Enabled";
 
-const char kLocalPredictorTrialName[] = "PrerenderLocalPredictor";
-const char kSideEffectFreeWhitelistTrialName[] =
-    "PrerenderSideEffectFreeWhitelist";
-const char kLocalPredictorPrerenderLaunchTrialName[] =
-    "PrerenderLocalPredictorPrerenderLanch";
-const char kLocalPredictorPrerenderAlwaysControlTrialName[] =
-    "PrerenderLocalPredictorPrerenderAlwaysControl";
-const char kLocalPredictorPrerenderTTLTrialName[] =
-    "PrerenderLocalPredictorPrerenderTTLSeconds";
-const char kLocalPredictorPrerenderPriorityHalfLifeTimeTrialName[] =
-    "PrerenderLocalPredictorPrerenderPriorityHalfLifeTimeSeconds";
-const char kLocalPredictorMaxConcurrentPrerenderTrialName[] =
-    "PrerenderLocalPredictorMaxConcurrentPrerenders";
+const char kLocalPredictorSpecTrialName[] = "PrerenderLocalPredictorSpec";
+const char kLocalPredictorKeyName[] = "LocalPredictor";
+const char kSideEffectFreeWhitelistKeyName[] = "SideEffectFreeWhitelist";
+const char kPrerenderLaunchKeyName[] = "PrerenderLaunch";
+const char kPrerenderAlwaysControlKeyName[] = "PrerenderAlwaysControl";
+const char kPrerenderTTLKeyName[] = "PrerenderTTLSeconds";
+const char kPrerenderPriorityHalfLifeTimeKeyName[] =
+    "PrerenderPriorityHalfLifeTimeSeconds";
+const char kMaxConcurrentPrerenderKeyName[] = "MaxConcurrentPrerenders";
+const char kSkipFragment[] = "SkipFragment";
+const char kSkipHTTPS[] = "SkipHTTPS";
+const char kSkipWhitelist[] = "SkipWhitelist";
+const char kSkipLoggedIn[] = "SkipLoggedIn";
+const char kSkipDefaultNoPrerender[] = "SkipDefaultNoPrerender";
 
 void SetupPrefetchFieldTrial() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
@@ -169,7 +175,7 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
 
   PrerenderOption prerender_option = PRERENDER_OPTION_AUTO;
   if (command_line.HasSwitch(switches::kPrerenderMode)) {
-    const std::string switch_value =
+    const string switch_value =
         command_line.GetSwitchValueASCII(switches::kPrerenderMode);
 
     if (switch_value == switches::kPrerenderModeSwitchValueAuto) {
@@ -244,7 +250,7 @@ void ConfigureLocalPredictor() {
   }
   scoped_refptr<FieldTrial> local_predictor_trial(
       FieldTrialList::FactoryGetFieldTrial(
-          kLocalPredictorTrialName, 100, kDisabledGroup, 2013, 12, 31,
+          kLocalPredictorKeyName, 100, kDisabledGroup, 2013, 12, 31,
           FieldTrial::SESSION_RANDOMIZED, NULL));
   local_predictor_trial->AppendGroup(kEnabledGroup, 100);
 }
@@ -259,7 +265,7 @@ bool IsOmniboxEnabled(Profile* profile) {
   // Override any field trial groups if the user has set a command line flag.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPrerenderFromOmnibox)) {
-    const std::string switch_value =
+    const string switch_value =
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kPrerenderFromOmnibox);
 
@@ -277,6 +283,29 @@ bool IsOmniboxEnabled(Profile* profile) {
          group == g_omnibox_trial_default_group_number;
 }
 
+/*
+PrerenderLocalPredictorSpec is a field trial, and its value must have the
+following format:
+key1=value1:key2=value2:key3=value3
+eg "LocalPredictor=Enabled:SideEffectFreeWhitelist=Enabled"
+The function below extracts the value corresponding to a key provided from the
+LocalPredictorSpec.
+*/
+string GetLocalPredictorSpecValue(string spec_key) {
+  vector<string> elements;
+  SplitStringUsingSubstr(
+      FieldTrialList::FindFullName(kLocalPredictorSpecTrialName),
+      ":",
+      &elements);
+  for (int i = 0; i < static_cast<int>(elements.size()); i++) {
+    vector<string> key_value;
+    SplitStringUsingSubstr(elements[i], "=", &key_value);
+    if (key_value.size() == 2 && key_value[0] == spec_key)
+      return key_value[1];
+  }
+  return string();
+}
+
 bool IsLocalPredictorEnabled() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   return false;
@@ -285,8 +314,7 @@ bool IsLocalPredictorEnabled() {
           switches::kDisablePrerenderLocalPredictor)) {
     return false;
   }
-  return base::FieldTrialList::FindFullName(kLocalPredictorTrialName) ==
-      kEnabledGroup;
+  return GetLocalPredictorSpecValue(kLocalPredictorKeyName) == kEnabledGroup;
 }
 
 bool IsLoggedInPredictorEnabled() {
@@ -295,27 +323,22 @@ bool IsLoggedInPredictorEnabled() {
 
 bool IsSideEffectFreeWhitelistEnabled() {
   return IsLocalPredictorEnabled() &&
-      base::FieldTrialList::FindFullName(kSideEffectFreeWhitelistTrialName) !=
+      GetLocalPredictorSpecValue(kSideEffectFreeWhitelistKeyName) !=
       kDisabledGroup;
 }
 
 bool IsLocalPredictorPrerenderLaunchEnabled() {
-  return base::FieldTrialList::FindFullName(
-      kLocalPredictorPrerenderLaunchTrialName) !=
-      kDisabledGroup;
+  return GetLocalPredictorSpecValue(kPrerenderLaunchKeyName) != kDisabledGroup;
 }
 
 bool IsLocalPredictorPrerenderAlwaysControlEnabled() {
-  return base::FieldTrialList::FindFullName(
-      kLocalPredictorPrerenderAlwaysControlTrialName) ==
+  return GetLocalPredictorSpecValue(kPrerenderAlwaysControlKeyName) ==
       kEnabledGroup;
 }
 
 int GetLocalPredictorTTLSeconds() {
   int ttl;
-  base::StringToInt(
-      base::FieldTrialList::FindFullName(kLocalPredictorPrerenderTTLTrialName),
-      &ttl);
+  StringToInt(GetLocalPredictorSpecValue(kPrerenderTTLKeyName), &ttl);
   // If the value is outside of 10s or 600s, use a default value of 180s.
   if (ttl < 10 || ttl > 600)
     ttl = 180;
@@ -324,10 +347,8 @@ int GetLocalPredictorTTLSeconds() {
 
 int GetLocalPredictorPrerenderPriorityHalfLifeTimeSeconds() {
   int half_life_time;
-  base::StringToInt(
-      base::FieldTrialList::FindFullName(
-          kLocalPredictorPrerenderPriorityHalfLifeTimeTrialName),
-      &half_life_time);
+  StringToInt(GetLocalPredictorSpecValue(kPrerenderPriorityHalfLifeTimeKeyName),
+              &half_life_time);
   // Sanity check: Ensure the half life time is non-negative.
   if (half_life_time < 0)
     half_life_time = 0;
@@ -336,10 +357,8 @@ int GetLocalPredictorPrerenderPriorityHalfLifeTimeSeconds() {
 
 int GetLocalPredictorMaxConcurrentPrerenders() {
   int num_prerenders;
-  base::StringToInt(
-      base::FieldTrialList::FindFullName(
-          kLocalPredictorMaxConcurrentPrerenderTrialName),
-      &num_prerenders);
+  StringToInt(GetLocalPredictorSpecValue(kMaxConcurrentPrerenderKeyName),
+              &num_prerenders);
   // Sanity check: Ensure the number of prerenders is at least 1.
   if (num_prerenders < 1)
     num_prerenders = 1;
@@ -348,5 +367,25 @@ int GetLocalPredictorMaxConcurrentPrerenders() {
     num_prerenders = 10;
   return num_prerenders;
 };
+
+bool SkipLocalPredictorFragment() {
+  return GetLocalPredictorSpecValue(kSkipFragment) == kEnabledGroup;
+}
+
+bool SkipLocalPredictorHTTPS() {
+  return GetLocalPredictorSpecValue(kSkipHTTPS) == kEnabledGroup;
+}
+
+bool SkipLocalPredictorWhitelist() {
+  return GetLocalPredictorSpecValue(kSkipWhitelist) == kEnabledGroup;
+}
+
+bool SkipLocalPredictorLoggedIn() {
+  return GetLocalPredictorSpecValue(kSkipLoggedIn) == kEnabledGroup;
+}
+
+bool SkipLocalPredictorDefaultNoPrerender() {
+  return GetLocalPredictorSpecValue(kSkipDefaultNoPrerender) == kEnabledGroup;
+}
 
 }  // namespace prerender

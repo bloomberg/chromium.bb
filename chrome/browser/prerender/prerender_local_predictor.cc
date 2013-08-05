@@ -743,13 +743,14 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       url_info.reset(NULL);
       continue;
     }
-    if (URLsIdenticalIgnoringFragments(info->source_url_.url,
+    if (!SkipLocalPredictorFragment() &&
+        URLsIdenticalIgnoringFragments(info->source_url_.url,
                                        url_info->url)) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_URLS_IDENTICAL_BUT_FRAGMENT);
       url_info.reset(NULL);
       continue;
     }
-    if (url_info->url.SchemeIs("https")) {
+    if (!SkipLocalPredictorHTTPS() && url_info->url.SchemeIs("https")) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_HTTPS);
       url_info.reset(NULL);
       continue;
@@ -770,18 +771,24 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       url_info.reset(NULL);
       continue;
     }
-    if (sb_db_manager->CheckSideEffectFreeWhitelistUrl(url_info->url)) {
+    if (!SkipLocalPredictorWhitelist() &&
+        sb_db_manager->CheckSideEffectFreeWhitelistUrl(url_info->url)) {
       // If a page is on the side-effect free whitelist, we will just prerender
       // it without any additional checks.
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ON_SIDE_EFFECT_FREE_WHITELIST);
       break;
     }
-    if (!url_info->logged_in && url_info->logged_in_lookup_ok) {
+    if (!SkipLocalPredictorLoggedIn() &&
+        !url_info->logged_in && url_info->logged_in_lookup_ok) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_NOT_LOGGED_IN);
       break;
     }
-    RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_FALLTHROUGH_NOT_PRERENDERING);
-    url_info.reset(NULL);
+    if (!SkipLocalPredictorDefaultNoPrerender()) {
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_FALLTHROUGH_NOT_PRERENDERING);
+      url_info.reset(NULL);
+    } else {
+      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_FALLTHROUGH_PRERENDERING);
+    }
   }
   if (!url_info.get())
     return;
