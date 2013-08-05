@@ -31,6 +31,6 @@
 [
 ] interface LayerRectList {
     readonly attribute unsigned long length;
-    getter LayerRect item([IsIndex,Default=Undefined] optional unsigned long index);
+    getter LayerRect item(unsigned long index);
 };
 
