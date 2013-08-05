@@ -173,6 +173,7 @@ const char kTagCellular[] = "cellular";
 const char kTagCellularAvailable[] = "cellularAvailable";
 const char kTagCellularEnabled[] = "cellularEnabled";
 const char kTagCellularSupportsScan[] = "cellularSupportsScan";
+const char kTagConfigure[] = "configure";
 const char kTagConnect[] = "connect";
 const char kTagConnected[] = "connected";
 const char kTagConnecting[] = "connecting";
@@ -838,6 +839,7 @@ void InternetOptionsHandler::GetLocalizedValues(
     { "activateButton", IDS_OPTIONS_SETTINGS_ACTIVATE },
     { "buyplanButton", IDS_OPTIONS_SETTINGS_BUY_PLAN },
     { "connectButton", IDS_OPTIONS_SETTINGS_CONNECT },
+    { "configureButton", IDS_OPTIONS_SETTINGS_CONFIGURE },
     { "disconnectButton", IDS_OPTIONS_SETTINGS_DISCONNECT },
     { "viewAccountButton", IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT },
 
@@ -1855,6 +1857,8 @@ void InternetOptionsHandler::NetworkCommandCallback(
         service_path,
         base::Bind(&base::DoNothing),
         base::Bind(&ShillError, "NetworkCommand: " + command));
+  } else if (command == kTagConfigure) {
+    NetworkConfigView::ShowForPath(service_path, GetNativeWindow());
   } else if (command == kTagActivate && type == flimflam::kTypeCellular) {
     network_connect::ActivateCellular(service_path);
     // Activation may update network properties (e.g. ActivationState), so

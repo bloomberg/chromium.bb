@@ -127,6 +127,12 @@ cr.define('options.internet', function() {
         DetailsInternetPage.disconnectNetwork();
       });
 
+      $('details-internet-configure').addEventListener('click',
+                                                       function(event) {
+        DetailsInternetPage.setDetails();
+        DetailsInternetPage.configureNetwork();
+      });
+
       $('activate-details').addEventListener('click', function(event) {
         DetailsInternetPage.activateFromDetails();
       });
@@ -534,6 +540,7 @@ cr.define('options.internet', function() {
     var buttonsToDisableList =
         new Array('details-internet-login',
                   'details-internet-disconnect',
+                  'details-internet-configure',
                   'activate-details',
                   'buyplan-details',
                   'view-account-details');
@@ -657,6 +664,15 @@ cr.define('options.internet', function() {
     chrome.send('networkCommand', [String(data.type),
                                           servicePath,
                                           'disconnect']);
+    OptionsPage.closeOverlay();
+  };
+
+  DetailsInternetPage.configureNetwork = function() {
+    var data = $('connection-state').data;
+    var servicePath = data.servicePath;
+    chrome.send('networkCommand', [String(data.type),
+                                          servicePath,
+                                          'configure']);
     OptionsPage.closeOverlay();
   };
 
@@ -804,6 +820,11 @@ cr.define('options.internet', function() {
     if (data.type != Constants.TYPE_ETHERNET)
       $('details-internet-disconnect').hidden = !data.connected;
 
+    if (data.type == Constants.TYPE_WIMAX)
+      $('details-internet-configure').hidden = false;
+    else
+      $('details-internet-configure').hidden = true;
+
     $('connection-state').data = data;
   }
 
@@ -858,6 +879,10 @@ cr.define('options.internet', function() {
       $('details-internet-disconnect').hidden = true;
     else
       $('details-internet-disconnect').hidden = !data.connected;
+    if (data.type == Constants.TYPE_WIMAX)
+      $('details-internet-configure').hidden = false;
+    else
+      $('details-internet-configure').hidden = true;
 
     detailsPage.deviceConnected = data.deviceConnected;
     detailsPage.connecting = data.connecting;

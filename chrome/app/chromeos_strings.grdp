@@ -1014,6 +1014,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_DISCONNECT" desc="In the settings tab, the text on the button to disconnect from a network.">
     Disconnect
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_CONFIGURE" desc="In the settings tab, the text on the button to configure a network.">
+    Configure
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_FORGET" desc="In the settings tab, the text on the button to forget this network.">
     Forget this network
   </message>

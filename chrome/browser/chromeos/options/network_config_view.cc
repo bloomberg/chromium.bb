@@ -136,6 +136,18 @@ void NetworkConfigView::ShowForType(ConnectionType type,
   view->ShowDialog(parent);
 }
 
+// static
+void NetworkConfigView::ShowForPath(const std::string& path,
+                                    gfx::NativeWindow parent) {
+  if (GetActiveDialog() != NULL)
+    return;
+  Network* network = NetworkLibrary::Get()->FindNetworkByPath(path);
+  if (!network)
+    return;
+  NetworkConfigView* view = new NetworkConfigView(network);
+  view->ShowDialog(parent);
+}
+
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
   return GetWidget()->GetNativeWindow();
 }

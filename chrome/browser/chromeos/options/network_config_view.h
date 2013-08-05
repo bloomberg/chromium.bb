@@ -47,6 +47,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   // Shows a network connection dialog if none is currently visible.
   static void Show(Network* network, gfx::NativeWindow parent);
   static void ShowForType(ConnectionType type, gfx::NativeWindow parent);
+  static void ShowForPath(const std::string& path, gfx::NativeWindow parent);
 
   // Returns corresponding native window.
   gfx::NativeWindow GetNativeWindow() const;

@@ -232,13 +232,16 @@ std::string ShillDeviceClientStub::GetDevicePathForType(
 }
 
 void ShillDeviceClientStub::SetDefaultProperties() {
-  // Add a wifi device. Note: path matches Manager entry.
+  // Add a wifi device.
   AddDevice("stub_wifi_device1", flimflam::kTypeWifi, "/device/wifi1");
 
-  // Add a cellular device. Used in SMS stub. Note: path matches
-  // Manager entry.
+  // Add a cellular device. Used in SMS stub.
   AddDevice("stub_cellular_device1", flimflam::kTypeCellular,
             "/device/cellular1");
+
+  // Add a wimax device.
+  AddDevice("stub_wimax_device1", flimflam::kTypeWimax,
+            "/device/wimax1");
 }
 
 void ShillDeviceClientStub::PassStubDeviceProperties(

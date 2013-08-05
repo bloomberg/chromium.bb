@@ -222,20 +222,24 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
 TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
   // There may be several manager changes during initialization.
   size_t initial_changed_count = test_observer_->manager_changed_count();
-  // Enable a technology.
+  // Disable a technology.
+  network_state_handler_->SetTechnologyEnabled(
+      flimflam::kTypeWimax, false, network_handler::ErrorCallback());
   EXPECT_NE(NetworkStateHandler::TECHNOLOGY_ENABLED,
             network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
+  EXPECT_EQ(initial_changed_count + 1, test_observer_->manager_changed_count());
+  // Enable a technology.
   network_state_handler_->SetTechnologyEnabled(
       flimflam::kTypeWimax, true, network_handler::ErrorCallback());
   // The technology state should immediately change to ENABLING and we should
   // receive a manager changed callback.
-  EXPECT_EQ(initial_changed_count + 1, test_observer_->manager_changed_count());
+  EXPECT_EQ(initial_changed_count + 2, test_observer_->manager_changed_count());
   EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_ENABLING,
             network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
   message_loop_.RunUntilIdle();
-  // Ensure we receive another manager changed callbacks when the technology
-  // becomes enabled.
-  EXPECT_EQ(initial_changed_count + 2, test_observer_->manager_changed_count());
+  // Ensure we receive 2 manager changed callbacks when the technology becomes
+  // avalable and enabled.
+  EXPECT_EQ(initial_changed_count + 4, test_observer_->manager_changed_count());
   EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_ENABLED,
             network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
 }
@@ -243,6 +247,8 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
 TEST_F(NetworkStateHandlerTest, TechnologyState) {
   ShillManagerClient::TestInterface* manager_test =
       DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
+  manager_test->RemoveTechnology(flimflam::kTypeWimax);
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
             network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
 

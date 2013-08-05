@@ -413,6 +413,16 @@ void ShillServiceClientStub::SetDefaultProperties() {
                      flimflam::kSignalStrengthProperty,
                      strength_value);
 
+  // Wimax
+
+  AddService("wimax1", "wimax1",
+             flimflam::kTypeWimax,
+             flimflam::kStateIdle,
+             add_to_visible, add_to_watchlist);
+  SetServiceProperty("wimax1",
+                     flimflam::kConnectableProperty,
+                     base::FundamentalValue(true));
+
   // Cellular
 
   AddService("cellular1", "cellular1",

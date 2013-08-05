@@ -303,10 +303,16 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerStub) {
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
   EXPECT_EQ(1, listener_->manager_updates());
+
+  // Remove a technology. Updates both the Available and Enabled lists.
+  manager_test_->RemoveTechnology(flimflam::kTypeWimax);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(3, listener_->manager_updates());
+
   // Add a disabled technology.
   manager_test_->AddTechnology(flimflam::kTypeWimax, false);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(2, listener_->manager_updates());
+  EXPECT_EQ(4, listener_->manager_updates());
   EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(
       flimflam::kTypeWimax));
   EXPECT_FALSE(shill_property_handler_->IsTechnologyEnabled(
@@ -317,7 +323,7 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
       flimflam::kTypeWimax,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(3, listener_->manager_updates());
+  EXPECT_EQ(5, listener_->manager_updates());
   EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(
       flimflam::kTypeWimax));
 

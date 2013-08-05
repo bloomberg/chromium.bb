@@ -451,6 +451,7 @@ void ShillManagerClientStub::SetDefaultProperties() {
   }
   AddTechnology(flimflam::kTypeWifi, true);
   AddTechnology(flimflam::kTypeCellular, true);
+  AddTechnology(flimflam::kTypeWimax, true);
 }
 
 void ShillManagerClientStub::PassStubProperties(
