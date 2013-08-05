@@ -205,8 +205,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     DeviceCloudPolicyManagerChromeOSTest::SetUp();
 
     // Set up test data.
-    device_policy_.set_new_signing_key(
-        PolicyBuilder::CreateTestNewSigningKey());
+    device_policy_.SetDefaultNewSigningKey();
     device_policy_.policy_data().set_timestamp(
         (base::Time::NowFromSystemTime() -
          base::Time::UnixEpoch()).InMilliseconds());
@@ -356,7 +355,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     // Key installation, policy load and refresh token save.
     device_settings_test_helper_.set_policy_blob(loaded_blob_);
     owner_key_util_->SetPublicKeyFromPrivateKey(
-        device_policy_.new_signing_key());
+        *device_policy_.GetNewSigningKey());
     ReloadDeviceSettings();
 
     if (done_)

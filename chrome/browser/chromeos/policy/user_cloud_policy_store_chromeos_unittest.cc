@@ -77,7 +77,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     // Install the initial public key, so that by default the validation of
     // the stored/loaded policy blob succeeds.
     std::vector<uint8> public_key;
-    ASSERT_TRUE(policy_.signing_key()->ExportPublicKey(&public_key));
+    ASSERT_TRUE(policy_.GetSigningKey()->ExportPublicKey(&public_key));
     StoreUserPolicyKey(public_key);
 
     policy_.payload().mutable_homepagelocation()->set_value(kDefaultHomepage);
@@ -242,10 +242,10 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStore) {
   // Start without any public key to trigger the initial key checks.
   ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
   // Make the policy blob contain a new public key.
-  policy_.set_new_signing_key(PolicyBuilder::CreateTestNewSigningKey());
+  policy_.SetDefaultNewSigningKey();
   policy_.Build();
   std::vector<uint8> new_public_key;
-  ASSERT_TRUE(policy_.new_signing_key()->ExportPublicKey(&new_public_key));
+  ASSERT_TRUE(policy_.GetNewSigningKey()->ExportPublicKey(&new_public_key));
   ASSERT_NO_FATAL_FAILURE(
       PerformStorePolicy(&new_public_key, NULL, kDefaultHomepage));
 }
@@ -257,10 +257,10 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithExistingKey) {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithRotation) {
   // Make the policy blob contain a new public key.
-  policy_.set_new_signing_key(PolicyBuilder::CreateTestNewSigningKey());
+  policy_.SetDefaultNewSigningKey();
   policy_.Build();
   std::vector<uint8> new_public_key;
-  ASSERT_TRUE(policy_.new_signing_key()->ExportPublicKey(&new_public_key));
+  ASSERT_TRUE(policy_.GetNewSigningKey()->ExportPublicKey(&new_public_key));
   ASSERT_NO_FATAL_FAILURE(
       PerformStorePolicy(&new_public_key, NULL, kDefaultHomepage));
 }
@@ -508,10 +508,10 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationAndStoreNew) {
   // Now store a new policy using the new homepage location.
   const char kNewHomepage[] = "http://google.com";
   policy_.payload().mutable_homepagelocation()->set_value(kNewHomepage);
-  policy_.set_new_signing_key(PolicyBuilder::CreateTestNewSigningKey());
+  policy_.SetDefaultNewSigningKey();
   policy_.Build();
   std::vector<uint8> new_public_key;
-  ASSERT_TRUE(policy_.new_signing_key()->ExportPublicKey(&new_public_key));
+  ASSERT_TRUE(policy_.GetNewSigningKey()->ExportPublicKey(&new_public_key));
   ASSERT_NO_FATAL_FAILURE(
       PerformStorePolicy(&new_public_key, kDefaultHomepage, kNewHomepage));
   VerifyPolicyMap(kNewHomepage);

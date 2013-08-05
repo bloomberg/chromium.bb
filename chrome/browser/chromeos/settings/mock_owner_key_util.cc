@@ -35,12 +35,13 @@ void MockOwnerKeyUtil::SetPublicKey(const std::vector<uint8>& key) {
   public_key_ = key;
 }
 
-void MockOwnerKeyUtil::SetPublicKeyFromPrivateKey(crypto::RSAPrivateKey* key) {
-  key->ExportPublicKey(&public_key_);
+void MockOwnerKeyUtil::SetPublicKeyFromPrivateKey(
+    const crypto::RSAPrivateKey& key) {
+  key.ExportPublicKey(&public_key_);
 }
 
-void MockOwnerKeyUtil::SetPrivateKey(crypto::RSAPrivateKey* key) {
-  private_key_.reset(key->Copy());
+void MockOwnerKeyUtil::SetPrivateKey(scoped_ptr<crypto::RSAPrivateKey> key) {
+  private_key_ = key.Pass();
   private_key_->ExportPublicKey(&public_key_);
 }
 

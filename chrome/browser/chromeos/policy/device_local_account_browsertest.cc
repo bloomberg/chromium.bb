@@ -126,19 +126,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void RemoveOwnerPrivateKeyFromPolicyBuilders() {
-    // Any instances of the private half of the owner key held by policy
-    // builders must be dropped as otherwise the NSS library will tell Chrome
-    // that the key is available - which is incorrect and leads to Chrome
-    // behaving as if a local owner were logged in.
-    device_policy()->set_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
-    device_policy()->set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
-    device_local_account_policy_.set_signing_key(
-        scoped_ptr<crypto::RSAPrivateKey>());
-    device_local_account_policy_.set_new_signing_key(
-        scoped_ptr<crypto::RSAPrivateKey>());
-  }
-
   void InitializePolicy() {
     device_policy()->policy_data().set_public_key_version(1);
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
@@ -152,15 +139,11 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
     device_local_account_policy_.policy_data().set_public_key_version(1);
     device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
         kDisplayName);
-
-    RemoveOwnerPrivateKeyFromPolicyBuilders();
   }
 
   void BuildDeviceLocalAccountPolicy() {
-    device_local_account_policy_.set_signing_key(
-        PolicyBuilder::CreateTestSigningKey());
+    device_local_account_policy_.SetDefaultSigningKey();
     device_local_account_policy_.Build();
-    RemoveOwnerPrivateKeyFromPolicyBuilders();
   }
 
   void InstallDeviceLocalAccountPolicy() {

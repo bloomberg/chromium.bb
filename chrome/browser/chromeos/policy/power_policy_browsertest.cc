@@ -175,7 +175,7 @@ void PowerPolicyBrowserTestBase::InstallUserKey() {
       user_keys_dir.AppendASCII(chromeos::UserManager::kStubUser)
                    .AppendASCII("policy.pub");
   std::vector<uint8> user_key_bits;
-  ASSERT_TRUE(user_policy_.signing_key()->ExportPublicKey(&user_key_bits));
+  ASSERT_TRUE(user_policy_.GetSigningKey()->ExportPublicKey(&user_key_bits));
   ASSERT_TRUE(file_util::CreateDirectory(user_key_file.DirName()));
   ASSERT_EQ(file_util::WriteFile(
                 user_key_file,

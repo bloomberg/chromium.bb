@@ -56,19 +56,14 @@ class PolicyBuilder {
     return policy_;
   }
 
-  crypto::RSAPrivateKey* signing_key() {
-    return signing_key_.get();
-  }
-  void set_signing_key(scoped_ptr<crypto::RSAPrivateKey> signing_key) {
-    signing_key_ = signing_key.Pass();
-  }
+  scoped_ptr<crypto::RSAPrivateKey> GetSigningKey();
+  void SetSigningKey(const crypto::RSAPrivateKey& key);
+  void SetDefaultSigningKey();
+  void UnsetSigningKey();
 
-  crypto::RSAPrivateKey* new_signing_key() {
-    return new_signing_key_.get();
-  }
-  void set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey> new_signing_key) {
-    new_signing_key_ = new_signing_key.Pass();
-  }
+  scoped_ptr<crypto::RSAPrivateKey> GetNewSigningKey();
+  void SetDefaultNewSigningKey();
+  void UnsetNewSigningKey();
 
   // Assembles the policy components. The resulting policy protobuf is available
   // through policy() after this call.
@@ -82,7 +77,7 @@ class PolicyBuilder {
 
   // These return hard-coded testing keys. Don't use in production!
   static scoped_ptr<crypto::RSAPrivateKey> CreateTestSigningKey();
-  static scoped_ptr<crypto::RSAPrivateKey> CreateTestNewSigningKey();
+  static scoped_ptr<crypto::RSAPrivateKey> CreateTestOtherSigningKey();
 
  private:
   // Produces |key|'s signature over |data| and stores it in |signature|.
@@ -94,8 +89,14 @@ class PolicyBuilder {
   scoped_ptr<enterprise_management::PolicyData> policy_data_;
   std::string payload_data_;
 
-  scoped_ptr<crypto::RSAPrivateKey> signing_key_;
-  scoped_ptr<crypto::RSAPrivateKey> new_signing_key_;
+  // The keys cannot be stored in NSS. Temporary keys are not guaranteed to
+  // remain in the database. Persistent keys require a persistent database,
+  // which would coincide with the user's database. However, these keys are used
+  // for signing the policy and don't have to coincide with the user's known
+  // keys. Instead, we store the private keys as raw bytes. Where needed, a
+  // temporary RSAPrivateKey is created.
+  std::vector<uint8> raw_signing_key_;
+  std::vector<uint8> raw_new_signing_key_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBuilder);
 };

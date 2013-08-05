@@ -214,7 +214,7 @@ void DeviceSettingsTestBase::SetUp() {
 
   device_policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(
       false);
-  owner_key_util_->SetPublicKeyFromPrivateKey(device_policy_.signing_key());
+  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   device_policy_.Build();
   device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
   device_settings_service_.SetSessionManager(&device_settings_test_helper_,

@@ -58,7 +58,7 @@ class SessionManagerOperationTest : public testing::Test {
     ASSERT_TRUE(op->owner_key().get());
     ASSERT_TRUE(op->owner_key()->public_key());
     std::vector<uint8> public_key;
-    ASSERT_TRUE(policy_.signing_key()->ExportPublicKey(&public_key));
+    ASSERT_TRUE(policy_.GetSigningKey()->ExportPublicKey(&public_key));
     EXPECT_EQ(public_key, *op->owner_key()->public_key());
   }
 
@@ -66,7 +66,7 @@ class SessionManagerOperationTest : public testing::Test {
     ASSERT_TRUE(op->owner_key().get());
     ASSERT_TRUE(op->owner_key()->private_key());
     std::vector<uint8> expected_key;
-    ASSERT_TRUE(policy_.signing_key()->ExportPrivateKey(&expected_key));
+    ASSERT_TRUE(policy_.GetSigningKey()->ExportPrivateKey(&expected_key));
     std::vector<uint8> actual_key;
     ASSERT_TRUE(op->owner_key()->private_key()->ExportPrivateKey(&actual_key));
     EXPECT_EQ(expected_key, actual_key);
@@ -107,7 +107,7 @@ TEST_F(SessionManagerOperationTest, LoadNoPolicyNoKey) {
 }
 
 TEST_F(SessionManagerOperationTest, LoadOwnerKey) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
+  owner_key_util_->SetPublicKeyFromPrivateKey(*policy_.GetSigningKey());
   LoadSettingsOperation op(
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
@@ -123,7 +123,7 @@ TEST_F(SessionManagerOperationTest, LoadOwnerKey) {
 }
 
 TEST_F(SessionManagerOperationTest, LoadPolicy) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
+  owner_key_util_->SetPublicKeyFromPrivateKey(*policy_.GetSigningKey());
   device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
   LoadSettingsOperation op(
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
@@ -145,7 +145,7 @@ TEST_F(SessionManagerOperationTest, LoadPolicy) {
 }
 
 TEST_F(SessionManagerOperationTest, LoadPrivateOwnerKey) {
-  owner_key_util_->SetPrivateKey(policy_.signing_key());
+  owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
   LoadSettingsOperation op(
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
@@ -162,7 +162,7 @@ TEST_F(SessionManagerOperationTest, LoadPrivateOwnerKey) {
 }
 
 TEST_F(SessionManagerOperationTest, RestartLoad) {
-  owner_key_util_->SetPrivateKey(policy_.signing_key());
+  owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
   device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
   LoadSettingsOperation op(
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
@@ -177,11 +177,11 @@ TEST_F(SessionManagerOperationTest, RestartLoad) {
   Mock::VerifyAndClearExpectations(this);
 
   // Now install a different key and policy and restart the operation.
-  policy_.set_signing_key(policy::PolicyBuilder::CreateTestNewSigningKey());
+  policy_.SetSigningKey(*policy::PolicyBuilder::CreateTestOtherSigningKey());
   policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(true);
   policy_.Build();
   device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
-  owner_key_util_->SetPrivateKey(policy_.signing_key());
+  owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
 
   EXPECT_CALL(*this,
               OnOperationCompleted(
@@ -204,7 +204,7 @@ TEST_F(SessionManagerOperationTest, RestartLoad) {
 }
 
 TEST_F(SessionManagerOperationTest, StoreSettings) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
+  owner_key_util_->SetPublicKeyFromPrivateKey(*policy_.GetSigningKey());
   StoreSettingsOperation op(
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)),
@@ -229,7 +229,7 @@ TEST_F(SessionManagerOperationTest, StoreSettings) {
 
 TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
   base::Time before(base::Time::NowFromSystemTime());
-  owner_key_util_->SetPrivateKey(policy_.signing_key());
+  owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
   SignAndStoreSettingsOperation op(
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)),
@@ -261,7 +261,7 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
   validator->ValidatePolicyType(policy::dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
   std::vector<uint8> public_key;
-  policy_.signing_key()->ExportPublicKey(&public_key);
+  policy_.GetSigningKey()->ExportPublicKey(&public_key);
   validator->ValidateSignature(public_key, false);
   validator->StartValidation(
       base::Bind(&SessionManagerOperationTest::CheckSuccessfulValidation,

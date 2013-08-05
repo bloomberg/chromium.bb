@@ -41,7 +41,7 @@ class CloudPolicyValidatorTest : public testing::Test {
         allow_key_rotation_(true),
         existing_dm_token_(PolicyBuilder::kFakeToken),
         file_thread_(content::BrowserThread::FILE, &loop_) {
-    policy_.set_new_signing_key(PolicyBuilder::CreateTestNewSigningKey());
+    policy_.SetDefaultNewSigningKey();
   }
 
   void Validate(testing::Action<void(UserCloudPolicyValidator*)> check_action) {
@@ -234,43 +234,43 @@ TEST_F(CloudPolicyValidatorTest, ErrorErrorCode) {
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorNoSignature) {
-  policy_.set_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
-  policy_.set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
+  policy_.UnsetSigningKey();
+  policy_.UnsetNewSigningKey();
   policy_.policy().clear_policy_data_signature();
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE));
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorInvalidSignature) {
-  policy_.set_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
-  policy_.set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
+  policy_.UnsetSigningKey();
+  policy_.UnsetNewSigningKey();
   policy_.policy().set_policy_data_signature("invalid");
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE));
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorNoPublicKey) {
-  policy_.set_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
-  policy_.set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
+  policy_.UnsetSigningKey();
+  policy_.UnsetNewSigningKey();
   policy_.policy().clear_new_public_key();
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE));
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorInvalidPublicKey) {
-  policy_.set_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
-  policy_.set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
+  policy_.UnsetSigningKey();
+  policy_.UnsetNewSigningKey();
   policy_.policy().set_new_public_key("invalid");
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE));
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorNoPublicKeySignature) {
-  policy_.set_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
-  policy_.set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
+  policy_.UnsetSigningKey();
+  policy_.UnsetNewSigningKey();
   policy_.policy().clear_new_public_key_signature();
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE));
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorInvalidPublicKeySignature) {
-  policy_.set_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
-  policy_.set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
+  policy_.UnsetSigningKey();
+  policy_.UnsetNewSigningKey();
   policy_.policy().set_new_public_key_signature("invalid");
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE));
 }
@@ -282,7 +282,7 @@ TEST_F(CloudPolicyValidatorTest, ErrorNoRotationAllowed) {
 
 TEST_F(CloudPolicyValidatorTest, NoRotation) {
   allow_key_rotation_ = false;
-  policy_.set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
+  policy_.UnsetNewSigningKey();
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_OK));
 }
 

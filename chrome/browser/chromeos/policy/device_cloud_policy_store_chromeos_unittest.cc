@@ -82,16 +82,15 @@ class DeviceCloudPolicyStoreChromeOSTest
     FlushDeviceSettings();
     ExpectSuccess();
 
-    device_policy_.set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
+    device_policy_.UnsetNewSigningKey();
     device_policy_.Build();
   }
 
   void PrepareNewSigningKey() {
-    device_policy_.set_new_signing_key(
-        PolicyBuilder::CreateTestNewSigningKey());
+    device_policy_.SetDefaultNewSigningKey();
     device_policy_.Build();
     owner_key_util_->SetPublicKeyFromPrivateKey(
-        device_policy_.new_signing_key());
+        *device_policy_.GetNewSigningKey());
   }
 
   void ResetToNonEnterprise() {
@@ -170,12 +169,13 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreBadSignature) {
 
 TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreKeyRotation) {
   PrepareExistingPolicy();
-  device_policy_.set_new_signing_key(PolicyBuilder::CreateTestNewSigningKey());
+  device_policy_.SetDefaultNewSigningKey();
   device_policy_.Build();
   store_->Store(device_policy_.policy());
   device_settings_test_helper_.FlushLoops();
   device_settings_test_helper_.FlushStore();
-  owner_key_util_->SetPublicKeyFromPrivateKey(device_policy_.new_signing_key());
+  owner_key_util_->SetPublicKeyFromPrivateKey(
+      *device_policy_.GetNewSigningKey());
   ReloadDeviceSettings();
   ExpectSuccess();
 }

@@ -138,7 +138,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
-  owner_key_util_->SetPrivateKey(device_policy_.signing_key());
+  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
   device_settings_service_.SetUsername(device_policy_.policy_data().username());
   FlushDeviceSettings();
 
@@ -166,7 +166,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
-  owner_key_util_->SetPrivateKey(device_policy_.signing_key());
+  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
   device_settings_service_.SetUsername(device_policy_.policy_data().username());
   FlushDeviceSettings();
 
@@ -189,7 +189,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSignature) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(device_policy_.signing_key());
+  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   device_policy_.policy().set_policy_data_signature("bad signature");
   device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
   ReloadDeviceSettings();
@@ -202,7 +202,7 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSignature) {
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalNoPolicy) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(device_policy_.signing_key());
+  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   device_settings_test_helper_.set_policy_blob(std::string());
   ReloadDeviceSettings();
 
