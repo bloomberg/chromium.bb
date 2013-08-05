@@ -133,13 +133,7 @@
           'action_name': 'generate_gl_bindings',
           'variables': {
             'generator_path': 'generate_bindings.py',
-            'conditions': [
-              ['use_system_mesa==0', {
-                'header_paths': '../../third_party/mesa/src/include:../../third_party/khronos',
-              }, { # use_system_mesa==1
-                'header_paths': '/usr/include',
-              }],
-            ],
+            'header_paths': '../../third_party/mesa/src/include:../../third_party/khronos',
           },
           'inputs': [
             '<(generator_path)',

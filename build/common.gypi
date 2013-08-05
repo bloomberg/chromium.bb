@@ -848,9 +848,6 @@
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
     'enable_mdns%' : '<(enable_mdns)',
 
-    # Use system mesa instead of bundled one.
-    'use_system_mesa%': 0,
-
     # Use system nspr instead of the bundled one.
     'use_system_nspr%': 0,
 
