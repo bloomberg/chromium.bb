@@ -275,12 +275,9 @@ void ChangeListProcessor::ConvertToMap(
           uma_stats->IncrementNumSharedWithMeEntries();
       }
 
-      std::pair<ResourceEntryMap::iterator, bool> ret = entry_map->
-          insert(std::make_pair(entry->resource_id(), ResourceEntry()));
-      if (ret.second)
-        ret.first->second.Swap(entry);
-      else
-        LOG(DFATAL) << "Found duplicate file " << entry->base_name();
+      (*entry_map)[entry->resource_id()].Swap(entry);
+      LOG_IF(WARNING, !entry->resource_id().empty())
+          << "Found duplicated file: " << entry->base_name();
     }
   }
 }
