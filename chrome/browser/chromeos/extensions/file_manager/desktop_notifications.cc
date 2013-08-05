@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
+#include "chrome/browser/chromeos/extensions/file_manager/desktop_notifications.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -20,7 +20,7 @@ namespace file_manager {
 namespace {
 
 struct NotificationTypeInfo {
-  FileManagerNotifications::NotificationType type;
+  DesktopNotifications::NotificationType type;
   const char* notification_id_prefix;
   int icon_id;
   int title_id;
@@ -32,58 +32,58 @@ struct NotificationTypeInfo {
 // NotificationType enum (i.e. the following MUST be satisfied:
 // kNotificationTypes[type].type == type).
 const NotificationTypeInfo kNotificationTypes[] = {
-    {
-      FileManagerNotifications::DEVICE,  // type
-      "Device_",  // notification_id_prefix
-      IDR_FILES_APP_ICON,  // icon_id
-      IDS_REMOVABLE_DEVICE_DETECTION_TITLE,  // title_id
-      IDS_REMOVABLE_DEVICE_SCANNING_MESSAGE  // message_id
-    },
-    {
-      FileManagerNotifications::DEVICE_FAIL,  // type
-      "DeviceFail_",  // notification_id_prefix
-      IDR_FILES_APP_ICON,  // icon_id
-      IDS_REMOVABLE_DEVICE_DETECTION_TITLE,  // title_id
-      IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE  // message_id
-    },
-    {
-      FileManagerNotifications::DEVICE_EXTERNAL_STORAGE_DISABLED,  // type
-      "DeviceFail_",  // nottification_id_prefix; same as for DEVICE_FAIL.
-      IDR_FILES_APP_ICON,  // icon_id
-      IDS_REMOVABLE_DEVICE_DETECTION_TITLE,  // title_id
-      IDS_EXTERNAL_STORAGE_DISABLED_MESSAGE  // message_id
-    },
-    {
-      FileManagerNotifications::FORMAT_START,  // type
-      "FormatStart_",  // notification_id_prefix
-      IDR_FILES_APP_ICON,  // icon_id
-      IDS_FORMATTING_OF_DEVICE_PENDING_TITLE,  // title_id
-      IDS_FORMATTING_OF_DEVICE_PENDING_MESSAGE  // message_id
-    },
-    {
-      FileManagerNotifications::FORMAT_START_FAIL,  // type
-      "FormatComplete_",  // notification_id_prefix
-      IDR_FILES_APP_ICON,  // icon_id
-      IDS_FORMATTING_OF_DEVICE_FAILED_TITLE,  // title_id
-      IDS_FORMATTING_STARTED_FAILURE_MESSAGE  // message_id
-    },
-    {
-      FileManagerNotifications::FORMAT_SUCCESS,  // type
-      "FormatComplete_",  // notification_id_prefix
-      IDR_FILES_APP_ICON,  // icon_id
-      IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE,  // title_id
-      IDS_FORMATTING_FINISHED_SUCCESS_MESSAGE  // message_id
-    },
-    {
-      FileManagerNotifications::FORMAT_FAIL,  // type
-      "FormatComplete_",  // notifications_id_prefix
-      IDR_FILES_APP_ICON,  // icon_id
-      IDS_FORMATTING_OF_DEVICE_FAILED_TITLE,  // title_id
-      IDS_FORMATTING_FINISHED_FAILURE_MESSAGE  // message_id
-    },
+  {
+    DesktopNotifications::DEVICE,  // type
+    "Device_",  // notification_id_prefix
+    IDR_FILES_APP_ICON,  // icon_id
+    IDS_REMOVABLE_DEVICE_DETECTION_TITLE,  // title_id
+    IDS_REMOVABLE_DEVICE_SCANNING_MESSAGE  // message_id
+  },
+  {
+    DesktopNotifications::DEVICE_FAIL,  // type
+    "DeviceFail_",  // notification_id_prefix
+    IDR_FILES_APP_ICON,  // icon_id
+    IDS_REMOVABLE_DEVICE_DETECTION_TITLE,  // title_id
+    IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE  // message_id
+  },
+  {
+    DesktopNotifications::DEVICE_EXTERNAL_STORAGE_DISABLED,  // type
+    "DeviceFail_",  // nottification_id_prefix; same as for DEVICE_FAIL.
+    IDR_FILES_APP_ICON,  // icon_id
+    IDS_REMOVABLE_DEVICE_DETECTION_TITLE,  // title_id
+    IDS_EXTERNAL_STORAGE_DISABLED_MESSAGE  // message_id
+  },
+  {
+    DesktopNotifications::FORMAT_START,  // type
+    "FormatStart_",  // notification_id_prefix
+    IDR_FILES_APP_ICON,  // icon_id
+    IDS_FORMATTING_OF_DEVICE_PENDING_TITLE,  // title_id
+    IDS_FORMATTING_OF_DEVICE_PENDING_MESSAGE  // message_id
+  },
+  {
+    DesktopNotifications::FORMAT_START_FAIL,  // type
+    "FormatComplete_",  // notification_id_prefix
+    IDR_FILES_APP_ICON,  // icon_id
+    IDS_FORMATTING_OF_DEVICE_FAILED_TITLE,  // title_id
+    IDS_FORMATTING_STARTED_FAILURE_MESSAGE  // message_id
+  },
+  {
+    DesktopNotifications::FORMAT_SUCCESS,  // type
+    "FormatComplete_",  // notification_id_prefix
+    IDR_FILES_APP_ICON,  // icon_id
+    IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE,  // title_id
+    IDS_FORMATTING_FINISHED_SUCCESS_MESSAGE  // message_id
+  },
+  {
+    DesktopNotifications::FORMAT_FAIL,  // type
+    "FormatComplete_",  // notifications_id_prefix
+    IDR_FILES_APP_ICON,  // icon_id
+    IDS_FORMATTING_OF_DEVICE_FAILED_TITLE,  // title_id
+    IDS_FORMATTING_FINISHED_FAILURE_MESSAGE  // message_id
+  },
 };
 
-int GetIconId(FileManagerNotifications::NotificationType type) {
+int GetIconId(DesktopNotifications::NotificationType type) {
   DCHECK_GE(type, 0);
   DCHECK_LT(static_cast<size_t>(type), arraysize(kNotificationTypes));
   DCHECK(kNotificationTypes[type].type == type);
@@ -91,7 +91,7 @@ int GetIconId(FileManagerNotifications::NotificationType type) {
   return kNotificationTypes[type].icon_id;
 }
 
-string16 GetTitle(FileManagerNotifications::NotificationType type) {
+string16 GetTitle(DesktopNotifications::NotificationType type) {
   DCHECK_GE(type, 0);
   DCHECK_LT(static_cast<size_t>(type), arraysize(kNotificationTypes));
   DCHECK(kNotificationTypes[type].type == type);
@@ -102,7 +102,7 @@ string16 GetTitle(FileManagerNotifications::NotificationType type) {
   return l10n_util::GetStringUTF16(id);
 }
 
-string16 GetMessage(FileManagerNotifications::NotificationType type) {
+string16 GetMessage(DesktopNotifications::NotificationType type) {
   DCHECK_GE(type, 0);
   DCHECK_LT(static_cast<size_t>(type), arraysize(kNotificationTypes));
   DCHECK(kNotificationTypes[type].type == type);
@@ -113,8 +113,8 @@ string16 GetMessage(FileManagerNotifications::NotificationType type) {
   return l10n_util::GetStringUTF16(id);
 }
 
-std::string GetNotificationId(FileManagerNotifications::NotificationType type,
-                               const std::string& path) {
+std::string GetNotificationId(DesktopNotifications::NotificationType type,
+                              const std::string& path) {
   DCHECK_GE(type, 0);
   DCHECK_LT(static_cast<size_t>(type), arraysize(kNotificationTypes));
   DCHECK(kNotificationTypes[type].type == type);
@@ -127,11 +127,11 @@ std::string GetNotificationId(FileManagerNotifications::NotificationType type,
 
 // Manages file browser notifications. Generates a desktop notification on
 // construction and removes it from the host when closed. Owned by the host.
-class FileManagerNotifications::NotificationMessage {
+class DesktopNotifications::NotificationMessage {
  public:
   class Delegate : public NotificationDelegate {
    public:
-    Delegate(const base::WeakPtr<FileManagerNotifications>& host,
+    Delegate(const base::WeakPtr<DesktopNotifications>& host,
              const std::string& id)
         : host_(host),
           id_(id) {}
@@ -152,13 +152,13 @@ class FileManagerNotifications::NotificationMessage {
    private:
     virtual ~Delegate() {}
 
-    base::WeakPtr<FileManagerNotifications> host_;
+    base::WeakPtr<DesktopNotifications> host_;
     std::string id_;
 
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  NotificationMessage(FileManagerNotifications* host,
+  NotificationMessage(DesktopNotifications* host,
                       Profile* profile,
                       NotificationType type,
                       const std::string& notification_id,
@@ -186,7 +186,7 @@ class FileManagerNotifications::NotificationMessage {
   DISALLOW_COPY_AND_ASSIGN(NotificationMessage);
 };
 
-struct FileManagerNotifications::MountRequestsInfo {
+struct DesktopNotifications::MountRequestsInfo {
   bool mount_success_exists;
   bool fail_message_finalized;
   bool fail_notification_shown;
@@ -201,25 +201,25 @@ struct FileManagerNotifications::MountRequestsInfo {
   }
 };
 
-FileManagerNotifications::FileManagerNotifications(Profile* profile)
+DesktopNotifications::DesktopNotifications(Profile* profile)
     : profile_(profile) {
 }
 
-FileManagerNotifications::~FileManagerNotifications() {
+DesktopNotifications::~DesktopNotifications() {
   STLDeleteContainerPairSecondPointers(notification_map_.begin(),
                                        notification_map_.end());
 }
 
-void FileManagerNotifications::RegisterDevice(const std::string& path) {
+void DesktopNotifications::RegisterDevice(const std::string& path) {
   mount_requests_.insert(MountRequestsMap::value_type(path,
                                                       MountRequestsInfo()));
 }
 
-void FileManagerNotifications::UnregisterDevice(const std::string& path) {
+void DesktopNotifications::UnregisterDevice(const std::string& path) {
   mount_requests_.erase(path);
 }
 
-void FileManagerNotifications::ManageNotificationsOnMountCompleted(
+void DesktopNotifications::ManageNotificationsOnMountCompleted(
     const std::string& system_path, const std::string& label, bool is_parent,
     bool success, bool is_unsupported) {
   MountRequestsMap::iterator it = mount_requests_.find(system_path);
@@ -247,8 +247,8 @@ void FileManagerNotifications::ManageNotificationsOnMountCompleted(
   // Do we have a multi-partition device for which at least one mount failed.
   bool fail_on_multipartition_device =
       success ? it->second.non_parent_device_failed
-              : it->second.mount_success_exists ||
-                it->second.non_parent_device_failed;
+      : it->second.mount_success_exists ||
+      it->second.non_parent_device_failed;
 
   base::string16 message;
   if (fail_on_multipartition_device) {
@@ -291,12 +291,12 @@ void FileManagerNotifications::ManageNotificationsOnMountCompleted(
   ShowNotificationWithMessage(DEVICE_FAIL, system_path, message);
 }
 
-void FileManagerNotifications::ShowNotification(NotificationType type,
-                                                const std::string& path) {
+void DesktopNotifications::ShowNotification(NotificationType type,
+                                            const std::string& path) {
   ShowNotificationWithMessage(type, path, GetMessage(type));
 }
 
-void FileManagerNotifications::ShowNotificationWithMessage(
+void DesktopNotifications::ShowNotificationWithMessage(
     NotificationType type,
     const std::string& path,
     const string16& message) {
@@ -305,7 +305,7 @@ void FileManagerNotifications::ShowNotificationWithMessage(
   ShowNotificationById(type, notification_id, message);
 }
 
-void FileManagerNotifications::ShowNotificationDelayed(
+void DesktopNotifications::ShowNotificationDelayed(
     NotificationType type,
     const std::string& path,
     base::TimeDelta delay) {
@@ -313,27 +313,27 @@ void FileManagerNotifications::ShowNotificationDelayed(
   hidden_notifications_.erase(notification_id);
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FileManagerNotifications::ShowNotificationById, AsWeakPtr(),
+      base::Bind(&DesktopNotifications::ShowNotificationById, AsWeakPtr(),
                  type, notification_id, GetMessage(type)),
       delay);
 }
 
-void FileManagerNotifications::HideNotification(NotificationType type,
-                                                const std::string& path) {
+void DesktopNotifications::HideNotification(NotificationType type,
+                                            const std::string& path) {
   std::string notification_id = GetNotificationId(type, path);
   HideNotificationById(notification_id);
 }
 
-void FileManagerNotifications::HideNotificationDelayed(
+void DesktopNotifications::HideNotificationDelayed(
     NotificationType type, const std::string& path, base::TimeDelta delay) {
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FileManagerNotifications::HideNotification, AsWeakPtr(),
+      base::Bind(&DesktopNotifications::HideNotification, AsWeakPtr(),
                  type, path),
       delay);
 }
 
-void FileManagerNotifications::ShowNotificationById(
+void DesktopNotifications::ShowNotificationById(
     NotificationType type,
     const std::string& notification_id,
     const string16& message) {
@@ -355,7 +355,7 @@ void FileManagerNotifications::ShowNotificationById(
   notification_map_[notification_id] = new_message;
 }
 
-void FileManagerNotifications::HideNotificationById(
+void DesktopNotifications::HideNotificationById(
     const std::string& notification_id) {
   NotificationMap::iterator it = notification_map_.find(notification_id);
   if (it != notification_map_.end()) {
@@ -367,7 +367,7 @@ void FileManagerNotifications::HideNotificationById(
   }
 }
 
-void FileManagerNotifications::RemoveNotificationById(
+void DesktopNotifications::RemoveNotificationById(
     const std::string& notification_id) {
   NotificationMap::iterator it = notification_map_.find(notification_id);
   if (it != notification_map_.end()) {
@@ -377,7 +377,7 @@ void FileManagerNotifications::RemoveNotificationById(
   }
 }
 
-string16 FileManagerNotifications::GetNotificationMessageForTest(
+string16 DesktopNotifications::GetNotificationMessageForTest(
     const std::string& id) const {
   NotificationMap::const_iterator it = notification_map_.find(id);
   if (it == notification_map_.end())

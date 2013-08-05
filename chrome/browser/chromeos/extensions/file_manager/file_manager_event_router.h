@@ -23,7 +23,7 @@ class Profile;
 
 namespace file_manager {
 
-class FileManagerNotifications;
+class DesktopNotifications;
 class MountedDiskMonitor;
 
 // Monitors changes in disk mounts, network connection state and preferences
@@ -158,7 +158,7 @@ class FileManagerEventRouter
 
   base::FilePathWatcher::Callback file_watcher_callback_;
   WatcherMap file_watchers_;
-  scoped_ptr<FileManagerNotifications> notifications_;
+  scoped_ptr<DesktopNotifications> notifications_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   scoped_ptr<MountedDiskMonitor> mounted_disk_monitor_;
   Profile* profile_;

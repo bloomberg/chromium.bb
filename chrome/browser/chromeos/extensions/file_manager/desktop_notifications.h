@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_NOTIFICATIONS_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_NOTIFICATIONS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_DESKTOP_NOTIFICATIONS_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_DESKTOP_NOTIFICATIONS_H_
 
 #include <map>
 #include <set>
@@ -18,8 +18,14 @@ class Profile;
 
 namespace file_manager {
 
-class FileManagerNotifications
-    : public base::SupportsWeakPtr<FileManagerNotifications> {
+// The class is used for showing desktop notifications about activities of
+// Files.app, such as a new storage device getting detected.
+//
+// Note that updates for file transfers from/to Drive shown in the ash tray,
+// hence not handled in this class. See ash/system/drive/tray_drive.h for
+// details.
+class DesktopNotifications
+    : public base::SupportsWeakPtr<DesktopNotifications> {
  public:
   // If changing the enum, please also update kNotificationTypes in .cc file.
   enum NotificationType {
@@ -32,8 +38,8 @@ class FileManagerNotifications
     FORMAT_FAIL,
   };
 
-  explicit FileManagerNotifications(Profile* profile);
-  virtual ~FileManagerNotifications();
+  explicit DesktopNotifications(Profile* profile);
+  virtual ~DesktopNotifications();
 
   // Registers the removable device whose mount events will be handled in
   // |ManageNotificationsOnMountComplete|.
@@ -93,9 +99,9 @@ class FileManagerNotifications
   MountRequestsMap mount_requests_;
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileManagerNotifications);
+  DISALLOW_COPY_AND_ASSIGN(DesktopNotifications);
 };
 
 }  // namespace file_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_NOTIFICATIONS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_DESKTOP_NOTIFICATIONS_H_

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
+#include "chrome/browser/chromeos/extensions/file_manager/desktop_notifications.h"
 
 #include <gtest/gtest.h>
 #include <string>
@@ -18,9 +18,10 @@
 
 namespace file_manager {
 
-class FileManagerNotificationsTest : public InProcessBrowserTest {
+// Add "FileManager" prefix to the class to avoid name conflicts.
+class FileManagerDesktopNotificationsBrowserTest : public InProcessBrowserTest {
  public:
-  FileManagerNotificationsTest() {}
+  FileManagerDesktopNotificationsBrowserTest() {}
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     notifications_.reset();
@@ -30,37 +31,37 @@ class FileManagerNotificationsTest : public InProcessBrowserTest {
   // This must be initialized late in test startup.
   void InitNotifications() {
     Profile* profile = browser()->profile();
-    notifications_.reset(new FileManagerNotifications(profile));
+    notifications_.reset(new DesktopNotifications(profile));
   }
 
   bool FindNotification(const std::string& id) {
     return notifications_->HasNotificationForTest(id);
   }
 
-  scoped_ptr<FileManagerNotifications> notifications_;
+  scoped_ptr<DesktopNotifications> notifications_;
 };
 
-IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, TestBasic) {
+IN_PROC_BROWSER_TEST_F(FileManagerDesktopNotificationsBrowserTest, TestBasic) {
   InitNotifications();
   // Showing a notification adds a new notification.
-  notifications_->ShowNotification(FileManagerNotifications::DEVICE, "path");
+  notifications_->ShowNotification(DesktopNotifications::DEVICE, "path");
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("Device_path"));
 
   // Updating the same notification maintains the same count.
-  notifications_->ShowNotification(FileManagerNotifications::DEVICE, "path");
+  notifications_->ShowNotification(DesktopNotifications::DEVICE, "path");
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("Device_path"));
 
   // A new notification increases the count.
-  notifications_->ShowNotification(FileManagerNotifications::DEVICE_FAIL,
+  notifications_->ShowNotification(DesktopNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("DeviceFail_path"));
   EXPECT_TRUE(FindNotification("Device_path"));
 
   // Hiding a notification removes it from our data.
-  notifications_->HideNotification(FileManagerNotifications::DEVICE_FAIL,
+  notifications_->HideNotification(DesktopNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
   EXPECT_FALSE(FindNotification("DeviceFail_path"));
@@ -69,10 +70,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, TestBasic) {
 
 // Note: Delayed tests use a delay time of 0 so that tasks wille execute
 // when RunAllPendingInMessageLoop() is called.
-IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, ShowDelayedTest) {
+IN_PROC_BROWSER_TEST_F(FileManagerDesktopNotificationsBrowserTest,
+                       ShowDelayedTest) {
   InitNotifications();
   // Adding a delayed notification does not create a notification.
-  notifications_->ShowNotificationDelayed(FileManagerNotifications::DEVICE,
+  notifications_->ShowNotificationDelayed(DesktopNotifications::DEVICE,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
@@ -85,10 +87,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, ShowDelayedTest) {
 
   // Showing a notification both immediately and delayed results in one
   // additional notification.
-  notifications_->ShowNotificationDelayed(FileManagerNotifications::DEVICE_FAIL,
+  notifications_->ShowNotificationDelayed(DesktopNotifications::DEVICE_FAIL,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
-  notifications_->ShowNotification(FileManagerNotifications::DEVICE_FAIL,
+  notifications_->ShowNotification(DesktopNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("DeviceFail_path"));
@@ -101,10 +103,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, ShowDelayedTest) {
 
   // If we schedule a show for later, then hide before it becomes visible,
   // the notification should not be added.
-  notifications_->ShowNotificationDelayed(FileManagerNotifications::FORMAT_FAIL,
+  notifications_->ShowNotificationDelayed(DesktopNotifications::FORMAT_FAIL,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
-  notifications_->HideNotification(FileManagerNotifications::FORMAT_FAIL,
+  notifications_->HideNotification(DesktopNotifications::FORMAT_FAIL,
                                    "path");
   EXPECT_EQ(2u, notifications_->GetNotificationCountForTest());
   EXPECT_TRUE(FindNotification("Device_path"));
@@ -119,11 +121,12 @@ IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, ShowDelayedTest) {
   EXPECT_FALSE(FindNotification("Format_path"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, HideDelayedTest) {
+IN_PROC_BROWSER_TEST_F(FileManagerDesktopNotificationsBrowserTest,
+                       HideDelayedTest) {
   InitNotifications();
   // Showing now, and scheduling a hide for later, results in one notification.
-  notifications_->ShowNotification(FileManagerNotifications::DEVICE, "path");
-  notifications_->HideNotificationDelayed(FileManagerNotifications::DEVICE,
+  notifications_->ShowNotification(DesktopNotifications::DEVICE, "path");
+  notifications_->HideNotificationDelayed(DesktopNotifications::DEVICE,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
   EXPECT_EQ(1u, notifications_->GetNotificationCountForTest());
@@ -134,15 +137,15 @@ IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, HideDelayedTest) {
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
 
   // Immediate show then hide results in no notification.
-  notifications_->ShowNotification(FileManagerNotifications::DEVICE_FAIL,
+  notifications_->ShowNotification(DesktopNotifications::DEVICE_FAIL,
                                    "path");
-  notifications_->HideNotification(FileManagerNotifications::DEVICE_FAIL,
+  notifications_->HideNotification(DesktopNotifications::DEVICE_FAIL,
                                    "path");
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(0u, notifications_->GetNotificationCountForTest());
 
   // Delayed hide for a notification that doesn't exist does nothing.
-  notifications_->HideNotificationDelayed(FileManagerNotifications::DEVICE_FAIL,
+  notifications_->HideNotificationDelayed(DesktopNotifications::DEVICE_FAIL,
                                           "path",
                                           base::TimeDelta::FromSeconds(0));
   content::RunAllPendingInMessageLoop();
@@ -153,7 +156,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, HideDelayedTest) {
 // different messages results in showing the second notification's message.
 // This situation can be encountered while showing notifications for
 // MountCompletedEvent.
-IN_PROC_BROWSER_TEST_F(FileManagerNotificationsTest, IdenticalNotificationIds) {
+IN_PROC_BROWSER_TEST_F(FileManagerDesktopNotificationsBrowserTest,
+                       IdenticalNotificationIds) {
   InitNotifications();
   notifications_->RegisterDevice("path");
 

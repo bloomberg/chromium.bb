@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
+#include "chrome/browser/chromeos/extensions/file_manager/desktop_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/mounted_disk_monitor.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
@@ -215,7 +215,7 @@ FileManagerEventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus(
 
 FileManagerEventRouter::FileManagerEventRouter(
     Profile* profile)
-    : notifications_(new FileManagerNotifications(profile)),
+    : notifications_(new DesktopNotifications(profile)),
       pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
       weak_factory_(this) {
@@ -774,7 +774,7 @@ void FileManagerEventRouter::OnDiskAdded(
   } else {
     // Either the disk was mounted or it has no media. In both cases we don't
     // want the Scanning notification to persist.
-    notifications_->HideNotification(FileManagerNotifications::DEVICE,
+    notifications_->HideNotification(DesktopNotifications::DEVICE,
                                      disk->system_path_prefix());
   }
 }
@@ -803,13 +803,13 @@ void FileManagerEventRouter::OnDeviceAdded(
   // a notification that the operation is not permitted.
   if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
     notifications_->ShowNotification(
-        FileManagerNotifications::DEVICE_EXTERNAL_STORAGE_DISABLED,
+        DesktopNotifications::DEVICE_EXTERNAL_STORAGE_DISABLED,
         device_path);
     return;
   }
 
   notifications_->RegisterDevice(device_path);
-  notifications_->ShowNotificationDelayed(FileManagerNotifications::DEVICE,
+  notifications_->ShowNotificationDelayed(DesktopNotifications::DEVICE,
                                           device_path,
                                           base::TimeDelta::FromSeconds(5));
 }
@@ -819,9 +819,9 @@ void FileManagerEventRouter::OnDeviceRemoved(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   VLOG(1) << "Device removed : " << device_path;
-  notifications_->HideNotification(FileManagerNotifications::DEVICE,
+  notifications_->HideNotification(DesktopNotifications::DEVICE,
                                    device_path);
-  notifications_->HideNotification(FileManagerNotifications::DEVICE_FAIL,
+  notifications_->HideNotification(DesktopNotifications::DEVICE_FAIL,
                                    device_path);
   notifications_->UnregisterDevice(device_path);
 }
@@ -837,11 +837,11 @@ void FileManagerEventRouter::OnFormatStarted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (success) {
-    notifications_->ShowNotification(FileManagerNotifications::FORMAT_START,
+    notifications_->ShowNotification(DesktopNotifications::FORMAT_START,
                                      device_path);
   } else {
     notifications_->ShowNotification(
-        FileManagerNotifications::FORMAT_START_FAIL, device_path);
+        DesktopNotifications::FORMAT_START_FAIL, device_path);
   }
 }
 
@@ -850,13 +850,13 @@ void FileManagerEventRouter::OnFormatCompleted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (success) {
-    notifications_->HideNotification(FileManagerNotifications::FORMAT_START,
+    notifications_->HideNotification(DesktopNotifications::FORMAT_START,
                                      device_path);
-    notifications_->ShowNotification(FileManagerNotifications::FORMAT_SUCCESS,
+    notifications_->ShowNotification(DesktopNotifications::FORMAT_SUCCESS,
                                      device_path);
     // Hide it after a couple of seconds.
     notifications_->HideNotificationDelayed(
-        FileManagerNotifications::FORMAT_SUCCESS,
+        DesktopNotifications::FORMAT_SUCCESS,
         device_path,
         base::TimeDelta::FromSeconds(4));
     // MountPath auto-detects filesystem format if second argument is empty.
@@ -865,9 +865,9 @@ void FileManagerEventRouter::OnFormatCompleted(
                                                std::string(),
                                                chromeos::MOUNT_TYPE_DEVICE);
   } else {
-    notifications_->HideNotification(FileManagerNotifications::FORMAT_START,
+    notifications_->HideNotification(DesktopNotifications::FORMAT_START,
                                      device_path);
-    notifications_->ShowNotification(FileManagerNotifications::FORMAT_FAIL,
+    notifications_->ShowNotification(DesktopNotifications::FORMAT_FAIL,
                                      device_path);
   }
 }

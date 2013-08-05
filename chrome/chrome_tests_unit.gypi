@@ -636,7 +636,7 @@
         'browser/chromeos/drive/test_util.h',
         'browser/chromeos/drive/webkit_file_stream_reader_impl_unittest.cc',
         'browser/chromeos/extensions/default_app_order_unittest.cc',
-        'browser/chromeos/extensions/file_manager/file_manager_notifications_unittest.cc',
+        'browser/chromeos/extensions/file_manager/desktop_notifications_unittest.cc',
         'browser/chromeos/extensions/wallpaper_private_api_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/fileapi/file_access_permissions_unittest.cc',

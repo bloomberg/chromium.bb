@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
+#include "chrome/browser/chromeos/extensions/file_manager/desktop_notifications.h"
 
 #include <string>
 
@@ -21,10 +21,10 @@ namespace file_manager {
 
 namespace {
 
-class MockFileManagerNotificationsOnMount : public FileManagerNotifications {
+class MockFileManagerNotificationsOnMount : public DesktopNotifications {
  public:
   explicit MockFileManagerNotificationsOnMount(Profile* profile)
-      : FileManagerNotifications(profile) {
+      : DesktopNotifications(profile) {
   }
 
   virtual ~MockFileManagerNotificationsOnMount() {}
@@ -43,7 +43,7 @@ MATCHER_P2(String16Equals, id, label, "") {
 TEST(FileManagerMountNotificationsTest, GoodDevice) {
   MockFileManagerNotificationsOnMount* mocked_notifications =
       new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
+  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
@@ -51,7 +51,7 @@ TEST(FileManagerMountNotificationsTest, GoodDevice) {
   notifications->RegisterDevice(notification_path);
 
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileManagerNotifications::DEVICE, StrEq(notification_path)));
+              DesktopNotifications::DEVICE, StrEq(notification_path)));
 
   notifications->ManageNotificationsOnMountCompleted(notification_path,
       device_label, true, true, false);
@@ -60,7 +60,7 @@ TEST(FileManagerMountNotificationsTest, GoodDevice) {
 TEST(FileManagerMountNotificationsTest, GoodDeviceWithBadParent) {
   MockFileManagerNotificationsOnMount* mocked_notifications =
       new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
+  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
@@ -68,15 +68,15 @@ TEST(FileManagerMountNotificationsTest, GoodDeviceWithBadParent) {
   notifications->RegisterDevice(notification_path);
 
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileManagerNotifications::DEVICE, StrEq(notification_path)));
+              DesktopNotifications::DEVICE, StrEq(notification_path)));
 
   {
     InSequence s;
 
     EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path), _));
+        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path), _));
     EXPECT_CALL(*mocked_notifications, HideNotification(
-        FileManagerNotifications::DEVICE_FAIL,
+        DesktopNotifications::DEVICE_FAIL,
         StrEq(notification_path)));
   }
 
@@ -91,7 +91,7 @@ TEST(FileManagerMountNotificationsTest, GoodDeviceWithBadParent) {
 TEST(FileManagerMountNotificationsTest, UnsupportedDevice) {
   MockFileManagerNotificationsOnMount* mocked_notifications =
       new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
+  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
@@ -99,9 +99,9 @@ TEST(FileManagerMountNotificationsTest, UnsupportedDevice) {
   notifications->RegisterDevice(notification_path);
 
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileManagerNotifications::DEVICE, StrEq(notification_path)));
+              DesktopNotifications::DEVICE, StrEq(notification_path)));
   EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
+      DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
       String16Equals(IDS_DEVICE_UNSUPPORTED_MESSAGE, device_label)));
 
   notifications->ManageNotificationsOnMountCompleted(notification_path,
@@ -111,7 +111,7 @@ TEST(FileManagerMountNotificationsTest, UnsupportedDevice) {
 TEST(FileManagerMountNotificationsTest, UnsupportedWithUnknownParent) {
   MockFileManagerNotificationsOnMount* mocked_notifications =
       new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
+  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
@@ -119,17 +119,17 @@ TEST(FileManagerMountNotificationsTest, UnsupportedWithUnknownParent) {
   notifications->RegisterDevice(notification_path);
 
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileManagerNotifications::DEVICE, StrEq(notification_path)));
+              DesktopNotifications::DEVICE, StrEq(notification_path)));
 
   {
     InSequence s;
 
     EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path), _));
+        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path), _));
     EXPECT_CALL(*mocked_notifications, HideNotification(
-        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path)));
+        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path)));
     EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
+        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
         String16Equals(IDS_DEVICE_UNSUPPORTED_MESSAGE,
         device_label)));
   }
@@ -143,16 +143,16 @@ TEST(FileManagerMountNotificationsTest, UnsupportedWithUnknownParent) {
 TEST(FileManagerMountNotificationsTest, MountPartialSuccess) {
   MockFileManagerNotificationsOnMount* mocked_notifications =
       new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
+  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
   notifications->RegisterDevice(notification_path);
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileManagerNotifications::DEVICE, StrEq(notification_path)));
+              DesktopNotifications::DEVICE, StrEq(notification_path)));
   EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
+      DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
           String16Equals(IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
           device_label)));
 
@@ -165,16 +165,16 @@ TEST(FileManagerMountNotificationsTest, MountPartialSuccess) {
 TEST(FileManagerMountNotificationsTest, Unknown) {
   MockFileManagerNotificationsOnMount* mocked_notifications =
       new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
+  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
   notifications->RegisterDevice(notification_path);
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileManagerNotifications::DEVICE, StrEq(notification_path)));
+              DesktopNotifications::DEVICE, StrEq(notification_path)));
   EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
+      DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
       String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)));
 
   notifications->ManageNotificationsOnMountCompleted(notification_path,
@@ -184,7 +184,7 @@ TEST(FileManagerMountNotificationsTest, Unknown) {
 TEST(FileManagerMountNotificationsTest, NonASCIILabel) {
   MockFileManagerNotificationsOnMount* mocked_notifications =
       new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
+  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   // "RA (U+30E9) BE (U+30D9) RU (U+30EB)" in Katakana letters.
@@ -192,9 +192,9 @@ TEST(FileManagerMountNotificationsTest, NonASCIILabel) {
 
   notifications->RegisterDevice(notification_path);
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileManagerNotifications::DEVICE, StrEq(notification_path)));
+              DesktopNotifications::DEVICE, StrEq(notification_path)));
   EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-      FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
+      DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
       String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)));
 
   notifications->ManageNotificationsOnMountCompleted(notification_path,
@@ -204,29 +204,29 @@ TEST(FileManagerMountNotificationsTest, NonASCIILabel) {
 TEST(FileManagerMountNotificationsTest, MulitpleFail) {
   MockFileManagerNotificationsOnMount* mocked_notifications =
       new MockFileManagerNotificationsOnMount(NULL);
-  scoped_ptr<FileManagerNotifications> notifications(mocked_notifications);
+  scoped_ptr<DesktopNotifications> notifications(mocked_notifications);
 
   std::string notification_path("system_path_prefix");
   std::string device_label("label");
 
   notifications->RegisterDevice(notification_path);
   EXPECT_CALL(*mocked_notifications, HideNotification(
-              FileManagerNotifications::DEVICE, StrEq(notification_path)));
+              DesktopNotifications::DEVICE, StrEq(notification_path)));
   {
     InSequence s;
     EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
+        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
         String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)))
         .RetiresOnSaturation();
     EXPECT_CALL(*mocked_notifications, HideNotification(
-        FileManagerNotifications::DEVICE_FAIL, notification_path));
+        DesktopNotifications::DEVICE_FAIL, notification_path));
     EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
+        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
         String16Equals(IDS_DEVICE_UNKNOWN_MESSAGE, device_label)));
     EXPECT_CALL(*mocked_notifications, HideNotification(
-        FileManagerNotifications::DEVICE_FAIL, notification_path));
+        DesktopNotifications::DEVICE_FAIL, notification_path));
     EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
-        FileManagerNotifications::DEVICE_FAIL, StrEq(notification_path),
+        DesktopNotifications::DEVICE_FAIL, StrEq(notification_path),
         String16Equals(IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
                        device_label)));
   }
