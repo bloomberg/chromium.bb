@@ -550,7 +550,8 @@ IntRect ScrollView::rectToCopyOnScroll() const
 
 void ScrollView::scrollContents(const IntSize& scrollDelta)
 {
-    if (!hostWindow())
+    HostWindow* window = hostWindow();
+    if (!window)
         return;
 
     // Since scrolling is double buffered, we will be blitting the scroll view's intersection
@@ -567,7 +568,7 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
         IntPoint panIconDirtySquareLocation = IntPoint(m_panScrollIconPoint.x() - (panIconDirtySquareSizeLength / 2), m_panScrollIconPoint.y() - (panIconDirtySquareSizeLength / 2));
         IntRect panScrollIconDirtyRect = IntRect(panIconDirtySquareLocation, IntSize(panIconDirtySquareSizeLength, panIconDirtySquareSizeLength));
         panScrollIconDirtyRect.intersect(clipRect);
-        hostWindow()->invalidateContentsAndRootView(panScrollIconDirtyRect);
+        window->invalidateContentsAndRootView(panScrollIconDirtyRect);
     }
 
     if (canBlitOnScroll()) { // The main frame can just blit the WebView window
@@ -652,16 +653,18 @@ IntRect ScrollView::contentsToWindow(const IntRect& contentsRect) const
 
 IntRect ScrollView::contentsToScreen(const IntRect& rect) const
 {
-    if (!hostWindow())
+    HostWindow* window = hostWindow();
+    if (!window)
         return IntRect();
-    return hostWindow()->rootViewToScreen(contentsToRootView(rect));
+    return window->rootViewToScreen(contentsToRootView(rect));
 }
 
 IntPoint ScrollView::screenToContents(const IntPoint& point) const
 {
-    if (!hostWindow())
+    HostWindow* window = hostWindow();
+    if (!window)
         return IntPoint();
-    return rootViewToContents(hostWindow()->screenToRootView(point));
+    return rootViewToContents(window->screenToRootView(point));
 }
 
 bool ScrollView::containsScrollbarsAvoidingResizer() const
@@ -814,8 +817,8 @@ void ScrollView::repaintContentRectangle(const IntRect& rect)
     if (paintRect.isEmpty())
         return;
 
-    if (hostWindow())
-        hostWindow()->invalidateContentsAndRootView(contentsToWindow(paintRect));
+    if (HostWindow* window = hostWindow())
+        window->invalidateContentsAndRootView(contentsToWindow(paintRect));
 }
 
 IntRect ScrollView::scrollCornerRect() const
@@ -993,7 +996,8 @@ void ScrollView::calculateOverhangAreasForPainting(IntRect& horizontalOverhangRe
 
 void ScrollView::updateOverhangAreas()
 {
-    if (!hostWindow())
+    HostWindow* window = hostWindow();
+    if (!window)
         return;
 
     IntRect horizontalOverhangRect;
@@ -1008,9 +1012,9 @@ void ScrollView::updateOverhangAreas()
     }
 #endif
     if (!horizontalOverhangRect.isEmpty())
-        hostWindow()->invalidateContentsAndRootView(horizontalOverhangRect);
+        window->invalidateContentsAndRootView(horizontalOverhangRect);
     if (!verticalOverhangRect.isEmpty())
-        hostWindow()->invalidateContentsAndRootView(verticalOverhangRect);
+        window->invalidateContentsAndRootView(verticalOverhangRect);
 }
 
 void ScrollView::paintOverhangAreas(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
@@ -1140,19 +1144,21 @@ bool ScrollView::isOffscreen() const
 
 void ScrollView::addPanScrollIcon(const IntPoint& iconPosition)
 {
-    if (!hostWindow())
+    HostWindow* window = hostWindow();
+    if (!window)
         return;
     m_drawPanScrollIcon = true;
     m_panScrollIconPoint = IntPoint(iconPosition.x() - panIconSizeLength / 2 , iconPosition.y() - panIconSizeLength / 2) ;
-    hostWindow()->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
+    window->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
 
 void ScrollView::removePanScrollIcon()
 {
-    if (!hostWindow())
+    HostWindow* window = hostWindow();
+    if (!window)
         return;
     m_drawPanScrollIcon = false;
-    hostWindow()->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
+    window->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
 
 void ScrollView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAll, bool updatePositionSynchronously)
