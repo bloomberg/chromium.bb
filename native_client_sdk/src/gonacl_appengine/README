@@ -3,6 +3,8 @@ This is a new App Engine Python 2.7 application for http://gonacl.com
 At this time it presents the existing functionality of redirecting
 to http://developers.google.com/native-client/
 
+Also, a PNaCl demo is added at /static/pnacl-demo/index.html
+
 To upload, run this from the root directory of the AppEngine SDK:
 
 $ ./appcfg.py update <path-to-this-dir>
@@ -12,3 +14,7 @@ upload, as it lets us use AppEngine's versioning. The newly uploaded version can
 be tried before actually being activated, by going to the "Versions" section on
 the AppEngine dashboard. Note that the newly uploaded version only becomes
 active when it's set as the "default" version in the dashboard.
+
+In static/pnacl-demo we have the files for the modified Earth demo. Only the
+source files (HTML and JS) are kept in source control. The pexe and images
+should be copied over from an SDK build when uploading to AppEngine.
