@@ -33,6 +33,7 @@ namespace crypto {
 class RSAPrivateKey;
 }
 
+class PortForwardingController;
 class Profile;
 
 // The format used for constructing DevTools server socket names.
@@ -152,6 +153,7 @@ class DevToolsAdbBridge
     explicit RemoteDevice(scoped_refptr<DevToolsAdbBridge> bridge,
                           scoped_refptr<AndroidDevice> device);
 
+    scoped_refptr<AndroidDevice> device() { return device_; }
     std::string serial() { return device_->serial(); }
     std::string model() { return device_->model(); }
 
@@ -269,6 +271,7 @@ class DevToolsAdbBridge
   scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
   typedef std::vector<Listener*> Listeners;
   Listeners listeners_;
+  scoped_ptr<PortForwardingController> port_forwarding_controller_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);
 };
 

@@ -52,6 +52,14 @@ void AdbWebSocket::SendFrame(const std::string& message) {
       base::Bind(&AdbWebSocket::SendFrameOnHandlerThread, this, message));
 }
 
+void AdbWebSocket::SendFrameOnHandlerThread(const std::string& message) {
+  int mask = base::RandInt(0, 0x7FFFFFFF);
+  std::string encoded_frame = WebSocket::EncodeFrameHybi17(message, mask);
+  request_buffer_ += encoded_frame;
+  if (request_buffer_.length() == encoded_frame.length())
+    SendPendingRequests(0);
+}
+
 AdbWebSocket::~AdbWebSocket() {}
 
 void AdbWebSocket::ConnectOnHandlerThread() {
@@ -125,15 +133,6 @@ void AdbWebSocket::OnBytesRead(
       base::Bind(&AdbWebSocket::OnBytesRead, this, response_buffer));
   if (result != net::ERR_IO_PENDING)
     OnBytesRead(response_buffer, result);
-}
-
-void AdbWebSocket::SendFrameOnHandlerThread(const std::string& data) {
-  delegate_->ProcessOutgoingMessage(data);
-  int mask = base::RandInt(0, 0x7FFFFFFF);
-  std::string encoded_frame = WebSocket::EncodeFrameHybi17(data, mask);
-  request_buffer_ += encoded_frame;
-  if (request_buffer_.length() == encoded_frame.length())
-    SendPendingRequests(0);
 }
 
 void AdbWebSocket::SendPendingRequests(int result) {

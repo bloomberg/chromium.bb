@@ -155,47 +155,6 @@ class UsbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
   scoped_refptr<AndroidUsbDevice> device_;
 };
 
-class AdbDevicesCommand : public base::RefCountedThreadSafe<
-    AdbDevicesCommand,
-    content::BrowserThread::DeleteOnUIThread> {
- public:
-  AdbDevicesCommand(DevToolsAdbBridge* bridge,
-                    const AndroidDevicesCallback& callback)
-     : bridge_(bridge),
-       callback_(callback) {
-    bridge_->EnumerateUsbDevices(
-        base::Bind(&AdbDevicesCommand::ReceivedUsbDevices, this));
-  }
-
- private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  friend class base::DeleteHelper<AdbDevicesCommand>;
-
-  virtual ~AdbDevicesCommand() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  }
-
-  void ReceivedUsbDevices(const AndroidDevices& usb_devices) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    bridge_->GetAdbMessageLoop()->PostTask(FROM_HERE,
-        base::Bind(&DevToolsAdbBridge::EnumerateAdbDevices, bridge_,
-                   base::Bind(&AdbDevicesCommand::ReceivedAdbDevices,
-                              this,
-                              usb_devices)));
-  }
-
-  void ReceivedAdbDevices(const AndroidDevices& usb_devices,
-                          const AndroidDevices& adb_devices) {
-    AndroidDevices devices(usb_devices);
-    devices.insert(devices.end(), adb_devices.begin(), adb_devices.end());
-    callback_.Run(devices);
-  }
-
-  scoped_refptr<DevToolsAdbBridge> bridge_;
-  AndroidDevicesCallback callback_;
-};
-
 class AdbPagesCommand : public base::RefCountedThreadSafe<
     AdbPagesCommand,
     content::BrowserThread::DeleteOnUIThread> {
@@ -206,8 +165,8 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
      : bridge_(bridge),
        callback_(callback) {
     remote_devices_.reset(new DevToolsAdbBridge::RemoteDevices());
-    new AdbDevicesCommand(bridge,
-        base::Bind(&AdbPagesCommand::ReceivedDevices, this));
+    bridge_->EnumerateUsbDevices(
+        base::Bind(&AdbPagesCommand::ReceivedUsbDevices, this));
   }
 
  private:
@@ -219,8 +178,16 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
-  void ReceivedDevices(const AndroidDevices& devices) {
+  void ReceivedUsbDevices(const AndroidDevices& devices) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     devices_ = devices;
+    bridge_->GetAdbMessageLoop()->PostTask(FROM_HERE,
+        base::Bind(&DevToolsAdbBridge::EnumerateAdbDevices, bridge_,
+                   base::Bind(&AdbPagesCommand::ReceivedAdbDevices, this)));
+  }
+
+  void ReceivedAdbDevices(const AndroidDevices& devices) {
+    devices_.insert(devices_.end(), devices.begin(), devices.end());
     ProcessSerials();
   }
 
@@ -525,9 +492,10 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
       base::MessageLoop* adb_message_loop,
       Profile* profile)
       : id_(id),
+        serial_(device->serial()),
         frontend_url_(frontend_url),
-        profile_(profile),
-        tethering_adb_filter_(kAdbPort, device->serial()) {
+        adb_message_loop_(adb_message_loop),
+        profile_(profile) {
     web_socket_ = new AdbWebSocket(
         device, socket_name, debug_url, adb_message_loop, this);
     g_host_delegates.Get()[id] = this;
@@ -557,6 +525,9 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
 
   virtual void OnSocketOpened() OVERRIDE {
     proxy_.reset(content::DevToolsExternalAgentProxy::Create(this));
+    tethering_adb_filter_.reset(new TetheringAdbFilter(
+        kAdbPort, serial_, adb_message_loop_, profile_->GetPrefs(),
+        web_socket_));
     OpenFrontend();
   }
 
@@ -571,19 +542,17 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
   }
 
   virtual bool ProcessIncomingMessage(const std::string& message) OVERRIDE {
-    return tethering_adb_filter_.ProcessIncomingMessage(message);
-  }
-
-  virtual void ProcessOutgoingMessage(const std::string& message) OVERRIDE {
-    tethering_adb_filter_.ProcessOutgoingMessage(message);
+    return tethering_adb_filter_->ProcessIncomingMessage(message);
   }
 
   const std::string id_;
+  const std::string serial_;
   const std::string frontend_url_;
+  base::MessageLoop* adb_message_loop_;
   Profile* profile_;
 
   scoped_ptr<content::DevToolsExternalAgentProxy> proxy_;
-  TetheringAdbFilter tethering_adb_filter_;
+  scoped_ptr<TetheringAdbFilter> tethering_adb_filter_;
   scoped_refptr<AdbWebSocket> web_socket_;
   DISALLOW_COPY_AND_ASSIGN(AgentHostDelegate);
 };
@@ -707,6 +676,8 @@ DevToolsAdbBridge::DevToolsAdbBridge(Profile* profile)
       adb_thread_(RefCountedAdbThread::GetInstance()),
       has_message_loop_(adb_thread_->message_loop() != NULL) {
   rsa_key_.reset(AndroidRSAPrivateKey(profile));
+  port_forwarding_controller_.reset(
+      new PortForwardingController(GetAdbMessageLoop(), profile->GetPrefs()));
 }
 
 void DevToolsAdbBridge::EnumerateUsbDevices(
@@ -804,6 +775,7 @@ void DevToolsAdbBridge::ReceivedRemoteDevices(RemoteDevices* devices_ptr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<RemoteDevices> devices(devices_ptr);
+  port_forwarding_controller_->UpdateDeviceList(*devices.get());
 
   Listeners copy(listeners_);
   for (Listeners::iterator it = copy.begin(); it != copy.end(); ++it)

@@ -1786,6 +1786,13 @@ const char kDevToolsHSplitLocation[] = "devtools.split_location";
 // A boolean specifying whether dev tools window should be opened docked.
 const char kDevToolsOpenDocked[] = "devtools.open_docked";
 
+// A boolean specifying whether port forwarding should be enabled.
+const char kDevToolsPortForwardingEnabled[] =
+    "devtools.port_forwarding_enabled";
+
+// A dictionary of port->location pairs for port forwarding.
+const char kDevToolsPortForwardingConfig[] = "devtools.port_forwarding_config";
+
 #if defined(OS_ANDROID)
 // A boolean specifying whether remote dev tools debugging is enabled.
 const char kDevToolsRemoteEnabled[] = "devtools.remote_enabled";

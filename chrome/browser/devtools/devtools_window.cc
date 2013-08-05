@@ -272,6 +272,14 @@ void DevToolsWindow::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       GetDevToolsWindowPlacementPrefKey().c_str(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  registry->RegisterBooleanPref(
+      prefs::kDevToolsPortForwardingEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kDevToolsPortForwardingConfig,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

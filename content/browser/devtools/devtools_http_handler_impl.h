@@ -35,7 +35,6 @@ namespace content {
 
 class DevToolsBrowserTarget;
 class DevToolsClientHost;
-class TetheringHandler;
 
 class DevToolsHttpHandlerImpl
     : public DevToolsHttpHandler,
@@ -130,8 +129,6 @@ class DevToolsHttpHandlerImpl
   DevToolsAgentHostBinding* binding_;
   scoped_ptr<DevToolsAgentHostBinding> default_binding_;
   scoped_refptr<DevToolsBrowserTarget> browser_target_;
-  typedef std::map<int, TetheringHandler*> TetheringHandlers;
-  TetheringHandlers tethering_handlers_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);
 };
 
