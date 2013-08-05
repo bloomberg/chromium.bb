@@ -901,122 +901,75 @@ FileCopyManager.prototype.processCopyEntry_ = function(
     // Sending a file from a) Drive to Drive, b) Drive to local or c) local to
     // Drive.
     var sourceFileUrl = sourceEntry.toURL();
-    var targetFileUrl =
-        targetDirEntry.toURL() + '/' + encodeURIComponent(targetRelativePath);
     var sourceFilePath = util.extractFilePath(sourceFileUrl);
-    var targetFilePath = util.extractFilePath(targetFileUrl);
 
-    // Progress callback. TODO(hidehiko): Simplify this progress mechanism.
-    var transferedBytes = 0;
-    var downTransfer = 0;
-    var onFileTransfersUpdated = function(statusList) {
-      for (var i = 0; i < statusList.length; i++) {
-        var s = statusList[i];
-        // Comparing urls is unreliable, since they may use different
-        // url encoding schemes (eg. rfc2396 vs. rfc3986).
-        var filePath = util.extractFilePath(s.fileUrl);
-        if (filePath == sourceFilePath || filePath == targetFilePath) {
-          var processed = s.processed;
+    // Progress callback.
+    // Because the uploading the file from local cache to Drive server will be
+    // done as a part of background Drive file system sync, so for this copy
+    // operation, what we need to take care about is only file downloading.
+    var numTransferredBytes = 0;
+    var onFileTransfersUpdated = null;
+    if (isSourceOnDrive) {
+      onFileTransfersUpdated = function(statusList) {
+        for (var i = 0; i < statusList.length; i++) {
+          var status = statusList[i];
 
-          // It becomes tricky when both the sides are on Drive.
-          // Currently, it is implemented by download followed by upload.
-          // Note, however, download will not happen if the file is cached.
-          if (isSourceOnDrive && isTargetOnDrive) {
-            if (filePath == sourceFilePath) {
-              // Download transfer is detected. Let's halve the progress.
-              downTransfer = processed = (s.processed >> 1);
-            } else {
-              // If download transfer has been detected, the upload transfer
-              // is stacked on top of it after halving. Otherwise, just use
-              // the upload transfer as-is.
-              processed = downTransfer > 0 ?
-                  downTransfer + (s.processed >> 1) : s.processed;
+          // Comparing urls is unreliable, since they may use different
+          // url encoding schemes (eg. rfc2396 vs. rfc3986).
+          var filePath = util.extractFilePath(status.fileUrl);
+          if (filePath == sourceFilePath) {
+            var processed = status.processed;
+            if (processed > numTransferredBytes) {
+              onCopyProgress(sourceEntry, processed - numTransferredBytes);
+              numTransferredBytes = processed;
             }
-          }
-
-          if (processed > transferedBytes) {
-            onCopyProgress(sourceEntry, processed - transferedBytes);
-            transferedBytes = processed;
+            return;
           }
         }
-      }
-    };
-
-    var onStartTransfer = function() {
-      chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
-          onFileTransfersUpdated);
-    };
-
-    var onSuccessTransfer = function(targetEntry) {
-      self.cancelCallback_ = null;
-      chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
-          onFileTransfersUpdated);
-
-      targetEntry.getMetadata(function(metadata) {
-        if (metadata.size > transferedBytes)
-          onCopyProgress(sourceEntry, metadata.size - transferedBytes);
-        onCopyComplete(targetEntry, metadata.size);
-      });
-    };
-
-    var onFailTransfer = function(err) {
-      self.cancelCallback_ = null;
-      chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
-          onFileTransfersUpdated);
-      console.error(
-          'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
-      onFilesystemError(err);
-    };
-
-    self.cancelCallback_ = function() {
-      self.cancelCallback_ = null;
+      };
 
       // Currently, we do NOT upload the file during the copy operation.
       // It will be done as a part of file system sync after copy operation.
       // So, we can cancel only file downloading.
-      if (isSourceOnDrive) {
+      self.cancelCallback_ = function() {
+        self.cancelCallback_ = null;
         chrome.fileBrowserPrivate.cancelFileTransfers(
             [sourceFileUrl], function() {});
-      }
-    };
-
-    // Note: for hosted documents, copyTo implementation of Drive file system
-    // and transferFile private API has special handling.
-    // See also drive::file_system::CopyOperation.
-    if (isSourceOnDrive && isTargetOnDrive) {
-      // If this is the copy operation inside Drive file system,
-      // we use copyTo method.
-      targetDirEntry.getDirectory(
-          PathUtil.dirname(targetRelativePath), {create: false},
-          function(dirEntry) {
-            onStartTransfer();
-            sourceEntry.copyTo(
-                dirEntry, PathUtil.basename(targetRelativePath),
-                onSuccessTransfer, onFailTransfer);
-          },
-          onFilesystemError);
-    } else {
-      // Sending a file either a) from local to Drive, or b) from Drive to
-      // local.
-      // TODO(hidehiko): Migrate this code into copyFileEntry_().
-      onStartTransfer();
-      chrome.fileBrowserPrivate.transferFile(
-          sourceFileUrl, targetFileUrl,
-          function() {
-            self.cancelCallback_ = null;
-            if (chrome.runtime.lastError) {
-              console.error(chrome.runtime.lastError.message);
-              onFailTransfer(Object.create(FileError.prototype, {
-                code: {
-                  get: function() { return FileError.INVALID_MODIFICATION_ERR; }
-                }
-              }));
-              return;
-            }
-            targetDirEntry.getFile(
-                targetRelativePath, {}, onSuccessTransfer, onFailTransfer);
-          });
+      };
     }
+
+    // If this is the copy operation from Drive file system,
+    // we use copyTo method.
+    targetDirEntry.getDirectory(
+        PathUtil.dirname(targetRelativePath), {create: false},
+        function(dirEntry) {
+          if (onFileTransfersUpdated)
+            chrome.fileBrowserPrivate.onFileTransfersUpdated
+                .addListener(onFileTransfersUpdated);
+
+          sourceEntry.copyTo(
+              dirEntry, PathUtil.basename(targetRelativePath),
+              function(entry) {
+                self.cancelCallback_ = null;
+                if (onFileTransfersUpdated)
+                  chrome.fileBrowserPrivate.onFileTransfersUpdated
+                      .removeListener(onFileTransfersUpdated);
+
+                entry.getMetadata(function(metadata) {
+                  if (metadata.size > numTransferredBytes)
+                    onCopyProgress(
+                        sourceEntry, metadata.size - numTransferredBytes);
+                  onCopyComplete(entry, 0);
+                });
+              },
+              function(error) {
+                self.cancelCallback_ = null;
+                chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
+                    onFileTransfersUpdated);
+                onFilesystemError(error);
+              });
+        },
+        onFilesystemError);
   };
 
   FileCopyManager.Task.deduplicatePath(
