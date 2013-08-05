@@ -134,13 +134,14 @@ class DockedWindowLayoutManagerTest
 
   // Panels are parented by panel container during drags.
   // Docked windows are parented by dock container during drags.
-  // All other windows that we are testing here have workspace as a parent.
+  // All other windows that we are testing here have default container as a
+  // parent.
   int CorrectContainerIdDuringDrag(DockedState is_docked) {
     if (window_type_ == aura::client::WINDOW_TYPE_PANEL)
       return internal::kShellWindowId_PanelContainer;
     if (is_docked == DOCKED)
       return internal::kShellWindowId_DockedContainer;
-    return internal::kShellWindowId_WorkspaceContainer;
+    return internal::kShellWindowId_DefaultContainer;
   }
 
   // Test dragging the window vertically (to detach if it is a panel) and then
@@ -193,7 +194,7 @@ class DockedWindowLayoutManagerTest
       DragEnd();
 
       EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-      EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+      EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
                 window->parent()->id());
       EXPECT_EQ(root_window, window->GetRootWindow());
     }

@@ -27,30 +27,14 @@ const int kContainerIds[] = {
   internal::kShellWindowId_AlwaysOnTopContainer
 };
 
-// Adds all the children of |window| to |windows|.
-void AddAllChildren(aura::Window* window,
-                    MruWindowTracker::WindowList* windows) {
-  const MruWindowTracker::WindowList& children(window->children());
-  windows->insert(windows->end(), children.begin(), children.end());
-}
-
-// Adds all the children of all of |window|s children to |windows|.
-void AddWorkspaceChildren(aura::Window* window,
-                          MruWindowTracker::WindowList* windows) {
-  for (size_t i = 0; i < window->children().size(); ++i)
-    AddAllChildren(window->children()[i], windows);
-}
-
 // Adds the windows that can be cycled through for the specified window id to
 // |windows|.
 void AddTrackedWindows(aura::RootWindow* root,
                      int container_id,
                      MruWindowTracker::WindowList* windows) {
   aura::Window* container = Shell::GetContainer(root, container_id);
-  if (container_id == internal::kShellWindowId_DefaultContainer)
-    AddWorkspaceChildren(container, windows);
-  else
-    AddAllChildren(container, windows);
+  const MruWindowTracker::WindowList& children(container->children());
+  windows->insert(windows->end(), children.begin(), children.end());
 }
 
 // Returns a list of windows ordered by their stacking order.
@@ -129,16 +113,6 @@ MruWindowTracker::~MruWindowTracker() {
       if (container)
         container->RemoveObserver(this);
     }
-    aura::Window* default_container =
-        Shell::GetContainer(*iter, internal::kShellWindowId_DefaultContainer);
-    if (default_container) {
-      for (size_t i = 0; i < default_container->children().size(); ++i) {
-        aura::Window* workspace_window = default_container->children()[i];
-        DCHECK_EQ(internal::kShellWindowId_WorkspaceContainer,
-                  workspace_window->id());
-        workspace_window->RemoveObserver(this);
-      }
-    }
   }
 
   activation_client_->RemoveObserver(this);
@@ -159,16 +133,6 @@ void MruWindowTracker::OnRootWindowAdded(aura::RootWindow* root_window) {
     aura::Window* container =
         Shell::GetContainer(root_window, kContainerIds[i]);
     container->AddObserver(this);
-  }
-
-  aura::Window* default_container =
-      Shell::GetContainer(root_window,
-                          internal::kShellWindowId_DefaultContainer);
-  for (size_t i = 0; i < default_container->children().size(); ++i) {
-    aura::Window* workspace_window = default_container->children()[i];
-    DCHECK_EQ(internal::kShellWindowId_WorkspaceContainer,
-              workspace_window->id());
-    workspace_window->AddObserver(this);
   }
 }
 
@@ -192,11 +156,10 @@ bool MruWindowTracker::IsTrackedContainer(aura::Window* window) {
   if (!window)
     return false;
   for (size_t i = 0; i < arraysize(kContainerIds); ++i) {
-    if (window->id() == kContainerIds[i]) {
+    if (window->id() == kContainerIds[i])
       return true;
-    }
   }
-  return window->id() == internal::kShellWindowId_WorkspaceContainer;
+  return false;
 }
 
 void MruWindowTracker::OnWindowActivated(aura::Window* gained_active,
@@ -208,15 +171,8 @@ void MruWindowTracker::OnWindowActivated(aura::Window* gained_active,
   }
 }
 
-void MruWindowTracker::OnWindowAdded(aura::Window* window) {
-  if (window->id() == internal::kShellWindowId_WorkspaceContainer)
-    window->AddObserver(this);
-}
-
 void MruWindowTracker::OnWillRemoveWindow(aura::Window* window) {
   mru_windows_.remove(window);
-  if (window->id() == internal::kShellWindowId_WorkspaceContainer)
-    window->RemoveObserver(this);
 }
 
 void MruWindowTracker::OnWindowDestroying(aura::Window* window) {

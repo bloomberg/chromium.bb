@@ -146,13 +146,14 @@ class DockedWindowResizerTest
 
   // Panels are parented by panel container during drags.
   // Docked windows are parented by dock container during drags.
-  // All other windows that we are testing here have workspace as a parent.
+  // All other windows that we are testing here have default container as a
+  // parent.
   int CorrectContainerIdDuringDrag(DockedState is_docked) {
     if (window_type_ == aura::client::WINDOW_TYPE_PANEL)
       return internal::kShellWindowId_PanelContainer;
     if (is_docked == DOCKED)
       return internal::kShellWindowId_DockedContainer;
-    return internal::kShellWindowId_WorkspaceContainer;
+    return internal::kShellWindowId_DefaultContainer;
   }
 
   // Test dragging the window vertically (to detach if it is a panel) and then
@@ -205,7 +206,7 @@ class DockedWindowResizerTest
       DragEnd();
 
       EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-      EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+      EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
                 window->parent()->id());
       EXPECT_EQ(root_window, window->GetRootWindow());
     }
@@ -275,7 +276,7 @@ TEST_P(DockedWindowResizerTest, AttachRightOvershoot) {
 }
 
 // Verifies a window can be dragged and then if not quite reaching the screen
-// edge it does not get docked to a screen edge and stays in the workspace.
+// edge it does not get docked to a screen edge and stays in the desktop.
 TEST_P(DockedWindowResizerTest, AttachRightUndershoot) {
   if (!SupportsHostWindowResize())
     return;
@@ -286,7 +287,7 @@ TEST_P(DockedWindowResizerTest, AttachRightUndershoot) {
   // The window should not be attached to the dock.
   EXPECT_EQ(window->GetRootWindow()->bounds().right() - 1,
             window->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 }
 
@@ -320,7 +321,7 @@ TEST_P(DockedWindowResizerTest, AttachLeftOvershoot) {
 }
 
 // Verifies a window can be dragged and then if not quite reaching the screen
-// edge it does not get docked to a screen edge and stays in the workspace.
+// edge it does not get docked to a screen edge and stays in the desktop.
 TEST_P(DockedWindowResizerTest, AttachLeftUndershoot) {
   if (!SupportsHostWindowResize())
     return;
@@ -331,7 +332,7 @@ TEST_P(DockedWindowResizerTest, AttachLeftUndershoot) {
   // The window should not be attached to the dock.
   EXPECT_EQ(window->GetRootWindow()->bounds().x() + 1,
             window->GetBoundsInScreen().x());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 }
 
@@ -405,10 +406,10 @@ TEST_P(DockedWindowResizerTest, AttachTryDetach) {
   // Release the mouse and the window should be no longer attached to the dock.
   DragEnd();
 
-  // The window should be floating on a workspace again.
+  // The window should be floating on the desktop again.
   EXPECT_EQ(window->GetRootWindow()->bounds().right() - 32,
             window->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 }
 
@@ -467,10 +468,10 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows)
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 
-  // The second window should be floating on a workspace again.
+  // The second window should be floating on the desktop again.
   EXPECT_EQ(w2->GetRootWindow()->bounds().right() - 32,
             w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             w2->parent()->id());
 }
 
@@ -493,7 +494,7 @@ TEST_P(DockedWindowResizerTest, AttachOnTwoSides)
 
   // The second window should be near the left edge but not snapped.
   EXPECT_EQ(w2->GetRootWindow()->bounds().x(), w2->GetBoundsInScreen().x());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
 }
 
 // Reverting drag
@@ -519,7 +520,7 @@ TEST_P(DockedWindowResizerTest, RevertDragRestoresAttachment) {
   ASSERT_NO_FATAL_FAILURE(DragStart(window.get()));
   DragMove(-50, 0);
   DragEnd();
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 }
 
@@ -548,7 +549,7 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
   DragEnd();
   EXPECT_NE(window->GetRootWindow()->bounds().right(),
             window->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
@@ -575,7 +576,7 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
   DragEnd();
   EXPECT_NE(window->GetRootWindow()->bounds().right(),
             window->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
 
@@ -597,7 +598,7 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
 }
 
 // Dock two windows, undock one.
-// Test the docked windows area size and workspace resizing.
+// Test the docked windows area size and default container resizing.
 TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne)
 {
   if (!SupportsHostWindowResize())
@@ -659,18 +660,18 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne)
   // Release the mouse and the window should be no longer attached to the edge.
   DragEnd();
 
-  // The second window should be floating on a workspace again.
+  // The second window should be floating on the desktop again.
   EXPECT_EQ(w2->GetRootWindow()->bounds().right() -
             (w2->bounds().width()/2 + 20),
             w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
   // Dock width should be set to remaining single docked window.
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
   EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
 }
 
-// Dock one windows. Maximize other testing workspace resizing.
+// Dock one windows. Maximize other testing desktop resizing.
 TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther)
 {
   if (!SupportsHostWindowResize())
@@ -701,16 +702,16 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther)
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 
-  // The second window should be floating on a workspace.
+  // The second window should be floating on the desktop.
   EXPECT_EQ(w2->GetRootWindow()->bounds().right() -
             (w2->bounds().width()/2 + 20),
             w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
   // Dock width should be set to remaining single docked window.
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
   EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // Workspace work area should now shrink.
+  // Desktop work area should now shrink.
   EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
             manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
@@ -732,9 +733,9 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther)
             manager->alignment_);
   // Release the mouse and the window should be no longer attached to the edge.
   DragEnd();
-  // Dock should get shrunk and workspace should get expanded.
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
+  // Dock should get shrunk and desktop should get expanded.
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w1->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
   EXPECT_EQ(DOCKED_ALIGNMENT_NONE, manager->alignment_);
   EXPECT_EQ(0, manager->docked_width_);
   // The second window should now get resized and take up the whole screen.
@@ -749,12 +750,12 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther)
   EXPECT_EQ(DOCKED_ALIGNMENT_NONE, manager->alignment_);
   // Release the mouse and the window should be now attached to the edge.
   DragEnd();
-  // Dock should get expanded and workspace should get shrunk.
+  // Dock should get expanded and desktop should get shrunk.
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
   EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // Second window should still be in a workspace.
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
+  // Second window should still be in the desktop.
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
   // Maximized window should be shrunk.
   EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
             manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
@@ -766,7 +767,7 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther)
   EXPECT_EQ(restored_bounds, w2->bounds());
 }
 
-// Dock one window. Test the sticky behavior near screen or workspace edge.
+// Dock one window. Test the sticky behavior near screen or desktop edge.
 TEST_P(DockedWindowResizerTest, AttachOneTestSticky)
 {
   if (!SupportsHostWindowResize())
@@ -793,15 +794,15 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky)
   EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
   EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
 
-  // Position second window in the workspace just to the right of the docked w1.
+  // Position second window in the desktop just to the right of the docked w1.
   DragToVerticalPositionRelativeToEdge(DOCKED_EDGE_LEFT,
                                        w2.get(),
                                        w1->bounds().right() + 20,
                                        50);
-  // The second window should be floating on a workspace.
+  // The second window should be floating on the desktop.
   EXPECT_EQ(w2->GetRootWindow()->bounds().x() + (w1->bounds().right() + 20),
             w2->GetBoundsInScreen().x());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
   // Dock width should be set to that of a single docked window.
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
@@ -817,9 +818,9 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky)
   // Dock should still have only one window in it.
   EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
   EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // The second window should still be in the workspace.
+  // The second window should still be in the desktop.
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
 
   // Drag w2 by a bit more - it should resist the drag (stuck edges)
   int start_x = w2->bounds().x();
@@ -836,9 +837,9 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky)
   // Dock should still have only one window in it
   EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
   EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // The second window should still be in the workspace
+  // The second window should still be in the desktop
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
 
   // Drag w2 by more than the stuck threshold and drop it into the dock.
   ASSERT_NO_FATAL_FAILURE(DragStart(w2.get()));
@@ -852,18 +853,18 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky)
   // Both windows are docked now.
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
-  // Dock should get expanded and workspace should get shrunk.
+  // Dock should get expanded and desktop should get shrunk.
   EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
   EXPECT_EQ(std::max(w1->bounds().width(), w2->bounds().width()),
             manager->docked_width_);
-  // Workspace work area should now shrink by dock width.
+  // Desktop work area should now shrink by dock width.
   EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
             manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 }
 
 // Dock two windows, resize one or both.
-// Test the docked windows area size and remaining workspace resizing.
+// Test the docked windows area size and remaining desktop resizing.
 TEST_P(DockedWindowResizerTest, ResizeTwoWindows)
 {
   if (!SupportsHostWindowResize())
@@ -917,7 +918,7 @@ TEST_P(DockedWindowResizerTest, ResizeTwoWindows)
   EXPECT_EQ(previous_width + kResizeSpan1, w1->bounds().width());
   EXPECT_GT(w1->bounds().width(), w2->bounds().width());
   EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // Workspace work area should shrink.
+  // Desktop work area should shrink.
   EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
             manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
@@ -944,7 +945,7 @@ TEST_P(DockedWindowResizerTest, ResizeTwoWindows)
   EXPECT_EQ(previous_width + kResizeSpan2, w1->bounds().width());
   EXPECT_GT(w1->bounds().width(), w2->bounds().width());
   EXPECT_EQ(w2->bounds().width(), manager->docked_width_);
-  // Workspace work area should shrink.
+  // Desktop work area should shrink.
   EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
             manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
@@ -969,7 +970,7 @@ TEST_P(DockedWindowResizerTest, ResizeTwoWindows)
   EXPECT_EQ(previous_width - kResizeSpan3, w1->bounds().width());
   EXPECT_GT(w1->bounds().width(), w2->bounds().width());
   EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // Workspace work area should shrink.
+  // Desktop work area should shrink.
   EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
             manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
@@ -995,13 +996,13 @@ TEST_P(DockedWindowResizerTest, ResizeTwoWindows)
   EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
   // Release the mouse and the window should be no longer attached to the edge.
   DragEnd();
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
   // Dock should get shrunk to minimum size.
   EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
   EXPECT_EQ(manager->kMinDockWidth, manager->docked_width_);
   // The first window should be still docked.
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  // Workspace work area should be inset.
+  // Desktop work area should be inset.
   EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
             manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());

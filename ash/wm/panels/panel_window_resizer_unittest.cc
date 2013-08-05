@@ -119,7 +119,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     DragEnd();
 
     EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-    EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+    EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
               window->parent()->id());
     EXPECT_EQ(root_window, window->GetRootWindow());
 
@@ -291,7 +291,7 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
   EXPECT_EQ(initial_bounds.x(), window->GetBoundsInScreen().x());
   EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
   EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 
   DragStart(window.get());
@@ -301,7 +301,7 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
   EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
   EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
   EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 }
 
@@ -322,7 +322,7 @@ TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
   EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
   EXPECT_EQ(initial_bounds.y() - 100, window->GetBoundsInScreen().y());
   EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 }
 
@@ -401,7 +401,7 @@ TEST_F(PanelWindowResizerTest, RevertDragRestoresAttachment) {
   DragMove(0, -100);
   DragEnd();
   EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 
   // Drag back to launcher.
@@ -411,7 +411,7 @@ TEST_F(PanelWindowResizerTest, RevertDragRestoresAttachment) {
   // When the drag is reverted it should remain detached.
   DragRevert();
   EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 }
 
@@ -420,7 +420,7 @@ TEST_F(PanelWindowResizerTest, DragMovesToPanelLayer) {
   DragStart(window.get());
   DragMove(0, -100);
   DragEnd();
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 
   // While moving the panel window should be moved to the panel container.
@@ -430,7 +430,7 @@ TEST_F(PanelWindowResizerTest, DragMovesToPanelLayer) {
   DragEnd();
 
   // When dropped it should return to the default container.
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer,
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 }
 

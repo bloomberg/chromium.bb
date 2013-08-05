@@ -13,7 +13,6 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace_controller.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -184,24 +183,21 @@ std::vector<Window*> GetWindowsForSoloHeaderUpdate(RootWindow* root_window) {
   std::vector<Window*> windows;
   // During shutdown there may not be a workspace controller. In that case
   // we don't care about updating any windows.
-  ash::internal::WorkspaceController* workspace_controller =
-      ash::GetRootWindowController(root_window)->workspace_controller();
-  if (workspace_controller) {
-    // Avoid memory allocations for typical window counts.
-    windows.reserve(16);
-    // Collect windows from the active workspace.
-    Window* workspace = workspace_controller->GetActiveWorkspaceWindow();
-    windows.insert(windows.end(),
-                   workspace->children().begin(),
-                   workspace->children().end());
-    // Collect "always on top" windows.
-    Window* top_container =
-        ash::Shell::GetContainer(
-            root_window, ash::internal::kShellWindowId_AlwaysOnTopContainer);
-    windows.insert(windows.end(),
-                   top_container->children().begin(),
-                   top_container->children().end());
-  }
+  // Avoid memory allocations for typical window counts.
+  windows.reserve(16);
+  // Collect windows from the desktop.
+  Window* desktop = ash::Shell::GetContainer(
+      root_window, ash::internal::kShellWindowId_DefaultContainer);
+  windows.insert(windows.end(),
+                 desktop->children().begin(),
+                 desktop->children().end());
+  // Collect "always on top" windows.
+  Window* top_container =
+      ash::Shell::GetContainer(
+          root_window, ash::internal::kShellWindowId_AlwaysOnTopContainer);
+  windows.insert(windows.end(),
+                 top_container->children().begin(),
+                 top_container->children().end());
   return windows;
 }
 }  // namespace
@@ -291,7 +287,7 @@ void FramePainter::Init(views::Widget* frame,
   window_->AddObserver(this);
 
   // Solo-window header updates are handled by the workspace controller when
-  // this window is added to the active workspace.
+  // this window is added to the desktop.
 }
 
 // static
@@ -899,8 +895,8 @@ void FramePainter::UpdateSoloWindowInRoot(RootWindow* root,
   if (old_solo_header == new_solo_header)
     return;
   root->SetProperty(internal::kSoloWindowHeaderKey, new_solo_header);
-  // Invalidate all the window frames in the active workspace. There should
-  // only be a few.
+  // Invalidate all the window frames in the desktop. There should only be
+  // a few.
   std::vector<Window*> windows = GetWindowsForSoloHeaderUpdate(root);
   for (std::vector<Window*>::const_iterator it = windows.begin();
        it != windows.end();

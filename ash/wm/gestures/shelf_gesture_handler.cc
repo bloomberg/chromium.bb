@@ -45,7 +45,7 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
 
   // The gesture are disabled for fullscreen windows that are not in immersive
   // mode.
-  aura::Window* fullscreen = controller->GetFullscreenWindow();
+  const aura::Window* fullscreen = controller->GetFullscreenWindow();
   if (fullscreen && !shelf->FullscreenWithMinimalChrome())
     return false;
 

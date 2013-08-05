@@ -24,7 +24,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
-#include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -62,7 +61,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   // It may be possible to refactor and eliminate chaining.
   WindowResizer* window_resizer = NULL;
   if (window->parent() &&
-      (window->parent()->id() == internal::kShellWindowId_WorkspaceContainer ||
+      (window->parent()->id() == internal::kShellWindowId_DefaultContainer ||
        window->parent()->id() == internal::kShellWindowId_DockedContainer ||
        window->parent()->id() == internal::kShellWindowId_PanelContainer)) {
     // Allow dragging maximized windows if it's not tracked by workspace. This
@@ -703,13 +702,9 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     const aura::RootWindow* root_window = *iter;
-    internal::WorkspaceController* workspace_controller =
-        GetRootWindowController(root_window)->workspace_controller();
-    if (!workspace_controller)
-      continue;
-    // Test all children from the active workspace in each root window.
-    const aura::Window::Windows& children =
-        workspace_controller->GetActiveWorkspaceWindow()->children();
+    // Test all children from the desktop in each root window.
+    const aura::Window::Windows& children = Shell::GetContainer(
+        root_window, kShellWindowId_DefaultContainer)->children();
     for (aura::Window::Windows::const_reverse_iterator i = children.rbegin();
          i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
       aura::Window* other = *i;

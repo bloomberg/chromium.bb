@@ -113,14 +113,9 @@ class WorkspaceControllerTest : public test::AshTestBase {
     return window;
   }
 
-  aura::Window* GetViewport() {
-    return Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                               kShellWindowId_DefaultContainer);
-  }
-
   aura::Window* GetDesktop() {
     return Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                               kShellWindowId_WorkspaceContainer);
+                               kShellWindowId_DefaultContainer);
   }
 
   gfx::Rect GetFullscreenBounds(aura::Window* window) {

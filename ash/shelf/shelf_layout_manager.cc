@@ -522,7 +522,7 @@ bool ShelfLayoutManager::FullscreenWithMinimalChrome() const {
   RootWindowController* controller = GetRootWindowController(root_window_);
   if (!controller)
     return false;
-  aura::Window* window = controller->GetFullscreenWindow();
+  const aura::Window* window = controller->GetFullscreenWindow();
   if (!window)
     return false;
   if (!window->GetProperty(kFullscreenUsesMinimalChromeKey))

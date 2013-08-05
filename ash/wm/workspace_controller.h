@@ -34,9 +34,6 @@ class ASH_EXPORT WorkspaceController {
 
   void SetShelf(ShelfLayoutManager* shelf);
 
-  // Returns the container window for the active workspace, never NULL.
-  aura::Window* GetActiveWorkspaceWindow();
-
   // Starts the animation that occurs on first login.
   void DoInitialAnimation();
 
@@ -46,7 +43,6 @@ class ASH_EXPORT WorkspaceController {
   aura::Window* viewport_;
 
   internal::ShelfLayoutManager* shelf_;
-  scoped_ptr<aura::Window> desktop_;
   scoped_ptr<internal::WorkspaceEventHandler> event_handler_;
   internal::WorkspaceLayoutManager* layout_manager_;
 

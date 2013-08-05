@@ -157,6 +157,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
       aura::Window* window);
 
   aura::Window* GetContainer(int container_id);
+  const aura::Window* GetContainer(int container_id) const;
 
   // Initializes the RootWindowController. |first_run_after_boot| is
   // set to true only for primary root window after boot.
@@ -204,7 +205,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Returns the window, if any, which is in fullscreen mode in the active
   // workspace. Exposed here so clients of Ash don't need to know the details
   // of workspace management.
-  aura::Window* GetFullscreenWindow() const;
+  const aura::Window* GetFullscreenWindow() const;
 
  private:
   void InitLayoutManagers();

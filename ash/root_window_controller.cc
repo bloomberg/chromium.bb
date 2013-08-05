@@ -81,26 +81,6 @@ aura::Window* CreateContainer(int window_id,
   return container;
 }
 
-// Returns all the children of the workspace windows, eg the standard top-level
-// windows.
-std::vector<aura::Window*> GetWorkspaceWindows(aura::RootWindow* root) {
-  using aura::Window;
-
-  std::vector<Window*> windows;
-  Window* container = Shell::GetContainer(
-      root, internal::kShellWindowId_DefaultContainer);
-  for (Window::Windows::const_reverse_iterator i =
-           container->children().rbegin();
-       i != container->children().rend(); ++i) {
-    Window* workspace_window = *i;
-    if (workspace_window->id() == internal::kShellWindowId_WorkspaceContainer) {
-      windows.insert(windows.end(), workspace_window->children().begin(),
-                     workspace_window->children().end());
-    }
-  }
-  return windows;
-}
-
 // Reparents |window| to |new_parent|.
 void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
   // Update the restore bounds to make it relative to the display.
@@ -114,7 +94,6 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
   // Set of windows to move.
   const int kContainerIdsToMove[] = {
-    internal::kShellWindowId_WorkspaceContainer,
     internal::kShellWindowId_DefaultContainer,
     internal::kShellWindowId_DockedContainer,
     internal::kShellWindowId_PanelContainer,
@@ -124,14 +103,8 @@ void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
     internal::kShellWindowId_InputMethodContainer,
     internal::kShellWindowId_UnparentedControlContainer,
   };
-  // For workspace windows we need to manually reparent the windows. This way
-  // workspace can move the windows to the appropriate workspace.
-  std::vector<aura::Window*> windows(GetWorkspaceWindows(src));
   for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
     int id = kContainerIdsToMove[i];
-    if (id == internal::kShellWindowId_DefaultContainer)
-      continue;
-
     aura::Window* src_container = Shell::GetContainer(src, id);
     aura::Window* dst_container = Shell::GetContainer(dst, id);
     while (!src_container->children().empty()) {
@@ -262,6 +235,10 @@ RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
 }
 
 aura::Window* RootWindowController::GetContainer(int container_id) {
+  return root_window_->GetChildById(container_id);
+}
+
+const aura::Window* RootWindowController::GetContainer(int container_id) const {
   return root_window_->GetChildById(container_id);
 }
 
@@ -422,8 +399,8 @@ void RootWindowController::UpdateShelfVisibility() {
   shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
-aura::Window* RootWindowController::GetFullscreenWindow() const {
-  aura::Window* container = workspace_controller_->GetActiveWorkspaceWindow();
+const aura::Window* RootWindowController::GetFullscreenWindow() const {
+  const aura::Window* container = GetContainer(kShellWindowId_DefaultContainer);
   for (size_t i = 0; i < container->children().size(); ++i) {
     aura::Window* child = container->children()[i];
     if (wm::IsWindowFullscreen(child))
