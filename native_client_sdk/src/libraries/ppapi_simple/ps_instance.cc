@@ -122,7 +122,7 @@ bool PSInstance::Init(uint32_t arg,
   StartInfo* si = new StartInfo;
 
   si->inst_ = this;
-  si->argc_ = 1;
+  si->argc_ = 0;
   si->argv_ = new char *[arg+1];
   si->argv_[0] = NULL;
 
