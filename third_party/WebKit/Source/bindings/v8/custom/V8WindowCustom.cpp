@@ -379,52 +379,52 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+
     DOMWindow* window = V8Window::toNative(info.Holder());
     if (!window)
         return;
 
     Frame* frame = window->frame();
+    // window is detached from a frame.
     if (!frame)
         return;
 
-    AtomicString propertyName = toWebCoreAtomicString(name);
-    Frame* child = frame->tree()->scopedChild(propertyName);
+    // Search sub-frames.
+    AtomicString propName = toWebCoreAtomicString(name);
+    Frame* child = frame->tree()->scopedChild(propName);
     if (child) {
         v8SetReturnValue(info, toV8Fast(child->domWindow(), info, window));
         return;
     }
 
+    // Search IDL functions defined in the prototype
     if (!info.Holder()->GetRealNamedProperty(name).IsEmpty())
         return;
 
-    Document* document = frame->document();
-    if (!document || !document->isHTMLDocument())
-        return;
+    // Search named items in the document.
+    Document* doc = frame->document();
 
-    HTMLDocument* htmlDocument = toHTMLDocument(document);
-
-    if (propertyName.isNull() || !htmlDocument->windowNamedItemMap().contains(propertyName.impl()))
-        return;
-
-    if (htmlDocument->windowNamedItemMap().mightContainMultiple(propertyName.impl())) {
-        RefPtr<HTMLCollection> items = htmlDocument->windowNamedItems(propertyName.impl());
-        ASSERT(!items->isEmpty());
-        if (items->hasExactlyOneItem()) {
-            v8SetReturnValue(info, toV8Fast(items->item(0), info, window));
-            return;
+    if (doc && doc->isHTMLDocument()) {
+        if (toHTMLDocument(doc)->hasNamedItem(propName.impl()) || doc->hasElementWithId(propName.impl())) {
+            RefPtr<HTMLCollection> items = doc->windowNamedItems(propName);
+            if (!items->isEmpty()) {
+                if (items->hasExactlyOneItem()) {
+                    v8SetReturnValue(info, toV8Fast(items->item(0), info, window));
+                    return;
+                }
+                v8SetReturnValue(info, toV8Fast(items.release(), info, window));
+                return;
+            }
         }
-        v8SetReturnValue(info, toV8Fast(items.release(), info, window));
-        return;
     }
-
-    Node* node = htmlDocument->windowNamedItemMap().getElementByWindowNamedItem(propertyName.impl(), document);
-    v8SetReturnValue(info, toV8Fast(node, info, window));
 }
+
 
 void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     WindowSetTimeoutImpl(args, true);
 }
+
 
 void V8Window::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
