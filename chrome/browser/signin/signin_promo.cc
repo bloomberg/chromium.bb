@@ -125,10 +125,6 @@ bool ShouldShowPromoAtStartup(Profile* profile, bool is_new_profile) {
   if (!ShouldShowPromo(profile))
     return false;
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kNoFirstRun))
-    is_new_profile = false;
-
   if (!is_new_profile) {
     if (!HasShownPromoAtStartup(profile))
       return false;

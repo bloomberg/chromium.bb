@@ -42,6 +42,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
 #include "base/callback.h"
@@ -446,17 +447,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, AddCustomFirstRunTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoNoWelcomePage) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
-    return;
-#endif
-
-  // Trick this test into thinking the promo has been shown for this profile; so
-  // that it will show it again (otherwise it skips showing it since
-  // --no-first-run is specified in browser tests).
-  signin::DidShowPromoAtStartup(browser()->profile());
-
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy,
@@ -472,7 +462,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoNoWelcomePage) {
   EXPECT_EQ(1, tab_strip->count());
 
   if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
-    EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
+    EXPECT_EQ(signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
+              tab_strip->GetWebContentsAt(0)->GetURL());
   } else {
     EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
               tab_strip->GetWebContentsAt(0)->GetURL());
@@ -480,16 +471,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoNoWelcomePage) {
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
-    return;
-#endif
-
-  // Trick this test into thinking the promo has been shown for this profile; so
-  // that it will show it again (otherwise it skips showing it since
-  // --no-first-run is specified in browser tests).
-  signin::DidShowPromoAtStartup(browser()->profile());
   first_run::SetShouldShowWelcomePage();
 
   // Do a simple non-process-startup browser launch.
@@ -507,7 +488,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
   EXPECT_EQ(2, tab_strip->count());
 
   if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
-    EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
+    EXPECT_EQ(signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
+              tab_strip->GetWebContentsAt(0)->GetURL());
   } else {
     EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
               tab_strip->GetWebContentsAt(0)->GetURL());
@@ -517,19 +499,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
-    return;
-#endif
-
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
-
-  // Trick this test into thinking the promo has been shown for this profile; so
-  // that it will show it again (otherwise it skips showing it since
-  // --no-first-run is specified in browser tests).
-  signin::DidShowPromoAtStartup(browser()->profile());
 
   // The welcome page should not be shown, even if
   // first_run::ShouldShowWelcomePage() says so, when there are already
@@ -550,7 +521,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
     EXPECT_EQ(2, tab_strip->count());
-    EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
+    EXPECT_EQ(signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
+              tab_strip->GetWebContentsAt(0)->GetURL());
     EXPECT_EQ("title1.html",
               tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
   } else {
@@ -564,20 +536,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
 // tabs, but the welcome page was explcitly added to the first run tabs.
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
                        SyncPromoWithFirstRunTabsIncludingWelcomePage) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
-    return;
-#endif
-
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
   browser_creator.AddFirstRunTab(GURL("http://welcome_page"));
-
-  // Trick this test into thinking the promo has been shown for this profile; so
-  // that it will show it again (otherwise it skips showing it since
-  // --no-first-run is specified in browser tests).
-  signin::DidShowPromoAtStartup(browser()->profile());
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -593,7 +554,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
     EXPECT_EQ(3, tab_strip->count());
-    EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
+    EXPECT_EQ(signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
+              tab_strip->GetWebContentsAt(0)->GetURL());
     EXPECT_EQ("title1.html",
               tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
     EXPECT_EQ(internals::GetWelcomePageURL(),
@@ -1042,6 +1004,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBrowserCreatorTest,
 
 class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
  protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -1050,18 +1013,12 @@ class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 };
 
-void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
-  // Remove the --no-first-run flag from the command line.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  CommandLine::StringVector argv = command_line->argv();
-  const std::string first_run_flag = std::string("--") + switches::kNoFirstRun;
-#if defined(OS_WIN)
-  argv.erase(std::find(argv.begin(), argv.end(), ASCIIToWide(first_run_flag)));
-#else
-  argv.erase(std::find(argv.begin(), argv.end(), first_run_flag));
-#endif
-  command_line->InitFromArgv(argv);
+void StartupBrowserCreatorFirstRunTest::SetUpCommandLine(
+    CommandLine* command_line) {
+  command_line->AppendSwitch(switches::kForceFirstRun);
+}
 
+void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
   // Set a policy that prevents the first-run dialog from being shown.
@@ -1140,8 +1097,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, SyncPromoAllowed) {
   // Verify that the sync promo and the welcome page are shown.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
-  EXPECT_EQ("accounts.google.com",
-            tab_strip->GetWebContentsAt(0)->GetURL().host());
+  EXPECT_EQ(signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
+            tab_strip->GetWebContentsAt(0)->GetURL());
   EXPECT_EQ(internals::GetWelcomePageURL(),
             tab_strip->GetWebContentsAt(1)->GetURL());
 }
@@ -1176,8 +1133,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Verify that the first-run tab is shown and the sync promo has been added.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
-  EXPECT_EQ("accounts.google.com",
-            tab_strip->GetWebContentsAt(0)->GetURL().host());
+  EXPECT_EQ(signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
+            tab_strip->GetWebContentsAt(0)->GetURL());
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }
@@ -1218,8 +1175,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   ASSERT_EQ(2, tab_strip->count());
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
-  EXPECT_EQ("accounts.google.com",
-            tab_strip->GetWebContentsAt(1)->GetURL().host());
+  EXPECT_EQ(signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
+            tab_strip->GetWebContentsAt(1)->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
@@ -1255,8 +1212,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // been replaced by the sync promo.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
-  EXPECT_EQ("accounts.google.com",
-            tab_strip->GetWebContentsAt(0)->GetURL().host());
+  EXPECT_EQ(signin::GetPromoURL(signin::SOURCE_START_PAGE, false),
+            tab_strip->GetWebContentsAt(0)->GetURL());
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }
