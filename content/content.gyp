@@ -46,7 +46,7 @@
           'target_name': 'content',
           'type': 'none',
           'dependencies': [
-            'content_app',
+            'content_app_browser',
             'content_browser',
             'content_child',
             'content_common',
@@ -65,7 +65,7 @@
           ],
         },
         {
-          'target_name': 'content_app',
+          'target_name': 'content_app_browser',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'includes': [
@@ -98,6 +98,17 @@
                 'CHROME_MULTIPLE_DLL_CHILD',
               ],
             }],
+          ],
+        },
+        {
+          'target_name': 'content_app_both',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'includes': [
+            'content_app.gypi',
+          ],
+          'dependencies': [
+            'content_common',
           ],
         },
         {
@@ -290,7 +301,7 @@
           },
         },
         {
-          'target_name': 'content_app',
+          'target_name': 'content_app_browser',
           'type': 'none',
           'dependencies': ['content', 'content_browser'],
         },
@@ -298,6 +309,11 @@
           'target_name': 'content_app_child',
           'type': 'none',
           'dependencies': ['content', 'content_child'],
+        },
+        {
+          'target_name': 'content_app_both',
+          'type': 'none',
+          'dependencies': ['content'],
         },
         {
           'target_name': 'content_browser',

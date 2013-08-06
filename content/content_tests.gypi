@@ -16,7 +16,7 @@
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui_test_support',
         '../url/url.gyp:url_lib',
-        'content_app',
+        'content_app_both',
         'content_browser',
         'content_common',
       ],

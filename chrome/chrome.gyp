@@ -13,7 +13,6 @@
     'chromium_browser_dependencies': [
       'common',
       'browser',
-      '../content/content.gyp:content_app',
       '../sync/sync.gyp:sync',
     ],
     'chromium_child_dependencies': [

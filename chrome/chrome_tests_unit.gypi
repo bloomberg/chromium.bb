@@ -20,7 +20,7 @@
         '../base/base.gyp:test_support_base',
         '../base/base.gyp:base_prefs_test_support',
         '../components/components.gyp:sessions_test_support',
-        '../content/content.gyp:content_app',
+        '../content/content.gyp:content_app_both',
         '../content/content.gyp:test_support_content',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net',
@@ -438,6 +438,7 @@
         '<@(chromium_child_dependencies)',
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
+        '../content/content.gyp:content_app_both',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
@@ -2591,6 +2592,7 @@
         # 1) everything that the chrome binaries depend on:
         '<@(chromium_browser_dependencies)',
         '<@(chromium_child_dependencies)',
+        '../content/content.gyp:content_app_both',
         # 2) test-specific support libraries:
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',

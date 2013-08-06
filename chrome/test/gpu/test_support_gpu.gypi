@@ -104,6 +104,7 @@
       'dependencies': [
         '<@(chromium_browser_dependencies)',
         '<@(chromium_child_dependencies)',
+        '../content/content.gyp:content_app_both',
         'chrome_resources.gyp:packed_resources',
         'chrome_resources.gyp:packed_extra_resources',
       ],

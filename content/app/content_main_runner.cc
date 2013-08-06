@@ -167,15 +167,14 @@ namespace content {
 
 base::LazyInstance<ContentBrowserClient>
     g_empty_content_browser_client = LAZY_INSTANCE_INITIALIZER;
-#if !defined(OS_IOS) && \
-    (!defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD))
+#if !defined(OS_IOS) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
 base::LazyInstance<ContentPluginClient>
     g_empty_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentRendererClient>
     g_empty_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentUtilityClient>
     g_empty_content_utility_client = LAZY_INSTANCE_INITIALIZER;
-#endif  // !OS_IOS
+#endif  // !OS_IOS && !CHROME_MULTIPLE_DLL_BROWSER
 
 #if defined(OS_WIN)
 
@@ -295,8 +294,7 @@ class ContentClientInitializer {
         content_client->browser_ = &g_empty_content_browser_client.Get();
     }
 
-#if !defined(OS_IOS) && \
-    (!defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD))
+#if !defined(OS_IOS) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
     if (process_type == switches::kPluginProcess ||
         process_type == switches::kPpapiPluginProcess) {
       if (delegate)
@@ -322,7 +320,7 @@ class ContentClientInitializer {
       if (!content_client->utility_)
         content_client->utility_ = &g_empty_content_utility_client.Get();
     }
-#endif  // !OS_IOS
+#endif  // !OS_IOS && !CHROME_MULTIPLE_DLL_BROWSER
   }
 };
 
@@ -410,10 +408,10 @@ int RunNamedProcessTypeMain(
     const MainFunctionParams& main_function_params,
     ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
-#if !defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
     { "",                            BrowserMain },
 #endif
-#if !defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD)
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 #if defined(ENABLE_PLUGINS)
     { switches::kPluginProcess,      PluginMain },
     { switches::kWorkerProcess,      WorkerMain },
@@ -423,7 +421,7 @@ int RunNamedProcessTypeMain(
     { switches::kUtilityProcess,     UtilityMain },
     { switches::kRendererProcess,    RendererMain },
     { switches::kGpuProcess,         GpuMain },
-#endif  // !CHROME_MULTIPLE_DLL || CHROME_MULTIPLE_DLL_CHILD
+#endif  // !CHROME_MULTIPLE_DLL_BROWSER
   };
 
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {

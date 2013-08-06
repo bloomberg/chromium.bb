@@ -80,6 +80,7 @@
           },
           'dependencies': [
             '<@(chromium_browser_dependencies)',
+            '../content/content.gyp:content_app_browser',
             'app/policy/cloud_policy_codegen.gyp:policy',
           ],
           'conditions': [

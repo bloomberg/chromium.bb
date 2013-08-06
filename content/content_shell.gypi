@@ -27,7 +27,7 @@
         'chromium_code': 1,
       },
       'dependencies': [
-        'content_app',
+        'content_app_both',
         'content_browser',
         'content_common',
         'content_gpu',

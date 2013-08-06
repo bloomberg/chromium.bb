@@ -80,7 +80,7 @@
         '../components/components.gyp:visitedlink_browser',
         '../components/components.gyp:visitedlink_renderer',
         '../components/components.gyp:web_contents_delegate_android',
-        '../content/content.gyp:content',
+        '../content/content.gyp:content_app_both',
         '../skia/skia.gyp:skia',
         '../gpu/gpu.gyp:command_buffer_service',
         '../gpu/gpu.gyp:gles2_implementation',
