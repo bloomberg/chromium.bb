@@ -2485,29 +2485,26 @@ void WebContentsImpl::OnWebUISend(const GURL& source_url,
 }
 
 void WebContentsImpl::OnRequestPpapiBrokerPermission(
-    int request_id,
+    int routing_id,
     const GURL& url,
     const base::FilePath& plugin_path) {
   if (!delegate_) {
-    OnPpapiBrokerPermissionResult(request_id, false);
+    OnPpapiBrokerPermissionResult(routing_id, false);
     return;
   }
 
   if (!delegate_->RequestPpapiBrokerPermission(
       this, url, plugin_path,
       base::Bind(&WebContentsImpl::OnPpapiBrokerPermissionResult,
-                 base::Unretained(this), request_id))) {
+                 base::Unretained(this), routing_id))) {
     NOTIMPLEMENTED();
-    OnPpapiBrokerPermissionResult(request_id, false);
+    OnPpapiBrokerPermissionResult(routing_id, false);
   }
 }
 
-void WebContentsImpl::OnPpapiBrokerPermissionResult(int request_id,
+void WebContentsImpl::OnPpapiBrokerPermissionResult(int routing_id,
                                                     bool result) {
-  RenderViewHostImpl* rvh = GetRenderViewHostImpl();
-  rvh->Send(new ViewMsg_PpapiBrokerPermissionResult(rvh->GetRoutingID(),
-                                                    request_id,
-                                                    result));
+  Send(new ViewMsg_PpapiBrokerPermissionResult(routing_id, result));
 }
 
 void WebContentsImpl::OnBrowserPluginMessage(const IPC::Message& message) {

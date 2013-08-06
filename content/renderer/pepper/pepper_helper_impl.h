@@ -38,9 +38,7 @@ struct WebCursorInfo;
 
 namespace content {
 class ContextProviderCommandBuffer;
-class PepperBroker;
 class PluginModule;
-class PPB_Broker_Impl;
 class RenderViewImpl;
 struct WebPluginInfo;
 
@@ -52,15 +50,6 @@ class PepperHelperImpl : public PepperHelper,
   virtual ~PepperHelperImpl();
 
   RenderViewImpl* render_view() { return render_view_; }
-
-  // A pointer is returned immediately, but it is not ready to be used until
-  // BrokerConnected has been called.
-  // The caller is responsible for calling Disconnect() on the returned pointer
-  // to clean up the corresponding resources allocated during this call.
-  PepperBroker* ConnectToBroker(PPB_Broker_Impl* client);
-
-  // Removes broker from pending_connect_broker_ if present. Returns true if so.
-  bool StopWaitingForBrokerConnection(PepperBroker* broker);
 
   // Notifies that |instance| has changed the cursor.
   // This will update the cursor appearance if it is currently over the plugin
@@ -136,13 +125,7 @@ class PepperHelperImpl : public PepperHelper,
   virtual void WillHandleMouseEvent() OVERRIDE;
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnDestruct() OVERRIDE;
-
-  void OnPpapiBrokerChannelCreated(int request_id,
-                                   base::ProcessId broker_pid,
-                                   const IPC::ChannelHandle& handle);
-  void OnPpapiBrokerPermissionResult(int request_id, bool result);
 
   // Attempts to create a PPAPI plugin for the given filepath. On success, it
   // will return the newly-created module.
@@ -156,9 +139,6 @@ class PepperHelperImpl : public PepperHelper,
   scoped_refptr<PluginModule> CreatePepperPluginModule(
       const WebPluginInfo& webplugin_info,
       bool* pepper_plugin_was_registered);
-
-  // Asynchronously attempts to create a PPAPI broker for the given plugin.
-  scoped_refptr<PepperBroker> CreateBroker(PluginModule* plugin_module);
 
   // Create a new HostDispatcher for proxying, hook it to the PluginModule,
   // and perform other common initialization.
@@ -175,12 +155,6 @@ class PepperHelperImpl : public PepperHelper,
   RenderViewImpl* render_view_;
 
   std::set<PepperPluginInstanceImpl*> active_instances_;
-
-  typedef IDMap<scoped_refptr<PepperBroker>, IDMapOwnPointer> BrokerMap;
-  BrokerMap pending_connect_broker_;
-
-  typedef IDMap<base::WeakPtr<PPB_Broker_Impl> > PermissionRequestMap;
-  PermissionRequestMap pending_permission_requests_;
 
   // Whether or not the focus is on a PPAPI plugin
   PepperPluginInstanceImpl* focused_plugin_;

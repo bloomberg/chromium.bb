@@ -171,11 +171,9 @@ class OpenChannelToPpapiBrokerCallback
     : public PpapiPluginProcessHost::BrokerClient {
  public:
   OpenChannelToPpapiBrokerCallback(RenderMessageFilter* filter,
-                                   int routing_id,
-                                   int request_id)
+                                   int routing_id)
       : filter_(filter),
-        routing_id_(routing_id),
-        request_id_(request_id) {
+        routing_id_(routing_id) {
   }
 
   virtual ~OpenChannelToPpapiBrokerCallback() {}
@@ -190,7 +188,6 @@ class OpenChannelToPpapiBrokerCallback
                                     base::ProcessId plugin_pid,
                                     int /* plugin_child_id */) OVERRIDE {
     filter_->Send(new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
-                                                        request_id_,
                                                         plugin_pid,
                                                         channel_handle));
     delete this;
@@ -203,7 +200,6 @@ class OpenChannelToPpapiBrokerCallback
  private:
   scoped_refptr<RenderMessageFilter> filter_;
   int routing_id_;
-  int request_id_;
 };
 
 }  // namespace
@@ -788,12 +784,11 @@ void RenderMessageFilter::OnDidDeleteOutOfProcessPepperInstance(
 
 void RenderMessageFilter::OnOpenChannelToPpapiBroker(
     int routing_id,
-    int request_id,
     const base::FilePath& path) {
   plugin_service_->OpenChannelToPpapiBroker(
       render_process_id_,
       path,
-      new OpenChannelToPpapiBrokerCallback(this, routing_id, request_id));
+      new OpenChannelToPpapiBrokerCallback(this, routing_id));
 }
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {

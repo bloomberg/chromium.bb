@@ -554,7 +554,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Callback function when requesting permission to access the PPAPI broker.
   // |result| is true if permission was granted.
-  void OnPpapiBrokerPermissionResult(int request_id, bool result);
+  void OnPpapiBrokerPermissionResult(int routing_id, bool result);
 
   // IPC message handlers.
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
@@ -611,7 +611,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnWebUISend(const GURL& source_url,
                    const std::string& name,
                    const base::ListValue& args);
-  void OnRequestPpapiBrokerPermission(int request_id,
+  void OnRequestPpapiBrokerPermission(int routing_id,
                                       const GURL& url,
                                       const base::FilePath& plugin_path);
   void OnBrowserPluginMessage(const IPC::Message& message);

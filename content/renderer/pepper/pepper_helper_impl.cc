@@ -37,7 +37,6 @@
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/pepper_broker.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
@@ -201,26 +200,6 @@ scoped_refptr<PluginModule> PepperHelperImpl::CreatePepperPluginModule(
   return module;
 }
 
-scoped_refptr<PepperBroker> PepperHelperImpl::CreateBroker(
-    PluginModule* plugin_module) {
-  DCHECK(plugin_module);
-  DCHECK(!plugin_module->GetBroker());
-
-  // The broker path is the same as the plugin.
-  const base::FilePath& broker_path = plugin_module->path();
-
-  scoped_refptr<PepperBroker> broker = new PepperBroker(plugin_module, this);
-
-  int request_id =
-      pending_connect_broker_.Add(new scoped_refptr<PepperBroker>(broker));
-
-  // Have the browser start the broker process for us.
-  Send(new ViewHostMsg_OpenChannelToPpapiBroker(
-      routing_id(), request_id, broker_path));
-
-  return broker;
-}
-
 RendererPpapiHost* PepperHelperImpl::CreateOutOfProcessModule(
     PluginModule* module,
     const base::FilePath& path,
@@ -251,42 +230,6 @@ RendererPpapiHost* PepperHelperImpl::CreateOutOfProcessModule(
 
   module->InitAsProxied(dispatcher.release());
   return host_impl;
-}
-
-void PepperHelperImpl::OnPpapiBrokerChannelCreated(
-    int request_id,
-    base::ProcessId broker_pid,
-    const IPC::ChannelHandle& handle) {
-  scoped_refptr<PepperBroker>* broker_ptr =
-      pending_connect_broker_.Lookup(request_id);
-  if (broker_ptr) {
-    scoped_refptr<PepperBroker> broker = *broker_ptr;
-    pending_connect_broker_.Remove(request_id);
-    broker->OnBrokerChannelConnected(broker_pid, handle);
-  } else {
-    // There is no broker waiting for this channel. Close it so the broker can
-    // clean up and possibly exit.
-    // The easiest way to clean it up is to just put it in an object
-    // and then close them. This failure case is not performance critical.
-    PepperBrokerDispatcherWrapper temp_dispatcher;
-    temp_dispatcher.Init(broker_pid, handle);
-  }
-}
-
-// Iterates through pending_connect_broker_ to find the broker.
-// Cannot use Lookup() directly because pending_connect_broker_ does not store
-// the raw pointer to the broker. Assumes maximum of one copy of broker exists.
-bool PepperHelperImpl::StopWaitingForBrokerConnection(
-    PepperBroker* broker) {
-  for (BrokerMap::iterator i(&pending_connect_broker_);
-       !i.IsAtEnd(); i.Advance()) {
-    if (i.GetCurrentValue()->get() == broker) {
-      pending_connect_broker_.Remove(i.GetCurrentKey());
-      return true;
-    }
-  }
-
-  return false;
 }
 
 void PepperHelperImpl::ViewWillInitiatePaint() {
@@ -518,55 +461,6 @@ void PepperHelperImpl::InstanceDeleted(
   }
 }
 
-// If a broker has not already been created for this plugin, creates one.
-PepperBroker* PepperHelperImpl::ConnectToBroker(
-    PPB_Broker_Impl* client) {
-  DCHECK(client);
-
-  PluginModule* plugin_module =
-      HostGlobals::Get()->GetInstance(client->pp_instance())->module();
-  if (!plugin_module)
-    return NULL;
-
-  scoped_refptr<PepperBroker> broker =
-      static_cast<PepperBroker*>(plugin_module->GetBroker());
-  if (!broker.get())
-    broker = CreateBroker(plugin_module);
-
-  int request_id = pending_permission_requests_.Add(
-      new base::WeakPtr<PPB_Broker_Impl>(client->AsWeakPtr()));
-  Send(new ViewHostMsg_RequestPpapiBrokerPermission(
-      routing_id(),
-      request_id,
-      client->GetDocumentUrl(),
-      plugin_module->path()));
-
-  // Adds a reference, ensuring that the broker is not deleted when
-  // |broker| goes out of scope.
-  broker->AddPendingConnect(client);
-
-  return broker.get();
-}
-
-void PepperHelperImpl::OnPpapiBrokerPermissionResult(int request_id,
-                                                     bool result) {
-  scoped_ptr<base::WeakPtr<PPB_Broker_Impl> > client_ptr(
-      pending_permission_requests_.Lookup(request_id));
-  DCHECK(client_ptr.get());
-  pending_permission_requests_.Remove(request_id);
-  base::WeakPtr<PPB_Broker_Impl> client = *client_ptr;
-  if (!client.get())
-    return;
-
-  PluginModule* plugin_module =
-      HostGlobals::Get()->GetInstance(client->pp_instance())->module();
-  if (!plugin_module)
-    return;
-
-  PepperBroker* broker = static_cast<PepperBroker*>(plugin_module->GetBroker());
-  broker->OnBrokerPermissionResult(client.get(), result);
-}
-
 void PepperHelperImpl::OnSetFocus(bool has_focus) {
   for (std::set<PepperPluginInstanceImpl*>::iterator i =
            active_instances_.begin();
@@ -628,18 +522,6 @@ void PepperHelperImpl::DidChangeCursor(PepperPluginInstanceImpl* instance,
 void PepperHelperImpl::DidReceiveMouseEvent(
     PepperPluginInstanceImpl* instance) {
   last_mouse_event_target_ = instance;
-}
-
-bool PepperHelperImpl::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PepperHelperImpl, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
-                        OnPpapiBrokerChannelCreated)
-    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerPermissionResult,
-                        OnPpapiBrokerPermissionResult)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void PepperHelperImpl::OnDestruct() {

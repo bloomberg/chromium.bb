@@ -24,7 +24,6 @@ class BrokerDispatcher;
 
 namespace content {
 
-class PepperHelperImpl;
 class PluginModule;
 
 // This object is NOT thread-safe.
@@ -46,7 +45,7 @@ class CONTENT_EXPORT PepperBrokerDispatcherWrapper {
 
 class PepperBroker : public base::RefCountedThreadSafe<PepperBroker>{
  public:
-  PepperBroker(PluginModule* plugin_module, PepperHelperImpl* helper);
+  explicit PepperBroker(PluginModule* plugin_module);
 
   // Decrements the references to the broker.
   // When there are no more references, this renderer's dispatcher is
@@ -96,8 +95,6 @@ class PepperBroker : public base::RefCountedThreadSafe<PepperBroker>{
   // Pointer to the associated plugin module.
   // Always set and cleared at the same time as the module's pointer to this.
   PluginModule* plugin_module_;
-
-  base::WeakPtr<PepperHelperImpl> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperBroker);
 };

@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process/process.h"
+#include "ipc/ipc_listener.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/shared_impl/resource.h"
@@ -16,11 +18,16 @@
 
 class GURL;
 
+namespace IPC {
+struct ChannelHandle;
+}
+
 namespace content {
 class PepperBroker;
 
 class PPB_Broker_Impl : public ::ppapi::Resource,
                         public ::ppapi::thunk::PPB_Broker_API,
+                        public IPC::Listener,
                         public base::SupportsWeakPtr<PPB_Broker_Impl> {
  public:
   explicit PPB_Broker_Impl(PP_Instance instance);
@@ -42,6 +49,13 @@ class PPB_Broker_Impl : public ::ppapi::Resource,
  private:
   virtual ~PPB_Broker_Impl();
 
+  // IPC::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  void OnPpapiBrokerChannelCreated(base::ProcessId broker_pid,
+                                   const IPC::ChannelHandle& handle);
+  void OnPpapiBrokerPermissionResult(bool result);
+
   // PluginDelegate ppapi broker object.
   // We don't own this pointer but are responsible for calling Disconnect on it.
   PepperBroker* broker_;
@@ -52,6 +66,8 @@ class PPB_Broker_Impl : public ::ppapi::Resource,
   // Pipe handle for the plugin instance to use to communicate with the broker.
   // Never owned by this object.
   int32_t pipe_handle_;
+
+  int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Broker_Impl);
 };

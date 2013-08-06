@@ -5,7 +5,6 @@
 #include "content/renderer/pepper/pepper_broker.h"
 
 #include "build/build_config.h"
-#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppb_broker_impl.h"
@@ -107,12 +106,9 @@ int32_t PepperBrokerDispatcherWrapper::SendHandleToBroker(
   return result;
 }
 
-PepperBroker::PepperBroker(PluginModule* plugin_module,
-                           PepperHelperImpl* helper)
-    : plugin_module_(plugin_module),
-      helper_(helper->AsWeakPtr()) {
+PepperBroker::PepperBroker(PluginModule* plugin_module)
+    : plugin_module_(plugin_module) {
   DCHECK(plugin_module_);
-  DCHECK(helper_.get());
 
   plugin_module_->SetBroker(this);
 }
@@ -146,28 +142,6 @@ void PepperBroker::Disconnect(PPB_Broker_Impl* client) {
   pending_connects_.erase(client);
 
   // TODO(ddorwin): Send message disconnect message using dispatcher_.
-
-  if (pending_connects_.empty()) {
-    // There are no more clients of this broker. Ensure it will be deleted even
-    // if the IPC response never comes and OnPepperBrokerChannelCreated is not
-    // called to remove this object from pending_connect_broker_.
-    // Before the broker is connected, clients must either be in
-    // pending_connects_ or not yet associated with this object. Thus, if this
-    // object is in pending_connect_broker_, there can be no associated clients
-    // once pending_connects_ is empty and it is thus safe to remove this from
-    // pending_connect_broker_. Doing so will cause this object to be deleted,
-    // removing it from the PluginModule. Any new clients will create a new
-    // instance of this object.
-    // This doesn't solve all potential problems, but it helps with the ones
-    // we can influence.
-    if (helper_.get()) {
-      bool stopped = helper_->StopWaitingForBrokerConnection(this);
-
-      // Verify the assumption that there are no references other than the one
-      // |client| holds, which will be released below.
-      DCHECK(!stopped || HasOneRef());
-    }
-  }
 
   // Release the reference added in Connect().
   // This must be the last statement because it may delete this object.
