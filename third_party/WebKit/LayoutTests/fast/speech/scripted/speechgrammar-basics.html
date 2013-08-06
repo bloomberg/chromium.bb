@@ -38,14 +38,14 @@ function run() {
     shouldBe("gs.length", "0");
     shouldBeTrue("gs.item(0) == null");
     shouldBeTrue("gs[0] == undefined");
-    shouldThrow("gs.item(-1)");
+    shouldBeNull("gs.item(-1)");
     shouldBeTrue("gs[-1] == undefined");
 
     evalAndLog("gs.addFromUri('grammar', 2)");
     shouldBe("gs.length", "1");
     shouldBeTrue("gs.item(1) == null");
     shouldBeTrue("gs[1] == undefined");
-    shouldThrow("gs.item(-1)");
+    shouldBeNull("gs.item(-1)");
     shouldBeTrue("gs[-1] == undefined");
     shouldBe("gs[0]", "gs.item(0)");
     shouldBe("gs.item(0).src", "base + 'grammar'");

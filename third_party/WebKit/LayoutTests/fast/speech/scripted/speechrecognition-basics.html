@@ -32,10 +32,12 @@ function oneMatchTest() {
         shouldBeNull('event.emma');
         shouldBeNull('event.interpretation');
         shouldBe('event.results.length', '1');
+        shouldBeNull('event.results.item(-1)');
         shouldBe('event.results[0].length', '1');
         shouldBe('event.results[0].isFinal', 'true');
         shouldBeEqualToString('event.results[0].item(0).transcript', 'hello, world');
         shouldBeCloseTo('event.results[0].item(0).confidence', 0.42, 1e-3);
+        shouldBeNull('event.results[0].item(-1)');
     }
 
     r.onspeechend =     function() { debug('onspeechend');   shouldBe('count', '5'); ++count; }

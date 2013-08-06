@@ -28,6 +28,6 @@
     Conditional=INPUT_SPEECH
 ] interface SpeechInputResultList {
     readonly attribute unsigned long length;
-    getter SpeechInputResult item([IsIndex] unsigned long index);
+    getter SpeechInputResult item(unsigned long index);
 };
 
