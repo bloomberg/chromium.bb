@@ -310,8 +310,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyTextAlign:
     case CSSPropertyTextAlignLast:
     case CSSPropertyTextAnchor:
-    case CSSPropertyTextDecoration:
-    case CSSPropertyTextDecorationLine:
     case CSSPropertyTextIndent:
     case CSSPropertyTextRendering:
     case CSSPropertyTextShadow:
@@ -470,6 +468,8 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyStopColor:
     case CSSPropertyStopOpacity:
     case CSSPropertyTableLayout:
+    case CSSPropertyTextDecoration:
+    case CSSPropertyTextDecorationLine:
     case CSSPropertyTextDecorationStyle:
     case CSSPropertyTextDecorationColor:
     case CSSPropertyTextLineThroughColor:

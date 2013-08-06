@@ -90,4 +90,10 @@ testElementStyle("textDecorationLine", "text-decoration-line", "[object CSSValue
 testComputedStyle("textDecorationLine", "text-decoration-line", "[object CSSValueList]", "underline");
 debug('');
 
+debug("Ancestor should not implicitly inherit value from parent (i.e. when value is void):");
+e.style.textDecorationLine = '';
+testElementStyle("textDecorationLine", "text-decoration-line", null, '');
+testComputedStyle("textDecorationLine", "text-decoration-line", "[object CSSPrimitiveValue]", "none");
+debug('');
+
 document.body.removeChild(testContainer);
