@@ -26,7 +26,6 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include <time.h>
 #include <cairo.h>
 
 #include <wayland-client.h>

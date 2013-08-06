@@ -39,8 +39,6 @@
 
 #include <libudev.h>
 
-#include "config.h"
-
 #include "compositor.h"
 #include "launcher-util.h"
 #include "pixman-renderer.h"
