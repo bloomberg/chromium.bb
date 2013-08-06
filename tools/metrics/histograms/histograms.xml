@@ -17563,6 +17563,15 @@ other types of suffix sets.
   <int value="88" label="ShadowDOMPrefixedCreateShadowRoot"/>
   <int value="89" label="ShadowDOMPrefixedShadowRoot"/>
   <int value="90" label="SVGAnimationElement"/>
+  <int value="91" label="KeyboardEventKeyLocation"/>
+  <int value="92" label="CaptureEvents"/>
+  <int value="93" label="ReleaseEvents"/>
+  <int value="94" label="CSSDisplayRunIn"/>
+  <int value="95" label="CSSDisplayCompact"/>
+  <int value="96" label="LineClamp"/>
+  <int value="97" label="SubFrameBeforeUnloadRegistered"/>
+  <int value="98" label="SubFrameBeforeUnloadFired"/>
+  <int value="99" label="CSSPseudoElementPrefixedDistributed"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
