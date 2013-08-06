@@ -18,19 +18,13 @@ class FilePath;
 }
 class Profile;
 
-
-namespace {
-
-typedef std::map<std::string, std::string> SystemLogsMap;
-
-const char kScreensizeHeightKey[] = "ScreensizeHeight";
-const char kScreensizeWidthKey[] = "ScreensizeWidth";
-
-}  // namespace
-
-
 class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
  public:
+  typedef std::map<std::string, std::string> SystemLogsMap;
+
+  static const char kScreensizeHeightKey[];
+  static const char kScreensizeWidthKey[];
+
   FeedbackData();
 
   // Called once we've update all the data from the feedback page.
