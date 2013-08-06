@@ -241,8 +241,6 @@
       '-ntp.NTPTest.testDifferentProfileNotAppearInMostVisited',
       # No NaCl support on ChromeOS.
       '-nacl_sdk',
-      # You cannot adjust the downloads directory on ChromeOS.
-      '-prefs.PrefsTest.testDownloadDirPref',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.

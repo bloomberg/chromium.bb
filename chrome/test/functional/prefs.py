@@ -85,48 +85,6 @@ class PrefsTest(pyauto.PyUITest):
     self.ActivateTab(1)
     self.assertEqual(url2, self.GetActiveTabURL().spec())
 
-  def testSessionRestoreShowBookmarkBar(self):
-    """Verify restore for bookmark bar visibility."""
-    assert not self.GetPrefsInfo().Prefs(pyauto.kShowBookmarkBar)
-    self.SetPrefs(pyauto.kShowBookmarkBar, True)
-    self.assertEqual(True, self.GetPrefsInfo().Prefs(pyauto.kShowBookmarkBar))
-    self.RestartBrowser(clear_profile=False)
-    self.assertEqual(True, self.GetPrefsInfo().Prefs(pyauto.kShowBookmarkBar))
-    self.assertTrue(self.GetBookmarkBarVisibility())
-
-  def testDownloadDirPref(self):
-    """Verify download dir pref."""
-    test_dir = os.path.join(self.DataDir(), 'downloads')
-    file_url = self.GetFileURLForPath(os.path.join(test_dir, 'a_zip_file.zip'))
-    download_dir = self.GetDownloadDirectory().value()
-    new_dl_dir = os.path.join(download_dir, 'My+Downloads Folder')
-    downloaded_pkg = os.path.join(new_dl_dir, 'a_zip_file.zip')
-    os.path.exists(new_dl_dir) and shutil.rmtree(new_dl_dir)
-    os.makedirs(new_dl_dir)
-    # Set pref to download in new_dl_dir
-    self.SetPrefs(pyauto.kDownloadDefaultDirectory, new_dl_dir)
-    self.DownloadAndWaitForStart(file_url)
-    self.WaitForAllDownloadsToComplete()
-    self.assertTrue(os.path.exists(downloaded_pkg))
-    shutil.rmtree(new_dl_dir, ignore_errors=True)  # cleanup
-
-  def testToolbarButtonsPref(self):
-    """Verify toolbar buttons prefs."""
-    # Assert defaults first
-    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
-    self.SetPrefs(pyauto.kShowHomeButton, True)
-    self.RestartBrowser(clear_profile=False)
-    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
-
-  def testNetworkPredictionEnabledPref(self):
-    """Verify DNS prefetching pref."""
-    # Assert default
-    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kNetworkPredictionEnabled))
-    self.SetPrefs(pyauto.kNetworkPredictionEnabled, False)
-    self.RestartBrowser(clear_profile=False)
-    self.assertFalse(self.GetPrefsInfo().Prefs(
-        pyauto.kNetworkPredictionEnabled))
-
   def testHomepagePrefs(self):
     """Verify homepage prefs."""
     # "Use the New Tab page"
@@ -187,20 +145,6 @@ class PrefsTest(pyauto.PyUITest):
     self.RestartBrowser(clear_profile=False)
     for pref in pref_list:
       self.assertEqual(self.GetPrefsInfo().Prefs(pref), False)
-
-  def testJavaScriptEnableDisable(self):
-    """Verify enabling disabling javascript prefs work """
-    self.assertTrue(
-        self.GetPrefsInfo().Prefs(pyauto.kWebKitJavascriptEnabled))
-    url = self.GetFileURLForDataPath(
-              os.path.join('javaScriptTitle.html'))
-    title1 = 'Title from script javascript enabled'
-    self.NavigateToURL(url)
-    self.assertEqual(title1, self.GetActiveTabTitle())
-    self.SetPrefs(pyauto.kWebKitJavascriptEnabled, False)
-    title = 'This is html title'
-    self.NavigateToURL(url)
-    self.assertEqual(title, self.GetActiveTabTitle())
 
   def testHaveLocalStatePrefs(self):
     """Verify that we have some Local State prefs."""
@@ -282,18 +226,6 @@ class PrefsTest(pyauto.PyUITest):
       window.domAutomationController.send(false);
     """
     return self.ExecuteJavascript(script, windex=windex, tab_index=tab_index)
-
-  def testImageContentSettings(self):
-    """Verify image content settings show or hide images."""
-    url = self.GetHttpURLForDataPath('settings', 'image_page.html')
-    self.NavigateToURL(url)
-    self.assertTrue(self._CheckForVisibleImage(),
-                    msg='No visible images found.')
-    # Set to block all images from loading.
-    self.SetPrefs(pyauto.kDefaultContentSettings, {'images': 2})
-    self.NavigateToURL(url)
-    self.assertFalse(self._CheckForVisibleImage(),
-                     msg='At least one visible image found.')
 
   def testImagesNotBlockedInIncognito(self):
     """Verify images are not blocked in Incognito mode."""
