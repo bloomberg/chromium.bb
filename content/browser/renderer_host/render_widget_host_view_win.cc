@@ -59,6 +59,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/win/imm32_manager.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/text/text_elider.h"

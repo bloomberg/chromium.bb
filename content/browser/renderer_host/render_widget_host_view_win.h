@@ -25,7 +25,6 @@
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/ime/win/imm32_manager.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/win/extra_sdk_defines.h"
 #include "ui/gfx/native_widget_types.h"
@@ -45,6 +44,7 @@ class Message;
 }
 
 namespace ui {
+class IMM32Manager;
 class ViewProp;
 }
 
