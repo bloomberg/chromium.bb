@@ -66,7 +66,8 @@ class InputFileManager : public base::RefCountedThreadSafe<InputFileManager> {
 
   int GetInputFileCount() const;
 
-  void GetAllInputFileNames(std::vector<SourceFile>* result) const;
+  // Fills the vector with all input files.
+  void GetAllPhysicalInputFileNames(std::vector<base::FilePath>* result) const;
 
  private:
   friend class base::RefCountedThreadSafe<InputFileManager>;

@@ -21,20 +21,19 @@ class ConfigValues {
   const std::vector<SourceDir>& includes() const { return includes_; }
   void swap_in_includes(std::vector<SourceDir>* lo) { includes_.swap(*lo); }
 
-  const std::vector<std::string>& defines() const { return defines_; }
-  void swap_in_defines(std::vector<std::string>* d) { defines_.swap(*d); }
+#define VALUES_ACCESSOR(name) \
+    const std::vector<std::string>& name() const { return name##_; } \
+    void swap_in_##name(std::vector<std::string>* v) { name##_.swap(*v); }
 
-  const std::vector<std::string>& cflags() const { return cflags_; }
-  void swap_in_cflags(std::vector<std::string>* lo) { cflags_.swap(*lo); }
+  VALUES_ACCESSOR(defines)
+  VALUES_ACCESSOR(cflags)
+  VALUES_ACCESSOR(cflags_c)
+  VALUES_ACCESSOR(cflags_cc)
+  VALUES_ACCESSOR(cflags_objc)
+  VALUES_ACCESSOR(cflags_objcc)
+  VALUES_ACCESSOR(ldflags)
 
-  const std::vector<std::string>& cflags_c() const { return cflags_c_; }
-  void swap_in_cflags_c(std::vector<std::string>* lo) { cflags_c_.swap(*lo); }
-
-  const std::vector<std::string>& cflags_cc() const { return cflags_cc_; }
-  void swap_in_cflags_cc(std::vector<std::string>* lo) { cflags_cc_.swap(*lo); }
-
-  const std::vector<std::string>& ldflags() const { return ldflags_; }
-  void swap_in_ldflags(std::vector<std::string>* lo) { ldflags_.swap(*lo); }
+#undef VALUES_ACCESSOR
 
  private:
   std::vector<SourceDir> includes_;
@@ -42,6 +41,8 @@ class ConfigValues {
   std::vector<std::string> cflags_;
   std::vector<std::string> cflags_c_;
   std::vector<std::string> cflags_cc_;
+  std::vector<std::string> cflags_objc_;
+  std::vector<std::string> cflags_objcc_;
   std::vector<std::string> ldflags_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigValues);

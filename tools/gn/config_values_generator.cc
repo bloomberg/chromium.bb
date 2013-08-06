@@ -12,12 +12,12 @@
 namespace {
 
 void GetStringList(
-    const Scope* scope,
+    Scope* scope,
     const char* var_name,
     ConfigValues* config_values,
     void (ConfigValues::* swapper_inner)(std::vector<std::string>*),
     Err* err) {
-  const Value* value = scope->GetValue(var_name);
+  const Value* value = scope->GetValue(var_name, true);
   if (!value)
     return;  // No value, empty input and succeed.
 
@@ -29,7 +29,7 @@ void GetStringList(
 }  // namespace
 
 ConfigValuesGenerator::ConfigValuesGenerator(ConfigValues* dest_values,
-                                             const Scope* scope,
+                                             Scope* scope,
                                              const Token& function_token,
                                              const SourceDir& input_dir,
                                              Err* err)
@@ -44,21 +44,25 @@ ConfigValuesGenerator::~ConfigValuesGenerator() {
 }
 
 void ConfigValuesGenerator::Run() {
-  FillDefines();
   FillIncludes();
-  FillCflags();
-  FillCflags_C();
-  FillCflags_CC();
-  FillLdflags();
-}
 
-void ConfigValuesGenerator::FillDefines() {
-  GetStringList(scope_, "defines", config_values_,
-                &ConfigValues::swap_in_defines, err_);
+#define FILL_CONFIG_VALUE(name) \
+    GetStringList(scope_, #name, config_values_, \
+                  &ConfigValues::swap_in_##name, err_);
+
+  FILL_CONFIG_VALUE(defines)
+  FILL_CONFIG_VALUE(cflags)
+  FILL_CONFIG_VALUE(cflags_c)
+  FILL_CONFIG_VALUE(cflags_cc)
+  FILL_CONFIG_VALUE(cflags_objc)
+  FILL_CONFIG_VALUE(cflags_objcc)
+  FILL_CONFIG_VALUE(ldflags)
+
+#undef FILL_CONFIG_VALUE
 }
 
 void ConfigValuesGenerator::FillIncludes() {
-  const Value* value = scope_->GetValue("includes");
+  const Value* value = scope_->GetValue("includes", true);
   if (!value)
     return;  // No value, empty input and succeed.
 
@@ -66,24 +70,4 @@ void ConfigValuesGenerator::FillIncludes() {
   if (!ExtractListOfRelativeDirs(*value, input_dir_, &includes, err_))
     return;
   config_values_->swap_in_includes(&includes);
-}
-
-void ConfigValuesGenerator::FillCflags() {
-  GetStringList(scope_, "cflags", config_values_,
-                &ConfigValues::swap_in_cflags, err_);
-}
-
-void ConfigValuesGenerator::FillCflags_C() {
-  GetStringList(scope_, "cflags_c", config_values_,
-                &ConfigValues::swap_in_cflags_c, err_);
-}
-
-void ConfigValuesGenerator::FillCflags_CC() {
-  GetStringList(scope_, "cflags_cc", config_values_,
-                &ConfigValues::swap_in_cflags_cc, err_);
-}
-
-void ConfigValuesGenerator::FillLdflags() {
-  GetStringList(scope_, "ldflags", config_values_,
-                &ConfigValues::swap_in_ldflags, err_);
 }

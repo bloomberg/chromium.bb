@@ -175,6 +175,9 @@ if (is_debug) {
 
 set_defaults("executable") {
   configs = native_compiler_configs
+  if (is_mac) {
+    configs += "//build/config/mac:mac_dynamic_flags"
+  }
 }
 
 set_defaults("static_library") {
@@ -183,6 +186,9 @@ set_defaults("static_library") {
 
 set_defaults("shared_library") {
   configs = native_compiler_configs
+  if (is_mac) {
+    configs += "//build/config/mac:mac_dynamic_flags"
+  }
 }
 
 # ==============================================================================

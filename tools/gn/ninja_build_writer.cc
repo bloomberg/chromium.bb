@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "tools/gn/build_settings.h"
+#include "tools/gn/escape.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/input_file_manager.h"
 #include "tools/gn/scheduler.h"
@@ -31,7 +32,7 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   base::FilePath executable(module);
 #elif defined(OS_MACOSX)
   // FIXME(brettw) write this on Mac!
-  base::FilePath executable("gn");
+  base::FilePath executable("../Debug/gn");
 #else
   base::FilePath executable =
       base::GetProcessExecutablePath(base::GetCurrentProcessHandle());
@@ -108,12 +109,12 @@ void NinjaBuildWriter::WriteNinjaRules() {
   out_ << "build build.ninja: gn";
 
   // Input build files.
-  std::vector<SourceFile> input_files;
-  g_scheduler->input_file_manager()->GetAllInputFileNames(&input_files);
-  for (size_t i = 0; i < input_files.size(); i++) {
-    out_ << " ";
-    path_output_.WriteFile(out_, input_files[i]);
-  }
+  std::vector<base::FilePath> input_files;
+  g_scheduler->input_file_manager()->GetAllPhysicalInputFileNames(&input_files);
+  EscapeOptions ninja_options;
+  ninja_options.mode = ESCAPE_NINJA;
+  for (size_t i = 0; i < input_files.size(); i++)
+    out_ << " " << EscapeString(FilePathToUTF8(input_files[i]), ninja_options);
 
   // Other files read by the build.
   std::vector<SourceFile> other_files = g_scheduler->GetGenDependencies();

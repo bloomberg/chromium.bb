@@ -291,6 +291,8 @@ component("base") {
     "memory/singleton.h",
     "memory/weak_ptr.cc",
     "memory/weak_ptr.h",
+    "message_loop/incoming_task_queue.cc",
+    "message_loop/incoming_task_queue.h",
     "message_loop/message_loop.cc",
     "message_loop/message_loop.h",
     "message_loop/message_loop_proxy.cc",
@@ -301,12 +303,27 @@ component("base") {
     "message_loop/message_pump.h",
     "message_loop/message_pump_android.cc",
     "message_loop/message_pump_android.h",
+    "message_loop/message_pump_aurax11.cc",
+    "message_loop/message_pump_aurax11.h",
     "message_loop/message_pump_default.cc",
     "message_loop/message_pump_default.h",
+    "message_loop/message_pump_glib.cc",
+    "message_loop/message_pump_glib.h",
+    "message_loop/message_pump_gtk.cc",
+    "message_loop/message_pump_gtk.h",
+    "message_loop/message_pump_io_ios.cc",
+    "message_loop/message_pump_io_ios.h",
+    "message_loop/message_pump_libevent.cc",
+    "message_loop/message_pump_libevent.h",
+    "message_loop/message_pump_mac.h",
+    "message_loop/message_pump_mac.mm",
+    "message_loop/message_pump_observer.h",
     "message_loop/message_pump_ozone.cc",
     "message_loop/message_pump_ozone.h",
     "message_loop/message_pump_win.cc",
     "message_loop/message_pump_win.h",
+    "metrics/field_trial.cc",
+    "metrics/field_trial.h",
     "metrics/sample_map.cc",
     "metrics/sample_map.h",
     "metrics/sample_vector.cc",
@@ -357,6 +374,8 @@ component("base") {
     "platform_file_win.cc",
     "port.h",
     "posix/eintr_wrapper.h",
+    "posix/file_descriptor_shuffle.cc",
+    "posix/file_descriptor_shuffle.y",
     "posix/global_descriptors.cc",
     "posix/global_descriptors.h",
     "posix/unix_domain_socket_linux.cc",
@@ -370,14 +389,6 @@ component("base") {
     "power_monitor/power_monitor_posix.cc",
     "power_monitor/power_monitor_win.cc",
     "power_monitor/power_observer.h",
-    "process.h",
-    "process_info.h",
-    "process_info_mac.cc",
-    "process_info_win.cc",
-    "process_linux.cc",
-    "process_posix.cc",
-    "process_util.h",
-    "process_win.cc",
     "process/internal_linux.cc",
     "process/internal_linux.h",
     "process/kill.cc",
@@ -394,12 +405,16 @@ component("base") {
     "process/memory_linux.cc",
     "process/memory_mac.mm",
     "process/memory_win.cc",
+    "process/process.h",
     "process/process_handle_freebsd.cc",
     "process/process_handle_linux.cc",
     "process/process_handle_mac.cc",
     "process/process_handle_openbsd.cc",
     "process/process_handle_posix.cc",
     "process/process_handle_win.cc",
+    "process/process_info.h",
+    "process/process_info_mac.cc",
+    "process/process_info_win.cc",
     "process/process_iterator.cc",
     "process/process_iterator.h",
     "process/process_iterator_freebsd.cc",
@@ -407,6 +422,7 @@ component("base") {
     "process/process_iterator_mac.cc",
     "process/process_iterator_openbsd.cc",
     "process/process_iterator_win.cc",
+    "process/process_linux.cc",
     "process/process_metrics.h",
     "process/process_metrics_freebsd.cc",
     "process/process_metrics_ios.cc",
@@ -415,6 +431,9 @@ component("base") {
     "process/process_metrics_openbsd.cc",
     "process/process_metrics_posix.cc",
     "process/process_metrics_win.cc",
+    "process/process_posix.cc",
+    "process/process_util.h",
+    "process/process_win.cc",
     "profiler/scoped_profile.cc",
     "profiler/scoped_profile.h",
     "profiler/alternate_timer.cc",
@@ -477,6 +496,9 @@ component("base") {
     "strings/utf_string_conversions.h",
     "supports_user_data.cc",
     "supports_user_data.h",
+    "sync_socket.h",
+    "sync_socket_posix.cc",
+    "sync_socket_win.cc",
     "synchronization/cancellation_flag.cc",
     "synchronization/cancellation_flag.h",
     "synchronization/condition_variable.h",
@@ -643,7 +665,13 @@ component("base") {
   sources -= "files/file_path_watcher_stub.cc"
 
   sources -= [
-    # TODO(brettw) ozone
+    # TODO(brettw) do these properly.
+    "message_loop/message_pump_aurax11.cc",
+    "message_loop/message_pump_aurax11.h",
+    "message_loop/message_pump_glib.cc",
+    "message_loop/message_pump_glib.h",
+    "message_loop/message_pump_gtk.cc",
+    "message_loop/message_pump_gtk.h",
     "message_loop/message_pump_ozone.cc",
     "message_loop/message_pump_ozone.h",
 
@@ -662,9 +690,6 @@ component("base") {
       "sys_info_chromeos.cc",
     ]
   }
-  if (!is_mac) {
-    sources -= "files/file_path_watcher_kqueue.cc"
-  }
 
   # Remove nacl stuff.
   if (!is_nacl) {
@@ -677,7 +702,7 @@ component("base") {
     ]
   }
 
-  # Windows stuff.
+  # Windows.
   if (is_win && !is_nacl) {
     sources -= [
       "strings/string16.cc",
@@ -691,13 +716,25 @@ component("base") {
     }
   }
 
-  # Remove non-Mac Unix stuff.
-  if (!is_posix || is_mac) {
+  # Mac.
+  if (is_mac) {
+    sources -= [
+      "base_paths_posix.cc",
+      "native_library_posix.cc",
+      "strings/sys_string_conversions_posix.cc",
+    ]
+  } else {
+    sources -= "files/file_path_watcher_kqueue.cc"
+  }
+
+  # Non-Mac Unix stuff.
+  if (is_mac) { #!is_posix || is_mac) {
     sources -= [
       "nix/mime_util_xdg.cc",
       "nix/mime_util_xdg.h",
       "nix/xdg_util.cc",
       "nix/xdg_util.h",
+      "third_party/xdg_mime/xdgmime.h",
     ]
   }
 
@@ -711,6 +748,13 @@ component("base") {
     "//third_party/modp_b64",
     "//base/third_party/dynamic_annotations",
   ]
+
+  if (!is_win) {
+    deps += "//third_party/libevent"
+  }
+  if (is_mac) {
+    deps += "//third_party/mach_override"
+  }
 }
 
 # This is the subset of files from base that should not be used with a dynamic

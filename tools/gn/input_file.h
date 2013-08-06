@@ -17,15 +17,19 @@ class InputFile {
  public:
   InputFile(const SourceFile& name);
 
-  // Constructor for testing. Uses an empty file path and a given contents.
-  //InputFile(const char* contents);
   ~InputFile();
 
+  // The virtual name passed into the constructor. This does not take into
+  // account whether the file was loaded from the secondary source tree (see
+  // BuildSettings secondary_source_path).
   const SourceFile& name() const { return name_; }
 
-  // The directory is just a cached version of name_->GetDir() but we get this
+  // The directory is just a cached version of name()->GetDir() but we get this
   // a lot so computing it once up front saves a bunch of work.
   const SourceDir& dir() const { return dir_; }
+
+  // The physical name tells the actual name on disk, if there is one.
+  const base::FilePath& physical_name() const { return physical_name_; }
 
   const std::string& contents() const {
     DCHECK(contents_loaded_);
@@ -42,6 +46,8 @@ class InputFile {
  private:
   SourceFile name_;
   SourceDir dir_;
+
+  base::FilePath physical_name_;
 
   bool contents_loaded_;
   std::string contents_;

@@ -360,15 +360,18 @@ void NinjaTargetWriter::WriteCompilerVars() {
   out_ << std::endl;
 
   // C flags and friends.
-  out_ << "cflags =";
-  RecursiveTargetConfigStringsToStream(target_, &ConfigValues::cflags, out_);
-  out_ << std::endl;
-  out_ << "cflags_c =";
-  RecursiveTargetConfigStringsToStream(target_, &ConfigValues::cflags_c, out_);
-  out_ << std::endl;
-  out_ << "cflags_cc =";
-  RecursiveTargetConfigStringsToStream(target_, &ConfigValues::cflags_cc, out_);
-  out_ << std::endl;
+#define WRITE_FLAGS(name) \
+    out_ << #name " ="; \
+    RecursiveTargetConfigStringsToStream(target_, &ConfigValues::name, out_); \
+    out_ << std::endl;
+
+  WRITE_FLAGS(cflags)
+  WRITE_FLAGS(cflags_c)
+  WRITE_FLAGS(cflags_cc)
+  WRITE_FLAGS(cflags_objc)
+  WRITE_FLAGS(cflags_objcc)
+
+#undef WRITE_FLAGS
 
   out_ << std::endl;
 }
@@ -429,7 +432,12 @@ void NinjaTargetWriter::WriteLinkerStuff(
   out_ << std::endl;
 
   // Libraries to link.
-  out_ << "libs =" << std::endl;
+  out_ << "libs =";
+  if (settings_->IsMac()) {
+    // TODO(brettw) fix this.
+    out_ << " -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreFoundation -framework Foundation -framework IOKit -framework Security";
+  }
+  out_ << std::endl;
 
   // The external output file is the one that other libs depend on.
   OutputFile external_output_file = helper_.GetTargetOutputFile(target_);
@@ -505,9 +513,12 @@ void NinjaTargetWriter::WriteLinkerStuff(
       path_output_.WriteFile(out_, external_output_file);
       out_ << std::endl;
     }
+
+    // TODO(brettw) postbuild steps.
+    if (settings_->IsMac())
+      out_ << "  postbuilds = $ && (export BUILT_PRODUCTS_DIR=/Users/brettw/prj/src/out/gn; export CONFIGURATION=Debug; export DYLIB_INSTALL_NAME_BASE=@rpath; export EXECUTABLE_NAME=libbase.dylib; export EXECUTABLE_PATH=libbase.dylib; export FULL_PRODUCT_NAME=libbase.dylib; export LD_DYLIB_INSTALL_NAME=@rpath/libbase.dylib; export MACH_O_TYPE=mh_dylib; export PRODUCT_NAME=base; export PRODUCT_TYPE=com.apple.product-type.library.dynamic; export SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk; export SRCROOT=/Users/brettw/prj/src/out/gn/../../base; export SOURCE_ROOT=\"$${SRCROOT}\"; export TARGET_BUILD_DIR=/Users/brettw/prj/src/out/gn; export TEMP_DIR=\"$${TMPDIR}\"; (cd ../../base && ../build/mac/strip_from_xcode); G=$$?; ((exit $$G) || rm -rf libbase.dylib) && exit $$G)";
   }
 
-  // TODO(brettw) postbuild steps here.
 
   out_ << std::endl;
 }

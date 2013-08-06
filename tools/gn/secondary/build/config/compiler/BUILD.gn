@@ -20,7 +20,7 @@ config("compiler") {
 
       "-fno-threadsafe-statics",
       "-fstack-protector-all",
-      "-fvisibility-hidden",
+      "-fvisibility=hidden",
       "-fvisibility-inlines-hidden",
     ]
     # !!! Please keep additions sorted alphabetically.
@@ -43,13 +43,35 @@ config("compiler") {
   }
 
   if (is_mac) {
-    cflags += [
+    # These are used for both compiler and linker flags on Mac.
+    common_mac_flags = [
+      # TODO(brettw) obviously this needs to be parameterized.
+      "-arch i386",
+
       # Set which SDK to use.
       # TODO(brettw) this needs to be configurable somehow.
       "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk",
 
       "-mmacosx-version-min=10.6",
     ]
+
+    # Mac compiler flags.
+    cflags += [
+      # Without this, the constructors and destructors of a C++ object inside
+      # an Objective C struct won't be called, which is very bad.
+      "-fobjc-call-cxx-cdtors",
+    ]
+    cflags += common_mac_flags
+
+    # Mac linker flags.
+    ldflags = [
+      "-L.",
+
+      # TODO(brettW) I don't understand these options.
+      "-Wl,-rpath,@loader_path/.",
+      "-Wl,-rpath,@loader_path/../../..",
+    ]
+    ldflags += common_mac_flags
   }
 }
 
@@ -114,6 +136,7 @@ config("chromium_code") {
     ]
   } else if (is_mac) {
     cflags = [
+      "-Wall",
       "-Werror",
       "-Wextra",
     ]

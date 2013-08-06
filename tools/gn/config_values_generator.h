@@ -19,7 +19,7 @@ class Token;
 class ConfigValuesGenerator {
  public:
   ConfigValuesGenerator(ConfigValues* dest_values,
-                        const Scope* scope,
+                        Scope* scope,
                         const Token& function_token,
                         const SourceDir& input_dir,
                         Err* err);
@@ -29,15 +29,10 @@ class ConfigValuesGenerator {
   void Run();
 
  private:
-  void FillDefines();
   void FillIncludes();
-  void FillCflags();
-  void FillCflags_C();
-  void FillCflags_CC();
-  void FillLdflags();
 
   ConfigValues* config_values_;
-  const Scope* scope_;
+  Scope* scope_;
   const Token& function_token_;
   const SourceDir input_dir_;
   Err* err_;

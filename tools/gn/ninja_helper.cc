@@ -11,7 +11,7 @@
 
 namespace {
 
-const char kLibDirWithSlash[] = "lib";
+const char kLibDirWithSlash[] = "lib/";
 const char kObjectDirNoSlash[] = "obj";
 
 }  // namespace
@@ -116,7 +116,8 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
 
   // This is prepended to the output file name.
   const char* prefix;
-  if (target->settings()->IsWin()) {
+  if (target->settings()->IsWin() ||
+      target->output_type() == Target::EXECUTABLE) {
     prefix = "";
   } else {
     prefix = "lib";

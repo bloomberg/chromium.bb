@@ -168,13 +168,14 @@ int InputFileManager::GetInputFileCount() const {
   return input_files_.size();
 }
 
-void InputFileManager::GetAllInputFileNames(
-    std::vector<SourceFile>* result) const {
+void InputFileManager::GetAllPhysicalInputFileNames(
+    std::vector<base::FilePath>* result) const {
   base::AutoLock lock(lock_);
   result->reserve(input_files_.size());
   for (InputFileMap::const_iterator i = input_files_.begin();
        i != input_files_.end(); ++i) {
-    result->push_back(i->second->file.name());
+    if (!i->second->file.physical_name().empty())
+      result->push_back(i->second->file.physical_name());
   }
 }
 
