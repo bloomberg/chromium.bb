@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/hit_test.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -20,19 +18,6 @@ const BubbleBorder::Arrow kArrow = BubbleBorder::TOP_LEFT;
 const SkColor kColor = SK_ColorRED;
 const int kMargin = 6;
 
-class TestBubbleDelegateView : public BubbleDelegateView {
- public:
-  explicit TestBubbleDelegateView(View* anchor_view)
-      : BubbleDelegateView(anchor_view, kArrow) {}
-  virtual ~TestBubbleDelegateView() {}
-
-  // BubbleDelegateView overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE { return gfx::Size(200, 200); }
-
-private:
-  DISALLOW_COPY_AND_ASSIGN(TestBubbleDelegateView);
-};
-
 class TestBubbleFrameView : public BubbleFrameView {
  public:
   TestBubbleFrameView()
@@ -42,7 +27,7 @@ class TestBubbleFrameView : public BubbleFrameView {
   }
   virtual ~TestBubbleFrameView() {}
 
-  // BubbleDelegateView overrides:
+  // BubbleFrameView overrides:
   virtual gfx::Rect GetMonitorBounds(const gfx::Rect& rect) OVERRIDE {
     return monitor_bounds_;
   }
@@ -65,38 +50,6 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
   gfx::Insets insets = frame.bubble_border()->GetInsets();
   EXPECT_EQ(insets.left() + margin_x, frame.GetBoundsForClientView().x());
   EXPECT_EQ(insets.top() + margin_y, frame.GetBoundsForClientView().y());
-}
-
-TEST_F(BubbleFrameViewTest, NonClientHitTest) {
-  // Create the anchor view, its parent widget is needed on Aura.
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<Widget> anchor_widget(new Widget);
-  anchor_widget->Init(params);
-  anchor_widget->Show();
-
-  TestBubbleDelegateView* bubble =
-      new TestBubbleDelegateView(anchor_widget->GetContentsView());
-  BubbleDelegateView::CreateBubble(bubble);
-  BubbleFrameView* frame = bubble->GetBubbleFrameView();
-  const int border = frame->bubble_border()->GetBorderThickness();
-
-  struct {
-    const int point;
-    const int hit;
-  } cases[] = {
-    { border,      HTNOWHERE },
-    { border + 5,  HTNOWHERE },
-    { border + 6,  HTCLIENT  },
-    { border + 50, HTCLIENT  },
-    { 1000,        HTNOWHERE },
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    gfx::Point point(cases[i].point, cases[i].point);
-    EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
-        << " with border: " << border << ", at point " << cases[i].point;
-  }
 }
 
 // Tests that the arrow is mirrored as needed to better fit the screen.

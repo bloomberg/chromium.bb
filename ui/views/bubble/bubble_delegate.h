@@ -150,8 +150,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   BubbleFrameView* GetBubbleFrameView() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, NonClientHitTest);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, NonClientHitTest);
 
   // Update the bubble color from |theme|, unless it was explicitly set.
   void UpdateColorsFromTheme(const ui::NativeTheme* theme);

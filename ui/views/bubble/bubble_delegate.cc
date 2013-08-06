@@ -66,7 +66,7 @@ class BubbleBorderDelegate : public WidgetDelegate,
 
   // WidgetDelegate overrides:
   virtual bool CanActivate() const OVERRIDE { return false; }
-  virtual string16 GetWindowTitle() const {
+  virtual string16 GetWindowTitle() const OVERRIDE {
     return bubble_->GetWindowTitle();
   }
   virtual bool ShouldShowCloseButton() const OVERRIDE {

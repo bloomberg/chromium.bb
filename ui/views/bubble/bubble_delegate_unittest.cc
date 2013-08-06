@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "ui/base/hit_test.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/test/test_widget_observer.h"
@@ -20,77 +21,67 @@ namespace {
 
 class TestBubbleDelegateView : public BubbleDelegateView {
  public:
-  TestBubbleDelegateView(View* anchor_view);
-  virtual ~TestBubbleDelegateView();
+  TestBubbleDelegateView(View* anchor_view)
+      : BubbleDelegateView(anchor_view, BubbleBorder::TOP_LEFT),
+        view_(new View()) {
+    view_->set_focusable(true);
+    AddChildView(view_);
+  }
+  virtual ~TestBubbleDelegateView() {}
 
-  virtual View* GetInitiallyFocusedView() OVERRIDE;
-
- protected:
-  // BubbleDelegateView overrides.
-  virtual int GetFadeDuration() OVERRIDE;
+  // BubbleDelegateView overrides:
+  virtual View* GetInitiallyFocusedView() OVERRIDE { return view_; }
+  virtual gfx::Size GetPreferredSize() OVERRIDE { return gfx::Size(200, 200); }
+  virtual int GetFadeDuration() OVERRIDE { return 1; }
 
  private:
   View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBubbleDelegateView);
 };
 
-TestBubbleDelegateView::TestBubbleDelegateView(View* anchor_view)
-    : BubbleDelegateView(anchor_view, BubbleBorder::TOP_LEFT),
-      view_(new View()) {
-  view_->set_focusable(true);
-  AddChildView(view_);
-}
+class BubbleDelegateTest : public ViewsTestBase {
+ public:
+  BubbleDelegateTest() {}
+  virtual ~BubbleDelegateTest() {}
 
-TestBubbleDelegateView::~TestBubbleDelegateView() {}
+  // Creates a test widget that owns its native widget.
+  Widget* CreateTestWidget() {
+    Widget* widget = new Widget();
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    widget->Init(params);
+    return widget;
+  }
 
-View* TestBubbleDelegateView::GetInitiallyFocusedView() {
-  return view_;
-}
-
-int TestBubbleDelegateView::GetFadeDuration() {
-  // We cannot return 0 as that causes the animation to never complete.
-  return 1;
-}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BubbleDelegateTest);
+};
 
 }  // namespace
 
-typedef ViewsTestBase BubbleDelegateTest;
-
 TEST_F(BubbleDelegateTest, CreateDelegate) {
-  // Create the anchor and parent widgets.
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<Widget> anchor_widget(new Widget);
-  anchor_widget->Init(params);
-  anchor_widget->Show();
-
-  BubbleDelegateView* bubble_delegate =
-      new BubbleDelegateView(anchor_widget->GetContentsView(),
-                             BubbleBorder::NONE);
+  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
+      anchor_widget->GetContentsView(), BubbleBorder::NONE);
   bubble_delegate->set_color(SK_ColorGREEN);
-  Widget* bubble_widget(
-      BubbleDelegateView::CreateBubble(bubble_delegate));
+  Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
   test::TestWidgetObserver bubble_observer(bubble_widget);
-  EXPECT_FALSE(bubble_observer.widget_closed());
+  bubble_widget->Show();
 
   BubbleBorder* border = bubble_delegate->GetBubbleFrameView()->bubble_border();
   EXPECT_EQ(bubble_delegate->arrow(), border->arrow());
   EXPECT_EQ(bubble_delegate->color(), border->background_color());
 
+  EXPECT_FALSE(bubble_observer.widget_closed());
   bubble_widget->CloseNow();
-  RunPendingMessages();
   EXPECT_TRUE(bubble_observer.widget_closed());
 }
 
 TEST_F(BubbleDelegateTest, CloseAnchorWidget) {
-  // Create the anchor widget.
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<Widget> anchor_widget(new Widget);
-  anchor_widget->Init(params);
-  anchor_widget->Show();
-
+  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
   BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
       anchor_widget->GetContentsView(), BubbleBorder::NONE);
   // Preventing close on deactivate should not prevent closing with the anchor.
@@ -98,102 +89,102 @@ TEST_F(BubbleDelegateTest, CloseAnchorWidget) {
   Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
-  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
   test::TestWidgetObserver bubble_observer(bubble_widget);
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   bubble_widget->Show();
-  RunPendingMessages();
-  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
   EXPECT_FALSE(bubble_observer.widget_closed());
 
 #if defined(USE_AURA)
   // TODO(msw): Remove activation hack to prevent bookkeeping errors in:
   //            aura::test::TestActivationClient::OnWindowDestroyed().
-  scoped_ptr<Widget> smoke_and_mirrors_widget(new Widget);
-  smoke_and_mirrors_widget->Init(params);
-  smoke_and_mirrors_widget->Show();
+  scoped_ptr<Widget> smoke_and_mirrors_widget(CreateTestWidget());
   EXPECT_FALSE(bubble_observer.widget_closed());
 #endif
 
   // Ensure that closing the anchor widget also closes the bubble itself.
   anchor_widget->CloseNow();
-  RunPendingMessages();
   EXPECT_TRUE(bubble_observer.widget_closed());
 }
 
 TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
-  // Create the anchor and parent widgets.
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<Widget> anchor_widget(new Widget);
-  anchor_widget->Init(params);
-  anchor_widget->Show();
-  scoped_ptr<Widget> parent_widget(new Widget);
-  parent_widget->Init(params);
-  parent_widget->Show();
+  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
+      anchor_widget->GetContentsView(), BubbleBorder::NONE);
 
   // Make sure the bubble widget is parented to a widget other than the anchor
   // widget so that closing the anchor widget does not close the bubble widget.
-  BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
-      anchor_widget->GetContentsView(), BubbleBorder::NONE);
+  scoped_ptr<Widget> parent_widget(CreateTestWidget());
   bubble_delegate->set_parent_window(parent_widget->GetNativeView());
   // Preventing close on deactivate should not prevent closing with the parent.
   bubble_delegate->set_close_on_deactivate(false);
   Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
-  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
   test::TestWidgetObserver bubble_observer(bubble_widget);
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   // Showing and hiding the bubble widget should have no effect on its anchor.
   bubble_widget->Show();
-  RunPendingMessages();
-  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
   bubble_widget->Hide();
-  RunPendingMessages();
-  EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
+  EXPECT_EQ(anchor_widget, bubble_delegate->anchor_widget());
 
   // Ensure that closing the anchor widget clears the bubble's reference to that
   // anchor widget, but the bubble itself does not close.
   anchor_widget->CloseNow();
-  RunPendingMessages();
-  EXPECT_NE(anchor_widget.get(), bubble_delegate->anchor_widget());
+  EXPECT_NE(anchor_widget, bubble_delegate->anchor_widget());
   EXPECT_FALSE(bubble_observer.widget_closed());
 
 #if defined(USE_AURA)
   // TODO(msw): Remove activation hack to prevent bookkeeping errors in:
   //            aura::test::TestActivationClient::OnWindowDestroyed().
-  scoped_ptr<Widget> smoke_and_mirrors_widget(new Widget);
-  smoke_and_mirrors_widget->Init(params);
-  smoke_and_mirrors_widget->Show();
+  scoped_ptr<Widget> smoke_and_mirrors_widget(CreateTestWidget());
   EXPECT_FALSE(bubble_observer.widget_closed());
 #endif
 
   // Ensure that closing the parent widget also closes the bubble itself.
   parent_widget->CloseNow();
-  RunPendingMessages();
   EXPECT_TRUE(bubble_observer.widget_closed());
 }
 
-// TODO(msw): test relies on focus and belongs in interactive_ui_tests.
-TEST_F(BubbleDelegateTest, DISABLED_InitiallyFocusedView) {
-  // Create the anchor and parent widgets.
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<Widget> anchor_widget(new Widget);
-  anchor_widget->Init(params);
-  anchor_widget->Show();
-
-  TestBubbleDelegateView* bubble_delegate =
-      new TestBubbleDelegateView(anchor_widget->GetContentsView());
+TEST_F(BubbleDelegateTest, InitiallyFocusedView) {
+  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
+      anchor_widget->GetContentsView(), BubbleBorder::NONE);
   Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
-  bubble_widget->Show();
-
   EXPECT_EQ(bubble_delegate->GetInitiallyFocusedView(),
             bubble_widget->GetFocusManager()->GetFocusedView());
   bubble_widget->CloseNow();
+}
+
+TEST_F(BubbleDelegateTest, NonClientHitTest) {
+  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  TestBubbleDelegateView* bubble_delegate =
+      new TestBubbleDelegateView(anchor_widget->GetContentsView());
+  BubbleDelegateView::CreateBubble(bubble_delegate);
+  BubbleFrameView* frame = bubble_delegate->GetBubbleFrameView();
+  const int border = frame->bubble_border()->GetBorderThickness();
+
+  struct {
+    const int point;
+    const int hit;
+  } cases[] = {
+    { border,      HTNOWHERE },
+    { border + 5,  HTNOWHERE },
+    { border + 6,  HTCLIENT  },
+    { border + 50, HTCLIENT  },
+    { 1000,        HTNOWHERE },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    gfx::Point point(cases[i].point, cases[i].point);
+    EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
+        << " with border: " << border << ", at point " << cases[i].point;
+  }
 }
 
 // This class provides functionality to verify that the BubbleView shows up
@@ -202,8 +193,7 @@ TEST_F(BubbleDelegateTest, DISABLED_InitiallyFocusedView) {
 class BubbleWidgetClosingTest : public BubbleDelegateTest,
                                 public views::WidgetObserver {
  public:
-  BubbleWidgetClosingTest()
-      : bubble_destroyed_(false) {
+  BubbleWidgetClosingTest() : bubble_destroyed_(false) {
 #if defined(USE_AURA)
     loop_.set_dispatcher(aura::Env::GetInstance()->GetDispatcher());
 #endif
@@ -236,13 +226,7 @@ class BubbleWidgetClosingTest : public BubbleDelegateTest,
 };
 
 TEST_F(BubbleWidgetClosingTest, TestBubbleVisibilityAndClose) {
-  // Create the anchor and parent widgets.
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<Widget> anchor_widget(new Widget);
-  anchor_widget->Init(params);
-  anchor_widget->Show();
-
+  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
   TestBubbleDelegateView* bubble_delegate =
       new TestBubbleDelegateView(anchor_widget->GetContentsView());
   Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
