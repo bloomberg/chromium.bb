@@ -86,19 +86,16 @@ PassRefPtr<CSSValue> AnimatableNumber::toCSSValue() const
 
 PassRefPtr<AnimatableValue> AnimatableNumber::interpolateTo(const AnimatableValue* value, double fraction) const
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(isSameType(value));
-    const AnimatableNumber* number = static_cast<const AnimatableNumber*>(value);
+    const AnimatableNumber* number = toAnimatableNumber(value);
     return AnimatableNumber::create(scale(1 - fraction).get(), number->scale(fraction).get());
 }
 
 PassRefPtr<AnimatableValue> AnimatableNumber::addWith(const AnimatableValue* value) const
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(isSameType(value));
-
     // Optimization for adding with 0.
     if (!m_isCalc && !m_number)
         return takeConstRef(value);
-    const AnimatableNumber* number = static_cast<const AnimatableNumber*>(value);
+    const AnimatableNumber* number = toAnimatableNumber(value);
     if (!number->m_isCalc && !number->m_number)
         return takeConstRef(this);
 

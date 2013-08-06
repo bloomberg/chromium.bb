@@ -44,11 +44,14 @@ public:
     virtual PassRefPtr<CSSValue> toCSSValue() const = 0;
 
     static const AnimatableValue* neutralValue();
-    virtual bool isNeutral() const { return false; }
 
     static PassRefPtr<AnimatableValue> interpolate(const AnimatableValue*, const AnimatableValue*, double fraction);
     // For noncommutative values read add(A, B) to mean the value A with B composed onto it.
     static PassRefPtr<AnimatableValue> add(const AnimatableValue*, const AnimatableValue*);
+
+    bool isNumber() const { return m_type == TypeNumber; }
+    bool isNeutral() const { return m_type == TypeNeutral; }
+    bool isUnknown() const { return m_type == TypeUnknown; }
 
 protected:
     enum AnimatableType {
@@ -75,7 +78,7 @@ protected:
     template <class T>
     static PassRefPtr<T> takeConstRef(const T* value) { return PassRefPtr<T>(const_cast<T*>(value)); }
 
-    AnimatableType m_type;
+    const AnimatableType m_type;
 };
 
 } // namespace WebCore

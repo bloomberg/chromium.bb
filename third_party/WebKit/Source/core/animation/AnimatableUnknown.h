@@ -65,7 +65,7 @@ private:
         ASSERT(m_value);
     }
 
-    RefPtr<CSSValue> m_value;
+    const RefPtr<CSSValue> m_value;
 };
 
 } // namespace WebCore

@@ -114,6 +114,11 @@ private:
     mutable RefPtr<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
 };
 
+inline const AnimatableNumber* toAnimatableNumber(const AnimatableValue* value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isNumber());
+    return static_cast<const AnimatableNumber*>(value);
+}
 
 } // namespace WebCore
 

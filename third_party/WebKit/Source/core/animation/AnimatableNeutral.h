@@ -45,8 +45,6 @@ public:
         return 0;
     }
 
-    virtual bool isNeutral() const OVERRIDE { return true; }
-
 protected:
     static PassRefPtr<AnimatableNeutral> create() { return adoptRef(new AnimatableNeutral()); }
 
