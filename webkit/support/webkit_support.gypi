@@ -115,12 +115,6 @@
         '<(DEPTH)/base/base.gyp:base',
       ],
       'sources': [
-        '<(DEPTH)/webkit/browser/fileapi/mock_file_system_context.cc',
-        '<(DEPTH)/webkit/browser/fileapi/mock_file_system_context.h',
-        '<(DEPTH)/webkit/browser/fileapi/mock_file_system_options.cc',
-        '<(DEPTH)/webkit/browser/fileapi/mock_file_system_options.h',
-        '<(DEPTH)/webkit/browser/quota/mock_special_storage_policy.cc',
-        '<(DEPTH)/webkit/browser/quota/mock_special_storage_policy.h',
         '<(DEPTH)/webkit/support/mac/DumpRenderTreePasteboard.h',
         '<(DEPTH)/webkit/support/mac/DumpRenderTreePasteboard.m',
         '<(DEPTH)/webkit/support/mock_webclipboard_impl.cc',
