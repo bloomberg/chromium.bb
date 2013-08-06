@@ -57,12 +57,7 @@ void MIDIDispatcherHost::OnRequestSysExPermission(int render_view_id,
 void MIDIDispatcherHost::WasSysExPermissionGranted(int render_view_id,
                                                    int client_id,
                                                    bool success) {
-  RenderViewHostImpl* r =
-      RenderViewHostImpl::FromID(render_process_id_, render_view_id);
-  if (!r)
-    return;
-  r->Send(
-      new MIDIMsg_SysExPermissionApproved(render_view_id, client_id, success));
+  Send(new MIDIMsg_SysExPermissionApproved(render_view_id, client_id, success));
 }
 
 }  // namespace content
