@@ -93,7 +93,7 @@ const  int64 kint64max  = (( int64) GG_LONGLONG(0x7FFFFFFFFFFFFFFF));
   void operator=(const TypeName&)
 
 // An older, deprecated, politically incorrect name for the above.
-// NOTE: The usage of this macro was baned from our code base, but some
+// NOTE: The usage of this macro was banned from our code base, but some
 // third_party libraries are yet using it.
 // TODO(tfarina): Figure out how to fix the usage of this macro in the
 // third_party libraries and get rid of it.
@@ -185,7 +185,7 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 // When you use implicit_cast, the compiler checks that the cast is safe.
 // Such explicit implicit_casts are necessary in surprisingly many
 // situations where C++ demands an exact type match instead of an
-// argument type convertable to a target type.
+// argument type convertible to a target type.
 //
 // The From type can be inferred, so the preferred syntax for using
 // implicit_cast is the same as for static_cast etc.:
@@ -288,7 +288,7 @@ struct CompileAssert {
 //
 // This is true for any cast syntax, either *(int*)&f or
 // *reinterpret_cast<int*>(&f).  And it is particularly true for
-// conversions betweeen integral lvalues and floating-point lvalues.
+// conversions between integral lvalues and floating-point lvalues.
 //
 // The purpose of 3.10 -15- is to allow optimizing compilers to assume
 // that expressions with different types refer to different memory.  gcc
