@@ -1457,7 +1457,7 @@ const Experiment kExperiments[] = {
     "apps-use-native-frame",
     IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_NAME,
     IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_DESCRIPTION,
-    kOsWin,
+    kOsMac | kOsWin,
     SINGLE_VALUE_TYPE(switches::kAppsUseNativeFrame)
   },
   {
