@@ -37,6 +37,11 @@ Table rows: [key2 = value2, key4 = value4, key5 = value5, key6 = value6]
 removeItem('key5');
 Table rows: [key2 = value2, key4 = value4, key6 = value6]
 
+Running: updateItemTest
+
+updateItem('key2', 'VALUE2');
+Table rows: [key2 = VALUE2, key4 = value4, key6 = value6]
+
 Running: clearTest
 
 clear()

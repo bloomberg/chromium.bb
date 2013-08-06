@@ -13,6 +13,11 @@ function removeItem(key)
     localStorage.removeItem(key);
 }
 
+function updateItem(key, newValue)
+{
+    localStorage.setItem(key, newValue);
+}
+
 function clear()
 {
     localStorage.clear();
@@ -120,6 +125,21 @@ function test()
             }
 
             removeItem();
+        },
+
+        function updateItemTest(next)
+        {
+            InspectorTest.addResult("");
+            InspectorTest.addSniffer(view.domStorageModel, "_domStorageItemUpdated", itemUpdated);
+            var command = "updateItem('key2', 'VALUE2');";
+            InspectorTest.addResult(command);
+            InspectorTest.evaluateInPage(command);
+
+            function itemUpdated()
+            {
+                dumpDataGrid(view._dataGrid.rootNode());
+                next();
+            }
         },
 
         function clearTest(next)
