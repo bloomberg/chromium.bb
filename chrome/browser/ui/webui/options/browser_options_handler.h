@@ -59,13 +59,6 @@ class BrowserOptionsHandler
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
 
-  // Will be called when the kSigninAllowed pref has changed.
-  void OnSigninAllowedPrefChange();
-
-  // Called whenever prefs::kSearchSuggestEnabled or the default search engine
-  // changes, so that we can update the state of the Instant pref checkbox.
-  void UpdateInstantCheckboxState();
-
   // ShellIntegration::DefaultWebClientObserver implementation.
   virtual void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state) OVERRIDE;
@@ -92,6 +85,11 @@ class BrowserOptionsHandler
   virtual void TouchpadExists(bool exists) OVERRIDE;
   virtual void MouseExists(bool exists) OVERRIDE;
 #endif
+
+  void UpdateSyncState();
+
+  // Will be called when the kSigninAllowed pref has changed.
+  void OnSigninAllowedPrefChange();
 
   // Makes this the default browser. Called from WebUI.
   void BecomeDefaultBrowser(const base::ListValue* args);

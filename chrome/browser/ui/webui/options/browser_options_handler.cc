@@ -655,17 +655,7 @@ void BrowserOptionsHandler::RegisterMessages() {
 }
 
 void BrowserOptionsHandler::OnStateChanged() {
-  web_ui()->CallJavascriptFunction("BrowserOptions.updateSyncState",
-                                   *GetSyncStateDictionary());
-
-  SendProfilesInfo();
-}
-
-void BrowserOptionsHandler::OnSigninAllowedPrefChange() {
-  web_ui()->CallJavascriptFunction("BrowserOptions.updateSyncState",
-                                   *GetSyncStateDictionary());
-
-  SendProfilesInfo();
+  UpdateSyncState();
 }
 
 void BrowserOptionsHandler::PageLoadStarted() {
@@ -1457,6 +1447,15 @@ void BrowserOptionsHandler::MouseExists(bool exists) {
   web_ui()->CallJavascriptFunction("BrowserOptions.showMouseControls", val);
 }
 #endif
+
+void BrowserOptionsHandler::UpdateSyncState() {
+  web_ui()->CallJavascriptFunction("BrowserOptions.updateSyncState",
+                                   *GetSyncStateDictionary());
+}
+
+void BrowserOptionsHandler::OnSigninAllowedPrefChange() {
+  UpdateSyncState();
+}
 
 void BrowserOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
