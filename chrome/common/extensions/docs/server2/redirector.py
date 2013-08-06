@@ -5,7 +5,6 @@
 import posixpath
 from urlparse import urlsplit
 
-from branch_utility import BranchUtility
 from file_system import FileNotFoundError
 from third_party.json_schema_compiler.json_parse import Parse
 
@@ -14,7 +13,7 @@ class Redirector(object):
     self._root_path = root_path
     self._file_system = file_system
     self._cache = compiled_fs_factory.Create(
-      lambda _, rules: Parse(rules), Redirector)
+        lambda _, rules: Parse(rules), Redirector)
 
   def Redirect(self, host, path):
     ''' Check if a path should be redirected, first according to host
@@ -59,18 +58,12 @@ class Redirector(object):
     if path and path[0] == 'chrome':
       path.pop(0)
 
-    for channel in BranchUtility.GetAllChannelNames():
-      if channel in path:
-        path.remove(channel)
-        path.insert(0, channel)
-        break
-
     return 'https://developer.chrome.com/' + posixpath.join(*path)
 
   def Cron(self):
     ''' Load files during a cron run.
     '''
-    for root, dirs, files in self._file_system.Walk(self._root_path + '/'):
+    for root, dirs, files in self._file_system.Walk(self._root_path):
       if 'redirects.json' in files:
         self._cache.GetFromFile('%s/redirects.json' % posixpath.join(
-            self._root_path, root))
+            self._root_path, root).rstrip('/'))
