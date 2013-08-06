@@ -37,6 +37,9 @@ enum LayerScaleAnimationDirection {
   LAYER_SCALE_ANIMATION_BELOW,
 };
 
+// Amount of time for the cross fade animation.
+extern const int kCrossFadeDurationMS;
+
 // Animate a cross-fade of |window| from its current bounds to |new_bounds|.
 ASH_EXPORT void CrossFadeToBounds(aura::Window* window,
                                   const gfx::Rect& new_bounds);

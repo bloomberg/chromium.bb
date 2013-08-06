@@ -15,7 +15,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_animations.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -72,6 +71,8 @@ int64 Round64(float f) {
 }
 
 }  // namespace
+
+const int kCrossFadeDurationMS = 200;
 
 void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   // Recalculate the transform at restore time since the launcher item may have
@@ -436,12 +437,12 @@ base::TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,
   int max_area = std::max(old_area, new_area);
   // Avoid divide by zero.
   if (max_area == 0)
-    return base::TimeDelta::FromMilliseconds(internal::kWorkspaceSwitchTimeMS);
+    return base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS);
 
   int delta_area = std::abs(old_area - new_area);
   // If the area didn't change, the animation is instantaneous.
   if (delta_area == 0)
-    return base::TimeDelta::FromMilliseconds(internal::kWorkspaceSwitchTimeMS);
+    return base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS);
 
   float factor =
       static_cast<float>(delta_area) / static_cast<float>(max_area);

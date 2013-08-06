@@ -9,15 +9,17 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_animations.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/corewm/window_animations.h"
 
@@ -94,10 +96,34 @@ void WorkspaceController::SetShelf(ShelfLayoutManager* shelf) {
 }
 
 void WorkspaceController::DoInitialAnimation() {
-  WorkspaceAnimationDetails details;
-  details.animate = details.animate_opacity = details.animate_scale = true;
-  details.pause_time_ms = kInitialPauseTimeMS;
-  ash::internal::ShowWorkspace(viewport_, details);
+  viewport_->Show();
+
+  viewport_->layer()->SetOpacity(0.0f);
+  SetTransformForScaleAnimation(
+      viewport_->layer(), LAYER_SCALE_ANIMATION_ABOVE);
+
+  // In order for pause to work we need to stop animations.
+  viewport_->layer()->GetAnimator()->StopAnimating();
+
+  {
+    ui::ScopedLayerAnimationSettings settings(
+        viewport_->layer()->GetAnimator());
+
+    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+    viewport_->layer()->GetAnimator()->SchedulePauseForProperties(
+        base::TimeDelta::FromMilliseconds(kInitialPauseTimeMS),
+        ui::LayerAnimationElement::TRANSFORM,
+        ui::LayerAnimationElement::OPACITY,
+        ui::LayerAnimationElement::BRIGHTNESS,
+        ui::LayerAnimationElement::VISIBILITY,
+        -1);
+
+    settings.SetTweenType(ui::Tween::EASE_OUT);
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
+    viewport_->layer()->SetTransform(gfx::Transform());
+    viewport_->layer()->SetOpacity(1.0f);
+  }
 }
 
 }  // namespace internal

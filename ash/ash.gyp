@@ -511,8 +511,6 @@
         'wm/workspace/snap_sizer.cc',
         'wm/workspace/snap_sizer.h',
         'wm/workspace/snap_types.h',
-        'wm/workspace/workspace_animations.cc',
-        'wm/workspace/workspace_animations.h',
         'wm/workspace/workspace_event_handler.cc',
         'wm/workspace/workspace_event_handler.h',
         'wm/workspace/workspace_layout_manager.cc',

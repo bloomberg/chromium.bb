@@ -25,9 +25,9 @@
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_animations.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -599,7 +599,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   ui::ScopedLayerAnimationSettings launcher_animation_setter(
       GetLayer(shelf_)->GetAnimator());
   launcher_animation_setter.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kWorkspaceSwitchTimeMS));
+      base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
   launcher_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
   launcher_animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
@@ -609,7 +609,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   ui::ScopedLayerAnimationSettings status_animation_setter(
       GetLayer(shelf_->status_area_widget())->GetAnimator());
   status_animation_setter.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kWorkspaceSwitchTimeMS));
+      base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
   status_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
   status_animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
