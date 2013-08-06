@@ -955,7 +955,7 @@ void RenderWidgetHostViewAura::MovePluginWindows(
       DCHECK(GetParent(window) == parent);
     }
     if (!GetProp(window, kWidgetOwnerProperty))
-      CHECK(SetProp(window, kWidgetOwnerProperty, this));
+      SetProp(window, kWidgetOwnerProperty, this);
   }
 #endif  // defined(OS_WIN)
 }
