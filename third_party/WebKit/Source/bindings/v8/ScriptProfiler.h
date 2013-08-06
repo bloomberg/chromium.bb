@@ -78,9 +78,6 @@ public:
     static unsigned requestHeapStatsUpdate(OutputStream*);
     static void initialize();
     static void visitNodeWrappers(WrappedNodeVisitor*);
-    static void visitExternalStrings(ExternalStringVisitor*);
-    static void visitExternalArrays(ExternalArrayVisitor*);
-    static size_t profilerSnapshotsSize();
     static HashMap<String, double>* currentProfileNameIdleTimeMap();
 };
 

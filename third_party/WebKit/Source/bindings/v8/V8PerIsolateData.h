@@ -89,7 +89,6 @@ public:
 
     v8::Persistent<v8::Value>& ensureLiveRoot();
 
-    void visitExternalStrings(ExternalStringVisitor*);
     DOMDataList& allStores() { return m_domDataList; }
 
     V8HiddenPropertyName* hiddenPropertyName() { return m_hiddenPropertyName.get(); }

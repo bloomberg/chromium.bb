@@ -298,49 +298,6 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
     v8::V8::VisitHandlesWithClassIds(&wrapperVisitor);
 }
 
-void ScriptProfiler::visitExternalStrings(ExternalStringVisitor* visitor)
-{
-    V8PerIsolateData::current()->visitExternalStrings(visitor);
-}
-
-void ScriptProfiler::visitExternalArrays(ExternalArrayVisitor* visitor)
-{
-    class DOMObjectWrapperVisitor : public v8::PersistentHandleVisitor {
-    public:
-        explicit DOMObjectWrapperVisitor(ExternalArrayVisitor* visitor)
-            : m_visitor(visitor)
-        {
-        }
-
-        virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
-        {
-            if (classId != v8DOMObjectClassId)
-                return;
-            // Casting to Handle is safe here, since the Persistent cannot get
-            // GCd during visiting.
-            ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
-            v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
-            if (!toWrapperTypeInfo(*wrapper)->isSubclass(&V8ArrayBufferView::info))
-                return;
-            m_visitor->visitJSExternalArray(V8ArrayBufferView::toNative(*wrapper));
-        }
-
-    private:
-        ExternalArrayVisitor* m_visitor;
-    } wrapperVisitor(visitor);
-
-    v8::V8::VisitHandlesWithClassIds(&wrapperVisitor);
-}
-
-size_t ScriptProfiler::profilerSnapshotsSize()
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
-    if (!profiler)
-        return 0;
-    return profiler->GetProfilerMemorySize();
-}
-
 ProfileNameIdleTimeMap* ScriptProfiler::currentProfileNameIdleTimeMap()
 {
     AtomicallyInitializedStatic(WTF::ThreadSpecific<ProfileNameIdleTimeMap>*, map = new WTF::ThreadSpecific<ProfileNameIdleTimeMap>);
