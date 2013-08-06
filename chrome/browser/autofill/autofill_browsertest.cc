@@ -1670,15 +1670,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_DisableAutocompleteWhileFilling) {
 
   // Press the down arrow to select the suggestion and attempt to preview the
   // autofilled form.
-  if (!external_delegate()) {
-    content::SimulateKeyPress(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        ui::VKEY_DOWN, false, false, false, false);
-  } else {
-    content::NativeWebKeyboardEvent event;
-    event.windowsKeyCode = ui::VKEY_DOWN;
-    external_delegate()->keyboard_listener()->HandleKeyPressEvent(event);
-  }
+  content::NativeWebKeyboardEvent event;
+  event.windowsKeyCode = ui::VKEY_DOWN;
+  external_delegate()->keyboard_listener()->HandleKeyPressEvent(event);
 
   // Wait for any IPCs to complete by performing an action that generates an
   // IPC that's easy to wait for.  Chrome shouldn't crash.
