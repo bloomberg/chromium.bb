@@ -125,7 +125,30 @@ row6 col2
 PASS
 row7 col0
 PASS
-Test 5 - RowSpan and ColSpan.
+Test 5 - 2 spanning cells starts at diffrent row index but end at same row index.
+
+row0 col0 rowspan=6 height=400px	row0 col1
+PASS
+row1 col1 rowspan=6 height=800px
+PASS
+row2 col2
+FAIL:
+Expected 130 for height, but got 132. 
+
+<tr data-expected-height="130">
+        <td>row2 col2</td>
+    </tr>
+row3 col2
+PASS
+row4 col2
+PASS
+row5 col2
+PASS
+row6 col2
+PASS
+row7 col0
+PASS
+Test 6 - RowSpan and ColSpan.
 
 row0 col0	row0 col1 - rowspan=3 colspan=2	row0 col2
 PASS
@@ -137,7 +160,7 @@ row3 col0 - colspan=3
 PASS
 row4 col0
 PASS
-Test 6 - Mix of baseline aligned and non-baseline aligned cells.
+Test 7 - Mix of baseline aligned and non-baseline aligned cells.
 
 row0 col0	row0 col1 vertical-align=top	row0 col2 vertical-align=bottom
 PASS
@@ -164,7 +187,7 @@ row5 col1 vertical-align=text-bottom
 PASS
 row6 col0
 PASS
-Test 7 - CSS Table.
+Test 8 - CSS Table.
 
 row0 col0	row0 col1	row0 col2
 row1 col0	row1 col1	row1 col2
@@ -177,7 +200,7 @@ row7 col0
 row8 col0
 row9 col0
 row10 col0
-Test 8 - Table Similar to CSS table with rowspan.
+Test 9 - Table Similar to CSS table with rowspan.
 
 row0 col0	row0 col1	row0 col2
 FAIL:

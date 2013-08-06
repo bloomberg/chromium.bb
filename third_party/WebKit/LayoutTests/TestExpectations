@@ -1286,15 +1286,7 @@ crbug.com/268246 http/tests/inspector/search/scripts-search-scope.html [ Pass Fa
 crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-shared-basic.html [ Failure Pass ]
 
 crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure Pass ]
-
-# Below test case need to rebaseline after crrev.com/21909002
-# Text only
-crbug.com/252120 [ Mac ] fast/table/table-all-rowspans-height-distribution-in-rows.html [ NeedsRebaseline ]
-# Image only
-# crbug.com/252120 [ Linux Win ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
-crbug.com/252120 [ Linux ] tables/mozilla/core/bloomberg.html [ NeedsRebaseline ]
 # Text and Image both
 # crbug.com/252120 [ Mac ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
 crbug.com/252120 [ Debug ] tables/mozilla/bugs/bug7714.html [ Crash ]
-crbug.com/252120 [ Win Mac ] tables/mozilla/core/bloomberg.html [ NeedsRebaseline ]
 
