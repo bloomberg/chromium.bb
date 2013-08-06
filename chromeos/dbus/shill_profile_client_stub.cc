@@ -28,8 +28,6 @@ struct ShillProfileClientStub::ProfileProperties {
 
 namespace {
 
-const char kSharedProfilePath[] = "/profile/default";
-
 void PassDictionary(
     const ShillProfileClient::DictionaryValueCallbackWithoutStatus& callback,
     const base::DictionaryValue* dictionary) {
@@ -38,10 +36,11 @@ void PassDictionary(
 
 }  // namespace
 
+// static
+const char ShillProfileClientStub::kSharedProfilePath[] = "/profile/default";
+
 ShillProfileClientStub::ShillProfileClientStub() {
   AddProfile(kSharedProfilePath, std::string());
-  // TODO(stevenjb): Remove implicit dependency on Service stub implementation.
-  AddService(kSharedProfilePath, "wifi2");
 }
 
 ShillProfileClientStub::~ShillProfileClientStub() {

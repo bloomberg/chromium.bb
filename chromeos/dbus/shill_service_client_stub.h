@@ -76,6 +76,7 @@ class ShillServiceClientStub : public ShillServiceClient,
   virtual ShillServiceClient::TestInterface* GetTestInterface() OVERRIDE;
 
   // ShillServiceClient::TestInterface overrides.
+  virtual void AddDefaultServices() OVERRIDE;
   virtual void AddService(const std::string& service_path,
                           const std::string& name,
                           const std::string& type,
@@ -100,12 +101,12 @@ class ShillServiceClientStub : public ShillServiceClient,
  private:
   typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
 
-  void SetDefaultProperties();
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& service_path,
                                       const std::string& property);
   base::DictionaryValue* GetModifiableServiceProperties(
       const std::string& service_path);
   PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
+  void SetOtherServicesOffline(const std::string& service_path);
 
   base::DictionaryValue stub_services_;
   // Observer list for each service.

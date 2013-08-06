@@ -35,6 +35,45 @@ struct ValueEquals {
   const base::Value* first_;
 };
 
+// Appends string entries from |service_list_in| whose entries in ServiceClient
+// have Type |match_type| to either an active list or an inactive list
+// based on the entry's State.
+void AppendServicesForType(
+    const base::ListValue* service_list_in,
+    const char* match_type,
+    std::vector<std::string>* active_service_list_out,
+    std::vector<std::string>* inactive_service_list_out) {
+  ShillServiceClient::TestInterface* service_client =
+      DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+  for (base::ListValue::const_iterator iter = service_list_in->begin();
+       iter != service_list_in->end(); ++iter) {
+    std::string service_path;
+    if (!(*iter)->GetAsString(&service_path))
+      continue;
+    const base::DictionaryValue* properties =
+        service_client->GetServiceProperties(service_path);
+    if (!properties) {
+      LOG(ERROR) << "Properties not found for service: " << service_path;
+      continue;
+    }
+    std::string type;
+    properties->GetString(flimflam::kTypeProperty, &type);
+    if (type != match_type)
+      continue;
+    std::string state;
+    properties->GetString(flimflam::kStateProperty, &state);
+    if (state == flimflam::kStateOnline ||
+        state == flimflam::kStateAssociation ||
+        state == flimflam::kStateConfiguration ||
+        state == flimflam::kStatePortal ||
+        state == flimflam::kStateReady) {
+      active_service_list_out->push_back(service_path);
+    } else {
+      inactive_service_list_out->push_back(service_path);
+    }
+  }
+}
+
 }  // namespace
 
 ShillManagerClientStub::ShillManagerClientStub()
@@ -352,26 +391,6 @@ void ShillManagerClientStub::ClearProperties() {
   stub_properties_.Clear();
 }
 
-void ShillManagerClientStub::MoveServiceToIndex(
-    const std::string& service_path,
-    size_t index,
-    bool add_to_watch_list) {
-  base::StringValue path_value(service_path);
-  base::ListValue* service_list = GetListProperty(flimflam::kServicesProperty);
-  base::ListValue::iterator iter =
-      std::find_if(service_list->begin(), service_list->end(),
-                   ValueEquals(&path_value));
-  if (iter == service_list->end()) {
-    LOG(ERROR) << "Service not found to move: " << service_path;
-    return;
-  }
-  service_list->Erase(iter, NULL);
-  service_list->Insert(index, path_value.DeepCopy());
-  CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
-  if (add_to_watch_list)
-    AddServiceToWatchList(service_path);
-}
-
 void ShillManagerClientStub::AddManagerService(const std::string& service_path,
                                                bool add_to_visible_list,
                                                bool add_to_watch_list) {
@@ -410,6 +429,32 @@ void ShillManagerClientStub::ClearManagerServices() {
   GetListProperty(flimflam::kServiceWatchListProperty)->Clear();
   CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
   CallNotifyObserversPropertyChanged(flimflam::kServiceWatchListProperty, 0);
+}
+
+void ShillManagerClientStub::SortManagerServices() {
+  static const char* ordered_types[] = {
+    flimflam::kTypeEthernet,
+    flimflam::kTypeWifi,
+    flimflam::kTypeCellular,
+    flimflam::kTypeWimax,
+    flimflam::kTypeVPN
+  };
+  base::ListValue* service_list = GetListProperty(flimflam::kServicesProperty);
+  if (!service_list || service_list->empty())
+    return;
+  std::vector<std::string> active_services;
+  std::vector<std::string> inactive_services;
+  for (size_t i = 0; i < arraysize(ordered_types); ++i) {
+    AppendServicesForType(service_list, ordered_types[i],
+                          &active_services, &inactive_services);
+  }
+  service_list->Clear();
+  for (size_t i = 0; i < active_services.size(); ++i)
+    service_list->AppendString(active_services[i]);
+  for (size_t i = 0; i < inactive_services.size(); ++i)
+    service_list->AppendString(inactive_services[i]);
+
+  CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
 }
 
 void ShillManagerClientStub::AddGeoNetwork(

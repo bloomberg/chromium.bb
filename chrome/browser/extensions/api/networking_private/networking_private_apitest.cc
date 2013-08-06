@@ -21,6 +21,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -104,6 +105,8 @@ class ExtensionNetworkingPrivateApiTest :
 
     InitializeSanitizedUsername();
 
+    ShillManagerClient::TestInterface* manager_test =
+        DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
     ShillDeviceClient::TestInterface* device_test =
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     ShillProfileClient::TestInterface* profile_test =
@@ -193,6 +196,8 @@ class ExtensionNetworkingPrivateApiTest :
                              flimflam::kTypeVPN,
                              flimflam::kStateOnline,
                              add_to_visible, add_to_watchlist);
+
+    manager_test->SortManagerServices();
 
     content::RunAllPendingInMessageLoop();
   }

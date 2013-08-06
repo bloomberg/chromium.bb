@@ -88,14 +88,12 @@ class ShillManagerClientStub : public ShillManagerClient,
                              const base::DictionaryValue& network) OVERRIDE;
   virtual void AddProfile(const std::string& profile_path) OVERRIDE;
   virtual void ClearProperties() OVERRIDE;
-  virtual void MoveServiceToIndex(const std::string& service_path,
-                                  size_t index,
-                                  bool add_to_watch_list) OVERRIDE;
   virtual void AddManagerService(const std::string& service_path,
                                  bool add_to_visible_list,
                                  bool add_to_watch_list) OVERRIDE;
   virtual void RemoveManagerService(const std::string& service_path) OVERRIDE;
   virtual void ClearManagerServices() OVERRIDE;
+  virtual void SortManagerServices() OVERRIDE;
 
  private:
   void AddServiceToWatchList(const std::string& service_path);

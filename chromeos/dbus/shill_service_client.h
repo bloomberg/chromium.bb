@@ -44,6 +44,10 @@ class CHROMEOS_EXPORT ShillServiceClient {
   // GetTestInterface(), only implemented in the stub implementation.
   class TestInterface {
    public:
+    // Adds a set of default services. Must be called after all Shill
+    // clients have been created.
+    virtual void AddDefaultServices() = 0;
+
     // Adds a Service to the Manager and Service stubs.
     virtual void AddService(const std::string& service_path,
                             const std::string& name,

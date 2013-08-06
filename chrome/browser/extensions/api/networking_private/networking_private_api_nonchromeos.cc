@@ -225,6 +225,15 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
       "    }"
       "  },"
       "  {"
+      "    \"ConnectionState\": \"Connected\","
+      "    \"GUID\": \"stub_vpn1\","
+      "    \"Name\": \"vpn1\","
+      "    \"Type\": \"VPN\","
+      "    \"VPN\": {"
+      "      \"AutoConnect\": false"
+      "    }"
+      "  },"
+      "  {"
       "    \"ConnectionState\": \"NotConnected\","
       "    \"GUID\": \"stub_wifi2\","
       "    \"Name\": \"wifi2_PSK\","
@@ -246,22 +255,13 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
       "    \"GUID\": \"stub_cellular1\","
       "    \"Name\": \"cellular1\","
       "    \"Type\": \"Cellular\""
-      "  },"
-      "  {"
-      "    \"ConnectionState\": \"Connected\","
-      "    \"GUID\": \"stub_vpn1\","
-      "    \"Name\": \"vpn1\","
-      "    \"Type\": \"VPN\","
-      "    \"VPN\": {"
-      "      \"AutoConnect\": false"
-      "    }"
       "  }]";
   ListValue* visible_networks =
       static_cast<ListValue*>(base::JSONReader::Read(networks_json));
   // If caller only needs WiFi networks, then remove all other networks.
   if (params->type == api::GetVisibleNetworks::Params::TYPE_WIFI) {
     visible_networks->Remove(4, NULL);
-    visible_networks->Remove(3, NULL);
+    visible_networks->Remove(2, NULL);
     visible_networks->Remove(0, NULL);
   }
 
@@ -282,9 +282,9 @@ bool NetworkingPrivateRequestNetworkScanFunction::RunImpl() {
   std::vector<std::string> changes;
   changes.push_back("stub_ethernet");
   changes.push_back("stub_wifi1");
+  changes.push_back("stub_vpn1");
   changes.push_back("stub_wifi2");
   changes.push_back("stub_cellular1");
-  changes.push_back("stub_vpn1");
 
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   scoped_ptr<base::ListValue> args(api::OnNetworkListChanged::Create(changes));
@@ -338,11 +338,11 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
 
     // Generate NetworkListChanged event.
     std::vector<std::string> list;
-    list.push_back("stub_wifi2");
     list.push_back("stub_ethernet");
+    list.push_back("stub_wifi2");
+    list.push_back("stub_vpn1");
     list.push_back("stub_wifi1");
     list.push_back("stub_cellular1");
-    list.push_back("stub_vpn1");
 
     scoped_ptr<base::ListValue> arg2(api::OnNetworkListChanged::Create(list));
     scoped_ptr<extensions::Event> netlist_event(new extensions::Event(

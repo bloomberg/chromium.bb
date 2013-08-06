@@ -118,6 +118,12 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     gsm_sms_client_.reset(
         GsmSMSClient::Create(client_type_override_, system_bus_.get()));
 
+    // If the Service client has a TestInterface, add the default services.
+    ShillServiceClient::TestInterface* service_client_test =
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+    if (service_client_test)
+      service_client_test->AddDefaultServices();
+
     image_burner_client_.reset(ImageBurnerClient::Create(client_type_,
                                                          system_bus_.get()));
     introspectable_client_.reset(

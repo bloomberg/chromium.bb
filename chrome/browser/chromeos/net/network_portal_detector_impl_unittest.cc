@@ -178,9 +178,8 @@ class NetworkPortalDetectorImplTest
   }
 
   void SetConnected(const std::string& service_path) {
-    DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
+    DBusThreadManager::Get()->GetShillServiceClient()->Connect(
         dbus::ObjectPath(service_path),
-        flimflam::kStateProperty, base::StringValue(flimflam::kStateOnline),
         base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
   }

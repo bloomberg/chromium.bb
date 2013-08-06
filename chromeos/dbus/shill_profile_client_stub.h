@@ -52,6 +52,8 @@ class ShillProfileClientStub : public ShillProfileClient,
                           const std::string& service_path) OVERRIDE;
   virtual void GetProfilePaths(std::vector<std::string>* profiles) OVERRIDE;
 
+  static const char kSharedProfilePath[];
+
  private:
   struct ProfileProperties;
   typedef std::map<std::string, ProfileProperties*> ProfileMap;

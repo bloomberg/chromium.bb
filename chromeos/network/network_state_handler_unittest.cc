@@ -339,11 +339,10 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
   ASSERT_TRUE(service_test);
 
-  // Change the default network by moving wifi1 to the front of the list
-  // and changing the state of eth1 to Idle.
-  const std::string wifi1 = kShillManagerClientStubDefaultWireless;
-  manager_test->MoveServiceToIndex(wifi1, 0, true);
+  // Change the default network by  changing the state of eth1 to Idle which
+  // should re-sort Manager.Services.
   const std::string eth1 = kShillManagerClientStubDefaultService;
+  const std::string wifi1 = kShillManagerClientStubDefaultWireless;
   base::StringValue connection_state_idle_value(flimflam::kStateIdle);
   service_test->SetServiceProperty(eth1, flimflam::kStateProperty,
                                    connection_state_idle_value);

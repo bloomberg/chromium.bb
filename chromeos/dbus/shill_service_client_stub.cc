@@ -13,6 +13,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill_profile_client_stub.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -43,7 +44,6 @@ void PassStubServiceProperties(
 }  // namespace
 
 ShillServiceClientStub::ShillServiceClientStub() : weak_ptr_factory_(this) {
-  SetDefaultProperties();
 }
 
 ShillServiceClientStub::~ShillServiceClientStub() {
@@ -171,18 +171,25 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
-  base::TimeDelta delay;
-  // Set Associating
+
+  // Set any other services of the same Type to 'offline' first, before setting
+  // State to Association which will trigger sorting Manager.Services and
+  // sending an update.
+  SetOtherServicesOffline(service_path.value());
+
+  // Set Associating.
   base::StringValue associating_value(flimflam::kStateAssociation);
   SetServiceProperty(service_path.value(),
                      flimflam::kStateProperty,
                      associating_value);
+
+  // Set Online after a delay.
+  base::TimeDelta delay;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableStubInteractive)) {
     const int kConnectDelaySeconds = 5;
     delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
   }
-  // Set Online after a delay
   base::StringValue online_value(flimflam::kStateOnline);
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
@@ -345,18 +352,7 @@ bool ShillServiceClientStub::SetServiceProperty(const std::string& service_path,
 
   VLOG(1) << "Service.SetProperty: " << property << " = " << value
           << " For: " << service_path;
-  if (property == flimflam::kStateProperty) {
-    // If the service went into a connected state, then move it to the top of
-    // the list in the manager client.
-    // TODO(gauravsh): Generalize to sort services properly to allow for testing
-    //  more complex scenarios.
-    std::string state;
-    if (value.GetAsString(&state) && (state == flimflam::kStateOnline ||
-                                      state == flimflam::kStatePortal))  {
-      DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
-          MoveServiceToIndex(service_path, 0, true);
-    }
-  }
+
   base::DictionaryValue new_properties;
   std::string changed_property;
   bool case_sensitive = true;
@@ -376,6 +372,13 @@ bool ShillServiceClientStub::SetServiceProperty(const std::string& service_path,
   }
 
   dict->MergeDictionary(&new_properties);
+
+  if (property == flimflam::kStateProperty) {
+    // When State changes the sort order of Services may change.
+    DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+        SortManagerServices();
+  }
+
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ShillServiceClientStub::NotifyObserversPropertyChanged,
@@ -398,7 +401,7 @@ void ShillServiceClientStub::ClearServices() {
   stub_services_.Clear();
 }
 
-void ShillServiceClientStub::SetDefaultProperties() {
+void ShillServiceClientStub::AddDefaultServices() {
   const bool add_to_visible = true;
   const bool add_to_watchlist = true;
 
@@ -485,6 +488,12 @@ void ShillServiceClientStub::SetDefaultProperties() {
   SetServiceProperty("vpn2",
                      flimflam::kProviderProperty,
                      provider_properties);
+
+  DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
+      AddService(ShillProfileClientStub::kSharedProfilePath, "wifi2");
+
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      SortManagerServices();
 }
 
 void ShillServiceClientStub::NotifyObserversPropertyChanged(
@@ -527,6 +536,36 @@ ShillServiceClientStub::GetObserverList(const dbus::ObjectPath& device_path) {
   PropertyObserverList* observer_list = new PropertyObserverList();
   observer_list_[device_path] = observer_list;
   return *observer_list;
+}
+
+void ShillServiceClientStub::SetOtherServicesOffline(
+    const std::string& service_path) {
+  const base::DictionaryValue* service_properties = GetServiceProperties(
+      service_path);
+  if (!service_properties) {
+    LOG(ERROR) << "Missing service: " << service_path;
+    return;
+  }
+  std::string service_type;
+  service_properties->GetString(flimflam::kTypeProperty, &service_type);
+  // Set all other services of the same type to offline (Idle).
+  for (base::DictionaryValue::Iterator iter(stub_services_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    std::string path = iter.key();
+    if (path == service_path)
+      continue;
+    base::DictionaryValue* properties;
+    if (!stub_services_.GetDictionaryWithoutPathExpansion(path, &properties))
+      NOTREACHED();
+
+    std::string type;
+    properties->GetString(flimflam::kTypeProperty, &type);
+    if (type != service_type)
+      continue;
+    properties->SetWithoutPathExpansion(
+        flimflam::kStateProperty,
+        base::Value::CreateStringValue(flimflam::kStateIdle));
+  }
 }
 
 }  // namespace chromeos
