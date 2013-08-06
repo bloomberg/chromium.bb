@@ -223,15 +223,23 @@ class _JSCModel(object):
     permissions_content = []
     manifest_content = []
 
-    for dependency in dependencies:
+    def categorize_dependency(dependency):
       context, name = dependency.split(':', 1)
       if context == 'permission':
         permissions_content.append(make_code_node('"%s"' % name))
       elif context == 'manifest':
         manifest_content.append(make_code_node('"%s": {...}' % name))
+      elif context == 'api':
+        transitive_dependencies = (
+            self._api_features.get(context, {}).get('dependencies', []))
+        for transitive_dependency in transitive_dependencies:
+          categorize_dependency(transitive_dependency)
       else:
-        raise ValueError('Unrecognized dependency for %s: %s'
-                         % (self._namespace.name, context))
+        raise ValueError('Unrecognized dependency for %s: %s' % (
+            self._namespace.name, context))
+
+    for dependency in dependencies:
+      categorize_dependency(dependency)
 
     dependency_rows = []
     if permissions_content:
