@@ -49,6 +49,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'asan-informational',
     'refresh-packages',
     'platform2',
+    'stumpy_test_ap',
     constants.BRANCH_UTIL_CONFIG,
 )
 
@@ -1173,6 +1174,14 @@ internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
   boards=['x86-alex'],
+)
+
+stumpy_test_ap = internal.derive(
+  vm_tests=None,
+  description='stumpy image used for WiFi testing',
+  boards=['stumpy'],
+  images=['test'],  # We need Python and utilities found only in test.
+  profile='testbed-ap',
 )
 
 ### Master paladin (CQ builder).
