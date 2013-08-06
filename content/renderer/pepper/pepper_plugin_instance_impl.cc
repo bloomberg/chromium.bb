@@ -27,6 +27,7 @@
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/npapi_glue.h"
+#include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
@@ -502,8 +503,22 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   if (helper_)
     helper_->InstanceCreated(this);
 
-  if (render_view)  // NULL in tests
+  if (render_view) {  // NULL in tests
     view_data_.is_page_visible = !render_view->is_hidden();
+
+    // Set the initial focus.
+    SetContentAreaFocus(render_view_->has_focus());
+
+    if (!module_->IsProxied()) {
+      PepperBrowserConnection* browser_connection =
+          PepperBrowserConnection::Get(render_view_);
+      browser_connection->DidCreateInProcessInstance(
+          pp_instance(),
+          render_view_->GetRoutingID(),
+          container_->element().document().url(),
+          GetPluginURL());
+    }
+  }
 
   RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
   resource_creation_ = host_impl->CreateInProcessResourceCreationAPI(this);
@@ -539,6 +554,13 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
 
   if (helper_)
     helper_->InstanceDeleted(this);
+
+  if (!module_->IsProxied() && render_view_) {
+    PepperBrowserConnection* browser_connection =
+        PepperBrowserConnection::Get(render_view_);
+    browser_connection->DidDeleteInProcessInstance(pp_instance());
+  }
+
   UnSetAndDeleteLockTargetAdapter();
   module_->InstanceDeleted(this);
   // If we switched from the NaCl plugin module, notify it too.
@@ -2381,7 +2403,8 @@ void PepperPluginInstanceImpl::SetTextInputType(PP_Instance instance,
   if (itype < 0 || itype > ui::TEXT_INPUT_TYPE_URL)
     itype = ui::TEXT_INPUT_TYPE_NONE;
   text_input_type_ = static_cast<ui::TextInputType>(itype);
-  helper_->PluginTextInputTypeChanged(this);
+  if (helper_->focused_plugin() == this)
+    render_view_->PpapiPluginTextInputTypeChanged();
 }
 
 void PepperPluginInstanceImpl::UpdateCaretPosition(
@@ -2391,11 +2414,13 @@ void PepperPluginInstanceImpl::UpdateCaretPosition(
   text_input_caret_ = PP_ToGfxRect(caret);
   text_input_caret_bounds_ = PP_ToGfxRect(bounding_box);
   text_input_caret_set_ = true;
-  helper_->PluginCaretPositionChanged(this);
+  if (helper_->focused_plugin() == this)
+    render_view_->PpapiPluginCaretPositionChanged();
 }
 
 void PepperPluginInstanceImpl::CancelCompositionText(PP_Instance instance) {
-  helper_->PluginRequestedCancelComposition(this);
+  if (helper_->focused_plugin() == this)
+    render_view_->PpapiPluginCancelComposition();
 }
 
 void PepperPluginInstanceImpl::SelectionChanged(PP_Instance instance) {
@@ -2421,7 +2446,8 @@ void PepperPluginInstanceImpl::UpdateSurroundingText(PP_Instance instance,
   surrounding_text_ = text;
   selection_caret_ = caret;
   selection_anchor_ = anchor;
-  helper_->PluginSelectionChanged(this);
+  if (helper_->focused_plugin() == this)
+    render_view_->PpapiPluginSelectionChanged();
 }
 
 PP_Var PepperPluginInstanceImpl::ResolveRelativeToDocument(
@@ -2646,14 +2672,15 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::SwitchToOutOfProcessProxy(
   scoped_refptr<PluginModule> external_plugin_module(
       module_->CreateModuleForExternalPluginInstance());
 
-  RendererPpapiHost* renderer_ppapi_host =
-      helper_->CreateExternalPluginModule(
-          external_plugin_module,
+  RendererPpapiHostImpl* renderer_ppapi_host =
+      external_plugin_module->CreateOutOfProcessModule(
+          render_view_,
           file_path,
           permissions,
           channel_handle,
           plugin_pid,
-          plugin_child_id);
+          plugin_child_id,
+          true);
   if (!renderer_ppapi_host) {
     DLOG(ERROR) << "CreateExternalPluginModule() failed";
     return PP_EXTERNAL_PLUGIN_ERROR_MODULE;

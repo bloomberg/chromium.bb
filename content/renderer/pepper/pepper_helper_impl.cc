@@ -40,10 +40,8 @@
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
-#include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/pepper_plugin_registry.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/ppb_tcp_socket_private_impl.h"
@@ -88,27 +86,6 @@ using WebKit::WebFrame;
 
 namespace content {
 
-namespace {
-
-void CreateHostForInProcessModule(RenderViewImpl* render_view,
-                                  PluginModule* module,
-                                  const WebPluginInfo& webplugin_info) {
-  // First time an in-process plugin was used, make a host for it.
-  const PepperPluginInfo* info =
-      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(webplugin_info);
-  DCHECK(!info->is_out_of_process);
-
-  ppapi::PpapiPermissions perms(
-      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(
-          webplugin_info)->permissions);
-  RendererPpapiHostImpl* host_impl =
-      RendererPpapiHostImpl::CreateOnModuleForInProcess(
-          module, perms);
-  render_view->PpapiPluginCreated(host_impl);
-}
-
-}  // namespace
-
 PepperHelperImpl::PepperHelperImpl(RenderViewImpl* render_view)
     : RenderViewObserver(render_view),
       render_view_(render_view),
@@ -124,8 +101,8 @@ WebKit::WebPlugin* PepperHelperImpl::CreatePepperWebPlugin(
     const WebPluginInfo& webplugin_info,
     const WebKit::WebPluginParams& params) {
   bool pepper_plugin_was_registered = false;
-  scoped_refptr<PluginModule> pepper_module(
-      CreatePepperPluginModule(webplugin_info, &pepper_plugin_was_registered));
+  scoped_refptr<PluginModule> pepper_module(PluginModule::Create(
+      render_view_, webplugin_info, &pepper_plugin_was_registered));
 
   if (pepper_plugin_was_registered) {
     if (!pepper_module.get())
@@ -137,107 +114,11 @@ WebKit::WebPlugin* PepperHelperImpl::CreatePepperWebPlugin(
   return NULL;
 }
 
-scoped_refptr<PluginModule> PepperHelperImpl::CreatePepperPluginModule(
-    const WebPluginInfo& webplugin_info,
-    bool* pepper_plugin_was_registered) {
-  *pepper_plugin_was_registered = true;
-
-  // See if a module has already been loaded for this plugin.
-  base::FilePath path(webplugin_info.path);
-  scoped_refptr<PluginModule> module =
-      PepperPluginRegistry::GetInstance()->GetLiveModule(path);
-  if (module.get()) {
-    if (!module->renderer_ppapi_host()) {
-      // If the module exists and no embedder state was associated with it,
-      // then the module was one of the ones preloaded and is an in-process
-      // plugin. We need to associate our host state with it.
-      CreateHostForInProcessModule(render_view_, module.get(), webplugin_info);
-    }
-    return module;
-  }
-
-  // In-process plugins will have always been created up-front to avoid the
-  // sandbox restrictions. So getting here implies it doesn't exist or should
-  // be out of process.
-  const PepperPluginInfo* info =
-      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(webplugin_info);
-  if (!info) {
-    *pepper_plugin_was_registered = false;
-    return scoped_refptr<PluginModule>();
-  } else if (!info->is_out_of_process) {
-    // In-process plugin not preloaded, it probably couldn't be initialized.
-    return scoped_refptr<PluginModule>();
-  }
-
-  ppapi::PpapiPermissions permissions =
-      ppapi::PpapiPermissions::GetForCommandLine(info->permissions);
-
-  // Out of process: have the browser start the plugin process for us.
-  IPC::ChannelHandle channel_handle;
-  base::ProcessId peer_pid;
-  int plugin_child_id = 0;
-  Send(new ViewHostMsg_OpenChannelToPepperPlugin(
-      path, &channel_handle, &peer_pid, &plugin_child_id));
-  if (channel_handle.name.empty()) {
-    // Couldn't be initialized.
-    return scoped_refptr<PluginModule>();
-  }
-
-  // AddLiveModule must be called before any early returns since the
-  // module's destructor will remove itself.
-  module = new PluginModule(info->name, path, permissions);
-  PepperPluginRegistry::GetInstance()->AddLiveModule(path, module.get());
-
-  if (!CreateOutOfProcessModule(module.get(),
-                                path,
-                                permissions,
-                                channel_handle,
-                                peer_pid,
-                                plugin_child_id,
-                                false))  // is_external = false
-    return scoped_refptr<PluginModule>();
-
-  return module;
-}
-
-RendererPpapiHost* PepperHelperImpl::CreateOutOfProcessModule(
-    PluginModule* module,
-    const base::FilePath& path,
-    ppapi::PpapiPermissions permissions,
-    const IPC::ChannelHandle& channel_handle,
-    base::ProcessId peer_pid,
-    int plugin_child_id,
-    bool is_external) {
-  scoped_refptr<PepperHungPluginFilter> hung_filter(
-      new PepperHungPluginFilter(path, routing_id(), plugin_child_id));
-  scoped_ptr<HostDispatcherWrapper> dispatcher(
-      new HostDispatcherWrapper(module,
-                                peer_pid,
-                                plugin_child_id,
-                                permissions,
-                                is_external));
-  if (!dispatcher->Init(
-          channel_handle,
-          PluginModule::GetLocalGetInterfaceFunc(),
-          ppapi::Preferences(render_view_->webkit_preferences()),
-          hung_filter.get()))
-    return NULL;
-
-  RendererPpapiHostImpl* host_impl =
-      RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
-          module, dispatcher->dispatcher(), permissions);
-  render_view_->PpapiPluginCreated(host_impl);
-
-  module->InitAsProxied(dispatcher.release());
-  return host_impl;
-}
-
 void PepperHelperImpl::ViewWillInitiatePaint() {
   // Notify all of our instances that we started painting. This is used for
   // internal bookkeeping only, so we know that the set can not change under
   // us.
-  for (std::set<PepperPluginInstanceImpl*>::iterator i =
-           active_instances_.begin();
+  for (PluginSet::iterator i = active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->ViewWillInitiatePaint();
 }
@@ -246,9 +127,8 @@ void PepperHelperImpl::ViewInitiatedPaint() {
   // Notify all instances that we painted.  The same caveats apply as for
   // ViewFlushedPaint regarding instances closing themselves, so we take
   // similar precautions.
-  std::set<PepperPluginInstanceImpl*> plugins = active_instances_;
-  for (std::set<PepperPluginInstanceImpl*>::iterator i = plugins.begin();
-       i != plugins.end(); ++i) {
+  PluginSet plugins = active_instances_;
+  for (PluginSet::iterator i = plugins.begin(); i != plugins.end(); ++i) {
     if (active_instances_.find(*i) != active_instances_.end())
       (*i)->ViewInitiatedPaint();
   }
@@ -259,9 +139,8 @@ void PepperHelperImpl::ViewFlushedPaint() {
   // we it may ask to close itself as a result. This will, in turn, modify our
   // set, possibly invalidating the iterator. So we iterate on a copy that
   // won't change out from under us.
-  std::set<PepperPluginInstanceImpl*> plugins = active_instances_;
-  for (std::set<PepperPluginInstanceImpl*>::iterator i = plugins.begin();
-       i != plugins.end(); ++i) {
+  PluginSet plugins = active_instances_;
+  for (PluginSet::iterator i = plugins.begin(); i != plugins.end(); ++i) {
     // The copy above makes sure our iterator is never invalid if some plugins
     // are destroyed. But some plugin may decide to close all of its views in
     // response to a paint in one of them, so we need to make sure each one is
@@ -289,8 +168,7 @@ PepperPluginInstanceImpl* PepperHelperImpl::GetBitmapForOptimizedPluginPaint(
     gfx::Rect* location,
     gfx::Rect* clip,
     float* scale_factor) {
-  for (std::set<PepperPluginInstanceImpl*>::iterator i =
-           active_instances_.begin();
+  for (PluginSet::iterator i = active_instances_.begin();
        i != active_instances_.end(); ++i) {
     PepperPluginInstanceImpl* instance = *i;
     // In Flash fullscreen , the plugin contents should be painted onto the
@@ -312,30 +190,6 @@ void PepperHelperImpl::PluginFocusChanged(
     focused_plugin_ = NULL;
   if (render_view_)
     render_view_->PpapiPluginFocusChanged();
-}
-
-void PepperHelperImpl::PluginTextInputTypeChanged(
-    PepperPluginInstanceImpl* instance) {
-  if (focused_plugin_ == instance && render_view_)
-    render_view_->PpapiPluginTextInputTypeChanged();
-}
-
-void PepperHelperImpl::PluginCaretPositionChanged(
-    PepperPluginInstanceImpl* instance) {
-  if (focused_plugin_ == instance && render_view_)
-    render_view_->PpapiPluginCaretPositionChanged();
-}
-
-void PepperHelperImpl::PluginRequestedCancelComposition(
-    PepperPluginInstanceImpl* instance) {
-  if (focused_plugin_ == instance && render_view_)
-    render_view_->PpapiPluginCancelComposition();
-}
-
-void PepperHelperImpl::PluginSelectionChanged(
-    PepperPluginInstanceImpl* instance) {
-  if (focused_plugin_ == instance && render_view_)
-    render_view_->PpapiPluginSelectionChanged();
 }
 
 void PepperHelperImpl::OnImeSetComposition(
@@ -429,19 +283,6 @@ bool PepperHelperImpl::CanComposeInline() const {
 void PepperHelperImpl::InstanceCreated(
     PepperPluginInstanceImpl* instance) {
   active_instances_.insert(instance);
-
-  // Set the initial focus.
-  instance->SetContentAreaFocus(render_view_->has_focus());
-
-  if (!instance->module()->IsProxied()) {
-    PepperBrowserConnection* browser_connection =
-        PepperBrowserConnection::Get(render_view_);
-    browser_connection->DidCreateInProcessInstance(
-        instance->pp_instance(),
-        render_view_->GetRoutingID(),
-        instance->container()->element().document().url(),
-        instance->GetPluginURL());
-  }
 }
 
 void PepperHelperImpl::InstanceDeleted(
@@ -452,25 +293,16 @@ void PepperHelperImpl::InstanceDeleted(
     last_mouse_event_target_ = NULL;
   if (focused_plugin_ == instance)
     PluginFocusChanged(instance, false);
-
-  if (!instance->module()->IsProxied()) {
-    PepperBrowserConnection* browser_connection =
-        PepperBrowserConnection::Get(render_view_);
-    browser_connection->DidDeleteInProcessInstance(
-        instance->pp_instance());
-  }
 }
 
 void PepperHelperImpl::OnSetFocus(bool has_focus) {
-  for (std::set<PepperPluginInstanceImpl*>::iterator i =
-           active_instances_.begin();
+  for (PluginSet::iterator i = active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->SetContentAreaFocus(has_focus);
 }
 
 void PepperHelperImpl::PageVisibilityChanged(bool is_visible) {
-  for (std::set<PepperPluginInstanceImpl*>::iterator i =
-           active_instances_.begin();
+  for (PluginSet::iterator i = active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->PageVisibilityChanged(is_visible);
 }
@@ -488,24 +320,6 @@ void PepperHelperImpl::WillHandleMouseEvent() {
   // event, it will notify us via DidReceiveMouseEvent() and set itself as
   // |last_mouse_event_target_|.
   last_mouse_event_target_ = NULL;
-}
-
-RendererPpapiHost* PepperHelperImpl::CreateExternalPluginModule(
-    scoped_refptr<PluginModule> module,
-    const base::FilePath& path,
-    ppapi::PpapiPermissions permissions,
-    const IPC::ChannelHandle& channel_handle,
-    base::ProcessId peer_pid,
-    int plugin_child_id) {
-  // We don't call PepperPluginRegistry::AddLiveModule, as this module is
-  // managed externally.
-  return CreateOutOfProcessModule(module.get(),
-                                  path,
-                                  permissions,
-                                  channel_handle,
-                                  peer_pid,
-                                  plugin_child_id,
-                                  true);  // is_external = true
 }
 
 void PepperHelperImpl::DidChangeCursor(PepperPluginInstanceImpl* instance,

@@ -22,10 +22,6 @@ namespace gfx {
 class Rect;
 }
 
-namespace IPC {
-struct ChannelHandle;
-}
-
 namespace ui {
 class Range;
 }

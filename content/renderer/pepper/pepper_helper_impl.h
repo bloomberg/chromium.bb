@@ -63,18 +63,6 @@ class PepperHelperImpl : public PepperHelper,
   // Notification that the given plugin is focused or unfocused.
   void PluginFocusChanged(PepperPluginInstanceImpl* instance, bool focused);
 
-  // Notification that the text input status of the given plugin is changed.
-  void PluginTextInputTypeChanged(PepperPluginInstanceImpl* instance);
-
-  // Notification that the caret position in the given plugin is changed.
-  void PluginCaretPositionChanged(PepperPluginInstanceImpl* instance);
-
-  // Notification that the plugin requested to cancel the current composition.
-  void PluginRequestedCancelComposition(PepperPluginInstanceImpl* instance);
-
-  // Notification that the text selection in the given plugin is changed.
-  void PluginSelectionChanged(PepperPluginInstanceImpl* instance);
-
   // Indicates that the given instance has been created.
   void InstanceCreated(PepperPluginInstanceImpl* instance);
 
@@ -83,15 +71,7 @@ class PepperHelperImpl : public PepperHelper,
   // from this call.
   void InstanceDeleted(PepperPluginInstanceImpl* instance);
 
-  // Sets up the renderer host and out-of-process proxy for an external plugin
-  // module. Returns the renderer host, or NULL if it couldn't be created.
-  RendererPpapiHost* CreateExternalPluginModule(
-      scoped_refptr<PluginModule> module,
-      const base::FilePath& path,
-      ::ppapi::PpapiPermissions permissions,
-      const IPC::ChannelHandle& channel_handle,
-      base::ProcessId plugin_pid,
-      int plugin_child_id);
+  PepperPluginInstanceImpl* focused_plugin() { return focused_plugin_; }
 
  private:
   // PepperHelper implementation.
@@ -127,34 +107,11 @@ class PepperHelperImpl : public PepperHelper,
   // RenderViewObserver implementation.
   virtual void OnDestruct() OVERRIDE;
 
-  // Attempts to create a PPAPI plugin for the given filepath. On success, it
-  // will return the newly-created module.
-  //
-  // There are two reasons for failure. The first is that the plugin isn't
-  // a PPAPI plugin. In this case, |*pepper_plugin_was_registered| will be set
-  // to false and the caller may want to fall back on creating an NPAPI plugin.
-  // the second is that the plugin failed to initialize. In this case,
-  // |*pepper_plugin_was_registered| will be set to true and the caller should
-  // not fall back on any other plugin types.
-  scoped_refptr<PluginModule> CreatePepperPluginModule(
-      const WebPluginInfo& webplugin_info,
-      bool* pepper_plugin_was_registered);
-
-  // Create a new HostDispatcher for proxying, hook it to the PluginModule,
-  // and perform other common initialization.
-  RendererPpapiHost* CreateOutOfProcessModule(
-      PluginModule* module,
-      const base::FilePath& path,
-      ppapi::PpapiPermissions permissions,
-      const IPC::ChannelHandle& channel_handle,
-      base::ProcessId plugin_pid,
-      int plugin_child_id,
-      bool is_external);
-
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;
 
-  std::set<PepperPluginInstanceImpl*> active_instances_;
+  typedef std::set<PepperPluginInstanceImpl*> PluginSet;
+  PluginSet active_instances_;
 
   // Whether or not the focus is on a PPAPI plugin
   PepperPluginInstanceImpl* focused_plugin_;

@@ -37,6 +37,10 @@ class CallbackTracker;
 class WebKitForwarding;
 }  // namespace ppapi
 
+namespace IPC {
+struct ChannelHandle;
+}
+
 namespace WebKit {
 class WebPluginContainer;
 }  // namespace WebKit
@@ -48,6 +52,7 @@ class PepperPluginInstanceImpl;
 class PepperBroker;
 class RendererPpapiHostImpl;
 class RenderViewImpl;
+struct WebPluginInfo;
 
 // Represents one plugin library loaded into one renderer. This library may
 // have multiple instances.
@@ -114,10 +119,6 @@ class CONTENT_EXPORT PluginModule :
   int GetPluginChildId();
 
   static const PPB_Core* GetCore();
-
-  // Returns a pointer to the local GetInterface function for retrieving
-  // PPB interfaces.
-  static PepperPluginInfo::GetInterfaceFunc GetLocalGetInterfaceFunc();
 
   // Returns whether an interface is supported. This method can be called from
   // the browser process and used for interface matching before plugin
@@ -187,11 +188,35 @@ class CONTENT_EXPORT PluginModule :
   void SetBroker(PepperBroker* broker);
   PepperBroker* GetBroker();
 
+  // Create a new HostDispatcher for proxying, hook it to the PluginModule,
+  // and perform other common initialization.
+  RendererPpapiHostImpl* CreateOutOfProcessModule(
+      RenderViewImpl* render_view,
+      const base::FilePath& path,
+      ppapi::PpapiPermissions permissions,
+      const IPC::ChannelHandle& channel_handle,
+      base::ProcessId plugin_pid,
+      int plugin_child_id,
+      bool is_external);
+
   // In production we purposely leak the HostGlobals object but in unittest
   // code, this can interfere with subsequent tests. This deletes the
   // existing HostGlobals. A new one will be constructed when a PluginModule is
   // instantiated.
   static void ResetHostGlobalsForTest();
+
+  // Attempts to create a PPAPI plugin for the given filepath. On success, it
+  // will return the newly-created module.
+  //
+  // There are two reasons for failure. The first is that the plugin isn't
+  // a PPAPI plugin. In this case, |*pepper_plugin_was_registered| will be set
+  // to false and the caller may want to fall back on creating an NPAPI plugin.
+  // the second is that the plugin failed to initialize. In this case,
+  // |*pepper_plugin_was_registered| will be set to true and the caller should
+  // not fall back on any other plugin types.
+  static scoped_refptr<PluginModule> Create(RenderViewImpl* render_view,
+                                            const WebPluginInfo& webplugin_info,
+                                            bool* pepper_plugin_was_registered);
 
  private:
   friend class base::RefCounted<PluginModule>;
