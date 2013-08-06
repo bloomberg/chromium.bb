@@ -41,8 +41,14 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      this.pageDiv.querySelector('.cookies-search-box').addEventListener(
+      var searchBox = this.pageDiv.querySelector('.cookies-search-box');
+      searchBox.addEventListener(
           'search', this.handleSearchQueryChange_.bind(this));
+      searchBox.onkeydown = function(e) {
+        // Prevent the overlay from handling this event.
+        if (e.keyIdentifier == 'Enter')
+          e.stopPropagation();
+      };
 
       this.pageDiv.querySelector('.remove-all-cookies-button').onclick =
           function(e) {

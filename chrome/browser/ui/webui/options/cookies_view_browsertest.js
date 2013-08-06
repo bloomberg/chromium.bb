@@ -22,3 +22,15 @@ CookiesViewWebUITest.prototype = {
 TEST_F('CookiesViewWebUITest', 'DISABLED_testOpenCookiesView', function() {
   assertEquals(this.browsePreload, document.location.href);
 });
+
+TEST_F('CookiesViewWebUITest', 'testNoCloseOnSearchEnter', function() {
+  var cookiesView = CookiesView.getInstance();
+  assertTrue(cookiesView.visible);
+  var searchBox = cookiesView.pageDiv.querySelector('.cookies-search-box');
+  searchBox.dispatchEvent(new KeyboardEvent('keydown', {
+    'bubbles': true,
+    'cancelable': true,
+    'keyIdentifier': 'Enter'
+  }));
+  assertTrue(cookiesView.visible);
+});
