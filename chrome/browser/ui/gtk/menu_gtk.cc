@@ -132,7 +132,7 @@ GtkWidget* MenuGtk::Delegate::GetDefaultImageForCommandId(int command_id) {
   switch (command_id) {
     case IDC_NEW_TAB:
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
-    case IDC_CONTENT_CONTEXT_SEARCHIMAGENEWTAB:
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
       stock = GTK_STOCK_NEW;

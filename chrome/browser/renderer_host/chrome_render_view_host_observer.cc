@@ -206,12 +206,15 @@ void ChromeRenderViewHostObserver::OnFocusedNodeTouched(bool editable) {
 // request based on the received thumbnail and opens the request in a new tab.
 void ChromeRenderViewHostObserver::OnRequestThumbnailForContextNodeACK(
     const SkBitmap& bitmap) {
-  const int kDefaultQualityForImageSearch = 90;
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host());
-  if (!web_contents)
+  const TemplateURL* const default_provider =
+      TemplateURLServiceFactory::GetForProfile(profile_)->
+          GetDefaultSearchProvider();
+  if (!web_contents || !default_provider)
     return;
 
+  const int kDefaultQualityForImageSearch = 90;
   std::vector<unsigned char> data;
   if (!gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
@@ -220,14 +223,9 @@ void ChromeRenderViewHostObserver::OnRequestThumbnailForContextNodeACK(
       &data))
     return;
 
-  const TemplateURL* const default_provider =
-      TemplateURLServiceFactory::GetForProfile(profile_)->
-          GetDefaultSearchProvider();
-  DCHECK(default_provider);
   TemplateURLRef::SearchTermsArgs search_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
-  search_args.image_thumbnail_content = std::string(data.begin(),
-                                                    data.end());
+  search_args.image_thumbnail_content = std::string(data.begin(), data.end());
   // TODO(jnd): Add a method in WebContentsViewDelegate to get the image URL
   // from the ContextMenuParams which creates current context menu.
   search_args.image_url = GURL();
@@ -240,16 +238,15 @@ void ChromeRenderViewHostObserver::OnRequestThumbnailForContextNodeACK(
   OpenURLParams open_url_params(result, content::Referrer(), NEW_FOREGROUND_TAB,
                                 content::PAGE_TRANSITION_LINK, false);
   const std::string& content_type = post_content.first;
-  std::string& post_data = post_content.second;
-  if (!post_data.empty()) {
+  std::string* post_data = &post_content.second;
+  if (!post_data->empty()) {
     DCHECK(!content_type.empty());
     open_url_params.uses_post = true;
     open_url_params.browser_initiated_post_data =
-        base::RefCountedString::TakeString(&post_data);
+        base::RefCountedString::TakeString(post_data);
     open_url_params.extra_headers += base::StringPrintf(
         "%s: %s\r\n", net::HttpRequestHeaders::kContentType,
         content_type.c_str());
   }
-
   web_contents->OpenURL(open_url_params);
 }

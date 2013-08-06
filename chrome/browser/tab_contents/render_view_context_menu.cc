@@ -190,7 +190,7 @@ const struct UmaEnumCommandIdPair {
   { 54, IDC_SPELLCHECK_MENU },
   { 55, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE },
   { 56, IDC_SPELLCHECK_LANGUAGES_FIRST },
-  { 57, IDC_CONTENT_CONTEXT_SEARCHIMAGENEWTAB },
+  { 57, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE },
   // Add new items here and use |enum_id| from the next line.
   { 58, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
 };
@@ -862,7 +862,7 @@ void RenderViewContextMenu::AppendImageItems() {
   if (!default_provider->image_url().empty() &&
       default_provider->image_url_ref().IsValidUsingTermsData(search_terms)) {
     menu_model_.AddItem(
-        IDC_CONTENT_CONTEXT_SEARCHIMAGENEWTAB,
+        IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
                                    default_provider->short_name()));
   }
@@ -1275,16 +1275,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
           ProfileIOData::IsHandledProtocol(params_.src_url.scheme());
     }
 
+    // The images shown in the most visited thumbnails can't be opened or
+    // searched for conventionally.
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
-    case IDC_CONTENT_CONTEXT_SEARCHIMAGENEWTAB:
-      // The images shown in the most visited thumbnails do not currently open
-      // in a new tab as they should. Disabling this context menu option for
-      // now, as a quick hack, before we resolve this issue (Issue = 2608).
-      // TODO(sidchat): Enable this option once this issue is resolved.
-      if (params_.src_url.scheme() == chrome::kChromeUIScheme ||
-          !params_.src_url.is_valid())
-        return false;
-      return true;
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
+      return params_.src_url.is_valid() &&
+          (params_.src_url.scheme() != chrome::kChromeUIScheme);
 
     case IDC_CONTENT_CONTEXT_COPYIMAGE:
       return !params_.is_image_blocked;
@@ -1630,7 +1626,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       CopyImageAt(params_.x, params_.y);
       break;
 
-    case IDC_CONTENT_CONTEXT_SEARCHIMAGENEWTAB:
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
       GetImageThumbnailForSearch();
       break;
 
