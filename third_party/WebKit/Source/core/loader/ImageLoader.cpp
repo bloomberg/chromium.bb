@@ -75,7 +75,6 @@ ImageLoader::ImageLoader(Element* element)
     , m_imageComplete(true)
     , m_loadManually(false)
     , m_elementIsProtected(false)
-    , m_highPriorityClientCount(0)
 {
 }
 
@@ -116,7 +115,6 @@ void ImageLoader::setImageWithoutConsideringPendingLoadEvent(CachedImage* newIma
     ASSERT(m_failedLoadURL.isEmpty());
     CachedImage* oldImage = m_image.get();
     if (newImage != oldImage) {
-        sourceImageChanged();
         m_image = newImage;
         if (m_hasPendingBeforeLoadEvent) {
             beforeLoadEventSender().cancelEvent(this);
@@ -195,8 +193,6 @@ void ImageLoader::updateFromElement()
 
     CachedImage* oldImage = m_image.get();
     if (newImage != oldImage) {
-        sourceImageChanged();
-
         if (m_hasPendingBeforeLoadEvent) {
             beforeLoadEventSender().cancelEvent(this);
             m_hasPendingBeforeLoadEvent = false;
@@ -430,25 +426,6 @@ void ImageLoader::dispatchPendingErrorEvent()
     updatedHasPendingEvent();
 }
 
-void ImageLoader::addClient(ImageLoaderClient* client)
-{
-    if (client->requestsHighLiveResourceCachePriority()) {
-        if (m_image && !m_highPriorityClientCount++)
-            m_image->setCacheLiveResourcePriority(Resource::CacheLiveResourcePriorityHigh);
-    }
-    m_clients.add(client);
-}
-void ImageLoader::removeClient(ImageLoaderClient* client)
-{
-    if (client->requestsHighLiveResourceCachePriority()) {
-        ASSERT(m_highPriorityClientCount);
-        m_highPriorityClientCount--;
-        if (m_image && !m_highPriorityClientCount)
-            m_image->setCacheLiveResourcePriority(Resource::CacheLiveResourcePriorityLow);
-    }
-    m_clients.remove(client);
-}
-
 void ImageLoader::dispatchPendingBeforeLoadEvents()
 {
     beforeLoadEventSender().dispatchPendingEvents();
@@ -468,15 +445,6 @@ void ImageLoader::elementDidMoveToNewDocument()
 {
     clearFailedLoadURL();
     setImage(0);
-}
-
-void ImageLoader::sourceImageChanged()
-{
-    HashSet<ImageLoaderClient*>::iterator end = m_clients.end();
-    for (HashSet<ImageLoaderClient*>::iterator it = m_clients.begin(); it != end; ++it) {
-        ImageLoaderClient* handle = *it;
-        handle->notifyImageSourceChanged();
-    }
 }
 
 inline void ImageLoader::clearFailedLoadURL()

@@ -6,8 +6,8 @@
 #define ImageBitmap_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/platform/graphics/Image.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "wtf/PassRefPtr.h"
@@ -16,48 +16,44 @@
 namespace WebCore {
 
 class HTMLCanvasElement;
+class HTMLImageElement;
 class HTMLVideoElement;
 class ImageData;
 
-class ImageBitmap : public RefCounted<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient {
+class ImageBitmap : public RefCounted<ImageBitmap>, public ScriptWrappable {
 
 public:
-    static PassRefPtr<ImageBitmap> create(HTMLImageElement*, const IntRect&);
-    static PassRefPtr<ImageBitmap> create(HTMLVideoElement*, const IntRect&);
-    static PassRefPtr<ImageBitmap> create(HTMLCanvasElement*, const IntRect&);
-    static PassRefPtr<ImageBitmap> create(ImageData*, const IntRect&);
-    static PassRefPtr<ImageBitmap> create(ImageBitmap*, const IntRect&);
+    static PassRefPtr<ImageBitmap> create(HTMLImageElement*, IntRect);
+    static PassRefPtr<ImageBitmap> create(HTMLVideoElement*, IntRect);
+    static PassRefPtr<ImageBitmap> create(HTMLCanvasElement*, IntRect);
+    static PassRefPtr<ImageBitmap> create(ImageData*, IntRect);
+    static PassRefPtr<ImageBitmap> create(ImageBitmap*, IntRect);
 
-    PassRefPtr<Image> bitmapImage() const;
-    PassRefPtr<HTMLImageElement> imageElement() const { return m_imageElement; }
+    BitmapImage* bitmapImage() const { return m_bitmap.get(); }
 
-    IntRect bitmapRect() const { return m_bitmapRect; }
+    int bitmapWidth() const { return m_bitmap->width(); }
+    int bitmapHeight() const { return m_bitmap->height(); }
+    IntSize bitmapSize() const { return m_bitmap->size(); }
+    IntPoint bitmapOffset() const { return m_bitmapOffset; }
 
-    int width() const { return m_cropRect.width(); }
-    int height() const { return m_cropRect.height(); }
-    IntSize size() const { return m_cropRect.size(); }
+    int width() const { return m_size.width(); }
+    int height() const { return m_size.height(); }
+    IntSize size() const { return m_size; }
 
-    ~ImageBitmap();
+    ~ImageBitmap() { };
 
 private:
-    ImageBitmap(HTMLImageElement*, const IntRect&);
-    ImageBitmap(HTMLVideoElement*, const IntRect&);
-    ImageBitmap(HTMLCanvasElement*, const IntRect&);
-    ImageBitmap(ImageData*, const IntRect&);
-    ImageBitmap(ImageBitmap*, const IntRect&);
+    ImageBitmap(HTMLImageElement*, IntRect);
+    ImageBitmap(HTMLVideoElement*, IntRect);
+    ImageBitmap(HTMLCanvasElement*, IntRect);
+    ImageBitmap(ImageData*, IntRect);
+    ImageBitmap(ImageBitmap*, IntRect);
 
-    // ImageLoaderClient
-    virtual void notifyImageSourceChanged();
-    virtual bool requestsHighLiveResourceCachePriority() { return true; }
-
-    // ImageBitmaps constructed from HTMLImageElements hold a reference to the HTMLImageElement until
-    // the image source changes.
-    RefPtr<HTMLImageElement> m_imageElement;
-    RefPtr<Image> m_bitmap;
+    RefPtr<BitmapImage> m_bitmap;
     OwnPtr<ImageBuffer> m_buffer;
 
-    IntRect m_bitmapRect; // The rect where the underlying Image should be placed in reference to the ImageBitmap.
-    IntRect m_cropRect;
+    IntPoint m_bitmapOffset; // offset applied to the image when it is drawn to the context
+    IntSize m_size; // user defined size of the ImageBitmap
 };
 
 } // namespace WebCore

@@ -25,7 +25,6 @@
 #ifndef Cache_h
 #define Cache_h
 
-#include "core/loader/cache/Resource.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
@@ -120,7 +119,6 @@ public:
     //  - maxDeadBytes: The maximum number of bytes that dead resources should consume when the cache is not under pressure.
     //  - totalBytes: The maximum number of bytes that the cache should consume overall.
     void setCapacities(unsigned minDeadBytes, unsigned maxDeadBytes, unsigned totalBytes);
-    void setDelayBeforeLiveDecodedPrune(unsigned seconds) { m_delayBeforeLiveDecodedPrune = seconds; }
 
     void evictResources();
 
@@ -175,8 +173,6 @@ private:
     unsigned m_capacity;
     unsigned m_minDeadCapacity;
     unsigned m_maxDeadCapacity;
-    unsigned m_delayBeforeLiveDecodedPrune;
-    double m_deadDecodedDataDeletionInterval;
 
     unsigned m_liveSize; // The number of bytes currently consumed by "live" resources in the cache.
     unsigned m_deadSize; // The number of bytes currently consumed by "dead" resources in the cache.
@@ -186,9 +182,8 @@ private:
     // waiting to die when the clients referencing them go away.
     Vector<LRUList, 32> m_allResources;
 
-    // Lists just for live resources with decoded data. Access to this list is based off of painting the resource.
-    // The lists are ordered by decode priority, with higher indices having higher priorities.
-    LRUList m_liveDecodedResources[Resource::CacheLiveResourcePriorityHigh + 1];
+    // List just for live resources with decoded data.  Access to this list is based off of painting the resource.
+    LRUList m_liveDecodedResources;
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).
