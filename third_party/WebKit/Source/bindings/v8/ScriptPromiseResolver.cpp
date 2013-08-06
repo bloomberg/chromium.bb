@@ -55,37 +55,41 @@ ScriptPromiseResolver::ScriptPromiseResolver(v8::Handle<v8::Object> creationCont
 
 ScriptPromiseResolver::~ScriptPromiseResolver()
 {
-    detach();
+    // We don't call "detach" here because it requires a caller
+    // to be in a v8 context.
+
+    detachPromise();
+    m_resolver.clear();
 }
 
 PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptExecutionContext* context)
 {
     ASSERT(isMainThread());
+    ASSERT(v8::Context::InContext());
     ASSERT(context);
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
     return adoptRef(new ScriptPromiseResolver(toV8Context(context, DOMWrapperWorld::current())->Global(), isolate));
 }
 
 PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create()
 {
     ASSERT(isMainThread());
+    ASSERT(v8::Context::InContext());
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
     return adoptRef(new ScriptPromiseResolver(v8::Object::New(), isolate));
 }
 
 bool ScriptPromiseResolver::isPending() const
 {
     ASSERT(isMainThread());
-    v8::HandleScope scope(m_isolate);
+    ASSERT(v8::Context::InContext());
     return isPendingInternal();
 }
 
 void ScriptPromiseResolver::detach()
 {
     ASSERT(isMainThread());
-    v8::HandleScope scope(m_isolate);
+    ASSERT(v8::Context::InContext());
     detachPromise();
     reject(v8::Undefined(m_isolate));
     m_resolver.clear();
@@ -94,6 +98,7 @@ void ScriptPromiseResolver::detach()
 void ScriptPromiseResolver::fulfill(v8::Handle<v8::Value> value)
 {
     ASSERT(isMainThread());
+    ASSERT(v8::Context::InContext());
     if (!isPendingInternal())
         return;
     V8PromiseCustom::fulfillResolver(m_resolver.newLocal(m_isolate), value, V8PromiseCustom::Asynchronous, m_isolate);
@@ -103,6 +108,7 @@ void ScriptPromiseResolver::fulfill(v8::Handle<v8::Value> value)
 void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 {
     ASSERT(isMainThread());
+    ASSERT(v8::Context::InContext());
     if (!isPendingInternal())
         return;
     V8PromiseCustom::resolveResolver(m_resolver.newLocal(m_isolate), value, V8PromiseCustom::Asynchronous, m_isolate);
@@ -112,6 +118,7 @@ void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
 {
     ASSERT(isMainThread());
+    ASSERT(v8::Context::InContext());
     if (!isPendingInternal())
         return;
     V8PromiseCustom::rejectResolver(m_resolver.newLocal(m_isolate), value, V8PromiseCustom::Asynchronous, m_isolate);
@@ -121,27 +128,28 @@ void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
 void ScriptPromiseResolver::fulfill(ScriptValue value)
 {
     ASSERT(isMainThread());
-    v8::HandleScope scope(m_isolate);
+    ASSERT(v8::Context::InContext());
     fulfill(value.v8Value());
 }
 
 void ScriptPromiseResolver::resolve(ScriptValue value)
 {
     ASSERT(isMainThread());
-    v8::HandleScope scope(m_isolate);
+    ASSERT(v8::Context::InContext());
     resolve(value.v8Value());
 }
 
 void ScriptPromiseResolver::reject(ScriptValue value)
 {
     ASSERT(isMainThread());
-    v8::HandleScope scope(m_isolate);
+    ASSERT(v8::Context::InContext());
     reject(value.v8Value());
 }
 
 bool ScriptPromiseResolver::isPendingInternal() const
 {
     ASSERT(isMainThread());
+    ASSERT(v8::Context::InContext());
     if (m_resolver.isEmpty())
         return false;
     v8::Local<v8::Object> resolver = m_resolver.newLocal(m_isolate);

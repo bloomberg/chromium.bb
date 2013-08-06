@@ -53,13 +53,23 @@ class ScriptExecutionContext;
 //  2. Pass the promise object of the holder to a JavaScript program
 //     (such as XMLHttpRequest return value).
 //  3. Detach the promise object if you no long need it.
-//  4. Call fullfill or reject when the operation completes or
+//  4. Call fulfill or reject when the operation completes or
 //     the operation fails respectively.
+//
+// Most methods including constructors must be called within a v8 context.
+// To use ScriptPromiseResolver out of a v8 context the caller must
+// enter a v8 context, for example by using ScriptScope and ScriptState.
+//
 class ScriptPromiseResolver : public RefCounted<ScriptPromiseResolver> {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 public:
     static PassRefPtr<ScriptPromiseResolver> create(ScriptExecutionContext*);
     static PassRefPtr<ScriptPromiseResolver> create();
+
+    // A ScriptPromiseResolver should be fulfilled / resolved / rejected before
+    // its destruction.
+    // A ScriptPromiseResolver can be destructed safely without
+    // entering a v8 context.
     ~ScriptPromiseResolver();
 
     // Detach the promise object and reject the resolver object with undefined.
@@ -76,7 +86,7 @@ public:
 
     ScriptObject promise()
     {
-        v8::HandleScope scope(m_isolate);
+        ASSERT(v8::Context::InContext());
         return ScriptObject(ScriptState::current(), m_promise.newLocal(m_isolate));
     }
 
@@ -110,7 +120,7 @@ template<typename T>
 void ScriptPromiseResolver::fulfill(PassRefPtr<T> value)
 {
     ASSERT(isMainThread());
-    v8::HandleScope scope(m_isolate);
+    ASSERT(v8::Context::InContext());
     fulfill(toV8(value.get(), v8::Object::New(), m_isolate));
 }
 
@@ -118,7 +128,7 @@ template<typename T>
 void ScriptPromiseResolver::resolve(PassRefPtr<T> value)
 {
     ASSERT(isMainThread());
-    v8::HandleScope scope(m_isolate);
+    ASSERT(v8::Context::InContext());
     resolve(toV8(value.get(), v8::Object::New(), m_isolate));
 }
 
@@ -126,7 +136,7 @@ template<typename T>
 void ScriptPromiseResolver::reject(PassRefPtr<T> value)
 {
     ASSERT(isMainThread());
-    v8::HandleScope scope(m_isolate);
+    ASSERT(v8::Context::InContext());
     reject(toV8(value.get(), v8::Object::New(), m_isolate));
 }
 
