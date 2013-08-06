@@ -30,10 +30,9 @@ class PaginationModel;
 class ContentsView : public views::View {
  public:
   ContentsView(AppListMainView* app_list_main_view,
-               PaginationModel* pagination_model);
+               PaginationModel* pagination_model,
+               AppListModel* model);
   virtual ~ContentsView();
-
-  void SetModel(AppListModel* model);
 
   // If |drag_and_drop| is not NULL it will be called upon drag and drop
   // operations outside the application list.

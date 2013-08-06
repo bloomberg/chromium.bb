@@ -90,10 +90,10 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
                                         kInnerPadding,
                                         kInnerPadding));
 
-  search_box_view_ = new SearchBoxView(this, delegate);
+  search_box_view_ = new SearchBoxView(this, delegate, model_);
   AddChildView(search_box_view_);
 
-  contents_view_ = new ContentsView(this, pagination_model);
+  contents_view_ = new ContentsView(this, pagination_model, model_);
   AddChildView(contents_view_);
 
   search_box_view_->set_contents_view(contents_view_);
@@ -103,9 +103,6 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
   contents_view_->SetFillsBoundsOpaquely(false);
   contents_view_->layer()->SetMasksToBounds(true);
 #endif
-
-  search_box_view_->SetModel(model_->search_box());
-  contents_view_->SetModel(model_);
 }
 
 AppListMainView::~AppListMainView() {

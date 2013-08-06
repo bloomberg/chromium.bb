@@ -46,11 +46,13 @@ SearchResultListView* GetSearchResultListView(views::ViewModel* model) {
 }  // namespace
 
 ContentsView::ContentsView(AppListMainView* app_list_main_view,
-                           PaginationModel* pagination_model)
+                           PaginationModel* pagination_model,
+                           AppListModel* model)
     : show_state_(SHOW_APPS),
       pagination_model_(pagination_model),
       view_model_(new views::ViewModel),
       bounds_animator_(new views::BoundsAnimator(this)) {
+  DCHECK(model);
   pagination_model_->SetTransitionDurations(
       kPageTransitionDurationInMs,
       kOverscrollPageTransitionDurationMs);
@@ -66,19 +68,12 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
       app_list_main_view);
   AddChildView(search_results_view);
   view_model_->Add(search_results_view, kIndexSearchResults);
+
+  GetAppsGridView(view_model_.get())->SetModel(model);
+  GetSearchResultListView(view_model_.get())->SetResults(model->results());
 }
 
 ContentsView::~ContentsView() {
-}
-
-void ContentsView::SetModel(AppListModel* model) {
-  if (model) {
-    GetAppsGridView(view_model_.get())->SetModel(model);
-    GetSearchResultListView(view_model_.get())->SetResults(model->results());
-  } else {
-    GetAppsGridView(view_model_.get())->SetModel(NULL);
-    GetSearchResultListView(view_model_.get())->SetResults(NULL);
-  }
 }
 
 void ContentsView::SetDragAndDropHostOfCurrentAppList(

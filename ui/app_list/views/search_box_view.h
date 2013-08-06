@@ -22,6 +22,7 @@ namespace app_list {
 
 class AppListMenuViews;
 class AppListViewDelegate;
+class AppListModel;
 class SearchBoxModel;
 class SearchBoxViewDelegate;
 
@@ -35,10 +36,9 @@ class SearchBoxView : public views::View,
                       public SearchBoxModelObserver {
  public:
   SearchBoxView(SearchBoxViewDelegate* delegate,
-                AppListViewDelegate* view_delegate);
+                AppListViewDelegate* view_delegate,
+                AppListModel* model);
   virtual ~SearchBoxView();
-
-  void SetModel(SearchBoxModel* model);
 
   bool HasSearch() const;
   void ClearSearch();

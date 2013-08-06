@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "grit/ui_resources.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_box_view_delegate.h"
 #include "ui/app_list/views/app_list_menu_views.h"
@@ -31,13 +32,15 @@ const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 }  // namespace
 
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
-                             AppListViewDelegate* view_delegate)
+                             AppListViewDelegate* view_delegate,
+                             AppListModel* model)
     : delegate_(delegate),
       view_delegate_(view_delegate),
-      model_(NULL),
+      model_(model->search_box()),
       icon_view_(new views::ImageView),
       search_box_(new views::Textfield),
       contents_view_(NULL) {
+  DCHECK(model_);
   AddChildView(icon_view_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -57,26 +60,14 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->SetController(this);
   AddChildView(search_box_);
+
+  model_->AddObserver(this);
+  IconChanged();
+  HintTextChanged();
 }
 
 SearchBoxView::~SearchBoxView() {
-  if (model_)
-    model_->RemoveObserver(this);
-}
-
-void SearchBoxView::SetModel(SearchBoxModel* model) {
-  if (model_ == model)
-    return;
-
-  if (model_)
-    model_->RemoveObserver(this);
-
-  model_ = model;
-  if (model_) {
-    model_->AddObserver(this);
-    IconChanged();
-    HintTextChanged();
-  }
+  model_->RemoveObserver(this);
 }
 
 bool SearchBoxView::HasSearch() const {
