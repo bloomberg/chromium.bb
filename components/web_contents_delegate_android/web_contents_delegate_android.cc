@@ -103,7 +103,7 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
                                                java_url.obj(),
                                                extra_headers.obj(),
                                                post_data.obj(),
-                                               disposition == OFF_THE_RECORD);
+                                               disposition);
     return NULL;
   }
 

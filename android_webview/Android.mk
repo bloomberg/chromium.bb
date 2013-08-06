@@ -60,6 +60,7 @@ $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertificateM
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertVerifyResultAndroid.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/NetError.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/PrivateKeyType.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/ui/WindowOpenDisposition.java \
 
 # content dependencies on java components that are provided by the system on
 # android

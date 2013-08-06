@@ -26,7 +26,7 @@ public class WebContentsDelegateAndroid {
     // Equivalent of WebCore::WebConsoleMessage::LevelError.
     public static final int LOG_LEVEL_ERROR = 3;
 
-    // Flags passed to the WebContentsDelegate.navigationStateChanged to tell it
+    // Flags passed to the WebContentsDelegateAndroid.navigationStateChanged to tell it
     // what has changed. Should match the values in invalidate_type.h.
     // Equivalent of InvalidateTypes::INVALIDATE_TYPE_URL.
     public static final int INVALIDATE_TYPE_URL = 1 << 0;
@@ -47,8 +47,13 @@ public class WebContentsDelegateAndroid {
         return mMostRecentProgress;
     }
 
+    /**
+     * @param disposition The new tab disposition as per the constants in
+     *                    org.chromium.ui.WindowOpenDisposition (See window_open_disposition_list.h
+     *                    for the enumeration definitions).
+     */
     @CalledByNative
-    public void openNewTab(String url, String extraHeaders, byte[] postData, boolean incognito) {
+    public void openNewTab(String url, String extraHeaders, byte[] postData, int disposition) {
     }
 
     @CalledByNative

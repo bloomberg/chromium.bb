@@ -966,8 +966,21 @@
            },
            'dependencies': [
              '../base/base.gyp:base_java',
+             'window_open_disposition_java',
            ],
            'includes': [ '../build/java.gypi' ],
+         },
+         {
+           'target_name': 'window_open_disposition_java',
+           'type': 'none',
+           'sources': [
+             'android/java/WindowOpenDisposition.template',
+           ],
+           'variables': {
+             'package_name': 'org/chromium/ui',
+             'template_deps': ['base/window_open_disposition_list.h'],
+           },
+           'includes': [ '../build/android/java_cpp_template.gypi' ],
          },
        ],
     }],
