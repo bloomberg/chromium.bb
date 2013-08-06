@@ -659,7 +659,8 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   if (base::RandInt(1, 100) == 50) {
     // Only do this computation sometimes since it can be expensive.
     db_->ComputeDatabaseMetrics(history_name);
-    thumbnail_db_->ComputeDatabaseMetrics();
+    if (thumbnail_db_)
+      thumbnail_db_->ComputeDatabaseMetrics();
   }
 
   // Tell the expiration module about all the nice databases we made. This must
