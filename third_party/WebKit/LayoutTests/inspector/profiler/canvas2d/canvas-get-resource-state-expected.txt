@@ -6,11 +6,12 @@ Stopped capturing.
 Number of trace log calls received: 20
 
 --- Canvas 2D initial state ---
-{ResourceState}  length(descriptors):18  length(imageURL):1594
+{ResourceState}  length(descriptors):19  length(imageURL):1594
   fillStyle: #000000
   font: 10px sans-serif
   globalAlpha: 1
   globalCompositeOperation: source-over
+  imageSmoothingEnabled: true
   lineCap: butt
   lineDash: Array[0]
   lineDashOffset: 0
@@ -27,11 +28,12 @@ Number of trace log calls received: 20
   webkitImageSmoothingEnabled: true
 
 --- Canvas 2D state after canvas calls ---
-{ResourceState}  length(descriptors):18  length(imageURL):1594
+{ResourceState}  length(descriptors):19  length(imageURL):1594
   fillStyle: #ff0000
   font: 13px sans-serif
   globalAlpha: 0
   globalCompositeOperation: xor
+  imageSmoothingEnabled: false
   lineCap: square
   lineDash: Array[2]
   lineDashOffset: 2
