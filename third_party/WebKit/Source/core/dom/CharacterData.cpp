@@ -109,8 +109,7 @@ unsigned CharacterData::parserAppendData(const String& string, unsigned offset, 
 
 void CharacterData::appendData(const String& data)
 {
-    String newStr = m_data;
-    newStr.append(data);
+    String newStr = m_data + data;
 
     setDataAndUpdate(newStr, m_data.length(), 0, data.length());
 
