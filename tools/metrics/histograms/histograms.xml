@@ -13125,7 +13125,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.GivenShowHomeButton_HomePageIsNewTabPage"
+    enum="Boolean">
+  <summary>
+    Whether or not the home page user preference is set to the default NTP value
+    when a profile is loaded. This is only logged if the home button is shown.
+  </summary>
+</histogram>
+
 <histogram name="Settings.HomePageIsNewTabPage" enum="Boolean">
+  <obsolete>
+    Deprecated 08/05/2013. Replaced by
+    Settings.GivenShowHomeButton_HomePageIsNewTabPage.
+  </obsolete>
   <summary>
     Whether or not the home page user preference is set to the default NTP value
     when a profile is loaded.
@@ -13134,7 +13146,7 @@ other types of suffix sets.
 
 <histogram name="Settings.ShowHomeButton" enum="BooleanEnabled">
   <summary>
-    Whether or not the Home button is enabled in user preferences when a profile
+    Whether or not the home button is enabled in user preferences when a profile
     is loaded.
   </summary>
 </histogram>

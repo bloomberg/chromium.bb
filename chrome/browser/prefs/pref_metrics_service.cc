@@ -21,17 +21,19 @@ PrefMetricsService::~PrefMetricsService() {
 }
 
 void PrefMetricsService::RecordLaunchPrefs() {
-  UMA_HISTOGRAM_BOOLEAN("Settings.ShowHomeButton",
-      profile_->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
-  UMA_HISTOGRAM_BOOLEAN("Settings.HomePageIsNewTabPage",
-      profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage));
-
-  int restore_on_startup = profile_->GetPrefs()->GetInteger(
-      prefs::kRestoreOnStartup);
+  PrefService* prefs = profile_->GetPrefs();
+  bool show_home_button = prefs->GetBoolean(prefs::kShowHomeButton);
+  bool home_page_is_ntp = prefs->GetBoolean(prefs::kHomePageIsNewTabPage);
+  UMA_HISTOGRAM_BOOLEAN("Settings.ShowHomeButton", show_home_button);
+  if (show_home_button) {
+    UMA_HISTOGRAM_BOOLEAN("Settings.GivenShowHomeButton_HomePageIsNewTabPage",
+        home_page_is_ntp);
+  }
+  int restore_on_startup = prefs->GetInteger(prefs::kRestoreOnStartup);
   UMA_HISTOGRAM_ENUMERATION("Settings.StartupPageLoadSettings",
       restore_on_startup, SessionStartupPref::kPrefValueMax);
   if (restore_on_startup == SessionStartupPref::kPrefValueURLs) {
-    const int url_list_size = profile_->GetPrefs()->GetList(
+    const int url_list_size = prefs->GetList(
         prefs::kURLsToRestoreOnStartup)->GetSize();
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Settings.StartupPageLoadURLs", url_list_size, 1, 50, 20);
