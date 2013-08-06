@@ -119,7 +119,9 @@ private:
     explicit StringImpl(ConstructEmptyStringTag)
         : m_refCount(s_refCountFlagIsStaticString)
         , m_length(0)
-        , m_hashAndFlags(s_hashFlag8BitBuffer)
+        , m_hash(0)
+        , m_isAtomic(false)
+        , m_is8Bit(true)
     {
         // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
         // with impunity. The empty string is special because it is never entered into
@@ -133,7 +135,9 @@ private:
     StringImpl(unsigned length, Force8Bit)
         : m_refCount(s_refCountIncrement)
         , m_length(length)
-        , m_hashAndFlags(s_hashFlag8BitBuffer)
+        , m_hash(0)
+        , m_isAtomic(false)
+        , m_is8Bit(true)
     {
         ASSERT(m_length);
         STRING_STATS_ADD_8BIT_STRING(m_length);
@@ -142,7 +146,9 @@ private:
     StringImpl(unsigned length)
         : m_refCount(s_refCountIncrement)
         , m_length(length)
-        , m_hashAndFlags(0)
+        , m_hash(0)
+        , m_isAtomic(false)
+        , m_is8Bit(false)
     {
         ASSERT(m_length);
         STRING_STATS_ADD_16BIT_STRING(m_length);
@@ -152,7 +158,9 @@ private:
     StringImpl(unsigned length, unsigned hash, StaticStringTag)
         : m_refCount(s_refCountFlagIsStaticString)
         , m_length(length)
-        , m_hashAndFlags(hash << s_flagCount | s_hashFlag8BitBuffer)
+        , m_hash(hash)
+        , m_isAtomic(false)
+        , m_is8Bit(true)
     {
     }
 
@@ -192,7 +200,7 @@ public:
     }
 
     unsigned length() const { return m_length; }
-    bool is8Bit() const { return m_hashAndFlags & s_hashFlag8BitBuffer; }
+    bool is8Bit() const { return m_is8Bit; }
 
     ALWAYS_INLINE const LChar* characters8() const { ASSERT(is8Bit()); return reinterpret_cast<const LChar*>(this + 1); }
     ALWAYS_INLINE const UChar* characters16() const { ASSERT(!is8Bit()); return reinterpret_cast<const UChar*>(this + 1); }
@@ -202,14 +210,8 @@ public:
 
     size_t sizeInBytes() const;
 
-    bool isAtomic() const { return m_hashAndFlags & s_hashFlagIsAtomic; }
-    void setIsAtomic(bool isAtomic)
-    {
-        if (isAtomic)
-            m_hashAndFlags |= s_hashFlagIsAtomic;
-        else
-            m_hashAndFlags &= ~s_hashFlagIsAtomic;
-    }
+    bool isAtomic() const { return m_isAtomic; }
+    void setIsAtomic(bool isAtomic) { m_isAtomic = isAtomic; }
 
     bool isStatic() const { return m_refCount & s_refCountFlagIsStaticString; }
 
@@ -222,18 +224,13 @@ private:
         ASSERT(!hasHash());
         // Multiple clients assume that StringHasher is the canonical string hash function.
         ASSERT(hash == (is8Bit() ? StringHasher::computeHashAndMaskTop8Bits(characters8(), m_length) : StringHasher::computeHashAndMaskTop8Bits(characters16(), m_length)));
-        ASSERT(!(hash & (s_flagMask << (8 * sizeof(hash) - s_flagCount)))); // Verify that enough high bits are empty.
-
-        hash <<= s_flagCount;
-        ASSERT(!(hash & m_hashAndFlags)); // Verify that enough low bits are empty after shift.
+        m_hash = hash;
         ASSERT(hash); // Verify that 0 is a valid sentinel hash value.
-
-        m_hashAndFlags |= hash; // Store hash with flags in low bits.
     }
 
     unsigned rawHash() const
     {
-        return m_hashAndFlags >> s_flagCount;
+        return m_hash;
     }
 
 public:
@@ -429,14 +426,6 @@ private:
     static const unsigned s_refCountFlagIsStaticString = 0x1;
     static const unsigned s_refCountIncrement = 0x2; // This allows us to ref / deref without disturbing the static string flag.
 
-    // The bottom 8 bits in the hash are flags, of which only 2 are currently in use.
-    static const unsigned s_flagCount = 8;
-    static const unsigned s_flagMask = (1u << s_flagCount) - 1;
-    COMPILE_ASSERT(s_flagCount == StringHasher::flagCount, StringHasher_reserves_enough_bits_for_StringImpl_flags);
-
-    static const unsigned s_hashFlagIsAtomic = 1u << 1;
-    static const unsigned s_hashFlag8BitBuffer = 1u << 0;
-
 #ifdef STRING_STATS
     static StringStats m_stringStats;
 #endif
@@ -452,7 +441,9 @@ private:
 private:
     unsigned m_refCount;
     unsigned m_length;
-    mutable unsigned m_hashAndFlags;
+    mutable unsigned m_hash : 24;
+    mutable unsigned m_isAtomic : 1;
+    mutable unsigned m_is8Bit : 1;
 };
 
 template <>
