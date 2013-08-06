@@ -139,6 +139,8 @@ display_release_window_surface(struct display *display,
 
 #define SURFACE_HINT_RESIZE 0x10
 
+#define SURFACE_HINT_RGB565 0x100
+
 cairo_surface_t *
 display_create_surface(struct display *display,
 		       struct wl_surface *surface,
@@ -382,6 +384,15 @@ window_get_title(struct window *window);
 
 void
 window_set_text_cursor_position(struct window *window, int32_t x, int32_t y);
+
+enum preferred_format {
+	WINDOW_PREFERRED_FORMAT_NONE,
+	WINDOW_PREFERRED_FORMAT_RGB565
+};
+
+void
+window_set_preferred_format(struct window *window,
+			    enum preferred_format format);
 
 int
 widget_set_tooltip(struct widget *parent, char *entry, float x, float y);

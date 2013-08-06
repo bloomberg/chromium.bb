@@ -128,6 +128,8 @@ struct display {
 	/* A hack to get text extents for tooltips */
 	cairo_surface_t *dummy_surface;
 	void *dummy_surface_data;
+
+	int has_rgb565;
 };
 
 enum {
@@ -236,6 +238,8 @@ struct window {
 	int resizing;
 	int fullscreen_method;
 	int configure_requests;
+
+	enum preferred_format preferred_format;
 
 	window_key_handler_t key_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
@@ -794,6 +798,7 @@ display_create_shm_surface_from_pool(struct display *display,
 	struct shm_surface_data *data;
 	uint32_t format;
 	cairo_surface_t *surface;
+	cairo_format_t cairo_format;
 	int stride, length, offset;
 	void *map;
 
@@ -801,8 +806,12 @@ display_create_shm_surface_from_pool(struct display *display,
 	if (data == NULL)
 		return NULL;
 
-	stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,
-						rectangle->width);
+	if (flags & SURFACE_HINT_RGB565 && display->has_rgb565)
+		cairo_format = CAIRO_FORMAT_RGB16_565;
+	else
+		cairo_format = CAIRO_FORMAT_ARGB32;
+
+	stride = cairo_format_stride_for_width (cairo_format, rectangle->width);
 	length = stride * rectangle->height;
 	data->pool = NULL;
 	map = shm_pool_allocate(pool, length, &offset);
@@ -813,7 +822,7 @@ display_create_shm_surface_from_pool(struct display *display,
 	}
 
 	surface = cairo_image_surface_create_for_data (map,
-						       CAIRO_FORMAT_ARGB32,
+						       cairo_format,
 						       rectangle->width,
 						       rectangle->height,
 						       stride);
@@ -821,10 +830,14 @@ display_create_shm_surface_from_pool(struct display *display,
 	cairo_surface_set_user_data(surface, &shm_surface_data_key,
 				    data, shm_surface_data_destroy);
 
-	if (flags & SURFACE_OPAQUE)
-		format = WL_SHM_FORMAT_XRGB8888;
-	else
-		format = WL_SHM_FORMAT_ARGB8888;
+	if (flags & SURFACE_HINT_RGB565 && display->has_rgb565)
+		format = WL_SHM_FORMAT_RGB565;
+	else {
+		if (flags & SURFACE_OPAQUE)
+			format = WL_SHM_FORMAT_XRGB8888;
+		else
+			format = WL_SHM_FORMAT_ARGB8888;
+	}
 
 	data->buffer = wl_shm_pool_create_buffer(pool->pool, offset,
 						 rectangle->width,
@@ -1424,6 +1437,9 @@ window_create_main_surface(struct window *window)
 
 	if (window->resizing)
 		flags |= SURFACE_HINT_RESIZE;
+
+	if (window->preferred_format == WINDOW_PREFERRED_FORMAT_RGB565)
+		flags |= SURFACE_HINT_RGB565;
 
 	if (window->resize_edges & WINDOW_RESIZING_LEFT)
 		dx = surface->server_allocation.width -
@@ -4209,6 +4225,7 @@ window_create_internal(struct display *display,
 	window->type = type;
 	window->fullscreen_method = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 	window->configure_requests = 0;
+	window->preferred_format = WINDOW_PREFERRED_FORMAT_NONE;
 
 	if (display->argb_device)
 #ifdef HAVE_CAIRO_EGL
@@ -4430,6 +4447,13 @@ void
 window_set_buffer_type(struct window *window, enum window_buffer_type type)
 {
 	window->main_surface->buffer_type = type;
+}
+
+void
+window_set_preferred_format(struct window *window,
+			    enum preferred_format format)
+{
+	window->preferred_format = format;
 }
 
 struct widget *
@@ -4730,6 +4754,19 @@ init_workspace_manager(struct display *d, uint32_t id)
 }
 
 static void
+shm_format(void *data, struct wl_shm *wl_shm, uint32_t format)
+{
+	struct display *d = data;
+
+	if (format == WL_SHM_FORMAT_RGB565)
+		d->has_rgb565 = 1;
+}
+
+struct wl_shm_listener shm_listener = {
+	shm_format
+};
+
+static void
 registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 		       const char *interface, uint32_t version)
 {
@@ -4754,6 +4791,7 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 					    id, &wl_shell_interface, 1);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
+		wl_shm_add_listener(d->shm, &shm_listener, d);
 	} else if (strcmp(interface, "wl_data_device_manager") == 0) {
 		d->data_device_manager =
 			wl_registry_bind(registry, id,
