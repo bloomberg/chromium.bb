@@ -76,6 +76,9 @@ public:
 
     virtual bool canContainRangeEndPoint() const { return false; }
 
+    void addClient(ImageLoaderClient* client) { m_imageLoader.addClient(client); }
+    void removeClient(ImageLoaderClient* client) { m_imageLoader.removeClient(client); }
+
 protected:
     HTMLImageElement(const QualifiedName&, Document*, HTMLFormElement* = 0);
 

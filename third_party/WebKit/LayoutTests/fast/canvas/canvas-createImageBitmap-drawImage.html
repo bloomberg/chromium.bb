@@ -138,6 +138,7 @@ function loaded() {
     if (imageLoaded && imageBitmapLoaded) {
         // check all of these elements
         elements = [image, aCanvas, d, aCtx, testBitmap];
+
         // wait for callback to finish before each check to ensure synchronous behavior
         nextCheck(0);
     }
@@ -170,7 +171,6 @@ function nextCheck(elementIndex) {
         checkCrop(imageBitmaps.negativeCrop);
         checkEmpty(imageBitmaps.empty);
         checkEmpty(imageBitmaps.emptyTwo);
-        checkImmutable(imageBitmaps.noCrop, elementIndex);
         nextCheck(elementIndex + 1);
     }, function() {
         testFailed("createImageBitmap promise rejected.");
@@ -394,34 +394,6 @@ function checkEmpty(imageBitmap) {
     shouldBeClear(11, 11);
     shouldBeClear(22, 22);
 }
-
-function checkImmutable(imageBitmap, elementIndex) {
-    debug("Check immutable.");
-    // change the underlying element to ensure that it does not change the imageBitmap
-    switch(elementIndex) {
-    case 0: // image
-        image = new Image();
-        break;
-    case 1: // canvas
-        clearContext(aCtx);
-        break;
-    case 2: // data
-        d = 0;
-        break;
-    case 3: // context
-        clearContext(aCtx);
-        break;
-    case 4: // bitmap
-        testBitmap = 0;
-        break;
-    default:
-        testFailed("Default should not be called.");
-    }
-    // should be drawn to (0, 0), (20, 20)
-    checkNoCrop(imageBitmap);
-    drawPattern(aCtx);
-}
-
 </script>
 <script src="../js/resources/js-test-post.js"></script>
 </body>

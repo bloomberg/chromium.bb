@@ -71,6 +71,7 @@ MemoryCache::MemoryCache()
     , m_maxDeadCapacity(cDefaultCacheCapacity)
     , m_liveSize(0)
     , m_deadSize(0)
+    , m_delayBeforeLiveDecodedPrune(cMinDelayBeforeLiveDecodedPrune)
 #ifdef MEMORY_CACHE_STATS
     , m_statsTimer(this, &MemoryCache::dumpStats)
 #endif
@@ -160,32 +161,37 @@ void MemoryCache::pruneLiveResources()
         currentTime = WTF::currentTime();
 
     // Destroy any decoded data in live objects that we can.
-    // Start from the tail, since this is the least recently accessed of the objects.
+    // Start from the tail, since this is the lowest priority
+    // and least recently accessed of the objects.
 
     // The list might not be sorted by the m_lastDecodedAccessTime. The impact
     // of this weaker invariant is minor as the below if statement to check the
     // elapsedTime will evaluate to false as the currentTime will be a lot
     // greater than the current->m_lastDecodedAccessTime.
     // For more details see: https://bugs.webkit.org/show_bug.cgi?id=30209
-    Resource* current = m_liveDecodedResources.m_tail;
-    while (current) {
-        Resource* prev = current->m_prevInLiveResourcesList;
-        ASSERT(current->hasClients());
-        if (current->isLoaded() && current->decodedSize()) {
-            // Check to see if the remaining resources are too new to prune.
-            double elapsedTime = currentTime - current->m_lastDecodedAccessTime;
-            if (elapsedTime < cMinDelayBeforeLiveDecodedPrune)
-                return;
 
-            // Destroy our decoded data. This will remove us from
-            // m_liveDecodedResources, and possibly move us to a different LRU
-            // list in m_allResources.
-            current->destroyDecodedData();
+    // Start pruning from the lowest priority list.
+    for (int priority = Resource::CacheLiveResourcePriorityLow; priority <= Resource::CacheLiveResourcePriorityHigh; ++priority) {
+        Resource* current = m_liveDecodedResources[priority].m_tail;
+        while (current) {
+            Resource* prev = current->m_prevInLiveResourcesList;
+            ASSERT(current->hasClients());
+            if (current->isLoaded() && current->decodedSize()) {
+                // Check to see if the remaining resources are too new to prune.
+                double elapsedTime = currentTime - current->m_lastDecodedAccessTime;
+                if (elapsedTime < m_delayBeforeLiveDecodedPrune)
+                    return;
 
-            if (targetSize && m_liveSize <= targetSize)
-                return;
+                // Destroy our decoded data. This will remove us from
+                // m_liveDecodedResources, and possibly move us to a different LRU
+                // list in m_allResources.
+                current->destroyDecodedData();
+
+                if (targetSize && m_liveSize <= targetSize)
+                    return;
+            }
+            current = prev;
         }
-        current = prev;
     }
 }
 
@@ -394,10 +400,12 @@ void MemoryCache::removeFromLiveDecodedResourcesList(Resource* resource)
         return;
     resource->m_inLiveDecodedResourcesList = false;
 
+    LRUList* list = &m_liveDecodedResources[resource->cacheLiveResourcePriority()];
+
 #if !ASSERT_DISABLED
     // Verify that we are in fact in this list.
     bool found = false;
-    for (Resource* current = m_liveDecodedResources.m_head; current; current = current->m_nextInLiveResourcesList) {
+    for (Resource* current = list->m_head; current; current = current->m_nextInLiveResourcesList) {
         if (current == resource) {
             found = true;
             break;
@@ -409,7 +417,7 @@ void MemoryCache::removeFromLiveDecodedResourcesList(Resource* resource)
     Resource* next = resource->m_nextInLiveResourcesList;
     Resource* prev = resource->m_prevInLiveResourcesList;
 
-    if (next == 0 && prev == 0 && m_liveDecodedResources.m_head != resource)
+    if (!next && !prev && list->m_head != resource)
         return;
 
     resource->m_nextInLiveResourcesList = 0;
@@ -417,13 +425,13 @@ void MemoryCache::removeFromLiveDecodedResourcesList(Resource* resource)
 
     if (next)
         next->m_prevInLiveResourcesList = prev;
-    else if (m_liveDecodedResources.m_tail == resource)
-        m_liveDecodedResources.m_tail = prev;
+    else if (list->m_tail == resource)
+        list->m_tail = prev;
 
     if (prev)
         prev->m_nextInLiveResourcesList = next;
-    else if (m_liveDecodedResources.m_head == resource)
-        m_liveDecodedResources.m_head = next;
+    else if (list->m_head == resource)
+        list->m_head = next;
 }
 
 void MemoryCache::insertInLiveDecodedResourcesList(Resource* resource)
@@ -432,18 +440,19 @@ void MemoryCache::insertInLiveDecodedResourcesList(Resource* resource)
     ASSERT(!resource->m_nextInLiveResourcesList && !resource->m_prevInLiveResourcesList && !resource->m_inLiveDecodedResourcesList);
     resource->m_inLiveDecodedResourcesList = true;
 
-    resource->m_nextInLiveResourcesList = m_liveDecodedResources.m_head;
-    if (m_liveDecodedResources.m_head)
-        m_liveDecodedResources.m_head->m_prevInLiveResourcesList = resource;
-    m_liveDecodedResources.m_head = resource;
+    LRUList* list = &m_liveDecodedResources[resource->cacheLiveResourcePriority()];
+    resource->m_nextInLiveResourcesList = list->m_head;
+    if (list->m_head)
+        list->m_head->m_prevInLiveResourcesList = resource;
+    list->m_head = resource;
 
     if (!resource->m_nextInLiveResourcesList)
-        m_liveDecodedResources.m_tail = resource;
+        list->m_tail = resource;
 
 #if !ASSERT_DISABLED
     // Verify that we are in now in the list like we should be.
     bool found = false;
-    for (Resource* current = m_liveDecodedResources.m_head; current; current = current->m_nextInLiveResourcesList) {
+    for (Resource* current = list->m_head; current; current = current->m_nextInLiveResourcesList) {
         if (current == resource) {
             found = true;
             break;

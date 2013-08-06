@@ -32,6 +32,7 @@
 #include "core/loader/cache/MemoryCache.h"
 
 #include "core/loader/cache/CachedRawResource.h"
+#include "core/loader/cache/MockCachedImageClient.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "wtf/OwnPtr.h"
@@ -41,6 +42,26 @@
 namespace WebCore {
 
 class MemoryCacheTest : public ::testing::Test {
+public:
+    class MockCachedImage : public WebCore::Resource {
+    public:
+        MockCachedImage(const ResourceRequest& request, Type type)
+            : Resource(request, type)
+        {
+        }
+
+        virtual void appendData(const char* data, int len)
+        {
+            Resource::appendData(data, len);
+            setDecodedSize(this->size());
+        }
+
+        virtual void destroyDecodedData()
+        {
+            setDecodedSize(0);
+        }
+    };
+
 protected:
     virtual void SetUp()
     {
@@ -106,4 +127,68 @@ TEST_F(MemoryCacheTest, DeadResourceEviction)
     ASSERT_EQ(0u, memoryCache()->liveSize());
 }
 
+// Verifies that CachedResources are evicted from the decode cache
+// according to their DecodeCachePriority.
+TEST_F(MemoryCacheTest, DecodeCacheOrder)
+{
+    memoryCache()->setDelayBeforeLiveDecodedPrune(0);
+    ResourcePtr<MockCachedImage> cachedImageLowPriority =
+        new MockCachedImage(ResourceRequest(""), Resource::RawResource);
+    ResourcePtr<MockCachedImage> cachedImageHighPriority =
+        new MockCachedImage(ResourceRequest(""), Resource::RawResource);
+
+    MockCachedImageClient clientLowPriority;
+    MockCachedImageClient clientHighPriority;
+    cachedImageLowPriority->addClient(&clientLowPriority);
+    cachedImageHighPriority->addClient(&clientHighPriority);
+
+    const char data[5] = "abcd";
+    cachedImageLowPriority->appendData(data, 1);
+    cachedImageHighPriority->appendData(data, 4);
+    const unsigned lowPrioritySize = cachedImageLowPriority->size();
+    const unsigned highPrioritySize = cachedImageHighPriority->size();
+    const unsigned lowPriorityMockDecodeSize = cachedImageLowPriority->decodedSize();
+    const unsigned highPriorityMockDecodeSize = cachedImageHighPriority->decodedSize();
+    const unsigned totalSize = lowPrioritySize + highPrioritySize;
+
+    // Verify that the sizes are different to ensure that we can test eviction order.
+    ASSERT_GT(lowPrioritySize, 0u);
+    ASSERT_NE(lowPrioritySize, highPrioritySize);
+    ASSERT_GT(lowPriorityMockDecodeSize, 0u);
+    ASSERT_NE(lowPriorityMockDecodeSize, highPriorityMockDecodeSize);
+
+    ASSERT_EQ(memoryCache()->deadSize(), 0u);
+    ASSERT_EQ(memoryCache()->liveSize(), 0u);
+
+    // Add the items. The item added first would normally be evicted first.
+    memoryCache()->add(cachedImageHighPriority.get());
+    ASSERT_EQ(memoryCache()->deadSize(), 0u);
+    ASSERT_EQ(memoryCache()->liveSize(), highPrioritySize);
+
+    memoryCache()->add(cachedImageLowPriority.get());
+    ASSERT_EQ(memoryCache()->deadSize(), 0u);
+    ASSERT_EQ(memoryCache()->liveSize(), highPrioritySize + lowPrioritySize);
+
+    // Insert all items in the decoded items list with the same priority
+    memoryCache()->insertInLiveDecodedResourcesList(cachedImageHighPriority.get());
+    memoryCache()->insertInLiveDecodedResourcesList(cachedImageLowPriority.get());
+    ASSERT_EQ(memoryCache()->deadSize(), 0u);
+    ASSERT_EQ(memoryCache()->liveSize(), totalSize);
+
+    // Now we will assign their priority and make sure they are moved to the correct buckets.
+    cachedImageLowPriority->setCacheLiveResourcePriority(Resource::CacheLiveResourcePriorityLow);
+    cachedImageHighPriority->setCacheLiveResourcePriority(Resource::CacheLiveResourcePriorityHigh);
+
+    // Should first prune the LowPriority item.
+    memoryCache()->setCapacities(memoryCache()->minDeadCapacity(), memoryCache()->liveSize() - 10, memoryCache()->liveSize() - 10);
+    memoryCache()->prune();
+    ASSERT_EQ(memoryCache()->deadSize(), 0u);
+    ASSERT_EQ(memoryCache()->liveSize(), totalSize - lowPriorityMockDecodeSize);
+
+    // Should prune the HighPriority item.
+    memoryCache()->setCapacities(memoryCache()->minDeadCapacity(), memoryCache()->liveSize() - 10, memoryCache()->liveSize() - 10);
+    memoryCache()->prune();
+    ASSERT_EQ(memoryCache()->deadSize(), 0u);
+    ASSERT_EQ(memoryCache()->liveSize(), totalSize - lowPriorityMockDecodeSize - highPriorityMockDecodeSize);
+}
 } // namespace

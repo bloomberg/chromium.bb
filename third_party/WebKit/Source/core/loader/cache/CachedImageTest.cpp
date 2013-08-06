@@ -35,51 +35,22 @@
 #include "core/loader/EmptyClients.h"
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/MockCachedImageClient.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/SharedBuffer.h"
-#include "core/platform/graphics/Image.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
-#include <gtest/gtest.h>
 
 using namespace WebCore;
 
 namespace {
-
-class MockCachedImageClient : public WebCore::CachedImageClient {
-public:
-    MockCachedImageClient()
-        : m_imageChangedCount(0)
-        , m_notifyFinishedCalled(false)
-    {
-    }
-
-    virtual ~MockCachedImageClient() { }
-    virtual void imageChanged(CachedImage*, const IntRect*)
-    {
-        m_imageChangedCount++;
-    }
-
-    virtual void notifyFinished(Resource*)
-    {
-        ASSERT_FALSE(m_notifyFinishedCalled);
-        m_notifyFinishedCalled = true;
-    }
-
-    int imageChangedCount() const { return m_imageChangedCount; }
-    bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
-
-private:
-    int m_imageChangedCount;
-    bool m_notifyFinishedCalled;
-};
 
 class QuitTask : public WebKit::WebThread::Task {
 public:

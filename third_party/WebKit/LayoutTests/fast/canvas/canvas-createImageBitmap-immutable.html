@@ -1,0 +1,105 @@
+<html>
+<body>
+<script>
+if (window.testRunner)
+    window.testRunner.waitUntilDone();
+
+function shouldNotBeCalled() {
+    testFailed("Promise was rejected.");
+    finishJSTest();
+}
+
+var aCanvas = document.createElement('canvas');
+aCanvas.setAttribute('width', '10');
+aCanvas.setAttribute('height', '10');
+var aCtx = aCanvas.getContext('2d');
+aCtx.fillStyle = 'green';
+aCtx.fillRect(0, 0, 20, 20);
+
+var bCanvas = document.createElement('canvas');
+bCanvas.setAttribute('width', '10');
+bCanvas.setAttribute('height', '10');
+var bCtx = bCanvas.getContext('2d');
+bCtx.fillStyle = 'red';
+bCtx.fillRect(0, 0, 20, 20);
+
+var canvas = document.createElement('canvas');
+canvas.setAttribute('width', '40');
+canvas.setAttribute('height', '30');
+var ctx = canvas.getContext('2d');
+document.body.appendChild(canvas);
+
+var image = new Image();
+image.onload = imageLoaded;
+image.src = aCanvas.toDataURL();
+
+var d;
+
+function imageLoaded() {
+    d = aCtx.getImageData(0, 0, 10, 10);
+    createImageBitmap(image).then(callback('Image'), shouldNotBeCalled);
+    createImageBitmap(d).then(callback('Data'), shouldNotBeCalled);
+    createImageBitmap(aCanvas).then(callback('Canvas'), shouldNotBeCalled);
+}
+
+var imageBitmapImage, imageBitmapData, imageBitmapCanvas;
+var i = 0;
+function callback(name) {
+    var name = name;
+    return function(imageBitmap) {
+        switch(name) {
+        case 'Image':
+            imageBitmapImage = imageBitmap;
+            image.onload = draw(imageBitmapImage);
+            image.src = bCanvas.toDataURL();
+            createImageBitmap(imageBitmapImage).then(callback('ImageBitmapImage', shouldNotBeCalled));
+            break;
+        case 'Data':
+            imageBitmapData = imageBitmap;
+            d = 0;
+            ctx.drawImage(imageBitmapData, 11, 0);
+            createImageBitmap(imageBitmapData).then(callback('ImageBitmapData', shouldNotBeCalled));
+            checkIfDone();
+            break;
+        case 'Canvas':
+            imageBitmapCanvas = imageBitmap;
+            aCtx.clearRect(0, 0, 10, 10);
+            ctx.drawImage(imageBitmapCanvas, 22, 0);
+            createImageBitmap(imageBitmapCanvas).then(callback('ImageBitmapCanvas', shouldNotBeCalled));
+            checkIfDone();
+            break;
+        case 'ImageBitmapImage':
+            imageBitmapImage = 0;
+            ctx.drawImage(imageBitmap, 0, 11);
+            checkIfDone();
+            break;
+        case 'ImageBitmapData':
+            d = 0;
+            imageBitmapData = 0;
+            ctx.drawImage(imageBitmap, 11, 11);
+            checkIfDone();
+            break;
+        case 'ImageBitmapCanvas':
+            aCtx.clearRect(0, 0, 10, 10);
+            imageBitmapCanvas = 0;
+            ctx.drawImage(imageBitmap, 22, 11);
+            checkIfDone();
+            break;
+        }
+    }
+}
+
+function draw(imageBitmap) {
+    ctx.drawImage(imageBitmap, 0, 0);
+    checkIfDone();
+}
+
+function checkIfDone() {
+    if (++i == 6 && window.testRunner)
+        window.testRunner.notifyDone();
+}
+
+</script>
+<p>There should be 6 green squares displayed in a 2 row by 3 column grid.</p>
+</body>
+</html>

@@ -26,9 +26,21 @@
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/ResourcePtr.h"
+#include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
+
+class ImageLoaderClient {
+public:
+    virtual void notifyImageSourceChanged() = 0;
+
+    // Determines whether the observed CachedImage should have higher priority in the decoded resources cache.
+    virtual bool requestsHighLiveResourceCachePriority() { return false; }
+
+protected:
+    ImageLoaderClient() { }
+};
 
 class Element;
 class ImageLoader;
@@ -69,6 +81,9 @@ public:
     static void dispatchPendingLoadEvents();
     static void dispatchPendingErrorEvents();
 
+    void addClient(ImageLoaderClient*);
+    void removeClient(ImageLoaderClient*);
+
 protected:
     virtual void notifyFinished(Resource*);
 
@@ -86,12 +101,14 @@ private:
     void updateRenderer();
 
     void setImageWithoutConsideringPendingLoadEvent(CachedImage*);
+    void sourceImageChanged();
     void clearFailedLoadURL();
 
     void timerFired(Timer<ImageLoader>*);
 
     Element* m_element;
     ResourcePtr<CachedImage> m_image;
+    HashSet<ImageLoaderClient*> m_clients;
     Timer<ImageLoader> m_derefElementTimer;
     AtomicString m_failedLoadURL;
     bool m_hasPendingBeforeLoadEvent : 1;
@@ -100,6 +117,7 @@ private:
     bool m_imageComplete : 1;
     bool m_loadManually : 1;
     bool m_elementIsProtected : 1;
+    unsigned m_highPriorityClientCount;
 };
 
 }

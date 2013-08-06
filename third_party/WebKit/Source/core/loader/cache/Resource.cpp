@@ -106,6 +106,7 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_handleCount(0)
     , m_preloadCount(0)
     , m_preloadResult(PreloadNotReferenced)
+    , m_cacheLiveResourcePriority(CacheLiveResourcePriorityLow)
     , m_inLiveDecodedResourcesList(false)
     , m_requestedFromNetworkingLayer(false)
     , m_inCache(false)
@@ -343,6 +344,16 @@ CachedMetadata* Resource::cachedMetadata(unsigned dataTypeID) const
     return m_cachedMetadata.get();
 }
 
+void Resource::setCacheLiveResourcePriority(CacheLiveResourcePriority priority)
+{
+    if (inCache() && m_inLiveDecodedResourcesList && m_cacheLiveResourcePriority != priority) {
+        memoryCache()->removeFromLiveDecodedResourcesList(this);
+        m_cacheLiveResourcePriority = priority;
+        memoryCache()->insertInLiveDecodedResourcesList(this);
+        memoryCache()->prune();
+    }
+}
+
 void Resource::clearLoader()
 {
     m_loader = 0;
@@ -522,7 +533,6 @@ void Resource::setEncodedSize(unsigned size)
 void Resource::didAccessDecodedData(double timeStamp)
 {
     m_lastDecodedAccessTime = timeStamp;
-
     if (inCache()) {
         if (m_inLiveDecodedResourcesList) {
             memoryCache()->removeFromLiveDecodedResourcesList(this);
@@ -826,3 +836,4 @@ void Resource::ResourceCallback::timerFired(Timer<ResourceCallback>*)
 }
 
 }
+
