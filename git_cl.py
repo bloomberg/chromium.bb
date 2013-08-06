@@ -2027,9 +2027,12 @@ def CMDtry(parser, args):
         'Bot list: %s' % builders_and_tests)
     return 1
 
-  patchset = cl.GetPatchset()
-  if not cl.GetPatchset():
-    patchset = cl.GetMostRecentPatchset()
+  patchset = cl.GetMostRecentPatchset()
+  if patchset and patchset != cl.GetPatchset():
+    print(
+        '\nWARNING Mismatch between local config and server. Did a previous '
+        'upload fail?\ngit-cl try always uses latest patchset from rietveld. '
+        'Continuing using\npatchset %s.\n' % patchset)
 
   cl.RpcServer().trigger_try_jobs(
       cl.GetIssue(), patchset, options.name, options.clobber, options.revision,
