@@ -176,6 +176,8 @@ public:
     PassRefPtr<CSSValue> parseGridPosition();
     bool parseIntegerOrStringFromGridPosition(RefPtr<CSSPrimitiveValue>& numericValue, RefPtr<CSSPrimitiveValue>& gridLineName);
     bool parseGridItemPositionShorthand(CSSPropertyID, bool important);
+    bool parseGridAreaShorthand(bool important);
+    bool parseSingleGridAreaLonghand(RefPtr<CSSValue>&);
     bool parseGridTrackList(CSSPropertyID, bool important);
     bool parseGridTrackRepeatFunction(CSSValueList&);
     PassRefPtr<CSSPrimitiveValue> parseGridTrackSize(CSSParserValueList& inputList);

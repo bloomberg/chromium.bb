@@ -3,6 +3,11 @@
 <head>
 <link href="resources/grid.css" rel="stylesheet">
 <style>
+.grid {
+    grid-template: "firstArea" "secondArea"
+                   "thirdArea" "thirdArea";
+}
+
 .gridItemWithPositiveInteger {
     grid-column-end: 10;
     grid-row-end: 15;
@@ -39,6 +44,10 @@
     grid-column-end: 2 "first" span;
     grid-row-end: "last" 3 span;
 }
+.gridItemWithArea {
+    grid-column-end: firstArea;
+    grid-row-end: thirdArea;
+}
 </style>
 <script src="resources/grid-item-column-row-parsing-utils.js"></script>
 <script src="../js/resources/js-test-pre.js"></script>
@@ -56,6 +65,7 @@
     <div class="gridItemWithString" id="gridItemWithStringElement"></div>
     <div class="gridItemWithSpanString" id="gridItemWithSpanStringElement"></div>
     <div class="gridItemWithSpanNumberString" id="gridItemWithSpanNumberStringElement"></div>
+    <div class="gridItemWithArea" id="gridItemWithArea"></div>
 </div>
 <script>
     description('Test that setting and getting grid-column-end and grid-row-end works as expected');
@@ -71,6 +81,7 @@
     testColumnRowCSSParsing("gridItemWithStringElement", "auto / 1 first", "auto / 1 last");
     testColumnRowCSSParsing("gridItemWithSpanStringElement", "auto / span 1 first", "auto / span 1 last");
     testColumnRowCSSParsing("gridItemWithSpanNumberStringElement", "auto / span 2 first", "auto / span 3 last");
+    testColumnRowCSSParsing("gridItemWithArea", "auto / firstArea", "auto / thirdArea");
 
     debug("");
     debug("Test the initial value");
@@ -89,6 +100,9 @@
     testColumnEndRowEndJSParsing("span 7", "span 2");
     testColumnEndRowEndJSParsing("span 'first'", "span 'last'", "span 1 first", "span 1 last");
     testColumnEndRowEndJSParsing("auto", "auto");
+    testColumnEndRowEndJSParsing("thirdArea", "secondArea");
+    testColumnEndRowEndJSParsing("nonExistentArea", "secondArea", "nonExistentArea", "secondArea");
+    testColumnEndRowEndJSParsing("secondArea", "nonExistentArea", "secondArea", "nonExistentArea");
 
     debug("");
     debug("Test setting grid-column-start and grid-row-start to 'inherit' through JS");

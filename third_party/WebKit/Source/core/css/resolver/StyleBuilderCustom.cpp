@@ -945,10 +945,18 @@ static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSiz
 
 static bool createGridPosition(CSSValue* value, GridPosition& position)
 {
-    // For now, we only accept: 'auto' | [ <integer> || <string> ] | span && <integer>?
+    // We accept the specification's grammar:
+    // 'auto' | [ <integer> || <string> ] | [ span && [ <integer> || string ] ] | <ident>
 
     if (value->isPrimitiveValue()) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+        // We translate <ident> to <string> during parsing as it
+        // makes handling it more simple.
+        if (primitiveValue->isString()) {
+            position.setNamedGridArea(primitiveValue->getStringValue());
+            return true;
+        }
+
         ASSERT(primitiveValue->getValueID() == CSSValueAuto);
         return true;
     }

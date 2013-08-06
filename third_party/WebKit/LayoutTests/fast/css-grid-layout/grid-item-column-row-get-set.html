@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script>
-if (window.testRunner)
-    testRunner.overridePreference("WebKitCSSGridLayoutEnabled", 1);
-</script>
+<link href="resources/grid.css" rel="stylesheet">
 <style>
+.grid {
+    grid-template: "firstArea" "secondArea"
+                   "thirdArea" "thirdArea";
+}
+
 .gridItemWithPositiveInteger {
     grid-column: 10;
     grid-row: 15;
@@ -62,27 +64,39 @@ if (window.testRunner)
     grid-column: 1 /span 3 "first";
     grid-row: -1 / "last" 2 span ;
 }
+.gridItemWithSingleNamedGridArea {
+    grid-column: thirdArea;
+    grid-row: firstArea;
+}
+.gridItemWithNamedGridAreaAndSpan {
+    grid-column: thirdArea / span;
+    grid-row: firstArea / span 2;
+}
 </style>
 <script src="resources/grid-item-column-row-parsing-utils.js"></script>
 <script src="../js/resources/js-test-pre.js"></script>
 </head>
 <body>
-<!-- The first has no properties set on it. -->
-<div id="gridItemWithNoCSSRule"></div>
-<div class="gridItemWithPositiveInteger" id="gridItemWithPositiveInteger"></div>
-<div class="gridItemWithNegativeInteger" id="gridItemWithNegativeInteger"></div>
-<div class="gridItemWithAuto" id="gridItemWithAutoElement"></div>
-<div class="gridItemWith2Integer" id="gridItemWith2IntegerElement"></div>
-<div class="gridItemWithNegativePositiveInteger" id="gridItemWithNegativePositiveIntegerElement"></div>
-<div class="gridItemWith2Auto" id="gridItemWith2AutoElement"></div>
-<div class="gridItemWithBeforeSpan" id="gridItemWithBeforeSpanElement"></div>
-<div class="gridItemWithAfterSpan" id="gridItemWithAfterSpanElement"></div>
-<div class="gridItemWith2OnlySpan" id="gridItemWith2OnlySpanElement"></div>
-<div class="gridItemWithNegativePositiveInteger gridItemWithBothLongHand" id="gridItemWithBothShortLongHandElement"></div>
-<div class="gridItemWithNoSpace" id="gridItemWithNoSpaceElement"></div>
-<div class="gridItemWithString" id="gridItemWithString"></div>
-<div class="gridItemWithSpanString" id="gridItemWithSpanString"></div>
-<div class="gridItemWithSpanNumberString" id="gridItemWithSpanNumberString"></div>
+<div class="grid">
+    <!-- The first has no properties set on it. -->
+    <div id="gridItemWithNoCSSRule"></div>
+    <div class="gridItemWithPositiveInteger" id="gridItemWithPositiveInteger"></div>
+    <div class="gridItemWithNegativeInteger" id="gridItemWithNegativeInteger"></div>
+    <div class="gridItemWithAuto" id="gridItemWithAutoElement"></div>
+    <div class="gridItemWith2Integer" id="gridItemWith2IntegerElement"></div>
+    <div class="gridItemWithNegativePositiveInteger" id="gridItemWithNegativePositiveIntegerElement"></div>
+    <div class="gridItemWith2Auto" id="gridItemWith2AutoElement"></div>
+    <div class="gridItemWithBeforeSpan" id="gridItemWithBeforeSpanElement"></div>
+    <div class="gridItemWithAfterSpan" id="gridItemWithAfterSpanElement"></div>
+    <div class="gridItemWith2OnlySpan" id="gridItemWith2OnlySpanElement"></div>
+    <div class="gridItemWithNegativePositiveInteger gridItemWithBothLongHand" id="gridItemWithBothShortLongHandElement"></div>
+    <div class="gridItemWithNoSpace" id="gridItemWithNoSpaceElement"></div>
+    <div class="gridItemWithString" id="gridItemWithString"></div>
+    <div class="gridItemWithSpanString" id="gridItemWithSpanString"></div>
+    <div class="gridItemWithSpanNumberString" id="gridItemWithSpanNumberString"></div>
+    <div class="gridItemWithSingleNamedGridArea" id="gridItemWithSingleNamedGridArea"></div>
+    <div class="gridItemWithNamedGridAreaAndSpan" id="gridItemWithNamedGridAreaAndSpan"></div>
+</div>
 <script>
     description('Test that setting and getting grid-column and grid-row works as expected');
 
@@ -101,6 +115,8 @@ if (window.testRunner)
     testColumnRowCSSParsing("gridItemWithString", "1 first / auto", "1 last / auto");
     testColumnRowCSSParsing("gridItemWithSpanString", "1 / span 1 first", "-1 / span 1 last");
     testColumnRowCSSParsing("gridItemWithSpanNumberString", "1 / span 3 first", "-1 / span 2 last");
+    testColumnRowCSSParsing("gridItemWithSingleNamedGridArea", "thirdArea / thirdArea", "firstArea / firstArea");
+    testColumnRowCSSParsing("gridItemWithNamedGridAreaAndSpan", "thirdArea / span 1", "firstArea / span 2");
 
     debug("");
     debug("Test the initial value");
@@ -128,6 +144,9 @@ if (window.testRunner)
     testColumnRowJSParsing("'first' / 'last'", "'nav' / 'last' span", "1 first / 1 last", "1 nav / span 1 last");
     testColumnRowJSParsing("3 'first' / 2 'last'", "5 'nav' / 'last' 7 span", "3 first / 2 last", "5 nav / span 7 last");
     testColumnRowJSParsing("3 'first' span / -3 'last'", "'last' 2 span / -1 'nav'", "span 3 first / -3 last", "span 2 last / -1 nav");
+    testColumnRowJSParsing("5 / none", "8 / foobar");
+    testColumnRowJSParsing("nonExistent / none", "nonExistent / foobar");
+    testColumnRowJSParsing("span 'first' 3 / none", "'last' span / foobar", "span 3 first / none", "span 1 last / foobar");
 
     debug("");
     debug("Test setting grid-column and grid-row back to 'auto' through JS");
@@ -163,7 +182,6 @@ if (window.testRunner)
     debug("Test getting and setting invalid grid-column and grid-row through JS");
     testColumnRowInvalidJSParsing("4 5", "5 8");
     testColumnRowInvalidJSParsing("4 /", "5 /");
-    testColumnRowInvalidJSParsing("5 / none", "8 / foobar");
     testColumnRowInvalidJSParsing("5 5", "8 auto");
     testColumnRowInvalidJSParsing("5 / /", "8 / /");
 

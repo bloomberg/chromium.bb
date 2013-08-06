@@ -996,12 +996,12 @@ size_t RenderGrid::resolveGridPositionFromStyle(const GridPosition& position, Gr
 
         return adjustGridPositionForSide(endOfTrack - resolvedPosition, side);
     }
-    case AutoPosition:
-        // 'auto' depends on the opposite position for resolution (e.g. grid-row: auto / 1).
-        ASSERT_NOT_REACHED();
+    case NamedGridAreaPosition:
+        // FIXME: Support resolving named grid area (crbug.com/258092).
         return 0;
+    case AutoPosition:
     case SpanPosition:
-        // FIXME: Handle span positions (crbug.com/229713).
+        // 'auto' and span depend on the opposite position for resolution (e.g. grid-row: auto / 1 or grid-column: span 3 / "myHeader").
         ASSERT_NOT_REACHED();
         return 0;
     }

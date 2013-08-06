@@ -88,6 +88,18 @@ PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-end') is gridC
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row') is gridRowValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-start') is gridRowStartValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-end') is gridRowEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column') is gridColumnValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-start') is gridColumnStartValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-end') is gridColumnEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row') is gridRowValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-start') is gridRowStartValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-end') is gridRowEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column') is gridColumnValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-start') is gridColumnStartValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-end') is gridColumnEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row') is gridRowValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-start') is gridRowStartValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-end') is gridRowEndValue
 
 Test the initial value
 PASS getComputedStyle(element, '').getPropertyValue('grid-column') is 'auto / auto'
@@ -98,6 +110,24 @@ PASS getComputedStyle(element, '').getPropertyValue('grid-row-start') is 'auto'
 PASS getComputedStyle(element, '').getPropertyValue('grid-row-end') is 'auto'
 
 Test getting and setting grid-column and grid-row through JS
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column') is gridColumnValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-start') is gridColumnStartValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-end') is gridColumnEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row') is gridRowValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-start') is gridRowStartValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-end') is gridRowEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column') is gridColumnValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-start') is gridColumnStartValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-end') is gridColumnEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row') is gridRowValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-start') is gridRowStartValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-end') is gridRowEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column') is gridColumnValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-start') is gridColumnStartValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-end') is gridColumnEndValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row') is gridRowValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-start') is gridRowStartValue
+PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-end') is gridRowEndValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column') is gridColumnValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-start') is gridColumnStartValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-end') is gridColumnEndValue
@@ -232,12 +262,6 @@ PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-start') is gridRo
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-end') is gridRowEndValue
 
 Test getting and setting invalid grid-column and grid-row through JS
-PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column') is gridColumnValue
-PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-start') is gridColumnStartValue
-PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-end') is gridColumnEndValue
-PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row') is gridRowValue
-PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-start') is gridRowStartValue
-PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-end') is gridRowEndValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column') is gridColumnValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-start') is gridColumnStartValue
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-end') is gridColumnEndValue
