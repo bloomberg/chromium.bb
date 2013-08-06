@@ -203,7 +203,14 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
 // TODO(ajwong): Also test what happens if an app spans multiple sites in its
 // extent.  These origins should also be isolated, but still have origin-based
 // separation as you would expect.
-IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
+//
+// This test is disabled due to being flaky. http://crbug.com/86562
+#if defined(OS_WIN)
+#define MAYBE_CookieIsolation DISABLED_CookieIsolation
+#else
+#define MAYBE_CookieIsolation CookieIsolation
+#endif
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_CookieIsolation) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
