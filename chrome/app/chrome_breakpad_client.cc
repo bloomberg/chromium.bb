@@ -136,7 +136,7 @@ bool ChromeBreakpadClient::ShouldShowRestartDialog(base::string16* title,
     return false;
 
   *title = base::ASCIIToUTF16(dlg_strings[0]);
-  *message = base::ASCIIToUTF16(dlg_strings[0]);
+  *message = base::ASCIIToUTF16(dlg_strings[1]);
   *is_rtl_locale = dlg_strings[2] == env_vars::kRtlLocale;
   return true;
 }
