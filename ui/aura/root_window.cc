@@ -353,7 +353,7 @@ bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
 
 void RootWindow::OnWindowDestroying(Window* window) {
   DispatchMouseExitToHidingWindow(window);
-  OnWindowHidden(window, WINDOW_DESTROYED, NULL);
+  OnWindowHidden(window, WINDOW_DESTROYED);
 
   if (window->IsVisible() &&
       window->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
@@ -389,7 +389,7 @@ void RootWindow::DispatchMouseExitToHidingWindow(Window* window) {
 
 void RootWindow::OnWindowVisibilityChanged(Window* window, bool is_visible) {
   if (!is_visible)
-    OnWindowHidden(window, WINDOW_HIDDEN, NULL);
+    OnWindowHidden(window, WINDOW_HIDDEN);
 
   if (window->ContainsPointInRoot(GetLastMouseLocationInRoot()))
     PostMouseMoveEventAfterWindowChange();
@@ -788,7 +788,7 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
   DCHECK(aura::client::GetCaptureWindow(this) != this);
 
   DispatchMouseExitToHidingWindow(detached);
-  OnWindowHidden(detached, new_root ? WINDOW_MOVING : WINDOW_HIDDEN, new_root);
+  OnWindowHidden(detached, new_root ? WINDOW_MOVING : WINDOW_HIDDEN);
 
   if (detached->IsVisible() &&
       detached->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
@@ -796,9 +796,7 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
   }
 }
 
-void RootWindow::OnWindowHidden(Window* invisible,
-                                WindowHiddenReason reason,
-                                RootWindow* new_root) {
+void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
   // TODO(beng): This should be removed once FocusController is turned on.
   if (client::GetFocusClient(this)) {
     client::GetFocusClient(this)->OnWindowHiddenInRootWindow(

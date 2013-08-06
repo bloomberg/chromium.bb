@@ -338,11 +338,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Called when a window becomes invisible, either by being removed
   // from root window hierarchy, via SetVisible(false) or being destroyed.
-  // |reason| specifies what triggered the hiding. |new_root| is the new root
-  // window, and may be NULL.
-  void OnWindowHidden(Window* invisible,
-                      WindowHiddenReason reason,
-                      RootWindow* new_root);
+  // |reason| specifies what triggered the hiding.
+  void OnWindowHidden(Window* invisible, WindowHiddenReason reason);
 
   // Cleans up the gesture recognizer for all windows in |window| (including
   // |window| itself).
