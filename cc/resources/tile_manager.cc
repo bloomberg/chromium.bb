@@ -235,8 +235,8 @@ void TileManager::DidFinishRunningTasksRequiredForActivation() {
 
 class BinComparator {
  public:
-  bool operator()(const scoped_refptr<Tile> a,
-                  const scoped_refptr<Tile> b) const {
+  bool operator()(const scoped_refptr<Tile>& a,
+                  const scoped_refptr<Tile>& b) const {
     const ManagedTileState& ams = a->managed_state();
     const ManagedTileState& bms = b->managed_state();
 
