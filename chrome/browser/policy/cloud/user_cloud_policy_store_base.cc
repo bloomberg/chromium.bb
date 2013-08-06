@@ -4,7 +4,9 @@
 
 #include "chrome/browser/policy/cloud/user_cloud_policy_store_base.h"
 
+#include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "policy/proto/cloud_policy.pb.h"
 
 namespace policy {
@@ -12,6 +14,7 @@ namespace policy {
 // Decodes a CloudPolicySettings object into a policy map. The implementation is
 // generated code in policy/cloud_policy_generated.cc.
 void DecodePolicy(const enterprise_management::CloudPolicySettings& policy,
+                  base::WeakPtr<CloudExternalDataManager> external_data_manager,
                   PolicyMap* policies);
 
 UserCloudPolicyStoreBase::UserCloudPolicyStoreBase() {
@@ -39,7 +42,7 @@ void UserCloudPolicyStoreBase::InstallPolicy(
     scoped_ptr<enterprise_management::CloudPolicySettings> payload) {
   // Decode the payload.
   policy_map_.Clear();
-  DecodePolicy(*payload, &policy_map_);
+  DecodePolicy(*payload, external_data_manager(), &policy_map_);
   policy_ = policy_data.Pass();
 }
 

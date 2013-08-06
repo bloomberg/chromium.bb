@@ -44,7 +44,7 @@ class ExternalDataFetcher {
 
  private:
   base::WeakPtr<ExternalDataManager> manager_;
-  std::string policy_;
+  const std::string policy_;
 };
 
 }  // namespace policy

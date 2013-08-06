@@ -7,12 +7,15 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 
 namespace policy {
+
+class CloudExternalDataManager;
 
 // Defines the low-level interface used by the cloud policy code to:
 //   1. Validate policy blobs that should be applied locally
@@ -56,6 +59,10 @@ class CloudPolicyStore {
   // Indicates whether the store has been fully initialized. This is
   // accomplished by calling Load() after startup.
   bool is_initialized() const { return is_initialized_; }
+
+  base::WeakPtr<CloudExternalDataManager> external_data_manager() const {
+    return external_data_manager_;
+  }
 
   const PolicyMap& policy_map() const { return policy_map_; }
   bool has_policy() const {
@@ -111,10 +118,19 @@ class CloudPolicyStore {
     return invalidation_version_;
   }
 
+  // Indicate that external data referenced by policies in this store is managed
+  // by |external_data_manager|. The |external_data_manager| will be notified
+  // about policy changes before any other observers.
+  void SetExternalDataManager(
+      base::WeakPtr<CloudExternalDataManager> external_data_manager);
+
  protected:
   // Invokes the corresponding callback on all registered observers.
   void NotifyStoreLoaded();
   void NotifyStoreError();
+
+  // Manages external data referenced by policies.
+  base::WeakPtr<CloudExternalDataManager> external_data_manager_;
 
   // Decoded version of the currently effective policy.
   PolicyMap policy_map_;

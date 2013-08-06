@@ -30,6 +30,8 @@
 #   'list' - a list of string values
 #   'dict' - a dictionary value, containing other values indexed by strings
 #     NOTE: This type is not supported yet. http://crbug.com/108992
+#   'external' - a policy that references external data.
+#     NOTE: This type is not supported yet. http://crbug.com/256635
 #
 # Policy group descriptions, policy captions and similar texts are localized
 # strings taken from the <message> nodes of the .grd file. Their name
@@ -99,6 +101,9 @@
 #   'can_be_recommended' can be set to True to include that policy in the
 #   recommended policies templates. This only affects the template generation;
 #   all policies can be at the recommended level. The default is False.
+#   'max_size' specifies the maximal size of the external data that a policy can
+#   reference, in bytes. This annotation is compulsory for policies of type
+#   'external'. It is ignored for all other policy types.
 #
 #   The 'future' key is used to indicate that a policy isn't yet ready for
 #   usage. It defaults to False, and currently affects the generated policy

@@ -18,6 +18,14 @@ namespace policy {
 // references.
 class ExternalDataManager {
  public:
+  // Retrieves the external data referenced by |policy| and invokes |callback|
+  // with the result. If |policy| does not reference any external data, the
+  // |callback| is invoked with a NULL pointer. Otherwise, the |callback| is
+  // invoked with the referenced data once it has been successfully retrieved.
+  // If retrieval is temporarily impossible (e.g. no network connectivity), the
+  // |callback| will be invoked when the temporary hindrance is resolved. If
+  // retrieval is permanently impossible (e.g. |policy| references data that
+  // does not exist on the server), the |callback| will never be invoked.
   virtual void Fetch(const std::string& policy,
                      const ExternalDataFetcher::FetchCallback& callback) = 0;
 };

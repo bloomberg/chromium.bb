@@ -28,6 +28,7 @@ TYPE_TO_SCHEMA = {
   'string': 'string',
   'int-enum': 'integer',
   'string-enum': 'string',
+  'external': 'object',
 }
 
 # List of boolean policies that have been introduced with negative polarity in
@@ -173,7 +174,7 @@ class PolicyTemplateChecker(object):
       if key not in ('name', 'type', 'caption', 'desc', 'device_only',
                      'supported_on', 'label', 'policies', 'items',
                      'example_value', 'features', 'deprecated', 'future',
-                     'id', 'schema'):
+                     'id', 'schema', 'max_size'):
         self.warning_count += 1
         print ('In policy %s: Warning: Unknown key: %s' %
                (policy.get('name'), key))
@@ -182,12 +183,12 @@ class PolicyTemplateChecker(object):
     self._CheckContains(policy, 'name', str, regexp_check=NO_WHITESPACE)
 
     # Each policy must have a type.
+    policy_types = ('group', 'main', 'string', 'int', 'list', 'int-enum',
+                    'string-enum', 'dict', 'external')
     policy_type = self._CheckContains(policy, 'type', str)
-    if policy_type not in ('group', 'main', 'string', 'int', 'list', 'int-enum',
-                           'string-enum', 'dict'):
-      self._Error('Policy type must be either of: group, main, string, int, '
-                  'list, int-enum, string-enum, dict',
-                  'policy', policy, policy_type)
+    if policy_type not in policy_types:
+      self._Error('Policy type must be one of: ' + ', '.join(policy_types),
+                  'policy', policy.get('name'), policy_type)
       return  # Can't continue for unsupported type.
 
     # Each policy must have a caption message.
@@ -206,7 +207,6 @@ class PolicyTemplateChecker(object):
     self._CheckContains(policy, 'future', bool, True)
 
     if policy_type == 'group':
-
       # Groups must not be nested.
       if is_in_group:
         self._Error('Policy groups must not be nested.', 'policy', policy)
@@ -226,8 +226,8 @@ class PolicyTemplateChecker(object):
 
       # Statistics.
       self.num_groups += 1
-    else:  # policy_type != group
 
+    else:  # policy_type != group
       # Each policy must have a protobuf ID.
       id = self._CheckContains(policy, 'id', int)
       self._AddPolicyID(id, policy_ids, policy)
@@ -278,7 +278,7 @@ class PolicyTemplateChecker(object):
         value_type = int
       elif policy_type == 'list':
         value_type = list
-      elif policy_type == 'dict':
+      elif policy_type in ('dict', 'external'):
         value_type = dict
       else:
         raise NotImplementedError('Unimplemented policy type: %s' % policy_type)
@@ -290,7 +290,6 @@ class PolicyTemplateChecker(object):
         self.num_policies_in_groups += 1
 
     if policy_type in ('int-enum', 'string-enum'):
-
       # Enums must contain a list of items.
       items = self._CheckContains(policy, 'items', list)
       if items is not None:
@@ -312,6 +311,10 @@ class PolicyTemplateChecker(object):
           # Each item must have a caption.
           self._CheckContains(item, 'caption', str, container_name='item',
                               identifier=policy.get('name'))
+
+    if policy_type == 'external':
+      # Each policy referencing external data must specify a maximum data size.
+      self._CheckContains(policy, 'max_size', int)
 
   def _CheckMessage(self, key, value):
     # |key| must be a string, |value| a dict.

@@ -5,6 +5,8 @@
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 
 #include "base/hash.h"
+#include "base/logging.h"
+#include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 
 namespace policy {
 
@@ -45,12 +47,26 @@ void CloudPolicyStore::NotifyStoreLoaded() {
   hash_value_ = new_hash_value;
 
   is_initialized_ = true;
+  // The |external_data_manager_| must be notified first so that when other
+  // observers are informed about the changed policies and try to fetch external
+  // data referenced by these, the |external_data_manager_| has the required
+  // metadata already.
+  if (external_data_manager_)
+    external_data_manager_->OnPolicyStoreLoaded();
   FOR_EACH_OBSERVER(Observer, observers_, OnStoreLoaded(this));
 }
 
 void CloudPolicyStore::NotifyStoreError() {
   is_initialized_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnStoreError(this));
+}
+
+void CloudPolicyStore::SetExternalDataManager(
+    base::WeakPtr<CloudExternalDataManager> external_data_manager) {
+  DCHECK(!external_data_manager_);
+  external_data_manager_ = external_data_manager;
+  if (is_initialized_)
+    external_data_manager_->OnPolicyStoreLoaded();
 }
 
 }  // namespace policy
