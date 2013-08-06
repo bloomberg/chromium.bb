@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/win/windows_version.h"
 
 namespace ui {
@@ -90,14 +91,20 @@ class TSFInputScope : public ITfInputScope {
   DISALLOW_COPY_AND_ASSIGN(TSFInputScope);
 };
 
-typedef HRESULT (WINAPI *SetInputScopeFunc)(HWND window_handle,
-                                            InputScope input_scope);
+typedef HRESULT (WINAPI *SetInputScopesFunc)(HWND window_handle,
+                                             const InputScope* input_scope_list,
+                                             UINT num_input_scopes,
+                                             WCHAR**, /* unused */
+                                             UINT, /* unused */
+                                             WCHAR*, /* unused */
+                                             WCHAR* /* unused */);
 
-SetInputScopeFunc g_set_input_scope = NULL;
+SetInputScopesFunc g_set_input_scopes = NULL;
 bool g_get_proc_done = false;
 
-SetInputScopeFunc GetSetInputScope() {
-  // Thread safety is not required.
+SetInputScopesFunc GetSetInputScopes() {
+  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  // Thread safety is not required because this function is under UI thread.
   if (!g_get_proc_done) {
     g_get_proc_done = true;
 
@@ -110,13 +117,13 @@ SetInputScopeFunc GetSetInputScope() {
         &module)) {
       return NULL;
     }
-    g_set_input_scope = reinterpret_cast<SetInputScopeFunc>(
-        GetProcAddress(module, "SetInputScope"));
+    g_set_input_scopes = reinterpret_cast<SetInputScopesFunc>(
+        GetProcAddress(module, "SetInputScopes"));
   }
-  return g_set_input_scope;
+  return g_set_input_scopes;
 }
 
-InputScope GetInputScopeType(TextInputType text_input_type) {
+InputScope ConvertTextInputTypeToInputScope(TextInputType text_input_type) {
   // Following mapping is based in IE10 on Windows 8.
   switch (text_input_type) {
     case TEXT_INPUT_TYPE_PASSWORD:
@@ -136,19 +143,56 @@ InputScope GetInputScopeType(TextInputType text_input_type) {
   }
 }
 
+InputScope ConvertTextInputModeToInputScope(TextInputMode text_input_mode) {
+  switch (text_input_mode) {
+    case TEXT_INPUT_MODE_VERBATIM:
+    case TEXT_INPUT_MODE_LATIN:
+    case TEXT_INPUT_MODE_LATIN_NAME:
+    case TEXT_INPUT_MODE_LATIN_PROSE:
+      return IS_ALPHANUMERIC_HALFWIDTH;
+    case TEXT_INPUT_MODE_FULL_WIDTH_LATIN:
+      return IS_ALPHANUMERIC_FULLWIDTH;
+    case TEXT_INPUT_MODE_KANA:
+      return IS_HIRAGANA;
+    case TEXT_INPUT_MODE_KATAKANA:
+      return IS_KATAKANA_FULLWIDTH;
+    case TEXT_INPUT_MODE_NUMERIC:
+      return IS_NUMBER;
+    case TEXT_INPUT_MODE_TEL:
+      return IS_TELEPHONE_FULLTELEPHONENUMBER;
+    case TEXT_INPUT_MODE_EMAIL:
+      return IS_EMAIL_SMTPEMAILADDRESS;
+    case TEXT_INPUT_MODE_URL:
+      return IS_URL;
+    default:
+      return IS_DEFAULT;
+  }
+}
+
 }  // namespace
 
 ITfInputScope* CreateInputScope(TextInputType text_input_type) {
   std::vector<InputScope> input_scopes(1);
-  input_scopes.push_back(GetInputScopeType(text_input_type));
+  input_scopes.push_back(ConvertTextInputTypeToInputScope(text_input_type));
   return new TSFInputScope(input_scopes);
 }
 
-void SetInputScopeForTsfUnawareWindow(HWND window_handle,
-                                      TextInputType text_input_type) {
-  SetInputScopeFunc set_input_scope = GetSetInputScope();
-  if (set_input_scope)
-    set_input_scope(window_handle, GetInputScopeType(text_input_type));
+void SetInputScopeForTsfUnawareWindow(
+    HWND window_handle,
+    TextInputType text_input_type,
+    TextInputMode text_input_mode) {
+  SetInputScopesFunc set_input_scopes = GetSetInputScopes();
+  if (!set_input_scopes)
+    return;
+
+  InputScope input_scopes[] = {
+      ConvertTextInputTypeToInputScope(text_input_type),
+      ConvertTextInputModeToInputScope(text_input_mode),
+  };
+
+  set_input_scopes(window_handle, input_scopes,
+                   (input_scopes[0] == input_scopes[1] ? 1 : 2), NULL, 0, NULL,
+                   NULL);
 }
 
 }  // namespace tsf_inputscope

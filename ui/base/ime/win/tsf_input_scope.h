@@ -8,6 +8,7 @@
 #include <Windows.h>
 
 #include "base/basictypes.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_export.h"
 
@@ -23,13 +24,14 @@ namespace tsf_inputscope {
 // reference count.
 UI_EXPORT ITfInputScope* CreateInputScope(TextInputType text_input_type);
 
-// A wrapper of the SetInputScope API exported by msctf.dll.
-// http://msdn.microsoft.com/en-us/library/windows/desktop/ms629025.aspx
+// A wrapper of the SetInputScopes API exported by msctf.dll.
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms629026.aspx
 // Does nothing on Windows XP in case TSF is disabled.
 // NOTE: For TSF-aware window, you should use ITfInputScope instead.
 UI_EXPORT void SetInputScopeForTsfUnawareWindow(
     HWND window_handle,
-    TextInputType text_input_type);
+    TextInputType text_input_type,
+    TextInputMode text_input_mode);
 
 }  // namespace tsf_inputscope
 }  // namespace ui

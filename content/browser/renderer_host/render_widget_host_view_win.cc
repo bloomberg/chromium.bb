@@ -3164,8 +3164,8 @@ void RenderWidgetHostViewWin::UpdateInputScopeIfNecessary(
   if (base::win::IsTSFAwareRequired())
     return;
 
-  ui::tsf_inputscope::SetInputScopeForTsfUnawareWindow(m_hWnd,
-                                                       text_input_type);
+  ui::tsf_inputscope::SetInputScopeForTsfUnawareWindow(
+      m_hWnd, text_input_type, ui::TEXT_INPUT_MODE_DEFAULT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
