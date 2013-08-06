@@ -34,7 +34,8 @@
       'filepath': 'android_webview/',
     },
     'app_container': {
-      'filepath': '.*app_window.*'
+      'filepath': '.*app_window.*' \
+                  '|.*app_current_window.*'
     },
     'app_list': {
       'filepath': 'chrome/browser/ui/app_list'\
