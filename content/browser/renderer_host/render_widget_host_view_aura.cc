@@ -1240,8 +1240,6 @@ bool RenderWidgetHostViewAura::CanCopyToBitmap() const {
 }
 
 bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
-  // TODO(skaslev): Implement this path for s/w compositing by handling software
-  // CopyOutputResult in CopyFromCompositingSurfaceHasResultForVideo().
   return GetCompositor() &&
          window_->layer()->has_external_content() &&
          host_->is_accelerated_compositing_active();
@@ -1385,8 +1383,7 @@ void RenderWidgetHostViewAura::DidReceiveFrameFromRenderer() {
     if (frame_subscriber()->ShouldCaptureFrame(present_time,
                                                &frame, &callback)) {
       CopyFromCompositingSurfaceToVideoFrame(
-          gfx::Rect(ConvertSizeToDIP(current_surface_->device_scale_factor(),
-                                     current_surface_->size())),
+          gfx::Rect(current_frame_size_),
           frame,
           base::Bind(callback, present_time));
     }
@@ -1886,8 +1883,35 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
 
   // We only handle texture readbacks for now. If the compositor is in software
   // mode, we could produce a software-backed VideoFrame here as well.
-  if (!result->HasTexture())
+  if (!result->HasTexture()) {
+    DCHECK(result->HasBitmap());
+    scoped_ptr<SkBitmap> bitmap = result->TakeBitmap();
+    // Scale the bitmap to the required size, if necessary.
+    SkBitmap scaled_bitmap;
+    if (result->size().width() != region_in_frame.width() ||
+        result->size().height() != region_in_frame.height()) {
+      skia::ImageOperations::ResizeMethod method =
+          skia::ImageOperations::RESIZE_GOOD;
+      scaled_bitmap = skia::ImageOperations::Resize(*bitmap.get(), method,
+                                                    region_in_frame.width(),
+                                                    region_in_frame.height());
+    } else {
+      scaled_bitmap = *bitmap.get();
+    }
+
+    {
+      SkAutoLockPixels scaled_bitmap_locker(scaled_bitmap);
+
+      media::CopyRGBToVideoFrame(
+          reinterpret_cast<uint8*>(scaled_bitmap.getPixels()),
+          scaled_bitmap.rowBytes(),
+          region_in_frame,
+          video_frame.get());
+    }
+    scoped_callback_runner.Release();
+    callback.Run(true);
     return;
+  }
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   GLHelper* gl_helper = factory->GetGLHelper();
