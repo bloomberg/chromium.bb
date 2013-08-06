@@ -38,7 +38,6 @@
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
@@ -53,12 +52,6 @@ public:
     static PassRefPtr<CustomElementRegistrationContext> create();
 
     ~CustomElementRegistrationContext() { }
-
-    // Model
-    // FIXME: Move this to CustomElementRegistry
-    static bool isValidTypeName(const AtomicString& type);
-    // FIXME: Move this to CustomElement
-    static bool isCustomTagName(const AtomicString& localName);
 
     // Definitions
     void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, ExceptionState&);

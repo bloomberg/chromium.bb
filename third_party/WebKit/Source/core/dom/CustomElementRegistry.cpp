@@ -35,6 +35,7 @@
 #include "SVGNames.h"
 #include "bindings/v8/CustomElementConstructorBuilder.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/CustomElement.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/DocumentLifecycleObserver.h"
@@ -72,7 +73,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
     }
 
     AtomicString type = userSuppliedName.lower();
-    if (!CustomElementRegistrationContext::isValidTypeName(type)) {
+    if (!CustomElement::isValidTypeName(type)) {
         es.throwDOMException(InvalidCharacterError);
         return 0;
     }

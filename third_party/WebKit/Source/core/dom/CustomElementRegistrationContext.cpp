@@ -32,7 +32,6 @@
 #include "core/dom/CustomElementRegistrationContext.h"
 
 #include "HTMLNames.h"
-#include "MathMLNames.h"
 #include "SVGNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/CustomElement.h"
@@ -60,7 +59,7 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
 
 PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document* document, const QualifiedName& tagName)
 {
-    ASSERT(isCustomTagName(tagName.localName()));
+    ASSERT(CustomElement::isCustomTagName(tagName.localName()));
 
     if (!document)
         return 0;
@@ -89,7 +88,7 @@ void CustomElementRegistrationContext::resolve(Element* element, const AtomicStr
 {
     // If an element has a custom tag name it takes precedence over
     // the "is" attribute (if any).
-    const AtomicString& type = isCustomTagName(element->localName())
+    const AtomicString& type = CustomElement::isCustomTagName(element->localName())
         ? element->localName()
         : typeExtension;
     ASSERT(!type.isNull());
@@ -122,34 +121,6 @@ PassRefPtr<CustomElementRegistrationContext> CustomElementRegistrationContext::c
     return adoptRef(new CustomElementRegistrationContext());
 }
 
-bool CustomElementRegistrationContext::isValidTypeName(const AtomicString& name)
-{
-    if (notFound == name.find('-'))
-        return false;
-
-    DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
-    if (reservedNames.isEmpty()) {
-        reservedNames.append(MathMLNames::annotation_xmlTag.localName());
-        reservedNames.append(SVGNames::color_profileTag.localName());
-        reservedNames.append(SVGNames::font_faceTag.localName());
-        reservedNames.append(SVGNames::font_face_srcTag.localName());
-        reservedNames.append(SVGNames::font_face_uriTag.localName());
-        reservedNames.append(SVGNames::font_face_formatTag.localName());
-        reservedNames.append(SVGNames::font_face_nameTag.localName());
-        reservedNames.append(SVGNames::missing_glyphTag.localName());
-    }
-
-    if (notFound != reservedNames.find(name))
-        return false;
-
-    return Document::isValidName(name.string());
-}
-
-bool CustomElementRegistrationContext::isCustomTagName(const AtomicString& localName)
-{
-    return isValidTypeName(localName);
-}
-
 void CustomElementRegistrationContext::setIsAttributeAndTypeExtension(Element* element, const AtomicString& type)
 {
     ASSERT(element);
@@ -163,7 +134,7 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
     if (!element->isHTMLElement() && !element->isSVGElement())
         return;
 
-    if (isCustomTagName(element->localName()))
+    if (CustomElement::isCustomTagName(element->localName()))
         return; // custom tags take precedence over type extensions
 
     if (CustomElementRegistrationContext* context = element->document()->registrationContext())

@@ -54,6 +54,7 @@
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/CustomElement.h"
 #include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DOMNamedFlowCollection.h"
@@ -713,7 +714,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
 
     RefPtr<Element> element;
 
-    if (CustomElementRegistrationContext::isCustomTagName(localName) && registrationContext())
+    if (CustomElement::isCustomTagName(localName) && registrationContext())
         element = registrationContext()->createCustomTagElement(this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
     else
         element = createElement(localName, es);
@@ -737,7 +738,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     }
 
     RefPtr<Element> element;
-    if (CustomElementRegistrationContext::isCustomTagName(qName.localName()) && registrationContext())
+    if (CustomElement::isCustomTagName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(this, qName);
     else
         element = createElementNS(namespaceURI, qualifiedName, es);

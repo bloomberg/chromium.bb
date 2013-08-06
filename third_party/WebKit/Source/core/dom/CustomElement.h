@@ -36,6 +36,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
@@ -45,6 +46,14 @@ class Element;
 
 class CustomElement {
 public:
+    // FIXME: CustomElementRegistry requires isValidTypeName to be a
+    // superset of isCustomTagName; consider either merging these or
+    // separating them completely into
+    // isCustomTagName/isTypeExtensionName.
+    static bool isValidTypeName(const AtomicString& type);
+    static bool isCustomTagName(const AtomicString& localName);
+    static void allowTagName(const AtomicString& localName);
+
     // API for registration contexts
     static void define(Element*, PassRefPtr<CustomElementDefinition>);
 
@@ -60,6 +69,8 @@ public:
 
 private:
     CustomElement();
+
+    static Vector<AtomicString>& additionalCustomTagNames();
 
     // Maps resolved elements to their definitions
 

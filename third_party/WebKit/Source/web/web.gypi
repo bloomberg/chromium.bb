@@ -121,6 +121,7 @@
       'WebCachedURLRequest.cpp',
       'WebColorName.cpp',
       'WebCrossOriginPreflightResultCache.cpp',
+      'WebCustomElement.cpp',
       'WebDOMActivityLogger.cpp',
       'WebDOMCustomEvent.cpp',
       'WebDOMEvent.cpp',

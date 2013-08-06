@@ -138,6 +138,8 @@ public:
     WEBKIT_EXPORT static void enableHTMLImports(bool);
     WEBKIT_EXPORT static bool isHTMLImportsEnabled();
 
+    WEBKIT_EXPORT static void enableCustomElements(bool);
+
 private:
     WebRuntimeFeatures();
 };

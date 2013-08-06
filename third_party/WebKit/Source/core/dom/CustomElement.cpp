@@ -31,11 +31,59 @@
 #include "config.h"
 #include "core/dom/CustomElement.h"
 
+#include "HTMLNames.h"
+#include "MathMLNames.h"
+#include "SVGNames.h"
 #include "core/dom/CustomElementCallbackScheduler.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/Element.h"
 
 namespace WebCore {
+
+Vector<AtomicString>& CustomElement::additionalCustomTagNames()
+{
+    DEFINE_STATIC_LOCAL(Vector<AtomicString>, tagNames, ());
+    return tagNames;
+}
+
+void CustomElement::allowTagName(const AtomicString& localName)
+{
+    AtomicString lower = localName.lower();
+    if (isCustomTagName(lower))
+        return;
+    additionalCustomTagNames().append(lower);
+}
+
+bool CustomElement::isValidTypeName(const AtomicString& name)
+{
+    if (notFound != additionalCustomTagNames().find(name))
+        return true;
+
+    if (notFound == name.find('-'))
+        return false;
+
+    DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
+    if (reservedNames.isEmpty()) {
+        reservedNames.append(MathMLNames::annotation_xmlTag.localName());
+        reservedNames.append(SVGNames::color_profileTag.localName());
+        reservedNames.append(SVGNames::font_faceTag.localName());
+        reservedNames.append(SVGNames::font_face_srcTag.localName());
+        reservedNames.append(SVGNames::font_face_uriTag.localName());
+        reservedNames.append(SVGNames::font_face_formatTag.localName());
+        reservedNames.append(SVGNames::font_face_nameTag.localName());
+        reservedNames.append(SVGNames::missing_glyphTag.localName());
+    }
+
+    if (notFound != reservedNames.find(name))
+        return false;
+
+    return Document::isValidName(name.string());
+}
+
+bool CustomElement::isCustomTagName(const AtomicString& localName)
+{
+    return isValidTypeName(localName);
+}
 
 void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition> passDefinition)
 {
