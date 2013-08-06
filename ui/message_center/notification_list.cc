@@ -348,6 +348,10 @@ void NotificationList::PushNotification(scoped_ptr<Notification> notification) {
     notification->CopyState(*iter);
     state_inherited = true;
     EraseNotification(iter);
+    // if |iter| is unread, EraseNotification decrements |unread_count_| but
+    // actually the count is unchanged since |notification| will be added.
+    if (!notification->is_read())
+      ++unread_count_;
   }
   // Add the notification to the the list and mark it unread and unshown.
   if (!state_inherited) {
