@@ -828,6 +828,7 @@ src/jsoncpp/README.chromium
 src/Makefile
 src/nacl_io/event_emitter.cc
 src/nacl_io/event_listener.cc
+src/nacl_io/inet_ntoa.cc
 src/nacl_io/kernel_handle.cc
 src/nacl_io/kernel_intercept.cc
 src/nacl_io/kernel_object.cc

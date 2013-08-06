@@ -5,7 +5,7 @@
 #ifndef LIBRARIES_NACL_IO_OSSOCKET_H_
 #define LIBRARIES_NACL_IO_OSSOCKET_H_
 
-#if defined(__native_client__) && defined(__GLIBC__)
+#if defined(__native_client__)
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>

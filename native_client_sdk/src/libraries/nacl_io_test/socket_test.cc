@@ -259,4 +259,111 @@ TEST_F(SocketTest, Socketpair) {
   EXPECT_EQ(errno, EPROTONOSUPPORT);
 }
 
+// These functions don't go through KernelProxy, so they don't require a test
+// fixture
+
+static struct in_addr generate_ipv4_addr(int tuple1, int tuple2,
+                                         int tuple3, int tuple4) {
+  unsigned char addr[4];
+  addr[0] = static_cast<unsigned char>(tuple1);
+  addr[1] = static_cast<unsigned char>(tuple2);
+  addr[2] = static_cast<unsigned char>(tuple3);
+  addr[3] = static_cast<unsigned char>(tuple4);
+  struct in_addr* real_addr = reinterpret_cast<struct in_addr*>(addr);
+  return *real_addr;
+}
+
+static struct in6_addr generate_ipv6_addr(int* tuples) {
+  unsigned char addr[16];
+  for (int i = 0; i < 8; i++) {
+    addr[2*i] = (tuples[i] >> 8) & 0xFF;
+    addr[2*i+1] = tuples[i] & 0xFF;
+  }
+  struct in6_addr* real_addr = reinterpret_cast<struct in6_addr*>(addr);
+  return *real_addr;
+}
+
+TEST(SocketUtilityFunctions, Inet_ntoa) {
+  char* stringified_addr = inet_ntoa(generate_ipv4_addr(0,0,0,0));
+  ASSERT_TRUE(NULL != stringified_addr);
+  EXPECT_STREQ("0.0.0.0", stringified_addr);
+
+  stringified_addr = inet_ntoa(generate_ipv4_addr(127,0,0,1));
+  ASSERT_TRUE(NULL != stringified_addr);
+  EXPECT_STREQ("127.0.0.1", stringified_addr);
+
+  stringified_addr = inet_ntoa(generate_ipv4_addr(255,255,255,255));
+  ASSERT_TRUE(NULL != stringified_addr);
+  EXPECT_STREQ("255.255.255.255", stringified_addr);
+}
+
+TEST(SocketUtilityFunctions, Inet_ntop_ipv4) {
+  char stringified_addr[INET_ADDRSTRLEN];
+
+  struct in_addr real_addr = generate_ipv4_addr(0,0,0,0);
+  EXPECT_TRUE(NULL != inet_ntop(AF_INET, &real_addr,
+                                stringified_addr, INET_ADDRSTRLEN));
+  EXPECT_STREQ("0.0.0.0", stringified_addr);
+
+  real_addr = generate_ipv4_addr(127,0,0,1);
+  EXPECT_TRUE(NULL != inet_ntop(AF_INET, &real_addr,
+                                stringified_addr, INET_ADDRSTRLEN));
+  EXPECT_STREQ("127.0.0.1", stringified_addr);
+
+  real_addr = generate_ipv4_addr(255,255,255,255);
+  EXPECT_TRUE(NULL != inet_ntop(AF_INET, &real_addr,
+                                stringified_addr, INET_ADDRSTRLEN));
+  EXPECT_STREQ("255.255.255.255", stringified_addr);
+}
+
+TEST(SocketUtilityFunctions, Inet_ntop_ipv6) {
+  char stringified_addr[INET6_ADDRSTRLEN];
+
+  {
+    int addr_tuples[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+    struct in6_addr real_addr = generate_ipv6_addr(addr_tuples);
+    EXPECT_TRUE(NULL != inet_ntop(AF_INET6, &real_addr,
+                                  stringified_addr, INET6_ADDRSTRLEN));
+    EXPECT_STREQ("0:0:0:0:0:0:0:0", stringified_addr);
+  }
+
+  {
+    int addr_tuples[8] = { 0x1234, 0xa, 0x12, 0x0000,
+                                0x5678, 0x9abc, 0xdef, 0xffff };
+    struct in6_addr real_addr = generate_ipv6_addr(addr_tuples);
+    EXPECT_TRUE(NULL != inet_ntop(AF_INET6, &real_addr,
+                                  stringified_addr, INET6_ADDRSTRLEN));
+    EXPECT_STREQ("1234:a:12:0:5678:9abc:def:ffff", stringified_addr);
+  }
+
+  {
+    int addr_tuples[8] = { 0xffff, 0xffff, 0xffff, 0xffff,
+                                0xffff, 0xffff, 0xffff, 0xffff };
+    struct in6_addr real_addr = generate_ipv6_addr(addr_tuples);
+    EXPECT_TRUE(NULL != inet_ntop(AF_INET6, &real_addr,
+                                  stringified_addr, INET6_ADDRSTRLEN));
+    EXPECT_STREQ("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", stringified_addr);
+  }
+}
+
+TEST(SocketUtilityFunctions, Inet_ntop_failure) {
+  char addr_name[INET6_ADDRSTRLEN];
+  int addr_tuples[8] = { 0xffff, 0xffff, 0xffff, 0xffff,
+                              0xffff, 0xffff, 0xffff, 0xffff };
+  struct in6_addr ipv6_addr = generate_ipv6_addr(addr_tuples);
+  struct in_addr ipv4_addr = generate_ipv4_addr(255,255,255,255);
+
+  EXPECT_TRUE(NULL == inet_ntop(AF_UNIX, &ipv6_addr,
+                                addr_name, INET6_ADDRSTRLEN));
+  EXPECT_EQ(errno, EAFNOSUPPORT);
+
+  EXPECT_TRUE(NULL == inet_ntop(AF_INET, &ipv4_addr,
+                                addr_name, INET_ADDRSTRLEN - 1));
+  EXPECT_EQ(errno, ENOSPC);
+
+  EXPECT_TRUE(NULL == inet_ntop(AF_INET6, &ipv6_addr,
+                                addr_name, INET6_ADDRSTRLEN - 1));
+  EXPECT_EQ(errno, ENOSPC);
+}
+
 #endif // PROVIDES_SOCKETPAIR_API

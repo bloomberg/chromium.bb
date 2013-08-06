@@ -12,6 +12,7 @@
       'SOURCES' : [
         "event_emitter.cc",
         "event_listener.cc",
+        "inet_ntoa.cc",
         "kernel_handle.cc",
         "kernel_intercept.cc",
         "kernel_object.cc",
