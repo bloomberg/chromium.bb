@@ -120,6 +120,11 @@ weston_data_source_send_offer(struct weston_data_source *source,
 	offer->resource =
 		wl_resource_create(wl_resource_get_client(target),
 				   &wl_data_offer_interface, 1, 0);
+	if (offer->resource == NULL) {
+		free(offer);
+		return NULL;
+	}
+
 	wl_resource_set_implementation(offer->resource, &data_offer_interface,
 				       offer, destroy_data_offer);
 
