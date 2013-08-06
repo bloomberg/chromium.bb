@@ -8,6 +8,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "chrome/browser/ui/views/message_center/message_center_widget_delegate.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/rect.h"
 #include "ui/message_center/message_center_tray.h"
@@ -69,6 +71,7 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
 
   // Gets the point where the status icon was clicked.
   gfx::Point mouse_click_point() { return mouse_click_point_; }
+  virtual MessageCenterTray* GetMessageCenterTray() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);

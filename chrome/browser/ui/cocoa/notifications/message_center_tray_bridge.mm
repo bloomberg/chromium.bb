@@ -85,6 +85,11 @@ bool MessageCenterTrayBridge::ShowNotifierSettings() {
   return false;
 }
 
+message_center::MessageCenterTray*
+MessageCenterTrayBridge::GetMessageCenterTray() {
+  return tray_.get();
+}
+
 void MessageCenterTrayBridge::UpdateStatusItem() {
   if (!status_item_view_) {
     status_item_view_.reset([[MCStatusItemView alloc] init]);

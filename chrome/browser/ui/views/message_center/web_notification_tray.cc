@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
@@ -287,6 +288,10 @@ PositionInfo WebNotificationTray::GetPositionInfo() {
         std::abs(mouse_click_point_.y() - corner.y()) + kMouseOffset;
   }
   return pos_info;
+}
+
+MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
+  return message_center_tray_.get();
 }
 
 void WebNotificationTray::CreateStatusIcon(const gfx::ImageSkia& image,

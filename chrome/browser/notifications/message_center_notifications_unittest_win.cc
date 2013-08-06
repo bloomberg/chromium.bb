@@ -41,6 +41,9 @@ class FakeMessageCenterTrayDelegate : public MessageCenterTrayDelegate {
   virtual bool ShowMessageCenter() OVERRIDE { return true; }
   virtual bool ShowNotifierSettings() OVERRIDE { return true; }
   virtual void HideMessageCenter() OVERRIDE {}
+  virtual MessageCenterTray* GetMessageCenterTray() OVERRIDE {
+    return &tray_;
+  }
 
   bool displayed_first_run_balloon() const {
     return displayed_first_run_balloon_;

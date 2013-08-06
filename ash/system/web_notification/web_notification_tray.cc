@@ -538,6 +538,10 @@ bool WebNotificationTray::ShowNotifierSettings() {
   return ShowMessageCenterInternal(true /* show_settings */);
 }
 
+message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
+  return message_center_tray_.get();
+}
+
 bool WebNotificationTray::IsPressed() {
   return IsMessageCenterBubbleVisible();
 }

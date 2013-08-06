@@ -16,6 +16,8 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager_impl.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_tray_delegate.h"
@@ -80,6 +82,12 @@ class MessageCenterNotificationManager
   // Takes ownership of |delegate|.
   void SetMessageCenterTrayDelegateForTest(
       message_center::MessageCenterTrayDelegate* delegate);
+
+ protected:
+  // content::NotificationObserver override.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   class ImageDownloadsObserver {
@@ -213,6 +221,9 @@ class MessageCenterNotificationManager
 #endif
 
   scoped_ptr<MessageCenterSettingsController> settings_controller_;
+
+  // Registrar for the other kind of notifications (event signaling).
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterNotificationManager);
 };

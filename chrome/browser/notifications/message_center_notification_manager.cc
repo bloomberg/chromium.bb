@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -19,6 +20,8 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "ui/message_center/message_center_style.h"
@@ -55,6 +58,9 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
   // views.Other platforms have global ownership and Create will return NULL.
   tray_.reset(message_center::CreateMessageCenterTray());
 #endif
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+                 content::NotificationService::AllSources());
 }
 
 MessageCenterNotificationManager::~MessageCenterNotificationManager() {
@@ -326,6 +332,20 @@ void MessageCenterNotificationManager::OnNotificationUpdated(
 void MessageCenterNotificationManager::SetMessageCenterTrayDelegateForTest(
     message_center::MessageCenterTrayDelegate* delegate) {
   tray_.reset(delegate);
+}
+
+void MessageCenterNotificationManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_FULLSCREEN_CHANGED) {
+    const bool is_fullscreen = *content::Details<bool>(details).ptr();
+
+    if (is_fullscreen && tray_.get() && tray_->GetMessageCenterTray())
+      tray_->GetMessageCenterTray()->HidePopupBubble();
+  } else {
+    NotificationUIManagerImpl::Observe(type, source, details);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
