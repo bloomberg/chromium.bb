@@ -127,6 +127,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual gfx::Image AccountChooserImage() OVERRIDE;
   virtual bool ShouldShowDetailArea() const OVERRIDE;
   virtual bool ShouldShowProgressBar() const OVERRIDE;
+  virtual gfx::Image ButtonStripImage() const OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual DialogOverlayState GetDialogOverlay() const OVERRIDE;

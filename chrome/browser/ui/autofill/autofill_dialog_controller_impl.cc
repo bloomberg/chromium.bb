@@ -1277,6 +1277,15 @@ bool AutofillDialogControllerImpl::ShouldShowProgressBar() const {
   return autocheckout_state_ == AUTOCHECKOUT_IN_PROGRESS;
 }
 
+gfx::Image AutofillDialogControllerImpl::ButtonStripImage() const {
+  if (ShouldShowDetailArea() && IsPayingWithWallet()) {
+    return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_WALLET_LOGO);
+  }
+
+  return gfx::Image();
+}
+
 string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
     const {
   switch (section) {

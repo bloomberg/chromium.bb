@@ -1115,6 +1115,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       overlay_view_(NULL),
       button_strip_extra_view_(NULL),
       save_in_chrome_checkbox_(NULL),
+      button_strip_image_(NULL),
       autocheckout_steps_area_(NULL),
       autocheckout_progress_bar_view_(NULL),
       autocheckout_progress_bar_(NULL),
@@ -1143,7 +1144,7 @@ void AutofillDialogViews::Show() {
   InitChildViews();
   UpdateAccountChooser();
   UpdateNotificationArea();
-  UpdateSaveInChromeCheckbox();
+  UpdateButtonStripExtraView();
 
   // Ownership of |contents_| is handed off by this call. The widget will take
   // care of deleting itself after calling DeleteDelegate().
@@ -1219,9 +1220,7 @@ void AutofillDialogViews::UpdateAutocheckoutStepsArea() {
 void AutofillDialogViews::UpdateButtonStrip() {
   button_strip_extra_view_->SetVisible(
       GetDialogButtons() != ui::DIALOG_BUTTON_NONE);
-  UpdateSaveInChromeCheckbox();
-  autocheckout_progress_bar_view_->SetVisible(
-      controller_->ShouldShowProgressBar());
+  UpdateButtonStripExtraView();
   GetDialogClientView()->UpdateDialogButtons();
 
   overlay_view_->SetState(controller_->GetDialogOverlay(), this);
@@ -1704,6 +1703,9 @@ void AutofillDialogViews::InitChildViews() {
   save_in_chrome_checkbox_->SetChecked(true);
   button_strip_extra_view_->AddChildView(save_in_chrome_checkbox_);
 
+  button_strip_image_ = new views::ImageView();
+  button_strip_extra_view_->AddChildView(button_strip_image_);
+
   autocheckout_progress_bar_view_ = new views::View();
   views::GridLayout* progress_bar_layout =
       new views::GridLayout(autocheckout_progress_bar_view_);
@@ -1720,9 +1722,7 @@ void AutofillDialogViews::InitChildViews() {
 
   autocheckout_progress_bar_ = new AutocheckoutProgressBar();
   progress_bar_layout->AddView(autocheckout_progress_bar_);
-
   button_strip_extra_view_->AddChildView(autocheckout_progress_bar_view_);
-  autocheckout_progress_bar_view_->SetVisible(false);
 
   account_chooser_ = new AccountChooser(controller_);
   notification_area_ = new NotificationArea(controller_);
@@ -1967,9 +1967,7 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
 
   group.manual_input->SetVisible(!show_suggestions);
 
-  // Show or hide the "Save in chrome" checkbox. If nothing is in editing mode,
-  // hide. If the controller tells us not to show it, likewise hide.
-  UpdateSaveInChromeCheckbox();
+  UpdateButtonStripExtraView();
 
   const bool has_menu = !!controller_->MenuModelForSection(group.section);
 
@@ -2190,9 +2188,16 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   decorated->SetIcon(icon);
 }
 
-void AutofillDialogViews::UpdateSaveInChromeCheckbox() {
+void AutofillDialogViews::UpdateButtonStripExtraView() {
   save_in_chrome_checkbox_->SetVisible(
       controller_->ShouldOfferToSaveInChrome());
+
+  gfx::Image image = controller_->ButtonStripImage();
+  button_strip_image_->SetVisible(!image.IsEmpty());
+  button_strip_image_->SetImage(image.AsImageSkia());
+
+  autocheckout_progress_bar_view_->SetVisible(
+      controller_->ShouldShowProgressBar());
 }
 
 void AutofillDialogViews::ContentsPreferredSizeChanged() {

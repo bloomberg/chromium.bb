@@ -74,6 +74,10 @@ class AutofillDialogController {
   // Whether or not the progress bar in the button strip should be showing.
   virtual bool ShouldShowProgressBar() const = 0;
 
+  // Returns the image that should be shown on the left of the button strip
+  // or an empty image if none should be shown.
+  virtual gfx::Image ButtonStripImage() const = 0;
+
   // Which dialog buttons should be visible.
   virtual int GetDialogButtons() const = 0;
 

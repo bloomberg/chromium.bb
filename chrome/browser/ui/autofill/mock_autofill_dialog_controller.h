@@ -29,6 +29,7 @@ class MockAutofillDialogController : public AutofillDialogController {
   MOCK_METHOD0(MenuModelForAccountChooser, ui::MenuModel*());
   MOCK_METHOD0(AccountChooserImage, gfx::Image());
   MOCK_CONST_METHOD0(ShouldShowProgressBar, bool());
+  MOCK_CONST_METHOD0(ButtonStripImage, gfx::Image());
   MOCK_CONST_METHOD0(GetDialogButtons, int());
   MOCK_CONST_METHOD0(ShouldShowDetailArea, bool());
   MOCK_CONST_METHOD1(IsDialogButtonEnabled, bool(ui::DialogButton button));

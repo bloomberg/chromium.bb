@@ -537,8 +537,8 @@ class AutofillDialogViews : public AutofillDialogView,
   // the input.
   void TextfieldEditedOrActivated(views::Textfield* textfield, bool was_edit);
 
-  // Updates the [X] Save in Chrome checkbox in the button strip.
-  void UpdateSaveInChromeCheckbox();
+  // Updates the views in the button strip.
+  void UpdateButtonStripExtraView();
 
   // Call this when the size of anything in |contents_| might've changed.
   void ContentsPreferredSizeChanged();
@@ -595,6 +595,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // This checkbox controls whether new details are saved to the Autofill
   // database. It lives in |extra_view_|.
   views::Checkbox* save_in_chrome_checkbox_;
+
+  // Used to display an image in the button strip extra view.
+  views::ImageView* button_strip_image_;
 
   // View that aren't in the hierarchy but are owned by |this|. Currently
   // just holds the (hidden) country comboboxes.
