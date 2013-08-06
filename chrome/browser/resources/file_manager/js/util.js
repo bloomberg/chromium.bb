@@ -505,11 +505,7 @@ util.deduplicatePath = function(dirEntry, relativePath, onSuccess, onError) {
       // Hit the limit of the number of retrial.
       // Note that we cannot create FileError object directly, so here we use
       // Object.create instead.
-      onError(Object.create(FileError.prototype, {
-        code: {
-          get: function() { return FileError.PATH_EXISTS_ERR; }
-        }
-      }));
+      onError(util.createFileError(FileError.PATH_EXISTS_ERR));
       return;
     }
 
@@ -1166,4 +1162,17 @@ util.EntryChangedType = {
 util.isFakeDirectoryEntry = function(entry) {
   // Currently, fake entry doesn't support createReader.
   return !('createReader' in entry);
+};
+
+/**
+ * Creates a FileError instance with given code.
+ * Note that we cannot create FileError instance by "new FileError(code)",
+ * unfortunately, so here we use Object.create.
+ * @param {number} code Error code for the FileError.
+ * @return {FileError} FileError instance
+ */
+util.createFileError = function(code) {
+  return Object.create(FileError.prototype, {
+    code: { get: function() { return code; } }
+  });
 };

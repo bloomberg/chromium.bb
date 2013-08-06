@@ -483,8 +483,10 @@ FileCopyManager.prototype.resetQueue_ = function() {
  */
 FileCopyManager.prototype.requestCancel = function(opt_callback) {
   this.cancelRequested_ = true;
-  if (this.cancelCallback_)
+  if (this.cancelCallback_) {
     this.cancelCallback_();
+    this.cancelCallback_ = null;
+  }
   if (opt_callback)
     this.cancelObservers_.push(opt_callback);
 
@@ -887,9 +889,17 @@ FileCopyManager.prototype.processCopyEntry_ = function(
           targetRelativePath,
           {create: true, exclusive: true},
           function(targetEntry) {
-            self.copyFileEntry_(
+            self.cancelCallback_ = self.copyFileEntry_(
                 sourceEntry, targetEntry,
-                onCopyProgress, onCopyComplete, onFilesystemError);
+                onCopyProgress,
+                function(entry, size) {
+                  self.cancelCallback_ = null;
+                  onCopyComplete(entry, size);
+                },
+                function(error) {
+                  self.cancelCallback_ = null;
+                  onFilesystemError(error);
+                });
           },
           util.flog('Error getting file: ' + targetRelativePath,
                     onFilesystemError));
@@ -989,6 +999,9 @@ FileCopyManager.prototype.processCopyEntry_ = function(
  * @param {function(FileError)} errorCallback Function that will be called
  *     if an error is encountered. Takes error type and additional error data
  *     as parameters.
+ * @return {function()} Callback to cancel the current file copy operation.
+ *     When the cancel is done, errorCallback will be called. The returned
+ *     callback must not be called more than once.
  * @private
  */
 FileCopyManager.prototype.copyFileEntry_ = function(sourceEntry,
@@ -996,24 +1009,37 @@ FileCopyManager.prototype.copyFileEntry_ = function(sourceEntry,
                                                     progressCallback,
                                                     successCallback,
                                                     errorCallback) {
-  if (this.maybeCancel_())
-    return;
+  // Set to true when cancel is requested.
+  var cancelRequested = false;
 
-  var self = this;
+  sourceEntry.file(function(file) {
+    if (cancelRequested) {
+      errorCallback(util.createFileError(FileError.ABORT_ERR));
+      return;
+    }
 
-  var onSourceFileFound = function(file) {
-    var onWriterCreated = function(writer) {
+    targetEntry.createWriter(function(writer) {
+      if (cancelRequested) {
+        errorCallback(util.createFileError(FileError.ABORT_ERR));
+        return;
+      }
+
       var reportedProgress = 0;
-      writer.onerror = function(progress) {
-        errorCallback(writer.error);
+      writer.onerror = writer.onabort = function(progress) {
+        errorCallback(cancelRequested ?
+            util.createFileError(FileError.ABORT_ERR) :
+            writer.error);
       };
 
       writer.onprogress = function(progress) {
-        if (self.maybeCancel_()) {
+        if (cancelRequested) {
           // If the copy was cancelled, we should abort the operation.
+          // The errorCallback will be called by writer.onabort after the
+          // termination.
           writer.abort();
           return;
         }
+
         // |progress.loaded| will contain total amount of data copied by now.
         // |progressCallback| expects data amount delta from the last progress
         // update.
@@ -1022,20 +1048,31 @@ FileCopyManager.prototype.copyFileEntry_ = function(sourceEntry,
       };
 
       writer.onwrite = function() {
+        if (cancelRequested) {
+          errorCallback(util.createFileError(FileError.ABORT_ERR));
+          return;
+        }
+
         sourceEntry.getMetadata(function(metadata) {
-          chrome.fileBrowserPrivate.setLastModified(targetEntry.toURL(),
+          if (cancelRequested) {
+            errorCallback(util.createFileError(FileError.ABORT_ERR));
+            return;
+          }
+
+          chrome.fileBrowserPrivate.setLastModified(
+              targetEntry.toURL(),
               '' + Math.round(metadata.modificationTime.getTime() / 1000));
           successCallback(targetEntry, file.size - reportedProgress);
         });
       };
 
       writer.write(file);
-    };
+    }, errorCallback);
+  }, errorCallback);
 
-    targetEntry.createWriter(onWriterCreated, errorCallback);
+  return function() {
+    cancelRequested = true;
   };
-
-  sourceEntry.file(onSourceFileFound, errorCallback);
 };
 
 /**
@@ -1194,11 +1231,7 @@ FileCopyManager.prototype.serviceZipTask_ = function(
             onFilesystemError);
       } else {
         onFilesystemError(
-            Object.create(FileError.prototype, {
-              code: {
-                get: function() { return FileError.INVALID_MODIFICATION_ERR; }
-              }
-            }));
+            util.createFileError(FileError.INVALID_MODIFICATION_ERR));
       }
     };
 
