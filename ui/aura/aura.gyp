@@ -101,8 +101,6 @@
         'window.cc',
         'window.h',
         'window_delegate.h',
-        'window_destruction_observer.cc',
-        'window_destruction_observer.h',
         'window_observer.h',
         'window_tracker.cc',
         'window_tracker.h',

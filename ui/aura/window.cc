@@ -23,8 +23,8 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_destruction_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -1027,13 +1027,14 @@ void Window::NotifyWindowVisibilityChanged(aura::Window* target,
 
 bool Window::NotifyWindowVisibilityChangedAtReceiver(aura::Window* target,
                                                      bool visible) {
-  // |this| may be deleted during a call to OnWindowVisibilityChanged
-  // on one of the observers. We create an local observer for that. In
-  // that case we exit without further access to any members.
-  WindowDestructionObserver destruction_observer(this);
+  // |this| may be deleted during a call to OnWindowVisibilityChanged() on one
+  // of the observers. We create an local observer for that. In that case we
+  // exit without further access to any members.
+  WindowTracker tracker;
+  tracker.Add(this);
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowVisibilityChanged(target, visible));
-  return !destruction_observer.destroyed();
+  return tracker.Contains(this);
 }
 
 bool Window::NotifyWindowVisibilityChangedDown(aura::Window* target,
