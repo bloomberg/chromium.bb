@@ -8,7 +8,7 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
   return NULL;
 }
 
-void WebCursor::SetDeviceScaleFactor(float scale_factor) {
+void WebCursor::SetDisplayInfo(const gfx::Display& display) {
   return;
 }
 

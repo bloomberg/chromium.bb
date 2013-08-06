@@ -1027,7 +1027,7 @@ void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
   current_cursor_ = cursor;
   const gfx::Display display = gfx::Screen::GetScreenFor(window_)->
       GetDisplayNearestWindow(window_);
-  current_cursor_.SetDeviceScaleFactor(display.device_scale_factor());
+  current_cursor_.SetDisplayInfo(display);
   UpdateCursorIfOverSelf();
 }
 
@@ -2303,6 +2303,8 @@ void RenderWidgetHostViewAura::OnDisplayBoundsChanged(
   gfx::Screen* screen = gfx::Screen::GetScreenFor(window_);
   if (display.id() == screen->GetDisplayNearestWindow(window_).id()) {
     UpdateScreenInfo(window_);
+    current_cursor_.SetDisplayInfo(display);
+    UpdateCursorIfOverSelf();
   }
 }
 
@@ -2397,8 +2399,11 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
     backing_store->ScaleFactorChanged(device_scale_factor);
 
   UpdateScreenInfo(window_);
-  DCHECK_EQ(current_device_scale_factor_, device_scale_factor);
-  current_cursor_.SetDeviceScaleFactor(device_scale_factor);
+
+  const gfx::Display display = gfx::Screen::GetScreenFor(window_)->
+      GetDisplayNearestWindow(window_);
+  DCHECK_EQ(device_scale_factor, display.device_scale_factor());
+  current_cursor_.SetDisplayInfo(display);
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroying() {

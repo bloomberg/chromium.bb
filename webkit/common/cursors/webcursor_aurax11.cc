@@ -9,12 +9,10 @@
 #include <X11/cursorfont.h>
 
 #include "base/logging.h"
-#include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_loader_x11.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/point_conversions.h"
-#include "ui/gfx/size_conversions.h"
 
 const ui::PlatformCursor WebCursor::GetPlatformCursor() {
   if (platform_cursor_)
@@ -28,29 +26,22 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
                    custom_size_.width(), custom_size_.height());
   bitmap.allocPixels();
   memcpy(bitmap.getAddr32(0, 0), custom_data_.data(), custom_data_.size());
-
   gfx::Point hotspot = hotspot_;
-  if (device_scale_factor_ != custom_scale_) {
-    float scale = device_scale_factor_ / custom_scale_;
-    gfx::Size scaled_size =
-        gfx::ToFlooredSize(gfx::ScaleSize(custom_size_, scale));
-    bitmap = skia::ImageOperations::Resize(bitmap,
-        skia::ImageOperations::RESIZE_BETTER,
-        scaled_size.width(),
-        scaled_size.height());
-    hotspot = gfx::ToFlooredPoint(gfx::ScalePoint(hotspot, scale));
-  }
+  ui::ScaleAndRotateCursorBitmapAndHotpoint(
+      device_scale_factor_, rotation_, &bitmap, &hotspot);
 
   XcursorImage* image = ui::SkBitmapToXcursorImage(&bitmap, hotspot);
   platform_cursor_ = ui::CreateReffedCustomXCursor(image);
   return platform_cursor_;
 }
 
-void WebCursor::SetDeviceScaleFactor(float scale_factor) {
-  if (device_scale_factor_ == scale_factor)
+void WebCursor::SetDisplayInfo(const gfx::Display& display) {
+  if (rotation_ == display.rotation() &&
+      device_scale_factor_ == display.device_scale_factor())
     return;
 
-  device_scale_factor_ = scale_factor;
+  device_scale_factor_ = display.device_scale_factor();
+  rotation_ = display.rotation();
   if (platform_cursor_)
     ui::UnrefCustomXCursor(platform_cursor_);
   platform_cursor_ = 0;
@@ -61,6 +52,7 @@ void WebCursor::SetDeviceScaleFactor(float scale_factor) {
 void WebCursor::InitPlatformData() {
   platform_cursor_ = 0;
   device_scale_factor_ = 1.f;
+  rotation_ = gfx::Display::ROTATE_0;
 }
 
 bool WebCursor::SerializePlatformData(Pickle* pickle) const {

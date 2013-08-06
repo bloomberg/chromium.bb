@@ -25,7 +25,7 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
   return custom_cursor_;
 }
 
-void WebCursor::SetDeviceScaleFactor(float scale_factor) {
+void WebCursor::SetDisplayInfo(const gfx::Display& display) {
   // TODO(winguru): Add support for scaling the cursor.
 }
 

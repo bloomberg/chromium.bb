@@ -296,6 +296,11 @@
             'base/view_prop_unittest.cc',
           ],
         }],
+        ['use_x11==1 and use_aura==1',  {
+          'sources': [
+            'base/cursor/cursor_loader_x11_unittest.cc',
+          ],
+        }],
         ['use_aura==1 or toolkit_views==1',  {
           'sources': [
             'base/dragdrop/os_exchange_data_unittest.cc',

@@ -137,25 +137,6 @@ int CursorShapeFromNative(const gfx::NativeCursor& native_cursor) {
   return XC_left_ptr;
 }
 
-void ScaleCursorImageAndHotpoint(float scale,
-                                 SkBitmap* bitmap,
-                                 gfx::Point* hotpoint) {
-  if (scale < FLT_EPSILON) {
-    NOTREACHED() << "Scale must be larger than 0.";
-    scale = 1.0f;
-  }
-
-  gfx::Size scaled_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(gfx::Size(bitmap->width(), bitmap->height()), scale));
-
-  *bitmap = skia::ImageOperations::Resize(
-      *bitmap,
-      skia::ImageOperations::RESIZE_BETTER,
-      scaled_size.width(),
-      scaled_size.height());
-  *hotpoint = gfx::ToFlooredPoint(gfx::ScalePoint(*hotpoint, scale));
-}
-
 }  // namespace
 
 namespace ui {
@@ -181,28 +162,8 @@ void CursorLoaderX11::LoadImageCursor(int id,
       GetScaleFactorFromScale(display().device_scale_factor()));
   SkBitmap bitmap = image_rep.sk_bitmap();
   gfx::Point hotpoint = hot;
-  switch (display().rotation()) {
-    case gfx::Display::ROTATE_0:
-      break;
-    case gfx::Display::ROTATE_90:
-      hotpoint.SetPoint(bitmap.height() - hot.y(), hot.x());
-      bitmap = SkBitmapOperations::Rotate(
-          bitmap, SkBitmapOperations::ROTATION_90_CW);
-      break;
-    case gfx::Display::ROTATE_180:
-      hotpoint.SetPoint(bitmap.width() - hot.x(), bitmap.height() - hot.y());
-      bitmap = SkBitmapOperations::Rotate(
-          bitmap, SkBitmapOperations::ROTATION_180_CW);
-      break;
-    case gfx::Display::ROTATE_270:
-      hotpoint.SetPoint(hot.y(), bitmap.width() - hot.x());
-      bitmap = SkBitmapOperations::Rotate(
-          bitmap, SkBitmapOperations::ROTATION_270_CW);
-      break;
-  }
-
-  if (scale() != 1.f)
-    ScaleCursorImageAndHotpoint(scale(), &bitmap, &hotpoint);
+  ScaleAndRotateCursorBitmapAndHotpoint(
+      scale(), display().rotation(), &bitmap, &hotpoint);
 
   XcursorImage* x_image = SkBitmapToXcursorImage(&bitmap, hotpoint);
   cursors_[id] = CreateReffedCustomXCursor(x_image);
@@ -296,6 +257,50 @@ bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
   if (find != cursors_.end())
     return cursors_[type];
   return GetXCursor(CursorShapeFromNative(native_cursor));
+}
+
+void ScaleAndRotateCursorBitmapAndHotpoint(float scale,
+                                           gfx::Display::Rotation rotation,
+                                           SkBitmap* bitmap,
+                                           gfx::Point* hotpoint) {
+  switch (rotation) {
+    case gfx::Display::ROTATE_0:
+      break;
+    case gfx::Display::ROTATE_90:
+      hotpoint->SetPoint(bitmap->height() - hotpoint->y(), hotpoint->x());
+      *bitmap = SkBitmapOperations::Rotate(
+          *bitmap, SkBitmapOperations::ROTATION_90_CW);
+      break;
+    case gfx::Display::ROTATE_180:
+      hotpoint->SetPoint(
+          bitmap->width() - hotpoint->x(), bitmap->height() - hotpoint->y());
+      *bitmap = SkBitmapOperations::Rotate(
+          *bitmap, SkBitmapOperations::ROTATION_180_CW);
+      break;
+    case gfx::Display::ROTATE_270:
+      hotpoint->SetPoint(hotpoint->y(), bitmap->width() - hotpoint->x());
+      *bitmap = SkBitmapOperations::Rotate(
+          *bitmap, SkBitmapOperations::ROTATION_270_CW);
+      break;
+  }
+
+  if (scale < FLT_EPSILON) {
+    NOTREACHED() << "Scale must be larger than 0.";
+    scale = 1.0f;
+  }
+
+  if (scale == 1.0f)
+    return;
+
+  gfx::Size scaled_size = gfx::ToFlooredSize(
+      gfx::ScaleSize(gfx::Size(bitmap->width(), bitmap->height()), scale));
+
+  *bitmap = skia::ImageOperations::Resize(
+      *bitmap,
+      skia::ImageOperations::RESIZE_BETTER,
+      scaled_size.width(),
+      scaled_size.height());
+  *hotpoint = gfx::ToFlooredPoint(gfx::ScalePoint(*hotpoint, scale));
 }
 
 }  // namespace ui
