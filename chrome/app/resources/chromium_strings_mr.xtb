@@ -74,6 +74,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">कृपया सर्व Chromium विंडो बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
 <translation id="4077262827416206768">कृपया हा बदल प्रभावी होण्‍यासाठी सर्व Chromium विंडो बंद करा आणि Chromium पुन्‍हा लाँच करा.</translation>
+<translation id="5472687196979159893">Chromium मध्ये आपले शोध कार्य कसे करतात हे <ph name="FILE_NAME"/> बदलू शकते.</translation>
 <translation id="6944967875980567883">Chromium मध्ये लोड केलेली मॉड्यूल</translation>
 <translation id="118298050220780080">आपण &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; वर पोहचण्‍याचा प्रयत्‍न केला, परंतु आपल्‍या संगणकाच्‍या ऑपरेटिंग प्रणालीद्वारे विश्वसनीय नसलेले घटकाद्वारे जारी केलेले एक प्रमाणपत्र सर्व्‍हरने सादर केले. याचा अर्थ असा असू शकतो की सर्व्‍हरने त्‍याची स्वत:ची सुरक्षा क्रेडेंशियल्स व्‍युत्‍पन्‍न केले आहेत, ज्‍यावर ओळख माहितीसाठी Chromium विसंबून राहू शकत नाही किंवा आक्रमणकर्ता आपल्‍या संप्रेषणामध्‍ये व्‍यत्‍यय आणण्‍याचा प्रयत्‍न करू शकतो.</translation>
 <translation id="3296368748942286671">Chromium बंद असताना पार्श्वभूमी अनुप्रयोग चालवणे सुरू ठेवा</translation>
@@ -178,6 +179,7 @@
 <translation id="1708666629004767631">Chromium ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
 <translation id="1539981464052805551">Copyright 2013 Chromium लेखक. सर्व हक्क राखीव.</translation>
 <translation id="378917192836375108">Chromium आपल्याला वेबवरील फोन नंबर क्लिक करू देते आणि Skype सह त्याला कॉल करते!</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> आपल्या Chromium सेटिंग्ज बदलू शकते.</translation>
 <translation id="8724049448828509830">एक डाउनलोड सध्या प्रगतीपथावर आहे. आपण Chromium मधून बाहेर पडू  आणि डाउनलोड रद्द करु इच्छिता?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Chromium प्लग-इन होस्ट</translation>

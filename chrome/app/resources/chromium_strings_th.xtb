@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">โปรดปิดหน้าต่าง Chromium ทั้งหมดแล้วลองอีกครั้ง</translation>
 <translation id="4077262827416206768">โปรดปิดหน้าต่าง Chromium ทั้งหมดและเปิด Chromium อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> อาจเปลี่ยนแปลงวิธีการทำงานของการค้นหาใน Chromium</translation>
 <translation id="6944967875980567883">โมดูลที่โหลดเข้าไปใน Chromium</translation>
 <translation id="118298050220780080">คุณพยายามที่จะเข้าถึง &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แต่เซิร์ฟเวอร์แสดงใบรับรองที่ออกโดยหน่วยงานหนึ่งที่ระบบปฏิบัติการในคอมพิวเตอร์ของคุณไม่เชื่อถือ ซึ่งอาจหมายความว่าเซิร์ฟเวอร์นี้ได้สร้างข้อมูลรับรองความปลอดภัยของตนเองขึ้นมา ซึ่ง Chromium ไม่สามารถเชื่อถือข้อมูลประจำตัวนี้ได้ หรือผู้บุกรุกอาจพยายามที่จะสกัดกั้นการสื่อสารของคุณอยู่</translation>
 <translation id="3296368748942286671">เรียกใช้แอปพลิเคชันพื้นหลังต่อไปเมื่อปิด Chromium</translation>
@@ -182,6 +183,7 @@
 <translation id="1708666629004767631">Chromium รุ่นใหม่ที่ปลอดภัยกว่าเดิมพร้อมให้ใช้งานแล้ว</translation>
 <translation id="1539981464052805551">ลิขสิทธิ์ 2013 The Chromium Authors สงวนลิขสิทธิ์</translation>
 <translation id="378917192836375108">Chromium ช่วยให้คุณสามารถคลิกหมายเลขโทรศัพท์บนเว็บและโทรออกด้วย Skype ได้!</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> อาจเปลี่ยนแปลงการตั้งค่า Chromium ของคุณ</translation>
 <translation id="8724049448828509830">ขณะนี้อยู่ระหว่างการดาวน์โหลดหนึ่งรายการ คุณต้องการออกจาก Chromium และยกเลิกการดาวน์โหลดหรือไม่</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">โฮสต์ปลั๊กอินของ Chromium</translation>

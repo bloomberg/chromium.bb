@@ -320,6 +320,7 @@
 <translation id="5234764350956374838">Elvetés</translation>
 <translation id="8702516222444523256">Ezt engedélyezve bizonyosodhat meg róla, hogy az Alkalmazásindító OSX-alkalmazáscsomagja létezik az Alkalmazások mappában.</translation>
 <translation id="40027638859996362">Szómozgatás</translation>
+<translation id="6303187936217840894">A böngészőbeállítások visszaállnak az alapértelmezett értékekre. Ez visszaállítja a kezdőlap, az új lap oldal és a keresőmotor beállításait, továbbá letiltja a bővítményeket, illetve feloldja minden lap rögzítését. Az egyéb átmeneti és gyorsítótárazott adatok – például cookie-k, tartalmi és webhelyadatok – is törlődni fognak.</translation>
 <translation id="1524793692806456360">A csak helyi Instant kibővített API engedélyezése</translation>
 <translation id="6928441285542626375">A TCP Fast Open engedélyezése</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> indexe</translation>
@@ -957,7 +958,6 @@
 <translation id="1871208020102129563">A proxy fix proxyszerverek használatára van beállítva, nem pedig .pac típusú szkript URL címének használatára.</translation>
 <translation id="1634788685286903402">Bízzon meg ebben a tanúsítványban e-mail felhasználók azonosításakor.</translation>
 <translation id="1856715684130786728">Hely hozzáadása...</translation>
-<translation id="3328786139156860526">Kicsúsznak a kezéből a dolgok? Állítsa vissza Chrome-profilját a tiszta, telepítés utáni állapotra.</translation>
 <translation id="8642489171979176277">A Google Eszköztárból importálva</translation>
 <translation id="4684427112815847243">Minden szinkronizálása</translation>
 <translation id="4699357559218762027">(automatikusan indított)</translation>
@@ -1316,7 +1316,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="2076748722938414183">Lapváltás letiltása</translation>
 <translation id="1756681705074952506">Beviteli mód</translation>
 <translation id="8545211332741562162">Engedély a weboldalak számára, hogy kísérleti JavaScript-funkciókat használjanak.</translation>
-<translation id="3335878584157510445">Profilbeállítások visszaállítása...</translation>
 <translation id="734303607351427494">Keresőmotorok kezelése...</translation>
 <translation id="3706919628594312718">Egérbeállítások</translation>
 <translation id="7973174304586609605">Új felhasználó hozzáadása...</translation>
@@ -1371,6 +1370,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="8856844195561710094">Nem sikerült leállítani a Bluetooth-eszközkeresést.</translation>
 <translation id="2246340272688122454">Helyreállító képfájl letöltése...</translation>
 <translation id="5305688511332277257">Nincs telepítve</translation>
+<translation id="1958802757844394735">Böngészőbeállítások visszaállítása az alapértelmezett értékekre.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">Kínai beviteli mód (kanji)</translation>
 <translation id="8395901698320285466">Méret</translation>
@@ -1733,7 +1733,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="3204741654590142272">A csatornamódosítás alkalmazása csak később történik meg.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> perc van hátra</translation>
 <translation id="901974403500617787">Rendszerszinten érvényes jelölőket csak a tulajdonos (<ph name="OWNER_EMAIL"/>) állíthat be.</translation>
-<translation id="492131106259297640">Profilbeállítások visszaállítása</translation>
 <translation id="2080010875307505892">Szerb billentyűzet</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> perc</translation>
 <translation id="201192063813189384">Hiba történt a gyorsítótárban lévő adatok beolvasása során.</translation>
@@ -3660,6 +3659,7 @@ További utasításokért, kérjük, nézze meg az e-mailjeit a következő fió
 <translation id="7158238151765743968">A(z) „<ph name="DEVICE_NAME"/>” eszközhöz való csatlakozás még mindig folyamatban van.</translation>
 <translation id="8782565991310229362">Kiosk-alkalmazás indítása visszavonva.</translation>
 <translation id="4726672564094551039">Házirendek újratöltése</translation>
+<translation id="2252923619938421629">Segítsen a Google Chrome fejlesztésében a jelenlegi beállítások elküldésével</translation>
 <translation id="4647697156028544508">Kérjük, adja meg a(z) &quot;<ph name="DEVICE_NAME"/>&quot; PIN kódját:</translation>
 <translation id="5604961908909363516">Hozzáférés minden begépelt szöveghez.</translation>
 <translation id="7671130400130574146">Az ablak fejlécének és keretének megjelenítése</translation>
@@ -4226,6 +4226,7 @@ További utasításokért, kérjük, nézze meg az e-mailjeit a következő fió
 <translation id="2270484714375784793">Telefonszám</translation>
 <translation id="3603622770190368340">Hálózati tanúsítvány beszerzése</translation>
 <translation id="6196207969502475924">Hangalapú keresés</translation>
+<translation id="6791586529990783225">A böngészőbeállítások visszaállítása</translation>
 <translation id="5973229212631512780">A(z) <ph name="FILE_NAME"/> fájl rosszindulatúnak tűnik.</translation>
 <translation id="2927657246008729253">Módosítás...</translation>
 <translation id="7978412674231730200">Privát kulcs</translation>

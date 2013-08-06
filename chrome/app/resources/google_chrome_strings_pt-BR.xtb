@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Iniciar aplicativos do Google Chrome</translation>
 <translation id="2370289711218562573">O Google Chrome está importando os Favoritos.</translation>
 <translation id="8762286861469007470">Detector de portal prisioneiro do Google Chrome</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> pode alterar suas configurações do Google Chrome.</translation>
 <translation id="1761870329818521071">Não é possível instalar a mesma versão do Frame do Google Chrome que está em execução. Feche o Frame do Google Chrome e tente novamente.</translation>
 <translation id="2040709530900803995">Visualizador do Google Chrome</translation>
 <translation id="6014844626092547096">Agora, você está conectado ao Google Chrome. A sincronização está desativada por seu administrador.</translation>
@@ -175,6 +176,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7253415505590551024">Há downloads em andamento. Deseja sair do Google Chrome e cancelar os downloads?</translation>
 <translation id="7196020411877309443">Por que estou vendo este aviso?</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador padrão.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> pode alterar o modo como suas pesquisas funcionam no Google Chrome.</translation>
 <translation id="6855094794438142393">Vá para
           o menu do Google Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

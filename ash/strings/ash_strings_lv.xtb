@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
-<translation id="3595596368722241419">Akumulators ir pilnībā uzlādēts</translation>
+<translation id="3595596368722241419">Akumulators pilns</translation>
 <translation id="5250713215130379958">Automātiski paslēpt palaišanas lapu</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> un <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Portāla statuss</translation>
@@ -107,7 +107,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="2372145515558759244">Notiek lietotņu sinhronizēšana...</translation>
 <translation id="7256405249507348194">Neatpazīta kļūda: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA pārbaude neizdevās</translation>
-<translation id="8456362689280298700">Atlikušais uzlādes laiks: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> jālādē</translation>
 <translation id="5787281376604286451">Balss komentāri ir iespējoti.
 Nospiediet Ctrl+Alt+Z, lai tos atspējotu.</translation>
 <translation id="4479639480957787382">tīkls Ethernet</translation>
@@ -171,7 +171,7 @@ Servera ziņojums: <ph name="SERVER_MSG"/></translation>
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="3050422059534974565">Ir ieslēgts BURTSLĒGS.
 Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
-<translation id="397105322502079400">Notiek aprēķināšana...</translation>
+<translation id="397105322502079400">Aprēķina...</translation>
 <translation id="158849752021629804">Nepieciešams mājas tīkls</translation>
 <translation id="6857811139397017780">Aktivizēt <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP uzmeklēšana neizdevās</translation>

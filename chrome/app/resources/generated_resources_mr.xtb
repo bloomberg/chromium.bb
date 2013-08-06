@@ -10,7 +10,7 @@
         अक्षम किंवा दुर्लक्षित केले आहेत.</translation>
 <translation id="166179487779922818">संकेतशब्द खूप लहान आहे.</translation>
 <translation id="2345460471437425338">होस्ट साठी अयोग्य प्रमाणपत्र.</translation>
-<translation id="3595596368722241419">बॅटरी भरली</translation>
+<translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
 <translation id="8130276680150879341">‍खाजगी नेटवर्क डिस्कनेक्ट करा</translation>
 <translation id="5028012205542821824">स्थापना सक्षम केली नाही.</translation>
 <translation id="1058418043520174283"><ph name="COUNT"/> पैकी <ph name="INDEX"/></translation>
@@ -323,6 +323,7 @@
 <translation id="5234764350956374838">डिसमिस करा</translation>
 <translation id="8702516222444523256">अनुप्रयोग फोल्डर खाली विद्यमान अॅप लाँचरसाठी OSX अॅप बंडल सुनिश्चित करणे सक्षम करा.</translation>
 <translation id="40027638859996362">शब्द हलविणे</translation>
+<translation id="6303187936217840894">आपल्या ब्राउझर सेटिंग्ज त्यांच्या डीफॉल्टवर पुनर्संचयित केल्या जातील. हे आपले मुख्यपृष्ठ, नवीन टॅब पृष्ठ आणि शोध इंजिन रीसेट करेल, आपले विस्तार अक्षम करा आणि सर्व टॅब अनपिन करा. हे सर्व तात्पुरता आणि कॅशे केलेला डेटा देखील साफ करेल, जसे की कुकीज, सामग्री आणि साइट डेटा.</translation>
 <translation id="1524793692806456360">केवळ-स्थानिक झटपट विस्तारित API सक्षम करा</translation>
 <translation id="6928441285542626375">TCP Fast Open सक्षम करा</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> ची अनुक्रमणिका</translation>
@@ -966,7 +967,6 @@
 <translation id="1871208020102129563">प्रॉक्सी निश्चित प्रॉक्सी सर्व्हर वापरण्‍यास सेट करण्‍यात आले आहे, .pac स्क्रिप्ट URL नव्हे.</translation>
 <translation id="1634788685286903402">ईमेल वापरकर्त्यांना ओळखण्यासाठी या प्रमाणपत्रावर विश्वास ठेवा.</translation>
 <translation id="1856715684130786728">स्थान जोडा...</translation>
-<translation id="3328786139156860526">गोष्टी नियंत्रणाबाहेर गेल्या? आपले Chrome प्रोफाईल एका साफ, स्थापनेनंतर स्थितीमध्ये परत करा.</translation>
 <translation id="8642489171979176277">Google टूलबार वरून आयातित</translation>
 <translation id="4684427112815847243">सर्वकाही समक्रमित करा</translation>
 <translation id="4699357559218762027">(स्वयं-लाँच केलेले)</translation>
@@ -1097,7 +1097,7 @@
 <translation id="702455272205692181"><ph name="EXTENSION_NAME"/></translation>
 <translation id="908263542783690259">ब्राउझिंग इतिहास साफ करा</translation>
 <translation id="8562720436766170629">आपल्या टॅब आणि ब्राउझिंग गतिविधीवर प्रवेश करा</translation>
-<translation id="6871690136546646783">स्पर्श समायोजन समर्थन अक्षम करतो. स्पर्श समायोजन ही एका माऊसच्या तुलनेत खराब रिजोल्यूशन असलेल्या स्पर्शाची प्रतिपूर्ती करण्यासाठी एका स्पर्श संकेताची स्थिती परिष्कृत करण्याची प्रक्रिया आहे.</translation>
+<translation id="6871690136546646783">स्पर्श समायोजन समर्थन अक्षम करतो. स्पर्श समायोजन ही एका माऊसच्या तुलनेत खराब रिजोल्यूशन असलेल्या स्पर्शाची प्रतिपूर्ती करण्यासाठी एका स्पर्श जेश्चरची स्थिती परिष्कृत करण्याची प्रक्रिया आहे.</translation>
 <translation id="7518003948725431193">या वेबपत्त्यासाठी वेबपृष्ठ आढळले नाही: <ph name="URL"/></translation>
 <translation id="7484645889979462775">या साइटसाठी कधीही नाही</translation>
 <translation id="8666066831007952346"><ph name="NUMBER_TWO"/> दिवस बाकी</translation>
@@ -1284,7 +1284,7 @@
 <translation id="2619052155095999743">समाविष्ट करा</translation>
 <translation id="1711973684025117106">झिप करणे अयशस्वी, अनपेक्षित त्रुटी: $1</translation>
 <translation id="5451646087589576080">फ्रेम &amp;माहिती पहा</translation>
-<translation id="5050209346295804497">मीडिया प्लेबॅकसाठी हावभाव आवश्यकता अक्षम करा.</translation>
+<translation id="5050209346295804497">मीडिया प्लेबॅकसाठी जेश्चर आवश्यकता अक्षम करा.</translation>
 <translation id="7952408061263786094">साइन आउट करा नंतर पुन्हा साइन इन करा...</translation>
 <translation id="5890500454703624920">आपल्या Google Wallet मध्ये खालील तपशील जतन केले आहेत.</translation>
 <translation id="5880247576487732437">टोकन सादर</translation>
@@ -1327,7 +1327,6 @@
 <translation id="2076748722938414183">टॅब स्क्रबिंग अक्षम करा</translation>
 <translation id="1756681705074952506">इनपुट पद्धत</translation>
 <translation id="8545211332741562162">प्रायोगिक JavaScript वैशिष्‍ट्ये वापरण्‍यासाठी वेब पृष्‍ठे सक्षम करा.</translation>
-<translation id="3335878584157510445">प्रोफाईल सेटिंग्ज रीसेट करा...</translation>
 <translation id="734303607351427494">शोध इंजिन व्यवस्थापित करा...</translation>
 <translation id="3706919628594312718">माउस सेटिंग्ज</translation>
 <translation id="7973174304586609605">नवीन वापरकर्ता जोडा...</translation>
@@ -1382,6 +1381,7 @@
 <translation id="8856844195561710094">Bluetooth डिव्हाइस शोध थांबविण्‍यात अयशस्वी.</translation>
 <translation id="2246340272688122454">पुनर्प्राप्ती प्रतिमा डाउनलोड करत आहे...</translation>
 <translation id="5305688511332277257">काहीही स्थापित केले नाही</translation>
+<translation id="1958802757844394735">ब्राउझर सेटिंग्ज त्यांच्या मूळ डीफॉल्टवर पुनर्संचयित करा.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">चीनी इनपुट पद्धत (कॅन्गजी)</translation>
 <translation id="8395901698320285466">परिमाण</translation>
@@ -1746,7 +1746,6 @@
 <translation id="3204741654590142272">चॅनेल बदल नंतर लागू होईल.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> मिनिट शिल्लक</translation>
 <translation id="901974403500617787">सिस्टीम-व्याप्त लागू होणारी ध्वजांकने केवळ मालकाद्वारे सेट केली जाऊ शकतात: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">प्रोफाईल सेटिंग्ज रीसेट करा</translation>
 <translation id="2080010875307505892">सर्बियन कीबोर्ड</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> मि</translation>
 <translation id="201192063813189384">कॅशेवरून डेटा वाचण्यात त्रुटी.</translation>
@@ -2431,7 +2430,7 @@
 <translation id="2756798847867733934">सिम कार्ड अक्षम झाले</translation>
 <translation id="5464632865477611176">यावेळी चालवा</translation>
 <translation id="4268025649754414643">की एनसिफरमेन्ट</translation>
-<translation id="916745092148443205">संकेत टॅप हायलाइट करणे</translation>
+<translation id="916745092148443205">जेश्चर टॅप हायलाइट करणे</translation>
 <translation id="1168020859489941584"><ph name="TIME_REMAINING"/> मध्ये उघडत आहे...</translation>
 <translation id="9158715103698450907">अरेरे! प्रमाणीकरणादरम्यान एक नेटवर्क संप्रेषण समस्या आली. कृपया आपले नेटवर्क कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="1629586766080672798">वहनावळ तपशील</translation>
@@ -2836,7 +2835,7 @@
 <translation id="4361696241124457694">एकदा हा पर्यवेक्षी वापरकर्ता काढल्यानंतर पर्यवेक्षी वापरकर्त्याशी संबद्ध सर्व फायली
     आणि स्थानिक डेटा कायमचा हटविला जाईल. या पर्यवेक्षी वापरकर्त्यासाठी
     भेट दिलेल्या वेबसाइट आणि सेटिंग्ज <ph name="MANAGEMENT_URL"/> वर व्यवस्थापकाद्वारे तरीही दृश्यमान केल्या जाऊ शकतात.</translation>
-<translation id="7913678092679498828">ठीक आहे, कळले!</translation>
+<translation id="7913678092679498828">ठीक, समजले!</translation>
 <translation id="3655670868607891010">आपण हे वारंवार पहात असल्यास, हे वापरून पहा <ph name="HELP_LINK"/>.</translation>
 <translation id="4504940961672722399">या चिन्हावर क्लिक करुन किंवा <ph name="EXTENSION_SHORTCUT"/> दाबून हा विस्तार वापरा.</translation>
 <translation id="2523966157338854187">विशिष्‍ट पृष्‍ठ किंवा पृष्‍ठांचा संच उघडा.</translation>
@@ -3693,7 +3692,7 @@
 <translation id="7801746894267596941">फक्त आपला सांकेतिक वाक्यांश असलेली कोणतीही व्यक्ती आपला कूटबद्ध डेटा वाचू शकते -- सांकेतिक वाक्यांश Google कडे पाठविला किंवा त्याद्वारे संचयित केलेला नाही. आपण आपला सांकेतिक वाक्यांश विसरल्यास, आपल्याला असे करणे आवश्यक असेल</translation>
 <translation id="291886813706048071">आपण <ph name="SEARCH_ENGINE"/> द्वारे येथून शोध घेऊ शकता</translation>
 <translation id="556042886152191864">बटण</translation>
-<translation id="1638861483461592770">प्रायोगिक संकेत टॅप हायलाइट लागू होणारे सक्षम करा</translation>
+<translation id="1638861483461592770">प्रायोगिक जेश्चर टॅप हायलाइट लागू करणे सक्षम करा.</translation>
 <translation id="3377188786107721145">धोरण विश्लेषण त्रुटी</translation>
 <translation id="7582844466922312471">मोबाइल डेटा</translation>
 <translation id="7851842096760874408">कॅप्चर वाढवण्याची गुणवत्ता टॅब.</translation>
@@ -3703,6 +3702,7 @@
 <translation id="7158238151765743968">&quot;<ph name="DEVICE_NAME"/>&quot; चे कनेक्शन अद्याप प्रगतीपथावर आहे.</translation>
 <translation id="8782565991310229362">कियोस्क अनुप्रयोग लाँच रद्द झाले.</translation>
 <translation id="4726672564094551039">धोरणे रीलोड करा</translation>
+<translation id="2252923619938421629">वर्तमान सेटिंग्जचा अहवाल देऊन Google Chrome उत्कृष्ट बनविण्यास मदत करा</translation>
 <translation id="4647697156028544508">कृपया &quot;<ph name="DEVICE_NAME"/>&quot; साठी पिन प्रविष्‍ट करा:</translation>
 <translation id="5604961908909363516">आपण टाइप केलेल्या कोणत्याही गोष्टीवर प्रवेश करा.</translation>
 <translation id="7671130400130574146">सिस्टम शीर्षक बार आणि किनारी वापरा</translation>
@@ -4268,6 +4268,7 @@
 <translation id="2270484714375784793">फोन नंबर</translation>
 <translation id="3603622770190368340">नेटवर्क प्रमाणपत्र प्राप्त करा</translation>
 <translation id="6196207969502475924">व्हॉइस शोध</translation>
+<translation id="6791586529990783225">ब्राउझर सेटिंग्ज रीसेट करा</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> दूर्भावनापूर्ण दिसते.</translation>
 <translation id="2927657246008729253">बदला...</translation>
 <translation id="7978412674231730200">खाजगी की</translation>
@@ -4757,7 +4758,7 @@
 <translation id="1468038450257740950">WebGL समर्थित नाही.</translation>
 <translation id="3943857333388298514">पेस्ट करा</translation>
 <translation id="385051799172605136">मागील</translation>
-<translation id="5075306601479391924">मीडिया घटक प्ले करण्यासाठी वापरकर्ता हावभाव आवश्यकता अक्षम करा. हे सक्रिय केल्याने स्वयंप्ले ला कार्य करण्याची अनुमती मिळेल.</translation>
+<translation id="5075306601479391924">मीडिया घटक प्ले करण्यासाठी वापरकर्ता जेश्चर आवश्यकता अक्षम करा. हे सक्रिय केल्याने स्वयंप्ले ला कार्य करण्याची अनुमती मिळेल.</translation>
 <translation id="1735181657228649412">अ‍ॅप्स / विस्तार विकसित करण्यासाठी अ‍ॅप.</translation>
 <translation id="1832546148887467272"><ph name="NEW_GOOGLE_HOST"/> कडे स्विच करा</translation>
 <translation id="2670965183549957348">च्यूइंग इनपुट पद्धत</translation>

@@ -319,6 +319,7 @@
 <translation id="5234764350956374838">Odbaci</translation>
 <translation id="8702516222444523256">Omogućite tu opciju kako biste osigurali da skup aplikacija OSX za Pokretač aplikacija postoji u mapi Aplikacije.</translation>
 <translation id="40027638859996362">Pomicanje riječi</translation>
+<translation id="6303187936217840894">Vaše postavke preglednika vratit će se na svoje izvorne zadane vrijednosti. Time će se vaša početna stranica, stranica Nova kartica i tražilica vratiti na zadano, onemogućit će se vaša proširenja i otkvačiti sve kartice. Također će se izbrisati ostali privremeni i predmemorirani podaci, na primjer, kolačići, sadržaj i podaci o web-lokaciji.</translation>
 <translation id="1524793692806456360">Omogući samo lokalni API Instant Extended</translation>
 <translation id="6928441285542626375">Omogući TCP Fast Open</translation>
 <translation id="5463275305984126951">Indeks za <ph name="LOCATION"/></translation>
@@ -951,7 +952,6 @@
 <translation id="1871208020102129563">Proxy poslužitelj postavljen je na upotrebu fiksnih proxy poslužitelja, a ne URL .pac skripte.</translation>
 <translation id="1634788685286903402">Vjeruj ovom certifikatu za identificiranje korisnika e-pošte.</translation>
 <translation id="1856715684130786728">Dodaj lokaciju...</translation>
-<translation id="3328786139156860526">Izgubili ste kontrolu nad situacijom? Vratite svoj profil u sustavu Chrome na izvorno stanje nakon instalacije.</translation>
 <translation id="8642489171979176277">Uvezeno iz Google Alatne trake</translation>
 <translation id="4684427112815847243">Sinkroniziraj sve</translation>
 <translation id="4699357559218762027">(pokrenuto automatski)</translation>
@@ -1310,7 +1310,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="2076748722938414183">Onemogući pomicanje po karticama</translation>
 <translation id="1756681705074952506">Način unosa</translation>
 <translation id="8545211332741562162">Omogućavanje web-stranica za upotrebu eksperimentalnih značajki JavaScripta.</translation>
-<translation id="3335878584157510445">Vrati postavke profila na zadano...</translation>
 <translation id="734303607351427494">Upravljaj tražilicama...</translation>
 <translation id="3706919628594312718">Postavke miša</translation>
 <translation id="7973174304586609605">Dodaj novog korisnika...</translation>
@@ -1365,6 +1364,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8856844195561710094">Zaustavljanje otkrivanja Bluetooth uređaja nije uspjelo.</translation>
 <translation id="2246340272688122454">Preuzimanje slike za oporavak sustava...</translation>
 <translation id="5305688511332277257">Nijedan nije instaliran</translation>
+<translation id="1958802757844394735">Vraćanje postavki preglednika na izvorne zadane vrijednosti.</translation>
 <translation id="7770995925463083016">Prije <ph name="NUMBER_TWO"/> minute</translation>
 <translation id="2816269189405906839">Kineski način unosa (cangjie)</translation>
 <translation id="8395901698320285466">Dimenzije</translation>
@@ -1729,7 +1729,6 @@ Ne otkrivajte nikakve osjetljive podatke.</translation>
 <translation id="3204741654590142272">Promjena kanala primijenit će se kasnije.</translation>
 <translation id="7836361698254323868">Preostalo minuta: <ph name="NUMBER_ONE"/></translation>
 <translation id="901974403500617787">Oznake koje se primjenjuju na razini sustava može postaviti samo vlasnik: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Vraćanje postavki profila na zadano</translation>
 <translation id="2080010875307505892">Srpska tipkovnica</translation>
 <translation id="2953767478223974804">Broj minuta: <ph name="NUMBER_ONE"/></translation>
 <translation id="201192063813189384">Pogreška čitanja iz predmemorije.</translation>
@@ -3657,6 +3656,7 @@ Ove i daljnje upute pronaći ćete u e-poruci koju smo poslali na adresu <ph nam
 <translation id="7158238151765743968">Povezivanje s uređajem &quot;<ph name="DEVICE_NAME"/>&quot; još je u tijeku.</translation>
 <translation id="8782565991310229362">Pokretanje aplikacije kioska otkazano je.</translation>
 <translation id="4726672564094551039">Ponovo učitaj pravila</translation>
+<translation id="2252923619938421629">Pomognite poboljšati Google Chrome tako što ćete prijaviti trenutačne postavke</translation>
 <translation id="4647697156028544508">Unesite PIN-a za uređaj &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">pristupiti svemu što upisujete.</translation>
 <translation id="7671130400130574146">Koristi naslovnu traku sustava i obrube</translation>
@@ -4223,6 +4223,7 @@ Ove i daljnje upute pronaći ćete u e-poruci koju smo poslali na adresu <ph nam
 <translation id="2270484714375784793">Telefonski broj</translation>
 <translation id="3603622770190368340">Dobivanje certifikata mreže</translation>
 <translation id="6196207969502475924">Glasovno pretraživanje</translation>
+<translation id="6791586529990783225">Vraćanje postavki preglednika na zadano</translation>
 <translation id="5973229212631512780">Datoteka <ph name="FILE_NAME"/> djeluje zlonamjerno.</translation>
 <translation id="2927657246008729253">Promijeni...</translation>
 <translation id="7978412674231730200">Osobni ključ</translation>

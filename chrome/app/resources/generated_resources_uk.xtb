@@ -9,7 +9,7 @@
 <translation id="3314762460582564620">Режим &quot;простий чжуїнь&quot;. Автоматичний вибір варіантів і пов’язані параметри вимкнені або не враховуються.</translation>
 <translation id="166179487779922818">Пароль закороткий.</translation>
 <translation id="2345460471437425338">Неправильний сертифікат для хосту.</translation>
-<translation id="3595596368722241419">Повний заряд акумулятора</translation>
+<translation id="3595596368722241419">Акумулятор заряджено</translation>
 <translation id="8130276680150879341">Від’єднатися від приватної мережі</translation>
 <translation id="5028012205542821824">Встановлення не ввімкнено.</translation>
 <translation id="1058418043520174283"><ph name="INDEX"/> з <ph name="COUNT"/></translation>
@@ -319,6 +319,7 @@
 <translation id="5234764350956374838">Відхилити</translation>
 <translation id="8702516222444523256">Увімкнути, щоб розмістити пакет програм в OS X для панелі запуску програм у папці Applications (Програми).</translation>
 <translation id="40027638859996362">Перенести слово</translation>
+<translation id="6303187936217840894">Буде відновлено початкові налаштування за умовчанням вашого веб-переглядача. Тобто домашню сторінку, сторінку нової вкладки й пошукову систему буде скинуто, розширення – вимкнено, а всі вкладки – відкріплено. Також буде очищено інші тимчасові й кешовані дані, як-от файли cookie, вміст і дані із сайтів.</translation>
 <translation id="1524793692806456360">Увімкнути лише локальний API розширеного Миттєвого пошуку</translation>
 <translation id="6928441285542626375">Увімкнути TCP Fast Open</translation>
 <translation id="5463275305984126951">Індекс <ph name="LOCATION"/></translation>
@@ -950,7 +951,6 @@
 <translation id="1871208020102129563">Проксі-сервер налаштовано на використання фіксованих проксі-серверів, а не URL-адреси сценарію .pac.</translation>
 <translation id="1634788685286903402">Довіряйте цьому сертифікату для ідентифікації користувачів електронної пошти.</translation>
 <translation id="1856715684130786728">Додати розташування…</translation>
-<translation id="3328786139156860526">Усе вийшло з-під контролю? Поверніть свій профіль Chrome у стан, у якому він був після встановлення.</translation>
 <translation id="8642489171979176277">Імпортовані з панелі інструментів Google</translation>
 <translation id="4684427112815847243">Синхронізувати все</translation>
 <translation id="4699357559218762027">(автозапуск)</translation>
@@ -1308,7 +1308,6 @@
 <translation id="2076748722938414183">Вимкнути перемикання вкладок</translation>
 <translation id="1756681705074952506">Метод введення</translation>
 <translation id="8545211332741562162">Дозволити веб-сторінкам використовувати експериментальні функції JavaScript.</translation>
-<translation id="3335878584157510445">Скинути налаштування профілю…</translation>
 <translation id="734303607351427494">Керувати пошуковими системами...</translation>
 <translation id="3706919628594312718">Налаштування миші</translation>
 <translation id="7973174304586609605">Додати нового користувача…</translation>
@@ -1363,6 +1362,7 @@
 <translation id="8856844195561710094">Не вдалося зупинити пошук пристрою Bluetooth.</translation>
 <translation id="2246340272688122454">Завантаження образу для відновлення...</translation>
 <translation id="5305688511332277257">Не встановлено жодного</translation>
+<translation id="1958802757844394735">Відновити початкові налаштування за умовчанням у веб-переглядачі.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">Метод введення для китайської мови (чангже)</translation>
 <translation id="8395901698320285466">Розміри</translation>
@@ -1727,7 +1727,6 @@
 <translation id="3204741654590142272">Версію буде змінено пізніше.</translation>
 <translation id="7836361698254323868">Залишилася <ph name="NUMBER_ONE"/> хвилина</translation>
 <translation id="901974403500617787">Позначки, які застосовуються до всієї системи, може встановлювати лише власник: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Скинути налаштування профілю</translation>
 <translation id="2080010875307505892">Сербська розкладка</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> хв.</translation>
 <translation id="201192063813189384">Помилка читання даних з кеш-пам’яті.</translation>
@@ -3635,6 +3634,7 @@
 <translation id="7158238151765743968">Під’єднання до пристрою &quot;<ph name="DEVICE_NAME"/>&quot; досі триває.</translation>
 <translation id="8782565991310229362">Скасовано запуск програми для терміналів.</translation>
 <translation id="4726672564094551039">Перезавантажити правила</translation>
+<translation id="2252923619938421629">Допоможіть покращити Google Chrome, повідомляючи поточні налаштування</translation>
 <translation id="4647697156028544508">Введіть PIN-код для пристрою &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Отримувати доступ до будь-яких даних, які ви вводите.</translation>
 <translation id="7671130400130574146">Використовувати системні границі та рядок заголовка</translation>
@@ -4201,6 +4201,7 @@
 <translation id="2270484714375784793">Номер телефону</translation>
 <translation id="3603622770190368340">Отримати сертифікат мережі</translation>
 <translation id="6196207969502475924">Голосовий пошук</translation>
+<translation id="6791586529990783225">Скинути налаштування веб-переглядача</translation>
 <translation id="5973229212631512780">Схоже, файл <ph name="FILE_NAME"/> шкідливий.</translation>
 <translation id="2927657246008729253">Змінити...</translation>
 <translation id="7978412674231730200">Секретний ключ</translation>

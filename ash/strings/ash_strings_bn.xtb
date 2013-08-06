@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
-<translation id="3595596368722241419">ব্যাটারি পূর্ণ</translation>
+<translation id="3595596368722241419">ব্যাটারি পুরো চার্জ</translation>
 <translation id="5250713215130379958">লঞ্চার স্বয়ংক্রিয়ভাবে লুকান</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> এবং <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">পোর্টাল স্থিতি</translation>
@@ -107,7 +107,7 @@
 <translation id="2372145515558759244">অ্যাপ্লিকেশনগুলি সিঙ্ক হচ্ছে...</translation>
 <translation id="7256405249507348194">অস্বীকৃত ত্রুটি: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA যাচাই ব্যর্থ</translation>
-<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> ইউনিট পূর্ণ</translation>
+<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> বাকি পুরো চার্জ হতে</translation>
 <translation id="5787281376604286451">কথ্য প্রতিক্রিয়া সক্ষমিত৷
 অক্ষম করতে Ctrl + Alt + Z টিপুন৷</translation>
 <translation id="4479639480957787382">ইথারনেট</translation>

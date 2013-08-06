@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Lukk alle Chromium-vinduer og prøv på nytt.</translation>
 <translation id="4077262827416206768">Lukk alle Chromium-vinduer og start Chromium på nytt for at denne endringen skal tre i kraft.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> kan endre hvordan søkene dine fungerer i Chromium.</translation>
 <translation id="6944967875980567883">Moduler lastet inn i Chromium</translation>
 <translation id="118298050220780080">Du prøvde å åpne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren oppga et sertifikat utstedt av en enhet som operativsystemet på datamaskinen din ikke anser som pålitelig. Dette kan bety at tjeneren har generert sine egne sikkerhetslegitimasjoner, som Chromium ikke kan stole på for identitetsinformasjon, eller at en angriper prøver å fange opp kommunikasjonen din.</translation>
 <translation id="3296368748942286671">Fortsett å kjøre bakgrunnsprogrammer når Chromium er lukket</translation>
@@ -179,6 +180,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
 <translation id="1539981464052805551">Copyright 2013 – The Chromium Authors. Med enerett.</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> kan endre Chromium-innstillingene dine.</translation>
 <translation id="8724049448828509830">Du har en aktiv nedlasting. Vil du avslutte Chromium og avbryte nedlastingen?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Chromium-vert for programtillegg</translation>

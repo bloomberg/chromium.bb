@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Εκκίνηση εφαρμογών Chrome</translation>
 <translation id="2370289711218562573">Το Google Chrome πραγματοποιεί εισαγωγή Αγαπημένων/Σελιδοδεικτών.</translation>
 <translation id="8762286861469007470">Ανιχνευτής Chrome Captive Portal</translation>
+<translation id="3993188379797269327">Το αρχείο <ph name="FILE_NAME"/> είναι πιθανό να αλλάξει τις ρυθμίσεις σας του Chrome.</translation>
 <translation id="1761870329818521071">Δεν είναι δυνατή η εγκατάσταση της ίδιας έκδοσης του Google Chrome Frame που εκτελείται αυτήν τη στιγμή. Κλείστε το Google Chrome Frame και δοκιμάστε ξανά.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Έχετε πλέον συνδεθεί στο Chrome! Ο συγχρονισμός έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
@@ -179,6 +180,7 @@
 <translation id="7253415505590551024">Αυτήν τη στιγμή, βρίσκονται σε εξέλιξη λήψεις. Θέλετε να κλείσετε το Google Chrome και να ακυρώσετε τις λήψεις;</translation>
 <translation id="7196020411877309443">Γιατί το βλέπω αυτό;</translation>
 <translation id="2769762047821873045">Το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>
+<translation id="1020869477857717497">Το αρχείο <ph name="FILE_NAME"/> είναι πιθανό να αλλάξει τον τρόπο λειτουργίας των αναζητήσεών σας στο Chrome.</translation>
 <translation id="6855094794438142393">Μεταβείτε
           στο μενού του Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

@@ -189,7 +189,7 @@
 <translation id="7209101170223508707">大寫鍵已啟用。
 按下 Alt + 搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE"/>%)</translation>
-<translation id="5102001756192215136">電量尚餘 <ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘</translation>
+<translation id="5102001756192215136">電量剩餘時間：<ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="520760366042891468">透過 Hangouts 分享螢幕控制權。</translation>
 <translation id="8000066093800657092">沒有網路</translation>
 <translation id="4015692727874266537">使用其他帳戶登入...</translation>

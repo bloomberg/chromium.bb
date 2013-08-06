@@ -331,6 +331,7 @@
 <translation id="5234764350956374838">Loại bỏ</translation>
 <translation id="8702516222444523256">Bật để đảm bảo gói ứng dụng OSX của Trình khởi chạy ứng dụng tồn tại trong thư mục Ứng dụng.</translation>
 <translation id="40027638859996362">Di chuyển từ</translation>
+<translation id="6303187936217840894">Cài đặt trình duyệt của bạn sẽ được khôi phục về mặc định ban đầu. Việc này sẽ đặt lại trang chủ, trang tab mới và công cụ tìm kiếm, tắt các tiện ích mở rộng của bạn và bỏ ghim tất cả các tab. Hành động này cũng xóa dữ liệu tạm thời và được lưu trong bộ nhớ cache khác, chẳng hạn như cookie, nội dung và dữ liệu trang web.</translation>
 <translation id="1524793692806456360">Chỉ bật cục bộ API được mở rộng của Instant</translation>
 <translation id="6928441285542626375">Bật TCP Fast Open</translation>
 <translation id="5463275305984126951">Chỉ mục của <ph name="LOCATION"/></translation>
@@ -972,7 +973,6 @@
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
 <translation id="1634788685286903402">Tin tưởng vào chứng chỉ này khi xác nhận người dùng email.</translation>
 <translation id="1856715684130786728">Thêm vị trí...</translation>
-<translation id="3328786139156860526">Mọi thứ vượt ngoài tầm kiểm soát? Hãy hoàn nguyên cấu hình trên Chrome về trạng thái đẹp mắt, sau cài đặt.</translation>
 <translation id="8642489171979176277">Được nhập Từ Thanh công cụ của Google</translation>
 <translation id="4684427112815847243">Đồng bộ hóa tất cả</translation>
 <translation id="4699357559218762027">(tự động khởi chạy)</translation>
@@ -1333,7 +1333,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="2076748722938414183">Tắt tính năng xóa tab</translation>
 <translation id="1756681705074952506">Phương thức nhập</translation>
 <translation id="8545211332741562162">Cho phép trang web sử dụng các tính năng JavaScript thử nghiệm.</translation>
-<translation id="3335878584157510445">Đặt lại cài đặt cấu hình...</translation>
 <translation id="734303607351427494">Quản lý công cụ tìm kiếm...</translation>
 <translation id="3706919628594312718">Cài đặt chuột</translation>
 <translation id="7973174304586609605">Thêm người dùng mới...</translation>
@@ -1388,6 +1387,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="8856844195561710094">Không thể ngừng khám phá thiết bị Bluetooth.</translation>
 <translation id="2246340272688122454">Đang tải xuống hình ảnh khôi phục...</translation>
 <translation id="5305688511332277257">Chưa cài đặt chứng chỉ nào</translation>
+<translation id="1958802757844394735">Khôi phục cài đặt trình duyệt về mặc định ban đầu.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">Phương pháp nhập tiếng Trung (cangjie)</translation>
 <translation id="8395901698320285466">Kích thước</translation>
@@ -1754,7 +1754,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="3204741654590142272">Thay đổi kênh sẽ được áp dụng sau.</translation>
 <translation id="7836361698254323868">Còn lại <ph name="NUMBER_ONE"/> phút</translation>
 <translation id="901974403500617787">Chỉ chủ sở hữu mới có thể đặt cờ áp dụng cho toàn hệ thống: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Đặt lại cài đặt cấu hình</translation>
 <translation id="2080010875307505892">Bàn phím tiếng Serbia</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> phút</translation>
 <translation id="201192063813189384">Lỗi đọc dữ liệu từ bộ nhớ cache.</translation>
@@ -3715,6 +3714,7 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL"/> để bi
 <translation id="7158238151765743968">Vẫn đang kết nối với &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="8782565991310229362">Đã hủy khởi chạy ứng dụng kiosk.</translation>
 <translation id="4726672564094551039">Tải lại chính sách</translation>
+<translation id="2252923619938421629">Giúp cải thiện Google Chrome bằng cách báo cáo cài đặt hiện tại</translation>
 <translation id="4647697156028544508">Vui lòng nhập PIN cho &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Truy cập bất kỳ nội dung nào bạn nhập.</translation>
 <translation id="7671130400130574146">Sử dụng thanh tiêu đề và đường viền của hệ thống</translation>
@@ -4282,6 +4282,7 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL"/> để bi
 <translation id="2270484714375784793">Số điện thoại</translation>
 <translation id="3603622770190368340">Nhận chứng chỉ mạng</translation>
 <translation id="6196207969502475924">Tìm kiếm bằng giọng nói</translation>
+<translation id="6791586529990783225">Đặt lại cài đặt trình duyệt</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> có dấu hiệu độc hại.</translation>
 <translation id="2927657246008729253">Thay đổi...</translation>
 <translation id="7978412674231730200">Khoá cá nhân</translation>

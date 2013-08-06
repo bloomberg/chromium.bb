@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Åbn Chrome-apps</translation>
 <translation id="2370289711218562573">Google Chrome importerer nu Foretrukne/Bogmærker.</translation>
 <translation id="8762286861469007470">Registrering af Chrome-gæsteportaler</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> kan ændre dine Chrome-indstillinger.</translation>
 <translation id="1761870329818521071">Det er ikke muligt at installere samme version af Google Chrome Frame som den, der allerede kører. Luk Google Chrome Frame, og prøv igen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Du er nu logget ind på Chrome. Synkronisering er deaktiveret af din administrator.</translation>
@@ -174,6 +175,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="7253415505590551024">Downloads er i øjeblikket i gang. Vil du afslutte Google Chrome og annullere disse downloads?</translation>
 <translation id="7196020411877309443">Hvorfor får jeg vist dette?</translation>
 <translation id="2769762047821873045">Google Chrome er ikke din standardbrowser.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> kan ændre dine søgeindstillinger i Chrome.</translation>
 <translation id="6855094794438142393">Gå til
           Chrome-menuen &gt;
           <ph name="SETTINGS_TITLE"/>

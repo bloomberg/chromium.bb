@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Käivitage Chrome'i rakendusi</translation>
 <translation id="2370289711218562573">Google Chrome impordib nüüd lemmikud/järjehoidjad.</translation>
 <translation id="8762286861469007470">Chrome'i Captive Portali tuvasti</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> võib muuta teie Chrome'i seadeid.</translation>
 <translation id="1761870329818521071">Töötava Google Chrome Frame'iga sama versiooni ei saa installida. Sulgege Google Chrome Frame ja proovige uuesti.</translation>
 <translation id="2040709530900803995">Google Chrome'i renderdaja</translation>
 <translation id="6014844626092547096">Olete nüüd Chrome'i sisse logitud. Administraator on sünkroonimise keelanud.</translation>
@@ -178,6 +179,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="7253415505590551024">Allalaadimised on pooleli. Kas soovite Google Chrome'ist väljuda ja allalaadimised tühistada?</translation>
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>
 <translation id="2769762047821873045">Google Chrome ei ole vaikebrauser.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> võib muuta otsingute toimimist Chrome'is.</translation>
 <translation id="6855094794438142393">Valige
           Chrome'i menüü &gt;
           <ph name="SETTINGS_TITLE"/>

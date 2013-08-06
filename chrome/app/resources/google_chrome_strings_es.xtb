@@ -28,6 +28,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2896252579017640304">Iniciar aplicaciones de Chrome</translation>
 <translation id="2370289711218562573">Google Chrome está importando Favoritos/Marcadores.</translation>
 <translation id="8762286861469007470">Detector de portales cautivos de Chrome</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> puede cambiar tu configuración de Chrome.</translation>
 <translation id="1761870329818521071">No se puede instalar la misma versión de Google Chrome Frame que se está ejecutando en este momento. Cierra Google Chrome Frame y vuelve a intentarlo.</translation>
 <translation id="2040709530900803995">Motor de renderización de Google Chrome</translation>
 <translation id="6014844626092547096">Has iniciado sesión en Chrome. El administrador ha inhabilitado la sincronización.</translation>
@@ -182,6 +183,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="7253415505590551024">Actualmente hay descargas en curso. ¿Quieres salir de Google Chrome y cancelarlas?</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> puede cambiar el funcionamiento de tus búsquedas en Chrome.</translation>
 <translation id="6855094794438142393">Accede al
           menú de Chrome, haz clic en
           <ph name="SETTINGS_TITLE"/>

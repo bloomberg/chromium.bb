@@ -107,7 +107,7 @@
 <translation id="2372145515558759244">正在同步应用...</translation>
 <translation id="7256405249507348194">无法识别的错误：<ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA 检查失败</translation>
-<translation id="8456362689280298700">还需 <ph name="HOUR"/>:<ph name="MINUTE"/> 才能充满电</translation>
+<translation id="8456362689280298700">电池充满还需 <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5787281376604286451">已启用语音反馈。
 按 Ctrl+Alt+Z 停用。</translation>
 <translation id="4479639480957787382">以太网</translation>

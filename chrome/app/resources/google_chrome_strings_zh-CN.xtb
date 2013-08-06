@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">启动 Chrome 应用</translation>
 <translation id="2370289711218562573">Google Chrome 浏览器正在导入收藏夹/书签。</translation>
 <translation id="8762286861469007470">Chrome 强制门户检测器</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> 可能会更改您的 Chrome 设置。</translation>
 <translation id="1761870329818521071">无法安装与当前运行版本相同的 Google Chrome 浏览器内嵌框架。请关闭 Google Chrome 浏览器内嵌框架，然后重试。</translation>
 <translation id="2040709530900803995">Google Chrome 浏览器呈现器</translation>
 <translation id="6014844626092547096">您现在已登录 Chrome！不过，管理员已停用同步功能。</translation>
@@ -158,6 +159,7 @@
 <translation id="7253415505590551024">正在进行多项下载。您希望退出 Google Chrome 浏览器并取消这些下载吗？</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
 <translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> 可能会更改 Chrome 中的搜索方式。</translation>
 <translation id="6855094794438142393">依次转到 Chrome 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”&gt;“<ph name="PROXIES_TITLE"/>”&gt;“LAN 设置”，然后取消选中“为 LAN 使用代理服务器”。</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="5553980212343253394">此网站使用的 Chrome 内嵌框架插件很快将不受支持。请卸载该插件，然后下载兼容的浏览器。</translation>

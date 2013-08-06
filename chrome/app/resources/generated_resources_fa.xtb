@@ -320,6 +320,7 @@
 <translation id="5234764350956374838">لغو کردن</translation>
 <translation id="8702516222444523256">برای اطمینان از این که مجموعه برنامه OSX برای راه‌انداز برنامه در پوشه برنامه‌ها وجود دارد این قابلیت را به کار بیندازید.</translation>
 <translation id="40027638859996362">انتقال کلمه</translation>
+<translation id="6303187936217840894">تنظیمات مرورگرتان به مقادیر پیش‌فرض اولیه‌شان بازیابی می‌شوند. با این کار صفحه اصلی، صفحه برگه جدید و موتور جستجوی شما بازنشانی می‌شود، برنامه‌های افزودنی‌تان غیرفعال می‌شود و تمام برگه‌ها لغو پین می‌شود. همچنین این کار باعث پاک شدن داده‌های موقت و داده‌های موجود در حافظه پنهان، مانند کوکی‌ها، محتوا و داده‌های سایت می‌شود.</translation>
 <translation id="1524793692806456360">به کار انداختن Instant Extended API فقط به صورت محلی</translation>
 <translation id="6928441285542626375">به کار انداختن TCP Fast Open</translation>
 <translation id="5463275305984126951">شاخص <ph name="LOCATION"/></translation>
@@ -957,7 +958,6 @@
 <translation id="1871208020102129563">تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
 <translation id="1634788685286903402">برای شناسایی کاربران ایمیل، به این مجوز اطمینان شود.</translation>
 <translation id="1856715684130786728">افزودن موقعیت مکانی...</translation>
-<translation id="3328786139156860526">اوضاع از کنترل خارج شده است؟ نمایه Chrome خود را به حالت بی نقص پاز نصب برگردانید.</translation>
 <translation id="8642489171979176277">وارد شده از نوارابزار Google</translation>
 <translation id="4684427112815847243">همگام‌سازی همه</translation>
 <translation id="4699357559218762027">(اجرای خودکار)</translation>
@@ -1316,7 +1316,6 @@
 <translation id="2076748722938414183">غیرفعال کردن تعویض سه‌انگشتی برگه‌ها</translation>
 <translation id="1756681705074952506">روش ورودی</translation>
 <translation id="8545211332741562162">به صفحات وب امکان می‌دهد از ویژگی‌های آزمایشی جاوا اسکریپت استفاده کنند.</translation>
-<translation id="3335878584157510445">بازنشانی تنظیمات نمایه...</translation>
 <translation id="734303607351427494">مدیریت موتورهای جستجو...</translation>
 <translation id="3706919628594312718">تنظیمات موشواره</translation>
 <translation id="7973174304586609605">افزودن کاربر جدید...</translation>
@@ -1371,6 +1370,7 @@
 <translation id="8856844195561710094">توقف کاوش دستگاه بلوتوث ناموفق بود.</translation>
 <translation id="2246340272688122454">در حال دانلود تصویر بازیابی...</translation>
 <translation id="5305688511332277257">چیزی نصب نشده است</translation>
+<translation id="1958802757844394735">تنظیمات مرورگر به مقادیر پیش‌فرض اصلی‌شان بازیایی شود.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">روش ورودی چینی (کانجی)</translation>
 <translation id="8395901698320285466">ابعاد</translation>
@@ -1735,7 +1735,6 @@
 <translation id="3204741654590142272">تغییر کانال بعداً اعمال خواهد شد.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> دقیقه باقیمانده</translation>
 <translation id="901974403500617787">پرچم‌هایی که در تمام سیستم اعمال می‌شوند فقط توسط مالک قابل تنظیم هستند: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">بازنشانی تنظیمات نمایه</translation>
 <translation id="2080010875307505892">صفحه‌کلید صربی</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> دقیقه</translation>
 <translation id="201192063813189384">خطا در خواندن داده‌ها از حافظهٔ پنهان.</translation>
@@ -3676,6 +3675,7 @@
 <translation id="7158238151765743968">اتصال به «<ph name="DEVICE_NAME"/>» همچنان در جریان است.</translation>
 <translation id="8782565991310229362">راه‌اندازی برنامه کاربردی کیوسک لغو شد.</translation>
 <translation id="4726672564094551039">بازخوانی خط مشی‌ها</translation>
+<translation id="2252923619938421629">با گزارش تنظیمات کنونی، به بهتر شدن Google Chrome کمک کنید.</translation>
 <translation id="4647697156028544508">لطفاً پین را برای &quot;<ph name="DEVICE_NAME"/>&quot; وارد کنید:</translation>
 <translation id="5604961908909363516">به هر چیزی که تایپ می‌کنید دسترسی داشته باشید.</translation>
 <translation id="7671130400130574146">استفاده از نوار عنوان سیستم و مرزها</translation>
@@ -4242,6 +4242,7 @@
 <translation id="2270484714375784793">شماره تلفن</translation>
 <translation id="3603622770190368340">دریافت گواهی‌نامه شبکه</translation>
 <translation id="6196207969502475924">جستجوی صوتی</translation>
+<translation id="6791586529990783225">بازنشانی تنظیمات مرورگر</translation>
 <translation id="5973229212631512780">فایل <ph name="FILE_NAME"/>، مخرب به نظر می‌رسد.</translation>
 <translation id="2927657246008729253">تغییر...</translation>
 <translation id="7978412674231730200">کلید خصوصی</translation>

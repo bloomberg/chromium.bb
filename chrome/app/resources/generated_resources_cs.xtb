@@ -9,7 +9,7 @@
 <translation id="3314762460582564620">Režim prostých znaků Zhuyin. Režim automatického výběru návrhu a související možnosti jsou deaktivovány nebo ignorovány.</translation>
 <translation id="166179487779922818">Heslo je příliš krátké.</translation>
 <translation id="2345460471437425338">Nesprávný certifikát pro hostitelský server.</translation>
-<translation id="3595596368722241419">Baterie je nabitá.</translation>
+<translation id="3595596368722241419">Baterie je nabitá</translation>
 <translation id="8130276680150879341">Odpojit se od soukromé sítě</translation>
 <translation id="5028012205542821824">Instalace není povolena.</translation>
 <translation id="1058418043520174283"><ph name="INDEX"/> z celkem <ph name="COUNT"/></translation>
@@ -325,6 +325,7 @@
 <translation id="5234764350956374838">Odmítnout</translation>
 <translation id="8702516222444523256">Aktivací této možnosti zajistíte, že bude ve složce Aplikace k dispozici balíček spouštěče aplikací pro systém OS X.</translation>
 <translation id="40027638859996362">Přesunutí slova</translation>
+<translation id="6303187936217840894">Nastavení prohlížeče bude obnoveno na původní výchozí hodnoty. Resetuje se vaše domovská stránka, stránka Nová karta a vyhledávač, deaktivují se rozšíření a uvolní se všechny karty. Budou také vymazána další dočasná data a data uložená v mezipaměti, například soubory cookies a data obsahu a webů.</translation>
 <translation id="1524793692806456360">Aktivovat pouze místní rozhraní Instant Extended API</translation>
 <translation id="6928441285542626375">Aktivovat funkci rychlého otevření protokolu TCP</translation>
 <translation id="5463275305984126951">Index <ph name="LOCATION"/></translation>
@@ -947,7 +948,6 @@
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
 <translation id="1634788685286903402">Důvěřovat tomuto certifikátu k ověřování uživatelů e-mailu.</translation>
 <translation id="1856715684130786728">Přidat polohu...</translation>
-<translation id="3328786139156860526">Vymklo se něco kontrole? Resetujte profil Chrome do původního stavu po instalaci.</translation>
 <translation id="8642489171979176277">Importováno z lišty Google Toolbar</translation>
 <translation id="4684427112815847243">Synchronizovat vše</translation>
 <translation id="4699357559218762027">(spuštěno automaticky)</translation>
@@ -1305,7 +1305,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME"/>
 <translation id="2076748722938414183">Zakázat přepínání karet posunutím</translation>
 <translation id="1756681705074952506">Metoda zadávání dat</translation>
 <translation id="8545211332741562162">Povolí webovým stránkám používat experimentální funkce jazyka JavaScript</translation>
-<translation id="3335878584157510445">Resetovat nastavení profilu...</translation>
 <translation id="734303607351427494">Spravovat vyhledávače...</translation>
 <translation id="3706919628594312718">Nastavení myši</translation>
 <translation id="7973174304586609605">Přidat nového uživatele...</translation>
@@ -1360,6 +1359,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME"/>
 <translation id="8856844195561710094">Vyhledávání zařízení Bluetooth se nepodařilo zastavit.</translation>
 <translation id="2246340272688122454">Stahování obrazu pro obnovení...</translation>
 <translation id="5305688511332277257">Není nainstalován žádný certifikát</translation>
+<translation id="1958802757844394735">Obnoví nastavení prohlížeče na původní výchozí hodnoty.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">Metoda zadávání čínštiny (cangjie)</translation>
 <translation id="8395901698320285466">Rozměry</translation>
@@ -1731,7 +1731,6 @@ Dejte pozor, abyste neodhalili žádné citlivé informace.</translation>
 <translation id="3204741654590142272">Změna kanálu bude použita později.</translation>
 <translation id="7836361698254323868">Zbývá <ph name="NUMBER_ONE"/> minuta</translation>
 <translation id="901974403500617787">Příznaky, které platí v celém systému, může nastavit pouze vlastník: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Resetovat nastavení profilu</translation>
 <translation id="2080010875307505892">Srbská klávesnice</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min</translation>
 <translation id="201192063813189384">Při čtení dat z mezipaměti došlo k chybě.</translation>
@@ -3677,6 +3676,7 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph nam
 <translation id="7158238151765743968">Stále probíhá připojení k zařízení <ph name="DEVICE_NAME"/>.</translation>
 <translation id="8782565991310229362">Spouštění aplikací pro režim veřejného terminálu bylo zrušeno.</translation>
 <translation id="4726672564094551039">Znovu načíst zásady</translation>
+<translation id="2252923619938421629">Pomoci s vylepšováním prohlížeče Google Chrome prostřednictvím nahlášení aktuálního nastavení</translation>
 <translation id="4647697156028544508">Zadejte prosím PIN pro zařízení <ph name="DEVICE_NAME"/>:</translation>
 <translation id="5604961908909363516">Získat přístup ke všemu, co napíšete</translation>
 <translation id="7671130400130574146">Použít systémové záhlaví a okraje okna</translation>
@@ -4243,6 +4243,7 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph nam
 <translation id="2270484714375784793">Telefonní číslo</translation>
 <translation id="3603622770190368340">Získání certifikátu sítě</translation>
 <translation id="6196207969502475924">Hlasové vyhledávání</translation>
+<translation id="6791586529990783225">Obnovení nastavení prohlížeče</translation>
 <translation id="5973229212631512780">Soubor <ph name="FILE_NAME"/> je nejspíš škodlivý.</translation>
 <translation id="2927657246008729253">Změnit...</translation>
 <translation id="7978412674231730200">Soukromý klíč</translation>

@@ -320,6 +320,7 @@
 <translation id="5234764350956374838">Tutup</translation>
 <translation id="8702516222444523256">Mengaktifkan untuk memastikan bahwa paket aplikasi OSX untuk Peluncur Aplikasi ada di bawah folder Aplikasi.</translation>
 <translation id="40027638859996362">Perpindahan kata</translation>
+<translation id="6303187936217840894">Setelan browser Anda akan dikembalikan ke default aslinya. Tindakan ini akan menyetel ulang beranda, laman tab baru, dan mesin telusur, menonaktifkan ekstensi, dan melepaskan sematan semua tab. Tindakan tersebut juga akan menghapus data sementara dan cache lainnya, misalnya cookie, konten, dan data situs.</translation>
 <translation id="1524793692806456360">Aktifkan API Perluasan Instan khusus lokal</translation>
 <translation id="6928441285542626375">Aktifkan TCP Fast Open</translation>
 <translation id="5463275305984126951">Pengindeksan <ph name="LOCATION"/></translation>
@@ -756,7 +757,7 @@
 <translation id="3605499851022050619">Laman diagnosis Safe Browsing</translation>
 <translation id="7485236722522518129">F4</translation>
 <translation id="1373282068478817608">Lukisan implementasi sisi</translation>
-<translation id="4417271111203525803">Baris alamat 2</translation>
+<translation id="4417271111203525803">Alamat baris 2</translation>
 <translation id="7617095560120859490">Beri tahu kami apa yang terjadi. (wajib)</translation>
 <translation id="5618333180342767515">(mungkin membutuhkan beberapa menit)</translation>
 <translation id="4991314311188418603"><ph name="COUNT"/> dipilih</translation>
@@ -957,7 +958,6 @@
 <translation id="1871208020102129563">Proxy disetel untuk menggunakan server proxy tetap, bukan URL skrip .pac.</translation>
 <translation id="1634788685286903402">Percayai sertifikat ini untuk mengidentifikasi pengguna email.</translation>
 <translation id="1856715684130786728">Tambahkan lokasi...</translation>
-<translation id="3328786139156860526">Ada hal yang lepas kontrol? Kembalikan profil Chrome Anda ke status setelah pemasangan yang bersih.</translation>
 <translation id="8642489171979176277">Diimpor dari Google Toolbar</translation>
 <translation id="4684427112815847243">Sinkronkan semua</translation>
 <translation id="4699357559218762027">(diluncurkan otomatis)</translation>
@@ -1317,7 +1317,6 @@ Ssst! <ph name="SHORTCUT_KEY"/> mode penyamaran mungkin berguna suatu saat nanti
 <translation id="2076748722938414183">Nonaktifkan penggosokan tab</translation>
 <translation id="1756681705074952506">Metode masukan</translation>
 <translation id="8545211332741562162">Mengaktifkan laman web untuk menggunakan fitur JavaScript eksperimental.</translation>
-<translation id="3335878584157510445">Setel ulang setelan profil...</translation>
 <translation id="734303607351427494">Kelola mesin telusur...</translation>
 <translation id="3706919628594312718">Setelan Mouse</translation>
 <translation id="7973174304586609605">Tambahkan pengguna baru...</translation>
@@ -1372,6 +1371,7 @@ Ssst! <ph name="SHORTCUT_KEY"/> mode penyamaran mungkin berguna suatu saat nanti
 <translation id="8856844195561710094">Gagal menghentikan pencarian perangkat Bluetooth.</translation>
 <translation id="2246340272688122454">Mengunduh citra pemulihan...</translation>
 <translation id="5305688511332277257">Tidak ada yang dipasang</translation>
+<translation id="1958802757844394735">Mengembalikan setelan browser ke default asli.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mnt. yang lalu</translation>
 <translation id="2816269189405906839">Metode masukan China (cangjie)</translation>
 <translation id="8395901698320285466">Dimensi</translation>
@@ -1736,7 +1736,6 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="3204741654590142272">Perubahan saluran akan diterapkan nanti.</translation>
 <translation id="7836361698254323868">Tersisa <ph name="NUMBER_ONE"/> menit</translation>
 <translation id="901974403500617787">Tanda yang berlaku bagi sistem secara luas hanya dapat disetel oleh pemilik: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Setel ulang setelan profil</translation>
 <translation id="2080010875307505892">Keyboard untuk bahasa Serbia</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> menit</translation>
 <translation id="201192063813189384">Kesalahan membaca data dari cache.</translation>
@@ -3286,7 +3285,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL"/> untuk hal ini dan petunjuk sele
 <translation id="1531961661616401172">Aktifkan Pemberitahuan Tersinkron eksperimental.</translation>
 <translation id="7361039089383199231">$1 byte</translation>
 <translation id="191688485499383649">Terjadi kesalahan tidak dikenal saat mencoba menyambung ke &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
-<translation id="7635741716790924709">Baris alamat 1</translation>
+<translation id="7635741716790924709">Alamat baris 1</translation>
 <translation id="5135533361271311778">Tidak dapat membuat item bookmark.</translation>
 <translation id="5271247532544265821">Mode China Aksara Modern/Tradisional</translation>
 <translation id="2052610617971448509">Sandbox Anda tidak memadai!</translation>
@@ -3670,6 +3669,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL"/> untuk hal ini dan petunjuk sele
 <translation id="7158238151765743968">Sambungan ke &quot;<ph name="DEVICE_NAME"/>&quot; sedang dalam proses.</translation>
 <translation id="8782565991310229362">Peluncuran aplikasi kios dibatalkan.</translation>
 <translation id="4726672564094551039">Muat ulang kebijakan</translation>
+<translation id="2252923619938421629">Bantu menjadikan Google Chrome lebih baik dengan melaporkan setelan saat ini</translation>
 <translation id="4647697156028544508">Masukkan PIN untuk &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Mengakses apa pun yang Anda ketik.</translation>
 <translation id="7671130400130574146">Gunakan bilah judul dan batas sistem</translation>
@@ -4235,6 +4235,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL"/> untuk hal ini dan petunjuk sele
 <translation id="2270484714375784793">Nomor telepon</translation>
 <translation id="3603622770190368340">Mendapatkan sertifikat jaringan</translation>
 <translation id="6196207969502475924">Penelusuran Suara</translation>
+<translation id="6791586529990783225">Setel ulang setelan browser</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> tampaknya berbahaya.</translation>
 <translation id="2927657246008729253">Ubah...</translation>
 <translation id="7978412674231730200">Kunci pribadi</translation>

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="3595596368722241419">बॅटरी भरली</translation>
+<translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
 <translation id="5250713215130379958">लाँचर स्वयं लपवा</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> आणि <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">पोर्टल राज्य</translation>
@@ -107,7 +107,7 @@
 <translation id="2372145515558759244">अ‍ॅप्स समक्रमित करत आहे...</translation>
 <translation id="7256405249507348194">अपरिचित त्रुटी: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA तपास अयशस्वी</translation>
-<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> पूर्ण होईपर्यंत</translation>
+<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> बाकी पूर्ण होण्यात</translation>
 <translation id="5787281376604286451">संभाषण अभिप्राय सक्षम केला आहे.
 अक्षम करण्‍यासाठी Ctrl+Alt+Z दाबा.</translation>
 <translation id="4479639480957787382">इथरनेट</translation>

@@ -326,6 +326,7 @@
 <translation id="5234764350956374838">Annuller</translation>
 <translation id="8702516222444523256">Aktivér for at sikre, at der findes en OSX-app-pakke for applikationslisten i mappen Applikationer.</translation>
 <translation id="40027638859996362">Flytning af ord</translation>
+<translation id="6303187936217840894">Dine browserindstillinger vil blive gendannet til deres oprindelige standardindstillinger. Dette vil nulstille din startside, siden Ny fane og søgemaskine, deaktivere dine udvidelser og frigøre alle faner. Det vil også fjerne andre midlertidige og cachelagrede data, såsom cookies, indhold og websitedata.</translation>
 <translation id="1524793692806456360">Aktivér kun den lokale Instant Extended API</translation>
 <translation id="6928441285542626375">Aktivér TCP Fast Open</translation>
 <translation id="5463275305984126951">Indeks over <ph name="LOCATION"/></translation>
@@ -965,7 +966,6 @@
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
 <translation id="1634788685286903402">Hav tillid til dette certifikat med hensyn til identifikation af e-mailbrugere.</translation>
 <translation id="1856715684130786728">Tilføj placering...</translation>
-<translation id="3328786139156860526">Er tingene ude af kontrol? Gendan tilstanden for din Chrome-profil fra før installationen.</translation>
 <translation id="8642489171979176277">Importeret fra Google Toolbar</translation>
 <translation id="4684427112815847243">Synkroniser alt</translation>
 <translation id="4699357559218762027">(automatisk opstart)</translation>
@@ -1325,7 +1325,6 @@ Beregner resterende tid</translation>
 <translation id="2076748722938414183">Deaktiver faneskift</translation>
 <translation id="1756681705074952506">Indtastningsmetode</translation>
 <translation id="8545211332741562162">Aktivér, at websider kan anvende eksperimentelle JavaScript-funktioner.</translation>
-<translation id="3335878584157510445">Nulstil profilindstillinger...</translation>
 <translation id="734303607351427494">Administrer søgemaskiner...</translation>
 <translation id="3706919628594312718">Indstillinger for mus</translation>
 <translation id="7973174304586609605">Tilføj ny bruger...</translation>
@@ -1380,6 +1379,7 @@ Beregner resterende tid</translation>
 <translation id="8856844195561710094">Kunne ikke standse opdagelse af Bluetooth-enhed.</translation>
 <translation id="2246340272688122454">Downloader genoprettelsesbillede...</translation>
 <translation id="5305688511332277257">Ingen installeret</translation>
+<translation id="1958802757844394735">Gendan browserindstillinger til deres oprindelige standardindstillinger.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> minutter siden</translation>
 <translation id="2816269189405906839">Kinesisk indtastningsmetode (cangjie)</translation>
 <translation id="8395901698320285466">Mål</translation>
@@ -1747,7 +1747,6 @@ Sørg for, at du ikke afslører følsomme oplysninger.</translation>
 <translation id="3204741654590142272">Ændringerne af kanalen træder i kraft senere.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> minut tilbage</translation>
 <translation id="901974403500617787">Markeringer, der gælder for hele systemet, kan kun indstilles af ejeren: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Nulstil profilindstillinger</translation>
 <translation id="2080010875307505892">Serbisk tastatur</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min.</translation>
 <translation id="201192063813189384">Der opstod en fejl under læsning af data fra cache.</translation>
@@ -3685,6 +3684,7 @@ Tjek din e-mail på <ph name="ACCOUNT_EMAIL"/> for at se denne og flere vejledni
 <translation id="7158238151765743968">Forbindelsen til &quot;<ph name="DEVICE_NAME"/>&quot; er stadig aktiv.</translation>
 <translation id="8782565991310229362">Start af kioskapplikationen blev annulleret.</translation>
 <translation id="4726672564094551039">Opdater politikker</translation>
+<translation id="2252923619938421629">Hjælp med at gøre Google Chrome bedre ved at rapportere de aktuelle indstillinger</translation>
 <translation id="4647697156028544508">Indtast pinkoden for &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Få adgang til alt det, som du skriver.</translation>
 <translation id="7671130400130574146">Brug systemets titellinje og rammer</translation>
@@ -4250,6 +4250,7 @@ Tjek din e-mail på <ph name="ACCOUNT_EMAIL"/> for at se denne og flere vejledni
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="3603622770190368340">Få fat i et netværkscertifikat</translation>
 <translation id="6196207969502475924">Stemmesøgning</translation>
+<translation id="6791586529990783225">Nulstil browserindstillinger</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> ser ud til at være ondsindet.</translation>
 <translation id="2927657246008729253">Skift...</translation>
 <translation id="7978412674231730200">Privat nøgle</translation>

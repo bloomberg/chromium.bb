@@ -316,6 +316,7 @@
 <translation id="5234764350956374838">关闭</translation>
 <translation id="8702516222444523256">启用即可确保应用启动器的 OSX 应用包显示在“应用”文件夹下。</translation>
 <translation id="40027638859996362">字词移动</translation>
+<translation id="6303187936217840894">您的浏览器设置将恢复为原始默认设置。这将重置您的主页、新标签页和搜索引擎，停用您的扩展程序，以及取消固定所有标签页。其他临时性数据和缓存数据（例如 Cookie、内容和网站数据）也会一并遭到清除。</translation>
 <translation id="1524793692806456360">启用仅限本地的 Instant Extended API</translation>
 <translation id="6928441285542626375">启用 TCP Fast Open</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> 的索引</translation>
@@ -947,7 +948,6 @@
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
 <translation id="1634788685286903402">信任该证书，以便标识电子邮件用户的身份。</translation>
 <translation id="1856715684130786728">添加位置…</translation>
-<translation id="3328786139156860526">设置变得一团糟？请将您的 Chrome 个人资料还原为安装后的简洁状态。</translation>
 <translation id="8642489171979176277">从 Google 工具栏导入的书签</translation>
 <translation id="4684427112815847243">同步所有数据类型</translation>
 <translation id="4699357559218762027">（自动启动）</translation>
@@ -1304,7 +1304,6 @@
 <translation id="2076748722938414183">停用标签页拖动功能</translation>
 <translation id="1756681705074952506">输入法</translation>
 <translation id="8545211332741562162">允许网页使用实验性 JavaScript 功能。</translation>
-<translation id="3335878584157510445">重置个人资料设置…</translation>
 <translation id="734303607351427494">管理搜索引擎...</translation>
 <translation id="3706919628594312718">鼠标设置</translation>
 <translation id="7973174304586609605">添加新用户...</translation>
@@ -1359,6 +1358,7 @@
 <translation id="8856844195561710094">无法停止蓝牙设备查找功能。</translation>
 <translation id="2246340272688122454">正在下载恢复映像...</translation>
 <translation id="5305688511332277257">未安装任何证书</translation>
+<translation id="1958802757844394735">将浏览器设置恢复为原始默认设置。</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> 分钟前</translation>
 <translation id="2816269189405906839">中文输入法（仓颉）</translation>
 <translation id="8395901698320285466">尺寸</translation>
@@ -1725,7 +1725,6 @@
 <translation id="3204741654590142272">系统稍后将应用版本更改。</translation>
 <translation id="7836361698254323868">还剩 <ph name="NUMBER_ONE"/> 分钟</translation>
 <translation id="901974403500617787">应用于整个系统的设置只能由以下所有者设定：<ph name="OWNER_EMAIL"/>。</translation>
-<translation id="492131106259297640">重置个人资料设置</translation>
 <translation id="2080010875307505892">塞尔维亚语键盘</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min</translation>
 <translation id="201192063813189384">从缓存中读取数据时出现错误。</translation>
@@ -3662,6 +3661,7 @@
 <translation id="7158238151765743968">仍在连接“<ph name="DEVICE_NAME"/>”。</translation>
 <translation id="8782565991310229362">已取消启动信息亭模式下的应用。</translation>
 <translation id="4726672564094551039">重新加载政策</translation>
+<translation id="2252923619938421629">请报告当前设置以帮助改进 Google Chrome 的功能</translation>
 <translation id="4647697156028544508">请输入“<ph name="DEVICE_NAME"/>”的 PIN：</translation>
 <translation id="5604961908909363516">访问您输入的所有内容。</translation>
 <translation id="7671130400130574146">使用系统标题栏和边框</translation>
@@ -4226,6 +4226,7 @@
 <translation id="2270484714375784793">电话号码</translation>
 <translation id="3603622770190368340">获取网络证书</translation>
 <translation id="6196207969502475924">语音搜索</translation>
+<translation id="6791586529990783225">重置浏览器设置</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> 似乎包含恶意内容。</translation>
 <translation id="2927657246008729253">更改...</translation>
 <translation id="7978412674231730200">私有密钥</translation>

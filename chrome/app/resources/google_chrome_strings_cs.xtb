@@ -28,6 +28,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2896252579017640304">Spustit aplikace Chrome</translation>
 <translation id="2370289711218562573">Google Chrome právě importuje Oblíbené položky nebo záložky:</translation>
 <translation id="8762286861469007470">Detektor Chrome stránek Captive Portal</translation>
+<translation id="3993188379797269327">Soubor <ph name="FILE_NAME"/> může změnit nastavení Chromu.</translation>
 <translation id="1761870329818521071">Nelze nainstalovat stejnou verzi pluginu Google Chrome Frame, jaká je právě spuštěná. Ukončete plugin Google Chrome Frame a zkuste to prosím znovu.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Nyní jste v Chromu přihlášeni. Synchronizace je ale deaktivována správcem.</translation>
@@ -182,6 +183,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="7253415505590551024">Probíhá stahování. Chcete Google Chrome ukončit a stahování zrušit?</translation>
 <translation id="7196020411877309443">Proč je zobrazeno toto dialogové okno?</translation>
 <translation id="2769762047821873045">Google Chrome není vaším výchozím prohlížečem.</translation>
+<translation id="1020869477857717497">Soubor <ph name="FILE_NAME"/> může v Chromu změnit fungování vyhledávání.</translation>
 <translation id="6855094794438142393">Přejděte do
           nabídky Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

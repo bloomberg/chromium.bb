@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">تشغيل تطبيقات Chrome</translation>
 <translation id="2370289711218562573">يقوم Google Chrome الآن باستيراد المفضلة/الإشارات.</translation>
 <translation id="8762286861469007470">أداة اكتشاف البوابات المقيدة في Chrome</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> قد يغيّر إعدادات Chrome.</translation>
 <translation id="1761870329818521071">لا يمكن تثبيت إصدار إطار Google Chrome نفسه الذي يتم تشغيله حاليًا. الرجاء إغلاق إطار Google Chrome وإعادة المحاولة.</translation>
 <translation id="2040709530900803995">عارض Google Chrome</translation>
 <translation id="6014844626092547096">لقد سجلت الدخول الآن إلى Chrome! عطّل المشرف المزامنة.</translation>
@@ -176,6 +177,7 @@
 <translation id="7253415505590551024">هناك تنزيلات قيد التقدم. هل تريد الخروج من Google Chrome وإلغاء التنزيلات؟</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
 <translation id="2769762047821873045">ليس Google Chrome متصفحك الافتراضي.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> قد يغيّر طريقة عمل عمليات البحث في Chrome.</translation>
 <translation id="6855094794438142393">انتقل إلى
           قائمة Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

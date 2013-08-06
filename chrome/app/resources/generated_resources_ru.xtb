@@ -319,6 +319,7 @@
 <translation id="5234764350956374838">Закрыть</translation>
 <translation id="8702516222444523256">Проверка наличия в папке &quot;Приложения&quot; пакета приложений OSX для Панели запуска.</translation>
 <translation id="40027638859996362">Сдвинуть на одно слово</translation>
+<translation id="6303187936217840894">Настройки браузера по умолчанию будут восстановлены. В результате произойдет сброс настроек главной страницы, страницы быстрого доступа и поисковой системы, отключение расширений и открепление всех вкладок. Кроме того, все временные и кэшированные данные, такие как файлы cookie, содержание и данные сайтов, будут удалены.</translation>
 <translation id="1524793692806456360">Использовать расширенный API Живого поиска в локальном режиме</translation>
 <translation id="6928441285542626375">Включение TCP Fast Open</translation>
 <translation id="5463275305984126951">Содержание <ph name="LOCATION"/></translation>
@@ -956,7 +957,6 @@
 <translation id="1871208020102129563">Выбрано использование фиксированных прокси-серверов, а не URL PAC-скрипта.</translation>
 <translation id="1634788685286903402">Доверять этому сертификату для идентификации пользователей электронной почты.</translation>
 <translation id="1856715684130786728">Добавить каталог...</translation>
-<translation id="3328786139156860526">Все вышло из-под контроля? Восстановите исходные настройки профиля.</translation>
 <translation id="8642489171979176277">Импортировано из Панели инструментов Google</translation>
 <translation id="4684427112815847243">Синхронизировать все</translation>
 <translation id="4699357559218762027">(автозапуск)</translation>
@@ -1315,7 +1315,6 @@
 <translation id="2076748722938414183">Отключить прокрутку вкладок</translation>
 <translation id="1756681705074952506">Способ ввода</translation>
 <translation id="8545211332741562162">Использование в веб-страницах элементов экспериментального JavaScript.</translation>
-<translation id="3335878584157510445">Сбросить настройки профиля...</translation>
 <translation id="734303607351427494">Управление поисковыми системами...</translation>
 <translation id="3706919628594312718">Настройки указателя мыши</translation>
 <translation id="7973174304586609605">Добавить пользователя...</translation>
@@ -1370,6 +1369,7 @@
 <translation id="8856844195561710094">Не удалось остановить обнаружение устройств Bluetooth.</translation>
 <translation id="2246340272688122454">Загрузка образа для восстановления...</translation>
 <translation id="5305688511332277257">Не установлено</translation>
+<translation id="1958802757844394735">Восстановление настроек браузера по умолчанию.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">китайская раскладка (канджи)</translation>
 <translation id="8395901698320285466">Размеры</translation>
@@ -1734,7 +1734,6 @@
 <translation id="3204741654590142272">Изменения версии вступят в силу позже.</translation>
 <translation id="7836361698254323868">Осталась <ph name="NUMBER_ONE"/> минута</translation>
 <translation id="901974403500617787">Системные флаги может устанавливать только владелец (<ph name="OWNER_EMAIL"/>).</translation>
-<translation id="492131106259297640">Изменение настроек профиля</translation>
 <translation id="2080010875307505892">Сербская раскладка</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> мин.</translation>
 <translation id="201192063813189384">Ошибка чтения данных из кэша.</translation>
@@ -3663,6 +3662,7 @@
 <translation id="7158238151765743968">Выполняется подключение к устройству &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="8782565991310229362">Запуск киоск-приложения был отменен.</translation>
 <translation id="4726672564094551039">Повторно загрузить политики</translation>
+<translation id="2252923619938421629">Отправьте отчет о текущих настройках Google Chrome и помогите усовершенствовать работу браузера</translation>
 <translation id="4647697156028544508">Введите PIN-код для &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Доступ к вводимым данным.</translation>
 <translation id="7671130400130574146">Использовать системные рамки и строку заголовка</translation>
@@ -4228,6 +4228,7 @@
 <translation id="2270484714375784793">Номер телефона</translation>
 <translation id="3603622770190368340">Получение сетевого сертификата</translation>
 <translation id="6196207969502475924">Голосовой поиск</translation>
+<translation id="6791586529990783225">Сброс настроек браузера</translation>
 <translation id="5973229212631512780">Файл <ph name="FILE_NAME"/> может оказаться вредоносным.</translation>
 <translation id="2927657246008729253">Изменить...</translation>
 <translation id="7978412674231730200">Закрытый ключ</translation>

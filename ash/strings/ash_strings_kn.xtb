@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
-<translation id="3595596368722241419">ಬ್ಯಾಟರಿ ಪೂರ್ಣವಾಗಿದೆ</translation>
+<translation id="3595596368722241419">ಬ್ಯಾಟರಿ ಭರ್ತಿಯಾಗಿದೆ</translation>
 <translation id="5250713215130379958">ಲಾಂಚರ್ ಅನ್ನು ಸ್ವಯಂಮರೆಮಾಡಿ</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> ಮತ್ತು <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">ಪೋರ್ಟಲ್ ಸ್ಥಿತಿ</translation>
@@ -171,7 +171,7 @@
 <translation id="7649070708921625228">ಸಹಾಯ</translation>
 <translation id="3050422059534974565">CAPS LOCK ಆನ್ ಆಗಿದೆ.
 ರದ್ದುಗೊಳಿಸಲು ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
-<translation id="397105322502079400">ಎಣಿಕೆ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="158849752021629804">ಹೋಮ್ ನೆಟ್‌ವರ್ಕ್ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="6857811139397017780">ಸಕ್ರಿಯಗೊಳಿಸಿ<ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP ಲುಕಪ್ ವಿಫಲವಾಗಿದೆ</translation>
@@ -189,7 +189,7 @@
 <translation id="7209101170223508707">CAPS LOCK ಆನ್ ಆಗಿದೆ.
 ರದ್ದುಗೊಳಿಸಲು Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ</translation>
 <translation id="8940956008527784070">ಬ್ಯಾಟರಿ ಕಡಿಮೆ (<ph name="PERCENTAGE"/>%)</translation>
-<translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ಎಡ</translation>
+<translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ಉಳಿದಿದೆ</translation>
 <translation id="520760366042891468">Hangouts ಮೂಲಕ ನಿಮ್ಮ ಪರದೆಯ ನಿಯಂತ್ರಣವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="8000066093800657092">ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲ</translation>
 <translation id="4015692727874266537">ಮತ್ತೊಂದು ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ...</translation>

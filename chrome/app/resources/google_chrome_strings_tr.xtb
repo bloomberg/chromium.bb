@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Chrome uygulamalarını başlat</translation>
 <translation id="2370289711218562573">Google Chrome şu anda Sık Kullanılanları/Yer İmlerini içe aktarıyor.</translation>
 <translation id="8762286861469007470">Chrome Captive Portal algılayıcısı</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> dosyası, Chrome ayarlarınızı değiştirebilir.</translation>
 <translation id="1761870329818521071">Şu anda çalışmakta olan Google Chrome Frame ile aynı sürüm yüklenemez. Lütfen Google Chrome Frame'i kapatın ve tekrar deneyin.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Chrome'da oturum açtınız! Senkronizasyon, yöneticiniz tarafından devre dışı bırakıldı.</translation>
@@ -173,6 +174,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="7253415505590551024">Şu anda devam eden indirme işlemleri var. Google Chrome'dan çıkmak ve indirme işlemlerini iptal etmek istiyor musunuz?</translation>
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>
 <translation id="2769762047821873045">Google Chrome varsayılan tarayıcınız değil.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> dosyası, aramalarınızın Chrome'daki işleyiş şeklini değiştirebilir.</translation>
 <translation id="6855094794438142393">Chrome menüsü &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;

@@ -331,6 +331,7 @@
 <translation id="5234764350956374838">Opusti</translation>
 <translation id="8702516222444523256">Omogočite, če želite zagotoviti, da bo paket aplikacij zaganjalnik aplikacij za OSX v mapi »Applications«.</translation>
 <translation id="40027638859996362">Premakne besedo</translation>
+<translation id="6303187936217840894">Nastavitve brskalnika bodo obnovljene na prvotne privzete nastavitve. To bo ponastavilo vašo domačo stran, stran »Nov zavihek« in iskalnik ter onemogočilo razširitve in odpelo vse zavihke. Počiščeni bodo tudi drugi začasni in predpomnjeni podatki, kot so piškotki, vsebina in podatki o spletnih mestih.</translation>
 <translation id="1524793692806456360">Omogočanje samo lokalnega API-ja za razširjeni dinamični način</translation>
 <translation id="6928441285542626375">Omogoči hitro odpiranje TCP-ja</translation>
 <translation id="5463275305984126951">Kazalo lokacije <ph name="LOCATION"/></translation>
@@ -969,7 +970,6 @@
 <translation id="1871208020102129563">Proxy je nastavljen na uporabo stalnih strežnikov proxy, ne na URL skripta .pac.</translation>
 <translation id="1634788685286903402">Zaupaj temu potrdilu za prepoznavanje uporabnikov e-pošte.</translation>
 <translation id="1856715684130786728">Dodaj lokacijo ...</translation>
-<translation id="3328786139156860526">Ste izgubili nadzor nad stvarmi? Obnovite profil za Chrome na čisto, ponamestitveno stanje.</translation>
 <translation id="8642489171979176277">Uvoženo iz Google Orodne vrstice</translation>
 <translation id="4684427112815847243">Sinhroniziraj vse</translation>
 <translation id="4699357559218762027">(samodejno zagnana)</translation>
@@ -1328,7 +1328,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY"/> za na
 <translation id="2076748722938414183">Onemogočanje pomikanja po zavihkih</translation>
 <translation id="1756681705074952506">Način vnosa</translation>
 <translation id="8545211332741562162">Omogoči uporabo preskusnih funkcij JavaScripta na spletnih straneh.</translation>
-<translation id="3335878584157510445">Ponastavitev nastavitev profila ...</translation>
 <translation id="734303607351427494">Upravljanje iskalnikov ...</translation>
 <translation id="3706919628594312718">Nastavitve miške</translation>
 <translation id="7973174304586609605">Dodajanje novega uporabnika ...</translation>
@@ -1383,6 +1382,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY"/> za na
 <translation id="8856844195561710094">Iskanja naprave Bluetooth ni bilo mogoče ustaviti.</translation>
 <translation id="2246340272688122454">Prenos posnetka za obnovitev ...</translation>
 <translation id="5305688511332277257">Ni nameščenih</translation>
+<translation id="1958802757844394735">Obnovi nastavitve brskalnika na prvotne privzete nastavitve.</translation>
 <translation id="7770995925463083016">Pred <ph name="NUMBER_TWO"/> min</translation>
 <translation id="2816269189405906839">Kitajski način vnosa (kangdži)</translation>
 <translation id="8395901698320285466">Mere</translation>
@@ -1748,7 +1748,6 @@ Ne razkrivajte občutljivih podatkov.</translation>
 <translation id="3204741654590142272">Sprememba kanala bo uveljavljena pozneje.</translation>
 <translation id="7836361698254323868">še <ph name="NUMBER_ONE"/> min</translation>
 <translation id="901974403500617787">Zastavice, ki se uporabijo v celotnem sistemu, lahko nastavi samo lastnik: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Ponastavitev nastavitev profila</translation>
 <translation id="2080010875307505892">Srbska tipkovnica</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min</translation>
 <translation id="201192063813189384">Napaka pri branju podatkov iz predpomnilnika</translation>
@@ -3703,6 +3702,7 @@ Ta in druga navodila lahko preberete v e-poštnem sporočilu, poslanem na <ph na
 <translation id="7158238151765743968">Povezava z napravo »<ph name="DEVICE_NAME"/>« še vedno poteka.</translation>
 <translation id="8782565991310229362">Zagon aplikacije Kiosk je preklican.</translation>
 <translation id="4726672564094551039">Znova naloži pravilnike</translation>
+<translation id="2252923619938421629">Pomagajte izboljšati Google Chrome s poročanjem trenutnih nastavitev</translation>
 <translation id="4647697156028544508">Vnesite PIN za napravo »<ph name="DEVICE_NAME"/>«:</translation>
 <translation id="5604961908909363516">Dostopajte do vsega, kar vnesete.</translation>
 <translation id="7671130400130574146">Uporabi sistemsko naslovno vrstico in obrobe</translation>
@@ -4270,6 +4270,7 @@ Ta in druga navodila lahko preberete v e-poštnem sporočilu, poslanem na <ph na
 <translation id="2270484714375784793">Telefonska številka</translation>
 <translation id="3603622770190368340">Prejemanje omrežnega potrdila</translation>
 <translation id="6196207969502475924">Glasovno iskanje</translation>
+<translation id="6791586529990783225">Ponastavitev nastavitev brskalnika</translation>
 <translation id="5973229212631512780">Datoteka <ph name="FILE_NAME"/> je videti škodljiva.</translation>
 <translation id="2927657246008729253">Spremeni ...</translation>
 <translation id="7978412674231730200">Zasebni ključ</translation>

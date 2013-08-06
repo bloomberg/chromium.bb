@@ -307,6 +307,7 @@
 <translation id="5234764350956374838">ปิด</translation>
 <translation id="8702516222444523256">เปิดใช้งานเพื่อให้แน่ใจว่ามีชุดแอป OSX สำหรับตัวเรียกใช้งานแอปอยู่ใต้โฟลเดอร์ &quot;แอปพลิเคชัน&quot;</translation>
 <translation id="40027638859996362">ย้ายคำ</translation>
+<translation id="6303187936217840894">การตั้งค่าเบราว์เซอร์ของคุณจะถูกคืนเป็นค่าเริ่มต้นเดิม ซึ่งจะรีเซ็ตหน้าแรก หน้าแท็บใหม่และเครื่องมือค้นหา ปิดใช้งานส่วนขยาย และเลิกตรึงแท็บทั้งหมด และยังจะล้างข้อมูลที่เก็บไว้ชั่วคราวและข้อมูลแคชอื่นๆ เช่น คุกกี้ เนื้อหา และข้อมูลไซต์</translation>
 <translation id="1524793692806456360">เปิดใช้งาน API แบบขยายทันทีเฉพาะในเครื่องเท่านั้น</translation>
 <translation id="6928441285542626375">เปิดใช้งาน TCP Fast Open</translation>
 <translation id="5463275305984126951">ดัชนีของ <ph name="LOCATION"/></translation>
@@ -940,7 +941,6 @@
 <translation id="1871208020102129563">พร็อกซีถูกตั้งค่าให้ใช้พร็อกซีเซิร์ฟเวอร์แบบคงที่ ไม่ใช่ URL สคริปต์ .pac</translation>
 <translation id="1634788685286903402">เชื่อถือใบรับรองนี้ในการระบุตัวตนของผู้ใช้อีเมล</translation>
 <translation id="1856715684130786728">เพิ่มตำแหน่ง...</translation>
-<translation id="3328786139156860526">เปลี่ยนโปรไฟล์ Google ของคุณกลับสู่สถานะหลังการติดตั้งที่สะอาดเรียบร้อย หากดูไม่ค่อยเป็นระเบียบแล้ว</translation>
 <translation id="8642489171979176277">นำเข้าจาก Google Toolbar</translation>
 <translation id="4684427112815847243">ซิงค์ทุกอย่าง</translation>
 <translation id="4699357559218762027">(เรียกใช้อัตโนมัติ)</translation>
@@ -1297,7 +1297,6 @@
 <translation id="2076748722938414183">ปิดใช้การถูแท็บ</translation>
 <translation id="1756681705074952506">วิธีการป้อนข้อมูล</translation>
 <translation id="8545211332741562162">เปิดใช้งานหน้าเว็บเพื่อใช้คุณลักษณะ JavaScript แบบทดลอง</translation>
-<translation id="3335878584157510445">รีเซ็ตการตั้งค่าโปรไฟล์...</translation>
 <translation id="734303607351427494">จัดการเครื่องมือค้นหา...</translation>
 <translation id="3706919628594312718">การตั้งค่าเมาส์</translation>
 <translation id="7973174304586609605">เพิ่มผู้ใช้ใหม่...</translation>
@@ -1352,6 +1351,7 @@
 <translation id="8856844195561710094">ไม่สามารถหยุดการค้นหาอุปกรณ์บลูทูธ</translation>
 <translation id="2246340272688122454">กำลังดาวน์โหลดอิมเมจการกู้คืน...</translation>
 <translation id="5305688511332277257">ไม่มีการติดตั้ง</translation>
+<translation id="1958802757844394735">คืนการตั้งค่าเบราว์เซอร์เป็นค่าเริ่มต้นเดิม</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> นาทีที่ผ่านมา</translation>
 <translation id="2816269189405906839">วิธีป้อนข้อมูลภาษาจีน (cangjie)</translation>
 <translation id="8395901698320285466">มิติข้อมูล</translation>
@@ -1716,7 +1716,6 @@
 <translation id="3204741654590142272">การเปลี่ยนช่องจะถูกนำไปใช้ในภายหลัง</translation>
 <translation id="7836361698254323868">เหลือ <ph name="NUMBER_ONE"/> นาที</translation>
 <translation id="901974403500617787">การตั้งค่าสถานะที่ใช้ทั้งระบบสามารถตั้งค่าได้โดยเจ้าของเท่านั้น: <ph name="OWNER_EMAIL"/></translation>
-<translation id="492131106259297640">รีเซ็ตการตั้งค่าโปรไฟล์</translation>
 <translation id="2080010875307505892">แป้นพิมพ์ภาษาเซอร์เบียน</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> นาที</translation>
 <translation id="201192063813189384">ข้อผิดพลาดในการอ่านข้อมูลจากแคช</translation>
@@ -2651,7 +2650,7 @@
 <translation id="8534579021159131403">นาที</translation>
 <translation id="1767519210550978135">Hsu</translation>
 <translation id="2498539833203011245">ย่อ</translation>
-<translation id="7410344089573941623">ถามว่า <ph name="HOST"/> ต้องการเข้าถึงกล้องถ่ายรูปและไมโครโฟนของคุณหรือไม่</translation>
+<translation id="7410344089573941623">ถามว่า <ph name="HOST"/> ต้องการเข้าถึงกล้องและไมโครโฟนของคุณหรือไม่</translation>
 <translation id="3480892288821151001">จัดวางหน้าต่างไว้ทางซ้าย</translation>
 <translation id="3031417829280473749">เอเจนต์เอ็กซ์</translation>
 <translation id="2893168226686371498">เบราว์เซอร์เริ่มต้น</translation>
@@ -3634,6 +3633,7 @@
 <translation id="7158238151765743968">การเชื่อมต่อกับ &quot;<ph name="DEVICE_NAME"/>&quot; ยังดำเนินการอยู่</translation>
 <translation id="8782565991310229362">การเรียกใช้แอปพลิเคชันคีออสก์ถูกยกเลิก</translation>
 <translation id="4726672564094551039">โหลดนโยบายซ้ำ</translation>
+<translation id="2252923619938421629">ช่วยให้ Google Chrome ดียิ่งขึ้นด้วยการรายงานการตั้งค่าปัจจุบัน</translation>
 <translation id="4647697156028544508">โปรดป้อน PIN สำหรับ &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">เข้าถึงทุกสิ่งที่คุณพิมพ์</translation>
 <translation id="7671130400130574146">ใช้แถบชื่อและเส้นขอบของระบบ</translation>
@@ -4199,6 +4199,7 @@
 <translation id="2270484714375784793">หมายเลขโทรศัพท์</translation>
 <translation id="3603622770190368340">รับใบรับรองเครือข่าย</translation>
 <translation id="6196207969502475924">การค้นหาด้วยเสียง</translation>
+<translation id="6791586529990783225">รีเซ็ตการตั้งค่าเบราว์เซอร์</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> ดูน่าจะเป็นอันตราย</translation>
 <translation id="2927657246008729253">เปลี่ยน...</translation>
 <translation id="7978412674231730200">กุญแจส่วนตัว</translation>

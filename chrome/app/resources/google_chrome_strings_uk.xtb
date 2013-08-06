@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Запустити програми Chrome</translation>
 <translation id="2370289711218562573">Google Chrome імпортує &quot;Улюблені/Закладки&quot;.</translation>
 <translation id="8762286861469007470">Детектор приєднаного порталу Chrome</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> може змінити ваші налаштування Chrome.</translation>
 <translation id="1761870329818521071">Неможливо встановити версію Google Chrome Frame, аналогічну запущеній на цей момент. Закрийте Google Chrome Frame і повторіть спробу.</translation>
 <translation id="2040709530900803995">Рендерер Google Chrome</translation>
 <translation id="6014844626092547096">Ви ввійшли в Chrome. Проте ваш адміністратор вимкнув синхронізацію.</translation>
@@ -174,6 +175,7 @@
 <translation id="7253415505590551024">Тривають завантаження. Вийти з Google Chrome і скасувати ці завантаження?</translation>
 <translation id="7196020411877309443">Чому відображається це повідомлення?</translation>
 <translation id="2769762047821873045">Google Chrome не є веб-переглядачем за умовчанням.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> може змінити ваші налаштування пошуку в Chrome.</translation>
 <translation id="6855094794438142393">Перейдіть у
           меню Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

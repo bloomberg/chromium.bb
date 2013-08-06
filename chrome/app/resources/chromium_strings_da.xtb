@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Luk alle Chromium-vinduer, og prøv igen.</translation>
 <translation id="4077262827416206768">Luk alle Chromium-vinduer, og genstart Chromium, før denne ændring kan træde i kraft.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> kan ændre dine søgeindstillinger i Chromium.</translation>
 <translation id="6944967875980567883">Moduler indlæst i Chromium</translation>
 <translation id="118298050220780080">Du forsøgte at besøge &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren fremviste et certifikat, der er udstedt af en enhed, som computerens operativsystem ikke har tillid til. Dette kan betyde, at serveren har genereret sine egne sikkerhedsoplysninger, som Chromium ikke kan benytte til at skaffe identitetsoplysninger, eller at en ondsindet person forsøger at opsnappe din kommunikation.</translation>
 <translation id="3296368748942286671">Fortsæt med at køre baggrundsapps, når Chromium er lukket</translation>
@@ -182,6 +183,7 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="1708666629004767631">Der findes en ny og mere sikker version af Chromium.</translation>
 <translation id="1539981464052805551">Copyright 2013 Forfatterne til Chromium. Alle rettigheder forbeholdes.</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> kan ændre dine Chromium-indstillinger.</translation>
 <translation id="8724049448828509830">En download er i øjeblikket i gang. Vil du afslutte Chromium og annullere downloaden?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Plugin-host til Chromium</translation>

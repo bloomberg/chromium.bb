@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Chromium 창을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="4077262827416206768">모든 Chromium 창을 닫은 뒤 다시 Chromium을 실행하면 변경 사항이 반영됩니다.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/>이(가) Chromium의 검색 작동 방법을 변경할 수 있습니다.</translation>
 <translation id="6944967875980567883">Chromium에 로드된 모듈</translation>
 <translation id="118298050220780080">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접속하려고 했지만 컴퓨터의 운영체제에서 신뢰하지 않는 단체에서 발급한 인증서를 제공했습니다. 다시 말해 서버가 자체 보안 인증 정보를 신뢰하지 않기 때문에 Chromium이 식별 정보를 수락하지 않거나 침입자가 통신을 가로챌 수 있습니다.</translation>
 <translation id="3296368748942286671">Chromium 종료 후에도 백그라운드 앱을 계속 실행</translation>
@@ -180,6 +181,7 @@
 <translation id="1708666629004767631">새롭고 안전한 Chromium의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="1539981464052805551">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/>이(가) Chromium 설정을 변경할 수 있습니다.</translation>
 <translation id="8724049448828509830">현재 한 개의 다운로드가 진행 중입니다. Chromium을 종료하고 다운로드를 취소하시겠습니까?</translation>
 <translation id="3360567213983886831">Chromium 바이너리</translation>
 <translation id="7503101070699687603">Chromium 플러그인 호스트</translation>

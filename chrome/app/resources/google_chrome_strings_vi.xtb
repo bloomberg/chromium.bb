@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Khởi chạy ứng dụng Chrome</translation>
 <translation id="2370289711218562573">Google Chrome hiện đang nhập Mục ưa thích/Dấu trang.</translation>
 <translation id="8762286861469007470">Trình phát hiện Chrome Captive Portal</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> có thể thay đổi cài đặt Chrome của bạn.</translation>
 <translation id="1761870329818521071">Không thể cài đặt phiên bản Google Chrome Frame giống với phiên bản hiện đang chạy. Vui lòng đóng Google Chrome Frame và thử lại.</translation>
 <translation id="2040709530900803995">Trình kết xuất của Google Chrome</translation>
 <translation id="6014844626092547096">Bạn hiện đã đăng nhập vào Chrome! Quản trị viên của bạn đã tắt tính năng Đồng bộ hóa.</translation>
@@ -179,6 +180,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7253415505590551024">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Google Chrome và hủy tải xuống không?</translation>
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> có thể thay đổi cách tìm kiếm của bạn hoạt động trong Chrome.</translation>
 <translation id="6855094794438142393">Đi tới
           trình đơn Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

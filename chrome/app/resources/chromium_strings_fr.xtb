@@ -77,6 +77,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Veuillez fermer toutes les fenêtres de Chromium, puis réessayer.</translation>
 <translation id="4077262827416206768">Pour que cette modification soit prise en compte, veuillez fermer toutes les fenêtres de Chromium, puis relancer le logiciel.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> risque de modifier le fonctionnement de vos recherches dans Chromium.</translation>
 <translation id="6944967875980567883">Modules chargés dans Chromium</translation>
 <translation id="118298050220780080">Vous avez tenté d'accéder au domaine &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le serveur a présenté un certificat émis par une entité non approuvée par le système d'exploitation de votre ordinateur. Cela peut signifier que le serveur a généré son propre certificat de sécurité, auquel cas Chromium ne peut pas s'y fier pour valider les informations d'identification. Il se peut également qu'un pirate informatique ait intercepté vos communications.</translation>
 <translation id="3296368748942286671">Poursuivre l'exécution des applications en arrière-plan après la fermeture de Chromium</translation>
@@ -183,6 +184,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="1708666629004767631">Une nouvelle version de Chromium encore plus sûre est disponible.</translation>
 <translation id="1539981464052805551">Copyright des auteurs de Chromium 2013. Tous droits réservés.</translation>
 <translation id="378917192836375108">Avec Chromium, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> risque de modifier vos paramètres Chromium.</translation>
 <translation id="8724049448828509830">Un téléchargement est actuellement en cours. Voulez-vous quitter Chromium et annuler le téléchargement ?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Hôte du plug-in Chromium</translation>

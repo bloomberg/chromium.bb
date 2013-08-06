@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">すべての Chromium ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="4077262827416206768">変更内容を反映するには、すべての Chromium ウィンドウを閉じてから Chromium を再起動してください。</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> によって Chromium での検索時の動作が変更される場合があります。</translation>
 <translation id="6944967875980567883">Chromium に読み込まれているモジュール</translation>
 <translation id="118298050220780080">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、お使いのパソコンのオペレーティング システムによって信頼されていない発行元です。サーバーが独自のセキュリティ認証情報を生成し、それが Chromium では認証情報として信頼できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
 <translation id="3296368748942286671">Chromium を閉じた際にバックグラウンド アプリの処理を続行する</translation>
@@ -182,6 +183,7 @@
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
 <translation id="1539981464052805551">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> によって Chromium の設定が変更される場合があります。</translation>
 <translation id="8724049448828509830">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Chromium を終了してもよろしいですか？</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Chromium Plug-In Host</translation>

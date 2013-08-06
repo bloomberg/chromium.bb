@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Cierra todas las ventanas de Chromium e inténtalo de nuevo.</translation>
 <translation id="4077262827416206768">Cierra todas las ventanas de Chromium y el vuelve a iniciarlo para que este cambio se aplique.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> puede cambiar el funcionamiento de tus búsquedas en Chromium.</translation>
 <translation id="6944967875980567883">Módulos cargados en Chromium</translation>
 <translation id="118298050220780080">Intentaste acceder a &lt;strong&gt; <ph name="DOMAIN"/> &lt;/ strong&gt;, pero el servidor presentó un certificado emitido por una entidad no aceptada por el sistema operativo de tu equipo. Esto puede significar que el servidor generó sus propias credenciales de seguridad, en las que Chromium no puede confiar para obtener información de identidad, o un intruso puede estar tratando de interceptar tus comunicaciones.</translation>
 <translation id="3296368748942286671">Continuar ejecutando aplicaciones en segundo plano cuando Chromium esté cerrado.</translation>
@@ -177,6 +178,7 @@
 <translation id="1708666629004767631">Hay una versión nueva y más segura de Chromium disponible.</translation>
 <translation id="1539981464052805551">Copyright 2013 Los autores de Chromium. Todos los derechos reservados.</translation>
 <translation id="378917192836375108">Chromium te permite hacer clic en un número de teléfono en la Web y comunicarte con este por Skype.</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> puede cambiar tu configuración de Chromium.</translation>
 <translation id="8724049448828509830">Hay una descarga en curso. ¿Quieres salir de Chromium y cancelarla?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Host complemento de Chromium</translation>

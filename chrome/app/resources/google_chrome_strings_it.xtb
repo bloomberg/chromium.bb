@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Avvia app Chrome</translation>
 <translation id="2370289711218562573">Google Chrome sta importando i Preferiti/Segnalibri.</translation>
 <translation id="8762286861469007470">Rilevatore Chrome Captive Portal</translation>
+<translation id="3993188379797269327">Il file <ph name="FILE_NAME"/> potrebbe modificare le impostazioni di Chrome.</translation>
 <translation id="1761870329818521071">Impossibile installare la stessa versione di Google Chrome Frame attualmente in esecuzione. Chiudi Google Chrome Frame e riprova.</translation>
 <translation id="2040709530900803995">Programma di rendering di Google Chrome</translation>
 <translation id="6014844626092547096">Hai eseguito l'accesso a Chrome. La sincronizzazione è stata disattivata dall'amministratore.</translation>
@@ -174,6 +175,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="7253415505590551024">Sono in corso dei download. Vuoi uscire da Google Chrome e annullare i download?</translation>
 <translation id="7196020411877309443">Perché visualizzo questo avviso?</translation>
 <translation id="2769762047821873045">Google Chrome non è il tuo browser predefinito.</translation>
+<translation id="1020869477857717497">Il file <ph name="FILE_NAME"/> potrebbe modificare il funzionamento delle ricerche in Chrome.</translation>
 <translation id="6855094794438142393">Seleziona
           il menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

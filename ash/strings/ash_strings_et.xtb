@@ -107,7 +107,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="2372145515558759244">Rakenduste sünkroonimine ...</translation>
 <translation id="7256405249507348194">Tundmatu viga: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA kontrollimine nurjus</translation>
-<translation id="8456362689280298700">Täielikuks laadimiseks kulub <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> täislaadimiseni</translation>
 <translation id="5787281376604286451">Suuline tagasiside on lubatud.
 Keelamiseks vajutage klahvikombinatsiooni Ctrl+Alt+Z.</translation>
 <translation id="4479639480957787382">Ethernet</translation>

@@ -335,6 +335,7 @@
 <translation id="5234764350956374838">Kapat</translation>
 <translation id="8702516222444523256">Uygulama Başlatıcı için Uygulamalar klasörü altında bir OSX uygulama grubunun bulunmasını sağlamak üzere etkinleştirin.</translation>
 <translation id="40027638859996362">Kelime taşıma</translation>
+<translation id="6303187936217840894">Tarayıcı ayarlarınızın orijinal varsayılan değerleri geri yüklenecek. Bu işlem ana sayfanızı, yeni sekme sayfanızı ve arama motorunuzu sıfırlayacak, uzantılarınızı devre dışı bırakacak ve tüm sekmelerinizin sabitlemesini kaldıracaktır. Ayrıca çerezler, içerik ve site verileri gibi geçici ve önbelleğe alınmış diğer veriler de temizlenecektir.</translation>
 <translation id="1524793692806456360">Yalnızca yerel olan Anında Arama Genişletilmiş API'sını etkinleştir</translation>
 <translation id="6928441285542626375">TCP Hızlı Açma'yı etkinleştir</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> dizini</translation>
@@ -972,7 +973,6 @@
 <translation id="1871208020102129563">Proxy, bir .pac komut dosyası URL'sini değil, sabit proxy sunucuları kullanacak şekilde ayarlanır.</translation>
 <translation id="1634788685286903402">E-posta kullanıcılarını tanımlamak için bu sertifikaya güvenin.</translation>
 <translation id="1856715684130786728">Konum ekle...</translation>
-<translation id="3328786139156860526">Olaylar kontrolden mi çıktı? Chrome profilinizi, yükleme sonrasındaki temiz durumuna döndürün.</translation>
 <translation id="8642489171979176277">Google Araç Çubuğu'ndan Alınanlar</translation>
 <translation id="4684427112815847243">Her şeyi senkronize et</translation>
 <translation id="4699357559218762027">(otomatik başlatıldı)</translation>
@@ -1332,7 +1332,6 @@ Kalan süre hesaplanıyor</translation>
 <translation id="2076748722938414183">Sekme geçişini devre dışı bırak</translation>
 <translation id="1756681705074952506">Giriş yöntemi</translation>
 <translation id="8545211332741562162">Web sayfalarının deneysel JavaScript özelliklerini kullanmasını etkinleştirin.</translation>
-<translation id="3335878584157510445">Profil ayarlarını sıfırla...</translation>
 <translation id="734303607351427494">Arama motorlarını yönet...</translation>
 <translation id="3706919628594312718">Fare ayarları</translation>
 <translation id="7973174304586609605">Yeni kullanıcı ekle...</translation>
@@ -1387,6 +1386,7 @@ Kalan süre hesaplanıyor</translation>
 <translation id="8856844195561710094">Bluetooth cihaz keşfi durdurulamadı.</translation>
 <translation id="2246340272688122454">Kurtarma görüntüsü indirilemiyor...</translation>
 <translation id="5305688511332277257">Hiç sertifika yüklenmedi</translation>
+<translation id="1958802757844394735">Tarayıcı ayarlarının orijinal varsayılan değerlerini geri yükleyin.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> dakika önce</translation>
 <translation id="2816269189405906839">Çince giriş yöntemi (cangjie)</translation>
 <translation id="8395901698320285466">Boyutlar</translation>
@@ -1754,7 +1754,6 @@ Hassas bilgilerinizi vermediğinizden emin olun.</translation>
 <translation id="3204741654590142272">Kanal değişikliği daha sonra uygulanacak.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> dakika kaldı</translation>
 <translation id="901974403500617787">Tüm sistem için geçerli olan işaretler sadece sahibi <ph name="OWNER_EMAIL"/> tarafından ayarlanabilir.</translation>
-<translation id="492131106259297640">Profil ayarlarını sıfırla</translation>
 <translation id="2080010875307505892">Sırpça klavye</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> dakika</translation>
 <translation id="201192063813189384">Önbellekten veri okunurken hata oluştu.</translation>
@@ -3708,6 +3707,7 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="7158238151765743968">&quot;<ph name="DEVICE_NAME"/>&quot; bağlantısı hâlâ devam ediyor.</translation>
 <translation id="8782565991310229362">Kiosk uygulaması başlatma iptal edildi.</translation>
 <translation id="4726672564094551039">İlkeleri yeniden yükle</translation>
+<translation id="2252923619938421629">Mevcut ayarlarınızı bildirerek Google Chrome'u daha iyi hale getirmemize yardımcı olun</translation>
 <translation id="4647697156028544508">Lütfen &quot;<ph name="DEVICE_NAME"/>&quot; için PIN'i girin:</translation>
 <translation id="5604961908909363516">Yazdığınız her şeye erişme.</translation>
 <translation id="7671130400130574146">Sistemin başlık çubuğunu ve kenarlıklarını kullan</translation>
@@ -4276,6 +4276,7 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="2270484714375784793">Telefon numarası</translation>
 <translation id="3603622770190368340">Ağ sertifikası edinme</translation>
 <translation id="6196207969502475924">Sesli Arama</translation>
+<translation id="6791586529990783225">Tarayıcı ayarlarını sıfırlayın</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> dosyası kötü amaçlı görünüyor.</translation>
 <translation id="2927657246008729253">Değiştir...</translation>
 <translation id="7978412674231730200">Özel anahtar</translation>

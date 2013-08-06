@@ -331,6 +331,7 @@
 <translation id="5234764350956374838">አትቀበል</translation>
 <translation id="8702516222444523256">ለApp Launcher የOSX መተግበሪያ ጥቅል በApplications አቃፊ ውስጥ መኖሩን ያረጋግጡ።</translation>
 <translation id="40027638859996362">የቃል መውሰድ</translation>
+<translation id="6303187936217840894">የአሳሽ ቅንብሮችዎ ወደ የመጀመሪያ ነባሪዎቻቸው ይመለሳሉ። ይሄ የእርስዎ መነሻ ገጽ፣ የአዲስ ትር ገጽ እና የፍለጋ ፕሮግራም ዳግም ያስጀምራቸዋል፣ ቅጥያዎችዎን ያሰናክላቸዋል እና ሁሉንም ትሮች ከተሰኩበት ያነሳቸዋል። እንዲሁም እንደ ኩኪዎች እና የጣቢያ ውሂብ ያሉ ሌሎች ጊዜያዊ እና የተሸጎጡ ውሂብ ይጠርጋቸዋል።</translation>
 <translation id="1524793692806456360">አካባቢያዊ ብቻ ፈጣን የተቀጠለ ኤ ፒ አይ ያንቁ</translation>
 <translation id="6928441285542626375">TCP Fast Open ያንቁ</translation>
 <translation id="5463275305984126951">የ<ph name="LOCATION"/> ጠቋሚ</translation>
@@ -980,7 +981,6 @@ nil</translation>
 <translation id="1871208020102129563">የ.pac ስክሪፕት ዩ አር ኤል ሳይሆን ተኪ አገልጋዮችን እንዲጠቀም ነው ተኪ የተዋቀረው።</translation>
 <translation id="1634788685286903402">የኢሜይል ተጠቃሚዎችን ለመለየት ይህን የእውቅና ማረጋገጫ ይመኑ።</translation>
 <translation id="1856715684130786728">አካባቢ አክል...</translation>
-<translation id="3328786139156860526">ነገሮች ከቁጥጥር ውጪ ሆኑ? የእርስዎን Chrome መገለጫ ወደ ንጹህ ድህረ-ጭነት ሁኔታ ያድህሩት።</translation>
 <translation id="8642489171979176277">ከGoogle መሳሪያ አሞሌ የመጣ</translation>
 <translation id="4684427112815847243">ሁሉንም ያመሳስሉ</translation>
 <translation id="4699357559218762027">(በራስ-ጀምሯል)</translation>
@@ -1341,7 +1341,6 @@ nil</translation>
 <translation id="2076748722938414183">የትር ማሸትን አሰናክል</translation>
 <translation id="1756681705074952506">የግቤት ስልት</translation>
 <translation id="8545211332741562162">ድረ-ገጾች የሙከራ ጃቫስክሪፕት ባህሪያትን እንዲጠቀሙ ያነቃል።</translation>
-<translation id="3335878584157510445">የመገለጫ ቅንብሮችን ዳግም አስጀምር...</translation>
 <translation id="734303607351427494">የፍለጋ ፕሮግራሞችን ያቀናብሩ...</translation>
 <translation id="3706919628594312718">የመዳፊት ቅንብሮች</translation>
 <translation id="7973174304586609605">አዲሰ ተጠቃሚ አክል...</translation>
@@ -1396,6 +1395,7 @@ nil</translation>
 <translation id="8856844195561710094">የብሉቱዝ መሣሪያን ማግኘት ማቆም አልተቻለም።</translation>
 <translation id="2246340272688122454">የዳግም ማግኛ ምስልን በማውረድ ላይ...</translation>
 <translation id="5305688511332277257">ምንም አልተጫነም</translation>
+<translation id="1958802757844394735">የአሳሽ ቅንብሮች ወደ የመጀመሪያ ነባሪዎቻቸው መልስ።</translation>
 <translation id="7770995925463083016">ከ<ph name="NUMBER_TWO"/> ደቂቃ በፊት</translation>
 <translation id="2816269189405906839">የቻይንኛ የግቤት ስልት (cangjie)</translation>
 <translation id="8395901698320285466">ልኬቶች</translation>
@@ -1765,7 +1765,6 @@ nil</translation>
 <translation id="3204741654590142272">የሰርጥ ለውጥ በኋላ ላይ ነው የሚተገበረው።</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> ደቂቃ ቀርቷል</translation>
 <translation id="901974403500617787">በመላው ስርዓት ላይ የሚተገበሩ ጥቆማዎች በባለቤቱ ብቻ ነው ሊዋቀሩ የሚችሉት፦ <ph name="OWNER_EMAIL"/>።</translation>
-<translation id="492131106259297640">የመገለጫ ቅንብሮችን ዳግም ያስጀምሩ</translation>
 <translation id="2080010875307505892">የሰርቢያኛ ቁልፍ ሰሌዳ</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> ደቂቃ</translation>
 <translation id="201192063813189384">ውሂብ ከመሸጎጫው ማንበብ ላይ ስህተት።</translation>
@@ -3733,6 +3732,7 @@ nil</translation>
 <translation id="7158238151765743968">ከ«<ph name="DEVICE_NAME"/>» ጋር የሚደረገው ግንኙነት አሁንም በሂደት ላይ ነው።</translation>
 <translation id="8782565991310229362">የኪዮስክ መተግበሪያ ማስጀመር ተሰርዟል።</translation>
 <translation id="4726672564094551039">መምሪያዎችን ዳግም ጫን</translation>
+<translation id="2252923619938421629">የአሁኖቹ ቅንብሮችን ሪፖርት በማድረግ Google Chrome የተሻለ እንዲሆን ያግዙ</translation>
 <translation id="4647697156028544508">እባክዎ የ«<ph name="DEVICE_NAME"/>»ን ፒን ያስገቡ፦</translation>
 <translation id="5604961908909363516">የሚተይቡትን ማንኛውም ነገር ይደርስበታል።</translation>
 <translation id="7671130400130574146">የሥርዓት ርእሰ አሞሌ እና ጠርዞች</translation>
@@ -4302,6 +4302,7 @@ nil</translation>
 <translation id="2270484714375784793">ስልክ ቁጥር</translation>
 <translation id="3603622770190368340">የአውታረ መረብ እውቅና ማረጋገጫ ያግኙ</translation>
 <translation id="6196207969502475924">የድምጽ ፍለጋ</translation>
+<translation id="6791586529990783225">የአሳሽ ቅንብሮችን ዳግም ያስጀምሩ</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> ተንኮል-አዘል ይመስላል።</translation>
 <translation id="2927657246008729253">ለውጥ…</translation>
 <translation id="7978412674231730200">የግል ቁልፍ</translation>

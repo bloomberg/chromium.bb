@@ -73,6 +73,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">அனைத்து Chromium சாளரங்களையும் மூடி, பின்னர் முயலவும்.</translation>
 <translation id="4077262827416206768">இந்த மாற்றம் செயல்பாட்டிற்கு வர, அனைத்து Chromium சாளரங்களையும் மூடி, Chromium ஐ மீண்டும் தொடங்குக.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> Chromium இல் உங்கள் தேடல்கள் செயல்படும் விதத்தை மாற்றலாம்.</translation>
 <translation id="6944967875980567883">Chromium இல் தொகுதிக்கூறுகள் ஏற்றப்பட்டன</translation>
 <translation id="118298050220780080">நீங்கள் &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ஐ அடைய முயற்சித்தீர்கள், ஆனால் உங்கள் கணினி இயக்க முறைமையால் நம்பகமற்ற உட்பொருள் மூலம் சேவையகம் சான்றிதழை வழங்கியுள்ளது. சேவையகம் அதின் சொந்த பாதுகாப்பு நற்சான்றிதழ்களை உருவாக்கியதாக இது இருக்கலாம், அடையாள தகவலுக்காக Chromium இதைச் சார்ந்திருக்காது அல்லது தீங்கிழைப்பவர் உங்கள் தகவல் தொடர்புகளில் குறுக்கீட முயற்சிக்கலாம்.</translation>
 <translation id="3296368748942286671">Chromium ஐ மூடியபிறகு, பின்புலப் பயன்பாடுகளைத் தொடர்ந்து இயக்கு</translation>
@@ -176,6 +177,7 @@
 <translation id="1708666629004767631">Chromium இன் புதிய, பாதுகாப்பான பதிப்பு கிடைக்கிறது.</translation>
 <translation id="1539981464052805551">பதிப்புரிமை 2013 Chromium உருவாக்குநர்கள். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</translation>
 <translation id="378917192836375108">வலையில் ஒரு தொலைபேசி எண்ணைக் கிளிக் செய்து, அதனை Skype மூலமாக அழைப்பதற்கு உங்களை Chromium அனுமதிக்கிறது!</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> உங்கள் Chromium அமைப்புகளை மாற்றலாம்.</translation>
 <translation id="8724049448828509830">பதிவிறக்கம் தற்போது செயலில் உள்ளது. Chromium இலிருந்து வெளியேறி, பதிவிறக்கத்தை ரத்து செய்ய விரும்புகிறீர்களா?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Chromium செருகுநிரல் ஹோஸ்ட்</translation>

@@ -28,6 +28,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2896252579017640304">Paleisti „Chrome“ programas</translation>
 <translation id="2370289711218562573">„Google Chrome“ dabar importuoja mėgstamiausius / žymas.</translation>
 <translation id="8762286861469007470">„Chrome Captive Portal“ detektorius</translation>
+<translation id="3993188379797269327">„<ph name="FILE_NAME"/>“ gali pakeisti „Chrome“ nustatymus.</translation>
 <translation id="1761870329818521071">Negalima įdiegti tos pačios „Google Chrome“ rėmelio versijos, kuri dabar paleista. Uždarykite „Google Chrome“ rėmelį ir bandykite dar kartą.</translation>
 <translation id="2040709530900803995">„Google Chrome“ atvaizdavimo priemonė</translation>
 <translation id="6014844626092547096">Dabar esate prisijungę prie „Chrome“. Administratorius neleidžia sinchronizuoti.</translation>
@@ -184,6 +185,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="7253415505590551024">Šiuo metu vykdomi atsisiuntimai. Ar norite išeiti iš „Google Chrome“ ir atšaukti atsisiuntimus?</translation>
 <translation id="7196020411877309443">Kodėl tai matau?</translation>
 <translation id="2769762047821873045">„Google Chrome“ nėra numatytoji naršyklė.</translation>
+<translation id="1020869477857717497">„<ph name="FILE_NAME"/>“ gali pakeisti paieškos veikimo būdą „Chrome“.</translation>
 <translation id="6855094794438142393">Eikite į
           „Chrome“ meniu &gt;
           „<ph name="SETTINGS_TITLE"/>“

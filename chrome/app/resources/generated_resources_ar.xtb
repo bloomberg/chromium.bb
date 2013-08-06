@@ -328,6 +328,7 @@
 <translation id="5234764350956374838">رفض</translation>
 <translation id="8702516222444523256">تمكين لضمان وجود حزمة تطبيق OSX لمشغّل التطبيقات ضمن مجلد التطبيقات.</translation>
 <translation id="40027638859996362">نقل كلمة</translation>
+<translation id="6303187936217840894">ستتم استعادة إعدادات المتصفح الافتراضية الأصلية. وسيؤدي هذا إلى إعادة تعيين الصفحة الرئيسية وصفحة &quot;علامة تبويب جديدة&quot; ومحرك البحث وتعطيل إضافاتك وإزالة تثبيت كل علامات التبويب. كما سيؤدي ذلك أيضًا إلى محو البيانات الأخرى المؤقتة والمخزنة مؤقتًا، مثل ملفات تعريف الارتباط والمحتوى وبيانات المواقع.</translation>
 <translation id="1524793692806456360">تمكين واجهة برمجة التطبيقات الموسعة للبحث الفوري محليًا فقط</translation>
 <translation id="6928441285542626375">تمكين TCP Fast Open</translation>
 <translation id="5463275305984126951">فهرس المجلد <ph name="LOCATION"/></translation>
@@ -959,7 +960,6 @@
 <translation id="1871208020102129563">تم تعيين الخادم الوكيل لاستخدام الخوادم الوكيلة الثابتة وليس عنوان URL لنص برمجي pac.</translation>
 <translation id="1634788685286903402">الوثوق بهذه الشهادة لتحديد هوية مستخدمي البريد الإلكتروني.</translation>
 <translation id="1856715684130786728">إضافة موقع...</translation>
-<translation id="3328786139156860526">هل تخرج الأمور عن سيطرتك؟ يُمكنك إعادة ملفك الشخصي في Chrome إلى حالة تثبيت سابقة وواضحة.</translation>
 <translation id="8642489171979176277">إشارات مستوردة من شريط أدوات Google</translation>
 <translation id="4684427112815847243">مزامنة كل شيء</translation>
 <translation id="4699357559218762027">(يتم تشغيله تلقائيًا)</translation>
@@ -1318,7 +1318,6 @@
 <translation id="2076748722938414183">تعطيل تبديل علامات التبويب</translation>
 <translation id="1756681705074952506">أسلوب الإدخال</translation>
 <translation id="8545211332741562162">تمكين صفحات الويب من استخدام ميزات جافا سكريبت التجريبية.</translation>
-<translation id="3335878584157510445">إعادة تعيين إعدادات الملف الشخصي...</translation>
 <translation id="734303607351427494">إدارة محركات البحث...</translation>
 <translation id="3706919628594312718">إعدادات الماوس</translation>
 <translation id="7973174304586609605">إضافة مستخدم جديد...</translation>
@@ -1373,6 +1372,7 @@
 <translation id="8856844195561710094">أخفق إيقاف اكتشاف جهاز بلوتوث.</translation>
 <translation id="2246340272688122454">جارٍ تنزيل صورة الاستعادة...</translation>
 <translation id="5305688511332277257">لم يتم تثبيت أية شهادات</translation>
+<translation id="1958802757844394735">استعادة إعدادات المتصفح الافتراضية الأصلية.</translation>
 <translation id="7770995925463083016">قبل <ph name="NUMBER_TWO"/> دقيقة</translation>
 <translation id="2816269189405906839">أسلوب الإدخال الصيني (cangjie)</translation>
 <translation id="8395901698320285466">الأبعاد</translation>
@@ -1739,7 +1739,6 @@
 <translation id="3204741654590142272">سيتم تطبيق تغييرات القناة في وقت لاحق.</translation>
 <translation id="7836361698254323868">عدد الدقائق المتبقية: <ph name="NUMBER_ONE"/></translation>
 <translation id="901974403500617787">لا يمكن تعيين العلامات التي تسري عبر النظام إلا من قِبل المالك: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">إعادة تعيين إعدادات الملف الشخصي</translation>
 <translation id="2080010875307505892">لوحة المفاتيح الصربية</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> دقيقة</translation>
 <translation id="201192063813189384">حدث خطأ أثناء قراءة بيانات من ذاكرة التخزين المؤقت.</translation>
@@ -3675,6 +3674,7 @@
 <translation id="7158238151765743968">لا يزال الاتصال  بالجهاز &quot;<ph name="DEVICE_NAME"/>&quot; قيد التقدم.</translation>
 <translation id="8782565991310229362">تم إلغاء تشغيل تطبيق Kiosk.</translation>
 <translation id="4726672564094551039">إعادة تحميل السياسات</translation>
+<translation id="2252923619938421629">ساعد في تحسين Google Chrome بالإبلاغ عن الإعدادات الحالية</translation>
 <translation id="4647697156028544508">الرجاء إدخال رقم التعريف الشخصي لـ &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">الدخول إلى أي شيء تكتبه.</translation>
 <translation id="7671130400130574146">استخدام شريط عناوين النظام والحدود</translation>
@@ -4244,6 +4244,7 @@
 <translation id="2270484714375784793">رقم الهاتف</translation>
 <translation id="3603622770190368340">الحصول على شهادة الشبكة</translation>
 <translation id="6196207969502475924">البحث الصوتي</translation>
+<translation id="6791586529990783225">إعادة تعيين إعدادات المتصفح</translation>
 <translation id="5973229212631512780">يبدو <ph name="FILE_NAME"/> ضارًا.</translation>
 <translation id="2927657246008729253">تغيير...</translation>
 <translation id="7978412674231730200">مفتاح خاص</translation>

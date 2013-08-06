@@ -331,6 +331,7 @@
 <translation id="5234764350956374838">Singkirkan</translation>
 <translation id="8702516222444523256">Dayakan untuk memastikan berkas apl OSX untuk Pelancar Apl terdapat dalam folder Aplikasi.</translation>
 <translation id="40027638859996362">Gerakkan perkataan</translation>
+<translation id="6303187936217840894">Tetapan penyemak imbas anda akan dipulihkan kepada lalai asalnya. Tindakan ini akan menetapkan semula halaman utama, halaman tab baharu dan enjin carian anda, melumpuhkan pelanjutan anda dan menyahsemat semua tab. Data cache dan data sementara lain, seperti data kuki, kandungan dan tapak turut akan dipadamkan.</translation>
 <translation id="1524793692806456360">Dayakan API Semerta Lanjutan setempat sahaja</translation>
 <translation id="6928441285542626375">Dayakan Buka Cepat TCP</translation>
 <translation id="5463275305984126951">Indeks bagi <ph name="LOCATION"/></translation>
@@ -971,7 +972,6 @@
 <translation id="1871208020102129563">Proksi ditetapkan untuk menggunakan pelayan proksi tetap, bukannya URL skrip .pac.</translation>
 <translation id="1634788685286903402">Percayakan sijil ini untuk mengenal pasti pengguna e-mel.</translation>
 <translation id="1856715684130786728">Tambah lokasi...</translation>
-<translation id="3328786139156860526">Keadaan menjadi tidak terkawal? Kembalikan profil Chrome anda kepada keadaan pascapemasangan yang bersih.</translation>
 <translation id="8642489171979176277">Diimport Daripada Bar Alat Google</translation>
 <translation id="4684427112815847243">Segerakkan semua</translation>
 <translation id="4699357559218762027">(dilancarkan secara automatik)</translation>
@@ -1330,7 +1330,6 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="2076748722938414183">Lumpuhkan pembersihan tab</translation>
 <translation id="1756681705074952506">Kaedah input</translation>
 <translation id="8545211332741562162">Membolehkan halaman web menggunakan ciri percubaan JavaScript.</translation>
-<translation id="3335878584157510445">Tetapkan semula tetapan profil...</translation>
 <translation id="734303607351427494">Uruskan enjin carian...</translation>
 <translation id="3706919628594312718">Tetapan tetikus</translation>
 <translation id="7973174304586609605">Tambah pengguna baharu...</translation>
@@ -1385,6 +1384,7 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="8856844195561710094">Gagal untuk menghentikan penemuan peranti Bluetooth.</translation>
 <translation id="2246340272688122454">Memuat turun imej pemulihan...</translation>
 <translation id="5305688511332277257">Tiada yang dipasang</translation>
+<translation id="1958802757844394735">Pulihkan tetapan penyemak imbas kepada lalai asalnya.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> minit lalu</translation>
 <translation id="2816269189405906839">Kaedah input Cina (cangjie)</translation>
 <translation id="8395901698320285466">Dimensi</translation>
@@ -1752,7 +1752,6 @@ Pastikan anda tidak mendedahkan sebarang maklumat sensitif.</translation>
 <translation id="3204741654590142272">Perubahan saluran akan dilaksanakan kemudian.</translation>
 <translation id="7836361698254323868">Tinggal <ph name="NUMBER_ONE"/> minit</translation>
 <translation id="901974403500617787">Bendera yang diguna pakai di seluruh sistem hanya boleh ditetapkan oleh pemilik: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Tetapkan semula tetapan profil</translation>
 <translation id="2080010875307505892">Papan kekunci Serbia</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minit</translation>
 <translation id="201192063813189384">Ralat membaca data daripada cache.</translation>
@@ -3726,6 +3725,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL"/> untuk mendapatkannya dan ara
 <translation id="7158238151765743968">Sambungan ke &quot;<ph name="DEVICE_NAME"/>&quot; masih dijalankan.</translation>
 <translation id="8782565991310229362">Pelancaran aplikasi kios dibatalkan.</translation>
 <translation id="4726672564094551039">Muat semula dasar</translation>
+<translation id="2252923619938421629">Bantu menjadikan Google Chrome lebih baik dengan melaporkan tetapan semasa</translation>
 <translation id="4647697156028544508">Sila masukkan PIN untuk &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Akses apa sahaja yang anda taip.</translation>
 <translation id="7671130400130574146">Gunakan bar dan sempadan tajuk sistem</translation>
@@ -4293,6 +4293,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL"/> untuk mendapatkannya dan ara
 <translation id="2270484714375784793">Nombor telefon</translation>
 <translation id="3603622770190368340">Dapatkan sijil rangkaian</translation>
 <translation id="6196207969502475924">Carian Suara</translation>
+<translation id="6791586529990783225">Tetapkan semula tetapan penyemak imbas</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> nampaknya berniat jahat.</translation>
 <translation id="2927657246008729253">Tukar...</translation>
 <translation id="7978412674231730200">Kunci persendirian</translation>

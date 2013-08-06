@@ -330,6 +330,7 @@
 <translation id="5234764350956374838">Zrušiť</translation>
 <translation id="8702516222444523256">Povolením tejto možnosti zaistíte, aby v priečinku Aplikácie existovala skupina aplikácií systému OSX pre Spúšťač aplikácií.</translation>
 <translation id="40027638859996362">Presunutie slova</translation>
+<translation id="6303187936217840894">Nastavenia prehliadača sa obnovia na pôvodné predvolené hodnoty. Týmto sa obnoví domovská stránka, stránka na novej karte a vyhľadávací nástroj, zakážu sa rozšírenia a uvoľnia karty. Vymažú sa tiež ďalšie dočasné údaje a údaje vyrovnávacej pamäte, ako sú napríklad súbory cookie či údaje obsahu a stránok.</translation>
 <translation id="1524793692806456360">Povoliť iba miestne rozšírenia dynamického režimu rozhrania API</translation>
 <translation id="6928441285542626375">Povoliť rozšírenie TCP Fast Open</translation>
 <translation id="5463275305984126951">Index adresára <ph name="LOCATION"/></translation>
@@ -967,7 +968,6 @@
 <translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC adresy URL.</translation>
 <translation id="1634788685286903402">Dôverovať tomuto certifikátu na identifikáciu e-mailových používateľov.</translation>
 <translation id="1856715684130786728">Pridať umiestnenie...</translation>
-<translation id="3328786139156860526">Vymkla sa situácia spod kontroly? Vráťte profil prehliadača Chrome do čistého stavu, v akom bol tesne po inštalácii.</translation>
 <translation id="8642489171979176277">Importované z Panela s nástrojmi Google</translation>
 <translation id="4684427112815847243">Synchronizovať všetko</translation>
 <translation id="4699357559218762027">(automaticky spustené)</translation>
@@ -1327,7 +1327,6 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY"/>).<
 <translation id="2076748722938414183">Zakázať prepínanie kariet</translation>
 <translation id="1756681705074952506">Metóda vstupu</translation>
 <translation id="8545211332741562162">Povolí webovým stránkam používať experimentálne funkcie jazyka JavaScript.</translation>
-<translation id="3335878584157510445">Obnoviť nastavenia profilu...</translation>
 <translation id="734303607351427494">Spravovať vyhľadávacie nástroje...</translation>
 <translation id="3706919628594312718">Nastavenia myši</translation>
 <translation id="7973174304586609605">Pridať nového používateľa...</translation>
@@ -1382,6 +1381,7 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY"/>).<
 <translation id="8856844195561710094">Nepodarilo sa zastaviť vyhľadávanie zariadení Bluetooth.</translation>
 <translation id="2246340272688122454">Preberá sa obraz na obnovenie...</translation>
 <translation id="5305688511332277257">Žiadne nainštalované</translation>
+<translation id="1958802757844394735">Obnovenie nastavení prehliadača na pôvodné predvolené hodnoty.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">Čínska metóda vstupu (cangjie)</translation>
 <translation id="8395901698320285466">Rozmery</translation>
@@ -1748,7 +1748,6 @@ Uistite sa, že neodhaľujete žiadne citlivé informácie.</translation>
 <translation id="3204741654590142272">Zmena kanála sa použije neskôr.</translation>
 <translation id="7836361698254323868">Zostáva <ph name="NUMBER_ONE"/> minúta</translation>
 <translation id="901974403500617787">Príznaky, ktoré platia v celom systéme, môže nastaviť iba vlastník: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Obnoviť nastavenia profilu</translation>
 <translation id="2080010875307505892">srbská klávesnica</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minúta</translation>
 <translation id="201192063813189384">Pri čítaní údajov z vyrovnávacej pamäte došlo k chybe.</translation>
@@ -3699,6 +3698,7 @@ Vaše súbory sú bezpečne uložené v službe Disk Google bez ohľadu na to, �
 <translation id="7158238151765743968">Stále prebieha pripájanie k zariadeniu <ph name="DEVICE_NAME"/>.</translation>
 <translation id="8782565991310229362">Spustenie aplikácie pre režim kiosku sa zrušilo.</translation>
 <translation id="4726672564094551039">Znova načítať pravidlá</translation>
+<translation id="2252923619938421629">Nahláste aktuálne nastavenia a pomôžte tak zlepšiť prehliadač Google Chrome</translation>
 <translation id="4647697156028544508">Zadajte kód PIN pre zariadenie <ph name="DEVICE_NAME"/>:</translation>
 <translation id="5604961908909363516">Pristupovať k všetkému, čo napíšete.</translation>
 <translation id="7671130400130574146">Použiť záhlavie a orámovanie okna systému</translation>
@@ -4266,6 +4266,7 @@ Vaše súbory sú bezpečne uložené v službe Disk Google bez ohľadu na to, �
 <translation id="2270484714375784793">Telefónne číslo</translation>
 <translation id="3603622770190368340">Získanie certifkátu siete</translation>
 <translation id="6196207969502475924">Hlasové vyhľadávanie</translation>
+<translation id="6791586529990783225">Obnovenie nastavení prehliadača</translation>
 <translation id="5973229212631512780">Zdá sa, že súbor <ph name="FILE_NAME"/> obsahuje škodlivý softvér.</translation>
 <translation id="2927657246008729253">Zmeniť...</translation>
 <translation id="7978412674231730200">Súkromný kľúč</translation>

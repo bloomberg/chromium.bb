@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
-<translation id="3595596368722241419">બૅટરી પૂર્ણ ભરાઈ ગઈ</translation>
+<translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
 <translation id="5250713215130379958">સ્વતઃછુપાવો લૉન્ચર</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> અને <ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">પોર્ટલ સ્ટેટ</translation>
@@ -107,7 +107,7 @@
 <translation id="2372145515558759244">એપ્લિકેશન્સને સમન્વયિત કરી રહ્યું છે...</translation>
 <translation id="7256405249507348194">અજ્ઞાત ભૂલ: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA તપાસ નિષ્ફળ</translation>
-<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> પૂર્ણ થાય ત્યાં સુધી</translation>
+<translation id="8456362689280298700">પૂર્ણ થવામાં <ph name="HOUR"/>:<ph name="MINUTE"/> બાકી</translation>
 <translation id="5787281376604286451">બોલાયેલ પ્રતિસાદ સક્ષમ છે. અક્ષમ કરવા માટે Ctrl + Alt + Z દબાવો.</translation>
 <translation id="4479639480957787382">ઇથરનેટ</translation>
 <translation id="6312403991423642364">અજ્ઞાત નેટવર્ક ભૂલ</translation>

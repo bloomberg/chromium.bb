@@ -28,6 +28,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2896252579017640304">Starta Chrome-appar</translation>
 <translation id="2370289711218562573">Google Chrome importerar favoriter/bokmärken.</translation>
 <translation id="8762286861469007470">Chrome Captive Portal-detektor</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> ändrar eventuellt dina Chrome-inställningar.</translation>
 <translation id="1761870329818521071">Det går inte att installera samma version av Google Chrome Frame som redan körs. Stäng Google Chrome Frame och försök igen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Nu är du inloggad på Chrome. Synkronisering har inaktiverats av administratören.</translation>
@@ -182,6 +183,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="7253415505590551024">Hämtningar pågår. Vill du avsluta Google Chrome och avbryta hämtningarna?</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>
 <translation id="2769762047821873045">Google Chrome är inte din standardwebbläsare.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> ändrar eventuellt hur dina sökningar fungerar i Chrome.</translation>
 <translation id="6855094794438142393">Öppna
           Chrome-menyn &gt;
           <ph name="SETTINGS_TITLE"/>

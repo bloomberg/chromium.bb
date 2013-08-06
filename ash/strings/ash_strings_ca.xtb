@@ -107,7 +107,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2372145515558759244">S'estan sincronitzant les aplicacions...</translation>
 <translation id="7256405249507348194">Error no reconegut: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Error en la comprovació d'AAA</translation>
-<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> fins que estigui carregat completament</translation>
+<translation id="8456362689280298700">Temps per a càrrega completa: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5787281376604286451">Els comentaris de veu estan activats.
 Premeu Ctrl+Alt+Z per desactivar-los.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -189,7 +189,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="7209101170223508707">Bloq Maj està activat.
 Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8940956008527784070">Bateria baixa (<ph name="PERCENTAGE"/>%)</translation>
-<translation id="5102001756192215136">Queden <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="5102001756192215136">Temps d'autonomia: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="520760366042891468">Compartiu el control de la pantalla mitjançant Hangouts.</translation>
 <translation id="8000066093800657092">No hi ha xarxa</translation>
 <translation id="4015692727874266537">Inicia la sessió amb un altre compte...</translation>

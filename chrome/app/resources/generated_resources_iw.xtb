@@ -327,6 +327,7 @@
 <translation id="5234764350956374838">סגור</translation>
 <translation id="8702516222444523256">הפעל כדי להבטיח שחבילת יישומים של OSX עבור מפעיל היישומים קיימת בתיקיית היישומים.</translation>
 <translation id="40027638859996362">העברת מילה</translation>
+<translation id="6303187936217840894">הגדרות הדפדפן שלך יוחזרו לברירת המחדל המקורית שלהן. הפעולה הזו תגרום לאיפוס דף הבית, דף הכרטיסייה החדשה ומנוע החיפוש, תשבית את התוספים ותבטל את ההצמדה של כל הכרטיסיות. היא גם תנקה נתונים אחרים מאחסון זמני ומהקובץ השמור, כמו נתונים של קובצי cookie, תוכן ואתרים.</translation>
 <translation id="1524793692806456360">הפעל ממשק API מורחב מקומי בלבד של Instant</translation>
 <translation id="6928441285542626375">הפעל פתיחה מהירה של TCP</translation>
 <translation id="5463275305984126951">אינדקס של <ph name="LOCATION"/></translation>
@@ -965,7 +966,6 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="1871208020102129563">שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
 <translation id="1634788685286903402">בטח באישור זה לזיהוי משתמשי דוא&quot;ל:</translation>
 <translation id="1856715684130786728">הוסף מיקום...</translation>
-<translation id="3328786139156860526">הדברים יצאו משליטה? החזר את פרופיל Chrome למצב נקי שלאחר התקנה.</translation>
 <translation id="8642489171979176277">הגיע דרך ייבוא מסרגל הכלים של Google</translation>
 <translation id="4684427112815847243">סנכרן הכל</translation>
 <translation id="4699357559218762027">(מופעל אוטומטית)</translation>
@@ -1324,7 +1324,6 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="2076748722938414183">השבת מעבר בין כרטיסיות</translation>
 <translation id="1756681705074952506">שיטת קלט</translation>
 <translation id="8545211332741562162">מאפשר לדפי אינטרנט להשתמש בתכונות ניסיוניות של JavaScript.</translation>
-<translation id="3335878584157510445">איפוס הגדרות פרופיל ...</translation>
 <translation id="734303607351427494">נהל מנועי חיפוש...</translation>
 <translation id="3706919628594312718">הגדרות עכבר</translation>
 <translation id="7973174304586609605">הוסף משתמש חדש...</translation>
@@ -1379,6 +1378,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="8856844195561710094">הפסקת גילוי מכשיר Bluetooth נכשלה.</translation>
 <translation id="2246340272688122454">מוריד תמונת שחזור...</translation>
 <translation id="5305688511332277257">לא מותקנים אישורים</translation>
+<translation id="1958802757844394735">החזר את הגדרות הדפדפן לברירות המחדל המקוריות שלהן.</translation>
 <translation id="7770995925463083016">לפני <ph name="NUMBER_TWO"/> דקות</translation>
 <translation id="2816269189405906839">שטת קלט סינית (cangjie)</translation>
 <translation id="8395901698320285466">מימדים</translation>
@@ -1743,7 +1743,6 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="3204741654590142272">שינוי הערוץ ייכנס לתוקף מאוחר יותר.</translation>
 <translation id="7836361698254323868">נותרה דקה <ph name="NUMBER_ONE"/></translation>
 <translation id="901974403500617787">רק הבעלים יכול להגדיר סימונים החלים על כל המערכת: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">איפוס הגדרות פרופיל</translation>
 <translation id="2080010875307505892">מקלדת סרבית</translation>
 <translation id="2953767478223974804">דקה <ph name="NUMBER_ONE"/></translation>
 <translation id="201192063813189384">שגיאה בקריאת נתונים מהקובץ השמור.</translation>
@@ -3665,6 +3664,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="7158238151765743968">החיבור אל &quot;<ph name="DEVICE_NAME"/>&quot; עדיין מתבצע.</translation>
 <translation id="8782565991310229362">ההפעלה של יישום קיוסק בוטלה.</translation>
 <translation id="4726672564094551039">מדיניות טעינה מחדש</translation>
+<translation id="2252923619938421629">עזור לשפר את Google Chrome על ידי דיווח ההגדרות הנוכחיות</translation>
 <translation id="4647697156028544508">הזן PIN עבור &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">להיכנס לכל דבר שאתה מקליד.</translation>
 <translation id="7671130400130574146">השתמש בגבולות ובשורת הכותרת של המערכת</translation>
@@ -4234,6 +4234,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="2270484714375784793">מספר טלפון</translation>
 <translation id="3603622770190368340">השג אישור רשת</translation>
 <translation id="6196207969502475924">חיפוש קולי</translation>
+<translation id="6791586529990783225">אפס את הגדרות הדפדפן</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> נראה זדוני.</translation>
 <translation id="2927657246008729253">שנה...</translation>
 <translation id="7978412674231730200">מפתח פרטי</translation>

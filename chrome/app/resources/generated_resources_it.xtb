@@ -324,6 +324,7 @@
 <translation id="5234764350956374838">Ignora</translation>
 <translation id="8702516222444523256">Attiva l'opzione per assicurarti che nella cartella Applicazioni esista un gruppo di app OS X per Avvio applicazioni.</translation>
 <translation id="40027638859996362">Spostamento parola</translation>
+<translation id="6303187936217840894">Verranno ripristinate le impostazioni predefinite originali del browser. Questo comporterà la reimpostazione della pagina iniziale, della pagina Nuova scheda e del motore di ricerca, nonché la disattivazione delle estensioni e lo sblocco di tutte le schede. Inoltre, verranno cancellati i dati temporanei e quelli contenuti nella cache, ad esempio, cookie, dati sui contenuti e sui siti.</translation>
 <translation id="1524793692806456360">Attiva API Instant Extended solo locale</translation>
 <translation id="6928441285542626375">Attiva apertura veloce TCP</translation>
 <translation id="5463275305984126951">Indice di <ph name="LOCATION"/></translation>
@@ -954,7 +955,6 @@
 <translation id="1871208020102129563">L'impostazione del proxy prevede l'utilizzo di server proxy fissi, non di un URL script .pac.</translation>
 <translation id="1634788685286903402">Considera attendibile questo certificato per l'identificazione degli utenti email.</translation>
 <translation id="1856715684130786728">Aggiungi posizione...</translation>
-<translation id="3328786139156860526">Le cose sono diventate incontrollabili? Ripristina uno stato post-installazione pulito del tuo profilo Chrome.</translation>
 <translation id="8642489171979176277">Importati da Google Toolbar</translation>
 <translation id="4684427112815847243">Sincronizza tutto</translation>
 <translation id="4699357559218762027">(avviata automaticamente)</translation>
@@ -1311,7 +1311,6 @@ La pagina potrà essere caricata dopo che ti sei connesso a una rete.</translati
 <translation id="2076748722938414183">Disattiva scrubbing schede</translation>
 <translation id="1756681705074952506">Metodo di immissione</translation>
 <translation id="8545211332741562162">Attiva l'utilizzo delle funzioni JavaScript sperimentali per le pagine web.</translation>
-<translation id="3335878584157510445">Reimposta impostazioni profilo...</translation>
 <translation id="734303607351427494">Gestisci motori di ricerca...</translation>
 <translation id="3706919628594312718">Impostazioni mouse</translation>
 <translation id="7973174304586609605">Aggiungi nuovo utente...</translation>
@@ -1366,6 +1365,7 @@ La pagina potrà essere caricata dopo che ti sei connesso a una rete.</translati
 <translation id="8856844195561710094">Impossibile interrompere il rilevamento del dispositivo Bluetooth.</translation>
 <translation id="2246340272688122454">Download dell'immagine di ripristino in corso...</translation>
 <translation id="5305688511332277257">Nessuno installato</translation>
+<translation id="1958802757844394735">Ripristina le impostazioni predefinite originali del browser.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> minuti fa</translation>
 <translation id="2816269189405906839">Metodo di immissione cinese (cangjie)</translation>
 <translation id="8395901698320285466">Dimensioni</translation>
@@ -1730,7 +1730,6 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="3204741654590142272">La modifica al canale verrà applicata più tardi.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> minuto rimanente</translation>
 <translation id="901974403500617787">I contrassegni che si applicano a livello di sistema possono essere impostati solo dal proprietario: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Reimposta impostazioni profilo</translation>
 <translation id="2080010875307505892">Tastiera serba</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min.</translation>
 <translation id="201192063813189384">Errore nella lettura dei dati dalla cache.</translation>
@@ -3655,6 +3654,7 @@ Per queste e per ulteriori istruzioni, controlla le tue email all'indirizzo <ph 
 <translation id="7158238151765743968">Connessione a &quot;<ph name="DEVICE_NAME"/>&quot; ancora in corso.</translation>
 <translation id="8782565991310229362">Avvio dell'applicazione kiosk annullato.</translation>
 <translation id="4726672564094551039">Ricarica norme</translation>
+<translation id="2252923619938421629">Contribuisci a migliorare Google Chrome indicando le impostazioni attuali</translation>
 <translation id="4647697156028544508">Inserisci il codice PIN per &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Accesso a tutto il testo digitato.</translation>
 <translation id="7671130400130574146">Usa barra del titolo di sistema e bordi</translation>
@@ -4218,6 +4218,7 @@ Per queste e per ulteriori istruzioni, controlla le tue email all'indirizzo <ph 
 <translation id="2270484714375784793">Numero di telefono</translation>
 <translation id="3603622770190368340">Ottieni certificato di rete</translation>
 <translation id="6196207969502475924">Ricerca vocale</translation>
+<translation id="6791586529990783225">Reimposta impostazioni del browser</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> potrebbe essere dannoso.</translation>
 <translation id="2927657246008729253">Modifica...</translation>
 <translation id="7978412674231730200">Chiave privata</translation>

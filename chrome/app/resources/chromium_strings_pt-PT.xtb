@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Feche todas as janelas do Chromium e tente novamente.</translation>
 <translation id="4077262827416206768">Feche todas as janelas do Chromium e reinicie o Chromium para que esta alteração seja aplicada.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> pode alterar a forma como as suas pesquisas funcionam no Chromium.</translation>
 <translation id="6944967875980567883">Módulos carregados no Chromium</translation>
 <translation id="118298050220780080">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado emitido por uma entidade na qual o sistema operativo do seu computador não confia. Isso pode significar que o servidor gerou as suas próprias credenciais de segurança, nas quais o Chromium não pode confiar para informações de identidade, ou um utilizador mal intencionado pode estar a tentar intercetar as suas comunicações.</translation>
 <translation id="3296368748942286671">Continuar a executar aplicações em segundo plano quando o Chromium está fechado</translation>
@@ -179,6 +180,7 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="1708666629004767631">Está disponível uma versão nova e mais segura do Chromium.</translation>
 <translation id="1539981464052805551">Copyright 2013 Os Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="378917192836375108">O Chromium permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> pode alterar as suas definições no Chromium.</translation>
 <translation id="8724049448828509830">A transferência está atualmente em curso. Pretende sair do Chromium e cancelar a transferência?</translation>
 <translation id="3360567213983886831">Binários do Chromium</translation>
 <translation id="7503101070699687603">Anfitrião do Plug-In do Chromium </translation>

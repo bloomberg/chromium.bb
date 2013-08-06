@@ -331,6 +331,7 @@
 <translation id="5234764350956374838">Dismiss</translation>
 <translation id="8702516222444523256">Enable to ensure an OSX app bundle for the App Launcher exists under the Applications folder.</translation>
 <translation id="40027638859996362">Word move</translation>
+<translation id="6303187936217840894">Your browser settings will be restored to their original defaults. This will reset your homepage, new tab page and search engine, disable your extensions and unpin all tabs. It will also clear other temporary and cached data, such as cookies, content and site data.</translation>
 <translation id="1524793692806456360">Enable local-only Instant Extended API</translation>
 <translation id="6928441285542626375">Enable TCP Fast Open</translation>
 <translation id="5463275305984126951">Index of <ph name="LOCATION"/></translation>
@@ -971,7 +972,6 @@
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
 <translation id="1634788685286903402">Trust this certificate for identifying email users.</translation>
 <translation id="1856715684130786728">Add location...</translation>
-<translation id="3328786139156860526">Things got out of control? Revert your Chrome profile to a clean, post install state.</translation>
 <translation id="8642489171979176277">Imported From Google Toolbar</translation>
 <translation id="4684427112815847243">Sync everything</translation>
 <translation id="4699357559218762027">(auto-launched)</translation>
@@ -1332,7 +1332,6 @@ Calculating remaining time</translation>
 <translation id="2076748722938414183">Disable tab scrubbing</translation>
 <translation id="1756681705074952506">Input method</translation>
 <translation id="8545211332741562162">Enable web pages to use experimental JavaScript features.</translation>
-<translation id="3335878584157510445">Reset profile settings...</translation>
 <translation id="734303607351427494">Manage search engines...</translation>
 <translation id="3706919628594312718">Mouse settings</translation>
 <translation id="7973174304586609605">Add new user...</translation>
@@ -1387,6 +1386,7 @@ Calculating remaining time</translation>
 <translation id="8856844195561710094">Failed to stop Bluetooth device discovery.</translation>
 <translation id="2246340272688122454">Downloading recovery image...</translation>
 <translation id="5305688511332277257">None installed</translation>
+<translation id="1958802757844394735">Restore browser settings to their original defaults.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">Chinese input method (cangjie)</translation>
 <translation id="8395901698320285466">Dimensions</translation>
@@ -1756,7 +1756,6 @@ Make sure you do not expose any sensitive information.</translation>
 <translation id="3204741654590142272">Channel change will be applied later.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> minute left</translation>
 <translation id="901974403500617787">Flags that apply system-wide can only be set by the owner: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Reset profile settings</translation>
 <translation id="2080010875307505892">Serbian keyboard</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min</translation>
 <translation id="201192063813189384">Error reading data from cache.</translation>
@@ -3698,6 +3697,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL"/> for these and further inst
 <translation id="7158238151765743968">Connection to &quot;<ph name="DEVICE_NAME"/>&quot; still in progress.</translation>
 <translation id="8782565991310229362">Kiosk application launch cancelled.</translation>
 <translation id="4726672564094551039">Reload policies</translation>
+<translation id="2252923619938421629">Help make Google Chrome better by reporting the current settings</translation>
 <translation id="4647697156028544508">Please enter the PIN for &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Access anything you type.</translation>
 <translation id="7671130400130574146">Use system title bar and borders</translation>
@@ -4265,6 +4265,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL"/> for these and further inst
 <translation id="2270484714375784793">Phone number</translation>
 <translation id="3603622770190368340">Obtain network certificate</translation>
 <translation id="6196207969502475924">Voice Search</translation>
+<translation id="6791586529990783225">Reset browser settings</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> appears malicious.</translation>
 <translation id="2927657246008729253">Change...</translation>
 <translation id="7978412674231730200">Private key</translation>

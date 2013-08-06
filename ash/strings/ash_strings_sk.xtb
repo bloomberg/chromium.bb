@@ -107,7 +107,7 @@
 <translation id="2372145515558759244">Prebieha synchronizácia aplikácií...</translation>
 <translation id="7256405249507348194">Nerozpoznaná chyba: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Kontrola AAA zlyhala</translation>
-<translation id="8456362689280298700">Čas do úplného nabitia: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="8456362689280298700">čas do úplného nabitia: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5787281376604286451">Hlasová odozva je povolená.
 Zakážete ju stlačením klávesov Ctrl+Alt+Z.</translation>
 <translation id="4479639480957787382">Ethernet</translation>

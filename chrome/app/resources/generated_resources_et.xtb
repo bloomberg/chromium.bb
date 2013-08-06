@@ -327,6 +327,7 @@
 <translation id="5234764350956374838">Loobu</translation>
 <translation id="8702516222444523256">Lubage, et tagada rakenduste käivitaja OSX-i rakendusepaketi olemasolu kaustas Rakendused.</translation>
 <translation id="40027638859996362">Sõna liigutamine</translation>
+<translation id="6303187936217840894">Brauseri seaded taastatakse originaalsetele vaikeseadetele. See lähtestab teie kodulehe, uue vahelehe ja otsingumootori, keelab laiendused ja vabastab kõik vahelehed. Lisaks kustutab see muud ajutised ja vahemällu salvestatud andmed, nt küpsised, sisu ja saidi andmed.</translation>
 <translation id="1524793692806456360">Ainult kohaliku Instanti laiendatud API lubamine</translation>
 <translation id="6928441285542626375">Luba TCP kiire avamine</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> indeks</translation>
@@ -968,7 +969,6 @@
 <translation id="1871208020102129563">Puhverserver on seatud kasutama fikseeritud puhverservereid, mitte pac-skripti URL-i.</translation>
 <translation id="1634788685286903402">Usalda seda sertifikaati meilikasutajate tuvastamiseks.</translation>
 <translation id="1856715684130786728">Lisa asukoht ...</translation>
-<translation id="3328786139156860526">Kas asjad on kontrolli alt väljas? Taastage oma Chrome'i profiili puhas, installijärgne olek.</translation>
 <translation id="8642489171979176277">Imporditud Google'i tööriistaribalt</translation>
 <translation id="4684427112815847243">Sünkrooni kõik</translation>
 <translation id="4699357559218762027">(automaatselt käivitatud)</translation>
@@ -1329,7 +1329,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY"/> võib järgmisel korral kasulikuks o
 <translation id="2076748722938414183">Keela vahelehe puhastamine</translation>
 <translation id="1756681705074952506">Sisestusmeetod</translation>
 <translation id="8545211332741562162">Lubab veebilehtedel kasutada JavaScripti katselisi funktsioone.</translation>
-<translation id="3335878584157510445">Lähtesta profiiliseaded ...</translation>
 <translation id="734303607351427494">Halda otsingumootoreid ...</translation>
 <translation id="3706919628594312718">Hiire seaded</translation>
 <translation id="7973174304586609605">Lisa uus kasutaja ...</translation>
@@ -1384,6 +1383,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY"/> võib järgmisel korral kasulikuks o
 <translation id="8856844195561710094">Bluetooth-seadme otsimise katkestamine nurjus.</translation>
 <translation id="2246340272688122454">Taastetõmmise allalaadimine ...</translation>
 <translation id="5305688511332277257">Pole ühtegi installitud</translation>
+<translation id="1958802757844394735">Brauseri seadete taastamine originaalsetele vaikeseadetele.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> minutit tagasi</translation>
 <translation id="2816269189405906839">Hiina sisestusviis (cangjie)</translation>
 <translation id="8395901698320285466">Dimensioonid</translation>
@@ -1750,7 +1750,6 @@ Veenduge, et te ei avalda tundlikku teavet.</translation>
 <translation id="3204741654590142272">Kanali muudatus rakendatakse hiljem.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> minut on jäänud</translation>
 <translation id="901974403500617787">Kogu süsteemis kehtivaid märgiseid saab määrata ainult omanik: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Profiiliseadete lähtestamine</translation>
 <translation id="2080010875307505892">Serbia klaviatuur</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minut</translation>
 <translation id="201192063813189384">Viga vahemälust andmete lugemisel.</translation>
@@ -3694,6 +3693,7 @@ Nende ja edasiste juhiste uurimiseks vaadake teenuse <ph name="ACCOUNT_EMAIL"/> 
 <translation id="7158238151765743968">Ühenduse loomine seadmega „<ph name="DEVICE_NAME"/>” on pooleli.</translation>
 <translation id="8782565991310229362">Kioski rakenduse käivitamine tühistati.</translation>
 <translation id="4726672564094551039">Laadi reeglid uuesti</translation>
+<translation id="2252923619938421629">Aidake muuta Google Chrome paremaks, teavitades meid praegustest seadetest</translation>
 <translation id="4647697156028544508">Sisestage seadme „<ph name="DEVICE_NAME"/>” PIN-kood:</translation>
 <translation id="5604961908909363516">Juurdepääs teie sisestatavale tekstile.</translation>
 <translation id="7671130400130574146">Kasutage süsteemi pealkirjariba ja ääriseid</translation>
@@ -4261,6 +4261,7 @@ Nende ja edasiste juhiste uurimiseks vaadake teenuse <ph name="ACCOUNT_EMAIL"/> 
 <translation id="2270484714375784793">Telefoninumber</translation>
 <translation id="3603622770190368340">Võrgusertifikaadi hankimine</translation>
 <translation id="6196207969502475924">Häälotsing</translation>
+<translation id="6791586529990783225">Brauseri seadete lähtestamine</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> näib pahatahtlik.</translation>
 <translation id="2927657246008729253">Muuda...</translation>
 <translation id="7978412674231730200">Privaatvõti</translation>

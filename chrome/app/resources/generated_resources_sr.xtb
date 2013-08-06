@@ -331,6 +331,7 @@
 <translation id="5234764350956374838">Одбаци</translation>
 <translation id="8702516222444523256">Омогућите да бисте били сигурни да ће пакет OSX апликација за Покретач апликација постојати у директоријуму Applications (Апликације).</translation>
 <translation id="40027638859996362">Премештање речи</translation>
+<translation id="6303187936217840894">Подешавања прегледача биће враћена на првобитна подразумевана подешавања. То ће вратити подешавања почетне странице, странице Нова картица и претраживача на почетне вредности, онемогућити додатке и откачити све картице. Такође ће обрисати остале привремене и кеширане податке, као што су колачићи и подаци о садржају и сајтовима.</translation>
 <translation id="1524793692806456360">Омогући API Проширени Инстант само на локалном нивоу</translation>
 <translation id="6928441285542626375">Омогући TCP Fast Open</translation>
 <translation id="5463275305984126951">Индекс локације <ph name="LOCATION"/></translation>
@@ -970,7 +971,6 @@
 <translation id="1871208020102129563">Прокси је подешен да користи фиксне прокси сервере, а не URL адресу .pac скрипте.</translation>
 <translation id="1634788685286903402">Овај сертификат је поуздан за идентификацију корисника е-поште.</translation>
 <translation id="1856715684130786728">Додај локацију...</translation>
-<translation id="3328786139156860526">Ствари су измакле контроли? Вратите Chrome профил у уредно почетно стање у коме је био после инсталације.</translation>
 <translation id="8642489171979176277">Увезено из Google Toolbar-а</translation>
 <translation id="4684427112815847243">Синхронизуј све</translation>
 <translation id="4699357559218762027">(аутоматски покренуто)</translation>
@@ -1330,7 +1330,6 @@
 <translation id="2076748722938414183">Онемогући пребацивање картица помоћу три прста</translation>
 <translation id="1756681705074952506">Метод уноса</translation>
 <translation id="8545211332741562162">Омогућите веб страницама да користе функције експерименталног JavaScript-а.</translation>
-<translation id="3335878584157510445">Врати подешавања профила на почетне вредности...</translation>
 <translation id="734303607351427494">Управљај претраживачима...</translation>
 <translation id="3706919628594312718">Подешавања миша</translation>
 <translation id="7973174304586609605">Додај новог корисника...</translation>
@@ -1385,6 +1384,7 @@
 <translation id="8856844195561710094">Није било могуће зауставити откривање Bluetooth уређаја.</translation>
 <translation id="2246340272688122454">Преузимање слике за обнављање...</translation>
 <translation id="5305688511332277257">Ништа није инсталирано</translation>
+<translation id="1958802757844394735">Враћање подешавања прегледача на првобитне подразумеване вредности.</translation>
 <translation id="7770995925463083016">Пре <ph name="NUMBER_TWO"/> минута</translation>
 <translation id="2816269189405906839">Кинески метод уноса (канђи)</translation>
 <translation id="8395901698320285466">Димензије</translation>
@@ -1755,7 +1755,6 @@
 <translation id="3204741654590142272">Промена канала ће бити примењена касније.</translation>
 <translation id="7836361698254323868">Преостао је <ph name="NUMBER_ONE"/> минут</translation>
 <translation id="901974403500617787">Ознаке које се примењују у целом систему може да подеси само власник: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Враћање подешавања профила на почетне вредности</translation>
 <translation id="2080010875307505892">Језик тастатуре: српски</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> мин.</translation>
 <translation id="201192063813189384">Грешка приликом читања података из кеша.</translation>
@@ -3709,6 +3708,7 @@
 <translation id="7158238151765743968">Повезивање са уређајем „<ph name="DEVICE_NAME"/>“ је још увек у току.</translation>
 <translation id="8782565991310229362">Покретање киоск апликације је отказано.</translation>
 <translation id="4726672564094551039">Поново учитај смернице</translation>
+<translation id="2252923619938421629">Помозите да побољшамо Google Chrome тако што ћете послати извештај о актуелним подешавањима</translation>
 <translation id="4647697156028544508">Унесите PIN за „<ph name="DEVICE_NAME"/>“:</translation>
 <translation id="5604961908909363516">Приступ свему што куцате.</translation>
 <translation id="7671130400130574146">Користи системску траку наслова и ивице</translation>
@@ -4278,6 +4278,7 @@
 <translation id="2270484714375784793">Број телефона</translation>
 <translation id="3603622770190368340">Добијање сертификата мреже</translation>
 <translation id="6196207969502475924">Гласовна претрага</translation>
+<translation id="6791586529990783225">Враћање прегледача на почетна подешавања</translation>
 <translation id="5973229212631512780">Изгледа да је датотека <ph name="FILE_NAME"/> злонамерна.</translation>
 <translation id="2927657246008729253">Промени...</translation>
 <translation id="7978412674231730200">Приватни кључ</translation>

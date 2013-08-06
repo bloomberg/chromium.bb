@@ -10,7 +10,7 @@
         ir atspējotas vai tiek ignorētas.</translation>
 <translation id="166179487779922818">Parole ir pārāk īsa.</translation>
 <translation id="2345460471437425338">Nepareizs saimniekdatora sertifikāts.</translation>
-<translation id="3595596368722241419">Akumulators ir pilnībā uzlādēts</translation>
+<translation id="3595596368722241419">Akumulators pilns</translation>
 <translation id="8130276680150879341">Atvienot no privāta tīkla</translation>
 <translation id="5028012205542821824">Instalēšana nav iespējota.</translation>
 <translation id="1058418043520174283"><ph name="INDEX"/> no <ph name="COUNT"/></translation>
@@ -327,6 +327,7 @@
 <translation id="5234764350956374838">Noraidīt</translation>
 <translation id="8702516222444523256">Iespējojiet, lai mapē Lietojumprogrammas pastāvētu OSX lietotņu paka lietojumprogrammu palaidējam.</translation>
 <translation id="40027638859996362">Pārvietot vārdu</translation>
+<translation id="6303187936217840894">Pārlūka iestatījumi tiks atjaunoti uz sākotnējiem noklusējuma iestatījumiem. Tādējādi tiks atiestatīta jūsu sākumlapa, jaunas cilnes lapa un meklētājprogramma, kā arī tiks atspējoti paplašinājumi un tiks atspraustas visas cilnes. Tiks arī dzēsti citi īslaicīgi glabātie dati un kešatmiņā saglabātie dati, piemēram, sīkfaili, satura un vietņu dati.</translation>
 <translation id="1524793692806456360">Iespējot dinamiskās meklēšanas izvērsto saskarni API tikai lokāli</translation>
 <translation id="6928441285542626375">Iespējot paplašinājumu TCP Fast Open</translation>
 <translation id="5463275305984126951">Indekss <ph name="LOCATION"/></translation>
@@ -965,7 +966,6 @@ Atlicis: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="1871208020102129563">Starpniekserveris ir iestatīts, lai tas lietotu fiksētus starpniekserverus, nevis .pac skripta URL.</translation>
 <translation id="1634788685286903402">Uzticēties šim sertifikātam, lai identificētu e-pasta lietotājus.</translation>
 <translation id="1856715684130786728">Pievienot atrašanās vietu...</translation>
-<translation id="3328786139156860526">Vai radās kļūda? Atjaunojiet Chrome profilu stāvoklī, kādā tas bija pēc instalēšanas.</translation>
 <translation id="8642489171979176277">Importētas no Google rīkjoslas</translation>
 <translation id="4684427112815847243">Sinhronizēt visu</translation>
 <translation id="4699357559218762027">(tiek palaista automātiski)</translation>
@@ -1325,7 +1325,6 @@ Tiek rēķināts atlikušais laiks</translation>
 <translation id="2076748722938414183">Atspējot atzīmju anulēšanu</translation>
 <translation id="1756681705074952506">Ievades metode</translation>
 <translation id="8545211332741562162">Iespējot tīmekļa lapas izmantot eksperimentālās JavaScript funkcijas.</translation>
-<translation id="3335878584157510445">Atiestatīt profila iestatījumus...</translation>
 <translation id="734303607351427494">Pārvaldīt meklētājprogrammas...</translation>
 <translation id="3706919628594312718">Peles iestatījumi</translation>
 <translation id="7973174304586609605">Pievienot jaunu lietotāju...</translation>
@@ -1380,6 +1379,7 @@ Tiek rēķināts atlikušais laiks</translation>
 <translation id="8856844195561710094">Neizdevās apturēt Bluetooth ierīces noteikšanu.</translation>
 <translation id="2246340272688122454">Notiek atkopšanas attēla lejupielāde...</translation>
 <translation id="5305688511332277257">Nav instalēts</translation>
+<translation id="1958802757844394735">Atjaunot pārlūka iestatījumus uz sākotnējiem noklusējuma iestatījumiem.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">Ķīniešu valodas ievades metode (cangjie)</translation>
 <translation id="8395901698320285466">Izmēri</translation>
@@ -1747,7 +1747,6 @@ Pārliecinieties, vai netiks padarīta redzama sensitīva informācija.</transla
 <translation id="3204741654590142272">Kanālu maiņa tiks piemērota vēlāk.</translation>
 <translation id="7836361698254323868">Atlikusi <ph name="NUMBER_ONE"/> minūte</translation>
 <translation id="901974403500617787">Atzīmes, kas attiecas uz visu sistēmu, var iestatīt tikai īpašnieks: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Profila iestatījumu atiestatīšana</translation>
 <translation id="2080010875307505892">Serbu valodas tastatūra</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minūtes</translation>
 <translation id="201192063813189384">Kļūda, lasot datus no kešatmiņas.</translation>
@@ -3697,6 +3696,7 @@ Vēl jālādē: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="7158238151765743968">Joprojām notiek savienojuma izveide ar ierīci <ph name="DEVICE_NAME"/>.</translation>
 <translation id="8782565991310229362">Kioska lietojumprogrammas palaišana tika atcelta.</translation>
 <translation id="4726672564094551039">Atkārtoti ielādēt politikas</translation>
+<translation id="2252923619938421629">Palīdziet uzlabot pārlūku Google Chrome, ziņojot par pašreizējiem iestatījumiem.</translation>
 <translation id="4647697156028544508">Ievadiet PIN ierīcei <ph name="DEVICE_NAME"/>:</translation>
 <translation id="5604961908909363516">Piekļūt visam, ko jūs rakstāt</translation>
 <translation id="7671130400130574146">Izmantot sistēmas virsrakstjoslu un apmales</translation>
@@ -4265,6 +4265,7 @@ Vēl jālādē: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="2270484714375784793">Tālruņa numurs</translation>
 <translation id="3603622770190368340">Tīkla sertifikāta iegūšana</translation>
 <translation id="6196207969502475924">Balss meklēšana</translation>
+<translation id="6791586529990783225">Pārlūka iestatījumu atiestatīšana</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/>, šķiet, ir ļaunprātīgs fails.</translation>
 <translation id="2927657246008729253">Mainīt...</translation>
 <translation id="7978412674231730200">Privātā atslēga</translation>

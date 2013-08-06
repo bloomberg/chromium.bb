@@ -87,7 +87,7 @@
 <translation id="1895658205118569222">シャットダウン</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4442424173763614572">DNS を検索できませんでした</translation>
-<translation id="6356500677799115505">バッテリー残量: 満、充電しています。</translation>
+<translation id="6356500677799115505">バッテリー残量: 満（充電中）</translation>
 <translation id="7874779702599364982">携帯電話ネットワークを検索しています...</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="1383876407941801731">検索</translation>
@@ -96,7 +96,7 @@
 <translation id="2204305834655267233">ネットワーク情報</translation>
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">ゲスト セッションを終了</translation>
-<translation id="4471417012762451363">バッテリー残量: <ph name="PERCENTAGE"/>%、充電しています。</translation>
+<translation id="4471417012762451363">バッテリー残量: <ph name="PERCENTAGE"/>%（充電中）</translation>
 <translation id="8308637677604853869">前のメニュー</translation>
 <translation id="4666297444214622512">別のアカウントにログインすることはできません。</translation>
 <translation id="1346748346194534595">右</translation>
@@ -107,7 +107,7 @@
 <translation id="2372145515558759244">アプリの同期...</translation>
 <translation id="7256405249507348194">不明なエラー: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA を確認できませんでした</translation>
-<translation id="8456362689280298700">フル充電まで <ph name="HOUR"/> 時間 <ph name="MINUTE"/> 分</translation>
+<translation id="8456362689280298700">フル充電まで: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5787281376604286451">音声フィードバックが有効です。
 無効にするには Ctrl+Alt+Z を押してください。</translation>
 <translation id="4479639480957787382">イーサネット</translation>

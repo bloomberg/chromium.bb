@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Aizveriet visus Chromium logus un mēģiniet vēlreiz.</translation>
 <translation id="4077262827416206768">Aizveriet visus Chromium logus un atkārtoti palaidiet Chromium, lai šīs izmaiņas stātos spēkā.</translation>
+<translation id="5472687196979159893">Izmantojot failu <ph name="FILE_NAME"/>, operētājsistēmā Chromium var tikt mainīti meklētājprogrammas iestatījumi.</translation>
 <translation id="6944967875980567883">Pārlūkā Chromium ielādētie moduļi</translation>
 <translation id="118298050220780080">Jūs mēģinājāt sasniegt vietni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris uzrādīja sertifikātu, ko izsniegusi iestāde, kurai neuzticas jūsu datora operētājsistēma. Tas var nozīmēt, ka serveris ir ģenerējis savus drošības akreditācijas datus, kam pārlūks Chromium nevar uzticēties, lai noteiktu identitātes informāciju, vai uzbrucējs, iespējams, mēģina pārķert jūsu saziņu.</translation>
 <translation id="3296368748942286671">Turpināt lietotņu izpildi fonā, kad Chromium ir aizvērts</translation>
@@ -182,6 +183,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="1708666629004767631">Ir pieejama jauna un drošāka Chromium versija.</translation>
 <translation id="1539981464052805551">Autortiesības 2012 Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="378917192836375108">Chromium ļauj jums noklikšķināt uz tālruņa numura un zvanīt uz to pakalpojumā Skype!</translation>
+<translation id="7331621180831839236">Izmantojot failu <ph name="FILE_NAME"/>, var tikt mainīti Chromium iestatījumi.</translation>
 <translation id="8724049448828509830">Lejupielāde vēl nav pabeigta. Vai vēlaties iziet no pārlūkprogrammas Chromium un atcelt lejupielādi?</translation>
 <translation id="3360567213983886831">Chromium binārie faili</translation>
 <translation id="7503101070699687603">Chromium spraudņa saimniekdators</translation>

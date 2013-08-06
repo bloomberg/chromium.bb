@@ -28,6 +28,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2896252579017640304">Launch Chrome apps</translation>
 <translation id="2370289711218562573">Google Chrome is now importing Favourites/Bookmarks.</translation>
 <translation id="8762286861469007470">Chrome Captive Portal detector</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> may change your Chrome settings.</translation>
 <translation id="1761870329818521071">Cannot install the same Google Chrome Frame version that is currently running. Please close Google Chrome Frame and try again.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">You're now signed in to Chrome! Sync is disabled by your administrator.</translation>
@@ -182,6 +183,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="7253415505590551024">Downloads are currently in progress. Do you want to exit Google Chrome and cancel the downloads?</translation>
 <translation id="7196020411877309443">Why am I seeing this?</translation>
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> may change how your searches work in Chrome.</translation>
 <translation id="6855094794438142393">Go to
           the Chrome menu &gt;
           <ph name="SETTINGS_TITLE"/>

@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Chrome アプリを起動</translation>
 <translation id="2370289711218562573">Google Chrome にお気に入り/ブックマークをインポートしています。</translation>
 <translation id="8762286861469007470">Chrome キャプティブ ポータル検出機能</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> によって Chrome の設定が変更される場合があります。</translation>
 <translation id="1761870329818521071">実行中の Google Chrome Frame と同じバージョンをインストールすることはできません。Google Chrome Frame を閉じてからもう一度お試しください。</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Chrome にログインしています。同期は管理者によって無効にされています。</translation>
@@ -174,6 +175,7 @@
 <translation id="7253415505590551024">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Google Chrome を終了してもよろしいですか？</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="2769762047821873045">Google Chromeはデフォルトのブラウザとして設定されていません。</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> によって Chrome での検索時の動作が変更される場合があります。</translation>
 <translation id="6855094794438142393">このオプションを無効にするには:
           Chrome メニュー &gt;
           <ph name="SETTINGS_TITLE"/>

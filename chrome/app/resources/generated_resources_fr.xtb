@@ -327,6 +327,7 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="5234764350956374838">Ignorer</translation>
 <translation id="8702516222444523256">Permet de s'assurer qu'il existe bien une offre groupée OS X pour le lanceur d'applications dans le dossier &quot;Applications&quot;.</translation>
 <translation id="40027638859996362">Déplacer un mot</translation>
+<translation id="6303187936217840894">Les valeurs par défaut des paramètres de votre navigateur seront rétablies. Votre page d'accueil, la page &quot;Nouvel onglet&quot; et votre moteur de recherche seront réinitialisés, vos extensions seront désactivées et vos onglets ne seront plus épinglés. Les autres données temporaires ou mises en cache, telles que les cookies, les données relatives aux contenus et aux sites, seront également effacées.</translation>
 <translation id="1524793692806456360">Activer l'API Instant Extended en local uniquement</translation>
 <translation id="6928441285542626375">Activer TCP Fast Open</translation>
 <translation id="5463275305984126951">Index de <ph name="LOCATION"/></translation>
@@ -966,7 +967,6 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
 <translation id="1634788685286903402">Considérer ce certificat comme fiable pour identifier les utilisateurs de messageries.</translation>
 <translation id="1856715684130786728">Ajouter un emplacement…</translation>
-<translation id="3328786139156860526">Les choses vous échappent ? Rétablissez l'état de post-installation de votre profil Chrome, avec les paramètres d'origine.</translation>
 <translation id="8642489171979176277">Importés depuis la barre d'outils Google</translation>
 <translation id="4684427112815847243">Tout synchroniser</translation>
 <translation id="4699357559218762027">(lancée automatiquement)</translation>
@@ -1327,7 +1327,6 @@ Calcul de la durée restante</translation>
 <translation id="2076748722938414183">Désactiver le passage d'un onglet à l'autre</translation>
 <translation id="1756681705074952506">Mode de saisie</translation>
 <translation id="8545211332741562162">Permettre aux pages Web d'utiliser les fonctionnalités expérimentales JavaScript</translation>
-<translation id="3335878584157510445">Réinitialiser les paramètres du profil…</translation>
 <translation id="734303607351427494">Gérer les moteurs de recherche...</translation>
 <translation id="3706919628594312718">Paramètres de la souris</translation>
 <translation id="7973174304586609605">Ajouter un utilisateur…</translation>
@@ -1382,6 +1381,7 @@ Calcul de la durée restante</translation>
 <translation id="8856844195561710094">Impossible d'arrêter la détection des périphériques Bluetooth.</translation>
 <translation id="2246340272688122454">Téléchargement de l'image de récupération...</translation>
 <translation id="5305688511332277257">Aucun certificat installé</translation>
+<translation id="1958802757844394735">Rétablir les valeurs par défaut des paramètres du navigateur</translation>
 <translation id="7770995925463083016">il y a <ph name="NUMBER_TWO"/> minutes</translation>
 <translation id="2816269189405906839">Mode de saisie du chinois (cangjie)</translation>
 <translation id="8395901698320285466">Dimensions</translation>
@@ -1751,7 +1751,6 @@ Veillez à ne pas révéler d'informations confidentielles.</translation>
 <translation id="3204741654590142272">Le changement de version sera appliqué ultérieurement</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> minute restante</translation>
 <translation id="901974403500617787">Seul le propriétaire suivant peut définir les options qui s'appliquent à tout le système : <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Réinitialiser les paramètres du profil</translation>
 <translation id="2080010875307505892">Clavier serbe</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minute</translation>
 <translation id="201192063813189384">Erreur lors de la lecture des données du cache.</translation>
@@ -3712,6 +3711,7 @@ Pour vérifier ce point et en savoir plus, veuillez vérifier votre compte de me
 <translation id="7158238151765743968">Connexion à l'appareil &quot;<ph name="DEVICE_NAME"/>&quot; toujours en cours…</translation>
 <translation id="8782565991310229362">Annulation du lancement de l'application du kiosque.</translation>
 <translation id="4726672564094551039">Actualiser les règles</translation>
+<translation id="2252923619938421629">Aidez-nous à améliorer Google Chrome en nous signalant les paramètres actuels</translation>
 <translation id="4647697156028544508">Saisissez le code d'accès de &quot;<ph name="DEVICE_NAME"/>&quot; :</translation>
 <translation id="5604961908909363516">Accéder à tout ce que vous tapez</translation>
 <translation id="7671130400130574146">Utiliser la barre de titre et les bordures de fenêtre du système</translation>
@@ -4278,6 +4278,7 @@ Pour vérifier ce point et en savoir plus, veuillez vérifier votre compte de me
 <translation id="2270484714375784793">N° de téléphone</translation>
 <translation id="3603622770190368340">Obtenir un certificat réseau</translation>
 <translation id="6196207969502475924">Recherche vocale</translation>
+<translation id="6791586529990783225">Réinitialiser les paramètres du navigateur</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> semble être malveillant.</translation>
 <translation id="2927657246008729253">Changer...</translation>
 <translation id="7978412674231730200">Clé privée</translation>

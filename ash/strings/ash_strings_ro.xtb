@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="3595596368722241419">Baterie încărcată complet</translation>
+<translation id="3595596368722241419">Baterie încărcată</translation>
 <translation id="5250713215130379958">Ascundeți automat lansatorul</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="7880025619322806991">Stare portal</translation>
@@ -107,7 +107,7 @@
 <translation id="2372145515558759244">Se sincronizează aplicațiile...</translation>
 <translation id="7256405249507348194">Eroare nerecunoscută: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Verificarea AAA a eșuat</translation>
-<translation id="8456362689280298700">Timp până la finalizare: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="8456362689280298700">Se încarcă în: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5787281376604286451">Este activat feedbackul vocal.
 Apăsați Ctrl+Alt+Z pentru a-l dezactiva.</translation>
 <translation id="4479639480957787382">Ethernet</translation>

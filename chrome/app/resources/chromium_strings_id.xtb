@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Tutup semua jendela Chromium dan coba lagi.</translation>
 <translation id="4077262827416206768">Tutup semua jendela Chromium dan luncurkan ulang Chromium agar perubahan ini diterapkan.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> mungkin mengubah cara penelusuran Anda berjalan di Chromium.</translation>
 <translation id="6944967875980567883">Modul dimuat ke dalam Chromium</translation>
 <translation id="118298050220780080">Anda mencoba menjangkau &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang diterbitkan oleh entitas yang tidak dipercayai sistem operasi komputer Anda. Artinya server telah membuat kredensial keamanannya sendiri, yang tidak dapat diandalkan oleh Chromium perihal informasi identitas, atau penyerang mungkin mencoba menghentikan komunikasi Anda.</translation>
 <translation id="3296368748942286671">Lanjutkan aplikasi yang berjalan di latar belakang jika Chromium ditutup</translation>
@@ -182,6 +183,7 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="1708666629004767631">Tersedia versi Chromium yang baru dan lebih aman.</translation>
 <translation id="1539981464052805551">Hak Cipta 2013 Penulis Chromium. Semua hak dilindungi undang-undang.</translation>
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> mungkin mengubah setelan Chromium Anda.</translation>
 <translation id="8724049448828509830">Unduhan saat ini sedang berlangsung. Anda ingin keluar dari Chromium dan membatalkan unduhan?</translation>
 <translation id="3360567213983886831">Biner Chromium</translation>
 <translation id="7503101070699687603">Host Plugin Chromium</translation>

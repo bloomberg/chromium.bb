@@ -335,6 +335,7 @@
 <translation id="5234764350956374838">Sluiten</translation>
 <translation id="8702516222444523256">Inschakelen om ervoor te zorgen dat er in de map Apps een OSX-appbundel voor het app-opstartprogramma is.</translation>
 <translation id="40027638859996362">Woord verplaatsen</translation>
+<translation id="6303187936217840894">Uw browserinstellingen worden teruggezet naar de oorspronkelijke standaardwaarden. Als u dit doet, worden uw startpagina, pagina 'Nieuw tabblad' en zoekmachine opnieuw ingesteld, worden uw extensies uitgeschakeld en worden alle tabbladen losgemaakt. Ook worden alle andere tijdelijke en gecachte gegevens, zoals cookies, inhoud en sitegegevens, gewist.</translation>
 <translation id="1524793692806456360">Alleen lokale Instant Extended API inschakelen</translation>
 <translation id="6928441285542626375">TCP Fast Open inschakelen</translation>
 <translation id="5463275305984126951">Index van <ph name="LOCATION"/></translation>
@@ -974,7 +975,6 @@
 <translation id="1871208020102129563">Proxy is ingesteld op het gebruik van vaste proxyservers, niet op een script-URL van het PAC-type.</translation>
 <translation id="1634788685286903402">Dit certificaat vertrouwen voor het identificeren van e-mailgebruikers.</translation>
 <translation id="1856715684130786728">Locatie toevoegen...</translation>
-<translation id="3328786139156860526">Is alles uit de hand gelopen? Herstel uw Chrome-profiel naar een goede status van na de installatie.</translation>
 <translation id="8642489171979176277">Geïmporteerd uit Google Toolbar</translation>
 <translation id="4684427112815847243">Alles synchroniseren</translation>
 <translation id="4699357559218762027">(automatisch gestart)</translation>
@@ -1300,7 +1300,7 @@ Resterende tijd berekenen</translation>
 <translation id="4689960105160368473">Bestede tijd op elke pagina bijhouden</translation>
 <translation id="3368922792935385530">Verbonden</translation>
 <translation id="8340999562596018839">Gesproken feedback</translation>
-<translation id="3866443872548686097">Uw opslagmedium is gereed. U kunt dit loskoppelen van uw systeem.</translation>
+<translation id="3866443872548686097">Uw opslagmedium is gereed. U kunt dit ontkoppelen van uw systeem.</translation>
 <translation id="6824564591481349393">&amp;E-mailadres kopiëren</translation>
 <translation id="907148966137935206">Sites niet toestaan pop-ups weer te geven (aanbevolen)</translation>
 <translation id="5184063094292164363">&amp;JavaScript-console</translation>
@@ -1336,7 +1336,6 @@ Resterende tijd berekenen</translation>
 <translation id="2076748722938414183">Schakelen tussen tabbladen uitschakelen</translation>
 <translation id="1756681705074952506">Invoermethode</translation>
 <translation id="8545211332741562162">Webpagina's toestaan experimentele JavaScript-functies te gebruiken.</translation>
-<translation id="3335878584157510445">Profielinstellingen herstellen...</translation>
 <translation id="734303607351427494">Zoekmachines beheren...</translation>
 <translation id="3706919628594312718">Muisinstellingen</translation>
 <translation id="7973174304586609605">Nieuwe gebruiker toevoegen...</translation>
@@ -1391,6 +1390,7 @@ Resterende tijd berekenen</translation>
 <translation id="8856844195561710094">Stoppen met zoeken naar Bluetooth-apparaat mislukt.</translation>
 <translation id="2246340272688122454">Herstelkopie downloaden...</translation>
 <translation id="5305688511332277257">Geen certificaten geïnstalleerd</translation>
+<translation id="1958802757844394735">De browserinstellingen terugzetten naar de oorspronkelijke standaardwaarden.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> minuten geleden</translation>
 <translation id="2816269189405906839">Chinese invoermethode (cangjie)</translation>
 <translation id="8395901698320285466">Afmetingen</translation>
@@ -1758,7 +1758,6 @@ Zorg ervoor dat u geen gevoelige informatie weergeeft.</translation>
 <translation id="3204741654590142272">Wijziging van kanaal wordt later toegepast.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> minuut resterend</translation>
 <translation id="901974403500617787">Markeringen die op het hele systeem van toepassing zijn, kunnen alleen worden ingesteld door de eigenaar: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Profielinstellingen herstellen</translation>
 <translation id="2080010875307505892">Servisch toetsenbord</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minuut</translation>
 <translation id="201192063813189384">Fout bij het lezen van gegevens uit cache.</translation>
@@ -2839,7 +2838,7 @@ U moet zijn ingelogd om deze functie te kunnen gebruiken.</translation>
 <translation id="2498765460639677199">Enorm</translation>
 <translation id="2378982052244864789">Selecteer de directory van de extensie.</translation>
 <translation id="7861215335140947162">&amp;Downloads</translation>
-<translation id="6586099239452884121">Bladeren als gast</translation>
+<translation id="6586099239452884121">Gebruiken als gast</translation>
 <translation id="1358735829858566124">Het bestand of de map is niet bruikbaar.</translation>
 <translation id="175772926354468439">Thema inschakelen</translation>
 <translation id="3144135466825225871">Vervangen van crx-bestand is mislukt. Controleer of het bestand wordt gebruikt.</translation>
@@ -2910,9 +2909,9 @@ Controleer uw e-mail op <ph name="ACCOUNT_EMAIL"/> voor deze en verdere instruct
 <translation id="8960795431111723921">We zijn bezig dit probleem te onderzoeken.</translation>
 <translation id="2482878487686419369">Meldingen</translation>
 <translation id="7091371877941014288">Wilt u op dit apparaat kioskapps kunnen uitvoeren?</translation>
-<translation id="3175100205257218635"><ph name="BEGIN_BOLD"/>U browst als gast<ph name="END_BOLD"/>. Pagina's die u op dit tabblad bekijkt, worden niet weergegeven in uw browser- of zoekgeschiedenis, en laten verder geen sporen (zoals cookies) op uw apparaat achter nadat u bent uitgelogd. Bestanden die u downloadt en bladwijzers die u instelt, worden niet opgeslagen.
+<translation id="3175100205257218635"><ph name="BEGIN_BOLD"/>U gebruikt als gast<ph name="END_BOLD"/>. Pagina's die u op dit tabblad bekijkt, worden niet weergegeven in uw browser- of zoekgeschiedenis, en laten verder geen sporen (zoals cookies) op uw apparaat achter nadat u bent uitgelogd. Bestanden die u downloadt en bladwijzers die u instelt, worden niet opgeslagen.
           <ph name="LINE_BREAK"/>
-          <ph name="BEGIN_LINK"/>Meer informatie<ph name="END_LINK"/> over browsen als gast.</translation>
+          <ph name="BEGIN_LINK"/>Meer informatie<ph name="END_LINK"/> over gebruiken als gast.</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="695755122858488207">Niet-geselecteerd keuzerondje</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
@@ -3011,7 +3010,7 @@ Controleer uw e-mail op <ph name="ACCOUNT_EMAIL"/> voor deze en verdere instruct
 <translation id="8218008331535230597">Machtiging van inhoudslicenties intrekken</translation>
 <translation id="6691936601825168937">&amp;Vooruit</translation>
 <translation id="6566142449942033617">Kan '<ph name="PLUGIN_PATH"/>' niet laden voor plugin.</translation>
-<translation id="7299337219131431707">Browsen als gast toestaan</translation>
+<translation id="7299337219131431707">Gebruiken als gast toestaan</translation>
 <translation id="7065534935986314333">Over dit systeem</translation>
 <translation id="4691088804026137116">Niets synchroniseren</translation>
 <translation id="45025857977132537">Sleutelgebruik voor certificaat: <ph name="USAGES"/></translation>
@@ -3617,9 +3616,9 @@ Controleer uw e-mail op <ph name="ACCOUNT_EMAIL"/> voor deze en verdere instruct
 <translation id="2885378588091291677">Taakbeheer</translation>
 <translation id="7412226954991670867">GPU-geheugen</translation>
 <translation id="4916679969857390442">Lens</translation>
-<translation id="485517666720348133"><ph name="BEGIN_BOLD"/>U browst als gast<ph name="END_BOLD"/>.Pagina's die u in dit venster bekijkt, worden niet weergegeven in uw browser- of zoekgeschiedenis, en laten verder geen sporen (zoals cookies) op uw computer achter nadat u bent uitgelogd. Bestanden die u downloadt en bladwijzers die u instelt, worden niet opgeslagen.
+<translation id="485517666720348133"><ph name="BEGIN_BOLD"/>U gebruikt dit apparaat als gast<ph name="END_BOLD"/>.Pagina's die u in dit venster bekijkt, worden niet weergegeven in uw browser- of zoekgeschiedenis, en laten verder geen sporen (zoals cookies) op uw computer achter nadat u bent uitgelogd. Bestanden die u downloadt en bladwijzers die u instelt, worden niet opgeslagen.
           <ph name="LINE_BREAK"/>
-          <ph name="BEGIN_LINK"/>Meer informatie<ph name="END_LINK"/> over browsen als gast.</translation>
+          <ph name="BEGIN_LINK"/>Meer informatie<ph name="END_LINK"/> over apparaten gebruiken als gast.</translation>
 <translation id="2080796051686842158">Opstartanimatie voor achtergrond uitschakelen (behalve voor OOBE).</translation>
 <translation id="305932878998873762">De Simple Cache voor HTTP is een nieuw cachegeheugen. Het is afhankelijk van het bestandssysteem voor toekenning van schijfruimte.</translation>
 <translation id="8962083179518285172">Details verbergen</translation>
@@ -3715,6 +3714,7 @@ Controleer uw e-mail op <ph name="ACCOUNT_EMAIL"/> voor deze en verdere instruct
 <translation id="7158238151765743968">Verbinding met '<ph name="DEVICE_NAME"/>' is nog actief.</translation>
 <translation id="8782565991310229362">Starten van kiosk-app geannuleerd.</translation>
 <translation id="4726672564094551039">Beleid opnieuw laden</translation>
+<translation id="2252923619938421629">Help Google Chrome beter te maken door de huidige instellingen te melden</translation>
 <translation id="4647697156028544508">Geef de pincode op voor '<ph name="DEVICE_NAME"/>':</translation>
 <translation id="5604961908909363516">Alles wat u typt openen.</translation>
 <translation id="7671130400130574146">Titelbalk en kaders van systeem gebruiken</translation>
@@ -3801,7 +3801,7 @@ Controleer uw e-mail op <ph name="ACCOUNT_EMAIL"/> voor deze en verdere instruct
 <translation id="8770196827482281187">Perzische invoermethode (indeling ISIRI 2901)</translation>
 <translation id="100451557350107889">Waar wilt u deze $1 foto's naartoe importeren?</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
-<translation id="5642953011762033339">Account loskoppelen</translation>
+<translation id="5642953011762033339">Account ontkoppelen</translation>
 <translation id="7564847347806291057">Proces beëindigen</translation>
 <translation id="7847212883280406910">Druk op Ctrl + Alt + S om over te schakelen naar <ph name="IDS_SHORT_PRODUCT_OS_NAME"/></translation>
 <translation id="1607220950420093847">Uw account is mogelijk verwijderd of uitgeschakeld. Log uit.</translation>
@@ -4282,6 +4282,7 @@ Controleer uw e-mail op <ph name="ACCOUNT_EMAIL"/> voor deze en verdere instruct
 <translation id="2270484714375784793">Telefoonnummer</translation>
 <translation id="3603622770190368340">Netwerkcertificaat verkrijgen</translation>
 <translation id="6196207969502475924">Gesproken zoekopdrachten</translation>
+<translation id="6791586529990783225">Browserinstellingen herstellen</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> lijkt schadelijk te zijn.</translation>
 <translation id="2927657246008729253">Wijzigen...</translation>
 <translation id="7978412674231730200">Privésleutel</translation>
@@ -4565,7 +4566,7 @@ Tijd berekenen tot vol</translation>
 <translation id="1097658378307015415">Voordat u inlogt, logt u eerst in als gast om het netwerk <ph name="NETWORK_ID"/> te activeren.</translation>
 <translation id="5170477580121653719">Google Drive-ruimte over: <ph name="SPACE_AVAILABLE"/>.</translation>
 <translation id="4114470632216071239">Simkaart vergrendelen (pincode is vereist voor het gebruik van mobiele netwerk)</translation>
-<translation id="6581162200855843583">Google Drive-koppeling</translation>
+<translation id="6581162200855843583">Google Drive-link</translation>
 <translation id="5783221160790377646">Als gevolg van een fout is er geen bewaakte gebruiker gemaakt. Probeer het later opnieuw.</translation>
 <translation id="340771324714262530">Spiegelen stoppen</translation>
 <translation id="3303260552072730022">Een extensie is op volledig scherm geactiveerd.</translation>

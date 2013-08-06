@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Uruchom aplikacje Chrome</translation>
 <translation id="2370289711218562573">Google Chrome rozpoczął importowanie Ulubionych/Zakładek.</translation>
 <translation id="8762286861469007470">Detektor portalu przechwytującego Chrome</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> może zmienić ustawienia Chrome.</translation>
 <translation id="1761870329818521071">Nie można zainstalować tej samej wersji wtyczki Google Chrome Frame, która jest obecnie uruchomiona. Zamknij wtyczkę Google Chrome Frame i spróbuj ponownie.</translation>
 <translation id="2040709530900803995">Moduł renderowania Google Chrome</translation>
 <translation id="6014844626092547096">Jesteś zalogowany w Chrome. Administrator wyłączył synchronizację.</translation>
@@ -175,6 +176,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="7253415505590551024">Trwa pobieranie plików. Czy chcesz wyjść z Google Chrome i anulować pobieranie?</translation>
 <translation id="7196020411877309443">Dlaczego wyświetla mi się to okienko?</translation>
 <translation id="2769762047821873045">Google Chrome nie jest domyślną przeglądarką.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> może zmienić sposób wyszukiwania w Chrome.</translation>
 <translation id="6855094794438142393">Wybierz
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

@@ -107,7 +107,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="2372145515558759244">Sincronizando aplicaciones...</translation>
 <translation id="7256405249507348194">Error desconocido: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Falló la verificación de AAA</translation>
-<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> hasta completarse</translation>
+<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> hasta completar</translation>
 <translation id="5787281376604286451">Los comentarios de voz están habilitados.
 Para inhabilitar esta opción, presiona Ctrl+Alt+Z.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -189,7 +189,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="7209101170223508707">El BLOQUEO DE MAYÚSCULAS está activado.
 Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</translation>
 <translation id="8940956008527784070">Batería baja (<ph name="PERCENTAGE"/>%)</translation>
-<translation id="5102001756192215136">Queda <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> restante</translation>
 <translation id="520760366042891468">Compartir el control de la pantalla a través de Hangouts</translation>
 <translation id="8000066093800657092">Sin red</translation>
 <translation id="4015692727874266537">Acceder a otra cuenta</translation>

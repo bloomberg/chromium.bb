@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Стартиране на приложения за Chrome</translation>
 <translation id="2370289711218562573">В момента Google Chrome импортира „Любими/Отметки“.</translation>
 <translation id="8762286861469007470">Инструмент на Chrome за откриване на портали за удостоверяване</translation>
+<translation id="3993188379797269327">„<ph name="FILE_NAME"/>“ може да промени настройките ви за Chrome.</translation>
 <translation id="1761870329818521071">Не може да се инсталира същата версия на Google Chrome Frame, която се използва понастоящем. Моля, затворете приставката и опитайте отново.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Вече влязохте в Chrome! Синхронизирането е деактивирано от администратора ви.</translation>
@@ -176,6 +177,7 @@
 <translation id="7253415505590551024">Понастоящем се извършват изтегляния. Искате ли да излезете от Google Chrome и да ги анулирате?</translation>
 <translation id="7196020411877309443">Защо се показва това?</translation>
 <translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
+<translation id="1020869477857717497">„<ph name="FILE_NAME"/>“ може да промени начина на работа на търсенията ви в Chrome.</translation>
 <translation id="6855094794438142393">Отворете
 менюто на Chrome &gt;
 <ph name="SETTINGS_TITLE"/>

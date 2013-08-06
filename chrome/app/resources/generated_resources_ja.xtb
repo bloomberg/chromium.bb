@@ -325,6 +325,7 @@
 <translation id="5234764350956374838">表示しない</translation>
 <translation id="8702516222444523256">アプリ ランチャーに対応する OSX アプリ バンドルが [アプリケーション] フォルダに必ず存在するようになります。</translation>
 <translation id="40027638859996362">1 語移動する</translation>
+<translation id="6303187936217840894">ブラウザの設定を元のデフォルトに戻します。これにより、ホームページ、新しいタブ ページ、検索エンジンがリセットされ、拡張機能は無効となり、すべてのタブの固定は解除されます。また、その他の一時的なキャッシュ データ（Cookie、コンテンツ データ、サイト データなど）も削除されます。</translation>
 <translation id="1524793692806456360">ローカル限定の Instant Extended API を有効にする</translation>
 <translation id="6928441285542626375">TCP Fast Open を有効にする</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> のインデックス</translation>
@@ -962,7 +963,6 @@
 <translation id="1871208020102129563">プロキシは .pac スクリプト URL ではなく固定プロキシ サーバーを使用するように設定されています。</translation>
 <translation id="1634788685286903402">メール ユーザーの身元を特定するこの証明書を信頼します。</translation>
 <translation id="1856715684130786728">位置情報を追加...</translation>
-<translation id="3328786139156860526">何らかの問題が発生したときに、Chrome プロフィールをインストール直後のクリーンな状態に戻します。</translation>
 <translation id="8642489171979176277">Google ツールバー ブックマーク</translation>
 <translation id="4684427112815847243">すべてを同期する</translation>
 <translation id="4699357559218762027">（自動起動済み）</translation>
@@ -1322,7 +1322,6 @@
 <translation id="2076748722938414183">タブのスクラビングを無効にする</translation>
 <translation id="1756681705074952506">入力方法</translation>
 <translation id="8545211332741562162">ウェブページで JavaScript の試験運用機能を使用できるようにします。</translation>
-<translation id="3335878584157510445">プロフィールの設定をリセット...</translation>
 <translation id="734303607351427494">検索エンジンの管理...</translation>
 <translation id="3706919628594312718">マウスの設定</translation>
 <translation id="7973174304586609605">新しいユーザーを追加...</translation>
@@ -1377,6 +1376,7 @@
 <translation id="8856844195561710094">Bluetooth デバイスの検出を停止できませんでした。</translation>
 <translation id="2246340272688122454">リカバリ イメージをダウンロードしています...</translation>
 <translation id="5305688511332277257">インストールされていません</translation>
+<translation id="1958802757844394735">ブラウザの設定を元のデフォルトに戻します。</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> 分前</translation>
 <translation id="2816269189405906839">中国語の入力方法（cangjie）</translation>
 <translation id="8395901698320285466">サイズ</translation>
@@ -1746,7 +1746,6 @@
 <translation id="3204741654590142272">チャンネルの変更は後で適用されます。</translation>
 <translation id="7836361698254323868">残り <ph name="NUMBER_ONE"/> 分</translation>
 <translation id="901974403500617787">システム全体に適用されるフラグは所有者（<ph name="OWNER_EMAIL"/>）のみが設定できます。</translation>
-<translation id="492131106259297640">プロフィールの設定をリセット</translation>
 <translation id="2080010875307505892">セルビア語のキーボード</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> 分</translation>
 <translation id="201192063813189384">キャッシュからデータを読み込み中にエラーが発生しました。</translation>
@@ -3225,7 +3224,7 @@
 <translation id="6442187272350399447">ビックリ</translation>
 <translation id="7317938878466090505"><ph name="PROFILE_NAME"/>（現在）</translation>
 <translation id="6774230405643443657">遅延画像デコードの有効化。</translation>
-<translation id="2148999191776934271">フル充電まで <ph name="HOUR"/> 時間 <ph name="MINUTE"/> 分</translation>
+<translation id="2148999191776934271">フル充電まで <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="6007237601604674381">移動できませんでした。<ph name="ERROR_MESSAGE"/></translation>
 <translation id="907841381057066561">パッケージ化の処理中に一時的な zip ファイルを作成できませんでした。</translation>
 <translation id="1881456419707551346">接続の詳細</translation>
@@ -3697,6 +3696,7 @@
 <translation id="7158238151765743968">「<ph name="DEVICE_NAME"/>」に引き続き接続しています。</translation>
 <translation id="8782565991310229362">キオスク アプリケーションの起動がキャンセルされました。</translation>
 <translation id="4726672564094551039">ポリシーを再読み込み</translation>
+<translation id="2252923619938421629">現在の設定を送信して Google Chrome の機能向上に役立てる</translation>
 <translation id="4647697156028544508">「<ph name="DEVICE_NAME"/>」の PIN を入力してください:</translation>
 <translation id="5604961908909363516">入力する内容すべてにアクセス</translation>
 <translation id="7671130400130574146">システム タイトル バーと枠線の使用</translation>
@@ -4264,6 +4264,7 @@
 <translation id="2270484714375784793">電話番号</translation>
 <translation id="3603622770190368340">ネットワーク証明書を取得</translation>
 <translation id="6196207969502475924">音声検索</translation>
+<translation id="6791586529990783225">ブラウザの設定をリセットする</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> は不正なファイルのようです。</translation>
 <translation id="2927657246008729253">変更...</translation>
 <translation id="7978412674231730200">秘密鍵</translation>

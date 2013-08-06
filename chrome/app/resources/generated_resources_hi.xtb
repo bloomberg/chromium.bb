@@ -327,6 +327,7 @@
 <translation id="5234764350956374838">खारिज करें</translation>
 <translation id="8702516222444523256">यह सुनिश्चित करने के लिए सक्षम करें कि एप्लिकेशन फ़ोल्डर के अंतर्गत एप्लिकेशन लॉन्चर के लिए एक OSX एप्लिकेशन बंडल मौजूद है.</translation>
 <translation id="40027638859996362">शब्द स्थानांतरण</translation>
+<translation id="6303187936217840894">आपकी ब्राउज़र सेटिंग अपने मूल डिफ़ॉल्ट रूप में पुनर्स्थापित कर दी जाएंगी. इससे आपका मुखपृष्ठ, नया टैब पृष्ठ और खोज इंजन रीसेट होगा, आपका एक्सटेंशन अक्षम हो जाएगा औऱ सभी टैब अनपिन हो जाएंगी. इससे अन्य अस्थायी और संचित डेटा, जैसे कुकीज़, सामग्री और साइट डेटा भी हट जाएगा.</translation>
 <translation id="1524793692806456360">केवल-स्थानीय झटपट विस्तृत API सक्षम करें</translation>
 <translation id="6928441285542626375">TCP फ़ास्ट ओपन सक्षम करें</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> का इंडेक्स</translation>
@@ -972,7 +973,6 @@
 <translation id="1871208020102129563">प्रॉक्‍सी को फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर का उपयोग करने के लिए सेट किया गया है, .pac स्‍क्रिप्‍ट फ़ाइल का उपयोग करने के लिए नहीं.</translation>
 <translation id="1634788685286903402">ईमेल उपयोगकर्ता को पहचानने के लिए इस प्रमाणपत्र पर विश्वास करें.</translation>
 <translation id="1856715684130786728">स्थान जोड़ें...</translation>
-<translation id="3328786139156860526">स्थिति नियंत्रण से बाहर हो गई है? अपनी Chrome प्रोफ़ाइल को एक साफ़, इंस्टॉल करने के बाद वाली स्थिति में वापस लाएं.</translation>
 <translation id="8642489171979176277">Google Toolbar से आयात किया गया</translation>
 <translation id="4684427112815847243">सब कुछ समन्‍वयित करें</translation>
 <translation id="4699357559218762027">(स्वत:-लॉन्च किया गया)</translation>
@@ -1331,7 +1331,6 @@
 <translation id="2076748722938414183">टैब स्क्रबिंग अक्षम करें</translation>
 <translation id="1756681705074952506">इनपुट विधि</translation>
 <translation id="8545211332741562162">प्रयोगात्‍मक JavaScript सुविधाओं का उपयोग करने के लिए वेब पृष्ठ सक्षम करें.</translation>
-<translation id="3335878584157510445">प्रोफ़ाइल सेटिंग रीसेट करें...</translation>
 <translation id="734303607351427494">खोज इंजन प्रबंधित करें...</translation>
 <translation id="3706919628594312718">माउस सेटिंग</translation>
 <translation id="7973174304586609605">नया उपयोगकर्ता जोड़ें...</translation>
@@ -1386,6 +1385,7 @@
 <translation id="8856844195561710094">Bluetooth उपकरण अन्‍वेषण बंद करने में विफल.</translation>
 <translation id="2246340272688122454">पुनर्प्राप्ति चित्र डाउनलोड कर रहा है...</translation>
 <translation id="5305688511332277257">कुछ भी इंस्टॉल नहीं है</translation>
+<translation id="1958802757844394735">ब्राउज़र सेटिंग को उनके मूल डिफ़ॉल्ट रूप में पुनर्स्थापित करना.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">चीनी इनपुट पद्धति (कांग्जी)</translation>
 <translation id="8395901698320285466">आयाम</translation>
@@ -1754,7 +1754,6 @@
 <translation id="3204741654590142272">चैनल बदलाव बाद में लागू किया जाएगा.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> मिनट शेष</translation>
 <translation id="901974403500617787">सिस्टम-व्यापी रूप से लागू होने वाले फ़्लैग केवल स्वामी द्वारा ही सेट किए जा सकते हैं: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">प्रोफ़ाइल सेटिंग रीसेट करें</translation>
 <translation id="2080010875307505892">सर्बियाई कीबोर्ड</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> मिनट</translation>
 <translation id="201192063813189384">संचय से डेटा पढ़ने में त्रुटि.</translation>
@@ -3724,6 +3723,7 @@
 <translation id="7158238151765743968">&quot;<ph name="DEVICE_NAME"/>&quot; से कनेक्शन अभी भी प्रगति में है.</translation>
 <translation id="8782565991310229362">कियोस्क एप्लिकेशन लॉन्च रद्द किया गया.</translation>
 <translation id="4726672564094551039">नीतियां पुनः लोड करें</translation>
+<translation id="2252923619938421629">वर्तमान सेटिंग की रिपोर्ट करके Google Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="4647697156028544508">कृपया &quot;<ph name="DEVICE_NAME"/>&quot; के लिए पिन दर्ज करें:</translation>
 <translation id="5604961908909363516">जो भी आप लिख रहे हैं उस तक पहुंचें.</translation>
 <translation id="7671130400130574146">सिस्टम शीर्षक बार और बॉर्डर का उपयोग करें</translation>
@@ -4293,6 +4293,7 @@
 <translation id="2270484714375784793">फ़ोन नंबर</translation>
 <translation id="3603622770190368340">नेटवर्क प्रमाणपत्र प्राप्त करें</translation>
 <translation id="6196207969502475924">ध्वनि खोज</translation>
+<translation id="6791586529990783225">ब्राउज़र सेटिंग रीसेट करना</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> दुर्भावनापूर्ण लगती है.</translation>
 <translation id="2927657246008729253">बदलें...</translation>
 <translation id="7978412674231730200">निजी कुंजी</translation>

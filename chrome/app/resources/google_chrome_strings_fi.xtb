@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Käynnistä Chrome-sovelluksia</translation>
 <translation id="2370289711218562573">Google Chrome tuo suosikkeja/kirjanmerkkejä.</translation>
 <translation id="8762286861469007470">Chromen Captive Portal -havaitsin</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> voi muuttaa Chromen asetuksia.</translation>
 <translation id="1761870329818521071">Ei voi asentaa samaa Google Chrome -kehyksen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Olet nyt kirjautunut sisään Chromeen! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
@@ -174,6 +175,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7253415505590551024">Latauksia on käynnissä. Haluatko sulkea Google Chromen ja peruuttaa lataukset?</translation>
 <translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>
 <translation id="2769762047821873045">Google Chrome ei ole oletusselain.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> voi muuttaa hakujen toimintatapaa Chromessa.</translation>
 <translation id="6855094794438142393">Avaa
           Chrome-valikko &gt;
           <ph name="SETTINGS_TITLE"/>

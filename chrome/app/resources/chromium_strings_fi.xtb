@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Sulje kaikki Chromium-ikkunat ja yritä uudelleen.</translation>
 <translation id="4077262827416206768">Sulje kaikki Chromium-ikkunat ja käynnistä Chromium uudelleen, niin muutos tulee voimaan.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> voi muuttaa hakujen toimintatapaa Chromiumissa.</translation>
 <translation id="6944967875980567883">Chromiumiin ladatut moduulit</translation>
 <translation id="118298050220780080">Yritit siirtyä osoitteeseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelimen palauttaman varmenteen on myöntänyt taho, johon tietokoneesi käyttöjärjestelmä ei luota. Tämä voi tarkoittaa, että palvelin on luonut omat suojaustietonsa itse, jolloin Chromium ei voi tunnistaa sitä luotettavasti, tai että hyökkääjä yrittää kaapata yhteyden.</translation>
 <translation id="3296368748942286671">Jätä taustasovellukset käyntiin, kun Chromium suljetaan</translation>
@@ -181,6 +182,7 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="1708666629004767631">Chromiumista on saatavilla uusi, turvallisempi versio.</translation>
 <translation id="1539981464052805551">Copyright 2013 The Chromium Authors. Kaikki oikeudet pidätetään.</translation>
 <translation id="378917192836375108">Chromiumin avulla voit soittaa Skypellä puhelinnumeroon klikkaamalla sitä verkossa!</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> voi muuttaa Chromiumin asetuksia.</translation>
 <translation id="8724049448828509830">Lataus on käynnissä. Haluatko sulkea Chromiumin ja peruuttaa latauksen?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Chromium Plug-In Host</translation>

@@ -78,6 +78,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Cierra todas las ventanas de Chromium e inténtalo de nuevo.</translation>
 <translation id="4077262827416206768">Cierra todas las ventanas de Chromium y vuelve a iniciarlo para que se aplique el cambio.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> puede cambiar el funcionamiento de tus búsquedas en Chromium.</translation>
 <translation id="6944967875980567883">Módulos cargados en Chromium 
 </translation>
 <translation id="118298050220780080">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor presentó un certificado emitido por una entidad que el sistema operativo del ordenador no tiene registrada como entidad de confianza. Este problema se puede deber a que el servidor haya generado sus propias credenciales de seguridad (en las que Chromium no puede confiar para confirmar la autenticidad del sitio) o a que un hacker esté intentando interceptar tus comunicaciones.</translation>
@@ -185,6 +186,7 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="1708666629004767631">Hay disponible una nueva versión más segura de Chromium.</translation>
 <translation id="1539981464052805551">Copyright 2013 Los creadores de Chromium. Todos los derechos reservados</translation>
 <translation id="378917192836375108">Chromium te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> puede cambiar tu configuración de Chromium.</translation>
 <translation id="8724049448828509830">Hay una descarga está en curso. ¿Quieres salir de Chromium y cancelarla?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Chromium Plug-In Host</translation>

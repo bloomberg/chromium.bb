@@ -75,6 +75,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">لطفاً همه پنجره‌های Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="4077262827416206768">لطفاً همه پنجره‌های Chromium را ببندید و Chromium را برای اعمال این تغییر دوباره راه‌اندازی کنید.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> ممکن است نحوه عملکرد جستجوهای‌تان را در Chromium تغییر دهد.</translation>
 <translation id="6944967875980567883">مدول‌ها در Chromium بارگیری شدند</translation>
 <translation id="118298050220780080">شما تلاش کردید به &lt;strong&gt;<ph name="DOMAIN"/>&lt;strong&gt; دسترسی پیدا کنید اما سرور گواهی را ارائه کرد که توسط هویتی صادر شده است که مورد اعتماد سیستم عامل رایانهٔ شما نیست. این ممکن است به این معنا باشد که سرور مدارک صلاحیت امنیت خود را ایجاد کرده است، که Chromium نمی‌تواند برای اطلاعات هویت به آن‌ها تکیه کند یا ممکن است یک مهاجم بخواهد ارتباطات شما را قطع کند.</translation>
 <translation id="3296368748942286671">ادامه اجرای برنامه‌ها در پس‌زمینه هنگامیکه Chromium بسته می‌شود</translation>
@@ -180,6 +181,7 @@
 <translation id="1708666629004767631">نسخه جدید و امن‌تری از Chromium موجود است.</translation>
 <translation id="1539981464052805551">حق نسخه‌برداری 2013 نویسندگان Chromium. کلیه حقوق محفوظ است.</translation>
 <translation id="378917192836375108">Chromium به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> ممکن است تنظیمات Chromium شما را تغییر دهد.</translation>
 <translation id="8724049448828509830">دانلود اکنون در حال انجام است. آیا می‌خواهید از Chromium خارج شوید و دانلود را لغو کنید.</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">میزبان افزونه Chromium </translation>

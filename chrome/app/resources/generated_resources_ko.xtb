@@ -330,6 +330,7 @@
 <translation id="5234764350956374838">숨기기</translation>
 <translation id="8702516222444523256">앱 실행기용 OSX 앱 번들이 애플리케이션 폴더 아래에 있는지 확인할 수 있도록 설정합니다.</translation>
 <translation id="40027638859996362">단어 이동</translation>
+<translation id="6303187936217840894">브라우저 설정이 기본값으로 복원됩니다. 홈페이지, 새 탭 페이지, 검색엔진이 재설정되고, 확장 프로그램이 사용 중지되며, 모든 탭이 고정 해제됩니다. 쿠키, 콘텐츠, 사이트 데이터를 포함한 임시 및 캐시된 데이터도 삭제됩니다.</translation>
 <translation id="1524793692806456360">로컬용 순간 검색 확장 API 사용</translation>
 <translation id="6928441285542626375">TCP 빠른 열기 사용</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/>의 색인</translation>
@@ -970,7 +971,6 @@
 <translation id="1871208020102129563">프록시가 .pac 스크립트 URL이 아닌 고정 프록시 서버를 사용하도록 설정됩니다.</translation>
 <translation id="1634788685286903402">이메일 사용자를 식별하기 위해 이 인증서를 신뢰합니다.</translation>
 <translation id="1856715684130786728">위치 추가...</translation>
-<translation id="3328786139156860526">통제 불능 상태입니까? Chrome 프로필을 설치 직후의 깨끗한 상태로 되돌리세요.</translation>
 <translation id="8642489171979176277">Google 툴바에서 가져온 북마크</translation>
 <translation id="4684427112815847243">모두 동기화</translation>
 <translation id="4699357559218762027">(자동 실행)</translation>
@@ -1332,7 +1332,6 @@
 <translation id="2076748722938414183">탭 스크러빙 사용중지</translation>
 <translation id="1756681705074952506">입력 방법</translation>
 <translation id="8545211332741562162">실험용 자바스크립트 기능을 사용하기 위해 웹페이지를 사용하도록 설정합니다.</translation>
-<translation id="3335878584157510445">프로필 설정 재설정...</translation>
 <translation id="734303607351427494">검색엔진 관리...</translation>
 <translation id="3706919628594312718">마우스 설정</translation>
 <translation id="7973174304586609605">새 사용자 추가...</translation>
@@ -1387,6 +1386,7 @@
 <translation id="8856844195561710094">블루투스 기기 검색을 중단하지 못했습니다.</translation>
 <translation id="2246340272688122454">복구 이미지 다운로드 중...</translation>
 <translation id="5305688511332277257">설치된 인증서 없음</translation>
+<translation id="1958802757844394735">브라우저 설정이 기본값으로 복원됩니다.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/>분 전</translation>
 <translation id="2816269189405906839">중국어 입력 방법(창제)</translation>
 <translation id="8395901698320285466">크기</translation>
@@ -1758,7 +1758,6 @@
 <translation id="3204741654590142272">채널 변경은 나중에 적용됩니다.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> minute left</translation>
 <translation id="901974403500617787">시스템 전체에 적용되는 플래그는 소유자(<ph name="OWNER_EMAIL"/>)만 설정할 수 있습니다.</translation>
-<translation id="492131106259297640">프로필 설정 재설정</translation>
 <translation id="2080010875307505892">세르비아어 키보드</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/>분</translation>
 <translation id="201192063813189384">캐시에서 데이터를 읽는 중에 오류가 발생했습니다.</translation>
@@ -3705,6 +3704,7 @@ Public Exponent(<ph name="PUBLIC_EXPONENT_NUM_BITS"/>비트):
 <translation id="7158238151765743968"><ph name="DEVICE_NAME"/>에 연결 중입니다.</translation>
 <translation id="8782565991310229362">키오스크 애플리케이션 실행이 취소되었습니다.</translation>
 <translation id="4726672564094551039">정책 새로고침</translation>
+<translation id="2252923619938421629">현재 설정을 보고하여 더 나은 Chrome을 만드는 데 도움 주기</translation>
 <translation id="4647697156028544508">'<ph name="DEVICE_NAME"/>'의 PIN을 입력하세요:</translation>
 <translation id="5604961908909363516">입력한 모든 대상에 액세스합니다.</translation>
 <translation id="7671130400130574146">시스템 제목 표시줄 및 테두리 사용</translation>
@@ -4273,6 +4273,7 @@ Public Exponent(<ph name="PUBLIC_EXPONENT_NUM_BITS"/>비트):
 <translation id="2270484714375784793">전화번호</translation>
 <translation id="3603622770190368340">네트워크 인증서 받기</translation>
 <translation id="6196207969502475924">음성 검색</translation>
+<translation id="6791586529990783225">브라우저 설정 재설정</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/>은(는) 악성 파일인 것 같습니다.</translation>
 <translation id="2927657246008729253">변경...</translation>
 <translation id="7978412674231730200">비공개 키</translation>

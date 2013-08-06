@@ -27,6 +27,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2896252579017640304">Lancer des applications Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome importe actuellement vos signets/favoris.</translation>
 <translation id="8762286861469007470">Détecteur de portail captif Google Chrome</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> risque de modifier vos paramètres Chrome.</translation>
 <translation id="1761870329818521071">Impossible d'installer la version de Google Chrome Frame qui est en cours d'exécution. Fermez Google Chrome Frame et réessayez.</translation>
 <translation id="2040709530900803995">Moteur de rendu de Google Chrome</translation>
 <translation id="6014844626092547096">Vous êtes maintenant connecté à Chrome. La synchronisation a été désactivée par votre administrateur.</translation>
@@ -182,6 +183,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="7253415505590551024">Des téléchargements sont actuellement en cours. Voulez-vous quitter Google Chrome et annuler les téléchargements ?</translation>
 <translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>
 <translation id="2769762047821873045">Google Chrome n'est pas votre navigateur par défaut.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> risque de modifier le fonctionnement de vos recherches dans Chrome.</translation>
 <translation id="6855094794438142393">Accédez au
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

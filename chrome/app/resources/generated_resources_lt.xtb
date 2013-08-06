@@ -330,6 +330,7 @@
 <translation id="5234764350956374838">Atsisakyti</translation>
 <translation id="8702516222444523256">Įgalinkite, kad įsitikintumėte, jog OSX programų grupė, skirta programų paleidimo priemonei, pateikiama aplanke „Programos“.</translation>
 <translation id="40027638859996362">Perkelti žodį</translation>
+<translation id="6303187936217840894">Naršyklės nustatymai bus atkurti į originalius numatytuosius. Bus iš naujo nustatyti pagrindinis puslapis, naujo skirtuko puslapis ir paieškos variklis, išjungti plėtiniai ir atsegti visi skirtukai. Taip pat bus išvalyti kiti laikini ir talpykloje esantys duomenys, pvz., slapukai, turinio ir svetainių duomenys.</translation>
 <translation id="1524793692806456360">Įgalinti tik vietinę Išplėstinės intuityviosios paieškos API</translation>
 <translation id="6928441285542626375">Įgalinti TCP greitą atidarymą</translation>
 <translation id="5463275305984126951">Turinys iš <ph name="LOCATION"/></translation>
@@ -969,7 +970,6 @@
 <translation id="1871208020102129563">Įgaliotasis serveris nustatytas naudoti fiksuotų įgaliotųjų serverių, o ne .pac scenarijaus URL.</translation>
 <translation id="1634788685286903402">Pasitikėti šiuo sertifikatu nustatant el. pašto naudotojus.</translation>
 <translation id="1856715684130786728">Pridėti vietą...</translation>
-<translation id="3328786139156860526">Nepatinka dabartinis profilis? Grąžinkite „Chrome“ profilį į būklę, kurios jis buvo jį įdiegus.</translation>
 <translation id="8642489171979176277">Importuota iš „Google“ įrankių juostos</translation>
 <translation id="4684427112815847243">Viską sinchronizuoti</translation>
 <translation id="4699357559218762027">(automatiškai paleidžiama)</translation>
@@ -1330,7 +1330,6 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="2076748722938414183">Neleisti perjungimo į gretimą skirtuką funkcijos</translation>
 <translation id="1756681705074952506">Įvesties metodas</translation>
 <translation id="8545211332741562162">Įgalinti tinklalapius naudoti bandomosios „JavaScript“ funkcijas.</translation>
-<translation id="3335878584157510445">Nustatyti profilio nustatymus iš naujo...</translation>
 <translation id="734303607351427494">Valdyti paieškos variklius...</translation>
 <translation id="3706919628594312718">Palės nustatymai</translation>
 <translation id="7973174304586609605">Pridėti naują naudotoją...</translation>
@@ -1385,6 +1384,7 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="8856844195561710094">Nepavyko sustabdyti „Bluetooth“ įrenginio aptikimo funkcijos.</translation>
 <translation id="2246340272688122454">Atsisiunčiamas atkūrimo vaizdas...</translation>
 <translation id="5305688511332277257">Nėra įdiegtų</translation>
+<translation id="1958802757844394735">Naršyklės nustatymai atkuriami į originalius numatytuosius.</translation>
 <translation id="7770995925463083016">Prieš <ph name="NUMBER_TWO"/> min.</translation>
 <translation id="2816269189405906839">Įvesties kinų k. metodas („Cangjie“)</translation>
 <translation id="8395901698320285466">Aspektai</translation>
@@ -1757,7 +1757,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME"/>“?</translation>
 <translation id="3204741654590142272">Kanalo pakeitimas bus pritaikytas vėliau.</translation>
 <translation id="7836361698254323868">Liko <ph name="NUMBER_ONE"/> min.</translation>
 <translation id="901974403500617787">Visoje sistemoje taikomas žymas gali nustatyti tik savininkas: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Nustatyti profilio nustatymus iš naujo</translation>
 <translation id="2080010875307505892">Serbiška klaviatūra</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min.</translation>
 <translation id="201192063813189384">Nuskaitant duomenis iš talpyklos įvyko klaida.</translation>
@@ -3719,6 +3718,7 @@ Turite būti prisijungę, kad galėtumėte naudoti šią funkciją.</translation
 <translation id="7158238151765743968">Vis dar bandoma užmegzti ryšį su „<ph name="DEVICE_NAME"/>“.</translation>
 <translation id="8782565991310229362">Atšauktas viešojo terminalo programos paleidimas.</translation>
 <translation id="4726672564094551039">Iš naujo įkelti politiką</translation>
+<translation id="2252923619938421629">Padėkite pagerinti „Google Chrome“ pateikę ataskaitą apie dabartinius nustatymus</translation>
 <translation id="4647697156028544508">Įveskite „<ph name="DEVICE_NAME"/>“ PIN kodą:</translation>
 <translation id="5604961908909363516">Pasiekti viską, ką įvedate.</translation>
 <translation id="7671130400130574146">Naudoti sistemos pavadinimo juostą ir rėmelius</translation>
@@ -4287,6 +4287,7 @@ Turite būti prisijungę, kad galėtumėte naudoti šią funkciją.</translation
 <translation id="2270484714375784793">Telefono numeris</translation>
 <translation id="3603622770190368340">Gauti tinklo sertifikatą</translation>
 <translation id="6196207969502475924">Paieška balsu</translation>
+<translation id="6791586529990783225">Nustatykite naršyklės nustatymus iš naujo</translation>
 <translation id="5973229212631512780">„<ph name="FILE_NAME"/>“ tikriausiai yra kenkėjiškas.</translation>
 <translation id="2927657246008729253">Pakeisti...</translation>
 <translation id="7978412674231730200">Asmeninis raktas</translation>

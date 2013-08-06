@@ -335,6 +335,7 @@
 <translation id="5234764350956374838">Ta bort permanent</translation>
 <translation id="8702516222444523256">Markera detta och se till att det finns ett appaket för OSX för startprogrammet för appar i mappen Appar.</translation>
 <translation id="40027638859996362">Flytta ord</translation>
+<translation id="6303187936217840894">Dina webbläsarinställningar kommer att återställas till standardinställningarna. Det innebär att din startsida, sidan för nya flikar och sökmotorinställningarna återställs och att dina tillägg inaktiveras och dina flikar lossas. Även tillfälliga och cachade data, till exempel cookies, innehåll och webbplatsinformation kommer att tas bort.</translation>
 <translation id="1524793692806456360">Aktivera ett utökat API för Instant endast lokalt</translation>
 <translation id="6928441285542626375">Aktivera TCP Fast Open</translation>
 <translation id="5463275305984126951">Index till <ph name="LOCATION"/></translation>
@@ -974,7 +975,6 @@
 <translation id="1871208020102129563">Proxyn är inställd på att använda fasta proxyservrar, inte en webbadress med PAC-skript.</translation>
 <translation id="1634788685286903402">Lita på detta certifikat för identifiering av e-postanvändare.</translation>
 <translation id="1856715684130786728">Lägg till plats ...</translation>
-<translation id="3328786139156860526">Har du tappat kontrollen? Återställ din Chrome-profil till installationstillståndet.</translation>
 <translation id="8642489171979176277">Importerad från Google Verktygsfält</translation>
 <translation id="4684427112815847243">Synkronisera allt</translation>
 <translation id="4699357559218762027">(startas automatiskt)</translation>
@@ -1334,7 +1334,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="2076748722938414183">Inaktivera skrubbning för flikar</translation>
 <translation id="1756681705074952506">Inmatningsmetod</translation>
 <translation id="8545211332741562162">Gör så att webbsidor använder experimentella Javascript-funktioner.</translation>
-<translation id="3335878584157510445">Återställ profilinställningar …</translation>
 <translation id="734303607351427494">Hantera sökmotorer...</translation>
 <translation id="3706919628594312718">Musinställningar</translation>
 <translation id="7973174304586609605">Lägg till en ny användare ...</translation>
@@ -1389,6 +1388,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="8856844195561710094">Det gick inte att avbryta identifiering av Bluetooth-enheter.</translation>
 <translation id="2246340272688122454">Hämtar återställningsavbildning...</translation>
 <translation id="5305688511332277257">Ingen installerad</translation>
+<translation id="1958802757844394735">Återställ webbläsarens inställningar till standardinställningarna.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">Kinesisk inmatningsmetod (cangjie)</translation>
 <translation id="8395901698320285466">Dimensioner</translation>
@@ -1756,7 +1756,6 @@ Lämna inte ut känsliga uppgifter.</translation>
 <translation id="3204741654590142272">Kanalbytet kommer att tillämpas senare.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> minut kvar</translation>
 <translation id="901974403500617787">Flaggor som gäller hela systemet kan endast ställas in av ägaren: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Återställ profilinställningar</translation>
 <translation id="2080010875307505892">Serbiskt tangentbord</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minut</translation>
 <translation id="201192063813189384">Ett fel uppstod när data lästes från cacheminnet.</translation>
@@ -3702,6 +3701,7 @@ hanteraren
 <translation id="7158238151765743968">Anslutning till <ph name="DEVICE_NAME"/> pågår.</translation>
 <translation id="8782565991310229362">Starten av kioskappen avbröts.</translation>
 <translation id="4726672564094551039">Läs in policyer på nytt</translation>
+<translation id="2252923619938421629">Hjälp oss att förbättra Google Chrome genom att rapportera dina aktuella inställningar</translation>
 <translation id="4647697156028544508">Ange PIN-koden för <ph name="DEVICE_NAME"/>:</translation>
 <translation id="5604961908909363516">Få åtkomst till allt du skriver.</translation>
 <translation id="7671130400130574146">Använd systemets inställningar för namnlist och ramar</translation>
@@ -4268,6 +4268,7 @@ hanteraren
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="3603622770190368340">Skaffa nätverkscertifikat</translation>
 <translation id="6196207969502475924">Röstsökning</translation>
+<translation id="6791586529990783225">Återställ webbläsarinställningarna</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> verkar vara en skadlig fil.</translation>
 <translation id="2927657246008729253">Ändra...</translation>
 <translation id="7978412674231730200">Privat nyckel</translation>

@@ -331,6 +331,7 @@
 <translation id="5234764350956374838">Balewalain</translation>
 <translation id="8702516222444523256">I-enable upang matiyak na umiiral ang isang OSX app bundle para sa App Launcher sa ilalim ng folder ng Mga Application.</translation>
 <translation id="40027638859996362">Ilipat ang salita</translation>
+<translation id="6303187936217840894">Ibabalik ang mga setting ng iyong browser sa mga orihinal na default ng mga ito. Ire-reset nito ang iyong homepage, pahina ng bagong tab at search engine, idi-disable ang iyong mga extension at i-a-unpin ang lahat ng tab. Iki-clear din nito ang iba pang pansamantala at naka-cache na data, gaya ng cookies, nilalaman at data ng site.</translation>
 <translation id="1524793692806456360">I-enable ang lokal lang na Instant extended API</translation>
 <translation id="6928441285542626375">I-enable ang TCP Fast Open</translation>
 <translation id="5463275305984126951">Index ng <ph name="LOCATION"/></translation>
@@ -969,7 +970,6 @@
 <translation id="1871208020102129563">Nakatakda ang proxy upang gumamit ng mga hindi nababagong proxy server, hindi ng isang .pac script URL.</translation>
 <translation id="1634788685286903402">Pagkatiwalaan ang certificate para sa pagtukoy ng mga user ng email.</translation>
 <translation id="1856715684130786728">Magdagdag ng lokasyon...</translation>
-<translation id="3328786139156860526">Nagkagulo ang lahat? I-revert ang iyong chrome sa isang katayuang malinis at post-install.</translation>
 <translation id="8642489171979176277">Na-import Mula sa Google Toolbar</translation>
 <translation id="4684427112815847243">I-sync lahat</translation>
 <translation id="4699357559218762027">(awtomatikong inilunsad)</translation>
@@ -1330,7 +1330,6 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="2076748722938414183">Huwag paganahin ang tab scrubbing</translation>
 <translation id="1756681705074952506">Pamamaraan ng pag-input</translation>
 <translation id="8545211332741562162">Paganahin ang mga web page upang gumamit ng mga tampok ng pang-eksperimentong JavaScript.</translation>
-<translation id="3335878584157510445">I-reset ang mga setting ng profile...</translation>
 <translation id="734303607351427494">Pamahalaan ang mga search engine...</translation>
 <translation id="3706919628594312718">Mga setting ng mouse</translation>
 <translation id="7973174304586609605">Magdagdag ng bagong user...</translation>
@@ -1385,6 +1384,7 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="8856844195561710094">Nabigong pahintuin ang paghanap ng Bluetooth na device.</translation>
 <translation id="2246340272688122454">Dina-download ang larawan ng pagbawi...</translation>
 <translation id="5305688511332277257">Walang naka-install</translation>
+<translation id="1958802757844394735">Ibalik ang mga setting ng browser sa mga orihinal na default ng mga ito.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> minuto ang nakalipas</translation>
 <translation id="2816269189405906839">Paraan ng pag-input na Chinese (cangjie)</translation>
 <translation id="8395901698320285466">Mga Sakop</translation>
@@ -1756,7 +1756,6 @@ Siguraduhing hindi ka maglalantad ng anumang sensitibong impormasyon.</translati
 <translation id="3204741654590142272">Malalapat sa ibang pagkakataon ang pagbabago sa channel.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> minuto ang natitira</translation>
 <translation id="901974403500617787">Ang may-ari lang ang maaaring magtakda ng mga flag na nalalapat sa buong system: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">I-reset ang mga setting ng profile</translation>
 <translation id="2080010875307505892">Serbian na keyboard</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minuto</translation>
 <translation id="201192063813189384">Error sa pagbabasa ng data mula sa cache.</translation>
@@ -3712,6 +3711,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL"/> para sa mga ito at mga
 <translation id="7158238151765743968">Kumokonekta pa rin sa &quot;<ph name="DEVICE_NAME"/>.&quot;</translation>
 <translation id="8782565991310229362">Kinansela ang paglulunsad sa kiosk application.</translation>
 <translation id="4726672564094551039">I-reload ang mga patakaran</translation>
+<translation id="2252923619938421629">Tumulong na mapahusay ang Google Chrome sa pamamagitan ng pag-uulat ng mga kasalukuyang setting</translation>
 <translation id="4647697156028544508">Pakilagay ang PIN para sa &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">I-access ang anumang iyong tina-type.</translation>
 <translation id="7671130400130574146">Gumamit ng system title bar at mga hangganan</translation>
@@ -4281,6 +4281,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL"/> para sa mga ito at mga
 <translation id="2270484714375784793">Numero ng telepono</translation>
 <translation id="3603622770190368340">Kunin ang certificate ng network</translation>
 <translation id="6196207969502475924">Paghahanap gamit ang boses</translation>
+<translation id="6791586529990783225">I-reset ang mga setting ng browser</translation>
 <translation id="5973229212631512780">Lumilitaw na nakakapahamak ang <ph name="FILE_NAME"/>.</translation>
 <translation id="2927657246008729253">Baguhin...</translation>
 <translation id="7978412674231730200">Private na key</translation>

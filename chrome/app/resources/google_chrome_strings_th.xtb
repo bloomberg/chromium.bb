@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">เปิดแอปพลิเคชัน Chrome</translation>
 <translation id="2370289711218562573">Google Chrome กำลังนำเข้ารายการโปรด/บุ๊คมาร์ค</translation>
 <translation id="8762286861469007470">ตัวตรวจจับ Chrome Captive Portal</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> อาจเปลี่ยนแปลงการตั้งค่า Chrome ของคุณ</translation>
 <translation id="1761870329818521071">ไม่สามารถติดตั้ง Google Chrome Frame รุ่นเดียวกันกับที่กำลังเรียกใช้อยู่ได้ โปรดปิด Google Chrome Frame แล้วลองใหม่อีกครั้ง</translation>
 <translation id="2040709530900803995">โปรแกรมแสดงภาพของ Google Chrome</translation>
 <translation id="6014844626092547096">ขณะนี้คุณลงชื่อเข้าใช้ Chrome แล้ว! การซิงค์ถูกปิดใช้งานโดยผู้ดูแลระบบของคุณ</translation>
@@ -175,6 +176,7 @@
 <translation id="7253415505590551024">ขณะนี้อยู่ระหว่างการดาวน์โหลดหลายรายการ คุณต้องการออกจาก Google Chrome และยกเลิกการดาวน์โหลดหรือไม่</translation>
 <translation id="7196020411877309443">เพราะเหตุใดฉันจึงเห็นป๊อปอัปนี้</translation>
 <translation id="2769762047821873045">Google Chrome ไม่ใช่เบราว์เซอร์เริ่มต้นโดยอัตโนมัติของคุณ</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> อาจเปลี่ยนแปลงวิธีการทำงานของการค้นหาใน Chrome</translation>
 <translation id="6855094794438142393">ไปที่
           เมนู Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

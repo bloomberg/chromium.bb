@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Lansați aplicații Chrome</translation>
 <translation id="2370289711218562573">Google Chrome importă acum Preferințele/Marcajele.</translation>
 <translation id="8762286861469007470">Detectorul Chrome de portaluri captive</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> vă poate modifica setările pentru Chrome.</translation>
 <translation id="1761870329818521071">Nu se poate instala aceeași versiune Google Chrome Frame care rulează în prezent. Închideți Google Chrome Frame și încercați din nou.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Sunteți conectat(ă) la Chrome! Sincronizarea este dezactivată de administrator.</translation>
@@ -174,6 +175,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7253415505590551024">Mai multe descărcări sunt în desfășurare. Doriți să ieșiți din Google Chrome și să anulați descărcările?</translation>
 <translation id="7196020411877309443">De ce primesc această notificare?</translation>
 <translation id="2769762047821873045">Google Chrome nu este browserul dvs. prestabilit.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> poate modifica modul în care căutările funcționează în Chrome.</translation>
 <translation id="6855094794438142393">Accesați
           meniul Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Inicia les aplicacions de Chrome</translation>
 <translation id="2370289711218562573">Google Chrome està important els preferits/els marcadors.</translation>
 <translation id="8762286861469007470">Detector de Captive Portal a Chrome</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> pot canviar la vostra configuració de Chrome.</translation>
 <translation id="1761870329818521071">No es pot instal·lar la mateixa versió de Google Chrome Frame que s'executa actualment. Tanqueu Google Chrome Frame i torneu-ho a provar.</translation>
 <translation id="2040709530900803995">Renderitzador de Google Chrome</translation>
 <translation id="6014844626092547096">Heu iniciat la sessió a Chrome. El vostre administrador ha desactivat la sincronització.</translation>
@@ -173,6 +174,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="7253415505590551024">En aquests moments hi ha baixades en curs. Voleu sortir de Google Chrome i cancel·lar les baixades?</translation>
 <translation id="7196020411877309443">Per què veig aquest missatge?</translation>
 <translation id="2769762047821873045">Google Chrome no és el navegador predeterminat.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> pot canviar el funcionament de les cerques a Chrome.</translation>
 <translation id="6855094794438142393">Aneu al
           menú de Chrome &gt;
           <ph name="SETTINGS_TITLE"/>

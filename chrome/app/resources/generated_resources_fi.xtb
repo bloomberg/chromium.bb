@@ -314,6 +314,7 @@
 <translation id="5234764350956374838">Piilota</translation>
 <translation id="8702516222444523256">Ota käyttöön, jos haluat varmistaa, että sovellusten käynnistysohjelman OSX-sovelluspaketti on Sovellukset-kansiossa.</translation>
 <translation id="40027638859996362">Sanan siirto</translation>
+<translation id="6303187936217840894">Selainasetuksesi palautetaan oletusasetuksiksi. Etusivusi, uusi välilehti -sivu ja hakukone nollataan, laajennukset poistetaan käytöstä ja kaikki kiinnitetyt välilehdet irrotetaan. Myös kaikki muut väliaikaiset ja välimuistitiedot, kuten evästeet ja sisältö- sekä sivustotiedot, poistetaan.</translation>
 <translation id="1524793692806456360">Ota käyttöön vain paikallinen Instant Extended -sovellusliittymä</translation>
 <translation id="6928441285542626375">Salli TCP Fast Open</translation>
 <translation id="5463275305984126951">Sijainnin <ph name="LOCATION"/> hakemisto</translation>
@@ -950,7 +951,6 @@ suojaamattomia yhteyksiä.<ph name="PRODUCT_NAME"/></translation>
 <translation id="1871208020102129563">Välityspalvelin on asetettu käyttämään kiinteitä välityspalvelimia, ei .pac-URL-osoitetta.</translation>
 <translation id="1634788685286903402">Luota tähän varmenteeseen sähköpostin käyttäjien tunnistamisessa.</translation>
 <translation id="1856715684130786728">Lisää sijainti…</translation>
-<translation id="3328786139156860526">Menikö jotain pieleen? Palauta Chrome-profiilisi siistiin asennuksenjälkeiseen tilaan.</translation>
 <translation id="8642489171979176277">Tuotu Google-työkalupalkista</translation>
 <translation id="4684427112815847243">Synkronoi kaikki</translation>
 <translation id="4699357559218762027">(käynnistyy automaattisesti)</translation>
@@ -1309,7 +1309,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="2076748722938414183">Poista välilehtien vaihto käytöstä</translation>
 <translation id="1756681705074952506">Syöttötapa</translation>
 <translation id="8545211332741562162">Anna verkkosivujen käyttää kokeellisia JavaScript-ominaisuuksia.</translation>
-<translation id="3335878584157510445">Tyhjennä profiilin asetuksia…</translation>
 <translation id="734303607351427494">Hallinnoi hakukoneita...</translation>
 <translation id="3706919628594312718">Hiiren asetukset</translation>
 <translation id="7973174304586609605">Lisää uusi käyttäjä…</translation>
@@ -1364,6 +1363,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8856844195561710094">Bluetooth-laitehaun pysäyttäminen epäonnistui.</translation>
 <translation id="2246340272688122454">Ladataan palautusnäköistiedostoa...</translation>
 <translation id="5305688511332277257">Yhtään ei ole asennettu</translation>
+<translation id="1958802757844394735">Palauta selainasetukset alkuperäisiksi oletusasetuksiksi.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">Kiinalainen syöttötapa (cangjie)</translation>
 <translation id="8395901698320285466">Mittasuhteet</translation>
@@ -1727,7 +1727,6 @@ Varo paljastamasta arkaluonteisia tietoja.</translation>
 <translation id="3204741654590142272">Kanavan muutos otetaan käyttöön myöhemmin.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> minuutti jäljellä</translation>
 <translation id="901974403500617787">Koko järjestelmään vaikuttavat merkinnät voi tehdä vain omistaja: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Tyhjennä profiilin asetukset</translation>
 <translation id="2080010875307505892">Näppäimistö: serbia</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minuuttia</translation>
 <translation id="201192063813189384">Virhe luettaessa välimuistin tietoja.</translation>
@@ -3650,6 +3649,7 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="7158238151765743968">Yhteyden muodostaminen laitteeseen <ph name="DEVICE_NAME"/> on vielä kesken.</translation>
 <translation id="8782565991310229362">Kioskisovelluksen käynnistäminen peruutettiin.</translation>
 <translation id="4726672564094551039">Päivitä käytännöt</translation>
+<translation id="2252923619938421629">Auta parantamaan Google Chromea ilmoittamalla nykyiset asetukset.</translation>
 <translation id="4647697156028544508">Anna laitteen <ph name="DEVICE_NAME"/> PIN-koodi:</translation>
 <translation id="5604961908909363516">Käyttää kaikkia kirjoittamiasi tietoja.</translation>
 <translation id="7671130400130574146">Käytä järjestelmän otsikkoriviä ja reunoja</translation>
@@ -4215,6 +4215,7 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="2270484714375784793">Puhelinnumero</translation>
 <translation id="3603622770190368340">Hanki verkkovarmenne</translation>
 <translation id="6196207969502475924">Puhehaku</translation>
+<translation id="6791586529990783225">Selainasetuksien nollaaminen</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> vaikuttaa haitalliselta.</translation>
 <translation id="2927657246008729253">Vaihda...</translation>
 <translation id="7978412674231730200">Yksityinen avain</translation>

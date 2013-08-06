@@ -321,6 +321,7 @@
 <translation id="5234764350956374838">關閉</translation>
 <translation id="8702516222444523256">啟用這項設定即可確保應用程式啟動器中的 OSX 套裝應用程式顯示在 [應用程式] 資料夾中。</translation>
 <translation id="40027638859996362">文字移動</translation>
+<translation id="6303187936217840894">您的瀏覽器設定將還原成原始預設值。這會重設您的首頁、新分頁和搜尋引擎，停用您的擴充功能，以及取消固定所有分頁。其他暫時性資料和快取資料 (例如 Cookie、內容和網站資料) 也會一併遭到清除。</translation>
 <translation id="1524793692806456360">啟用互動智慧搜尋擴充 API (僅限本機)</translation>
 <translation id="6928441285542626375">啟用 TCP Fast Open</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> 的索引</translation>
@@ -953,7 +954,6 @@
 <translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
 <translation id="1634788685286903402">信任這個用於識別電子郵件使用者的憑證。</translation>
 <translation id="1856715684130786728">新增位置...</translation>
-<translation id="3328786139156860526">設定變得一團亂嗎？將您的 Chrome 設定檔還原為安裝後的全新狀態。</translation>
 <translation id="8642489171979176277">由 Google 工具列匯入</translation>
 <translation id="4684427112815847243">同步處理所有資料</translation>
 <translation id="4699357559218762027">(自動啟動)</translation>
@@ -1312,7 +1312,6 @@
 <translation id="2076748722938414183">停用分頁拖曳</translation>
 <translation id="1756681705074952506">輸入法</translation>
 <translation id="8545211332741562162">讓網頁使用實驗性 JavaScript 功能。</translation>
-<translation id="3335878584157510445">重設設定檔設定...</translation>
 <translation id="734303607351427494">管理搜尋引擎...</translation>
 <translation id="3706919628594312718">滑鼠設定</translation>
 <translation id="7973174304586609605">新增使用者...</translation>
@@ -1367,6 +1366,7 @@
 <translation id="8856844195561710094">無法停止搜索藍牙裝置。</translation>
 <translation id="2246340272688122454">正在下載還原映像檔...</translation>
 <translation id="5305688511332277257">未安裝任何憑證</translation>
+<translation id="1958802757844394735">將瀏覽器設定重設為原始預設值。</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> 分鐘前</translation>
 <translation id="2816269189405906839">中文輸入法 (倉頡)</translation>
 <translation id="8395901698320285466">尺寸</translation>
@@ -1736,7 +1736,6 @@
 <translation id="3204741654590142272">系統會在稍後套用版本變更。</translation>
 <translation id="7836361698254323868">剩下 <ph name="NUMBER_ONE"/> 分鐘</translation>
 <translation id="901974403500617787">這些設定會套用至整個系統，只有以下使用者可設定：<ph name="OWNER_EMAIL"/>。</translation>
-<translation id="492131106259297640">重設設定檔設定</translation>
 <translation id="2080010875307505892">塞爾維亞文鍵盤</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> 分鐘</translation>
 <translation id="201192063813189384">讀取快取資料時發生錯誤。</translation>
@@ -3678,6 +3677,7 @@
 <translation id="7158238151765743968">仍在連線至「<ph name="DEVICE_NAME"/>」。</translation>
 <translation id="8782565991310229362">Kiosk 應用程式已取消執行。</translation>
 <translation id="4726672564094551039">重新載入政策</translation>
+<translation id="2252923619938421629">只要回報目前的設定，就能助我們一臂之力，讓 Google Chrome 更臻完美</translation>
 <translation id="4647697156028544508">請輸入「<ph name="DEVICE_NAME"/>」的 PIN：</translation>
 <translation id="5604961908909363516">存取您輸入的任何內容</translation>
 <translation id="7671130400130574146">使用系統標題列及邊界</translation>
@@ -4243,6 +4243,7 @@
 <translation id="2270484714375784793">電話號碼</translation>
 <translation id="3603622770190368340">取得網路憑證</translation>
 <translation id="6196207969502475924">語音搜尋</translation>
+<translation id="6791586529990783225">重設瀏覽器設定</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> 可能是惡意軟體。</translation>
 <translation id="2927657246008729253">變更...</translation>
 <translation id="7978412674231730200">秘密金鑰</translation>

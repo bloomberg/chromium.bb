@@ -8,11 +8,11 @@
 
           Sera hii ni ya matumizi ya ndani ya Chrome yenyewe.</translation>
 <translation id="7040229947030068419">Thamani ya mfano:</translation>
-<translation id="1213523811751486361">Inabainisha URL ya injini ya utafutaji inayotumika ili kutoa mapendekezo ya utafuitaji. URL inafaa kujumlisha mtungo '<ph name="SEARCH_TERM_MARKER"/>', ambao utabadilishwa wakati wa muda wa hoji kwa maandishi ambayo mtumiaji ameingiza hadi sasa.
+<translation id="1213523811751486361">Hubainisha URL ya mtambo wa kutafuta inayotumika ili kutoa mapendekezo ya utafutaji. URL inafaa kujumlisha maneno '<ph name="SEARCH_TERM_MARKER"/>', ambayo nafasi yake itachukuliwa wakati wa kuandika hoja na maandishi ambayo mtumiaji atakuwa ameingiza kufikia wakati huo.
 
           Sera hii ni ya hiari. Ikiwa haijawekwa, hakuna URL ya mapendekezo itakayotumika.
 
-          Hii inaheshimiwa tu ikiwa sera 'DefaultSearchProviderEnabled' imewezeshwa.</translation>
+          Hii inazingatiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="6106630674659980926">Wezesha kidhibiti cha nenosiri</translation>
 <translation id="7109916642577279530">Ruhusu au kataza kuchukuliwa kwa sauti. 
 Ikiwashwa au ikiwa hijasanidiwa (chaguo-msingi), mtumiaji ataombwa ufikiaji wa kuchukua sauti isipokuwa za URL zilizosanidiwa katika orodha ya AudioCaptureAllowedUrls ambayo itapewa ufikiaji bila kuomba. 
@@ -197,11 +197,11 @@ Kama sera hii itawekwa, itadhibiti aina ya kikuza skrini ambacho kimewashwa waka
 Kama umeweka sera hii, watumiaji wanaweza kuipuuza kwa muda kwa kuwasha au kuzima kikuza skrini. Hata hivyo, chaguo la mtumiaji haliendelei na chaguo msingi hurejeshwa tena wakati skrini ya kuingia katika akaunti inapoonyeshwa upya au mtumiaji anapobakia bila kufanya kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja. 
 
 Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa kwanza. Watumiaji wanaweza kuwasha au kuzima kikuza skrini wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inaendelea kati ya watumiaji.</translation>
-<translation id="5423001109873148185">Sera hii inazilazimisha injini za utafutaji kuletwa kutoka kwenye kivinjari cha sasa chaguo-msingi iwapo imewezeeshwa. Ikiwezeshwa,  sera hii pia inaathiri kidadisi cha kuleta.
+<translation id="5423001109873148185">Sera hii inailazimisha mitambo ya kutafuta kuingizwa kutoka kivinjari chaguo-msingi cha sasa iwapo itawashwa. Ikiwashwa,  sera hii pia itaathiri kidadisi cha kuingiza.
 
-      Ikilemazwa, injini chaguo-msingi ya utafutaji hailetwi.
+      Ikizimwa, mtambo chaguo-msingi wa kutafuta hauingizwi.
 
-      Ikiwa haitawekwa, huenda mtumiaji akaombwa kuleta, au huenda uletaji ukatendeka moja kwa moja.</translation>
+      Ikiwa haitawekwa, mtumiaji anaweza kuomba aingize, au huenda ungizaji ukatendeka kiotomatiki.</translation>
 <translation id="3288595667065905535">Kituo cha Kutoa</translation>
 <translation id="2785954641789149745">Huwasha kipengee cha Kuvinjari Salama cha <ph name="PRODUCT_NAME"/>  na kuzuia watumiaji kutoka kubadilisha mpangilio huu. 
 Kama utawasha mpangilio huu, Kuvinjari Salama kutatumika kila wakati. 
@@ -434,9 +434,9 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 
           Ikiwa mpangilio huu utalemzwa au hautawekwa, basi watumiaji wa karibu na wa mbali wanaweza kuingiliana na seva pangishi inaposhirikiwa.</translation>
 <translation id="1426410128494586442">Ndio</translation>
-<translation id="4962195944157514011">Inabainisha URL ya injini ya utafutaji inayotumika unapofanya utafutaji chaguo-msingi. URL inafaa kujumlisha mtungo '<ph name="SEARCH_TERM_MARKER"/>', ambao unabadilishwa katika muda wa hoji kwa masharti ambayo mtumiaji anatafutiza.
+<translation id="4962195944157514011">Hubainisha URL ya mtambo wa kutafuta inayotumika unapofanya utafutaji chaguo-msingi. URL inafaa kujumlisha maneno '<ph name="SEARCH_TERM_MARKER"/>', ambayo nafasi yake inachukuliwa wakati wa kuandika hoja ya maneno ambayo mtumiaji atakuwa akitafuta.
 
-          Chaguo hili sharti liwekwe wakati sera ya 'DefaultSearchProviderEnabled' imewezeshwa na itaheshimiwa tu ikiwa hii ndiyo hali.</translation>
+          Chaguo hili sharti liwekwe wakati sera ya 'DefaultSearchProviderEnabled' imewashwa na itazingatiwa tu ikiwa hii ndiyo hali.</translation>
 <translation id="6009903244351574348">Ruhusu <ph name="PRODUCT_FRAME_NAME"/> kushughulikia aina zilizoorodheshwa za maudhui.
 
           Ikiwa sera hii haitawekwa kionyeshi chaguo-msingi kitatumiwa kwa tovuti zote kama ilivyobainishwa na sera ya 'ChromeFrameRendererSettings'.</translation>
@@ -776,11 +776,11 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
 <translation id="7091198954851103976">Kila wakati inaendesha programu jalizi ambazo zinahitaji uidhinishaji.</translation>
 <translation id="1708496595873025510">Weka kizuizi kwenye uletaji wa mbegu Tofauti</translation>
 <translation id="8870318296973696995">Ukurasa wa Kwanza</translation>
-<translation id="1240643596769627465">Inabainisha URL ya injini ya utafutaji inayotumiwa kutoa matokeo ya papo hapo. URL iwe na mtungi <ph name="SEARCH_TERM_MARKER"/>, utakaobadilishwa wakati wa hoja kwa maandishi ambayo mtumiaji ameyaingiza kufikia wakati huu.
+<translation id="1240643596769627465">Hubainisha URL ya mtambo wa kutafuta inayotumiwa kutoa matokeo ya papo hapo. URL itakuwa na maneno <ph name="SEARCH_TERM_MARKER"/>, ambayo nafasi yake itachukuliwa wakati wa kuandika hoja na maandishi ambayo mtumiaji atakuwa ameingiza kufikia wakati huo.
 
           Sera hii ni ya hiari. Isipowekwa, hakuna matokeo ya utafutaji ya papo hapo yatatolewa.
 
-          Sera hii inaheshimiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' itawezeshwa.</translation>
+          Sera hii itazingatiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' itawashwa.</translation>
 <translation id="6693751878507293182">Ukiwezesha mpangilio huu utafutaji otomatiki na usakinishaji wa programu jalizi zinazokosekana utalemazwa katika <ph name="PRODUCT_NAME"/>.
 
       Kuweka chaguo hili kulezama au kuiacha bila kuwekwa kipataji cha programu jalizi kitakuwa amilifu.</translation>
@@ -1123,11 +1123,11 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
       Kuacha sera hii kama haijawekwa kutaruhusu mtumiaji kuchagua iwapo ataonyesha kitufe cha mwanzo.</translation>
 <translation id="6897718480289510689">Ruhusu ufikiaji katika tovuti zilizo nje ya mafurushi ya maudhui.</translation>
 <translation id="2518231489509538392">Ruhusu kucheza sauti</translation>
-<translation id="7301543427086558500">Inabainisha orodha ya URL mbadala ambayo inaweza kutumiwa ili kuchopoa taminolijia za utafutaji kutoka kwenye injini ya utafutaji. URL zinafaa kuwa na mtungo <ph name="SEARCH_TERM_MARKER"/>, ambao utatumika kuchopoa taminolojia za utafutaji.
+<translation id="7301543427086558500">Hubainisha orodha ya URL mbadala zinazoweza kutumiwa ili kupata taminolijia za utafutaji kutoka kwenye mtambo wa kutafuta. URL zinafaa kuwa na maneno <ph name="SEARCH_TERM_MARKER"/>, ambayo yatatumika kupata taminolojia za utafutaji.
 
-          Sera hii ni ya hiari, Iwapo haijawekwa, hakuna url mbadala zitatumika kuchopoa hoja za utafutaji.
+          Sera hii ni ya hiari, Iwapo haijawekwa, hakuna url mbadala zitazotumika kupata hoja za utafutaji.
 
-          Sera hii inaaminika tu iwapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
+          Sera hii inazingatiwa tu iwapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="6282799760374509080">Ruhusu au upinge kurekodi sauti</translation>
 <translation id="8864975621965365890">Didimiza kukataa kuuliza ambako huonekana tovuti inapotolewa na <ph name="PRODUCT_FRAME_NAME"/> .</translation>
 <translation id="3264793472749429012">Usimbaji wa kitoaji chaguo-msingi cha utafutaji</translation>

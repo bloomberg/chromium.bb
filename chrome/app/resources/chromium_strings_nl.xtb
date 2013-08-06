@@ -78,6 +78,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Sluit alle Chromium-vensters en probeer het opnieuw.</translation>
 <translation id="4077262827416206768">Sluit alle Chromium-vensters en start Chromium opnieuw om de wijziging toe te passen.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> kan wijzigen hoe uw zoekopdrachten werken in Chromium.</translation>
 <translation id="6944967875980567883">Modules die in Chromium zijn geladen</translation>
 <translation id="118298050220780080">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat werd geleverd door een entiteit die niet wordt vertrouwd door het besturingssysteem van uw computer. Dit kan betekenen dat de server eigen aanmeldingsgegevens voor beveiliging heeft gemaakt, waar Chromium niet op kan vertrouwen voor identiteitsinformatie, of dat een aanvaller probeert uw communicatie te onderscheppen.</translation>
 <translation id="3296368748942286671">Achtergrondapps ingeschakeld houden als Chromium is gesloten</translation>
@@ -181,6 +182,7 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
 <translation id="1539981464052805551">Copyright 2013 De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="378917192836375108">Met Chromium kunt u klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> kan uw Chromium-instellingen wijzigen.</translation>
 <translation id="8724049448828509830">Er wordt momenteel een download uitgevoerd. Wilt u Chromium afsluiten en de download annuleren?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Chromium Plug-In Host</translation>

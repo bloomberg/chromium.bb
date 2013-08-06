@@ -315,6 +315,7 @@
 <translation id="5234764350956374838">Rechazar</translation>
 <translation id="8702516222444523256">Permite garantizar la existencia de un paquete de aplicaciones de OSX para el selector de aplicaciones en la carpeta Aplicaciones.</translation>
 <translation id="40027638859996362">Movimiento de palabra</translation>
+<translation id="6303187936217840894">La configuración de tu navegador se restaurará a la configuración predeterminada original. Esto restablecerá la página principal, la página Nueva pestaña y el motor de búsqueda, inhabilitará las extensiones y anulará la fijación de todas las pestañas. También borrará otros datos temporales y de la caché, como cookies y datos de contenido y de sitios.</translation>
 <translation id="1524793692806456360">Habilitar la API ampliada de Instant solo local</translation>
 <translation id="6928441285542626375">Habilitar TCP Fast Open</translation>
 <translation id="5463275305984126951">Índice de <ph name="LOCATION"/></translation>
@@ -952,7 +953,6 @@
 <translation id="1871208020102129563">El proxy está configurado para usar servidores proxy fijos, no una URL de script .pac.</translation>
 <translation id="1634788685286903402">Confiar en este certificado para identificar usuarios de correo electrónico.</translation>
 <translation id="1856715684130786728">Agregar ubicación...</translation>
-<translation id="3328786139156860526">¿Perdiste el control de la situación? Revierte tu perfil de Chrome a un estado limpio posterior a la instalación.</translation>
 <translation id="8642489171979176277">Importado desde la Barra Google</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
 <translation id="4699357559218762027">(con inicio automático)</translation>
@@ -1311,7 +1311,6 @@
 <translation id="2076748722938414183">Inhabilitar la depuración de pestañas</translation>
 <translation id="1756681705074952506">Método de entrada</translation>
 <translation id="8545211332741562162">Permite habilitar las páginas que utilizan funciones de JavaScript experimentales.</translation>
-<translation id="3335878584157510445">Restablecer configuración del perfil</translation>
 <translation id="734303607351427494">Administrar motores de búsqueda...</translation>
 <translation id="3706919628594312718">Configuración del mouse</translation>
 <translation id="7973174304586609605">Agregar usuario nuevo...</translation>
@@ -1366,6 +1365,7 @@
 <translation id="8856844195561710094">Error al detener la detección del dispositivo Bluetooth</translation>
 <translation id="2246340272688122454">Descargando imagen de recuperación...</translation>
 <translation id="5305688511332277257">No hay certificados instalados</translation>
+<translation id="1958802757844394735">Permite restaurar la configuración del navegador a su configuración predeterminada original.</translation>
 <translation id="7770995925463083016">Hace <ph name="NUMBER_TWO"/> minutos</translation>
 <translation id="2816269189405906839">Método de entrada chino (cangjie)</translation>
 <translation id="8395901698320285466">Dimensiones</translation>
@@ -1731,7 +1731,6 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="3204741654590142272">El cambio del canal se aplicará más tarde</translation>
 <translation id="7836361698254323868">Falta <ph name="NUMBER_ONE"/> minuto.</translation>
 <translation id="901974403500617787">El propietario es el único que puede especificar las marcas que se aplican a todo el sistema: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Restablecer configuración del perfil</translation>
 <translation id="2080010875307505892">Teclado serbio</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min</translation>
 <translation id="201192063813189384">Error al leer los datos de la caché</translation>
@@ -3660,6 +3659,7 @@ Revisa tu correo electrónico <ph name="ACCOUNT_EMAIL"/> para consultar estas y 
 <translation id="7158238151765743968">La conexión a &quot;<ph name="DEVICE_NAME"/>&quot; sigue en curso.</translation>
 <translation id="8782565991310229362">Se canceló el inicio de la aplicación del kiosco.</translation>
 <translation id="4726672564094551039">Volver a cargar políticas</translation>
+<translation id="2252923619938421629">Informa tu configuración actual para ayudarnos a mejorar Google Chrome.</translation>
 <translation id="4647697156028544508">Ingresa el PIN para &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Acceder al texto que escribas</translation>
 <translation id="7671130400130574146">Usar la barra de título y los bordes del sistema</translation>
@@ -4225,6 +4225,7 @@ Revisa tu correo electrónico <ph name="ACCOUNT_EMAIL"/> para consultar estas y 
 <translation id="2270484714375784793">Número de teléfono</translation>
 <translation id="3603622770190368340">Obtener certificado de red</translation>
 <translation id="6196207969502475924">Búsqueda por voz</translation>
+<translation id="6791586529990783225">Restablecer la configuración del navegador</translation>
 <translation id="5973229212631512780">Parece que <ph name="FILE_NAME"/> es malicioso.</translation>
 <translation id="2927657246008729253">Cambiar...</translation>
 <translation id="7978412674231730200">Clave privada</translation>

@@ -76,6 +76,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Zamknij wszystkie okna Chromium i spróbuj ponownie.</translation>
 <translation id="4077262827416206768">Zamknij wszystkie okna Chromium i uruchom go ponownie, by zmiany zostały wprowadzone.</translation>
+<translation id="5472687196979159893"><ph name="FILE_NAME"/> może zmienić sposób wyszukiwania w Chromium.</translation>
 <translation id="6944967875980567883">Moduły załadowane do Chromium</translation>
 <translation id="118298050220780080">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat wydany przez podmiot, który nie jest zaufany w systemie operacyjnym. To może oznaczać, że serwer wygenerował własne dane uwierzytelniające, którym Chromium nie może ufać w kwestii identyfikacji tożsamości. Możliwe też, że intruz próbuje przechwycić Twoją komunikację.</translation>
 <translation id="3296368748942286671">Kontynuuj działanie aplikacji w tle po zamknięciu Chromium</translation>
@@ -180,6 +181,7 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="1708666629004767631">Dostępna jest nowa, bezpieczniejsza wersja Chromium.</translation>
 <translation id="1539981464052805551">Copyright 2013 Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="378917192836375108">W Chromium możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić pod niego przez Skype.</translation>
+<translation id="7331621180831839236"><ph name="FILE_NAME"/> może zmienić ustawienia Chromium.</translation>
 <translation id="8724049448828509830">Trwa pobieranie pliku. Czy chcesz wyjść z Chromium i anulować pobieranie?</translation>
 <translation id="3360567213983886831">Pliki binarne Chromium</translation>
 <translation id="7503101070699687603">Serwer wtyczek Chromium</translation>

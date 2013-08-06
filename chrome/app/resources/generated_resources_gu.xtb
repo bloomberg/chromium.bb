@@ -10,7 +10,7 @@
         અક્ષમ છે અથવા અવગણવામાં આવ્યાં છે.</translation>
 <translation id="166179487779922818">પાસવર્ડ ખૂબ ટૂંકો છે.</translation>
 <translation id="2345460471437425338">હોસ્ટ માટે ખોટા પ્રમાણપત્ર.</translation>
-<translation id="3595596368722241419">બૅટરી પૂર્ણ ભરાઈ ગઈ</translation>
+<translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
 <translation id="8130276680150879341">ખાનગી નેટવર્ક ડિસ્કનેક્ટ કરો</translation>
 <translation id="5028012205542821824">ઇન્સ્ટોલેશન સક્ષમ કરેલ નથી.</translation>
 <translation id="1058418043520174283"><ph name="COUNT"/> માંથી <ph name="INDEX"/></translation>
@@ -331,6 +331,7 @@
 <translation id="5234764350956374838">કાઢી નાખો</translation>
 <translation id="8702516222444523256">એપ્લિકેશન લૉન્ચર માટે OSX એપ્લિકેશન બન્ડલ એપ્લિકેશન ફોલ્ડર હેઠળ અસ્તિત્વમાં છે તેની ખાતરી કરવા માટે સક્ષમ કરો.</translation>
 <translation id="40027638859996362">શબ્દ ખસેડો</translation>
+<translation id="6303187936217840894">તમારી બ્રાઉઝર સેટિંગ્સને તેમના મૂળ ડિફોલ્ટ્સ પર પુનઃસ્થાપિત કરવામાં આવશે. આ તમારા હોમપેજ, નવા ટૅબ પૃષ્ઠ અને શોધ એંજિનને ફરીથી સેટ કરશે, તમારા એક્સ્ટેન્શન્સને અક્ષમ કરશે અને તમામ ટેબ્સને અનપિન કરશે. તે અન્ય અસ્થાયી અને કેશ કરેલા ડેટા, જેમ કે કુકીઝ, સામગ્રી અને સાઇટ ડેટાને પણ સાફ કરશે.</translation>
 <translation id="1524793692806456360">માત્ર-સ્થાનિક ઇન્સ્ટન્ટ વિસ્તૃત API સક્ષમ કરો</translation>
 <translation id="6928441285542626375">TCP ફાસ્ટ ઓપન સક્ષમ કરો</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> ની અનુક્રમણિકા</translation>
@@ -974,7 +975,6 @@
 <translation id="1871208020102129563">પ્રોક્સી નિયત કરેલા પ્રોક્સી સર્વરનો ઉપયોગ કરવા માટે સેટ કરેલી છે, .pac સ્ક્રિપ્ટ URL નથી.</translation>
 <translation id="1634788685286903402">ઇમેઇલ વપરાશકર્તાઓને ઓળખવા માટે આ પ્રમાણપત્ર પર વિશ્વાસ કરો.</translation>
 <translation id="1856715684130786728">સ્થાન ઉમેરો...</translation>
-<translation id="3328786139156860526">શું વસ્તુઓ નિયંત્રણની બહાર થઈ છે? તમારી Chrome પ્રોફાઇલને એક સાફ, પોસ્ટ ઇન્સ્ટોલ સ્થિતિમાં પાછી ફેરવો.</translation>
 <translation id="8642489171979176277">Google ટૂલબારમાંથી આયાત કરેલું</translation>
 <translation id="4684427112815847243">દરેક વસ્તુ સમન્વયિત કરો</translation>
 <translation id="4699357559218762027">(સ્વતઃ-લોંચ કરેલું)</translation>
@@ -1335,7 +1335,6 @@
 <translation id="2076748722938414183">ટેબ સ્ક્રબિંગ અક્ષમ કરો</translation>
 <translation id="1756681705074952506">ઇનપુટ પદ્ધતિ</translation>
 <translation id="8545211332741562162">પ્રાયોગિક JavaScript સુવિધાઓનો ઉપયોગ કરવા માટે વેબ પૃષ્ઠોને સક્ષમ કરો.</translation>
-<translation id="3335878584157510445">પ્રોફાઇલ સેટિંગ્સને ફરીથી સેટ કરો...</translation>
 <translation id="734303607351427494">શોધ એંજીન્સ મેનેજ કરો...</translation>
 <translation id="3706919628594312718">માઉસ સેટિંગ્સ</translation>
 <translation id="7973174304586609605">નવા વપરાશકર્તાને ઉમેરો...</translation>
@@ -1390,6 +1389,7 @@
 <translation id="8856844195561710094">Bluetooth ડિવાઇસ શોધ રોકવામાં નિષ્ફળ થયું.</translation>
 <translation id="2246340272688122454">પુનર્પ્રાપ્તિ છબી ડાઉનલોડ કરી રહ્યું છે...</translation>
 <translation id="5305688511332277257">કશું ઇન્સ્ટોલ કરેલું નથી</translation>
+<translation id="1958802757844394735">બ્રાઉઝર સેટિંગ્સને તેમના મૂળ ડિફોલ્ટ્સ પર પુનઃસ્થાપિત કરો.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">ચાઇનીઝ ઇનપુટ મેથડ (કૅંગી)</translation>
 <translation id="8395901698320285466">પરિમાણો</translation>
@@ -1758,7 +1758,6 @@
 <translation id="3204741654590142272">ચેનલ ફેરફાર પછીથી લાગુ થશે.</translation>
 <translation id="7836361698254323868"><ph name="NUMBER_ONE"/> મિનિટ બાકી</translation>
 <translation id="901974403500617787">ધ્વજો કે જે સિસ્ટમ-વ્યાપી લાગુ છે તે ફક્ત માલિક દ્વારા જ સેટ કરી શકાય છે: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">પ્રોફાઇલ સેટિંગ્સને ફરીથી સેટ કરો</translation>
 <translation id="2080010875307505892">સર્બિયન કીબોર્ડ</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> મિનિટ</translation>
 <translation id="201192063813189384">કેશમાંથી ડેટા વાંચવામાં ભૂલ.</translation>
@@ -3712,6 +3711,7 @@
 <translation id="7158238151765743968">&quot;<ph name="DEVICE_NAME"/>&quot; પર કનેક્શન હજી પણ પ્રક્રિયામાં છે.</translation>
 <translation id="8782565991310229362">કિઓસ્ક એપ્લિકેશન લોન્ચ રદ કર્યું.</translation>
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
+<translation id="2252923619938421629">વર્તમાન સેટિંગ્સની જાણ કરીને Google Chrome ને વધુ સારું બનાવવામાં સહાય કરો</translation>
 <translation id="4647697156028544508">કૃપા કરીને &quot;<ph name="DEVICE_NAME"/>&quot; માટે પિન દાખલ કરો:</translation>
 <translation id="5604961908909363516">તમે જે કંઈ લખો તેને ઍક્સેસ કરો.</translation>
 <translation id="7671130400130574146">સિસ્ટમ શીર્ષક બાર અને બોર્ડર્સનો ઉપયોગ કરો</translation>
@@ -4276,6 +4276,7 @@
 <translation id="2270484714375784793">ફોન નંબર</translation>
 <translation id="3603622770190368340">નેટવર્ક પ્રમાણપત્ર મેળવો</translation>
 <translation id="6196207969502475924">વૉઇસ શોધ</translation>
+<translation id="6791586529990783225">બ્રાઉઝર સેટિંગ્સને ફરીથી સેટ કરો</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> દૂષિત દેખાય છે.</translation>
 <translation id="2927657246008729253">બદલો...</translation>
 <translation id="7978412674231730200">ખાનગી કી</translation>

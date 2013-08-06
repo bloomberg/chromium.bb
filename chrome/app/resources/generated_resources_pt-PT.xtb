@@ -329,6 +329,7 @@
 <translation id="5234764350956374838">Ignorar</translation>
 <translation id="8702516222444523256">Ative para assegurar que existe um pacote de aplicações OSX para o Iniciador de Aplicações na pasta Aplicações.</translation>
 <translation id="40027638859996362">Mover palavra</translation>
+<translation id="6303187936217840894">As definições do seu navegador serão restauradas para as predefinições originais. Isto irá repor a sua página inicial, página novo separador e motor de pesquisa, desativar as suas extensões e soltar todos os separadores. Irá também limpar outros dados em cache e temporários como, por exemplo, cookies, conteúdo e dados do site.</translation>
 <translation id="1524793692806456360">Ativar a API alargada Instantânea apenas local</translation>
 <translation id="6928441285542626375">Ativar a TCP Fast Open</translation>
 <translation id="5463275305984126951">Índice de <ph name="LOCATION"/></translation>
@@ -966,7 +967,6 @@ para proteger a sua privacidade.</translation>
 <translation id="1871208020102129563">O proxy está definido para utilizar servidores proxy fixos e não um URL de script .pac.</translation>
 <translation id="1634788685286903402">Confiar neste certificado para identificar utilizadores de e-mail.</translation>
 <translation id="1856715684130786728">Adicionar localização...</translation>
-<translation id="3328786139156860526">As coisas fugiram do controlo? Reverta o seu perfil do Chrome para um estado limpo, pós-instalação.</translation>
 <translation id="8642489171979176277">Importado da Barra de ferramentas do Google</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
 <translation id="4699357559218762027">(com iniciação automática)</translation>
@@ -1325,7 +1325,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY"/> pode ser útil da próx
 <translation id="2076748722938414183">Desativar a alternância entre separadores</translation>
 <translation id="1756681705074952506">Método de introdução</translation>
 <translation id="8545211332741562162">Permitir que as páginas Web utilizem as funcionalidades de JavaScript experimentais.</translation>
-<translation id="3335878584157510445">Repor definições do perfil...</translation>
 <translation id="734303607351427494">Gerir motores de pesquisa...</translation>
 <translation id="3706919628594312718">Definições do rato</translation>
 <translation id="7973174304586609605">Adicionar novo utilizador...</translation>
@@ -1380,6 +1379,7 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY"/> pode ser útil da próx
 <translation id="8856844195561710094">Falha ao parar a deteção de aparelhos Bluetooth.</translation>
 <translation id="2246340272688122454">A transferir imagem de recuperação...</translation>
 <translation id="5305688511332277257">Nenhum instalado</translation>
+<translation id="1958802757844394735">Restaurar as definições do navegador para as predefinições originais.</translation>
 <translation id="7770995925463083016">Há <ph name="NUMBER_TWO"/> min.</translation>
 <translation id="2816269189405906839">Método de introdução chinês (cangjie)</translation>
 <translation id="8395901698320285466">Dimensões</translation>
@@ -1745,7 +1745,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="3204741654590142272">A alteração do canal será aplicada mais tarde.</translation>
 <translation id="7836361698254323868">Falta <ph name="NUMBER_ONE"/> minuto</translation>
 <translation id="901974403500617787">Os sinalizadores que se aplicam a todo o sistema apenas podem ser definidos pelo proprietário: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Repor definições do perfil</translation>
 <translation id="2080010875307505892">Teclado sérvio</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min.</translation>
 <translation id="201192063813189384">Erro ao ler dados da cache.</translation>
@@ -3688,6 +3687,7 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL"/> para obter estas e outras in
 <translation id="7158238151765743968">A ligação a &quot;<ph name="DEVICE_NAME"/>&quot; ainda está em curso.</translation>
 <translation id="8782565991310229362">A iniciação da aplicação de quiosque foi cancelada.</translation>
 <translation id="4726672564094551039">Recarregar políticas</translation>
+<translation id="2252923619938421629">Ajude a melhorar o Google Chrome, comunicando as definições atuais</translation>
 <translation id="4647697156028544508">Introduza o PIN para &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Aceder a tudo o que escrever.</translation>
 <translation id="7671130400130574146">Utilizar os limites e a barra de título do sistema</translation>
@@ -4253,6 +4253,7 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL"/> para obter estas e outras in
 <translation id="2270484714375784793">Número de telefone</translation>
 <translation id="3603622770190368340">Obter certificado de rede</translation>
 <translation id="6196207969502475924">Pesquisa por Voz</translation>
+<translation id="6791586529990783225">Repor as definições do navegador</translation>
 <translation id="5973229212631512780"><ph name="FILE_NAME"/> parece ser malicioso.</translation>
 <translation id="2927657246008729253">Alterar...</translation>
 <translation id="7978412674231730200">Chave privada</translation>

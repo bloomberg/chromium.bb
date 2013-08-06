@@ -323,6 +323,7 @@
 <translation id="5234764350956374838">Zamknij</translation>
 <translation id="8702516222444523256">Włączenie tej opcji gwarantuje, że pakiet aplikacji OSX w menu z aplikacjami jest umieszczony w katalogu Programy.</translation>
 <translation id="40027638859996362">Przenoszenie słów</translation>
+<translation id="6303187936217840894">Przeglądarka powróci do oryginalnych ustawień domyślnych. Twoja strona startowa, strona Nowa karta oraz wyszukiwarka zostaną zresetowane, używane rozszerzenia wyłączone, a wszystkie karty odpięte. Pozostałe dane tymczasowe i zapisane w pamięci podręcznej, takie jak pliki cookie oraz dane treści i witryn, również zostaną wyczyszczone.</translation>
 <translation id="1524793692806456360">Włącz lokalny rozszerzony interfejs API wyszukiwania dynamicznego</translation>
 <translation id="6928441285542626375">Włącz szybkie otwieranie TCP</translation>
 <translation id="5463275305984126951">Indeks – <ph name="LOCATION"/></translation>
@@ -961,7 +962,6 @@
 <translation id="1871208020102129563">Proxy skonfigurowano do używania stałych serwerów proxy, a nie URL-a skryptu PAC.</translation>
 <translation id="1634788685286903402">Ufaj temu certyfikatowi przy identyfikowaniu użytkowników poczty e-mail.</translation>
 <translation id="1856715684130786728">Dodaj lokalizację...</translation>
-<translation id="3328786139156860526">Sprawy wymknęły się spod kontroli? Przywróć swój profil Chrome do nienaruszonego stanu, w jakim był po instalacji.</translation>
 <translation id="8642489171979176277">Zaimportowane z paska Google Toolbar</translation>
 <translation id="4684427112815847243">Synchronizuj wszystko</translation>
 <translation id="4699357559218762027">(automatyczne uruchamianie)</translation>
@@ -1320,7 +1320,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="2076748722938414183">Wyłącz oczyszczanie kart</translation>
 <translation id="1756681705074952506">Sposób wprowadzania tekstu</translation>
 <translation id="8545211332741562162">Włącz eksperymentalne funkcje języka JavaScript na stronach internetowych.</translation>
-<translation id="3335878584157510445">Resetuj ustawienia profilu...</translation>
 <translation id="734303607351427494">Zarządzaj wyszukiwarkami</translation>
 <translation id="3706919628594312718">Ustawienia myszy</translation>
 <translation id="7973174304586609605">Dodaj nowego użytkownika...</translation>
@@ -1375,6 +1374,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="8856844195561710094">Zatrzymywanie wykrywania urządzeń Bluetooth nie powiodło się.</translation>
 <translation id="2246340272688122454">Trwa pobieranie obrazu odzyskiwania...</translation>
 <translation id="5305688511332277257">Brak zainstalowanych</translation>
+<translation id="1958802757844394735">Przywróć oryginalne ustawienia domyślne przeglądarki.</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> min temu</translation>
 <translation id="2816269189405906839">chiński (cangjie)</translation>
 <translation id="8395901698320285466">Wymiary</translation>
@@ -1739,7 +1739,6 @@ Upewnij się, że nie zdradzasz żadnych poufnych informacji.</translation>
 <translation id="3204741654590142272">Zmiana wersji nastąpi później.</translation>
 <translation id="7836361698254323868">Pozostała <ph name="NUMBER_ONE"/> minuta</translation>
 <translation id="901974403500617787">Flagi stosowane w całym systemie może ustawić tylko właściciel: <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="492131106259297640">Resetuj ustawienia profilu</translation>
 <translation id="2080010875307505892">Klawiatura serbska</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min</translation>
 <translation id="201192063813189384">Błąd podczas odczytu danych z pamięci podręcznej.</translation>
@@ -3682,6 +3681,7 @@ Te i dalsze instrukcje znajdziesz w e-mailu na koncie <ph name="ACCOUNT_EMAIL"/>
 <translation id="7158238151765743968">Połączenie z urządzeniem <ph name="DEVICE_NAME"/> jest nadal w toku.</translation>
 <translation id="8782565991310229362">Uruchamianie aplikacji kiosku zostało anulowane.</translation>
 <translation id="4726672564094551039">Odśwież zasady</translation>
+<translation id="2252923619938421629">Pomóż udoskonalić Google Chrome, zgłaszając bieżące ustawienia</translation>
 <translation id="4647697156028544508">Wpisz PIN urządzenia „<ph name="DEVICE_NAME"/>”:</translation>
 <translation id="5604961908909363516">Uzyskiwać dostęp do dowolnego wpisanego tekstu.</translation>
 <translation id="7671130400130574146">Użyj systemowego paska tytułu i ramek</translation>
@@ -4248,6 +4248,7 @@ Te i dalsze instrukcje znajdziesz w e-mailu na koncie <ph name="ACCOUNT_EMAIL"/>
 <translation id="2270484714375784793">Numer telefonu</translation>
 <translation id="3603622770190368340">Pobierz certyfikat sieci</translation>
 <translation id="6196207969502475924">Wyszukiwanie głosowe</translation>
+<translation id="6791586529990783225">Zresetuj ustawienia przeglądarki</translation>
 <translation id="5973229212631512780">Plik <ph name="FILE_NAME"/> wygląda na szkodliwy.</translation>
 <translation id="2927657246008729253">Zmień...</translation>
 <translation id="7978412674231730200">Klucz prywatny</translation>

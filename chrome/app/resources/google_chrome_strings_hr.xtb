@@ -24,6 +24,7 @@
 <translation id="2896252579017640304">Pokreni aplikacije sustava Chrome</translation>
 <translation id="2370289711218562573">Google Chrome trenutno uvozi favorite/oznake.</translation>
 <translation id="8762286861469007470">Detektor tehnike Captive Portal za Chrome</translation>
+<translation id="3993188379797269327"><ph name="FILE_NAME"/> može mijenjati vaše postavke Chromea.</translation>
 <translation id="1761870329818521071">Nije moguće instalirati istu verziju programa Google Chrome Frame koja je trenutačno pokrenuta. Zatvorite Google Chrome Frame i pokušajte ponovo.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Sada ste prijavljeni na Chrome! Administrator je onemogućio sinkronizaciju.</translation>
@@ -172,6 +173,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="7253415505590551024">Preuzimanja su u tijeku. Želite li napustiti Google Chrome i otkazati ta preuzimanja?</translation>
 <translation id="7196020411877309443">Zašto vidim ovo?</translation>
 <translation id="2769762047821873045">Google Chrome nije vaš zadani preglednik.</translation>
+<translation id="1020869477857717497"><ph name="FILE_NAME"/> može mijenjati način na koji funkcioniraju vaša pretraživanja u Chromeu.</translation>
 <translation id="6855094794438142393">Idite na
           izbornik Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
