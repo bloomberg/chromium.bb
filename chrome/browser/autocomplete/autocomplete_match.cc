@@ -440,6 +440,16 @@ std::string AutocompleteMatch::GetAdditionalInfo(
   return (i == additional_info.end()) ? std::string() : i->second;
 }
 
+bool AutocompleteMatch::IsVerbatimType() const {
+  const bool is_keyword_verbatim_match =
+      (type == AutocompleteMatchType::SEARCH_OTHER_ENGINE &&
+       provider != NULL &&
+       provider->type() == AutocompleteProvider::TYPE_SEARCH);
+  return type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
+      type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
+      is_keyword_verbatim_match;
+}
+
 #ifndef NDEBUG
 void AutocompleteMatch::Validate() const {
   ValidateClassifications(contents, contents_class);

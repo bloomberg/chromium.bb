@@ -112,6 +112,11 @@ GURL GetInstantURL(Profile* profile, int start_margin);
 // TODO(kmadhusu): Remove this function and update the call sites.
 GURL GetLocalInstantURL(Profile* profile);
 
+// Returns true if 'hide_verbatim' flag is enabled in field trials
+// to hide the top match in the native suggestions dropdown if it is a verbatim
+// match.  See comments on ShouldHideTopMatch in autocomplete_result.h.
+bool ShouldHideTopVerbatimMatch();
+
 // Returns true if 'use_remote_ntp_on_startup' flag is enabled in field trials
 // to always show the remote NTP on browser startup.
 bool ShouldPreferRemoteNTPOnStartup();
@@ -180,8 +185,9 @@ typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;
 // flags. On success, |flags| will be filled with the field trial flags. |flags|
 // must not be NULL. If not NULL, |group_number| will receive the experiment
 // group number.
-// Returns true iff field trial info was successfully parsed out of
-// |group_name|.
+// Returns true iff |group_name| is successfully parsed and not disabled.
+// Note that |flags| may be successfully populated in some cases when false is
+// returned - in these cases it should not be used.
 // Exposed for testing only.
 bool GetFieldTrialInfo(const std::string& group_name,
                        FieldTrialFlags* flags,

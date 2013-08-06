@@ -29,62 +29,81 @@
 
 namespace chrome {
 
-TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfo) {
+TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoEmptyAndValid) {
   FieldTrialFlags flags;
   uint64 group_number = 0;
-  const uint64 ZERO = 0;
 
-  EXPECT_FALSE(GetFieldTrialInfo(std::string(), &flags, &group_number));
-  EXPECT_EQ(ZERO, group_number);
-  EXPECT_EQ(ZERO, flags.size());
+  EXPECT_TRUE(GetFieldTrialInfo(std::string(), &flags, &group_number));
+  EXPECT_EQ(0ul, group_number);
+  EXPECT_EQ(0ul, flags.size());
 
   EXPECT_TRUE(GetFieldTrialInfo("Group77", &flags, &group_number));
-  EXPECT_EQ(uint64(77), group_number);
-  EXPECT_EQ(ZERO, flags.size());
+  EXPECT_EQ(77ul, group_number);
+  EXPECT_EQ(0ul, flags.size());
+}
 
-  group_number = 0;
+TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoInvalidThenValid) {
+  FieldTrialFlags flags;
+  uint64 group_number = 0;
+
   EXPECT_FALSE(GetFieldTrialInfo("Group77.2", &flags, &group_number));
-  EXPECT_EQ(ZERO, group_number);
-  EXPECT_EQ(ZERO, flags.size());
+  EXPECT_EQ(0ul, group_number);
+  EXPECT_EQ(0ul, flags.size());
 
-  EXPECT_FALSE(GetFieldTrialInfo("Invalid77", &flags, &group_number));
-  EXPECT_EQ(ZERO, group_number);
-  EXPECT_EQ(ZERO, flags.size());
-
-  EXPECT_FALSE(GetFieldTrialInfo("Invalid77", &flags, NULL));
-  EXPECT_EQ(ZERO, flags.size());
+  EXPECT_TRUE(GetFieldTrialInfo("Invalid77", &flags, &group_number));
+  EXPECT_EQ(0ul, group_number);
+  EXPECT_EQ(0ul, flags.size());
 
   EXPECT_TRUE(GetFieldTrialInfo("Group77 ", &flags, &group_number));
-  EXPECT_EQ(uint64(77), group_number);
-  EXPECT_EQ(ZERO, flags.size());
+  EXPECT_EQ(77ul, group_number);
+  EXPECT_EQ(0ul, flags.size());
+}
 
-  group_number = 0;
-  flags.clear();
-  EXPECT_EQ(uint64(9999), GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
+TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoValidFlag) {
+  FieldTrialFlags flags;
+  uint64 group_number = 0;
+
+  EXPECT_EQ(9999ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
   EXPECT_TRUE(GetFieldTrialInfo("Group77 foo:6", &flags, &group_number));
-  EXPECT_EQ(uint64(77), group_number);
-  EXPECT_EQ(uint64(1), flags.size());
-  EXPECT_EQ(uint64(6), GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
+  EXPECT_EQ(77ul, group_number);
+  EXPECT_EQ(1ul, flags.size());
+  EXPECT_EQ(6ul, GetUInt64ValueForFlagWithDefault("foo", 9999, flags));
+}
 
-  group_number = 0;
-  flags.clear();
+TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoLotsOfFlags) {
+  FieldTrialFlags flags;
+  uint64 group_number = 0;
+
   EXPECT_TRUE(GetFieldTrialInfo(
       "Group77 bar:1 baz:7 cat:dogs", &flags, &group_number));
-  EXPECT_EQ(uint64(77), group_number);
-  EXPECT_EQ(uint64(3), flags.size());
+  EXPECT_EQ(77ul, group_number);
+  EXPECT_EQ(3ul, flags.size());
   EXPECT_EQ(true, GetBoolValueForFlagWithDefault("bar", false, flags));
-  EXPECT_EQ(uint64(7), GetUInt64ValueForFlagWithDefault("baz", 0, flags));
+  EXPECT_EQ(7ul, GetUInt64ValueForFlagWithDefault("baz", 0, flags));
   EXPECT_EQ("dogs",
             GetStringValueForFlagWithDefault("cat", std::string(), flags));
   EXPECT_EQ("default",
             GetStringValueForFlagWithDefault("moose", "default", flags));
+}
 
-  group_number = 0;
-  flags.clear();
+TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoDisabled) {
+  FieldTrialFlags flags;
+  uint64 group_number = 0;
+
   EXPECT_FALSE(GetFieldTrialInfo(
       "Group77 bar:1 baz:7 cat:dogs DISABLED", &flags, &group_number));
-  EXPECT_EQ(ZERO, group_number);
-  EXPECT_EQ(ZERO, flags.size());
+  EXPECT_EQ(0ul, group_number);
+  EXPECT_EQ(0ul, flags.size());
+}
+
+TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoControlFlags) {
+  FieldTrialFlags flags;
+  uint64 group_number = 0;
+
+  EXPECT_TRUE(GetFieldTrialInfo(
+      "Control77 bar:1 baz:7 cat:dogs", &flags, &group_number));
+  EXPECT_EQ(0ul, group_number);
+  EXPECT_EQ(3ul, flags.size());
 }
 
 class InstantExtendedAPIEnabledTest : public testing::Test {
@@ -171,6 +190,38 @@ TEST_F(InstantExtendedAPIEnabledTest, DisabledViaCommandLineFlag) {
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
   EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
   ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
+}
+
+typedef InstantExtendedAPIEnabledTest ShouldHideTopVerbatimTest;
+
+TEST_F(ShouldHideTopVerbatimTest, DoNotHideByDefault) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Control"));
+  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, DoNotHideInInstantExtended) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group1"));
+  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, EnableByFlagInInstantExtended) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group1 hide_verbatim:1"));
+  EXPECT_TRUE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, EnableByFlagOutsideInstantExtended) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Controll1 hide_verbatim:1"));
+  EXPECT_TRUE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, DisableByFlag) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "InstantExtended", "Group1 hide_verbatim:0"));
+  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
 }
 
 class SearchTest : public BrowserWithTestWindowTest {

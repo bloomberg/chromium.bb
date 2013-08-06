@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_non_view.h"
+#include "chrome/common/autocomplete_match_type.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -93,7 +94,9 @@ bool OmniboxPopupViewMac::IsOpen() const {
 void OmniboxPopupViewMac::UpdatePopupAppearance() {
   DCHECK([NSThread isMainThread]);
   const AutocompleteResult& result = GetResult();
-  if (result.empty()) {
+  const size_t start_match = result.ShouldHideTopMatch() ? 1 : 0;
+  const size_t rows = result.size() - start_match;
+  if (rows == 0) {
     [[popup_ parentWindow] removeChildWindow:popup_];
     [popup_ orderOut:nil];
 
@@ -119,12 +122,11 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   DCHECK_GT(matrix_width, 0.0);
 
   // Load the results into the popup's matrix.
-  const size_t rows = GetResult().size();
   DCHECK_GT(rows, 0U);
   [matrix_ renewRows:rows columns:1];
   for (size_t ii = 0; ii < rows; ++ii) {
     OmniboxPopupCell* cell = [matrix_ cellAtRow:ii column:0];
-    const AutocompleteMatch& match = GetResult().match_at(ii);
+    const AutocompleteMatch& match = GetResult().match_at(ii + start_match);
     [cell setImage:ImageForMatch(match)];
     [cell setAttributedTitle:MatchText(match, result_font, matrix_width)];
   }
@@ -159,7 +161,13 @@ gfx::Rect OmniboxPopupViewMac::GetTargetBounds() {
 // This is only called by model in SetSelectedLine() after updating
 // everything.  Popup should already be visible.
 void OmniboxPopupViewMac::PaintUpdatesNow() {
-  [matrix_ selectCellAtRow:model_->selected_line() column:0];
+  size_t start_match = model_->result().ShouldHideTopMatch() ? 1 : 0;
+  if (start_match > model_->selected_line()) {
+    [matrix_ deselectAllCells];
+  } else {
+    [matrix_ selectCellAtRow:model_->selected_line() - start_match column:0];
+  }
+
 }
 
 void OmniboxPopupViewMac::OnMatrixRowSelected(OmniboxPopupMatrix* matrix,

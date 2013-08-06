@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 14
+// Next tag: 15
 message OmniboxEventProto {
   // The timestamp for the event, in seconds since the epoch.
   optional int64 time = 1;
@@ -34,6 +34,10 @@ message OmniboxEventProto {
   // The index of the item that the user selected in the omnibox popup list.
   // This corresponds the index of the |suggestion| below.
   optional int32 selected_index = 5;
+
+  // Whether or not the top match was hidden in the omnibox suggestions
+  // dropdown.
+  optional bool is_top_result_hidden_in_dropdown = 14;
 
   // The length of the inline autocomplete text in the omnibox.
   // The sum |typed_length| + |completed_length| gives the full length of the

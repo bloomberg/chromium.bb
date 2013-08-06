@@ -10,6 +10,9 @@
 #include "base/logging.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/search/search.h"
+#include "chrome/common/autocomplete_match_type.h"
 
 // static
 const size_t AutocompleteResult::kMaxMatches = 6;
@@ -152,6 +155,24 @@ const AutocompleteMatch& AutocompleteResult::match_at(size_t index) const {
 AutocompleteMatch* AutocompleteResult::match_at(size_t index) {
   DCHECK_LT(index, matches_.size());
   return &matches_[index];
+}
+
+bool AutocompleteResult::ShouldHideTopMatch() const {
+  // Gate on our field trial flag.
+  if (!chrome::ShouldHideTopVerbatimMatch())
+    return false;
+
+  // If we don't have a verbatim first match, show everything.
+  if (empty() || !match_at(0).IsVerbatimType())
+    return false;
+
+  // If the verbatim first match is followed by another verbatim match, don't
+  // hide anything, lest we cause user confusion.
+  if ((size() > 1) && match_at(1).IsVerbatimType())
+    return false;
+
+  // Otherwise, it's safe to hide the verbatim first match.
+  return true;
 }
 
 void AutocompleteResult::Reset() {

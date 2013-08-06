@@ -57,6 +57,7 @@ const char kStalePageTimeoutFlagName[] = "stale";
 const int kStalePageTimeoutDefault = 3 * 3600;  // 3 hours.
 const int kStalePageTimeoutDisabled = 0;
 
+const char kHideVerbatimFlagName[] = "hide_verbatim";
 const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
 const char kShowNtpFlagName[] = "show_ntp";
 const char kRecentTabsOnNTPFlagName[] = "show_recent_tabs";
@@ -256,9 +257,12 @@ uint64 EmbeddedSearchPageVersion() {
   }
 
   FieldTrialFlags flags;
+  uint64 group_num = 0;
   if (GetFieldTrialInfo(
           base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
+          &flags, &group_num)) {
+    if (group_num == 0)
+      return kEmbeddedPageVersionDisabled;
     return GetUInt64ValueForFlagWithDefault(kEmbeddedPageVersionFlagName,
                                             kEmbeddedPageVersionDefault,
                                             flags);
@@ -398,10 +402,20 @@ bool ShouldPreferRemoteNTPOnStartup() {
 
   FieldTrialFlags flags;
   if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(kUseRemoteNTPOnStartupFlagName, false,
+      base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+      &flags, NULL)) {
+    return GetBoolValueForFlagWithDefault(kUseRemoteNTPOnStartupFlagName, true,
                                           flags);
+  }
+  return false;
+}
+
+bool ShouldHideTopVerbatimMatch() {
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(
+      base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+      &flags, NULL)) {
+    return GetBoolValueForFlagWithDefault(kHideVerbatimFlagName, false, flags);
   }
   return false;
 }
@@ -474,8 +488,8 @@ int GetInstantLoaderStalenessTimeoutSec() {
   int timeout_sec = kStalePageTimeoutDefault;
   FieldTrialFlags flags;
   if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
+      base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+      &flags, NULL)) {
     timeout_sec = GetUInt64ValueForFlagWithDefault(kStalePageTimeoutFlagName,
                                                    kStalePageTimeoutDefault,
                                                    flags);
@@ -555,11 +569,10 @@ void DisableInstantExtendedAPIForTesting() {
 bool GetFieldTrialInfo(const std::string& group_name,
                        FieldTrialFlags* flags,
                        uint64* group_number) {
-  if (EndsWith(group_name, kDisablingSuffix, true) ||
-      !StartsWithASCII(group_name, kGroupNumberPrefix, true))
+  if (EndsWith(group_name, kDisablingSuffix, true))
     return false;
 
-  // We have a valid trial that starts with "Group" and isn't disabled.
+  // We have a valid trial that isn't disabled.
   // First extract the flags.
   std::string group_prefix(group_name);
 
@@ -577,13 +590,17 @@ bool GetFieldTrialInfo(const std::string& group_name,
 
   // Now extract the group number, making sure we get a non-zero value.
   uint64 temp_group_number = 0;
-  std::string group_suffix = group_prefix.substr(strlen(kGroupNumberPrefix));
-  if (!base::StringToUint64(group_suffix, &temp_group_number) ||
-      temp_group_number == 0)
-    return false;
-
-  if (group_number)
-    *group_number = temp_group_number;
+  if (StartsWithASCII(group_name, kGroupNumberPrefix, true)) {
+    std::string group_suffix = group_prefix.substr(strlen(kGroupNumberPrefix));
+    if (!base::StringToUint64(group_suffix, &temp_group_number))
+      return false;
+    if (group_number)
+      *group_number = temp_group_number;
+  } else {
+    // Instant Extended is not enabled.
+    if (group_number)
+      *group_number = 0;
+  }
 
   return true;
 }

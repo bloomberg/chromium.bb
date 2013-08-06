@@ -218,6 +218,16 @@ struct AutocompleteMatch {
   // dictionary.  Returns the empty string if no such value exists.
   std::string GetAdditionalInfo(const std::string& property) const;
 
+  // Returns whether this match is a "verbatim" match: a URL navigation directly
+  // to the user's input, a search for the user's input with the default search
+  // engine, or a "keyword mode" search for the query portion of the user's
+  // input.  Note that rare or unusual types that could be considered verbatim,
+  // such as keyword engine matches or extension-provided matches, aren't
+  // detected by this IsVerbatimType, as the user will not be able to infer
+  // what will happen when he or she presses enter in those cases if the match
+  // is not shown.
+  bool IsVerbatimType() const;
+
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).
