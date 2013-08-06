@@ -232,3 +232,19 @@ class  Testprinter(unittest.TestCase):
         self.reset(err)
         printer.print_found(100, 10, 2, 3)
         self.assertWritten(err, ["Found 100 tests; running 10 (6 times each: --repeat-each=2 --iterations=3), skipping 90.\n"])
+
+    def test_debug_rwt_logging_is_throttled(self):
+        printer, err = self.get_printer(['--debug-rwt-logging'])
+
+        result = self.get_result('passes/image.html')
+        printer.print_started_test('passes/image.html')
+        printer.print_finished_test(result, expected=True, exp_str='', got_str='')
+
+        printer.print_started_test('passes/text.html')
+        result = self.get_result('passes/text.html')
+        printer.print_finished_test(result, expected=True, exp_str='', got_str='')
+
+        # Only the first test's start should be printed.
+        lines = err.buflist
+        self.assertEqual(len(lines), 1)
+        self.assertTrue(lines[0].endswith('passes/image.html\n'))

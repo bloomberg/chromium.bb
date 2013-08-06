@@ -63,8 +63,6 @@ class Printer(object):
         self.num_tests = 0
         self._port = port
         self._options = options
-        if self._options.debug_rwt_logging:
-            self._options.verbose = True
         self._meter = MeteredStream(regular_output, options.debug_rwt_logging, logger=logger,
                                     number_of_columns=self._port.host.platform.terminal_width())
         self._running_tests = []
@@ -298,7 +296,7 @@ class Printer(object):
             self._print_default("")
             incomplete_str = " (%d didn't run)" % incomplete
 
-        if self._options.verbose or unexpected:
+        if self._options.verbose or self._options.debug_rwt_logging or unexpected:
             self.writeln("")
 
         expected_summary_str = ''
@@ -352,12 +350,12 @@ class Printer(object):
         self.num_completed += 1
         test_name = result.test_name
 
-        result_message = self._result_message(result.type, result.failures, expected, self._options.verbose,
+        result_message = self._result_message(result.type, result.failures, expected,
                                               self._options.timing, result.test_run_time)
 
         if self._options.details:
             self._print_test_trace(result, exp_str, got_str)
-        elif (self._options.verbose and not self._options.debug_rwt_logging) or not expected:
+        elif self._options.verbose or not expected:
             self.writeln(self._test_status_line(test_name, result_message))
         elif self.num_completed == self.num_tests:
             self._meter.write_update('')
@@ -372,7 +370,7 @@ class Printer(object):
             self._completed_tests = []
         self._running_tests.remove(test_name)
 
-    def _result_message(self, result_type, failures, expected, verbose, timing, test_run_time):
+    def _result_message(self, result_type, failures, expected, timing, test_run_time):
         exp_string = ' unexpectedly' if not expected else ''
         timing_string = ' %.4fs' % test_run_time if timing else ''
         if result_type == test_expectations.PASS:
