@@ -50,6 +50,15 @@ void MHTMLGenerationManager::GenerateMHTML(
   job.routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
   job.callback = callback;
   id_to_job_[job_id] = job;
+  if (!registrar_.IsRegistered(
+          this,
+          NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+          Source<RenderProcessHost>(web_contents->GetRenderProcessHost()))) {
+    registrar_.Add(
+        this,
+        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+        Source<RenderProcessHost>(web_contents->GetRenderProcessHost()));
+  }
 
   base::ProcessHandle renderer_process =
       web_contents->GetRenderProcessHost()->GetHandle();
@@ -134,6 +143,28 @@ void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
 void MHTMLGenerationManager::CloseFile(base::PlatformFile file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::ClosePlatformFile(file);
+}
+
+void MHTMLGenerationManager::Observe(int type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  DCHECK(type == NOTIFICATION_RENDERER_PROCESS_TERMINATED);
+  RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
+  registrar_.Remove(
+      this,
+      NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+      source);
+  std::set<int> job_to_delete;
+  for (IDToJobMap::iterator it = id_to_job_.begin(); it != id_to_job_.end();
+       ++it) {
+    if (it->second.process_id == host->GetID())
+      job_to_delete.insert(it->first);
+  }
+  for (std::set<int>::iterator it = job_to_delete.begin();
+       it != job_to_delete.end();
+       ++it) {
+    JobFinished(*it, -1);
+  }
 }
 
 }  // namespace content

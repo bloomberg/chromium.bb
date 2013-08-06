@@ -10,6 +10,8 @@
 #include "base/memory/singleton.h"
 #include "base/platform_file.h"
 #include "base/process/process.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace base {
@@ -19,7 +21,7 @@ class FilePath;
 namespace content {
 class WebContents;
 
-class MHTMLGenerationManager {
+class MHTMLGenerationManager : public NotificationObserver {
  public:
   static MHTMLGenerationManager* GetInstance();
 
@@ -60,7 +62,7 @@ class MHTMLGenerationManager {
   };
 
   MHTMLGenerationManager();
-  ~MHTMLGenerationManager();
+  virtual ~MHTMLGenerationManager();
 
   // Called on the file thread to create |file|.
   void CreateFile(int job_id,
@@ -83,8 +85,14 @@ class MHTMLGenerationManager {
   // |mhtml_data_size| is -1 if the MHTML generation failed.
   void JobFinished(int job_id, int64 mhtml_data_size);
 
+  // Implementation of NotificationObserver.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
   typedef std::map<int, Job> IDToJobMap;
   IDToJobMap id_to_job_;
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(MHTMLGenerationManager);
 };
