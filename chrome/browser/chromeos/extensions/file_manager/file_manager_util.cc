@@ -522,11 +522,6 @@ GURL GetMediaPlayerUrl() {
   return GetFileManagerUrl("/mediaplayer.html");
 }
 
-GURL GetVideoPlayerUrl(const GURL& source_url) {
-  return GURL(GetFileManagerUrl("/video_player.html").spec() +
-              std::string("?") + source_url.spec());
-}
-
 GURL GetActionChoiceUrl(const base::FilePath& virtual_path,
                         bool advanced_mode) {
   std::string url = GetFileManagerUrl("/action_choice.html").spec();
@@ -686,25 +681,6 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
 
 void ViewRemovableDrive(const base::FilePath& path) {
   OpenFileBrowserImpl(path, "auto-open");
-}
-
-void OpenNewWindow(Profile* profile, const GURL& url) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      profile ? profile : ProfileManager::GetDefaultProfileOrOffTheRecord())->
-          extension_service();
-  if (!service)
-    return;
-
-  const extensions::Extension* extension =
-      service->GetExtensionById(kFileBrowserDomain, false);
-  if (!extension)
-    return;
-
-  chrome::AppLaunchParams params(profile, extension,
-                                 extension_misc::LAUNCH_WINDOW,
-                                 NEW_FOREGROUND_TAB);
-  params.override_url = url;
-  chrome::OpenApplication(params);
 }
 
 void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode) {

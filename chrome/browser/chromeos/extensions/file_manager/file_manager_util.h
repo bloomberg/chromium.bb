@@ -26,7 +26,6 @@ namespace util {
 GURL GetFileBrowserExtensionUrl();
 GURL GetFileBrowserUrl();
 GURL GetMediaPlayerUrl();
-GURL GetVideoPlayerUrl();
 
 // Converts |relative_path| (e.g., "drive/root" or "Downloads") into external
 // filesystem URL (e.g., filesystem://id/external/drive/root).
@@ -68,10 +67,6 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type type);
 // If there is no File Browser open, this call opens a new one pointing to
 // |path|. In this case the tab will automatically close on |path| unmount.
 void ViewRemovableDrive(const base::FilePath& path);
-
-// Opens a new window of the Files.app on the specified url using the
-// provided profile. If |profile| is null, then the default one is used.
-void OpenNewWindow(Profile* profile, const GURL& url);
 
 // Opens an action choice dialog for an external drive.
 // One of the actions is opening the File Manager. Passes |advanced_mode|
