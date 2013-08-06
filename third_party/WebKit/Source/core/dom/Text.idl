@@ -27,5 +27,5 @@
 
     // Introduced in DOM Level 3:
     readonly attribute DOMString       wholeText;
-    Text                               replaceWholeText(DOMString content); // Removed from DOM4.
+    [MeasureAs=TextReplaceWholeText] Text replaceWholeText(DOMString content); // Removed from DOM4.
 };
