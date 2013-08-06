@@ -34,6 +34,7 @@
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/Player.h"
 #include "core/dom/Element.h"
+#include "core/dom/Event.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -58,12 +59,28 @@ public:
             return animations->defaultStack();
         return 0;
     }
+    void addEventToDispatch(EventTarget* target, PassRefPtr<Event> event)
+    {
+        m_events.append(EventToDispatch(target, event));
+    }
 
 private:
     DocumentTimeline(Document*);
+    void dispatchEvents();
     double m_currentTime;
     Document* m_document;
     Vector<RefPtr<Player> > m_players;
+
+    struct EventToDispatch {
+        EventToDispatch(EventTarget* target, PassRefPtr<Event> event)
+            : target(target)
+            , event(event)
+        {
+        }
+        RefPtr<EventTarget> target;
+        RefPtr<Event> event;
+    };
+    Vector<EventToDispatch> m_events;
 };
 
 } // namespace

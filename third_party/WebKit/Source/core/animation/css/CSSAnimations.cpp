@@ -184,8 +184,9 @@ void CSSAnimations::update(Element* element, const RenderStyle* style)
             if (!keyframes.isEmpty()) {
                 Timing timing;
                 timingFromAnimationData(animationData, timing);
+                OwnPtr<CSSAnimations::EventDelegate> eventDelegate = adoptPtr(new EventDelegate(element, animationName));
                 m_animations.set(animationName.impl(), element->document()->timeline()->play(
-                    Animation::create(element, KeyframeAnimationEffect::create(keyframes), timing).get()).get());
+                    Animation::create(element, KeyframeAnimationEffect::create(keyframes), timing, eventDelegate.release()).get()).get());
             }
         }
     }
@@ -200,6 +201,34 @@ void CSSAnimations::cancel()
         iter->value->cancel();
 
     m_animations.clear();
+}
+
+void CSSAnimations::EventDelegate::maybeDispatch(Document::ListenerType listenerType, AtomicString& eventName, double elapsedTime)
+{
+    if (m_target->document()->hasListenerType(listenerType))
+        m_target->document()->timeline()->addEventToDispatch(m_target, AnimationEvent::create(eventName, m_name, elapsedTime));
+}
+
+void CSSAnimations::EventDelegate::onEventCondition(bool wasInPlay, bool isInPlay, double previousIteration, double currentIteration)
+{
+    // Events for a single document are queued and dispatched as a group at
+    // the end of DocumentTimeline::serviceAnimations.
+    // FIXME: Events which are queued outside of serviceAnimations should
+    // trigger a timer to dispatch when control is released.
+    // FIXME: Receive TimedItem as param in order to produce correct elapsed time value.
+    double elapsedTime = 0;
+    if (!wasInPlay && isInPlay) {
+        maybeDispatch(Document::ANIMATIONSTART_LISTENER, eventNames().webkitAnimationStartEvent, elapsedTime);
+        return;
+    }
+    if (wasInPlay && isInPlay && currentIteration != previousIteration) {
+        maybeDispatch(Document::ANIMATIONITERATION_LISTENER, eventNames().webkitAnimationIterationEvent, elapsedTime);
+        return;
+    }
+    if (wasInPlay && !isInPlay) {
+        maybeDispatch(Document::ANIMATIONEND_LISTENER, eventNames().webkitAnimationEndEvent, elapsedTime);
+        return;
+    }
 }
 
 } // namespace WebCore

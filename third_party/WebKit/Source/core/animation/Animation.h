@@ -42,7 +42,7 @@ class Element;
 class Animation FINAL : public TimedItem {
 
 public:
-    static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&);
+    static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, PassOwnPtr<TimedItemEventDelegate> = nullptr);
 
     const AnimationEffect::CompositableValueMap* compositableValues() const
     {
@@ -57,7 +57,7 @@ protected:
     virtual void willDetach() OVERRIDE FINAL;
 
 private:
-    Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&);
+    Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, PassOwnPtr<TimedItemEventDelegate>);
 
     RefPtr<Element> m_target;
     RefPtr<AnimationEffect> m_effect;

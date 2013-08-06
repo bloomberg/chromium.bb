@@ -35,6 +35,7 @@
 
 #include "core/animation/Player.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/Document.h"
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "wtf/HashMap.h"
@@ -79,6 +80,19 @@ public:
 private:
     typedef HashMap<StringImpl*, Player*> AnimationMap;
     AnimationMap m_animations;
+    class EventDelegate FINAL : public TimedItemEventDelegate {
+    public:
+        EventDelegate(Element* target, const AtomicString& name)
+            : m_target(target)
+            , m_name(name)
+        {
+        }
+        virtual void onEventCondition(bool wasInPlay, bool isInPlay, double previousIteration, double currentIteration) OVERRIDE;
+    private:
+        void maybeDispatch(Document::ListenerType, AtomicString& eventName, double elapsedTime);
+        Element* m_target;
+        const AtomicString m_name;
+    };
 };
 
 } // namespace WebCore

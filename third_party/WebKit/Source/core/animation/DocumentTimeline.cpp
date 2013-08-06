@@ -71,6 +71,8 @@ void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 
     if (m_document->view() && !m_players.isEmpty())
         m_document->view()->scheduleAnimation();
+
+    dispatchEvents();
 }
 
 void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
@@ -79,6 +81,13 @@ void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
         m_players[i]->setPaused(true);
         m_players[i]->setCurrentTime(pauseTime);
     }
+}
+
+void DocumentTimeline::dispatchEvents()
+{
+    for (size_t i = 0; i < m_events.size(); i++)
+        m_events[i].target->dispatchEvent(m_events[i].event.release());
+    m_events.clear();
 }
 
 } // namespace
