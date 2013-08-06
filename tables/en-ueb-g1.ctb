@@ -61,6 +61,7 @@ prepunc ` 56-6-356
 prepunc ' 3
 postpunc ' 3
 word ' 3
+endword s' 234-3
 word 'em = 
 word 'tis =
 word 'twas =
