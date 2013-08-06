@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -30,11 +31,18 @@
  * http://www.opengroup.org/onlinepubs/009695399/functions/sigaction.html
  */
 
+/*
+ * The signals listed here should either be handled by NaCl (or otherwise
+ * trusted) or have handlers that are expected to crash.
+ * Signals for which handlers are expected to crash should be listed
+ * in the NaClSignalHandleCustomCrashHandler function below.
+ */
 static int s_Signals[] = {
 #if NACL_ARCH(NACL_BUILD_ARCH) != NACL_mips
   /* This signal does not exist on MIPS. */
   SIGSTKFLT,
 #endif
+  SIGSYS, /* Used to support a seccomp-bpf sandbox. */
   NACL_THREAD_SUSPEND_SIGNAL,
   SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGBUS, SIGFPE, SIGSEGV,
   /* Handle SIGABRT in case someone sends it asynchronously using kill(). */
@@ -118,6 +126,21 @@ static void GetCurrentThread(const struct NaClSignalContext *sig_ctx,
   }
 }
 
+/*
+ * If |sig| had a handler that was expected to crash, exit.
+ */
+static void NaClSignalHandleCustomCrashHandler(int sig) {
+  /* Only SIGSYS is expected to have a custom crash handler. */
+  if (sig == SIGSYS) {
+    char tmp[128];
+    SNPRINTF(tmp, sizeof(tmp),
+        "\n** Signal %d has a custom crash handler but did not crash.\n",
+        sig);
+    NaClSignalErrorMessage(tmp);
+    NaClExit(-sig);
+  }
+}
+
 static void FindAndRunHandler(int sig, siginfo_t *info, void *uc) {
   unsigned int a;
 
@@ -138,6 +161,7 @@ static void FindAndRunHandler(int sig, siginfo_t *info, void *uc) {
         if (s_OldActions[a].sa_sigaction != NULL) {
           /* then call the old handler. */
           s_OldActions[a].sa_sigaction(sig, info, uc);
+          NaClSignalHandleCustomCrashHandler(sig);
           break;
         }
       } else {
@@ -146,6 +170,7 @@ static void FindAndRunHandler(int sig, siginfo_t *info, void *uc) {
             (s_OldActions[a].sa_handler != SIG_IGN)) {
           /* and call the old signal. */
           s_OldActions[a].sa_handler(sig);
+          NaClSignalHandleCustomCrashHandler(sig);
           break;
         }
       }
