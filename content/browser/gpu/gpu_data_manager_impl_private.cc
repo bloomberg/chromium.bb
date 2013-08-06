@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -103,8 +104,9 @@ int GetGpuBlacklistHistogramValueWin(GpuFeatureStatus status) {
 }
 #endif  // OS_WIN
 
-// Send UMA histograms about the enabled features.
-void UpdateStats(const gpu::GpuBlacklist* blacklist,
+// Send UMA histograms about the enabled features and GPU properties.
+void UpdateStats(const gpu::GPUInfo& gpu_info,
+                 const gpu::GpuBlacklist* blacklist,
                  const std::set<int>& blacklisted_features) {
   uint32 max_entry_id = blacklist->max_entry_id();
   if (max_entry_id == 0) {
@@ -192,6 +194,9 @@ void UpdateStats(const gpu::GpuBlacklist* blacklist,
     histogram_pointer->Add(GetGpuBlacklistHistogramValueWin(value));
 #endif
   }
+
+  UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.GLResetNotificationStrategy",
+      gpu_info.gl_reset_notification_strategy);
 }
 
 // Strip out the non-digital info; if after that, we get an empty string,
@@ -600,7 +605,7 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
     std::set<int> features = gpu_blacklist_->MakeDecision(
         gpu::GpuControlList::kOsAny, std::string(), gpu_info_);
     if (update_histograms_)
-      UpdateStats(gpu_blacklist_.get(), features);
+      UpdateStats(gpu_info_, gpu_blacklist_.get(), features);
 
     UpdateBlacklistedFeatures(features);
   }
