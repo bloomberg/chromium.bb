@@ -42,6 +42,7 @@
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
+#include "core/platform/HistogramSupport.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -151,6 +152,14 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
     // context is already 2D, just return that. If the existing context is WebGL, then destroy it
     // before creating a new 2D context. Vice versa when requesting a WebGL canvas. Requesting a
     // context with any other type string will destroy any existing context.
+    enum ContextType {
+        Context2d,
+        ContextWebkit3d,
+        ContextExperimentalWebgl,
+        ContextWebgl,
+        // Only add new items to the end and keep the order of existing items.
+        ContextTypeCount,
+    };
 
     // FIXME - The code depends on the context not going away once created, to prevent JS from
     // seeing a dangling pointer. So for now we will disallow the context from being changed
@@ -159,6 +168,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         if (m_context && !m_context->is2d())
             return 0;
         if (!m_context) {
+            HistogramSupport::histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
             m_context = CanvasRenderingContext2D::create(this, RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ? static_cast<Canvas2DContextAttributes*>(attrs) : 0, document()->inQuirksMode());
             if (m_context)
                 scheduleLayerUpdate();
@@ -168,17 +178,24 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
 
     Settings* settings = document()->settings();
     if (settings && settings->webGLEnabled()) {
-
         // Accept the legacy "webkit-3d" name as well as the provisional "experimental-webgl" name.
-        bool is3dContext = (type == "webkit-3d") || (type == "experimental-webgl");
-
         // Now that WebGL is ratified, we will also accept "webgl" as the context name in Chrome.
-        is3dContext |= (type == "webgl");
+        ContextType contextType;
+        bool is3dContext = true;
+        if (type == "webkit-3d")
+            contextType = ContextWebkit3d;
+        else if (type == "experimental-webgl")
+            contextType = ContextExperimentalWebgl;
+        else if (type == "webgl")
+            contextType = ContextWebgl;
+        else
+            is3dContext = false;
 
         if (is3dContext) {
             if (m_context && !m_context->is3d())
                 return 0;
             if (!m_context) {
+                HistogramSupport::histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
                 m_context = WebGLRenderingContext::create(this, static_cast<WebGLContextAttributes*>(attrs));
                 if (m_context)
                     scheduleLayerUpdate();
