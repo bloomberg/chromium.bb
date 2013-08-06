@@ -76,8 +76,11 @@ gfx::Size GetDPI() {
 }
 
 float GetDPIScale() {
-  return static_cast<float>(GetDPI().width()) /
-      static_cast<float>(kDefaultDPIX);
+  if (IsHighDPIEnabled()) {
+    return static_cast<float>(GetDPI().width()) /
+        static_cast<float>(kDefaultDPIX);
+  }
+  return 1.0;
 }
 
 bool IsInHighDPIMode() {
