@@ -34,6 +34,8 @@ class Chromium(recipe_util.Recipe):
       spec['submodule_git_svn_spec'] = props['submodule_git_svn_spec']
     if props.get('target_os'):
       spec['target_os'] = props['target_os'].split(',')
+    if props.get('target_os_only'):
+      spec['target_os_only'] = props['target_os_only']
     checkout_type = 'gclient_git_svn'
     if props.get('nosvn'):
       checkout_type = 'gclient_git'
