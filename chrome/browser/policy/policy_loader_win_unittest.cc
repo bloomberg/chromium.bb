@@ -714,7 +714,6 @@ void PRegTestHarness::AppendPolicyToPRegFile(const string16& path,
     }
     case base::Value::TYPE_DOUBLE: {
       double double_value = 0;
-      std::string string_value;
       ASSERT_TRUE(value->GetAsDouble(&double_value));
       AppendStringToPRegFile(path, key, base::DoubleToString(double_value));
       break;
