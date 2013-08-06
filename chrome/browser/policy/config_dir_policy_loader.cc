@@ -159,11 +159,9 @@ void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
     }
 
     // Detach the "3rdparty" node.
-    base::Value* third_party = NULL;
-    if (dictionary_value->Remove("3rdparty", &third_party)) {
-      Merge3rdPartyPolicy(third_party, level, bundle);
-      delete third_party;
-    }
+    scoped_ptr<base::Value> third_party;
+    if (dictionary_value->Remove("3rdparty", &third_party))
+      Merge3rdPartyPolicy(third_party.get(), level, bundle);
 
     // Add chrome policy.
     PolicyMap policy_map;

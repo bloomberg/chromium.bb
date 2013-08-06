@@ -855,10 +855,11 @@ std::string AboutStats(const std::string& query) {
       // as well.
       for (int index = static_cast<int>(timers->GetSize())-1; index >= 0;
            index--) {
-        Value* value;
+        scoped_ptr<Value> value;
         timers->Remove(index, &value);
         // We don't care about the value pointer; it's still tracked
         // on the counters list.
+        ignore_result(value.release());
       }
     }
   }

@@ -149,9 +149,9 @@ void TraceEventTestFixture::OnTraceDataCollected(
 
   // Move items into our aggregate collection
   while (root_list->GetSize()) {
-    Value* item = NULL;
+    scoped_ptr<Value> item;
     root_list->Remove(0, &item);
-    trace_parsed_.Append(item);
+    trace_parsed_.Append(item.release());
   }
 }
 

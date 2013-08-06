@@ -204,10 +204,9 @@ void ExtensionAPI::LoadSchema(const std::string& name,
   while (!schema_list->empty()) {
     base::DictionaryValue* schema = NULL;
     {
-      base::Value* value = NULL;
+      scoped_ptr<base::Value> value;
       schema_list->Remove(schema_list->GetSize() - 1, &value);
-      CHECK(value->IsType(base::Value::TYPE_DICTIONARY));
-      schema = static_cast<base::DictionaryValue*>(value);
+      CHECK(value.release()->GetAsDictionary(&schema));
     }
 
     CHECK(schema->GetString("namespace", &schema_namespace));

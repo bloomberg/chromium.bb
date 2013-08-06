@@ -560,7 +560,8 @@ Error* Session::MouseDoubleClick() {
   return error;
 }
 
-Error* Session::GetCookies(const std::string& url, base::ListValue** cookies) {
+Error* Session::GetCookies(const std::string& url,
+                           scoped_ptr<base::ListValue>* cookies) {
   Error* error = NULL;
   RunSessionTask(base::Bind(
       &Automation::GetCookies,

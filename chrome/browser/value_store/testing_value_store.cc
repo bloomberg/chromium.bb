@@ -125,13 +125,12 @@ ValueStore::WriteResult TestingValueStore::Remove(
     return WriteResultError();
   }
 
-  scoped_ptr<ValueStoreChangeList> changes(
-      new ValueStoreChangeList());
+  scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
-    Value* old_value = NULL;
+    scoped_ptr<Value> old_value;
     if (storage_.RemoveWithoutPathExpansion(*it, &old_value)) {
-      changes->push_back(ValueStoreChange(*it, old_value, NULL));
+      changes->push_back(ValueStoreChange(*it, old_value.release(), NULL));
     }
   }
   return MakeWriteResult(changes.release());

@@ -131,7 +131,7 @@ class Automation {
   void Reload(const WebViewId& view_id, Error** error);
 
   void GetCookies(const std::string& url,
-                  base::ListValue** cookies,
+                  scoped_ptr<base::ListValue>* cookies,
                   Error** error);
   void DeleteCookie(const std::string& url,
                     const std::string& cookie_name,

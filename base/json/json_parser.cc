@@ -56,7 +56,7 @@ class DictionaryHiddenRootValue : public base::DictionaryValue {
   // the method below.
 
   virtual bool RemoveWithoutPathExpansion(const std::string& key,
-                                          Value** out) OVERRIDE {
+                                          scoped_ptr<Value>* out) OVERRIDE {
     // If the caller won't take ownership of the removed value, just call up.
     if (!out)
       return DictionaryValue::RemoveWithoutPathExpansion(key, out);
@@ -65,12 +65,11 @@ class DictionaryHiddenRootValue : public base::DictionaryValue {
 
     // Otherwise, remove the value while its still "owned" by this and copy it
     // to convert any JSONStringValues to std::string.
-    Value* out_owned = NULL;
+    scoped_ptr<Value> out_owned;
     if (!DictionaryValue::RemoveWithoutPathExpansion(key, &out_owned))
       return false;
 
-    *out = out_owned->DeepCopy();
-    delete out_owned;
+    out->reset(out_owned->DeepCopy());
 
     return true;
   }
@@ -103,7 +102,7 @@ class ListHiddenRootValue : public base::ListValue {
     ListValue::Swap(copy.get());
   }
 
-  virtual bool Remove(size_t index, Value** out) OVERRIDE {
+  virtual bool Remove(size_t index, scoped_ptr<Value>* out) OVERRIDE {
     // If the caller won't take ownership of the removed value, just call up.
     if (!out)
       return ListValue::Remove(index, out);
@@ -112,12 +111,11 @@ class ListHiddenRootValue : public base::ListValue {
 
     // Otherwise, remove the value while its still "owned" by this and copy it
     // to convert any JSONStringValues to std::string.
-    Value* out_owned = NULL;
+    scoped_ptr<Value> out_owned;
     if (!ListValue::Remove(index, &out_owned))
       return false;
 
-    *out = out_owned->DeepCopy();
-    delete out_owned;
+    out->reset(out_owned->DeepCopy());
 
     return true;
   }

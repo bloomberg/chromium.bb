@@ -338,9 +338,9 @@ void ExternalCache::OnCacheUpdated(scoped_ptr<base::DictionaryValue> prefs) {
               extensions::ExternalProviderImpl::kExternalCrx, &crx_path) ||
           cached_entry->HasKey(
               extensions::ExternalProviderImpl::kKeepIfPresent)) {
-        base::Value* value = NULL;
+        scoped_ptr<base::Value> value;
         prefs->Remove(it.key(), &value);
-        cached_extensions_->Set(it.key(), value);
+        cached_extensions_->Set(it.key(), value.release());
       }
     }
   }

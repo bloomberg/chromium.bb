@@ -183,7 +183,7 @@ bool FakeDriveService::LoadResourceListForWapi(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<Value> raw_value = test_util::LoadJSONFile(relative_path);
   base::DictionaryValue* as_dict = NULL;
-  base::Value* feed = NULL;
+  scoped_ptr<base::Value> feed;
   base::DictionaryValue* feed_as_dict = NULL;
 
   // Extract the "feed" from the raw value and take the ownership.
@@ -191,6 +191,7 @@ bool FakeDriveService::LoadResourceListForWapi(
   if (raw_value->GetAsDictionary(&as_dict) &&
       as_dict->Remove("feed", &feed) &&
       feed->GetAsDictionary(&feed_as_dict)) {
+    ignore_result(feed.release());
     resource_list_value_.reset(feed_as_dict);
 
     // Go through entries and convert test$data from a string to a binary blob.
@@ -201,8 +202,9 @@ bool FakeDriveService::LoadResourceListForWapi(
         std::string content_data;
         if (entries->GetDictionary(i, &entry) &&
             entry->GetString("test$data", &content_data)) {
-          entry->Set("test$data", base::BinaryValue::CreateWithCopiedBuffer(
-                  content_data.c_str(), content_data.size()));
+          entry->Set("test$data",
+                     base::BinaryValue::CreateWithCopiedBuffer(
+                         content_data.c_str(), content_data.size()));
         }
       }
     }

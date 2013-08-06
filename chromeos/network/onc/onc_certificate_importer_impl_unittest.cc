@@ -80,11 +80,11 @@ class ONCCertificateImporterImplTest : public testing::Test {
   void AddCertificatesFromFile(std::string filename, bool expected_success) {
     scoped_ptr<base::DictionaryValue> onc =
         test_utils::ReadTestDictionary(filename);
-    base::Value* certificates_value = NULL;
+    scoped_ptr<base::Value> certificates_value;
     base::ListValue* certificates = NULL;
     onc->RemoveWithoutPathExpansion(toplevel_config::kCertificates,
                                     &certificates_value);
-    certificates_value->GetAsList(&certificates);
+    certificates_value.release()->GetAsList(&certificates);
     onc_certificates_.reset(certificates);
 
     web_trust_certificates_.clear();

@@ -39,17 +39,17 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 
     // Extract the value from the ReadResult and pass ownership of it to the
     // callback.
-    base::Value* value = NULL;
-    if (!result->HasError())
+    scoped_ptr<base::Value> value;
+    if (!result->HasError()) {
       result->settings()->RemoveWithoutPathExpansion(key, &value);
-    else
+    } else {
       LOG(INFO) << "Reading " << key << " from " << db_path_.value()
-          << " failed: " << result->error();
+                << " failed: " << result->error();
+    }
 
-    scoped_ptr<base::Value> passed_value(value);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&ValueStoreFrontend::Backend::RunCallback,
-                   this, callback, base::Passed(&passed_value)));
+                   this, callback, base::Passed(&value)));
   }
 
   void Set(const std::string& key, scoped_ptr<base::Value> value) {

@@ -544,15 +544,14 @@ void Automation::ExecuteScript(const WebViewId& view_id,
   if (*error)
     return;
 
-  Value* unscoped_value;
   automation::Error auto_error;
+  scoped_ptr<Value> value;
   if (!SendExecuteJavascriptJSONRequest(automation(), view_locator,
                                         frame_path.value(), script,
-                                        &unscoped_value, &auto_error)) {
+                                        &value, &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
     return;
   }
-  scoped_ptr<Value> value(unscoped_value);
   if (!value->GetAsString(result))
     *error = new Error(kUnknownError, "Execute script did not return string");
 }
@@ -844,7 +843,7 @@ void Automation::Reload(const WebViewId& view_id, Error** error) {
 }
 
 void Automation::GetCookies(const std::string& url,
-                            ListValue** cookies,
+                            scoped_ptr<ListValue>* cookies,
                             Error** error) {
   automation::Error auto_error;
   if (!SendGetCookiesJSONRequest(automation(), url, cookies, &auto_error))

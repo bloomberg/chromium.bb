@@ -37,14 +37,14 @@ bool CookieCommand::DoesPost() {
 void CookieCommand::ExecuteGet(Response* const response) {
   std::string url;
   Error* error = session_->GetURL(&url);
-  ListValue* cookies = NULL;
+  scoped_ptr<ListValue> cookies;
   if (!error)
     error = session_->GetCookies(url, &cookies);
   if (error) {
     response->SetError(error);
     return;
   }
-  response->SetValue(cookies);
+  response->SetValue(cookies.release());
 }
 
 void CookieCommand::ExecutePost(Response* const response) {
@@ -83,10 +83,9 @@ void CookieCommand::ExecutePost(Response* const response) {
 void CookieCommand::ExecuteDelete(Response* const response) {
   std::string url;
   Error* error = session_->GetURL(&url);
-  ListValue* unscoped_cookies = NULL;
+  scoped_ptr<ListValue> cookies;
   if (!error)
-    error = session_->GetCookies(url, &unscoped_cookies);
-  scoped_ptr<ListValue> cookies(unscoped_cookies);
+    error = session_->GetCookies(url, &cookies);
   if (error) {
     response->SetError(error);
     return;

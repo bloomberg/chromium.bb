@@ -559,9 +559,12 @@ TEST(JSONReaderTest, ReadFromFile) {
 // Tests that the root of a JSON object can be deleted safely while its
 // children outlive it.
 TEST(JSONReaderTest, StringOptimizations) {
-  Value* dict_literals[2] = {0};
-  Value* dict_strings[2] = {0};
-  Value* list_values[2] = {0};
+  scoped_ptr<Value> dict_literal_0;
+  scoped_ptr<Value> dict_literal_1;
+  scoped_ptr<Value> dict_string_0;
+  scoped_ptr<Value> dict_string_1;
+  scoped_ptr<Value> list_value_0;
+  scoped_ptr<Value> list_value_1;
 
   {
     scoped_ptr<Value> root(JSONReader::Read(
@@ -588,43 +591,36 @@ TEST(JSONReaderTest, StringOptimizations) {
     ASSERT_TRUE(root_dict->GetDictionary("test", &dict));
     ASSERT_TRUE(root_dict->GetList("list", &list));
 
-    EXPECT_TRUE(dict->Remove("foo", &dict_literals[0]));
-    EXPECT_TRUE(dict->Remove("bar", &dict_literals[1]));
-    EXPECT_TRUE(dict->Remove("baz", &dict_strings[0]));
-    EXPECT_TRUE(dict->Remove("moo", &dict_strings[1]));
+    EXPECT_TRUE(dict->Remove("foo", &dict_literal_0));
+    EXPECT_TRUE(dict->Remove("bar", &dict_literal_1));
+    EXPECT_TRUE(dict->Remove("baz", &dict_string_0));
+    EXPECT_TRUE(dict->Remove("moo", &dict_string_1));
 
     ASSERT_EQ(2u, list->GetSize());
-    EXPECT_TRUE(list->Remove(0, &list_values[0]));
-    EXPECT_TRUE(list->Remove(0, &list_values[1]));
+    EXPECT_TRUE(list->Remove(0, &list_value_0));
+    EXPECT_TRUE(list->Remove(0, &list_value_1));
   }
 
   bool b = false;
   double d = 0;
   std::string s;
 
-  EXPECT_TRUE(dict_literals[0]->GetAsBoolean(&b));
+  EXPECT_TRUE(dict_literal_0->GetAsBoolean(&b));
   EXPECT_TRUE(b);
 
-  EXPECT_TRUE(dict_literals[1]->GetAsDouble(&d));
+  EXPECT_TRUE(dict_literal_1->GetAsDouble(&d));
   EXPECT_EQ(3.14, d);
 
-  EXPECT_TRUE(dict_strings[0]->GetAsString(&s));
+  EXPECT_TRUE(dict_string_0->GetAsString(&s));
   EXPECT_EQ("bat", s);
 
-  EXPECT_TRUE(dict_strings[1]->GetAsString(&s));
+  EXPECT_TRUE(dict_string_1->GetAsString(&s));
   EXPECT_EQ("cow", s);
 
-  EXPECT_TRUE(list_values[0]->GetAsString(&s));
+  EXPECT_TRUE(list_value_0->GetAsString(&s));
   EXPECT_EQ("a", s);
-  EXPECT_TRUE(list_values[1]->GetAsString(&s));
+  EXPECT_TRUE(list_value_1->GetAsString(&s));
   EXPECT_EQ("b", s);
-
-  delete dict_literals[0];
-  delete dict_literals[1];
-  delete dict_strings[0];
-  delete dict_strings[1];
-  delete list_values[0];
-  delete list_values[1];
 }
 
 // A smattering of invalid JSON designed to test specific portions of the

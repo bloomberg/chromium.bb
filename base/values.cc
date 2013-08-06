@@ -719,7 +719,8 @@ bool DictionaryValue::GetListWithoutPathExpansion(const std::string& key,
           const_cast<const ListValue**>(out_value));
 }
 
-bool DictionaryValue::Remove(const std::string& path, Value** out_value) {
+bool DictionaryValue::Remove(const std::string& path,
+                             scoped_ptr<Value>* out_value) {
   DCHECK(IsStringUTF8(path));
   std::string current_path(path);
   DictionaryValue* current_dictionary = this;
@@ -736,7 +737,7 @@ bool DictionaryValue::Remove(const std::string& path, Value** out_value) {
 }
 
 bool DictionaryValue::RemoveWithoutPathExpansion(const std::string& key,
-                                                 Value** out_value) {
+                                                 scoped_ptr<Value>* out_value) {
   DCHECK(IsStringUTF8(key));
   ValueMap::iterator entry_iterator = dictionary_.find(key);
   if (entry_iterator == dictionary_.end())
@@ -744,7 +745,7 @@ bool DictionaryValue::RemoveWithoutPathExpansion(const std::string& key,
 
   Value* entry = entry_iterator->second;
   if (out_value)
-    *out_value = entry;
+    out_value->reset(entry);
   else
     delete entry;
   dictionary_.erase(entry_iterator);
@@ -958,12 +959,12 @@ bool ListValue::GetList(size_t index, ListValue** out_value) {
       const_cast<const ListValue**>(out_value));
 }
 
-bool ListValue::Remove(size_t index, Value** out_value) {
+bool ListValue::Remove(size_t index, scoped_ptr<Value>* out_value) {
   if (index >= list_.size())
     return false;
 
   if (out_value)
-    *out_value = list_[index];
+    out_value->reset(list_[index]);
   else
     delete list_[index];
 
@@ -986,9 +987,10 @@ bool ListValue::Remove(const Value& value, size_t* index) {
   return false;
 }
 
-ListValue::iterator ListValue::Erase(iterator iter, Value** out_value) {
+ListValue::iterator ListValue::Erase(iterator iter,
+                                     scoped_ptr<Value>* out_value) {
   if (out_value)
-    *out_value = *iter;
+    out_value->reset(*iter);
   else
     delete *iter;
 

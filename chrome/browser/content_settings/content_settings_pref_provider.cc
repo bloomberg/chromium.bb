@@ -548,11 +548,11 @@ void PrefProvider::CanonicalizeContentSettingsExceptions(
   }
 
   for (size_t i = 0; i < move_items.size(); ++i) {
-    Value* pattern_settings_dictionary = NULL;
+    scoped_ptr<Value> pattern_settings_dictionary;
     all_settings_dictionary->RemoveWithoutPathExpansion(
         move_items[i].first, &pattern_settings_dictionary);
     all_settings_dictionary->SetWithoutPathExpansion(
-        move_items[i].second, pattern_settings_dictionary);
+        move_items[i].second, pattern_settings_dictionary.release());
   }
 }
 

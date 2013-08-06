@@ -107,20 +107,20 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     scoped_ptr<base::DictionaryValue> fake_toplevel_onc =
         onc::ReadDictionaryFromJson(kFakeONC);
 
-    base::Value* network_configs_value = NULL;
+    scoped_ptr<base::Value> network_configs_value;
     base::ListValue* network_configs = NULL;
     fake_toplevel_onc->RemoveWithoutPathExpansion(
         onc::toplevel_config::kNetworkConfigurations,
         &network_configs_value);
-    network_configs_value->GetAsList(&network_configs);
+    network_configs_value.release()->GetAsList(&network_configs);
     fake_network_configs_.reset(network_configs);
 
-    base::Value* certs_value = NULL;
+    scoped_ptr<base::Value> certs_value;
     base::ListValue* certs = NULL;
     fake_toplevel_onc->RemoveWithoutPathExpansion(
         onc::toplevel_config::kCertificates,
         &certs_value);
-    certs_value->GetAsList(&certs);
+    certs_value.release()->GetAsList(&certs);
     fake_certificates_.reset(certs);
   }
 

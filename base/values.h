@@ -311,16 +311,16 @@ class BASE_EXPORT DictionaryValue : public Value {
 
   // Removes the Value with the specified path from this dictionary (or one
   // of its child dictionaries, if the path is more than just a local key).
-  // If |out_value| is non-NULL, the removed Value AND ITS OWNERSHIP will be
-  // passed out via out_value.  If |out_value| is NULL, the removed value will
-  // be deleted.  This method returns true if |path| is a valid path; otherwise
-  // it will return false and the DictionaryValue object will be unchanged.
-  virtual bool Remove(const std::string& path, Value** out_value);
+  // If |out_value| is non-NULL, the removed Value will be passed out via
+  // |out_value|.  If |out_value| is NULL, the removed value will be deleted.
+  // This method returns true if |path| is a valid path; otherwise it will
+  // return false and the DictionaryValue object will be unchanged.
+  virtual bool Remove(const std::string& path, scoped_ptr<Value>* out_value);
 
   // Like Remove(), but without special treatment of '.'.  This allows e.g. URLs
   // to be used as paths.
   virtual bool RemoveWithoutPathExpansion(const std::string& key,
-                                          Value** out_value);
+                                          scoped_ptr<Value>* out_value);
 
   // Makes a copy of |this| but doesn't include empty dictionaries and lists in
   // the copy.  This never returns NULL, even if |this| itself is empty.
@@ -414,7 +414,7 @@ class BASE_EXPORT ListValue : public Value {
   // passed out via |out_value|.  If |out_value| is NULL, the removed value will
   // be deleted.  This method returns true if |index| is valid; otherwise
   // it will return false and the ListValue object will be unchanged.
-  virtual bool Remove(size_t index, Value** out_value);
+  virtual bool Remove(size_t index, scoped_ptr<Value>* out_value);
 
   // Removes the first instance of |value| found in the list, if any, and
   // deletes it. |index| is the location where |value| was found. Returns false
@@ -425,7 +425,7 @@ class BASE_EXPORT ListValue : public Value {
   // deleted, otherwise ownership of the value is passed back to the caller.
   // Returns an iterator pointing to the location of the element that
   // followed the erased element.
-  iterator Erase(iterator iter, Value** out_value);
+  iterator Erase(iterator iter, scoped_ptr<Value>* out_value);
 
   // Appends a Value to the end of the list.
   void Append(Value* in_value);

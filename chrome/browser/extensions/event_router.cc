@@ -143,8 +143,9 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
 
   // DispatchExtensionMessage does _not_ take ownership of event_args, so we
   // must ensure that the destruction of args does not attempt to free it.
-  Value* removed_event_args = NULL;
+  scoped_ptr<Value> removed_event_args;
   args.Remove(1, &removed_event_args);
+  ignore_result(removed_event_args.release());
 }
 
 // static

@@ -349,9 +349,8 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
         static_cast<base::DictionaryValue*>(value.release()));
     std::string pattern_str;
     bool pattern_read = pattern_filter_pair->GetString("pattern", &pattern_str);
-    base::Value* cert_filter_ptr = NULL;
-    bool filter_read = pattern_filter_pair->Remove("filter", &cert_filter_ptr);
-    scoped_ptr<base::Value> cert_filter(cert_filter_ptr);
+    scoped_ptr<base::Value> cert_filter;
+    bool filter_read = pattern_filter_pair->Remove("filter", &cert_filter);
     if (!pattern_read || !filter_read ||
         !cert_filter->IsType(base::Value::TYPE_DICTIONARY)) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"

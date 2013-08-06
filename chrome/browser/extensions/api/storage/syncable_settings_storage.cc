@@ -182,10 +182,8 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
 
   SettingSyncDataList changes;
   for (base::DictionaryValue::Iterator it(settings); !it.IsAtEnd(); it.Advance()) {
-    Value* orphaned_sync_value = NULL;
-    if (new_sync_state->RemoveWithoutPathExpansion(
-          it.key(), &orphaned_sync_value)) {
-      scoped_ptr<Value> sync_value(orphaned_sync_value);
+    scoped_ptr<Value> sync_value;
+    if (new_sync_state->RemoveWithoutPathExpansion(it.key(), &sync_value)) {
       if (sync_value->Equals(&it.value())) {
         // Sync and local values are the same, no changes to send.
       } else {
@@ -212,14 +210,14 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
   while (!new_sync_state->empty()) {
     base::DictionaryValue::Iterator first_entry(*new_sync_state);
     std::string key = first_entry.key();
-    Value* value = NULL;
+    scoped_ptr<Value> value;
     CHECK(new_sync_state->RemoveWithoutPathExpansion(key, &value));
     changes.push_back(
         SettingSyncData(
             syncer::SyncChange::ACTION_ADD,
             extension_id_,
             key,
-            make_scoped_ptr(value)));
+            value.Pass()));
   }
 
   if (changes.empty())

@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_id.h"
@@ -207,14 +208,14 @@ bool SendNavigateToURLJSONRequest(
     automation::Error* error) WARN_UNUSED_RESULT;
 
 // Requests the given javascript to be executed in the frame specified by the
-// given xpath. Returns true on success. If true, |result| will be set to the
-// result of the execution and ownership will be given to the caller.
+// given xpath. Returns true on success. If true, |result| will be reset to the
+// result of the execution.
 bool SendExecuteJavascriptJSONRequest(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     const std::string& frame_xpath,
     const std::string& javascript,
-    base::Value** result,
+    scoped_ptr<base::Value>* result,
     automation::Error* error) WARN_UNUSED_RESULT;
 
 // Requests the specified view to go forward. Waits for the load to complete.
@@ -265,7 +266,7 @@ bool SendHeapProfilerDumpJSONRequestDeprecated(
 bool SendGetCookiesJSONRequest(
     AutomationMessageSender* sender,
     const std::string& url,
-    base::ListValue** cookies,
+    scoped_ptr<base::ListValue>* cookies,
     automation::Error* error) WARN_UNUSED_RESULT;
 
 // Requests deletion of the cookie with the given name and URL. Returns true

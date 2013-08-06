@@ -203,7 +203,7 @@ TEST(ValuesTest, ListDeletion) {
 
 TEST(ValuesTest, ListRemoval) {
   bool deletion_flag = true;
-  Value* removed_item = NULL;
+  scoped_ptr<Value> removed_item;
 
   {
     ListValue list;
@@ -218,8 +218,7 @@ TEST(ValuesTest, ListRemoval) {
     EXPECT_EQ(0U, list.GetSize());
   }
   EXPECT_FALSE(deletion_flag);
-  delete removed_item;
-  removed_item = NULL;
+  removed_item.reset();
   EXPECT_TRUE(deletion_flag);
 
   {
@@ -275,7 +274,7 @@ TEST(ValuesTest, DictionaryDeletion) {
 TEST(ValuesTest, DictionaryRemoval) {
   std::string key = "test";
   bool deletion_flag = true;
-  Value* removed_item = NULL;
+  scoped_ptr<Value> removed_item;
 
   {
     DictionaryValue dict;
@@ -288,8 +287,7 @@ TEST(ValuesTest, DictionaryRemoval) {
     ASSERT_TRUE(removed_item);
   }
   EXPECT_FALSE(deletion_flag);
-  delete removed_item;
-  removed_item = NULL;
+  removed_item.reset();
   EXPECT_TRUE(deletion_flag);
 
   {

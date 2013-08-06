@@ -139,10 +139,10 @@ std::string ReadAndUpdateServiceState(const base::FilePath& directory,
   }
 
   // Remove everything except kCloudPrintRoot.
-  base::Value* cloud_print_root = NULL;
+  scoped_ptr<base::Value> cloud_print_root;
   dictionary->Remove(prefs::kCloudPrintRoot, &cloud_print_root);
   dictionary->Clear();
-  dictionary->Set(prefs::kCloudPrintRoot, cloud_print_root);
+  dictionary->Set(prefs::kCloudPrintRoot, cloud_print_root.release());
 
   dictionary->SetBoolean(prefs::kCloudPrintXmppPingEnabled, true);
   if (!proxy_id.empty())  // Reuse proxy id if we already had one.

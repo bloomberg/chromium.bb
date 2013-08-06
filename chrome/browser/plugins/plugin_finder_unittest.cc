@@ -15,7 +15,7 @@ TEST(PluginFinderTest, JsonSyntax) {
   scoped_ptr<DictionaryValue> plugin_list(
     PluginFinder::LoadBuiltInPluginList());
   ASSERT_TRUE(plugin_list.get());
-  base::Value* version = NULL;
+  scoped_ptr<base::Value> version;
   ASSERT_TRUE(plugin_list->Remove("x-version", &version));
   EXPECT_EQ(base::Value::TYPE_INTEGER, version->GetType());
 
@@ -69,5 +69,4 @@ TEST(PluginFinderTest, JsonSyntax) {
           << "Invalid security status \"" << status_str << "\"";
     }
   }
-  delete version;
 }

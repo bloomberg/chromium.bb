@@ -322,7 +322,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     if (!dict->GetDictionaryWithoutPathExpansion(it.key(), &description))
       return false;
 
-    base::Value* value = NULL;
+    scoped_ptr<base::Value> value;
     if (!description->RemoveWithoutPathExpansion(kValue, &value))
       return false;
 
@@ -336,7 +336,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     // If policy for components is ever used for device-level settings then
     // this must support a configurable scope; assuming POLICY_SCOPE_USER is
     // fine for now.
-    policy->Set(it.key(), level, POLICY_SCOPE_USER, value, NULL);
+    policy->Set(it.key(), level, POLICY_SCOPE_USER, value.release(), NULL);
   }
 
   return true;

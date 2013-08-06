@@ -237,15 +237,15 @@ bool Validator::ValidateRecommendedField(
   CHECK(result != NULL);
 
   scoped_ptr<base::ListValue> recommended;
-  base::Value* recommended_value = NULL;
+  scoped_ptr<base::Value> recommended_value;
   // This remove passes ownership to |recommended_value|.
   if (!result->RemoveWithoutPathExpansion(onc::kRecommended,
                                           &recommended_value)) {
     return true;
   }
   base::ListValue* recommended_list = NULL;
-  recommended_value->GetAsList(&recommended_list);
-  CHECK(recommended_list != NULL);
+  recommended_value.release()->GetAsList(&recommended_list);
+  CHECK(recommended_list);
 
   recommended.reset(recommended_list);
 
