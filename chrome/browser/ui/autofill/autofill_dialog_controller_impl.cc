@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -32,6 +31,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"

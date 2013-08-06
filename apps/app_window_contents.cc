@@ -4,9 +4,9 @@
 
 #include "apps/app_window_contents.h"
 
-#include "apps/native_app_window.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_thread.h"

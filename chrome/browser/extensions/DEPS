@@ -5,7 +5,6 @@ include_rules = [
   # to depend on apps will be lifted.
   "-apps",
   "+apps/app_window_contents.h",
-  "+apps/native_app_window.h",
   "+apps/shell_window.h",
 
   # TODO(tfarina): Remove all these. crbug.com/125846.

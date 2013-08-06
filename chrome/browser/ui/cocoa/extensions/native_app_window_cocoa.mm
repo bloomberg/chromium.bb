@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
+#include "chrome/browser/ui/cocoa/extensions/native_app_window_cocoa.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -849,4 +849,11 @@ ShellNSWindow* NativeAppWindowCocoa::window() const {
   NSWindow* window = [window_controller_ window];
   CHECK(!window || [window isKindOfClass:[ShellNSWindow class]]);
   return static_cast<ShellNSWindow*>(window);
+}
+
+// static
+NativeAppWindow* NativeAppWindow::Create(
+    ShellWindow* shell_window,
+    const ShellWindow::CreateParams& params) {
+  return new NativeAppWindowCocoa(shell_window, params);
 }

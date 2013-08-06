@@ -21,6 +21,7 @@
 
 class GURL;
 class Profile;
+class NativeAppWindow;
 class SkRegion;
 
 namespace content {
@@ -40,8 +41,6 @@ class BaseWindow;
 }
 
 namespace apps {
-
-class NativeAppWindow;
 
 // Manages the web contents for Shell Windows. The implementation for this
 // class should create and maintain the WebContents for the window, and handle
@@ -131,9 +130,6 @@ class ShellWindow : public content::NotificationObserver,
 
     // General initialization.
     virtual void InitWebContents(content::WebContents* web_contents) = 0;
-    virtual NativeAppWindow* CreateNativeAppWindow(
-        ShellWindow* window,
-        const CreateParams& params) = 0;
 
     // Link handling.
     virtual content::WebContents* OpenURLFromTab(

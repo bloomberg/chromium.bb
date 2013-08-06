@@ -4,7 +4,6 @@
 
 #include "apps/shell_window.h"
 
-#include "apps/native_app_window.h"
 #include "apps/shell_window_geometry_cache.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -156,7 +156,7 @@ void ShellWindow::Init(const GURL& url,
 
   new_params.bounds = bounds;
 
-  native_app_window_.reset(delegate_->CreateNativeAppWindow(this, new_params));
+  native_app_window_.reset(NativeAppWindow::Create(this, new_params));
 
   if (!new_params.hidden) {
     if (window_type_is_panel())

@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/apps/native_app_window_gtk.h"
+#include "chrome/browser/ui/gtk/extensions/native_app_window_gtk.h"
 
 #include <gdk/gdkx.h>
 #include <vector>
@@ -623,4 +623,11 @@ void NativeAppWindowGtk::UpdateDraggableRegions(
     return;
 
   draggable_region_.reset(ShellWindow::RawDraggableRegionsToSkRegion(regions));
+}
+
+// static
+NativeAppWindow* NativeAppWindow::Create(
+    ShellWindow* shell_window,
+    const ShellWindow::CreateParams& params) {
+  return new NativeAppWindowGtk(shell_window, params);
 }

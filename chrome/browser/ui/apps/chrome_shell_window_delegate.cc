@@ -25,6 +25,8 @@
 #include "ash/launcher/launcher_types.h"
 #endif
 
+namespace chrome {
+
 namespace {
 
 bool disable_external_open_for_testing_ = false;
@@ -61,12 +63,6 @@ void ChromeShellWindowDelegate::InitWebContents(
   printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
   printing::PrintViewManager::CreateForWebContents(web_contents);
 #endif
-}
-
-apps::NativeAppWindow* ChromeShellWindowDelegate::CreateNativeAppWindow(
-    apps::ShellWindow* window,
-    const apps::ShellWindow::CreateParams& params) {
-  return CreateNativeAppWindowImpl(window, params);
 }
 
 content::WebContents* ChromeShellWindowDelegate::OpenURLFromTab(
@@ -152,3 +148,5 @@ bool ChromeShellWindowDelegate::IsWebContentsVisible(
     content::WebContents* web_contents) {
   return platform_util::IsVisible(web_contents->GetView()->GetNativeView());
 }
+
+}  // namespace chrome

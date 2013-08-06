@@ -1,18 +1,18 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_APPS_NATIVE_APP_WINDOW_COCOA_H_
-#define CHROME_BROWSER_UI_COCOA_APPS_NATIVE_APP_WINDOW_COCOA_H_
+#ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_NATIVE_APP_WINDOW_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_EXTENSIONS_NATIVE_APP_WINDOW_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/draggable_region.h"
 #include "ui/gfx/rect.h"
@@ -41,7 +41,7 @@ class SkRegion;
 @end
 
 // Cocoa bridge to AppWindow.
-class NativeAppWindowCocoa : public apps::NativeAppWindow {
+class NativeAppWindowCocoa : public NativeAppWindow {
  public:
   NativeAppWindowCocoa(apps::ShellWindow* shell_window,
                        const apps::ShellWindow::CreateParams& params);
@@ -191,4 +191,4 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow {
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowCocoa);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_APPS_NATIVE_APP_WINDOW_COCOA_H_
+#endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_NATIVE_APP_WINDOW_COCOA_H_

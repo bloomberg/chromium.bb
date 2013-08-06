@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/apps/native_app_window_views.h"
+#include "chrome/browser/ui/views/extensions/native_app_window_views.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -745,4 +745,13 @@ void NativeAppWindowViews::HandleKeyboardEvent(
 
 void NativeAppWindowViews::RenderViewHostChanged() {
   OnViewWasResized();
+}
+
+//------------------------------------------------------------------------------
+// NativeAppWindow::Create
+
+// static
+NativeAppWindow* NativeAppWindow::Create(
+    ShellWindow* shell_window, const ShellWindow::CreateParams& params) {
+  return new NativeAppWindowViews(shell_window, params);
 }

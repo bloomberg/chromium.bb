@@ -13,6 +13,8 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 
+namespace chrome {
+
 class ShellWindowLinkDelegate : public content::WebContentsDelegate {
  public:
   ShellWindowLinkDelegate();
@@ -36,9 +38,6 @@ class ChromeShellWindowDelegate : public apps::ShellWindow::Delegate {
  private:
   // apps::ShellWindow::Delegate:
   virtual void InitWebContents(content::WebContents* web_contents) OVERRIDE;
-  virtual apps::NativeAppWindow* CreateNativeAppWindow(
-      apps::ShellWindow* window,
-      const apps::ShellWindow::CreateParams& params) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(
       Profile* profile,
       content::WebContents* source,
@@ -66,14 +65,11 @@ class ChromeShellWindowDelegate : public apps::ShellWindow::Delegate {
   virtual bool IsWebContentsVisible(
       content::WebContents* web_contents) OVERRIDE;
 
-  // Implemented in platform specific code.
-  static apps::NativeAppWindow* CreateNativeAppWindowImpl(
-      apps::ShellWindow* window,
-      const apps::ShellWindow::CreateParams& params);
-
   scoped_ptr<ShellWindowLinkDelegate> shell_window_link_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellWindowDelegate);
 };
+
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_APPS_CHROME_SHELL_WINDOW_DELEGATE_H_

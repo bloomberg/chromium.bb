@@ -1,16 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_NATIVE_APP_WINDOW_H_
-#define APPS_NATIVE_APP_WINDOW_H_
+#ifndef CHROME_BROWSER_UI_EXTENSIONS_NATIVE_APP_WINDOW_H_
+#define CHROME_BROWSER_UI_EXTENSIONS_NATIVE_APP_WINDOW_H_
 
 #include "apps/shell_window.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/insets.h"
-
-namespace apps {
 
 // This is an interface to a native implementation of a shell window, used for
 // new-style packaged apps. Shell windows contain a web contents, but no tabs
@@ -18,6 +16,11 @@ namespace apps {
 class NativeAppWindow : public ui::BaseWindow,
                         public web_modal::WebContentsModalDialogHost {
  public:
+  // Used by apps::ShellWindow to instantiate the platform-specific
+  // apps::ShellWindow code.
+  static NativeAppWindow* Create(apps::ShellWindow* window,
+                                 const apps::ShellWindow::CreateParams& params);
+
   // Called when the draggable regions are changed.
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) = 0;
@@ -50,6 +53,4 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual ~NativeAppWindow() {}
 };
 
-}  // namespace apps
-
-#endif  // APPS_NATIVE_APP_WINDOW_H_
+#endif  // CHROME_BROWSER_UI_EXTENSIONS_NATIVE_APP_WINDOW_H_
