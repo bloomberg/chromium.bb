@@ -32,7 +32,12 @@ void GetNSExecutablePath(base::FilePath* path) {
   int rv = _NSGetExecutablePath(WriteInto(&executable_path, executable_length),
                                 &executable_length);
   DCHECK_EQ(rv, 0);
-  *path = base::FilePath(executable_path);
+
+  // _NSGetExecutablePath may return paths containing ./ or ../ which makes
+  // FilePath::DirName() work incorrectly, convert it to absolute path so that
+  // paths such as DIR_SOURCE_ROOT can work, since we expect absolute paths to
+  // be returned here.
+  *path = base::MakeAbsoluteFilePath(base::FilePath(executable_path));
 }
 
 // Returns true if the module for |address| is found. |path| will contain
