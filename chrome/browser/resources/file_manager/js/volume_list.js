@@ -137,10 +137,89 @@ var VolumeItem = cr.ui.define('li');
 
 VolumeItem.prototype = {
   __proto__: HTMLLIElement.prototype,
+};
 
-  decorate: function() {
-    // Nothing to do.
-  },
+/**
+ * Decorate the item.
+ */
+VolumeItem.prototype.decorate = function() {
+  // decorate() may be called twice: from the constructor and from
+  // List.createItem(). This check prevents double-decorating.
+  if (this.className)
+    return;
+
+  this.className = 'root-item';
+  this.setAttribute('role', 'option');
+
+  this.iconDiv_ = cr.doc.createElement('div');
+  this.iconDiv_.className = 'volume-icon';
+  this.appendChild(this.iconDiv_);
+
+  this.label_ = cr.doc.createElement('div');
+  this.label_.className = 'root-label';
+  this.appendChild(this.label_);
+
+  cr.defineProperty(this, 'lead', cr.PropertyKind.BOOL_ATTR);
+  cr.defineProperty(this, 'selected', cr.PropertyKind.BOOL_ATTR);
+};
+
+/**
+ * Associate a path with this item.
+ * @param {string} path Path of this item.
+ */
+VolumeItem.prototype.setPath = function(path) {
+  if (this.path_)
+    console.warn('VolumeItem.setPath should be called only once.');
+
+  this.path_ = path;
+
+  var rootType = PathUtil.getRootType(path);
+
+  this.iconDiv_.setAttribute('volume-type-icon', rootType);
+  if (rootType === RootType.REMOVABLE) {
+    this.iconDiv_.setAttribute('volume-subtype',
+        VolumeManager.getInstance().getDeviceType(path));
+  }
+
+  this.label_.textContent = PathUtil.getFolderLabel(path);
+
+  if (rootType === RootType.ARCHIVE || rootType === RootType.REMOVABLE) {
+    this.eject_ = cr.doc.createElement('div');
+    // Block other mouse handlers.
+    this.eject_.addEventListener(
+        'mouseup', function(e) { e.stopPropagation() });
+    this.eject_.addEventListener(
+        'mousedown', function(e) { e.stopPropagation() });
+
+    this.eject_.className = 'root-eject';
+    this.eject_.addEventListener('click', function(event) {
+      event.stopPropagation();
+      cr.dispatchSimpleEvent(this, 'eject');
+    }.bind(this));
+
+    this.appendChild(this.eject_);
+  }
+};
+
+/**
+ * Associate a context menu with this item.
+ * @param {cr.ui.Menu} menu Menu this item.
+ */
+VolumeItem.prototype.maybeSetContextMenu = function(menu) {
+  if (!this.path_) {
+    console.error(
+        'VolumeItem.maybeSetContextMenu must be called after setPath().');
+    return;
+  }
+
+  var isRoot = PathUtil.isRootPath(this.path_);
+  var rootType = PathUtil.getRootType(this.path_);
+  // The context menu is shown on the following items:
+  // - Removable and Archive volumes
+  // - Folder shortcuts
+  if (!isRoot ||
+      (rootType != RootType.DRIVE && rootType != RootType.DOWNLOADS))
+    cr.ui.contextMenuHandler.setContextMenu(this, menu);
 };
 
 /**
@@ -214,61 +293,30 @@ VolumeList.prototype.decorate = function(directoryModel, pinnedFolderModel) {
  * @private
  */
 VolumeList.prototype.renderRoot_ = function(path) {
-  var li = new VolumeItem;
-  // TODO(yoshiki): Move the following initialization code to the constructor
-  // of VolumeItem.
-  li.className = 'root-item';
-  li.setAttribute('role', 'option');
-  var dm = this.directoryModel_;
+  var item = new VolumeItem();
+  item.setPath(path);
+
   var handleClick = function() {
-    if (li.selected && path !== dm.getCurrentDirPath()) {
+    if (item.selected && path !== this.directoryModel_.getCurrentDirPath()) {
       this.directoryModel_.changeDirectory(path);
     }
   }.bind(this);
-  li.addEventListener('click', handleClick);
-  li.addEventListener(cr.ui.TouchHandler.EventType.TOUCH_START, handleClick);
+  item.addEventListener('click', handleClick);
 
-  var isRoot = PathUtil.isRootPath(path);
-  var rootType = PathUtil.getRootType(path);
+  var handleEject = function() {
+    var unmountCommand = cr.doc.querySelector('command#unmount');
+    // Let's make sure 'canExecute' state of the command is properly set for
+    // the root before executing it.
+    unmountCommand.canExecuteChange(item);
+    unmountCommand.execute(item);
+  };
+  item.addEventListener('eject', handleEject);
+  // TODO(yoshiki): Check if the following touch handler is necessary or not.
+  // If unnecessary, remove it.
+  item.addEventListener(cr.ui.TouchHandler.EventType.TOUCH_START, handleClick);
 
-  var iconDiv = cr.doc.createElement('div');
-  iconDiv.className = 'volume-icon';
-  iconDiv.setAttribute('volume-type-icon', rootType);
-  if (rootType === RootType.REMOVABLE) {
-    iconDiv.setAttribute('volume-subtype',
-        this.volumeManager_.getDeviceType(path));
-  }
-  li.appendChild(iconDiv);
-
-  var div = cr.doc.createElement('div');
-  div.className = 'root-label';
-
-  div.textContent = PathUtil.getFolderLabel(path);
-  li.appendChild(div);
-
-  if (rootType === RootType.ARCHIVE || rootType === RootType.REMOVABLE) {
-    var eject = cr.doc.createElement('div');
-    eject.className = 'root-eject';
-    eject.addEventListener('click', function(event) {
-      event.stopPropagation();
-      var unmountCommand = cr.doc.querySelector('command#unmount');
-      // Let's make sure 'canExecute' state of the command is properly set for
-      // the root before executing it.
-      unmountCommand.canExecuteChange(li);
-      unmountCommand.execute(li);
-    }.bind(this));
-    // Block other mouse handlers.
-    eject.addEventListener('mouseup', function(e) { e.stopPropagation() });
-    eject.addEventListener('mousedown', function(e) { e.stopPropagation() });
-    li.appendChild(eject);
-  }
-
-  if (this.contextMenu_ && (!isRoot ||
-      rootType != RootType.DRIVE && rootType != RootType.DOWNLOADS))
-    cr.ui.contextMenuHandler.setContextMenu(li, this.contextMenu_);
-
-  cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
-  cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
+  if (this.contextMenu_)
+    item.maybeSetContextMenu(this.contextMenu_);
 
   // If the current directory is already set.
   if (this.currentVolume_ == path) {
@@ -276,8 +324,7 @@ VolumeList.prototype.renderRoot_ = function(path) {
       this.selectedItem = path;
     }.bind(this), 0);
   }
-
-  return li;
+  return item;
 };
 
 /**
@@ -290,15 +337,7 @@ VolumeList.prototype.setContextMenu = function(menu) {
   this.contextMenu_ = menu;
 
   for (var i = 0; i < this.dataModel.length; i++) {
-    var path = this.dataModel.item(i);
-    var itemType = this.dataModel.getItemType(i);
-    var type = PathUtil.getRootType(path);
-    // Context menu is set only to archive and removable volumes.
-    if (itemType == VolumeListModel.ItemType.PINNED ||
-        type == RootType.ARCHIVE || type == RootType.REMOVABLE) {
-      cr.ui.contextMenuHandler.setContextMenu(this.getListItemByIndex(i),
-                                              this.contextMenu_);
-    }
+    this.getListItemByIndex(i).maybeSetContextMenu(this.contextMenu_);
   }
 };
 
