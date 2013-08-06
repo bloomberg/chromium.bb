@@ -337,7 +337,7 @@
       'conditions': [
         ['disable_nacl!=1', {
           'dependencies': [
-            'nacl',
+            '../components/nacl.gyp:nacl',
           ],
         }],
         ['enable_plugins==1', {
