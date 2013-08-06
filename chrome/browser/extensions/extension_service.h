@@ -352,8 +352,9 @@ class ExtensionService
   virtual void DisableExtension(const std::string& extension_id,
       extensions::Extension::DisableReason disable_reason);
 
-  // Disable non-builtin and non-managed extensions with ids not in
-  // |except_ids|.
+  // Disable non-default and non-managed extensions with ids not in
+  // |except_ids|. Default extensions are those from the Web Store with
+  // |was_installed_by_default| flag.
   void DisableUserExtensions(const std::vector<std::string>& except_ids);
 
   // Updates the |extension|'s granted permissions lists to include all

@@ -228,20 +228,35 @@ scoped_ptr<net::FakeURLFetcher> ConfigParserTest::CreateFakeURLFetcher(
 scoped_refptr<Extension> CreateExtension(const std::string& name,
                                          const base::FilePath& path,
                                          Manifest::Location location,
-                                         bool theme) {
+                                         extensions::Manifest::Type type,
+                                         bool installed_by_default) {
   DictionaryValue manifest;
   manifest.SetString(extension_manifest_keys::kVersion, "1.0.0.0");
   manifest.SetString(extension_manifest_keys::kName, name);
-  manifest.SetString("app.launch.web_url", "http://www.google.com");
-  if (theme)
-    manifest.Set(extension_manifest_keys::kTheme, new DictionaryValue);
+  switch (type) {
+    case extensions::Manifest::TYPE_THEME:
+      manifest.Set(extension_manifest_keys::kTheme, new DictionaryValue);
+      break;
+    case extensions::Manifest::TYPE_HOSTED_APP:
+      manifest.SetString(extension_manifest_keys::kLaunchWebURL,
+                         "http://www.google.com");
+      manifest.SetString(extension_manifest_keys::kUpdateURL,
+                         "http://clients2.google.com/service/update2/crx");
+      break;
+    case extensions::Manifest::TYPE_EXTENSION:
+      // do nothing
+      break;
+    default:
+      NOTREACHED();
+  }
   manifest.SetString(extension_manifest_keys::kOmniboxKeyword, name);
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
       path,
       location,
       manifest,
-      Extension::NO_FLAGS,
+      installed_by_default ? Extension::WAS_INSTALLED_BY_DEFAULT
+                           : Extension::NO_FLAGS,
       &error);
   EXPECT_TRUE(extension.get() != NULL) << error;
   return extension;
@@ -270,6 +285,7 @@ TEST_F(ProfileResetterTest, ResetDefaultSearchEngine) {
       "xxx",
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::COMPONENT,
+      extensions::Manifest::TYPE_EXTENSION,
       false);
   service_->AddExtension(extension.get());
 
@@ -434,14 +450,16 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  scoped_refptr<Extension> theme = CreateExtension("example1", temp_dir.path(),
-                                                   Manifest::INVALID_LOCATION,
-                                                   true);
+  scoped_refptr<Extension> theme =
+      CreateExtension("example1",
+                      temp_dir.path(),
+                      Manifest::INVALID_LOCATION,
+                      extensions::Manifest::TYPE_THEME,
+                      false);
   service_->FinishInstallationForTest(theme.get());
   // Let ThemeService finish creating the theme pack.
   base::MessageLoop::current()->RunUntilIdle();
 
-  // ThemeService isn't compiled for Android.
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(profile());
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
@@ -450,6 +468,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
       "example2",
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
+      extensions::Manifest::TYPE_EXTENSION,
       false);
   service_->AddExtension(ext2.get());
   // Components and external policy extensions shouldn't be deleted.
@@ -457,19 +476,22 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
       "example3",
       base::FilePath(FILE_PATH_LITERAL("//nonexistent2")),
       Manifest::COMPONENT,
+      extensions::Manifest::TYPE_EXTENSION,
       false);
   service_->AddExtension(ext3.get());
   scoped_refptr<Extension> ext4 =
       CreateExtension("example4",
                       base::FilePath(FILE_PATH_LITERAL("//nonexistent3")),
                       Manifest::EXTERNAL_POLICY_DOWNLOAD,
+                      extensions::Manifest::TYPE_EXTENSION,
                       false);
   service_->AddExtension(ext4.get());
   EXPECT_EQ(4u, service_->extensions()->size());
 
   ResetAndWait(ProfileResetter::EXTENSIONS);
-
   EXPECT_EQ(2u, service_->extensions()->size());
+  EXPECT_FALSE(service_->extensions()->Contains(theme->id()));
+  EXPECT_FALSE(service_->extensions()->Contains(ext2->id()));
   EXPECT_TRUE(service_->extensions()->Contains(ext3->id()));
   EXPECT_TRUE(service_->extensions()->Contains(ext4->id()));
   EXPECT_TRUE(theme_service->UsingDefaultTheme());
@@ -480,6 +502,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisablingNonOrganic) {
       "example2",
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
+      extensions::Manifest::TYPE_EXTENSION,
       false);
   service_->AddExtension(ext2.get());
   // Components and external policy extensions shouldn't be deleted.
@@ -487,6 +510,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisablingNonOrganic) {
       "example3",
       base::FilePath(FILE_PATH_LITERAL("//nonexistent2")),
       Manifest::INVALID_LOCATION,
+      extensions::Manifest::TYPE_EXTENSION,
       false);
   service_->AddExtension(ext3.get());
   EXPECT_EQ(2u, service_->extensions()->size());
@@ -498,6 +522,52 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisablingNonOrganic) {
 
   EXPECT_EQ(1u, service_->extensions()->size());
   EXPECT_TRUE(service_->extensions()->Contains(ext3->id()));
+}
+
+TEST_F(ProfileResetterTest, ResetExtensionsAndDefaultApps) {
+  service_->Init();
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  scoped_refptr<Extension> ext1 =
+      CreateExtension("example1",
+                      temp_dir.path(),
+                      Manifest::INVALID_LOCATION,
+                      extensions::Manifest::TYPE_THEME,
+                      false);
+  service_->FinishInstallationForTest(ext1.get());
+  // Let ThemeService finish creating the theme pack.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile());
+  EXPECT_FALSE(theme_service->UsingDefaultTheme());
+
+  scoped_refptr<Extension> ext2 =
+      CreateExtension("example2",
+                      base::FilePath(FILE_PATH_LITERAL("//nonexistent2")),
+                      Manifest::INVALID_LOCATION,
+                      extensions::Manifest::TYPE_EXTENSION,
+                      false);
+  service_->AddExtension(ext2.get());
+
+  scoped_refptr<Extension> ext3 =
+      CreateExtension("example2",
+                      base::FilePath(FILE_PATH_LITERAL("//nonexistent3")),
+                      Manifest::INVALID_LOCATION,
+                      extensions::Manifest::TYPE_HOSTED_APP,
+                      true);
+  service_->AddExtension(ext3.get());
+  EXPECT_EQ(3u, service_->extensions()->size());
+
+  ResetAndWait(ProfileResetter::EXTENSIONS);
+
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_FALSE(service_->extensions()->Contains(ext1->id()));
+  EXPECT_FALSE(service_->extensions()->Contains(ext2->id()));
+  EXPECT_TRUE(service_->extensions()->Contains(ext3->id()));
+  EXPECT_TRUE(theme_service->UsingDefaultTheme());
 }
 
 TEST_F(ProfileResetterTest, ResetStartPage) {
@@ -536,6 +606,7 @@ TEST_F(PinnedTabsResetTest, ResetPinnedTabs) {
       "hello!",
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
+      extensions::Manifest::TYPE_HOSTED_APP,
       false);
   scoped_ptr<content::WebContents> contents1(CreateWebContents());
   extensions::TabHelper::CreateForWebContents(contents1.get());

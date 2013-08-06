@@ -993,6 +993,10 @@ void ExtensionService::DisableUserExtensions(
 
   for (extensions::ExtensionList::const_iterator extension = to_disable.begin();
       extension != to_disable.end(); ++extension) {
+    if ((*extension)->was_installed_by_default() &&
+        extension_urls::IsWebstoreUpdateUrl(
+            extensions::ManifestURL::GetUpdateURL(*extension)))
+      continue;
     const std::string& id = (*extension)->id();
     if (except_ids.end() == std::find(except_ids.begin(), except_ids.end(), id))
       DisableExtension(id, extensions::Extension::DISABLE_USER_ACTION);
