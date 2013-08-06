@@ -233,6 +233,8 @@ shm_buffer_get_vc_format(struct wl_shm_buffer *buffer)
 		return VC_IMAGE_XRGB8888;
 	case WL_SHM_FORMAT_ARGB8888:
 		return VC_IMAGE_ARGB8888 | PREMULT_ALPHA_FLAG;
+	case WL_SHM_FORMAT_RGB565:
+		return VC_IMAGE_RGB565;
 	default:
 		/* invalid format */
 		return VC_IMAGE_MIN;
@@ -1284,6 +1286,8 @@ rpi_renderer_create(struct weston_compositor *compositor,
 	compositor->renderer = &renderer->base;
 	compositor->read_format = PIXMAN_a8r8g8b8;
 	/* WESTON_CAP_ROTATION_ANY not supported */
+
+	wl_display_add_shm_format(compositor->wl_display, WL_SHM_FORMAT_RGB565);
 
 	return 0;
 }

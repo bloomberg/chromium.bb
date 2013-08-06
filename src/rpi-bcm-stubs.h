@@ -85,6 +85,7 @@ typedef enum
 	/* these are not the right values: */
 	VC_IMAGE_ARGB8888,
 	VC_IMAGE_XRGB8888,
+	VC_IMAGE_RGB565,
 } VC_IMAGE_TYPE_T;
 
 /* from /opt/vc/include/interface/vmcs_host/vc_dispmanx_types.h */
