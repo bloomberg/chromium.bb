@@ -874,26 +874,9 @@
           ],
         }],
         ['use_cras==1', {
-          'cflags': [
-            '<!@(<(pkg-config) --cflags libcras)',
-          ],
-          'link_settings': {
-            'libraries': [
-              '<!@(<(pkg-config) --libs libcras)',
-            ],
-          },
           'defines': [
             'USE_CRAS',
-          ],
-          'sources/': [
-            ['exclude', '^browser/chromeos/audio/audio_mixer_alsa.cc'],
-            ['exclude', '^browser/chromeos/audio/audio_mixer_alsa.h'],
-          ],
-        }, {  # use_cras==0
-          'sources/': [
-            ['exclude', '^browser/chromeos/audio/audio_mixer_cras.cc'],
-            ['exclude', '^browser/chromeos/audio/audio_mixer_cras.h'],
-          ],
+          ],          
         }],
         ['file_manager_extension==0', {
           'sources/': [
