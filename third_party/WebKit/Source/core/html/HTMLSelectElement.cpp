@@ -419,7 +419,6 @@ Node* HTMLSelectElement::item(unsigned index)
 
 void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, ExceptionState& es)
 {
-    es.clearException();
     if (index > maxSelectItems - 1)
         index = maxSelectItems - 1;
     int diff = index - length();
@@ -442,7 +441,6 @@ void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, Exc
 
 void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& es)
 {
-    es.clearException();
     if (newLen > maxSelectItems)
         newLen = maxSelectItems;
     int diff = length() - newLen;

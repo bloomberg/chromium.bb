@@ -66,7 +66,6 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope* wor
 
 PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope* worker, int type, long long size, ExceptionState& es)
 {
-    es.clearException();
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
         es.throwDOMException(SecurityError, FileError::securityErrorMessage);
@@ -108,7 +107,6 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
 
 PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope* worker, const String& url, ExceptionState& es)
 {
-    es.clearException();
     KURL completedURL = worker->completeURL(url);
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
@@ -130,8 +128,10 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
         return 0;
 
     RefPtr<EntrySync> entry = fileSystem->root()->getDirectory(filePath, Dictionary(), es);
-    if (es.code() == TypeMismatchError)
+    if (es.code() == TypeMismatchError) {
+        es.clearException();
         return fileSystem->root()->getFile(filePath, Dictionary(), es);
+    }
 
     return entry.release();
 }

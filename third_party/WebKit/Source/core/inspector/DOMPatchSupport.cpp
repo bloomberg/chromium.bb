@@ -155,7 +155,6 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
 
     if (!innerPatchChildren(parentNode, oldList, newList, es)) {
         // Fall back to total replace.
-        es.clearException();
         if (!m_domEditor->replaceChild(parentNode, fragment.release(), node, es))
             return 0;
     }

@@ -93,7 +93,6 @@ void Attr::createTextChild()
 
 void Attr::setPrefix(const AtomicString& prefix, ExceptionState& es)
 {
-    es.clearException();
     checkSetPrefix(prefix, es);
     if (es.hadException())
         return;

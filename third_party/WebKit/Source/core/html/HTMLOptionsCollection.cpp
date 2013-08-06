@@ -60,7 +60,6 @@ void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, int index
         return;
     }
 
-    es.clearException();
     HTMLSelectElement* select = toHTMLSelectElement(ownerNode());
 
     if (index == -1 || unsigned(index) >= length())

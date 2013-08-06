@@ -73,7 +73,6 @@ PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document
 
     RefPtr<Text> text = Text::create(document, data.isNull() ? "" : data);
 
-    es.clearException();
     element->appendChild(text.release(), es);
     if (es.hadException())
         return 0;

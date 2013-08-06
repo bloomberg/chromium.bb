@@ -68,7 +68,6 @@ unsigned StorageAreaProxy::length(ExceptionState& es, Frame* frame)
         es.throwDOMException(SecurityError);
         return 0;
     }
-    es.clearException();
     return m_storageArea->length();
 }
 
@@ -78,7 +77,6 @@ String StorageAreaProxy::key(unsigned index, ExceptionState& es, Frame* frame)
         es.throwDOMException(SecurityError);
         return String();
     }
-    es.clearException();
     return m_storageArea->key(index);
 }
 
@@ -88,7 +86,6 @@ String StorageAreaProxy::getItem(const String& key, ExceptionState& es, Frame* f
         es.throwDOMException(SecurityError);
         return String();
     }
-    es.clearException();
     return m_storageArea->getItem(key);
 }
 
@@ -110,7 +107,6 @@ void StorageAreaProxy::removeItem(const String& key, ExceptionState& es, Frame* 
         es.throwDOMException(SecurityError);
         return;
     }
-    es.clearException();
     m_storageArea->removeItem(key, frame->document()->url());
 }
 
@@ -120,7 +116,6 @@ void StorageAreaProxy::clear(ExceptionState& es, Frame* frame)
         es.throwDOMException(SecurityError);
         return;
     }
-    es.clearException();
     m_storageArea->clear(frame->document()->url());
 }
 

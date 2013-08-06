@@ -226,7 +226,6 @@ void Range::setStart(PassRefPtr<Node> refNode, int offset, ExceptionState& es)
         didMoveDocument = true;
     }
 
-    es.clearException();
     Node* childNode = checkNodeWOffset(refNode.get(), offset, es);
     if (es.hadException())
         return;
@@ -255,7 +254,6 @@ void Range::setEnd(PassRefPtr<Node> refNode, int offset, ExceptionState& es)
         didMoveDocument = true;
     }
 
-    es.clearException();
     Node* childNode = checkNodeWOffset(refNode.get(), offset, es);
     if (es.hadException())
         return;
@@ -307,7 +305,6 @@ bool Range::isPointInRange(Node* refNode, int offset, ExceptionState& es)
         return false;
     }
 
-    es.clearException();
     checkNodeWOffset(refNode, offset, es);
     if (es.hadException())
         return false;
@@ -337,7 +334,6 @@ short Range::comparePoint(Node* refNode, int offset, ExceptionState& es) const
         return 0;
     }
 
-    es.clearException();
     checkNodeWOffset(refNode, offset, es);
     if (es.hadException())
         return 0;
@@ -416,7 +412,6 @@ short Range::compareBoundaryPoints(CompareHow how, const Range* sourceRange, Exc
         return 0;
     }
 
-    es.clearException();
     Node* thisCont = commonAncestorContainer(es);
     if (es.hadException())
         return 0;
@@ -676,7 +671,6 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS)
         fragment = DocumentFragment::create(m_ownerDocument.get());
 
-    es.clearException();
     if (collapsed(es))
         return fragment.release();
     if (es.hadException())
@@ -740,10 +734,15 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
 
     // Collapse the range, making sure that the result is not within a node that was partially selected.
     if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS) {
-        if (partialStart && commonRoot->contains(partialStart.get()))
+        if (partialStart && commonRoot->contains(partialStart.get())) {
+            // FIXME: We should not continue if we have an earlier error.
+            es.clearException();
             setStart(partialStart->parentNode(), partialStart->nodeIndex() + 1, es);
-        else if (partialEnd && commonRoot->contains(partialEnd.get()))
+        } else if (partialEnd && commonRoot->contains(partialEnd.get())) {
+            // FIXME: We should not continue if we have an earlier error.
+            es.clearException();
             setStart(partialEnd->parentNode(), partialEnd->nodeIndex(), es);
+        }
         if (es.hadException())
             return 0;
         m_end = m_start;
@@ -946,8 +945,6 @@ PassRefPtr<DocumentFragment> Range::cloneContents(ExceptionState& es)
 void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& es)
 {
     RefPtr<Node> newNode = prpNewNode;
-
-    es.clearException();
 
     if (!m_start.container()) {
         es.throwDOMException(InvalidStateError);
@@ -1231,7 +1228,6 @@ void Range::setStartAfter(Node* refNode, ExceptionState& es)
         return;
     }
 
-    es.clearException();
     checkNodeBA(refNode, es);
     if (es.hadException())
         return;
@@ -1251,7 +1247,6 @@ void Range::setEndBefore(Node* refNode, ExceptionState& es)
         return;
     }
 
-    es.clearException();
     checkNodeBA(refNode, es);
     if (es.hadException())
         return;
@@ -1271,7 +1266,6 @@ void Range::setEndAfter(Node* refNode, ExceptionState& es)
         return;
     }
 
-    es.clearException();
     checkNodeBA(refNode, es);
     if (es.hadException())
         return;
@@ -1335,7 +1329,6 @@ void Range::selectNode(Node* refNode, ExceptionState& es)
     if (m_ownerDocument != refNode->document())
         setDocument(refNode->document());
 
-    es.clearException();
     setStartBefore(refNode, es);
     if (es.hadException())
         return;
@@ -1450,7 +1443,6 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionState& es)
         return;
     }
 
-    es.clearException();
     while (Node* n = newParent->firstChild()) {
         toContainerNode(newParent.get())->removeChild(n, es);
         if (es.hadException())
@@ -1480,7 +1472,6 @@ void Range::setStartBefore(Node* refNode, ExceptionState& es)
         return;
     }
 
-    es.clearException();
     checkNodeBA(refNode, es);
     if (es.hadException())
         return;
@@ -1495,7 +1486,6 @@ void Range::checkDeleteExtract(ExceptionState& es)
         return;
     }
 
-    es.clearException();
     if (!commonAncestorContainer(es) || es.hadException())
         return;
 

@@ -79,7 +79,6 @@ PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned sh
     }
 
     if (type != XPathResult::ANY_TYPE) {
-        es.clearException();
         result->convertTo(type, es);
         if (es.hadException())
             return 0;

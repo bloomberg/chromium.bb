@@ -44,7 +44,6 @@ void FileWriterSync::write(Blob* data, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(m_complete);
-    es.clearException();
     if (!data) {
         es.throwDOMException(TypeMismatchError, FileError::typeMismatchErrorMessage);
         return;
@@ -67,7 +66,6 @@ void FileWriterSync::seek(long long position, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(m_complete);
-    es.clearException();
     seekInternal(position);
 }
 
@@ -75,7 +73,6 @@ void FileWriterSync::truncate(long long offset, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(m_complete);
-    es.clearException();
     if (offset < 0) {
         es.throwDOMException(InvalidStateError, FileError::invalidStateErrorMessage);
         return;

@@ -100,7 +100,6 @@ static void clearPeformanceEntries(PerformanceEntryMap& performanceEntryMap, con
 
 void UserTiming::mark(const String& markName, ExceptionState& es)
 {
-    es.clearException();
     if (restrictedKeyMap().contains(markName)) {
         es.throwDOMException(SyntaxError);
         return;
@@ -117,8 +116,6 @@ void UserTiming::clearMarks(const String& markName)
 
 double UserTiming::findExistingMarkStartTime(const String& markName, ExceptionState& es)
 {
-    es.clearException();
-
     if (m_marksMap.contains(markName))
         return m_marksMap.get(markName).last()->startTime();
 

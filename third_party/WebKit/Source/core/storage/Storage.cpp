@@ -58,7 +58,6 @@ String Storage::anonymousIndexedGetter(unsigned index, ExceptionState& es)
 
 String Storage::anonymousNamedGetter(const AtomicString& name, ExceptionState& es)
 {
-    es.clearException();
     bool found = contains(name, es);
     if (es.hadException() || !found)
         return String();

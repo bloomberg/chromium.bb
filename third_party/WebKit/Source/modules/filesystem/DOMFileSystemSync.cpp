@@ -154,7 +154,6 @@ private:
 
 PassRefPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, ExceptionState& es)
 {
-    es.clearException();
     KURL fileSystemURL = createFileSystemURL(fileEntry);
     RefPtr<CreateFileHelper::CreateFileResult> result(CreateFileHelper::CreateFileResult::create());
     m_asyncFileSystem->createSnapshotFileAndReadMetadata(fileSystemURL, CreateFileHelper::create(result, fileEntry->name(), fileSystemURL, type()));
@@ -238,8 +237,6 @@ private:
 PassRefPtr<FileWriterSync> DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, ExceptionState& es)
 {
     ASSERT(fileEntry);
-    es.clearException();
-
 
     RefPtr<FileWriterSync> fileWriter = FileWriterSync::create();
     RefPtr<ReceiveFileWriterCallback> successCallback = ReceiveFileWriterCallback::create();

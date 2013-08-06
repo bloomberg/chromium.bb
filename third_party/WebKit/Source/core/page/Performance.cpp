@@ -258,7 +258,6 @@ EventTargetData* Performance::ensureEventTargetData()
 
 void Performance::mark(const String& markName, ExceptionState& es)
 {
-    es.clearException();
     if (!m_userTiming)
         m_userTiming = UserTiming::create(this);
     m_userTiming->mark(markName, es);
@@ -273,7 +272,6 @@ void Performance::clearMarks(const String& markName)
 
 void Performance::measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState& es)
 {
-    es.clearException();
     if (!m_userTiming)
         m_userTiming = UserTiming::create(this);
     m_userTiming->measure(measureName, startMark, endMark, es);

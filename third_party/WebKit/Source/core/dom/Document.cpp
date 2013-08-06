@@ -831,8 +831,6 @@ PassRefPtr<CSSStyleDeclaration> Document::createCSSStyleDeclaration()
 
 PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& es)
 {
-    es.clearException();
-
     if (!importedNode) {
         es.throwDOMException(NotSupportedError);
         return 0;

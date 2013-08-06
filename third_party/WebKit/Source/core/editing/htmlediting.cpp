@@ -526,7 +526,6 @@ VisiblePosition visiblePositionAfterNode(Node* node)
 // Use this function instead of create a regular range object (avoiding editing offset).
 PassRefPtr<Range> createRange(PassRefPtr<Document> document, const VisiblePosition& start, const VisiblePosition& end, ExceptionState& es)
 {
-    es.clearException();
     RefPtr<Range> selectedRange = Range::create(document);
     selectedRange->setStart(start.deepEquivalent().containerNode(), start.deepEquivalent().computeOffsetInContainerNode(), es);
     if (!es.hadException())

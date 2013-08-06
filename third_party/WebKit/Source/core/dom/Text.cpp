@@ -53,8 +53,6 @@ PassRefPtr<Text> Text::createEditingText(Document* document, const String& data)
 
 PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& es)
 {
-    es.clearException();
-
     // IndexSizeError: Raised if the specified offset is negative or greater than
     // the number of 16-bit units in data.
     if (offset > length()) {

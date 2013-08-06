@@ -439,7 +439,6 @@ void HTMLElement::setInnerText(const String& text, ExceptionState& es)
     }
 
     // Add text nodes and <br> elements.
-    es.clearException();
     RefPtr<DocumentFragment> fragment = textToFragment(text, es);
     if (!es.hadException())
         replaceChildrenWithFragment(this, fragment.release(), es);
@@ -468,7 +467,6 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& es)
     RefPtr<Node> prev = previousSibling();
     RefPtr<Node> next = nextSibling();
     RefPtr<Node> newChild;
-    es.clearException();
 
     // Convert text to fragment with <br> tags instead of linebreaks if needed.
     if (text.contains('\r') || text.contains('\n'))

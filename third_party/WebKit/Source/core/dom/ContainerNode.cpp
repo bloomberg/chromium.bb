@@ -225,8 +225,6 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
 
     RefPtr<Node> protect(this);
 
-    es.clearException();
-
     // insertBefore(node, 0) is equivalent to appendChild(node)
     if (!refChild) {
         appendChild(newChild, es, attachBehavior);
@@ -341,8 +339,6 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
     ASSERT(refCount() || parentOrShadowHostNode());
 
     RefPtr<Node> protect(this);
-
-    es.clearException();
 
     if (oldChild == newChild) // nothing to do
         return;
@@ -462,8 +458,6 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
     ASSERT(refCount() || parentOrShadowHostNode());
 
     RefPtr<Node> protect(this);
-
-    es.clearException();
 
     // NotFoundError: Raised if oldChild is not a child of this node.
     if (!oldChild || oldChild->parentNode() != this) {
@@ -603,8 +597,6 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es, A
     // Check that this node is not "floating".
     // If it is, it can be deleted as a side effect of sending mutation events.
     ASSERT(refCount() || parentOrShadowHostNode());
-
-    es.clearException();
 
     // Make sure adding the new child is ok
     if (!checkAddChild(this, newChild.get(), es))

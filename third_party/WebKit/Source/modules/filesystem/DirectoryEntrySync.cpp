@@ -53,7 +53,6 @@ PassRefPtr<DirectoryReaderSync> DirectoryEntrySync::createReader()
 
 PassRefPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const Dictionary& options, ExceptionState& es)
 {
-    es.clearException();
     FileSystemFlags flags(options);
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->getFile(this, path, flags, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
@@ -65,7 +64,6 @@ PassRefPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const 
 
 PassRefPtr<DirectoryEntrySync> DirectoryEntrySync::getDirectory(const String& path, const Dictionary& options, ExceptionState& es)
 {
-    es.clearException();
     FileSystemFlags flags(options);
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->getDirectory(this, path, flags, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
@@ -77,7 +75,6 @@ PassRefPtr<DirectoryEntrySync> DirectoryEntrySync::getDirectory(const String& pa
 
 void DirectoryEntrySync::removeRecursively(ExceptionState& es)
 {
-    es.clearException();
     VoidSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->removeRecursively(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
         es.throwDOMException(InvalidModificationError);

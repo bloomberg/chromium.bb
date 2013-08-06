@@ -154,7 +154,6 @@ void PropertySetCSSStyleDeclaration::setCssText(const String& text, ExceptionSta
     StyleAttributeMutationScope mutationScope(this);
     willMutate();
 
-    es.clearException();
     // FIXME: Detect syntax errors and set es.
     m_propertySet->parseDeclaration(text, contextStyleSheet());
 
@@ -217,7 +216,6 @@ void PropertySetCSSStyleDeclaration::setProperty(const String& propertyName, con
 
     willMutate();
 
-    es.clearException();
     bool changed = m_propertySet->setProperty(propertyID, value, important, contextStyleSheet());
 
     didMutate(changed ? PropertyChanged : NoChanges);
@@ -238,7 +236,6 @@ String PropertySetCSSStyleDeclaration::removeProperty(const String& propertyName
 
     willMutate();
 
-    es.clearException();
     String result;
     bool changed = m_propertySet->removeProperty(propertyID, &result);
 
@@ -264,7 +261,6 @@ void PropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID propertyI
     StyleAttributeMutationScope mutationScope(this);
     willMutate();
 
-    es.clearException();
     bool changed = m_propertySet->setProperty(propertyID, value, important, contextStyleSheet());
 
     didMutate(changed ? PropertyChanged : NoChanges);

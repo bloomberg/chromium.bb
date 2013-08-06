@@ -52,6 +52,7 @@ void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& me
 
 void ExceptionState::setException(v8::Handle<v8::Value> exception)
 {
+    // FIXME: Assert that exception is not empty?
     if (exception.IsEmpty()) {
         clearException();
         return;

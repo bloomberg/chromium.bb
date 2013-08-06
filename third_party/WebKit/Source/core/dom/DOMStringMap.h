@@ -54,15 +54,17 @@ public:
         setItem(name, value, es);
         return true;
     }
-    bool anonymousNamedDeleter(const AtomicString& name, ExceptionState& es)
+    bool anonymousNamedDeleter(const AtomicString& name, ExceptionState&)
     {
+        // FIXME: Remove ExceptionState parameter.
+
+        TrackExceptionState es;
         deleteItem(name, es);
         bool result = !es.hadException();
         // DOMStringMap deleter should ignore exception.
         // Behavior of Firefox and Opera are same.
         // delete document.body.dataset["-foo"] // false instead of DOM Exception 12
         // LayoutTests/fast/dom/HTMLSelectElement/select-selectedIndex-multiple.html
-        es.clearException();
         return result;
     }
     void namedPropertyEnumerator(Vector<String>& names, ExceptionState&)

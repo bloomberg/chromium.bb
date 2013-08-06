@@ -34,7 +34,6 @@ namespace WebCore {
 
 void CanvasPattern::parseRepetitionType(const String& type, bool& repeatX, bool& repeatY, ExceptionState& es)
 {
-    es.clearException();
     if (type.isEmpty() || type == "repeat") {
         repeatX = true;
         repeatY = true;

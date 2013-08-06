@@ -57,7 +57,6 @@ PassRefPtr<XPathResult> XPathEvaluator::evaluate(const String& expression, Node*
         return 0;
     }
 
-    es.clearException();
     RefPtr<XPathExpression> expr = createExpression(expression, resolver, es);
     if (es.hadException())
         return 0;

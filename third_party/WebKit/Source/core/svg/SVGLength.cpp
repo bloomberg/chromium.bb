@@ -203,7 +203,6 @@ void SVGLength::setValue(float value, const SVGLengthContext& context, Exception
     if (extractType(m_unit) == LengthTypePercentage)
         value = value / 100;
 
-    es.clearException();
     float convertedValue = context.convertValueFromUserUnits(value, extractMode(m_unit), extractType(m_unit), es);
     if (!es.hadException())
         m_valueInSpecifiedUnits = convertedValue;

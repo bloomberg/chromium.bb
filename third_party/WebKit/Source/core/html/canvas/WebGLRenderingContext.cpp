@@ -3235,8 +3235,7 @@ void WebGLRenderingContext::stencilOpSeparate(GC3Denum face, GC3Denum fail, GC3D
 void WebGLRenderingContext::texImage2DBase(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, const void* pixels, ExceptionState& es)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
-    // FIXME: For now we ignore any errors returned
-    es.clearException();
+    // FIXME: Handle errors.
     WebGLTexture* tex = validateTextureBinding("texImage2D", target, true);
     ASSERT(validateTexFuncParameters("texImage2D", NotTexSubImage2D, target, level, internalformat, width, height, border, format, type));
     ASSERT(tex);
@@ -3250,7 +3249,6 @@ void WebGLRenderingContext::texImage2DBase(GC3Denum target, GC3Dint level, GC3De
 void WebGLRenderingContext::texImage2DImpl(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Denum format, GC3Denum type, Image* image, GraphicsContext3D::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha, ExceptionState& es)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
-    es.clearException();
     Vector<uint8_t> data;
     GraphicsContext3D::ImageExtractor imageExtractor(image, domSource, premultiplyAlpha, m_unpackColorspaceConversion == GraphicsContext3D::NONE);
     if (!imageExtractor.extractSucceeded()) {
@@ -3351,7 +3349,6 @@ void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum 
 void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
     GC3Denum format, GC3Denum type, ImageData* pixels, ExceptionState& es)
 {
-    es.clearException();
     if (isContextLost() || !pixels || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceImageData, target, level, internalformat, pixels->width(), pixels->height(), 0, format, type, 0, 0))
         return;
     Vector<uint8_t> data;
@@ -3376,7 +3373,6 @@ void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum 
 void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
     GC3Denum format, GC3Denum type, HTMLImageElement* image, ExceptionState& es)
 {
-    es.clearException();
     if (isContextLost() || !validateHTMLImageElement("texImage2D", image, es))
         return;
     Image* imageForRender = image->cachedImage()->imageForRenderer(image->renderer());
@@ -3389,7 +3385,6 @@ void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum 
 void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
     GC3Denum format, GC3Denum type, HTMLCanvasElement* canvas, ExceptionState& es)
 {
-    es.clearException();
     if (isContextLost() || !validateHTMLCanvasElement("texImage2D", canvas, es) || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceHTMLCanvasElement, target, level, internalformat, canvas->width(), canvas->height(), 0, format, type, 0, 0))
         return;
 
@@ -3428,7 +3423,6 @@ PassRefPtr<Image> WebGLRenderingContext::videoFrameToImage(HTMLVideoElement* vid
 void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
     GC3Denum format, GC3Denum type, HTMLVideoElement* video, ExceptionState& es)
 {
-    es.clearException();
     if (isContextLost() || !validateHTMLVideoElement("texImage2D", video, es)
         || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceHTMLVideoElement, target, level, internalformat, video->videoWidth(), video->videoHeight(), 0, format, type, 0, 0))
         return;
@@ -3500,8 +3494,7 @@ void WebGLRenderingContext::texParameteri(GC3Denum target, GC3Denum pname, GC3Di
 
 void WebGLRenderingContext::texSubImage2DBase(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, const void* pixels, ExceptionState& es)
 {
-    // FIXME: For now we ignore any errors returned
-    es.clearException();
+    // FIXME: Handle errors.
     ASSERT(!isContextLost());
     ASSERT(validateTexFuncParameters("texSubImage2D", TexSubImage2D, target, level, format, width, height, 0, format, type));
     ASSERT(validateSize("texSubImage2D", xoffset, yoffset));
@@ -3523,7 +3516,6 @@ void WebGLRenderingContext::texSubImage2DBase(GC3Denum target, GC3Dint level, GC
 void WebGLRenderingContext::texSubImage2DImpl(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset, GC3Denum format, GC3Denum type, Image* image, GraphicsContext3D::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha, ExceptionState& es)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
-    es.clearException();
     Vector<uint8_t> data;
     GraphicsContext3D::ImageExtractor imageExtractor(image, domSource, premultiplyAlpha, m_unpackColorspaceConversion == GraphicsContext3D::NONE);
     if (!imageExtractor.extractSucceeded()) {
@@ -3581,7 +3573,6 @@ void WebGLRenderingContext::texSubImage2D(GC3Denum target, GC3Dint level, GC3Din
 void WebGLRenderingContext::texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
     GC3Denum format, GC3Denum type, ImageData* pixels, ExceptionState& es)
 {
-    es.clearException();
     if (isContextLost() || !pixels || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceImageData, target, level, format,  pixels->width(), pixels->height(), 0, format, type, xoffset, yoffset))
         return;
 
@@ -3607,7 +3598,6 @@ void WebGLRenderingContext::texSubImage2D(GC3Denum target, GC3Dint level, GC3Din
 void WebGLRenderingContext::texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
     GC3Denum format, GC3Denum type, HTMLImageElement* image, ExceptionState& es)
 {
-    es.clearException();
     if (isContextLost() || !validateHTMLImageElement("texSubImage2D", image, es))
         return;
     Image* imageForRender = image->cachedImage()->imageForRenderer(image->renderer());
@@ -3620,7 +3610,6 @@ void WebGLRenderingContext::texSubImage2D(GC3Denum target, GC3Dint level, GC3Din
 void WebGLRenderingContext::texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
     GC3Denum format, GC3Denum type, HTMLCanvasElement* canvas, ExceptionState& es)
 {
-    es.clearException();
     if (isContextLost() || !validateHTMLCanvasElement("texSubImage2D", canvas, es)
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLCanvasElement, target, level, format, canvas->width(), canvas->height(), 0, format, type, xoffset, yoffset))
         return;
@@ -3635,7 +3624,6 @@ void WebGLRenderingContext::texSubImage2D(GC3Denum target, GC3Dint level, GC3Din
 void WebGLRenderingContext::texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
     GC3Denum format, GC3Denum type, HTMLVideoElement* video, ExceptionState& es)
 {
-    es.clearException();
     if (isContextLost() || !validateHTMLVideoElement("texSubImage2D", video, es)
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLVideoElement, target, level, format, video->videoWidth(), video->videoHeight(), 0, format, type, xoffset, yoffset))
         return;

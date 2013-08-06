@@ -1350,8 +1350,6 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
         return;
     }
 
-    es.clearException();
-
     if (!std::isfinite(dstRect.x()) || !std::isfinite(dstRect.y()) || !std::isfinite(dstRect.width()) || !std::isfinite(dstRect.height())
         || !std::isfinite(srcRect.x()) || !std::isfinite(srcRect.y()) || !std::isfinite(srcRect.width()) || !std::isfinite(srcRect.height()))
         return;
@@ -1429,8 +1427,6 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
         es.throwDOMException(IndexSizeError);
         return;
     }
-
-    es.clearException();
 
     FloatRect normalizedSrcRect = normalizeRect(srcRect);
     FloatRect normalizedDstRect = normalizeRect(dstRect);
@@ -1510,8 +1506,6 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRec
         es.throwDOMException(TypeMismatchError);
         return;
     }
-
-    es.clearException();
 
     if (video->readyState() == HTMLMediaElement::HAVE_NOTHING || video->readyState() == HTMLMediaElement::HAVE_METADATA)
         return;
@@ -1747,7 +1741,6 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageEleme
         return 0;
     }
     bool repeatX, repeatY;
-    es.clearException();
     CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, es);
     if (es.hadException())
         return 0;
@@ -1781,7 +1774,6 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLCanvasElem
     }
 
     bool repeatX, repeatY;
-    es.clearException();
     CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, es);
     if (es.hadException())
         return 0;
@@ -1865,7 +1857,6 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtr<Image
 
 PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float sh, ExceptionState& es) const
 {
-    es.clearException();
     if (!sw || !sh) {
         es.throwDOMException(IndexSizeError);
         return 0;

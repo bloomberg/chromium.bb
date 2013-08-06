@@ -661,7 +661,6 @@ double CSSPrimitiveValue::getDoubleValue(unsigned short unitType, ExceptionState
         return 0.0;
     }
 
-    es.clearException();
     return result;
 }
 
@@ -763,7 +762,6 @@ void CSSPrimitiveValue::setStringValue(unsigned short, const String&, ExceptionS
 
 String CSSPrimitiveValue::getStringValue(ExceptionState& es) const
 {
-    es.clearException();
     switch (m_primitiveUnitType) {
         case CSS_STRING:
         case CSS_ATTR:
@@ -803,7 +801,6 @@ String CSSPrimitiveValue::getStringValue() const
 
 Counter* CSSPrimitiveValue::getCounterValue(ExceptionState& es) const
 {
-    es.clearException();
     if (m_primitiveUnitType != CSS_COUNTER) {
         es.throwDOMException(InvalidAccessError);
         return 0;
@@ -814,7 +811,6 @@ Counter* CSSPrimitiveValue::getCounterValue(ExceptionState& es) const
 
 Rect* CSSPrimitiveValue::getRectValue(ExceptionState& es) const
 {
-    es.clearException();
     if (m_primitiveUnitType != CSS_RECT) {
         es.throwDOMException(InvalidAccessError);
         return 0;
@@ -825,7 +821,6 @@ Rect* CSSPrimitiveValue::getRectValue(ExceptionState& es) const
 
 Quad* CSSPrimitiveValue::getQuadValue(ExceptionState& es) const
 {
-    es.clearException();
     if (m_primitiveUnitType != CSS_QUAD) {
         es.throwDOMException(InvalidAccessError);
         return 0;
@@ -836,7 +831,6 @@ Quad* CSSPrimitiveValue::getQuadValue(ExceptionState& es) const
 
 PassRefPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionState& es) const
 {
-    es.clearException();
     if (m_primitiveUnitType != CSS_RGBCOLOR) {
         es.throwDOMException(InvalidAccessError);
         return 0;
@@ -848,7 +842,6 @@ PassRefPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionState& es) con
 
 Pair* CSSPrimitiveValue::getPairValue(ExceptionState& es) const
 {
-    es.clearException();
     if (m_primitiveUnitType != CSS_PAIR) {
         es.throwDOMException(InvalidAccessError);
         return 0;

@@ -50,7 +50,6 @@ DirectoryReaderSync::DirectoryReaderSync(PassRefPtr<DOMFileSystemBase> fileSyste
 
 PassRefPtr<EntryArraySync> DirectoryReaderSync::readEntries(ExceptionState& es)
 {
-    es.clearException();
     if (!m_hasMoreEntries)
         return EntryArraySync::create();
 

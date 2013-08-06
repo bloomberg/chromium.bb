@@ -1166,7 +1166,6 @@ String Element::nodeNamePreservingCase() const
 
 void Element::setPrefix(const AtomicString& prefix, ExceptionState& es)
 {
-    es.clearException();
     checkSetPrefix(prefix, es);
     if (es.hadException())
         return;

@@ -108,7 +108,6 @@ void CanvasPathMethods::bezierCurveTo(float cp1x, float cp1y, float cp2x, float 
 
 void CanvasPathMethods::arcTo(float x1, float y1, float x2, float y2, float r, ExceptionState& es)
 {
-    es.clearException();
     if (!std::isfinite(x1) || !std::isfinite(y1) || !std::isfinite(x2) || !std::isfinite(y2) || !std::isfinite(r))
         return;
 
@@ -133,7 +132,6 @@ void CanvasPathMethods::arcTo(float x1, float y1, float x2, float y2, float r, E
 
 void CanvasPathMethods::arc(float x, float y, float r, float sa, float ea, bool anticlockwise, ExceptionState& es)
 {
-    es.clearException();
     if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(r) || !std::isfinite(sa) || !std::isfinite(ea))
         return;
 

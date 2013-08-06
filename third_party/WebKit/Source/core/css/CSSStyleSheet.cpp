@@ -249,7 +249,6 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
 {
     ASSERT(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
 
-    es.clearException();
     if (index > length()) {
         es.throwDOMException(IndexSizeError);
         return 0;
@@ -278,7 +277,6 @@ void CSSStyleSheet::deleteRule(unsigned index, ExceptionState& es)
 {
     ASSERT(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
 
-    es.clearException();
     if (index >= length()) {
         es.throwDOMException(IndexSizeError);
         return;
