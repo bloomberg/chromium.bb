@@ -436,19 +436,20 @@ def _RunInstrumentationTests(options, error_func):
         options.python_test_root, options.official_build,
         instrumentation_options)
 
-    test_results, test_exit_code = test_dispatcher.RunTests(
-        tests, runner_factory, False,
-        options.test_device,
-        shard=True,
-        build_type=options.build_type,
-        test_timeout=None,
-        num_retries=options.num_retries)
+    if tests:
+      test_results, test_exit_code = test_dispatcher.RunTests(
+          tests, runner_factory, False,
+          options.test_device,
+          shard=True,
+          build_type=options.build_type,
+          test_timeout=None,
+          num_retries=options.num_retries)
 
-    results.AddTestRunResults(test_results)
+      results.AddTestRunResults(test_results)
 
-    # Only allow exit code escalation
-    if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
-      exit_code = test_exit_code
+      # Only allow exit code escalation
+      if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
+        exit_code = test_exit_code
 
   report_results.LogFull(
       results=results,
