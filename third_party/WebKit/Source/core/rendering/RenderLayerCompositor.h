@@ -350,8 +350,6 @@ private:
 #if ENABLE(RUBBER_BANDING)
     OwnPtr<GraphicsLayer> m_layerForOverhangAreas;
     OwnPtr<GraphicsLayer> m_contentShadowLayer;
-    OwnPtr<GraphicsLayer> m_layerForTopOverhangArea;
-    OwnPtr<GraphicsLayer> m_layerForBottomOverhangArea;
 #endif
 
 #if !LOG_DISABLED

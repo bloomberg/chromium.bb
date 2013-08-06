@@ -334,11 +334,6 @@ public:
 
     virtual bool isActive() const OVERRIDE;
 
-#if ENABLE(RUBBER_BANDING)
-    GraphicsLayer* setWantsLayerForTopOverHangArea(bool) const;
-    GraphicsLayer* setWantsLayerForBottomOverHangArea(bool) const;
-#endif
-
     // DEPRECATED: Use viewportConstrainedVisibleContentRect() instead.
     IntSize scrollOffsetForFixedPosition() const;
 
