@@ -607,11 +607,6 @@ webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html
 
 webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ ImageOnlyFailure ]
 
-# CSS Gradients now use premultiplied color space. The following tests need rebase
-crbug.com/227396 fast/gradients/unprefixed-generated-gradients.html [ NeedsRebaseline ]
-crbug.com/227396 css3/compositing/effect-background-blend-mode-tiled.html [ NeedsRebaseline ]
-crbug.com/227396 css3/compositing/effect-background-blend-mode.html [ NeedsRebaseline ]
-
 # IETC grid layout
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83913 ietestcenter/css3/grid/grid-items-003.htm [ ImageOnlyFailure ]
