@@ -32,6 +32,7 @@
 #include "WebDocument.h"
 #include "WebElement.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/Element.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -84,6 +85,9 @@ bool WebElement::hasAttribute(const WebString& attrName) const
 
 void WebElement::removeAttribute(const WebString& attrName)
 {
+    // TODO: Custom element callbacks need to be called on WebKit API methods that
+    // mutate the DOM in any way.
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliverCustomElementCallbacks;
     unwrap<Element>()->removeAttribute(attrName);
 }
 
@@ -94,6 +98,9 @@ WebString WebElement::getAttribute(const WebString& attrName) const
 
 bool WebElement::setAttribute(const WebString& attrName, const WebString& attrValue)
 {
+    // TODO: Custom element callbacks need to be called on WebKit API methods that
+    // mutate the DOM in any way.
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliverCustomElementCallbacks;
     TrackExceptionState es;
     unwrap<Element>()->setAttribute(attrName, attrValue, es);
     return !es.hadException();
