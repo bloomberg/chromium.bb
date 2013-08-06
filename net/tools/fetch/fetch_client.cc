@@ -25,6 +25,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
@@ -142,6 +143,8 @@ int main(int argc, char** argv) {
 
   // Do work here.
   base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+
+  net::HttpStreamFactory::EnableNpnHttp2Draft04();
 
   scoped_ptr<net::HostResolver> host_resolver(
       net::HostResolver::CreateDefaultResolver(NULL));
