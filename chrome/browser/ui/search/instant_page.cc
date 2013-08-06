@@ -300,9 +300,12 @@ void InstantPage::MaybeRemoveMostVisitedItems(
   if (!history::MostVisitedTilesExperiment::IsDontShowOpenURLsEnabled())
     return;
 
-  TabStripModel* tab_strip_model = chrome::FindBrowserWithProfile(
-      profile_,
-      chrome::GetActiveDesktop())->tab_strip_model();
+  Browser* browser = chrome::FindBrowserWithProfile(profile_,
+                                                    chrome::GetActiveDesktop());
+  if (!browser)
+    return;
+
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
   history::TopSites* top_sites = profile_->GetTopSites();
   if (!tab_strip_model || !top_sites) {
     NOTREACHED();
