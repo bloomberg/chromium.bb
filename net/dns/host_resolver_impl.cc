@@ -1400,8 +1400,10 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
         resolver_->resolved_known_ipv6_hostname_ = true;
         bool got_ipv6_address = false;
         for (size_t i = 0; i < addr_list.size(); ++i) {
-          if (addr_list[i].GetFamily() == ADDRESS_FAMILY_IPV6)
+          if (addr_list[i].GetFamily() == ADDRESS_FAMILY_IPV6) {
             got_ipv6_address = true;
+            break;
+          }
         }
         UMA_HISTOGRAM_BOOLEAN("Net.UnspecResolvedIPv6", got_ipv6_address);
       }
