@@ -1520,15 +1520,16 @@ void RenderViewHostImpl::OnAddMessageToConsole(
     const string16& message,
     int32 line_no,
     const string16& source_id) {
-  if (delegate_->AddMessageToConsole(level, message, line_no, source_id))
-    return;
-  // Pass through log level only on WebUI pages to limit console spew.
-  int32 resolved_level = HasWebUIScheme(delegate_->GetURL()) ? level : 0;
-
-  if (resolved_level >= ::logging::GetMinLogLevel()) {
-    logging::LogMessage("CONSOLE", line_no, resolved_level).stream() << "\"" <<
-        message << "\", source: " << source_id << " (" << line_no << ")";
+  if (!delegate_->AddMessageToConsole(level, message, line_no, source_id)) {
+    // Pass through log level only on WebUI pages to limit console spew.
+    int32 resolved_level = HasWebUIScheme(delegate_->GetURL()) ? level : 0;
+    if (resolved_level >= ::logging::GetMinLogLevel()) {
+      logging::LogMessage("CONSOLE", line_no, resolved_level).stream() <<
+          "\"" << message << "\", source: " << source_id <<
+          " (" << line_no << ")";
+    }
   }
+  Send(new ViewMsg_AddMessageToConsole_ACK(GetRoutingID()));
 }
 
 void RenderViewHostImpl::AddObserver(RenderViewHostObserver* observer) {
