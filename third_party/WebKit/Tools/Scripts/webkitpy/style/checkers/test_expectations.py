@@ -66,7 +66,7 @@ class TestExpectationsChecker(object):
         pass
 
     def check_test_expectations(self, expectations_str, tests=None):
-        parser = TestExpectationParser(self._port_obj, tests, allow_rebaseline=False)
+        parser = TestExpectationParser(self._port_obj, tests, is_lint_mode=True)
         expectations = parser.parse('expectations', expectations_str)
 
         level = 5

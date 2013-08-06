@@ -182,9 +182,9 @@ class MiscTests(Base):
             filesystem = self._port.host.filesystem
             filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'disabled-test.html-disabled'), 'content')
             self.get_test('disabled-test.html-disabled'),
-            self.parse_exp("[ FOO ] failures/expected/text.html [ Failure ]\n"
-                "Bug(rniwa) non-existent-test.html [ Failure ]\n"
-                "Bug(rniwa) disabled-test.html-disabled [ ImageOnlyFailure ]", is_lint_mode=True)
+            self.parse_exp("Bug(user) [ FOO ] failures/expected/text.html [ Failure ]\n"
+                "Bug(user) non-existent-test.html [ Failure ]\n"
+                "Bug(user) disabled-test.html-disabled [ ImageOnlyFailure ]", is_lint_mode=True)
             self.assertFalse(True, "ParseError wasn't raised")
         except ParseError, e:
             warnings = ("expectations:1 Unrecognized specifier 'foo' failures/expected/text.html\n"
@@ -406,15 +406,13 @@ class SemanticTests(Base):
             self.assertEqual(len(exp.warnings), 3)
 
     def test_missing_bugid(self):
-        self.parse_exp('failures/expected/text.html [ Failure ]')
+        self.parse_exp('failures/expected/text.html [ Failure ]', is_lint_mode=False)
         self.assertFalse(self._exp.has_warnings())
 
-        self._port.warn_if_bug_missing_in_test_expectations = lambda: True
-
-        self.parse_exp('failures/expected/text.html [ Failure ]')
-        line = self._exp._model.get_expectation_line('failures/expected/text.html')
-        self.assertFalse(line.is_invalid())
-        self.assertEqual(line.warnings, ['Test lacks BUG specifier.'])
+        try:
+            self.parse_exp('failures/expected/text.html [ Failure ]', is_lint_mode=True)
+        except ParseError, exp:
+            self.assertEqual(exp.warnings, ['expectations:1 Test lacks BUG specifier. failures/expected/text.html'])
 
     def test_skip_and_wontfix(self):
         # Skip is not allowed to have other expectations as well, because those
@@ -427,11 +425,6 @@ class SemanticTests(Base):
 
         self.parse_exp('failures/expected/text.html [ Pass WontFix ]')
         self.assertTrue(self._exp.has_warnings())
-
-    def test_slow_and_timeout(self):
-        # A test cannot be SLOW and expected to TIMEOUT.
-        self.assertRaises(ParseError, self.parse_exp,
-            'Bug(test) failures/expected/timeout.html [ Slow Timeout ]', is_lint_mode=True)
 
     def test_rebaseline(self):
         # Can't lint a file w/ 'REBASELINE' in it.
@@ -693,7 +686,7 @@ class TestExpectationsParserTests(unittest.TestCase):
         test_port = host.port_factory.get('test-win-xp', None)
         self._converter = TestConfigurationConverter(test_port.all_test_configurations(), test_port.configuration_specifier_macros())
         unittest.TestCase.__init__(self, testFunc)
-        self._parser = TestExpectationParser(host.port_factory.get('test-win-xp', None), [], allow_rebaseline=False)
+        self._parser = TestExpectationParser(host.port_factory.get('test-win-xp', None), [], is_lint_mode=False)
 
     def test_expectation_line_for_test(self):
         # This is kind of a silly test, but it at least ensures that we don't throw an error.
@@ -729,7 +722,7 @@ class TestExpectationSerializationTests(unittest.TestCase):
 
     def assert_list_round_trip(self, in_string, expected_string=None):
         host = MockHost()
-        parser = TestExpectationParser(host.port_factory.get('test-win-xp', None), [], allow_rebaseline=False)
+        parser = TestExpectationParser(host.port_factory.get('test-win-xp', None), [], is_lint_mode=False)
         expectations = parser.parse('path', in_string)
         if expected_string is None:
             expected_string = in_string

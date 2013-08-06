@@ -85,11 +85,11 @@ class TestExpectationParser(object):
 
     MISSING_BUG_WARNING = 'Test lacks BUG specifier.'
 
-    def __init__(self, port, full_test_list, allow_rebaseline):
+    def __init__(self, port, full_test_list, is_lint_mode):
         self._port = port
         self._test_configuration_converter = TestConfigurationConverter(set(port.all_test_configurations()), port.configuration_specifier_macros())
         self._full_test_list = full_test_list
-        self._allow_rebaseline = allow_rebaseline
+        self._is_lint_mode = is_lint_mode
 
     def parse(self, filename, expectations_string):
         expectation_lines = []
@@ -143,19 +143,18 @@ class TestExpectationParser(object):
         self._parse_expectations(expectation_line)
 
     def _parse_specifiers(self, expectation_line):
+        if self._is_lint_mode:
+            self._lint_line(expectation_line)
+
         parsed_specifiers = set([specifier.lower() for specifier in expectation_line.specifiers])
-        expectations = [expectation.lower() for expectation in expectation_line.expectations]
-
-        if self.SLOW_MODIFIER in expectations and self.TIMEOUT_EXPECTATION in expectations:
-            expectation_line.warnings.append('A test can not be both SLOW and TIMEOUT. If it times out indefinitely, then it should be just TIMEOUT.')
-
-        if not expectation_line.bugs and self.WONTFIX_MODIFIER not in expectations and self._port.warn_if_bug_missing_in_test_expectations():
-            expectation_line.warnings.append(self.MISSING_BUG_WARNING)
-
-        if self._allow_rebaseline and self.REBASELINE_MODIFIER in expectations:
-            expectation_line.warnings.append('REBASELINE should only be used for running rebaseline.py. Cannot be checked in.')
-
         expectation_line.matching_configurations = self._test_configuration_converter.to_config_set(parsed_specifiers, expectation_line.warnings)
+
+    def _lint_line(self, expectation_line):
+        expectations = [expectation.lower() for expectation in expectation_line.expectations]
+        if not expectation_line.bugs and self.WONTFIX_MODIFIER not in expectations:
+            expectation_line.warnings.append(self.MISSING_BUG_WARNING)
+        if self.REBASELINE_MODIFIER in expectations:
+            expectation_line.warnings.append('REBASELINE should only be used for running rebaseline.py. Cannot be checked in.')
 
     def _parse_expectations(self, expectation_line):
         result = set()

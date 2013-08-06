@@ -1029,13 +1029,6 @@ class Port(object):
         'snowleopard' should precede 'leopard')."""
         raise NotImplementedError
 
-    def uses_test_expectations_file(self):
-        # FIXME: Remove this method.
-        return True
-
-    def warn_if_bug_missing_in_test_expectations(self):
-        return False
-
     def expectations_dict(self):
         """Returns an OrderedDict of name -> expectations strings.
         The names are expected to be (but not required to be) paths in the filesystem.
