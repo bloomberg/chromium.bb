@@ -24,6 +24,7 @@ void PanelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (event->type() == ui::ET_MOUSE_PRESSED &&
       event->flags() & ui::EF_IS_DOUBLE_CLICK &&
+      event->IsOnlyLeftMouseButton() &&
       target->delegate()->GetNonClientComponent(event->location()) ==
           HTCAPTION) {
     target->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
