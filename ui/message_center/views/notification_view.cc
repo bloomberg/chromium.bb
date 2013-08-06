@@ -13,6 +13,7 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_switches.h"
@@ -41,9 +42,7 @@ const int kTextRightPadding = 23;
 const int kItemTitleToMessagePadding = 3;
 const int kProgressBarWidth = message_center::kNotificationWidth -
     kTextLeftPadding - kTextRightPadding;
-const int kProgressBarHeight = 8;
-const int kProgressBarTopPadding = 12;
-const int kProgressBarBottomPadding = 2;
+const int kProgressBarBottomPadding = 0;
 const int kButtonVecticalPadding = 0;
 const int kButtonTitleTopPadding = 0;
 
@@ -244,6 +243,7 @@ class NotificationProgressBar : public views::ProgressBar {
  private:
   // Overriden from View
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationProgressBar);
 };
@@ -255,10 +255,43 @@ NotificationProgressBar::~NotificationProgressBar() {
 }
 
 gfx::Size NotificationProgressBar::GetPreferredSize() {
-  gfx::Size pref_size(kProgressBarWidth, kProgressBarHeight);
+  gfx::Size pref_size(kProgressBarWidth, message_center::kProgressBarThickness);
   gfx::Insets insets = GetInsets();
   pref_size.Enlarge(insets.width(), insets.height());
   return pref_size;
+}
+
+void NotificationProgressBar::OnPaint(gfx::Canvas* canvas) {
+  gfx::Rect content_bounds = GetContentsBounds();
+
+  // Draw background.
+  SkPath background_path;
+  background_path.addRoundRect(gfx::RectToSkRect(content_bounds),
+                               message_center::kProgressBarCornerRadius,
+                               message_center::kProgressBarCornerRadius);
+  SkPaint background_paint;
+  background_paint.setStyle(SkPaint::kFill_Style);
+  background_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  background_paint.setColor(message_center::kProgressBarBackgroundColor);
+  canvas->DrawPath(background_path, background_paint);
+
+  // Draw slice.
+  const int slice_width =
+      static_cast<int>(content_bounds.width() * GetNormalizedValue() + 0.5);
+  if (slice_width < 1)
+    return;
+
+  gfx::Rect slice_bounds = content_bounds;
+  slice_bounds.set_width(slice_width);
+  SkPath slice_path;
+  slice_path.addRoundRect(gfx::RectToSkRect(slice_bounds),
+                          message_center::kProgressBarCornerRadius,
+                          message_center::kProgressBarCornerRadius);
+  SkPaint slice_paint;
+  slice_paint.setStyle(SkPaint::kFill_Style);
+  slice_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  slice_paint.setColor(message_center::kProgressBarSliceColor);
+  canvas->DrawPath(slice_path, slice_paint);
 }
 
 // NotificationButton //////////////////////////////////////////////////////////
@@ -466,7 +499,7 @@ NotificationView::NotificationView(const Notification& notification,
   if (notification.type() == NOTIFICATION_TYPE_PROGRESS) {
     progress_bar_view_ = new NotificationProgressBar();
     progress_bar_view_->set_border(MakeProgressBarBorder(
-        kProgressBarTopPadding, kProgressBarBottomPadding));
+        message_center::kProgressBarTopPadding, kProgressBarBottomPadding));
     progress_bar_view_->SetValue(notification.progress() / 100.0);
     top_view_->AddChildView(progress_bar_view_);
   }
