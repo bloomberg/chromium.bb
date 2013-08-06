@@ -237,8 +237,8 @@ class AcceleratedCompositingTest : public GpuFeatureTest {
   }
 };
 
-#if defined(OS_WIN) && defined(USE_AURA)
-// Compositing is always on for Windows Aura.
+#if defined(USE_AURA)
+// Compositing is always on for Aura.
 #define MAYBE_AcceleratedCompositingDisabled DISABLED_AcceleratedCompositingDisabled
 #else
 #define MAYBE_AcceleratedCompositingDisabled AcceleratedCompositingDisabled

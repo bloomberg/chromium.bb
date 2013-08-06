@@ -45,8 +45,8 @@ class TabCaptureApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-// http://crbug.com/261493
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// http://crbug.com/261493 and http://crbug.com/268644
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(USE_AURA)
 #define MAYBE_ApiTests DISABLED_ApiTests
 #else
 #define MAYBE_ApiTests ApiTests
@@ -70,7 +70,13 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
                                   "api_tests.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
+// http://crbug.com/268644
+#if defined(USE_AURA)
+#define MAYBE_ApiTestsAudio DISABLED_ApiTestsAudio
+#else
+#define MAYBE_ApiTestsAudio ApiTestsAudio
+#endif
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTestsAudio) {
 #if defined(OS_WIN)
   // TODO(justinlin): Disabled for WinXP due to timeout issues.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
@@ -83,8 +89,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
                                   "api_tests_audio.html")) << message_;
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
+// http://crbug.com/177163 and http://crbug.com/268644
+#if defined(OS_WIN) && (!defined(NDEBUG) || defined(USE_AURA))
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd

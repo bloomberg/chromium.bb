@@ -996,6 +996,10 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
     DisableHardwareAcceleration();
   if (command_line->HasSwitch(switches::kEnableSoftwareCompositing))
     use_software_compositor_ = true;
+  //TODO(jbauman): enable for Chrome OS and Linux
+#if defined(USE_AURA) && defined(OS_WIN)
+  use_software_compositor_ = true;
+#endif
   if (command_line->HasSwitch(switches::kGpuSwitching)) {
     std::string option_string = command_line->GetSwitchValueASCII(
         switches::kGpuSwitching);

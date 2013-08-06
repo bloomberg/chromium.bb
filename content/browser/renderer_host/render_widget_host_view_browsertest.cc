@@ -330,6 +330,15 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 // is enabled.
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
                        CopyFromBackingStore) {
+#if defined(USE_AURA)
+  if (ui::IsTestCompositorEnabled()) {
+    LOG(WARNING) << ("Blindly passing this test: Aura test compositor doesn't "
+                     "support copying from backing store.");
+    // TODO(jbauman): Aura test compositor should support copying from backing
+    // store. http://crbug.com/268644
+    return;
+  }
+#endif
   RunBasicCopyFromBackingStoreTest();
 }
 
@@ -372,7 +381,6 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest,
          "not supported on this platform.");
     return;
   }
-
   base::RunLoop run_loop;
   scoped_refptr<media::VideoFrame> dest =
       media::VideoFrame::CreateBlackFrame(frame_size());
@@ -441,6 +449,16 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
                      "on this platform.");
     return;
   }
+
+#if defined(USE_AURA)
+  if (ui::IsTestCompositorEnabled()) {
+    LOG(WARNING) << ("Blindly passing this test: Aura test compositor doesn't "
+                     "support copying to video frame.");
+    // TODO(jbauman): Aura test compositor should support copying to video
+    // frame. http://crbug.com/268644
+    return;
+  }
+#endif
 
   base::RunLoop run_loop;
   scoped_refptr<media::VideoFrame> first_output =
