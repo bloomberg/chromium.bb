@@ -62,6 +62,8 @@ const char kJsApiUserChooserLaunchGuest[] = "launchGuest";
 const char kJsApiUserChooserLaunchUser[] = "launchUser";
 const char kJsApiUserChooserRemoveUser[] = "removeUser";
 
+const size_t kAvatarIconSize = 160;
+
 void HandleAndDoNothing(const base::ListValue* args) {
 }
 
@@ -79,6 +81,18 @@ void OpenNewWindowForProfile(
     chrome::startup::IS_FIRST_RUN,
     desktop_type,
     false);
+}
+
+std::string GetAvatarImageAtIndex(
+    size_t index, const ProfileInfoCache& info_cache) {
+  bool is_gaia_picture =
+      info_cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
+      info_cache.GetGAIAPictureOfProfileAtIndex(index);
+
+  gfx::Image icon = profiles::GetSizedAvatarIconWithBorder(
+      info_cache.GetAvatarIconOfProfileAtIndex(index),
+      is_gaia_picture, kAvatarIconSize, kAvatarIconSize);
+  return webui::GetBitmapDataUrl(icon.AsBitmap());
 }
 
 } // namespace
@@ -304,12 +318,14 @@ void UserChooserScreenHandler::SendUserList() {
   const ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
 
+  // If the active user is a managed user, then they may not perform
+  // certain actions (i.e. delete another user).
+  bool active_user_is_managed = Profile::FromWebUI(web_ui())->IsManaged();
   for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
     DictionaryValue* profile_value = new DictionaryValue();
 
     base::FilePath profile_path = info_cache.GetPathOfProfileAtIndex(i);
     bool is_active_user = (profile_path == active_profile_path);
-    bool needs_signin = info_cache.ProfileIsSigninRequiredAtIndex(i);
 
     profile_value->SetString(
         kKeyUsername, info_cache.GetUserNameOfProfileAtIndex(i));
@@ -321,20 +337,15 @@ void UserChooserScreenHandler::SendUserList() {
     profile_value->SetBoolean(kKeyPublicAccount, false);
     profile_value->SetBoolean(kKeyLocallyManagedUser, false);
     profile_value->SetBoolean(kKeySignedIn, is_active_user);
-    profile_value->SetBoolean(kKeyNeedsSignin, needs_signin);
+    profile_value->SetBoolean(
+        kKeyNeedsSignin, info_cache.ProfileIsSigninRequiredAtIndex(i));
     profile_value->SetBoolean(kKeyIsOwner, false);
-    profile_value->SetBoolean(kKeyCanRemove, true);
+    profile_value->SetBoolean(kKeyCanRemove, !active_user_is_managed);
     profile_value->SetBoolean(kKeyIsDesktop, true);
+    profile_value->SetString(
+        kKeyAvatarUrl, GetAvatarImageAtIndex(i, info_cache));
 
-    bool is_gaia_picture =
-        info_cache.IsUsingGAIAPictureOfProfileAtIndex(i) &&
-        info_cache.GetGAIAPictureOfProfileAtIndex(i);
-
-    gfx::Image icon = profiles::GetSizedAvatarIconWithBorder(
-        info_cache.GetAvatarIconOfProfileAtIndex(i), is_gaia_picture, 160, 160);
-    profile_value->SetString(kKeyAvatarUrl,
-        webui::GetBitmapDataUrl(icon.AsBitmap()));
-
+    // The row of user pods should display the active user first.
     if (is_active_user)
       users_list.Insert(0, profile_value);
     else
