@@ -28,6 +28,14 @@ EXTRA_ENV = {
   # Allow C++ exception handling in the pexe.
   'ALLOW_CXX_EXCEPTIONS' : '0',
 
+  # To simulate the sandboxed translator better and avoid user surprises,
+  # reject LLVM bitcode (non-finalized) by default, accepting only PNaCl
+  # (finalized) bitcode. --allow-llvm-bitcode-input has to be passed explicitly
+  # to override this.
+  # TODO(eliben): actually enable rejection in followup CL that includes other
+  # piping.
+  'ALLOW_LLVM_BITCODE_INPUT': '0',
+
   # Use the IRT shim by default. This can be disabled with an explicit
   # flag (--noirtshim) or via -nostdlib.
   'USE_IRT_SHIM'  : '${!SHARED ? 1 : 0}',
@@ -219,6 +227,8 @@ TranslatorPatterns = [
   # Allowing C++ exception handling causes a specific set of native objects to
   # get linked into the nexe.
   ( '--pnacl-allow-exceptions', "env.set('ALLOW_CXX_EXCEPTIONS', '1')"),
+
+  ( '--allow-llvm-bitcode-input', "env.set('ALLOW_LLVM_BITCODE_INPUT', '1')"),
 
   ( '-rpath-link=(.+)', "env.append('LD_FLAGS', '-L'+$0)"),
 
