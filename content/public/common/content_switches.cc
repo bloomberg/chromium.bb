@@ -592,6 +592,10 @@ const char kLogPluginMessages[]             = "log-plugin-messages";
 // Renderer.Memory histogram. Used in memory tests.
 const char kMemoryMetrics[]                 = "memory-metrics";
 
+// Mutes audio sent to the audio device so it is not audible during
+// automated testing.
+const char kMuteAudio[]                     = "mute-audio";
+
 // Don't send HTTP-Referer headers.
 const char kNoReferrers[]                   = "no-referrers";
 

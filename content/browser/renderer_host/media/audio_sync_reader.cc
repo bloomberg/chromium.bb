@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
+#include "content/public/common/content_switches.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/shared_memory_util.h"
@@ -21,6 +23,8 @@ AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory,
                                  int input_channels)
     : shared_memory_(shared_memory),
       input_channels_(input_channels),
+      mute_audio_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kMuteAudio)),
       renderer_callback_count_(0),
       renderer_missed_callback_count_(0) {
   packet_size_ = media::PacketSizeInBytes(shared_memory_->requested_size());
@@ -111,11 +115,15 @@ int AudioSyncReader::Read(bool block, const AudioBus* source, AudioBus* dest) {
   else if (frames > output_bus_->frames())
     frames = output_bus_->frames();
 
-  // Copy data from the shared memory into the caller's AudioBus.
-  output_bus_->CopyTo(dest);
+  if (mute_audio_) {
+    dest->Zero();
+  } else {
+    // Copy data from the shared memory into the caller's AudioBus.
+    output_bus_->CopyTo(dest);
 
-  // Zero out any unfilled frames in the destination bus.
-  dest->ZeroFramesPartial(frames, dest->frames() - frames);
+    // Zero out any unfilled frames in the destination bus.
+    dest->ZeroFramesPartial(frames, dest->frames() - frames);
+  }
 
   // Zero out the entire output buffer to avoid stuttering/repeating-buffers
   // in the anomalous case if the renderer is unable to keep up with real-time.

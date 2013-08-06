@@ -58,6 +58,10 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   // Number of input channels for synchronized I/O.
   int input_channels_;
 
+  // Mutes all incoming samples. This is used to prevent audible sound
+  // during automated testing.
+  bool mute_audio_;
+
   // Socket for transmitting audio data.
   scoped_ptr<base::CancelableSyncSocket> socket_;
 
