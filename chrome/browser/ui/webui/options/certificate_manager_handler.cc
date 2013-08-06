@@ -624,8 +624,6 @@ void CertificateManagerHandler::ExportPersonal(const ListValue* args) {
   file_type_info.extension_description_overrides.push_back(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_PKCS12_FILES));
   file_type_info.include_all_files = true;
-  // TODO(kinaba): http://crbug.com/140425. Turn file_type_info.support_drive
-  // on once Google Drive client on ChromeOS fully supports file writing.
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_file_dialog_->SelectFile(
@@ -716,7 +714,6 @@ void CertificateManagerHandler::StartImportPersonal(const ListValue* args) {
   file_type_info.extension_description_overrides.push_back(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_PKCS12_FILES));
   file_type_info.include_all_files = true;
-  file_type_info.support_drive = true;
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_file_dialog_->SelectFile(

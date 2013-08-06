@@ -31,7 +31,7 @@ namespace {
 
 // The struct is used for GetSelectedFileInfo().
 struct GetSelectedFileInfoParams {
-  bool for_opening;
+  GetSelectedFileInfoLocalPathOption local_path_option;
   GetSelectedFileInfoCallback callback;
   std::vector<base::FilePath> file_paths;
   std::vector<ui::SelectedFileInfo> selected_files;
@@ -52,9 +52,13 @@ void GetSelectedFileInfoInternal(Profile* profile,
   for (size_t i = params->selected_files.size();
        i < params->file_paths.size(); ++i) {
     const base::FilePath& file_path = params->file_paths[i];
-    // When opening a drive file, we should get local file path.
-    if (params->for_opening &&
-        drive::util::IsUnderDriveMountPoint(file_path)) {
+    // When the caller of the select file dialog wants local file paths,
+    // we should retrieve Drive files onto the local cache.
+    if (params->local_path_option == NO_LOCAL_PATH_RESOLUTION ||
+        !drive::util::IsUnderDriveMountPoint(file_path)) {
+      params->selected_files.push_back(
+          ui::SelectedFileInfo(file_path, base::FilePath()));
+    } else {
       drive::DriveIntegrationService* integration_service =
           drive::DriveIntegrationServiceFactory::GetForProfile(profile);
       // |integration_service| is NULL if Drive is disabled.
@@ -66,15 +70,14 @@ void GetSelectedFileInfoInternal(Profile* profile,
                                     scoped_ptr<drive::ResourceEntry>());
         return;
       }
+      // TODO(kinaba): crbug.com/140425 support FOR_SAVING
+      DCHECK(params->local_path_option == NEED_LOCAL_PATH_FOR_OPENING);
       integration_service->file_system()->GetFileByPath(
           drive::util::ExtractDrivePath(file_path),
           base::Bind(&ContinueGetSelectedFileInfo,
                      profile,
                      base::Passed(&params)));
       return;
-    } else {
-      params->selected_files.push_back(
-          ui::SelectedFileInfo(file_path, base::FilePath()));
     }
   }
   params->callback.Run(params->selected_files);
@@ -157,13 +160,13 @@ base::FilePath GetLocalPathFromURL(
 void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
                          Profile* profile,
                          const std::vector<GURL>& file_urls,
-                         bool for_opening,
+                         GetSelectedFileInfoLocalPathOption local_path_option,
                          GetSelectedFileInfoCallback callback) {
   DCHECK(render_view_host);
   DCHECK(profile);
 
   scoped_ptr<GetSelectedFileInfoParams> params(new GetSelectedFileInfoParams);
-  params->for_opening = for_opening;
+  params->local_path_option = local_path_option;
   params->callback = callback;
 
   for (size_t i = 0; i < file_urls.size(); ++i) {

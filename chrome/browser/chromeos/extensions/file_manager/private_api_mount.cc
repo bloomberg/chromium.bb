@@ -200,7 +200,7 @@ bool RemoveMountFunction::RunImpl() {
       render_view_host(),
       profile(),
       file_paths,
-      true,  // for_opening
+      util::NEED_LOCAL_PATH_FOR_OPENING,
       base::Bind(&RemoveMountFunction::GetSelectedFileInfoResponse, this));
   return true;
 }

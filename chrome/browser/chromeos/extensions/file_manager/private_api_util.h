@@ -56,11 +56,26 @@ base::FilePath GetLocalPathFromURL(
 typedef base::Callback<void(const std::vector<ui::SelectedFileInfo>&)>
     GetSelectedFileInfoCallback;
 
+// Option enum to control how to set the ui::SelectedFileInfo::local_path
+// fields in GetSelectedFileInfo() for Drive files.
+// NO_LOCAL_PATH_RESOLUTION:
+//   Does nothing. Set the Drive path as-is.
+// NEED_LOCAL_PATH_FOR_OPENING:
+//   Sets the path to a local cache file.
+// NEED_LOCAL_PATH_FOR_SAVING:
+//   Sets the path to a local cache file. Modification to the file is monitored
+//   and automatically synced to the Drive server.
+enum GetSelectedFileInfoLocalPathOption {
+  NO_LOCAL_PATH_RESOLUTION,
+  NEED_LOCAL_PATH_FOR_OPENING,
+  NEED_LOCAL_PATH_FOR_SAVING,
+};
+
 // Gets the information for |file_urls|.
 void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
                          Profile* profile,
                          const std::vector<GURL>& file_urls,
-                         bool for_opening,
+                         GetSelectedFileInfoLocalPathOption local_path_option,
                          GetSelectedFileInfoCallback callback);
 
 }  // namespace util

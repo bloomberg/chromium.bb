@@ -42,12 +42,21 @@ bool SelectFileFunction::RunImpl() {
   file_paths.push_back(GURL(file_url));
   bool for_opening = false;
   args_->GetBoolean(2, &for_opening);
+  bool need_local_path = false;
+  args_->GetBoolean(3, &need_local_path);
+
+  util::GetSelectedFileInfoLocalPathOption option =
+      util::NO_LOCAL_PATH_RESOLUTION;
+  if (need_local_path) {
+    option = for_opening ?
+        util::NEED_LOCAL_PATH_FOR_OPENING : util::NEED_LOCAL_PATH_FOR_SAVING;
+  }
 
   util::GetSelectedFileInfo(
       render_view_host(),
       profile(),
       file_paths,
-      for_opening,
+      option,
       base::Bind(&SelectFileFunction::GetSelectedFileInfoResponse, this));
   return true;
 }
@@ -90,11 +99,15 @@ bool SelectFilesFunction::RunImpl() {
     file_urls.push_back(GURL(virtual_path));
   }
 
+  bool need_local_path = false;
+  args_->GetBoolean(1, &need_local_path);
+
   util::GetSelectedFileInfo(
       render_view_host(),
       profile(),
       file_urls,
-      true,  // for_opening
+      need_local_path ?
+          util::NEED_LOCAL_PATH_FOR_OPENING : util::NO_LOCAL_PATH_RESOLUTION,
       base::Bind(&SelectFilesFunction::GetSelectedFileInfoResponse, this));
   return true;
 }
