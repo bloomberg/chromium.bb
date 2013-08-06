@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/html/shadow/MediaControlsChromiumAndroid.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 
 namespace WebCore {

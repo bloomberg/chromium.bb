@@ -31,6 +31,7 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"

@@ -28,7 +28,7 @@
 
 #include <stdio.h>
 #include "HTMLNames.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/CharacterData.h"

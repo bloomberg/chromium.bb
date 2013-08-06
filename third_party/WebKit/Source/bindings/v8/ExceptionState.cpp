@@ -67,15 +67,12 @@ void ExceptionState::throwTypeError(const String& message)
     setException(V8ThrowException::createTypeError(message, m_isolate));
 }
 
-NonThrowExceptionState::NonThrowExceptionState()
-    : ExceptionState(0) { }
-
-void NonThrowExceptionState::throwDOMException(const ExceptionCode& ec, const String&)
+void TrackExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)
 {
     m_code = ec;
 }
 
-void NonThrowExceptionState::throwTypeError(const String&)
+void TrackExceptionState::throwTypeError(const String&)
 {
     m_code = TypeError;
 }

@@ -27,6 +27,7 @@
 #include "core/editing/SplitElementCommand.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
 #include "wtf/Assertions.h"

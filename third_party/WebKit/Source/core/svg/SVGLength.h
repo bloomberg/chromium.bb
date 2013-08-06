@@ -21,7 +21,7 @@
 #ifndef SVGLength_h
 #define SVGLength_h
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/platform/animation/AnimationUtilities.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGParsingError.h"

@@ -31,7 +31,7 @@
 #include "core/inspector/InspectorDOMStorageAgent.h"
 
 #include "InspectorFrontend.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"

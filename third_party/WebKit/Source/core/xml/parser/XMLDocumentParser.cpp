@@ -37,6 +37,7 @@
 #include <wtf/Vector.h>
 #include "HTMLNames.h"
 #include "XMLNSNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"

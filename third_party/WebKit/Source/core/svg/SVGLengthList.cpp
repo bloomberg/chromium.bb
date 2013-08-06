@@ -22,7 +22,6 @@
 #include "core/svg/SVGLengthList.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/text/StringBuilder.h"
 

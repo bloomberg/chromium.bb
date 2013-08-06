@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/html/shadow/MediaControlsChromium.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 
 using namespace std;

@@ -109,7 +109,7 @@ public:
         }
 
         IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
-        NonThrowExceptionState es;
+        TrackExceptionState es;
         RefPtr<IDBAny> requestResult = idbRequest->result(es);
         if (es.hadException()) {
             m_requestCallback->sendFailure("Could not get result in callback.");
@@ -171,7 +171,7 @@ public:
         }
 
         IDBOpenDBRequest* idbOpenDBRequest = static_cast<IDBOpenDBRequest*>(event->target());
-        NonThrowExceptionState es;
+        TrackExceptionState es;
         RefPtr<IDBAny> requestResult = idbOpenDBRequest->result(es);
         if (es.hadException()) {
             m_executableWithDatabase->requestCallback()->sendFailure("Could not get result in callback.");
@@ -198,7 +198,7 @@ private:
 void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, const String& databaseName)
 {
     RefPtr<OpenDatabaseCallback> callback = OpenDatabaseCallback::create(this);
-    NonThrowExceptionState es;
+    TrackExceptionState es;
     RefPtr<IDBOpenDBRequest> idbOpenDBRequest = idbFactory->open(context(), databaseName, es);
     if (es.hadException()) {
         requestCallback()->sendFailure("Could not open database.");
@@ -209,7 +209,7 @@ void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, cons
 
 static PassRefPtr<IDBTransaction> transactionForDatabase(ScriptExecutionContext* scriptExecutionContext, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IDBTransaction::modeReadOnly())
 {
-    NonThrowExceptionState es;
+    TrackExceptionState es;
     RefPtr<IDBTransaction> idbTransaction = idbDatabase->transaction(scriptExecutionContext, objectStoreName, mode, es);
     if (es.hadException())
         return 0;
@@ -218,7 +218,7 @@ static PassRefPtr<IDBTransaction> transactionForDatabase(ScriptExecutionContext*
 
 static PassRefPtr<IDBObjectStore> objectStoreForTransaction(IDBTransaction* idbTransaction, const String& objectStoreName)
 {
-    NonThrowExceptionState es;
+    TrackExceptionState es;
     RefPtr<IDBObjectStore> idbObjectStore = idbTransaction->objectStore(objectStoreName, es);
     if (es.hadException())
         return 0;
@@ -227,7 +227,7 @@ static PassRefPtr<IDBObjectStore> objectStoreForTransaction(IDBTransaction* idbT
 
 static PassRefPtr<IDBIndex> indexForObjectStore(IDBObjectStore* idbObjectStore, const String& indexName)
 {
-    NonThrowExceptionState es;
+    TrackExceptionState es;
     RefPtr<IDBIndex> idbIndex = idbObjectStore->index(indexName, es);
     if (es.hadException())
         return 0;
@@ -415,7 +415,7 @@ public:
         }
 
         IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
-        NonThrowExceptionState es;
+        TrackExceptionState es;
         RefPtr<IDBAny> requestResult = idbRequest->result(es);
         if (es.hadException()) {
             m_requestCallback->sendFailure("Could not get result in callback.");
@@ -433,7 +433,7 @@ public:
         RefPtr<IDBCursorWithValue> idbCursor = requestResult->idbCursorWithValue();
 
         if (m_skipCount) {
-            NonThrowExceptionState es;
+            TrackExceptionState es;
             idbCursor->advance(m_skipCount, es);
             if (es.hadException())
                 m_requestCallback->sendFailure("Could not advance cursor.");
@@ -623,7 +623,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
     ASSERT(!context.IsEmpty());
     v8::Context::Scope contextScope(context);
 
-    NonThrowExceptionState es;
+    TrackExceptionState es;
     RefPtr<IDBRequest> idbRequest = idbFactory->getDatabaseNames(document, es);
     if (es.hadException()) {
         requestCallback->sendFailure("Could not obtain database names.");
@@ -747,7 +747,7 @@ public:
             return;
         }
 
-        NonThrowExceptionState es;
+        TrackExceptionState es;
         RefPtr<IDBRequest> idbRequest = idbObjectStore->clear(context(), es);
         ASSERT(!es.hadException());
         if (es.hadException()) {

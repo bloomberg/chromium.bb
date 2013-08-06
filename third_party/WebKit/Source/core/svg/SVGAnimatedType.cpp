@@ -21,7 +21,6 @@
 #include "core/svg/SVGAnimatedType.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGPathByteStream.h"
 

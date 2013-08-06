@@ -78,9 +78,9 @@ private:
     v8::Isolate* m_isolate;
 };
 
-class NonThrowExceptionState : public ExceptionState {
+class TrackExceptionState : public ExceptionState {
 public:
-    NonThrowExceptionState();
+    TrackExceptionState(): ExceptionState(0) { }
     virtual void throwDOMException(const ExceptionCode&, const String& message = String()) OVERRIDE FINAL;
     virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL;
 };

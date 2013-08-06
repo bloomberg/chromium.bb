@@ -196,7 +196,7 @@ bool parseHash(const Dictionary& raw, WebKit::WebCryptoAlgorithm& hash)
     if (!raw.get("hash", rawHash))
         return false;
 
-    NonThrowExceptionState es;
+    TrackExceptionState es;
     return normalizeAlgorithm(rawHash, Digest, hash, es);
 }
 

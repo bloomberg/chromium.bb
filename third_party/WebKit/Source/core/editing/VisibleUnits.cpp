@@ -27,6 +27,7 @@
 #include "core/editing/VisibleUnits.h"
 
 #include "HTMLNames.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"

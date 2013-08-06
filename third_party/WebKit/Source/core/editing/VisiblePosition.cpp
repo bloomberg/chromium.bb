@@ -29,7 +29,7 @@
 
 #include <stdio.h>
 #include "HTMLNames.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"

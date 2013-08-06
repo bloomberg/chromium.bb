@@ -34,7 +34,6 @@
 #include "HTMLNames.h"
 #include "InspectorFrontend.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CharacterData.h"

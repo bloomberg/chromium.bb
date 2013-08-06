@@ -28,7 +28,7 @@
 #include "core/editing/ApplyBlockElementCommand.h"
 
 #include "HTMLNames.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Text.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"

@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/editing/DeleteFromTextNodeCommand.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"

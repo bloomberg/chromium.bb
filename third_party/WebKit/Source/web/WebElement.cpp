@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebDocument.h"
 #include "WebElement.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Element.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/shadow/ShadowRoot.h"

@@ -28,6 +28,8 @@
 #include "CSSPropertyNames.h"
 #include "InspectorTypeBuilder.h"
 #include "StylePropertyShorthand.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSMediaRule.h"

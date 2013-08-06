@@ -21,7 +21,7 @@
 #ifndef SVGMarkerElement_h
 #define SVGMarkerElement_h
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/svg/SVGAnimatedAngle.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
