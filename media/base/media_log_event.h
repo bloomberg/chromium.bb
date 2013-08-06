@@ -87,6 +87,9 @@ struct MediaLogEvent {
     // Errors reported by Media Source Extensions code.
     MEDIA_SOURCE_ERROR,
     // params: "error": Error string describing the error detected.
+
+    // A property has changed without any special event occurring.
+    PROPERTY_CHANGE,
   };
 
   int32 id;

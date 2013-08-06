@@ -43,6 +43,34 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
 }
 
 // static
+std::string VideoFrame::FormatToString(VideoFrame::Format format) {
+  switch (format) {
+    case VideoFrame::INVALID:
+      return "INVALID";
+    case VideoFrame::RGB32:
+      return "RGB32";
+    case VideoFrame::YV12:
+      return "YV12";
+    case VideoFrame::YV16:
+      return "YV16";
+    case VideoFrame::EMPTY:
+      return "EMPTY";
+    case VideoFrame::I420:
+      return "I420";
+    case VideoFrame::NATIVE_TEXTURE:
+      return "NATIVE_TEXTURE";
+#if defined(GOOGLE_TV)
+    case VideoFrame::HOLE:
+      return "HOLE";
+#endif
+    case VideoFrame::YV12A:
+      return "YV12A";
+  }
+  NOTREACHED() << "Invalid videoframe format provided: " << format;
+  return "";
+}
+
+// static
 bool VideoFrame::IsValidConfig(VideoFrame::Format format,
                                const gfx::Size& coded_size,
                                const gfx::Rect& visible_rect,

@@ -29,6 +29,9 @@ enum SampleFormat {
 // |sample_format|.
 MEDIA_EXPORT int SampleFormatToBytesPerChannel(SampleFormat sample_format);
 
+// Returns the name of the sample format as a string
+MEDIA_EXPORT const char* SampleFormatToString(SampleFormat sample_format);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_SAMPLE_FORMAT_H

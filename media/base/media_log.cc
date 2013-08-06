@@ -56,6 +56,8 @@ const char* MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "BUFFERED_EXTENTS_CHANGED";
     case MediaLogEvent::MEDIA_SOURCE_ERROR:
       return "MEDIA_SOURCE_ERROR";
+    case MediaLogEvent::PROPERTY_CHANGE:
+      return "PROPERTY_CHANGE";
   }
   NOTREACHED();
   return NULL;
@@ -196,6 +198,34 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateMediaSourceErrorEvent(
       CreateEvent(MediaLogEvent::MEDIA_SOURCE_ERROR));
   event->params.SetString("error", error);
   return event.Pass();
+}
+
+void MediaLog::SetStringProperty(
+    const char* key, const std::string& value) {
+  scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
+  event->params.SetString(key, value);
+  AddEvent(event.Pass());
+}
+
+void MediaLog::SetIntegerProperty(
+    const char* key, int value) {
+  scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
+  event->params.SetInteger(key, value);
+  AddEvent(event.Pass());
+}
+
+void MediaLog::SetDoubleProperty(
+    const char* key, double value) {
+  scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
+  event->params.SetDouble(key, value);
+  AddEvent(event.Pass());
+}
+
+void MediaLog::SetBooleanProperty(
+    const char* key, bool value) {
+  scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
+  event->params.SetBoolean(key, value);
+  AddEvent(event.Pass());
 }
 
 }  //namespace media

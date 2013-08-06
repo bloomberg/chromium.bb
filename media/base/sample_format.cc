@@ -29,4 +29,27 @@ int SampleFormatToBytesPerChannel(SampleFormat sample_format) {
   return 0;
 }
 
+const char* SampleFormatToString(SampleFormat sample_format) {
+  switch(sample_format) {
+    case kUnknownSampleFormat:
+      return "Unknown sample format";
+    case kSampleFormatU8:
+      return "Unsigned 8-bit with bias of 128";
+    case kSampleFormatS16:
+      return "Signed 16-bit";
+    case kSampleFormatS32:
+      return "Signed 32-bit";
+    case kSampleFormatF32:
+      return "Float 32-bit";
+    case kSampleFormatPlanarS16:
+      return "Signed 16-bit planar";
+    case kSampleFormatPlanarF32:
+      return "Float 32-bit planar";
+    case kSampleFormatMax:
+      break;
+  }
+  NOTREACHED() << "Invalid sample format provided: " << sample_format;
+  return "";
+}
+
 }  // namespace media

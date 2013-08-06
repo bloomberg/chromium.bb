@@ -68,6 +68,12 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   scoped_ptr<MediaLogEvent> CreateMediaSourceErrorEvent(
       const std::string& error);
 
+  // Report a property change without an accompanying event.
+  void SetStringProperty(const char* key, const std::string& value);
+  void SetIntegerProperty(const char* key, int value);
+  void SetDoubleProperty(const char* key, double value);
+  void SetBooleanProperty(const char* key, bool value);
+
  protected:
   friend class base::RefCountedThreadSafe<MediaLog>;
   virtual ~MediaLog();

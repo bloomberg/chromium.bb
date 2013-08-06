@@ -53,6 +53,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     YV12A = 14,  // 20bpp YUVA planar 1x1 Y, 2x2 VU, 1x1 A samples.
   };
 
+  // Returns the name of a Format as a string.
+  static std::string FormatToString(Format format);
+
   // This class calls the TextureNoLongerNeededCallback when the last reference
   // on the class is destroyed. The VideoFrame holds a reference to the mailbox
   // but anyone else who queries the mailbox should also hold a reference while
