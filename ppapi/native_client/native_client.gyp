@@ -98,7 +98,8 @@
             'out_newlib32': '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
             'out_newlib_arm': '<(PRODUCT_DIR)/nacl_irt_arm.nexe',
             'build_glibc': 0,
-            'build_newlib': 1,
+            'build_newlib': 0,
+            'build_irt': 1,
             'include_dirs': [
               'lib/gl/include',
               '..',
@@ -125,8 +126,6 @@
               '-lgio',
               '-Wl,--end-group',
               '-lm',
-              '-Wl,<(NACL_RODATA_FLAG)=<(NACL_IRT_DATA_START)',
-              '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
             ],
             'extra_args': [
               '--strip-all',
