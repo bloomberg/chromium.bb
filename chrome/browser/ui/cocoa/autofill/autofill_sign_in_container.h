@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace autofill {
-  class AutofillDialogController;
+  class AutofillDialogViewDelegate;
 }
 
 namespace content {
@@ -21,11 +21,11 @@ namespace content {
 // Controls the sign-in dialog of the AutofillDialog.
 @interface AutofillSignInContainer : NSViewController {
  @private
-  autofill::AutofillDialogController* controller_;  // Not owned.
+  autofill::AutofillDialogViewDelegate* delegate_;  // Not owned.
   scoped_ptr<content::WebContents> webContents_;
 }
 
-- (id)initWithController:(autofill::AutofillDialogController*)controller;
+- (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate;
 - (void)loadSignInPage;
 - (content::NavigationController*)navigationController;
 

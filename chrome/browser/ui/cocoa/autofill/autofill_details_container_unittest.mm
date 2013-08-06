@@ -7,7 +7,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
-#include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -17,14 +17,14 @@ namespace {
 class AutofillDetailsContainerTest : public ui::CocoaTest {
  public:
   AutofillDetailsContainerTest() {
-    container_.reset([[AutofillDetailsContainer alloc] initWithController:
-                         &controller_]);
+    container_.reset([[AutofillDetailsContainer alloc] initWithDelegate:
+                         &delegate_]);
     [[test_window() contentView] addSubview:[container_ view]];
   }
 
  protected:
   base::scoped_nsobject<AutofillDetailsContainer> container_;
-  testing::NiceMock<autofill::MockAutofillDialogController> controller_;
+  testing::NiceMock<autofill::MockAutofillDialogViewDelegate> delegate_;
 };
 
 }  // namespace
@@ -47,7 +47,7 @@ TEST_F(AutofillDetailsContainerTest, ValidateAllSections) {
   DetailOutputMap output;
   ValidityData validity;
 
-  EXPECT_CALL(controller_, InputsAreValid(_, _, VALIDATE_FINAL))
+  EXPECT_CALL(delegate_, InputsAreValid(_, _, VALIDATE_FINAL))
       .Times(4)
       .WillOnce(Return(validity))
       .WillOnce(Return(validity))
@@ -59,7 +59,7 @@ TEST_F(AutofillDetailsContainerTest, ValidateAllSections) {
   ValidityData invalid;
   invalid[ADDRESS_HOME_ZIP] = ASCIIToUTF16("Some error message");
 
-  EXPECT_CALL(controller_, InputsAreValid(_, _, VALIDATE_FINAL))
+  EXPECT_CALL(delegate_, InputsAreValid(_, _, VALIDATE_FINAL))
       .Times(4)
       .WillOnce(Return(validity))
       .WillOnce(Return(validity))

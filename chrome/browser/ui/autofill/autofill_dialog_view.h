@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_H_
 
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 
 namespace content {
 class NavigationController;
@@ -17,7 +17,7 @@ class Size;
 
 namespace autofill {
 
-class AutofillDialogController;
+class AutofillDialogViewDelegate;
 class TestableAutofillDialogView;
 
 // An interface for the dialog that appears when a site initiates an Autofill
@@ -96,7 +96,7 @@ class AutofillDialogView {
 
   // Factory function to create the dialog (implemented once per view
   // implementation). |controller| will own the created dialog.
-  static AutofillDialogView* Create(AutofillDialogController* controller);
+  static AutofillDialogView* Create(AutofillDialogViewDelegate* delegate);
 };
 
 }  // namespace autofill

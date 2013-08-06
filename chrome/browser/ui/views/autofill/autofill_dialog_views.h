@@ -10,8 +10,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -74,7 +74,7 @@ class AutofillDialogViews : public AutofillDialogView,
                             public views::ComboboxListener,
                             public views::StyledLabelListener {
  public:
-  explicit AutofillDialogViews(AutofillDialogController* controller);
+  explicit AutofillDialogViews(AutofillDialogViewDelegate* delegate);
   virtual ~AutofillDialogViews();
 
   // AutofillDialogView implementation:
@@ -203,10 +203,10 @@ class AutofillDialogViews : public AutofillDialogView,
                          public views::LinkListener,
                          public base::SupportsWeakPtr<AccountChooser> {
    public:
-    explicit AccountChooser(AutofillDialogController* controller);
+    explicit AccountChooser(AutofillDialogViewDelegate* delegate);
     virtual ~AccountChooser();
 
-    // Updates the view based on the state that |controller_| reports.
+    // Updates the view based on the state that |delegate_| reports.
     void Update();
 
     // views::View implementation.
@@ -229,8 +229,8 @@ class AutofillDialogViews : public AutofillDialogView,
     // The sign in link.
     views::Link* link_;
 
-    // The controller |this| queries for logic and state.
-    AutofillDialogController* controller_;
+    // The delegate |this| queries for logic and state.
+    AutofillDialogViewDelegate* delegate_;
 
     // Runs the suggestion menu (triggered by each section's |suggested_button|.
     scoped_ptr<views::MenuRunner> menu_runner_;
@@ -296,7 +296,7 @@ class AutofillDialogViews : public AutofillDialogView,
   class NotificationArea : public views::View,
                            public views::ButtonListener {
    public:
-    explicit NotificationArea(AutofillDialogController* controller);
+    explicit NotificationArea(AutofillDialogViewDelegate* delegate);
     virtual ~NotificationArea();
 
     // Displays the given notifications.
@@ -322,9 +322,9 @@ class AutofillDialogViews : public AutofillDialogView,
     // pointing at |arrow_centering_anchor_|.
     bool HasArrow();
 
-    // A reference to the controller than owns this view. Used to report when
-    // checkboxes change their values.
-    AutofillDialogController* controller_;  // weak
+    // A reference to the delegate/controller than owns this view.
+    // Used to report when checkboxes change their values.
+    AutofillDialogViewDelegate* delegate_;  // weak
 
     // The currently showing checkbox, or NULL if none exists.
     views::Checkbox* checkbox_;  // weak
@@ -493,7 +493,7 @@ class AutofillDialogViews : public AutofillDialogView,
   // returned.
   views::View* InitInputsView(DialogSection section);
 
-  // Updates the given section to match the state provided by |controller_|. If
+  // Updates the given section to match the state provided by |delegate_|. If
   // |clobber_inputs| is true, the current state of the textfields will be
   // ignored, otherwise their contents will be preserved.
   void UpdateSectionImpl(DialogSection section, bool clobber_inputs);
@@ -532,7 +532,7 @@ class AutofillDialogViews : public AutofillDialogView,
   bool ValidateForm();
 
   // When an input textfield is edited (its contents change) or activated
-  // (clicked while focused), this function will inform the controller that it's
+  // (clicked while focused), this function will inform the delegate that it's
   // time to show a suggestion popup and possibly reset the validity state of
   // the input.
   void TextfieldEditedOrActivated(views::Textfield* textfield, bool was_edit);
@@ -554,8 +554,8 @@ class AutofillDialogViews : public AutofillDialogView,
   // Called when the details container changes in size or position.
   void DetailsContainerBoundsChanged();
 
-  // The controller that drives this view. Weak pointer, always non-NULL.
-  AutofillDialogController* const controller_;
+  // The delegate that drives this view. Weak pointer, always non-NULL.
+  AutofillDialogViewDelegate* const delegate_;
 
   // The window that displays |contents_|. Weak pointer; may be NULL when the
   // dialog is closing.

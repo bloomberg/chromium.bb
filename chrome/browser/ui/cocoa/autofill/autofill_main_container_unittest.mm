@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -17,14 +17,14 @@ class AutofillMainContainerTest : public ui::CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
-    container_.reset([[AutofillMainContainer alloc] initWithController:
-                         &controller_]);
+    container_.reset([[AutofillMainContainer alloc] initWithDelegate:
+                         &delegate_]);
     [[test_window() contentView] addSubview:[container_ view]];
   }
 
  protected:
   base::scoped_nsobject<AutofillMainContainer> container_;
-  testing::NiceMock<autofill::MockAutofillDialogController> controller_;
+  testing::NiceMock<autofill::MockAutofillDialogViewDelegate> delegate_;
 };
 
 }  // namespace
@@ -76,8 +76,8 @@ TEST_F(AutofillMainContainerTest, SaveDetailsLocallyDefaultsToTrue) {
 TEST_F(AutofillMainContainerTest, SaveInChromeCheckboxVisibility) {
   using namespace testing;
 
-  // Tests that the checkbox is only visible if the controller allows it.
-  EXPECT_CALL(controller_, ShouldOfferToSaveInChrome()).Times(2)
+  // Tests that the checkbox is only visible if the delegate allows it.
+  EXPECT_CALL(delegate_, ShouldOfferToSaveInChrome()).Times(2)
       .WillOnce(Return(false))
       .WillOnce(Return(true));
 

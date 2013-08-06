@@ -10,7 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 
 namespace autofill {
-  class AutofillDialogController;
+  class AutofillDialogViewDelegate;
 }
 
 @class MenuButton;
@@ -20,11 +20,11 @@ namespace autofill {
   base::scoped_nsobject<NSButton> link_;
   base::scoped_nsobject<MenuButton> popup_;
   base::scoped_nsobject<NSImageView> icon_;
-  autofill::AutofillDialogController* controller_;  // weak.
+  autofill::AutofillDialogViewDelegate* delegate_;  // weak.
 }
 
 - (id)initWithFrame:(NSRect)frame
-         controller:(autofill::AutofillDialogController*)controller;
+         delegate:(autofill::AutofillDialogViewDelegate*)delegate;
 - (void)update;
 
 @end

@@ -1,19 +1,19 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_MOCK_AUTOFILL_DIALOG_CONTROLLER_H_
-#define CHROME_BROWSER_UI_AUTOFILL_MOCK_AUTOFILL_DIALOG_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_AUTOFILL_MOCK_AUTOFILL_DIALOG_VIEW_DELEGATE_H_
+#define CHROME_BROWSER_UI_AUTOFILL_MOCK_AUTOFILL_DIALOG_VIEW_DELEGATE_H_
 
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill {
 
-class MockAutofillDialogController : public AutofillDialogController {
+class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
  public:
-  MockAutofillDialogController();
-  virtual ~MockAutofillDialogController();
+  MockAutofillDialogViewDelegate();
+  virtual ~MockAutofillDialogViewDelegate();
 
   MOCK_CONST_METHOD0(DialogTitle, string16());
   MOCK_CONST_METHOD0(AccountChooserText, string16());
@@ -83,4 +83,4 @@ class MockAutofillDialogController : public AutofillDialogController {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_MOCK_AUTOFILL_DIALOG_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_AUTOFILL_MOCK_AUTOFILL_DIALOG_VIEW_DELEGATE_H_

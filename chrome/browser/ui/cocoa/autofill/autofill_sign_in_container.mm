@@ -8,16 +8,16 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
 @implementation AutofillSignInContainer
 
-- (id)initWithController:(autofill::AutofillDialogController*)controller {
+- (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate {
   if (self = [super init]) {
-    controller_ = controller;
+    delegate_ = delegate;
   }
   return self;
 }
@@ -25,7 +25,7 @@
 - (void)loadView {
   webContents_.reset(
       content::WebContents::Create(
-          content::WebContents::CreateParams(controller_->profile())));
+          content::WebContents::CreateParams(delegate_->profile())));
   NSView* webContentView = webContents_->GetView()->GetNativeView();
   [self setView:webContentView];
 }

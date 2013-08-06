@@ -7,17 +7,17 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_notification_controller.h"
 #include "skia/ext/skia_utils_mac.h"
 
 @implementation AutofillNotificationContainer
 
-- (id)initWithController:(autofill::AutofillDialogController*)controller {
+- (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate {
   if (self = [super init]) {
-    controller_ = controller;
+    delegate_ = delegate;
     [self setView:[[[NSView alloc] initWithFrame:NSZeroRect] autorelease]];
   }
   return self;
@@ -39,9 +39,9 @@
   if (![[notificationControllers_ objectAtIndex:0] hasArrow])
     preferredSize.height += kArrowHeight;
 
-  for (AutofillNotificationController* controller in
+  for (AutofillNotificationController* delegate in
        notificationControllers_.get())
-    preferredSize.height += [controller preferredSizeForWidth:width].height;
+    preferredSize.height += [delegate preferredSizeForWidth:width].height;
 
   return preferredSize;
 }
@@ -55,13 +55,13 @@
   if (![[notificationControllers_ objectAtIndex:0] hasArrow])
     remaining.size.height -= kArrowHeight;
 
-  for (AutofillNotificationController* controller in
+  for (AutofillNotificationController* delegate in
        notificationControllers_.get()) {
     NSRect viewRect;
-    NSSize size = [controller preferredSizeForWidth:NSWidth(remaining)];
+    NSSize size = [delegate preferredSizeForWidth:NSWidth(remaining)];
     NSDivideRect(remaining, &viewRect, &remaining, size.height, NSMaxYEdge);
-    [[controller view ] setFrame:viewRect];
-    [controller performLayout];
+    [[delegate view ] setFrame:viewRect];
+    [delegate performLayout];
   }
   DCHECK_EQ(0, NSHeight(remaining));
 }
@@ -114,7 +114,7 @@
 - (IBAction)checkboxClicked:(id)sender {
   DCHECK(checkboxNotification_);
   BOOL isChecked = ([sender state] == NSOnState);
-  controller_->NotificationCheckboxStateChanged(checkboxNotification_->type(),
+  delegate_->NotificationCheckboxStateChanged(checkboxNotification_->type(),
                                                 isChecked);
 }
 

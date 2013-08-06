@@ -14,9 +14,9 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/autofill/account_chooser_model.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
 #include "components/autofill/content/browser/autocheckout_steps.h"
@@ -66,7 +66,7 @@ class WalletSigninHelper;
 
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
-class AutofillDialogControllerImpl : public AutofillDialogController,
+class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
                                      public AutofillPopupDelegate,
                                      public content::NotificationObserver,
                                      public SuggestionsMenuModelDelegate,
@@ -111,7 +111,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // actually implements |AutofillDialogView::GetTestableView()|).
   TestableAutofillDialogView* GetTestableView();
 
-  // AutofillDialogController implementation.
+  // AutofillDialogViewDelegate implementation.
   virtual string16 DialogTitle() const OVERRIDE;
   virtual string16 AccountChooserText() const OVERRIDE;
   virtual string16 SignInLinkText() const OVERRIDE;

@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/down_arrow_popup_menu_cell.h"
@@ -47,15 +47,15 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 @implementation AutofillAccountChooser
 
 - (id)initWithFrame:(NSRect)frame
-     controller:(autofill::AutofillDialogController*)controller {
+     delegate:(autofill::AutofillDialogViewDelegate*)delegate {
   if ((self = [super initWithFrame:frame])) {
-    controller_ = controller;
+    delegate_ = delegate;
 
     icon_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
     [icon_ setImageFrameStyle:NSImageFrameNone];
 
     link_.reset([[HyperlinkButtonCell buttonWithString:
-        base::SysUTF16ToNSString(controller_->SignInLinkText())] retain]);
+        base::SysUTF16ToNSString(delegate_->SignInLinkText())] retain]);
     [link_ setAction:@selector(linkClicked:)];
     [link_ setTarget:self];
     [[link_ cell] setUnderlineOnHover:YES];
@@ -86,26 +86,26 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 }
 
 - (void)optionsMenuChanged:(id)sender {
-  ui::MenuModel* menuModel = controller_->MenuModelForAccountChooser();
+  ui::MenuModel* menuModel = delegate_->MenuModelForAccountChooser();
   DCHECK(menuModel);
   menuModel->ActivatedAt([sender tag]);
 }
 
 - (void)linkClicked:(id)sender {
-  controller_->SignInLinkClicked();
+  delegate_->SignInLinkClicked();
 }
 
 - (void)update {
-  NSImage* iconImage = controller_->AccountChooserImage().AsNSImage();
+  NSImage* iconImage = delegate_->AccountChooserImage().AsNSImage();
   [icon_ setImage:iconImage];
 
   // Set title.
   NSString* popupTitle =
-      base::SysUTF16ToNSString(controller_->AccountChooserText());
+      base::SysUTF16ToNSString(delegate_->AccountChooserText());
   [popup_ setTitle:popupTitle];
 
   NSString* linkTitle =
-      base::SysUTF16ToNSString(controller_->SignInLinkText());
+      base::SysUTF16ToNSString(delegate_->SignInLinkText());
   [link_ setTitle:linkTitle];
 
   // populate menu
@@ -113,7 +113,7 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
   [accountMenu removeAllItems];
   // See menu_button.h for documentation on why this is needed.
   [accountMenu addItemWithTitle:@"" action:nil keyEquivalent:@""];
-  ui::MenuModel* model = controller_->MenuModelForAccountChooser();
+  ui::MenuModel* model = delegate_->MenuModelForAccountChooser();
   if (model) {
     for (int i = 0; i < model->GetItemCount(); ++i) {
       AddMenuItem(accountMenu,

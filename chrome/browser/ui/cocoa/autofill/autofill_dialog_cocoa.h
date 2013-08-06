@@ -20,7 +20,7 @@ namespace content {
 }
 
 namespace autofill {
-  class AutofillDialogController;
+  class AutofillDialogViewDelegate;
 }
 
 @class AutofillAccountChooser;
@@ -34,7 +34,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
                             public TestableAutofillDialogView,
                             public ConstrainedWindowMacDelegate {
  public:
-  explicit AutofillDialogCocoa(AutofillDialogController* controller);
+  explicit AutofillDialogCocoa(AutofillDialogViewDelegate* delegate);
   virtual ~AutofillDialogCocoa();
 
   // AutofillDialogView implementation:
@@ -78,7 +78,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE;
 
-  AutofillDialogController* controller() { return controller_; }
+  AutofillDialogViewDelegate* delegate() { return delegate_; }
 
   // Posts a close request on the current message loop.
   void PerformClose();
@@ -88,13 +88,13 @@ class AutofillDialogCocoa : public AutofillDialogView,
   void CloseNow();
 
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
-  base::scoped_nsobject<AutofillDialogWindowController> sheet_controller_;
+  base::scoped_nsobject<AutofillDialogWindowController> sheet_delegate_;
 
   // WeakPtrFactory for deferred close.
   base::WeakPtrFactory<AutofillDialogCocoa> close_weak_ptr_factory_;
 
-  // The controller |this| queries for logic and state.
-  AutofillDialogController* controller_;
+  // The delegate |this| queries for logic and state.
+  AutofillDialogViewDelegate* delegate_;
 };
 
 }  // autofill
@@ -117,7 +117,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
 // A child view request re-layouting.
 - (void)requestRelayout;
 
-// Validate data. If it is valid, notify the controller that the user would
+// Validate data. If it is valid, notify the delegate that the user would
 // like to use the data.
 - (IBAction)accept:(id)sender;
 

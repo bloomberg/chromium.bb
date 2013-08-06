@@ -15,7 +15,7 @@ AutofillDialogView::~AutofillDialogView() {}
 #if defined(TOOLKIT_GTK) || defined(OS_ANDROID)
 // TODO(estade): implement the dialog on GTK. See http://crbug.com/157275.
 AutofillDialogView* AutofillDialogView::Create(
-    AutofillDialogController* controller) {
+    AutofillDialogViewDelegate* delegate) {
   return NULL;
 }
 #endif

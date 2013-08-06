@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
 namespace autofill {
-  class AutofillDialogController;
+  class AutofillDialogViewDelegate;
 }
 
 @class AutofillTextField;
@@ -31,7 +31,7 @@ namespace autofill {
   // The input set by ShowTextfield.
   base::scoped_nsobject<AutofillTextField> inputField_;
 
-  autofill::AutofillDialogController* controller_;  // Not owned.
+  autofill::AutofillDialogViewDelegate* delegate_;  // Not owned.
 }
 
 // Auxiliary textfield. See showTextfield: for details.

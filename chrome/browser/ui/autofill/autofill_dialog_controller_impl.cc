@@ -301,7 +301,7 @@ bool IsInstrumentAllowed(
 // Signals that the user has opted in to geolocation services.  Factored out
 // into a separate method because all interaction with the geolocation provider
 // needs to happen on the IO thread, which is not the thread
-// AutofillDialogController lives on.
+// AutofillDialogViewDelegate lives on.
 void UserDidOptIntoLocationServices() {
   content::GeolocationProvider::GetInstance()->UserDidOptIntoLocationServices();
 }
@@ -448,7 +448,7 @@ gfx::Image GetGeneratedCardImage(const string16& card_number) {
 
 }  // namespace
 
-AutofillDialogController::~AutofillDialogController() {}
+AutofillDialogViewDelegate::~AutofillDialogViewDelegate() {}
 
 AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   if (popup_controller_)
@@ -719,7 +719,7 @@ std::vector<DialogAutocheckoutStep>
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutofillDialogController implementation.
+// AutofillDialogViewDelegate implementation.
 
 string16 AutofillDialogControllerImpl::DialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);

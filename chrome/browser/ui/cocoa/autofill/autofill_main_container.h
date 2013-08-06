@@ -19,7 +19,7 @@
 @class HyperlinkTextView;
 
 namespace autofill {
-  class AutofillDialogController;
+  class AutofillDialogViewDelegate;
 }
 
 // NSViewController for the main portion of the autofill dialog. Contains
@@ -36,7 +36,7 @@ namespace autofill {
   AutofillDialogWindowController* target_;
 
   // Weak. Owns the dialog.
-  autofill::AutofillDialogController* controller_;
+  autofill::AutofillDialogViewDelegate* delegate_;
 
   // Preferred size for legal documents.
   NSSize legalDocumentsSize_;
@@ -48,15 +48,15 @@ namespace autofill {
 @property(assign, nonatomic) AutofillDialogWindowController* target;
 
 // Designated initializer.
-- (id)initWithController:(autofill::AutofillDialogController*)controller;
+- (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate;
 
 // Sets the anchor point for the notificationView_.
 - (void)setAnchorView:(NSView*)anchorView;
 
-// Returns the view controller responsible for |section|.
+// Returns the view delegate responsible for |section|.
 - (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section;
 
-// Called when the controller-maintained suggestions model has changed.
+// Called when the delegate-maintained suggestions model has changed.
 - (void)modelChanged;
 
 // Get status of "Save in Chrome" checkbox.

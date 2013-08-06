@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_H_
-#define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_DELEGATE_H_
+#define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_DELEGATE_H_
 
 #include <vector>
 
@@ -35,7 +35,7 @@ class MenuModel;
 namespace autofill {
 
 // This class defines the interface to the controller that the dialog view sees.
-class AutofillDialogController {
+class AutofillDialogViewDelegate {
  public:
   // Strings -------------------------------------------------------------------
 
@@ -208,9 +208,9 @@ class AutofillDialogController {
   virtual content::WebContents* web_contents() = 0;
 
  protected:
-  virtual ~AutofillDialogController();
+  virtual ~AutofillDialogViewDelegate();
 };
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_DELEGATE_H_

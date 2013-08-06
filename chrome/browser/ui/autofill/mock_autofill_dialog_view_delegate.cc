@@ -1,15 +1,15 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #include "content/public/browser/native_web_keyboard_event.h"  // For gmock.
 #include "grit/generated_resources.h"
 #include "ui/gfx/rect.h"  // Only needed because gmock needs complete types.
 
 namespace autofill {
 
-MockAutofillDialogController::MockAutofillDialogController() {
+MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
   using testing::DefaultValue;
   using testing::_;
   using testing::Return;
@@ -49,7 +49,7 @@ MockAutofillDialogController::MockAutofillDialogController() {
       .WillByDefault(Return(false));
 }
 
-MockAutofillDialogController::~MockAutofillDialogController() {
+MockAutofillDialogViewDelegate::~MockAutofillDialogViewDelegate() {
   using testing::DefaultValue;
 
   DefaultValue<SuggestionState>::Clear();

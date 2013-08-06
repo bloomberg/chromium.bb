@@ -18,7 +18,7 @@
 namespace autofill {
   class DialogNotification;
   typedef std::vector<DialogNotification> DialogNotifications;
-  class AutofillDialogController;
+  class AutofillDialogViewDelegate;
 }
 
 // Container for all notifications shown in requestAutocomplete dialog.
@@ -33,12 +33,12 @@ namespace autofill {
   // The notification that the checkbox is associated with.
   scoped_ptr<autofill::DialogNotification> checkboxNotification_;
 
-  // Main controller for the dialog. Weak, owns dialog.
-  autofill::AutofillDialogController* controller_;
+  // Main delegate for the dialog. Weak, owns dialog.
+  autofill::AutofillDialogViewDelegate* delegate_;
 }
 
 // Designated initializer.
-- (id)initWithController:(autofill::AutofillDialogController*)controller;
+- (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate;
 
 // Computes the views preferred size given a fixed width.
 - (NSSize)preferredSizeForWidth:(CGFloat)width;

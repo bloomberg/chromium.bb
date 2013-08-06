@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/mac/foundation_util.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -26,16 +26,16 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
 
 @implementation AutofillDetailsContainer
 
-- (id)initWithController:(autofill::AutofillDialogController*)controller {
+- (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate {
   if (self = [super init]) {
-    controller_ = controller;
+    delegate_ = delegate;
   }
   return self;
 }
 
 - (void)addSection:(autofill::DialogSection)section {
   base::scoped_nsobject<AutofillSectionContainer> sectionContainer(
-      [[AutofillSectionContainer alloc] initWithController:controller_
+      [[AutofillSectionContainer alloc] initWithDelegate:delegate_
                                                 forSection:section]);
   [sectionContainer setValidationDelegate:self];
   [details_ addObject:sectionContainer];

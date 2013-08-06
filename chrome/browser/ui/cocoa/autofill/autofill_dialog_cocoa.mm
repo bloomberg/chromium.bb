@@ -9,7 +9,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/chrome_style.h"
@@ -38,13 +38,13 @@ namespace autofill {
 
 // static
 AutofillDialogView* AutofillDialogView::Create(
-    AutofillDialogController* controller) {
-  return new AutofillDialogCocoa(controller);
+    AutofillDialogViewDelegate* delegate) {
+  return new AutofillDialogCocoa(delegate);
 }
 
-AutofillDialogCocoa::AutofillDialogCocoa(AutofillDialogController* controller)
+AutofillDialogCocoa::AutofillDialogCocoa(AutofillDialogViewDelegate* delegate)
     : close_weak_ptr_factory_(this),
-      controller_(controller) {
+      delegate_(delegate) {
 }
 
 AutofillDialogCocoa::~AutofillDialogCocoa() {
@@ -52,19 +52,19 @@ AutofillDialogCocoa::~AutofillDialogCocoa() {
 
 void AutofillDialogCocoa::Show() {
   // This should only be called once.
-  DCHECK(!sheet_controller_.get());
-  sheet_controller_.reset([[AutofillDialogWindowController alloc]
-       initWithWebContents:controller_->web_contents()
+  DCHECK(!sheet_delegate_.get());
+  sheet_delegate_.reset([[AutofillDialogWindowController alloc]
+       initWithWebContents:delegate_->web_contents()
             autofillDialog:this]);
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
-          initWithCustomWindow:[sheet_controller_ window]]);
+          initWithCustomWindow:[sheet_delegate_ window]]);
   constrained_window_.reset(
-      new ConstrainedWindowMac(this, controller_->web_contents(), sheet));
+      new ConstrainedWindowMac(this, delegate_->web_contents(), sheet));
 }
 
 void AutofillDialogCocoa::Hide() {
-  [sheet_controller_ hide];
+  [sheet_delegate_ hide];
 }
 
 void AutofillDialogCocoa::PerformClose() {
@@ -81,7 +81,7 @@ void AutofillDialogCocoa::CloseNow() {
 }
 
 void AutofillDialogCocoa::UpdateAccountChooser() {
-  [sheet_controller_ updateAccountChooser];
+  [sheet_delegate_ updateAccountChooser];
 }
 
 void AutofillDialogCocoa::UpdateButtonStrip() {
@@ -94,24 +94,24 @@ void AutofillDialogCocoa::UpdateForErrors() {
 }
 
 void AutofillDialogCocoa::UpdateNotificationArea() {
-  [sheet_controller_ updateNotificationArea];
+  [sheet_delegate_ updateNotificationArea];
 }
 
 void AutofillDialogCocoa::UpdateAutocheckoutStepsArea() {
 }
 
 void AutofillDialogCocoa::UpdateSection(DialogSection section) {
-  [sheet_controller_ updateSection:section];
+  [sheet_delegate_ updateSection:section];
 }
 
 void AutofillDialogCocoa::FillSection(DialogSection section,
                                       const DetailInput& originating_input) {
-  [sheet_controller_ fillSection:section forInput:originating_input];
+  [sheet_delegate_ fillSection:section forInput:originating_input];
 }
 
 void AutofillDialogCocoa::GetUserInput(DialogSection section,
                                        DetailOutputMap* output) {
-  [sheet_controller_ getInputs:output forSection:section];
+  [sheet_delegate_ getInputs:output forSection:section];
 }
 
 string16 AutofillDialogCocoa::GetCvc() {
@@ -119,21 +119,21 @@ string16 AutofillDialogCocoa::GetCvc() {
 }
 
 bool AutofillDialogCocoa::SaveDetailsLocally() {
-  return [sheet_controller_ saveDetailsLocally];
+  return [sheet_delegate_ saveDetailsLocally];
 }
 
 const content::NavigationController* AutofillDialogCocoa::ShowSignIn() {
-  return [sheet_controller_ showSignIn];
+  return [sheet_delegate_ showSignIn];
 }
 
 void AutofillDialogCocoa::HideSignIn() {
-  [sheet_controller_ hideSignIn];
+  [sheet_delegate_ hideSignIn];
 }
 
 void AutofillDialogCocoa::UpdateProgressBar(double value) {}
 
 void AutofillDialogCocoa::ModelChanged() {
-  [sheet_controller_ modelChanged];
+  [sheet_delegate_ modelChanged];
 }
 
 void AutofillDialogCocoa::OnSignInResize(const gfx::Size& pref_size) {
@@ -145,18 +145,18 @@ TestableAutofillDialogView* AutofillDialogCocoa::GetTestableView() {
 }
 
 void AutofillDialogCocoa::SubmitForTesting() {
-  [sheet_controller_ accept:nil];
+  [sheet_delegate_ accept:nil];
 }
 
 void AutofillDialogCocoa::CancelForTesting() {
-  [sheet_controller_ cancel:nil];
+  [sheet_delegate_ cancel:nil];
 }
 
 string16 AutofillDialogCocoa::GetTextContentsOfInput(const DetailInput& input) {
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
     DialogSection section = static_cast<DialogSection>(i);
     DetailOutputMap contents;
-    [sheet_controller_ getInputs:&contents forSection:section];
+    [sheet_delegate_ getInputs:&contents forSection:section];
     DetailOutputMap::const_iterator it = contents.find(&input);
     if (it != contents.end())
       return it->second;
@@ -168,30 +168,30 @@ string16 AutofillDialogCocoa::GetTextContentsOfInput(const DetailInput& input) {
 
 void AutofillDialogCocoa::SetTextContentsOfInput(const DetailInput& input,
                                                  const string16& contents) {
-  [sheet_controller_ setTextContents:base::SysUTF16ToNSString(contents)
+  [sheet_delegate_ setTextContents:base::SysUTF16ToNSString(contents)
                             forInput:input];
 }
 
 void AutofillDialogCocoa::SetTextContentsOfSuggestionInput(
     DialogSection section,
     const base::string16& text) {
-  [sheet_controller_ setTextContents:base::SysUTF16ToNSString(text)
+  [sheet_delegate_ setTextContents:base::SysUTF16ToNSString(text)
               ofSuggestionForSection:section];
 }
 
 void AutofillDialogCocoa::ActivateInput(const DetailInput& input) {
-  [sheet_controller_ activateFieldForInput:input];
+  [sheet_delegate_ activateFieldForInput:input];
 }
 
 gfx::Size AutofillDialogCocoa::GetSize() const {
-  return gfx::Size(NSSizeToCGSize([[sheet_controller_ window] frame].size));
+  return gfx::Size(NSSizeToCGSize([[sheet_delegate_ window] frame].size));
 }
 
 void AutofillDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   constrained_window_.reset();
-  // |this| belongs to |controller_|, so no self-destruction here.
-  controller_->ViewClosed();
+  // |this| belongs to |delegate_|, so no self-destruction here.
+  delegate_->ViewClosed();
 }
 
 }  // autofill
@@ -220,12 +220,12 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     autofillDialog_ = autofillDialog;
 
     mainContainer_.reset([[AutofillMainContainer alloc]
-                             initWithController:autofillDialog->controller()]);
+                             initWithDelegate:autofillDialog->delegate()]);
     [mainContainer_ setTarget:self];
 
     signInContainer_.reset(
         [[AutofillSignInContainer alloc]
-            initWithController:autofillDialog->controller()]);
+            initWithDelegate:autofillDialog->delegate()]);
     [[signInContainer_ view] setHidden:YES];
 
     NSRect clientRect = [[mainContainer_ view] frame];
@@ -239,7 +239,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     headerRect.origin.y = NSMaxY(clientRect);
     accountChooser_.reset([[AutofillAccountChooser alloc]
                               initWithFrame:headerRect
-                                 controller:autofillDialog->controller()]);
+                                 delegate:autofillDialog->delegate()]);
 
     // This needs a flipped content view because otherwise the size
     // animation looks odd. However, replacing the contentView for constrained
@@ -343,16 +343,16 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 - (IBAction)accept:(id)sender {
   if ([mainContainer_ validate])
-    autofillDialog_->controller()->OnAccept();
+    autofillDialog_->delegate()->OnAccept();
 }
 
 - (IBAction)cancel:(id)sender {
-  autofillDialog_->controller()->OnCancel();
+  autofillDialog_->delegate()->OnCancel();
   autofillDialog_->PerformClose();
 }
 
 - (void)hide {
-  autofillDialog_->controller()->OnCancel();
+  autofillDialog_->delegate()->OnCancel();
   autofillDialog_->PerformClose();
 }
 

@@ -8,7 +8,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
-#include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
 #import "chrome/browser/ui/cocoa/autofill/layout_view.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
@@ -33,14 +33,14 @@ class AutofillSectionContainerTest : public ui::CocoaTest {
   void ResetContainer() {
     container_.reset(
         [[AutofillSectionContainer alloc]
-            initWithController:&controller_
+            initWithDelegate:&delegate_
                     forSection:section_]);
     [[test_window() contentView] setSubviews:@[ [container_ view] ]];
   }
 
  protected:
   base::scoped_nsobject<AutofillSectionContainer> container_;
-  testing::NiceMock<autofill::MockAutofillDialogController> controller_;
+  testing::NiceMock<autofill::MockAutofillDialogViewDelegate> delegate_;
   autofill::DialogSection section_;
 };
 
@@ -85,9 +85,9 @@ TEST_F(AutofillSectionContainerTest, ModelsPopulateComboboxes) {
   inputs.push_back(kTestInputs[0]);
 
   autofill::MonthComboboxModel comboModel;
-  EXPECT_CALL(controller_, RequestedFieldsForSection(section_))
+  EXPECT_CALL(delegate_, RequestedFieldsForSection(section_))
       .WillOnce(ReturnRef(inputs));
-  EXPECT_CALL(controller_, ComboboxModelForAutofillType(CREDIT_CARD_EXP_MONTH))
+  EXPECT_CALL(delegate_, ComboboxModelForAutofillType(CREDIT_CARD_EXP_MONTH))
       .WillRepeatedly(Return(&comboModel));
   ResetContainer();
 
@@ -114,11 +114,11 @@ TEST_F(AutofillSectionContainerTest, OutputMatchesDefinition) {
   inputs.push_back(kTestInputs[0]);
   inputs.push_back(kTestInputs[1]);
 
-  EXPECT_CALL(controller_, RequestedFieldsForSection(section_))
+  EXPECT_CALL(delegate_, RequestedFieldsForSection(section_))
       .WillOnce(ReturnRef(inputs));
-  EXPECT_CALL(controller_, ComboboxModelForAutofillType(EMAIL_ADDRESS))
+  EXPECT_CALL(delegate_, ComboboxModelForAutofillType(EMAIL_ADDRESS))
       .WillRepeatedly(ReturnNull());
-  EXPECT_CALL(controller_, ComboboxModelForAutofillType(CREDIT_CARD_EXP_MONTH))
+  EXPECT_CALL(delegate_, ComboboxModelForAutofillType(CREDIT_CARD_EXP_MONTH))
       .WillRepeatedly(Return(&comboModel));
 
   ResetContainer();
@@ -144,7 +144,7 @@ TEST_F(AutofillSectionContainerTest, SuggestionsPopulatedByController) {
   using namespace autofill;
   using namespace testing;
 
-  EXPECT_CALL(controller_, MenuModelForSection(section_))
+  EXPECT_CALL(delegate_, MenuModelForSection(section_))
       .WillOnce(Return(&model));
 
   ResetContainer();
@@ -178,11 +178,11 @@ TEST_F(AutofillSectionContainerTest, FieldsAreInitiallyValid) {
   inputs.push_back(kTestInputs[0]);
   inputs.push_back(kTestInputs[1]);
 
-  EXPECT_CALL(controller_, RequestedFieldsForSection(section_))
+  EXPECT_CALL(delegate_, RequestedFieldsForSection(section_))
       .WillOnce(ReturnRef(inputs));
-  EXPECT_CALL(controller_, ComboboxModelForAutofillType(EMAIL_ADDRESS))
+  EXPECT_CALL(delegate_, ComboboxModelForAutofillType(EMAIL_ADDRESS))
       .WillRepeatedly(ReturnNull());
-  EXPECT_CALL(controller_, ComboboxModelForAutofillType(CREDIT_CARD_EXP_MONTH))
+  EXPECT_CALL(delegate_, ComboboxModelForAutofillType(CREDIT_CARD_EXP_MONTH))
       .WillRepeatedly(Return(&comboModel));
 
   ResetContainer();
@@ -211,16 +211,16 @@ TEST_F(AutofillSectionContainerTest, ControllerInformsValidity) {
 
   validity[EMAIL_ADDRESS] = ASCIIToUTF16("Some error message");
   validity2[CREDIT_CARD_EXP_MONTH ] = ASCIIToUTF16("Some other error message");
-  EXPECT_CALL(controller_, RequestedFieldsForSection(section_))
+  EXPECT_CALL(delegate_, RequestedFieldsForSection(section_))
       .WillOnce(ReturnRef(inputs));
-  EXPECT_CALL(controller_, ComboboxModelForAutofillType(EMAIL_ADDRESS))
+  EXPECT_CALL(delegate_, ComboboxModelForAutofillType(EMAIL_ADDRESS))
       .WillRepeatedly(ReturnNull());
-  EXPECT_CALL(controller_, ComboboxModelForAutofillType(CREDIT_CARD_EXP_MONTH))
+  EXPECT_CALL(delegate_, ComboboxModelForAutofillType(CREDIT_CARD_EXP_MONTH))
       .WillRepeatedly(Return(&comboModel));
 
   ResetContainer();
   [container_ getInputs:&output];
-  EXPECT_CALL(controller_, InputsAreValid(section_, output, VALIDATE_FINAL))
+  EXPECT_CALL(delegate_, InputsAreValid(section_, output, VALIDATE_FINAL))
       .WillOnce(Return(validity))
       .WillOnce(Return(validity2));
 

@@ -9,7 +9,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
@@ -33,9 +33,9 @@
 
 @synthesize target = target_;
 
-- (id)initWithController:(autofill::AutofillDialogController*)controller {
+- (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate {
   if (self = [super init]) {
-    controller_ = controller;
+    delegate_ = delegate;
   }
   return self;
 }
@@ -54,13 +54,13 @@
   saveInChromeCheckbox_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
   [saveInChromeCheckbox_ setButtonType:NSSwitchButton];
   [saveInChromeCheckbox_ setTitle:
-      base::SysUTF16ToNSString(controller_->SaveLocallyText())];
+      base::SysUTF16ToNSString(delegate_->SaveLocallyText())];
   [saveInChromeCheckbox_ setState:NSOnState];
   [saveInChromeCheckbox_ sizeToFit];
   [[self view] addSubview:saveInChromeCheckbox_];
 
   detailsContainer_.reset(
-      [[AutofillDetailsContainer alloc] initWithController:controller_]);
+      [[AutofillDetailsContainer alloc] initWithDelegate:delegate_]);
   NSSize frameSize = [[detailsContainer_ view] frame].size;
   [[detailsContainer_ view] setFrameOrigin:
       NSMakePoint(0, NSHeight([buttonContainer_ frame]))];
@@ -83,7 +83,7 @@
   [[self view] addSubview:legalDocumentsView_];
 
   notificationContainer_.reset(
-      [[AutofillNotificationContainer alloc] initWithController:controller_]);
+      [[AutofillNotificationContainer alloc] initWithDelegate:delegate_]);
   [[self view] addSubview:[notificationContainer_ view]];
 }
 
@@ -92,8 +92,8 @@
     clickedOnLink:(id)link
           atIndex:(NSUInteger)charIndex {
   int index = [base::mac::ObjCCastStrict<NSNumber>(link) intValue];
-  controller_->LegalDocumentLinkClicked(
-      controller_->LegalDocumentLinks()[index]);
+  delegate_->LegalDocumentLinkClicked(
+      delegate_->LegalDocumentLinks()[index]);
   return YES;
 }
 
@@ -230,7 +230,7 @@
 }
 
 - (void)modelChanged {
-  [saveInChromeCheckbox_ setHidden:!controller_->ShouldOfferToSaveInChrome()];
+  [saveInChromeCheckbox_ setHidden:!delegate_->ShouldOfferToSaveInChrome()];
   [detailsContainer_ modelChanged];
 }
 
@@ -239,7 +239,7 @@
 }
 
 - (void)updateLegalDocuments {
-  NSString* text = base::SysUTF16ToNSString(controller_->LegalDocumentsText());
+  NSString* text = base::SysUTF16ToNSString(delegate_->LegalDocumentsText());
 
   if ([text length]) {
     NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
@@ -248,7 +248,7 @@
                        messageColor:[NSColor blackColor]];
 
     const std::vector<ui::Range>& link_ranges =
-        controller_->LegalDocumentLinks();
+        delegate_->LegalDocumentLinks();
     for (size_t i = 0; i < link_ranges.size(); ++i) {
       NSRange range = link_ranges[i].ToNSRange();
       [legalDocumentsView_ addLinkRange:range
@@ -260,16 +260,16 @@
   [legalDocumentsView_ setHidden:[text length] == 0];
 
   // Always request re-layout on state change.
-  id controller = [[[self view] window] windowController];
-  if ([controller respondsToSelector:@selector(requestRelayout)])
-    [controller performSelector:@selector(requestRelayout)];
+  id delegate = [[[self view] window] windowController];
+  if ([delegate respondsToSelector:@selector(requestRelayout)])
+    [delegate performSelector:@selector(requestRelayout)];
 }
 
 - (void)updateNotificationArea {
-  [notificationContainer_ setNotifications:controller_->CurrentNotifications()];
-  id controller = [[[self view] window] windowController];
-  if ([controller respondsToSelector:@selector(requestRelayout)])
-    [controller performSelector:@selector(requestRelayout)];
+  [notificationContainer_ setNotifications:delegate_->CurrentNotifications()];
+  id delegate = [[[self view] window] windowController];
+  if ([delegate respondsToSelector:@selector(requestRelayout)])
+    [delegate performSelector:@selector(requestRelayout)];
 }
 
 - (void)setAnchorView:(NSView*)anchorView {

@@ -7,7 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -22,13 +22,13 @@ class AutofillAccountChooserTest : public ui::CocoaTest {
   AutofillAccountChooserTest() {
     NSRect frame = NSMakeRect(0, 0, 500, 200);
     view_.reset([[AutofillAccountChooser alloc] initWithFrame:frame
-                                                   controller:&controller_]);
+                                                   delegate:&delegate_]);
     [[test_window() contentView] addSubview:view_];
  }
 
  protected:
   base::scoped_nsobject<AutofillAccountChooser> view_;
-  testing::NiceMock<autofill::MockAutofillDialogController> controller_;
+  testing::NiceMock<autofill::MockAutofillDialogViewDelegate> delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillAccountChooserTest);
@@ -85,7 +85,7 @@ TEST_F(AutofillAccountChooserTest, PopulatesMenu) {
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
 
-  EXPECT_CALL(controller_, MenuModelForAccountChooser())
+  EXPECT_CALL(delegate_, MenuModelForAccountChooser())
       .WillOnce(Return(&model));
   [view_ update];
 

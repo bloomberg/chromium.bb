@@ -14,7 +14,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
 namespace autofill {
-  class AutofillDialogController;
+  class AutofillDialogViewDelegate;
 }
 
 @class AutofillSectionView;
@@ -32,9 +32,9 @@ namespace autofill {
 @end
 
 
-// View controller for a section of the payment details. Contains a label
+// View delegate for a section of the payment details. Contains a label
 // describing the section as well as associated inputs and controls. Built
-// dynamically based on data retrieved from AutofillDialogController.
+// dynamically based on data retrieved from AutofillDialogViewDelegate.
 @interface AutofillSectionContainer :
     NSViewController<AutofillLayout, AutofillInputDelegate> {
  @private
@@ -54,21 +54,21 @@ namespace autofill {
 
   base::scoped_nsobject<MenuController> menuController_;
   autofill::DialogSection section_;
-  autofill::AutofillDialogController* controller_;  // Not owned.
+  autofill::AutofillDialogViewDelegate* delegate_;  // Not owned.
 }
 
 @property(readonly, nonatomic) autofill::DialogSection section;
 @property(assign, nonatomic) id<AutofillValidationDisplay> validationDelegate;
 
-// Designated initializer. Queries |controller| for the list of desired input
+// Designated initializer. Queries |delegate| for the list of desired input
 // fields for |section|.
-- (id)initWithController:(autofill::AutofillDialogController*)controller
+- (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate
               forSection:(autofill::DialogSection)section;
 
 // Populates |output| with mappings from field identification to input value.
 - (void)getInputs:(autofill::DetailOutputMap*)output;
 
-// Called when the controller-maintained suggestions model has changed.
+// Called when the delegate-maintained suggestions model has changed.
 - (void)modelChanged;
 
 // Called when the contents of a section have changed.

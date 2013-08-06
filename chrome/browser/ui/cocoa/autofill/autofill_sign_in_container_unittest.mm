@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,8 +34,8 @@ class AutofillSignInContainerTest : public ChromeRenderViewHostTestHarness {
     // from from CocoaTest, so do a bootstrap and create test window.
     CocoaTest::BootstrapCocoa();
     container_.reset(
-        [[AutofillSignInContainer alloc] initWithController:&controller_]);
-    EXPECT_CALL(controller_, profile())
+        [[AutofillSignInContainer alloc] initWithDelegate:&delegate_]);
+    EXPECT_CALL(delegate_, profile())
         .WillOnce(testing::Return(this->profile()));
     [[test_window() contentView] addSubview:[container_ view]];
   }
@@ -61,7 +61,7 @@ class AutofillSignInContainerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   base::scoped_nsobject<AutofillSignInContainer> container_;
-  testing::NiceMock<autofill::MockAutofillDialogController> controller_;
+  testing::NiceMock<autofill::MockAutofillDialogViewDelegate> delegate_;
   CocoaTestHelperWindow* test_window_;
 };
 

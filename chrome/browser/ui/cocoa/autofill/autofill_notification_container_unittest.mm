@@ -7,7 +7,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
-#include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
@@ -17,14 +17,14 @@ class AutofillNotificationContainerTest : public ui::CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
-    container_.reset([[AutofillNotificationContainer alloc] initWithController:
-                         &controller_]);
+    container_.reset([[AutofillNotificationContainer alloc] initWithDelegate:
+                         &delegate_]);
     [[test_window() contentView] addSubview:[container_ view]];
   }
 
  protected:
   base::scoped_nsobject<AutofillNotificationContainer> container_;
-  testing::NiceMock<autofill::MockAutofillDialogController> controller_;
+  testing::NiceMock<autofill::MockAutofillDialogViewDelegate> delegate_;
 };
 
 }  // namespace
