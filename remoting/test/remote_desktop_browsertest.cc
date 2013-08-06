@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,8 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
 
   // Verify the test has access to the internet (specifically google.com)
   void VerifyInternetAccess();
+
+  void Authorize();
 
   // Whether to perform the cleanup tasks (uninstalling chromoting, etc).
   // This is useful for diagnostic purposes.
@@ -239,6 +241,52 @@ void RemoteDesktopBrowserTest::VerifyChromotingLoaded(bool expected) {
   EXPECT_EQ(installed, expected);
 }
 
+void RemoteDesktopBrowserTest::Authorize() {
+  // The chromoting extension should be installed.
+  ASSERT_FALSE(ChromotingID().empty());
+
+  // The chromoting main page should be loaded in the current tab
+  // and isAuthenticated() should be false (auth dialog visible).
+  std::string url = "chrome-extension://" + ChromotingID() + "/main.html";
+  ASSERT_EQ(GetCurrentURL().spec(), url);
+
+  bool result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send("
+          "remoting.OAuth2.prototype.isAuthenticated());",
+      &result));
+  EXPECT_FALSE(result);
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &browser()->tab_strip_model()->GetActiveWebContents()->
+              GetController()));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "remoting.OAuth2.prototype.doAuthRedirect()"));
+  observer.Wait();
+
+  // Verify the active tab is at the "Google Accounts" login page.
+  EXPECT_EQ(GetCurrentURL().host(), "accounts.google.com");
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send("
+          "document.getElementById(\"Email\") != null);",
+      &result));
+  EXPECT_TRUE(result);
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send("
+          "document.getElementById(\"Passwd\") != null);",
+      &result));
+  EXPECT_TRUE(result);
+}
+
 IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Launch) {
   VerifyInternetAccess();
 
@@ -256,6 +304,26 @@ IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Launch) {
   // uinstall it now those load will fail. Navigating away to avoid the load
   // failures.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  if (!NoCleanup()) {
+    UninstallChromotingApp();
+    VerifyChromotingLoaded(false);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Auth) {
+  VerifyInternetAccess();
+
+  if (!NoInstall()) {
+    VerifyChromotingLoaded(false);
+    InstallChromotingApp();
+  }
+
+  VerifyChromotingLoaded(true);
+
+  LaunchChromotingApp();
+
+  Authorize();
 
   if (!NoCleanup()) {
     UninstallChromotingApp();
