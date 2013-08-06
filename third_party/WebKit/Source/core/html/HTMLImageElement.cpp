@@ -165,12 +165,14 @@ void HTMLImageElement::attach(const AttachContext& context)
         RenderImageResource* renderImageResource = renderImage->imageResource();
         if (renderImageResource->hasImage())
             return;
-        renderImageResource->setCachedImage(m_imageLoader.image());
 
         // If we have no image at all because we have no src attribute, set
         // image height and width for the alt text instead.
         if (!m_imageLoader.image() && !renderImageResource->cachedImage())
             renderImage->setImageSizeForAltText();
+        else
+            renderImageResource->setCachedImage(m_imageLoader.image());
+
     }
 }
 
