@@ -300,7 +300,6 @@ gTestInclusions = {
          'NotificationApiTest.*',
          'MediaGalleriesPrivateApiTest.*',
          'PlatformAppMediaGalleriesBrowserTest.*',
-         'ExperimentalMediaGalleriesApiTest.*',
          'GetAuthTokenFunctionTest.*',
          'LaunchWebAuthFlowFunctionTest.*',
          'FileSystemApiTest.*',

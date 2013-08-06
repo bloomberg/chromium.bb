@@ -58,17 +58,6 @@ class MediaGalleriesGetMediaFileSystemsFunction
       const chrome::MediaFileSystemsCallback& cb);
 };
 
-class MediaGalleriesAssembleMediaFileFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "experimental.mediaGalleries.assembleMediaFile",
-      EXPERIMENTAL_MEDIAGALLERIES_ASSEMBLEMEDIAFILE)
-
- protected:
-  virtual ~MediaGalleriesAssembleMediaFileFunction();
-  virtual bool RunImpl() OVERRIDE;
-};
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_

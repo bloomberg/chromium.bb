@@ -22,7 +22,6 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/common/extensions/api/experimental_media_galleries.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
@@ -244,20 +243,6 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
       g_browser_process->media_file_system_registry();
   registry->GetMediaFileSystemsForExtension(
       render_view_host(), GetExtension(), cb);
-}
-
-// MediaGalleriesAssembleMediaFileFunction -------------------------------------
-
-MediaGalleriesAssembleMediaFileFunction::
-    ~MediaGalleriesAssembleMediaFileFunction() {}
-
-bool MediaGalleriesAssembleMediaFileFunction::RunImpl() {
-  if (!ApiIsAccessible(&error_))
-    return false;
-
-  // TODO(vandebo) Update the metadata and return the new file.
-  SetResult(base::Value::CreateNullValue());
-  return true;
 }
 
 }  // namespace extensions

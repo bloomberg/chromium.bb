@@ -23,10 +23,6 @@ MediaGalleriesCustomBindings::MediaGalleriesCustomBindings(
       "GetMediaFileSystemObject",
       base::Bind(&MediaGalleriesCustomBindings::GetMediaFileSystemObject,
                  base::Unretained(this)));
-  RouteFunction(
-      "ExtractEmbeddedThumbnails",
-      base::Bind(&MediaGalleriesCustomBindings::ExtractEmbeddedThumbnails,
-                 base::Unretained(this)));
 }
 
 void MediaGalleriesCustomBindings::GetMediaFileSystemObject(
@@ -56,18 +52,6 @@ void MediaGalleriesCustomBindings::GetMediaFileSystemObject(
       webframe->createFileSystem(WebKit::WebFileSystemTypeIsolated,
                                  WebKit::WebString::fromUTF8(fs_name),
                                  WebKit::WebString::fromUTF8(root_url)));
-}
-
-void MediaGalleriesCustomBindings::ExtractEmbeddedThumbnails(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (args.Length() != 1) {
-    NOTREACHED() << "Bad arguments";
-    return;
-  }
-  // TODO(vandebo) Check that the object is a FileEntry.
-
-  // TODO(vandebo) Create and return a Directory entry object.
-  args.GetReturnValue().SetNull();
 }
 
 }  // namespace extensions

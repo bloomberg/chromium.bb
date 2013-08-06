@@ -38,15 +38,6 @@ base::FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
 
 const char kTestGalleries[] = "testGalleries(%d)";
 
-class MediaGalleriesExperimentalApiTest : public ExtensionApiTest {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        extensions::switches::kEnableExperimentalExtensionApis);
-  }
-};
-
 }  // namespace
 
 // This function is to ensure at least one (fake) media gallery exists for
@@ -185,10 +176,4 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   chrome::EnsureMediaDirectoriesExists media_directories;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/metadata"))
       << message_;
-}
-
-
-IN_PROC_BROWSER_TEST_F(MediaGalleriesExperimentalApiTest,
-                       ExperimentalMediaGalleries) {
-  ASSERT_TRUE(RunExtensionTest("media_galleries/experimental")) << message_;
 }

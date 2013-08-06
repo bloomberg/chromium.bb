@@ -21,12 +21,6 @@ class MediaGalleriesCustomBindings : public ChromeV8Extension {
   void GetMediaFileSystemObject(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // DirectoryReader GetMediaFileSystem(FileEntry): synchronously return a
-  // directory reader for a virtual directory.  The directory will contain
-  // all of the thumbnails embedded in the passed file.
-  void ExtractEmbeddedThumbnails(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesCustomBindings);
 };
 
