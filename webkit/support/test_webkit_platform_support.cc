@@ -221,6 +221,8 @@ WebKit::WebString TestWebKitPlatformSupport::queryLocalizedString(
       return ASCIIToUTF16("<<ThisMonthLabel>>");
     case WebKit::WebLocalizedString::ThisWeekButtonLabel:
       return ASCIIToUTF16("<<ThisWeekLabel>>");
+    case WebKit::WebLocalizedString::WeekFormatTemplate:
+      return ASCIIToUTF16("Week $2, $1");
     default:
       return WebKitPlatformSupportImpl::queryLocalizedString(name);
   }
@@ -333,6 +335,16 @@ void TestWebKitPlatformSupport::sampleGamepads(WebKit::WebGamepads& data) {
 void TestWebKitPlatformSupport::setGamepadData(
     const WebKit::WebGamepads& data) {
   gamepad_data_ = data;
+}
+
+base::string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
+  return base::string16();
+}
+
+base::StringPiece TestWebKitPlatformSupport::GetDataResource(
+    int resource_id,
+    ui::ScaleFactor scale_factor) {
+  return base::StringPiece();
 }
 
 webkit_glue::ResourceLoaderBridge*

@@ -50,13 +50,9 @@ void BeforeInitialize() {
 }
 
 void AfterInitialize() {
-  base::FilePath data_path(kDumpRenderTreeDir);
-  data_path = data_path.Append("DumpRenderTree.pak");
-  ResourceBundle::InitSharedInstanceWithPakPath(data_path);
 }
 
 void BeforeShutdown() {
-  ResourceBundle::CleanupSharedInstance();
 }
 
 void AfterShutdown() {
@@ -64,38 +60,3 @@ void AfterShutdown() {
 
 }  // namespace webkit_support
 
-base::string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
-  return ResourceBundle::GetSharedInstance().GetLocalizedString(message_id);
-}
-
-base::StringPiece TestWebKitPlatformSupport::GetDataResource(
-    int resource_id,
-    ui::ScaleFactor scale_factor) {
-  base::FilePath resources_path(kDumpRenderTreeDir);
-  resources_path = resources_path.Append("DumpRenderTree_resources");
-  switch (resource_id) {
-    case IDR_BROKENIMAGE: {
-      CR_DEFINE_STATIC_LOCAL(std::string, broken_image_data, ());
-      if (broken_image_data.empty()) {
-        base::FilePath path = resources_path.Append("missingImage.gif");
-        bool success = file_util::ReadFileToString(path, &broken_image_data);
-        if (!success)
-          LOG(FATAL) << "Failed reading: " << path.value();
-      }
-      return broken_image_data;
-    }
-    case IDR_TEXTAREA_RESIZER: {
-      CR_DEFINE_STATIC_LOCAL(std::string, resize_corner_data, ());
-      if (resize_corner_data.empty()) {
-        base::FilePath path = resources_path.Append("textAreaResizeCorner.png");
-        bool success = file_util::ReadFileToString(path, &resize_corner_data);
-        if (!success)
-          LOG(FATAL) << "Failed reading: " << path.value();
-      }
-      return resize_corner_data;
-    }
-  }
-
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
-      resource_id, scale_factor);
-}
