@@ -140,7 +140,7 @@
                   'enable_x86_64': 0
                 }
               ],
-              ['OS!="win" and target_arch=="x64"',
+              ['target_arch=="x64"',
                 {
                   'enable_x86_32': 0
                 }
