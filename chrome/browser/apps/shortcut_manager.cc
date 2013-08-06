@@ -61,6 +61,12 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
       is_profile_info_cache_observer_(false),
       prefs_(profile->GetPrefs()),
       weak_factory_(this) {
+  // Use of g_browser_process requires that we are either on the UI thread, or
+  // there are no threads initialized (such as in unit tests).
+  DCHECK(
+      !content::BrowserThread::IsWellKnownThread(content::BrowserThread::UI) ||
+      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
@@ -69,9 +75,6 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<Profile>(profile_));
 
-  // TODO(mgiuca): This use of g_browser_process should be DCHECKed for
-  // content::BrowserThread::CurrentlyOn(content::BrowserThread::UI). This check
-  // currently fails browser_tests, due to http://crbug.com/251191.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // profile_manager might be NULL in testing environments.
   if (profile_manager) {
