@@ -92,6 +92,8 @@ struct wl_display {
 	struct wl_list client_list;
 
 	struct wl_signal destroy_signal;
+
+	struct wl_array additional_shm_formats;
 };
 
 struct wl_global {
@@ -711,6 +713,8 @@ wl_display_create(void)
 	display->id = 1;
 	display->serial = 0;
 
+	wl_array_init(&display->additional_shm_formats);
+
 	if (!wl_global_create(display, &wl_display_interface, 1,
 			      display, bind_display)) {
 		wl_event_loop_destroy(display->loop);
@@ -1167,4 +1171,19 @@ WL_EXPORT void
 wl_display_remove_global(struct wl_display *display, struct wl_global *global)
 {
 	wl_global_destroy(global);
+}
+
+WL_EXPORT void
+wl_display_add_shm_format(struct wl_display *display, uint32_t format)
+{
+	uint32_t *p;
+
+	p = wl_array_add(&display->additional_shm_formats, sizeof *p);
+	*p = format;
+}
+
+struct wl_array *
+wl_display_get_additional_shm_formats(struct wl_display *display)
+{
+	return &display->additional_shm_formats;
 }

@@ -83,6 +83,27 @@ static const struct wl_buffer_interface shm_buffer_interface = {
 	shm_buffer_destroy
 };
 
+static int
+format_is_supported(struct wl_client *client, uint32_t format)
+{
+	struct wl_display *display = wl_client_get_display(client);
+	struct wl_array *formats;
+	uint32_t *p;
+
+	switch (format) {
+	case WL_SHM_FORMAT_ARGB8888:
+	case WL_SHM_FORMAT_XRGB8888:
+		return 1;
+	default:
+		formats = wl_display_get_additional_shm_formats(display);
+		wl_array_for_each(p, formats)
+			if(*p == format)
+				return 1;
+	}
+
+	return 0;
+}
+
 static void
 shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 		       uint32_t id, int32_t offset,
@@ -92,14 +113,10 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	struct wl_shm_pool *pool = wl_resource_get_user_data(resource);
 	struct wl_shm_buffer *buffer;
 
-	switch (format) {
-	case WL_SHM_FORMAT_ARGB8888:
-	case WL_SHM_FORMAT_XRGB8888:
-		break;
-	default:
+	if (!format_is_supported(client, format)) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_FORMAT,
-				       "invalid format");
+				       "invalid format 0x%x", format);
 		return;
 	}
 
@@ -242,6 +259,9 @@ bind_shm(struct wl_client *client,
 	 void *data, uint32_t version, uint32_t id)
 {
 	struct wl_resource *resource;
+	struct wl_display *display = wl_client_get_display(client);
+	struct wl_array *additional_formats;
+	uint32_t *p;
 
 	resource = wl_resource_create(client, &wl_shm_interface, 1, id);
 	if (!resource) {
@@ -253,6 +273,10 @@ bind_shm(struct wl_client *client,
 
 	wl_shm_send_format(resource, WL_SHM_FORMAT_ARGB8888);
 	wl_shm_send_format(resource, WL_SHM_FORMAT_XRGB8888);
+
+	additional_formats = wl_display_get_additional_shm_formats(display);
+	wl_array_for_each(p, additional_formats)
+		wl_shm_send_format(resource, *p);
 }
 
 WL_EXPORT int
@@ -270,14 +294,9 @@ wl_shm_buffer_create(struct wl_client *client,
 		     int32_t stride, uint32_t format)
 {
 	struct wl_shm_buffer *buffer;
-			     
-	switch (format) {
-	case WL_SHM_FORMAT_ARGB8888:
-	case WL_SHM_FORMAT_XRGB8888:
-		break;
-	default:
+
+	if (!format_is_supported(client, format))
 		return NULL;
-	}
 
 	buffer = malloc(sizeof *buffer + stride * height);
 	if (buffer == NULL)

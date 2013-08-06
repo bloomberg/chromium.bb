@@ -29,6 +29,7 @@
 
 #define WL_HIDE_DEPRECATED 1
 
+#include "wayland-server.h"
 #include "wayland-util.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
@@ -175,5 +176,8 @@ wl_closure_destroy(struct wl_closure *closure);
 extern wl_log_func_t wl_log_handler;
 
 void wl_log(const char *fmt, ...);
+
+struct wl_array *
+wl_display_get_additional_shm_formats(struct wl_display *display);
 
 #endif
