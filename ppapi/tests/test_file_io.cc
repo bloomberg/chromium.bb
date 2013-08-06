@@ -1138,6 +1138,10 @@ std::string TestFileIO::TestRequestOSFileHandleWithOpenExclusive() {
   callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
   ASSERT_EQ(PP_OK, callback.result());
 
+  // Open with PP_FILEOPENFLAG_CREATE and PP_FILEOPENFLAG_EXCLUSIVE will fail
+  // if the file already exists. Delete it here to make sure it does not.
+  callback.WaitForResult(file_ref.Delete(callback.GetCallback()));
+
   pp::FileIO_Private file_io(instance_);
   callback.WaitForResult(file_io.Open(file_ref,
                                       PP_FILEOPENFLAG_CREATE |

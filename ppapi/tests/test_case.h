@@ -224,18 +224,21 @@ class TestCase {
   // Var ids that should be ignored when checking for leaks on shutdown.
   std::set<int64_t> ignored_leaked_vars_;
 
-  // The tests that were found in test_filter but have not yet been run. The
-  // bool indicates whether the test should be run (i.e., it will be false if
-  // the test name was prefixed in the test_filter string).
+  // The tests that were found in test_filter. The bool indicates whether the
+  // test should be run (i.e., it will be false if the test name was prefixed in
+  // the test_filter string).
   //
-  // This is initialized lazily the first time that ShouldRunTest is called by
-  // RunTests. When RunTests is finished, this should be empty. Any remaining
-  // tests are tests that were listed in the test_filter but didn't match
-  // any calls to ShouldRunTest, meaning it was probably a typo. TestingInstance
-  // should log this and consider it a failure.
+  // This is initialized lazily the first time that ShouldRunTest is called.
+  std::map<std::string, bool> filter_tests_;
+  // Flag indicating whether we have populated filter_tests_ yet.
+  bool have_populated_filter_tests_;
+  // This is initialized with the contents of filter_tests_. As each test is
+  // run, it is removed from remaining_tests_. When RunTests is finished,
+  // remaining_tests_ should be empty. Any remaining tests are tests that were
+  // listed in the test_filter but didn't match any calls to ShouldRunTest,
+  // meaning it was probably a typo. TestingInstance should log this and
+  // consider it a failure.
   std::map<std::string, bool> remaining_tests_;
-  // Flag indicating whether we have populated remaining_tests_ yet.
-  bool have_populated_remaining_tests_;
 
   // If ShouldRunTest is called but the given test name doesn't match anything
   // in the test_filter, the test name will be added here. This allows
