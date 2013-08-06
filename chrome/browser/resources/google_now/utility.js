@@ -4,8 +4,6 @@
 
 'use strict';
 
-// TODO(vadimt): Remove alerts.
-
 /**
  * @fileoverview Utility objects and functions for Google Now extension.
  */
@@ -13,10 +11,22 @@
 // TODO(vadimt): Figure out the server name. Use it in the manifest and for
 // NOTIFICATION_CARDS_URL. Meanwhile, to use the feature, you need to manually
 // set the server name via local storage.
+
 /**
  * Notification server URL.
  */
 var NOTIFICATION_CARDS_URL = localStorage['server_url'];
+
+var DEBUG_MODE = localStorage['debug_mode'];
+
+/**
+ * Shows a message popup in debug mode.
+ * @param {string} message Diagnostic message.
+ */
+function debugAlert(message) {
+  if (DEBUG_MODE)
+    alert(message);
+}
 
 /**
  * Checks for internal errors.
@@ -93,11 +103,11 @@ function buildTaskManager(areConflicting) {
   function checkInInstrumentedCallback() {
     if (!isInInstrumentedCallback) {
       // Cannot use verify() since no one will catch the exception.
-      // This alert will detect bugs at the development stage, and is very
+      // This check will detect bugs at the development stage, and is very
       // unlikely to be seen by users.
       var error = 'Not in instrumented callback: ' + new Error().stack;
       console.error(error);
-      alert(error);
+      debugAlert(error);
     }
   }
 
@@ -277,7 +287,7 @@ function buildTaskManager(areConflicting) {
             if (isEnabled)
               sendErrorReport(error);
           });
-          alert(message);
+          debugAlert(message);
         }
       }
     };
@@ -295,14 +305,14 @@ function buildTaskManager(areConflicting) {
     var originalFunction = namespace[functionName];
 
     if (!originalFunction)
-      alert('Cannot instrument ' + functionName);
+      debugAlert('Cannot instrument ' + functionName);
 
     namespace[functionName] = function() {
       // This is the wrapper for the API function. Pass the wrapped callback to
       // the original function.
       var callback = arguments[callbackParameter];
       if (typeof callback != 'function') {
-        alert('Argument ' + callbackParameter + ' of ' + functionName +
+        debugAlert('Argument ' + callbackParameter + ' of ' + functionName +
               ' is not a function');
       }
       arguments[callbackParameter] = wrapCallback(
