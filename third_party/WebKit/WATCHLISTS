@@ -161,6 +161,10 @@
                   '|LayoutTests/fast/mediastream/' \
                   '|Source/core/platform/chromium/support/'
     },
+    'geolocation': {
+      'filepath': 'Source/modules/geolocation/' \
+                  '|LayoutTests/fast/dom/Geolocation/'
+    },
   },
 
   'WATCHLISTS': {
@@ -234,5 +238,6 @@
     'web_idl': [ 'ch.dumez@sisa.samsung.com' ],
     'webcomponents': [ 'webcomponents-bugzilla@chromium.org', 'dglazkov+blink@chromium.org' ],
     'mediastream': [ 'tommyw+watchlist@chromium.org' ],
+    'geolocation': [ 'mvanouwerkerk@chromium.org' ],
   },
 }
