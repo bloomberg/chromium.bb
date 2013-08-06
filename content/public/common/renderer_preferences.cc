@@ -44,7 +44,8 @@ RendererPreferences::RendererPreferences()
       default_zoom_level(0),
       report_frame_name_changes(false),
       touchpad_fling_profile(3),
-      touchscreen_fling_profile(3) {
+      touchscreen_fling_profile(3),
+      tap_multiple_targets_strategy(TAP_MULTIPLE_TARGETS_STRATEGY_POPUP) {
   touchpad_fling_profile[0] = kDefaultAlpha;
   touchpad_fling_profile[1] = kDefaultBeta;
   touchpad_fling_profile[2] = kDefaultGamma;
