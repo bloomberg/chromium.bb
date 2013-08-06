@@ -68,7 +68,6 @@ class WebFlingAnimator;
 class WebGestureCurveTarget;
 class WebGestureCurve;
 class WebGraphicsContext3DProvider;
-class WebHyphenator;
 class WebIDBFactory;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
@@ -129,9 +128,6 @@ public:
     virtual WebThemeEngine* themeEngine() { return 0; }
 
     virtual WebFallbackThemeEngine* fallbackThemeEngine() { return 0; }
-
-    // Must return non-null.
-    virtual WebHyphenator* hyphenator() { return 0; }
 
     // May return null.
     virtual WebSpeechSynthesizer* createSpeechSynthesizer(WebSpeechSynthesizerClient*) { return 0; }
