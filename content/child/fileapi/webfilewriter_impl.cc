@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/platform_file.h"
+#include "base/synchronization/waitable_event.h"
 #include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "webkit/child/worker_task_runner.h"
@@ -31,9 +32,13 @@ typedef FileSystemDispatcher::WriteCallback WriteCallback;
 class WebFileWriterImpl::WriterBridge
     : public base::RefCountedThreadSafe<WriterBridge> {
  public:
-  WriterBridge()
+  WriterBridge(WebFileWriterImpl::Type type)
       : request_id_(0),
-        thread_id_(WorkerTaskRunner::Instance()->CurrentWorkerId()) {}
+        thread_id_(WorkerTaskRunner::Instance()->CurrentWorkerId()),
+        written_bytes_(0) {
+    if (type == WebFileWriterImpl::TYPE_SYNC)
+      waitable_event_.reset(new base::WaitableEvent(false, false));
+  }
 
   void Truncate(const GURL& path, int64 offset,
                 const StatusCallback& status_callback) {
@@ -67,12 +72,25 @@ class WebFileWriterImpl::WriterBridge
         base::Bind(&WriterBridge::DidFinish, this));
   }
 
+  base::WaitableEvent* waitable_event() {
+    return waitable_event_.get();
+  }
+
+  void WaitAndRun() {
+    waitable_event_->Wait();
+    DCHECK(!results_closure_.is_null());
+    results_closure_.Run();
+  }
+
  private:
   friend class base::RefCountedThreadSafe<WriterBridge>;
   virtual ~WriterBridge() {}
 
   void DidWrite(int64 bytes, bool complete) {
-    PostTaskToWorker(base::Bind(write_callback_, bytes, complete));
+    written_bytes_ += bytes;
+    if (waitable_event_ && !complete)
+      return;
+    PostTaskToWorker(base::Bind(write_callback_, written_bytes_, complete));
   }
 
   void DidFinish(base::PlatformFileError status) {
@@ -80,24 +98,36 @@ class WebFileWriterImpl::WriterBridge
   }
 
   void PostTaskToWorker(const base::Closure& closure) {
-    if (!thread_id_)
+    written_bytes_ = 0;
+    if (!thread_id_) {
+      DCHECK(!waitable_event_);
       closure.Run();
-    else
-      WorkerTaskRunner::Instance()->PostTask(thread_id_, closure);
+      return;
+    }
+    if (waitable_event_) {
+      results_closure_ = closure;
+      waitable_event_->Signal();
+      return;
+    }
+    WorkerTaskRunner::Instance()->PostTask(thread_id_, closure);
   }
 
   StatusCallback status_callback_;
   WriteCallback write_callback_;
   int request_id_;
   int thread_id_;
+  int written_bytes_;
+  scoped_ptr<base::WaitableEvent> waitable_event_;
+  base::Closure results_closure_;
 };
 
 WebFileWriterImpl::WebFileWriterImpl(
      const GURL& path, WebKit::WebFileWriterClient* client,
+     Type type,
      base::MessageLoopProxy* main_thread_loop)
   : WebFileWriterBase(path, client),
     main_thread_loop_(main_thread_loop),
-    bridge_(new WriterBridge) {
+    bridge_(new WriterBridge(type)) {
 }
 
 WebFileWriterImpl::~WebFileWriterImpl() {
@@ -123,10 +153,14 @@ void WebFileWriterImpl::DoCancel() {
 }
 
 void WebFileWriterImpl::RunOnMainThread(const base::Closure& closure) {
-  if (main_thread_loop_->RunsTasksOnCurrentThread())
+  if (main_thread_loop_->RunsTasksOnCurrentThread()) {
+    DCHECK(!bridge_->waitable_event());
     closure.Run();
-  else
-    main_thread_loop_->PostTask(FROM_HERE, closure);
+    return;
+  }
+  main_thread_loop_->PostTask(FROM_HERE, closure);
+  if (bridge_->waitable_event())
+    bridge_->WaitAndRun();
 }
 
 }  // namespace content
