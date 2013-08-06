@@ -14,10 +14,8 @@
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "third_party/WebKit/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
 #include "third_party/WebKit/public/platform/WebStorageNamespace.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -40,9 +38,6 @@
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/support/gc_extension.h"
 #include "webkit/support/mock_webclipboard_impl.h"
-#include "webkit/support/test_shell_webblobregistry_impl.h"
-#include "webkit/support/test_webmessageportchannel.h"
-#include "webkit/support/web_audio_device_mock.h"
 #include "webkit/support/web_gesture_curve_mock.h"
 #include "webkit/support/web_layer_tree_view_impl_for_testing.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
@@ -74,7 +69,6 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   WebKit::WebRuntimeFeatures::enableDatabase(true);
   WebKit::WebRuntimeFeatures::enableNotifications(true);
   WebKit::WebRuntimeFeatures::enableTouch(true);
-  WebKit::WebRuntimeFeatures::enableGamepad(true);
 
   // Load libraries for media and enable the media player.
   bool enable_media = false;
@@ -93,18 +87,6 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   // TODO(joth): Make a dummy geolocation service implemenation for
   // test_shell, and set this to true. http://crbug.com/36451
   WebKit::WebRuntimeFeatures::enableGeolocation(false);
-
-  // Construct and initialize an appcache system for this scope.
-  // A new empty temp directory is created to house any cached
-  // content during the run. Upon exit that directory is deleted.
-  // If we can't create a tempdir, we'll use in-memory storage.
-  if (!appcache_dir_.CreateUniqueTempDir()) {
-    LOG(WARNING) << "Failed to create a temp dir for the appcache, "
-                    "using in-memory storage.";
-    DCHECK(appcache_dir_.path().empty());
-  }
-
-  blob_registry_ = new TestShellWebBlobRegistryImpl();
 
   file_utilities_.set_sandbox_enabled(false);
 
@@ -144,36 +126,10 @@ WebKit::WebFileUtilities* TestWebKitPlatformSupport::fileUtilities() {
   return &file_utilities_;
 }
 
-WebKit::WebSandboxSupport* TestWebKitPlatformSupport::sandboxSupport() {
-  return NULL;
-}
-
-WebKit::WebBlobRegistry* TestWebKitPlatformSupport::blobRegistry() {
-  return blob_registry_.get();
-}
-
 WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
   NOTREACHED() <<
       "IndexedDB cannot be tested with in-process harnesses.";
   return NULL;
-}
-
-bool TestWebKitPlatformSupport::sandboxEnabled() {
-  return true;
-}
-
-unsigned long long TestWebKitPlatformSupport::visitedLinkHash(
-    const char* canonicalURL, size_t length) {
-  return 0;
-}
-
-bool TestWebKitPlatformSupport::isLinkVisited(unsigned long long linkHash) {
-  return false;
-}
-
-WebKit::WebMessagePortChannel*
-TestWebKitPlatformSupport::createMessagePortChannel() {
-  return new TestWebMessagePortChannel();
 }
 
 WebKit::WebURLLoader* TestWebKitPlatformSupport::createURLLoader() {
@@ -297,46 +253,6 @@ TestWebKitPlatformSupport::compositorSupport() {
   return &compositor_support_;
 }
 
-double TestWebKitPlatformSupport::audioHardwareSampleRate() {
-  return 44100.0;
-}
-
-size_t TestWebKitPlatformSupport::audioHardwareBufferSize() {
-  return 128;
-}
-
-WebKit::WebAudioDevice* TestWebKitPlatformSupport::createAudioDevice(
-    size_t bufferSize, unsigned numberOfInputChannels,
-    unsigned numberOfChannels, double sampleRate,
-    WebKit::WebAudioDevice::RenderCallback*,
-    const WebKit::WebString& input_device_id) {
-  return new WebAudioDeviceMock(sampleRate);
-}
-
-// TODO(crogers): remove once WebKit switches to new API.
-WebKit::WebAudioDevice* TestWebKitPlatformSupport::createAudioDevice(
-    size_t bufferSize, unsigned numberOfInputChannels,
-    unsigned numberOfChannels, double sampleRate,
-    WebKit::WebAudioDevice::RenderCallback*) {
-  return new WebAudioDeviceMock(sampleRate);
-}
-
-// TODO(crogers): remove once WebKit switches to new API.
-WebKit::WebAudioDevice* TestWebKitPlatformSupport::createAudioDevice(
-    size_t bufferSize, unsigned numberOfChannels, double sampleRate,
-    WebKit::WebAudioDevice::RenderCallback*) {
-  return new WebAudioDeviceMock(sampleRate);
-}
-
-void TestWebKitPlatformSupport::sampleGamepads(WebKit::WebGamepads& data) {
-  data = gamepad_data_;
-}
-
-void TestWebKitPlatformSupport::setGamepadData(
-    const WebKit::WebGamepads& data) {
-  gamepad_data_ = data;
-}
-
 base::string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
   return base::string16();
 }
@@ -360,22 +276,6 @@ TestWebKitPlatformSupport::CreateWebSocketBridge(
     webkit_glue::WebSocketStreamHandleDelegate* delegate) {
   NOTREACHED();
   return NULL;
-}
-
-WebKit::WebMediaStreamCenter*
-TestWebKitPlatformSupport::createMediaStreamCenter(
-    WebKit::WebMediaStreamCenterClient* client) {
-
-  return webkit_glue::WebKitPlatformSupportImpl::createMediaStreamCenter(
-      client);
-}
-
-WebKit::WebRTCPeerConnectionHandler*
-TestWebKitPlatformSupport::createRTCPeerConnectionHandler(
-    WebKit::WebRTCPeerConnectionHandlerClient* client) {
-
-  return webkit_glue::WebKitPlatformSupportImpl::createRTCPeerConnectionHandler(
-      client);
 }
 
 WebKit::WebGestureCurve* TestWebKitPlatformSupport::createFlingAnimationCurve(

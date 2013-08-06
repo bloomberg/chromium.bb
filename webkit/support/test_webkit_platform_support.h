@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
 #include "webkit/child/webkitplatformsupport_child_impl.h"
@@ -24,7 +23,6 @@ class ContextProvider;
 }
 
 namespace WebKit {
-class WebAudioDevice;
 class WebGraphicsContext3DProvider;
 class WebLayerTreeView;
 }
@@ -40,15 +38,8 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebFileUtilities* fileUtilities();
-  virtual WebKit::WebSandboxSupport* sandboxSupport();
-  virtual WebKit::WebBlobRegistry* blobRegistry();
   virtual WebKit::WebIDBFactory* idbFactory();
 
-  virtual bool sandboxEnabled();
-  virtual unsigned long long visitedLinkHash(const char* canonicalURL,
-                                             size_t length);
-  virtual bool isLinkVisited(unsigned long long linkHash);
-  virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebData loadResource(const char* name);
   virtual WebKit::WebString queryLocalizedString(
@@ -83,24 +74,6 @@ class TestWebKitPlatformSupport :
     return file_system_root_.path();
   }
 
-  // Mock out the WebAudioDevice since the real one
-  // talks with the browser process.
-  virtual double audioHardwareSampleRate();
-  virtual size_t audioHardwareBufferSize();
-  virtual WebKit::WebAudioDevice* createAudioDevice(size_t bufferSize,
-      unsigned numberOfInputChannels, unsigned numberOfChannels,
-      double sampleRate, WebKit::WebAudioDevice::RenderCallback*,
-      const WebKit::WebString& input_device_id);
-  virtual WebKit::WebAudioDevice* createAudioDevice(size_t bufferSize,
-      unsigned numberOfInputChannels, unsigned numberOfChannels,
-      double sampleRate, WebKit::WebAudioDevice::RenderCallback*);
-  virtual WebKit::WebAudioDevice* createAudioDevice(size_t bufferSize,
-      unsigned numberOfChannels, double sampleRate,
-      WebKit::WebAudioDevice::RenderCallback*);
-
-  virtual void sampleGamepads(WebKit::WebGamepads& data);
-  void setGamepadData(const WebKit::WebGamepads& data);
-
   virtual base::string16 GetLocalizedString(int message_id) OVERRIDE;
   virtual base::StringPiece GetDataResource(
       int resource_id,
@@ -111,11 +84,6 @@ class TestWebKitPlatformSupport :
   virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketBridge(
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate) OVERRIDE;
-
-  virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(
-      WebKit::WebMediaStreamCenterClient* client);
-  virtual WebKit::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
-      WebKit::WebRTCPeerConnectionHandlerClient* client);
 
   virtual WebKit::WebGestureCurve* createFlingAnimationCurve(
       int device_source,
@@ -143,11 +111,8 @@ class TestWebKitPlatformSupport :
   webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
-  base::ScopedTempDir appcache_dir_;
-  scoped_refptr<TestShellWebBlobRegistryImpl> blob_registry_;
   base::ScopedTempDir file_system_root_;
   WebURLLoaderMockFactory url_loader_factory_;
-  WebKit::WebGamepads gamepad_data_;
   webkit::WebCompositorSupportImpl compositor_support_;
 
   scoped_refptr<cc::ContextProvider> main_thread_contexts_;
