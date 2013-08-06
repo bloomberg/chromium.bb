@@ -311,8 +311,12 @@ void TestRenderViewHost::SendNavigateWithFile(
 void TestRenderViewHost::SendNavigateWithTransitionAndResponseCode(
     int page_id, const GURL& url, PageTransition transition,
     int response_code) {
-  OnDidStartProvisionalLoadForFrame(kFrameId, -1, true, url);
-  SendNavigateWithParameters(page_id, url, transition, url, response_code, 0);
+  // DidStartProvisionalLoad may delete the pending entry that holds |url|,
+  // so we keep a copy of it to use in SendNavigateWithParameters.
+  GURL url_copy(url);
+  OnDidStartProvisionalLoadForFrame(kFrameId, -1, true, url_copy);
+  SendNavigateWithParameters(page_id, url_copy, transition, url_copy,
+                             response_code, 0);
 }
 
 void TestRenderViewHost::SendNavigateWithParameters(
