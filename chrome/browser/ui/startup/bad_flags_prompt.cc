@@ -36,6 +36,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
     extensions::switches::kExtensionsOnChromeURLs,
     // This parameter should be used only for server side developments.
     switches::kTranslateScriptURL,
+    switches::kTranslateSecurityOrigin,
     NULL
   };
 

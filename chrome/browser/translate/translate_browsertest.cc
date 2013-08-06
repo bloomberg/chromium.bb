@@ -48,10 +48,16 @@ class TranslateBrowserTest : public InProcessBrowserTest {
   TranslateBrowserTest()
       : https_server_(net::SpawnedTestServer::TYPE_HTTPS,
                       SSLOptions(SSLOptions::CERT_OK),
-                      base::FilePath(kTranslateRoot)) {}
+                      base::FilePath(kTranslateRoot)),
+        infobar_service_(NULL) {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ASSERT_TRUE(https_server_.Start());
+    // Setup alternate security origin for testing in order to allow XHR against
+    // local test server. Note that this flag shows a confirm infobar in tests.
+    GURL base_url = GetSecureURL("");
+    command_line->AppendSwitchASCII(switches::kTranslateSecurityOrigin,
+                                    base_url.GetOrigin().spec());
   }
 
  protected:
@@ -65,41 +71,75 @@ class TranslateBrowserTest : public InProcessBrowserTest {
     return https_server_.GetURL(prefix + path);
   }
 
+  TranslateInfoBarDelegate* GetExistingTranslateInfoBarDelegate() {
+    if (!infobar_service_) {
+      content::WebContents* web_contents =
+          browser()->tab_strip_model()->GetActiveWebContents();
+      if (web_contents)
+        infobar_service_ = InfoBarService::FromWebContents(web_contents);
+    }
+    if (!infobar_service_) {
+      EXPECT_TRUE(false) << "infobar service is not available";
+      return NULL;
+    }
+
+    TranslateInfoBarDelegate* delegate = NULL;
+    for (size_t i = 0; i < infobar_service_->infobar_count(); ++i) {
+      // Check if the shown infobar is a confirm infobar coming from the
+      // |kTranslateSecurityOrigin| flag specified in SetUpCommandLine().
+      // This infobar appears in all tests of TranslateBrowserTest and can be
+      // ignored here.
+      ConfirmInfoBarDelegate* confirm =
+          infobar_service_->infobar_at(i)->AsConfirmInfoBarDelegate();
+      if (confirm)
+        continue;
+
+      TranslateInfoBarDelegate* translate =
+        infobar_service_->infobar_at(i)->AsTranslateInfoBarDelegate();
+      if (translate) {
+        EXPECT_FALSE(delegate) << "multiple infobars are shown unexpectedly";
+        delegate = translate;
+        continue;
+      }
+
+      // Other infobar should not be shown.
+      EXPECT_TRUE(delegate);
+    }
+    return delegate;
+  }
+
  private:
   net::SpawnedTestServer https_server_;
+  InfoBarService* infobar_service_;
 
   typedef net::SpawnedTestServer::SSLOptions SSLOptions;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateBrowserTest);
 };
 
-// TODO(toyoshim): This test should be changed to work in an isolated world.
-// See also http://crbug.com/164547 .
-IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, DISABLED_Translate) {
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
 
+  net::TestURLFetcherFactory factory;
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents);
-
-  net::TestURLFetcherFactory factory;
+  // Check if there is no Translate infobar.
+  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
 
   // Setup infobar observer.
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  ASSERT_TRUE(infobar_service);
-  EXPECT_EQ(0U, infobar_service->infobar_count());
   content::WindowedNotificationObserver infobar(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::NotificationService::AllSources());
 
   // Setup page title observer.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
   content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
@@ -110,9 +150,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, DISABLED_Translate) {
   infobar.Wait();
 
   // Perform Chrome Translate.
-  ASSERT_EQ(1U, infobar_service->infobar_count());
-  TranslateInfoBarDelegate* translate =
-      infobar_service->infobar_at(0)->AsTranslateInfoBarDelegate();
+  translate = GetExistingTranslateInfoBarDelegate();
   ASSERT_TRUE(translate);
   translate->Translate();
 
@@ -159,17 +197,14 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
+  // Check if there is no Translate infobar.
+  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
+
+  // Setup page title observer.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-
-  // Check infobar count.
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  ASSERT_TRUE(infobar_service);
-  EXPECT_EQ(0U, infobar_service->infobar_count());
-
-  // Setup page title observer.
   content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
@@ -182,8 +217,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 
-  // Check there is not infobar.
-  EXPECT_EQ(0U, infobar_service->infobar_count());
+  // Check if there is no Translate infobar.
+  translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
@@ -196,17 +232,14 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
+  // Check if there is no Translate infobar.
+  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
+
+  // Setup page title observer.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-
-  // Check infobar count.
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  ASSERT_TRUE(infobar_service);
-  EXPECT_EQ(0U, infobar_service->infobar_count());
-
-  // Setup page title observer.
   content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
@@ -219,8 +252,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 
-  // Check there is not infobar.
-  EXPECT_EQ(0U, infobar_service->infobar_count());
+  // Check if there is no Translate infobar.
+  translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
@@ -232,17 +266,14 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
+  // Check if there is no Translate infobar.
+  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
+
+  // Setup page title observer.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-
-  // Check infobar count.
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  ASSERT_TRUE(infobar_service);
-  EXPECT_EQ(0U, infobar_service->infobar_count());
-
-  // Setup page title observer.
   content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
@@ -255,8 +286,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 
-  // Check there is not infobar.
-  EXPECT_EQ(0U, infobar_service->infobar_count());
+  // Check if there is no Translate infobar.
+  translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
@@ -268,17 +300,14 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
+  // Check if there is no Translate infobar.
+  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
+
+  // Setup page title observer.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-
-  // Check infobar count.
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  ASSERT_TRUE(infobar_service);
-  EXPECT_EQ(0U, infobar_service->infobar_count());
-
-  // Setup page title observer.
   content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
@@ -291,8 +320,9 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 
-  // Check there is not infobar.
-  EXPECT_EQ(0U, infobar_service->infobar_count());
+  // Check if there is no Translate infobar.
+  translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
@@ -304,17 +334,14 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
+  // Check if there is no Translate infobar.
+  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
+
+  // Setup page title observer.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-
-  // Check infobar count.
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  ASSERT_TRUE(infobar_service);
-  EXPECT_EQ(0U, infobar_service->infobar_count());
-
-  // Setup page title observer.
   content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
@@ -327,6 +354,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_EQ("PASS", UTF16ToASCII(result));
 
-  // Check there is not infobar.
-  EXPECT_EQ(0U, infobar_service->infobar_count());
+  // Check if there is no Translate infobar.
+  translate = GetExistingTranslateInfoBarDelegate();
+  EXPECT_FALSE(translate);
 }

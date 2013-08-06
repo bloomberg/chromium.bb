@@ -357,9 +357,15 @@ void TranslateHelper::OnTranslatePage(int page_id,
         chrome::ISOLATED_WORLD_ID_TRANSLATE,
         WebString::fromUTF8(kContentSecurityPolicy));
 
+    std::string security_origin(kSecurityOrigin);
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kTranslateSecurityOrigin)) {
+      security_origin =
+          command_line->GetSwitchValueASCII(switches::kTranslateSecurityOrigin);
+    }
     frame->setIsolatedWorldSecurityOrigin(
         chrome::ISOLATED_WORLD_ID_TRANSLATE,
-        WebSecurityOrigin::create(GURL(kSecurityOrigin)));
+        WebSecurityOrigin::create(GURL(security_origin)));
   }
 
   if (!IsTranslateLibAvailable()) {

@@ -1398,6 +1398,9 @@ const char kTrackActiveVisitTime[]          = "track-active-visit-time";
 // Overrides the default server used for Google Translate.
 const char kTranslateScriptURL[]            = "translate-script-url";
 
+// Overrides security-origin with which Translate runs in an isolated world.
+const char kTranslateSecurityOrigin[]       = "translate-security-origin";
+
 // Disables same-origin check on HTTP resources pushed via a SPDY proxy.
 // The value is the host:port of the trusted proxy.
 const char kTrustedSpdyProxy[]              = "trusted-spdy-proxy";
