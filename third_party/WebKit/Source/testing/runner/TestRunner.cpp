@@ -234,6 +234,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("dumpIconChanges", &TestRunner::dumpIconChanges);
     bindMethod("setAudioData", &TestRunner::setAudioData);
     bindMethod("dumpFrameLoadCallbacks", &TestRunner::dumpFrameLoadCallbacks);
+    bindMethod("dumpPingLoaderCallbacks", &TestRunner::dumpPingLoaderCallbacks);
     bindMethod("dumpUserGestureInFrameLoadCallbacks", &TestRunner::dumpUserGestureInFrameLoadCallbacks);
     bindMethod("dumpTitleChanges", &TestRunner::dumpTitleChanges);
     bindMethod("dumpCreateView", &TestRunner::dumpCreateView);
@@ -401,6 +402,7 @@ void TestRunner::reset()
     m_dumpIconChanges = false;
     m_dumpAsAudio = false;
     m_dumpFrameLoadCallbacks = false;
+    m_dumpPingLoaderCallbacks = false;
     m_dumpUserGestureInFrameLoadCallbacks = false;
     m_dumpTitleChanges = false;
     m_dumpCreateView = false;
@@ -522,6 +524,16 @@ bool TestRunner::shouldDumpFrameLoadCallbacks() const
 void TestRunner::setShouldDumpFrameLoadCallbacks(bool value)
 {
     m_dumpFrameLoadCallbacks = value;
+}
+
+bool TestRunner::shouldDumpPingLoaderCallbacks() const
+{
+    return m_testIsRunning && m_dumpPingLoaderCallbacks;
+}
+
+void TestRunner::setShouldDumpPingLoaderCallbacks(bool value)
+{
+    m_dumpPingLoaderCallbacks = value;
 }
 
 bool TestRunner::shouldDumpUserGestureInFrameLoadCallbacks() const
@@ -1961,6 +1973,12 @@ void TestRunner::setAudioData(const CppArgumentList& arguments, CppVariant* resu
 void TestRunner::dumpFrameLoadCallbacks(const CppArgumentList&, CppVariant* result)
 {
     m_dumpFrameLoadCallbacks = true;
+    result->setNull();
+}
+
+void TestRunner::dumpPingLoaderCallbacks(const CppArgumentList&, CppVariant* result)
+{
+    m_dumpPingLoaderCallbacks = true;
     result->setNull();
 }
 

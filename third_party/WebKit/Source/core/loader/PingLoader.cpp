@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/page/Frame.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
@@ -123,6 +124,8 @@ void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRe
 PingLoader::PingLoader(Frame* frame, ResourceRequest& request, StoredCredentials credentialsAllowed)
     : m_timeout(this, &PingLoader::timeout)
 {
+    frame->loader()->client()->didDispatchPingLoader(request.url());
+
     unsigned long identifier = createUniqueIdentifier();
     m_loader = adoptPtr(WebKit::Platform::current()->createURLLoader());
     ASSERT(m_loader);

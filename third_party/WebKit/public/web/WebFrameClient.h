@@ -253,6 +253,9 @@ public:
     // A reflected XSS was encountered in the page and suppressed.
     virtual void didDetectXSS(WebFrame*, const WebURL&, bool didBlockEntirePage) { }
 
+    // A PingLoader was created, and a request dispatched to a URL.
+    virtual void didDispatchPingLoader(WebFrame*, const WebURL&) { }
+
     // Script notifications ------------------------------------------------
 
     // Script in the page tried to allocate too much memory.

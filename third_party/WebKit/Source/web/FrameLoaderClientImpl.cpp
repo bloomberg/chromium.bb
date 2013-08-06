@@ -592,6 +592,12 @@ void FrameLoaderClientImpl::didDetectXSS(const KURL& insecureURL, bool didBlockE
         m_webFrame->client()->didDetectXSS(m_webFrame, insecureURL, didBlockEntirePage);
 }
 
+void FrameLoaderClientImpl::didDispatchPingLoader(const KURL& url)
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->didDispatchPingLoader(m_webFrame, url);
+}
+
 ResourceError FrameLoaderClientImpl::interruptedForPolicyChangeError(
     const ResourceRequest& request)
 {

@@ -10,6 +10,7 @@ function test() {
             testRunner.dumpAsText();
             testRunner.overridePreference("WebKitHyperlinkAuditingEnabled", 1);
             testRunner.waitUntilDone();
+            testRunner.dumpPingLoaderCallbacks();
         }
         testCalled = true;
         return;

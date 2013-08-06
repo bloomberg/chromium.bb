@@ -201,6 +201,7 @@ protected:
     void didFinishLoad(WebKit::WebFrame*);
     void didChangeLocationWithinPage(WebKit::WebFrame*);
     void didDetectXSS(WebKit::WebFrame*, const WebKit::WebURL& insecureURL, bool didBlockEntirePage);
+    void didDispatchPingLoader(WebKit::WebFrame*, const WebKit::WebURL&);
     void willRequestResource(WebKit::WebFrame*, const WebKit::WebCachedURLRequest&);
     void didCreateDataSource(WebKit::WebFrame*, WebKit::WebDataSource*);
     void willSendRequest(WebKit::WebFrame*, unsigned identifier, WebKit::WebURLRequest&, const WebKit::WebURLResponse& redirectResponse);

@@ -151,6 +151,7 @@ class FetchRequest;
         // spread to other frames in the same origin.
         virtual void didRunInsecureContent(SecurityOrigin*, const KURL&) = 0;
         virtual void didDetectXSS(const KURL&, bool didBlockEntirePage) = 0;
+        virtual void didDispatchPingLoader(const KURL&) = 0;
 
         virtual ResourceError interruptedForPolicyChangeError(const ResourceRequest&) = 0;
 

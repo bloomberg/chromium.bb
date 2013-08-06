@@ -120,6 +120,13 @@ public:
         m_baseProxy->didDetectXSS(frame, insecureURL, didBlockEntirePage);
         Base::didDetectXSS(frame, insecureURL, didBlockEntirePage);
     }
+    virtual void didDispatchPingLoader(WebKit::WebFrame* frame, const WebKit::WebURL& url)
+    {
+        // This is not implemented in RenderFrameImpl, so need to explicitly call
+        // into the base proxy.
+        m_baseProxy->didDispatchPingLoader(frame, url);
+        Base::didDispatchPingLoader(frame, url);
+    }
     virtual void willRequestResource(WebKit::WebFrame* frame, const WebKit::WebCachedURLRequest& request)
     {
         // This is not implemented in RenderFrameImpl, so need to explicitly call

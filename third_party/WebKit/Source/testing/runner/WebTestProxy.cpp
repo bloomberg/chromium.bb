@@ -1272,6 +1272,12 @@ void WebTestProxyBase::didDetectXSS(WebFrame*, const WebURL&, bool)
         m_delegate->printMessage("didDetectXSS\n");
 }
 
+void WebTestProxyBase::didDispatchPingLoader(WebFrame*, const WebURL& url)
+{
+    if (m_testInterfaces->testRunner()->shouldDumpPingLoaderCallbacks())
+        m_delegate->printMessage(string("PingLoader dispatched to '") + URLDescription(url).c_str() + "'.\n");
+}
+
 void WebTestProxyBase::willRequestResource(WebFrame* frame, const WebKit::WebCachedURLRequest& request)
 {
     if (m_testInterfaces->testRunner()->shouldDumpResourceRequestCallbacks()) {

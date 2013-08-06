@@ -98,8 +98,10 @@ public:
     void setShouldDumpAsText(bool);
     void setShouldGeneratePixelResults(bool);
     void setShouldDumpFrameLoadCallbacks(bool);
+    void setShouldDumpPingLoaderCallbacks(bool);
     bool shouldDumpEditingCallbacks() const;
     bool shouldDumpFrameLoadCallbacks() const;
+    bool shouldDumpPingLoaderCallbacks() const;
     bool shouldDumpUserGestureInFrameLoadCallbacks() const;
     bool shouldDumpTitleChanges() const;
     bool shouldDumpIconChanges() const;
@@ -338,6 +340,11 @@ private:
     // descriptive text for each frame load callback. It takes no arguments, and
     // ignores any that may be present.
     void dumpFrameLoadCallbacks(const CppArgumentList&, CppVariant*);
+
+    // This function sets a flag that tells the test_shell to print a line of
+    // descriptive text for each PingLoader dispatch. It takes no arguments, and
+    // ignores any that may be present.
+    void dumpPingLoaderCallbacks(const CppArgumentList&, CppVariant*);
 
     // This function sets a flag that tells the test_shell to print a line of
     // user gesture status text for some frame load callbacks. It takes no
@@ -607,6 +614,10 @@ private:
     // If true, the test_shell will output a descriptive line for each frame
     // load callback.
     bool m_dumpFrameLoadCallbacks;
+
+    // If true, the test_shell will output a descriptive line for each
+    // PingLoader dispatched.
+    bool m_dumpPingLoaderCallbacks;
 
     // If true, the test_shell will output a line of the user gesture status
     // text for some frame load callbacks.
