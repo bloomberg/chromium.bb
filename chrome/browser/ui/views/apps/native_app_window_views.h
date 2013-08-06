@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_NATIVE_APP_WINDOW_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_NATIVE_APP_WINDOW_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_APPS_NATIVE_APP_WINDOW_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_APPS_NATIVE_APP_WINDOW_VIEWS_H_
 
+#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/image/image_skia.h"
@@ -36,7 +36,7 @@ namespace views {
 class WebView;
 }
 
-class NativeAppWindowViews : public NativeAppWindow,
+class NativeAppWindowViews : public apps::NativeAppWindow,
                              public views::WidgetDelegateView,
                              public views::WidgetObserver,
                              public content::WebContentsObserver {
@@ -182,4 +182,4 @@ class NativeAppWindowViews : public NativeAppWindow,
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_NATIVE_APP_WINDOW_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_APPS_NATIVE_APP_WINDOW_VIEWS_H_

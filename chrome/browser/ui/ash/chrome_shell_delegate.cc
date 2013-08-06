@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
+#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "ash/ash_switches.h"
 #include "ash/host/root_window_host_factory.h"
@@ -37,7 +38,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/common/chrome_switches.h"

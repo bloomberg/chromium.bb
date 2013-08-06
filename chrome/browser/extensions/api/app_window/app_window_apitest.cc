@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -9,7 +10,6 @@
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/rect.h"

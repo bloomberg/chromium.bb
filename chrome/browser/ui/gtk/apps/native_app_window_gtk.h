@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_EXTENSIONS_NATIVE_APP_WINDOW_GTK_H_
-#define CHROME_BROWSER_UI_GTK_EXTENSIONS_NATIVE_APP_WINDOW_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_APPS_NATIVE_APP_WINDOW_GTK_H_
+#define CHROME_BROWSER_UI_GTK_APPS_NATIVE_APP_WINDOW_GTK_H_
 
 #include <gtk/gtk.h>
 
+#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -25,7 +25,7 @@ namespace extensions {
 class Extension;
 }
 
-class NativeAppWindowGtk : public NativeAppWindow,
+class NativeAppWindowGtk : public apps::NativeAppWindow,
                            public ExtensionViewGtk::Container,
                            public ui::ActiveWindowWatcherXObserver {
  public:
@@ -167,4 +167,4 @@ class NativeAppWindowGtk : public NativeAppWindow,
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_EXTENSIONS_NATIVE_APP_WINDOW_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_APPS_NATIVE_APP_WINDOW_GTK_H_

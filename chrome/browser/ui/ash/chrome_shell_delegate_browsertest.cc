@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
+#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/aura/client/aura_constants.h"
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegatePlatformAppBrowserTest,
 
   const extensions::Extension* extension = LoadAndLaunchPlatformApp("minimal");
   apps::ShellWindow* shell_window = CreateShellWindow(extension);
-  NativeAppWindow* app_window = shell_window->GetBaseWindow();
+  apps::NativeAppWindow* app_window = shell_window->GetBaseWindow();
   ASSERT_TRUE(shell_window->GetBaseWindow()->IsActive());
   EXPECT_FALSE(app_window->IsMaximized());
   EXPECT_FALSE(app_window->IsFullscreen());
