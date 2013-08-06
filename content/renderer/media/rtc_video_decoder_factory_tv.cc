@@ -31,21 +31,17 @@ class RTCDemuxerStream : public DemuxerStream {
   virtual void EnableBitstreamConverter() OVERRIDE;
 
   void QueueBuffer(scoped_refptr<media::DecoderBuffer> buffer,
-                   const base::Closure& done_cb,
                    const gfx::Size& new_size);
   void Destroy();
 
  private:
   struct BufferEntry {
     BufferEntry(const scoped_refptr<media::DecoderBuffer>& decoder_buffer_param,
-                const base::Closure& done_cb_param,
                 const gfx::Size& new_size_param)
         : decoder_buffer(decoder_buffer_param),
-          done_cb(done_cb_param),
           new_size(new_size_param) {}
 
     scoped_refptr<media::DecoderBuffer> decoder_buffer;
-    base::Closure done_cb;
     // When |!new_size.isEmpty()|, it means that config change with new size
     // |new_size| happened.
     gfx::Size new_size;
@@ -57,7 +53,6 @@ class RTCDemuxerStream : public DemuxerStream {
   bool is_destroyed_;
   std::queue<BufferEntry> buffer_queue_;
   ReadCB read_cb_;
-  base::Closure pending_done_cb_;
 
   media::AudioDecoderConfig dummy_audio_decoder_config_;
   media::VideoDecoderConfig video_decoder_config_;
@@ -93,12 +88,11 @@ DemuxerStream::Type RTCDemuxerStream::type() { return DemuxerStream::VIDEO; }
 void RTCDemuxerStream::EnableBitstreamConverter() { NOTREACHED(); }
 
 void RTCDemuxerStream::QueueBuffer(scoped_refptr<media::DecoderBuffer> buffer,
-                                   const base::Closure& done_cb,
                                    const gfx::Size& new_size) {
   base::AutoLock lock(lock_);
   if (is_destroyed_)
     return;
-  buffer_queue_.push(BufferEntry(buffer, done_cb, new_size));
+  buffer_queue_.push(BufferEntry(buffer, new_size));
   if (buffer)
     frame_rate_tracker_.Update(1);
   DVLOG(1) << "frame rate received : " << frame_rate_tracker_.units_second();
@@ -113,10 +107,6 @@ void RTCDemuxerStream::Read(const ReadCB& read_cb) {
         .Run(DemuxerStream::kAborted, NULL);
     return;
   }
-  // A call to |Read| operation means that |MediaSourceDelegate| is done with
-  // the previous buffer.
-  if (!pending_done_cb_.is_null())
-    base::ResetAndReturn(&pending_done_cb_).Run();
   read_cb_ = media::BindToLoop(base::MessageLoopProxy::current(), read_cb);
   RunReadCallback_Locked();
 }
@@ -127,7 +117,6 @@ void RTCDemuxerStream::Destroy() {
   is_destroyed_ = true;
   if (!read_cb_.is_null())
     base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kAborted, NULL);
-  pending_done_cb_.Reset();
   while (!buffer_queue_.empty())
     buffer_queue_.pop();
 }
@@ -154,8 +143,6 @@ void RTCDemuxerStream::RunReadCallback_Locked() {
     front.new_size.SetSize(0, 0);
     return;
   }
-  DCHECK(pending_done_cb_.is_null());
-  pending_done_cb_ = front.done_cb;
   base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kOk, front.decoder_buffer);
   buffer_queue_.pop();
 }
@@ -182,7 +169,7 @@ webrtc::VideoDecoder* RTCVideoDecoderFactoryTv::CreateVideoDecoder(
 void RTCVideoDecoderFactoryTv::DestroyVideoDecoder(
     webrtc::VideoDecoder* decoder) {
   base::AutoLock lock(lock_);
-  DCHECK(decoder_.get() == decoder);
+  DCHECK_EQ(decoder_.get(), decoder);
   decoder_.reset();
 }
 
@@ -235,11 +222,10 @@ void RTCVideoDecoderFactoryTv::InitializeStream(const gfx::Size& size) {
 
 void RTCVideoDecoderFactoryTv::QueueBuffer(
     scoped_refptr<media::DecoderBuffer> buffer,
-    const base::Closure& done_cb,
     const gfx::Size& new_size) {
   base::AutoLock lock(lock_);
   DCHECK(stream_);
-  stream_->QueueBuffer(buffer, done_cb, new_size);
+  stream_->QueueBuffer(buffer, new_size);
 }
 
 }  // namespace content

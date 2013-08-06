@@ -55,7 +55,6 @@ class CONTENT_EXPORT RTCVideoDecoderFactoryTv
   // For RTCVideoDecoderBridgeTv to talk to RTCDemuxerStream.
   void InitializeStream(const gfx::Size& size);
   void QueueBuffer(scoped_refptr<media::DecoderBuffer> buffer,
-                   const base::Closure& done_cb,
                    const gfx::Size& size);
 
  private:

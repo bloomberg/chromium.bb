@@ -39,17 +39,12 @@ class CONTENT_EXPORT RTCVideoDecoderBridgeTv
   virtual int32_t Reset() OVERRIDE;
 
  private:
-  static void RunDecodeCompleteCallback(webrtc::DecodedImageCallback* callback,
-                                        int64_t timestamp,
-                                        gfx::Size size);
-
   // The factory outlives this object, so weak pointer is fine.
   RTCVideoDecoderFactoryTv* factory_;
 
   gfx::Size size_;
   bool is_initialized_;
   bool first_frame_;
-  webrtc::DecodedImageCallback* decode_complete_callback_;
   int64_t timestamp_offset_millis_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderBridgeTv);
