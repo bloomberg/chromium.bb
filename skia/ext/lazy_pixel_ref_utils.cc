@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "lazy_pixel_ref_utils.h"
+#include "skia/ext/lazy_pixel_ref_utils.h"
 
-#include "SkCanvas.h"
-#include "SkData.h"
-#include "SkDevice.h"
-#include "SkDraw.h"
-#include "SkPixelRef.h"
-#include "SkRRect.h"
-#include "SkRasterClip.h"
-#include "SkRect.h"
-#include "SkShader.h"
-
-#include "lazy_pixel_ref.h"
+#include "skia/ext/lazy_pixel_ref.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkDraw.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/src/core/SkRasterClip.h"
 
 namespace skia {
 
