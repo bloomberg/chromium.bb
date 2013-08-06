@@ -56,14 +56,15 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
         "     Rasterizes a Picture JSON-encoded by cc::Picture::AsValue()."
         "     @param {Object} picture A json-encoded cc::Picture."
         "     @param {"
-        "                 'scale':  {Number},"
-        "                 'stop':   {Number},"
-        "                 'clip':   [Number, Number, Number, Number]"
+        "                 'scale':    {Number},"
+        "                 'stop':     {Number},"
+        "                 'overdraw': {Boolean},"
+        "                 'clip':     [Number, Number, Number, Number]"
         "     } (optional) Rasterization parameters."
         "     @returns {"
-        "                 'width':  {Number},"
-        "                 'height': {Number},"
-        "                 'data':   {ArrayBuffer}"
+        "                 'width':    {Number},"
+        "                 'height':   {Number},"
+        "                 'data':     {ArrayBuffer}"
         "     }"
         "     @returns undefined if the arguments are invalid or the picture"
         "                        version is not supported."
@@ -120,6 +121,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     double scale = 1.0;
     gfx::Rect clip_rect(picture->LayerRect());
     int stop_index = -1;
+    bool overdraw = false;
 
     if (args.Length() > 1) {
       scoped_ptr<content::V8ValueConverter> converter(
@@ -131,6 +133,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
       if (params_value.get() && params_value->GetAsDictionary(&params_dict)) {
         params_dict->GetDouble("scale", &scale);
         params_dict->GetInteger("stop", &stop_index);
+        params_dict->GetBoolean("overdraw", &overdraw);
 
         const base::Value* clip_value = NULL;
         if (params_dict->Get("clip", &clip_value))
@@ -170,6 +173,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
 
     // Raster the requested command subset into the bitmap-backed canvas.
     int last_index = debug_canvas.getSize() - 1;
+    debug_canvas.setOverdrawViz(overdraw);
     debug_canvas.drawTo(&canvas, stop_index < 0
                         ? last_index
                         : std::min(last_index, stop_index));
