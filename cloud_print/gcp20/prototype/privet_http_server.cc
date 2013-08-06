@@ -14,6 +14,9 @@
 
 namespace {
 
+const int kDeviceBusyTimeout = 30;  // in seconds
+const int kPendingUserActionTimeout = 5;  // in seconds
+
 // {"error":|error_type|}
 scoped_ptr<base::DictionaryValue> CreateError(const std::string& error_type) {
   scoped_ptr<base::DictionaryValue> error(new base::DictionaryValue);
@@ -296,10 +299,12 @@ void PrivetHttpServer::ProcessRegistrationStatus(
       *current_response = CreateError("invalid_params");
       break;
     case REG_ERROR_DEVICE_BUSY:
-      *current_response = CreateErrorWithTimeout("device_busy", 30);
+      *current_response = CreateErrorWithTimeout("device_busy",
+                                                 kDeviceBusyTimeout);
       break;
     case REG_ERROR_PENDING_USER_ACTION:
-      *current_response = CreateErrorWithTimeout("pending_user_action", 30);
+      *current_response = CreateErrorWithTimeout("pending_user_action",
+                                                 kPendingUserActionTimeout);
       break;
     case REG_ERROR_USER_CANCEL:
       *current_response = CreateError("user_cancel");

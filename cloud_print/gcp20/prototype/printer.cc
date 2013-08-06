@@ -240,9 +240,9 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationGetClaimToken(
   if (reg_info_.confirmation_state != RegistrationInfo::CONFIRMATION_CONFIRMED)
     return ConfirmationToRegistrationError(reg_info_.confirmation_state);
 
-  // If reply wasn't received yet, reply with |device_busy| error.
+  // If reply wasn't received yet, reply with |pending_user_action| error.
   if (reg_info_.state == RegistrationInfo::DEV_REG_REGISTRATION_STARTED)
-    return PrivetHttpServer::REG_ERROR_DEVICE_BUSY;
+    return PrivetHttpServer::REG_ERROR_PENDING_USER_ACTION;
 
   DCHECK_EQ(reg_info_.state,
             RegistrationInfo::DEV_REG_REGISTRATION_CLAIM_TOKEN_READY);
