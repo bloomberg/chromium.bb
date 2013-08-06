@@ -15,9 +15,11 @@ cr.define('options.autofillOptions', function() {
         loadTimeData.getString('autofillEditProfileButton');
     editButtonEl.onclick = function(e) { edit(guid); };
 
-    // Don't select the row when clicking the button.
     editButtonEl.onmousedown = function(e) {
+      // Don't select the row when clicking the button.
       e.stopPropagation();
+      // Don't focus on the button when clicking it.
+      e.preventDefault();
     };
 
     return editButtonEl;
