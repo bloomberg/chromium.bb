@@ -60,5 +60,5 @@ typedef struct sha1_context SHA1_CTX;
 #define SHA1_Update SCTP_NSS_SHA1_Update
 #define SHA1_Final SCTP_NSS_SHA1_Final
 
-#endif				/* _KERNEL */
-#endif
+#endif  /* _KERNEL */
+#endif  /* __SCTP_NSS_SHA1_h__ */
