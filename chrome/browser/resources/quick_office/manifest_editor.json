@@ -2,25 +2,29 @@
   "background": {
     "persistent": false,
     "scripts": [
-      "scripts/background/register.js"
+      "scripts/background/register.js",
+      "scripts/configs/experimentalFeatures.js"
     ]
   },
   "content_security_policy": "default-src 'self'; connect-src blob: chrome-extension:; style-src 'self' 'unsafe-inline' chrome-extension:; img-src 'self' blob: data:; frame-src chrome-extension:; script-src 'self'",
   "default_locale": "en",
-  "description": "Chrome Office Viewer (Beta)",
-  "file_browser_handlers": [{
-    "default_title": "Chrome Office Viewer (Beta)",
-    "file_filters": [
-      "filesystem:*.doc",
-      "filesystem:*.docx",
-      "filesystem:*.docm",
-      "filesystem:*.ppt",
-      "filesystem:*.pptx",
-      "filesystem:*.pptm",
-      "filesystem:*.xls",
-      "filesystem:*.xlsx"],
-    "id": "qoview"
-  }],
+  "description": "Quickoffice (Beta)",
+  "file_browser_handlers": [
+    {
+      "default_title": "Quickoffice (Beta)",
+      "file_filters": [
+        "filesystem:*.doc",
+        "filesystem:*.docx",
+        "filesystem:*.docm",
+        "filesystem:*.ppt",
+        "filesystem:*.pptx",
+        "filesystem:*.pptm",
+        "filesystem:*.xls",
+        "filesystem:*.xlsx"
+      ],
+      "id": "qoview"
+    }
+  ],
   "icons": {
     "16": "img/icon_16.png",
     "128": "img/icon_128.png"
@@ -49,8 +53,9 @@
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "application/vnd.ces-quicksheet",
     "application/vnd.spreadsheet-openxml",
-    "application/vnd.ms-excel.sheet.macroEnabled.12"],
-  "name": "Chrome Office Viewer (Beta)",
+    "application/vnd.ms-excel.sheet.macroEnabled.12"
+  ],
+  "name": "Quickoffice (Beta)",
   "offline_enabled": true,
   "permissions": [
     "fileBrowserHandler",
@@ -58,7 +63,8 @@
     "fileSystem.write",
     "metricsPrivate",
     "streamsPrivate",
-    "unlimitedStorage"],
+    "unlimitedStorage"
+  ],
   "platforms": [
     {
       "nacl_arch": "x86-32",
@@ -73,7 +79,8 @@
       "sub_package_path": "_platform_specific/arm/"
     }
   ],
-  "version": "2.9.3.9",
+  "version": "3.0.4.2",
   "web_accessible_resources": [
-    "views/qowt.html"]
+    "views/qowt.html"
+  ]
 }

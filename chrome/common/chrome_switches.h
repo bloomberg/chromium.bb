@@ -191,7 +191,7 @@ extern const char kEnablePasswordGeneration[];
 extern const char kEnableProfiling[];
 extern const char kEnableQuic[];
 extern const char kEnableQuicHttps[];
-extern const char kEnableQuickofficeEdit[];
+extern const char kEnableQuickofficeViewing[];
 extern const char kEnableResetProfileSettings[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSavePasswordBubble[];

@@ -667,8 +667,8 @@ const char kEnableQuic[]                    = "enable-quic";
 // testing flag.  This only has an effect if QUIC protocol is enabled.
 const char kEnableQuicHttps[]               = "enable-quic-https";
 
-// Enables the Quickoffoce/Chrome document editor rather than the viewer.
-const char kEnableQuickofficeEdit[]         = "enable-quickoffice-editing";
+// Enables the Quickoffoce/Chrome document viewer rather than the editor.
+const char kEnableQuickofficeViewing[]      = "enable-quickoffice-viewing";
 
 // Enables support in chrome://settings to reset settings in your profile
 // that are often touched by malware.

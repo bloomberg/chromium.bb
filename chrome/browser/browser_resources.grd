@@ -337,9 +337,8 @@
       </if>
       <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
         <include name="IDR_HELP_MANIFEST" file="resources\help_app\manifest.json" type="BINDATA" />
-        <include name="IDR_QUICK_OFFICE_MANIFEST" file="resources\quick_office\manifest.json" type="BINDATA" />
-        <include name="IDR_QUICKOFFICE_EDITOR_MANIFEST"
-        file="resources\quick_office\manifest_experimental.json" type="BINDATA" />
+        <include name="IDR_QUICKOFFICE_VIEWING_MANIFEST" file="resources\quick_office\manifest_viewing.json" type="BINDATA" />
+        <include name="IDR_QUICKOFFICE_EDITOR_MANIFEST" file="resources\quick_office\manifest_editor.json" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_SALSA_CSS" file="resources\chromeos\salsa.css" type="BINDATA" />

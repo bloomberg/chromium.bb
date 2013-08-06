@@ -1554,11 +1554,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
-    "enable-quickoffice-editing",
-    IDS_FLAGS_ENABLE_QUICKOFFICE_DESKTOP_EDIT_NAME,
-    IDS_FLAGS_ENABLE_QUICKOFFICE_DESKTOP_EDIT_DESCRIPTION,
+    "enable-quickoffice-viewing",
+    IDS_FLAGS_ENABLE_QUICKOFFICE_DESKTOP_VIEWING_NAME,
+    IDS_FLAGS_ENABLE_QUICKOFFICE_DESKTOP_VIEWING_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableQuickofficeEdit),
+    SINGLE_VALUE_TYPE(switches::kEnableQuickofficeViewing),
   },
   {
     "enable-sticky-keys",
