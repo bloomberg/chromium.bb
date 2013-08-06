@@ -4538,6 +4538,9 @@
                   ['asan==0', {
                     'AdditionalOptions': ['/largeaddressaware'],
                   }],
+                  ['clang==1', {
+                    'AdditionalOptions!': ['/safeseh'],
+                  }],
                 ],
               },
             },
