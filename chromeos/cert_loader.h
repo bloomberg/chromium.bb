@@ -66,11 +66,16 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   static bool IsInitialized();
 
   // |crypto_task_runner| is the task runner that any synchronous crypto calls
-  // should be made from. e.g. in Chrome this is the IO thread. Must be called
+  // should be made from, e.g. in Chrome this is the IO thread. Must be called
   // after the thread is started. Certificate loading will not happen unless
   // this is set.
   void SetCryptoTaskRunner(
       const scoped_refptr<base::SequencedTaskRunner>& crypto_task_runner);
+
+  // Sets the task runner that any slow calls will be made from, e.g. calls
+  // to the NSS database. If not set, uses base::WorkerPool.
+  void SetSlowTaskRunnerForTest(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
@@ -166,6 +171,9 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
 
   // TaskRunner for crypto calls.
   scoped_refptr<base::SequencedTaskRunner> crypto_task_runner_;
+
+  // TaskRunner for other slow tasks. May be set in tests.
+  scoped_refptr<base::TaskRunner> slow_task_runner_for_test_;
 
   // This factory should be used only for callbacks during TPMToken
   // initialization.

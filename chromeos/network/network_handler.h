@@ -13,6 +13,7 @@ namespace chromeos {
 
 class GeolocationHandler;
 class ManagedNetworkConfigurationHandler;
+class NetworkCertMigrator;
 class NetworkConfigurationHandler;
 class NetworkConnectionHandler;
 class NetworkDeviceHandler;
@@ -59,6 +60,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<NetworkDeviceHandler> network_device_handler_;
   scoped_ptr<NetworkProfileHandler> network_profile_handler_;
+  scoped_ptr<NetworkCertMigrator> network_cert_migrator_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   scoped_ptr<ManagedNetworkConfigurationHandler>
       managed_network_configuration_handler_;

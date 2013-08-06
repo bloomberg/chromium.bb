@@ -74,6 +74,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& post_method() const { return post_method_; }
   const std::string& post_data() const { return post_data_; }
 
+  // Whether this network has a CACertNSS nickname set.
+  bool HasCACertNSS() const { return has_ca_cert_nss_; }
+
   // Returns true if |connection_state_| is a connected/connecting state.
   bool IsConnectedState() const;
   bool IsConnectingState() const;
@@ -153,6 +156,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string payment_url_;
   std::string post_method_;
   std::string post_data_;
+
+  // Whether a deprecated CaCertNSS property of this network is set. Required
+  // for migration to PEM.
+  bool has_ca_cert_nss_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkState);
 };

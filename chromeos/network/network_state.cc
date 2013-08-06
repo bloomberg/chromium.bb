@@ -68,6 +68,33 @@ chromeos::NetworkUIData* CreateUIDataFromValue(
   return new chromeos::NetworkUIData(*ui_data_dict);
 }
 
+bool IsCaCertNssSet(const base::DictionaryValue& properties) {
+  std::string ca_cert_nss;
+  if (properties.GetStringWithoutPathExpansion(flimflam::kEapCaCertNssProperty,
+                                               &ca_cert_nss) &&
+      !ca_cert_nss.empty()) {
+    return true;
+  }
+
+  const base::DictionaryValue* provider = NULL;
+  properties.GetDictionaryWithoutPathExpansion(flimflam::kProviderProperty,
+                                               &provider);
+  if (!provider)
+    return false;
+  if (provider->GetStringWithoutPathExpansion(
+          flimflam::kL2tpIpsecCaCertNssProperty, &ca_cert_nss) &&
+      !ca_cert_nss.empty()) {
+    return true;
+  }
+  if (provider->GetStringWithoutPathExpansion(
+          flimflam::kOpenVPNCaCertNSSProperty, &ca_cert_nss) &&
+      !ca_cert_nss.empty()) {
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -82,7 +109,8 @@ NetworkState::NetworkState(const std::string& path)
       signal_strength_(0),
       connectable_(false),
       activate_over_non_cellular_networks_(false),
-      cellular_out_of_credits_(false) {
+      cellular_out_of_credits_(false),
+      has_ca_cert_nss_(false) {
 }
 
 NetworkState::~NetworkState() {
@@ -191,6 +219,9 @@ bool NetworkState::PropertyChanged(const std::string& key,
 bool NetworkState::InitialPropertiesReceived(
     const base::DictionaryValue& properties) {
   bool changed = UpdateName(properties);
+  bool had_ca_cert_nss = has_ca_cert_nss_;
+  has_ca_cert_nss_ = IsCaCertNssSet(properties);
+  changed |= had_ca_cert_nss != has_ca_cert_nss_;
   return changed;
 }
 

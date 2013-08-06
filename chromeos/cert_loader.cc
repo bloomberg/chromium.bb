@@ -59,6 +59,7 @@ void CallOpenPersistentNSSDB() {
 }  // namespace
 
 static CertLoader* g_cert_loader = NULL;
+
 // static
 void CertLoader::Initialize() {
   CHECK(!g_cert_loader);
@@ -106,6 +107,11 @@ void CertLoader::SetCryptoTaskRunner(
     const scoped_refptr<base::SequencedTaskRunner>& crypto_task_runner) {
   crypto_task_runner_ = crypto_task_runner;
   MaybeRequestCertificates();
+}
+
+void CertLoader::SetSlowTaskRunnerForTest(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+  slow_task_runner_for_test_ = task_runner;
 }
 
 CertLoader::~CertLoader() {
@@ -330,13 +336,16 @@ void CertLoader::StartLoadCertificates() {
   net::CertificateList* cert_list = new net::CertificateList;
   certificates_update_running_ = true;
   certificates_update_required_ = false;
-  base::WorkerPool::GetTaskRunner(true /* task_is_slow */)->
-      PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(LoadNSSCertificates, cert_list),
-          base::Bind(&CertLoader::UpdateCertificates,
-                     update_certificates_factory_.GetWeakPtr(),
-                     base::Owned(cert_list)));
+
+  base::TaskRunner* task_runner = slow_task_runner_for_test_.get();
+  if (!task_runner)
+    task_runner = base::WorkerPool::GetTaskRunner(true /* task is slow */);
+  task_runner->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(LoadNSSCertificates, cert_list),
+      base::Bind(&CertLoader::UpdateCertificates,
+                 update_certificates_factory_.GetWeakPtr(),
+                 base::Owned(cert_list)));
 }
 
 void CertLoader::UpdateCertificates(net::CertificateList* cert_list) {

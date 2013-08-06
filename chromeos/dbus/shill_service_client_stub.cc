@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -356,12 +357,30 @@ bool ShillServiceClientStub::SetServiceProperty(const std::string& service_path,
           MoveServiceToIndex(service_path, 0, true);
     }
   }
-  dict->SetWithoutPathExpansion(property, value.DeepCopy());
+  base::DictionaryValue new_properties;
+  std::string changed_property;
+  bool case_sensitive = true;
+  if (StartsWithASCII(property, "Provider.", case_sensitive) ||
+      StartsWithASCII(property, "OpenVPN.", case_sensitive) ||
+      StartsWithASCII(property, "L2TPIPsec.", case_sensitive)) {
+    // These properties are only nested within the Provider dictionary if read
+    // from Shill.
+    base::DictionaryValue* provider = new base::DictionaryValue;
+    provider->SetWithoutPathExpansion(property, value.DeepCopy());
+    new_properties.SetWithoutPathExpansion(flimflam::kProviderProperty,
+                                           provider);
+    changed_property = flimflam::kProviderProperty;
+  } else {
+    new_properties.SetWithoutPathExpansion(property, value.DeepCopy());
+    changed_property = property;
+  }
+
+  dict->MergeDictionary(&new_properties);
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ShillServiceClientStub::NotifyObserversPropertyChanged,
                  weak_ptr_factory_.GetWeakPtr(),
-                 dbus::ObjectPath(service_path), property));
+                 dbus::ObjectPath(service_path), changed_property));
   return true;
 }
 
