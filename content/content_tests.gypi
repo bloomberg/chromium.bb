@@ -1096,11 +1096,6 @@
                   ['exclude', '^common/gpu/media/android_video_decode_accelerator_unittest.cc'],
                 ],
               }],
-              ['target_arch=="arm"', {
-                'include_dirs': [
-                  '<(DEPTH)/third_party/openmax/il',
-                ],
-              }],
               ['OS=="win"', {
                 'dependencies': [
                   '../third_party/angle_dx11/src/build_angle.gyp:libEGL',

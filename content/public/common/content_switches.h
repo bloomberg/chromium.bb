@@ -228,7 +228,6 @@ extern const char kTraceStartup[];
 extern const char kTraceStartupFile[];
 extern const char kTraceStartupDuration[];
 CONTENT_EXPORT extern const char kUIPrioritizeInGpuProcess[];
-CONTENT_EXPORT extern const char kUseExynosVda[];
 CONTENT_EXPORT extern const char kUserAgent[];
 extern const char kUtilityCmdPrefix[];
 CONTENT_EXPORT extern const char kUtilityProcess[];

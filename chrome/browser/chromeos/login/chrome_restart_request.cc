@@ -134,7 +134,6 @@ std::string DeriveCommandLine(const GURL& start_url,
 #endif
       ::switches::kUseGL,
       ::switches::kUserDataDir,
-      ::switches::kUseExynosVda,
       ::switches::kV,
       ::switches::kEnableWebGLDraftExtensions,
       ash::switches::kAshDefaultGuestWallpaperLarge,

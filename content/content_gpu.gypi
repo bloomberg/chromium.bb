@@ -72,11 +72,6 @@
         },
       ],
     }],
-    ['target_arch=="arm" and chromeos == 1', {
-      'include_dirs': [
-        '<(DEPTH)/third_party/openmax/il',
-      ],
-    }],
     ['target_arch!="arm" and chromeos == 1', {
       'include_dirs': [
         '<(DEPTH)/third_party/libva',

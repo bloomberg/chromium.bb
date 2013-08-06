@@ -353,10 +353,7 @@ bool WarmUpSandbox(const CommandLine& command_line) {
   }
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseExynosVda))
-    ExynosVideoDecodeAccelerator::PreSandboxInitialization();
-  else
-    OmxVideoDecodeAccelerator::PreSandboxInitialization();
+  ExynosVideoDecodeAccelerator::PreSandboxInitialization();
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
   VaapiWrapper::PreSandboxInitialization();
 #endif

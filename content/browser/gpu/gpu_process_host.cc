@@ -1156,7 +1156,6 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kReduceGpuSandbox,
     switches::kTestGLLib,
     switches::kTraceStartup,
-    switches::kUseExynosVda,
     switches::kV,
     switches::kVModule,
 #if defined(OS_MACOSX)

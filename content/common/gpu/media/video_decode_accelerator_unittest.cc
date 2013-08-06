@@ -496,7 +496,7 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
 
   void SetState(ClientState new_state);
 
-  // Delete the associated OMX decoder helper.
+  // Delete the associated decoder helper.
   void DeleteDecoder();
 
   // Compute & return the first encoded bytes (including a start frame) to send
