@@ -206,7 +206,7 @@ public:
     void linkProgram(WebGLProgram*, ExceptionState&);
     void pixelStorei(GC3Denum pname, GC3Dint param);
     void polygonOffset(GC3Dfloat factor, GC3Dfloat units);
-    void readPixels(GC3Dint x, GC3Dint y, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, ArrayBufferView* pixels, ExceptionState&);
+    void readPixels(GC3Dint x, GC3Dint y, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, ArrayBufferView* pixels);
     void renderbufferStorage(GC3Denum target, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height);
     void sampleCoverage(GC3Dfloat value, GC3Dboolean invert);
     void scissor(GC3Dint x, GC3Dint y, GC3Dsizei width, GC3Dsizei height);
@@ -373,7 +373,7 @@ public:
     void addCompressedTextureFormat(GC3Denum);
     void removeAllCompressedTextureFormats();
 
-    PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy, ExceptionState&);
+    PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy);
 
     WebGLRenderbuffer* ensureEmulatedStencilBuffer(GC3Denum target, WebGLRenderbuffer*);
 

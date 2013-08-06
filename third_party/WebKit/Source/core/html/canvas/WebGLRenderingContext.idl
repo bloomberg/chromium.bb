@@ -583,7 +583,7 @@ typedef /*unrestricted*/ float GLclampf;
     [StrictTypeChecking] void         pixelStorei(GLenum pname, GLint param);
     [StrictTypeChecking] void         polygonOffset(GLfloat factor, GLfloat units);
 
-    [StrictTypeChecking, RaisesException] void         readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, ArrayBufferView pixels);
+    [StrictTypeChecking] void         readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, ArrayBufferView pixels);
 
     [StrictTypeChecking] void         renderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
     [StrictTypeChecking] void         sampleCoverage(GLclampf value, GLboolean invert);
