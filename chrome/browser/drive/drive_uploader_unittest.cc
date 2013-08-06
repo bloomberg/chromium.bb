@@ -286,6 +286,21 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   }
 };
 
+// Mock DriveService that returns a failure at GetUploadStatus().
+class MockDriveServiceNoConnectionAtGetUploadStatus : public DummyDriveService {
+  // Returns error.
+  virtual CancelCallback GetUploadStatus(
+      const GURL& upload_url,
+      int64 content_length,
+      const UploadRangeCallback& callback) OVERRIDE {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(callback,
+                   UploadRangeResponse(GDATA_NO_CONNECTION, -1, -1),
+                   base::Passed(scoped_ptr<ResourceEntry>())));
+    return CancelCallback();
+  }
+};
+
 class DriveUploaderTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
@@ -475,6 +490,31 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_EQ(GURL(kTestUploadExistingFileURL), upload_location);
+}
+
+TEST_F(DriveUploaderTest, GetUploadStatusFail) {
+  base::FilePath local_path;
+  std::string data;
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 512 * 1024, &local_path, &data));
+
+  GDataErrorCode error = HTTP_SUCCESS;
+  GURL upload_location;
+  scoped_ptr<ResourceEntry> resource_entry;
+
+  MockDriveServiceNoConnectionAtGetUploadStatus mock_service;
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
+  uploader.ResumeUploadFile(GURL(kTestUploadExistingFileURL),
+                            local_path,
+                            kTestMimeType,
+                            test_util::CreateCopyResultCallback(
+                                &error, &upload_location, &resource_entry),
+                            google_apis::ProgressCallback());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_TRUE(upload_location.is_empty());
 }
 
 TEST_F(DriveUploaderTest, NonExistingSourceFile) {

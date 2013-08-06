@@ -172,8 +172,7 @@ class DriveUploader : public DriveUploaderInterface {
   void StartGetUploadStatus(scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Uploads the next chunk of data from the file.
-  void UploadNextChunk(scoped_ptr<UploadFileInfo> upload_file_info,
-                       int64 start_position);
+  void UploadNextChunk(scoped_ptr<UploadFileInfo> upload_file_info);
 
   // DriveService callback for ResumeUpload.
   void OnUploadRangeResponseReceived(
