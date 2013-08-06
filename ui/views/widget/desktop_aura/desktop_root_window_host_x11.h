@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
@@ -32,6 +33,7 @@ class DesktopActivationClient;
 class DesktopCaptureClient;
 class DesktopDragDropClientAuraX11;
 class DesktopDispatcherClient;
+class DesktopRootWindowHostObserverX11;
 class X11DesktopWindowMoveClient;
 class X11WindowEventFilter;
 
@@ -64,42 +66,13 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   // has changed our activation.
   void HandleNativeWidgetActivationChanged(bool active);
 
+  void AddObserver(views::DesktopRootWindowHostObserverX11* observer);
+  void RemoveObserver(views::DesktopRootWindowHostObserverX11* observer);
+
   // Deallocates the internal list of open windows.
   static void CleanUpWindowList();
 
- private:
-  // Initializes our X11 surface to draw on. This method performs all
-  // initialization related to talking to the X11 server.
-  void InitX11Window(const Widget::InitParams& params);
-
-  // Creates an aura::RootWindow to contain the |content_window|, along with
-  // all aura client objects that direct behavior.
-  aura::RootWindow* InitRootWindow(const Widget::InitParams& params);
-
-  // Returns true if there's an X window manager present... in most cases.  Some
-  // window managers (notably, ion3) don't implement enough of ICCCM for us to
-  // detect that they're there.
-  bool IsWindowManagerPresent();
-
-  // Sends a message to the x11 window manager, enabling or disabling the
-  // states |state1| and |state2|.
-  void SetWMSpecState(bool enabled, ::Atom state1, ::Atom state2);
-
-  // Checks if the window manager has set a specific state.
-  bool HasWMSpecProperty(const char* property) const;
-
-  // Called when another DRWHL takes capture, or when capture is released
-  // entirely.
-  void OnCaptureReleased();
-
-  // Dispatches a mouse event, taking mouse capture into account. If a
-  // different host has capture, we translate the event to its coordinate space
-  // and dispatch it to that host instead.
-  void DispatchMouseEvent(ui::MouseEvent* event);
-
-  // See comment for variable open_windows_.
-  static std::list<XID>& open_windows();
-
+ protected:
   // Overridden from DesktopRootWindowHost:
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) OVERRIDE;
@@ -180,6 +153,39 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
 
+private:
+  // Initializes our X11 surface to draw on. This method performs all
+  // initialization related to talking to the X11 server.
+  void InitX11Window(const Widget::InitParams& params);
+
+  // Creates an aura::RootWindow to contain the |content_window|, along with
+  // all aura client objects that direct behavior.
+  aura::RootWindow* InitRootWindow(const Widget::InitParams& params);
+
+  // Returns true if there's an X window manager present... in most cases.  Some
+  // window managers (notably, ion3) don't implement enough of ICCCM for us to
+  // detect that they're there.
+  bool IsWindowManagerPresent();
+
+  // Sends a message to the x11 window manager, enabling or disabling the
+  // states |state1| and |state2|.
+  void SetWMSpecState(bool enabled, ::Atom state1, ::Atom state2);
+
+  // Checks if the window manager has set a specific state.
+  bool HasWMSpecProperty(const char* property) const;
+
+  // Called when another DRWHL takes capture, or when capture is released
+  // entirely.
+  void OnCaptureReleased();
+
+  // Dispatches a mouse event, taking mouse capture into account. If a
+  // different host has capture, we translate the event to its coordinate space
+  // and dispatch it to that host instead.
+  void DispatchMouseEvent(ui::MouseEvent* event);
+
+  // See comment for variable open_windows_.
+  static std::list<XID>& open_windows();
+
   // Overridden from Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
@@ -244,6 +250,8 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
 
   aura::RootWindowHostDelegate* root_window_host_delegate_;
   aura::Window* content_window_;
+
+  ObserverList<DesktopRootWindowHostObserverX11> observer_list_;
 
   // The current root window host that has capture. While X11 has something
   // like Windows SetCapture()/ReleaseCapture(), it is entirely implicit and
