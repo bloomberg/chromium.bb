@@ -5,6 +5,7 @@
 #include "ui/base/ime/win/tsf_input_scope.h"
 
 #include <InputScope.h>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -16,8 +17,8 @@ namespace {
 
 class TSFInputScope : public ITfInputScope {
  public:
-  explicit TSFInputScope(InputScope input_scope)
-      : input_scope_(input_scope),
+  explicit TSFInputScope(const std::vector<InputScope>& input_scopes)
+      : input_scopes_(input_scopes),
         ref_count_(0) {}
 
   // ITfInputScope:
@@ -51,13 +52,15 @@ class TSFInputScope : public ITfInputScope {
     if (!count || !input_scopes)
       return E_INVALIDARG;
     *input_scopes = static_cast<InputScope*>(CoTaskMemAlloc(
-        sizeof(InputScope)));
+        sizeof(InputScope) * input_scopes_.size()));
     if (!input_scopes) {
       *count = 0;
       return E_OUTOFMEMORY;
     }
-    (*input_scopes)[0] = input_scope_;
-    *count = 1;
+
+    for (size_t i = 0; i < input_scopes_.size(); ++i)
+      (*input_scopes)[i] = input_scopes_[i];
+    *count = input_scopes_.size();
     return S_OK;
   }
 
@@ -78,8 +81,8 @@ class TSFInputScope : public ITfInputScope {
   }
 
  private:
-  // The corresponding text input type.
-  InputScope input_scope_;
+  // The corresponding text input types.
+  std::vector<InputScope> input_scopes_;
 
   // The refrence count of this instance.
   volatile LONG ref_count_;
@@ -136,7 +139,9 @@ InputScope GetInputScopeType(TextInputType text_input_type) {
 }  // namespace
 
 ITfInputScope* CreateInputScope(TextInputType text_input_type) {
-  return new TSFInputScope(GetInputScopeType(text_input_type));
+  std::vector<InputScope> input_scopes(1);
+  input_scopes.push_back(GetInputScopeType(text_input_type));
+  return new TSFInputScope(input_scopes);
 }
 
 void SetInputScopeForTsfUnawareWindow(HWND window_handle,
