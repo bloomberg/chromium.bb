@@ -247,6 +247,7 @@ FolderShortcutsDataModel.prototype = {
     // 1) 'change' event is not necessary to fire since it is covered by
     //    'permuted' event.
     // 2) 'splice' and 'sorted' events are not implemented. These events are
-    //    not used in VolumeListModel. We have to implement them when necessary.
+    //    not used in NavigationListModel. We have to implement them when
+    //    necessary.
   }
 };

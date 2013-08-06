@@ -410,7 +410,7 @@ test.util.async.selectVolume = function(contentWindow, iconName, callback) {
     },
     sendEvents: function() {
       // To change the selected volume, we have to send both events 'mousedown'
-      // and 'click' to the volume list.
+      // and 'click' to the navigation list.
       callback(test.util.sync.fakeMouseDown(contentWindow, query) &&
                test.util.sync.fakeMouseClick(contentWindow, query));
     }

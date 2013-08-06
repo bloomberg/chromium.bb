@@ -99,9 +99,9 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
-   * @param {VolumeList} tree Its sub items will could be drop target.
+   * @param {NavigationList} tree Its sub items will could be drop target.
    */
-  attachVolumesDropTarget: function(list) {
+  attachNavigationListDropTarget: function(list) {
     list.addEventListener('dragover',
         this.onDragOver_.bind(this, true /* onlyIntoDirectories */, list));
     list.addEventListener('dragenter',
@@ -409,7 +409,7 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
-   * @param {VolumeList} list Drop target list.
+   * @param {NavigationList} list Drop target list.
    * @param {Event} event A dragenter event of DOM.
    */
   onDragEnterVolumesList_: function(list, event) {

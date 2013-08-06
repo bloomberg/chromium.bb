@@ -448,7 +448,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     controller.attachDragSource(this.grid_);
     controller.attachFileListDropTarget(this.grid_);
     controller.attachTreeDropTarget(this.directoryTree_);
-    controller.attachVolumesDropTarget(this.volumeList_, true);
+    controller.attachNavigationListDropTarget(this.navigationList_, true);
     controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
         this.blinkSelection.bind(this));
@@ -474,7 +474,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.rootsContextMenu_ =
         this.dialogDom_.querySelector('#roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
-    this.volumeList_.setContextMenu(this.rootsContextMenu_);
+    this.navigationList_.setContextMenu(this.rootsContextMenu_);
 
     this.directoryTreeContextMenu_ =
         this.dialogDom_.querySelector('#directory-tree-context-menu');
@@ -565,14 +565,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     CommandUtil.registerCommand(this.dialogContainer_, 'change-default-app',
         Commands.changeDefaultAppCommand, this);
 
-    CommandUtil.registerCommand(this.volumeList_, 'unmount',
-        Commands.unmountCommand, this.volumeList_, this);
+    CommandUtil.registerCommand(this.navigationList_, 'unmount',
+        Commands.unmountCommand, this.navigationList_, this);
 
-    CommandUtil.registerCommand(this.volumeList_, 'import-photos',
-        Commands.importCommand, this.volumeList_);
+    CommandUtil.registerCommand(this.navigationList_, 'import-photos',
+        Commands.importCommand, this.navigationList_);
 
     CommandUtil.registerCommand(this.dialogContainer_, 'format',
-        Commands.formatCommand, this.volumeList_, this,
+        Commands.formatCommand, this.navigationList_, this,
         this.directoryModel_);
 
     CommandUtil.registerCommand(this.dialogContainer_, 'delete',
@@ -624,7 +624,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       CommandUtil.registerCommand(this.dialogContainer_,
                                   'volume-switch-' + i,
                                   Commands.volumeSwitchCommand,
-                                  this.volumeList_,
+                                  this.navigationList_,
                                   i);
     }
 
@@ -1181,10 +1181,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.updateMiddleBarVisibility_(true);
     }.bind(this));
 
-    this.volumeList_ = this.dialogDom_.querySelector('#volume-list');
-    VolumeList.decorate(this.volumeList_,
-                        this.directoryModel_,
-                        this.folderShortcutsModel_);
+    this.navigationList_ = this.dialogDom_.querySelector('#volume-list');
+    NavigationList.decorate(this.navigationList_,
+                            this.directoryModel_,
+                            this.folderShortcutsModel_);
   };
 
   /**
@@ -1503,10 +1503,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.directoryTree_)
       this.directoryTree_.relayout();
 
-    // TODO(mtomasz, yoshiki): Initialize volume list earlier, before
+    // TODO(mtomasz, yoshiki): Initialize navigation list earlier, before
     // file system is available.
-    if (this.volumeList_)
-      this.volumeList_.redraw();
+    if (this.navigationList_)
+      this.navigationList_.redraw();
 
     // Hide the search box if there is not enough space.
     this.searchBoxWrapper_.classList.toggle(

@@ -415,7 +415,7 @@ function onExecute(action, details) {
         defaultPath: details.entries[0].fullPath,
       };
       // For mounted devices just focus any Files.app window. The mounted
-      // volume will appear on the volume list.
+      // volume will appear on the navigation list.
       var type = action == 'auto-open' ? LaunchType.FOCUS_ANY_OR_CREATE :
           LaunchType.FOCUS_SAME_OR_CREATE;
       launchFileManager(appState,

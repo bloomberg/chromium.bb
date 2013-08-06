@@ -5,13 +5,13 @@
 'use strict';
 
 /**
- * A volume list model. This model combines the 2 lists.
+ * A navigation list model. This model combines the 2 lists.
  * @param {cr.ui.ArrayDataModel} volumesList The first list of the model.
  * @param {cr.ui.ArrayDataModel} pinnedList The second list of the model.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function VolumeListModel(volumesList, pinnedList) {
+function NavigationListModel(volumesList, pinnedList) {
   this.volumesList_ = volumesList;
   this.pinnedList_ = pinnedList;
 
@@ -62,9 +62,9 @@ function VolumeListModel(volumesList, pinnedList) {
 }
 
 /**
- * VolumeList inherits cr.EventTarget.
+ * NavigationList inherits cr.EventTarget.
  */
-VolumeListModel.prototype = {
+NavigationListModel.prototype = {
   __proto__: cr.EventTarget.prototype,
   get length() { return this.length_(); }
 };
@@ -74,7 +74,7 @@ VolumeListModel.prototype = {
  * @param {number} index The index of the entry to get.
  * @return {?string} The path at the given index.
  */
-VolumeListModel.prototype.item = function(index) {
+NavigationListModel.prototype.item = function(index) {
   var offset = this.volumesList_.length;
   if (index < offset) {
     var entry = this.volumesList_.item(index);
@@ -85,10 +85,10 @@ VolumeListModel.prototype.item = function(index) {
 };
 
 /**
- * Type of the item on the volume list.
+ * Type of the item on the navigation list.
  * @enum {number}
  */
-VolumeListModel.ItemType = {
+NavigationListModel.ItemType = {
   ROOT: 1,
   PINNED: 2
 };
@@ -96,12 +96,12 @@ VolumeListModel.ItemType = {
 /**
  * Returns the type of the item at the given index.
  * @param {number} index The index of the entry to get.
- * @return {VolumeListModel.ItemType} The type of the item.
+ * @return {NavigationListModel.ItemType} The type of the item.
  */
-VolumeListModel.prototype.getItemType = function(index) {
+NavigationListModel.prototype.getItemType = function(index) {
   var offset = this.volumesList_.length;
   return index < offset ?
-      VolumeListModel.ItemType.ROOT : VolumeListModel.ItemType.PINNED;
+      NavigationListModel.ItemType.ROOT : NavigationListModel.ItemType.PINNED;
 };
 
 /**
@@ -109,7 +109,7 @@ VolumeListModel.prototype.getItemType = function(index) {
  * @return {number} The length of the model.
  * @private
  */
-VolumeListModel.prototype.length_ = function() {
+NavigationListModel.prototype.length_ = function() {
   return this.volumesList_.length + this.pinnedList_.length;
 };
 
@@ -120,7 +120,7 @@ VolumeListModel.prototype.length_ = function() {
  *     the {@code opt_fromIndex}.
  * @return {number} The index of the first found element or -1 if not found.
  */
-VolumeListModel.prototype.indexOf = function(item, opt_fromIndex) {
+NavigationListModel.prototype.indexOf = function(item, opt_fromIndex) {
   for (var i = opt_fromIndex || 0; i < this.length; i++) {
     if (item === this.item(i))
       return i;
@@ -129,20 +129,20 @@ VolumeListModel.prototype.indexOf = function(item, opt_fromIndex) {
 };
 
 /**
- * A volume item.
+ * A navigation list item.
  * @constructor
  * @extends {HTMLLIElement}
  */
-var VolumeItem = cr.ui.define('li');
+var NavigationListItem = cr.ui.define('li');
 
-VolumeItem.prototype = {
+NavigationListItem.prototype = {
   __proto__: HTMLLIElement.prototype,
 };
 
 /**
  * Decorate the item.
  */
-VolumeItem.prototype.decorate = function() {
+NavigationListItem.prototype.decorate = function() {
   // decorate() may be called twice: from the constructor and from
   // List.createItem(). This check prevents double-decorating.
   if (this.className)
@@ -167,9 +167,9 @@ VolumeItem.prototype.decorate = function() {
  * Associate a path with this item.
  * @param {string} path Path of this item.
  */
-VolumeItem.prototype.setPath = function(path) {
+NavigationListItem.prototype.setPath = function(path) {
   if (this.path_)
-    console.warn('VolumeItem.setPath should be called only once.');
+    console.warn('NavigationListItem.setPath should be called only once.');
 
   this.path_ = path;
 
@@ -205,10 +205,10 @@ VolumeItem.prototype.setPath = function(path) {
  * Associate a context menu with this item.
  * @param {cr.ui.Menu} menu Menu this item.
  */
-VolumeItem.prototype.maybeSetContextMenu = function(menu) {
+NavigationListItem.prototype.maybeSetContextMenu = function(menu) {
   if (!this.path_) {
-    console.error(
-        'VolumeItem.maybeSetContextMenu must be called after setPath().');
+    console.error('NavigationListItem.maybeSetContextMenu must be called ' +
+                  'after setPath().');
     return;
   }
 
@@ -223,17 +223,17 @@ VolumeItem.prototype.maybeSetContextMenu = function(menu) {
 };
 
 /**
- * A volume list.
+ * A navigation list.
  * @constructor
  * @extends {cr.ui.List}
  */
-function VolumeList() {
+function NavigationList() {
 }
 
 /**
- * VolumeList inherits cr.ui.List.
+ * NavigationList inherits cr.ui.List.
  */
-VolumeList.prototype.__proto__ = cr.ui.List.prototype;
+NavigationList.prototype.__proto__ = cr.ui.List.prototype;
 
 /**
  * @param {HTMLElement} el Element to be DirectoryItem.
@@ -241,8 +241,8 @@ VolumeList.prototype.__proto__ = cr.ui.List.prototype;
  * @param {cr.ui.ArrayDataModel} pinnedFolderModel Current model of the pinned
  *     folders.
  */
-VolumeList.decorate = function(el, directoryModel, pinnedFolderModel) {
-  el.__proto__ = VolumeList.prototype;
+NavigationList.decorate = function(el, directoryModel, pinnedFolderModel) {
+  el.__proto__ = NavigationList.prototype;
   el.decorate(directoryModel, pinnedFolderModel);
 };
 
@@ -251,9 +251,10 @@ VolumeList.decorate = function(el, directoryModel, pinnedFolderModel) {
  * @param {cr.ui.ArrayDataModel} pinnedFolderModel Current model of the pinned
  *     folders.
  */
-VolumeList.prototype.decorate = function(directoryModel, pinnedFolderModel) {
+NavigationList.prototype.decorate =
+    function(directoryModel, pinnedFolderModel) {
   cr.ui.List.decorate(this);
-  this.__proto__ = VolumeList.prototype;
+  this.__proto__ = NavigationList.prototype;
 
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = VolumeManager.getInstance();
@@ -281,19 +282,19 @@ VolumeList.prototype.decorate = function(directoryModel, pinnedFolderModel) {
   this.pinnedItemList_ = pinnedFolderModel;
 
   this.dataModel =
-      new VolumeListModel(this.directoryModel_.getRootsList(),
-                          this.pinnedItemList_);
+      new NavigationListModel(this.directoryModel_.getRootsList(),
+                              this.pinnedItemList_);
 };
 
 /**
- * Creates an element of a volume. This method is called from cr.ui.List
- * internally.
+ * Creates an element of a navigation list. This method is called from
+ * cr.ui.List internally.
  * @param {string} path Path of the directory to be rendered.
- * @return {VolumeItem} Rendered element.
+ * @return {NavigationListItem} Rendered element.
  * @private
  */
-VolumeList.prototype.renderRoot_ = function(path) {
-  var item = new VolumeItem();
+NavigationList.prototype.renderRoot_ = function(path) {
+  var item = new NavigationListItem();
   item.setPath(path);
 
   var handleClick = function() {
@@ -330,7 +331,7 @@ VolumeList.prototype.renderRoot_ = function(path) {
  *
  * @param {cr.ui.Menu} menu Context menu.
  */
-VolumeList.prototype.setContextMenu = function(menu) {
+NavigationList.prototype.setContextMenu = function(menu) {
   this.contextMenu_ = menu;
 
   for (var i = 0; i < this.dataModel.length; i++) {
@@ -339,11 +340,11 @@ VolumeList.prototype.setContextMenu = function(menu) {
 };
 
 /**
- * Selects the n-th volume from the list.
- * @param {number} index Volume index.
+ * Selects the n-th item from the list.
+ * @param {number} index Item index.
  * @return {boolean} True for success, otherwise false.
  */
-VolumeList.prototype.selectByIndex = function(index) {
+NavigationList.prototype.selectByIndex = function(index) {
   if (index < 0 || index > this.dataModel.length - 1)
     return false;
 
@@ -364,7 +365,7 @@ VolumeList.prototype.selectByIndex = function(index) {
  * @param {Event} event The event.
  * @private
  */
-VolumeList.prototype.onBeforeSelectionChange_ = function(event) {
+NavigationList.prototype.onBeforeSelectionChange_ = function(event) {
   if (event.changes.length == 1 && !event.changes[0].selected)
     event.preventDefault();
 };
@@ -374,8 +375,8 @@ VolumeList.prototype.onBeforeSelectionChange_ = function(event) {
  * @param {Event} event The event.
  * @private
  */
-VolumeList.prototype.onSelectionChange_ = function(event) {
-  // This handler is invoked even when the volume list itself changes the
+NavigationList.prototype.onSelectionChange_ = function(event) {
+  // This handler is invoked even when the navigation list itself changes the
   // selection. In such case, we shouldn't handle the event.
   if (this.dontHandleSelectionEvent_)
     return;
@@ -388,12 +389,12 @@ VolumeList.prototype.onSelectionChange_ = function(event) {
  * @param {Event} event The event.
  * @private
  */
-VolumeList.prototype.onCurrentDirectoryChanged_ = function(event) {
+NavigationList.prototype.onCurrentDirectoryChanged_ = function(event) {
   var path = event.newDirEntry.fullPath || this.dataModel.getCurrentDirPath();
   var newRootPath = PathUtil.getRootPath(path);
 
-  // Synchronizes the volume list selection with the current directory, after
-  // it is changed outside of the volume list.
+  // Synchronizes the navigation list selection with the current directory,
+  // after it is changed outside of the navigation list.
 
   // (1) Select the nearest parent directory (including the pinned directories).
   var bestMatchIndex = -1;
