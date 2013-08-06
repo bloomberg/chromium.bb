@@ -1652,7 +1652,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
 		    if (value[object])
 		    {
 			FcValueList	*thisValue = value[object];
-			FcValueList	*nextValue = thisValue;
+			FcValueList	*nextValue = l;
 
 			/*
 			 * Append the new list of values after the current value
