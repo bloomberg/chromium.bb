@@ -25,6 +25,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chromeos/network/onc/onc_test_utils.h"
+#include "crypto/nss_util.h"
 #endif
 
 using testing::AnyNumber;
@@ -93,6 +94,9 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
   }
 
   policy::MockConfigurationPolicyProvider provider_;
+#if defined(OS_CHROMEOS)
+  crypto::ScopedTestNSSDB test_nssdb_;
+#endif
 };
 
 #if defined(OS_CHROMEOS)

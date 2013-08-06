@@ -1033,8 +1033,11 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
     const char kStubLabel[] = "Stub TPM Token";
     const char kStubUserPin[] = "012345";
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, kStubLabel,
-                              kStubUserPin));
+        FROM_HERE,
+        base::Bind(callback,
+                   DBUS_METHOD_CALL_SUCCESS,
+                   std::string(kStubLabel),
+                   std::string(kStubUserPin)));
   }
 
   // CryptohomeClient override.
