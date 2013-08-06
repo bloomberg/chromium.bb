@@ -34,45 +34,4 @@ TEST_F(DesktopScreenPositionClientTest, PositionDialog) {
   EXPECT_EQ("11,12", dialog->GetWindowBoundsInScreen().origin().ToString());
 }
 
-// Verifies that setting the bounds of a control parented to something other
-// than the root window is positioned correctly.
-TEST_F(DesktopScreenPositionClientTest, PositionControlWithNonRootParent) {
-  Widget widget1;
-  Widget widget2;
-  Widget widget3;
-  gfx::Point origin = gfx::Point(16, 16);
-
-  // Create 3 windows.  A root window, an arbitrary window parented to the root
-  // but NOT positioned at (0,0) relative to the root, and then a third window
-  // parented to the second, also not positioned at (0,0).
-  Widget::InitParams params1 =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params1.bounds = gfx::Rect(origin, gfx::Size(700, 600));
-  params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params1.native_widget = new DesktopNativeWidgetAura(&widget1);
-  widget1.Init(params1);
-
-  Widget::InitParams params2 =
-    CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params2.bounds = gfx::Rect(origin, gfx::Size(600, 500));
-  params2.parent = widget1.GetNativeView();
-  params2.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params2.child = true;
-  widget2.Init(params2);
-
-  Widget::InitParams params3 =
-      CreateParams(Widget::InitParams::TYPE_CONTROL);
-  params3.parent = widget2.GetNativeView();
-  params3.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params3.child = true;
-  params3.bounds = gfx::Rect(origin, gfx::Size(500, 400));
-  widget3.Init(params3);
-
-  // The origin of the 3rd window should be the sum of all parent origins.
-  gfx::Point expected_origin(origin.x() * 3, origin.y() * 3);
-  gfx::Rect expected_bounds(expected_origin, gfx::Size(500, 400));
-  gfx::Rect actual_bounds(widget3.GetWindowBoundsInScreen());
-  EXPECT_EQ(expected_bounds.ToString(), actual_bounds.ToString());
-}
-
 }  // namespace views

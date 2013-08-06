@@ -68,16 +68,19 @@ void DesktopScreenPositionClient::SetBounds(
     const gfx::Rect& bounds,
     const gfx::Display& display) {
   // TODO: Use the 3rd parameter, |display|.
+  gfx::Point origin = bounds.origin();
   aura::RootWindow* root = window->GetRootWindow();
+  aura::Window::ConvertPointToTarget(window->parent(), root, &origin);
+
+  if (window->type() == aura::client::WINDOW_TYPE_CONTROL) {
+    window->SetBounds(gfx::Rect(origin, bounds.size()));
+    return;
+  }
 
   if (PositionWindowInScreenCoordinates(window)) {
     // The caller expects windows we consider "embedded" to be placed in the
     // screen coordinate system. So we need to offset the root window's
     // position (which is in screen coordinates) from these bounds.
-
-    gfx::Point origin = bounds.origin();
-    aura::Window::ConvertPointToTarget(window->parent(), root, &origin);
-
     gfx::Point host_origin = GetOrigin(root);
     origin.Offset(-host_origin.x(), -host_origin.y());
     window->SetBounds(gfx::Rect(origin, bounds.size()));
