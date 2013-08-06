@@ -119,25 +119,6 @@ class CancelFileTransfersFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Implements the chrome.fileBrowserPrivate.transferFile method.
-class TransferFileFunction : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.transferFile",
-                             FILEBROWSERPRIVATE_TRANSFERFILE)
-
-  TransferFileFunction();
-
- protected:
-  virtual ~TransferFileFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  // Helper callback for handling response from FileSystem::TransferFile().
-  void OnTransferCompleted(drive::FileError error);
-};
-
 class SearchDriveFunction : public LoggedAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDrive",

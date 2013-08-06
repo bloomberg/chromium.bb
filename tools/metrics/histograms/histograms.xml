@@ -17185,7 +17185,7 @@ other types of suffix sets.
   <int value="338" label="APP_CURRENTWINDOWINTERNAL_MAXIMIZE"/>
   <int value="339" label="EXPERIMENTAL_DISCOVERY_CLEARALLSUGGESTIONS"/>
   <int value="340" label="DELETED_MANAGEDMODEPRIVATE_ENTER"/>
-  <int value="341" label="FILEBROWSERPRIVATE_TRANSFERFILE"/>
+  <int value="341" label="DELETED_FILEBROWSERPRIVATE_TRANSFERFILE"/>
   <int value="342" label="BROWSERACTION_SETPOPUP"/>
   <int value="343" label="TABS_GETSELECTED"/>
   <int value="344" label="FONTSETTINGS_GETFONT"/>

@@ -33,7 +33,6 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<PinDriveFileFunction>();
   registry->RegisterFunction<GetDriveFilesFunction>();
   registry->RegisterFunction<CancelFileTransfersFunction>();
-  registry->RegisterFunction<TransferFileFunction>();
   registry->RegisterFunction<SearchDriveFunction>();
   registry->RegisterFunction<SearchDriveMetadataFunction>();
   registry->RegisterFunction<ClearDriveCacheFunction>();
