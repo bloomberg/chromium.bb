@@ -929,14 +929,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableTouchAdjustment)
   },
-  {
-    "enable-tab-capture",
-    IDS_ENABLE_TAB_CAPTURE_NAME,
-    IDS_ENABLE_TAB_CAPTURE_DESCRIPTION,
-    kOsWin | kOsMac | kOsLinux | kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kTabCapture, "1",
-                                        switches::kTabCapture, "0")
-  },
 #if defined(OS_CHROMEOS)
   {
       "ash-use-alternate-shelf",

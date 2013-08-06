@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -277,7 +276,6 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromExtension(
 
   if (request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE &&
       tab_capture_allowed &&
-      extensions::FeatureSwitch::tab_capture()->IsEnabled() &&
       extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
     devices.push_back(content::MediaStreamDevice(
         content::MEDIA_TAB_AUDIO_CAPTURE, std::string(), std::string()));
@@ -289,7 +287,6 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromExtension(
 
   if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE &&
       tab_capture_allowed &&
-      extensions::FeatureSwitch::tab_capture()->IsEnabled() &&
       extension->HasAPIPermission(extensions::APIPermission::kTabCapture)) {
     devices.push_back(content::MediaStreamDevice(
         content::MEDIA_TAB_VIDEO_CAPTURE, std::string(), std::string()));

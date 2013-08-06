@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "content/public/browser/render_process_host.h"
@@ -52,11 +51,6 @@ const char kMediaStreamSourceTab[] = "tab";
 }  // namespace
 
 bool TabCaptureCaptureFunction::RunImpl() {
-  if (!FeatureSwitch::tab_capture()->IsEnabled()) {
-    error_ = kPermissionError;
-    return false;
-  }
-
   scoped_ptr<api::tab_capture::Capture::Params> params =
       TabCapture::Capture::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -156,11 +150,6 @@ bool TabCaptureCaptureFunction::RunImpl() {
 }
 
 bool TabCaptureGetCapturedTabsFunction::RunImpl() {
-  if (!FeatureSwitch::tab_capture()->IsEnabled()) {
-    error_ = kPermissionError;
-    return false;
-  }
-
   extensions::TabCaptureRegistry* registry =
       extensions::TabCaptureRegistryFactory::GetForProfile(profile());
 

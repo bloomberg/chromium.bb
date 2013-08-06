@@ -58,9 +58,6 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
     return;
 #endif
 
-  extensions::FeatureSwitch::ScopedOverride tab_capture(
-      extensions::FeatureSwitch::tab_capture(), true);
-
 #if defined(OS_WIN)
   // TODO(justinlin): Disabled for WinXP due to timeout issues.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
@@ -74,9 +71,6 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
 }
 
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
-  extensions::FeatureSwitch::ScopedOverride tab_capture(
-      extensions::FeatureSwitch::tab_capture(), true);
-
 #if defined(OS_WIN)
   // TODO(justinlin): Disabled for WinXP due to timeout issues.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
@@ -96,9 +90,6 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
 #define MAYBE_EndToEnd EndToEnd
 #endif
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_EndToEnd) {
-  extensions::FeatureSwitch::ScopedOverride tab_capture(
-      extensions::FeatureSwitch::tab_capture(), true);
-
 #if defined(OS_WIN)
   // TODO(justinlin): Disabled for WinXP due to timeout issues.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
