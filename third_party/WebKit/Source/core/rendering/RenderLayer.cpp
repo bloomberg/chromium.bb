@@ -1324,7 +1324,7 @@ bool RenderLayer::userInputScrollable(ScrollbarOrientation orientation) const
 
     EOverflow overflowStyle = (orientation == HorizontalScrollbar) ?
         renderer()->style()->overflowX() : renderer()->style()->overflowY();
-    return (overflowStyle == OSCROLL || overflowStyle == OAUTO);
+    return (overflowStyle == OSCROLL || overflowStyle == OAUTO || overflowStyle == OOVERLAY);
 }
 
 int RenderLayer::pageStep(ScrollbarOrientation orientation) const
