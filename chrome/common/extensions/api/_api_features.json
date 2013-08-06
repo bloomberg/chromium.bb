@@ -596,7 +596,7 @@
     "contexts": ["blessed_extension"]
   },
   "windows": {
-    "dependencies": ["permission:tabs"],
+    "dependencies": ["api:tabs"],
     "contexts": ["blessed_extension"]
   }
 }
