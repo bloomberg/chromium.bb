@@ -45,7 +45,10 @@ void InputMethodBridge::OnFocus() {
 }
 
 void InputMethodBridge::OnBlur() {
-  ConfirmCompositionText();
+  if (HasCompositionText()) {
+    ConfirmCompositionText();
+    host_->CancelComposition(this);
+  }
 
   if (host_->GetTextInputClient() == this)
     host_->SetFocusedTextInputClient(NULL);
