@@ -4,23 +4,23 @@
 </head>
 <body>
 <script>
-description("This tests getInputContext() which is an additional interface for HTMLElement.");
+description("This tests inputMethodContext attribute which is an additional interface for HTMLElement.");
 
 var html = document.documentElement;
 
 // Checks creating an InputMethodContext object via new throws exception.
 shouldThrow('new InputMethodContext()');
 
-// Checks existence of getInputContext()
-shouldBeNonNull(html.getInputContext);
-shouldBeEqualToString('typeof(html.getInputContext)', 'function');
+// Checks existence of .inputMethodContext attribute.
+shouldBeNonNull(html.inputMethodContext);
+shouldBeEqualToString('typeof(html.inputMethodContext)', 'object');
 
-// Checks getInputContext() returns an InputMethodContext object.
-var context = html.getInputContext();
+// Checks inputMethodContext returns an InputMethodContext object.
+var context = html.inputMethodContext;
 shouldBeTrue('context instanceof InputMethodContext');
 
-// Checks the same InputMethodCOntext objects are returned from an element.
-var context2 = html.getInputContext();
+// Checks the same InputMethodContext objects are returned from an element.
+var context2 = html.inputMethodContext;
 shouldBeTrue('context2 instanceof InputMethodContext');
 shouldBeTrue('context === context2');
 </script>

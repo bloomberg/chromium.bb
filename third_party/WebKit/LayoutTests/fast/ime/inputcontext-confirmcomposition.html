@@ -11,8 +11,8 @@ description("This tests confirmComposition() of InputMethodContext.");
 var test = document.getElementById('test');
 var test2 = document.getElementById('test2');
 
-// Checks getInputContext() returns an InputMethodContext object.
-var context = test.getInputContext();
+// Checks .inputMethodContext returns an InputMethodContext object.
+var context = test.inputMethodContext;
 shouldBeTrue('context instanceof InputMethodContext');
 
 var expectedText;
@@ -51,7 +51,7 @@ context.confirmComposition();
 shouldBeEqualToString('test.value', 'abcdefgh');
 
 debug("Check if confirmComposition on non-focused element doesn't affect the focused editor.");
-var context2 = test2.getInputContext();
+var context2 = test2.inputMethodContext;
 // Focus will still stay in the original field.
 test.focus();
 expectedText = 'ijkl';

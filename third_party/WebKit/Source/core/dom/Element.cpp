@@ -3086,7 +3086,7 @@ void Element::createUniqueElementData()
     }
 }
 
-InputMethodContext* Element::getInputContext()
+InputMethodContext* Element::inputMethodContext()
 {
     return ensureElementRareData()->ensureInputMethodContext(toHTMLElement(this));
 }

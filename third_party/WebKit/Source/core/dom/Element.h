@@ -639,7 +639,7 @@ public:
     ActiveAnimations* ensureActiveAnimations();
     bool hasActiveAnimations() const;
 
-    InputMethodContext* getInputContext();
+    InputMethodContext* inputMethodContext();
 
 protected:
     Element(const QualifiedName& tagName, Document* document, ConstructionType type)
