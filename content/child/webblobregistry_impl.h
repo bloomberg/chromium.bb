@@ -11,6 +11,7 @@
 
 namespace WebKit {
 class WebBlobData;
+class WebString;
 class WebThreadSafeData;
 class WebURL;
 }
@@ -29,10 +30,18 @@ class WebBlobRegistryImpl : public WebKit::WebBlobRegistry {
                                const WebKit::WebURL& src_url);
   virtual void unregisterBlobURL(const WebKit::WebURL& url);
 
+  virtual void registerStreamURL(const WebKit::WebURL& url,
+                                 const WebKit::WebString& content_type);
+  virtual void registerStreamURL(const WebKit::WebURL& url,
+                                 const WebKit::WebURL& src_url);
+  virtual void addDataToStream(const WebKit::WebURL& url,
+                               WebKit::WebThreadSafeData& data);
+  virtual void finalizeStream(const WebKit::WebURL& url);
+  virtual void unregisterStreamURL(const WebKit::WebURL& url);
+
  private:
-  void SendData(const WebKit::WebURL& url,
-                const WebKit::WebThreadSafeData& data,
-                webkit_blob::BlobData::Item* item);
+  void SendDataForBlob(const WebKit::WebURL& url,
+                       const WebKit::WebThreadSafeData& data);
 
   scoped_refptr<ThreadSafeSender> sender_;
 };

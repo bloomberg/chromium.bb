@@ -71,6 +71,12 @@ void Stream::AddData(scoped_refptr<net::IOBuffer> buffer, size_t size) {
   can_add_data_ = writer_->Write(buffer, size);
 }
 
+void Stream::AddData(const char* data, size_t size) {
+  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(size));
+  memcpy(io_buffer->data(), data, size);
+  can_add_data_ = writer_->Write(io_buffer, size);
+}
+
 void Stream::Finalize() {
   writer_->Close(0);
   writer_.reset(NULL);

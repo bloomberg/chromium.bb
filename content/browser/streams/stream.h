@@ -59,6 +59,9 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
 
   // Adds the data in |buffer| to the stream.  Takes ownership of |buffer|.
   void AddData(scoped_refptr<net::IOBuffer> buffer, size_t size);
+  // Adds data of |size| at |data| to the stream. This method creates a copy
+  // of the data, and then passes it to |writer_|.
+  void AddData(const char* data, size_t size);
 
   // Notifies this stream that it will not be receiving any more data.
   void Finalize();

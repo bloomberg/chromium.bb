@@ -8,9 +8,12 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/process/process.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/streams/stream_registry.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,6 +21,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/blob/blob_storage_controller.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -25,6 +29,17 @@
 #include "webkit/common/blob/blob_data.h"
 
 namespace content {
+
+namespace {
+
+const char kFakeBlobInternalUrlSpec[] =
+    "blob:blobinternal%3A///dc83ede4-9bbd-453b-be2e-60fd623fcc93";
+const char kFakeBlobInternalUrlSpec2[] =
+    "blob:blobinternal%3A///d28ae2e7-d233-4dda-9598-d135fe5d403e";
+
+const char kFakeContentType[] = "fake/type";
+
+}  // namespace
 
 class FileAPIMessageFilterTest : public testing::Test {
  public:
@@ -45,6 +60,28 @@ class FileAPIMessageFilterTest : public testing::Test {
               types[i],
               fileapi::FileSystemContext::GetPermissionPolicy(types[i]));
     }
+
+    stream_context_ = StreamContext::GetFor(&browser_context_);
+    blob_storage_context_ = ChromeBlobStorageContext::GetFor(&browser_context_);
+
+    filter_ = new FileAPIMessageFilter(
+        0 /* process_id */,
+        browser_context_.GetRequestContext(),
+        file_system_context_.get(),
+        blob_storage_context_,
+        stream_context_);
+
+    // Complete initialization.
+    message_loop_.RunUntilIdle();
+  }
+
+  // Tests via OnMessageReceived(const IPC::Message&). The channel proxy calls
+  // this method. Since OnMessageReceived is hidden on FileAPIMessageFilter,
+  // we need to cast it.
+  bool InvokeOnMessageReceived(const IPC::Message& message) {
+    IPC::ChannelProxy::MessageFilter* casted_filter =
+        static_cast<IPC::ChannelProxy::MessageFilter*>(filter_.get());
+    return casted_filter->OnMessageReceived(message);
   }
 
   base::MessageLoop message_loop_;
@@ -52,48 +89,35 @@ class FileAPIMessageFilterTest : public testing::Test {
 
   TestBrowserContext browser_context_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  StreamContext* stream_context_;
+  ChromeBlobStorageContext* blob_storage_context_;
+
+  scoped_refptr<FileAPIMessageFilter> filter_;
 };
 
 TEST_F(FileAPIMessageFilterTest, BuildEmptyBlob) {
-  scoped_refptr<FileAPIMessageFilter> filter(
-      new FileAPIMessageFilter(
-          0 /* process_id */,
-          browser_context_.GetRequestContext(),
-          file_system_context_.get(),
-          ChromeBlobStorageContext::GetFor(&browser_context_)));
-
-  // Complete initialization.
-  message_loop_.RunUntilIdle();
-
   webkit_blob::BlobStorageController* controller =
-      ChromeBlobStorageContext::GetFor(&browser_context_)->controller();
+      blob_storage_context_->controller();
 
   const GURL kUrl("blob:foobar");
   const GURL kDifferentUrl("blob:barfoo");
-  const std::string kContentType = "fake/type";
 
   EXPECT_EQ(NULL, controller->GetBlobDataFromUrl(kUrl));
 
-  // Test via OnMessageReceived(const IPC::Message&) which is called by the
-  // channel proxy. Since OnMessageReceived is hidden on FileAPIMessageFilter,
-  // cast it.
-  IPC::ChannelProxy::MessageFilter* casted_filter =
-      static_cast<IPC::ChannelProxy::MessageFilter*>(filter.get());
-
-  BlobHostMsg_StartBuildingBlob start_message(kUrl);
-  EXPECT_TRUE(casted_filter->OnMessageReceived(start_message));
+  BlobHostMsg_StartBuilding start_message(kUrl);
+  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
 
   // Blob is still being built. Nothing should be returned.
   EXPECT_EQ(NULL, controller->GetBlobDataFromUrl(kUrl));
 
-  BlobHostMsg_FinishBuildingBlob finish_message(kUrl, kContentType);
-  EXPECT_TRUE(casted_filter->OnMessageReceived(finish_message));
+  BlobHostMsg_FinishBuilding finish_message(kUrl, kFakeContentType);
+  EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
 
   // Now, Blob is built.
   webkit_blob::BlobData* blob_data = controller->GetBlobDataFromUrl(kUrl);
   ASSERT_FALSE(blob_data == NULL);
   EXPECT_EQ(0U, blob_data->items().size());
-  EXPECT_EQ(kContentType, blob_data->content_type());
+  EXPECT_EQ(kFakeContentType, blob_data->content_type());
 
   // Nothing should be returned for a URL we didn't use.
   EXPECT_TRUE(controller->GetBlobDataFromUrl(kDifferentUrl) == NULL);
@@ -105,7 +129,8 @@ TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
           0 /* process_id */,
           browser_context_.GetRequestContext(),
           file_system_context_.get(),
-          ChromeBlobStorageContext::GetFor(&browser_context_)));
+          ChromeBlobStorageContext::GetFor(&browser_context_),
+          StreamContext::GetFor(&browser_context_)));
   filter->OnChannelConnected(0);
 
   // Complete initialization.
@@ -132,13 +157,15 @@ TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
           0 /* process_id */,
           browser_context_.GetRequestContext(),
           file_system_context_.get(),
-          ChromeBlobStorageContext::GetFor(&browser_context_)));
+          ChromeBlobStorageContext::GetFor(&browser_context_),
+          StreamContext::GetFor(&browser_context_)));
   scoped_refptr<FileAPIMessageFilter> filter2(
       new FileAPIMessageFilter(
           1 /* process_id */,
           browser_context_.GetRequestContext(),
           file_system_context_.get(),
-          ChromeBlobStorageContext::GetFor(&browser_context_)));
+          ChromeBlobStorageContext::GetFor(&browser_context_),
+          StreamContext::GetFor(&browser_context_)));
   filter1->OnChannelConnected(0);
   filter2->OnChannelConnected(1);
 
@@ -160,4 +187,171 @@ TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
   message_loop_.RunUntilIdle();
 }
 
-}  // namespace fileapi
+TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
+  StreamRegistry* stream_registry = stream_context_->registry();
+
+  webkit_blob::BlobStorageController* blob_controller =
+      blob_storage_context_->controller();
+
+  const GURL kUrl(kFakeBlobInternalUrlSpec);
+  const GURL kDifferentUrl("blob:barfoo");
+
+  EXPECT_EQ(NULL, stream_registry->GetStream(kUrl).get());
+  EXPECT_EQ(NULL, blob_controller->GetBlobDataFromUrl(kUrl));
+
+  StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
+  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
+
+  const int kBufferSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  int bytes_read = 0;
+
+  scoped_refptr<Stream> stream = stream_registry->GetStream(kUrl);
+  // Stream becomes available for read right after registration.
+  ASSERT_FALSE(stream.get() == NULL);
+  EXPECT_EQ(Stream::STREAM_EMPTY,
+            stream->ReadRawData(buffer.get(), kBufferSize, &bytes_read));
+  EXPECT_EQ(0, bytes_read);
+  stream = NULL;
+
+  StreamHostMsg_FinishBuilding finish_message(kUrl);
+  EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
+
+  // Blob controller shouldn't be affected.
+  EXPECT_EQ(NULL, blob_controller->GetBlobDataFromUrl(kUrl));
+
+  stream = stream_registry->GetStream(kUrl);
+  ASSERT_FALSE(stream.get() == NULL);
+  EXPECT_EQ(Stream::STREAM_EMPTY,
+            stream->ReadRawData(buffer.get(), kBufferSize, &bytes_read));
+  EXPECT_EQ(0, bytes_read);
+
+  // Run loop to finish transfer.
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(Stream::STREAM_COMPLETE,
+            stream->ReadRawData(buffer.get(), kBufferSize, &bytes_read));
+  EXPECT_EQ(0, bytes_read);
+
+  // Nothing should be returned for a URL we didn't use.
+  EXPECT_TRUE(stream_registry->GetStream(kDifferentUrl).get() == NULL);
+}
+
+TEST_F(FileAPIMessageFilterTest, BuildNonEmptyStream) {
+  StreamRegistry* stream_registry = stream_context_->registry();
+
+  const GURL kUrl(kFakeBlobInternalUrlSpec);
+
+  EXPECT_EQ(NULL, stream_registry->GetStream(kUrl).get());
+
+  StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
+  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
+
+  webkit_blob::BlobData::Item item;
+  const std::string kFakeData = "foobarbaz";
+  item.SetToBytes(kFakeData.data(), kFakeData.size());
+  StreamHostMsg_AppendBlobDataItem append_message(kUrl, item);
+  EXPECT_TRUE(InvokeOnMessageReceived(append_message));
+
+  StreamHostMsg_FinishBuilding finish_message(kUrl);
+  EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
+
+  // Run loop to finish transfer and commit finalize command.
+  message_loop_.RunUntilIdle();
+
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kFakeData.size()));
+  int bytes_read = 0;
+
+  scoped_refptr<Stream> stream = stream_registry->GetStream(kUrl);
+  ASSERT_FALSE(stream.get() == NULL);
+
+  EXPECT_EQ(Stream::STREAM_HAS_DATA,
+            stream->ReadRawData(buffer.get(), kFakeData.size(), &bytes_read));
+  EXPECT_EQ(kFakeData.size(), static_cast<size_t>(bytes_read));
+  EXPECT_EQ(kFakeData, std::string(buffer->data(), bytes_read));
+
+  EXPECT_EQ(Stream::STREAM_COMPLETE,
+            stream->ReadRawData(buffer.get(), kFakeData.size(), &bytes_read));
+  EXPECT_EQ(0, bytes_read);
+}
+
+TEST_F(FileAPIMessageFilterTest, BuildStreamWithSharedMemory) {
+  StreamRegistry* stream_registry = stream_context_->registry();
+
+  const GURL kUrl(kFakeBlobInternalUrlSpec);
+
+  EXPECT_EQ(NULL, stream_registry->GetStream(kUrl).get());
+
+  // For win, we need to set valid PID to the filter.
+  // OnAppendSharedMemoryToStream passes the peer process's handle to
+  // SharedMemory's constructor. If it's incorrect, DuplicateHandle won't work
+  // correctly.
+  static_cast<IPC::ChannelProxy::MessageFilter*>(
+      filter_.get())->OnChannelConnected(base::Process::Current().pid());
+
+  StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
+  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
+
+  const std::string kFakeData = "foobarbaz";
+
+  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+  ASSERT_TRUE(shared_memory->CreateAndMapAnonymous(kFakeData.size()));
+  memcpy(shared_memory->memory(), kFakeData.data(), kFakeData.size());
+  StreamHostMsg_SyncAppendSharedMemory append_message(
+      kUrl, shared_memory->handle(), kFakeData.size());
+  EXPECT_TRUE(InvokeOnMessageReceived(append_message));
+
+  StreamHostMsg_FinishBuilding finish_message(kUrl);
+  EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
+
+  // Run loop to finish transfer and commit finalize command.
+  message_loop_.RunUntilIdle();
+
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kFakeData.size()));
+  int bytes_read = 0;
+
+  scoped_refptr<Stream> stream = stream_registry->GetStream(kUrl);
+  ASSERT_FALSE(stream.get() == NULL);
+
+  EXPECT_EQ(Stream::STREAM_HAS_DATA,
+            stream->ReadRawData(buffer.get(), kFakeData.size(), &bytes_read));
+  EXPECT_EQ(kFakeData.size(), static_cast<size_t>(bytes_read));
+  EXPECT_EQ(kFakeData, std::string(buffer->data(), bytes_read));
+
+  EXPECT_EQ(Stream::STREAM_COMPLETE,
+            stream->ReadRawData(buffer.get(), kFakeData.size(), &bytes_read));
+  EXPECT_EQ(0, bytes_read);
+}
+
+TEST_F(FileAPIMessageFilterTest, BuildStreamAndCallOnChannelClosing) {
+  StreamRegistry* stream_registry = stream_context_->registry();
+
+  const GURL kUrl(kFakeBlobInternalUrlSpec);
+
+  StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
+  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
+
+  ASSERT_FALSE(stream_registry->GetStream(kUrl).get() == NULL);
+
+  filter_->OnChannelClosing();
+
+  ASSERT_EQ(NULL, stream_registry->GetStream(kUrl).get());
+}
+
+TEST_F(FileAPIMessageFilterTest, CloneStream) {
+  StreamRegistry* stream_registry = stream_context_->registry();
+
+  const GURL kUrl(kFakeBlobInternalUrlSpec);
+  const GURL kDestUrl(kFakeBlobInternalUrlSpec2);
+
+  StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
+  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
+
+  StreamHostMsg_Clone clone_message(kDestUrl, kUrl);
+  EXPECT_TRUE(InvokeOnMessageReceived(clone_message));
+
+  ASSERT_FALSE(stream_registry->GetStream(kUrl).get() == NULL);
+  ASSERT_FALSE(stream_registry->GetStream(kDestUrl).get() == NULL);
+}
+
+}  // namespace content

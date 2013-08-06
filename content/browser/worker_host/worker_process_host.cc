@@ -229,6 +229,8 @@ bool WorkerProcessHost::Init(int render_process_id) {
 void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
   ChromeBlobStorageContext* blob_storage_context =
       GetChromeBlobStorageContextForResourceContext(resource_context_);
+  StreamContext* stream_context =
+      GetStreamContextForResourceContext(resource_context_);
 
   net::URLRequestContextGetter* url_request_context =
       partition_.url_request_context();
@@ -255,7 +257,8 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       process_->GetData().id,
       url_request_context,
       partition_.filesystem_context(),
-      blob_storage_context));
+      blob_storage_context,
+      stream_context));
   process_->GetHost()->AddFilter(new FileUtilitiesMessageFilter(
       process_->GetData().id));
   process_->GetHost()->AddFilter(new MimeRegistryMessageFilter());

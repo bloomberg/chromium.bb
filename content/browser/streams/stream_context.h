@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -28,7 +29,7 @@ class StreamContext
  public:
   StreamContext();
 
-  static StreamContext* GetFor(BrowserContext* browser_context);
+  CONTENT_EXPORT static StreamContext* GetFor(BrowserContext* browser_context);
 
   void InitializeOnIOThread();
 
@@ -57,4 +58,3 @@ struct StreamContextDeleter {
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_STREAMS_STREAM_CONTEXT_H_
-

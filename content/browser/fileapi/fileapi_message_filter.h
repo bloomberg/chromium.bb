@@ -13,8 +13,11 @@
 #include "base/containers/hash_tables.h"
 #include "base/files/file_util_proxy.h"
 #include "base/id_map.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/platform_file.h"
+#include "content/browser/streams/stream.h"
+#include "content/browser/streams/stream_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
@@ -48,6 +51,8 @@ class ShareableFileReference;
 namespace content {
 class ChromeBlobStorageContext;
 
+// TODO(tyoshino): Factor out code except for IPC gluing from
+// FileAPIMessageFilter into separate classes. See crbug.com/263741.
 class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
  public:
   // Used by the renderer process host on the UI thread.
@@ -55,13 +60,15 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
       int process_id,
       net::URLRequestContextGetter* request_context_getter,
       fileapi::FileSystemContext* file_system_context,
-      ChromeBlobStorageContext* blob_storage_context);
+      ChromeBlobStorageContext* blob_storage_context,
+      StreamContext* stream_context);
   // Used by the worker process host on the IO thread.
   FileAPIMessageFilter(
       int process_id,
       net::URLRequestContext* request_context,
       fileapi::FileSystemContext* file_system_context,
-      ChromeBlobStorageContext* blob_storage_context);
+      ChromeBlobStorageContext* blob_storage_context,
+      StreamContext* stream_context);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
@@ -122,14 +129,33 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                             const GURL& path);
   void OnDidReceiveSnapshotFile(int request_id);
 
+  // Handlers for BlobHostMsg_ family messages.
+
   void OnStartBuildingBlob(const GURL& url);
-  void OnAppendBlobDataItem(const GURL& url,
-                            const webkit_blob::BlobData::Item& item);
-  void OnAppendSharedMemory(const GURL& url, base::SharedMemoryHandle handle,
-                            size_t buffer_size);
+  void OnAppendBlobDataItemToBlob(
+      const GURL& url, const webkit_blob::BlobData::Item& item);
+  void OnAppendSharedMemoryToBlob(
+      const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size);
   void OnFinishBuildingBlob(const GURL& url, const std::string& content_type);
   void OnCloneBlob(const GURL& url, const GURL& src_url);
   void OnRemoveBlob(const GURL& url);
+
+  // Handlers for StreamHostMsg_ family messages.
+  //
+  // TODO(tyoshino): Consider renaming BlobData to more generic one as it's now
+  // used for Stream.
+
+  // Currently |content_type| is ignored.
+  //
+  // TODO(tyoshino): Set |content_type| to the stream.
+  void OnStartBuildingStream(const GURL& url, const std::string& content_type);
+  void OnAppendBlobDataItemToStream(
+      const GURL& url, const webkit_blob::BlobData::Item& item);
+  void OnAppendSharedMemoryToStream(
+      const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size);
+  void OnFinishBuildingStream(const GURL& url);
+  void OnCloneStream(const GURL& url, const GURL& src_url);
+  void OnRemoveStream(const GURL& url);
 
   // Callback functions to be used when each file operation is finished.
   void DidFinish(int request_id, base::PlatformFileError result);
@@ -170,6 +196,9 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                              int permissions,
                              base::PlatformFileError* error);
 
+  // Retrieves the Stream object for |url| from |stream_context_|.
+  scoped_refptr<Stream> GetStreamForURL(const GURL& url);
+
   fileapi::FileSystemOperationRunner* operation_runner() {
     return operation_runner_.get();
   }
@@ -189,12 +218,17 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   net::URLRequestContext* request_context_;
 
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+  scoped_refptr<StreamContext> stream_context_;
 
   scoped_ptr<fileapi::FileSystemOperationRunner> operation_runner_;
 
   // Keep track of blob URLs registered in this process. Need to unregister
   // all of them when the renderer process dies.
   base::hash_set<std::string> blob_urls_;
+
+  // Keep track of stream URLs registered in this process. Need to unregister
+  // all of them when the renderer process dies.
+  base::hash_set<std::string> stream_urls_;
 
   // Used to keep snapshot files alive while a DidCreateSnapshot
   // is being sent to the renderer.

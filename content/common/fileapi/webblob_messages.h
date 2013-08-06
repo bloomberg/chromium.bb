@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// IPC messages for HTML5 Blob.
+// IPC messages for HTML5 Blob and Stream.
 // Multiply-included message file, hence no include guard.
 
 #include "content/common/content_export.h"
@@ -17,7 +17,7 @@
 // Blob messages sent from the renderer to the browser.
 
 // Registers a blob as being built.
-IPC_MESSAGE_CONTROL1(BlobHostMsg_StartBuildingBlob,
+IPC_MESSAGE_CONTROL1(BlobHostMsg_StartBuilding,
                      GURL /* url */)
 
 // Appends data to a blob being built.
@@ -32,16 +32,47 @@ IPC_SYNC_MESSAGE_CONTROL3_0(BlobHostMsg_SyncAppendSharedMemory,
                             size_t /* buffer size */)
 
 // Finishes building a blob.
-IPC_MESSAGE_CONTROL2(BlobHostMsg_FinishBuildingBlob,
+IPC_MESSAGE_CONTROL2(BlobHostMsg_FinishBuilding,
                      GURL /* url */,
                      std::string /* content_type */)
 
-// Creates a new blob that's a clone of an existing src blob.
-// The source blob must be fully built.
-IPC_MESSAGE_CONTROL2(BlobHostMsg_CloneBlob,
+// Creates a new blob that's a clone of an existing src blob. The source blob
+// must be fully built.
+IPC_MESSAGE_CONTROL2(BlobHostMsg_Clone,
                      GURL /* url */,
                      GURL /* src_url */)
 
 // Removes a blob.
-IPC_MESSAGE_CONTROL1(BlobHostMsg_RemoveBlob,
+IPC_MESSAGE_CONTROL1(BlobHostMsg_Remove,
+                     GURL /* url */)
+
+// Stream messages sent from the renderer to the browser.
+
+// Registers a stream as being built.
+IPC_MESSAGE_CONTROL2(StreamHostMsg_StartBuilding,
+                     GURL /* url */,
+                     std::string /* content_type */)
+
+// Appends data to a stream being built.
+IPC_MESSAGE_CONTROL2(StreamHostMsg_AppendBlobDataItem,
+                     GURL /* url */,
+                     webkit_blob::BlobData::Item)
+
+// Appends data to a stream being built.
+IPC_SYNC_MESSAGE_CONTROL3_0(StreamHostMsg_SyncAppendSharedMemory,
+                            GURL /* url */,
+                            base::SharedMemoryHandle,
+                            size_t /* buffer size */)
+
+// Finishes building a stream.
+IPC_MESSAGE_CONTROL1(StreamHostMsg_FinishBuilding,
+                     GURL /* url */)
+
+// Creates a new stream that's a clone of an existing src stream.
+IPC_MESSAGE_CONTROL2(StreamHostMsg_Clone,
+                     GURL /* url */,
+                     GURL /* src_url */)
+
+// Removes a stream.
+IPC_MESSAGE_CONTROL1(StreamHostMsg_Remove,
                      GURL /* url */)
