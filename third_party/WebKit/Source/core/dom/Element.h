@@ -446,7 +446,7 @@ public:
 
     ShadowRoot* userAgentShadowRoot() const;
     ShadowRoot* ensureUserAgentShadowRoot();
-
+    virtual bool supportsShadowElementForUserAgentShadow() const;
     virtual const AtomicString& shadowPseudoId() const;
     virtual const AtomicString& shadowPartId() const;
 
@@ -697,6 +697,7 @@ private:
     void updatePseudoElement(PseudoId, StyleChange);
     void createPseudoElementIfNeeded(PseudoId);
 
+    // FIXME: Everyone should allow author shadows.
     virtual bool areAuthorShadowsAllowed() const { return true; }
     virtual void didAddUserAgentShadowRoot(ShadowRoot*) { }
     virtual bool alwaysCreateUserAgentShadowRoot() const { return false; }

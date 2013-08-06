@@ -81,6 +81,7 @@ public:
 
     bool isYoungest() const { return !youngerShadowRoot(); }
     bool isOldest() const { return !olderShadowRoot(); }
+    bool isOldestAuthorShadowRoot() const;
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 

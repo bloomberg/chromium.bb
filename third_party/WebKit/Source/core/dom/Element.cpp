@@ -1633,6 +1633,11 @@ ShadowRoot* Element::ensureUserAgentShadowRoot()
     return shadowRoot;
 }
 
+bool Element::supportsShadowElementForUserAgentShadow() const
+{
+    return true;
+}
+
 // FIXME: After replacing all internal shadowPseudoId with shadowPartId, remove this method.
 const AtomicString& Element::shadowPseudoId() const
 {

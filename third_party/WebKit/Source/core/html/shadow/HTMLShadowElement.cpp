@@ -70,5 +70,25 @@ ShadowRoot* HTMLShadowElement::olderShadowRoot()
     return older;
 }
 
+static inline Element* hostForOldestAuthorShadowRoot(ShadowRoot* root)
+{
+    return root && root->isOldestAuthorShadowRoot() ? root->host() : 0;
+}
+
+bool HTMLShadowElement::shouldSelect() const
+{
+    Element* host = hostForOldestAuthorShadowRoot(containingShadowRoot());
+    return !host || host->supportsShadowElementForUserAgentShadow();
+}
+
+Node::InsertionNotificationRequest HTMLShadowElement::insertedInto(ContainerNode* insertionPoint)
+{
+    if (insertionPoint->inDocument() && !shouldSelect()) {
+        String message = String::format("<shadow> doesn't work for %s element host.", containingShadowRoot()->host()->nodeName().utf8().data());
+        document()->addConsoleMessage(RenderingMessageSource, WarningMessageLevel, message);
+    }
+    return InsertionPoint::insertedInto(insertionPoint);
+}
+
 } // namespace WebCore
 

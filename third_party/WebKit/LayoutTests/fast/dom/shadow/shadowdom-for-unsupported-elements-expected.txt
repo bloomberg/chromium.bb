@@ -7,8 +7,6 @@ audio
 PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 canvas
 PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
-details
-PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 embed
 PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 fieldset
@@ -28,8 +26,6 @@ PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node wa
 progress
 PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 select
-PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
-summary
 PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 textarea
 PASS element.createShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..

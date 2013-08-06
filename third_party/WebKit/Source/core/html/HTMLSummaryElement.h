@@ -38,7 +38,7 @@ private:
 
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual void defaultEventHandler(Event*);
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
+    virtual bool supportsShadowElementForUserAgentShadow() const OVERRIDE { return false; }
     virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;
     HTMLDetailsElement* detailsElement() const;
 

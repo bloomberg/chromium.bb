@@ -107,6 +107,15 @@ ShadowRoot* ShadowRoot::bindingsOlderShadowRoot() const
     return older;
 }
 
+bool ShadowRoot::isOldestAuthorShadowRoot() const
+{
+    if (type() != AuthorShadowRoot)
+        return false;
+    if (ShadowRoot* older = olderShadowRoot())
+        return older->type() == UserAgentShadowRoot;
+    return true;
+}
+
 PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& es)
 {
     es.throwDOMException(DataCloneError);

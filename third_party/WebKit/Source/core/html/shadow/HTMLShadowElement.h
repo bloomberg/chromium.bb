@@ -43,9 +43,11 @@ public:
     virtual ~HTMLShadowElement();
 
     ShadowRoot* olderShadowRoot();
+    bool shouldSelect() const;
 
 private:
     HTMLShadowElement(const QualifiedName&, Document*);
+    virtual InsertionNotificationRequest insertedInto(ContainerNode* insertionPoint) OVERRIDE;
 };
 
 inline bool isHTMLShadowElement(const Node* node)

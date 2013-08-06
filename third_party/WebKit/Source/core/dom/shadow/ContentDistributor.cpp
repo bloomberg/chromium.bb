@@ -215,7 +215,10 @@ void ContentDistributor::distribute(Element* host)
         HTMLShadowElement* shadowElement = activeShadowInsertionPoints[i - 1];
         ShadowRoot* root = shadowElement->containingShadowRoot();
         ASSERT(root);
-        if (root->olderShadowRoot()) {
+        if (!shadowElement->shouldSelect()) {
+            if (root->olderShadowRoot())
+                root->olderShadowRoot()->ensureScopeDistribution()->setInsertionPointAssignedTo(shadowElement);
+        } else if (root->olderShadowRoot()) {
             distributeNodeChildrenTo(shadowElement, root->olderShadowRoot());
             root->olderShadowRoot()->ensureScopeDistribution()->setInsertionPointAssignedTo(shadowElement);
         } else {
