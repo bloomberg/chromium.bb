@@ -9,29 +9,7 @@
 #include "tools/gn/source_file.h"
 #include "tools/gn/toolchain_manager.h"
 #include "tools/gn/value.h"
-
-const char* ScopePerFileProvider::kDefaultToolchain =
-    "default_toolchain";
-const char* ScopePerFileProvider::kPythonPath =
-    "python_path";
-const char* ScopePerFileProvider::kToolchain =
-    "toolchain";
-const char* ScopePerFileProvider::kRootOutputDirName =
-    "root_output_dir";
-const char* ScopePerFileProvider::kRootGenDirName =
-    "root_gen_dir";
-const char* ScopePerFileProvider::kTargetOutputDirName =
-    "target_output_dir";
-const char* ScopePerFileProvider::kTargetGenDirName =
-    "target_gen_dir";
-const char* ScopePerFileProvider::kRelativeRootOutputDirName =
-    "relative_root_output_dir";
-const char* ScopePerFileProvider::kRelativeRootGenDirName =
-    "relative_root_gen_dir";
-const char* ScopePerFileProvider::kRelativeTargetOutputDirName =
-    "relative_target_output_dir";
-const char* ScopePerFileProvider::kRelativeTargetGenDirName =
-    "relative_target_gen_dir";
+#include "tools/gn/variables.h"
 
 ScopePerFileProvider::ScopePerFileProvider(Scope* scope,
                                            const SourceFile& source_file)
@@ -44,35 +22,30 @@ ScopePerFileProvider::~ScopePerFileProvider() {
 
 const Value* ScopePerFileProvider::GetProgrammaticValue(
     const base::StringPiece& ident) {
-  if (ident == kDefaultToolchain)
+  if (ident == variables::kCurrentToolchain)
+    return GetCurrentToolchain();
+  if (ident == variables::kDefaultToolchain)
     return GetDefaultToolchain();
-  if (ident == kPythonPath)
+  if (ident == variables::kPythonPath)
     return GetPythonPath();
 
-  if (ident == kTargetOutputDirName)
-    return GetTargetOutputDir();
-  if (ident == kTargetGenDirName)
-    return GetTargetGenDir();
-
-  if (ident == kRelativeRootOutputDirName)
+  if (ident == variables::kRelativeRootOutputDir)
     return GetRelativeRootOutputDir();
-  if (ident == kRelativeRootGenDirName)
+  if (ident == variables::kRelativeRootGenDir)
     return GetRelativeRootGenDir();
-  if (ident == kRelativeTargetOutputDirName)
+  if (ident == variables::kRelativeTargetOutputDir)
     return GetRelativeTargetOutputDir();
-  if (ident == kRelativeTargetGenDirName)
+  if (ident == variables::kRelativeTargetGenDir)
     return GetRelativeTargetGenDir();
   return NULL;
 }
 
-// static
-Value ScopePerFileProvider::GetRootOutputDir(const Settings* settings) {
-  return Value(NULL, GetRootOutputDirWithNoLastSlash(settings));
-}
-
-// static
-Value ScopePerFileProvider::GetRootGenDir(const Settings* settings) {
-  return Value(NULL, GetRootGenDirWithNoLastSlash(settings));
+const Value* ScopePerFileProvider::GetCurrentToolchain() {
+  if (!current_toolchain_) {
+    current_toolchain_.reset(new Value(NULL,
+        scope_->settings()->toolchain()->label().GetUserVisibleName(false)));
+  }
+  return current_toolchain_.get();
 }
 
 const Value* ScopePerFileProvider::GetDefaultToolchain() {
@@ -92,32 +65,6 @@ const Value* ScopePerFileProvider::GetPythonPath() {
         FilePathToUTF8(scope_->settings()->build_settings()->python_path())));
   }
   return python_path_.get();
-}
-
-const Value* ScopePerFileProvider::GetToolchain() {
-  if (!toolchain_) {
-    toolchain_.reset(new Value(NULL,
-        scope_->settings()->toolchain()->label().GetUserVisibleName(false)));
-  }
-  return toolchain_.get();
-}
-
-const Value* ScopePerFileProvider::GetTargetOutputDir() {
-  if (!target_output_dir_) {
-    target_output_dir_.reset(new Value(NULL,
-        GetRootOutputDirWithNoLastSlash(scope_->settings()) +
-        GetFileDirWithNoLastSlash()));
-  }
-  return target_output_dir_.get();
-}
-
-const Value* ScopePerFileProvider::GetTargetGenDir() {
-  if (!target_output_dir_) {
-    target_gen_dir_.reset(new Value(NULL,
-        GetRootGenDirWithNoLastSlash(scope_->settings()) +
-        GetFileDirWithNoLastSlash()));
-  }
-  return target_gen_dir_.get();
 }
 
 const Value* ScopePerFileProvider::GetRelativeRootOutputDir() {
@@ -164,7 +111,7 @@ std::string ScopePerFileProvider::GetRootOutputDirWithNoLastSlash(
   const std::string& output_dir =
       settings->build_settings()->build_dir().value();
   CHECK(!output_dir.empty());
-  return output_dir.substr(0, output_dir.size() - 1);
+  return output_dir.substr(1, output_dir.size() - 1);
 }
 
 // static

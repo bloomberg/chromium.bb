@@ -46,10 +46,12 @@ class TargetGenerator {
   // Sets err_ on failure.
   Target::OutputType GetOutputType() const;
 
-  // Reads configs from the given var name, and uses the given setting on the
-  // target to save them
+  // Reads configs/deps from the given var name, and uses the given setting on
+  // the target to save them.
   void FillGenericConfigs(const char* var_name,
                           void (Target::*setter)(std::vector<const Config*>*));
+  void FillGenericDeps(const char* var_name,
+                       void (Target::*setter)(std::vector<const Target*>*));
 
   void FillConfigs();
   void FillAllDependentConfigs();
@@ -57,6 +59,7 @@ class TargetGenerator {
   void FillSources();
   void FillData();
   void FillDependencies();
+  void FillDataDependencies();
   void FillDestDir();
   void FillScript();
   void FillScriptArgs();

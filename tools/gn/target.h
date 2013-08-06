@@ -64,8 +64,13 @@ class Target : public Item {
   const FileList& data() const { return data_; }
   void swap_in_data(FileList* d) { data_.swap(*d); }
 
+  // Linked dependencies.
   const std::vector<const Target*>& deps() const { return deps_; }
   void swap_in_deps(std::vector<const Target*>* d) { deps_.swap(*d); }
+
+  // Non-linked dependencies.
+  const std::vector<const Target*>& datadeps() const { return datadeps_; }
+  void swap_in_datadeps(std::vector<const Target*>* d) { datadeps_.swap(*d); }
 
   // List of configs that this class inherits settings from.
   const std::vector<const Config*>& configs() const { return configs_; }
@@ -118,6 +123,7 @@ class Target : public Item {
   FileList sources_;
   FileList data_;
   std::vector<const Target*> deps_;
+  std::vector<const Target*> datadeps_;
   std::vector<const Config*> configs_;
   std::vector<const Config*> all_dependent_configs_;
   std::vector<const Config*> direct_dependent_configs_;

@@ -29,6 +29,12 @@ bool NinjaWriter::WriteRootBuildfiles() {
 
   std::vector<const Target*> all_targets;
   build_settings_->target_manager().GetAllTargets(&all_targets);
+  if (all_targets.empty()) {
+    Err(Location(), "No targets.",
+        "I could not find any targets to write, so I'm doing nothing.")
+        .PrintToStdout();
+    return false;
+  }
   for (size_t i = 0; i < all_targets.size(); i++) {
     categorized[all_targets[i]->label().GetToolchainLabel()].push_back(
         all_targets[i]);
@@ -54,11 +60,19 @@ bool NinjaWriter::WriteRootBuildfiles() {
     if (i->first == default_label)
       default_targets = &i->second;
     all_settings.push_back(settings);
-    if (!NinjaToolchainWriter::RunAndWriteFile(settings, i->second))
+    if (!NinjaToolchainWriter::RunAndWriteFile(settings, i->second)) {
+      Err(Location(),
+          "Couldn't open toolchain buildfile(s) for writing").PrintToStdout();
       return false;
+    }
   }
 
   // Write the root buildfile.
-  return NinjaBuildWriter::RunAndWriteFile(build_settings_, all_settings,
-                                           *default_targets);
+  if (!NinjaBuildWriter::RunAndWriteFile(build_settings_, all_settings,
+                                         *default_targets)) {
+    Err(Location(),
+        "Couldn't open toolchain buildfile(s) for writing").PrintToStdout();
+    return false;
+  }
+  return true;
 }

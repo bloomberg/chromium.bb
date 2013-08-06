@@ -43,15 +43,6 @@ void SetSystemVars(const Settings& settings, Scope* scope) {
 #else
   scope->SetValue("is_linux", Value(NULL, 0), NULL);
 #endif
-
-  // Set this value without the terminating slash because the code expects
-  // $root_output_dir/foo to work.
-  scope->SetValue(ScopePerFileProvider::kRootOutputDirName,
-                  ScopePerFileProvider::GetRootOutputDir(&settings),
-                  NULL);
-  scope->SetValue(ScopePerFileProvider::kRootGenDirName,
-                  ScopePerFileProvider::GetRootGenDir(&settings),
-                  NULL);
 }
 
 }  // namespace

@@ -21,34 +21,10 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   virtual const Value* GetProgrammaticValue(
       const base::StringPiece& ident) OVERRIDE;
 
-  // Returns the value to expose to script for the given thing. These values
-  // are acually set globally, but are put here so we can keep all logic
-  // for converting paths to built-in values in this one file.
-  static Value GetRootOutputDir(const Settings* settings);
-  static Value GetRootGenDir(const Settings* settings);
-
-  // Variable names. These two should be set globally independent of the file
-  // being processed.
-  static const char* kRootOutputDirName;
-  static const char* kRootGenDirName;
-
-  // Variable names. These are provided by this class as needed.
-  static const char* kDefaultToolchain;
-  static const char* kPythonPath;
-  static const char* kToolchain;
-  static const char* kTargetOutputDirName;
-  static const char* kTargetGenDirName;
-  static const char* kRelativeRootOutputDirName;
-  static const char* kRelativeRootGenDirName;
-  static const char* kRelativeTargetOutputDirName;
-  static const char* kRelativeTargetGenDirName;
-
  private:
+  const Value* GetCurrentToolchain();
   const Value* GetDefaultToolchain();
   const Value* GetPythonPath();
-  const Value* GetToolchain();
-  const Value* GetTargetOutputDir();
-  const Value* GetTargetGenDir();
   const Value* GetRelativeRootOutputDir();
   const Value* GetRelativeRootGenDir();
   const Value* GetRelativeTargetOutputDir();
@@ -63,11 +39,9 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   SourceFile source_file_;
 
   // All values are lazily created.
+  scoped_ptr<Value> current_toolchain_;
   scoped_ptr<Value> default_toolchain_;
   scoped_ptr<Value> python_path_;
-  scoped_ptr<Value> toolchain_;
-  scoped_ptr<Value> target_output_dir_;
-  scoped_ptr<Value> target_gen_dir_;
   scoped_ptr<Value> relative_root_output_dir_;
   scoped_ptr<Value> relative_root_gen_dir_;
   scoped_ptr<Value> relative_target_output_dir_;

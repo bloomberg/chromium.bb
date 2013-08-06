@@ -11,6 +11,7 @@ class BuildSettings;
 
 class NinjaWriter {
  public:
+  // On failure will print an error and will return false.
   static bool RunAndWriteFiles(const BuildSettings* build_settings);
 
  private:

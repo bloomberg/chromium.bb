@@ -58,11 +58,8 @@ int RunGen(const std::vector<std::string>& args) {
     return 1;
 
   // Write the root ninja files.
-  if (!NinjaWriter::RunAndWriteFiles(&setup->build_settings())) {
-    Err(Location(),
-        "Couldn't open root buildfile(s) for writing").PrintToStdout();
+  if (!NinjaWriter::RunAndWriteFiles(&setup->build_settings()))
     return 1;
-  }
 
   base::TimeTicks end_time = base::TimeTicks::Now();
 

@@ -35,6 +35,10 @@ void RecursiveCollectDeps(const Target* target, std::set<Label>* result) {
   const std::vector<const Target*>& deps = target->deps();
   for (size_t i = 0; i < deps.size(); i++)
     RecursiveCollectDeps(deps[i], result);
+
+  const std::vector<const Target*>& datadeps = target->datadeps();
+  for (size_t i = 0; i < datadeps.size(); i++)
+    RecursiveCollectDeps(datadeps[i], result);
 }
 
 // Prints dependencies of the given target (not the target itself).
@@ -42,6 +46,9 @@ void RecursivePrintDeps(const Target* target,
                         const Label& default_toolchain,
                         int indent_level) {
   std::vector<const Target*> sorted_deps = target->deps();
+  const std::vector<const Target*> datadeps = target->datadeps();
+  for (size_t i = 0; i < datadeps.size(); i++)
+    sorted_deps.push_back(datadeps[i]);
   std::sort(sorted_deps.begin(), sorted_deps.end(), CompareTargetLabel());
 
   std::string indent(indent_level * 2, ' ');
@@ -53,10 +60,11 @@ void RecursivePrintDeps(const Target* target,
 }
 
 void PrintDeps(const Target* target, bool display_header) {
+  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
   Label toolchain_label = target->label().GetToolchainLabel();
 
   // Tree mode is separate.
-  if (CommandLine::ForCurrentProcess()->HasSwitch("tree")) {
+  if (cmdline->HasSwitch("tree")) {
     if (display_header)
       OutputString("\nDependency tree:\n");
     RecursivePrintDeps(target, toolchain_label, 1);
@@ -65,7 +73,7 @@ void PrintDeps(const Target* target, bool display_header) {
 
   // Collect the deps to display.
   std::vector<Label> deps;
-  if (CommandLine::ForCurrentProcess()->HasSwitch("all")) {
+  if (cmdline->HasSwitch("all")) {
     if (display_header)
       OutputString("\nAll recursive dependencies:\n");
 
@@ -83,6 +91,10 @@ void PrintDeps(const Target* target, bool display_header) {
     const std::vector<const Target*>& target_deps = target->deps();
     for (size_t i = 0; i < target_deps.size(); i++)
       deps.push_back(target_deps[i]->label());
+
+    const std::vector<const Target*>& target_datadeps = target->datadeps();
+    for (size_t i = 0; i < target_datadeps.size(); i++)
+      deps.push_back(target_datadeps[i]->label());
   }
 
   std::sort(deps.begin(), deps.end());
@@ -226,7 +238,8 @@ const char kDesc_Help[] =
     "  deps [--all | --tree]\n"
     "      Show immediate (or, when \"--all\" or \"--tree\" is specified,\n"
     "      recursive) dependencies of the given target. \"--tree\" shows them\n"
-    "      in a tree format. Otherwise, they will be sorted alphabetically.\n"
+    "      in a tree format.  Otherwise, they will be sorted alphabetically.\n"
+    "      Both \"deps\" and \"datadeps\" will be included.\n"
     "\n"
     "  defines    [--blame]\n"
     "  includes   [--blame]\n"

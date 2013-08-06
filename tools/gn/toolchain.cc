@@ -13,7 +13,6 @@ const char* Toolchain::kToolObjCxx = "objcxx";
 const char* Toolchain::kToolAsm = "asm";
 const char* Toolchain::kToolAlink = "alink";
 const char* Toolchain::kToolSolink = "solink";
-const char* Toolchain::kToolSolinkModule = "solink_module";
 const char* Toolchain::kToolLink = "link";
 const char* Toolchain::kToolStamp = "stamp";
 const char* Toolchain::kToolCopy = "copy";
@@ -47,7 +46,6 @@ Toolchain::ToolType Toolchain::ToolNameToType(const base::StringPiece& str) {
   if (str == kToolAsm) return TYPE_ASM;
   if (str == kToolAlink) return TYPE_ALINK;
   if (str == kToolSolink) return TYPE_SOLINK;
-  if (str == kToolSolinkModule) return TYPE_SOLINK_MODULE;
   if (str == kToolLink) return TYPE_LINK;
   if (str == kToolStamp) return TYPE_STAMP;
   if (str == kToolCopy) return TYPE_COPY;
@@ -64,7 +62,6 @@ std::string Toolchain::ToolTypeToName(ToolType type) {
     case TYPE_ASM: return kToolAsm;
     case TYPE_ALINK: return kToolAlink;
     case TYPE_SOLINK: return kToolSolink;
-    case TYPE_SOLINK_MODULE: return kToolSolinkModule;
     case TYPE_LINK: return kToolLink;
     case TYPE_STAMP: return kToolStamp;
     case TYPE_COPY: return kToolCopy;

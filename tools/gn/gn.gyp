@@ -117,6 +117,8 @@
         'value.h',
         'value_extractors.cc',
         'value_extractors.h',
+        'variables.cc',
+        'variables.h',
       ],
     },
     {

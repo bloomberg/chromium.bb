@@ -49,6 +49,11 @@ class NinjaTargetWriter {
   void WriteSources(std::vector<OutputFile>* object_files);
   void WriteLinkerStuff(const std::vector<OutputFile>& object_files);
 
+  // Writes the build line for linking the target. Includes newline.
+  void WriteLinkCommand(const OutputFile& external_output_file,
+                        const OutputFile& internal_output_file,
+                        const std::vector<OutputFile>& object_files);
+
   // Returns NULL if the source type should not be compiled on this target.
   const char* GetCommandForSourceType(SourceFileType type) const;
 

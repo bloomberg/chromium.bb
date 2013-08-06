@@ -22,6 +22,7 @@
 #include "tools/gn/token.h"
 #include "tools/gn/value.h"
 #include "tools/gn/value_extractors.h"
+#include "tools/gn/variables.h"
 
 namespace {
 
@@ -98,6 +99,7 @@ void TargetGenerator::Run() {
   if (TypeHasOutputs(output_type))
     FillOutputs();
   FillDependencies();  // All types have dependencies.
+  FillDataDependencies();  // All types have dependencies.
 
   if (TypeHasConfigValues(output_type)) {
     ConfigValuesGenerator gen(&target_->config_values(), scope_,
@@ -208,46 +210,10 @@ void TargetGenerator::FillGenericConfigs(
   (target_->*setter)(&dest_configs);
 }
 
-void TargetGenerator::FillConfigs() {
-  FillGenericConfigs("configs", &Target::swap_in_configs);
-}
-
-void TargetGenerator::FillAllDependentConfigs() {
-  FillGenericConfigs("all_dependent_configs",
-                     &Target::swap_in_all_dependent_configs);
-}
-
-void TargetGenerator::FillDirectDependentConfigs() {
-  FillGenericConfigs("direct_dependent_configs",
-                     &Target::swap_in_direct_dependent_configs);
-}
-
-void TargetGenerator::FillSources() {
-  const Value* value = scope_->GetValue("sources", true);
-  if (!value)
-    return;
-
-  Target::FileList dest_sources;
-  if (!ExtractListOfRelativeFiles(*value, input_directory_, &dest_sources,
-                                  err_))
-    return;
-  target_->swap_in_sources(&dest_sources);
-}
-
-void TargetGenerator::FillData() {
-  const Value* value = scope_->GetValue("data", true);
-  if (!value)
-    return;
-
-  Target::FileList dest_data;
-  if (!ExtractListOfRelativeFiles(*value, input_directory_, &dest_data,
-                                  err_))
-    return;
-  target_->swap_in_data(&dest_data);
-}
-
-void TargetGenerator::FillDependencies() {
-  const Value* value = scope_->GetValue("deps", true);
+void TargetGenerator::FillGenericDeps(
+    const char* var_name,
+    void (Target::*setter)(std::vector<const Target*>*)) {
+  const Value* value = scope_->GetValue(var_name, true);
   if (!value)
     return;
 
@@ -265,7 +231,55 @@ void TargetGenerator::FillDependencies() {
       return;
   }
 
-  target_->swap_in_deps(&dest_deps);
+  (target_->*setter)(&dest_deps);
+}
+
+void TargetGenerator::FillConfigs() {
+  FillGenericConfigs(variables::kConfigs, &Target::swap_in_configs);
+}
+
+void TargetGenerator::FillAllDependentConfigs() {
+  FillGenericConfigs(variables::kAllDependentConfigs,
+                     &Target::swap_in_all_dependent_configs);
+}
+
+void TargetGenerator::FillDirectDependentConfigs() {
+  FillGenericConfigs(variables::kDirectDependentConfigs,
+                     &Target::swap_in_direct_dependent_configs);
+}
+
+void TargetGenerator::FillSources() {
+  const Value* value = scope_->GetValue(variables::kSources, true);
+  if (!value)
+    return;
+
+  Target::FileList dest_sources;
+  if (!ExtractListOfRelativeFiles(*value, input_directory_, &dest_sources,
+                                  err_))
+    return;
+  target_->swap_in_sources(&dest_sources);
+}
+
+void TargetGenerator::FillData() {
+  // TODO(brettW) hook this up to the constant when we have cleaned up
+  // how data files are used.
+  const Value* value = scope_->GetValue("data", true);
+  if (!value)
+    return;
+
+  Target::FileList dest_data;
+  if (!ExtractListOfRelativeFiles(*value, input_directory_, &dest_data,
+                                  err_))
+    return;
+  target_->swap_in_data(&dest_data);
+}
+
+void TargetGenerator::FillDependencies() {
+  FillGenericDeps(variables::kDeps, &Target::swap_in_deps);
+}
+
+void TargetGenerator::FillDataDependencies() {
+  FillGenericDeps(variables::kDatadeps, &Target::swap_in_datadeps);
 }
 
 void TargetGenerator::FillDestDir() {

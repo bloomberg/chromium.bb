@@ -11,6 +11,7 @@
 #include "tools/gn/input_conversion.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/variables.h"
 
 namespace commands {
 
@@ -30,8 +31,7 @@ void PrintShortHelp(const std::string& line) {
 }
 
 void PrintToplevelHelp() {
-  std::cout <<
-      "Commands (type \"gn help <command>\" for more details):\n";
+  OutputString("Commands (type \"gn help <command>\" for more details):\n");
 
   const commands::CommandInfoMap& command_map = commands::GetCommands();
   for (commands::CommandInfoMap::const_iterator i = command_map.begin();
@@ -46,10 +46,11 @@ void PrintToplevelHelp() {
       "  -q: Quiet mode, don't print anything on success.\n"
       "  --root: Specifies source root (overrides .gn file).\n"
       "  --secondary: Specifies secondary source root (overrides .gn file).\n"
-      "  -v: Verbose mode, print lots of logging.\n"
-      "\n"
-      "Buildfile functions (type \"gn help <function>\" for more details):\n");
+      "  -v: Verbose mode, print lots of logging.\n");
 
+  // Functions.
+  OutputString("\nBuildfile functions (type \"gn help <function>\" for more "
+               "details):\n");
   const functions::FunctionInfoMap& function_map = functions::GetFunctions();
   std::vector<std::string> sorted_functions;
   for (functions::FunctionInfoMap::const_iterator i = function_map.begin();
@@ -58,6 +59,24 @@ void PrintToplevelHelp() {
   std::sort(sorted_functions.begin(), sorted_functions.end());
   for (size_t i = 0; i < sorted_functions.size(); i++)
     OutputString("  " + sorted_functions[i] + "\n", DECORATION_YELLOW);
+
+  // Built-in variables.
+  OutputString("\nBuilt-in predefined variables (type \"gn help <variable>\" "
+               "for more details):\n");
+  const variables::VariableInfoMap& builtin_vars =
+      variables::GetBuiltinVariables();
+  for (variables::VariableInfoMap::const_iterator i = builtin_vars.begin();
+       i != builtin_vars.end(); ++i)
+    PrintShortHelp(i->second.help_short);
+
+  // Target variables.
+  OutputString("\nVariables you set in targets (type \"gn help <variable>\" "
+               "for more details):\n");
+  const variables::VariableInfoMap& target_vars =
+      variables::GetTargetVariables();
+  for (variables::VariableInfoMap::const_iterator i = target_vars.begin();
+       i != target_vars.end(); ++i)
+    PrintShortHelp(i->second.help_short);
 
   OutputString("\nOther help topics:\n");
   PrintShortHelp("dotfile: Info about the toplevel .gn file.");
@@ -96,6 +115,26 @@ int RunHelp(const std::vector<std::string>& args) {
       function_map.find(args[0]);
   if (found_function != function_map.end()) {
     OutputString(found_function->second.help);
+    return 0;
+  }
+
+  // Builtin variables.
+  const variables::VariableInfoMap& builtin_vars =
+      variables::GetBuiltinVariables();
+  variables::VariableInfoMap::const_iterator found_builtin_var =
+      builtin_vars.find(args[0]);
+  if (found_builtin_var != builtin_vars.end()) {
+    OutputString(found_builtin_var->second.help);
+    return 0;
+  }
+
+  // Target variables.
+  const variables::VariableInfoMap& target_vars =
+      variables::GetTargetVariables();
+  variables::VariableInfoMap::const_iterator found_target_var =
+      target_vars.find(args[0]);
+  if (found_target_var != target_vars.end()) {
+    OutputString(found_target_var->second.help);
     return 0;
   }
 

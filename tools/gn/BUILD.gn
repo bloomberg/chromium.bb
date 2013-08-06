@@ -107,6 +107,8 @@ static_library("gn_lib") {
     "value.h",
     "value_extractors.cc",
     "value_extractors.h",
+    "variables.cc",
+    "variables.h",
   ]
   deps = [
     "//base",
