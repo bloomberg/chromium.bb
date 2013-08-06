@@ -63,9 +63,9 @@ void InitIBusLookupTableWithCandidatesFilled(size_t page_size,
 
 class CandidateWindowViewTest : public views::ViewsTestBase {
  protected:
-  void ExpectLabels(const std::string shortcut,
-                    const std::string candidate,
-                    const std::string annotation,
+  void ExpectLabels(const std::string& shortcut,
+                    const std::string& candidate,
+                    const std::string& annotation,
                     const CandidateView* row) {
     EXPECT_EQ(shortcut, UTF16ToUTF8(row->shortcut_label_->text()));
     EXPECT_EQ(candidate, UTF16ToUTF8(row->candidate_label_->text()));
