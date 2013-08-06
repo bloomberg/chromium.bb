@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/timer/timer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
@@ -217,7 +218,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
 // If this flakes, use http://crbug.com/51622.
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
   // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL("about:blank"));
+  NavigateToURL(shell(), GURL(kAboutBlankURL));
 
   ASSERT_TRUE(test_server()->Start());
   GURL url(test_server()->GetURL("files/simple_page.html"));
@@ -229,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
 
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcher404) {
   // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL("about:blank"));
+  NavigateToURL(shell(), GURL(kAboutBlankURL));
 
   // Test 404 response.
   ASSERT_TRUE(test_server()->Start());
@@ -243,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcher404) {
 // If this flakes, use http://crbug.com/51622.
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDidFail) {
   // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL("about:blank"));
+  NavigateToURL(shell(), GURL(kAboutBlankURL));
 
   PostTaskToInProcessRendererAndWait(
         base::Bind(&ResourceFetcherTests::ResourceFetcherDidFailOnRenderer,
@@ -252,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDidFail) {
 
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
   // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL("about:blank"));
+  NavigateToURL(shell(), GURL(kAboutBlankURL));
 
   // Grab a page that takes at least 1 sec to respond, but set the fetcher to
   // timeout in 0 sec.
@@ -266,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
 
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
   // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL("about:blank"));
+  NavigateToURL(shell(), GURL(kAboutBlankURL));
 
   // Grab a page that takes at least 1 sec to respond, but set the fetcher to
   // timeout in 0 sec.

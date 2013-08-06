@@ -5,6 +5,7 @@
 #include "content/shell/shell_application_mac.h"
 
 #include "base/auto_reset.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
@@ -29,7 +30,7 @@
   content::ShellBrowserContext* browserContext =
       content::ShellContentBrowserClient::Get()->browser_context();
   content::Shell::CreateNewWindow(browserContext,
-                                  GURL("about:blank"),
+                                  GURL(content::kAboutBlankURL),
                                   NULL,
                                   MSG_ROUTING_NONE,
                                   gfx::Size());

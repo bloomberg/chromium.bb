@@ -19,6 +19,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/history_item_serialization.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -117,7 +118,6 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
   // Only the expected PNGs for Mac have a valid alpha channel.
   MakeBitmapOpaque(snapshot);
 #endif
-
 }
 
 class SyncNavigationStateVisitor : public RenderViewVisitor {
@@ -155,6 +155,7 @@ class ProxyToRenderViewVisitor : public RenderViewVisitor {
     }
     return true;
   }
+
  private:
   WebTestProxyBase* proxy_;
   RenderView* render_view_;
@@ -164,15 +165,15 @@ class ProxyToRenderViewVisitor : public RenderViewVisitor {
 
 class NavigateAwayVisitor : public RenderViewVisitor {
  public:
-  NavigateAwayVisitor(RenderView* main_render_view)
+  explicit NavigateAwayVisitor(RenderView* main_render_view)
       : main_render_view_(main_render_view) {}
   virtual ~NavigateAwayVisitor() {}
 
   virtual bool Visit(RenderView* render_view) OVERRIDE {
     if (render_view == main_render_view_)
       return true;
-    render_view->GetWebView()->mainFrame()
-        ->loadRequest(WebURLRequest(GURL("about:blank")));
+    render_view->GetWebView()->mainFrame()->loadRequest(
+        WebURLRequest(GURL(kAboutBlankURL)));
     return true;
   }
 
@@ -670,8 +671,8 @@ void WebKitTestRunner::OnReset() {
   Reset();
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
-  render_view()->GetWebView()->mainFrame()
-      ->loadRequest(WebURLRequest(GURL("about:blank")));
+  render_view()->GetWebView()->mainFrame()->loadRequest(
+      WebURLRequest(GURL(kAboutBlankURL)));
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 

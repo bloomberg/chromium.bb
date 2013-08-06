@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test_utils.h"
@@ -34,7 +35,7 @@ void MediaBrowserTest::RunMediaTestPage(
     std::vector<StringPair>::const_iterator itr = query_params->begin();
     query = base::StringPrintf("%s=%s", itr->first, itr->second);
     ++itr;
-    for (;itr != query_params->end(); ++itr) {
+    for (; itr != query_params->end(); ++itr) {
       query.append(base::StringPrintf("&%s=%s", itr->first, itr->second));
     }
   }
@@ -184,7 +185,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoTulipWebm) {
 // Covers tear-down when navigating away as opposed to browser exiting.
 IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
   PlayVideo("bear.ogv", false);
-  NavigateToURL(shell(), GURL("about:blank"));
+  NavigateToURL(shell(), GURL(kAboutBlankURL));
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
 

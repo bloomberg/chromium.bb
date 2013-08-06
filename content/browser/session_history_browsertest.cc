@@ -164,10 +164,10 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
   EXPECT_EQ("bot1", GetTabTitle());
 
   GoBack();
-  EXPECT_EQ("about:blank", GetTabTitle());
+  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
 
   ASSERT_FALSE(CanGoBack());
-  EXPECT_EQ("about:blank", GetTabTitle());
+  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
 
   GoForward();
   EXPECT_EQ("bot1", GetTabTitle());
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
   EXPECT_EQ(frames, GetTabURL());
 
   GoBack();
-  EXPECT_EQ("about:blank", GetTabTitle());
+  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
   EXPECT_EQ(GURL(kAboutBlankURL), GetTabURL());
 
   GoForward();
@@ -400,10 +400,10 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
   // history is [blank, bot1, bot2, *bot3]
 
   JavascriptGo("-3");
-  EXPECT_EQ("about:blank", GetTabTitle());
+  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
 
   ASSERT_FALSE(CanGoBack());
-  EXPECT_EQ("about:blank", GetTabTitle());
+  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
 
   JavascriptGo("1");
   EXPECT_EQ("bot1", GetTabTitle());
@@ -419,10 +419,10 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
   EXPECT_EQ("bot1", GetTabTitle());
 
   JavascriptGo("-1");
-  EXPECT_EQ("about:blank", GetTabTitle());
+  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
 
   ASSERT_FALSE(CanGoBack());
-  EXPECT_EQ("about:blank", GetTabTitle());
+  EXPECT_EQ(std::string(kAboutBlankURL), GetTabTitle());
 
   JavascriptGo("1");
   EXPECT_EQ("bot1", GetTabTitle());

@@ -17,7 +17,6 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -42,10 +41,9 @@ class WebContentsImplTestWebUIControllerFactory
  public:
   virtual WebUIController* CreateWebUIControllerForURL(
       WebUI* web_ui, const GURL& url) const OVERRIDE {
-   if (!UseWebUI(url))
-     return NULL;
-
-   return new WebUIController(web_ui);
+    if (!UseWebUI(url))
+      return NULL;
+    return new WebUIController(web_ui);
   }
 
   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
@@ -73,7 +71,7 @@ class TestInterstitialPage;
 
 class TestInterstitialPageDelegate : public InterstitialPageDelegate {
  public:
-  TestInterstitialPageDelegate(TestInterstitialPage* interstitial_page)
+  explicit TestInterstitialPageDelegate(TestInterstitialPage* interstitial_page)
       : interstitial_page_(interstitial_page) {}
   virtual void CommandReceived(const std::string& command) OVERRIDE;
   virtual std::string GetHTMLContents() OVERRIDE { return std::string(); }
@@ -271,7 +269,7 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
 
 class TestWebContentsObserver : public WebContentsObserver {
  public:
-  TestWebContentsObserver(WebContents* contents)
+  explicit TestWebContentsObserver(WebContents* contents)
       : WebContentsObserver(contents) {
   }
   virtual ~TestWebContentsObserver() {}
@@ -2110,7 +2108,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
 
   // A navigation to about:whatever should always look like a navigation to
   // about:blank
-  GURL url_normalized("about:blank");
+  GURL url_normalized(kAboutBlankURL);
   GURL url_from_ipc("about:whatever");
 
   // We navigate the test WebContents to about:blank, since NavigateAndCommit

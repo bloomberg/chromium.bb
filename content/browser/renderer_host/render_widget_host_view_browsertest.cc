@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
@@ -270,7 +271,7 @@ class NonCompositingRenderWidgetHostViewBrowserTest
   }
 
   virtual GURL TestUrl() {
-    return GURL("about:blank");
+    return GURL(kAboutBlankURL);
   }
 
   virtual bool SetUpSourceSurface(const char* wait_message) OVERRIDE {

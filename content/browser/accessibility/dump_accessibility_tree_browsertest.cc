@@ -20,6 +20,7 @@
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
 #include "content/test/content_browser_test.h"
@@ -60,8 +61,8 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
  public:
   // Utility helper that does a comment aware equality check.
   // Returns array of lines from expected file which are different.
-  std::vector<int> DiffLines(std::vector<std::string>& expected_lines,
-                             std::vector<std::string>& actual_lines) {
+  std::vector<int> DiffLines(const std::vector<std::string>& expected_lines,
+                             const std::vector<std::string>& actual_lines) {
     int actual_lines_count = actual_lines.size();
     int expected_lines_count = expected_lines.size();
     std::vector<int> diff_lines;
@@ -123,7 +124,7 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
 
 void DumpAccessibilityTreeTest::RunTest(
     const base::FilePath::CharType* file_path) {
-  NavigateToURL(shell(), GURL("about:blank"));
+  NavigateToURL(shell(), GURL(kAboutBlankURL));
 
   // Setup test paths.
   base::FilePath dir_test_data;
@@ -206,7 +207,7 @@ void DumpAccessibilityTreeTest::RunTest(
       if (diff_index < static_cast<int>(diff_lines.size()) &&
           diff_lines[diff_index] == line) {
         is_diff = true;
-        ++ diff_index;
+        ++diff_index;
       }
       printf("%1s %4d %s\n", is_diff? kSignalDiff : "", line + 1,
              expected_lines[line].c_str());

@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_state.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
@@ -506,7 +507,7 @@ TEST_F(NavigationControllerTest, LoadURLWithParams) {
   load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
   load_params.is_renderer_initiated = true;
   load_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
-  load_params.transferred_global_request_id = GlobalRequestID(2,3);
+  load_params.transferred_global_request_id = GlobalRequestID(2, 3);
 
   controller.LoadURLWithParams(load_params);
   NavigationEntryImpl* entry =
@@ -527,7 +528,7 @@ TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data) {
       GURL("data:text/html,dataurl"));
   load_params.load_type = NavigationController::LOAD_TYPE_DATA;
   load_params.base_url_for_data_url = GURL("http://foo");
-  load_params.virtual_url_for_data_url = GURL("about:blank");
+  load_params.virtual_url_for_data_url = GURL(kAboutBlankURL);
   load_params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
 
   controller.LoadURLWithParams(load_params);
@@ -867,7 +868,7 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   contents()->SetDelegate(delegate.get());
 
   // Without any navigations, the renderer starts at about:blank.
-  const GURL kExistingURL("about:blank");
+  const GURL kExistingURL(kAboutBlankURL);
 
   // Now make a pending new navigation.
   const GURL kNewURL("http://eh");
@@ -1160,7 +1161,7 @@ TEST_F(NavigationControllerTest, Reload_GeneratesNewPage) {
 
 class TestNavigationObserver : public RenderViewHostObserver {
  public:
-  TestNavigationObserver(RenderViewHost* render_view_host)
+  explicit TestNavigationObserver(RenderViewHost* render_view_host)
       : RenderViewHostObserver(render_view_host) {
   }
 
@@ -3524,7 +3525,7 @@ TEST_F(NavigationControllerTest, ClearFaviconOnRedirect) {
   EXPECT_FALSE(DoImagesMatch(kDefaultFavicon, entry->GetFavicon().image));
 
   test_rvh()->SendNavigateWithTransition(
-      0, // same page ID.
+      0,  // same page ID.
       kPageWithoutFavicon,
       PAGE_TRANSITION_CLIENT_REDIRECT);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);

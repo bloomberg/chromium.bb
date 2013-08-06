@@ -63,7 +63,7 @@ class RenderViewHostTest : public RenderViewHostImplTestHarness {
 TEST_F(RenderViewHostTest, FilterAbout) {
   test_rvh()->SendNavigate(1, GURL("about:cache"));
   ASSERT_TRUE(controller().GetActiveEntry());
-  EXPECT_EQ(GURL("about:blank"), controller().GetActiveEntry()->GetURL());
+  EXPECT_EQ(GURL(kAboutBlankURL), controller().GetActiveEntry()->GetURL());
 }
 
 // Create a full screen popup RenderWidgetHost and View.
@@ -161,8 +161,8 @@ TEST_F(RenderViewHostTest, StartDragging) {
   drop_data.url = file_url;
   drop_data.html_base_url = file_url;
   test_rvh()->TestOnStartDragging(drop_data);
-  EXPECT_EQ(GURL("about:blank"), delegate_view.drag_url());
-  EXPECT_EQ(GURL("about:blank"), delegate_view.html_base_url());
+  EXPECT_EQ(GURL(kAboutBlankURL), delegate_view.drag_url());
+  EXPECT_EQ(GURL(kAboutBlankURL), delegate_view.html_base_url());
 
   GURL http_url = GURL("http://www.domain.com/index.html");
   drop_data.url = http_url;

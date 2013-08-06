@@ -7,6 +7,7 @@
 // the binding from the outside by loading JS into the shell.
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/test/render_view_test.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -69,7 +70,7 @@ class TestObserver : public RenderViewObserver {
   CppBindingExampleWithOptionalFallback example_bound_class_;
 };
 
-}  // namespace anonymous
+}  // namespace
 
 class CppBoundClassTest : public RenderViewTest {
  public:
@@ -82,7 +83,7 @@ class CppBoundClassTest : public RenderViewTest {
 
     WebKit::WebURLRequest url_request;
     url_request.initialize();
-    url_request.setURL(GURL("about:blank"));
+    url_request.setURL(GURL(kAboutBlankURL));
 
     GetMainFrame()->loadRequest(url_request);
     ProcessPendingMessages();
