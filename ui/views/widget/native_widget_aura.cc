@@ -48,7 +48,7 @@
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
 #endif
 
@@ -947,7 +947,7 @@ void Widget::CloseAllSecondaryWidgets() {
   EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, 0);
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
   std::vector<aura::Window*> open_windows =
       DesktopRootWindowHostX11::GetAllOpenWindows();
   std::for_each(open_windows.begin(), open_windows.end(), CloseWindow);
