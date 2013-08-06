@@ -30,5 +30,5 @@ class LoadingTrace(page_measurement.PageMeasurement):
     # recognize loading as a toplevel action.
     self._metrics.Stop(tab)
 
-    loading.AddResultsForTab(tab, results)
+    loading.LoadingMetric().AddResults(tab, results)
     self._metrics.AddResults(results)

@@ -56,7 +56,7 @@ class Smoothness(page_measurement.PageMeasurement):
     if not (rendering_stats_deltas['numFramesSentToScreen'] > 0):
       raise DidNotScrollException()
 
-    loading.AddResultsForTab(tab, results)
+    loading.LoadingMetric().AddResults(tab, results)
 
     smoothness.CalcFirstPaintTimeResults(results, tab)
     smoothness.CalcScrollResults(rendering_stats_deltas, results)

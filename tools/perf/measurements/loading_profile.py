@@ -46,7 +46,7 @@ class LoadingProfile(page_measurement.PageMeasurement):
 
     profile_files = tab.browser.StopProfiling()
 
-    loading.AddResultsForTab(tab, results)
+    loading.LoadingMetric().AddResults(tab, results)
 
     profile_file = None
     for profile_file in profile_files:
