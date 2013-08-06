@@ -690,7 +690,7 @@ void XMLHttpRequest::sendForInspectorXHRReplay(PassRefPtr<FormData> formData, Ex
 {
     m_requestEntityBody = formData ? formData->deepCopy() : 0;
     createRequest(es);
-    m_exceptionCode = es;
+    m_exceptionCode = es.code();
 }
 
 void XMLHttpRequest::createRequest(ExceptionState& es)

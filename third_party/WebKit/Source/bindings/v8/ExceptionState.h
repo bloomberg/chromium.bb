@@ -54,6 +54,8 @@ public:
     bool hadException() const { return !m_exception.isEmpty() || m_code; }
     void clearException();
 
+    ExceptionCode code() { return m_code; }
+
     bool throwIfNeeded()
     {
         if (m_exception.isEmpty()) {
@@ -64,21 +66,6 @@ public:
 
         V8ThrowException::throwError(m_exception.newLocal(m_isolate));
         return true;
-    }
-
-    // FIXME: Remove the rest of the public methods/operators once the transition is done.
-    typedef void* ExceptionState::*UnspecifiedBoolType;
-    operator UnspecifiedBoolType*() const
-    {
-        return m_code ? reinterpret_cast<UnspecifiedBoolType*>(1) : 0;
-    }
-
-    operator ExceptionCode& () { return m_code; }
-
-    ExceptionState& operator=(const ExceptionCode& ec)
-    {
-        throwDOMException(ec);
-        return *this;
     }
 
 protected:

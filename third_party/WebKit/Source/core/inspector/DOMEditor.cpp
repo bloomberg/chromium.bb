@@ -405,7 +405,7 @@ bool DOMEditor::setNodeValue(Node* node, const String& value, ExceptionState& es
 static void populateErrorString(ExceptionState& es, ErrorString* errorString)
 {
     if (es.hadException())
-        *errorString = DOMException::getErrorName(es);
+        *errorString = DOMException::getErrorName(es.code());
 }
 
 bool DOMEditor::insertBefore(Node* parentNode, PassRefPtr<Node> node, Node* anchorNode, ErrorString* errorString)

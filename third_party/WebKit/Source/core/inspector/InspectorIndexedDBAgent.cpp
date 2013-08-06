@@ -751,7 +751,7 @@ public:
         RefPtr<IDBRequest> idbRequest = idbObjectStore->clear(context(), es);
         ASSERT(!es.hadException());
         if (es.hadException()) {
-            ExceptionCode ec = es;
+            ExceptionCode ec = es.code();
             m_requestCallback->sendFailure(String::format("Could not clear object store '%s': %d", m_objectStoreName.utf8().data(), ec));
             return;
         }

@@ -109,7 +109,7 @@ PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sql
             if (m_sqliteTransaction->wasRolledBackBySqlite())
                 return 0;
 
-            if (es == QuotaExceededError) {
+            if (es.code() == QuotaExceededError) {
                 if (m_transactionClient->didExceedQuota(database())) {
                     es.clearException();
                     retryStatement = true;

@@ -206,7 +206,7 @@ WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) co
 {
     TrackExceptionState es;
     WebElement element(m_private->querySelector(tag, es));
-    ec = es;
+    ec = es.code();
     return element;
 }
 

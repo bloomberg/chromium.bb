@@ -1496,7 +1496,7 @@ void Range::checkDeleteExtract(ExceptionState& es)
     }
 
     es.clearException();
-    if (!commonAncestorContainer(es) || es)
+    if (!commonAncestorContainer(es) || es.hadException())
         return;
 
     Node* pastLast = pastLastNode();

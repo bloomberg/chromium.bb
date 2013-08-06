@@ -54,11 +54,12 @@ namespace DOMStorageAgentState {
 static const char domStorageAgentEnabled[] = "domStorageAgentEnabled";
 };
 
-static bool hadException(ExceptionCode ec, ErrorString* errorString)
+static bool hadException(ExceptionState& es, ErrorString* errorString)
 {
-    switch (ec) {
-    case 0:
+    if (!es.hadException())
         return false;
+
+    switch (es.code()) {
     case SecurityError:
         *errorString = "Security error";
         return true;
@@ -135,7 +136,7 @@ void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, cons
 static String toErrorString(ExceptionState& es)
 {
     if (es.hadException())
-        return DOMException::getErrorName(es);
+        return DOMException::getErrorName(es.code());
     return "";
 }
 

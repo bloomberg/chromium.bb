@@ -100,7 +100,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     OwnPtr<SourceBufferPrivate> sourceBufferPrivate = createSourceBufferPrivate(contentType.type(), codecs, es);
 
     if (!sourceBufferPrivate) {
-        ASSERT(es == NotSupportedError || es == QuotaExceededError);
+        ASSERT(es.code() == NotSupportedError || es.code() == QuotaExceededError);
         // 2. If type contains a MIME type that is not supported ..., then throw a NotSupportedError exception and abort these steps.
         // 3. If the user agent can't handle any more SourceBuffer objects then throw a QuotaExceededError exception and abort these steps
         return 0;

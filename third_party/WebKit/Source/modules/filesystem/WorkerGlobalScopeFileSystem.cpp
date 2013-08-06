@@ -130,7 +130,7 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
         return 0;
 
     RefPtr<EntrySync> entry = fileSystem->root()->getDirectory(filePath, Dictionary(), es);
-    if (es == TypeMismatchError)
+    if (es.code() == TypeMismatchError)
         return fileSystem->root()->getFile(filePath, Dictionary(), es);
 
     return entry.release();
