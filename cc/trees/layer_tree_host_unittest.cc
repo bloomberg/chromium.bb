@@ -4025,30 +4025,22 @@ TEST_F(LayerTreeHostTestTreeActivationCallback, DelegatingRenderer) {
   RunTest(true, true, true);
 }
 
-// VideoLayer must support being invalidated and then passing that along
-// to the compositor thread, even though no resources are updated in
-// response to that invalidation.
-class LayerTreeHostTestVideoLayerInvalidate : public LayerTreeHostTest {
+class LayerInvalidateCausesDraw : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestVideoLayerInvalidate() : num_commits_(0), num_draws_(0) {}
-
-  virtual void SetupTree() OVERRIDE {
-    LayerTreeHostTest::SetupTree();
-    video_layer_ = VideoLayer::Create(&provider_);
-    video_layer_->SetBounds(gfx::Size(10, 10));
-    video_layer_->SetIsDrawable(true);
-    layer_tree_host()->root_layer()->AddChild(video_layer_);
-  }
+  LayerInvalidateCausesDraw() : num_commits_(0), num_draws_(0) {}
 
   virtual void BeginTest() OVERRIDE {
+    ASSERT_TRUE(!!invalidate_layer_)
+        << "Derived tests must set this in SetupTree";
+
     // One initial commit.
     PostSetNeedsCommitToMainThread();
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
-    // After commit, invalidate the video layer.  This should cause a commit.
+    // After commit, invalidate the layer.  This should cause a commit.
     if (layer_tree_host()->source_frame_number() == 1)
-     video_layer_->SetNeedsDisplay();
+     invalidate_layer_->SetNeedsDisplay();
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
@@ -4066,14 +4058,57 @@ class LayerTreeHostTestVideoLayerInvalidate : public LayerTreeHostTest {
     EXPECT_GE(2, num_draws_);
   }
 
+ protected:
+  scoped_refptr<Layer> invalidate_layer_;
+
  private:
-  FakeVideoFrameProvider provider_;
-  scoped_refptr<VideoLayer> video_layer_;
   int num_commits_;
   int num_draws_;
 };
 
+// VideoLayer must support being invalidated and then passing that along
+// to the compositor thread, even though no resources are updated in
+// response to that invalidation.
+class LayerTreeHostTestVideoLayerInvalidate : public LayerInvalidateCausesDraw {
+ public:
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostTest::SetupTree();
+    scoped_refptr<VideoLayer> video_layer = VideoLayer::Create(&provider_);
+    video_layer->SetBounds(gfx::Size(10, 10));
+    video_layer->SetIsDrawable(true);
+    layer_tree_host()->root_layer()->AddChild(video_layer);
+
+    invalidate_layer_ = video_layer;
+  }
+
+ private:
+  FakeVideoFrameProvider provider_;
+};
+
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestVideoLayerInvalidate);
+
+// IOSurfaceLayer must support being invalidated and then passing that along
+// to the compositor thread, even though no resources are updated in
+// response to that invalidation.
+class LayerTreeHostTestIOSurfaceLayerInvalidate
+    : public LayerInvalidateCausesDraw {
+ public:
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostTest::SetupTree();
+    scoped_refptr<IOSurfaceLayer> layer = IOSurfaceLayer::Create();
+    layer->SetBounds(gfx::Size(10, 10));
+    uint32_t fake_io_surface_id = 7;
+    layer->SetIOSurfaceProperties(fake_io_surface_id, layer->bounds());
+    layer->SetIsDrawable(true);
+    layer_tree_host()->root_layer()->AddChild(layer);
+
+    invalidate_layer_ = layer;
+  }
+};
+
+// TODO(danakj): IOSurface layer can not be transported. crbug.com/239335
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostTestIOSurfaceLayerInvalidate);
 
 class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
  protected:

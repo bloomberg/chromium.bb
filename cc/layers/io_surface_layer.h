@@ -20,6 +20,8 @@ class CC_EXPORT IOSurfaceLayer : public Layer {
       OVERRIDE;
   virtual bool DrawsContent() const OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual bool Update(ResourceUpdateQueue* queue,
+                      const OcclusionTracker* occlusion) OVERRIDE;
 
  protected:
   IOSurfaceLayer();
