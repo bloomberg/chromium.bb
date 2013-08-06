@@ -16,14 +16,8 @@ namespace content {
 class WebFileWriterImpl : public fileapi::WebFileWriterBase,
                           public base::SupportsWeakPtr<WebFileWriterImpl> {
  public:
-  enum Type {
-    TYPE_SYNC,
-    TYPE_ASYNC,
-  };
-
   WebFileWriterImpl(const GURL& path,
                     WebKit::WebFileWriterClient* client,
-                    Type type,
                     base::MessageLoopProxy* main_thread_loop);
   virtual ~WebFileWriterImpl();
 

@@ -252,11 +252,8 @@ void DidCreateFileWriter(
     callbacks->didFail(WebKit::WebFileErrorInvalidState);
     return;
   }
-  WebFileWriterImpl::Type type = callbacks->shouldBlockUntilCompletion() ?
-      WebFileWriterImpl::TYPE_SYNC : WebFileWriterImpl::TYPE_ASYNC;
   callbacks->didCreateFileWriter(
-      new WebFileWriterImpl(path, client, type, main_thread_loop),
-      file_info.size);
+      new WebFileWriterImpl(path, client, main_thread_loop), file_info.size);
 }
 
 void CreateFileWriterCallbackAdapter(
@@ -491,9 +488,7 @@ base::Unretained(waitable_results))),
 
 WebKit::WebFileWriter* WebFileSystemImpl::createFileWriter(
     const WebURL& path, WebKit::WebFileWriterClient* client) {
-  return new WebFileWriterImpl(GURL(path), client,
-                               WebFileWriterImpl::TYPE_ASYNC,
-                               main_thread_loop_.get());
+  return new WebFileWriterImpl(GURL(path), client, main_thread_loop_.get());
 }
 
 void WebFileSystemImpl::createFileWriter(
