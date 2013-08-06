@@ -89,6 +89,7 @@ void PreconnectOnIOThread(
     case UrlInfo::LEARNED_REFERAL_MOTIVATED:
       request_info.motivation = net::HttpRequestInfo::PRECONNECT_MOTIVATED;
       break;
+    case UrlInfo::MOUSE_OVER_MOTIVATED:
     case UrlInfo::SELF_REFERAL_MOTIVATED:
     case UrlInfo::EARLY_LOAD_MOTIVATED:
       request_info.motivation = net::HttpRequestInfo::EARLY_LOAD_MOTIVATED;

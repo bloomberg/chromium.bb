@@ -6657,11 +6657,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.PreconnectedLinkNavigation" enum="PreconnectedNavigation">
+  <summary>
+    Indicate whether a link navigation was preceded by a recent pre-connect
+    trigger (within 10 seconds). There is a high chance that loading the page
+    used a preconnected TCP session.
+  </summary>
+</histogram>
+
 <histogram name="Net.PreconnectedNavigation" enum="PreconnectedNavigation">
   <summary>
-    Indicate whether the navigation was preceded by a recent pre-connect
-    (pre-connect within 10 seconds). There is a high chance that loading the
-    page used a preconnected TCP session.
+    Indicate whether a URLRequest was preceded by a recent pre-connect trigger
+    (within 10 seconds). There is a high chance that loading the resource used a
+    preconnected TCP session.
   </summary>
 </histogram>
 
@@ -6712,6 +6720,14 @@ other types of suffix sets.
     preresolve, or do nothing. This histogram can be used to select those static
     thresholds.
   </details>
+</histogram>
+
+<histogram name="Net.PreconnectTriggerUsed" enum="PreconnectTriggerUsed">
+  <summary>
+    Indicate whether if a preconnect trigger is followed by a resource request
+    (from link navigations) to the host or not. This is to measure precision of
+    link-based preconnect triggers.
+  </summary>
 </histogram>
 
 <histogram name="Net.PreconnectUtilization" enum="NetPreconnectUtilization">
@@ -20285,8 +20301,8 @@ other types of suffix sets.
 </enum>
 
 <enum name="PreconnectedNavigation" type="int">
-  <int value="0" label="Page nav. preceded by a pre-connect"/>
-  <int value="1" label="No recent pre-connect to the page"/>
+  <int value="0" label="No recent pre-connect to the page"/>
+  <int value="1" label="Page nav. preceded by a pre-connect"/>
 </enum>
 
 <enum name="PreconnectMotivation" type="int">
@@ -20307,6 +20323,11 @@ other types of suffix sets.
   <int value="0" label="PRECONNECTION"/>
   <int value="1" label="PRERESOLUTION"/>
   <int value="2" label="TOO_NEW"/>
+</enum>
+
+<enum name="PreconnectTriggerUsed" type="int">
+  <int value="0" label="The pre-connect triggered host was not accessed"/>
+  <int value="1" label="The pre-connect triggered host was accessed"/>
 </enum>
 
 <enum name="PrerenderFinalStatus" type="int">

@@ -238,7 +238,12 @@ class Predictor {
                                UrlInfo::ResolutionMotivation motivation,
                                int count);
 
-  void RecordPreconnectNavigationStats(const GURL& url);
+  void RecordPreconnectTrigger(const GURL& url);
+
+  void RecordPreconnectNavigationStat(const std::vector<GURL>& url_chain,
+                                      bool is_subresource);
+
+  void RecordLinkNavigation(const GURL& url);
 
   // ------------- End IO thread methods.
 
@@ -509,7 +514,8 @@ class Predictor {
   // The time when the last preconnection was requested to a search service.
   base::TimeTicks last_omnibox_preconnect_;
 
-  TimedCache recent_preconnects_;
+  class PreconnectUsage;
+  scoped_ptr<PreconnectUsage> preconnect_usage_;
 
   // For each URL that we might navigate to (that we've "learned about")
   // we have a Referrer list. Each Referrer list has all hostnames we might

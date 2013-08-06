@@ -16,6 +16,7 @@
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
+#include "chrome/browser/net/predictor_tab_helper.h"
 #include "chrome/browser/password_manager/password_generation_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
@@ -116,6 +117,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(
       web_contents);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
+  chrome_browser_net::PredictorTabHelper::CreateForWebContents(web_contents);
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
   extensions::TabHelper::CreateForWebContents(web_contents);

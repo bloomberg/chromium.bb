@@ -29,6 +29,7 @@ void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) {
   predictor_->LearnAboutInitialNavigation(request_scheme_host);
 
   bool redirected_host = false;
+  bool is_subresource = !(request->load_flags() & net::LOAD_MAIN_FRAME);
   if (request->referrer().empty()) {
     if (request->url() != request->original_url()) {
       // This request was completed with a redirect.
@@ -55,7 +56,6 @@ void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) {
     }
   } else {
     GURL referring_scheme_host = GURL(request->referrer()).GetWithEmptyPath();
-    bool is_subresource = !(request->load_flags() & net::LOAD_MAIN_FRAME);
     // Learn about our referring URL, for use in the future.
     if (is_subresource && timed_cache_.WasRecentlySeen(referring_scheme_host))
       predictor_->LearnFromNavigation(referring_scheme_host,
@@ -71,7 +71,8 @@ void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) {
   }
   timed_cache_.SetRecentlySeen(request_scheme_host);
 
-  predictor_->RecordPreconnectNavigationStats(request_scheme_host);
+  predictor_->RecordPreconnectNavigationStat(request->url_chain(),
+                                             is_subresource);
 
   // Subresources for main frames usually get predicted when we detected the
   // main frame request - way back in RenderViewHost::Navigate.  So only handle
