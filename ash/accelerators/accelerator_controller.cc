@@ -920,14 +920,12 @@ bool AcceleratorController::PerformAction(int action,
       Shell::GetInstance()->power_button_controller()->
           OnLockButtonEvent(action == LOCK_PRESSED, base::TimeTicks());
       return true;
-#if !defined(NDEBUG)
     case PRINT_LAYER_HIERARCHY:
       return HandlePrintLayerHierarchy();
     case PRINT_VIEW_HIERARCHY:
       return HandlePrintViewHierarchy();
     case PRINT_WINDOW_HIERARCHY:
       return HandlePrintWindowHierarchy();
-#endif
     default:
       NOTREACHED() << "Unhandled action " << action;
   }
