@@ -785,13 +785,6 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     m_isComplete = false;
     checkCompleted();
 
-    if (isNewNavigation) {
-        // This will clear previousItem from the rest of the frame tree that didn't
-        // doing any loading. We need to make a pass on this now, since for fragment
-        // navigation we'll not go through a real load and reach Completed state.
-        checkLoadComplete();
-    }
-
     // Generate start and stop notifications only when loader is completed so that we
     // don't fire them for fragment redirection that happens in window.onload handler.
     // See https://bugs.webkit.org/show_bug.cgi?id=31838
@@ -1185,14 +1178,6 @@ void FrameLoader::setProvisionalDocumentLoader(DocumentLoader* loader)
     m_provisionalDocumentLoader = loader;
 }
 
-void FrameLoader::setState(FrameState newState)
-{
-    m_state = newState;
-
-    if (newState == FrameStateProvisional)
-        m_frame->navigationScheduler()->cancel();
-}
-
 void FrameLoader::commitProvisionalLoad()
 {
     ASSERT(m_client->hasWebView());
@@ -1224,7 +1209,7 @@ void FrameLoader::commitProvisionalLoad()
         ASSERT(m_state == FrameStateComplete);
         return;
     }
-    setState(FrameStateCommittedPage);
+    m_state = FrameStateCommittedPage;
 
     if (isLoadingMainFrame())
         m_frame->page()->chrome().client()->needTouchEvents(false);
@@ -1329,51 +1314,39 @@ CachePolicy FrameLoader::subresourceCachePolicy() const
 void FrameLoader::checkLoadCompleteForThisFrame()
 {
     ASSERT(m_client->hasWebView());
+    if (m_state != FrameStateCommittedPage)
+        return;
 
-    switch (m_state) {
-        case FrameStateProvisional: {
-            return;
-        }
-        case FrameStateCommittedPage: {
-            DocumentLoader* dl = m_documentLoader.get();
-            if (!dl || (dl->isLoadingInAPISense() && !dl->isStopping()))
-                return;
+    if (!m_documentLoader || (m_documentLoader->isLoadingInAPISense() && !m_documentLoader->isStopping()))
+        return;
 
-            setState(FrameStateComplete);
+    m_state = FrameStateComplete;
 
-            // FIXME: Is this subsequent work important if we already navigated away?
-            // Maybe there are bugs because of that, or extra work we can skip because
-            // the new page is ready.
+    // FIXME: Is this subsequent work important if we already navigated away?
+    // Maybe there are bugs because of that, or extra work we can skip because
+    // the new page is ready.
 
-            // If the user had a scroll point, scroll to it, overriding the anchor point if any.
-            if (m_frame->page()) {
-                if (isBackForwardLoadType(m_loadType) || m_loadType == FrameLoadTypeReload || m_loadType == FrameLoadTypeReloadFromOrigin)
-                    history()->restoreScrollPositionAndViewState();
-            }
-
-            if (!m_stateMachine.committedFirstRealDocumentLoad())
-                return;
-
-            m_progressTracker->progressCompleted();
-            if (Page* page = m_frame->page()) {
-                if (m_frame == page->mainFrame())
-                    page->resetRelevantPaintedObjectCounter();
-            }
-
-            const ResourceError& error = dl->mainDocumentError();
-            if (!error.isNull())
-                m_client->dispatchDidFailLoad(error);
-            else
-                m_client->dispatchDidFinishLoad();
-            return;
-        }
-
-        case FrameStateComplete:
-            m_loadType = FrameLoadTypeStandard;
-            return;
+    // If the user had a scroll point, scroll to it, overriding the anchor point if any.
+    if (m_frame->page()) {
+        if (isBackForwardLoadType(m_loadType) || m_loadType == FrameLoadTypeReload || m_loadType == FrameLoadTypeReloadFromOrigin)
+            history()->restoreScrollPositionAndViewState();
     }
 
-    ASSERT_NOT_REACHED();
+    if (!m_stateMachine.committedFirstRealDocumentLoad())
+        return;
+
+    m_progressTracker->progressCompleted();
+    if (Page* page = m_frame->page()) {
+        if (m_frame == page->mainFrame())
+            page->resetRelevantPaintedObjectCounter();
+    }
+
+    const ResourceError& error = m_documentLoader->mainDocumentError();
+    if (!error.isNull())
+        m_client->dispatchDidFailLoad(error);
+    else
+        m_client->dispatchDidFinishLoad();
+    m_loadType = FrameLoadTypeStandard;
 }
 
 void FrameLoader::didLayout(LayoutMilestones milestones)
@@ -1617,7 +1590,7 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
             return;
         setProvisionalDocumentLoader(0);
         m_progressTracker->progressCompleted();
-        setState(FrameStateComplete);
+        m_state = FrameStateComplete;
 
         // Reset the back forward list to the last committed history item at the top level.
         RefPtr<HistoryItem> item = m_frame->page()->mainFrame()->loader()->history()->currentItem();
@@ -1804,11 +1777,11 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
         if (page->mainFrame() == m_frame)
             m_frame->page()->inspectorController()->resume();
     }
+    m_frame->navigationScheduler()->cancel();
 
     setProvisionalDocumentLoader(m_policyDocumentLoader.get());
     m_loadType = type;
-    setState(FrameStateProvisional);
-
+    m_state = FrameStateProvisional;
     setPolicyDocumentLoader(0);
 
     if (formState)
