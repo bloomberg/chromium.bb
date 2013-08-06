@@ -1396,7 +1396,7 @@ void ChromeLauncherControllerPerApp::UpdateAppLaunchersFromPref() {
   int max_index = model_->item_count();
   // Using the alternate shelf layout the App Icon should be the first item in
   // the list thus start adding items at slot 1 (instead of slot 0).
-  if(ash::switches::UseAlternateShelfLayout()) {
+  if (ash::switches::UseAlternateShelfLayout()) {
     ++index;
     ++max_index;
   }
@@ -1501,7 +1501,7 @@ void ChromeLauncherControllerPerApp::SetShelfAutoHideBehaviorFromPrefs() {
 
 void ChromeLauncherControllerPerApp::SetShelfAlignmentFromPrefs() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowLauncherAlignmentMenu))
+          switches::kShowShelfAlignmentMenu))
     return;
 
   ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();

@@ -1234,7 +1234,7 @@ views::FocusTraversable* LauncherView::GetPaneFocusTraversable() {
 
 void LauncherView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_TOOLBAR;
-  state->name = l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_ACCESSIBLE_NAME);
+  state->name = l10n_util::GetStringUTF16(IDS_ASH_SHELF_ACCESSIBLE_NAME);
 }
 
 void LauncherView::OnGestureEvent(ui::GestureEvent* event) {

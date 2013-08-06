@@ -55,13 +55,10 @@ OverflowButton::OverflowButton(views::ButtonListener* listener)
   image_ = rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW).ToImageSkia();
 
   set_accessibility_focusable(true);
-  SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_AURA_LAUNCHER_OVERFLOW_NAME));
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_OVERFLOW_NAME));
 }
 
-
-OverflowButton::~OverflowButton() {
-}
+OverflowButton::~OverflowButton() {}
 
 void OverflowButton::OnShelfAlignmentChanged() {
   SchedulePaint();

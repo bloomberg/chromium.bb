@@ -170,26 +170,26 @@ This file contains the strings for ash.
       <message name="IDS_AURA_APP_LIST_SYNCING_TITLE" desc="The title used for the Aura app list in the launcher to indicate loading/syncing apps.">
         Syncing apps...
       </message>
-      <message name="IDS_AURA_LAUNCHER_OVERFLOW_NAME" desc="The title used for the Aura overflow button in the launcher">
+      <message name="IDS_ASH_SHELF_OVERFLOW_NAME" desc="The title used for the Ash overflow button in the shelf">
         Overflow Button
       </message>
-      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE" desc="Title of the menu item in the context menu for auto-hiding the launcher when the current window is not maximized">
-        Autohide launcher
+      <message name="IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE" desc="Title of the menu item in the context menu for auto-hiding the shelf when the current window is not maximized">
+        Autohide shelf
       </message>
-      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION" desc="Title of the menu item in the context menu for aligning the launcher">
-        Launcher position
+      <message name="IDS_ASH_SHELF_CONTEXT_MENU_POSITION" desc="Title of the menu item in the context menu for aligning the shelf">
+        Shelf position
       </message>
-      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_BOTTOM" desc="Title of the menu item in the context menu for aligning the launcher to the bottom of the screen">
+      <message name="IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_BOTTOM" desc="Title of the menu item in the context menu for aligning the shelf to the bottom of the screen">
         Bottom
       </message>
-      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_LEFT" desc="Title of the menu item in the context menu for aligning the launcher to the left of the screen">
+      <message name="IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_LEFT" desc="Title of the menu item in the context menu for aligning the shelf to the left of the screen">
         Left
       </message>
-      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_RIGHT" desc="Title of the menu item in the context menu for aligning the launcher to the right of the screen">
+      <message name="IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_RIGHT" desc="Title of the menu item in the context menu for aligning the shelf to the right of the screen">
         Right
       </message>
-      <message name="IDS_ASH_LAUNCHER_ACCESSIBLE_NAME" desc="The accessible name of the launcher.">
-        Launcher
+      <message name="IDS_ASH_SHELF_ACCESSIBLE_NAME" desc="The accessible name of the shelf.">
+        Shelf
       </message>
 
       <message name="IDS_AURA_SET_DESKTOP_WALLPAPER" desc="The label used for change wallpaper in context menu">

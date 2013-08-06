@@ -13,26 +13,24 @@
 
 namespace ash {
 
-LauncherAlignmentMenu::LauncherAlignmentMenu(
-    aura::RootWindow* root)
+LauncherAlignmentMenu::LauncherAlignmentMenu(aura::RootWindow* root)
     : ui::SimpleMenuModel(NULL),
       root_window_(root) {
   DCHECK(root_window_);
   int align_group_id = 1;
   set_delegate(this);
   AddRadioItemWithStringId(MENU_ALIGN_LEFT,
-                           IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_LEFT,
+                           IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_LEFT,
                            align_group_id);
   AddRadioItemWithStringId(MENU_ALIGN_BOTTOM,
-                           IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_BOTTOM,
+                           IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_BOTTOM,
                            align_group_id);
   AddRadioItemWithStringId(MENU_ALIGN_RIGHT,
-                           IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_RIGHT,
+                           IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_RIGHT,
                            align_group_id);
 }
 
-LauncherAlignmentMenu::~LauncherAlignmentMenu() {
-}
+LauncherAlignmentMenu::~LauncherAlignmentMenu() {}
 
 bool LauncherAlignmentMenu::IsCommandIdChecked(int command_id) const {
   return internal::ShelfLayoutManager::ForLauncher(root_window_)->

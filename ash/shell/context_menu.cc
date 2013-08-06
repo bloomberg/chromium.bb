@@ -21,9 +21,9 @@ ContextMenu::ContextMenu(aura::RootWindow* root)
   DCHECK(root_window_);
   set_delegate(this);
   AddCheckItemWithStringId(MENU_AUTO_HIDE,
-                           IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE);
+                           IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
-                         IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION,
+                         IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
                          &alignment_menu_);
 }
 

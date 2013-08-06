@@ -1014,10 +1014,10 @@ const Experiment kExperiments[] = {
 #if defined(USE_ASH)
   {
     "show-launcher-alignment-menu",
-    IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_NAME,
-    IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_DESCRIPTION,
+    IDS_FLAGS_SHOW_SHELF_ALIGNMENT_MENU_NAME,
+    IDS_FLAGS_SHOW_SHELF_ALIGNMENT_MENU_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kShowLauncherAlignmentMenu)
+    SINGLE_VALUE_TYPE(switches::kShowShelfAlignmentMenu)
   },
   {
     "disable-minimize-on-second-launcher-item-click",

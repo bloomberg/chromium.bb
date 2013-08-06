@@ -141,13 +141,13 @@ void LauncherContextMenu::Init() {
   // fullscreen because it is confusing when the preference appears not to
   // apply.
   if (!IsFullScreenMode()) {
-    AddCheckItemWithStringId(
-        MENU_AUTO_HIDE, IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE);
+    AddCheckItemWithStringId(MENU_AUTO_HIDE,
+                             IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   }
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowLauncherAlignmentMenu)) {
+          switches::kShowShelfAlignmentMenu)) {
     AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
-                           IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION,
+                           IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
                            &launcher_alignment_menu_);
   }
 #if defined(OS_CHROMEOS)
