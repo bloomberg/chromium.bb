@@ -877,12 +877,9 @@ WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
 
 void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
   if (g_test_gamepads == 0) {
-    if (!gamepad_shared_memory_reader_)
-      gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
-    gamepad_shared_memory_reader_->SampleGamepads(gamepads);
+    RenderThreadImpl::current()->SampleGamepads(&gamepads);
   } else {
     gamepads = g_test_gamepads.Get();
-    return;
   }
 }
 

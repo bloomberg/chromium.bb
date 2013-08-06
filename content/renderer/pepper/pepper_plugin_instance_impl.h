@@ -536,14 +536,13 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   class GamepadImpl : public ::ppapi::thunk::PPB_Gamepad_API,
                       public ::ppapi::Resource {
    public:
-    explicit GamepadImpl(PepperHelperImpl* helper);
+    GamepadImpl();
     // Resource implementation.
     virtual ::ppapi::thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() OVERRIDE;
     virtual void Sample(PP_Instance instance,
                         PP_GamepadsSampleData* data) OVERRIDE;
    private:
     virtual ~GamepadImpl();
-    PepperHelperImpl* helper_;
   };
 
   // See the static Create functions above for creating PepperPluginInstanceImpl

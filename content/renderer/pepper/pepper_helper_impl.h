@@ -31,7 +31,6 @@ struct URLResponseInfoData;
 }
 
 namespace WebKit {
-class WebGamepads;
 class WebURLResponse;
 struct WebCompositionUnderline;
 struct WebCursorInfo;
@@ -39,7 +38,6 @@ struct WebCursorInfo;
 
 namespace content {
 class ContextProviderCommandBuffer;
-class GamepadSharedMemoryReader;
 class PepperBroker;
 class PluginModule;
 class PPB_Broker_Impl;
@@ -95,9 +93,6 @@ class PepperHelperImpl : public PepperHelper,
   // the destructor, so it's important that the instance is not dereferenced
   // from this call.
   void InstanceDeleted(PepperPluginInstanceImpl* instance);
-
-  // Retrieve current gamepad data.
-  void SampleGamepads(WebKit::WebGamepads* data);
 
   // Sets up the renderer host and out-of-process proxy for an external plugin
   // module. Returns the renderer host, or NULL if it couldn't be created.
@@ -199,8 +194,6 @@ class PepperHelperImpl : public PepperHelper,
   // |last_mouse_event_target_| is not owned by this class. We can know about
   // when it is destroyed via InstanceDeleted().
   PepperPluginInstanceImpl* last_mouse_event_target_;
-
-  scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
   scoped_refptr<ContextProviderCommandBuffer> offscreen_context3d_;
 

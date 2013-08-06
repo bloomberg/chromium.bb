@@ -58,6 +58,7 @@
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
+#include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/gpu/input_event_filter.h"
@@ -1301,6 +1302,12 @@ void RenderThreadImpl::SetFlingCurveParameters(
   webkit_platform_support_->SetFlingCurveParameters(new_touchpad,
                                                     new_touchscreen);
 
+}
+
+void RenderThreadImpl::SampleGamepads(WebKit::WebGamepads* data) {
+  if (!gamepad_shared_memory_reader_)
+    gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
+  gamepad_shared_memory_reader_->SampleGamepads(*data);
 }
 
 }  // namespace content

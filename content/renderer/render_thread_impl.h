@@ -28,6 +28,7 @@ class SkBitmap;
 struct ViewMsg_New_Params;
 
 namespace WebKit {
+class WebGamepads;
 class WebGraphicsContext3D;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
@@ -77,6 +78,7 @@ class ContextProviderCommandBuffer;
 class DBMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
+class GamepadSharedMemoryReader;
 class GpuChannelHost;
 class IndexedDBDispatcher;
 class InputEventFilter;
@@ -345,6 +347,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void SetFlingCurveParameters(const std::vector<float>& new_touchpad,
                                const std::vector<float>& new_touchscreen);
 
+  // Retrieve current gamepad data.
+  void SampleGamepads(WebKit::WebGamepads* data);
+
  private:
   // ChildThread
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -485,6 +490,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   scoped_ptr<WebRTCIdentityService> webrtc_identity_service_;
+
+  scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

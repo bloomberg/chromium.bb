@@ -419,9 +419,8 @@ void PepperPluginInstanceImpl::NaClDocumentLoader::didFail(
   error_.reset(new WebURLError(error));
 }
 
-PepperPluginInstanceImpl::GamepadImpl::GamepadImpl(PepperHelperImpl* helper)
-    : Resource(::ppapi::Resource::Untracked()),
-      helper_(helper) {
+PepperPluginInstanceImpl::GamepadImpl::GamepadImpl()
+    : Resource(::ppapi::Resource::Untracked()) {
 }
 
 PepperPluginInstanceImpl::GamepadImpl::~GamepadImpl() {
@@ -435,7 +434,7 @@ void PepperPluginInstanceImpl::GamepadImpl::Sample(
     PP_Instance instance,
     PP_GamepadsSampleData* data) {
   WebKit::WebGamepads webkit_data;
-  helper_->SampleGamepads(&webkit_data);
+  RenderThreadImpl::current()->SampleGamepads(&webkit_data);
   ConvertWebKitGamepadData(
       *reinterpret_cast<const ::ppapi::WebKitGamepads*>(&webkit_data), data);
 }
@@ -474,7 +473,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       checked_for_plugin_input_event_interface_(false),
       checked_for_plugin_messaging_interface_(false),
       checked_for_plugin_pdf_interface_(false),
-      gamepad_impl_(new GamepadImpl(helper)),
+      gamepad_impl_(new GamepadImpl()),
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),

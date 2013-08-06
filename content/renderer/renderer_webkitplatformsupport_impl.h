@@ -35,7 +35,6 @@ class WebGraphicsContext3DProvider;
 namespace content {
 class DeviceMotionEventPump;
 class DeviceOrientationEventPump;
-class GamepadSharedMemoryReader;
 class QuotaMessageFilter;
 class RendererClipboardClient;
 class ThreadSafeSender;
@@ -201,8 +200,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<WebFileSystemImpl> web_file_system_;
 
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
-
-  scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
   scoped_ptr<DeviceMotionEventPump> device_motion_event_pump_;
   scoped_ptr<DeviceOrientationEventPump> device_orientation_event_pump_;

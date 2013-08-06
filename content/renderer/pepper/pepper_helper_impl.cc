@@ -32,7 +32,6 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
@@ -629,12 +628,6 @@ void PepperHelperImpl::DidChangeCursor(PepperPluginInstanceImpl* instance,
 void PepperHelperImpl::DidReceiveMouseEvent(
     PepperPluginInstanceImpl* instance) {
   last_mouse_event_target_ = instance;
-}
-
-void PepperHelperImpl::SampleGamepads(WebKit::WebGamepads* data) {
-  if (!gamepad_shared_memory_reader_)
-    gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
-  gamepad_shared_memory_reader_->SampleGamepads(*data);
 }
 
 bool PepperHelperImpl::OnMessageReceived(const IPC::Message& message) {
