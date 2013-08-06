@@ -675,7 +675,7 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
 
 void BookmarkModel::ReorderChildren(
     const BookmarkNode* parent,
-    const std::vector<BookmarkNode*>& ordered_nodes) {
+    const std::vector<const BookmarkNode*>& ordered_nodes) {
   // Ensure that all children in |parent| are in |ordered_nodes|.
   DCHECK_EQ(static_cast<size_t>(parent->child_count()), ordered_nodes.size());
   for (size_t i = 0; i < ordered_nodes.size(); ++i)
@@ -684,7 +684,8 @@ void BookmarkModel::ReorderChildren(
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     OnWillReorderBookmarkNode(this, parent));
 
-  AsMutable(parent)->SetChildren(ordered_nodes);
+  AsMutable(parent)->SetChildren(
+      *(reinterpret_cast<const std::vector<BookmarkNode*>*>(&ordered_nodes)));
 
   if (store_.get())
     store_->ScheduleSave();

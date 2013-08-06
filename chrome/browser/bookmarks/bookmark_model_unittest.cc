@@ -1011,7 +1011,7 @@ TEST_F(BookmarkModelTest, Reorder) {
   ClearCounts();
 
   // Reorder bar node's bookmarks in reverse order.
-  std::vector<BookmarkNode*> new_order;
+  std::vector<const BookmarkNode*> new_order;
   new_order.push_back(parent->GetChild(3));
   new_order.push_back(parent->GetChild(2));
   new_order.push_back(parent->GetChild(1));
