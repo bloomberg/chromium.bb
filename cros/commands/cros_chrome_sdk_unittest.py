@@ -233,6 +233,15 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     with self.cache.Lookup(self.VERSION_KEY) as r:
       self.assertTrue(r.Exists())
 
+  def testErrorCodePassthrough(self):
+    """Test that error codes are passed through."""
+    self.SetupCommandMock()
+    with cros_test_lib.LoggingCapturer():
+      self.rc_mock.AddCmdResult(partial_mock.ListRegex('-- true'),
+                                returncode=5)
+      returncode = self.cmd_mock.inst.Run()
+      self.assertEquals(returncode, 5)
+
   def testLocalSDKPath(self):
     """Fetch components from a local --sdk-path."""
     sdk_dir = os.path.join(self.tempdir, 'sdk_dir')

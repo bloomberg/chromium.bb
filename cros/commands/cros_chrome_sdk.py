@@ -853,6 +853,8 @@ class ChromeSDKCommand(cros.CrosCommand):
           # BASH_ENV, and ignores the --rcfile flag.
           extra_env = {'BASH_ENV': rcfile}
 
-        cros_build_lib.RunCommand(
+        cmd_result = cros_build_lib.RunCommand(
             bash_cmd, print_cmd=False, debug_level=logging.CRITICAL,
             error_code_ok=True, extra_env=extra_env, cwd=self.options.cwd)
+        if self.options.cmd:
+          return cmd_result.returncode
