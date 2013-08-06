@@ -85,10 +85,9 @@ void ShellWindowRegistry::RemoveShellWindow(ShellWindow* shell_window) {
   const ShellWindowList::iterator it = std::find(shell_windows_.begin(),
                                                  shell_windows_.end(),
                                                  shell_window);
-  if (it != shell_windows_.end()) {
+  if (it != shell_windows_.end())
     shell_windows_.erase(it);
-    FOR_EACH_OBSERVER(Observer, observers_, OnShellWindowRemoved(shell_window));
-  }
+  FOR_EACH_OBSERVER(Observer, observers_, OnShellWindowRemoved(shell_window));
 }
 
 void ShellWindowRegistry::AddObserver(Observer* observer) {
