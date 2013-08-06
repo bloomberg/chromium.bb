@@ -20472,6 +20472,11 @@ other types of suffix sets.
   <int value="48" label="Tab Helper URL seen namespace match"/>
   <int value="49" label="URL lookup multiple source webcontents"/>
   <int value="50" label="Continue prerender check side-effect free whitelist"/>
+  <int value="51" label="Continue prerender check Examine next URL"/>
+  <int value="52" label="Issuing prerender, already prerendering"/>
+  <int value="53" label="Issuing prerender, new prerender"/>
+  <int value="54" label="Issuing prerender, cancelled old prerender"/>
+  <int value="55" label="Continue prerender check fallthrough prerendering"/>
 </enum>
 
 <enum name="PrerenderLocalVisitCoreTransition" type="int">
@@ -20548,6 +20553,10 @@ other types of suffix sets.
   <int value="4" label="Mainframe commit"/>
   <int value="5" label="Mainframe commit, logged in"/>
   <int value="6" label="Login action added"/>
+  <int value="7" label="Login action added, Mainframe"/>
+  <int value="8" label="Login action added, Mainframe, pw empty"/>
+  <int value="9" label="Login action added, Subframe"/>
+  <int value="10" label="Login action added, Subframe, pw empty"/>
 </enum>
 
 <enum name="PreTapEvents" type="int">
