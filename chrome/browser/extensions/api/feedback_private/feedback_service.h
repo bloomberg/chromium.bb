@@ -16,11 +16,10 @@
 
 class Profile;
 
-using extensions::api::feedback_private::SystemInformation;
-
 namespace extensions {
 
-typedef std::vector<linked_ptr<SystemInformation> > SystemInformationList;
+typedef std::vector<linked_ptr<api::feedback_private::SystemInformation> >
+    SystemInformationList;
 
 class FeedbackService {
  public:
@@ -30,11 +29,6 @@ class FeedbackService {
 
   // Creates a platform-specific FeedbackService instance.
   static FeedbackService* CreateInstance();
-  // Convenience method for populating a SystemInformationList structure
-  // with a key/value pair.
-  static void PopulateSystemInfo(SystemInformationList* sys_info_list,
-                                 const std::string& key,
-                                 const std::string& value);
 
   virtual ~FeedbackService();
 
