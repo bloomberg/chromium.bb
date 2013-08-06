@@ -1707,10 +1707,6 @@
         'browser/ui/views/frame/browser_desktop_root_window_host_x11.h',
         'browser/ui/views/frame/glass_browser_frame_view.cc',
         'browser/ui/views/frame/glass_browser_frame_view.h',
-        'browser/ui/views/frame/global_menu_bar_x11.cc',
-        'browser/ui/views/frame/global_menu_bar_x11.h',
-        'browser/ui/views/frame/global_menu_bar_registrar_x11.cc',
-        'browser/ui/views/frame/global_menu_bar_registrar_x11.h',
         'browser/ui/views/frame/immersive_mode_controller.cc',
         'browser/ui/views/frame/immersive_mode_controller.h',
         'browser/ui/views/frame/immersive_mode_controller_ash.cc',
@@ -2633,7 +2629,6 @@
             # world.
             'browser/ui/libgtk2ui/libgtk2ui.gyp:gtk2ui',
             '../ui/linux_ui/linux_ui.gyp:linux_ui',
-            '../build/linux/system.gyp:gio',
           ],
         }],
         ['use_aura==0 or chromeos==1 or OS!="linux"', {
