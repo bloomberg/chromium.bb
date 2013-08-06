@@ -331,8 +331,19 @@ html[dir='rtl'] .enable-control {
   display: inline-block;
 }
 
+.install-warnings {
+  background: pink;
+  border-radius: 3px;
+  margin-top: 5px;
+  padding: 2px 5px;
+}
+
 .install-warnings a {
   -webkit-margin-start: 0;
+}
+
+.install-warnings ul {
+  margin: 0;
 }
 
 .extension-details-summary {

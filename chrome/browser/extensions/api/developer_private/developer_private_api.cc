@@ -54,6 +54,7 @@
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/install_warning.h"
 #include "extensions/common/switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -298,6 +299,14 @@ scoped_ptr<developer::ItemInfo>
   if (Manifest::IsUnpackedLocation(item.location())) {
     info->path.reset(
         new std::string(UTF16ToUTF8(item.path().LossyDisplayName())));
+    for (std::vector<extensions::InstallWarning>::const_iterator it =
+             item.install_warnings().begin();
+         it != item.install_warnings().end(); ++it) {
+      developer::InstallWarning* warning = new developer::InstallWarning();
+      warning->is_html = (it->format == InstallWarning::FORMAT_HTML);
+      warning->message = it->message;
+      info->install_warnings.push_back(make_linked_ptr(warning));
+    }
   }
 
   info->incognito_enabled = service->IsIncognitoEnabled(item.id());

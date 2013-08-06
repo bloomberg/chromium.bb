@@ -26,6 +26,11 @@ namespace developerPrivate {
     boolean incognito;
   };
 
+  dictionary InstallWarning {
+    boolean is_html;
+    DOMString message;
+  };
+
   dictionary ItemInfo {
     DOMString id;
     DOMString name;
@@ -54,6 +59,7 @@ namespace developerPrivate {
     DOMString? app_launch_url;
     DOMString? homepage_url;
     DOMString? update_url;
+    InstallWarning[] install_warnings;
     boolean offline_enabled;
 
     // All views of the current extension.
