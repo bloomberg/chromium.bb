@@ -38,25 +38,25 @@ struct Job {
 // when parsing is failed.
 bool ParseRegisterStartResponse(const std::string& response,
                                 std::string* error_description,
-                                std::string* polling_url_result,
-                                std::string* registration_token_result,
-                                std::string* complete_invite_url_result,
-                                std::string* device_id_result);
+                                std::string* polling_url,
+                                std::string* registration_token,
+                                std::string* complete_invite_url,
+                                std::string* device_id);
 
 // Parses CloudPrint register complete response to out parameters.
 // Returns |true| on success. Callback is called with description as a parameter
 // when parsing is failed.
 bool ParseRegisterCompleteResponse(const std::string& response,
                                    std::string* error_description,
-                                   std::string* authorization_code_result,
-                                   std::string* xmpp_jid_result);
+                                   std::string* authorization_code,
+                                   std::string* xmpp_jid);
 
 // Parses CloudPrint fetch response to out parameters.
 // Returns |true| on success. Callback is called with description as a parameter
 // when parsing is failed.
 bool ParseFetchResponse(const std::string& response,
                         std::string* error_description,
-                        std::vector<Job>* list_result);
+                        std::vector<Job>* list);
 
 }  // namespace cloud_print_response_parser
 
