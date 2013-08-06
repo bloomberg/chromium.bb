@@ -315,30 +315,20 @@ class WritableFileChecker
   virtual ~WritableFileChecker() {}
 
   // Called when a work item is completed. If all work items are done, this
-  // posts a task to run AllTasksDone on the UI thread.
+  // calls the success or failure callback.
   void TaskDone() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-    if (--outstanding_tasks_ == 0) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&WritableFileChecker::AllTasksDone, this));
-    }
-  }
-
-  // Called on the UI thread when all tasks are done.
-  void AllTasksDone() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (error_.empty())
-      on_success_.Run();
-    else
-      on_failure_.Run(error_);
+    if (--outstanding_tasks_ == 0) {
+      if (error_.empty())
+        on_success_.Run();
+      else
+        on_failure_.Run(error_);
+    }
   }
 
   // Reports an error in completing a work item. This may be called more than
   // once, but only the last message will be retained.
   void Error(const std::string& message) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
     DCHECK(!message.empty());
     error_ = message;
     TaskDone();
@@ -350,22 +340,36 @@ class WritableFileChecker
     for (std::vector<base::FilePath>::const_iterator it = paths.begin();
          it != paths.end(); ++it) {
       if (!DoCheckWritableFile(*it, extension_path_, &error)) {
-        Error(error);
+        content::BrowserThread::PostTask(
+            content::BrowserThread::UI,
+            FROM_HERE,
+            base::Bind(&WritableFileChecker::Error, this, error));
         return;
       }
     }
-    TaskDone();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&WritableFileChecker::TaskDone, this));
   }
 
 #if defined(OS_CHROMEOS)
   void CheckRemoteWritableFile(drive::FileError error,
                                const base::FilePath& path) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
     if (error == drive::FILE_ERROR_OK) {
-      TaskDone();
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&WritableFileChecker::TaskDone, this));
     } else {
-      Error(base::StringPrintf(kWritableFileErrorFormat,
-                               path.BaseName().AsUTF8Unsafe().c_str()));
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(
+              &WritableFileChecker::Error,
+              this,
+              base::StringPrintf(kWritableFileErrorFormat,
+                                 path.BaseName().AsUTF8Unsafe().c_str())));
     }
   }
 #endif
