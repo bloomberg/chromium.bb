@@ -86,6 +86,10 @@ class AssemblyProgram {
   // Generates a single byte of data or machine instruction.
   CheckBool EmitByteInstruction(uint8 byte) WARN_UNUSED_RESULT;
 
+  // Generates multiple bytes of data or machine instructions.
+  CheckBool EmitBytesInstruction(const uint8* value, uint32 len)
+      WARN_UNUSED_RESULT;
+
   // Generates 4-byte relative reference to address of 'label'.
   CheckBool EmitRel32(Label* label) WARN_UNUSED_RESULT;
 
@@ -122,6 +126,9 @@ class AssemblyProgram {
   // otherwise returns NULL.
   Label* InstructionRel32Label(const Instruction* instruction) const;
 
+  // Trim underused labels
+  CheckBool TrimLabels();
+
   void PrintLabelCounts(RVAToLabel* labels);
   void CountRel32ARM();
 
@@ -129,6 +136,8 @@ class AssemblyProgram {
   ExecutableType kind_;
 
   CheckBool Emit(Instruction* instruction) WARN_UNUSED_RESULT;
+
+  static const int kLabelLowerLimit;
 
   // Looks up a label or creates a new one.  Might return NULL.
   Label* FindLabel(RVA rva, RVAToLabel* labels);

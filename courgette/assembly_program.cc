@@ -29,6 +29,7 @@ enum OP {
   ABS32,          // REL32 <label> - emit am abs32 encoded reference to 'label'.
   REL32ARM,       // REL32ARM <c_op> <label> - arm-specific rel32 reference
   MAKEELFARMRELOCS, // Generates a base relocation table.
+  DEFBYTES,       // Emits any number of byte literals
   LAST_OP
 };
 
@@ -84,6 +85,21 @@ class ByteInstruction : public Instruction {
  public:
   explicit ByteInstruction(uint8 value) : Instruction(DEFBYTE, value) {}
   uint8 byte_value() const { return info_; }
+};
+
+// Emits a single byte.
+class BytesInstruction : public Instruction {
+ public:
+  BytesInstruction(const uint8* values, uint32 len)
+      : Instruction(DEFBYTES, 0),
+        values_(values),
+        len_(len) {}
+  const uint8* byte_values() const { return values_; }
+  uint32 len() const { return len_; }
+
+ private:
+  const uint8* values_;
+  uint32 len_;
 };
 
 // A ABS32 to REL32 instruction emits a reference to a label's address.
@@ -160,6 +176,11 @@ CheckBool AssemblyProgram::EmitOriginInstruction(RVA rva) {
 
 CheckBool AssemblyProgram::EmitByteInstruction(uint8 byte) {
   return Emit(GetByteInstruction(byte));
+}
+
+CheckBool AssemblyProgram::EmitBytesInstruction(const uint8* values,
+                                                uint32 len) {
+  return Emit(new(std::nothrow) BytesInstruction(values, len));
 }
 
 CheckBool AssemblyProgram::EmitRel32(Label* label) {
@@ -397,6 +418,14 @@ EncodedProgram* AssemblyProgram::Encode() const {
           return NULL;
         break;
       }
+      case DEFBYTES: {
+        const uint8* byte_values =
+          static_cast<BytesInstruction*>(instruction)->byte_values();
+        uint32 len = static_cast<BytesInstruction*>(instruction)->len();
+        if (!encoded->AddCopy(len, byte_values))
+          return NULL;
+        break;
+      }
       case REL32: {
         Label* label = static_cast<InstructionWithLabel*>(instruction)->label();
         if (!encoded->AddRel32(label->index_))
@@ -464,6 +493,59 @@ Instruction* AssemblyProgram::GetByteInstruction(uint8 byte) {
   return byte_instruction_cache_[byte];
 }
 
+// Chosen empirically to give the best reduction in payload size for
+// an update from daisy_3701.98.0 to daisy_4206.0.0.
+const int AssemblyProgram::kLabelLowerLimit = 5;
+
+CheckBool AssemblyProgram::TrimLabels() {
+  // For now only trim for ARM binaries
+  if (kind() != EXE_ELF_32_ARM)
+    return true;
+
+  int lower_limit = kLabelLowerLimit;
+
+  VLOG(1) << "TrimLabels: threshold " << lower_limit;
+
+  // Remove underused labels from the list of labels
+  RVAToLabel::iterator it = rel32_labels_.begin();
+  while (it != rel32_labels_.end()) {
+    if (it->second->count_ <= lower_limit) {
+      rel32_labels_.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+
+  // Walk through the list of instructions, replacing trimmed labels
+  // with the original machine instruction
+  for (size_t i = 0; i < instructions_.size(); ++i) {
+    Instruction* instruction = instructions_[i];
+    switch (instruction->op()) {
+      case REL32ARM: {
+        Label* label =
+            static_cast<InstructionWithLabelARM*>(instruction)->label();
+        if (label->count_ <= lower_limit) {
+          const uint8* arm_op =
+              static_cast<InstructionWithLabelARM*>(instruction)->arm_op();
+          uint16 op_size =
+              static_cast<InstructionWithLabelARM*>(instruction)->op_size();
+
+          if (op_size < 1)
+            return false;
+          BytesInstruction* new_instruction =
+            new(std::nothrow) BytesInstruction(arm_op, op_size);
+          instructions_[i] = new_instruction;
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  return true;
+}
+
 void AssemblyProgram::PrintLabelCounts(RVAToLabel* labels) {
   for (RVAToLabel::const_iterator p = labels->begin(); p != labels->end();
        ++p) {
@@ -478,6 +560,13 @@ void AssemblyProgram::CountRel32ARM() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+Status TrimLabels(AssemblyProgram* program) {
+  if (program->TrimLabels())
+    return C_OK;
+  else
+    return C_TRIM_FAILED;
+}
 
 Status Encode(AssemblyProgram* program, EncodedProgram** output) {
   *output = NULL;
