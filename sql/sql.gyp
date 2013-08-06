@@ -80,6 +80,7 @@
         'test_support_sql',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
+        '../third_party/sqlite/sqlite.gyp:sqlite',
       ],
       'sources': [
         'run_all_unittests.cc',

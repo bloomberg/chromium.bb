@@ -425,7 +425,7 @@ TEST_F(SQLConnectionTest, RazeEmptyDB) {
   db().Close();
 
   {
-    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "r+"));
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "rb+"));
     ASSERT_TRUE(file.get() != NULL);
     ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
     ASSERT_TRUE(file_util::TruncateFile(file.get()));
@@ -443,7 +443,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB) {
   ASSERT_FALSE(base::PathExists(db_path()));
 
   {
-    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "w"));
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "wb"));
     ASSERT_TRUE(file.get() != NULL);
 
     const char* kJunk = "This is the hour of our discontent.";
@@ -476,7 +476,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB2) {
   db().Close();
 
   {
-    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "r+"));
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "rb+"));
     ASSERT_TRUE(file.get() != NULL);
     ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
 
@@ -526,7 +526,7 @@ TEST_F(SQLConnectionTest, RazeCallbackReopen) {
 
   // Trim a single page from the end of the file.
   {
-    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "r+"));
+    file_util::ScopedFILE file(file_util::OpenFile(db_path(), "rb+"));
     ASSERT_TRUE(file.get() != NULL);
     ASSERT_EQ(0, fseek(file.get(), -page_size, SEEK_END));
     ASSERT_TRUE(file_util::TruncateFile(file.get()));

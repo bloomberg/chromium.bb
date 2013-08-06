@@ -72,6 +72,24 @@ bool Recovery::Init(const base::FilePath& db_path) {
   if (!recover_db_.OpenTemporary())
     return false;
 
+  // TODO(shess): Figure out a story for USE_SYSTEM_SQLITE.  The
+  // virtual table implementation relies on SQLite internals for some
+  // types and functions, which could be copied inline to make it
+  // standalone.  Or an alternate implementation could try to read
+  // through errors entirely at the SQLite level.
+  //
+  // For now, defer to the caller.  The setup will succeed, but the
+  // later CREATE VIRTUAL TABLE call will fail, at which point the
+  // caller can fire Unrecoverable().
+#if !defined(USE_SYSTEM_SQLITE)
+  int rc = recoverVtableInit(recover_db_.db_);
+  if (rc != SQLITE_OK) {
+    LOG(ERROR) << "Failed to initialize recover module: "
+               << recover_db_.GetErrorMessage();
+    return false;
+  }
+#endif
+
   // Turn on |SQLITE_RecoveryMode| for the handle, which allows
   // reading certain broken databases.
   if (!recover_db_.Execute("PRAGMA writable_schema=1"))
