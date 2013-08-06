@@ -1113,8 +1113,6 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
       DCHECK(success);
     }
   }
-  if (!IsValidExistingManagedUserId(managed_user_id))
-    return;
 
   std::vector<ProfileManager::CreateCallback> callbacks;
   if (create_shortcut)
@@ -1126,6 +1124,9 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
                  managed_user);
 
   if (managed_user && ManagedUserService::AreManagedUsersEnabled()) {
+    if (!IsValidExistingManagedUserId(managed_user_id))
+      return;
+
     if (managed_user_id.empty()) {
       managed_user_id =
           ManagedUserRegistrationUtility::GenerateNewManagedUserId();
@@ -1744,20 +1745,21 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
 
 bool BrowserOptionsHandler::IsValidExistingManagedUserId(
     const std::string& existing_managed_user_id) const {
+  if (existing_managed_user_id.empty())
+    return true;
+
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAllowCreateExistingManagedUsers)) {
     return false;
   }
 
-  if (existing_managed_user_id.empty())
-    return true;
   DictionaryPrefUpdate update(Profile::FromWebUI(web_ui())->GetPrefs(),
                               prefs::kManagedUsers);
   DictionaryValue* dict = update.Get();
   if (!dict->HasKey(existing_managed_user_id))
     return false;
 
-  // Check if this managed user is already exists on this machine.
+  // Check if this managed user already exists on this machine.
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
