@@ -3,9 +3,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if [ -n "$1" ]; then
-  rundir="$1"
-else
+set -e
+
+while test $# -ne 0; do
+  case "$1" in
+    -v)
+      version="$2"
+      shift
+      ;;
+    -d)
+      rundir="$2"
+      shift
+      ;;
+    *)
+      rundir="$1"
+      ;;
+  esac
+  shift
+done
+
+if [ -z "$rundir" ]; then
   rundir=$(mktemp -d)
 fi
 
@@ -26,7 +43,8 @@ username='test-username'
 #     http://gerrit-releases.storage.googleapis.com/index.html
 url='https://www.googleapis.com/storage/v1beta2/b/gerrit-releases/o?projection=noAcl'
 curl --ssl-reqd -s $url | python <(cat <<EOF
-# Reads json-encoded text from stdin in the format:
+# Receives Gerrit version via command line and reads json-encoded
+# text from stdin in the format:
 #
 #    {
 #     "items": [
@@ -41,12 +59,13 @@ curl --ssl-reqd -s $url | python <(cat <<EOF
 #      ...
 #    }
 #
-# ...and prints the name and md5sum of the latest non-release-candidate version.
+# ...and prints the name and md5sum of the corresponding *.war file.
 
 import json
 import re
 import sys
 
+requested_version = sys.argv[1] if len(sys.argv) > 1 else None
 gerrit_re = re.compile('gerrit(?:-full)?-([0-9.]+(?:-rc[0-9]+)?)[.]war')
 j = json.load(sys.stdin)
 items = [(x, gerrit_re.match(x['name'])) for x in j['items']]
@@ -64,14 +83,23 @@ def _cmp(a, b):
     if ai != bi:
       return -1 if ai > bi else 1
   return 0
+
+if requested_version:
+  for info, version in items:
+    if version == requested_version:
+      print '"%s" "%s"' % (info['name'], info['md5Hash'])
+      sys.exit(0)
+  print >> sys.stderr, 'No such Gerrit version: %s' % requested_version
+  sys.exit(1)
+
 items.sort(cmp=_cmp)
 for x in items:
   if 'rc' not in x[0]['name']:
     print '"%s" "%s"' % (x[0]['name'], x[0]['md5Hash'])
     sys.exit(0)
 EOF
-) | xargs | while read name md5; do
-  # Download the latest gerrit version if necessary, and verify the md5sum.
+) "$version" | xargs | while read name md5; do
+  # Download the requested gerrit version if necessary, and verify the md5sum.
   target="$this_dir/$name"
   net_sum=$(echo -n $md5 | base64 -d | od -tx1 | head -1 | cut -d ' ' -f 2- |
             sed 's/ //g')
@@ -114,6 +142,11 @@ EOF
 # Initialize the gerrit instance.
 java -jar "$gerrit_exe" init --no-auto-start --batch -d "${rundir}"
 
+# Create SSH key pair for the first user.
+mkdir -p "${rundir}/tmp"
+ssh-keygen -t rsa -q -f "${rundir}/tmp/id_rsa" -N ""
+ssh_public_key="$(cat ${rundir}/tmp/id_rsa.pub)"
+
 # Set up the first user, with admin priveleges.
 cat <<EOF | java -jar "$gerrit_exe" gsql -d "${rundir}" > /dev/null
 INSERT INTO ACCOUNTS (FULL_NAME, MAXIMUM_PAGE_SIZE, PREFERRED_EMAIL, REGISTERED_ON, ACCOUNT_ID) VALUES ('${full_name}', ${maximum_page_size}, '${preferred_email}', '${registered_on}', ${account_id});
@@ -121,10 +154,10 @@ INSERT INTO ACCOUNT_EXTERNAL_IDS (ACCOUNT_ID, EXTERNAL_ID) VALUES (${account_id}
 INSERT INTO ACCOUNT_EXTERNAL_IDS (ACCOUNT_ID, EXTERNAL_ID) VALUES (${account_id}, 'username:${username}');
 INSERT INTO ACCOUNT_EXTERNAL_IDS (ACCOUNT_ID, EMAIL_ADDRESS, PASSWORD) VALUES (${account_id}, '${preferred_email}', '${password}');
 INSERT INTO ACCOUNT_GROUP_MEMBERS (ACCOUNT_ID, GROUP_ID) VALUES (${account_id}, 1);
+INSERT INTO ACCOUNT_SSH_KEYS (ACCOUNT_ID, SSH_PUBLIC_KEY, VALID, SEQ) VALUES (${account_id}, '${ssh_public_key}', 'Y', 0);
 EOF
 
 # Create a netrc file to authenticate as the first user.
-mkdir -p "${rundir}/tmp"
 cat <<EOF > "${rundir}/tmp/.netrc"
 machine localhost login ${username} password ${password}
 EOF
@@ -140,6 +173,9 @@ echo "  ${rundir}/bin/gerrit.sh start"
 echo
 echo "To use the REST API:"
 echo "  curl --netrc-file ${rundir}/tmp/.netrc http://localhost:8080/<endpoint>"
+echo
+echo "To use SSH API:"
+echo "  ssh ${username}@localhost -p 29418 -i ${rundir}/tmp/id_rsa gerrit"
 echo
 echo "To enable 'git push' without a password prompt:"
 echo "  git config credential.helper 'store --file=${rundir}/tmp/.git-credentials'"
