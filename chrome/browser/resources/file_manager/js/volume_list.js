@@ -186,8 +186,6 @@ VolumeList.prototype.decorate = function(directoryModel, pinnedFolderModel) {
       'change', this.onSelectionChange_.bind(this));
   this.selectionModel.addEventListener(
       'beforeChange', this.onBeforeSelectionChange_.bind(this));
-  this.currentVolume_ = null;
-
 
   this.scrollBar_ = new ScrollBar();
   this.scrollBar_.initialize(this.parentNode, this);
@@ -314,11 +312,14 @@ VolumeList.prototype.selectByIndex = function(index) {
     return false;
 
   var newPath = this.dataModel.item(index);
-  if (!newPath || this.currentVolume_ == newPath)
+  if (!newPath)
     return false;
 
-  this.currentVolume_ = newPath;
-  this.directoryModel_.changeDirectory(this.currentVolume_);
+  // Prevents double-moving to the current directory.
+  if (this.directoryModel_.getCurrentDirEntry().fullPath == newPath)
+    return false;
+
+  this.directoryModel_.changeDirectory(newPath);
   return true;
 };
 
@@ -354,10 +355,6 @@ VolumeList.prototype.onSelectionChange_ = function(event) {
 VolumeList.prototype.onCurrentDirectoryChanged_ = function(event) {
   var path = event.newDirEntry.fullPath || this.dataModel.getCurrentDirPath();
   var newRootPath = PathUtil.getRootPath(path);
-
-  // Sets |this.currentVolume_| in advance to prevent |onSelectionChange_()|
-  // from calling |DirectoryModel.ChangeDirectory()| again.
-  this.currentVolume_ = newRootPath;
 
   // Synchronizes the volume list selection with the current directory, after
   // it is changed outside of the volume list.
