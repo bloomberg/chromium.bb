@@ -244,10 +244,7 @@ bool HTMLPlugInImageElement::loadPlugin(const KURL& url, const String& mimeType,
 {
     Frame* frame = document()->frame();
 
-    // Application plug-ins are plug-ins implemented by the user agent, for example Qt plug-ins,
-    // as opposed to third-party code such as Flash. The user agent decides whether or not they are
-    // permitted, rather than WebKit.
-    if (!frame->loader()->allowPlugins(AboutToInstantiatePlugin) && !MIMETypeRegistry::isApplicationPluginMIMEType(mimeType))
+    if (!frame->loader()->allowPlugins(AboutToInstantiatePlugin))
         return false;
 
     if (!pluginIsLoadable(url, mimeType))

@@ -197,16 +197,6 @@ static bool canLoadURL(const KURL& url, const ContentType& contentType, const St
     if (contentMIMEType.isEmpty() || contentMIMEType == "application/octet-stream" || contentMIMEType == "text/plain") {
         if (url.protocolIsData())
             contentMIMEType = mimeTypeFromDataURL(url.string());
-        else {
-            String lastPathComponent = url.lastPathComponent();
-            size_t pos = lastPathComponent.reverseFind('.');
-            if (pos != notFound) {
-                String extension = lastPathComponent.substring(pos + 1);
-                String mediaType = MIMETypeRegistry::getMediaMIMETypeForExtension(extension);
-                if (!mediaType.isEmpty())
-                    return true;
-            }
-        }
     }
 
     // If no MIME type is specified, always attempt to load.

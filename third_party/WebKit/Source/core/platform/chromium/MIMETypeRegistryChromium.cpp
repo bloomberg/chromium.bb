@@ -135,28 +135,4 @@ bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType)
         || mimeType.startsWith("application/x-java-vm", false);
 }
 
-String MIMETypeRegistry::getMediaMIMETypeForExtension(const String&)
-{
-    return String();
-}
-
-bool MIMETypeRegistry::isApplicationPluginMIMEType(const String&)
-{
-    return false;
-}
-
-static HashSet<String>& dummyHashSet()
-{
-    ASSERT_NOT_REACHED();
-    DEFINE_STATIC_LOCAL(HashSet<String>, dummy, ());
-    return dummy;
-}
-
-// NOTE: the following methods should never be reached
-HashSet<String>& MIMETypeRegistry::getSupportedImageMIMETypes() { return dummyHashSet(); }
-HashSet<String>& MIMETypeRegistry::getSupportedImageResourceMIMETypes() { return dummyHashSet(); }
-HashSet<String>& MIMETypeRegistry::getSupportedImageMIMETypesForEncoding() { return dummyHashSet(); }
-HashSet<String>& MIMETypeRegistry::getSupportedNonImageMIMETypes() { return dummyHashSet(); }
-HashSet<String>& MIMETypeRegistry::getSupportedMediaMIMETypes() { return dummyHashSet(); }
-
 } // namespace WebCore
