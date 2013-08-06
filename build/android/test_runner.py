@@ -23,7 +23,7 @@ from pylib.base import test_dispatcher
 from pylib.gtest import gtest_config
 from pylib.gtest import setup as gtest_setup
 from pylib.gtest import test_options as gtest_test_options
-from pylib.host_driven import run_python_tests as python_dispatch
+from pylib.host_driven import setup as host_driven_setup
 from pylib.instrumentation import setup as instrumentation_setup
 from pylib.instrumentation import test_options as instrumentation_test_options
 from pylib.uiautomator import setup as uiautomator_setup
@@ -159,19 +159,13 @@ def AddJavaTestOptions(option_parser):
       '-E', '--exclude-annotation', dest='exclude_annotation_str',
       help=('Comma-separated list of annotations. Exclude tests with these '
             'annotations.'))
-  option_parser.add_option('-j', '--java_only', action='store_true',
-                           default=False, help='Run only the Java tests.')
-  option_parser.add_option('-p', '--python_only', action='store_true',
-                           default=False,
-                           help='Run only the host-driven tests.')
   option_parser.add_option('--screenshot', dest='screenshot_failures',
                            action='store_true',
                            help='Capture screenshots of test failures')
   option_parser.add_option('--save-perf-json', action='store_true',
                            help='Saves the JSON file for each UI Perf test.')
-  option_parser.add_option('--official-build', help='Run official build tests.')
-  option_parser.add_option('--python_test_root',
-                           help='Root of the host-driven tests.')
+  option_parser.add_option('--official-build', action='store_true',
+                           help='Run official build tests.')
   option_parser.add_option('--keep_test_server_ports',
                            action='store_true',
                            help=('Indicates the test server ports must be '
@@ -194,19 +188,6 @@ def AddJavaTestOptions(option_parser):
 
 def ProcessJavaTestOptions(options, error_func):
   """Processes options/arguments and populates |options| with defaults."""
-
-  if options.java_only and options.python_only:
-    error_func('Options java_only (-j) and python_only (-p) '
-               'are mutually exclusive.')
-  options.run_java_tests = True
-  options.run_python_tests = True
-  if options.java_only:
-    options.run_python_tests = False
-  elif options.python_only:
-    options.run_java_tests = False
-
-  if not options.python_test_root:
-    options.run_python_tests = False
 
   if options.annotation_str:
     options.annotations = options.annotation_str.split(',')
@@ -237,6 +218,13 @@ def AddInstrumentationTestOptions(option_parser):
   AddJavaTestOptions(option_parser)
   AddCommonOptions(option_parser)
 
+  option_parser.add_option('-j', '--java_only', action='store_true',
+                           default=False, help='Run only the Java tests.')
+  option_parser.add_option('-p', '--python_only', action='store_true',
+                           default=False,
+                           help='Run only the host-driven tests.')
+  option_parser.add_option('--python_test_root',
+                           help='Root of the host-driven tests.')
   option_parser.add_option('-w', '--wait_debugger', dest='wait_for_debugger',
                            action='store_true',
                            help='Wait for debugger.')
@@ -263,6 +251,19 @@ def ProcessInstrumentationOptions(options, error_func):
   """
 
   ProcessJavaTestOptions(options, error_func)
+
+  if options.java_only and options.python_only:
+    error_func('Options java_only (-j) and python_only (-p) '
+               'are mutually exclusive.')
+  options.run_java_tests = True
+  options.run_python_tests = True
+  if options.java_only:
+    options.run_python_tests = False
+  elif options.python_only:
+    options.run_java_tests = False
+
+  if not options.python_test_root:
+    options.run_python_tests = False
 
   if not options.test_apk:
     error_func('--test-apk must be specified.')
@@ -431,8 +432,17 @@ def _RunInstrumentationTests(options, error_func):
     results.AddTestRunResults(test_results)
 
   if options.run_python_tests:
-    test_results, test_exit_code = (
-        python_dispatch.DispatchPythonTests(options))
+    runner_factory, tests = host_driven_setup.InstrumentationSetup(
+        options.python_test_root, options.official_build,
+        instrumentation_options)
+
+    test_results, test_exit_code = test_dispatcher.RunTests(
+        tests, runner_factory, False,
+        options.test_device,
+        shard=True,
+        build_type=options.build_type,
+        test_timeout=None,
+        num_retries=options.num_retries)
 
     results.AddTestRunResults(test_results)
 
@@ -458,27 +468,14 @@ def _RunUIAutomatorTests(options, error_func):
   results = base_test_result.TestRunResults()
   exit_code = 0
 
-  if options.run_java_tests:
-    runner_factory, tests = uiautomator_setup.Setup(uiautomator_options)
+  runner_factory, tests = uiautomator_setup.Setup(uiautomator_options)
 
-    test_results, exit_code = test_dispatcher.RunTests(
-        tests, runner_factory, False, options.test_device,
-        shard=True,
-        build_type=options.build_type,
-        test_timeout=None,
-        num_retries=options.num_retries)
-
-    results.AddTestRunResults(test_results)
-
-  if options.run_python_tests:
-    test_results, test_exit_code = (
-        python_dispatch.DispatchPythonTests(options))
-
-    results.AddTestRunResults(test_results)
-
-    # Only allow exit code escalation
-    if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
-      exit_code = test_exit_code
+  results, exit_code = test_dispatcher.RunTests(
+      tests, runner_factory, False, options.test_device,
+      shard=True,
+      build_type=options.build_type,
+      test_timeout=None,
+      num_retries=options.num_retries)
 
   report_results.LogFull(
       results=results,
@@ -524,8 +521,6 @@ def RunTestsCommand(command, options, args, option_parser):
     return _RunUIAutomatorTests(options, option_parser.error)
   else:
     raise Exception('Unknown test type.')
-
-  return exit_code
 
 
 def HelpCommand(command, options, args, option_parser):

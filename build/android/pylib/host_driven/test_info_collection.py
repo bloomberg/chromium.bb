@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Module containing information about the python-driven tests."""
+"""Module containing information about the host-driven tests."""
 
 import logging
 import os
@@ -70,7 +70,7 @@ class TestInfoCollection(object):
     Args:
       annotations: List of annotations. Each test in the returned list is
         annotated with atleast one of these annotations.
-      exlcude_annotations: List of annotations. The tests in the returned
+      exclude_annotations: List of annotations. The tests in the returned
         list are not annotated with any of these annotations.
       name_filter: name filter which tests must match, if any
 

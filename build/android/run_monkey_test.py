@@ -9,32 +9,58 @@ import optparse
 import random
 import sys
 
-from pylib import android_commands
 from pylib.base import base_test_result
-from pylib.host_driven import python_test_base
-from pylib.host_driven import python_test_sharder
+from pylib.base import test_dispatcher
+from pylib.host_driven import test_case
+from pylib.host_driven import test_runner
 from pylib.utils import report_results
 from pylib.utils import test_options_parser
 
 
-class MonkeyTest(python_test_base.PythonTestBase):
+class MonkeyTest(test_case.HostDrivenTestCase):
+  def __init__(self, test_name, package_name, activity_name, category, seed,
+               throttle, event_count, verbosity, extra_args):
+    """Create a MonkeyTest object.
+
+    Args:
+      test_name: Name of the method to run for this test object.
+      package_name: Allowed package.
+      activity_name: Name of the activity to start.
+      category: A list of allowed categories.
+      seed: Seed value for pseduo-random generator. Same seed value
+          generates the same sequence of events. Seed is randomized by default.
+      throttle: Delay between events (ms).
+      event_count: Number of events to generate.
+      verbosity: Verbosity level [0-3].
+      extra_args: A string of other args to pass to the command verbatim.
+    """
+    super(MonkeyTest, self).__init__(test_name)
+    self.package_name = package_name
+    self.activity_name = activity_name
+    self.category = category
+    self.seed = seed or random.randint(1, 100)
+    self.throttle = throttle
+    self.event_count = event_count
+    self.verbosity = verbosity
+    self.extra_args = extra_args
+
   def testMonkey(self):
     # Launch and wait for Chrome to launch.
-    self.adb.StartActivity(self.options.package_name,
-                           self.options.activity_name,
+    self.adb.StartActivity(self.package_name,
+                           self.activity_name,
                            wait_for_completion=True,
                            action='android.intent.action.MAIN',
                            force_stop=True)
 
     # Chrome crashes are not always caught by Monkey test runner.
     # Verify Chrome has the same PID before and after the test.
-    before_pids = self.adb.ExtractPid(self.options.package_name)
+    before_pids = self.adb.ExtractPid(self.package_name)
 
     # Run the test.
     output = ''
     if before_pids:
       output = '\n'.join(self._LaunchMonkeyTest())
-      after_pids = self.adb.ExtractPid(self.options.package_name)
+      after_pids = self.adb.ExtractPid(self.package_name)
 
     crashed = (not before_pids or not after_pids
                or after_pids[0] != before_pids[0])
@@ -42,82 +68,63 @@ class MonkeyTest(python_test_base.PythonTestBase):
     results = base_test_result.TestRunResults()
     if 'Monkey finished' in output and not crashed:
       result = base_test_result.BaseTestResult(
-          self.qualified_name, base_test_result.ResultType.PASS, log=output)
+          self.tagged_name, base_test_result.ResultType.PASS, log=output)
     else:
       result = base_test_result.BaseTestResult(
-          self.qualified_name, base_test_result.ResultType.FAIL, log=output)
+          self.tagged_name, base_test_result.ResultType.FAIL, log=output)
     results.AddResult(result)
     return results
 
   def _LaunchMonkeyTest(self):
     """Runs monkey test for a given package.
 
-    Looks at the following parameters in the options object provided
-    in class initializer:
-      package_name: Allowed package.
-      category: A list of allowed categories.
-      throttle: Delay between events (ms).
-      seed: Seed value for pseduo-random generator. Same seed value
-        generates the same sequence of events. Seed is randomized by
-        default.
-      event_count: Number of events to generate.
-      verbosity: Verbosity level [0-3].
-      extra_args: A string of other args to pass to the command verbatim.
+    Returns:
+      Output from the monkey command on the device.
     """
 
-    category = self.options.category or []
-    seed = self.options.seed or random.randint(1, 100)
-    throttle = self.options.throttle or 100
-    event_count = self.options.event_count or 10000
-    verbosity = self.options.verbosity or 1
-    extra_args = self.options.extra_args or ''
-
-    timeout_ms = event_count * throttle * 1.5
+    timeout_ms = self.event_count * self.throttle * 1.5
 
     cmd = ['monkey',
-           '-p %s' % self.options.package_name,
-           ' '.join(['-c %s' % c for c in category]),
-           '--throttle %d' % throttle,
-           '-s %d' % seed,
-           '-v ' * verbosity,
+           '-p %s' % self.package_name,
+           ' '.join(['-c %s' % c for c in self.category]),
+           '--throttle %d' % self.throttle,
+           '-s %d' % self.seed,
+           '-v ' * self.verbosity,
            '--monitor-native-crashes',
            '--kill-process-after-error',
-           extra_args,
-           '%d' % event_count]
+           self.extra_args,
+           '%d' % self.event_count]
     return self.adb.RunShellCommand(' '.join(cmd), timeout_time=timeout_ms)
 
 
-def DispatchPythonTests(options):
-  """Dispatches the Monkey tests, sharding it if there multiple devices."""
+def RunMonkeyTests(options):
+  """Runs the Monkey tests, replicating it if there multiple devices."""
   logger = logging.getLogger()
   logger.setLevel(logging.DEBUG)
-  attached_devices = android_commands.GetAttachedDevices()
-  if not attached_devices:
-    raise Exception('You have no devices attached or visible!')
 
   # Actually run the tests.
   logging.debug('Running monkey tests.')
-  # TODO(frankf): This is a stop-gap solution. Come up with a
-  # general way for running tests on every devices.
-  available_tests = []
-  for k in range(len(attached_devices)):
-    new_method = 'testMonkey%d' % k
-    setattr(MonkeyTest, new_method, MonkeyTest.testMonkey)
-    available_tests.append(MonkeyTest(new_method))
-  options.ensure_value('shard_retries', 1)
-  sharder = python_test_sharder.PythonTestSharder(
-      attached_devices, available_tests, options)
-  results = sharder.RunShardedTests()
+  available_tests = [
+      MonkeyTest('testMonkey', options.package_name, options.activity_name,
+                 category=options.category, seed=options.seed,
+                 throttle=options.throttle, event_count=options.event_count,
+                 verbosity=options.verbosity, extra_args=options.extra_args)]
+
+  def TestRunnerFactory(device, shard_index):
+    return test_runner.HostDrivenTestRunner(
+        device, shard_index, '', options.build_type, False, False)
+
+  results, exit_code = test_dispatcher.RunTests(
+      available_tests, TestRunnerFactory, False, None, shard=False,
+      build_type=options.build_type, num_retries=0)
+
   report_results.LogFull(
       results=results,
       test_type='Monkey',
       test_package='Monkey',
       build_type=options.build_type)
-  # TODO(gkanwar): After the host-driven tests have been refactored, they sould
-  # use the comment exit code system (part of pylib/base/shard.py)
-  if not results.DidRunPass():
-    return 1
-  return 0
+
+  return exit_code
 
 
 def main():
@@ -128,12 +135,12 @@ def main():
   parser.add_option('--activity-name',
                     default='com.google.android.apps.chrome.Main',
                     help='Name of the activity to start [default: %default].')
-  parser.add_option('--category',
-                    help='A list of allowed categories [default: ""].')
+  parser.add_option('--category', default='',
+                    help='A list of allowed categories [default: %default].')
   parser.add_option('--throttle', default=100, type='int',
                     help='Delay between events (ms) [default: %default]. ')
   parser.add_option('--seed', type='int',
-                    help=('Seed value for pseduo-random generator. Same seed '
+                    help=('Seed value for pseudo-random generator. Same seed '
                           'value generates the same sequence of events. Seed '
                           'is randomized by default.'))
   parser.add_option('--event-count', default=10000, type='int',
@@ -156,10 +163,7 @@ def main():
   if options.category:
     options.category = options.category.split(',')
 
-  # TODO(gkanwar): This should go away when the host-driven tests are refactored
-  options.num_retries = 1
-
-  DispatchPythonTests(options)
+  RunMonkeyTests(options)
 
 
 if __name__ == '__main__':

@@ -169,7 +169,7 @@ class TestJar(object):
     for test_method in self.GetTestMethods():
       annotations_ = frozenset(self.GetTestAnnotations(test_method))
       if (annotations_.isdisjoint(self._ANNOTATIONS) and
-          not self.IsPythonDrivenTest(test_method)):
+          not self.IsHostDrivenTest(test_method)):
         tests_missing_annotations.append(test_method)
     return sorted(tests_missing_annotations)
 
@@ -202,7 +202,7 @@ class TestJar(object):
         available_tests = list(set(available_tests) - set(excluded_tests))
     else:
       available_tests = [m for m in self.GetTestMethods()
-                         if not self.IsPythonDrivenTest(m)]
+                         if not self.IsHostDrivenTest(m)]
 
     tests = []
     if test_filter:
@@ -216,5 +216,5 @@ class TestJar(object):
     return tests
 
   @staticmethod
-  def IsPythonDrivenTest(test):
+  def IsHostDrivenTest(test):
     return 'pythonDrivenTests' in test

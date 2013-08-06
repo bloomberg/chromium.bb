@@ -2,10 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Helper functions common to native, java and python test runners."""
+"""Helper functions common to native, java and host-driven test runners."""
 
 import logging
-import os
 import sys
 import time
 

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Annotations for python-driven tests."""
+"""Annotations for host-driven tests."""
 
 import os
 
@@ -13,7 +13,7 @@ class AnnotatedFunctions(object):
 
   @staticmethod
   def _AddFunction(annotation, function):
-    """Adds an annotated to function to our container.
+    """Adds an annotated function to our container.
 
     Args:
       annotation: the annotation string.
@@ -56,7 +56,7 @@ class AnnotatedFunctions(object):
             if qualified_function_name in tests]
 
 
-# The following functions are annotations used for the python driven tests.
+# The following functions are annotations used for the host-driven tests.
 def Smoke(function):
   return AnnotatedFunctions._AddFunction('Smoke', function)
 

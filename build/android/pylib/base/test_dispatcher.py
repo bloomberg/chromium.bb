@@ -371,15 +371,17 @@ def RunTests(tests, runner_factory, wait_for_debugger, test_device,
     shared_test_collection = _TestCollection([_Test(t) for t in tests])
     test_collection_factory = lambda: shared_test_collection
     tag_results_with_device = False
+    log_string = 'sharded across devices'
   else:
     # Generate a unique _TestCollection object for each test runner, but use
     # the same set of tests.
     test_collection_factory = lambda: _TestCollection([_Test(t) for t in tests])
     tag_results_with_device = True
+    log_string = 'replicated on each device'
 
   devices = _GetAttachedDevices(wait_for_debugger, test_device)
 
-  logging.info('Will run %d tests: %s', len(tests), str(tests))
+  logging.info('Will run %d tests (%s): %s', len(tests), log_string, str(tests))
   runners = _CreateRunners(runner_factory, devices, setup_timeout)
   try:
     return _RunAllTests(runners, test_collection_factory,

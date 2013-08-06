@@ -33,7 +33,7 @@ LOGCAT_DIR = os.path.join(CHROME_SRC, 'out', 'logcat')
 #   apk_package: package for the apk to be installed.
 #   test_apk: apk to run tests on.
 #   test_data: data folder in format destination:source.
-#   host_driven_root: The python test root directory.
+#   host_driven_root: The host-driven test root directory.
 #   annotation: Annotation of the tests to include.
 #   exclude_annotation: The annotation of the tests to exclude.
 I_TEST = collections.namedtuple('InstrumentationTest', [
