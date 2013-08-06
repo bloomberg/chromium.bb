@@ -991,11 +991,6 @@ const char kNoFirstRun[]                    = "no-first-run";
 // Pages may still be able to generate inconsistent data from plugins.
 const char kNoJsRandomness[]                = "no-js-randomness";
 
-// Disables the timeout during registration of a new managed-user profile;
-// useful for debugging.
-const char kNoManagedUserRegistrationTimeout[]  =
-    "no-managed-user-registration-timeout";
-
 // Whether or not the browser should warn if the profile is on a network share.
 // This flag is only relevant for Windows currently.
 const char kNoNetworkProfileWarning[]       = "no-network-profile-warning";

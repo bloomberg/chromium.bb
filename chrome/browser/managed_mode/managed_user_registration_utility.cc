@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
@@ -20,16 +19,12 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/glue/device_info.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 using base::DictionaryValue;
 
-// How long to wait before aborting user registration. If this is changed, the
-// histogram limits in the BrowserOptionsHandler should also be updated.
-const int kRegistrationTimeoutMS = 30 * 1000;
 const char kAcknowledged[] = "acknowledged";
 const char kName[] = "name";
 const char kMasterKey[] = "masterKey";
@@ -85,7 +80,6 @@ void ManagedUserRegistrationUtility::Register(
   DCHECK(pending_managed_user_id_.empty());
   callback_ = callback;
   pending_managed_user_id_ = managed_user_id;
-  StartRegistrationTimer();
 
   const DictionaryValue* dict = prefs_->GetDictionary(prefs::kManagedUsers);
   is_existing_managed_user_ = dict->HasKey(managed_user_id);
@@ -101,22 +95,6 @@ void ManagedUserRegistrationUtility::Register(
   browser_sync::DeviceInfo::GetClientName(
       base::Bind(&ManagedUserRegistrationUtility::FetchToken,
                  weak_ptr_factory_.GetWeakPtr(), info.name));
-}
-
-void ManagedUserRegistrationUtility::StartRegistrationTimer() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNoManagedUserRegistrationTimeout)) {
-    return;
-  }
-
-  registration_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kRegistrationTimeoutMS),
-      base::Bind(
-          &ManagedUserRegistrationUtility::AbortPendingRegistration,
-          weak_ptr_factory_.GetWeakPtr(),
-          true,  // Run the callback.
-          GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED)));
 }
 
 void ManagedUserRegistrationUtility::CancelPendingRegistration() {
@@ -181,7 +159,6 @@ void ManagedUserRegistrationUtility::AbortPendingRegistration(
 void ManagedUserRegistrationUtility::CompleteRegistration(
     bool run_callback,
     const GoogleServiceAuthError& error) {
-  registration_timer_.Stop();
   if (callback_.is_null())
     return;
 

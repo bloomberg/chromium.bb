@@ -1174,11 +1174,9 @@ void BrowserOptionsHandler::RecordProfileCreationMetrics(
   UMA_HISTOGRAM_ENUMERATION("Profile.CreateResult",
                             status,
                             Profile::MAX_CREATE_STATUS);
-  UMA_HISTOGRAM_CUSTOM_TIMES("Profile.CreateTime",
-      base::TimeTicks::Now() - profile_creation_start_time_,
-      base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromSeconds(30),  // From kRegistrationTimeoutMS.
-      100);
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "Profile.CreateTimeNoTimeout",
+      base::TimeTicks::Now() - profile_creation_start_time_);
 }
 
 void BrowserOptionsHandler::ShowProfileCreationFeedback(
@@ -1289,11 +1287,9 @@ void BrowserOptionsHandler::CancelProfileRegistration(bool user_initiated) {
     return;
 
   if (user_initiated) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("Profile.CreateTimeCanceled",
-      base::TimeTicks::Now() - profile_creation_start_time_,
-      base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromSeconds(30),  // From kRegistrationTimeoutMS.
-      100);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Profile.CreateTimeCanceledNoTimeout",
+        base::TimeTicks::Now() - profile_creation_start_time_);
     RecordProfileCreationMetrics(Profile::CREATE_STATUS_CANCELED);
   }
 

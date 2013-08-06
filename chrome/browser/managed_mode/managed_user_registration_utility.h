@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_observer.h"
 #include "chrome/browser/managed_mode/managed_users.h"
@@ -68,8 +67,6 @@ class ManagedUserRegistrationUtility
                 const ManagedUserRegistrationInfo& info,
                 const RegistrationCallback& callback);
 
-  void StartRegistrationTimer();
-
   // ManagedUserSyncServiceObserver:
   virtual void OnManagedUserAcknowledged(const std::string& managed_user_id)
       OVERRIDE;
@@ -121,9 +118,6 @@ class ManagedUserRegistrationUtility
 
   // A |BrowserContextKeyedService| owned by the custodian profile.
   ManagedUserSyncService* managed_user_sync_service_;
-
-  // Provides a timeout during profile creation.
-  base::OneShotTimer<ManagedUserRegistrationUtility> registration_timer_;
 
   std::string pending_managed_user_id_;
   std::string pending_managed_user_token_;
