@@ -37,8 +37,9 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
     return closeable_;
   }
 
-  // View override:
+  // DialogDelegateView overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE { return gfx::Size(200, 200); }
+  virtual string16 GetWindowTitle() const OVERRIDE { return title_; }
 
   // ButtonListener override:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE {
@@ -73,12 +74,15 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
     GetWidget()->Close();
   }
 
+  void set_title(const string16& title) { title_ = title; }
+
  private:
   bool canceled_;
   bool accepted_;
   // Prevent the dialog from closing, for repeated ok and cancel button clicks.
   bool closeable_;
   Button* last_pressed_button_;
+  string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDialog);
 };
@@ -200,31 +204,51 @@ TEST_F(DialogTest, RemoveDefaultButton) {
 }
 
 TEST_F(DialogTest, HitTest) {
+  if (!DialogDelegate::UseNewStyle())
+    return;
+
+  // Ensure that the new style's BubbleFrameView hit-tests as expected.
   const NonClientView* view = dialog()->GetWidget()->non_client_view();
+  BubbleFrameView* frame = static_cast<BubbleFrameView*>(view->frame_view());
+  const int border = frame->bubble_border()->GetBorderThickness();
 
-  if (DialogDelegate::UseNewStyle()) {
-    // Ensure that the new style's BubbleFrameView hit-tests as expected.
-    BubbleFrameView* frame = static_cast<BubbleFrameView*>(view->frame_view());
-    const int border = frame->bubble_border()->GetBorderThickness();
+  struct {
+    const int point;
+    const int hit;
+  } cases[] = {
+    { border,      HTSYSMENU },
+    { border + 10, HTSYSMENU },
+    { border + 20, HTCAPTION },
+    { border + 40, HTCLIENT  },
+    { border + 50, HTCLIENT  },
+    { 1000,        HTNOWHERE },
+  };
 
-    struct {
-      const int point;
-      const int hit;
-    } cases[] = {
-      { border,      HTSYSMENU },
-      { border + 10, HTSYSMENU },
-      { border + 20, HTCAPTION },
-      { border + 40, HTCLIENT  },
-      { border + 50, HTCLIENT  },
-      { 1000,        HTNOWHERE },
-    };
-
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-      gfx::Point point(cases[i].point, cases[i].point);
-      EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
-          << " with border: " << border << ", at point " << cases[i].point;
-    }
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    gfx::Point point(cases[i].point, cases[i].point);
+    EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
+        << " with border: " << border << ", at point " << cases[i].point;
   }
+}
+
+TEST_F(DialogTest, InitialBoundsAccommodateTitle) {
+  if (!DialogDelegate::UseNewStyle())
+    return;
+
+  TestDialog* titled_dialog(new TestDialog());
+  titled_dialog->set_title(ASCIIToUTF16("Title"));
+  DialogDelegate::CreateDialogWidget(titled_dialog, GetContext(), NULL);
+
+  // Titled dialogs have taller initial frame bounds than untitled dialogs.
+  EXPECT_GT(titled_dialog->GetWidget()->GetWindowBoundsInScreen().height(),
+            dialog()->GetWidget()->GetWindowBoundsInScreen().height());
+
+  // Giving the default test dialog a title will make the bounds the same.
+  dialog()->set_title(ASCIIToUTF16("Title"));
+  dialog()->GetWidget()->UpdateWindowTitle();
+  View* frame = dialog()->GetWidget()->non_client_view()->frame_view();
+  EXPECT_EQ(titled_dialog->GetWidget()->GetWindowBoundsInScreen().height(),
+            frame->GetPreferredSize().height());
 }
 
 }  // namespace views

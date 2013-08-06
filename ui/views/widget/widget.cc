@@ -348,12 +348,14 @@ void Widget::Init(const InitParams& in_params) {
     non_client_view_->set_client_view(widget_delegate_->CreateClientView(this));
     non_client_view_->SetOverlayView(widget_delegate_->CreateOverlayView());
     SetContentsView(non_client_view_);
+    // Initialize the window's title before setting the window's initial bounds;
+    // the frame view's preferred height may depend on the presence of a title.
+    UpdateWindowTitle();
     SetInitialBounds(params.bounds);
     if (params.show_state == ui::SHOW_STATE_MAXIMIZED)
       Maximize();
     else if (params.show_state == ui::SHOW_STATE_MINIMIZED)
       Minimize();
-    UpdateWindowTitle();
   } else if (params.delegate) {
     SetContentsView(params.delegate->GetContentsView());
     SetInitialBoundsForFramelessWindow(params.bounds);
