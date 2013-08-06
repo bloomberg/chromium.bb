@@ -86,19 +86,19 @@ int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
 
   FieldTypeGroupForMetrics group;
   switch (AutofillType(field_type).group()) {
-    case AutofillType::NO_GROUP:
+    case ::autofill::NO_GROUP:
       group = AMBIGUOUS;
       break;
 
-    case AutofillType::NAME:
+    case ::autofill::NAME:
       group = NAME;
       break;
 
-    case AutofillType::COMPANY:
+    case ::autofill::COMPANY:
       group = COMPANY;
       break;
 
-    case AutofillType::ADDRESS_HOME:
+    case ::autofill::ADDRESS_HOME:
       switch (field_type) {
         case ADDRESS_HOME_LINE1:
           group = ADDRESS_LINE_1;
@@ -124,15 +124,15 @@ int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
       }
       break;
 
-    case AutofillType::EMAIL:
+    case ::autofill::EMAIL:
       group = EMAIL;
       break;
 
-    case AutofillType::PHONE_HOME:
+    case ::autofill::PHONE_HOME:
       group = PHONE;
       break;
 
-    case AutofillType::CREDIT_CARD:
+    case ::autofill::CREDIT_CARD:
       switch (field_type) {
         case ::autofill::CREDIT_CARD_NAME:
           group = CREDIT_CARD_NAME;

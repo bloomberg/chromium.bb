@@ -712,7 +712,7 @@ AutofillDialogViewAndroid::MBT AutofillDialogViewAndroid::GetMenuItemButtonType(
 namespace {
 
 bool IsCreditCardType(AutofillFieldType type) {
-  return AutofillType(type).group() == AutofillType::CREDIT_CARD;
+  return AutofillType(type).group() == CREDIT_CARD;
 }
 
 class CollapsedAutofillProfileWrapper : public AutofillProfileWrapper {

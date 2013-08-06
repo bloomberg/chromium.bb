@@ -142,9 +142,9 @@ void GetGoogleCookies(
 }
 
 bool IsBillingGroup(FieldTypeGroup group) {
-  return group == AutofillType::ADDRESS_BILLING ||
-         group == AutofillType::PHONE_BILLING ||
-         group == AutofillType::NAME_BILLING;
+  return group == ADDRESS_BILLING ||
+         group == PHONE_BILLING ||
+         group == NAME_BILLING;
 }
 
 const char kTransactionIdNotSet[] = "transaction id not set";
@@ -361,7 +361,7 @@ void AutocheckoutManager::ReturnAutocheckoutData(
       continue;
     }
     FieldTypeGroup group = AutofillType(type).group();
-    if (group == AutofillType::CREDIT_CARD) {
+    if (group == CREDIT_CARD) {
       credit_card_->SetRawInfo(type, value);
       // TODO(dgwallinga): Find a way of cleanly deprecating CREDIT_CARD_NAME.
       // code.google.com/p/chromium/issues/detail?id=263498
@@ -493,7 +493,7 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
     return;
   }
 
-  if (AutofillType(type).group() == AutofillType::CREDIT_CARD) {
+  if (AutofillType(type).group() == CREDIT_CARD) {
     credit_card_->FillFormField(
         field, 0, autofill_manager_->app_locale(), field_to_fill);
   } else if (IsBillingGroup(AutofillType(type).group())) {

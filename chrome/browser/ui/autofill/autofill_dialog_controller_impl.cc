@@ -145,7 +145,7 @@ bool DetailInputMatchesField(DialogSection section,
 }
 
 bool IsCreditCardType(AutofillFieldType type) {
-  return AutofillType(type).group() == AutofillType::CREDIT_CARD;
+  return AutofillType(type).group() == CREDIT_CARD;
 }
 
 // Returns true if |input| should be used to fill a site-requested |field| which

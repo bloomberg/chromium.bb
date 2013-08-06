@@ -1218,7 +1218,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
       // Forms often ask for multiple phone numbers -- e.g. both a daytime and
       // evening phone number.  Our phone number detection is also generally a
       // little off.  Hence, ignore this field type as a signal here.
-      if (AutofillType(current_type).group() == AutofillType::PHONE_HOME)
+      if (AutofillType(current_type).group() == PHONE_HOME)
         already_saw_current_type = false;
 
       // Some forms have adjacent fields of the same type.  Two common examples:
@@ -1250,9 +1250,8 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
   // This simplifies the section-aware logic in autofill_manager.cc.
   for (std::vector<AutofillField*>::iterator field = fields_.begin();
        field != fields_.end(); ++field) {
-    AutofillType::FieldTypeGroup field_type_group =
-        AutofillType((*field)->type()).group();
-    if (field_type_group == AutofillType::CREDIT_CARD)
+    FieldTypeGroup field_type_group = AutofillType((*field)->type()).group();
+    if (field_type_group == CREDIT_CARD)
       (*field)->set_section((*field)->section() + "-cc");
     else
       (*field)->set_section((*field)->section() + "-default");

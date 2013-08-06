@@ -426,7 +426,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       form_structure->IsAutofillable(false)) {
     AutofillFieldType type = autofill_field->type();
     bool is_filling_credit_card =
-        (AutofillType(type).group() == AutofillType::CREDIT_CARD);
+        (AutofillType(type).group() == CREDIT_CARD);
     if (is_filling_credit_card) {
       GetCreditCardSuggestions(
           field, type, &values, &labels, &icons, &unique_ids);
@@ -546,7 +546,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     const AutofillField* cached_field = form_structure->field(i);
     FieldTypeGroup field_group_type =
         AutofillType(cached_field->type()).group();
-    if (field_group_type != AutofillType::NO_GROUP) {
+    if (field_group_type != NO_GROUP) {
       // If the field being filled is either
       //   (a) the field that the user initiated the fill from, or
       //   (b) part of the same logical unit, e.g. name or phone number,

@@ -74,7 +74,7 @@ base::string16 NameInfo::GetRawInfo(AutofillFieldType type) const {
 
 void NameInfo::SetRawInfo(AutofillFieldType type, const base::string16& value) {
   type = AutofillType::GetEquivalentFieldType(type);
-  DCHECK_EQ(AutofillType::NAME, AutofillType(type).group());
+  DCHECK_EQ(NAME, AutofillType(type).group());
   if (type == NAME_FIRST)
     first_ = value;
   else if (type == NAME_MIDDLE || type == NAME_MIDDLE_INITIAL)

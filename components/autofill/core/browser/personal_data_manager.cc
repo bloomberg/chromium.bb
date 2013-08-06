@@ -279,7 +279,7 @@ bool PersonalDataManager::ImportFormData(
 
     types_seen.insert(field_type);
 
-    if (group == AutofillType::CREDIT_CARD) {
+    if (group == CREDIT_CARD) {
       if (LowerCaseEqualsASCII(field->form_control_type, "month")) {
         DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type);
         local_imported_credit_card->SetInfoForMonthInputType(value);

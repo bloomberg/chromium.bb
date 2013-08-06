@@ -228,7 +228,7 @@ string16 FullWalletBillingWrapper::GetInfo(AutofillFieldType type) const {
   if (type == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(full_wallet_->expiration_month());
 
-  if (AutofillType(type).group() == AutofillType::CREDIT_CARD)
+  if (AutofillType(type).group() == CREDIT_CARD)
     return full_wallet_->GetInfo(type);
 
   return full_wallet_->billing_address()->GetInfo(

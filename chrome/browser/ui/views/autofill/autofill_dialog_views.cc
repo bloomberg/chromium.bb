@@ -1260,11 +1260,10 @@ void AutofillDialogViews::FillSection(DialogSection section,
   // CC comboboxes (even if they already have something in them). If the
   // Autofill data comes from an AutofillProfile, leave the comboboxes alone.
   if ((section == SECTION_CC || section == SECTION_CC_BILLING) &&
-      AutofillType(originating_input.type).group() ==
-              AutofillType::CREDIT_CARD) {
+      AutofillType(originating_input.type).group() == CREDIT_CARD) {
     for (ComboboxMap::const_iterator it = group->comboboxes.begin();
          it != group->comboboxes.end(); ++it) {
-      if (AutofillType(it->first->type).group() == AutofillType::CREDIT_CARD)
+      if (AutofillType(it->first->type).group() == CREDIT_CARD)
         it->second->SetSelectedIndex(it->second->model()->GetDefaultIndex());
     }
   }

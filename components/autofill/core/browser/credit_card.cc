@@ -533,7 +533,7 @@ void CreditCard::FillFormField(const AutofillField& field,
                                size_t /*variant*/,
                                const std::string& app_locale,
                                FormFieldData* field_data) const {
-  DCHECK_EQ(AutofillType::CREDIT_CARD, AutofillType(field.type()).group());
+  DCHECK_EQ(CREDIT_CARD, AutofillType(field.type()).group());
   DCHECK(field_data);
 
   if (field_data->form_control_type == "select-one") {

@@ -73,8 +73,7 @@ void BreakSuggestionText(const string16& text,
 // TODO(groby): This kind of logic should _really_ live on the controller.
 bool ShouldOverwriteComboboxes(autofill::DialogSection section,
                                autofill::AutofillFieldType type) {
-  using autofill::AutofillType;
-  if (AutofillType(type).group() != AutofillType::CREDIT_CARD) {
+  if (autofill::AutofillType(type).group() != autofill::CREDIT_CARD) {
     return false;
   }
 
@@ -327,7 +326,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
         autofill::AutofillFieldType fieldType =
             [self fieldTypeForControl:popup];
         if (autofill::AutofillType(fieldType).group() ==
-                autofill::AutofillType::CREDIT_CARD) {
+                autofill::CREDIT_CARD) {
           ui::ComboboxModel* model =
               controller_->ComboboxModelForAutofillType(fieldType);
           DCHECK(model);

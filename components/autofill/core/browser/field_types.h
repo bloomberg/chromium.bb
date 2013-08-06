@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_FIELD_TYPES_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_FIELD_TYPES_H_
 
+#include <map>
 #include <set>
-#include <string>
+
+#include "base/strings/string16.h"
 
 namespace autofill {
 
@@ -102,7 +104,21 @@ enum AutofillFieldType {
   MAX_VALID_FIELD_TYPE = 73,
 };
 
+enum FieldTypeGroup {
+  NO_GROUP,
+  NAME,
+  NAME_BILLING,
+  EMAIL,
+  COMPANY,
+  ADDRESS_HOME,
+  ADDRESS_BILLING,
+  PHONE_HOME,
+  PHONE_BILLING,
+  CREDIT_CARD,
+};
+
 typedef std::set<AutofillFieldType> FieldTypeSet;
+typedef std::map<base::string16, AutofillFieldType> FieldTypeMap;
 
 }  // namespace autofill
 

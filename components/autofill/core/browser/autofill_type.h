@@ -5,11 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_TYPE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_TYPE_H_
 
-#include <map>
-#include <set>
 #include <string>
 
-#include "base/strings/string16.h"
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
@@ -18,19 +15,6 @@ namespace autofill {
 // and for associating form fields with form values in the Web Database.
 class AutofillType {
  public:
-  enum FieldTypeGroup {
-    NO_GROUP,
-    NAME,
-    NAME_BILLING,
-    EMAIL,
-    COMPANY,
-    ADDRESS_HOME,
-    ADDRESS_BILLING,
-    PHONE_HOME,
-    PHONE_BILLING,
-    CREDIT_CARD,
-  };
-
   explicit AutofillType(AutofillFieldType field_type);
   AutofillType(const AutofillType& autofill_type);
   AutofillType& operator=(const AutofillType& autofill_type);
@@ -55,10 +39,6 @@ class AutofillType {
  private:
   AutofillFieldType field_type_;
 };
-
-typedef AutofillType::FieldTypeGroup FieldTypeGroup;
-typedef std::set<AutofillFieldType> FieldTypeSet;
-typedef std::map<base::string16, AutofillFieldType> FieldTypeMap;
 
 }  // namespace autofill
 
