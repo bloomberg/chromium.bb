@@ -136,7 +136,7 @@ void GetSizeStatsOnBlockingPool(const std::string& mount_path,
     *total_size =
         static_cast<uint64>(stat.f_blocks) * stat.f_frsize;
     *remaining_size =
-        static_cast<uint64>(stat.f_bfree) * stat.f_frsize;
+        static_cast<uint64>(stat.f_bavail) * stat.f_frsize;
   }
 }
 
