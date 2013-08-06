@@ -24,29 +24,37 @@
  */
 
 #include "config.h"
-#include "bindings/v8/custom/V8DataViewCustom.h"
+#include "core/html/canvas/DataView.h"
 
+#include "V8DataView.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
-#include "core/html/canvas/DataView.h"
 
 namespace WebCore {
 
-static void initializeScriptWrappableForInterface(DataView* object)
+void V8DataView::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &V8DataView::info);
-    else
-        ASSERT_NOT_REACHED();
+    if (!args.Length()) {
+        // see constructWebGLArray -- we don't seem to be able to distingish between
+        // 'new DataView()' and the call used to construct the cached DataView object.
+        RefPtr<DataView> dataView = DataView::create(0);
+        v8::Handle<v8::Object> wrapper = args.Holder();
+        V8DOMWrapper::associateObjectWithWrapper<V8DataView>(dataView.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+        args.GetReturnValue().Set(wrapper);
+        return;
+    }
+    if (args[0]->IsNull() || !V8ArrayBuffer::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
+        throwTypeError(args.GetIsolate());
+        return;
+    }
+    constructWebGLArrayWithArrayBufferArgument<DataView, char, V8DataView>(args, &info, v8::kExternalByteArray, false);
+}
+
+// FIXME: Don't need this override.
+v8::Handle<v8::Object> wrap(DataView* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(impl);
+    return V8DataView::createWrapper(impl, creationContext, isolate);
 }
 
 } // namespace WebCore
-
-// In ScriptWrappable::init, the use of a local function declaration has an issue on Windows:
-// the local declaration does not pick up the surrounding namespace. Therefore, we provide this function
-// in the global namespace.
-// (More info on the MSVC bug here: http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c)
-void webCoreInitializeScriptWrappableForInterface(WebCore::DataView* object)
-{
-    WebCore::initializeScriptWrappableForInterface(object);
-}

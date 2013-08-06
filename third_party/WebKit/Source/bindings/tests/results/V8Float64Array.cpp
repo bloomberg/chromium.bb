@@ -23,6 +23,8 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8ArrayBufferView.h"
+#include "V8Float32Array.h"
+#include "V8Int32Array.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
@@ -31,9 +33,6 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
-#include "bindings/v8/custom/V8Float32ArrayCustom.h"
-#include "bindings/v8/custom/V8Float64ArrayCustom.h"
-#include "bindings/v8/custom/V8Int32ArrayCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
@@ -77,7 +76,7 @@ static void fooMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
         return;
     }
     Float64Array* imp = V8Float64Array::toNative(args.Holder());
-    V8TRYCATCH_VOID(Float32Array*, array, args[0]->IsFloat32Array() ? V8Float32Array::toNative(v8::Handle<v8::Float32Array>::Cast(args[0])) : 0);
+    V8TRYCATCH_VOID(Float32Array*, array, V8Float32Array::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Float32Array::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     v8SetReturnValue(args, toV8(imp->foo(array), args.Holder(), args.GetIsolate()));
     return;
 }
@@ -99,6 +98,11 @@ static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     Float64ArrayV8Internal::setMethod(args);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    return constructWebGLArray<Float64Array, V8Float64Array, double>(args, &V8Float64Array::info, v8::kExternalDoubleArray);
 }
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -165,7 +169,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8Float64ArrayTemplate(v8::Hand
 
     // Custom Signature 'foo'
     const int fooArgc = 1;
-    v8::Handle<v8::FunctionTemplate> fooArgv[fooArgc] = { v8::Handle<v8::FunctionTemplate>() };
+    v8::Handle<v8::FunctionTemplate> fooArgv[fooArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Float32Array::info, currentWorldType) };
     v8::Handle<v8::Signature> fooSignature = v8::Signature::New(desc, fooArgc, fooArgv);
     proto->Set(v8::String::NewSymbol("foo"), v8::FunctionTemplate::New(Float64ArrayV8Internal::fooMethodCallback, v8Undefined(), fooSignature, 1));
 

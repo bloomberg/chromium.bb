@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/ScriptProfiler.h"
 
+#include "V8ArrayBufferView.h"
 #include "V8Node.h"
 #include "V8Window.h"
 #include "bindings/v8/RetainedDOMInfo.h"
@@ -38,7 +39,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
-#include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/dom/Document.h"
 #include "core/inspector/BindingVisitors.h"
 
@@ -320,7 +320,7 @@ void ScriptProfiler::visitExternalArrays(ExternalArrayVisitor* visitor)
             // GCd during visiting.
             ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
             v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
-            if (!(*wrapper)->IsArrayBufferView())
+            if (!toWrapperTypeInfo(*wrapper)->isSubclass(&V8ArrayBufferView::info))
                 return;
             m_visitor->visitJSExternalArray(V8ArrayBufferView::toNative(*wrapper));
         }
