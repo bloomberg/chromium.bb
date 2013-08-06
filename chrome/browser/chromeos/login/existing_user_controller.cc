@@ -822,22 +822,19 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
     // URLs via policy.
     if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs()))
       InitializeStartUrls();
-#ifndef NDEBUG
+
+    // Mark the device as registered., i.e. the second part of OOBE as
+    // completed.
+    if (!StartupUtils::IsDeviceRegistered())
+      StartupUtils::MarkDeviceRegistered();
+
     if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kOobeSkipPostLogin)) {
       LoginUtils::Get()->DoBrowserLaunch(profile, host_);
       host_ = NULL;
     } else {
-#endif
-      // Mark the device as registered., i.e. the second part of OOBE as
-      // completed.
-      if (!StartupUtils::IsDeviceRegistered())
-        StartupUtils::MarkDeviceRegistered();
-
       ActivateWizard(WizardController::kTermsOfServiceScreenName);
-#ifndef NDEBUG
     }
-#endif
   } else {
     LoginUtils::Get()->DoBrowserLaunch(profile, host_);
     host_ = NULL;

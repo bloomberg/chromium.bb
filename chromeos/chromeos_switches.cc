@@ -172,10 +172,8 @@ const char kNoDiscardTabs[]                 = "no-discard-tabs";
 // switch and scroll events.
 const char kNoSwapMetrics[]                 = "no-swap-metrics";
 
-#ifndef NDEBUG
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
-#endif  // NDEBUG
 
 // Skips the machine hwid check. Useful for running in VMs because they have no
 // hwid.
