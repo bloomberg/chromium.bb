@@ -1085,6 +1085,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Canvas.ContextType" enum="CanvasContextType">
+  <summary>
+    Records the context type names used to create canvas rendering contexts.
+  </summary>
+</histogram>
+
 <histogram name="Cellular.ActivationFailure">
   <summary>
     The count of cellular device activation failures (Chrome OS).
@@ -15764,6 +15770,13 @@ other types of suffix sets.
 <enum name="BooleanWiped" type="int">
   <int value="0" label="Re-enabled"/>
   <int value="1" label="Wiped out"/>
+</enum>
+
+<enum name="CanvasContextType" type="int">
+  <int value="0" label="2d"/>
+  <int value="1" label="webkit-3d"/>
+  <int value="2" label="experimental-webgl"/>
+  <int value="3" label="webgl"/>
 </enum>
 
 <enum name="ChannelLayout" type="int">
