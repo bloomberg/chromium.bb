@@ -105,10 +105,50 @@ inline bool IsUsingToolKitGtk() {
 #endif
 }
 
+// Write |error_message| to stderr. Similar to RawLog(), but a bit more careful
+// about async-signal safety. |size| is the size to write and should typically
+// not include a terminating \0.
+void WriteToStdErr(const char* error_message, size_t size) {
+  while (size > 0) {
+    // TODO(jln): query the current policy to check if send() is available and
+    // use it to perform a non blocking write.
+    const int ret = HANDLE_EINTR(write(STDERR_FILENO, error_message, size));
+    // We can't handle any type of error here.
+    if (ret <= 0 || static_cast<size_t>(ret) > size) break;
+    size -= ret;
+    error_message += ret;
+  }
+}
+
+// Print a seccomp-bpf failure to handle |sysno| to stderr in an
+// async-signal safe way.
+void PrintSyscallError(uint32_t sysno) {
+  if (sysno >= 1024)
+    sysno = 0;
+  // TODO(markus): replace with async-signal safe snprintf when available.
+  const size_t kNumDigits = 4;
+  char sysno_base10[kNumDigits];
+  uint32_t rem = sysno;
+  uint32_t mod = 0;
+  for (int i = kNumDigits - 1; i >= 0; i--) {
+    mod = rem % 10;
+    rem /= 10;
+    sysno_base10[i] = '0' + mod;
+  }
+  static const char kSeccompErrorPrefix[] =
+      __FILE__":**CRASHING**:seccomp-bpf failure in syscall ";
+  static const char kSeccompErrorPostfix[] = "\n";
+  WriteToStdErr(kSeccompErrorPrefix, sizeof(kSeccompErrorPrefix) - 1);
+  WriteToStdErr(sysno_base10, sizeof(sysno_base10));
+  WriteToStdErr(kSeccompErrorPostfix, sizeof(kSeccompErrorPostfix) - 1);
+}
+
 intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
   uint32_t syscall = args.nr;
   if (syscall >= 1024)
     syscall = 0;
+  PrintSyscallError(syscall);
+
   // Encode 8-bits of the 1st two arguments too, so we can discern which socket
   // type, which fcntl, ... etc., without being likely to hit a mapped
   // address.
