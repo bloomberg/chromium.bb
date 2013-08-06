@@ -111,12 +111,6 @@ class AutofillDialogController {
   // section.
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) = 0;
 
-#if defined(OS_ANDROID)
-  // As the above, but will never return NULL. TODO(estade): android should
-  // stop relying on this and it should be removed.
-  virtual ui::MenuModel* MenuModelForSectionHack(DialogSection section) = 0;
-#endif
-
   // Returns the label text used to describe the section (i.e. Billing).
   virtual string16 LabelForSection(DialogSection section) const = 0;
 

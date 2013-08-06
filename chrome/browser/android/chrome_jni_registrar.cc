@@ -27,7 +27,6 @@
 #include "chrome/browser/signin/android_profile_oauth2_token_service.h"
 #include "chrome/browser/speech/tts_android.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
-#include "chrome/browser/ui/android/autofill/autofill_dialog_view_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
@@ -55,8 +54,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "AndroidProfileOAuth2TokenService",
     AndroidProfileOAuth2TokenService::Register },
   { "ApplicationLifetime", RegisterApplicationLifetimeAndroid },
-  { "AutofillDialog",
-    autofill::AutofillDialogViewAndroid::RegisterAutofillDialogViewAndroid },
   { "AutofillPopup",
     autofill::AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid },
   { "CertificateViewer", RegisterCertificateViewer },

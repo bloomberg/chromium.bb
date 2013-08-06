@@ -464,6 +464,7 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   }
 }
 
+#if !defined(OS_ANDROID)
 // static
 base::WeakPtr<AutofillDialogControllerImpl>
     AutofillDialogControllerImpl::Create(
@@ -482,6 +483,7 @@ base::WeakPtr<AutofillDialogControllerImpl>
                                        callback);
   return autofill_dialog_controller->weak_ptr_factory_.GetWeakPtr();
 }
+#endif  // !defined(OS_ANDROID)
 
 // static
 void AutofillDialogControllerImpl::RegisterProfilePrefs(
@@ -1227,13 +1229,6 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForSection(
 
   return NULL;
 }
-
-#if defined(OS_ANDROID)
-ui::MenuModel* AutofillDialogControllerImpl::MenuModelForSectionHack(
-    DialogSection section) {
-  return SuggestionsMenuModelForSection(section);
-}
-#endif
 
 ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
   // If there were unrecoverable Wallet errors, or if there are choices other
@@ -2409,9 +2404,6 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
   gfx::Rect window_bounds;
 #if !defined(OS_ANDROID)
   window_bounds = GetBaseWindowForWebContents(web_contents())->GetBounds();
-#else
-  // TODO(dbeam): figure out the correct browser window size to pass along for
-  // android.
 #endif
 
   PrefService* user_prefs = profile_->GetPrefs();
@@ -2449,8 +2441,6 @@ void AutofillDialogControllerImpl::OpenTabWithUrl(const GURL& url) {
       content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
-#else
-  // TODO(estade): use TabModelList?
 #endif
 }
 

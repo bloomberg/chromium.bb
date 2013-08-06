@@ -142,6 +142,7 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
+#if defined(ENABLE_AUTOFILL_DIALOG)
   HideRequestAutocompleteDialog();
 
   dialog_controller_ = AutofillDialogControllerImpl::Create(web_contents_,
@@ -150,6 +151,10 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
                                                             dialog_type,
                                                             callback);
   dialog_controller_->Show();
+#else
+  callback.Run(NULL, std::string());
+  NOTIMPLEMENTED();
+#endif  // #if !defined(ENABLE_AUTOFILL_DIALOG)
 }
 
 void TabAutofillManagerDelegate::ShowAutofillPopup(

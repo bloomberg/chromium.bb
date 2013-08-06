@@ -138,10 +138,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual ui::ComboboxModel* ComboboxModelForAutofillType(
       AutofillFieldType type) OVERRIDE;
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) OVERRIDE;
-#if defined(OS_ANDROID)
-  virtual ui::MenuModel* MenuModelForSectionHack(DialogSection section)
-      OVERRIDE;
-#endif
   virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
   virtual SuggestionState SuggestionStateForSection(
       DialogSection section) OVERRIDE;
