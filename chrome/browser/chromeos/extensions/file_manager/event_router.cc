@@ -332,14 +332,10 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
 
   WatcherMap::iterator iter = file_watchers_.find(watch_path);
   if (iter == file_watchers_.end()) {
-    scoped_ptr<FileWatcherExtensions>
-        watch(new FileWatcherExtensions(virtual_path,
-                                        extension_id,
-                                        is_remote_watch));
-    watch->Watch(watch_path,
-                 file_watcher_callback_,
-                 callback);
-    file_watchers_[watch_path] = watch.release();
+    scoped_ptr<FileWatcher> watcher(
+        new FileWatcher(virtual_path, extension_id, is_remote_watch));
+    watcher->Watch(watch_path, file_watcher_callback_, callback);
+    file_watchers_[watch_path] = watcher.release();
   } else {
     iter->second->AddExtension(extension_id);
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -647,13 +643,13 @@ void EventRouter::HandleFileWatchNotification(const base::FilePath& local_path,
 void EventRouter::DispatchDirectoryChangeEvent(
     const base::FilePath& virtual_path,
     bool got_error,
-    const FileWatcherExtensions::ExtensionUsageRegistry& extensions) {
+    const FileWatcher::ExtensionUsageRegistry& extensions) {
   if (!profile_) {
     NOTREACHED();
     return;
   }
 
-  for (FileWatcherExtensions::ExtensionUsageRegistry::const_iterator iter =
+  for (FileWatcher::ExtensionUsageRegistry::const_iterator iter =
            extensions.begin(); iter != extensions.end(); ++iter) {
     GURL target_origin_url(extensions::Extension::GetBaseURLFromExtensionId(
         iter->first));

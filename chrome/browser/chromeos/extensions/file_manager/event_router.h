@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_watcher_extensions.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_watcher.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -99,7 +99,7 @@ class EventRouter
   virtual void OnFileSystemBeingUnmounted() OVERRIDE;
 
  private:
-  typedef std::map<base::FilePath, FileWatcherExtensions*> WatcherMap;
+  typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
 
   // USB mount event handlers.
   void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk* disk);
@@ -126,7 +126,7 @@ class EventRouter
   void DispatchDirectoryChangeEvent(
       const base::FilePath& path,
       bool error,
-      const FileWatcherExtensions::ExtensionUsageRegistry& extensions);
+      const FileWatcher::ExtensionUsageRegistry& extensions);
 
   void DispatchMountEvent(
       chromeos::disks::DiskMountManager::MountEvent event,
