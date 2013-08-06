@@ -41,11 +41,14 @@ const char labelDiscardable[] = "discardable";
 
 bool DiscardablePixelRefAllocator::allocPixelRef(SkBitmap* dst, SkColorTable* ctable)
 {
+    // It should not be possible to have a non-null color table in Blink.
+    ASSERT(!ctable);
+
     Sk64 size = dst->getSize64();
     if (size.isNeg() || !size.is32())
         return false;
 
-    SkAutoTUnref<DiscardablePixelRef> pixelRef(new DiscardablePixelRef(ctable, adoptPtr(new SkMutex())));
+    SkAutoTUnref<DiscardablePixelRef> pixelRef(new DiscardablePixelRef(adoptPtr(new SkMutex())));
     if (pixelRef->allocAndLockDiscardableMemory(size.get32())) {
         pixelRef->setURI(labelDiscardable);
         dst->setPixelRef(pixelRef.get());
@@ -58,12 +61,11 @@ bool DiscardablePixelRefAllocator::allocPixelRef(SkBitmap* dst, SkColorTable* ct
     }
 
     // Fallback to heap allocator if discardable memory is not available.
-    return dst->allocPixels(ctable);
+    return dst->allocPixels();
 }
 
-DiscardablePixelRef::DiscardablePixelRef(SkColorTable* ctable, PassOwnPtr<SkMutex> mutex)
+DiscardablePixelRef::DiscardablePixelRef(PassOwnPtr<SkMutex> mutex)
     : SkPixelRef(mutex.get())
-    , m_colorTable(ctable)
     , m_lockedMemory(0)
     , m_mutex(mutex)
 {
@@ -71,7 +73,6 @@ DiscardablePixelRef::DiscardablePixelRef(SkColorTable* ctable, PassOwnPtr<SkMute
 
 DiscardablePixelRef::~DiscardablePixelRef()
 {
-    SkSafeUnref(m_colorTable);
 }
 
 bool DiscardablePixelRef::allocAndLockDiscardableMemory(size_t bytes)
@@ -89,7 +90,7 @@ void* DiscardablePixelRef::onLockPixels(SkColorTable** ctable)
     if (!m_lockedMemory && m_discardable->lock())
         m_lockedMemory = m_discardable->data();
 
-    *ctable = m_colorTable;
+    *ctable = 0;
     return m_lockedMemory;
 }
 
