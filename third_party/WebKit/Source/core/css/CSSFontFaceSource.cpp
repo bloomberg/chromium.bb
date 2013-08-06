@@ -85,12 +85,22 @@ bool CSSFontFaceSource::isValid() const
     return true;
 }
 
+void CSSFontFaceSource::didStartFontLoad(CachedFont*)
+{
+    // Avoid duplicated reports when multiple CSSFontFaceSource are registered
+    // at this CachedFont.
+    if (!m_fontDataTable.isEmpty())
+        m_histograms.loadStarted();
+}
+
 void CSSFontFaceSource::fontLoaded(CachedFont*)
 {
+    if (!m_fontDataTable.isEmpty())
+        m_histograms.recordRemoteFont(m_font.get());
+
     pruneTable();
     if (m_face)
         m_face->fontLoaded(this);
-    m_histograms.recordRemoteFont(m_font.get());
 }
 
 PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription& fontDescription, bool syntheticBold, bool syntheticItalic, CSSFontSelector* fontSelector)
@@ -180,8 +190,6 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
         // and the loader may invoke arbitrary delegate or event handler code.
         fontSelector->beginLoadingFontSoon(m_font.get());
 
-        m_histograms.loadStarted();
-
         // This temporary font is not retained and should not be returned.
         FontCachePurgePreventer fontCachePurgePreventer;
         SimpleFontData* temporaryFont = fontCache()->getNonRetainedLastResortFallbackFont(fontDescription);
@@ -252,18 +260,18 @@ void CSSFontFaceSource::FontLoadHistograms::recordRemoteFont(const CachedFont* f
 const char* CSSFontFaceSource::FontLoadHistograms::histogramName(const CachedFont* font)
 {
     if (font->errorOccurred())
-        return "WebFont.LoadTime.LoadError";
+        return "WebFont.DownloadTime.LoadError";
 
     unsigned size = font->encodedSize();
     if (size < 10 * 1024)
-        return "WebFont.LoadTime.0.Under10KB";
+        return "WebFont.DownloadTime.0.Under10KB";
     if (size < 50 * 1024)
-        return "WebFont.LoadTime.1.10KBTo50KB";
+        return "WebFont.DownloadTime.1.10KBTo50KB";
     if (size < 100 * 1024)
-        return "WebFont.LoadTime.2.50KBTo100KB";
+        return "WebFont.DownloadTime.2.50KBTo100KB";
     if (size < 1024 * 1024)
-        return "WebFont.LoadTime.3.100KBTo1MB";
-    return "WebFont.LoadTime.4.Over1MB";
+        return "WebFont.DownloadTime.3.100KBTo1MB";
+    return "WebFont.DownloadTime.4.Over1MB";
 }
 
 }

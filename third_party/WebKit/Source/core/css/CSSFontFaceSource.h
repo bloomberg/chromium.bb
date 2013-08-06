@@ -57,6 +57,7 @@ public:
 
     void setFontFace(CSSFontFace* face) { m_face = face; }
 
+    virtual void didStartFontLoad(CachedFont*) OVERRIDE;
     virtual void fontLoaded(CachedFont*);
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&, bool syntheticBold, bool syntheticItalic, CSSFontSelector*);

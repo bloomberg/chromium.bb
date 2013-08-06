@@ -79,6 +79,7 @@ public:
     static ResourceClientType expectedType() { return FontType; }
     virtual ResourceClientType resourceClientType() const { return expectedType(); }
     virtual void fontLoaded(CachedFont*) { }
+    virtual void didStartFontLoad(CachedFont*) { }
 };
 
 }
