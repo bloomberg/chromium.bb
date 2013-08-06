@@ -133,11 +133,6 @@ TEST_RESOURCES_TO_PUSH = [
     'compositing/resources/video.mp4',
 ]
 
-# List of test resources from webkit platform. These resources will be copied to the external storage.
-WEBKIT_PLATFORM_RESOURCES_TO_PUSH = [
-    'third_party/hyphen/hyph_en_US.dic',
-]
-
 MD5SUM_DEVICE_FILE_NAME = 'md5sum_bin'
 MD5SUM_HOST_FILE_NAME = 'md5sum_bin_host'
 MD5SUM_DEVICE_PATH = '/data/local/tmp/' + MD5SUM_DEVICE_FILE_NAME
@@ -737,7 +732,6 @@ class ChromiumAndroidDriver(driver.Driver):
         self._push_executable()
         self._push_fonts()
         self._push_test_resources()
-        self._push_platform_resources()
 
     def _setup_test(self):
         if self._android_devices.is_device_prepared(self._android_commands.get_serial()):
@@ -817,12 +811,6 @@ class ChromiumAndroidDriver(driver.Driver):
         self._log_debug('Pushing test resources')
         for resource in TEST_RESOURCES_TO_PUSH:
             self._push_file_if_needed(self._port.layout_tests_dir() + '/' + resource, DEVICE_LAYOUT_TESTS_DIR + resource)
-
-    def _push_platform_resources(self):
-        self._log_debug('Pushing platform resources')
-        external_storage = self._port._filesystem.join(self._android_commands.run(['shell', 'echo $EXTERNAL_STORAGE']).strip(), 'Source', 'WebKit', 'chromium')
-        for resource in WEBKIT_PLATFORM_RESOURCES_TO_PUSH:
-            self._push_file_if_needed(self._port._chromium_base_dir(self._port._filesystem) + '/' + resource, external_storage + '/' + resource)
 
     def _get_last_stacktrace(self):
         tombstones = self._android_commands.run(['shell', 'ls', '-n', '/data/tombstones'])
