@@ -39,7 +39,7 @@
 namespace {
 
 // The height of the download items.
-const int kDownloadItemHeight = download_util::kSmallProgressIconSize;
+const int kDownloadItemHeight = DownloadShelf::kSmallProgressIconSize;
 
 // Padding between the download widgets.
 const int kDownloadItemPadding = 10;

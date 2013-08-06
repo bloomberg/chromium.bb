@@ -95,7 +95,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
     body_state_(NORMAL),
     drop_down_state_(NORMAL),
     mode_(NORMAL_MODE),
-    progress_angle_(download_util::kStartAngleDegrees),
+    progress_angle_(DownloadShelf::kStartAngleDegrees),
     drop_down_pressed_(false),
     dragging_(false),
     starting_drag_(false),
@@ -197,8 +197,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
                                   normal_body_image_set_.top_left->height() +
                                   normal_body_image_set_.bottom_left->height());
 
-  if (download_util::kSmallProgressIconSize > box_height_)
-    box_y_ = (download_util::kSmallProgressIconSize - box_height_) / 2;
+  if (DownloadShelf::kSmallProgressIconSize > box_height_)
+    box_y_ = (DownloadShelf::kSmallProgressIconSize - box_height_) / 2;
   else
     box_y_ = 0;
 
@@ -219,9 +219,9 @@ DownloadItemView::~DownloadItemView() {
 // Progress animation handlers.
 
 void DownloadItemView::UpdateDownloadProgress() {
-  progress_angle_ = (progress_angle_ +
-                     download_util::kUnknownIncrementDegrees) %
-                    download_util::kMaxDegrees;
+  progress_angle_ =
+      (progress_angle_ + DownloadShelf::kUnknownIncrementDegrees) %
+      DownloadShelf::kMaxDegrees;
   SchedulePaint();
 }
 
@@ -229,7 +229,7 @@ void DownloadItemView::StartDownloadProgress() {
   if (progress_timer_.IsRunning())
     return;
   progress_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(download_util::kProgressRateMs), this,
+      base::TimeDelta::FromMilliseconds(DownloadShelf::kProgressRateMs), this,
       &DownloadItemView::UpdateDownloadProgress);
 }
 
@@ -361,7 +361,7 @@ gfx::Size DownloadItemView::GetPreferredSize() {
   // First, we set the height to the height of two rows or text plus margins.
   height = 2 * kVerticalPadding + 2 * font_.GetHeight() + kVerticalTextPadding;
   // Then we increase the size if the progress icon doesn't fit.
-  height = std::max<int>(height, download_util::kSmallProgressIconSize);
+  height = std::max<int>(height, DownloadShelf::kSmallProgressIconSize);
 
   if (IsShowingWarningDialog()) {
     BodyImageSet* body_image_set =
@@ -384,7 +384,7 @@ gfx::Size DownloadItemView::GetPreferredSize() {
       width += normal_drop_down_image_set_.top->width();
   } else {
     width = kLeftPadding + normal_body_image_set_.top_left->width();
-    width += download_util::kSmallProgressIconSize;
+    width += DownloadShelf::kSmallProgressIconSize;
     width += kTextWidth;
     width += normal_body_image_set_.top_right->width();
     width += normal_drop_down_image_set_.top->width();
@@ -639,7 +639,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   if (!IsShowingWarningDialog()) {
     if (!status_text_.empty()) {
       int mirrored_x = GetMirroredXWithWidthInView(
-          download_util::kSmallProgressIconSize, kTextWidth);
+          DownloadShelf::kSmallProgressIconSize, kTextWidth);
       // Add font_.height() to compensate for title, which is drawn later.
       int y = box_y_ + kVerticalPadding + font_.GetHeight() +
               kVerticalTextPadding;
@@ -764,7 +764,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     }
 
     int mirrored_x = GetMirroredXWithWidthInView(
-        download_util::kSmallProgressIconSize, kTextWidth);
+        DownloadShelf::kSmallProgressIconSize, kTextWidth);
     SkColor file_name_color = GetThemeProvider()->GetColor(
         ThemeProperties::COLOR_BOOKMARK_TEXT);
     int y =
@@ -797,21 +797,32 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     if (!IsShowingWarningDialog()) {
       DownloadItem::DownloadState state = download()->GetState();
       if (state == DownloadItem::IN_PROGRESS) {
-        download_util::PaintDownloadProgress(canvas, this, 0, 0,
+        DownloadShelf::PaintDownloadProgress(canvas,
+                                             this,
+                                             0,
+                                             0,
                                              progress_angle_,
                                              model_.PercentComplete(),
-                                             download_util::SMALL);
+                                             DownloadShelf::SMALL);
       } else if (complete_animation_.get() &&
                  complete_animation_->is_animating()) {
         if (state == DownloadItem::INTERRUPTED) {
-          download_util::PaintDownloadInterrupted(canvas, this, 0, 0,
+          DownloadShelf::PaintDownloadInterrupted(
+              canvas,
+              this,
+              0,
+              0,
               complete_animation_->GetCurrentValue(),
-              download_util::SMALL);
+              DownloadShelf::SMALL);
         } else {
           DCHECK_EQ(DownloadItem::COMPLETE, state);
-          download_util::PaintDownloadComplete(canvas, this, 0, 0,
+          DownloadShelf::PaintDownloadComplete(
+              canvas,
+              this,
+              0,
+              0,
               complete_animation_->GetCurrentValue(),
-              download_util::SMALL);
+              DownloadShelf::SMALL);
         }
       }
     }
@@ -823,8 +834,8 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
       icon_x = kLeftPadding + body_image_set->top_left->width();
       icon_y = (height() - icon->height()) / 2;
     } else {
-      icon_x = download_util::kSmallProgressIconOffset;
-      icon_y = download_util::kSmallProgressIconOffset;
+      icon_x = DownloadShelf::kSmallProgressIconOffset;
+      icon_y = DownloadShelf::kSmallProgressIconOffset;
     }
     icon_x = GetMirroredXWithWidthInView(icon_x, icon->width());
     if (enabled()) {
