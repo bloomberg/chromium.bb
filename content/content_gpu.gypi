@@ -40,12 +40,14 @@
         {
           'destination': '<(PRODUCT_DIR)',
           'files': [
-            '<(windows_sdk_path)/Redist/D3D/x86/d3dcompiler_46.dll',
+            '<(windows_sdk_path)/Redist/D3D/<(winsdk_arch)/d3dcompiler_46.dll',
           ],
         },
       ],
     }],
-    ['OS=="win" and directxsdk_exists=="True"', {
+    ['OS=="win" and target_arch=="ia32" and directxsdk_exists=="True"', {
+      # We don't support x64 prior to Win7 and D3DCompiler_43.dll is
+      # not needed on Vista+.
       'actions': [
         {
           'action_name': 'extract_d3dcompiler',

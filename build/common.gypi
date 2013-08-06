@@ -1411,6 +1411,12 @@
       }],  # OS=="mac" or OS=="ios"
       ['OS=="win"', {
         'conditions': [
+          # This is the architecture convention used in WinSDK paths.
+          ['target_arch=="ia32"', {
+            'winsdk_arch%': 'x86',
+          },{
+            'winsdk_arch%': '<(target_arch)',
+          }],
           ['component=="shared_library"', {
             'win_use_allocator_shim%': 0,
           }],

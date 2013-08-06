@@ -553,7 +553,7 @@
       {
         'action_name': 'extract_xinput',
         'variables': {
-          'input': 'APR2007_xinput_x86.cab',
+          'input': 'APR2007_xinput_<(winsdk_arch).cab',
           'output': 'xinput1_3.dll',
         },
         'inputs': [
