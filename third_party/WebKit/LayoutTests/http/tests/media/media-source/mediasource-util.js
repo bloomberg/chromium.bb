@@ -1,4 +1,12 @@
 (function(window) {
+    // Set the testharness.js timeout to 120 seconds so that it is higher than
+    // the LayoutTest timeout. This prevents testharness.js from prematurely
+    // terminating tests and allows the LayoutTest runner to control when to
+    // timeout the test.
+    // FIXME: Change this to use explicit_timeout instead once /resources/testharness.js
+    //        is updated to a more recent version.
+    setup({ timeout: 120000 });
+
     EventExpectationsManager = function(test)
     {
         this.test_ = test;
