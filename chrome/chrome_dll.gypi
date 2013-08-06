@@ -227,6 +227,13 @@
                   ],
                 },
               },
+              'conditions': [
+                ['win_use_allocator_shim==1', {
+                  'dependencies': [
+                    '<(allocator_target)',
+                  ],
+                }],
+              ]
             }],
             ['chrome_multiple_dll==1', {
               'defines': [
