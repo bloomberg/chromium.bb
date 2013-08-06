@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -32,7 +33,8 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
       arm_cpu_time_(),
 #endif
       task_observer_(this),
-      weak_factory_(this) {
+      weak_factory_(this),
+      suspended_(false) {
   DCHECK(timeout >= 0);
 
 #if defined(OS_WIN)
@@ -104,10 +106,16 @@ GpuWatchdogThread::~GpuWatchdogThread() {
   CloseHandle(watched_thread_handle_);
 #endif
 
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  if (power_monitor)
+    power_monitor->RemoveObserver(this);
+
   watched_message_loop_->RemoveTaskObserver(&task_observer_);
 }
 
 void GpuWatchdogThread::OnAcknowledge() {
+  CHECK(base::PlatformThread::CurrentId() == thread_id());
+
   // The check has already been acknowledged and another has already been
   // scheduled by a previous call to OnAcknowledge. It is normal for a
   // watched thread to see armed_ being true multiple times before
@@ -118,6 +126,9 @@ void GpuWatchdogThread::OnAcknowledge() {
   // Revoke any pending hang termination.
   weak_factory_.InvalidateWeakPtrs();
   armed_ = false;
+
+  if (suspended_)
+    return;
 
   // If it took a long time for the acknowledgement, assume the computer was
   // recently suspended.
@@ -132,7 +143,11 @@ void GpuWatchdogThread::OnAcknowledge() {
 }
 
 void GpuWatchdogThread::OnCheck(bool after_suspend) {
-  if (armed_)
+  CHECK(base::PlatformThread::CurrentId() == thread_id());
+
+  // Do not create any new termination tasks if one has already been created
+  // or the system is suspended.
+  if (armed_ || suspended_)
     return;
 
   // Must set armed before posting the task. This task might be the only task
@@ -168,6 +183,9 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
 
 // Use the --disable-gpu-watchdog command line switch to disable this.
 void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
+  // Should not get here while the system is suspended.
+  DCHECK(!suspended_);
+
 #if defined(OS_WIN)
   // Defer termination until a certain amount of CPU time has elapsed on the
   // watched thread.
@@ -212,6 +230,34 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   *((volatile int*)0) = 0x1337;
 
   terminated = true;
+}
+
+void GpuWatchdogThread::AddPowerObserver() {
+  message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuWatchdogThread::OnAddPowerObserver, this));
+}
+
+void GpuWatchdogThread::OnAddPowerObserver() {
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  DCHECK(power_monitor);
+  power_monitor->AddObserver(this);
+}
+
+void GpuWatchdogThread::OnSuspend() {
+  suspended_ = true;
+
+  // When suspending force an acknowledgement to cancel any pending termination
+  // tasks.
+  OnAcknowledge();
+}
+
+void GpuWatchdogThread::OnResume() {
+  suspended_ = false;
+
+  // After resuming jump-start the watchdog again.
+  armed_ = false;
+  OnCheck(true);
 }
 
 #if defined(OS_WIN)

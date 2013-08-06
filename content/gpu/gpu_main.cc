@@ -294,6 +294,9 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   gpu_process.set_main_thread(child_thread);
 
+  if (watchdog_thread)
+    watchdog_thread->AddPowerObserver();
+
   {
     TRACE_EVENT0("gpu", "Run Message Loop");
     main_message_loop.Run();
