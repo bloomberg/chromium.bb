@@ -32,12 +32,12 @@ ShareDialog.FAILURE_TIMEOUT = 5000;
 
 /**
  * Wraps a Web View element and adds authorization headers to it.
- * @param {origin} origin Origin to be authorized.
+ * @param {string} urlPattern Pattern of urls to be authorized.
  * @param {WebView} webView Web View element to be wrapped.
  * @constructor
  */
-ShareDialog.WebViewAuthorizer = function(origin, webView) {
-  this.origin_ = origin;
+ShareDialog.WebViewAuthorizer = function(urlPattern, webView) {
+  this.urlPattern_ = urlPattern;
   this.webView_ = webView;
   this.initialized_ = false;
   this.accessToken_ = null;
@@ -58,7 +58,7 @@ ShareDialog.WebViewAuthorizer.prototype.initialize = function(callback) {
     this.webView_.removeEventListener('loadstop', registerInjectionHooks);
     this.webView_.onBeforeSendHeaders.addListener(
       this.authorizeRequest_.bind(this),
-      {urls: [this.origin_ + '/*']},
+      {urls: [this.urlPattern_]},
       ['blocking', 'requestHeaders']);
     this.initialized_ = true;
     callback();
@@ -218,14 +218,14 @@ ShareDialog.prototype.show = function(entry, onFailure) {
         this.webViewWrapper_, 'share-dialog-webview', 'webview');
     this.webView_.setAttribute('tabIndex', '-1');
     this.webViewAuthorizer_ = new ShareDialog.WebViewAuthorizer(
-        ShareClient.SHARE_TARGET, this.webView_);
+        !window.IN_TEST ? (ShareClient.SHARE_TARGET + '/*') : '<all_urls>',
+        this.webView_);
     this.webView_.addEventListener('newwindow', function(e) {
       // Discard the window object and reopen in an external window.
       e.window.discard();
       chrome.windows.create({url: e.targetUrl});
       e.preventDefault();
     });
-
     cr.ui.dialogs.BaseDialog.prototype.show.call(this, '', null, null, null);
 
     // Initialize and authorize the Web View tag asynchronously.

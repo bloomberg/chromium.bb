@@ -77,8 +77,9 @@ ShareClient.Observer.prototype.onClosed = function() {
  * @private
  */
 ShareClient.prototype.onMessage_ = function(e) {
-  if (e.origin != ShareClient.SHARE_TARGET)
+  if (e.origin != ShareClient.SHARE_TARGET && !window.IN_TEST)
     return;
+
   var data = JSON.parse(e.data);
   switch (data.type) {
     case 'resize':
@@ -131,7 +132,8 @@ ShareClient.prototype.postMessage_ = function(type, opt_args) {
     args: opt_args
   };
   this.webView_.contentWindow.postMessage(
-      JSON.stringify(message), ShareClient.SHARE_TARGET);
+      JSON.stringify(message),
+      !window.IN_TEST ? ShareClient.SHARE_TARGET : '*');
 };
 
 /**

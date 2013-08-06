@@ -221,18 +221,20 @@ test.util.async.waitForWindowGeometry = function(
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
  * @param {?string} iframeQuery Iframe selector or null if no iframe.
+ * @param {boolean=} opt_inverse True if the function should return if the
+ *    element disappears, instead of appearing.
  * @param {function(Object)} callback Callback with a hash array of attributes
  *     and contents as text.
  */
 test.util.async.waitForElement = function(
-    contentWindow, targetQuery, iframeQuery, callback) {
+    contentWindow, targetQuery, iframeQuery, opt_inverse, callback) {
   test.util.repeatUntilTrue_(function() {
     var doc = test.util.sync.getDocument_(contentWindow, iframeQuery);
     if (!doc)
       return false;
     var element = doc.querySelector(targetQuery);
     if (!element)
-      return false;
+      return !!opt_inverse;
     var attributes = {};
     for (var i = 0; i < element.attributes.length; i++) {
       attributes[element.attributes[i].nodeName] =
@@ -240,7 +242,7 @@ test.util.async.waitForElement = function(
     }
     var text = element.textContent;
     callback({attributes: attributes, text: text});
-    return true;
+    return !opt_inverse;
   });
 };
 
@@ -438,6 +440,21 @@ test.util.async.waitForFiles = function(
     }
     return false;
   });
+};
+
+/**
+ * Executes Javascript code on a webview and returns the result.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} webViewQuery Selector for the web view.
+ * @param {string} code Javascript code to be executed within the web view.
+ * @param {function(*)} callback Callback function with results returned by the
+ *     script.
+ */
+test.util.async.executeScriptInWebView = function(
+    contentWindow, webViewQuery, code, callback) {
+  var webView = contentWindow.document.querySelector(webViewQuery);
+  webView.executeScript({code: code}, callback);
 };
 
 /**
@@ -663,6 +680,9 @@ test.util.registerRemoteTestUtils = function() {
       console.error('The testing extension must be white-listed.');
       return false;
     }
+    // Set a global flag that we are in tests, so other components are aware
+    // of it.
+    window.IN_TEST = true;
     // Check the function name.
     if (!request.func || request.func[request.func.length - 1] == '_') {
       request.func = '';

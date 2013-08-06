@@ -62,9 +62,13 @@ namespace util = google_apis::util;
 namespace drive {
 namespace {
 
-// Rel property of upload link in the entries dictionary value.
+// Rel property of an upload link in the entries dictionary value.
 const char kUploadUrlRel[] =
     "http://schemas.google.com/g/2005#resumable-create-media";
+
+// Rel property of a share link in the entries dictionary value.
+const char kShareUrlRel[] =
+    "http://schemas.google.com/docs/2007#share";
 
 // Returns true if a resource entry matches with the search query.
 // Supports queries consist of following format.
@@ -1391,6 +1395,13 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
   upload_link->SetString("href", upload_url.spec());
   upload_link->SetString("rel", kUploadUrlRel);
   links->Append(upload_link);
+
+  const GURL share_url = net::AppendOrReplaceQueryParameter(
+      share_url_base_, "name", title);
+  base::DictionaryValue* share_link = new base::DictionaryValue;
+  upload_link->SetString("href", share_url.spec());
+  upload_link->SetString("rel", kShareUrlRel);
+  links->Append(share_link);
   new_entry->Set("link", links);
 
   AddNewChangestampAndETag(new_entry.get());

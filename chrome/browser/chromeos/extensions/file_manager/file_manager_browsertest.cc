@@ -34,6 +34,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace file_manager {
@@ -255,6 +256,12 @@ class DriveTestVolume {
     }
   }
 
+  // Sets the url base for the test server to be used to generate share urls
+  // on the files and directories.
+  void ConfigureShareUrlBase(const GURL& share_url_base) {
+    fake_drive_service_->set_share_url_base(share_url_base);
+  }
+
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
     fake_drive_service_ = new drive::FakeDriveService;
@@ -370,6 +377,12 @@ void FileManagerBrowserTest::SetUpOnMainThread() {
     local_volume_->CreateEntry(kTestEntrySetCommon[i]);
 
   if (drive_volume_) {
+    // Install the web server to serve the mocked share dialog.
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    const GURL share_url_base(embedded_test_server()->GetURL(
+        "/chromeos/file_manager/share_dialog_mock/index.html"));
+    drive_volume_->ConfigureShareUrlBase(share_url_base);
+
     for (size_t i = 0; i < arraysize(kTestEntrySetCommon); ++i)
       drive_volume_->CreateEntry(kTestEntrySetCommon[i]);
 
@@ -508,6 +521,12 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "restoreSortColumn"),
                       TestParameter(IN_GUEST_MODE, "restoreCurrentView"),
                       TestParameter(NOT_IN_GUEST_MODE, "restoreCurrentView")));
+
+INSTANTIATE_TEST_CASE_P(
+    ShareDialog,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "shareFile"),
+                      TestParameter(NOT_IN_GUEST_MODE, "shareDirectory")));
 
 }  // namespace
 }  // namespace file_manager

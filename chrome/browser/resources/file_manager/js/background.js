@@ -140,6 +140,8 @@ AppWindowWrapper.prototype.launch = function(appState, callback) {
       contentWindow.appID = this.id_;
       contentWindow.appState = this.appState_;
       contentWindow.appInitialURL = this.url_;
+      if (window.IN_TEST)
+        contentWindow.IN_TEST = true;
       appWindow.onClosed.addListener(function() {
         if (contentWindow.unload)
           contentWindow.unload();
