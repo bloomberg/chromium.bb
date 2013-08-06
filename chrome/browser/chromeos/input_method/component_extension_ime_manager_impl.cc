@@ -43,11 +43,6 @@ struct WhitelistedComponentExtensionIME {
     "/usr/share/chromeos-assets/input_methods/nacl_mozc",
   },
   {
-    // Google Chinese Input (zhuyin)
-    "goedamlknlnjaengojinmfgpmdjmkooo",
-    "/usr/share/chromeos-assets/input_methods/zhuyin",
-  },
-  {
     // Google Chinese Input (pinyin)
     "nmblnjkfdkabgdofidlkienfnnbjhnab",
     "/usr/share/chromeos-assets/input_methods/pinyin",
@@ -72,11 +67,6 @@ struct WhitelistedComponentExtensionIME {
     // Open-sourced Pinyin Chinese Input Method.
     "cpgalbafkoofkjmaeonnfijgpfennjjn",
     "/usr/share/chromeos-assets/input_methods/pinyin",
-  },
-  {
-    // Open-sourced Zhuyin Chinese Input Method.
-    "ekbifjdfhkmdeeajnolmgdlmkllopefi",
-    "/usr/share/chromeos-assets/input_methods/zhuyin",
   },
   {
     // Open-sourced Cangjie Chinese Input Method.
