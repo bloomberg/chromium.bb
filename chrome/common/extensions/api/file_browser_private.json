@@ -8,15 +8,30 @@
     "description": "none",
     "types": [
       {
-        "id": "FileBrowserTask",
+        "id": "FileTask",
         "type": "object",
-        "description": "Represents information about available browser tasks. A task is an abstraction of an operation that the file browser can perform over a selected file set.",
+        "description": "A file task represents an action that the file manager can perform over the currently selected files. See chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details about how file tasks are handled.",
         "properties": {
-          "taskId": {"type": "string", "description": "The unique identifier of the task."},
-          "title": {"type": "string", "description": "Task title."},
-          "iconUrl": {"type": "string", "description": "Task icon url (from chrome://extension-icon/...)"},
-          "driveApp": {"type": "boolean", "description": "True if this is Drive App."},
-          "isDefault": {"type": "boolean", "description": "True if this task is a default task for the selected files."}
+          "taskId": {
+            "type": "string",
+            "description": "The unique identifier of the task."
+          },
+          "title": {
+            "type": "string",
+            "description": "Task title (ex. App name)."
+          },
+          "iconUrl": {
+            "type": "string",
+            "description": "Task icon url (from chrome://extension-icon/...)"
+          },
+          "driveApp": {
+            "type": "boolean",
+            "description": "True if this is Drive App."
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "True if this task is a default task for the selected files."
+          }
         }
       },
       {
@@ -475,7 +490,7 @@
               {
                 "name": "tasks",
                 "type": "array",
-                "items": {"$ref": "FileBrowserTask"},
+                "items": {"$ref": "FileTask"},
                 "description": "The list of matched file URL patterns for this task."
               }
             ]
