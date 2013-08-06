@@ -90,7 +90,6 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/HitTestingTransformState.h"
-#include "core/rendering/OverlapTestRequestClient.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
@@ -3360,7 +3359,7 @@ void RenderLayer::paint(GraphicsContext* context, const LayoutRect& damageRect, 
 
     OverlapTestRequestMap::iterator end = overlapTestRequests.end();
     for (OverlapTestRequestMap::iterator it = overlapTestRequests.begin(); it != end; ++it)
-        it->key->setOverlapTestResult(false);
+        it->key->setIsOverlapped(false);
 }
 
 void RenderLayer::paintOverlayScrollbars(GraphicsContext* context, const LayoutRect& damageRect, PaintBehavior paintBehavior, RenderObject* paintingRoot)
@@ -3423,14 +3422,14 @@ void RenderLayer::restoreClip(GraphicsContext* context, const LayoutRect& paintD
 
 static void performOverlapTests(OverlapTestRequestMap& overlapTestRequests, const RenderLayer* rootLayer, const RenderLayer* layer)
 {
-    Vector<OverlapTestRequestClient*> overlappedRequestClients;
+    Vector<RenderWidget*> overlappedRequestClients;
     OverlapTestRequestMap::iterator end = overlapTestRequests.end();
     LayoutRect boundingBox = layer->boundingBox(rootLayer);
     for (OverlapTestRequestMap::iterator it = overlapTestRequests.begin(); it != end; ++it) {
         if (!boundingBox.intersects(it->value))
             continue;
 
-        it->key->setOverlapTestResult(true);
+        it->key->setIsOverlapped(true);
         overlappedRequestClients.append(it->key);
     }
     for (size_t i = 0; i < overlappedRequestClients.size(); ++i)

@@ -52,7 +52,6 @@ class HitTestLocation;
 class HitTestResult;
 class InlineBox;
 class InlineFlowBox;
-class OverlapTestRequestClient;
 class Path;
 class Position;
 class PseudoStyleRequest;

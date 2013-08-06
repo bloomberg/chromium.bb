@@ -306,7 +306,7 @@ void RenderWidget::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         layer()->paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect);
 }
 
-void RenderWidget::setOverlapTestResult(bool isOverlapped)
+void RenderWidget::setIsOverlapped(bool isOverlapped)
 {
     ASSERT(m_widget);
     ASSERT(m_widget->isFrameView());

@@ -23,7 +23,6 @@
 #define RenderWidget_h
 
 #include "core/platform/Widget.h"
-#include "core/rendering/OverlapTestRequestClient.h"
 #include "core/rendering/RenderReplaced.h"
 
 namespace WebCore {
@@ -54,7 +53,7 @@ private:
     static unsigned s_widgetHierarchyUpdateSuspendCount;
 };
 
-class RenderWidget : public RenderReplaced, private OverlapTestRequestClient {
+class RenderWidget : public RenderReplaced {
 public:
     virtual ~RenderWidget();
 
@@ -66,6 +65,8 @@ public:
     void updateWidgetPosition();
     void widgetPositionsUpdated();
     IntRect windowClipRect() const;
+
+    void setIsOverlapped(bool);
 
     void ref() { ++m_refCount; }
     void deref();
@@ -90,7 +91,6 @@ private:
 
     virtual void willBeDestroyed() OVERRIDE FINAL;
     virtual void destroy() OVERRIDE FINAL;
-    virtual void setOverlapTestResult(bool) OVERRIDE FINAL;
 
     bool setWidgetGeometry(const LayoutRect&);
     bool updateWidgetGeometry();

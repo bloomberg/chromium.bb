@@ -37,13 +37,13 @@
 
 namespace WebCore {
 
-class OverlapTestRequestClient;
 class RenderInline;
 class RenderLayerModelObject;
 class RenderObject;
 class RenderRegion;
+class RenderWidget;
 
-typedef HashMap<OverlapTestRequestClient*, IntRect> OverlapTestRequestMap;
+typedef HashMap<RenderWidget*, IntRect> OverlapTestRequestMap;
 
 /*
  * Paint the object and its children, clipped by (x|y|w|h).
