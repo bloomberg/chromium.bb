@@ -67,8 +67,6 @@ typedef Vector<WordMeasurement, 64> WordMeasurements;
 enum CaretType { CursorCaret, DragCaret };
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 
-enum DeleteFloatMapValues { DeleteAllValues, DoNotDeleteValues };
-
 enum TextRunFlag {
     DefaultTextRunFlags = 0,
     RespectDirection = 1 << 0,
@@ -120,7 +118,6 @@ public:
     void removePositionedObjects(RenderBlock*, ContainingBlockState = SameContainingBlock);
 
     void removeFloatingObjects();
-    static void floatWillBeRemoved(RenderBox*);
 
     TrackedRendererListHashSet* positionedObjects() const;
     bool hasPositionedObjects() const
@@ -159,8 +156,7 @@ public:
     void markPositionedObjectsForLayout();
     virtual void markForPaginationRelayoutIfNeeded() OVERRIDE FINAL;
 
-    bool containsFloats() const;
-
+    bool containsFloats() const { return m_floatingObjects && !m_floatingObjects->set().isEmpty(); }
     bool containsFloat(RenderBox*) const;
 
     // Versions that can compute line offsets with the region and page offset passed in. Used for speed to avoid having to
@@ -1297,13 +1293,8 @@ public:
 
 protected:
 
+    OwnPtr<FloatingObjects> m_floatingObjects;
     OwnPtr<RenderBlockRareData> m_rareData;
-
-    FloatingObjects* floatingObjects() const;
-
-    void removeBlockFromFloatMaps(DeleteFloatMapValues deleteValues = DeleteAllValues);
-    void insertIntoFloatingObjectMaps(FloatingObject*);
-    void removeFromFloatingObjectMaps(FloatingObject*);
 
     RenderObjectChildList m_children;
     RenderLineBoxList m_lineBoxes;   // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
@@ -1336,8 +1327,6 @@ inline const RenderBlock* toRenderBlock(const RenderObject* object)
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderBlock());
     return static_cast<const RenderBlock*>(object);
 }
-
-typedef WTF::HashMap<const RenderBlock*, OwnPtr<RenderBlock::FloatingObjects> > TrackedFloatMap;
 
 // This will catch anyone doing an unnecessary cast.
 void toRenderBlock(const RenderBlock*);
