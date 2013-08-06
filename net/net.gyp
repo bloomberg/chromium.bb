@@ -1854,7 +1854,9 @@
       'conditions': [
         ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
           'dependencies': [
-            'quic_library'
+            'quic_library',
+            'flip_in_mem_edsm_server_library',
+            'flip_balsa_and_epoll_library',
           ],
           'sources': [
             'tools/flip_server/simple_buffer.cc',
@@ -2607,8 +2609,8 @@
           ],
         },
         {
-          'target_name': 'flip_in_mem_edsm_server',
-          'type': 'executable',
+          'target_name': 'flip_in_mem_edsm_server_library',
+          'type': 'static_library',
           'cflags': [
             '-Wno-deprecated',
           ],
@@ -2630,7 +2632,6 @@
             'tools/flip_server/create_listener.h',
             'tools/flip_server/flip_config.cc',
             'tools/flip_server/flip_config.h',
-            'tools/flip_server/flip_in_mem_edsm_server.cc',
             'tools/flip_server/http_interface.cc',
             'tools/flip_server/http_interface.h',
             'tools/flip_server/loadtime_measurement.h',
@@ -2654,6 +2655,22 @@
             'tools/flip_server/streamer_interface.cc',
             'tools/flip_server/streamer_interface.h',
             'tools/flip_server/string_piece_utils.h',
+          ],
+        },
+        {
+          'target_name': 'flip_in_mem_edsm_server',
+          'type': 'executable',
+          'cflags': [
+            '-Wno-deprecated',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            'flip_balsa_and_epoll_library',
+            'flip_in_mem_edsm_server_library',
+            'net',
+          ],
+          'sources': [
+            'tools/flip_server/flip_in_mem_edsm_server.cc',
           ],
         },
         {
