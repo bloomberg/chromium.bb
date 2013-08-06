@@ -651,9 +651,6 @@ void FocusController::setActive(bool active)
     }
 
     focusedOrMainFrame()->selection()->pageActivationChanged();
-
-    if (m_focusedFrame && isFocused())
-        dispatchEventsOnWindowAndFocusedNode(m_focusedFrame->document(), active);
 }
 
 static void contentAreaDidShowOrHide(ScrollableArea* scrollableArea, bool didShow)
