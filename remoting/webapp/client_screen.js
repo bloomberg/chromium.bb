@@ -337,6 +337,7 @@ remoting.onConnected = function(clientSession) {
   setConnectionInterruptedButtonsText_();
   var connectedTo = document.getElementById('connected-to');
   connectedTo.innerText = clientSession.hostDisplayName;
+  document.getElementById('access-code-entry').value = '';
   remoting.setMode(remoting.AppMode.IN_SESSION);
   remoting.toolbar.center();
   remoting.toolbar.preview();
