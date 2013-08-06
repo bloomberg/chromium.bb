@@ -363,7 +363,7 @@ def RunTests(tests, runner_factory, wait_for_debugger, test_device,
   """
   if not tests:
     logging.error('No tests to run.')
-    return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
+    return (base_test_result.TestRunResults(), 0)
 
   if shard:
     # Generate a shared _TestCollection object for all test runners, so they
