@@ -203,7 +203,8 @@ AutoStamper::AutoStamper(TimingCanvas *timing_canvas)
 
 AutoStamper::~AutoStamper() {
   base::TimeDelta delta = base::TimeTicks::HighResNow() - start_ticks_;
-  int command_index = timing_canvas_->tracking_canvas_->CommandCount();
+  int command_index = timing_canvas_->tracking_canvas_->CommandCount() - 1;
+  DCHECK_GE(command_index, 0);
   timing_canvas_->timings_map_[command_index] = delta;
 }
 
