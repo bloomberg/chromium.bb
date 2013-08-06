@@ -373,4 +373,14 @@ bool WebRuntimeFeatures::isDataListElementEnabled()
     return RuntimeEnabledFeatures::dataListElementEnabled();
 }
 
+void WebRuntimeFeatures::enableHTMLImports(bool enable)
+{
+    RuntimeEnabledFeatures::setHTMLImportsEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isHTMLImportsEnabled()
+{
+    return RuntimeEnabledFeatures::htmlImportsEnabled();
+}
+
 } // namespace WebKit
