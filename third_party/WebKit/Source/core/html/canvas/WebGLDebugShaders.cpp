@@ -53,9 +53,8 @@ PassRefPtr<WebGLDebugShaders> WebGLDebugShaders::create(WebGLRenderingContext* c
     return adoptRef(new WebGLDebugShaders(context));
 }
 
-String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader, ExceptionState& es)
+String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader)
 {
-    UNUSED_PARAM(es);
     if (isLost())
         return String();
     if (!m_context->validateWebGLObject("getTranslatedShaderSource", shader))

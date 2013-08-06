@@ -88,9 +88,8 @@ GC3Dboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* ar
     return extensions->isVertexArrayOES(arrayObject->object());
 }
 
-void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject, ExceptionState& es)
+void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
 {
-    UNUSED_PARAM(es);
     if (isLost())
         return;
 
