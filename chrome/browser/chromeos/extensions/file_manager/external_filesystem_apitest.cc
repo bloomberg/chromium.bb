@@ -293,7 +293,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
   virtual void InitTestFileSystem() OVERRIDE {
     // Set up cache root to be used by DriveIntegrationService. This has to be
     // done before the browser is created because the service instance is
-    // initialized by FileManagerEventRouter.
+    // initialized by EventRouter.
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
 
     drive::DriveIntegrationServiceFactory::SetFactoryForTest(

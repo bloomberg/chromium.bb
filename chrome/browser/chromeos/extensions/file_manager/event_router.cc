@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
+#include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -148,8 +148,8 @@ const int64 kFileTransferEventFrequencyInMilliseconds = 1000;
 
 // Utility function to check if |job_info| is a file uploading job.
 bool IsUploadJob(drive::JobType type) {
-  return type == drive::TYPE_UPLOAD_NEW_FILE ||
-         type == drive::TYPE_UPLOAD_EXISTING_FILE;
+  return (type == drive::TYPE_UPLOAD_NEW_FILE ||
+          type == drive::TYPE_UPLOAD_EXISTING_FILE);
 }
 
 // Utility function to check if |job_info| is a file downloading job.
@@ -204,16 +204,16 @@ bool IsGooglePhotosInstalled(Profile *profile) {
 }  // namespace
 
 // Pass dummy value to JobInfo's constructor for make it default constructible.
-FileManagerEventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus()
+EventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus()
     : job_info(drive::TYPE_DOWNLOAD_FILE) {
 }
 
-FileManagerEventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus(
+EventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus(
     const drive::JobInfo& info, const std::string& status)
     : job_info(info), status(status) {
 }
 
-FileManagerEventRouter::FileManagerEventRouter(
+EventRouter::EventRouter(
     Profile* profile)
     : notifications_(new DesktopNotifications(profile)),
       pref_change_registrar_(new PrefChangeRegistrar),
@@ -222,17 +222,18 @@ FileManagerEventRouter::FileManagerEventRouter(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_watcher_callback_ =
-      base::Bind(&FileManagerEventRouter::HandleFileWatchNotification,
+      base::Bind(&EventRouter::HandleFileWatchNotification,
                  weak_factory_.GetWeakPtr());
 }
 
-FileManagerEventRouter::~FileManagerEventRouter() {
+EventRouter::~EventRouter() {
 }
 
-void FileManagerEventRouter::Shutdown() {
+void EventRouter::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DLOG_IF(WARNING, !file_watchers_.empty()) << "Not all file watchers are "
+  DLOG_IF(WARNING, !file_watchers_.empty())
+      << "Not all file watchers are "
       << "removed. This can happen when Files.app is open during shutdown.";
   STLDeleteValues(&file_watchers_);
   if (!profile_) {
@@ -261,7 +262,7 @@ void FileManagerEventRouter::Shutdown() {
   profile_ = NULL;
 }
 
-void FileManagerEventRouter::ObserveFileSystemEvents() {
+void EventRouter::ObserveFileSystemEvents() {
   if (!profile_) {
     NOTREACHED();
     return;
@@ -299,11 +300,11 @@ void FileManagerEventRouter::ObserveFileSystemEvents() {
 
   pref_change_registrar_->Add(
       prefs::kExternalStorageDisabled,
-      base::Bind(&FileManagerEventRouter::OnExternalStorageDisabledChanged,
+      base::Bind(&EventRouter::OnExternalStorageDisabledChanged,
                  weak_factory_.GetWeakPtr()));
 
   base::Closure callback =
-      base::Bind(&FileManagerEventRouter::OnFileManagerPrefsChanged,
+      base::Bind(&EventRouter::OnFileManagerPrefsChanged,
                  weak_factory_.GetWeakPtr());
   pref_change_registrar_->Add(prefs::kDisableDriveOverCellular, callback);
   pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, callback);
@@ -312,11 +313,10 @@ void FileManagerEventRouter::ObserveFileSystemEvents() {
 }
 
 // File watch setup routines.
-void FileManagerEventRouter::AddFileWatch(
-    const base::FilePath& local_path,
-    const base::FilePath& virtual_path,
-    const std::string& extension_id,
-    const BoolCallback& callback) {
+void EventRouter::AddFileWatch(const base::FilePath& local_path,
+                               const base::FilePath& virtual_path,
+                               const std::string& extension_id,
+                               const BoolCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -347,9 +347,8 @@ void FileManagerEventRouter::AddFileWatch(
   }
 }
 
-void FileManagerEventRouter::RemoveFileWatch(
-    const base::FilePath& local_path,
-    const std::string& extension_id) {
+void EventRouter::RemoveFileWatch(const base::FilePath& local_path,
+                                  const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::FilePath watch_path = local_path;
@@ -370,9 +369,8 @@ void FileManagerEventRouter::RemoveFileWatch(
   }
 }
 
-void FileManagerEventRouter::OnDiskEvent(
-    DiskMountManager::DiskEvent event,
-    const DiskMountManager::Disk* disk) {
+void EventRouter::OnDiskEvent(DiskMountManager::DiskEvent event,
+                              const DiskMountManager::Disk* disk) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Disregard hidden devices.
@@ -385,9 +383,8 @@ void FileManagerEventRouter::OnDiskEvent(
   }
 }
 
-void FileManagerEventRouter::OnDeviceEvent(
-    DiskMountManager::DeviceEvent event,
-    const std::string& device_path) {
+void EventRouter::OnDeviceEvent(DiskMountManager::DeviceEvent event,
+                                const std::string& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (event == DiskMountManager::DEVICE_ADDED) {
@@ -399,7 +396,7 @@ void FileManagerEventRouter::OnDeviceEvent(
   }
 }
 
-void FileManagerEventRouter::OnMountEvent(
+void EventRouter::OnMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info) {
@@ -450,10 +447,9 @@ void FileManagerEventRouter::OnMountEvent(
   }
 }
 
-void FileManagerEventRouter::OnFormatEvent(
-      DiskMountManager::FormatEvent event,
-      chromeos::FormatError error_code,
-      const std::string& device_path) {
+void EventRouter::OnFormatEvent(DiskMountManager::FormatEvent event,
+                                chromeos::FormatError error_code,
+                                const std::string& device_path) {
   if (event == DiskMountManager::FORMAT_STARTED) {
     OnFormatStarted(device_path, error_code == chromeos::FORMAT_ERROR_NONE);
   } else if (event == DiskMountManager::FORMAT_COMPLETED) {
@@ -461,7 +457,7 @@ void FileManagerEventRouter::OnFormatEvent(
   }
 }
 
-void FileManagerEventRouter::NetworkManagerChanged() {
+void EventRouter::NetworkManagerChanged() {
   if (!profile_ ||
       !extensions::ExtensionSystem::Get(profile_)->event_router()) {
     NOTREACHED();
@@ -474,11 +470,11 @@ void FileManagerEventRouter::NetworkManagerChanged() {
       BroadcastEvent(event.Pass());
 }
 
-void FileManagerEventRouter::DefaultNetworkChanged() {
+void EventRouter::DefaultNetworkChanged() {
   NetworkManagerChanged();
 }
 
-void FileManagerEventRouter::OnExternalStorageDisabledChanged() {
+void EventRouter::OnExternalStorageDisabledChanged() {
   // If the policy just got disabled we have to unmount every device currently
   // mounted. The opposite is fine - we can let the user re-plug her device to
   // make it available.
@@ -496,7 +492,7 @@ void FileManagerEventRouter::OnExternalStorageDisabledChanged() {
   }
 }
 
-void FileManagerEventRouter::OnFileManagerPrefsChanged() {
+void EventRouter::OnFileManagerPrefsChanged() {
   if (!profile_ ||
       !extensions::ExtensionSystem::Get(profile_)->event_router()) {
     NOTREACHED();
@@ -510,12 +506,12 @@ void FileManagerEventRouter::OnFileManagerPrefsChanged() {
       BroadcastEvent(event.Pass());
 }
 
-void FileManagerEventRouter::OnJobAdded(const drive::JobInfo& job_info) {
+void EventRouter::OnJobAdded(const drive::JobInfo& job_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   OnJobUpdated(job_info);
 }
 
-void FileManagerEventRouter::OnJobUpdated(const drive::JobInfo& job_info) {
+void EventRouter::OnJobUpdated(const drive::JobInfo& job_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!drive::IsActiveFileTransferJobInfo(job_info))
     return;
@@ -532,8 +528,8 @@ void FileManagerEventRouter::OnJobUpdated(const drive::JobInfo& job_info) {
   SendDriveFileTransferEvent(always);
 }
 
-void FileManagerEventRouter::OnJobDone(const drive::JobInfo& job_info,
-                                       drive::FileError error) {
+void EventRouter::OnJobDone(const drive::JobInfo& job_info,
+                            drive::FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!drive::IsActiveFileTransferJobInfo(job_info))
     return;
@@ -542,7 +538,7 @@ void FileManagerEventRouter::OnJobDone(const drive::JobInfo& job_info,
   drive_jobs_[job_info.job_id] = DriveJobInfoWithStatus(
       job_info,
       error == drive::FILE_ERROR_OK ? kFileTransferStateCompleted
-                                    : kFileTransferStateFailed);
+      : kFileTransferStateFailed);
 
   // Fire event if needed.
   bool always = true;
@@ -552,7 +548,7 @@ void FileManagerEventRouter::OnJobDone(const drive::JobInfo& job_info,
   drive_jobs_.erase(job_info.job_id);
 }
 
-void FileManagerEventRouter::SendDriveFileTransferEvent(bool always) {
+void EventRouter::SendDriveFileTransferEvent(bool always) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const base::Time now = base::Time::Now();
@@ -571,7 +567,7 @@ void FileManagerEventRouter::SendDriveFileTransferEvent(bool always) {
   // Convert the current |drive_jobs_| to a JSON value.
   scoped_ptr<base::ListValue> event_list(new base::ListValue);
   for (std::map<drive::JobID, DriveJobInfoWithStatus>::iterator
-       iter = drive_jobs_.begin(); iter != drive_jobs_.end(); ++iter) {
+           iter = drive_jobs_.begin(); iter != drive_jobs_.end(); ++iter) {
 
     scoped_ptr<base::DictionaryValue> job_info_dict(
         JobInfoToDictionaryValue(kFileBrowserDomain,
@@ -590,12 +586,11 @@ void FileManagerEventRouter::SendDriveFileTransferEvent(bool always) {
   last_file_transfer_event_ = now;
 }
 
-void FileManagerEventRouter::OnDirectoryChanged(
-    const base::FilePath& directory_path) {
+void EventRouter::OnDirectoryChanged(const base::FilePath& directory_path) {
   HandleFileWatchNotification(directory_path, false);
 }
 
-void FileManagerEventRouter::OnFileSystemMounted() {
+void EventRouter::OnFileSystemMounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const std::string& drive_path = drive::util::GetDriveMountPointPathAsString();
@@ -612,7 +607,7 @@ void FileManagerEventRouter::OnFileSystemMounted() {
                mount_info);
 }
 
-void FileManagerEventRouter::OnFileSystemBeingUnmounted() {
+void EventRouter::OnFileSystemBeingUnmounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Raise a mount event to notify the File Manager.
@@ -626,7 +621,7 @@ void FileManagerEventRouter::OnFileSystemBeingUnmounted() {
                mount_info);
 }
 
-void FileManagerEventRouter::OnRefreshTokenInvalid() {
+void EventRouter::OnRefreshTokenInvalid() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Raise a DriveConnectionStatusChanged event to notify the status offline.
@@ -637,8 +632,8 @@ void FileManagerEventRouter::OnRefreshTokenInvalid() {
       BroadcastEvent(event.Pass());
 }
 
-void FileManagerEventRouter::HandleFileWatchNotification(
-    const base::FilePath& local_path, bool got_error) {
+void EventRouter::HandleFileWatchNotification(const base::FilePath& local_path,
+                                              bool got_error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   WatcherMap::const_iterator iter = file_watchers_.find(local_path);
@@ -649,7 +644,7 @@ void FileManagerEventRouter::HandleFileWatchNotification(
                                iter->second->extensions());
 }
 
-void FileManagerEventRouter::DispatchDirectoryChangeEvent(
+void EventRouter::DispatchDirectoryChangeEvent(
     const base::FilePath& virtual_path,
     bool got_error,
     const FileWatcherExtensions::ExtensionUsageRegistry& extensions) {
@@ -662,7 +657,8 @@ void FileManagerEventRouter::DispatchDirectoryChangeEvent(
            extensions.begin(); iter != extensions.end(); ++iter) {
     GURL target_origin_url(extensions::Extension::GetBaseURLFromExtensionId(
         iter->first));
-    GURL base_url = fileapi::GetFileSystemRootURI(target_origin_url,
+    GURL base_url = fileapi::GetFileSystemRootURI(
+        target_origin_url,
         fileapi::kFileSystemTypeExternal);
     GURL target_directory_url = GURL(base_url.spec() + virtual_path.value());
     scoped_ptr<ListValue> args(new ListValue());
@@ -683,14 +679,15 @@ void FileManagerEventRouter::DispatchDirectoryChangeEvent(
   }
 }
 
-void FileManagerEventRouter::DispatchMountEvent(
+void EventRouter::DispatchMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info) {
   scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* mount_info_value = new DictionaryValue();
   args->Append(mount_info_value);
-  mount_info_value->SetString("eventType",
+  mount_info_value->SetString(
+      "eventType",
       event == DiskMountManager::MOUNTING ? "mount" : "unmount");
   mount_info_value->SetString("status", MountErrorToString(error_code));
   mount_info_value->SetString(
@@ -717,7 +714,8 @@ void FileManagerEventRouter::DispatchMountEvent(
       mount_info_value->SetString("mountPath",
                                   "/" + relative_mount_path.value());
     } else {
-      mount_info_value->SetString("status",
+      mount_info_value->SetString(
+          "status",
           MountErrorToString(chromeos::MOUNT_ERROR_PATH_UNMOUNTED));
     }
   }
@@ -728,8 +726,9 @@ void FileManagerEventRouter::DispatchMountEvent(
       BroadcastEvent(extension_event.Pass());
 }
 
-void FileManagerEventRouter::ShowRemovableDeviceInFileManager(
-    const DiskMountManager::Disk& disk, const base::FilePath& mount_path) {
+void EventRouter::ShowRemovableDeviceInFileManager(
+    const DiskMountManager::Disk& disk,
+    const base::FilePath& mount_path) {
   // Do not attempt to open File Manager while the login is in progress or
   // the screen is locked.
   if (chromeos::LoginDisplayHostImpl::default_host() ||
@@ -746,13 +745,12 @@ void FileManagerEventRouter::ShowRemovableDeviceInFileManager(
   DirectoryExistsOnUIThread(
       dcim_path,
       IsGooglePhotosInstalled(profile_) ?
-        base::Bind(&base::DoNothing) :
-        base::Bind(&util::ViewRemovableDrive, mount_path),
+      base::Bind(&base::DoNothing) :
+      base::Bind(&util::ViewRemovableDrive, mount_path),
       base::Bind(&util::ViewRemovableDrive, mount_path));
 }
 
-void FileManagerEventRouter::OnDiskAdded(
-    const DiskMountManager::Disk* disk) {
+void EventRouter::OnDiskAdded(const DiskMountManager::Disk* disk) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   VLOG(1) << "Disk added: " << disk->device_path();
@@ -779,8 +777,7 @@ void FileManagerEventRouter::OnDiskAdded(
   }
 }
 
-void FileManagerEventRouter::OnDiskRemoved(
-    const DiskMountManager::Disk* disk) {
+void EventRouter::OnDiskRemoved(const DiskMountManager::Disk* disk) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   VLOG(1) << "Disk removed: " << disk->device_path();
@@ -793,8 +790,7 @@ void FileManagerEventRouter::OnDiskRemoved(
   }
 }
 
-void FileManagerEventRouter::OnDeviceAdded(
-    const std::string& device_path) {
+void EventRouter::OnDeviceAdded(const std::string& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   VLOG(1) << "Device added : " << device_path;
@@ -814,8 +810,7 @@ void FileManagerEventRouter::OnDeviceAdded(
                                           base::TimeDelta::FromSeconds(5));
 }
 
-void FileManagerEventRouter::OnDeviceRemoved(
-    const std::string& device_path) {
+void EventRouter::OnDeviceRemoved(const std::string& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   VLOG(1) << "Device removed : " << device_path;
@@ -826,14 +821,13 @@ void FileManagerEventRouter::OnDeviceRemoved(
   notifications_->UnregisterDevice(device_path);
 }
 
-void FileManagerEventRouter::OnDeviceScanned(
-    const std::string& device_path) {
+void EventRouter::OnDeviceScanned(const std::string& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Device scanned : " << device_path;
 }
 
-void FileManagerEventRouter::OnFormatStarted(
-    const std::string& device_path, bool success) {
+void EventRouter::OnFormatStarted(const std::string& device_path,
+                                  bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (success) {
@@ -845,8 +839,8 @@ void FileManagerEventRouter::OnFormatStarted(
   }
 }
 
-void FileManagerEventRouter::OnFormatCompleted(
-    const std::string& device_path, bool success) {
+void EventRouter::OnFormatCompleted(const std::string& device_path,
+                                    bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (success) {

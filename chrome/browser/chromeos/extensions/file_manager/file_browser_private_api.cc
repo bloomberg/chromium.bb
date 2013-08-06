@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 
+#include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_dialog.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_drive.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_file_system.h"
@@ -19,7 +19,7 @@
 namespace file_manager {
 
 FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
-    : event_router_(new FileManagerEventRouter(profile)) {
+    : event_router_(new EventRouter(profile)) {
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   // Tasks related functions.

@@ -17,8 +17,8 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
@@ -341,7 +341,7 @@ void AddFileWatchFunction::PerformFileWatchOperation(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FileManagerEventRouter* event_router =
+  EventRouter* event_router =
       FileBrowserPrivateAPI::Get(profile_)->event_router();
   event_router->AddFileWatch(
       local_path,
@@ -362,7 +362,7 @@ void RemoveFileWatchFunction::PerformFileWatchOperation(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FileManagerEventRouter* event_router =
+  EventRouter* event_router =
       FileBrowserPrivateAPI::Get(profile_)->event_router();
   event_router->RemoveFileWatch(local_path, extension_id);
   Respond(true);

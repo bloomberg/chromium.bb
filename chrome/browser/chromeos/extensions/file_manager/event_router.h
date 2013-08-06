@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_EVENT_ROUTER_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_EVENT_ROUTER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_EVENT_ROUTER_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_EVENT_ROUTER_H_
 
 #include <map>
 #include <string>
@@ -28,7 +28,7 @@ class MountedDiskMonitor;
 
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
-class FileManagerEventRouter
+class EventRouter
     : public chromeos::disks::DiskMountManager::Observer,
       public chromeos::ConnectivityStateHelperObserver,
       public drive::DriveIntegrationServiceObserver,
@@ -36,8 +36,8 @@ class FileManagerEventRouter
       public drive::JobListObserver,
       public drive::DriveServiceObserver {
  public:
-  explicit FileManagerEventRouter(Profile* profile);
-  virtual ~FileManagerEventRouter();
+  explicit EventRouter(Profile* profile);
+  virtual ~EventRouter();
 
   void Shutdown();
 
@@ -165,10 +165,10 @@ class FileManagerEventRouter
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FileManagerEventRouter> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerEventRouter);
+  base::WeakPtrFactory<EventRouter> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };
 
 }  // namespace file_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_EVENT_ROUTER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_EVENT_ROUTER_H_

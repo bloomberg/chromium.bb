@@ -12,7 +12,7 @@ class Profile;
 
 namespace file_manager {
 
-class FileManagerEventRouter;
+class EventRouter;
 
 // Manages and registers the fileBrowserPrivate API with the extension system.
 class FileBrowserPrivateAPI : public BrowserContextKeyedService {
@@ -26,12 +26,10 @@ class FileBrowserPrivateAPI : public BrowserContextKeyedService {
   // Convenience function to return the FileBrowserPrivateAPI for a Profile.
   static FileBrowserPrivateAPI* Get(Profile* profile);
 
-  FileManagerEventRouter* event_router() {
-    return event_router_.get();
-  }
+  EventRouter* event_router() { return event_router_.get(); }
 
  private:
-  scoped_ptr<FileManagerEventRouter> event_router_;
+  scoped_ptr<EventRouter> event_router_;
 };
 
 }  // namespace file_manager

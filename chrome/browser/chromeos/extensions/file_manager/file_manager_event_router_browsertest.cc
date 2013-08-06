@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
+#include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerEventRouterBrowserTest,
                        ExternalStoragePolicyTest) {
   FileBrowserPrivateAPI* file_browser =
       FileBrowserPrivateAPIFactory::GetForProfile(browser()->profile());
-  FileManagerEventRouter* event_router =
+  EventRouter* event_router =
       file_browser->event_router();
 
   DiskMountManager::DiskEvent event = DiskMountManager::DISK_ADDED;
