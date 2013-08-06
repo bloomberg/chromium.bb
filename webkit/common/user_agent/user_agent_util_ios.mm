@@ -33,10 +33,12 @@ const UAVersions& GetUAVersionsForCurrentOS() {
   // Safari version can't be, so a lookup table is used instead (for both, since
   // the reported versions should stay in sync).
   static const OSVersionMap version_map[] = {
-    { 6, 0, { "8536.25",   "536.26" } },  // TODO(ios): Update for 6.0 final.
+    // TODO(stuartmorgan): Update for 7.0 final if necessary.
+    { 7, 0, { "8536.25",   "537.51.1" } },
+    // 6.1 has the same values as 6.0.
+    { 6, 0, { "8536.25",   "536.26" } },
     // 5.1 has the same values as 5.0.
     { 5, 0, { "7534.48.3", "534.46" } },
-    { 4, 3, { "6533.18.5", "533.17.9" } },
   };
 
   int32 os_major_version = 0;
@@ -99,53 +101,6 @@ std::string BuildOSCpuInfo() {
       (os_major_version < 5) ? " U;" : "",  // iOS < 5 has a "U;" in the UA.
       (platform == "iPad") ? "" : "iPhone ",  // iPad has an empty string here.
       os_version.c_str());
-
-  // Up until iOS 5, the locale was included at the end of the Safari UA.
-  // TODO(stuartmorgan): Remove this once iOS 4.3 is no longer supported.
-  if (os_major_version < 5) {
-    // The locale string is not easy to set correctly. Safari uses a language
-    // code and a dialect code. However, there is no setting allowing the user
-    // to set the dialect code, and no API to retrieve it.
-    // Note: The NSLocale methods (currentIdentifier:,
-    // objectForKey:NSLocaleLanguageCode and objectForKey:NSLocaleCountryCode)
-    // are not useful here because they return information related to the
-    // "Region Format" setting, which is different from the "Language" setting.
-    base::scoped_nsobject<NSDictionary> dialects([[NSDictionary alloc]
-        initWithObjectsAndKeys:
-            @"ar",    @"ar",  // No dialect code in Safari.
-            @"ca-es", @"ca",
-            @"cs-cz", @"cs",
-            @"da-dk", @"da",
-            @"el-gr", @"el",
-            @"en-gb", @"en-GB",
-            @"en-us", @"en",
-            @"he-il", @"he",
-            @"id",    @"id",  // No dialect code in Safari.
-            @"ja-jp", @"ja",
-            @"ko-kr", @"ko",
-            @"nb-no", @"nb",
-            @"pt-br", @"pt",
-            @"pt-pt", @"pt-PT",
-            @"sv-se", @"sv",
-            @"uk-ua", @"uk",
-            @"vi-vn", @"vi",
-            @"zh-cn", @"zh-Hans",
-            @"zh-tw", @"zh-Hant",
-            nil]);
-
-    NSArray* preferredLanguages = [NSLocale preferredLanguages];
-    NSString* language = ([preferredLanguages count] > 0) ?
-        [preferredLanguages objectAtIndex:0] : @"en";
-    NSString* localeIdentifier = [dialects objectForKey:language];
-    if (!localeIdentifier) {
-      // No entry in the dictionary, so duplicate the language string.
-      localeIdentifier =
-          [NSString stringWithFormat:@"%@-%@", language, language];
-    }
-
-    base::StringAppendF(&os_cpu, "; %s",
-                        base::SysNSStringToUTF8(localeIdentifier).c_str());
-  }
 
   return os_cpu;
 }
