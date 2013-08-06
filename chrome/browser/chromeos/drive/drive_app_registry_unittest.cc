@@ -30,8 +30,6 @@ class DriveAppRegistryTest : public testing::Test {
                                       base::MessageLoopProxy::current().get()));
 
     web_apps_registry_.reset(new DriveAppRegistry(scheduler_.get()));
-    web_apps_registry_->Update();
-    base::RunLoop().RunUntilIdle();
   }
 
   bool VerifyApp(const ScopedVector<DriveAppInfo>& list,
@@ -54,7 +52,7 @@ class DriveAppRegistryTest : public testing::Test {
       }
     }
     EXPECT_TRUE(found) << "Unable to find app with web_store_id "
-        << web_store_id;
+                       << web_store_id;
     return found;
   }
 
@@ -66,6 +64,9 @@ class DriveAppRegistryTest : public testing::Test {
 };
 
 TEST_F(DriveAppRegistryTest, LoadAndFindDriveApps) {
+  web_apps_registry_->Update();
+  base::RunLoop().RunUntilIdle();
+
   // Find by primary extension 'exe'.
   ScopedVector<DriveAppInfo> ext_results;
   base::FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
@@ -89,6 +90,19 @@ TEST_F(DriveAppRegistryTest, LoadAndFindDriveApps) {
   ASSERT_EQ(1U, secondary_app.size());
   VerifyApp(secondary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
             "Drive app 1", "", false);
+}
+
+TEST_F(DriveAppRegistryTest, MultipleUpdate) {
+  // Call Update().
+  web_apps_registry_->Update();
+
+  // Call Update() again.
+  // This call should be ignored because there is already an ongoing update.
+  web_apps_registry_->Update();
+
+  // The app list should be loaded only once.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_drive_service_->app_list_load_count());
 }
 
 }  // namespace drive

@@ -165,6 +165,7 @@ FakeDriveService::FakeDriveService()
       change_list_load_count_(0),
       directory_load_count_(0),
       about_resource_load_count_(0),
+      app_list_load_count_(0),
       offline_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -551,6 +552,7 @@ CancelCallback FakeDriveService::GetAppList(
     return CancelCallback();
   }
 
+  ++app_list_load_count_;
   scoped_ptr<AppList> app_list(AppList::CreateFrom(*app_info_value_));
   base::MessageLoop::current()->PostTask(
       FROM_HERE,

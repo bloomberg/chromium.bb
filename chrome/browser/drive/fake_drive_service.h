@@ -68,6 +68,10 @@ class FakeDriveService : public DriveServiceInterface {
     return about_resource_load_count_;
   }
 
+  // Returns the number of times the app list is successfully loaded by
+  // GetAppList().
+  int app_list_load_count() const { return app_list_load_count_; }
+
   // Returns the file path whose request is cancelled just before this method
   // invocation.
   const base::FilePath& last_cancelled_file() const {
@@ -272,6 +276,7 @@ class FakeDriveService : public DriveServiceInterface {
   int change_list_load_count_;
   int directory_load_count_;
   int about_resource_load_count_;
+  int app_list_load_count_;
   bool offline_;
   base::FilePath last_cancelled_file_;
 

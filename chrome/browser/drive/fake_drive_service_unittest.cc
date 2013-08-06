@@ -738,6 +738,7 @@ TEST_F(FakeDriveServiceTest, GetAppList) {
   EXPECT_EQ(HTTP_SUCCESS, error);
 
   ASSERT_TRUE(app_list);
+  EXPECT_EQ(1, fake_service_.app_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetAppList_Offline) {

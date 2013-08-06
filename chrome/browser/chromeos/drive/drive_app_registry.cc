@@ -95,6 +95,7 @@ DriveAppRegistry::DriveAppFileSelector::~DriveAppFileSelector() {
 
 DriveAppRegistry::DriveAppRegistry(JobScheduler* scheduler)
     : scheduler_(scheduler),
+      is_updating_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -137,6 +138,11 @@ void DriveAppRegistry::GetAppsForFile(
 void DriveAppRegistry::Update() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (is_updating_)  // There is already an update in progress.
+    return;
+
+  is_updating_ = true;
+
   scheduler_->GetAppList(
       base::Bind(&DriveAppRegistry::UpdateAfterGetAppList,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -146,6 +152,9 @@ void DriveAppRegistry::UpdateAfterGetAppList(
     google_apis::GDataErrorCode gdata_error,
     scoped_ptr<google_apis::AppList> app_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DCHECK(is_updating_);
+  is_updating_ = false;
 
   FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
