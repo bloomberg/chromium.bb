@@ -310,6 +310,7 @@
       'tests/MemoryInfo.cpp',
       'tests/OpaqueRectTrackingContentLayerDelegateTest.cpp',
       'tests/OpenTypeVerticalDataTest.cpp',
+      'tests/PageSerializerTest.cpp',
       'tests/PaintAggregatorTest.cpp',
       'tests/PopupContainerTest.cpp',
       'tests/PrerenderingTest.cpp',

@@ -44,6 +44,7 @@
 #include "core/editing/MarkupAccumulator.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/parser/HTMLMetaCharsetParser.h"
@@ -52,6 +53,7 @@
 #include "core/page/Page.h"
 #include "core/platform/SerializedResource.h"
 #include "core/platform/graphics/Image.h"
+#include "core/rendering/RenderImage.h"
 #include "core/rendering/style/StyleCachedImage.h"
 #include "core/rendering/style/StyleImage.h"
 #include "wtf/text/CString.h"
@@ -223,6 +225,13 @@ void PageSerializer::serializeFrame(Frame* frame)
             KURL url = document->completeURL(imageElement->getAttribute(HTMLNames::srcAttr));
             CachedImage* cachedImage = imageElement->cachedImage();
             addImageToResources(cachedImage, imageElement->renderer(), url);
+        } else if (element->hasTagName(HTMLNames::inputTag)) {
+            HTMLInputElement* inputElement = toHTMLInputElement(element);
+            if (inputElement->isImageButton() && inputElement->hasImageLoader()) {
+                KURL url = inputElement->src();
+                CachedImage* cachedImage = inputElement->imageLoader()->image();
+                addImageToResources(cachedImage, inputElement->renderer(), url);
+            }
         } else if (element->hasTagName(HTMLNames::linkTag)) {
             HTMLLinkElement* linkElement = toHTMLLinkElement(element);
             if (CSSStyleSheet* sheet = linkElement->sheet()) {
@@ -263,8 +272,9 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet* styleSheet, const KUR
         } else if (rule->type() == CSSRule::FONT_FACE_RULE) {
             // FIXME: Add support for font face rule. It is not clear to me at this point if the actual otf/eot file can
             // be retrieved from the CSSFontFaceRule object.
-        } else if (rule->type() == CSSRule::STYLE_RULE)
+        } else if (rule->type() == CSSRule::STYLE_RULE) {
             retrieveResourcesForRule(static_cast<CSSStyleRule*>(rule)->styleRule(), document);
+        }
     }
 
     if (url.isValid() && !m_resourceURLs.contains(url)) {
