@@ -1408,11 +1408,19 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
             didAddStorageEventListener(this);
     }
 
-    if (eventType == eventNames().unloadEvent)
+    if (eventType == eventNames().unloadEvent) {
         addUnloadEventListener(this);
-    else if (eventType == eventNames().beforeunloadEvent && allowsBeforeUnloadListeners(this))
-        addBeforeUnloadEventListener(this);
-    else if (eventType == eventNames().devicemotionEvent && RuntimeEnabledFeatures::deviceMotionEnabled()) {
+    } else if (eventType == eventNames().beforeunloadEvent) {
+        if (allowsBeforeUnloadListeners(this)) {
+            // This is confusingly named. It doesn't actually add the listener. It just increments a count
+            // so that we know we have listeners registered for the purposes of determining if we can
+            // fast terminate the renderer process.
+            addBeforeUnloadEventListener(this);
+        } else {
+            // Subframes return false from allowsBeforeUnloadListeners.
+            UseCounter::count(this, UseCounter::SubFrameBeforeUnloadRegistered);
+        }
+    } else if (eventType == eventNames().devicemotionEvent && RuntimeEnabledFeatures::deviceMotionEnabled()) {
         if (DeviceMotionController* controller = DeviceMotionController::from(document()))
             controller->startUpdating();
     } else if (eventType == eventNames().deviceorientationEvent && RuntimeEnabledFeatures::deviceOrientationEnabled()) {

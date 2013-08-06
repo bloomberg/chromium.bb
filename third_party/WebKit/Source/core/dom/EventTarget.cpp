@@ -38,6 +38,7 @@
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/page/DOMWindow.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
@@ -229,6 +230,15 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     // dispatch. Conveniently, all new event listeners will be added after or at
     // index |size|, so iterating up to (but not including) |size| naturally excludes
     // new event listeners.
+
+    ScriptExecutionContext* context = scriptExecutionContext();
+    if (context && context->isDocument() && event->type() == eventNames().beforeunloadEvent) {
+        Document* document = toDocument(context);
+        if (DOMWindow* domWindow = document->domWindow()) {
+            if (domWindow != domWindow->top())
+                UseCounter::count(domWindow, UseCounter::SubFrameBeforeUnloadFired);
+        }
+    }
 
     bool userEventWasHandled = false;
     size_t i = 0;
