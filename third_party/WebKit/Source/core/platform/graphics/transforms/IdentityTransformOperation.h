@@ -38,8 +38,8 @@ public:
 
 private:
     virtual bool isIdentity() const { return true; }
-    virtual OperationType getOperationType() const { return IDENTITY; }
-    virtual bool isSameType(const TransformOperation& o) const { return o.getOperationType() == IDENTITY; }
+    virtual OperationType getOperationType() const { return Identity; }
+    virtual bool isSameType(const TransformOperation& o) const { return o.getOperationType() == Identity; }
 
     virtual bool operator==(const TransformOperation& o) const
     {

@@ -64,60 +64,60 @@ PassOwnPtr<WebTransformOperations> toWebTransformOperations(const TransformOpera
     for (size_t j = 0; j < transformOperations.size(); ++j) {
         TransformOperation::OperationType operationType = transformOperations.operations()[j]->getOperationType();
         switch (operationType) {
-        case TransformOperation::SCALE_X:
-        case TransformOperation::SCALE_Y:
-        case TransformOperation::SCALE_Z:
-        case TransformOperation::SCALE_3D:
-        case TransformOperation::SCALE: {
+        case TransformOperation::ScaleX:
+        case TransformOperation::ScaleY:
+        case TransformOperation::ScaleZ:
+        case TransformOperation::Scale3D:
+        case TransformOperation::Scale: {
             ScaleTransformOperation* transform = static_cast<ScaleTransformOperation*>(transformOperations.operations()[j].get());
             webTransformOperations->appendScale(transform->x(), transform->y(), transform->z());
             break;
         }
-        case TransformOperation::TRANSLATE_X:
-        case TransformOperation::TRANSLATE_Y:
-        case TransformOperation::TRANSLATE_Z:
-        case TransformOperation::TRANSLATE_3D:
-        case TransformOperation::TRANSLATE: {
+        case TransformOperation::TranslateX:
+        case TransformOperation::TranslateY:
+        case TransformOperation::TranslateZ:
+        case TransformOperation::Translate3D:
+        case TransformOperation::Translate: {
             TranslateTransformOperation* transform = static_cast<TranslateTransformOperation*>(transformOperations.operations()[j].get());
             webTransformOperations->appendTranslate(floatValueForLength(transform->x(), boxSize.width()), floatValueForLength(transform->y(), boxSize.height()), floatValueForLength(transform->z(), 1));
             break;
         }
-        case TransformOperation::ROTATE_X:
-        case TransformOperation::ROTATE_Y:
-        case TransformOperation::ROTATE_3D:
-        case TransformOperation::ROTATE: {
+        case TransformOperation::RotateX:
+        case TransformOperation::RotateY:
+        case TransformOperation::Rotate3D:
+        case TransformOperation::Rotate: {
             RotateTransformOperation* transform = static_cast<RotateTransformOperation*>(transformOperations.operations()[j].get());
             webTransformOperations->appendRotate(transform->x(), transform->y(), transform->z(), transform->angle());
             break;
         }
-        case TransformOperation::SKEW_X:
-        case TransformOperation::SKEW_Y:
-        case TransformOperation::SKEW: {
+        case TransformOperation::SkewX:
+        case TransformOperation::SkewY:
+        case TransformOperation::Skew: {
             SkewTransformOperation* transform = static_cast<SkewTransformOperation*>(transformOperations.operations()[j].get());
             webTransformOperations->appendSkew(transform->angleX(), transform->angleY());
             break;
         }
-        case TransformOperation::MATRIX: {
+        case TransformOperation::Matrix: {
             MatrixTransformOperation* transform = static_cast<MatrixTransformOperation*>(transformOperations.operations()[j].get());
             TransformationMatrix m = transform->matrix();
             webTransformOperations->appendMatrix(TransformSkMatrix44Conversions::convert(m));
             break;
         }
-        case TransformOperation::MATRIX_3D: {
+        case TransformOperation::Matrix3D: {
             Matrix3DTransformOperation* transform = static_cast<Matrix3DTransformOperation*>(transformOperations.operations()[j].get());
             TransformationMatrix m = transform->matrix();
             webTransformOperations->appendMatrix(TransformSkMatrix44Conversions::convert(m));
             break;
         }
-        case TransformOperation::PERSPECTIVE: {
+        case TransformOperation::Perspective: {
             PerspectiveTransformOperation* transform = static_cast<PerspectiveTransformOperation*>(transformOperations.operations()[j].get());
             webTransformOperations->appendPerspective(floatValueForLength(transform->perspective(), 0));
             break;
         }
-        case TransformOperation::IDENTITY:
+        case TransformOperation::Identity:
             webTransformOperations->appendIdentity();
             break;
-        case TransformOperation::NONE:
+        case TransformOperation::None:
             // Do nothing.
             break;
         } // switch
@@ -142,11 +142,11 @@ bool appendKeyframeWithCustomBezierTimingFunction(Curve* curve, double keyTime, 
 
 bool isRotationType(TransformOperation::OperationType transformType)
 {
-    return transformType == TransformOperation::ROTATE
-        || transformType == TransformOperation::ROTATE_X
-        || transformType == TransformOperation::ROTATE_Y
-        || transformType == TransformOperation::ROTATE_Z
-        || transformType == TransformOperation::ROTATE_3D;
+    return transformType == TransformOperation::Rotate
+        || transformType == TransformOperation::RotateX
+        || transformType == TransformOperation::RotateY
+        || transformType == TransformOperation::RotateZ
+        || transformType == TransformOperation::Rotate3D;
 }
 
 template <>

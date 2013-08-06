@@ -75,7 +75,7 @@ private:
         , m_angle(angle)
         , m_type(type)
     {
-        ASSERT(type == ROTATE_X || type == ROTATE_Y || type == ROTATE_Z || type == ROTATE_3D);
+        ASSERT(type == RotateX || type == RotateY || type == RotateZ || type == Rotate3D);
     }
 
     double m_x;

@@ -79,7 +79,7 @@ private:
         , m_z(tz)
         , m_type(type)
     {
-        ASSERT(type == TRANSLATE_X || type == TRANSLATE_Y || type == TRANSLATE_Z || type == TRANSLATE || type == TRANSLATE_3D);
+        ASSERT(type == TranslateX || type == TranslateY || type == TranslateZ || type == Translate || type == Translate3D);
     }
 
     Length m_x;

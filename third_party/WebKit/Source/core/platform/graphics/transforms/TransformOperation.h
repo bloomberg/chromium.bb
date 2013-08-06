@@ -37,18 +37,18 @@ namespace WebCore {
 class TransformOperation : public RefCounted<TransformOperation> {
 public:
     enum OperationType {
-        SCALE_X, SCALE_Y, SCALE,
-        TRANSLATE_X, TRANSLATE_Y, TRANSLATE,
-        ROTATE,
-        ROTATE_Z = ROTATE,
-        SKEW_X, SKEW_Y, SKEW,
-        MATRIX,
-        SCALE_Z, SCALE_3D,
-        TRANSLATE_Z, TRANSLATE_3D,
-        ROTATE_X, ROTATE_Y, ROTATE_3D,
-        MATRIX_3D,
-        PERSPECTIVE,
-        IDENTITY, NONE
+        ScaleX, ScaleY, Scale,
+        TranslateX, TranslateY, Translate,
+        Rotate,
+        RotateZ = Rotate,
+        SkewX, SkewY, Skew,
+        Matrix,
+        ScaleZ, Scale3D,
+        TranslateZ, Translate3D,
+        RotateX, RotateY, Rotate3D,
+        Matrix3D,
+        Perspective,
+        Identity, None
     };
 
     virtual ~TransformOperation() { }
@@ -69,15 +69,15 @@ public:
     bool is3DOperation() const
     {
         OperationType opType = getOperationType();
-        return opType == SCALE_Z ||
-               opType == SCALE_3D ||
-               opType == TRANSLATE_Z ||
-               opType == TRANSLATE_3D ||
-               opType == ROTATE_X ||
-               opType == ROTATE_Y ||
-               opType == ROTATE_3D ||
-               opType == MATRIX_3D ||
-               opType == PERSPECTIVE;
+        return opType == ScaleZ
+            || opType == Scale3D
+            || opType == TranslateZ
+            || opType == Translate3D
+            || opType == RotateX
+            || opType == RotateY
+            || opType == Rotate3D
+            || opType == Matrix3D
+            || opType == Perspective;
     }
 };
 

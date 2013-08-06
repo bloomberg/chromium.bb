@@ -90,7 +90,7 @@ PassRefPtr<TransformOperation> RotateTransformOperation::blend(const TransformOp
         y = 0;
         z = 1;
     }
-    return RotateTransformOperation::create(x, y, z, angle, ROTATE_3D);
+    return RotateTransformOperation::create(x, y, z, angle, Rotate3D);
 }
 
 } // namespace WebCore

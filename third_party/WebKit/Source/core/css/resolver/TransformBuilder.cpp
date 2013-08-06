@@ -59,30 +59,30 @@ static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const Rend
 static TransformOperation::OperationType getTransformOperationType(CSSTransformValue::TransformOperationType type)
 {
     switch (type) {
-    case CSSTransformValue::ScaleTransformOperation: return TransformOperation::SCALE;
-    case CSSTransformValue::ScaleXTransformOperation: return TransformOperation::SCALE_X;
-    case CSSTransformValue::ScaleYTransformOperation: return TransformOperation::SCALE_Y;
-    case CSSTransformValue::ScaleZTransformOperation: return TransformOperation::SCALE_Z;
-    case CSSTransformValue::Scale3DTransformOperation: return TransformOperation::SCALE_3D;
-    case CSSTransformValue::TranslateTransformOperation: return TransformOperation::TRANSLATE;
-    case CSSTransformValue::TranslateXTransformOperation: return TransformOperation::TRANSLATE_X;
-    case CSSTransformValue::TranslateYTransformOperation: return TransformOperation::TRANSLATE_Y;
-    case CSSTransformValue::TranslateZTransformOperation: return TransformOperation::TRANSLATE_Z;
-    case CSSTransformValue::Translate3DTransformOperation: return TransformOperation::TRANSLATE_3D;
-    case CSSTransformValue::RotateTransformOperation: return TransformOperation::ROTATE;
-    case CSSTransformValue::RotateXTransformOperation: return TransformOperation::ROTATE_X;
-    case CSSTransformValue::RotateYTransformOperation: return TransformOperation::ROTATE_Y;
-    case CSSTransformValue::RotateZTransformOperation: return TransformOperation::ROTATE_Z;
-    case CSSTransformValue::Rotate3DTransformOperation: return TransformOperation::ROTATE_3D;
-    case CSSTransformValue::SkewTransformOperation: return TransformOperation::SKEW;
-    case CSSTransformValue::SkewXTransformOperation: return TransformOperation::SKEW_X;
-    case CSSTransformValue::SkewYTransformOperation: return TransformOperation::SKEW_Y;
-    case CSSTransformValue::MatrixTransformOperation: return TransformOperation::MATRIX;
-    case CSSTransformValue::Matrix3DTransformOperation: return TransformOperation::MATRIX_3D;
-    case CSSTransformValue::PerspectiveTransformOperation: return TransformOperation::PERSPECTIVE;
-    case CSSTransformValue::UnknownTransformOperation: return TransformOperation::NONE;
+    case CSSTransformValue::ScaleTransformOperation: return TransformOperation::Scale;
+    case CSSTransformValue::ScaleXTransformOperation: return TransformOperation::ScaleX;
+    case CSSTransformValue::ScaleYTransformOperation: return TransformOperation::ScaleY;
+    case CSSTransformValue::ScaleZTransformOperation: return TransformOperation::ScaleZ;
+    case CSSTransformValue::Scale3DTransformOperation: return TransformOperation::Scale3D;
+    case CSSTransformValue::TranslateTransformOperation: return TransformOperation::Translate;
+    case CSSTransformValue::TranslateXTransformOperation: return TransformOperation::TranslateX;
+    case CSSTransformValue::TranslateYTransformOperation: return TransformOperation::TranslateY;
+    case CSSTransformValue::TranslateZTransformOperation: return TransformOperation::TranslateZ;
+    case CSSTransformValue::Translate3DTransformOperation: return TransformOperation::Translate3D;
+    case CSSTransformValue::RotateTransformOperation: return TransformOperation::Rotate;
+    case CSSTransformValue::RotateXTransformOperation: return TransformOperation::RotateX;
+    case CSSTransformValue::RotateYTransformOperation: return TransformOperation::RotateY;
+    case CSSTransformValue::RotateZTransformOperation: return TransformOperation::RotateZ;
+    case CSSTransformValue::Rotate3DTransformOperation: return TransformOperation::Rotate3D;
+    case CSSTransformValue::SkewTransformOperation: return TransformOperation::Skew;
+    case CSSTransformValue::SkewXTransformOperation: return TransformOperation::SkewX;
+    case CSSTransformValue::SkewYTransformOperation: return TransformOperation::SkewY;
+    case CSSTransformValue::MatrixTransformOperation: return TransformOperation::Matrix;
+    case CSSTransformValue::Matrix3DTransformOperation: return TransformOperation::Matrix3D;
+    case CSSTransformValue::PerspectiveTransformOperation: return TransformOperation::Perspective;
+    case CSSTransformValue::UnknownTransformOperation: return TransformOperation::None;
     }
-    return TransformOperation::NONE;
+    return TransformOperation::None;
 }
 
 bool TransformBuilder::createTransformOperations(CSSValue* inValue, const RenderStyle* style, const RenderStyle* rootStyle, TransformOperations& outOperations)

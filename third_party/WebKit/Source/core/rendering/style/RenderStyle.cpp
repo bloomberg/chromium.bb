@@ -798,11 +798,11 @@ inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation> >& tr
     unsigned size = transformOperations.size();
     for (unsigned i = 0; i < size; ++i) {
         TransformOperation::OperationType type = transformOperations[i]->getOperationType();
-        if (type != TransformOperation::TRANSLATE_X
-            && type != TransformOperation::TRANSLATE_Y
-            && type != TransformOperation::TRANSLATE
-            && type != TransformOperation::TRANSLATE_Z
-            && type != TransformOperation::TRANSLATE_3D)
+        if (type != TransformOperation::TranslateX
+            && type != TransformOperation::TranslateY
+            && type != TransformOperation::Translate
+            && type != TransformOperation::TranslateZ
+            && type != TransformOperation::Translate3D)
             return true;
     }
 

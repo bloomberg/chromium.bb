@@ -487,10 +487,10 @@ int GraphicsLayer::validateTransformOperations(const KeyframeValueList& valueLis
         TransformOperation::OperationType type = firstVal->operations().at(j)->getOperationType();
 
         // if this is a rotation entry, we need to see if any angle differences are >= 180 deg
-        if (type == TransformOperation::ROTATE_X ||
-            type == TransformOperation::ROTATE_Y ||
-            type == TransformOperation::ROTATE_Z ||
-            type == TransformOperation::ROTATE_3D) {
+        if (type == TransformOperation::RotateX
+            || type == TransformOperation::RotateY
+            || type == TransformOperation::RotateZ
+            || type == TransformOperation::Rotate3D) {
             lastRotAngle = static_cast<RotateTransformOperation*>(firstVal->operations().at(j).get())->angle();
 
             if (maxRotAngle < 0)
