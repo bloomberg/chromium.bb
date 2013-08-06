@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/process/launch.h"
@@ -356,7 +358,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
     // If this tab held url2, then restore this single tab.
     if (tab.navigations[0].virtual_url() == url2) {
       timestamp = tab.navigations[0].timestamp();
-      service->RestoreEntryById(NULL, tab.id, host_desktop_type, UNKNOWN);
+      std::vector<content::WebContents*> content =
+          service->RestoreEntryById(NULL, tab.id, host_desktop_type, UNKNOWN);
+      ASSERT_EQ(1U, content.size());
+      ASSERT_TRUE(content[0]);
+      EXPECT_EQ(url2, content[0]->GetURL());
       break;
     }
   }
@@ -404,7 +410,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
       static_cast<TabRestoreService::Tab*>(service->entries().front());
 
   // Restore the tab.
-  service->RestoreEntryById(NULL, tab->id, host_desktop_type, UNKNOWN);
+  std::vector<content::WebContents*> content =
+      service->RestoreEntryById(NULL, tab->id, host_desktop_type, UNKNOWN);
+  ASSERT_EQ(1U, content.size());
+  ASSERT_TRUE(content[0]);
+  EXPECT_EQ(url, content[0]->GetURL());
 
   // Make sure the restore was successful.
   EXPECT_EQ(0U, service->entries().size());
@@ -487,11 +497,12 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Restore in the current tab.
+  content::WebContents* tab_content = NULL;
   {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    SessionRestore::RestoreForeignSessionTab(
+    tab_content = SessionRestore::RestoreForeignSessionTab(
         browser()->tab_strip_model()->GetActiveWebContents(), tab, CURRENT_TAB);
     observer.Wait();
   }
@@ -500,13 +511,16 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
       browser()->tab_strip_model()->GetWebContentsAt(0);
   VerifyNavigationEntries(web_contents->GetController(), url1, url2);
   ASSERT_TRUE(web_contents->GetUserAgentOverride().empty());
+  ASSERT_TRUE(tab_content);
+  ASSERT_EQ(url2, tab_content->GetURL());
 
   // Restore in a new tab.
+  tab_content = NULL;
   {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    SessionRestore::RestoreForeignSessionTab(
+    tab_content = SessionRestore::RestoreForeignSessionTab(
         browser()->tab_strip_model()->GetActiveWebContents(),
         tab, NEW_BACKGROUND_TAB);
     observer.Wait();
@@ -516,15 +530,18 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
   VerifyNavigationEntries(web_contents->GetController(), url1, url2);
   ASSERT_TRUE(web_contents->GetUserAgentOverride().empty());
+  ASSERT_TRUE(tab_content);
+  ASSERT_EQ(url2, tab_content->GetURL());
 
   // Restore in a new window.
   Browser* new_browser = NULL;
+  tab_content = NULL;
   {
     ui_test_utils::BrowserAddedObserver browser_observer;
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    SessionRestore::RestoreForeignSessionTab(
+    tab_content = SessionRestore::RestoreForeignSessionTab(
         browser()->tab_strip_model()->GetActiveWebContents(), tab, NEW_WINDOW);
     new_browser = browser_observer.WaitForSingleNewBrowser();
     observer.Wait();
@@ -534,6 +551,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   web_contents = new_browser->tab_strip_model()->GetWebContentsAt(0);
   VerifyNavigationEntries(web_contents->GetController(), url1, url2);
   ASSERT_TRUE(web_contents->GetUserAgentOverride().empty());
+  ASSERT_TRUE(tab_content);
+  ASSERT_EQ(url2, tab_content->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
@@ -574,12 +593,18 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
 
   session.push_back(static_cast<const SessionWindow*>(&window));
   ui_test_utils::BrowserAddedObserver window_observer;
-  SessionRestore::RestoreForeignSessionWindows(
-      profile, browser()->host_desktop_type(), session.begin(), session.end());
+  std::vector<Browser*> browsers =
+      SessionRestore::RestoreForeignSessionWindows(
+          profile, browser()->host_desktop_type(), session.begin(),
+          session.end());
   Browser* new_browser = window_observer.WaitForSingleNewBrowser();
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(2u, active_browser_list_->size());
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
+
+  ASSERT_EQ(1u, browsers.size());
+  ASSERT_TRUE(browsers[0]);
+  ASSERT_EQ(2, browsers[0]->tab_strip_model()->count());
 
   content::WebContents* web_contents_1 =
       new_browser->tab_strip_model()->GetWebContentsAt(0);

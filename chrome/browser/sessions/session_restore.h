@@ -52,10 +52,11 @@ class SessionRestore {
                                  uint32 behavior,
                                  const std::vector<GURL>& urls_to_open);
 
-  // Specifically used in the restoration of a foreign session.  This method
+  // Specifically used in the restoration of a foreign session.  This function
   // restores the given session windows to multiple browsers all of which
-  // will be created on the desktop specified by |host_desktop_type|.
-  static void RestoreForeignSessionWindows(
+  // will be created on the desktop specified by |host_desktop_type|. Returns
+  // the created Browsers.
+  static std::vector<Browser*> RestoreForeignSessionWindows(
       Profile* profile,
       chrome::HostDesktopType host_desktop_type,
       std::vector<const SessionWindow*>::const_iterator begin,
@@ -63,8 +64,9 @@ class SessionRestore {
 
   // Specifically used in the restoration of a foreign session.  This method
   // restores the given session tab to the browser of |source_web_contents| if
-  // the disposition is not NEW_WINDOW.
-  static void RestoreForeignSessionTab(
+  // the disposition is not NEW_WINDOW. Returns the WebContents corresponding
+  // to the restored tab.
+  static content::WebContents* RestoreForeignSessionTab(
       content::WebContents* source_web_contents,
       const SessionTab& tab,
       WindowOpenDisposition disposition);

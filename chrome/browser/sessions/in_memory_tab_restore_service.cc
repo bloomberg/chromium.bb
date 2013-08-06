@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sessions/in_memory_tab_restore_service.h"
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -50,10 +52,11 @@ const TabRestoreService::Entries& InMemoryTabRestoreService::entries() const {
   return helper_.entries();
 }
 
-void InMemoryTabRestoreService::RestoreMostRecentEntry(
+std::vector<content::WebContents*>
+InMemoryTabRestoreService::RestoreMostRecentEntry(
     TabRestoreServiceDelegate* delegate,
     chrome::HostDesktopType host_desktop_type) {
-  helper_.RestoreMostRecentEntry(delegate, host_desktop_type);
+  return helper_.RestoreMostRecentEntry(delegate, host_desktop_type);
 }
 
 TabRestoreService::Tab* InMemoryTabRestoreService::RemoveTabEntryById(
@@ -61,12 +64,12 @@ TabRestoreService::Tab* InMemoryTabRestoreService::RemoveTabEntryById(
   return helper_.RemoveTabEntryById(id);
 }
 
-void InMemoryTabRestoreService::RestoreEntryById(
+std::vector<content::WebContents*> InMemoryTabRestoreService::RestoreEntryById(
     TabRestoreServiceDelegate* delegate,
     SessionID::id_type id,
     chrome::HostDesktopType host_desktop_type,
     WindowOpenDisposition disposition) {
-  helper_.RestoreEntryById(delegate, id, host_desktop_type, disposition);
+  return helper_.RestoreEntryById(delegate, id, host_desktop_type, disposition);
 }
 
 void InMemoryTabRestoreService::LoadTabsFromLastSession() {

@@ -155,8 +155,9 @@ class TabRestoreService : public BrowserContextKeyedService {
   // Restores the most recently closed entry. Does nothing if there are no
   // entries to restore. If the most recently restored entry is a tab, it is
   // added to |delegate|. If a new browser needs to be created for this entry,
-  // it will be created on the desktop specified by |host_desktop_type|.
-  virtual void RestoreMostRecentEntry(
+  // it will be created on the desktop specified by |host_desktop_type|. Returns
+  // the WebContents of the restored tab(s).
+  virtual std::vector<content::WebContents*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
       chrome::HostDesktopType host_desktop_type) = 0;
 
@@ -170,10 +171,12 @@ class TabRestoreService : public BrowserContextKeyedService {
   // browser window) of the tab when it was closed will be respected if
   // disposition is UNKNOWN. If a new browser needs to be created for this
   // entry, it will be created on the desktop specified by |host_desktop_type|.
-  virtual void RestoreEntryById(TabRestoreServiceDelegate* delegate,
-                                SessionID::id_type id,
-                                chrome::HostDesktopType host_desktop_type,
-                                WindowOpenDisposition disposition) = 0;
+  // Returns the WebContents of the restored tab(s).
+  virtual std::vector<content::WebContents*> RestoreEntryById(
+      TabRestoreServiceDelegate* delegate,
+      SessionID::id_type id,
+      chrome::HostDesktopType host_desktop_type,
+      WindowOpenDisposition disposition) = 0;
 
   // Loads the tabs and previous session. This does nothing if the tabs
   // from the previous session have already been loaded.

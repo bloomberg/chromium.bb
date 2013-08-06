@@ -31,7 +31,8 @@ namespace chrome {
 // the newly created tab is pinned. If |from_last_session| is true,
 // |navigations| are from the previous session. |user_agent_override| contains
 // the string being used as the user agent for all of the tab's navigations when
-// the regular user agent is overridden.
+// the regular user agent is overridden. Returns the WebContents of the restored
+// tab.
 content::WebContents* AddRestoredTab(
     Browser* browser,
     const std::vector<sessions::SerializedNavigationEntry>& navigations,
@@ -45,8 +46,9 @@ content::WebContents* AddRestoredTab(
     const std::string& user_agent_override);
 
 // Replaces the state of the currently selected tab with the session
-// history restored from the SessionRestore system.
-void ReplaceRestoredTab(
+// history restored from the SessionRestore system. Returns the WebContents of
+// the restored tab.
+content::WebContents* ReplaceRestoredTab(
     Browser* browser,
     const std::vector<sessions::SerializedNavigationEntry>& navigations,
     int selected_navigation,

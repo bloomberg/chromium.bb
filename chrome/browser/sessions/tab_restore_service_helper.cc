@@ -170,13 +170,15 @@ const TabRestoreService::Entries& TabRestoreServiceHelper::entries() const {
   return entries_;
 }
 
-void TabRestoreServiceHelper::RestoreMostRecentEntry(
+std::vector<content::WebContents*>
+TabRestoreServiceHelper::RestoreMostRecentEntry(
     TabRestoreServiceDelegate* delegate,
     chrome::HostDesktopType host_desktop_type) {
   if (entries_.empty())
-    return;
+    return std::vector<WebContents*>();
 
-  RestoreEntryById(delegate, entries_.front()->id, host_desktop_type, UNKNOWN);
+  return RestoreEntryById(delegate, entries_.front()->id, host_desktop_type,
+      UNKNOWN);
 }
 
 TabRestoreService::Tab* TabRestoreServiceHelper::RemoveTabEntryById(
@@ -194,7 +196,7 @@ TabRestoreService::Tab* TabRestoreServiceHelper::RemoveTabEntryById(
   return tab;
 }
 
-void TabRestoreServiceHelper::RestoreEntryById(
+std::vector<content::WebContents*> TabRestoreServiceHelper::RestoreEntryById(
     TabRestoreServiceDelegate* delegate,
     SessionID::id_type id,
     chrome::HostDesktopType host_desktop_type,
@@ -202,7 +204,7 @@ void TabRestoreServiceHelper::RestoreEntryById(
   Entries::iterator entry_iterator = GetEntryIteratorById(id);
   if (entry_iterator == entries_.end())
     // Don't hoark here, we allow an invalid id.
-    return;
+    return std::vector<WebContents*>();
 
   if (observer_)
     observer_->OnRestoreEntryById(id, entry_iterator);
@@ -221,9 +223,13 @@ void TabRestoreServiceHelper::RestoreEntryById(
   // |delegate| will be NULL in cases where one isn't already available (eg,
   // when invoked on Mac OS X with no windows open). In this case, create a
   // new browser into which we restore the tabs.
+  std::vector<WebContents*> web_contents;
   if (entry->type == TabRestoreService::TAB) {
     Tab* tab = static_cast<Tab*>(entry);
-    delegate = RestoreTab(*tab, delegate, host_desktop_type, disposition);
+    WebContents* restored_tab = NULL;
+    delegate = RestoreTab(*tab, delegate, host_desktop_type, disposition,
+        &restored_tab);
+    web_contents.push_back(restored_tab);
     delegate->ShowBrowserWindow();
   } else if (entry->type == TabRestoreService::WINDOW) {
     TabRestoreServiceDelegate* current_delegate = delegate;
@@ -250,6 +256,7 @@ void TabRestoreServiceHelper::RestoreEntryById(
         if (restored_tab) {
           restored_tab->GetController().LoadIfNecessary();
           RecordAppLaunch(profile_, tab);
+          web_contents.push_back(restored_tab);
         }
       }
       // All the window's tabs had the same former browser_id.
@@ -264,7 +271,10 @@ void TabRestoreServiceHelper::RestoreEntryById(
            tab_i != window->tabs.end(); ++tab_i) {
         const Tab& tab = *tab_i;
         if (tab.id == id) {
-          delegate = RestoreTab(tab, delegate, host_desktop_type, disposition);
+          WebContents* restored_tab = NULL;
+          delegate = RestoreTab(tab, delegate, host_desktop_type, disposition,
+              &restored_tab);
+          web_contents.push_back(restored_tab);
           window->tabs.erase(tab_i);
           // If restoring the tab leaves the window with nothing else, delete it
           // as well.
@@ -302,6 +312,7 @@ void TabRestoreServiceHelper::RestoreEntryById(
 
   restoring_ = false;
   NotifyTabsChanged();
+  return web_contents;
 }
 
 void TabRestoreServiceHelper::NotifyTabsChanged() {
@@ -437,14 +448,17 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
     const Tab& tab,
     TabRestoreServiceDelegate* delegate,
     chrome::HostDesktopType host_desktop_type,
-    WindowOpenDisposition disposition) {
+    WindowOpenDisposition disposition,
+    WebContents** contents) {
+  WebContents* web_contents;
   if (disposition == CURRENT_TAB && delegate) {
-    delegate->ReplaceRestoredTab(tab.navigations,
-                                 tab.current_navigation_index,
-                                 tab.from_last_session,
-                                 tab.extension_app_id,
-                                 tab.session_storage_namespace.get(),
-                                 tab.user_agent_override);
+    web_contents = delegate->ReplaceRestoredTab(
+        tab.navigations,
+        tab.current_navigation_index,
+        tab.from_last_session,
+        tab.extension_app_id,
+        tab.session_storage_namespace.get(),
+        tab.user_agent_override);
   } else {
     // We only respsect the tab's original browser if there's no disposition.
     if (disposition == UNKNOWN && tab.has_browser()) {
@@ -473,19 +487,21 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
       tab_index = delegate->GetTabCount();
     }
 
-    WebContents* web_contents =
-        delegate->AddRestoredTab(tab.navigations,
-                                 tab_index,
-                                 tab.current_navigation_index,
-                                 tab.extension_app_id,
-                                 disposition != NEW_BACKGROUND_TAB,
-                                 tab.pinned,
-                                 tab.from_last_session,
-                                 tab.session_storage_namespace.get(),
-                                 tab.user_agent_override);
+    web_contents = delegate->AddRestoredTab(tab.navigations,
+                                            tab_index,
+                                            tab.current_navigation_index,
+                                            tab.extension_app_id,
+                                            disposition != NEW_BACKGROUND_TAB,
+                                            tab.pinned,
+                                            tab.from_last_session,
+                                            tab.session_storage_namespace.get(),
+                                            tab.user_agent_override);
     web_contents->GetController().LoadIfNecessary();
   }
   RecordAppLaunch(profile_, tab);
+  if (contents)
+    *contents = web_contents;
+
   return delegate;
 }
 

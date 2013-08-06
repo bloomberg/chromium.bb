@@ -130,7 +130,7 @@ content::WebContents* AddRestoredTab(
   return web_contents;
 }
 
-void ReplaceRestoredTab(
+content::WebContents* ReplaceRestoredTab(
     Browser* browser,
     const std::vector<SerializedNavigationEntry>& navigations,
     int selected_navigation,
@@ -155,6 +155,7 @@ void ReplaceRestoredTab(
                                  TabStripModel::ADD_ACTIVE |
                                  TabStripModel::ADD_INHERIT_GROUP);
   tab_strip->CloseWebContentsAt(insertion_index, TabStripModel::CLOSE_NONE);
+  return web_contents;
 }
 
 }  // namespace chrome

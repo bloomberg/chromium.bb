@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SESSIONS_PERSISTENT_TAB_RESTORE_SERVICE_H_
 #define CHROME_BROWSER_SESSIONS_PERSISTENT_TAB_RESTORE_SERVICE_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,14 +33,15 @@ class PersistentTabRestoreService : public TabRestoreService {
   virtual void BrowserClosed(TabRestoreServiceDelegate* delegate) OVERRIDE;
   virtual void ClearEntries() OVERRIDE;
   virtual const Entries& entries() const OVERRIDE;
-  virtual void RestoreMostRecentEntry(
+  virtual std::vector<content::WebContents*> RestoreMostRecentEntry(
       TabRestoreServiceDelegate* delegate,
       chrome::HostDesktopType host_desktop_type) OVERRIDE;
   virtual Tab* RemoveTabEntryById(SessionID::id_type id) OVERRIDE;
-  virtual void RestoreEntryById(TabRestoreServiceDelegate* delegate,
-                                SessionID::id_type id,
-                                chrome::HostDesktopType host_desktop_type,
-                                WindowOpenDisposition disposition) OVERRIDE;
+  virtual std::vector<content::WebContents*> RestoreEntryById(
+      TabRestoreServiceDelegate* delegate,
+      SessionID::id_type id,
+      chrome::HostDesktopType host_desktop_type,
+      WindowOpenDisposition disposition) OVERRIDE;
   virtual void LoadTabsFromLastSession() OVERRIDE;
   virtual bool IsLoaded() const OVERRIDE;
   virtual void DeleteLastSession() OVERRIDE;

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_HELPER_H_
 
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
@@ -79,13 +80,15 @@ class TabRestoreServiceHelper {
   void BrowserClosed(TabRestoreServiceDelegate* delegate);
   void ClearEntries();
   const Entries& entries() const;
-  void RestoreMostRecentEntry(TabRestoreServiceDelegate* delegate,
-                              chrome::HostDesktopType host_desktop_type);
+  std::vector<content::WebContents*> RestoreMostRecentEntry(
+      TabRestoreServiceDelegate* delegate,
+      chrome::HostDesktopType host_desktop_type);
   Tab* RemoveTabEntryById(SessionID::id_type id);
-  void RestoreEntryById(TabRestoreServiceDelegate* delegate,
-                        SessionID::id_type id,
-                        chrome::HostDesktopType host_desktop_type,
-                        WindowOpenDisposition disposition);
+  std::vector<content::WebContents*> RestoreEntryById(
+      TabRestoreServiceDelegate* delegate,
+      SessionID::id_type id,
+      chrome::HostDesktopType host_desktop_type,
+      WindowOpenDisposition disposition);
 
   // Notifies observers the tabs have changed.
   void NotifyTabsChanged();
@@ -128,12 +131,14 @@ class TabRestoreServiceHelper {
   // |disposition| will be respected, but if it is UNKNOWN then the tab's
   // original attributes will be respected instead. If a new browser needs to be
   // created for this tab, it will be created on the desktop specified by
-  // |host_desktop_type|.
+  // |host_desktop_type|. If present, |contents| will be populated with the
+  // WebContents of the restored tab.
   TabRestoreServiceDelegate* RestoreTab(
       const Tab& tab,
       TabRestoreServiceDelegate* delegate,
       chrome::HostDesktopType host_desktop_type,
-      WindowOpenDisposition disposition);
+      WindowOpenDisposition disposition,
+      content::WebContents** contents);
 
   // Returns true if |tab| has more than one navigation. If |tab| has more
   // than one navigation |tab->current_navigation_index| is constrained based

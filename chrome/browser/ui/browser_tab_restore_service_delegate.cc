@@ -65,14 +65,14 @@ WebContents* BrowserTabRestoreServiceDelegate::AddRestoredTab(
                                 user_agent_override);
 }
 
-void BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
+WebContents* BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int selected_navigation,
       bool from_last_session,
       const std::string& extension_app_id,
       SessionStorageNamespace* session_storage_namespace,
       const std::string& user_agent_override) {
-  chrome::ReplaceRestoredTab(browser_, navigations, selected_navigation,
+  return chrome::ReplaceRestoredTab(browser_, navigations, selected_navigation,
                              from_last_session, extension_app_id,
                              session_storage_namespace, user_agent_override);
 }

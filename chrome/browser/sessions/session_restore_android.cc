@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sessions/session_restore.h"
 
+#include <vector>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,7 +18,7 @@
 // The android implementation does not do anything "foreign session" specific.
 // We use it to restore tabs from "recently closed" too.
 // static
-void SessionRestore::RestoreForeignSessionTab(
+content::WebContents* SessionRestore::RestoreForeignSessionTab(
     content::WebContents* web_contents,
     const SessionTab& session_tab,
     WindowOpenDisposition disposition) {
@@ -36,13 +38,15 @@ void SessionRestore::RestoreForeignSessionTab(
       content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
       &entries);
   tab_model->CreateTab(new_web_contents);
+  return new_web_contents;
 }
 
 // static
-void SessionRestore::RestoreForeignSessionWindows(
+std::vector<Browser*> SessionRestore::RestoreForeignSessionWindows(
     Profile* profile,
     chrome::HostDesktopType host_desktop_type,
     std::vector<const SessionWindow*>::const_iterator begin,
     std::vector<const SessionWindow*>::const_iterator end) {
   NOTREACHED();
+  return std::vector<Browser*>();
 }
