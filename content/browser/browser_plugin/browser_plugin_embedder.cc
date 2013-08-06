@@ -187,7 +187,6 @@ void BrowserPluginEmbedder::OnAttach(
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
-        params.browser_plugin_instance_id,
         extra_params);
     guest->Attach(static_cast<WebContentsImpl*>(web_contents()), params);
     return;
@@ -202,7 +201,6 @@ void BrowserPluginEmbedder::OnAttach(
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
-        params.browser_plugin_instance_id,
         extra_params);
     guest->Initialize(static_cast<WebContentsImpl*>(web_contents()), params);
   }

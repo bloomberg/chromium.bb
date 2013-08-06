@@ -67,13 +67,12 @@ GuestView* GuestView::From(int embedder_process_id, int guest_instance_id) {
 
 void GuestView::Attach(content::WebContents* embedder_web_contents,
                        const std::string& extension_id,
-                       int view_instance_id,
                        const base::DictionaryValue& args) {
   embedder_web_contents_ = embedder_web_contents;
   embedder_render_process_id_ =
       embedder_web_contents->GetRenderProcessHost()->GetID();
   extension_id_ = extension_id;
-  view_instance_id_ = view_instance_id;
+  args.GetInteger(guestview::kParameterInstanceId, &view_instance_id_);
 
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
   embedder_guestview_map.Get().insert(std::make_pair(key, this));

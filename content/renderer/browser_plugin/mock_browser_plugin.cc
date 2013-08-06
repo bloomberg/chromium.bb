@@ -9,9 +9,8 @@ namespace content {
 
 MockBrowserPlugin::MockBrowserPlugin(RenderViewImpl* render_view,
                                      WebKit::WebFrame* frame,
-                                     const WebKit::WebPluginParams& params,
-                                     int instance_id)
-    : BrowserPlugin(render_view, frame, params, instance_id) {
+                                     const WebKit::WebPluginParams& params)
+    : BrowserPlugin(render_view, frame, params) {
 }
 
 MockBrowserPlugin::~MockBrowserPlugin() {}

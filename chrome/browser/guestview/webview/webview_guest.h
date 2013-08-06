@@ -33,7 +33,6 @@ class WebViewGuest : public GuestView,
   // GuestView implementation.
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const std::string& extension_id,
-                      int view_instance_id,
                       const base::DictionaryValue& args) OVERRIDE;
   virtual GuestView::Type GetViewType() const OVERRIDE;
   virtual WebViewGuest* AsWebView() OVERRIDE;

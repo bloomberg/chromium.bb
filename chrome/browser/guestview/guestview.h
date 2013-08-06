@@ -48,7 +48,6 @@ class GuestView : public content::BrowserPluginGuestDelegate {
 
   virtual void Attach(content::WebContents* embedder_web_contents,
                       const std::string& extension_id,
-                      int view_instance_id,
                       const base::DictionaryValue& args);
 
   content::WebContents* embedder_web_contents() const {

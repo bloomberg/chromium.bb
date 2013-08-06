@@ -38,7 +38,7 @@ WebView.prototype.setupWebRequestEvents_ = function() {
                 'webview.' + webRequestEvent.name,
                 webRequestEvent.parameters,
                 webRequestEvent.extraParameters, null,
-                self.browserPluginNode_.getInstanceId());
+                self.viewInstanceId_);
       }
       return self[webRequestEvent.name + '_'];
     }

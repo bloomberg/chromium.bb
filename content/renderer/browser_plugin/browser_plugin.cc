@@ -91,10 +91,8 @@ static base::LazyInstance<PluginContainerMap> g_plugin_container_map =
 BrowserPlugin::BrowserPlugin(
     RenderViewImpl* render_view,
     WebKit::WebFrame* frame,
-    const WebPluginParams& params,
-    int instance_id)
+    const WebPluginParams& params)
     : guest_instance_id_(browser_plugin::kInstanceIDNone),
-      instance_id_(instance_id),
       render_view_(render_view->AsWeakPtr()),
       render_view_routing_id_(render_view->GetRoutingID()),
       container_(NULL),
@@ -397,7 +395,6 @@ void BrowserPlugin::OnInstanceIDAllocated(int guest_instance_id) {
 
 void BrowserPlugin::Attach(scoped_ptr<base::DictionaryValue> extra_params) {
   BrowserPluginHostMsg_Attach_Params attach_params;
-  attach_params.browser_plugin_instance_id = instance_id_;
   attach_params.focused = ShouldGuestBeFocused();
   attach_params.visible = visible_;
   attach_params.name = GetNameAttribute();

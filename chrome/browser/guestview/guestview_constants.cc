@@ -11,8 +11,9 @@ const char kIsTopLevel[] = "isTopLevel";
 const char kReason[] = "reason";
 const char kUrl[] = "url";
 
-// Attributes.
-const char kAttributeApi[] = "api";
+// Initialization parameters.
+const char kParameterApi[] = "api";
+const char kParameterInstanceId[] = "instanceId";
 
 // Other.
 const int kInstanceIDNone = 0;

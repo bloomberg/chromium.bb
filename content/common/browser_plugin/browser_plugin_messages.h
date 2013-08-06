@@ -64,7 +64,6 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
-  IPC_STRUCT_MEMBER(int, browser_plugin_instance_id)
   IPC_STRUCT_MEMBER(std::string, storage_partition_id)
   IPC_STRUCT_MEMBER(bool, persist_storage)
   IPC_STRUCT_MEMBER(bool, focused)

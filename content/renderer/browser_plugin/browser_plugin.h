@@ -40,7 +40,6 @@ class CONTENT_EXPORT BrowserPlugin :
   RenderViewImpl* render_view() const { return render_view_.get(); }
   int render_view_routing_id() const { return render_view_routing_id_; }
   int guest_instance_id() const { return guest_instance_id_; }
-  int instance_id() const { return instance_id_; }
 
   static BrowserPlugin* FromContainer(WebKit::WebPluginContainer* container);
 
@@ -219,8 +218,7 @@ class CONTENT_EXPORT BrowserPlugin :
   BrowserPlugin(
       RenderViewImpl* render_view,
       WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params,
-      int instance_id);
+      const WebKit::WebPluginParams& params);
 
   virtual ~BrowserPlugin();
 
@@ -336,9 +334,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // This is the browser-process-allocated instance ID that uniquely identifies
   // a guest WebContents.
   int guest_instance_id_;
-  // This is a render-process-allocated instance ID that uniquely identifies a
-  // BrowserPlugin.
-  int instance_id_;
   base::WeakPtr<RenderViewImpl> render_view_;
   // We cache the |render_view_|'s routing ID because we need it on destruction.
   // If the |render_view_| is destroyed before the BrowserPlugin is destroyed

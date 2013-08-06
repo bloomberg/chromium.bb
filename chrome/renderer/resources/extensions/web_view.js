@@ -18,6 +18,8 @@ var WEB_VIEW_EVENTS = {
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
 };
 
+var webViewInstanceIdCounter = 0;
+
 var createEvent = function(name) {
   var eventOpts = {supportsListeners: true, supportsFilters: true};
   return new eventBindings.Event(name, undefined, eventOpts);
@@ -343,11 +345,13 @@ WebView.prototype.handleBrowserPluginAttributeMutation_ = function(mutation) {
  */
 WebView.prototype.setupWebviewNodeEvents_ = function() {
   var self = this;
+  this.viewInstanceId_ = ++webViewInstanceIdCounter;
   var onInstanceIdAllocated = function(e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
     self.instanceId_ = detail.windowId;
     var params = {
-      'api': 'webview'
+      'api': 'webview',
+      'instanceId': self.viewInstanceId_
     };
     self.browserPluginNode_['-internal-attach'](params);
 

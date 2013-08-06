@@ -80,10 +80,9 @@ WebViewGuest* WebViewGuest::From(int embedder_process_id,
 
 void WebViewGuest::Attach(WebContents* embedder_web_contents,
                           const std::string& extension_id,
-                          int view_instance_id,
                           const base::DictionaryValue& args) {
   GuestView::Attach(
-      embedder_web_contents, extension_id, view_instance_id, args);
+      embedder_web_contents, extension_id, args);
 
   AddWebViewToExtensionRendererState();
 }
@@ -317,7 +316,6 @@ void WebViewGuest::AddWebViewToExtensionRendererState() {
   ExtensionRendererState::WebViewInfo webview_info;
   webview_info.embedder_process_id = embedder_render_process_id();
   webview_info.embedder_routing_id = embedder_web_contents()->GetRoutingID();
-  webview_info.guest_instance_id = guest_instance_id();
   webview_info.instance_id = view_instance_id();
 
   content::BrowserThread::PostTask(

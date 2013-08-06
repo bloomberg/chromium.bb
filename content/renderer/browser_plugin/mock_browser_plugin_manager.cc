@@ -14,7 +14,6 @@ namespace content {
 MockBrowserPluginManager::MockBrowserPluginManager(
     RenderViewImpl* render_view)
     : BrowserPluginManager(render_view),
-      browser_plugin_instance_id_counter_(0),
       guest_instance_id_counter_(0) {
 }
 
@@ -25,8 +24,7 @@ BrowserPlugin* MockBrowserPluginManager::CreateBrowserPlugin(
     RenderViewImpl* render_view,
     WebKit::WebFrame* frame,
     const WebKit::WebPluginParams& params) {
-  int instance_id = ++browser_plugin_instance_id_counter_;
-  return new MockBrowserPlugin(render_view, frame, params, instance_id);
+  return new MockBrowserPlugin(render_view, frame, params);
 }
 
 void MockBrowserPluginManager::AllocateInstanceID(

@@ -831,7 +831,7 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
     return;
   }
   std::string api_type;
-  extra_params->GetString(guestview::kAttributeApi, &api_type);
+  extra_params->GetString(guestview::kParameterApi, &api_type);
 
   if (api_type == "adview") {
     *guest_delegate  = new AdViewGuest(guest_web_contents);
@@ -845,7 +845,6 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
 void ChromeContentBrowserClient::GuestWebContentsAttached(
     WebContents* guest_web_contents,
     WebContents* embedder_web_contents,
-    int browser_plugin_instance_id,
     const base::DictionaryValue& extra_params) {
   Profile* profile = Profile::FromBrowserContext(
       embedder_web_contents->GetBrowserContext());
@@ -873,7 +872,6 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
   }
   guest->Attach(embedder_web_contents,
                 extension->id(),
-                browser_plugin_instance_id,
                 extra_params);
 }
 

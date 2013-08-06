@@ -14,8 +14,9 @@ extern const char kIsTopLevel[];
 extern const char kReason[];
 extern const char kUrl[];
 
-// Attributes.
-extern const char kAttributeApi[];
+// Initialization parameters.
+extern const char kParameterApi[];
+extern const char kParameterInstanceId[];
 
 // Other.
 extern const int kInstanceIDNone;

@@ -192,7 +192,7 @@ TEST_F(BrowserPluginTest, InitialResize) {
   EXPECT_EQ(480, params.resize_guest_params.view_rect.height());
   ASSERT_TRUE(browser_plugin);
   // Now the browser plugin is expecting a UpdateRect resize.
-  int instance_id = browser_plugin->instance_id();
+  int instance_id = browser_plugin->guest_instance_id();
   EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
 
   // Send the BrowserPlugin an UpdateRect equal to its container size with
@@ -289,7 +289,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
   ASSERT_TRUE(browser_plugin);
-  int instance_id = browser_plugin->instance_id();
+  int instance_id = browser_plugin->guest_instance_id();
   EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
   // Send an UpdateRect to the BrowserPlugin to make it use the pending damage
   // buffer.

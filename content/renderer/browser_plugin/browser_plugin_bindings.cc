@@ -286,26 +286,6 @@ class BrowserPluginBindingAttachWindowTo : public BrowserPluginMethodBinding {
 
 // Note: This is a method that is used internally by the <webview> shim only.
 // This should not be exposed to developers.
-class BrowserPluginBindingGetInstanceID : public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingGetInstanceID()
-      : BrowserPluginMethodBinding(browser_plugin::kMethodGetInstanceId, 0) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    int instance_id = bindings->instance()->instance_id();
-    INT32_TO_NPVARIANT(instance_id, *result);
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingGetInstanceID);
-};
-
-// Note: This is a method that is used internally by the <webview> shim only.
-// This should not be exposed to developers.
 class BrowserPluginBindingGetGuestInstanceID :
     public BrowserPluginMethodBinding {
  public:
@@ -731,7 +711,6 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
 
   method_bindings_.push_back(new BrowserPluginBindingAttach);
   method_bindings_.push_back(new BrowserPluginBindingAttachWindowTo);
-  method_bindings_.push_back(new BrowserPluginBindingGetInstanceID);
   method_bindings_.push_back(new BrowserPluginBindingGetGuestInstanceID);
   method_bindings_.push_back(new BrowserPluginBindingSetPermission);
   method_bindings_.push_back(new BrowserPluginBindingTrackObjectLifetime);

@@ -45,7 +45,7 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
                                  int request_id,
                                  const gfx::Point& position);
 
-  int browser_plugin_instance_id_counter_;
+  int request_id_counter_;
   IDMap<BrowserPlugin> pending_allocate_guest_instance_id_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
