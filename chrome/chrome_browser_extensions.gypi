@@ -376,8 +376,6 @@
         'browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h',
         'browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h',
         'browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h',
-        'browser/extensions/api/record/record_api.cc',
-        'browser/extensions/api/record/record_api.h',
         'browser/extensions/api/recovery_private/recovery_operation.cc',
         'browser/extensions/api/recovery_private/recovery_operation.h',
         'browser/extensions/api/recovery_private/recovery_operation_manager.cc',

@@ -53,7 +53,6 @@
           'experimental_identity.idl',
           'experimental_idltest.idl',
           'location.idl',
-          'experimental_record.json',
           'system_memory.idl',
           'extension.json',
           'feedback_private.idl',

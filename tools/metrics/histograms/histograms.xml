@@ -16984,7 +16984,7 @@ other types of suffix sets.
   <int value="178" label="BOOKMARKS_GETTREE"/>
   <int value="179" label="FILEBROWSERPRIVATE_SELECTFILES"/>
   <int value="180" label="RUNTIME_GETBACKGROUNDPAGE"/>
-  <int value="181" label="EXPERIMENTAL_RECORD_REPLAYURLS"/>
+  <int value="181" label="DELETED_EXPERIMENTAL_RECORD_REPLAYURLS"/>
   <int value="182" label="WEBSTOREPRIVATE_COMPLETEINSTALL"/>
   <int value="183" label="DELETED_EXPERIMENTAL_SPEECHINPUT_START"/>
   <int value="184" label="COOKIES_GETALL"/>
@@ -17154,7 +17154,7 @@ other types of suffix sets.
   <int value="348" label="CONTEXTMENUS_CREATE"/>
   <int value="349" label="MEDIAPLAYERPRIVATE_GETPLAYLIST"/>
   <int value="350" label="DOWNLOADS_ERASE"/>
-  <int value="351" label="EXPERIMENTAL_RECORD_CAPTUREURLS"/>
+  <int value="351" label="DELETED_EXPERIMENTAL_RECORD_CAPTUREURLS"/>
   <int value="352" label="TTS_ISSPEAKING"/>
   <int value="353" label="BOOKMARKS_REMOVETREE"/>
   <int value="354" label="FILEBROWSERPRIVATE_SEARCHDRIVE"/>

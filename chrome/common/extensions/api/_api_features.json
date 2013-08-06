@@ -213,10 +213,6 @@
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
   },
-  "experimental.record": {
-    "dependencies": ["permission:experimental"],
-    "contexts": ["blessed_extension"]
-  },
   "experimental.rlz": {
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
