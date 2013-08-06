@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Tue Jul 23 13:16:52 2013. */
+/* From private/ppb_nacl_private.idl modified Mon Jul 29 16:44:58 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -50,9 +50,9 @@ typedef enum {
  */
 /* PPB_NaCl_Private */
 struct PPB_NaCl_Private_1_0 {
-  /* Launches NaCl's sel_ldr process.  Returns PP_NACL_OK on success and
-   * writes a NaClHandle to imc_handle. Returns PP_NACL_FAILED on failure.
-   * The |enable_ppapi_dev| parameter controls whether GetInterface
+  /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
+   * and writes a NaClHandle to imc_handle. Returns PP_EXTERNAL_PLUGIN_FAILED on
+   * failure. The |enable_ppapi_dev| parameter controls whether GetInterface
    * returns 'Dev' interfaces to the NaCl plugin.  The |uses_ppapi| flag
    * indicates that the nexe run by sel_ldr will use the PPAPI APIs.
    * This implies that LaunchSelLdr is run from the main thread.  If a nexe
@@ -74,11 +74,12 @@ struct PPB_NaCl_Private_1_0 {
                                           void* imc_handle,
                                           struct PP_Var* error_message);
   /* This function starts the IPC proxy so the nexe can communicate with the
-   * browser. Returns PP_NACL_OK on success, otherwise a result code indicating
-   * the failure. PP_NACL_FAILED is returned if LaunchSelLdr wasn't called with
-   * the instance. PP_NACL_ERROR_MODULE is returned if the module can't be
-   * initialized. PP_NACL_ERROR_INSTANCE is returned if the instance can't be
-   * initialized. PP_NACL_USE_SRPC is returned if the plugin should use SRPC.
+   * browser. Returns PP_EXTERNAL_PLUGIN_OK on success, otherwise a result code
+   * indicating the failure. PP_EXTERNAL_PLUGIN_FAILED is returned if
+   * LaunchSelLdr wasn't called with the instance.
+   * PP_EXTERNAL_PLUGIN_ERROR_MODULE is returned if the module can't be
+   * initialized. PP_EXTERNAL_PLUGIN_ERROR_INSTANCE is returned if the instance
+   * can't be initialized.
    */
   PP_ExternalPluginResult (*StartPpapiProxy)(PP_Instance instance);
   /* On POSIX systems, this function returns the file descriptor of
@@ -101,10 +102,15 @@ struct PPB_NaCl_Private_1_0 {
                                    PP_FileHandle* target_handle,
                                    uint32_t desired_access,
                                    uint32_t options);
+  /* Check if PNaCl is installed and attempt to install if necessary.
+   * Callback is called when the check is done and PNaCl is already installed,
+   * or after an on-demand install is attempted. Called back with PP_OK if
+   * PNaCl is available. Called back with an error otherwise.
+   */
+  int32_t (*EnsurePnaclInstalled)(PP_Instance instance,
+                                  struct PP_CompletionCallback callback);
   /* Returns a read-only file descriptor of a file rooted in the Pnacl
    * component directory, or an invalid handle on failure.
-   * Do we want this to take a completion callback and be async, or
-   * could we make this happen on another thread?
    */
   PP_FileHandle (*GetReadonlyPnaclFd)(const char* filename);
   /* This creates a temporary file that will be deleted by the time

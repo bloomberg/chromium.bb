@@ -9,6 +9,7 @@
 // nacl_types is built into nacl_helper in addition to chrome, and we don't
 // want to pull src/url/ into there, since it would be unnecessary bloat.
 
+#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
 
@@ -26,6 +27,20 @@ struct PnaclCacheInfo {
   int opt_level;
   base::Time last_modified;
   std::string etag;
+};
+
+// Progress information for PNaCl on-demand installs.
+struct PnaclInstallProgress {
+  int64 current;
+  int64 total_size;
+
+  // Returns an instance of PnaclInstallProgress where the
+  // total is marked as unknown.
+  static PnaclInstallProgress Unknown();
+
+  // Returns true if the given instance of PnaclInstallProgress has
+  // an unknown total.
+  static bool progress_known(const PnaclInstallProgress& p);
 };
 
 }  // namespace nacl

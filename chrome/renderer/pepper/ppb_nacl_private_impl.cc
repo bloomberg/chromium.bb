@@ -41,10 +41,11 @@ base::LazyInstance<scoped_refptr<PnaclTranslationResourceHost> >
     g_pnacl_resource_host = LAZY_INSTANCE_INITIALIZER;
 
 static bool InitializePnaclResourceHost() {
+  // Must run on the main thread.
+  content::RenderThread* render_thread = content::RenderThread::Get();
+  if (!render_thread)
+    return false;
   if (!g_pnacl_resource_host.Get()) {
-    content::RenderThread* render_thread = content::RenderThread::Get();
-    if (!render_thread)
-      return false;
     g_pnacl_resource_host.Get() = new PnaclTranslationResourceHost(
         render_thread->GetIOMessageLoopProxy());
     render_thread->AddFilter(g_pnacl_resource_host.Get());
@@ -201,6 +202,19 @@ int32_t BrokerDuplicateHandle(PP_FileHandle source_handle,
 #endif
 }
 
+int32_t EnsurePnaclInstalled(PP_Instance instance,
+                             PP_CompletionCallback callback) {
+  ppapi::thunk::EnterInstance enter(instance, callback);
+  if (enter.failed())
+    return enter.retval();
+  if (!InitializePnaclResourceHost())
+    return enter.SetResult(PP_ERROR_FAILED);
+  g_pnacl_resource_host.Get()->EnsurePnaclInstalled(
+      instance,
+      enter.callback());
+  return enter.SetResult(PP_OK_COMPLETIONPENDING);
+}
+
 PP_FileHandle GetReadonlyPnaclFD(const char* filename) {
   IPC::PlatformFileForTransit out_fd = IPC::InvalidPlatformFileForTransit();
   IPC::Sender* sender = content::RenderThread::Get();
@@ -210,11 +224,9 @@ PP_FileHandle GetReadonlyPnaclFD(const char* filename) {
           &out_fd))) {
     return base::kInvalidPlatformFileValue;
   }
-
   if (out_fd == IPC::InvalidPlatformFileForTransit()) {
     return base::kInvalidPlatformFileValue;
   }
-
   base::PlatformFile handle =
       IPC::PlatformFileForTransitToPlatformFile(out_fd);
   return handle;
@@ -255,8 +267,6 @@ int32_t GetNexeFd(PP_Instance instance,
   if (!InitializePnaclResourceHost())
     return enter.SetResult(PP_ERROR_FAILED);
 
-  IPC::Sender* sender = content::RenderThread::Get();
-  DCHECK(sender);
   base::Time last_modified_time;
   // If FromString fails, it doesn't touch last_modified_time and we just send
   // the default-constructed null value.
@@ -346,6 +356,7 @@ const PPB_NaCl_Private nacl_interface = {
   &UrandomFD,
   &Are3DInterfacesDisabled,
   &BrokerDuplicateHandle,
+  &EnsurePnaclInstalled,
   &GetReadonlyPnaclFD,
   &CreateTemporaryFile,
   &GetNexeFd,

@@ -58,6 +58,7 @@ class NaClBrowserDelegate {
   // Install PNaCl if this operation is supported. On success, the |installed|
   // callback should be called with true, and on failure (or not supported),
   // the |installed| callback should be called with false.
+  // TODO(jvoung): Add the progress callback as well.
   virtual void TryInstallPnacl(
       const base::Callback<void(bool)>& installed) = 0;
 };

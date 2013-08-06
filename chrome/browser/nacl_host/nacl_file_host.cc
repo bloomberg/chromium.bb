@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "components/nacl/common/nacl_browser_delegate.h"
 #include "components/nacl/common/nacl_host_messages.h"
+#include "components/nacl/common/pnacl_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
@@ -41,6 +42,37 @@ void NotifyRendererOfError(
   nacl_host_message_filter->Send(reply_msg);
 }
 
+void TryInstallPnacl(
+    const nacl_file_host::InstallCallback& done_callback,
+    const nacl_file_host::InstallProgressCallback& progress_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // TODO(jvoung): Figure out a way to get progress events and
+  // call progress_callback.
+  NaClBrowser::GetDelegate()->TryInstallPnacl(done_callback);
+}
+
+void DoEnsurePnaclInstalled(
+    const nacl_file_host::InstallCallback& done_callback,
+    const nacl_file_host::InstallProgressCallback& progress_callback) {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  // If already installed, return reply w/ success immediately.
+  base::FilePath pnacl_dir;
+  if (NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir)
+      && !pnacl_dir.empty()
+      && base::PathExists(pnacl_dir)) {
+    done_callback.Run(true);
+    return;
+  }
+
+  // Otherwise, request an install (but send some "unknown" progress first).
+  progress_callback.Run(nacl::PnaclInstallProgress::Unknown());
+  // TryInstall after sending the progress event so that they are more ordered.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&TryInstallPnacl, done_callback, progress_callback));
+}
+
 bool PnaclDoOpenFile(const base::FilePath& file_to_open,
                      base::PlatformFile* out_file) {
   base::PlatformFileError error_code;
@@ -58,43 +90,6 @@ bool PnaclDoOpenFile(const base::FilePath& file_to_open,
 void DoOpenPnaclFile(
     scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
     const std::string& filename,
-    IPC::Message* reply_msg);
-
-void PnaclCheckDone(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
-    const std::string& filename,
-    IPC::Message* reply_msg,
-    bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!success) {
-    NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
-  } else {
-    if (!BrowserThread::PostBlockingPoolTask(
-            FROM_HERE,
-            base::Bind(&DoOpenPnaclFile,
-                       nacl_host_message_filter,
-                       filename,
-                       reply_msg))) {
-      NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
-    }
-  }
-}
-
-void TryInstallPnacl(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
-    const std::string& filename,
-    IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  NaClBrowser::GetDelegate()->TryInstallPnacl(
-      base::Bind(&PnaclCheckDone,
-                 nacl_host_message_filter,
-                 filename,
-                 reply_msg));
-}
-
-void DoOpenPnaclFile(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
-    const std::string& filename,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::FilePath full_filepath;
@@ -103,12 +98,7 @@ void DoOpenPnaclFile(
   base::FilePath pnacl_dir;
   if (!NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir) ||
       !base::PathExists(pnacl_dir)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&TryInstallPnacl,
-                   nacl_host_message_filter,
-                   filename,
-                   reply_msg));
+    NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
   }
 
@@ -247,6 +237,18 @@ void DoOpenNaClExecutableOnThreadPool(
 }  // namespace
 
 namespace nacl_file_host {
+
+void EnsurePnaclInstalled(
+    const InstallCallback& done_callback,
+    const InstallProgressCallback& progress_callback) {
+  if (!BrowserThread::PostBlockingPoolTask(
+          FROM_HERE,
+          base::Bind(&DoEnsurePnaclInstalled,
+                     done_callback,
+                     progress_callback))) {
+    done_callback.Run(false);
+  }
+}
 
 void GetReadonlyPnaclFd(
     scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,

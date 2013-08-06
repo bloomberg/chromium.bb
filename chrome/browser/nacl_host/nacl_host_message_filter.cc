@@ -56,6 +56,8 @@ bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message,
   IPC_BEGIN_MESSAGE_MAP_EX(NaClHostMessageFilter, message, *message_was_ok)
 #if !defined(DISABLE_NACL)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClHostMsg_LaunchNaCl, OnLaunchNaCl)
+    IPC_MESSAGE_HANDLER(NaClHostMsg_EnsurePnaclInstalled,
+                        OnEnsurePnaclInstalled)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClHostMsg_GetReadonlyPnaclFD,
                                     OnGetReadonlyPnaclFd)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClHostMsg_NaClCreateTemporaryFile,
@@ -94,6 +96,27 @@ void NaClHostMessageFilter::OnLaunchNaCl(
   base::FilePath manifest_url =
       GetManifestPath(extension_info_map_.get(), launch_params.manifest_url);
   host->Launch(this, reply_msg, manifest_url);
+}
+
+void NaClHostMessageFilter::ReplyEnsurePnaclInstalled(
+    int instance,
+    bool success) {
+  Send(new NaClViewMsg_EnsurePnaclInstalledReply(instance, success));
+}
+
+void NaClHostMessageFilter::SendProgressEnsurePnaclInstalled(
+    int instance,
+    const nacl::PnaclInstallProgress& progress) {
+    // TODO(jvoung): actually send an IPC.
+}
+
+void NaClHostMessageFilter::OnEnsurePnaclInstalled(
+    int instance) {
+  nacl_file_host::EnsurePnaclInstalled(
+      base::Bind(&NaClHostMessageFilter::ReplyEnsurePnaclInstalled,
+                 this, instance),
+      base::Bind(&NaClHostMessageFilter::SendProgressEnsurePnaclInstalled,
+                 this, instance));
 }
 
 void NaClHostMessageFilter::OnGetReadonlyPnaclFd(

@@ -25,7 +25,9 @@ PnaclTranslationResourceHost::PnaclTranslationResourceHost(
     : io_message_loop_(io_message_loop), channel_(NULL) {}
 
 PnaclTranslationResourceHost::~PnaclTranslationResourceHost() {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   CleanupCacheRequests();
+  CleanupEnsurePnaclRequests();
 }
 
 void PnaclTranslationResourceHost::OnFilterAdded(IPC::Channel* channel) {
@@ -49,6 +51,8 @@ bool PnaclTranslationResourceHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PnaclTranslationResourceHost, message)
     IPC_MESSAGE_HANDLER(NaClViewMsg_NexeTempFileReply, OnNexeTempFileReply)
+    IPC_MESSAGE_HANDLER(NaClViewMsg_EnsurePnaclInstalledReply,
+                        OnEnsurePnaclInstalledReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -61,20 +65,29 @@ void PnaclTranslationResourceHost::RequestNexeFd(
     PP_Bool* is_hit,
     PP_FileHandle* file_handle,
     scoped_refptr<TrackedCallback> callback) {
+  DCHECK(PpapiGlobals::Get()->
+         GetMainThreadMessageLoop()->BelongsToCurrentThread());
+  io_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&PnaclTranslationResourceHost::SendRequestNexeFd,
+                 this,
+                 render_view_id,
+                 instance,
+                 cache_info,
+                 is_hit,
+                 file_handle,
+                 callback));
+  return;
+}
 
-  if (!io_message_loop_->BelongsToCurrentThread()) {
-    io_message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&PnaclTranslationResourceHost::RequestNexeFd,
-                   this,
-                   render_view_id,
-                   instance,
-                   cache_info,
-                   is_hit,
-                   file_handle,
-                   callback));
-    return;
-  }
+void PnaclTranslationResourceHost::SendRequestNexeFd(
+    int render_view_id,
+    PP_Instance instance,
+    const nacl::PnaclCacheInfo& cache_info,
+    PP_Bool* is_hit,
+    PP_FileHandle* file_handle,
+    scoped_refptr<TrackedCallback> callback) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   if (!channel_ || !channel_->Send(new NaClHostMsg_NexeTempFileRequest(
                        render_view_id, instance, cache_info))) {
     PpapiGlobals::Get()->GetMainThreadMessageLoop()
@@ -90,14 +103,19 @@ void PnaclTranslationResourceHost::RequestNexeFd(
 
 void PnaclTranslationResourceHost::ReportTranslationFinished(
     PP_Instance instance) {
-  if (!io_message_loop_->BelongsToCurrentThread()) {
-    io_message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&PnaclTranslationResourceHost::ReportTranslationFinished,
-                   this,
-                   instance));
-    return;
-  }
+  DCHECK(PpapiGlobals::Get()->
+         GetMainThreadMessageLoop()->BelongsToCurrentThread());
+  io_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&PnaclTranslationResourceHost::SendReportTranslationFinished,
+                 this,
+                 instance));
+  return;
+}
+
+void PnaclTranslationResourceHost::SendReportTranslationFinished(
+    PP_Instance instance) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   // If the channel is closed or we have been detached, we are probably shutting
   // down, so just don't send anything.
   if (!channel_)
@@ -110,6 +128,7 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
     PP_Instance instance,
     bool is_hit,
     IPC::PlatformFileForTransit file) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   CacheRequestInfoMap::iterator it = pending_cache_requests_.find(instance);
   int32_t status = PP_ERROR_FAILED;
   // Handle the expected successful case first.
@@ -136,12 +155,79 @@ void PnaclTranslationResourceHost::OnNexeTempFileReply(
 }
 
 void PnaclTranslationResourceHost::CleanupCacheRequests() {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   for (CacheRequestInfoMap::iterator it = pending_cache_requests_.begin();
        it != pending_cache_requests_.end();
        ++it) {
     it->second.callback->PostAbort();
   }
   pending_cache_requests_.clear();
+}
+
+void PnaclTranslationResourceHost::EnsurePnaclInstalled(
+    PP_Instance instance,
+    scoped_refptr<TrackedCallback> callback) {
+  DCHECK(PpapiGlobals::Get()->
+         GetMainThreadMessageLoop()->BelongsToCurrentThread());
+  io_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&PnaclTranslationResourceHost::SendEnsurePnaclInstalled,
+                 this, instance, callback));
+  return;
+}
+
+void PnaclTranslationResourceHost::SendEnsurePnaclInstalled(
+    PP_Instance instance,
+    scoped_refptr<TrackedCallback> callback) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  // If a request is already in, just queue this one and wait for notification.
+  // Hope that the request is not canceled.
+  if (pending_ensure_pnacl_requests_.size() > 0) {
+    pending_ensure_pnacl_requests_.push_back(callback);
+    return;
+  }
+  // Otherwise, try to send the request, then queue.
+  if (!channel_ || !channel_->Send(new NaClHostMsg_EnsurePnaclInstalled(
+          instance))) {
+    PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(&TrackedCallback::Run,
+                   callback,
+                   static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
+  }
+  pending_ensure_pnacl_requests_.push_back(callback);
+}
+
+void PnaclTranslationResourceHost::OnEnsurePnaclInstalledReply(
+    PP_Instance instance,
+    bool success) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  // Broadcast to all listeners.
+  for (EnsurePnaclInstalledList::iterator
+           i = pending_ensure_pnacl_requests_.begin(),
+           e = pending_ensure_pnacl_requests_.end();
+       i != e; ++i) {
+    if (TrackedCallback::IsPending(*i)) {
+      PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+          FROM_HERE,
+          base::Bind(&TrackedCallback::Run,
+                     *i,
+                     static_cast<int32_t>(success ? PP_OK : PP_ERROR_FAILED)));
+    }
+  }
+  pending_ensure_pnacl_requests_.clear();
+}
+
+void PnaclTranslationResourceHost::CleanupEnsurePnaclRequests() {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  for (EnsurePnaclInstalledList::iterator
+           i = pending_ensure_pnacl_requests_.begin(),
+           e = pending_ensure_pnacl_requests_.end();
+       i != e; ++i) {
+    (*i)->PostAbort();
+  }
+  pending_ensure_pnacl_requests_.clear();
 }
 
 #endif  // DISABLE_NACL

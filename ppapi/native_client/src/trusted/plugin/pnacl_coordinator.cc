@@ -241,19 +241,13 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
                  reinterpret_cast<const void*>(coordinator->manifest_.get()),
                  coordinator->off_the_record_));
 
-  // Loading resources (e.g. llc and ld nexes) is done with PnaclResources.
-  coordinator->resources_.reset(
-      new PnaclResources(plugin,
-                         coordinator,
-                         coordinator->manifest_.get()));
-  CHECK(coordinator->resources_ != NULL);
-
-  // The first step of loading resources: read the resource info file.
-  pp::CompletionCallback resource_info_read_cb =
+  // First check that PNaCl is installed.
+  pp::CompletionCallback pnacl_installed_cb =
       coordinator->callback_factory_.NewCallback(
-          &PnaclCoordinator::ResourceInfoWasRead);
-  coordinator->resources_->ReadResourceInfo(PnaclUrls::GetResourceInfoUrl(),
-                                            resource_info_read_cb);
+          &PnaclCoordinator::DidCheckPnaclInstalled);
+  plugin->nacl_interface()->EnsurePnaclInstalled(
+      plugin->pp_instance(),
+      pnacl_installed_cb.pp_completion_callback());
   return coordinator;
 }
 
@@ -662,6 +656,29 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
     translated_fd_.reset(temp_nexe_file_->release_read_wrapper());
   }
   translate_notify_callback_.Run(pp_error);
+}
+
+void PnaclCoordinator::DidCheckPnaclInstalled(int32_t pp_error) {
+  if (pp_error != PP_OK) {
+    ReportNonPpapiError(
+        ERROR_PNACL_RESOURCE_FETCH,
+        nacl::string("The Portable Native Client component is not installed"
+                     " or has been disabled."));
+    return;
+  }
+
+  // Loading resources (e.g. llc and ld nexes) is done with PnaclResources.
+  resources_.reset(new PnaclResources(plugin_,
+                                      this,
+                                      this->manifest_.get()));
+  CHECK(resources_ != NULL);
+
+  // The first step of loading resources: read the resource info file.
+  pp::CompletionCallback resource_info_read_cb =
+      callback_factory_.NewCallback(
+          &PnaclCoordinator::ResourceInfoWasRead);
+  resources_->ReadResourceInfo(PnaclUrls::GetResourceInfoUrl(),
+                               resource_info_read_cb);
 }
 
 void PnaclCoordinator::ResourceInfoWasRead(int32_t pp_error) {
