@@ -513,13 +513,6 @@ setup_session(struct weston_launch *wl)
 			error(1, errno, "TIOCSCTTY failed - tty is in use");
 	}
 
-	if (setgid(wl->pw->pw_gid) < 0 ||
-#ifdef HAVE_INITGROUPS
-	    initgroups(wl->pw->pw_name, wl->pw->pw_gid) < 0 ||
-#endif
-	    setuid(wl->pw->pw_uid) < 0)
-		error(1, errno, "dropping privileges failed");
-
 	term = getenv("TERM");
 	clearenv();
 	setenv("TERM", term, 1);
@@ -539,6 +532,17 @@ setup_session(struct weston_launch *wl)
 }
 
 static void
+drop_privileges(struct weston_launch *wl)
+{
+	if (setgid(wl->pw->pw_gid) < 0 ||
+#ifdef HAVE_INITGROUPS
+	    initgroups(wl->pw->pw_name, wl->pw->pw_gid) < 0 ||
+#endif
+	    setuid(wl->pw->pw_uid) < 0)
+		error(1, errno, "dropping privileges failed");
+}
+
+static void
 launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 {
 	char *child_argv[MAX_ARGV_SIZE];
@@ -549,6 +553,8 @@ launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 		printf("weston-launch: spawned weston with pid: %d\n", getpid());
 	if (wl->new_user)
 		setup_session(wl);
+
+	drop_privileges(wl);
 
 	if (wl->tty != STDIN_FILENO)
 		setenv_fd("WESTON_TTY_FD", wl->tty);
