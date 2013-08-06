@@ -38,7 +38,7 @@ class PageCycler(page_measurement.PageMeasurement):
                            'page_cycler.js'), 'r') as f:
       self._page_cycler_js = f.read()
 
-    self._memory_metrics = None
+    self._memory_metric = None
     self._histograms = None
 
   def AddCommandLineOptions(self, parser):
@@ -51,9 +51,9 @@ class PageCycler(page_measurement.PageMeasurement):
     parser.add_option(pageset_repeat_option)
 
   def DidStartBrowser(self, browser):
-    self._memory_metrics = memory.MemoryMetrics()
-    self._memory_metrics.Start(browser)
-
+    """Initialize metrics once right after the browser has been launched."""
+    self._memory_metric = memory.MemoryMetric(browser)
+    self._memory_metric.Start()
     self._histograms = [histogram.HistogramMetric(
                            h, histogram.RENDERER_HISTOGRAM)
                        for h in MEMORY_HISTOGRAMS]
@@ -126,5 +126,7 @@ class PageCycler(page_measurement.PageMeasurement):
                 chart_name='times')
 
   def DidRunTest(self, tab, results):
-    self._memory_metrics.StopAndGetResults(tab.browser, results)
+    self._memory_metric.Stop()
+    self._memory_metric.AddResults(tab, results)
     self.MeasureIO(tab, results)
+
