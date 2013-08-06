@@ -5,13 +5,9 @@
 #ifndef CONTENT_BROWSER_BYTE_STREAM_H_
 #define CONTENT_BROWSER_BYTE_STREAM_H_
 
-#include <deque>
-#include <set>
-#include <utility>
-
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "net/base/io_buffer.h"
 

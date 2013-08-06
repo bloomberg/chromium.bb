@@ -541,4 +541,42 @@ TEST_F(ByteStreamTest, ByteStream_ZeroCallback) {
   EXPECT_EQ(1, num_callbacks);
 }
 
+TEST_F(ByteStreamTest, ByteStream_CloseWithoutAnyWrite) {
+  scoped_ptr<ByteStreamWriter> byte_stream_input;
+  scoped_ptr<ByteStreamReader> byte_stream_output;
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      3 * 1024, &byte_stream_input, &byte_stream_output);
+
+  byte_stream_input->Close(0);
+  message_loop_.RunUntilIdle();
+
+  scoped_refptr<net::IOBuffer> output_io_buffer;
+  size_t output_length;
+  EXPECT_EQ(ByteStreamReader::STREAM_COMPLETE,
+            byte_stream_output->Read(&output_io_buffer, &output_length));
+}
+
+TEST_F(ByteStreamTest, ByteStream_FlushWithoutAnyWrite) {
+  scoped_ptr<ByteStreamWriter> byte_stream_input;
+  scoped_ptr<ByteStreamReader> byte_stream_output;
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      3 * 1024, &byte_stream_input, &byte_stream_output);
+
+  byte_stream_input->Flush();
+  message_loop_.RunUntilIdle();
+
+  scoped_refptr<net::IOBuffer> output_io_buffer;
+  size_t output_length;
+  EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
+            byte_stream_output->Read(&output_io_buffer, &output_length));
+
+  byte_stream_input->Close(0);
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(ByteStreamReader::STREAM_COMPLETE,
+            byte_stream_output->Read(&output_io_buffer, &output_length));
+}
+
 }  // namespace content

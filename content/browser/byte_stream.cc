@@ -4,10 +4,13 @@
 
 #include "content/browser/byte_stream.h"
 
+#include <deque>
+#include <set>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 
 namespace content {
@@ -263,7 +266,7 @@ void ByteStreamWriterImpl::PostToPeer(bool complete, int status) {
   // Valid contexts in which to call.
   DCHECK(complete || 0 != input_contents_size_);
 
-  scoped_ptr<ContentVector> transfer_buffer(new ContentVector);
+  scoped_ptr<ContentVector> transfer_buffer;
   size_t buffer_size = 0;
   if (0 != input_contents_size_) {
     transfer_buffer.reset(new ContentVector);
@@ -370,8 +373,8 @@ void ByteStreamReaderImpl::TransferDataInternal(
 
   if (transfer_buffer) {
     available_contents_.insert(available_contents_.end(),
-                                        transfer_buffer->begin(),
-                                        transfer_buffer->end());
+                               transfer_buffer->begin(),
+                               transfer_buffer->end());
   }
 
   if (source_complete) {
@@ -407,7 +410,6 @@ void ByteStreamReaderImpl::MaybeUpdateInput() {
 }
 
 }  // namespace
-
 
 const int ByteStreamWriter::kFractionBufferBeforeSending = 3;
 const int ByteStreamReader::kFractionReadBeforeWindowUpdate = 3;
