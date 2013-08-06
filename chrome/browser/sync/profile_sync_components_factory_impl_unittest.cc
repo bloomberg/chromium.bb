@@ -55,13 +55,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     datatypes.push_back(syncer::TYPED_URLS);
     datatypes.push_back(syncer::FAVICON_TRACKING);
     datatypes.push_back(syncer::FAVICON_IMAGES);
-
-    // If SyncedNotifications are enabled, count them too.
-    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-    if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-        channel == chrome::VersionInfo::CHANNEL_DEV ||
-        channel == chrome::VersionInfo::CHANNEL_CANARY)
-      datatypes.push_back(syncer::SYNCED_NOTIFICATIONS);
+    datatypes.push_back(syncer::SYNCED_NOTIFICATIONS);
 
   return datatypes;
   }

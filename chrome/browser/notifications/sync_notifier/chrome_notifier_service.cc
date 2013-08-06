@@ -11,10 +11,12 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -347,6 +349,10 @@ void ChromeNotifierService::AddForTest(
   }
 
 void ChromeNotifierService::Display(SyncedNotification* notification) {
+  // If the feature is disabled, exit now.
+  if (!notifier::ChromeNotifierServiceFactory::UseSyncedNotifications(
+          CommandLine::ForCurrentProcess()))
+    return;
 
   // Set up to fetch the bitmaps.
   notification->QueueBitmapFetchJobs(notification_manager_,

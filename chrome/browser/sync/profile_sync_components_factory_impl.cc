@@ -261,14 +261,10 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             syncer::APP_SETTINGS, this, profile_, pss));
   }
 
-#if !defined(OS_ANDROID)
-  if (notifier::ChromeNotifierServiceFactory::UseSyncedNotifications(
-          command_line_)) {
-    pss->RegisterDataTypeController(
-        new UIDataTypeController(
-            syncer::SYNCED_NOTIFICATIONS, this, profile_, pss));
-  }
-#endif
+  // Synced Notifications are enabled by default.
+  pss->RegisterDataTypeController(
+      new UIDataTypeController(
+          syncer::SYNCED_NOTIFICATIONS, this, profile_, pss));
 
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
   // Dictionary sync is enabled by default.
