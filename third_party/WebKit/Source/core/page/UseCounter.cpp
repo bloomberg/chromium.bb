@@ -664,6 +664,12 @@ void UseCounter::count(CSSPropertyID feature)
     m_CSSFeatureBits.quickSet(feature);
 }
 
+void UseCounter::count(Feature feature)
+{
+    ASSERT(deprecationMessage(feature).isEmpty());
+    recordMeasurement(feature);
+}
+
 UseCounter* UseCounter::getFrom(const Document* document)
 {
     if (document && document->page())

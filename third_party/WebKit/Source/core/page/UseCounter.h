@@ -158,6 +158,7 @@ public:
         LineClamp,
         SubFrameBeforeUnloadRegistered,
         SubFrameBeforeUnloadFired,
+        CSSPseudoElementPrefixedDistributed,
         // Add new features immediately above this line. Don't change assigned
         // numbers of each items, and don't reuse unused slots.
         NumberOfFeatures, // This enum value must be last.
@@ -167,6 +168,7 @@ public:
     static void count(Document*, Feature);
     static void count(DOMWindow*, Feature);
     void count(CSSPropertyID);
+    void count(Feature);
 
     // "countDeprecation" sets the bit for this feature to 1, and sends a deprecation
     // warning to the console. Repeated calls are ignored.

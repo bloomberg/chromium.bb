@@ -11341,6 +11341,8 @@ CSSParserSelector* CSSParser::rewriteSpecifiersWithElementNameForContentPseudoEl
 
 CSSParserSelector* CSSParser::rewriteSpecifiersForShadowDistributed(CSSParserSelector* specifiers, CSSParserSelector* distributedPseudoElementSelector)
 {
+    if (m_useCounter)
+        m_useCounter->count(UseCounter::CSSPseudoElementPrefixedDistributed);
     CSSParserSelector* argumentSelector = distributedPseudoElementSelector->functionArgumentSelector();
     ASSERT(argumentSelector);
     ASSERT(!specifiers->isDistributedPseudoElement());
