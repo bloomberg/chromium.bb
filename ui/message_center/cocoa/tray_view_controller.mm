@@ -163,13 +163,6 @@ const CGFloat kTrayBottomMargin = 75;
   if (settingsController_)
     return [self updateTrayViewAndWindow];
 
-  // When the window is visible, the only update is to remove notifications
-  // dismissed by the user.
-  if ([[[self view] window] isVisible]) {
-    [self closeNotificationsByUser];
-    return;
-  }
-
   std::map<std::string, MCNotificationController*> newMap;
 
   base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
