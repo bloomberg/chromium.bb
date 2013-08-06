@@ -116,14 +116,6 @@ struct wl_resource {
 
 static int wl_debug = 0;
 
-static void
-destroy_client(void *data)
-{
-	struct wl_client *client = data;
-
-	wl_client_destroy(client);
-}
-
 WL_EXPORT void
 wl_resource_post_event(struct wl_resource *resource, uint32_t opcode, ...)
 {
@@ -137,13 +129,12 @@ wl_resource_post_event(struct wl_resource *resource, uint32_t opcode, ...)
 	va_end(ap);
 
 	if (closure == NULL) {
-		resource->client->error = 1
+		resource->client->error = 1;
 		return;
 	}
 
 	if (wl_closure_send(closure, resource->client->connection))
-		wl_event_loop_add_idle(resource->client->display->loop,
-				       destroy_client, resource->client);
+		resource->client->error = 1;
 
 	if (wl_debug)
 		wl_closure_print(closure, object, true);
@@ -165,13 +156,12 @@ wl_resource_queue_event(struct wl_resource *resource, uint32_t opcode, ...)
 	va_end(ap);
 
 	if (closure == NULL) {
-		resource->client->error = 1
+		resource->client->error = 1;
 		return;
 	}
 
 	if (wl_closure_queue(closure, resource->client->connection))
-		wl_event_loop_add_idle(resource->client->display->loop,
-				       destroy_client, resource->client);
+		resource->client->error = 1;
 
 	if (wl_debug)
 		wl_closure_print(closure, object, true);
