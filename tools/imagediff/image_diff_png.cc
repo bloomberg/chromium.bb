@@ -1,31 +1,21 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-#include "webkit/support/webkit_support_gfx.h"
+#include "tools/imagediff/image_diff_png.h"
 
 #include <stdlib.h>
 #include <string.h>
 
+#include "base/logging.h"
+#include "build/build_config.h"
 #include "third_party/libpng/png.h"
 #include "third_party/zlib/zlib.h"
 
-namespace webkit_support {
+namespace image_diff_png {
 
-// Define macro here to make webkit_support_gfx independent of target base.
-// Note that the NOTREACHED() macro will result in a crash. This is preferable
-// to calling exit() / abort(), since the latter may not surfce the problem as
-// crash reports, making it hard to tell where the problem is.
-#define NOTREACHED(msg) *((volatile int*)0) = 3
-#define DCHECK(condition) \
-  if (!(condition)) fprintf(stderr, "DCHECK failed: " #condition ".")
-
-// The new webkit_support_gfx, used by DumpRenderTree and ImageDiff,
-// doesn't depend on most other parts of chromium. This could make building
-// the individual target of ImageDiff fast. It's implemented by duplicating
-// most code in ui/gfx/codec/png_codec.cc, after removing code related to
-// Skia.
+// This is a duplicate of ui/gfx/codec/png_codec.cc, after removing code related
+// to Skia, that we can use when running layout tests with minimal dependencies.
 namespace {
 
 enum ColorFormat {
@@ -235,7 +225,7 @@ void DecodeInfoCallback(png_struct* png_ptr, png_info* info_ptr) {
         state->output_channels = 4;
         break;
       default:
-        NOTREACHED("Unknown output format");
+        NOTREACHED() << "Unknown output format";
         break;
     }
   } else if (channels == 4) {
@@ -253,11 +243,11 @@ void DecodeInfoCallback(png_struct* png_ptr, png_info* info_ptr) {
         state->output_channels = 4;
         break;
       default:
-        NOTREACHED("Unknown output format");
+        NOTREACHED() << "Unknown output format";
         break;
     }
   } else {
-    NOTREACHED("Unknown input channels");
+    NOTREACHED() << "Unknown input channels";
     longjmp(png_jmpbuf(png_ptr), 1);
   }
 
@@ -272,7 +262,7 @@ void DecodeRowCallback(png_struct* png_ptr, png_byte* new_row,
 
   DCHECK(pass == 0);
   if (static_cast<int>(row_num) > state->height) {
-    NOTREACHED("Invalid row");
+    NOTREACHED() << "Invalid row";
     return;
   }
 
@@ -587,7 +577,7 @@ bool EncodeWithCompressionLevel(const unsigned char* input, ColorFormat format,
       break;
 
     default:
-      NOTREACHED("Unknown pixel format");
+      NOTREACHED() << "Unknown pixel format";
       return false;
   }
 
@@ -657,18 +647,4 @@ bool EncodeBGRAPNG(const unsigned char* input,
       std::vector<Comment>(), output);
 }
 
-bool EncodeBGRAPNGWithChecksum(const unsigned char* input,
-                               int width,
-                               int height,
-                               int row_byte_width,
-                               bool discard_transparency,
-                               const std::string& checksum,
-                               std::vector<unsigned char>* output) {
-  std::vector<Comment> comments;
-  comments.push_back(Comment("checksum", checksum));
-  return Encode(input, FORMAT_BGRA,
-      width, height, row_byte_width, discard_transparency,
-      comments, output);
-}
-
-}  // namespace webkit_support
+}  // image_diff_png

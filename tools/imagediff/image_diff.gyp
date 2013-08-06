@@ -10,12 +10,19 @@
     {
       'target_name': 'image_diff',
       'type': 'executable',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../webkit/support/webkit_support.gyp:webkit_support_gfx',
+        '../../third_party/libpng/libpng.gyp:libpng',
+        '../../third_party/zlib/zlib.gyp:zlib',
+      ],
+      'include_dirs': [
+        '../../',
       ],
       'sources': [
         'image_diff.cc',
+        'image_diff_png.h',
+        'image_diff_png.cc',
       ],
       'conditions': [
        ['OS=="android" and android_webview_build==0', {

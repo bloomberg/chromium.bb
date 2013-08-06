@@ -147,6 +147,9 @@ net/socket/ssl_client_socket_nss.cc
 skia/config/SkUserConfig.h
 # Contains word 'copyright' in comments.
 tools/gen_keyboard_overlay_data/gen_keyboard_overlay_data.py
+# This third-party code is taken from Mozilla, but is copyright Google and has
+# been re-licensed under the Chromium license.
+tools/imagediff/image_diff_png.cc
 # Copyright Ero Carrera; BSD license. Tool only.
 tools/symsrc/pefile.py
 # Copyright The Chromium Authors, Sun Microsystems Inc, the V8 project authors;
@@ -193,9 +196,6 @@ webkit/child/multipart_response_delegate.h
 # Copyright Tim Copperfield and Christian Dywan; LGPL license. Not used on
 # Android.
 webkit/common/cursors/webcursor_gtk_data.h
-# This third-party code is taken from Mozilla, but is copyright Google and has
-# been re-licensed under the Chromium license.
-webkit/support/webkit_support_gfx.cc
 # Copyright Apple, Inc, Graham Dennis and Eric Seidel; BSD license. Tool only
 webkit/support/mac/DumpRenderTreePasteboard.h
 # Copyright Apple, Inc, Graham Dennis and Eric Seidel; BSD license. Tool only

@@ -15,9 +15,10 @@
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/size.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/clipboard_utils.h"
-#include "webkit/support/webkit_support_gfx.h"
 
 using WebKit::WebDragData;
 using WebKit::WebString;
@@ -106,20 +107,17 @@ WebKit::WebData MockWebClipboardImpl::readImage(
   // for endianess reasons, it will be BGRA8888 on Windows.
   const SkBitmap& bitmap = m_image.getSkBitmap();
   SkAutoLockPixels lock(bitmap);
+  gfx::PNGCodec::Encode(static_cast<unsigned char*>(bitmap.getPixels()),
 #if defined(OS_ANDROID)
-  webkit_support::EncodeRGBAPNG(static_cast<unsigned char*>(bitmap.getPixels()),
-                                bitmap.width(),
-                                bitmap.height(),
-                                bitmap.rowBytes(),
-                                &encoded_image);
+                        gfx::PNGCodec::FORMAT_RGBA,
 #else
-  webkit_support::EncodeBGRAPNG(static_cast<unsigned char*>(bitmap.getPixels()),
-                                bitmap.width(),
-                                bitmap.height(),
-                                bitmap.rowBytes(),
-                                false,
-                                &encoded_image);
+                        gfx::PNGCodec::FORMAT_BGRA,
 #endif
+                        gfx::Size(bitmap.width(), bitmap.height()),
+                        bitmap.rowBytes(),
+                        false /* discard_transparency */,
+                        std::vector<gfx::PNGCodec::Comment>(),
+                        &encoded_image);
   data.assign(reinterpret_cast<char*>(vector_as_array(&encoded_image)),
               encoded_image.size());
   return data;

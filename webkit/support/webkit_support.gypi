@@ -110,7 +110,6 @@
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '<(DEPTH)/webkit/renderer/webkit_renderer.gyp:webkit_renderer',
         'glue',
-        'webkit_support_gfx',
       ],
       'export_dependent_settings': [
         '<(DEPTH)/base/base.gyp:base',
@@ -131,28 +130,6 @@
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
-    },
-
-    {
-      'target_name': 'webkit_support_gfx',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
-        '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
-      ],
-      'sources': [
-        'webkit_support_gfx.h',
-        'webkit_support_gfx.cc',
-      ],
-      'include_dirs': [
-        '<(DEPTH)',
-      ],
-      'conditions': [
-          ['OS=="android"', {
-              'toolsets': ['target', 'host'],
-          }],
-      ],
     },
   ],
 }

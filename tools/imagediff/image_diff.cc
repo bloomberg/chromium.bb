@@ -23,7 +23,7 @@
 #include "base/safe_numerics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "webkit/support/webkit_support_gfx.h"
+#include "tools/imagediff/image_diff_png.h"
 
 #if defined(OS_WIN)
 #include "windows.h"
@@ -80,7 +80,7 @@ class Image {
     if (fread(source.get(), 1, byte_length, stdin) != byte_length)
       return false;
 
-    if (!webkit_support::DecodePNG(source.get(), byte_length,
+    if (!image_diff_png::DecodePNG(source.get(), byte_length,
                                    &data_, &w_, &h_)) {
       Clear();
       return false;
@@ -105,7 +105,7 @@ class Image {
 
     file_util::CloseFile(f);
 
-    if (!webkit_support::DecodePNG(&compressed[0], compressed.size(),
+    if (!image_diff_png::DecodePNG(&compressed[0], compressed.size(),
                                    &data_, &w_, &h_)) {
       Clear();
       return false;
@@ -315,7 +315,7 @@ int DiffImages(const base::FilePath& file1, const base::FilePath& file2,
     return kStatusSame;
 
   std::vector<unsigned char> png_encoding;
-  webkit_support::EncodeRGBAPNG(
+  image_diff_png::EncodeRGBAPNG(
       diff_image.data(), diff_image.w(), diff_image.h(),
       diff_image.w() * 4, &png_encoding);
   if (file_util::WriteFile(out_file,

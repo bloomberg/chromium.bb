@@ -30,7 +30,7 @@
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "webkit/support/webkit_support_gfx.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace content {
 
@@ -512,13 +512,15 @@ void WebKitTestController::OnImageDump(
     bool discard_transparency = true;
 #endif
 
-    bool success = webkit_support::EncodeBGRAPNGWithChecksum(
-        reinterpret_cast<const unsigned char*>(image.getPixels()),
-        image.width(),
-        image.height(),
+    std::vector<gfx::PNGCodec::Comment> comments;
+    comments.push_back(gfx::PNGCodec::Comment("checksum", actual_pixel_hash));
+    bool success = gfx::PNGCodec::Encode(
+        static_cast<const unsigned char*>(image.getPixels()),
+        gfx::PNGCodec::FORMAT_BGRA,
+        gfx::Size(image.width(), image.height()),
         static_cast<int>(image.rowBytes()),
         discard_transparency,
-        actual_pixel_hash,
+        comments,
         &png);
     if (success)
       printer_->PrintImageBlock(png);
