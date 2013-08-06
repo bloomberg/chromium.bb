@@ -22,5 +22,14 @@ deps = {
       "https://src.chromium.org/chrome/trunk/src/tools/crx_id",
     "src/chrome/test/data/extensions/profiles":
       "https://src.chromium.org/chrome/trunk/src/chrome/test/data/extensions/profiles",
+    "src/build/util":
+      "https://src.chromium.org/chrome/trunk/src/build/util",
+    "third_party/flot/jquery.flot.min.js":
+      "https://src.chromium.org/chrome/trunk/src/third_party/flot/jquery.flot.min.js",
+    "src/third_party/WebKit/PerformanceTests/resources/jquery.tablesorter.min.js":
+      "https://src.chromium.org/blink/trunk/PerformanceTests/resources/jquery.tablesorter.min.js",
+    "src/third_party/WebKit/PerformanceTests/resources/statistics.js":
+      "https://src.chromium.org/blink/trunk/PerformanceTests/resources/statistics.js",
+    "src/tools/perf/unit-info.json":
+      "https://src.chromium.org/chrome/trunk/src/tools/perf/unit-info.json"
     }
-
