@@ -231,8 +231,8 @@ void ManageProfileHandler::RequestExistingManagedUsers(const ListValue* args) {
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i)
     managed_user_ids.insert(cache.GetManagedUserIdOfProfileAtIndex(i));
 
-  DictionaryValue* dict =
-      DictionaryPrefUpdate(profile->GetPrefs(), prefs::kManagedUsers).Get();
+  const DictionaryValue* dict =
+      profile->GetPrefs()->GetDictionary(prefs::kManagedUsers);
   DictionaryValue id_names_dict;
   for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     if (managed_user_ids.find(it.key()) != managed_user_ids.end())
