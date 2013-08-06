@@ -110,6 +110,14 @@ class MockRTCResourceContext : public ResourceContext {
     return test_request_context_;
   }
 
+  virtual bool AllowMicAccess(const GURL& origin) OVERRIDE {
+    return false;
+  }
+
+  virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE {
+    return false;
+  }
+
  private:
   net::URLRequestContext* test_request_context_;
 

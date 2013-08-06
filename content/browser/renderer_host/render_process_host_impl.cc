@@ -657,7 +657,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(peer_connection_tracker_host_.get());
   channel_->AddFilter(new MediaStreamDispatcherHost(
       GetID(), media_stream_manager));
-  channel_->AddFilter(new DeviceRequestMessageFilter(media_stream_manager));
+  channel_->AddFilter(
+      new DeviceRequestMessageFilter(resource_context, media_stream_manager));
 #endif
 #if defined(ENABLE_PLUGINS)
   // TODO(raymes): PepperMessageFilter should be removed from here.

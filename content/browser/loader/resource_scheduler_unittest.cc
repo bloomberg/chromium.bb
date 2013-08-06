@@ -89,6 +89,8 @@ class FakeResourceContext : public ResourceContext {
  private:
   virtual net::HostResolver* GetHostResolver() OVERRIDE { return NULL; }
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE { return NULL; }
+  virtual bool AllowMicAccess(const GURL& origin) OVERRIDE { return false; }
+  virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE { return false; }
 };
 
 class FakeURLRequestContextSelector

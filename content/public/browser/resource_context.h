@@ -10,6 +10,8 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
+class GURL;
+
 namespace appcache {
 class AppCacheService;
 }
@@ -38,6 +40,16 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   // storage partitioning. This getter returns the default context associated
   // with a BrowsingContext.
   virtual net::URLRequestContext* GetRequestContext() = 0;
+
+  // Returns true if microphone access is allowed for |origin|. Used to
+  // determine what level of authorization is given to |origin| to access
+  // resource metadata.
+  virtual bool AllowMicAccess(const GURL& origin) = 0;
+
+  // Returns true if web camera access is allowed for |origin|. Used to
+  // determine what level of authorization is given to |origin| to access
+  // resource metadata.
+  virtual bool AllowCameraAccess(const GURL& origin) = 0;
 };
 
 }  // namespace content

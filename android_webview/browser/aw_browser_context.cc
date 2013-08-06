@@ -44,6 +44,12 @@ class AwResourceContext : public content::ResourceContext {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     return getter_->GetURLRequestContext();
   }
+  virtual bool AllowMicAccess(const GURL& origin) OVERRIDE {
+    return false;
+  }
+  virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE {
+    return false;
+  }
 
  private:
   net::URLRequestContextGetter* getter_;

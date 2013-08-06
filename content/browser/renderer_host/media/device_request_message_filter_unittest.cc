@@ -6,6 +6,7 @@
 #include "content/browser/renderer_host/media/device_request_message_filter.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/media_stream_messages.h"
+#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,8 +50,9 @@ class MockMediaStreamManager : public MediaStreamManager {
 
 class MockDeviceRequestMessageFilter : public DeviceRequestMessageFilter {
  public:
-  MockDeviceRequestMessageFilter(MockMediaStreamManager* manager)
-      : DeviceRequestMessageFilter(manager), received_id_(-1) {}
+  MockDeviceRequestMessageFilter(MockResourceContext* context,
+                                 MockMediaStreamManager* manager)
+      : DeviceRequestMessageFilter(context, manager), received_id_(-1) {}
   StreamDeviceInfoArray requested_devices() { return requested_devices_; }
   int received_id() { return received_id_; }
 
@@ -122,6 +124,15 @@ class DeviceRequestMessageFilterTest : public testing::Test {
     EXPECT_TRUE(DoesEveryDeviceMapToRawId(host_->requested_devices(), origin));
   }
 
+  bool AreLabelsPresent(MediaStreamType type) {
+    const StreamDeviceInfoArray& devices = host_->requested_devices();
+    for (size_t i = 0; i < devices.size(); i++) {
+      if (devices[i].device.type == type && !devices[i].device.name.empty())
+        return true;
+    }
+    return false;
+  }
+
  protected:
   virtual ~DeviceRequestMessageFilterTest() {}
 
@@ -135,11 +146,14 @@ class DeviceRequestMessageFilterTest : public testing::Test {
         .WillByDefault(Invoke(media_stream_manager_.get(),
                               &MockMediaStreamManager::DoEnumerateDevices));
 
-    host_ = new MockDeviceRequestMessageFilter(media_stream_manager_.get());
+    resource_context_.reset(new MockResourceContext(NULL));
+    host_ = new MockDeviceRequestMessageFilter(resource_context_.get(),
+                                               media_stream_manager_.get());
   }
 
   scoped_refptr<MockDeviceRequestMessageFilter> host_;
   scoped_ptr<MockMediaStreamManager> media_stream_manager_;
+  scoped_ptr<MockResourceContext> resource_context_;
   StreamDeviceInfoArray physical_audio_devices_;
   StreamDeviceInfoArray physical_video_devices_;
   scoped_ptr<base::MessageLoop> message_loop_;
@@ -253,6 +267,38 @@ TEST_F(DeviceRequestMessageFilterTest, TestGetSources_NoAudioDevices) {
 TEST_F(DeviceRequestMessageFilterTest, TestGetSources_NoDevices) {
   // Runs through test with no devices.
   RunTest(0, 0);
+}
+
+TEST_F(DeviceRequestMessageFilterTest, TestGetSources_DenyMicDenyCamera) {
+  resource_context_->set_mic_access(false);
+  resource_context_->set_camera_access(false);
+  RunTest(3, 3);
+  EXPECT_FALSE(AreLabelsPresent(MEDIA_DEVICE_AUDIO_CAPTURE));
+  EXPECT_FALSE(AreLabelsPresent(MEDIA_DEVICE_VIDEO_CAPTURE));
+}
+
+TEST_F(DeviceRequestMessageFilterTest, TestGetSources_AllowMicDenyCamera) {
+  resource_context_->set_mic_access(true);
+  resource_context_->set_camera_access(false);
+  RunTest(3, 3);
+  EXPECT_TRUE(AreLabelsPresent(MEDIA_DEVICE_AUDIO_CAPTURE));
+  EXPECT_FALSE(AreLabelsPresent(MEDIA_DEVICE_VIDEO_CAPTURE));
+}
+
+TEST_F(DeviceRequestMessageFilterTest, TestGetSources_DenyMicAllowCamera) {
+  resource_context_->set_mic_access(false);
+  resource_context_->set_camera_access(true);
+  RunTest(3, 3);
+  EXPECT_FALSE(AreLabelsPresent(MEDIA_DEVICE_AUDIO_CAPTURE));
+  EXPECT_TRUE(AreLabelsPresent(MEDIA_DEVICE_VIDEO_CAPTURE));
+}
+
+TEST_F(DeviceRequestMessageFilterTest, TestGetSources_AllowMicAllowCamera) {
+  resource_context_->set_mic_access(true);
+  resource_context_->set_camera_access(true);
+  RunTest(3, 3);
+  EXPECT_TRUE(AreLabelsPresent(MEDIA_DEVICE_AUDIO_CAPTURE));
+  EXPECT_TRUE(AreLabelsPresent(MEDIA_DEVICE_VIDEO_CAPTURE));
 }
 
 };  // namespace content

@@ -16,13 +16,15 @@
 namespace content {
 
 class MediaStreamManager;
+class ResourceContext;
 
 // DeviceRequestMessageFilter used to delegate requests from the
 // MediaStreamCenter.
 class CONTENT_EXPORT DeviceRequestMessageFilter : public BrowserMessageFilter,
                                                   public MediaStreamRequester {
  public:
-  explicit DeviceRequestMessageFilter(MediaStreamManager* media_stream_manager);
+  DeviceRequestMessageFilter(ResourceContext* resource_context,
+                             MediaStreamManager* media_stream_manager);
 
   // MediaStreamRequester implementation.
   // TODO(vrk): Replace MediaStreamRequester interface with a single callback so
@@ -58,6 +60,8 @@ class CONTENT_EXPORT DeviceRequestMessageFilter : public BrowserMessageFilter,
                      const StreamDeviceInfoArray& raw_devices,
                      StreamDeviceInfoArray* devices_with_guids);
 
+  // Owned by ProfileIOData which is guaranteed to outlive DRMF.
+  ResourceContext* resource_context_;
   MediaStreamManager* media_stream_manager_;
 
   struct DeviceRequest;

@@ -14,7 +14,9 @@ MockResourceContext::MockResourceContext()
 
 MockResourceContext::MockResourceContext(
     net::URLRequestContext* test_request_context)
-  : test_request_context_(test_request_context) {
+  : test_request_context_(test_request_context),
+    mic_allowed_(false),
+    camera_allowed_(false) {
 }
 
 MockResourceContext::~MockResourceContext() {}
@@ -26,6 +28,14 @@ net::HostResolver* MockResourceContext::GetHostResolver()  {
 net::URLRequestContext* MockResourceContext::GetRequestContext()  {
   CHECK(test_request_context_);
   return test_request_context_;
+}
+
+bool MockResourceContext::AllowMicAccess(const GURL& origin)  {
+  return mic_allowed_;
+}
+
+bool MockResourceContext::AllowCameraAccess(const GURL& origin)  {
+  return camera_allowed_;
 }
 
 }  // namespace content

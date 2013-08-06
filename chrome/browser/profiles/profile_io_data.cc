@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -689,6 +690,23 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(io_data_->initialized_);
   return request_context_;
+}
+
+bool ProfileIOData::ResourceContext::AllowMicAccess(const GURL& origin) {
+  return AllowContentAccess(origin, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+}
+
+bool ProfileIOData::ResourceContext::AllowCameraAccess(const GURL& origin) {
+  return AllowContentAccess(origin, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+}
+
+bool ProfileIOData::ResourceContext::AllowContentAccess(
+    const GURL& origin, ContentSettingsType type) {
+  HostContentSettingsMap* content_settings =
+      io_data_->GetHostContentSettingsMap();
+  ContentSetting setting = content_settings->GetContentSetting(
+      origin, origin, type, NO_RESOURCE_IDENTIFIER);
+  return setting == CONTENT_SETTING_ALLOW;
 }
 
 // static

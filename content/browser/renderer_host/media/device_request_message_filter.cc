@@ -10,13 +10,26 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/media_stream_messages.h"
+#include "content/public/browser/resource_context.h"
 #include "crypto/hmac.h"
+
+// Clears the MediaStreamDevice.name from all devices in |device_list|.
+static void ClearDeviceLabels(content::StreamDeviceInfoArray* devices) {
+  for (content::StreamDeviceInfoArray::iterator device_itr = devices->begin();
+       device_itr != devices->end();
+       ++device_itr) {
+    device_itr->device.name.clear();
+  }
+}
 
 namespace content {
 
 DeviceRequestMessageFilter::DeviceRequestMessageFilter(
+    ResourceContext* resource_context,
     MediaStreamManager* media_stream_manager)
-    : media_stream_manager_(media_stream_manager) {
+    : resource_context_(resource_context),
+      media_stream_manager_(media_stream_manager) {
+  DCHECK(resource_context);
   DCHECK(media_stream_manager);
 }
 
@@ -93,7 +106,13 @@ void DeviceRequestMessageFilter::DevicesEnumerated(
     return;
   }
 
-  // Both audio and video devices are ready.
+  // Query for mic and camera permissions.
+  if (!resource_context_->AllowMicAccess(request_it->origin))
+    ClearDeviceLabels(audio_devices);
+  if (!resource_context_->AllowCameraAccess(request_it->origin))
+    ClearDeviceLabels(video_devices);
+
+  // Both audio and video devices are ready for copying.
   StreamDeviceInfoArray all_devices = *audio_devices;
   all_devices.insert(
       all_devices.end(), video_devices->begin(), video_devices->end());

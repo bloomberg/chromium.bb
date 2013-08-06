@@ -19,6 +19,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
+#include "chrome/common/content_settings_types.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "net/cookies/cookie_monster.h"
@@ -362,9 +363,15 @@ class ProfileIOData {
     // ResourceContext implementation:
     virtual net::HostResolver* GetHostResolver() OVERRIDE;
     virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
+    virtual bool AllowMicAccess(const GURL& origin) OVERRIDE;
+    virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE;
 
    private:
     friend class ProfileIOData;
+
+    // Helper method that returns true if |type| is allowed for |origin|, false
+    // otherwise.
+    bool AllowContentAccess(const GURL& origin, ContentSettingsType type);
 
     ProfileIOData* const io_data_;
 
