@@ -5,6 +5,88 @@
 'use strict';
 
 /**
+ * Utilities for FileCopyManager.
+ */
+var fileOperationUtil = {};
+
+/**
+ * Simple wrapper for util.deduplicatePath. On error, this method translates
+ * the FileError to FileCopyManager.Error object.
+ *
+ * @param {DirectoryEntry} dirEntry The target directory entry.
+ * @param {string} relativePath The path to be deduplicated.
+ * @param {function(string)} successCallback Callback run with the deduplicated
+ *     path on success.
+ * @param {function(FileCopyManager.Error)} errorCallback Callback run on error.
+ */
+fileOperationUtil.deduplicatePath = function(
+    dirEntry, relativePath, successCallback, errorCallback) {
+  util.deduplicatePath(
+      dirEntry, relativePath, successCallback,
+      function(err) {
+        var onFileSystemError = function(error) {
+          errorCallback(new FileCopyManager.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR, error));
+        };
+
+        if (err.code == FileError.PATH_EXISTS_ERR) {
+          // Failed to uniquify the file path. There should be an existing
+          // entry, so return the error with it.
+          util.resolvePath(
+              dirEntry, relativePath,
+              function(entry) {
+                errorCallback(new FileCopyManager.Error(
+                    util.FileOperationErrorType.TARGET_EXISTS, entry));
+              },
+              onFileSystemError);
+          return;
+        }
+        onFileSystemError(err);
+      });
+};
+
+/**
+ * Sets last modified date to the entry.
+ * @param {Entry} entry The entry to which the last modified is set.
+ * @param {Date} modificationTime The last modified time.
+ */
+fileOperationUtil.setLastModified = function(entry, modificationTime) {
+  chrome.fileBrowserPrivate.setLastModified(
+      entry.toURL(), '' + Math.round(modificationTime.getTime() / 1000));
+};
+
+/**
+ * Thin wrapper of chrome.fileBrowserPrivate.zipSelection to adapt its
+ * interface similar to copyTo().
+ *
+ * @param {Array.<Entry>} sources The array of entries to be archived.
+ * @param {DirectoryEntry} parent The entry of the destination directory.
+ * @param {string} newName The name of the archive to be created.
+ * @param {function(FileEntry)} successCallback Callback invoked when the
+ *     operation is successfully done with the entry of the created archive.
+ * @param {function(FileError)} errorCallback Callback invoked when an error
+ *     is found.
+ */
+fileOperationUtil.zipSelection = function(
+    sources, parent, newName, successCallback, errorCallback) {
+  chrome.fileBrowserPrivate.zipSelection(
+      parent.toURL(),
+      sources.map(function(e) { return e.toURL(); }),
+      newName, function(success) {
+        if (!success) {
+          // Failed to create a zip archive.
+          errorCallback(
+              util.createFileError(FileError.INVALID_MODIFICATION_ERR));
+          return;
+        }
+
+        // Returns the created entry via callback.
+        parent.getFile(
+            newName, {create: false}, successCallback, errorCallback);
+      });
+};
+
+/**
  * @constructor
  */
 function FileCopyManager() {
@@ -136,41 +218,6 @@ FileCopyManager.Task = function(targetDirEntry, opt_zipBaseDirEntry) {
   this.renamedDirectories_ = [];
 };
 
-/**
- * Simple wrapper for util.deduplicatePath. On error, this method translates
- * the FileError to FileCopyManager.Error object.
- *
- * @param {DirectoryEntry} dirEntry The target directory entry.
- * @param {string} relativePath The path to be deduplicated.
- * @param {function(string)} successCallback Callback run with the deduplicated
- *     path on success.
- * @param {function(FileCopyManager.Error)} errorCallback Callback run on error.
- */
-FileCopyManager.Task.deduplicatePath = function(
-    dirEntry, relativePath, successCallback, errorCallback) {
-  util.deduplicatePath(
-      dirEntry, relativePath, successCallback,
-      function(err) {
-        var onFileSystemError = function(error) {
-          errorCallback(new FileCopyManager.Error(
-              util.FileOperationErrorType.FILESYSTEM_ERROR, error));
-        };
-
-        if (err.code == FileError.PATH_EXISTS_ERR) {
-          // Failed to uniquify the file path. There should be an existing
-          // entry, so return the error with it.
-          util.resolvePath(
-              dirEntry, relativePath,
-              function(entry) {
-                errorCallback(new FileCopyManager.Error(
-                    util.FileOperationErrorType.TARGET_EXISTS, entry));
-              },
-              onFileSystemError);
-          return;
-        }
-        onFileSystemError(err);
-      });
-};
 
 /**
  * @param {Array.<Entry>} entries Entries.
@@ -906,6 +953,8 @@ FileCopyManager.prototype.processCopyEntry_ = function(
       return;
     }
 
+    // TODO(hidehiko): Move following code to fileOperationUtil.
+
     // Sending a file from a) Drive to Drive, b) Drive to local or c) local to
     // Drive.
     var sourceFileUrl = sourceEntry.toURL();
@@ -980,12 +1029,13 @@ FileCopyManager.prototype.processCopyEntry_ = function(
         onFilesystemError);
   };
 
-  FileCopyManager.Task.deduplicatePath(
+  fileOperationUtil.deduplicatePath(
       targetDirEntry, originalPath, onDeduplicated, errorCallback);
 };
 
 /**
  * Copies the contents of sourceEntry into targetEntry.
+ * TODO(hidehiko): Move this method into fileOperationUtil.
  *
  * @param {FileEntry} sourceEntry The file entry that will be copied.
  * @param {FileEntry} targetEntry The file entry to which sourceEntry will be
@@ -1059,9 +1109,8 @@ FileCopyManager.prototype.copyFileEntry_ = function(sourceEntry,
             return;
           }
 
-          chrome.fileBrowserPrivate.setLastModified(
-              targetEntry.toURL(),
-              '' + Math.round(metadata.modificationTime.getTime() / 1000));
+          fileOperationUtil.setLastModified(
+              targetEntry, metadata.modificationTime);
           successCallback(targetEntry, file.size - reportedProgress);
         });
       };
@@ -1151,7 +1200,7 @@ FileCopyManager.prototype.processMoveEntry_ = function(
     return;
   }
 
-  FileCopyManager.Task.deduplicatePath(
+  fileOperationUtil.deduplicatePath(
       task.targetDirEntry,
       task.applyRenames(sourceEntry.fullPath.substr(sourcePath.length + 1)),
       function(targetRelativePath) {
@@ -1196,13 +1245,6 @@ FileCopyManager.prototype.processMoveEntry_ = function(
 FileCopyManager.prototype.serviceZipTask_ = function(
     task, entryChangedCallback, progressCallback, successCallback,
     errorCallback) {
-  var dirURL = task.zipBaseDirEntry.toURL();
-  var selectionURLs = [];
-  for (var i = 0; i < task.pendingDirectories.length; i++)
-    selectionURLs.push(task.pendingDirectories[i].toURL());
-  for (var i = 0; i < task.pendingFiles.length; i++)
-    selectionURLs.push(task.pendingFiles[i].toURL());
-
   // TODO(hidehiko): we should localize the name.
   var destName = 'Archive';
   if (task.originalEntries.length == 1) {
@@ -1213,35 +1255,25 @@ FileCopyManager.prototype.serviceZipTask_ = function(
     destName = ((i < 0) ? basename : basename.substr(0, i));
   }
 
-  var onDeduplicated = function(destPath) {
-    var onZipSelectionComplete = function(success) {
-      var onFilesystemError = function(err) {
-        errorCallback(new FileCopyManager.Error(
-            util.FileOperationErrorType.FILESYSTEM_ERROR,
-            err));
-      };
+  fileOperationUtil.deduplicatePath(
+      task.targetDirEntry, destName + '.zip',
+      function(destPath) {
+        progressCallback();
 
-      if (success) {
-        task.targetDirEntry.getFile(
-            destPath, {create: false},
+        fileOperationUtil.zipSelection(
+            task.pendingDirectories.concat(task.pendingFiles),
+            task.zipBaseDirEntry,
+            destPath,
             function(entry) {
               entryChangedCallback(util.EntryChangedType.CREATE, entry);
               successCallback();
             },
-            onFilesystemError);
-      } else {
-        onFilesystemError(
-            util.createFileError(FileError.INVALID_MODIFICATION_ERR));
-      }
-    };
-
-    progressCallback();
-    chrome.fileBrowserPrivate.zipSelection(dirURL, selectionURLs, destPath,
-        onZipSelectionComplete);
-  };
-
-  FileCopyManager.Task.deduplicatePath(
-      task.targetDirEntry, destName + '.zip', onDeduplicated, errorCallback);
+            function(error) {
+              errorCallback(new FileCopyManager.Error(
+                  util.FileOperationErrorType.FILESYSTEM_ERROR, error));
+            });
+      },
+      errorCallback);
 };
 
 /**
@@ -1378,7 +1410,7 @@ FileCopyManager.prototype.zipSelection = function(dirEntry, selectionEntries) {
     // TODO: per-entry zip progress update with accurate byte count.
     // For now just set completedBytes to same value as totalBytes so that the
     // progress bar is full.
-    zipTask.completedBytes = zip.Task.totalBytes;
+    zipTask.completedBytes = zipTask.totalBytes;
     self.copyTasks_.push(zipTask);
     if (self.copyTasks_.length == 1) {
       // Assume self.cancelRequested_ == false.
