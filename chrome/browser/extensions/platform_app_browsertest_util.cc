@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 
 #include "apps/app_window_contents.h"
+#include "apps/native_app_window.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -27,7 +27,7 @@ namespace utils = extension_function_test_utils;
 namespace extensions {
 
 PlatformAppBrowserTest::PlatformAppBrowserTest() {
-  chrome::ChromeShellWindowDelegate::DisableExternalOpenForTesting();
+  ChromeShellWindowDelegate::DisableExternalOpenForTesting();
 }
 
 void PlatformAppBrowserTest::SetUpCommandLine(CommandLine* command_line) {
@@ -153,10 +153,9 @@ ShellWindow* PlatformAppBrowserTest::CreateShellWindow(
 
 ShellWindow* PlatformAppBrowserTest::CreateShellWindowFromParams(
     const Extension* extension, const ShellWindow::CreateParams& params) {
-  ShellWindow* window = new ShellWindow(
-      browser()->profile(),
-      new chrome::ChromeShellWindowDelegate(),
-      extension);
+  ShellWindow* window = new ShellWindow(browser()->profile(),
+                                        new ChromeShellWindowDelegate(),
+                                        extension);
   window->Init(GURL(std::string()),
                new apps::AppWindowContents(window),
                params);

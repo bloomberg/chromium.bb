@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/extensions/shell_window_frame_view.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/extensions/native_app_window_views.h"
+#include "chrome/browser/ui/views/apps/native_app_window_views.h"
 #include "extensions/common/draggable_region.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names

@@ -55,6 +55,7 @@
         'field_trial_names.cc',
         'field_trial_names.h',
         'metrics_names.h',
+        'native_app_window.h',
         'pref_names.cc',
         'pref_names.h',
         'prefs.cc',

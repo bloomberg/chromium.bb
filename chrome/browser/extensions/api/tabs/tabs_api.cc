@@ -588,7 +588,7 @@ bool WindowsCreateFunction::RunImpl() {
       create_params.bounds = window_bounds;
       create_params.focused = saw_focus_key && focused;
       ShellWindow* shell_window = new ShellWindow(
-          window_profile, new chrome::ChromeShellWindowDelegate(),
+          window_profile, new ChromeShellWindowDelegate(),
           GetExtension());
       AshPanelContents* ash_panel_contents = new AshPanelContents(shell_window);
       shell_window->Init(urls[0], ash_panel_contents, create_params);

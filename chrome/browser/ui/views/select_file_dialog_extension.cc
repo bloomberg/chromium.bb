@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
+#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
