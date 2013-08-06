@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/AnimatableNeutral.h"
-#include "core/animation/DeferredAnimatableValue.h"
 #include <algorithm>
 
 namespace WebCore {
@@ -40,12 +39,6 @@ const AnimatableValue* AnimatableValue::neutralValue()
 {
     static AnimatableNeutral* neutralSentinelValue = AnimatableNeutral::create().leakRef();
     return neutralSentinelValue;
-}
-
-const AnimatableValue* AnimatableValue::deferredSnapshotValue()
-{
-    static DeferredAnimatableValue* deferredAnimatableValueSentinel = DeferredAnimatableValue::create().leakRef();
-    return deferredAnimatableValueSentinel;
 }
 
 PassRefPtr<AnimatableValue> AnimatableValue::interpolate(const AnimatableValue* left, const AnimatableValue* right, double fraction)

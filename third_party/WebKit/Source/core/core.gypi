@@ -543,7 +543,6 @@
             'animation/Animation.h',
             'animation/AnimationEffect.h',
             'animation/AnimationStack.h',
-            'animation/DeferredAnimatableValue.h',
             'animation/DocumentTimeline.cpp',
             'animation/DocumentTimeline.h',
             'animation/KeyframeAnimationEffect.cpp',

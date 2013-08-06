@@ -1068,14 +1068,11 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
             CSSPropertyID property = iter->key;
             if (!isPropertyForPass<pass>(property))
                 continue;
-            RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(AnimatableValue::neutralValue());
-            if (animatableValue->isDeferredSnapshot())
-                continue;
-            RefPtr<CSSValue> cssValue = animatableValue->toCSSValue();
+            RefPtr<CSSValue> value = iter->value->compositeOnto(AnimatableValue::neutralValue())->toCSSValue();
             if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
-                state.setLineHeightValue(cssValue.get());
+                state.setLineHeightValue(value.get());
             else
-                StyleBuilder::applyProperty(property, state, cssValue.get());
+                StyleBuilder::applyProperty(property, state, value.get());
         }
     }
 }
