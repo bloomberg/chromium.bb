@@ -1,12 +1,23 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 2.?.? (yyyy-mm-dd)
+* Noteworthy changes in release 2.5.4 (2013-?-??)
+** Bug Fixes
+   - Fixed ENDSEGMENT indicator in computer Braille thanks to John
+     Boyer.
+   - Emphasized words should now be contracted consistently thanks to
+     John Boyer.
 
 ** Braille Table Improvements
-   - fr-bfu-comp8.utb: corrections, zero was wrongly displayed in some instances.
+   - fr-bfu-comp8.utb: corrections, zero was wrongly displayed in some
+     instances.
+   - en-us-g2.ctb, en-ueb-g2.ctb: Fixes for that's, can't and s'
+     thanks to Ken Perry.
+
+** Backwards incompatible changes
+   - Delete the table chardefs-ueb.cti as these rules are now
+     provided by en-ueb-chardefs.uti
 
 * Noteworthy changes in release 2.5.3 (2013-6-21)
-
 ** New features
 *** New Braille tables
     - Korean grade 1 and grade 2 thanks to Joseph Lee
