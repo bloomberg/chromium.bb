@@ -5742,21 +5742,9 @@
    fun:_Znw*
    fun:_ZN4base4BindIMN11dom_storage17DomStorageContextEFvRK4GURLE13scoped_refptrIS2_ES3_EENS_8CallbackINS_8internal9BindStateINSB_13FunctorTraitsIT_E12RunnableTypeENSF_7RunTypeEFvNSB_19CallbackParamTraitsIT0_E11StorageTypeENSI_IT1_E11StorageTypeEEE14UnboundRunTypeEEESE_RKSJ_RKSM_
    fun:_ZN7content21DOMStorageContextImpl18DeleteLocalStorageERK4GURL
-   fun:_ZN7content20StoragePartitionImpl23AsyncClearDataForOriginEjRK4GURLPN3net23URLRequestContextGetterE
+  ...
    fun:_ZN10extensions11DataDeleter13StartDeletingEP7ProfileRKSsRK4GURL
    fun:_ZN16ExtensionService18UninstallExtensionESsbPSbItN4base20string16_char_traitsESaItEE
-}
-{
-   bug_166470b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocator*FilePath*allocate*
-   fun:_ZNSt12_Vector_base*FilePath*_M_allocate*
-   fun:_ZNSt6vector*FilePath*_M_insert_aux*
-   fun:_ZNSt6vector*FilePath*push_back*
-   fun:_ZN9file_util15CreateDirectoryE*
-   fun:_ZN11dom_storage17DomStorageContext19GetStorageNamespaceEl
-   fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
 }
 {
    bug_166470c
@@ -5773,6 +5761,19 @@
    fun:_ZN11dom_storage14DomStorageArea26DatabaseFileNameFromOriginERK4GURL
    fun:_ZN11dom_storage14DomStorageAreaC1E*
    fun:_ZN11dom_storage19DomStorageNamespace24DeleteLocalStorageOriginERK4GURL
+   fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
+}
+{
+   bug_166485
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocator*FilePath*allocate*
+   fun:_ZNSt12_Vector_base*FilePath*_M_allocate*
+   fun:_ZNSt6vector*FilePath*_M_insert_aux*
+   fun:_ZNSt6vector*FilePath*push_back*
+   fun:_ZN9file_util26CreateDirectoryAndGetError*
+   fun:_ZN9file_util15CreateDirectory*
+   fun:_ZN11dom_storage17DomStorageContext19GetStorageNamespaceEl
    fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
 }
 {
