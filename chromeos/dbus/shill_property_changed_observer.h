@@ -17,9 +17,11 @@ namespace chromeos {
 // sent from Shill.
 class ShillPropertyChangedObserver {
  public:
-  virtual ~ShillPropertyChangedObserver() {}
   virtual void OnPropertyChanged(const std::string& name,
                                  const base::Value& value) = 0;
+
+ protected:
+  virtual ~ShillPropertyChangedObserver() {}
 };
 
 }  // namespace chromeos

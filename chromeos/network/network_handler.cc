@@ -13,6 +13,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_profile_observer.h"
+#include "chromeos/network/network_sms_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
@@ -32,6 +33,7 @@ NetworkHandler::NetworkHandler() {
   managed_network_configuration_handler_.reset(
       new ManagedNetworkConfigurationHandler());
   network_connection_handler_.reset(new NetworkConnectionHandler());
+  network_sms_handler_.reset(new NetworkSmsHandler());
   geolocation_handler_.reset(new GeolocationHandler());
 }
 
@@ -49,6 +51,7 @@ void NetworkHandler::Init() {
       network_configuration_handler_.get());
   network_connection_handler_->Init(network_state_handler_.get(),
                                     network_configuration_handler_.get());
+  network_sms_handler_->Init();
   geolocation_handler_->Init();
 }
 
@@ -101,6 +104,10 @@ NetworkHandler::managed_network_configuration_handler() {
 
 NetworkConnectionHandler* NetworkHandler::network_connection_handler() {
   return network_connection_handler_.get();
+}
+
+NetworkSmsHandler* NetworkHandler::network_sms_handler() {
+  return network_sms_handler_.get();
 }
 
 GeolocationHandler* NetworkHandler::geolocation_handler() {

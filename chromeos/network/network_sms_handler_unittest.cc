@@ -55,6 +55,11 @@ class NetworkSmsHandlerTest : public testing::Test {
   virtual ~NetworkSmsHandlerTest() {}
 
   virtual void SetUp() OVERRIDE {
+    // Append '--sms-test-messages' to the command line to tell
+    // SMSClientStubImpl to generate a series of test SMS messages.
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(chromeos::switches::kSmsTestMessages);
+
     // Initialize DBusThreadManager with a stub implementation.
     DBusThreadManager::InitializeWithStub();
     ShillManagerClient::TestInterface* manager_test =
@@ -66,35 +71,35 @@ class NetworkSmsHandlerTest : public testing::Test {
     ASSERT_TRUE(device_test);
     device_test->AddDevice("stub_cellular_device2", flimflam::kTypeCellular,
                            "/org/freedesktop/ModemManager1/stub/0");
+
+    // This relies on the stub dbus implementations for ShillManagerClient,
+    // ShillDeviceClient, GsmSMSClient, ModemMessagingClient and SMSClient.
+    // Initialize a sms handler. The stub dbus clients will not send the
+    // first test message until RequestUpdate has been called.
+    network_sms_handler_.reset(new NetworkSmsHandler());
+    network_sms_handler_->Init();
+    test_observer_.reset(new TestObserver());
+    network_sms_handler_->AddObserver(test_observer_.get());
+    network_sms_handler_->RequestUpdate(true);
+    message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
+    network_sms_handler_.reset();
     DBusThreadManager::Shutdown();
   }
 
  protected:
   base::MessageLoopForUI message_loop_;
+  scoped_ptr<NetworkSmsHandler> network_sms_handler_;
+  scoped_ptr<TestObserver> test_observer_;
 };
 
 TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {
-  // Append '--sms-test-messages' to the command line to tell SMSClientStubImpl
-  // to generate a series of test SMS messages.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(chromeos::switches::kSmsTestMessages);
-
-  // This relies on the stub dbus implementations for ShillManagerClient,
-  // ShillDeviceClient, GsmSMSClient, ModemMessagingClient and SMSClient.
-  // Initialize a sms handler. The stub dbus clients will not send the
-  // first test message until RequestUpdate has been called.
-  scoped_ptr<NetworkSmsHandler> sms_handler(new NetworkSmsHandler());
-  scoped_ptr<TestObserver> test_observer(new TestObserver());
-  sms_handler->AddObserver(test_observer.get());
-  sms_handler->Init();
-  message_loop_.RunUntilIdle();
-  EXPECT_EQ(test_observer->message_count(), 0);
+  EXPECT_EQ(test_observer_->message_count(), 0);
 
   // Test that no messages have been received yet
-  const std::set<std::string>& messages(test_observer->messages());
+  const std::set<std::string>& messages(test_observer_->messages());
   // Note: The following string corresponds to values in
   // ModemMessagingClientStubImpl and SmsClientStubImpl.
   // TODO(stevenjb): Use a TestInterface to set this up to remove dependency.
@@ -102,10 +107,10 @@ TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {
   EXPECT_EQ(messages.find(kMessage1), messages.end());
 
   // Test for messages delivered by signals.
-  test_observer->ClearMessages();
-  sms_handler->RequestUpdate();
+  test_observer_->ClearMessages();
+  network_sms_handler_->RequestUpdate(false);
   message_loop_.RunUntilIdle();
-  EXPECT_GE(test_observer->message_count(), 1);
+  EXPECT_GE(test_observer_->message_count(), 1);
   EXPECT_NE(messages.find(kMessage1), messages.end());
 }
 

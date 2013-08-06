@@ -10,14 +10,20 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/values.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/shill_property_changed_observer.h"
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+class Value;
+}
 
 namespace chromeos {
 
 // Class to watch sms without Libcros.
-class CHROMEOS_EXPORT NetworkSmsHandler {
+class CHROMEOS_EXPORT NetworkSmsHandler : public ShillPropertyChangedObserver {
  public:
   static const char kNumberKey[];
   static const char kTextKey[];
@@ -32,31 +38,50 @@ class CHROMEOS_EXPORT NetworkSmsHandler {
     virtual void MessageReceived(const base::DictionaryValue& message) = 0;
   };
 
-  NetworkSmsHandler();
-  ~NetworkSmsHandler();
+  virtual ~NetworkSmsHandler();
 
-  // Requests the devices from the netowork manager, sets up observers, and
-  // requests the initial list of messages. Any observers that wish to be
-  // notified with initial messages should be added before calling this.
-  void Init();
-
-  // Requests an immediate check for new messages.
-  void RequestUpdate();
+  // Requests an immediate check for new messages. If |request_existing| is
+  // true then also requests to be notified for any already received messages.
+  void RequestUpdate(bool request_existing);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // ShillPropertyChangedObserver
+  virtual void OnPropertyChanged(const std::string& name,
+                                 const base::Value& value) OVERRIDE;
+
  private:
+  friend class NetworkHandler;
+  friend class NetworkSmsHandlerTest;
+
   class NetworkSmsDeviceHandler;
   class ModemManagerNetworkSmsDeviceHandler;
   class ModemManager1NetworkSmsDeviceHandler;
 
-  // Called from NetworkSmsDeviceHandler when a message is received.
+  NetworkSmsHandler();
+
+  // Requests the devices from the network manager, sets up observers, and
+  // requests the initial list of messages.
+  void Init();
+
+  // Adds |message| to the list of received messages. If the length of the
+  // list exceeds the maximum number of retained messages, erase the least
+  // recently received message.
+  void AddReceivedMessage(const base::DictionaryValue& message);
+
+  // Notify observers that |message| was received.
   void NotifyMessageReceived(const base::DictionaryValue& message);
+
+    // Called from NetworkSmsDeviceHandler when a message is received.
+  void MessageReceived(const base::DictionaryValue& message);
 
   // Callback to handle the manager properties with the list of devices.
   void ManagerPropertiesCallback(DBusMethodCallStatus call_status,
                                  const base::DictionaryValue& properties);
+
+  // Requests properties for each entry in |devices|.
+  void UpdateDevices(const base::ListValue* devices);
 
   // Callback to handle the device properties for |device_path|.
   // A NetworkSmsDeviceHandler will be instantiated for each cellular device.
@@ -66,6 +91,7 @@ class CHROMEOS_EXPORT NetworkSmsHandler {
 
   ObserverList<Observer> observers_;
   ScopedVector<NetworkSmsDeviceHandler> device_handlers_;
+  ScopedVector<base::DictionaryValue> received_messages_;
   base::WeakPtrFactory<NetworkSmsHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSmsHandler);
