@@ -1290,3 +1290,4 @@ crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyF
 # crbug.com/252120 [ Mac ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
 crbug.com/252120 [ Debug ] tables/mozilla/bugs/bug7714.html [ Crash ]
 
+crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
