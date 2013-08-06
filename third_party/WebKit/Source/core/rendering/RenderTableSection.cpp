@@ -414,7 +414,7 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
         int originalBeforePosition = m_rowPos[rowIndex + rowSpan];
 
         if (extraHeightToPropagate) {
-            for (unsigned row = lastRowIndex + lastRowSpan + 1; row <= rowIndex + rowSpan; row++)
+            for (unsigned row = lastRowIndex + lastRowSpan; row <= rowIndex + rowSpan; row++)
                 m_rowPos[row] += extraHeightToPropagate;
         }
 
@@ -455,11 +455,12 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
 
         // Getting total changed height in the table
         extraHeightToPropagate = m_rowPos[rowIndex + rowSpan] - originalBeforePosition;
+        m_rowPos[rowIndex + rowSpan] -= extraHeightToPropagate;
     }
 
     if (extraHeightToPropagate) {
         // Apply changed height by rowSpan cells to rows present at the end of the table
-        for (unsigned row = lastRowIndex + lastRowSpan + 1; row <= m_grid.size(); row++)
+        for (unsigned row = lastRowIndex + lastRowSpan; row <= m_grid.size(); row++)
             m_rowPos[row] += extraHeightToPropagate;
     }
 }

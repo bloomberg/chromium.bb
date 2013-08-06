@@ -125,7 +125,37 @@
     </tr>
   </tbody>
 </table>
-<h5>Test 5 - RowSpan and ColSpan. </h5>
+<h5>Test 5 - 2 spanning cells starts at diffrent row index but end at same row index.</h5>
+<table border="1">
+  <tbody>
+    <tr data-expected-height="35">
+        <td rowspan="6" style="height:600px">row0 col0 rowspan=6 height=400px</td>
+        <td>row0 col1</td>
+    </tr>
+    <tr data-expected-height="0">
+        <td rowspan="5" style="height:300px">row1 col1 rowspan=6 height=800px</td>
+    </tr>
+    <tr data-expected-height="130">
+        <td>row2 col2</td>
+    </tr>
+    <tr data-expected-height="132">
+        <td>row3 col2</td>
+    </tr>
+    <tr data-expected-height="140">
+        <td>row4 col2</td>
+    </tr>
+    <tr data-expected-height="140">
+        <td>row5 col2</td>
+    </tr>
+    <tr data-expected-height="19">
+        <td>row6 col2</td>
+    </tr>
+    <tr data-expected-height="19">
+        <td>row7 col0</td>
+    </tr>
+  </tbody>
+</table>
+<h5>Test 6 - RowSpan and ColSpan. </h5>
 <table border="1" width="607">
   <tbody>
     <tr data-expected-height="34">
@@ -147,7 +177,7 @@
     </tr>
   </tbody>
 </table>
-<h5>Test 6 - Mix of baseline aligned and non-baseline aligned cells.</h5>
+<h5>Test 7 - Mix of baseline aligned and non-baseline aligned cells.</h5>
 <table border="1" width="607">
   <tbody>
     <tr data-expected-height="104">
@@ -176,7 +206,7 @@
     </tr>
   </tbody>
 </table>
-<h5>Test 7 - CSS Table.</h5>
+<h5>Test 8 - CSS Table.</h5>
 <div id="div-table">
     <span id="span-row">
         <span id="span-cell">row0 col0</span>
@@ -221,7 +251,7 @@
         <div id="div-cell">row10 col0</div>
     </div>
 </div>
-<h5>Test 8 - Table Similar to CSS table with rowspan.</h5>
+<h5>Test 9 - Table Similar to CSS table with rowspan.</h5>
 <table border="1px">
     <tr data-expected-height="21">
         <td rowspan=5 style="height:300px">row0 col0</td>
