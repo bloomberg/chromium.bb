@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -392,6 +393,10 @@ InspectUI::InspectUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new InspectMessageHandler(this));
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
+
+  // Set up the chrome://theme/ source.
+  ThemeSource* theme = new ThemeSource(profile);
+  content::URLDataSource::Add(profile, theme);
 }
 
 InspectUI::~InspectUI() {
