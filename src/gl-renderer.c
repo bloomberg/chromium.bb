@@ -1109,6 +1109,8 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	struct gl_renderer *gr = get_renderer(surface->compositor);
 	struct gl_surface_state *gs = get_surface_state(surface);
 	struct weston_buffer *buffer = gs->buffer_ref.buffer;
+	GLenum format;
+	int pixel_type;
 
 #ifdef GL_UNPACK_ROW_LENGTH
 	pixman_box32_t *rectangles;
@@ -1133,12 +1135,28 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	if (!pixman_region32_not_empty(&gs->texture_damage))
 		goto done;
 
+	switch (wl_shm_buffer_get_format(buffer->shm_buffer)) {
+	case WL_SHM_FORMAT_XRGB8888:
+	case WL_SHM_FORMAT_ARGB8888:
+		format = GL_BGRA_EXT;
+		pixel_type = GL_UNSIGNED_BYTE;
+		break;
+	case WL_SHM_FORMAT_RGB565:
+		format = GL_RGB;
+		pixel_type = GL_UNSIGNED_SHORT_5_6_5;
+		break;
+	default:
+		weston_log("warning: unknown shm buffer format\n");
+		format = GL_BGRA_EXT;
+		pixel_type = GL_UNSIGNED_BYTE;
+	}
+
 	glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
 
 	if (!gr->has_unpack_subimage) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+		glTexImage2D(GL_TEXTURE_2D, 0, format,
 			     gs->pitch, buffer->height, 0,
-			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+			     format, pixel_type,
 			     wl_shm_buffer_get_data(buffer->shm_buffer));
 
 		goto done;
@@ -1154,7 +1172,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 		glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 		glTexSubImage2D(GL_TEXTURE_2D, 0,
 				0, 0, gs->pitch, buffer->height,
-				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
+				format, pixel_type, data);
 		goto done;
 	}
 
@@ -1168,7 +1186,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 		glPixelStorei(GL_UNPACK_SKIP_ROWS, r.y1);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, r.x1, r.y1,
 				r.x2 - r.x1, r.y2 - r.y1,
-				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
+				format, pixel_type, data);
 	}
 #endif
 
@@ -1207,18 +1225,38 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 	struct weston_compositor *ec = es->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
 	struct gl_surface_state *gs = get_surface_state(es);
+	int pitch;
 
 	buffer->shm_buffer = shm_buffer;
 	buffer->width = wl_shm_buffer_get_width(shm_buffer);
 	buffer->height = wl_shm_buffer_get_height(shm_buffer);
 
+	switch (wl_shm_buffer_get_format(shm_buffer)) {
+	case WL_SHM_FORMAT_XRGB8888:
+		gs->shader = &gr->texture_shader_rgbx;
+		pitch = wl_shm_buffer_get_stride(shm_buffer) / 4;
+		break;
+	case WL_SHM_FORMAT_ARGB8888:
+		gs->shader = &gr->texture_shader_rgba;
+		pitch = wl_shm_buffer_get_stride(shm_buffer) / 4;
+		break;
+	case WL_SHM_FORMAT_RGB565:
+		gs->shader = &gr->texture_shader_rgbx;
+		pitch = wl_shm_buffer_get_stride(shm_buffer) / 2;
+		break;
+	default:
+		weston_log("warning: unknown shm buffer format\n");
+		gs->shader = &gr->texture_shader_rgba;
+		pitch = wl_shm_buffer_get_stride(shm_buffer) / 4;
+	}
+
 	/* Only allocate a texture if it doesn't match existing one.
 	 * If a switch from DRM allocated buffer to a SHM buffer is
 	 * happening, we need to allocate a new texture buffer. */
-	if (wl_shm_buffer_get_stride(shm_buffer) / 4 != gs->pitch ||
+	if (pitch != gs->pitch ||
 	    buffer->height != gs->height ||
 	    gs->buffer_type != BUFFER_TYPE_SHM) {
-		gs->pitch =  wl_shm_buffer_get_stride(shm_buffer) / 4;
+		gs->pitch = pitch;
 		gs->height = buffer->height;
 		gs->target = GL_TEXTURE_2D;
 		gs->buffer_type = BUFFER_TYPE_SHM;
@@ -1230,11 +1268,6 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 			     gs->pitch, buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
 	}
-
-	if (wl_shm_buffer_get_format(shm_buffer) == WL_SHM_FORMAT_XRGB8888)
-		gs->shader = &gr->texture_shader_rgbx;
-	else
-		gs->shader = &gr->texture_shader_rgba;
 }
 
 static void
@@ -1903,6 +1936,8 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	ec->renderer = &gr->base;
 	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
 	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
+
+	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_RGB565);
 
 	return 0;
 
