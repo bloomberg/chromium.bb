@@ -134,8 +134,17 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
     if (!element->isHTMLElement() && !element->isSVGElement())
         return;
 
-    if (CustomElement::isCustomTagName(element->localName()))
-        return; // custom tags take precedence over type extensions
+    if (element->isCustomElement()) {
+        // This can happen if:
+        // 1. The element has a custom tag, which takes precedence over
+        //    type extensions.
+        // 2. Undoing a command (eg ReplaceNodeWithSpan) recycles an
+        //    element but tries to overwrite its attribute list.
+        return;
+    }
+
+    // Custom tags take precedence over type extensions
+    ASSERT(!CustomElement::isCustomTagName(element->localName()));
 
     if (CustomElementRegistrationContext* context = element->document()->registrationContext())
         context->didGiveTypeExtension(element, type);
