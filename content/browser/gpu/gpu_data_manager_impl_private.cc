@@ -637,10 +637,8 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
   DCHECK(command_line);
 
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL)) {
-#if !defined(OS_ANDROID)
     if (!command_line->HasSwitch(switches::kDisableExperimentalWebGL))
       command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
-#endif
     if (!command_line->HasSwitch(switches::kDisablePepper3d))
       command_line->AppendSwitch(switches::kDisablePepper3d);
   }
