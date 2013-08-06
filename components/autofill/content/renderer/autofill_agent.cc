@@ -418,8 +418,6 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
 
 void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
                                                const WebKeyboardEvent& event) {
-  // TODO(csharp): Remove once Autofill test flakiness is fixed.
-  LOG(INFO) << "AutofillAgent::textFieldDidReceiveKeyDown";
   if (password_autofill_agent_->TextFieldHandlingKeyDown(element, event)) {
     element_ = element;
     return;
@@ -629,9 +627,6 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
                                     bool autofill_on_empty_values,
                                     bool requires_caret_at_end,
                                     bool display_warning_if_disabled) {
-  // TODO(csharp): Remove once Autofill test flakiness is fixed.
-  LOG(INFO) << "AutofillAgent::ShowSuggestions";
-
   if (!element.isEnabled() || element.isReadOnly() || !element.isTextField() ||
       element.isPasswordField() || !element.suggestedValue().isEmpty())
     return;
@@ -668,9 +663,6 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
 
 void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
                                              bool display_warning_if_disabled) {
-  // TODO(csharp): Remove once Autofill test flakiness is fixed.
-  LOG(INFO) << "AutofillAgent::QueryAutofillSuggestions";
-
   if (!element.document().frame())
     return;
 
