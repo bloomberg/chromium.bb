@@ -92,3 +92,6 @@ race:base::debug::TraceEventTestFixture_TraceSamplingScope_Test::TestBody
 
 # http://crbug.com/257543
 race:*GetObjectFromEntryAddress
+
+# http://crbug.com/268941
+race:tracked_objects::ThreadData::tls_index_
