@@ -3282,8 +3282,7 @@ if nacl_irt_env.Bit('bitcode'):
     nacl_irt_env.Append(CCFLAGS=['--target=x86_64-nacl'])
     nacl_irt_env.Append(LINKFLAGS=['--target=x86_64-nacl',
                                    '--pnacl-allow-translate',
-                                   '-arch', 'x86-64',
-                                   '--pnacl-driver-verbose'])
+                                   '-arch', 'x86-64'])
 
 # All IRT code must avoid direct use of the TLS ABI register, which
 # is reserved for user TLS.  Instead, ensure all TLS accesses use a

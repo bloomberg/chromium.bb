@@ -286,7 +286,7 @@
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
                    '--compile_flags=--target=x86_64-nacl ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                    '--defines=^(defines) >(_defines)',
-                   '--link_flags=--pnacl-driver-verbose --target=x86_64-nacl -arch x86-64 --pnacl-allow-translate --pnacl-allow-native -Wt,-mtls-use-call -Wn,-Trodata-segment=<(NACL_IRT_DATA_START) -Wn,-Ttext-segment=<(NACL_IRT_TEXT_START) -B>(tc_lib_dir_irt64) ^(link_flags) >(_link_flags)',
+                   '--link_flags=--target=x86_64-nacl -arch x86-64 --pnacl-allow-translate --pnacl-allow-native -Wt,-mtls-use-call -Wn,-Trodata-segment=<(NACL_IRT_DATA_START) -Wn,-Ttext-segment=<(NACL_IRT_TEXT_START) -B>(tc_lib_dir_irt64) ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
                  ],
                },
