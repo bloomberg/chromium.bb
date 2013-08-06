@@ -26,8 +26,8 @@
 #ifndef PluginTest_h
 #define PluginTest_h
 
-#include <WebKit/npfunctions.h>
 #include <assert.h>
+#include <bindings/npfunctions.h>
 #include <map>
 #include <string>
 

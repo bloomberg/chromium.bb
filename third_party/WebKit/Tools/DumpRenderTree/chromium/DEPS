@@ -1,5 +1,0 @@
-include_rules = [
-    "+public/platform",
-    "+public/web",
-    "+public/testing",
-]

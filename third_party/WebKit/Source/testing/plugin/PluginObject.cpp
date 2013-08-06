@@ -809,7 +809,7 @@ static bool testPostURLFile(PluginObject* obj, const NPVariant* args, uint32_t a
     if (!written)
         return false;
 
-    NPError error = browser->posturl(obj->npp, url, target, pathString.UTF8Length, path, TRUE);
+    NPError error = browser->posturl(obj->npp, url, target, pathString.UTF8Length, path, true);
 
     free(path);
     free(target);
@@ -1190,17 +1190,17 @@ static NPObject *pluginAllocate(NPP npp, NPClass *theClass)
     newInstance->npp = npp;
     newInstance->testObject = browser->createobject(npp, getTestClass());
     newInstance->rememberedObject = 0;
-    newInstance->eventLogging = FALSE;
+    newInstance->eventLogging = false;
     newInstance->onStreamLoad = 0;
     newInstance->onStreamDestroy = 0;
     newInstance->onDestroy = 0;
     newInstance->onURLNotify = 0;
     newInstance->onSetWindow = 0;
     newInstance->onPaintEvent = 0;
-    newInstance->logDestroy = FALSE;
-    newInstance->logSetWindow = FALSE;
-    newInstance->returnErrorFromNewStream = FALSE;
-    newInstance->returnNegativeOneFromWrite = FALSE;
+    newInstance->logDestroy = false;
+    newInstance->logSetWindow = false;
+    newInstance->returnErrorFromNewStream = false;
+    newInstance->returnNegativeOneFromWrite = false;
     newInstance->stream = 0;
 
     newInstance->firstUrl = 0;
@@ -1208,11 +1208,11 @@ static NPObject *pluginAllocate(NPP npp, NPClass *theClass)
     newInstance->lastUrl = 0;
     newInstance->lastHeaders = 0;
 
-    newInstance->testGetURLOnDestroy = FALSE;
-    newInstance->testWindowOpen = FALSE;
-    newInstance->testKeyboardFocusForPlugins = FALSE;
+    newInstance->testGetURLOnDestroy = false;
+    newInstance->testWindowOpen = false;
+    newInstance->testKeyboardFocusForPlugins = false;
 
-    newInstance->mouseDownForEvaluateScript = FALSE;
+    newInstance->mouseDownForEvaluateScript = false;
     newInstance->evaluateScriptOnMouseDownOrKeyDown = 0;
 
     return (NPObject*)newInstance;

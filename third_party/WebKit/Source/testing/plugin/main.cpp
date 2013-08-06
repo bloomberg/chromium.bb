@@ -209,7 +209,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
             obj->onURLNotify = strdup(argv[i]);
         else if (strcasecmp(argn[i], "src") == 0 &&
                  strcasecmp(argv[i], "data:application/x-webkit-test-netscape,returnerrorfromnewstream") == 0)
-            obj->returnErrorFromNewStream = TRUE;
+            obj->returnErrorFromNewStream = true;
         else if (strcasecmp(argn[i], "src") == 0 &&
                  strcasecmp(argv[i], "data:application/x-webkit-test-netscape,alertwhenloaded") == 0)
             executeScript(obj, "alert('Plugin Loaded!')");
@@ -231,7 +231,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
         else if (strcasecmp(argn[i], "onPaintEvent") == 0 && !obj->onPaintEvent)
             obj->onPaintEvent = strdup(argv[i]);
         else if (strcasecmp(argn[i], "logfirstsetwindow") == 0)
-            obj->logSetWindow = TRUE;
+            obj->logSetWindow = true;
         else if (strcasecmp(argn[i], "testnpruntime") == 0)
             testNPRuntime(instance);
         else if (strcasecmp(argn[i], "logSrc") == 0) {
@@ -243,7 +243,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
         else if (!strcasecmp(argn[i], "ondestroy"))
             obj->onDestroy = strdup(argv[i]);
         else if (strcasecmp(argn[i], "testwindowopen") == 0)
-            obj->testWindowOpen = TRUE;
+            obj->testWindowOpen = true;
         else if (strcasecmp(argn[i], "drawingmodel") == 0) {
 #ifdef XP_MACOSX
             const char* value = argv[i];
@@ -266,7 +266,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
             obj->testGetURLOnDestroy = TRUE;
 #endif
         } else if (!strcasecmp(argn[i], "src") && strstr(argv[i], "plugin-document-has-focus.pl"))
-            obj->testKeyboardFocusForPlugins = TRUE;
+            obj->testKeyboardFocusForPlugins = true;
         else if (!strcasecmp(argn[i], "evaluatescript")) {
             char* script = argv[i];
             if (script == strstr(script, "mouse::")) {
@@ -362,7 +362,7 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window)
 
         if (obj->logSetWindow) {
             pluginLog(instance, "NPP_SetWindow: %d %d", (int)window->width, (int)window->height);
-            obj->logSetWindow = FALSE;
+            obj->logSetWindow = false;
             executeScript(obj, "testRunner.notifyDone();");
         }
 
@@ -371,7 +371,7 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window)
 
         if (obj->testWindowOpen) {
             testWindowOpen(instance);
-            obj->testWindowOpen = FALSE;
+            obj->testWindowOpen = false;
         }
 
         if (obj->testKeyboardFocusForPlugins) {
@@ -686,7 +686,7 @@ static int16_t handleEventX11(NPP instance, PluginObject* obj, XEvent* event)
             pluginLog(instance, "keyUp '%c'", keyEventToChar(&event->xkey));
         if (obj->testKeyboardFocusForPlugins) {
             obj->eventLogging = false;
-            obj->testKeyboardFocusForPlugins = FALSE;
+            obj->testKeyboardFocusForPlugins = false;
             executeScript(obj, "testRunner.notifyDone();");
         }
         break;
@@ -820,7 +820,7 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value)
         return NPERR_NO_ERROR;
     }
     if (variable == NPPVpluginNeedsXEmbed) {
-        *((NPBool *)value) = TRUE;
+        *((NPBool *)value) = true;
         return NPERR_NO_ERROR;
     }
 #endif

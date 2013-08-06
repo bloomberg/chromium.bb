@@ -26,7 +26,7 @@
 #ifndef PluginObject_h
 #define PluginObject_h
 
-#include <WebKit/npfunctions.h>
+#include <bindings/npfunctions.h>
 #include <stdarg.h>
 
 class PluginTest;

@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <WebKit/npapi.h>
-#include <WebKit/npruntime.h>
+#include <bindings/npapi.h>
+#include <bindings/npruntime.h>
 
 NPClass* getTestClass(void);
 int getTestObjectCount();

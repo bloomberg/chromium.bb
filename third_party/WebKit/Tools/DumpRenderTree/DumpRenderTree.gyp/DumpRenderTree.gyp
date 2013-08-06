@@ -242,7 +242,6 @@
             'include_dirs': [
                 '<(DEPTH)',
                 '<(source_dir)/testing/plugin/',
-                '<(tools_dir)/DumpRenderTree/chromium/TestNetscapePlugIn/ForwardingHeaders',
             ],
             'conditions': [
                 ['OS=="mac"', {

@@ -126,16 +126,6 @@ _PATH_RULES_SPECIFIER = [
     # API and therefore do not follow the same header including
     # discipline as WebCore.
 
-    ([# TestNetscapePlugIn has no config.h and uses funny names like
-      # NPP_SetWindow.
-      "Tools/DumpRenderTree/TestNetscapePlugIn/",
-      # The API test harnesses have no config.h and use funny macros like
-      # TEST_CLASS_NAME.
-      "Tools/WebKitAPITest/",
-      "Tools/TestWebKitAPI/",
-      "Source/WebKit/qt/tests/qdeclarativewebview"],
-     ["-build/include",
-      "-readability/naming"]),
     ([# There is no clean way to avoid "yy_*" names used by flex.
       "Source/WebCore/css/CSSParser.cpp",
       # Qt code uses '_' in some places (such as private slots
