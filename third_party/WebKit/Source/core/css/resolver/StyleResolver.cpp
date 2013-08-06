@@ -765,6 +765,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
 
 void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style, const StringImpl* name, KeyframeAnimationEffect::KeyframeVector& keyframes)
 {
+    ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     const StyleRuleKeyframes* keyframesRule = matchScopedKeyframesRule(element, name);
     if (!keyframesRule)
         return;
@@ -797,6 +798,7 @@ void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style,
 
 const StylePropertySet* StyleResolver::firstKeyframeStyles(const Element* element, const StringImpl* animationName)
 {
+    ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     const StyleRuleKeyframes* keyframesRule = matchScopedKeyframesRule(element, animationName);
     if (!keyframesRule)
         return 0;
@@ -1044,6 +1046,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
 template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Element* target, const DocumentTimeline* timeline, const CSSAnimationUpdate* update)
 {
+    ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     ASSERT(pass != VariableDefinitions);
     ASSERT(pass != AnimationProperties);
     if (update && update->styles()) {

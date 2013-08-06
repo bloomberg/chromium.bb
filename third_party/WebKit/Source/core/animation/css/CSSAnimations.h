@@ -52,6 +52,7 @@ class StyleResolver;
 class CSSAnimationUpdate FINAL {
 public:
     const StylePropertySet* styles() const { return m_styles.get(); }
+    // Returns whether player has been cancelled and should be filtered during style application.
     bool isFiltered(const Player* player) const { return m_filtered.contains(player); }
     void cancel(const Player* player)
     {

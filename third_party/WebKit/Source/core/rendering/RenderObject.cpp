@@ -1735,17 +1735,17 @@ void RenderObject::handleDynamicFloatPositionChange()
 void RenderObject::setAnimatableStyle(PassRefPtr<RenderStyle> style)
 {
     if (!isText() && style) {
-        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && node() && node()->isElementNode()) {
+        if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
+            setStyle(animation()->updateAnimations(this, style.get()));
+            return;
+        }
+        if (node() && node()->isElementNode()) {
             Element* element = toElement(node());
             if (CSSAnimations::needsUpdate(element, style.get()))
                 element->ensureActiveAnimations()->cssAnimations()->update(element, style.get());
-            setStyle(style);
-        } else {
-            setStyle(animation()->updateAnimations(this, style.get()));
         }
-    } else {
-        setStyle(style);
     }
+    setStyle(style);
 }
 
 StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsigned contextSensitiveProperties) const
