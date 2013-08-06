@@ -1492,9 +1492,14 @@ surface_frame(struct wl_client *client,
 		return;
 	}
 
-	cb->resource = wl_resource_create(client,
-						      &wl_callback_interface,
-						      1, callback);
+	cb->resource = wl_resource_create(client, &wl_callback_interface, 1,
+					  callback);
+	if (cb->resource == NULL) {
+		free(cb);
+		wl_resource_post_no_memory(resource);
+		return;
+	}
+
 	wl_resource_set_implementation(cb->resource, NULL, cb,
 				       destroy_frame_callback);
 
@@ -1696,6 +1701,11 @@ compositor_create_surface(struct wl_client *client,
 	surface->resource =
 		wl_resource_create(client, &wl_surface_interface,
 				   wl_resource_get_version(resource), id);
+	if (surface->resource == NULL) {
+		weston_surface_destroy(surface);
+		wl_resource_post_no_memory(resource);
+		return;
+	}
 	wl_resource_set_implementation(surface->resource, &surface_interface,
 				       surface, destroy_surface);
 }
@@ -1759,6 +1769,11 @@ compositor_create_region(struct wl_client *client,
 
 	region->resource =
 		wl_resource_create(client, &wl_region_interface, 1, id);
+	if (region->resource == NULL) {
+		free(region);
+		wl_resource_post_no_memory(resource);
+		return;
+	}
 	wl_resource_set_implementation(region->resource, &region_interface,
 				       region, destroy_region);
 }
@@ -2419,10 +2434,12 @@ bind_subcompositor(struct wl_client *client,
 
 	resource =
 		wl_resource_create(client, &wl_subcompositor_interface, 1, id);
-	if (resource)
-		wl_resource_set_implementation(resource,
-					       &subcompositor_interface, 
-					       compositor, NULL);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+	wl_resource_set_implementation(resource, &subcompositor_interface,
+				       compositor, NULL);
 }
 
 static void
@@ -2542,6 +2559,10 @@ bind_output(struct wl_client *client,
 
 	resource = wl_resource_create(client, &wl_output_interface,
 				      MIN(version, 2), id);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
 
 	wl_list_insert(&output->resource_list, wl_resource_get_link(resource));
 	wl_resource_set_implementation(resource, NULL, data, unbind_resource);
@@ -2813,9 +2834,13 @@ compositor_bind(struct wl_client *client,
 
 	resource = wl_resource_create(client, &wl_compositor_interface,
 				      MIN(version, 3), id);
-	if (resource)
-		wl_resource_set_implementation(resource, &compositor_interface,
-					       compositor, NULL);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_resource_set_implementation(resource, &compositor_interface,
+				       compositor, NULL);
 }
 
 static void

@@ -1177,6 +1177,11 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 
         cr = wl_resource_create(client, &wl_pointer_interface,
 				wl_resource_get_version(resource), id);
+	if (cr == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
 	wl_list_insert(&seat->pointer->resource_list, wl_resource_get_link(cr));
 	wl_resource_set_implementation(cr, &pointer_interface, seat->pointer,
 				       unbind_resource);
@@ -1211,6 +1216,11 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 
         cr = wl_resource_create(client, &wl_keyboard_interface,
 				wl_resource_get_version(resource), id);
+	if (cr == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
 	wl_list_insert(&seat->keyboard->resource_list, wl_resource_get_link(cr));
 	wl_resource_set_implementation(cr, NULL, seat, unbind_resource);
 
@@ -1246,6 +1256,11 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 
         cr = wl_resource_create(client, &wl_touch_interface,
 				wl_resource_get_version(resource), id);
+	if (cr == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
 	wl_list_insert(&seat->touch->resource_list, wl_resource_get_link(cr));
 	wl_resource_set_implementation(cr, NULL, seat, unbind_resource);
 }

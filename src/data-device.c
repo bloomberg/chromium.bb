@@ -577,8 +577,13 @@ get_data_device(struct wl_client *client,
 
 	resource = wl_resource_create(client,
 				      &wl_data_device_interface, 1, id);
+	if (resource == NULL) {
+		wl_resource_post_no_memory(manager_resource);
+		return;
+	}
 
-	wl_list_insert(&seat->drag_resource_list, wl_resource_get_link(resource));
+	wl_list_insert(&seat->drag_resource_list,
+		       wl_resource_get_link(resource));
 	wl_resource_set_implementation(resource, &data_device_interface,
 				       seat, unbind_data_device);
 }
@@ -597,9 +602,13 @@ bind_manager(struct wl_client *client,
 	resource =
 		wl_resource_create(client,
 				   &wl_data_device_manager_interface, 1, id);
-	if (resource)
-		wl_resource_set_implementation(resource, &manager_interface,
-					       NULL, NULL);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_resource_set_implementation(resource, &manager_interface,
+				       NULL, NULL);
 }
 
 WL_EXPORT void
