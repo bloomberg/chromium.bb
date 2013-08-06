@@ -136,8 +136,10 @@ wl_resource_post_event(struct wl_resource *resource, uint32_t opcode, ...)
 				      &object->interface->events[opcode]);
 	va_end(ap);
 
-	if (closure == NULL)
+	if (closure == NULL) {
+		resource->client->error = 1
 		return;
+	}
 
 	if (wl_closure_send(closure, resource->client->connection))
 		wl_event_loop_add_idle(resource->client->display->loop,
@@ -162,8 +164,10 @@ wl_resource_queue_event(struct wl_resource *resource, uint32_t opcode, ...)
 				      &object->interface->events[opcode]);
 	va_end(ap);
 
-	if (closure == NULL)
+	if (closure == NULL) {
+		resource->client->error = 1
 		return;
+	}
 
 	if (wl_closure_queue(closure, resource->client->connection))
 		wl_event_loop_add_idle(resource->client->display->loop,
