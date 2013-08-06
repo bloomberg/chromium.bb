@@ -232,6 +232,24 @@ TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
   dntCheckbox.click();
 });
 
+// Verify that preventDefault() is called on 'Enter' keydown events that trigger
+// the default button. If this doesn't happen, other elements that may get
+// focus (by the overlay closing for instance), will execute in addition to the
+// default button. See crbug.com/268336.
+TEST_F('OptionsWebUITest', 'EnterPreventsDefault', function() {
+  var page = HomePageOverlay.getInstance();
+  OptionsPage.showPageByName(page.name);
+  var event = new KeyboardEvent('keydown', {
+    'bubbles': true,
+    'cancelable': true,
+    'keyIdentifier': 'Enter'
+  });
+  assertFalse(event.defaultPrevented);
+  page.pageDiv.dispatchEvent(event);
+  assertTrue(event.defaultPrevented);
+  testDone();
+});
+
 /**
  * TestFixture for OptionsPage WebUI testing including tab history.
  * @extends {testing.Test}

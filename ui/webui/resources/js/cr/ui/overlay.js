@@ -58,8 +58,13 @@ cr.define('cr.ui.overlay', function() {
         if (e.keyIdentifier == 'Enter' &&
             !forbiddenTagNames.test(document.activeElement.tagName)) {
           var button = getDefaultButton(overlay);
-          if (button)
+          if (button) {
             button.click();
+            // Executing the default button may result in focus moving to a
+            // different button. Calling preventDefault is necessary to not have
+            // that button execute as well.
+            e.preventDefault();
+          }
         }
       });
 
