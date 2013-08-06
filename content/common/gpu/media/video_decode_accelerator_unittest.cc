@@ -18,6 +18,7 @@
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <deque>
 
 // Include gtest.h out of order because <X11/X.h> #define's Bool & None, which
 // gtest uses as struct names (inside a namespace).  This means that
@@ -82,13 +83,19 @@ namespace {
 //   (the latter tests just decode speed).
 // - |profile| is the media::VideoCodecProfile set during Initialization.
 // An empty value for a numeric field means "ignore".
-const base::FilePath::CharType* test_video_data =
+const base::FilePath::CharType* g_test_video_data =
     // FILE_PATH_LITERAL("test-25fps.vp8:320:240:250:250:50:175:11");
     FILE_PATH_LITERAL("test-25fps.h264:320:240:250:258:50:175:1");
 
 // The path of the frame delivery time log. We can enable the log and specify
 // the filename by the "--frame_delivery_log" switch.
-const base::FilePath::CharType* frame_delivery_log = NULL;
+const base::FilePath::CharType* g_frame_delivery_log = NULL;
+
+// The value is set by the switch "--rendering_fps".
+double g_rendering_fps = 0;
+
+// Disable rendering, the value is set by the switch "--disable_rendering".
+bool g_disable_rendering = false;
 
 // Magic constants for differentiating the reasons for NotifyResetDone being
 // called.
@@ -100,7 +107,7 @@ enum ResetPoint {
 
 const int kMaxResetAfterFrameNum = 100;
 const int kMaxFramesToDelayReuse = 64;
-const int kReuseDelayMs = 1000;
+const base::TimeDelta kReuseDelay = base::TimeDelta::FromSeconds(1);
 
 struct TestVideoFile {
   explicit TestVideoFile(base::FilePath::StringType file_name)
@@ -223,11 +230,10 @@ enum ClientState {
   CS_INITIALIZED = 2,
   CS_FLUSHING = 3,
   CS_FLUSHED = 4,
-  CS_DONE = 5,
-  CS_RESETTING = 6,
-  CS_RESET = 7,
-  CS_ERROR = 8,
-  CS_DESTROYED = 9,
+  CS_RESETTING = 5,
+  CS_RESET = 6,
+  CS_ERROR = 7,
+  CS_DESTROYED = 8,
   CS_MAX,  // Must be last entry.
 };
 
@@ -269,6 +275,157 @@ ClientState ClientStateNotification::Wait() {
   return ret;
 }
 
+// A wrapper client that throttles the PictureReady callbacks to a given rate.
+// It may drops or queues frame to deliver them on time.
+class ThrottlingVDAClient : public VideoDecodeAccelerator::Client,
+                            public base::SupportsWeakPtr<ThrottlingVDAClient> {
+ public:
+  // Callback invoked whan the picture is dropped and should be reused for
+  // the decoder again.
+  typedef base::Callback<void(int32 picture_buffer_id)> ReusePictureCB;
+
+  ThrottlingVDAClient(VideoDecodeAccelerator::Client* client,
+                      double fps,
+                      ReusePictureCB reuse_picture_cb);
+  virtual ~ThrottlingVDAClient();
+
+  // VideoDecodeAccelerator::Client implementation
+  virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+                                     const gfx::Size& dimensions,
+                                     uint32 texture_target) OVERRIDE;
+  virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
+  virtual void PictureReady(const media::Picture& picture) OVERRIDE;
+  virtual void NotifyInitializeDone() OVERRIDE;
+  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
+  virtual void NotifyFlushDone() OVERRIDE;
+  virtual void NotifyResetDone() OVERRIDE;
+  virtual void NotifyError(VideoDecodeAccelerator::Error error) OVERRIDE;
+
+  int num_decoded_frames() { return num_decoded_frames_; }
+
+ private:
+
+  void CallClientPictureReady(int version);
+
+  VideoDecodeAccelerator::Client* client_;
+  ReusePictureCB reuse_picture_cb_;
+  base::TimeTicks next_frame_delivered_time_;
+  base::TimeDelta frame_duration_;
+
+  int num_decoded_frames_;
+  int stream_version_;
+  std::deque<media::Picture> pending_pictures_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ThrottlingVDAClient);
+};
+
+ThrottlingVDAClient::ThrottlingVDAClient(VideoDecodeAccelerator::Client* client,
+                                         double fps,
+                                         ReusePictureCB reuse_picture_cb)
+    : client_(client),
+      reuse_picture_cb_(reuse_picture_cb),
+      num_decoded_frames_(0),
+      stream_version_(0) {
+  CHECK(client_);
+  CHECK_GT(fps, 0);
+  frame_duration_ = base::TimeDelta::FromSeconds(1) / fps;
+}
+
+ThrottlingVDAClient::~ThrottlingVDAClient() {}
+
+void ThrottlingVDAClient::ProvidePictureBuffers(uint32 requested_num_of_buffers,
+                                                const gfx::Size& dimensions,
+                                                uint32 texture_target) {
+  client_->ProvidePictureBuffers(
+      requested_num_of_buffers, dimensions, texture_target);
+}
+
+void ThrottlingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
+  client_->DismissPictureBuffer(picture_buffer_id);
+}
+
+void ThrottlingVDAClient::PictureReady(const media::Picture& picture) {
+  ++num_decoded_frames_;
+
+  if (pending_pictures_.empty()) {
+    base::TimeDelta delay =
+        next_frame_delivered_time_.is_null()
+            ? base::TimeDelta()
+            : next_frame_delivered_time_ - base::TimeTicks::Now();
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ThrottlingVDAClient::CallClientPictureReady,
+                   AsWeakPtr(),
+                   stream_version_),
+        delay);
+  }
+  pending_pictures_.push_back(picture);
+}
+
+void ThrottlingVDAClient::CallClientPictureReady(int version) {
+  // Just return if we have reset the decoder
+  if (version != stream_version_)
+    return;
+
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  if (next_frame_delivered_time_.is_null())
+    next_frame_delivered_time_ = now;
+
+  if (next_frame_delivered_time_ + frame_duration_ < now) {
+    // Too late, drop the frame
+    reuse_picture_cb_.Run(pending_pictures_.front().picture_buffer_id());
+  } else {
+    client_->PictureReady(pending_pictures_.front());
+  }
+
+  pending_pictures_.pop_front();
+  next_frame_delivered_time_ += frame_duration_;
+  if (!pending_pictures_.empty()) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ThrottlingVDAClient::CallClientPictureReady,
+                   AsWeakPtr(),
+                   stream_version_),
+        next_frame_delivered_time_ - base::TimeTicks::Now());
+  }
+}
+
+void ThrottlingVDAClient::NotifyInitializeDone() {
+  client_->NotifyInitializeDone();
+}
+
+void ThrottlingVDAClient::NotifyEndOfBitstreamBuffer(
+    int32 bitstream_buffer_id) {
+  client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
+}
+
+void ThrottlingVDAClient::NotifyFlushDone() {
+  if (!pending_pictures_.empty()) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ThrottlingVDAClient::NotifyFlushDone,
+                   base::Unretained(this)),
+        next_frame_delivered_time_ - base::TimeTicks::Now());
+    return;
+  }
+  client_->NotifyFlushDone();
+}
+
+void ThrottlingVDAClient::NotifyResetDone() {
+  ++stream_version_;
+  while (!pending_pictures_.empty()) {
+    reuse_picture_cb_.Run(pending_pictures_.front().picture_buffer_id());
+    pending_pictures_.pop_front();
+  }
+  next_frame_delivered_time_ = base::TimeTicks();
+  client_->NotifyResetDone();
+}
+
+void ThrottlingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {
+  client_->NotifyError(error);
+}
+
 // Client that can accept callbacks from a VideoDecodeAccelerator and is used by
 // the TESTs below.
 class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
@@ -285,8 +442,11 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   // calls have been made, N>=0 means interpret as ClientState.
   // Both |reset_after_frame_num| & |delete_decoder_state| apply only to the
   // last play-through (governed by |num_play_throughs|).
+  // |rendering_fps| indicates the target rendering fps. 0 means no target fps
+  // and it would render as fast as possible.
+  // |suppress_rendering| indicates GL rendering is suppressed or not.
   // After |delay_reuse_after_frame_num| frame has been delivered, the client
-  // will start delaying the call to ReusePictureBuffer() for kReuseDelayMs.
+  // will start delaying the call to ReusePictureBuffer() for kReuseDelay.
   GLRenderingVDAClient(RenderingHelper* rendering_helper,
                        int rendering_window_id,
                        ClientStateNotification* note,
@@ -299,6 +459,7 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
                        int frame_width,
                        int frame_height,
                        int profile,
+                       double rendering_fps,
                        bool suppress_rendering,
                        int delay_reuse_after_frame_num);
   virtual ~GLRenderingVDAClient();
@@ -320,11 +481,13 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
 
   void OutputFrameDeliveryTimes(base::PlatformFile output);
 
+  void NotifyFrameDropped(int32 picture_buffer_id);
+
   // Simple getters for inspecting the state of the Client.
   int num_done_bitstream_buffers() { return num_done_bitstream_buffers_; }
   int num_skipped_fragments() { return num_skipped_fragments_; }
   int num_queued_fragments() { return num_queued_fragments_; }
-  int num_decoded_frames() { return num_decoded_frames_; }
+  int num_decoded_frames();
   double frames_per_second();
   bool decoder_deleted() { return !decoder_.get(); }
 
@@ -376,42 +539,56 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   bool suppress_rendering_;
   std::vector<base::TimeTicks> frame_delivery_times_;
   int delay_reuse_after_frame_num_;
+  scoped_ptr<ThrottlingVDAClient> throttling_client_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(GLRenderingVDAClient);
 };
 
-GLRenderingVDAClient::GLRenderingVDAClient(
-    RenderingHelper* rendering_helper,
-    int rendering_window_id,
-    ClientStateNotification* note,
-    const std::string& encoded_data,
-    int num_fragments_per_decode,
-    int num_in_flight_decodes,
-    int num_play_throughs,
-    int reset_after_frame_num,
-    int delete_decoder_state,
-    int frame_width,
-    int frame_height,
-    int profile,
-    bool suppress_rendering,
-    int delay_reuse_after_frame_num)
+GLRenderingVDAClient::GLRenderingVDAClient(RenderingHelper* rendering_helper,
+                                           int rendering_window_id,
+                                           ClientStateNotification* note,
+                                           const std::string& encoded_data,
+                                           int num_fragments_per_decode,
+                                           int num_in_flight_decodes,
+                                           int num_play_throughs,
+                                           int reset_after_frame_num,
+                                           int delete_decoder_state,
+                                           int frame_width,
+                                           int frame_height,
+                                           int profile,
+                                           double rendering_fps,
+                                           bool suppress_rendering,
+                                           int delay_reuse_after_frame_num)
     : rendering_helper_(rendering_helper),
       rendering_window_id_(rendering_window_id),
       encoded_data_(encoded_data),
       num_fragments_per_decode_(num_fragments_per_decode),
-      num_in_flight_decodes_(num_in_flight_decodes), outstanding_decodes_(0),
-      encoded_data_next_pos_to_decode_(0), next_bitstream_buffer_id_(0),
+      num_in_flight_decodes_(num_in_flight_decodes),
+      outstanding_decodes_(0),
+      encoded_data_next_pos_to_decode_(0),
+      next_bitstream_buffer_id_(0),
       note_(note),
       remaining_play_throughs_(num_play_throughs),
       reset_after_frame_num_(reset_after_frame_num),
       delete_decoder_state_(delete_decoder_state),
       state_(CS_CREATED),
-      num_skipped_fragments_(0), num_queued_fragments_(0),
-      num_decoded_frames_(0), num_done_bitstream_buffers_(0),
+      num_skipped_fragments_(0),
+      num_queued_fragments_(0),
+      num_decoded_frames_(0),
+      num_done_bitstream_buffers_(0),
       profile_(profile),
       suppress_rendering_(suppress_rendering),
       delay_reuse_after_frame_num_(delay_reuse_after_frame_num) {
   CHECK_GT(num_fragments_per_decode, 0);
   CHECK_GT(num_in_flight_decodes, 0);
   CHECK_GT(num_play_throughs, 0);
+  CHECK_GE(rendering_fps, 0);
+  if (rendering_fps > 0)
+    throttling_client_.reset(new ThrottlingVDAClient(
+        this,
+        rendering_fps,
+        base::Bind(&GLRenderingVDAClient::NotifyFrameDropped,
+                   base::Unretained(this))));
 }
 
 GLRenderingVDAClient::~GLRenderingVDAClient() {
@@ -426,21 +603,26 @@ static bool DoNothingReturnTrue() { return true; }
 void GLRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_deleted());
   CHECK(!decoder_.get());
+
+  VideoDecodeAccelerator::Client* client = this;
+  if (throttling_client_)
+    client = throttling_client_.get();
 #if defined(OS_WIN)
-  decoder_.reset(new DXVAVideoDecodeAccelerator(
-      this, base::Bind(&DoNothingReturnTrue)));
+  decoder_.reset(
+      new DXVAVideoDecodeAccelerator(client, base::Bind(&DoNothingReturnTrue)));
 #elif defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL)
-  decoder_.reset(
-      new ExynosVideoDecodeAccelerator(
-          static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
-          static_cast<EGLContext>(rendering_helper_->GetGLContext()),
-          this, base::Bind(&DoNothingReturnTrue)));
+  decoder_.reset(new ExynosVideoDecodeAccelerator(
+      static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+      static_cast<EGLContext>(rendering_helper_->GetGLContext()),
+      client,
+      base::Bind(&DoNothingReturnTrue)));
 #elif defined(ARCH_CPU_X86_FAMILY)
   decoder_.reset(new VaapiVideoDecodeAccelerator(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),
       static_cast<GLXContext>(rendering_helper_->GetGLContext()),
-      this, base::Bind(&DoNothingReturnTrue)));
+      client,
+      base::Bind(&DoNothingReturnTrue)));
 #endif  // ARCH_CPU_ARMEL
 #endif  // OS_WIN
   CHECK(decoder_.get());
@@ -495,6 +677,7 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
 
   if (decoder_deleted())
     return;
+
   frame_delivery_times_.push_back(base::TimeTicks::Now());
 
   CHECK_LE(picture.bitstream_buffer_id(), next_bitstream_buffer_id_);
@@ -503,7 +686,7 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
   // Mid-stream reset applies only to the last play-through per constructor
   // comment.
   if (remaining_play_throughs_ == 1 &&
-      reset_after_frame_num_ == num_decoded_frames_) {
+      reset_after_frame_num_ == num_decoded_frames()) {
     reset_after_frame_num_ = MID_STREAM_RESET;
     decoder_->Reset();
     // Re-start decoding from the beginning of the stream to avoid needing to
@@ -518,11 +701,13 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
     rendering_helper_->RenderTexture(picture_buffer->texture_id());
   }
 
-  if (num_decoded_frames_ > delay_reuse_after_frame_num_) {
-    base::MessageLoop::current()->PostDelayedTask(FROM_HERE, base::Bind(
-        &VideoDecodeAccelerator::ReusePictureBuffer,
-        decoder_->AsWeakPtr(), picture.picture_buffer_id()),
-        base::TimeDelta::FromMilliseconds(kReuseDelayMs));
+  if (num_decoded_frames() > delay_reuse_after_frame_num_) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&VideoDecodeAccelerator::ReusePictureBuffer,
+                   decoder_->AsWeakPtr(),
+                   picture.picture_buffer_id()),
+        kReuseDelay);
   } else {
     decoder_->ReusePictureBuffer(picture.picture_buffer_id());
   }
@@ -607,6 +792,10 @@ void GLRenderingVDAClient::OutputFrameDeliveryTimes(base::PlatformFile output) {
     t0 = frame_delivery_times_[i];
     base::WritePlatformFileAtCurrentPos(output, s.data(), s.length());
   }
+}
+
+void GLRenderingVDAClient::NotifyFrameDropped(int32 picture_buffer_id) {
+  decoder_->ReusePictureBuffer(picture_buffer_id);
 }
 
 static bool LookingAtNAL(const std::string& encoded, size_t pos) {
@@ -748,11 +937,16 @@ void GLRenderingVDAClient::DecodeNextFragments() {
   }
 }
 
+int GLRenderingVDAClient::num_decoded_frames() {
+  return throttling_client_ ? throttling_client_->num_decoded_frames()
+                            : num_decoded_frames_;
+}
+
 double GLRenderingVDAClient::frames_per_second() {
   base::TimeDelta delta = frame_delivery_times_.back() - initialize_done_ticks_;
   if (delta.InSecondsF() == 0)
     return 0;
-  return num_decoded_frames_ / delta.InSecondsF();
+  return num_decoded_frames() / delta.InSecondsF();
 }
 
 // Test parameters:
@@ -798,9 +992,6 @@ enum { kMinSupportedNumConcurrentDecoders = 3 };
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
 TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
-  // Can be useful for debugging VLOGs from OVDA.
-  // logging::SetMinLogLevel(-1);
-
   // Required for Thread to work.  Not used otherwise.
   base::ShadowingAtExitManager at_exit_manager;
 
@@ -814,13 +1005,16 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   const bool render_as_thumbnails = GetParam().h;
 
   std::vector<TestVideoFile*> test_video_files;
-  ParseAndReadTestVideoData(test_video_data, num_concurrent_decoders,
-                            reset_point, &test_video_files);
+  ParseAndReadTestVideoData(g_test_video_data,
+                            num_concurrent_decoders,
+                            reset_point,
+                            &test_video_files);
 
-  // Suppress GL rendering when we are logging the frame delivery time and a
-  // few other tests, to cut down overall test runtime.
-  const bool suppress_rendering = num_fragments_per_decode > 1 ||
-      frame_delivery_log != NULL;
+  // Suppress GL rendering for all tests when the "--disable_rendering" is set.
+  // Otherwise, suppress rendering in all but a few tests, to cut down overall
+  // test runtime.
+  const bool suppress_rendering =
+      num_fragments_per_decode > 1 || g_disable_rendering;
 
   std::vector<ClientStateNotification*> notes(num_concurrent_decoders, NULL);
   std::vector<GLRenderingVDAClient*> clients(num_concurrent_decoders, NULL);
@@ -880,12 +1074,22 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
       delay_after_frame_num = video_file->num_frames - kMaxFramesToDelayReuse;
     }
 
-    GLRenderingVDAClient* client = new GLRenderingVDAClient(
-        rendering_helper.get(), index, note, video_file->data_str,
-        num_fragments_per_decode, num_in_flight_decodes, num_play_throughs,
-        video_file->reset_after_frame_num, delete_decoder_state,
-        video_file->width, video_file->height, video_file->profile,
-        suppress_rendering, delay_after_frame_num);
+    GLRenderingVDAClient* client =
+        new GLRenderingVDAClient(rendering_helper.get(),
+                                 index,
+                                 note,
+                                 video_file->data_str,
+                                 num_fragments_per_decode,
+                                 num_in_flight_decodes,
+                                 num_play_throughs,
+                                 video_file->reset_after_frame_num,
+                                 delete_decoder_state,
+                                 video_file->width,
+                                 video_file->height,
+                                 video_file->profile,
+                                 g_rendering_fps,
+                                 suppress_rendering,
+                                 delay_after_frame_num);
     clients[index] = client;
 
     rendering_thread.message_loop()->PostTask(
@@ -1011,9 +1215,9 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   // Output the frame delivery time to file
   // We can only make performance/correctness assertions if the decoder was
   // allowed to finish.
-  if (frame_delivery_log != NULL && delete_decoder_state >= CS_FLUSHED) {
+  if (g_frame_delivery_log != NULL && delete_decoder_state >= CS_FLUSHED) {
     base::PlatformFile output_file = base::CreatePlatformFile(
-        base::FilePath(frame_delivery_log),
+        base::FilePath(g_frame_delivery_log),
         base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
         NULL,
         NULL);
@@ -1153,11 +1357,22 @@ int main(int argc, char **argv) {
   for (CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
     if (it->first == "test_video_data") {
-      content::test_video_data = it->second.c_str();
+      content::g_test_video_data = it->second.c_str();
       continue;
     }
     if (it->first == "frame_delivery_log") {
-      content::frame_delivery_log = it->second.c_str();
+      content::g_frame_delivery_log = it->second.c_str();
+      continue;
+    }
+    if (it->first == "rendering_fps") {
+      // On Windows, CommandLine::StringType is wstring. We need to convert
+      // it to std::string first
+      std::string input(it->second.begin(), it->second.end());
+      CHECK(base::StringToDouble(input, &content::g_rendering_fps));
+      continue;
+    }
+    if (it->first == "disable_rendering") {
+      content::g_disable_rendering = true;
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")
