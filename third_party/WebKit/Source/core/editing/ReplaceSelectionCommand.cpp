@@ -178,7 +178,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
 
     // Give the root a chance to change the text.
     RefPtr<BeforeTextInsertedEvent> evt = BeforeTextInsertedEvent::create(text);
-    editableRoot->dispatchEvent(evt, ASSERT_NO_EXCEPTION_STATE);
+    editableRoot->dispatchEvent(evt, ASSERT_NO_EXCEPTION);
     if (text != evt->text() || !editableRoot->rendererIsRichlyEditable()) {
         restoreAndRemoveTestRenderingNodesToFragment(holder.get());
 
@@ -229,7 +229,7 @@ void ReplacementFragment::removeNode(PassRefPtr<Node> node)
     if (!parent)
         return;
 
-    parent->removeChild(node.get(), ASSERT_NO_EXCEPTION_STATE);
+    parent->removeChild(node.get(), ASSERT_NO_EXCEPTION);
 }
 
 void ReplacementFragment::insertNodeBefore(PassRefPtr<Node> node, Node* refNode)
@@ -241,15 +241,15 @@ void ReplacementFragment::insertNodeBefore(PassRefPtr<Node> node, Node* refNode)
     if (!parent)
         return;
 
-    parent->insertBefore(node, refNode, ASSERT_NO_EXCEPTION_STATE);
+    parent->insertBefore(node, refNode, ASSERT_NO_EXCEPTION);
 }
 
 PassRefPtr<Element> ReplacementFragment::insertFragmentForTestRendering(Node* rootEditableElement)
 {
     RefPtr<Element> holder = createDefaultParagraphElement(m_document.get());
 
-    holder->appendChild(m_fragment, ASSERT_NO_EXCEPTION_STATE);
-    rootEditableElement->appendChild(holder.get(), ASSERT_NO_EXCEPTION_STATE);
+    holder->appendChild(m_fragment, ASSERT_NO_EXCEPTION);
+    rootEditableElement->appendChild(holder.get(), ASSERT_NO_EXCEPTION);
     m_document->updateLayoutIgnorePendingStylesheets();
 
     return holder.release();
@@ -261,8 +261,8 @@ void ReplacementFragment::restoreAndRemoveTestRenderingNodesToFragment(Element* 
         return;
 
     while (RefPtr<Node> node = holder->firstChild()) {
-        holder->removeChild(node.get(), ASSERT_NO_EXCEPTION_STATE);
-        m_fragment->appendChild(node.get(), ASSERT_NO_EXCEPTION_STATE);
+        holder->removeChild(node.get(), ASSERT_NO_EXCEPTION);
+        m_fragment->appendChild(node.get(), ASSERT_NO_EXCEPTION);
     }
 
     removeNode(holder);
@@ -547,9 +547,9 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
 
             // Mutate using the CSSOM wrapper so we get the same event behavior as a script.
             if (isBlock(element))
-                element->style()->setPropertyInternal(CSSPropertyDisplay, "inline", false, IGNORE_EXCEPTION_STATE);
+                element->style()->setPropertyInternal(CSSPropertyDisplay, "inline", false, IGNORE_EXCEPTION);
             if (element->renderer() && element->renderer()->style()->isFloating())
-                element->style()->setPropertyInternal(CSSPropertyFloat, "none", false, IGNORE_EXCEPTION_STATE);
+                element->style()->setPropertyInternal(CSSPropertyFloat, "none", false, IGNORE_EXCEPTION);
         }
     }
 }
@@ -1429,7 +1429,7 @@ Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtr<HTMLElement> prpList
     }
 
     while (RefPtr<Node> listItem = listElement->firstChild()) {
-        listElement->removeChild(listItem.get(), ASSERT_NO_EXCEPTION_STATE);
+        listElement->removeChild(listItem.get(), ASSERT_NO_EXCEPTION);
         if (isStart || isMiddle) {
             insertNodeBefore(listItem, lastNode);
             insertedNodes.respondToNodeInsertion(listItem.get());

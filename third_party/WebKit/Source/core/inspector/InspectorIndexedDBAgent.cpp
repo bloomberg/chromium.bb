@@ -520,9 +520,9 @@ public:
                 return;
             }
 
-            idbRequest = idbIndex->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), IDBCursor::directionNext(), IGNORE_EXCEPTION_STATE);
+            idbRequest = idbIndex->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), IDBCursor::directionNext(), IGNORE_EXCEPTION);
         } else {
-            idbRequest = idbObjectStore->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), IDBCursor::directionNext(), IGNORE_EXCEPTION_STATE);
+            idbRequest = idbObjectStore->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), IDBCursor::directionNext(), IGNORE_EXCEPTION);
         }
         idbRequest->addEventListener(eventNames().successEvent, openCursorCallback, false);
     }

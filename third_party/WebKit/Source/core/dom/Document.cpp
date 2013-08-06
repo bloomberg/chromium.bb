@@ -1315,7 +1315,7 @@ void Document::setTitle(const String& title)
     else if (!m_titleElement) {
         if (HTMLElement* headElement = head()) {
             m_titleElement = createElement(titleTag, false);
-            headElement->appendChild(m_titleElement, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+            headElement->appendChild(m_titleElement, ASSERT_NO_EXCEPTION, AttachLazily);
         }
     }
 
@@ -2724,7 +2724,7 @@ void Document::processHttpEquivSetCookie(const String& content)
         return;
 
     // Exception (for sandboxed documents) ignored.
-    toHTMLDocument(this)->setCookie(content, IGNORE_EXCEPTION_STATE);
+    toHTMLDocument(this)->setCookie(content, IGNORE_EXCEPTION);
 }
 
 void Document::processHttpEquivXFrameOptions(const String& content)

@@ -1116,7 +1116,7 @@ CSSStyleRule* InspectorStyleSheet::addRule(const String& selector, ExceptionStat
     if (!styleRule) {
         // What we just added has to be a CSSStyleRule - we cannot handle other types of rules yet.
         // If it is not a style rule, pretend we never touched the stylesheet.
-        m_pageStyleSheet->deleteRule(lastRuleIndex, ASSERT_NO_EXCEPTION_STATE);
+        m_pageStyleSheet->deleteRule(lastRuleIndex, ASSERT_NO_EXCEPTION);
         es.throwDOMException(SyntaxError);
         return 0;
     }
@@ -1127,7 +1127,7 @@ CSSStyleRule* InspectorStyleSheet::addRule(const String& selector, ExceptionStat
     styleSheetText.append(selector);
     styleSheetText.appendLiteral(" {}");
     // Using setText() as this operation changes the style sheet rule set.
-    setText(styleSheetText.toString(), ASSERT_NO_EXCEPTION_STATE);
+    setText(styleSheetText.toString(), ASSERT_NO_EXCEPTION);
 
     fireStyleSheetChanged();
 
@@ -1163,7 +1163,7 @@ bool InspectorStyleSheet::deleteRule(const InspectorCSSId& id, ExceptionState& e
 
     String sheetText = m_parsedStyleSheet->text();
     sheetText.remove(sourceData->ruleHeaderRange.start, sourceData->ruleBodyRange.end - sourceData->ruleHeaderRange.start + 1);
-    setText(sheetText, ASSERT_NO_EXCEPTION_STATE);
+    setText(sheetText, ASSERT_NO_EXCEPTION);
     fireStyleSheetChanged();
     return true;
 }

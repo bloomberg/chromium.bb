@@ -74,7 +74,7 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFr
         if (!numCharacters)
             continue;
 
-        Node* container = it.range()->startContainer(IGNORE_EXCEPTION_STATE);
+        Node* container = it.range()->startContainer(IGNORE_EXCEPTION);
         RenderObject* renderer = container->renderer();
         ASSERT(renderer);
         if (!renderer)

@@ -47,9 +47,9 @@ void WrapContentsInDummySpanCommand::executeApply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_dummySpan->appendChild(children[i].release(), IGNORE_EXCEPTION_STATE);
+        m_dummySpan->appendChild(children[i].release(), IGNORE_EXCEPTION);
 
-    m_element->appendChild(m_dummySpan.get(), IGNORE_EXCEPTION_STATE);
+    m_element->appendChild(m_dummySpan.get(), IGNORE_EXCEPTION);
 }
 
 void WrapContentsInDummySpanCommand::doApply()
@@ -72,9 +72,9 @@ void WrapContentsInDummySpanCommand::doUnapply()
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_element->appendChild(children[i].release(), IGNORE_EXCEPTION_STATE);
+        m_element->appendChild(children[i].release(), IGNORE_EXCEPTION);
 
-    m_dummySpan->remove(IGNORE_EXCEPTION_STATE);
+    m_dummySpan->remove(IGNORE_EXCEPTION);
 }
 
 void WrapContentsInDummySpanCommand::doReapply()

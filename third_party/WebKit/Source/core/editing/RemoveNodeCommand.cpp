@@ -52,7 +52,7 @@ void RemoveNodeCommand::doApply()
     m_parent = parent;
     m_refChild = m_node->nextSibling();
 
-    m_node->remove(IGNORE_EXCEPTION_STATE);
+    m_node->remove(IGNORE_EXCEPTION);
 }
 
 void RemoveNodeCommand::doUnapply()
@@ -62,7 +62,7 @@ void RemoveNodeCommand::doUnapply()
     if (!parent || !parent->rendererIsEditable())
         return;
 
-    parent->insertBefore(m_node.get(), refChild.get(), IGNORE_EXCEPTION_STATE);
+    parent->insertBefore(m_node.get(), refChild.get(), IGNORE_EXCEPTION);
 }
 
 #ifndef NDEBUG

@@ -156,7 +156,7 @@ void MediaControlsChromium::reset()
         return;
 
     double duration = m_mediaController->duration();
-    m_durationDisplay->setInnerText(page->theme()->formatMediaControlsTime(duration), ASSERT_NO_EXCEPTION_STATE);
+    m_durationDisplay->setInnerText(page->theme()->formatMediaControlsTime(duration), ASSERT_NO_EXCEPTION);
     m_durationDisplay->setCurrentValue(duration);
 
     MediaControls::reset();
@@ -186,7 +186,7 @@ void MediaControlsChromium::updateCurrentTimeDisplay()
     }
 
     // Allow the theme to format the time.
-    m_currentTimeDisplay->setInnerText(page->theme()->formatMediaControlsCurrentTime(now, duration), IGNORE_EXCEPTION_STATE);
+    m_currentTimeDisplay->setInnerText(page->theme()->formatMediaControlsCurrentTime(now, duration), IGNORE_EXCEPTION);
     m_currentTimeDisplay->setCurrentValue(now);
 }
 
@@ -218,7 +218,7 @@ void MediaControlsChromium::insertTextTrackContainer(PassRefPtr<MediaControlText
 {
     // Insert it before the first controller element so it always displays behind the controls.
     // In the Chromium case, that's the enclosure element.
-    insertBefore(textTrackContainer, m_enclosure, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+    insertBefore(textTrackContainer, m_enclosure, ASSERT_NO_EXCEPTION, AttachLazily);
 }
 
 

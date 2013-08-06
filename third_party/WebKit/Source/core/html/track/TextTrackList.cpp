@@ -263,7 +263,7 @@ void TextTrackList::asyncEventTimerFired(Timer<TextTrackList>*)
     m_pendingEvents.swap(pendingEvents);
     size_t count = pendingEvents.size();
     for (size_t index = 0; index < count; ++index)
-        dispatchEvent(pendingEvents[index].release(), IGNORE_EXCEPTION_STATE);
+        dispatchEvent(pendingEvents[index].release(), IGNORE_EXCEPTION);
     --m_dispatchingEvents;
 }
 

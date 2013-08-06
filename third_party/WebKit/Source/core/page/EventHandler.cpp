@@ -1711,7 +1711,7 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
         0, 0, clipboard);
 
-    dragTarget->dispatchEvent(me.get(), IGNORE_EXCEPTION_STATE);
+    dragTarget->dispatchEvent(me.get(), IGNORE_EXCEPTION);
     return me->defaultPrevented();
 }
 
@@ -2044,7 +2044,7 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
     // FrameSelection::setFocusedNodeIfNeeded.
     if (element
         && m_frame->selection()->isRange()
-        && m_frame->selection()->toNormalizedRange()->compareNode(element, IGNORE_EXCEPTION_STATE) == Range::NODE_INSIDE
+        && m_frame->selection()->toNormalizedRange()->compareNode(element, IGNORE_EXCEPTION) == Range::NODE_INSIDE
         && element->isDescendantOf(m_frame->document()->focusedElement()))
         return true;
 
@@ -3008,13 +3008,13 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     keydown->setTarget(node);
 
     if (initialKeyEvent.type() == PlatformEvent::RawKeyDown) {
-        node->dispatchEvent(keydown, IGNORE_EXCEPTION_STATE);
+        node->dispatchEvent(keydown, IGNORE_EXCEPTION);
         // If frame changed as a result of keydown dispatch, then return true to avoid sending a subsequent keypress message to the new frame.
         bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController()->focusedOrMainFrame();
         return keydown->defaultHandled() || keydown->defaultPrevented() || changedFocusedFrame;
     }
 
-    node->dispatchEvent(keydown, IGNORE_EXCEPTION_STATE);
+    node->dispatchEvent(keydown, IGNORE_EXCEPTION);
     // If frame changed as a result of keydown dispatch, then return early to avoid sending a subsequent keypress message to the new frame.
     bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController()->focusedOrMainFrame();
     bool keydownResult = keydown->defaultHandled() || keydown->defaultPrevented() || changedFocusedFrame;
@@ -3035,7 +3035,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     keypress->setTarget(node);
     if (keydownResult)
         keypress->setDefaultPrevented(true);
-    node->dispatchEvent(keypress, IGNORE_EXCEPTION_STATE);
+    node->dispatchEvent(keypress, IGNORE_EXCEPTION);
 
     return keydownResult || keypress->defaultPrevented() || keypress->defaultHandled();
 }
@@ -3329,7 +3329,7 @@ bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEve
     RefPtr<TextEvent> event = TextEvent::create(m_frame->domWindow(), text, inputType);
     event->setUnderlyingEvent(underlyingEvent);
 
-    target->dispatchEvent(event, IGNORE_EXCEPTION_STATE);
+    target->dispatchEvent(event, IGNORE_EXCEPTION);
     return event->defaultHandled();
 }
 

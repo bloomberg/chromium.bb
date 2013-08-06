@@ -75,7 +75,7 @@ void TitleEncodingFixer::fixTitleEncoding()
     CString originalBytes = titleElement->textContent().latin1();
     OwnPtr<TextCodec> codec = newTextCodec(m_document->decoder()->encoding());
     String correctlyDecodedTitle = codec->decode(originalBytes.data(), originalBytes.length(), true);
-    titleElement->setTextContent(correctlyDecodedTitle, IGNORE_EXCEPTION_STATE);
+    titleElement->setTextContent(correctlyDecodedTitle, IGNORE_EXCEPTION);
 }
 
 }

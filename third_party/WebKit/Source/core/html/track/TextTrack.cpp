@@ -244,7 +244,7 @@ void TextTrack::addCue(PassRefPtr<TextTrackCue> prpCue)
     // list of cues.
     TextTrack* cueTrack = cue->track();
     if (cueTrack && cueTrack != this)
-        cueTrack->removeCue(cue.get(), ASSERT_NO_EXCEPTION_STATE);
+        cueTrack->removeCue(cue.get(), ASSERT_NO_EXCEPTION);
 
     // 2. Add cue to the method's TextTrack object's text track's text track list of cues.
     cue->setTrack(this);
@@ -321,7 +321,7 @@ void TextTrack::addRegion(PassRefPtr<TextTrackRegion> prpRegion)
     // region from that text track list of regions.
     TextTrack* regionTrack = region->track();
     if (regionTrack && regionTrack != this)
-        regionTrack->removeRegion(region.get(), ASSERT_NO_EXCEPTION_STATE);
+        regionTrack->removeRegion(region.get(), ASSERT_NO_EXCEPTION);
 
     // 2. If the method's TextTrack object's text track list of regions contains
     // a region with the same identifier as region replace the values of that

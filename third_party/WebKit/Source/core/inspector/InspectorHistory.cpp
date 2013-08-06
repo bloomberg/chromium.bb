@@ -102,7 +102,7 @@ bool InspectorHistory::perform(PassOwnPtr<Action> action, ExceptionState& es)
 
 void InspectorHistory::markUndoableState()
 {
-    perform(adoptPtr(new UndoableStateMark()), IGNORE_EXCEPTION_STATE);
+    perform(adoptPtr(new UndoableStateMark()), IGNORE_EXCEPTION);
 }
 
 bool InspectorHistory::undo(ExceptionState& es)

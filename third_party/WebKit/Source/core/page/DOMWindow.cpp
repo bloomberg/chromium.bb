@@ -1389,8 +1389,8 @@ static void didAddStorageEventListener(DOMWindow* window)
     // notifications about storage events that might be triggered in other processes. Rather
     // than subscribe to these notifications explicitly, we subscribe to them implicitly to
     // simplify the work done by the system.
-    window->localStorage(IGNORE_EXCEPTION_STATE);
-    window->sessionStorage(IGNORE_EXCEPTION_STATE);
+    window->localStorage(IGNORE_EXCEPTION);
+    window->sessionStorage(IGNORE_EXCEPTION);
 }
 
 bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)

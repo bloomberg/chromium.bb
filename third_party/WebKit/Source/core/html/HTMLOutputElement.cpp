@@ -138,7 +138,7 @@ void HTMLOutputElement::setTextContentInternal(const String& value)
 {
     ASSERT(!m_isSetTextContentInProgress);
     m_isSetTextContentInProgress = true;
-    setTextContent(value, IGNORE_EXCEPTION_STATE);
+    setTextContent(value, IGNORE_EXCEPTION);
 }
 
 } // namespace

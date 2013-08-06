@@ -100,7 +100,7 @@ Element* FormatBlockCommand::elementForFormatBlockCommand(Range* range)
     if (!range)
         return 0;
 
-    Node* commonAncestor = range->commonAncestorContainer(IGNORE_EXCEPTION_STATE);
+    Node* commonAncestor = range->commonAncestorContainer(IGNORE_EXCEPTION);
     while (commonAncestor && !isElementForFormatBlock(commonAncestor))
         commonAncestor = commonAncestor->parentNode();
 

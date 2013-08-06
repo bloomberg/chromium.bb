@@ -612,16 +612,16 @@ void RenderNamedFlowThread::getRanges(Vector<RefPtr<Range> >& rangeObjects, cons
             if (!boxIntersectsRegion(logicalTopForRenderer, logicalBottomForRenderer, logicalTopForRegion, logicalBottomForRegion)) {
                 if (foundStartPosition) {
                     if (!startsAboveRegion) {
-                        if (range->intersectsNode(node, IGNORE_EXCEPTION_STATE))
-                            range->setEndBefore(node, IGNORE_EXCEPTION_STATE);
-                        rangeObjects.append(range->cloneRange(IGNORE_EXCEPTION_STATE));
+                        if (range->intersectsNode(node, IGNORE_EXCEPTION))
+                            range->setEndBefore(node, IGNORE_EXCEPTION);
+                        rangeObjects.append(range->cloneRange(IGNORE_EXCEPTION));
                         range = Range::create(contentNode->document());
                         startsAboveRegion = true;
                     } else
                         skipOverOutsideNodes = true;
                 }
                 if (skipOverOutsideNodes)
-                    range->setStartAfter(node, IGNORE_EXCEPTION_STATE);
+                    range->setStartAfter(node, IGNORE_EXCEPTION);
                 foundStartPosition = false;
                 continue;
             }
@@ -648,7 +648,7 @@ void RenderNamedFlowThread::getRanges(Vector<RefPtr<Range> >& rangeObjects, cons
                 // the range is closed.
                 if (startsAboveRegion) {
                     startsAboveRegion = false;
-                    range->setStartBefore(node, IGNORE_EXCEPTION_STATE);
+                    range->setStartBefore(node, IGNORE_EXCEPTION);
                 }
             }
             skipOverOutsideNodes  = false;
@@ -682,7 +682,7 @@ void RenderNamedFlowThread::getRanges(Vector<RefPtr<Range> >& rangeObjects, cons
                 // for elements that ends inside the region, set the end position to be after them
                 // allow this end position to be changed only by other elements that are not descendants of the current end node
                 if (endsBelowRegion || (!endsBelowRegion && !node->isDescendantOf(lastEndNode))) {
-                    range->setEndAfter(node, IGNORE_EXCEPTION_STATE);
+                    range->setEndAfter(node, IGNORE_EXCEPTION);
                     endsBelowRegion = false;
                     lastEndNode = node;
                 }

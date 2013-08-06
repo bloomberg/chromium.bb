@@ -155,7 +155,7 @@ String ChromiumDataObject::getData(const String& type) const
 bool ChromiumDataObject::setData(const String& type, const String& data)
 {
     clearData(type);
-    add(data, type, ASSERT_NO_EXCEPTION_STATE);
+    add(data, type, ASSERT_NO_EXCEPTION);
     return true;
 }
 

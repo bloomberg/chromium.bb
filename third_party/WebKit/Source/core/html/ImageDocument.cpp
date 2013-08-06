@@ -167,7 +167,7 @@ PassRefPtr<DocumentParser> ImageDocument::createParser()
 void ImageDocument::createDocumentStructure()
 {
     RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(this);
-    appendChild(rootElement, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+    appendChild(rootElement, ASSERT_NO_EXCEPTION, AttachLazily);
     rootElement->insertedByParser();
 
     if (frame() && frame()->loader())
@@ -177,7 +177,7 @@ void ImageDocument::createDocumentStructure()
     RefPtr<HTMLMetaElement> meta = HTMLMetaElement::create(this);
     meta->setAttribute(nameAttr, "viewport");
     meta->setAttribute(contentAttr, "width=device-width");
-    head->appendChild(meta, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+    head->appendChild(meta, ASSERT_NO_EXCEPTION, AttachLazily);
 
     RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(this);
     body->setAttribute(styleAttr, "margin: 0px;");
@@ -186,7 +186,7 @@ void ImageDocument::createDocumentStructure()
     m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none");
     m_imageElement->setLoadManually(true);
     m_imageElement->setSrc(url().string());
-    body->appendChild(m_imageElement.get(), ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+    body->appendChild(m_imageElement.get(), ASSERT_NO_EXCEPTION, AttachLazily);
 
     if (shouldShrinkToFit()) {
         // Add event listeners
@@ -196,8 +196,8 @@ void ImageDocument::createDocumentStructure()
         m_imageElement->addEventListener("click", listener.release(), false);
     }
 
-    rootElement->appendChild(head, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
-    rootElement->appendChild(body, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+    rootElement->appendChild(head, ASSERT_NO_EXCEPTION, AttachLazily);
+    rootElement->appendChild(body, ASSERT_NO_EXCEPTION, AttachLazily);
 }
 
 float ImageDocument::scale() const

@@ -113,7 +113,7 @@ PassRefPtr<TimeRanges> MediaSourceBase::buffered() const
     for (size_t i = 0; i < ranges.size(); ++i) {
         unsigned length = ranges[i]->length();
         if (length)
-            highestEndTime = std::max(highestEndTime, ranges[i]->end(length - 1, ASSERT_NO_EXCEPTION_STATE));
+            highestEndTime = std::max(highestEndTime, ranges[i]->end(length - 1, ASSERT_NO_EXCEPTION));
     }
 
     // Return an empty range if all ranges are empty.
@@ -131,7 +131,7 @@ PassRefPtr<TimeRanges> MediaSourceBase::buffered() const
 
         // 5.2 If readyState is "ended", then set the end time on the last range in source ranges to highest end time.
         if (ended && sourceRanges->length())
-            sourceRanges->add(sourceRanges->start(sourceRanges->length() - 1, ASSERT_NO_EXCEPTION_STATE), highestEndTime);
+            sourceRanges->add(sourceRanges->start(sourceRanges->length() - 1, ASSERT_NO_EXCEPTION), highestEndTime);
 
         // 5.3 Let new intersection ranges equal the the intersection between the intersection ranges and the source ranges.
         // 5.4 Replace the ranges in intersection ranges with the new intersection ranges.

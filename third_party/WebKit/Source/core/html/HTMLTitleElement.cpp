@@ -149,7 +149,7 @@ void HTMLTitleElement::setText(const String &value)
         if (numChildren > 0)
             removeChildren();
 
-        appendChild(document()->createTextNode(valueCopy.impl()), IGNORE_EXCEPTION_STATE);
+        appendChild(document()->createTextNode(valueCopy.impl()), IGNORE_EXCEPTION);
     }
 }
 

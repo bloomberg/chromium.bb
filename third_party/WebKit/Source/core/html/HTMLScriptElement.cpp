@@ -94,7 +94,7 @@ void HTMLScriptElement::setText(const String &value)
     if (numChildren > 0)
         removeChildren();
 
-    appendChild(document()->createTextNode(value.impl()), IGNORE_EXCEPTION_STATE);
+    appendChild(document()->createTextNode(value.impl()), IGNORE_EXCEPTION);
 }
 
 void HTMLScriptElement::setAsync(bool async)

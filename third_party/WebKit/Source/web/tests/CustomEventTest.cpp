@@ -100,7 +100,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     WebView* webView = FrameTestHelpers::createWebViewAndLoad(baseURL + path);
     WebFrameImpl* frame = static_cast<WebFrameImpl*>(webView->mainFrame());
 
-    WebDOMEvent event = frame->frame()->document()->createEvent("CustomEvent", IGNORE_EXCEPTION_STATE);
+    WebDOMEvent event = frame->frame()->document()->createEvent("CustomEvent", IGNORE_EXCEPTION);
     WebDOMCustomEvent customEvent = event.to<WebDOMCustomEvent>();
 
     v8::HandleScope handleScope;

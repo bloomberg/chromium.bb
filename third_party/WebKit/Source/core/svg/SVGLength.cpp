@@ -122,14 +122,14 @@ SVGLength::SVGLength(SVGLengthMode mode, const String& valueAsString)
     : m_valueInSpecifiedUnits(0)
     , m_unit(storeUnit(mode, LengthTypeNumber))
 {
-    setValueAsString(valueAsString, IGNORE_EXCEPTION_STATE);
+    setValueAsString(valueAsString, IGNORE_EXCEPTION);
 }
 
 SVGLength::SVGLength(const SVGLengthContext& context, float value, SVGLengthMode mode, SVGLengthType unitType)
     : m_valueInSpecifiedUnits(0)
     , m_unit(storeUnit(mode, unitType))
 {
-    setValue(value, context, ASSERT_NO_EXCEPTION_STATE);
+    setValue(value, context, ASSERT_NO_EXCEPTION);
 }
 
 SVGLength::SVGLength(const SVGLength& other)
@@ -183,7 +183,7 @@ SVGLengthMode SVGLength::unitMode() const
 
 float SVGLength::value(const SVGLengthContext& context) const
 {
-    return value(context, IGNORE_EXCEPTION_STATE);
+    return value(context, IGNORE_EXCEPTION);
 }
 
 float SVGLength::value(const SVGLengthContext& context, ExceptionState& es) const

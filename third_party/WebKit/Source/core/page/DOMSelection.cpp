@@ -400,10 +400,10 @@ void DOMSelection::addRange(Range* r)
     }
 
     RefPtr<Range> range = selection->selection().toNormalizedRange();
-    if (r->compareBoundaryPoints(Range::START_TO_START, range.get(), IGNORE_EXCEPTION_STATE) == -1) {
+    if (r->compareBoundaryPoints(Range::START_TO_START, range.get(), IGNORE_EXCEPTION) == -1) {
         // We don't support discontiguous selection. We don't do anything if r and range don't intersect.
-        if (r->compareBoundaryPoints(Range::START_TO_END, range.get(), IGNORE_EXCEPTION_STATE) > -1) {
-            if (r->compareBoundaryPoints(Range::END_TO_END, range.get(), IGNORE_EXCEPTION_STATE) == -1)
+        if (r->compareBoundaryPoints(Range::START_TO_END, range.get(), IGNORE_EXCEPTION) > -1) {
+            if (r->compareBoundaryPoints(Range::END_TO_END, range.get(), IGNORE_EXCEPTION) == -1)
                 // The original range and r intersect.
                 selection->setSelection(VisibleSelection(r->startPosition(), range->endPosition(), DOWNSTREAM));
             else
@@ -414,7 +414,7 @@ void DOMSelection::addRange(Range* r)
         // We don't support discontiguous selection. We don't do anything if r and range don't intersect.
         TrackExceptionState es;
         if (r->compareBoundaryPoints(Range::END_TO_START, range.get(), es) < 1 && !es.hadException()) {
-            if (r->compareBoundaryPoints(Range::END_TO_END, range.get(), IGNORE_EXCEPTION_STATE) == -1)
+            if (r->compareBoundaryPoints(Range::END_TO_END, range.get(), IGNORE_EXCEPTION) == -1)
                 // The original range contains r.
                 selection->setSelection(VisibleSelection(range.get()));
             else
@@ -441,9 +441,9 @@ void DOMSelection::deleteFromDocument()
     if (!selectedRange)
         return;
 
-    selectedRange->deleteContents(ASSERT_NO_EXCEPTION_STATE);
+    selectedRange->deleteContents(ASSERT_NO_EXCEPTION);
 
-    setBaseAndExtent(selectedRange->startContainer(ASSERT_NO_EXCEPTION_STATE), selectedRange->startOffset(), selectedRange->startContainer(), selectedRange->startOffset(), ASSERT_NO_EXCEPTION_STATE);
+    setBaseAndExtent(selectedRange->startContainer(ASSERT_NO_EXCEPTION), selectedRange->startOffset(), selectedRange->startContainer(), selectedRange->startOffset(), ASSERT_NO_EXCEPTION);
 }
 
 bool DOMSelection::containsNode(const Node* n, bool allowPartial) const

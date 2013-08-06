@@ -215,7 +215,7 @@ void TextTrackRegion::updateParametersFromRegion(TextTrackRegion* region)
     m_regionAnchor = FloatPoint(region->regionAnchorX(), region->regionAnchorY());
     m_viewportAnchor = FloatPoint(region->viewportAnchorX(), region->viewportAnchorY());
 
-    setScroll(region->scroll(), ASSERT_NO_EXCEPTION_STATE);
+    setScroll(region->scroll(), ASSERT_NO_EXCEPTION);
 }
 
 void TextTrackRegion::setRegionSettings(const String& input)
@@ -373,7 +373,7 @@ void TextTrackRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
     double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
     float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
 
-    m_cueContainer->classList()->remove(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION_STATE);
+    m_cueContainer->classList()->remove(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION);
 
     m_currentTop += boxHeight;
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop, m_currentTop, CSSPrimitiveValue::CSS_PX);
@@ -385,7 +385,7 @@ void TextTrackRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayB
     if (m_cueContainer->contains(displayBox.get()))
         return;
 
-    m_cueContainer->appendChild(displayBox, ASSERT_NO_EXCEPTION_STATE, AttachNow);
+    m_cueContainer->appendChild(displayBox, ASSERT_NO_EXCEPTION, AttachNow);
     displayLastTextTrackCueBox();
 }
 
@@ -400,7 +400,7 @@ void TextTrackRegion::displayLastTextTrackCueBox()
 
     // If it's a scrolling region, add the scrolling class.
     if (isScrollingRegion())
-        m_cueContainer->classList()->add(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION_STATE);
+        m_cueContainer->classList()->add(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION);
 
     float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
 

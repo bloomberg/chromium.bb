@@ -5594,12 +5594,12 @@ void WebGLRenderingContext::setBackDrawBuffer(GC3Denum buf)
 
 void WebGLRenderingContext::restoreCurrentFramebuffer()
 {
-    bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_framebufferBinding.get(), IGNORE_EXCEPTION_STATE);
+    bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_framebufferBinding.get(), IGNORE_EXCEPTION);
 }
 
 void WebGLRenderingContext::restoreCurrentTexture2D()
 {
-    bindTexture(GraphicsContext3D::TEXTURE_2D, m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get(), IGNORE_EXCEPTION_STATE);
+    bindTexture(GraphicsContext3D::TEXTURE_2D, m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get(), IGNORE_EXCEPTION);
 }
 
 void WebGLRenderingContext::multisamplingChanged(bool enabled)

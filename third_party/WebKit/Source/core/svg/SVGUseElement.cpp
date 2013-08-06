@@ -515,7 +515,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     // Eventually dump shadow tree
 #ifdef DUMP_SHADOW_TREE
     RefPtr<XMLSerializer> serializer = XMLSerializer::create();
-    String markup = serializer->serializeToString(shadowTreeRootElement, ASSERT_NO_EXCEPTION_STATE);
+    String markup = serializer->serializeToString(shadowTreeRootElement, ASSERT_NO_EXCEPTION);
     fprintf(stderr, "Dumping <use> shadow tree markup:\n%s\n", markup.latin1().data());
 #endif
 }

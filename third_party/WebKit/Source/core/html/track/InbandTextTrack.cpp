@@ -151,22 +151,22 @@ void InbandTextTrack::addGenericCue(InbandTextTrackPrivate* trackPrivate, Generi
     cue->setFontName(cueData->fontName());
 
     if (cueData->position() > 0)
-        cue->setPosition(lround(cueData->position()), IGNORE_EXCEPTION_STATE);
+        cue->setPosition(lround(cueData->position()), IGNORE_EXCEPTION);
     if (cueData->line() > 0)
-        cue->setLine(lround(cueData->line()), IGNORE_EXCEPTION_STATE);
+        cue->setLine(lround(cueData->line()), IGNORE_EXCEPTION);
     if (cueData->size() > 0)
-        cue->setSize(lround(cueData->size()), IGNORE_EXCEPTION_STATE);
+        cue->setSize(lround(cueData->size()), IGNORE_EXCEPTION);
     if (cueData->backgroundColor().alpha())
         cue->setBackgroundColor(cueData->backgroundColor().rgb());
     if (cueData->foregroundColor().alpha())
         cue->setForegroundColor(cueData->foregroundColor().rgb());
 
     if (cueData->align() == GenericCueData::Start)
-        cue->setAlign(ASCIILiteral("start"), IGNORE_EXCEPTION_STATE);
+        cue->setAlign(ASCIILiteral("start"), IGNORE_EXCEPTION);
     else if (cueData->align() == GenericCueData::Middle)
-        cue->setAlign(ASCIILiteral("middle"), IGNORE_EXCEPTION_STATE);
+        cue->setAlign(ASCIILiteral("middle"), IGNORE_EXCEPTION);
     else if (cueData->align() == GenericCueData::End)
-        cue->setAlign(ASCIILiteral("end"), IGNORE_EXCEPTION_STATE);
+        cue->setAlign(ASCIILiteral("end"), IGNORE_EXCEPTION);
     cue->setSnapToLines(false);
 
     if (hasCue(cue.get())) {

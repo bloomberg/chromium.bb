@@ -106,7 +106,7 @@ PassRefPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(const QualifiedName&
 
 void HTMLTextAreaElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
-    root->appendChild(TextControlInnerTextElement::create(document()), ASSERT_NO_EXCEPTION_STATE);
+    root->appendChild(TextControlInnerTextElement::create(document()), ASSERT_NO_EXCEPTION);
 }
 
 const AtomicString& HTMLTextAreaElement::formControlType() const
@@ -419,14 +419,14 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
     }
     size_t size = textNodes.size();
     for (size_t i = 0; i < size; ++i)
-        removeChild(textNodes[i].get(), IGNORE_EXCEPTION_STATE);
+        removeChild(textNodes[i].get(), IGNORE_EXCEPTION);
 
     // Normalize line endings.
     String value = defaultValue;
     value.replace("\r\n", "\n");
     value.replace('\r', '\n');
 
-    insertBefore(document()->createTextNode(value), firstChild(), IGNORE_EXCEPTION_STATE);
+    insertBefore(document()->createTextNode(value), firstChild(), IGNORE_EXCEPTION);
 
     if (!m_isDirty)
         setNonDirtyValue(value);
@@ -541,7 +541,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
     String placeholderText = strippedPlaceholder();
     if (placeholderText.isEmpty()) {
         if (m_placeholder) {
-            userAgentShadowRoot()->removeChild(m_placeholder, ASSERT_NO_EXCEPTION_STATE);
+            userAgentShadowRoot()->removeChild(m_placeholder, ASSERT_NO_EXCEPTION);
             m_placeholder = 0;
         }
         return;
@@ -550,9 +550,9 @@ void HTMLTextAreaElement::updatePlaceholderText()
         RefPtr<HTMLDivElement> placeholder = HTMLDivElement::create(document());
         m_placeholder = placeholder.get();
         m_placeholder->setPseudo(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
-        userAgentShadowRoot()->insertBefore(m_placeholder, innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION_STATE);
+        userAgentShadowRoot()->insertBefore(m_placeholder, innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION);
     }
-    m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION_STATE);
+    m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION);
     fixPlaceholderRenderer(m_placeholder, innerTextElement());
 }
 

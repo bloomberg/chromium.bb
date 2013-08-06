@@ -213,7 +213,7 @@ static bool expandSelectionToGranularity(Frame* frame, TextGranularity granulari
     RefPtr<Range> newRange = selection.toNormalizedRange();
     if (!newRange)
         return false;
-    if (newRange->collapsed(IGNORE_EXCEPTION_STATE))
+    if (newRange->collapsed(IGNORE_EXCEPTION))
         return false;
     RefPtr<Range> oldRange = frame->selection()->selection().toNormalizedRange();
     EAffinity affinity = frame->selection()->affinity();
@@ -265,8 +265,8 @@ static unsigned verticalScrollDistance(Frame* frame)
 
 static RefPtr<Range> unionDOMRanges(Range* a, Range* b)
 {
-    Range* start = a->compareBoundaryPoints(Range::START_TO_START, b, ASSERT_NO_EXCEPTION_STATE) <= 0 ? a : b;
-    Range* end = a->compareBoundaryPoints(Range::END_TO_END, b, ASSERT_NO_EXCEPTION_STATE) <= 0 ? b : a;
+    Range* start = a->compareBoundaryPoints(Range::START_TO_START, b, ASSERT_NO_EXCEPTION) <= 0 ? a : b;
+    Range* end = a->compareBoundaryPoints(Range::END_TO_END, b, ASSERT_NO_EXCEPTION) <= 0 ? b : a;
 
     return Range::create(a->ownerDocument(), start->startContainer(), start->startOffset(), end->endContainer(), end->endOffset());
 }
@@ -442,7 +442,7 @@ static bool executeFormatBlock(Frame* frame, Event*, EditorCommandSource, const 
         tagName = tagName.substring(1, tagName.length() - 2);
 
     String localName, prefix;
-    if (!Document::parseQualifiedName(tagName, prefix, localName, IGNORE_EXCEPTION_STATE))
+    if (!Document::parseQualifiedName(tagName, prefix, localName, IGNORE_EXCEPTION))
         return false;
     QualifiedName qualifiedTagName(prefix, localName, xhtmlNamespaceURI);
 

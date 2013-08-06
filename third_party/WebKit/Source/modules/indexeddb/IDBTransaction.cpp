@@ -421,7 +421,7 @@ void IDBTransaction::stop()
 
     m_contextStopped = true;
 
-    abort(IGNORE_EXCEPTION_STATE);
+    abort(IGNORE_EXCEPTION);
 }
 
 void IDBTransaction::enqueueEvent(PassRefPtr<Event> event)

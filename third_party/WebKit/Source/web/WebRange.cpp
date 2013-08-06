@@ -109,7 +109,7 @@ WebString WebRange::toPlainText() const
 WebRange WebRange::expandedToParagraph() const
 {
     WebRange copy(*this);
-    copy.m_private->expand("block", IGNORE_EXCEPTION_STATE);
+    copy.m_private->expand("block", IGNORE_EXCEPTION);
     return copy;
 }
 

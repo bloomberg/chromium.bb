@@ -82,7 +82,7 @@ void MediaDocumentParser::createDocumentStructure()
     RefPtr<HTMLMetaElement> meta = HTMLMetaElement::create(document());
     meta->setAttribute(nameAttr, "viewport");
     meta->setAttribute(contentAttr, "width=device-width");
-    head->appendChild(meta.release(), ASSERT_NO_EXCEPTION_STATE);
+    head->appendChild(meta.release(), ASSERT_NO_EXCEPTION);
 
     RefPtr<HTMLVideoElement> media = HTMLVideoElement::create(document());
     media->setAttribute(controlsAttr, "");
@@ -95,15 +95,15 @@ void MediaDocumentParser::createDocumentStructure()
     if (DocumentLoader* loader = document()->loader())
         source->setType(loader->responseMIMEType());
 
-    media->appendChild(source.release(), ASSERT_NO_EXCEPTION_STATE);
+    media->appendChild(source.release(), ASSERT_NO_EXCEPTION);
 
     RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(document());
-    body->appendChild(media.release(), ASSERT_NO_EXCEPTION_STATE);
+    body->appendChild(media.release(), ASSERT_NO_EXCEPTION);
 
-    rootElement->appendChild(head.release(), ASSERT_NO_EXCEPTION_STATE);
-    rootElement->appendChild(body.release(), ASSERT_NO_EXCEPTION_STATE);
+    rootElement->appendChild(head.release(), ASSERT_NO_EXCEPTION);
+    rootElement->appendChild(body.release(), ASSERT_NO_EXCEPTION);
 
-    document()->appendChild(rootElement.release(), ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+    document()->appendChild(rootElement.release(), ASSERT_NO_EXCEPTION, AttachLazily);
     m_didBuildDocumentStructure = true;
 }
 

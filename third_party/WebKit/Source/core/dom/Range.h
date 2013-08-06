@@ -68,8 +68,8 @@ public:
 
     Node* commonAncestorContainer(ExceptionState&) const;
     static Node* commonAncestorContainer(Node* containerA, Node* containerB);
-    void setStart(PassRefPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION_STATE);
-    void setEnd(PassRefPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION_STATE);
+    void setStart(PassRefPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void setEnd(PassRefPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
     void collapse(bool toStart, ExceptionState&);
     bool isPointInRange(Node* refNode, int offset, ExceptionState&);
     short comparePoint(Node* refNode, int offset, ExceptionState&) const;
@@ -95,18 +95,18 @@ public:
     void detach(ExceptionState&);
     PassRefPtr<Range> cloneRange(ExceptionState&) const;
 
-    void setStartAfter(Node*, ExceptionState& = ASSERT_NO_EXCEPTION_STATE);
-    void setEndBefore(Node*, ExceptionState& = ASSERT_NO_EXCEPTION_STATE);
-    void setEndAfter(Node*, ExceptionState& = ASSERT_NO_EXCEPTION_STATE);
-    void selectNode(Node*, ExceptionState& = ASSERT_NO_EXCEPTION_STATE);
+    void setStartAfter(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void setEndBefore(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void setEndAfter(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void selectNode(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void selectNodeContents(Node*, ExceptionState&);
     void surroundContents(PassRefPtr<Node>, ExceptionState&);
     void setStartBefore(Node*, ExceptionState&);
 
     const Position startPosition() const { return m_start.toPosition(); }
     const Position endPosition() const { return m_end.toPosition(); }
-    void setStart(const Position&, ExceptionState& = ASSERT_NO_EXCEPTION_STATE);
-    void setEnd(const Position&, ExceptionState& = ASSERT_NO_EXCEPTION_STATE);
+    void setStart(const Position&, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void setEnd(const Position&, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     Node* firstNode() const;
     Node* pastLastNode() const;

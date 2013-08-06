@@ -60,7 +60,7 @@ void AppendNodeCommand::doApply()
     if (!m_parent->rendererIsEditable() && m_parent->attached())
         return;
 
-    m_parent->appendChild(m_node.get(), IGNORE_EXCEPTION_STATE, AttachLazily);
+    m_parent->appendChild(m_node.get(), IGNORE_EXCEPTION, AttachLazily);
 
     if (AXObjectCache::accessibilityEnabled())
         sendAXTextChangedIgnoringLineBreaks(m_node.get(), AXObjectCache::AXTextInserted);
@@ -75,7 +75,7 @@ void AppendNodeCommand::doUnapply()
     if (AXObjectCache::accessibilityEnabled())
         sendAXTextChangedIgnoringLineBreaks(m_node.get(), AXObjectCache::AXTextDeleted);
 
-    m_node->remove(IGNORE_EXCEPTION_STATE);
+    m_node->remove(IGNORE_EXCEPTION);
 }
 
 #ifndef NDEBUG

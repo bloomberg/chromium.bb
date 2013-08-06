@@ -45,7 +45,7 @@ public:
     {
         // Only dispatch events to nodes that are in the document
         if (m_eventTarget->inDocument())
-            m_eventTarget->dispatchEvent(m_event, IGNORE_EXCEPTION_STATE);
+            m_eventTarget->dispatchEvent(m_event, IGNORE_EXCEPTION);
     }
 
 private:

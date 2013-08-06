@@ -331,7 +331,7 @@ VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) c
     if (index <= 0)
         return VisiblePosition(firstPositionInNode(innerTextElement()), DOWNSTREAM);
     RefPtr<Range> range = Range::create(document());
-    range->selectNodeContents(innerTextElement(), ASSERT_NO_EXCEPTION_STATE);
+    range->selectNodeContents(innerTextElement(), ASSERT_NO_EXCEPTION);
     CharacterIterator it(range.get());
     it.advance(index - 1);
     return VisiblePosition(it.range()->endPosition(), UPSTREAM);
@@ -343,8 +343,8 @@ int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& p
     if (enclosingTextFormControl(indexPosition) != this)
         return 0;
     RefPtr<Range> range = Range::create(indexPosition.document());
-    range->setStart(innerTextElement(), 0, ASSERT_NO_EXCEPTION_STATE);
-    range->setEnd(indexPosition.containerNode(), indexPosition.offsetInContainerNode(), ASSERT_NO_EXCEPTION_STATE);
+    range->setStart(innerTextElement(), 0, ASSERT_NO_EXCEPTION);
+    range->setEnd(indexPosition.containerNode(), indexPosition.offsetInContainerNode(), ASSERT_NO_EXCEPTION);
     return TextIterator::rangeLength(range.get());
 }
 
@@ -525,10 +525,10 @@ void HTMLTextFormControlElement::setInnerTextValue(const String& value)
             if (AXObjectCache* cache = document()->existingAXObjectCache())
                 cache->postNotification(this, AXObjectCache::AXValueChanged, false);
         }
-        innerTextElement()->setInnerText(value, ASSERT_NO_EXCEPTION_STATE);
+        innerTextElement()->setInnerText(value, ASSERT_NO_EXCEPTION);
 
         if (value.endsWith('\n') || value.endsWith('\r'))
-            innerTextElement()->appendChild(HTMLBRElement::create(document()), ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+            innerTextElement()->appendChild(HTMLBRElement::create(document()), ASSERT_NO_EXCEPTION, AttachLazily);
     }
 
     setFormControlValueMatchesRenderer(true);

@@ -104,7 +104,7 @@ void ContainerNode::takeAllChildrenFrom(ContainerNode* oldParent)
         if (children[i]->attached())
             children[i]->detach();
         // FIXME: We need a no mutation event version of adoptNode.
-        RefPtr<Node> child = document()->adoptNode(children[i].release(), ASSERT_NO_EXCEPTION_STATE);
+        RefPtr<Node> child = document()->adoptNode(children[i].release(), ASSERT_NO_EXCEPTION);
         parserAppendChild(child.get());
         // FIXME: Together with adoptNode above, the tree scope might get updated recursively twice
         // (if the document changed or oldParent was in a shadow tree, AND *this is in a shadow tree).
@@ -322,7 +322,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
         return;
 
     if (document() != newChild->document())
-        document()->adoptNode(newChild.get(), ASSERT_NO_EXCEPTION_STATE);
+        document()->adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
 
     insertBeforeCommon(nextChild, newChild.get());
 
@@ -660,7 +660,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
     ASSERT(!hasTagName(HTMLNames::templateTag));
 
     if (document() != newChild->document())
-        document()->adoptNode(newChild.get(), ASSERT_NO_EXCEPTION_STATE);
+        document()->adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
 
     Node* last = m_lastChild;
     {

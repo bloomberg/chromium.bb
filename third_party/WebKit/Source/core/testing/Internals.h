@@ -251,8 +251,8 @@ public:
     Vector<String> allIconURLs(Document*) const;
 
     int numberOfPages(float pageWidthInPixels = 800, float pageHeightInPixels = 600);
-    String pageProperty(String, int, ExceptionState& = ASSERT_NO_EXCEPTION_STATE) const;
-    String pageSizeAndMarginsInPixels(int, int, int, int, int, int, int, ExceptionState& = ASSERT_NO_EXCEPTION_STATE) const;
+    String pageProperty(String, int, ExceptionState& = ASSERT_NO_EXCEPTION) const;
+    String pageSizeAndMarginsInPixels(int, int, int, int, int, int, int, ExceptionState& = ASSERT_NO_EXCEPTION) const;
 
     void setDeviceScaleFactor(float scaleFactor, ExceptionState&);
     void setPageScaleFactor(float scaleFactor, int x, int y, ExceptionState&);

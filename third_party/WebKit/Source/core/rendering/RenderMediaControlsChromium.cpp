@@ -216,8 +216,8 @@ static bool paintMediaSlider(RenderObject* object, const PaintInfo& paintInfo, c
         return true;
 
     for (unsigned i = 0; i < bufferedTimeRanges->length(); ++i) {
-        float start = bufferedTimeRanges->start(i, ASSERT_NO_EXCEPTION_STATE);
-        float end = bufferedTimeRanges->end(i, ASSERT_NO_EXCEPTION_STATE);
+        float start = bufferedTimeRanges->start(i, ASSERT_NO_EXCEPTION);
+        float end = bufferedTimeRanges->end(i, ASSERT_NO_EXCEPTION);
         if (std::isnan(start) || std::isnan(end) || start > currentTime || end < currentTime)
             continue;
         int startPosition = int(start * rect.width() / duration);

@@ -99,7 +99,7 @@ static void findMisspellings(TextCheckerClient* client, const UChar* text, int s
 
 static PassRefPtr<Range> expandToParagraphBoundary(PassRefPtr<Range> range)
 {
-    RefPtr<Range> paragraphRange = range->cloneRange(IGNORE_EXCEPTION_STATE);
+    RefPtr<Range> paragraphRange = range->cloneRange(IGNORE_EXCEPTION);
     setStart(paragraphRange.get(), startOfParagraph(range->startPosition()));
     setEnd(paragraphRange.get(), endOfParagraph(range->endPosition()));
     return paragraphRange;
@@ -163,7 +163,7 @@ PassRefPtr<Range> TextCheckingParagraph::subrange(int characterOffset, int chara
 int TextCheckingParagraph::offsetTo(const Position& position, ExceptionState& es) const
 {
     ASSERT(m_checkingRange);
-    RefPtr<Range> range = offsetAsRange()->cloneRange(ASSERT_NO_EXCEPTION_STATE);
+    RefPtr<Range> range = offsetAsRange()->cloneRange(ASSERT_NO_EXCEPTION);
     range->setEnd(position.containerNode(), position.computeOffsetInContainerNode(), es);
     if (es.hadException())
         return 0;
@@ -306,7 +306,7 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
     // Expand the search range to encompass entire paragraphs, since text checking needs that much context.
     // Determine the character offset from the start of the paragraph to the start of the original search range,
     // since we will want to ignore results in this area.
-    RefPtr<Range> paragraphRange = m_range->cloneRange(IGNORE_EXCEPTION_STATE);
+    RefPtr<Range> paragraphRange = m_range->cloneRange(IGNORE_EXCEPTION);
     setStart(paragraphRange.get(), startOfParagraph(m_range->startPosition()));
     int totalRangeLength = TextIterator::rangeLength(paragraphRange.get());
     setEnd(paragraphRange.get(), endOfParagraph(m_range->startPosition()));

@@ -150,7 +150,7 @@ SVGTRefElement::~SVGTRefElement()
 void SVGTRefElement::updateReferencedText(Element* target)
 {
     if (target)
-        replaceChildrenWithText(userAgentShadowRoot(), target->textContent(), ASSERT_NO_EXCEPTION_STATE);
+        replaceChildrenWithText(userAgentShadowRoot(), target->textContent(), ASSERT_NO_EXCEPTION);
     else
         userAgentShadowRoot()->removeChildren();
 }

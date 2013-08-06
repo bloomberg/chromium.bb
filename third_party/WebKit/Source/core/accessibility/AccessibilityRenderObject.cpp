@@ -1893,7 +1893,7 @@ VisiblePosition AccessibilityRenderObject::visiblePositionForIndex(int index) co
         return VisiblePosition(firstPositionInOrBeforeNode(node), DOWNSTREAM);
 
     RefPtr<Range> range = Range::create(m_renderer->document());
-    range->selectNodeContents(node, IGNORE_EXCEPTION_STATE);
+    range->selectNodeContents(node, IGNORE_EXCEPTION);
     CharacterIterator it(range.get());
     it.advance(index - 1);
     return VisiblePosition(Position(it.range()->endContainer(), it.range()->endOffset(), Position::PositionIsOffsetInAnch\
@@ -1919,8 +1919,8 @@ int AccessibilityRenderObject::indexForVisiblePosition(const VisiblePosition& po
         return 0;
 
     RefPtr<Range> range = Range::create(m_renderer->document());
-    range->setStart(node, 0, IGNORE_EXCEPTION_STATE);
-    range->setEnd(indexPosition, IGNORE_EXCEPTION_STATE);
+    range->setStart(node, 0, IGNORE_EXCEPTION);
+    range->setEnd(indexPosition, IGNORE_EXCEPTION);
 
     return TextIterator::rangeLength(range.get());
 }
@@ -2018,7 +2018,7 @@ PlainTextRange AccessibilityRenderObject::ariaSelectedTextRange() const
 
     VisibleSelection visibleSelection = selection();
     RefPtr<Range> currentSelectionRange = visibleSelection.toNormalizedRange();
-    if (!currentSelectionRange || !currentSelectionRange->intersectsNode(node, IGNORE_EXCEPTION_STATE))
+    if (!currentSelectionRange || !currentSelectionRange->intersectsNode(node, IGNORE_EXCEPTION))
         return PlainTextRange();
 
     int start = indexForVisiblePosition(visibleSelection.start());

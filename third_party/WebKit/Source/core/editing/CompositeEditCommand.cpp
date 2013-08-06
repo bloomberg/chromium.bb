@@ -890,7 +890,7 @@ void CompositeEditCommand::removePlaceholderAt(const Position& p)
 PassRefPtr<Node> CompositeEditCommand::insertNewDefaultParagraphElementAt(const Position& position)
 {
     RefPtr<Element> paragraphElement = createDefaultParagraphElement(document());
-    paragraphElement->appendChild(createBreakElement(document()), IGNORE_EXCEPTION_STATE);
+    paragraphElement->appendChild(createBreakElement(document()), IGNORE_EXCEPTION);
     insertNodeAt(paragraphElement, position);
     return paragraphElement.release();
 }

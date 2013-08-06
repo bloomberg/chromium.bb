@@ -62,11 +62,11 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     select->setPseudo(keygenSelectPseudoId);
     for (size_t i = 0; i < keys.size(); ++i) {
         RefPtr<HTMLOptionElement> option = HTMLOptionElement::create(document());
-        option->appendChild(Text::create(document(), keys[i]), ASSERT_NO_EXCEPTION_STATE);
-        select->appendChild(option, ASSERT_NO_EXCEPTION_STATE);
+        option->appendChild(Text::create(document(), keys[i]), ASSERT_NO_EXCEPTION);
+        select->appendChild(option, ASSERT_NO_EXCEPTION);
     }
 
-    root->appendChild(select, ASSERT_NO_EXCEPTION_STATE);
+    root->appendChild(select, ASSERT_NO_EXCEPTION);
 }
 
 void HTMLKeygenElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

@@ -61,7 +61,7 @@ void InsertIntoTextNodeCommand::doApply()
             renderText->momentarilyRevealLastTypedCharacter(m_offset + m_text.length() - 1);
     }
 
-    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION_STATE);
+    m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION);
 
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->nodeTextChangeNotification(m_node.get(), AXObjectCache::AXTextInserted, m_offset, m_text);
@@ -76,7 +76,7 @@ void InsertIntoTextNodeCommand::doUnapply()
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->nodeTextChangeNotification(m_node.get(), AXObjectCache::AXTextDeleted, m_offset, m_text);
 
-    m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION_STATE);
+    m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION);
 }
 
 #ifndef NDEBUG

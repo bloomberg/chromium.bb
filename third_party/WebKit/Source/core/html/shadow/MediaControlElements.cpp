@@ -162,7 +162,7 @@ void MediaControlPanelElement::setPosition(const LayoutPoint& position)
     setInlineStyleProperty(CSSPropertyMarginLeft, 0.0, CSSPrimitiveValue::CSS_PX);
     setInlineStyleProperty(CSSPropertyMarginTop, 0.0, CSSPrimitiveValue::CSS_PX);
 
-    classList()->add("dragged", IGNORE_EXCEPTION_STATE);
+    classList()->add("dragged", IGNORE_EXCEPTION);
 }
 
 void MediaControlPanelElement::resetPosition()
@@ -172,7 +172,7 @@ void MediaControlPanelElement::resetPosition()
     removeInlineStyleProperty(CSSPropertyMarginLeft);
     removeInlineStyleProperty(CSSPropertyMarginTop);
 
-    classList()->remove("dragged", IGNORE_EXCEPTION_STATE);
+    classList()->remove("dragged", IGNORE_EXCEPTION);
 
     m_cumulativeDragOffset.setX(0);
     m_cumulativeDragOffset.setY(0);
@@ -500,7 +500,7 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
 
     double time = value().toDouble();
     if (event->type() == eventNames().inputEvent && time != mediaController()->currentTime())
-        mediaController()->setCurrentTime(time, IGNORE_EXCEPTION_STATE);
+        mediaController()->setCurrentTime(time, IGNORE_EXCEPTION);
 
     RenderSlider* slider = toRenderSlider(renderer());
     if (slider && slider->inDragMode())
@@ -750,7 +750,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
 #endif
             if (displayBox->hasChildNodes() && !contains(displayBox.get())) {
                 // Note: the display tree of a cue is removed when the active flag of the cue is unset.
-                appendChild(displayBox, ASSERT_NO_EXCEPTION_STATE, AttachNow);
+                appendChild(displayBox, ASSERT_NO_EXCEPTION, AttachNow);
             }
 #if ENABLE(WEBVTT_REGIONS)
         } else {

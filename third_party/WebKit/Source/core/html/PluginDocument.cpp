@@ -71,7 +71,7 @@ private:
 void PluginDocumentParser::createDocumentStructure()
 {
     RefPtr<Element> rootElement = document()->createElement(htmlTag, false);
-    document()->appendChild(rootElement, IGNORE_EXCEPTION_STATE);
+    document()->appendChild(rootElement, IGNORE_EXCEPTION);
     toHTMLHtmlElement(rootElement.get())->insertedByParser();
 
     if (document()->frame() && document()->frame()->loader())
@@ -82,7 +82,7 @@ void PluginDocumentParser::createDocumentStructure()
     body->setAttribute(marginheightAttr, "0");
     body->setAttribute(styleAttr, "background-color: rgb(38,38,38)");
 
-    rootElement->appendChild(body, IGNORE_EXCEPTION_STATE);
+    rootElement->appendChild(body, IGNORE_EXCEPTION);
 
     RefPtr<Element> embedElement = document()->createElement(embedTag, false);
 
@@ -100,7 +100,7 @@ void PluginDocumentParser::createDocumentStructure()
 
     toPluginDocument(document())->setPluginNode(m_embedElement);
 
-    body->appendChild(embedElement, IGNORE_EXCEPTION_STATE);
+    body->appendChild(embedElement, IGNORE_EXCEPTION);
 
     Frame* frame = document()->frame();
     if (!frame)

@@ -35,7 +35,7 @@ SVGAnimatedLengthAnimator::SVGAnimatedLengthAnimator(SVGAnimationElement* animat
 static inline SVGLength& sharedSVGLength(SVGLengthMode mode, const String& valueAsString)
 {
     DEFINE_STATIC_LOCAL(SVGLength, sharedLength, ());
-    sharedLength.setValueAsString(valueAsString, mode, ASSERT_NO_EXCEPTION_STATE);
+    sharedLength.setValueAsString(valueAsString, mode, ASSERT_NO_EXCEPTION);
     return sharedLength;
 }
 
@@ -78,7 +78,7 @@ void SVGAnimatedLengthAnimator::addAnimatedTypes(SVGAnimatedType* from, SVGAnima
     const SVGLength& fromLength = from->length();
     SVGLength& toLength = to->length();
 
-    toLength.setValue(toLength.value(lengthContext) + fromLength.value(lengthContext), lengthContext, ASSERT_NO_EXCEPTION_STATE);
+    toLength.setValue(toLength.value(lengthContext) + fromLength.value(lengthContext), lengthContext, ASSERT_NO_EXCEPTION);
 }
 
 static SVGLength parseLengthFromString(SVGAnimationElement* animationElement, const String& string)
@@ -105,7 +105,7 @@ void SVGAnimatedLengthAnimator::calculateAnimatedValue(float percentage, unsigne
     SVGLengthType unitType = percentage < 0.5 ? fromSVGLength.unitType() : toSVGLength.unitType();
     m_animationElement->animateAdditiveNumber(percentage, repeatCount, fromSVGLength.value(lengthContext), toSVGLength.value(lengthContext), toAtEndOfDurationSVGLength.value(lengthContext), animatedNumber);
 
-    animatedSVGLength.setValue(lengthContext, animatedNumber, m_lengthMode, unitType, ASSERT_NO_EXCEPTION_STATE);
+    animatedSVGLength.setValue(lengthContext, animatedNumber, m_lengthMode, unitType, ASSERT_NO_EXCEPTION);
 }
 
 float SVGAnimatedLengthAnimator::calculateDistance(const String& fromString, const String& toString)

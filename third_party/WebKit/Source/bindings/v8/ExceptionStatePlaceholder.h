@@ -49,11 +49,11 @@ public:
     virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL { }
 };
 
-#define IGNORE_EXCEPTION_STATE (::WebCore::IgnorableExceptionState().returnThis())
+#define IGNORE_EXCEPTION (::WebCore::IgnorableExceptionState().returnThis())
 
 #if ASSERT_DISABLED
 
-#define ASSERT_NO_EXCEPTION_STATE (::WebCore::IgnorableExceptionState().returnThis())
+#define ASSERT_NO_EXCEPTION (::WebCore::IgnorableExceptionState().returnThis())
 
 #else
 
@@ -69,7 +69,7 @@ private:
     int m_line;
 };
 
-#define ASSERT_NO_EXCEPTION_STATE (::WebCore::NoExceptionStateAssertionChecker(__FILE__, __LINE__).returnThis())
+#define ASSERT_NO_EXCEPTION (::WebCore::NoExceptionStateAssertionChecker(__FILE__, __LINE__).returnThis())
 
 #endif
 

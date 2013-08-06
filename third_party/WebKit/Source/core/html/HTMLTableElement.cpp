@@ -130,13 +130,13 @@ PassRefPtr<HTMLElement> HTMLTableElement::createTHead()
     if (HTMLTableSectionElement* existingHead = tHead())
         return existingHead;
     RefPtr<HTMLTableSectionElement> head = HTMLTableSectionElement::create(theadTag, document());
-    setTHead(head, IGNORE_EXCEPTION_STATE);
+    setTHead(head, IGNORE_EXCEPTION);
     return head.release();
 }
 
 void HTMLTableElement::deleteTHead()
 {
-    removeChild(tHead(), IGNORE_EXCEPTION_STATE);
+    removeChild(tHead(), IGNORE_EXCEPTION);
 }
 
 PassRefPtr<HTMLElement> HTMLTableElement::createTFoot()
@@ -144,13 +144,13 @@ PassRefPtr<HTMLElement> HTMLTableElement::createTFoot()
     if (HTMLTableSectionElement* existingFoot = tFoot())
         return existingFoot;
     RefPtr<HTMLTableSectionElement> foot = HTMLTableSectionElement::create(tfootTag, document());
-    setTFoot(foot, IGNORE_EXCEPTION_STATE);
+    setTFoot(foot, IGNORE_EXCEPTION);
     return foot.release();
 }
 
 void HTMLTableElement::deleteTFoot()
 {
-    removeChild(tFoot(), IGNORE_EXCEPTION_STATE);
+    removeChild(tFoot(), IGNORE_EXCEPTION);
 }
 
 PassRefPtr<HTMLElement> HTMLTableElement::createTBody()
@@ -158,7 +158,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::createTBody()
     RefPtr<HTMLTableSectionElement> body = HTMLTableSectionElement::create(tbodyTag, document());
     Node* referenceElement = lastBody() ? lastBody()->nextSibling() : 0;
 
-    insertBefore(body, referenceElement, ASSERT_NO_EXCEPTION_STATE);
+    insertBefore(body, referenceElement, ASSERT_NO_EXCEPTION);
     return body.release();
 }
 
@@ -167,13 +167,13 @@ PassRefPtr<HTMLElement> HTMLTableElement::createCaption()
     if (HTMLTableCaptionElement* existingCaption = caption())
         return existingCaption;
     RefPtr<HTMLTableCaptionElement> caption = HTMLTableCaptionElement::create(captionTag, document());
-    setCaption(caption, IGNORE_EXCEPTION_STATE);
+    setCaption(caption, IGNORE_EXCEPTION);
     return caption.release();
 }
 
 void HTMLTableElement::deleteCaption()
 {
-    removeChild(caption(), IGNORE_EXCEPTION_STATE);
+    removeChild(caption(), IGNORE_EXCEPTION);
 }
 
 HTMLTableSectionElement* HTMLTableElement::lastBody() const

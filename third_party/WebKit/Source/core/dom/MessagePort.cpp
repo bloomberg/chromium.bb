@@ -170,7 +170,7 @@ void MessagePort::dispatchMessages()
         OwnPtr<MessagePortArray> ports = MessagePort::entanglePorts(*m_scriptExecutionContext, channels.release());
         RefPtr<Event> evt = MessageEvent::create(ports.release(), message.release());
 
-        dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION_STATE);
+        dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
     }
 }
 

@@ -222,7 +222,7 @@ TextTrackCue::TextTrackCue(ScriptExecutionContext* context, double start, double
 
 TextTrackCue::~TextTrackCue()
 {
-    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION_STATE);
+    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
 }
 
 PassRefPtr<TextTrackCueBox> TextTrackCue::createDisplayTree()
@@ -505,7 +505,7 @@ void TextTrackCue::copyWebVTTNodeToDOMTree(ContainerNode* webVTTNode, ContainerN
             clonedNode = toWebVTTElement(node)->createEquivalentHTMLElement(ownerDocument());
         else
             clonedNode = node->cloneNode(false);
-        parent->appendChild(clonedNode, ASSERT_NO_EXCEPTION_STATE);
+        parent->appendChild(clonedNode, ASSERT_NO_EXCEPTION);
         if (node->isContainerNode())
             copyWebVTTNodeToDOMTree(toContainerNode(node), toContainerNode(clonedNode.get()));
     }
@@ -804,7 +804,7 @@ PassRefPtr<TextTrackCueBox> TextTrackCue::getDisplayTree(const IntSize& videoSiz
 
     // Note: This is contained by default in m_cueBackgroundBox.
     m_cueBackgroundBox->setPseudo(cueShadowPseudoId());
-    displayTree->appendChild(m_cueBackgroundBox, ASSERT_NO_EXCEPTION_STATE, AttachLazily);
+    displayTree->appendChild(m_cueBackgroundBox, ASSERT_NO_EXCEPTION, AttachLazily);
 
     // FIXME(BUG 79916): Runs of children of WebVTT Ruby Objects that are not
     // WebVTT Ruby Text Objects must be wrapped in anonymous boxes whose
@@ -835,7 +835,7 @@ void TextTrackCue::removeDisplayTree()
         region->willRemoveTextTrackCueBox(m_displayTree.get());
 #endif
 
-    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION_STATE);
+    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
 }
 
 std::pair<double, double> TextTrackCue::getPositionCoordinates() const

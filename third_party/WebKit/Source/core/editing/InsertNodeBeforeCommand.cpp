@@ -54,7 +54,7 @@ void InsertNodeBeforeCommand::doApply()
         return;
     ASSERT(parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable));
 
-    parent->insertBefore(m_insertChild.get(), m_refChild.get(), IGNORE_EXCEPTION_STATE, AttachLazily);
+    parent->insertBefore(m_insertChild.get(), m_refChild.get(), IGNORE_EXCEPTION, AttachLazily);
 
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->nodeTextChangeNotification(m_insertChild.get(), AXObjectCache::AXTextInserted, 0, m_insertChild->nodeValue());
@@ -69,7 +69,7 @@ void InsertNodeBeforeCommand::doUnapply()
     if (AXObjectCache* cache = document()->existingAXObjectCache())
         cache->nodeTextChangeNotification(m_insertChild.get(), AXObjectCache::AXTextDeleted, 0, m_insertChild->nodeValue());
 
-    m_insertChild->remove(IGNORE_EXCEPTION_STATE);
+    m_insertChild->remove(IGNORE_EXCEPTION);
 }
 
 #ifndef NDEBUG

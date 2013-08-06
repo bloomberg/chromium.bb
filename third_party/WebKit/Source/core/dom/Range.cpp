@@ -205,7 +205,7 @@ static inline bool checkForDifferentRootContainer(const RangeBoundaryPoint& star
     while (startRootContainer->parentNode())
         startRootContainer = startRootContainer->parentNode();
 
-    return startRootContainer != endRootContainer || (Range::compareBoundaryPoints(start, end, ASSERT_NO_EXCEPTION_STATE) > 0);
+    return startRootContainer != endRootContainer || (Range::compareBoundaryPoints(start, end, ASSERT_NO_EXCEPTION) > 0);
 }
 
 void Range::setStart(PassRefPtr<Node> refNode, int offset, ExceptionState& es)
@@ -1652,7 +1652,7 @@ PassRefPtr<Range> rangeOfContents(Node* node)
 {
     ASSERT(node);
     RefPtr<Range> range = Range::create(node->document());
-    range->selectNodeContents(node, IGNORE_EXCEPTION_STATE);
+    range->selectNodeContents(node, IGNORE_EXCEPTION);
     return range.release();
 }
 

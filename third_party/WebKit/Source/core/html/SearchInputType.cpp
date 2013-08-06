@@ -101,11 +101,11 @@ void SearchInputType::createShadowSubtree()
 
     RefPtr<SearchFieldDecorationElement> searchDecoration = SearchFieldDecorationElement::create(element()->document());
     m_searchDecoration = searchDecoration.get();
-    container->insertBefore(m_searchDecoration, textWrapper, IGNORE_EXCEPTION_STATE);
+    container->insertBefore(m_searchDecoration, textWrapper, IGNORE_EXCEPTION);
 
     RefPtr<SearchFieldCancelButtonElement> cancelButton = SearchFieldCancelButtonElement::create(element()->document());
     m_cancelButton = cancelButton.get();
-    container->insertBefore(m_cancelButton, textWrapper->nextSibling(), IGNORE_EXCEPTION_STATE);
+    container->insertBefore(m_cancelButton, textWrapper->nextSibling(), IGNORE_EXCEPTION);
 }
 
 HTMLElement* SearchInputType::searchDecorationElement() const

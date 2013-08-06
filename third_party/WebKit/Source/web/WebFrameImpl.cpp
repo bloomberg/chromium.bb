@@ -709,11 +709,11 @@ WebFrame* WebFrameImpl::findChildByExpression(const WebString& xpath) const
 
     Document* document = frame()->document();
 
-    RefPtr<XPathResult> xpathResult = DocumentXPathEvaluator::evaluate(document, xpath, document, 0, XPathResult::ORDERED_NODE_ITERATOR_TYPE, 0, IGNORE_EXCEPTION_STATE);
+    RefPtr<XPathResult> xpathResult = DocumentXPathEvaluator::evaluate(document, xpath, document, 0, XPathResult::ORDERED_NODE_ITERATOR_TYPE, 0, IGNORE_EXCEPTION);
     if (!xpathResult)
         return 0;
 
-    Node* node = xpathResult->iterateNext(IGNORE_EXCEPTION_STATE);
+    Node* node = xpathResult->iterateNext(IGNORE_EXCEPTION);
     if (!node || !node->isFrameOwnerElement())
         return 0;
     HTMLFrameOwnerElement* frameElement = toFrameOwnerElement(node);
@@ -2362,7 +2362,7 @@ void WebFrameImpl::addMarker(Range* range, bool activeMatch)
 
 void WebFrameImpl::setMarkerActive(Range* range, bool active)
 {
-    if (!range || range->collapsed(IGNORE_EXCEPTION_STATE))
+    if (!range || range->collapsed(IGNORE_EXCEPTION))
         return;
     frame()->document()->markers()->setMarkersActive(range, active);
 }

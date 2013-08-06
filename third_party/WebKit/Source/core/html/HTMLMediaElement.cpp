@@ -2173,7 +2173,7 @@ void HTMLMediaElement::playInternal()
         scheduleDelayedAction(LoadMediaResource);
 
     if (endedPlayback())
-        seek(0, IGNORE_EXCEPTION_STATE);
+        seek(0, IGNORE_EXCEPTION);
 
     if (m_mediaController)
         m_mediaController->bringElementUpToSpeed(this);
@@ -2502,8 +2502,8 @@ double HTMLMediaElement::percentLoaded() const
     double buffered = 0;
     RefPtr<TimeRanges> timeRanges = m_player->buffered();
     for (unsigned i = 0; i < timeRanges->length(); ++i) {
-        double start = timeRanges->start(i, IGNORE_EXCEPTION_STATE);
-        double end = timeRanges->end(i, IGNORE_EXCEPTION_STATE);
+        double start = timeRanges->start(i, IGNORE_EXCEPTION);
+        double end = timeRanges->end(i, IGNORE_EXCEPTION);
         buffered += end - start;
     }
     return buffered / duration;
@@ -3108,7 +3108,7 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
         if (loop() && !m_mediaController) {
             m_sentEndEvent = false;
             //  then seek to the earliest possible position of the media resource and abort these steps.
-            seek(startTime(), IGNORE_EXCEPTION_STATE);
+            seek(startTime(), IGNORE_EXCEPTION);
         } else {
             // If the media element does not have a current media controller, and the media element
             // has still ended playback, and the direction of playback is still forwards, and paused
@@ -3148,7 +3148,7 @@ void HTMLMediaElement::mediaPlayerDurationChanged()
     double now = currentTime();
     double dur = duration();
     if (now > dur)
-        seek(dur, IGNORE_EXCEPTION_STATE);
+        seek(dur, IGNORE_EXCEPTION);
 }
 
 void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
@@ -3675,7 +3675,7 @@ bool HTMLMediaElement::createMediaControls()
     if (isFullscreen())
         mediaControls->enteredFullscreen();
 
-    ensureUserAgentShadowRoot()->appendChild(mediaControls, ASSERT_NO_EXCEPTION_STATE);
+    ensureUserAgentShadowRoot()->appendChild(mediaControls, ASSERT_NO_EXCEPTION);
 
     if (!controls() || !inDocument())
         mediaControls->hide();
@@ -3943,7 +3943,7 @@ void HTMLMediaElement::applyMediaFragmentURI()
 {
     if (m_fragmentStartTime != MediaPlayer::invalidTime()) {
         m_sentEndEvent = false;
-        seek(m_fragmentStartTime, IGNORE_EXCEPTION_STATE);
+        seek(m_fragmentStartTime, IGNORE_EXCEPTION);
     }
 }
 

@@ -332,7 +332,7 @@ public:
     virtual bool perform(ExceptionState&)
     {
         m_oldValue = m_node->nodeValue();
-        return redo(IGNORE_EXCEPTION_STATE);
+        return redo(IGNORE_EXCEPTION);
     }
 
     virtual bool undo(ExceptionState&)

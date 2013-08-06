@@ -187,7 +187,7 @@ TEST(LinkHighlightTest, resetDuringNodeRemoval)
     ASSERT_TRUE(highlightLayer);
     EXPECT_TRUE(highlightLayer->linkHighlight());
 
-    touchNode->remove(IGNORE_EXCEPTION_STATE);
+    touchNode->remove(IGNORE_EXCEPTION);
     webViewImpl->layout();
     EXPECT_FALSE(highlightLayer->linkHighlight());
 

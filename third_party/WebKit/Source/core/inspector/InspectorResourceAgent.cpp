@@ -656,11 +656,11 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
     if (cachedResource)
         memoryCache()->remove(cachedResource);
 
-    xhr->open(xhrReplayData->method(), xhrReplayData->url(), xhrReplayData->async(), IGNORE_EXCEPTION_STATE);
+    xhr->open(xhrReplayData->method(), xhrReplayData->url(), xhrReplayData->async(), IGNORE_EXCEPTION);
     HTTPHeaderMap::const_iterator end = xhrReplayData->headers().end();
     for (HTTPHeaderMap::const_iterator it = xhrReplayData->headers().begin(); it!= end; ++it)
-        xhr->setRequestHeader(it->key, it->value, IGNORE_EXCEPTION_STATE);
-    xhr->sendForInspectorXHRReplay(xhrReplayData->formData(), IGNORE_EXCEPTION_STATE);
+        xhr->setRequestHeader(it->key, it->value, IGNORE_EXCEPTION);
+    xhr->sendForInspectorXHRReplay(xhrReplayData->formData(), IGNORE_EXCEPTION);
 }
 
 void InspectorResourceAgent::canClearBrowserCache(ErrorString*, bool* result)

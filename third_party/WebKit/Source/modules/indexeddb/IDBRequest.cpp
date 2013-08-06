@@ -490,7 +490,7 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
         // doesn't receive a second error) and before deactivating (which might trigger commit).
         if (event->type() == eventNames().errorEvent && dontPreventDefault && !m_requestAborted) {
             m_transaction->setError(m_error);
-            m_transaction->abort(IGNORE_EXCEPTION_STATE);
+            m_transaction->abort(IGNORE_EXCEPTION);
         }
 
         // If this was the last request in the transaction's list, it may commit here.
@@ -511,7 +511,7 @@ void IDBRequest::uncaughtExceptionInEventHandler()
 {
     if (m_transaction && !m_requestAborted) {
         m_transaction->setError(DOMError::create(AbortError, "Uncaught exception in event handler."));
-        m_transaction->abort(IGNORE_EXCEPTION_STATE);
+        m_transaction->abort(IGNORE_EXCEPTION);
     }
 }
 

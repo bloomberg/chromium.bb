@@ -166,7 +166,7 @@ void TimeRanges::add(double start, double end)
 bool TimeRanges::contain(double time) const
 {
     for (unsigned n = 0; n < length(); n++) {
-        if (time >= start(n, IGNORE_EXCEPTION_STATE) && time <= end(n, IGNORE_EXCEPTION_STATE))
+        if (time >= start(n, IGNORE_EXCEPTION) && time <= end(n, IGNORE_EXCEPTION))
             return true;
     }
     return false;
@@ -177,8 +177,8 @@ double TimeRanges::nearest(double time) const
     double closest = 0;
     unsigned count = length();
     for (unsigned ndx = 0; ndx < count; ndx++) {
-        double startTime = start(ndx, IGNORE_EXCEPTION_STATE);
-        double endTime = end(ndx, IGNORE_EXCEPTION_STATE);
+        double startTime = start(ndx, IGNORE_EXCEPTION);
+        double endTime = end(ndx, IGNORE_EXCEPTION);
         if (time >= startTime && time <= endTime)
             return time;
         if (fabs(startTime - time) < closest)
