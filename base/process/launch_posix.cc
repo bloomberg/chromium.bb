@@ -77,6 +77,22 @@ void SetEnvironment(char** env) {
 #endif
 }
 
+// Set the calling thread's signal mask to new_sigmask and return
+// the previous signal mask.
+sigset_t SetSignalMask(const sigset_t& new_sigmask) {
+  sigset_t old_sigmask;
+#if defined(OS_ANDROID)
+  // POSIX says pthread_sigmask() must be used in multi-threaded processes,
+  // but Android's pthread_sigmask() was broken until 4.1:
+  // https://code.google.com/p/android/issues/detail?id=15337
+  // http://stackoverflow.com/questions/13777109/pthread-sigmask-on-android-not-working
+  RAW_CHECK(sigprocmask(SIG_SETMASK, &new_sigmask, &old_sigmask) == 0);
+#else
+  RAW_CHECK(pthread_sigmask(SIG_SETMASK, &new_sigmask, &old_sigmask) == 0);
+#endif
+  return old_sigmask;
+}
+
 #if !defined(OS_LINUX) || \
     (!defined(__i386__) && !defined(__x86_64__) && !defined(__arm__))
 void ResetChildSignalHandlersToDefaults() {
@@ -394,14 +410,28 @@ bool LaunchProcess(const std::vector<std::string>& argv,
   if (options.environ)
     new_environ.reset(AlterEnvironment(*options.environ, GetEnvironment()));
 
+  sigset_t full_sigset;
+  sigfillset(&full_sigset);
+  const sigset_t orig_sigmask = SetSignalMask(full_sigset);
+
   pid_t pid;
 #if defined(OS_LINUX)
   if (options.clone_flags) {
+    // Signal handling in this function assumes the creation of a new
+    // process, so we check that a thread is not being created by mistake
+    // and that signal handling follows the process-creation rules.
+    RAW_CHECK(
+        !(options.clone_flags & (CLONE_SIGHAND | CLONE_THREAD | CLONE_VM)));
     pid = syscall(__NR_clone, options.clone_flags, 0, 0, 0);
   } else
 #endif
   {
     pid = fork();
+  }
+
+  // Always restore the original signal mask in the parent.
+  if (pid != 0) {
+    SetSignalMask(orig_sigmask);
   }
 
   if (pid < 0) {
@@ -469,6 +499,7 @@ bool LaunchProcess(const std::vector<std::string>& argv,
 #endif  // defined(OS_MACOSX)
 
     ResetChildSignalHandlersToDefaults();
+    SetSignalMask(orig_sigmask);
 
 #if 0
     // When debugging it can be helpful to check that we really aren't making
