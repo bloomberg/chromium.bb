@@ -10,11 +10,12 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
 
 namespace {
 
-base::Value* NetLogSimpleEntryCreationCallback(
+base::Value* NetLogSimpleEntryConstructionCallback(
     const disk_cache::SimpleEntryImpl* entry,
     net::NetLog::LogLevel log_level ALLOW_UNUSED) {
   base::DictionaryValue* dict = new base::DictionaryValue();
@@ -23,14 +24,32 @@ base::Value* NetLogSimpleEntryCreationCallback(
   return dict;
 }
 
+base::Value* NetLogSimpleEntryCreationCallback(
+    const disk_cache::SimpleEntryImpl* entry,
+    int net_error,
+    net::NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("net_error", net_error);
+  if (net_error == net::OK)
+    dict->SetString("key", entry->key());
+  return dict;
+}
+
 }  // namespace
 
 namespace disk_cache {
 
-net::NetLog::ParametersCallback CreateNetLogSimpleEntryCreationCallback(
+net::NetLog::ParametersCallback CreateNetLogSimpleEntryConstructionCallback(
     const SimpleEntryImpl* entry) {
   DCHECK(entry);
-  return base::Bind(&NetLogSimpleEntryCreationCallback, entry);
+  return base::Bind(&NetLogSimpleEntryConstructionCallback, entry);
+}
+
+net::NetLog::ParametersCallback CreateNetLogSimpleEntryCreationCallback(
+    const SimpleEntryImpl* entry,
+    int net_error) {
+  DCHECK(entry);
+  return base::Bind(&NetLogSimpleEntryCreationCallback, entry, net_error);
 }
 
 }  // namespace disk_cache

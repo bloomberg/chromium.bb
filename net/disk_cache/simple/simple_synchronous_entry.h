@@ -22,6 +22,8 @@ class IOBuffer;
 
 namespace disk_cache {
 
+class SimpleSynchronousEntry;
+
 struct SimpleEntryStat {
   SimpleEntryStat();
   SimpleEntryStat(base::Time last_used_p,
@@ -31,6 +33,15 @@ struct SimpleEntryStat {
   base::Time last_used;
   base::Time last_modified;
   int32 data_size[kSimpleEntryFileCount];
+};
+
+struct SimpleEntryCreationResults {
+  SimpleEntryCreationResults(SimpleEntryStat entry_stat);
+  ~SimpleEntryCreationResults();
+
+  SimpleSynchronousEntry* sync_entry;
+  SimpleEntryStat entry_stat;
+  int result;
 };
 
 // Worker thread interface to the very simple cache. This interface is not
@@ -63,17 +74,13 @@ class SimpleSynchronousEntry {
   static void OpenEntry(const base::FilePath& path,
                         uint64 entry_hash,
                         bool had_index,
-                        SimpleSynchronousEntry** out_entry,
-                        SimpleEntryStat* out_entry_stat,
-                        int* out_result);
+                        SimpleEntryCreationResults* out_results);
 
   static void CreateEntry(const base::FilePath& path,
                           const std::string& key,
                           uint64 entry_hash,
                           bool had_index,
-                          SimpleSynchronousEntry** out_entry,
-                          SimpleEntryStat* out_entry_stat,
-                          int* out_result);
+                          SimpleEntryCreationResults* out_results);
 
   // Deletes an entry without first Opening it. Does not check if there is
   // already an Entry object in memory holding the open files. Be careful! This

@@ -2014,3 +2014,164 @@ EVENT_TYPE(FTP_DATA_CONNECTION)
 //     "status_code": <numeric status code of the response>
 //   }
 EVENT_TYPE(FTP_CONTROL_RESPONSE)
+
+// -----------------------------------------------------------------------------
+// Simple Cache events.
+// -----------------------------------------------------------------------------
+
+// This event lasts the lifetime of a Simple Cache entry.
+// It contains the following parameter:
+//   {
+//     "entry_hash": <hash of the entry, formatted as a hex string>
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY)
+
+// This event is created when the entry's key is set.
+// It contains the following parameter:
+//   {
+//     "key": <key of the entry>
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_SET_KEY)
+
+// This event is created when OpenEntry is called.  It has no parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_OPEN_CALL)
+
+// This event is created when the Simple Cache actually begins opening the
+// cache entry.  It has no parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_OPEN_BEGIN)
+
+// This event is created when the Simple Cache finishes the OpenEntry call.
+// It contains the following parameter:
+// {
+//   "net_error": <net error code returned from the call>
+// }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_OPEN_END)
+
+// This event is created when CreateEntry is called.  It has no parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_CREATE_CALL)
+
+// This event is created when the Simple Cache optimistically returns a result
+// from a CreateEntry call before it performs the create operation.
+// It contains the following parameter:
+// {
+//   "net_error": <net error code returned from the call>
+// }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_CREATE_OPTIMISTIC)
+
+// This event is created when the Simple Cache actually begins creating the
+// cache entry.  It has no parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_CREATE_BEGIN)
+
+// This event is created when the Simple Cache finishes the CreateEntry call.
+// It contains the following parameter:
+// {
+//   "net_error": <net error code returned from the call>
+// }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_CREATE_END)
+
+// This event is created when ReadEntry is called.
+// It contains the following parameters:
+//   {
+//     "index": <Index being read/written>,
+//     "offset": <Offset being read/written>,
+//     "buf_len": <Length of buffer being read to/written from>,
+//     "truncate": <If present for a write, the truncate flag is set to true.
+//                  Not present in reads or writes where it is false>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_READ_CALL)
+
+// This event is created when the Simple Cache actually begins reading data
+// from the cache entry.
+// It contains the following parameters:
+//   {
+//     "index": <Index being read/written>,
+//     "offset": <Offset being read/written>,
+//     "buf_len": <Length of buffer being read to/written from>,
+//     "truncate": <If present for a write, the truncate flag is set to true.
+//                  Not present in reads or writes where it is false>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_READ_BEGIN)
+
+// This event is created when the Simple Cache finishes a ReadEntry call.
+// It contains the following parameters:
+//   {
+//     "bytes_copied": <Number of bytes copied.  Not present on error>,
+//     "net_error": <Network error code.  Only present on error>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_READ_END)
+
+// This event is created when the Simple Cache begins to verify the checksum of
+// cached data it has just read.  It occurs before READ_END, and contains no
+// parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_CHECKSUM_BEGIN)
+
+// This event is created when the Simple Cache finishes verifying the checksum
+// of cached data.  It occurs after CHECKSUM_BEGIN but before READ_END, and
+// contains one parameter:
+// {
+//   "net_error": <net error code returned from the internal checksum call>
+// }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_CHECKSUM_END)
+
+// This event is created when WriteEntry is called.
+// It contains the following parameters:
+//   {
+//     "index": <Index being read/written>,
+//     "offset": <Offset being read/written>,
+//     "buf_len": <Length of buffer being read to/written from>,
+//     "truncate": <If present for a write, the truncate flag is set to true.
+//                  Not present in reads or writes where it is false>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_WRITE_CALL)
+
+// This event is created when the Simple Cache optimistically returns a result
+// from a WriteData call before it performs the write operation.
+// It contains the following parameters:
+//   {
+//     "bytes_copied": <Number of bytes copied.  Not present on error>,
+//     "net_error": <Network error code.  Only present on error>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_WRITE_OPTIMISTIC)
+
+// This event is created when the Simple Cache actually begins writing data to
+// the cache entry.
+// It contains the following parameters:
+//   {
+//     "index": <Index being read/written>,
+//     "offset": <Offset being read/written>,
+//     "buf_len": <Length of buffer being read to/written from>,
+//     "truncate": <If present for a write, the truncate flag is set to true.
+//                  Not present in reads or writes where it is false>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_WRITE_BEGIN)
+
+// This event is created when the Simple Cache finishes a WriteEntry call.
+// It contains the following parameters:
+//   {
+//     "bytes_copied": <Number of bytes copied.  Not present on error>,
+//     "net_error": <Network error code.  Only present on error>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_WRITE_END)
+
+// This event is created when DoomEntry is called.  It contains no parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_DOOM_CALL)
+
+// This event is created when the Simple Cache actually starts dooming a cache
+// entry.  It contains no parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_DOOM_BEGIN)
+
+// This event is created when the Simple Cache finishes dooming an entry.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_DOOM_END)
+
+// This event is created when CloseEntry is called.  It contains no parameters.
+// A Close call may not result in CLOSE_BEGIN and CLOSE_END if there are still
+// more references to the entry remaining.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_CALL)
+
+// This event is created when the Simple Cache actually starts closing a cache
+// entry.  It contains no parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_BEGIN)
+
+// This event is created when the Simple Cache finishes a CloseEntry call.  It
+// contains no parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_END)

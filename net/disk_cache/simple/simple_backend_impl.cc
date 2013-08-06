@@ -433,7 +433,7 @@ scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(
   if (!it->second.get()) {
     SimpleEntryImpl* entry = new SimpleEntryImpl(
         path_, entry_hash, entry_operations_mode_, this, net_log_);
-    entry->set_key(key);
+    entry->SetKey(key);
     it->second = entry->AsWeakPtr();
   }
   DCHECK(it->second.get());

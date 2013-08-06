@@ -30,6 +30,7 @@ namespace disk_cache {
 class SimpleBackendImpl;
 class SimpleSynchronousEntry;
 struct SimpleEntryStat;
+struct SimpleEntryCreationResults;
 
 // SimpleEntryImpl is the IO thread interface to an entry in the very simple
 // disk cache. It proxies for the SimpleSynchronousEntry, which performs IO
@@ -61,7 +62,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
 
   const std::string& key() const { return key_; }
   uint64 entry_hash() const { return entry_hash_; }
-  void set_key(const std::string& key) { key_ = key; }
+  void SetKey(const std::string& key);
 
   // From Entry:
   virtual void Doom() OVERRIDE;
@@ -216,10 +217,9 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   void CreationOperationComplete(
       const CompletionCallback& completion_callback,
       const base::TimeTicks& start_time,
-      scoped_ptr<SimpleSynchronousEntry*> in_sync_entry,
-      scoped_ptr<SimpleEntryStat> in_entry_stat,
-      scoped_ptr<int> in_result,
-      Entry** out_entry);
+      scoped_ptr<SimpleEntryCreationResults> in_results,
+      Entry** out_entry,
+      net::NetLog::EventType end_event_type);
 
   // Called after we've closed and written the EOF record to our entry. Until
   // this point it hasn't been safe to OpenEntry() the same entry, but from this

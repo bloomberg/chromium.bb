@@ -13,12 +13,19 @@ namespace disk_cache {
 
 class SimpleEntryImpl;
 
-// Creates a NetLog callback that returns parameters for the creation of a
-// SimpleEntryImpl. Contains the entry's key and hash, and whether it was
-// created or opened. |entry| can't be NULL and must outlive the returned
-// callback.
-net::NetLog::ParametersCallback CreateNetLogSimpleEntryCreationCallback(
+// Creates a NetLog callback that returns parameters for the construction of a
+// SimpleEntryImpl.  Contains the entry's hash.  |entry| can't be NULL and must
+// outlive the returned callback.
+net::NetLog::ParametersCallback CreateNetLogSimpleEntryConstructionCallback(
     const SimpleEntryImpl* entry);
+
+// Creates a NetLog callback that returns parameters for the result of calling
+// |CreateEntry| or |OpenEntry| on a SimpleEntryImpl.  Contains the |net_error|
+// and, if successful, the entry's key.  |entry| can't be NULL and must outlive
+// the returned callback.
+net::NetLog::ParametersCallback CreateNetLogSimpleEntryCreationCallback(
+    const SimpleEntryImpl* entry,
+    int net_error);
 
 }  // namespace disk_cache
 

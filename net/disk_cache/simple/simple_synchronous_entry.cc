@@ -149,6 +149,16 @@ SimpleEntryStat::SimpleEntryStat(base::Time last_used_p,
   memcpy(data_size, data_size_p, sizeof(data_size));
 }
 
+SimpleEntryCreationResults::SimpleEntryCreationResults(
+    SimpleEntryStat entry_stat)
+    : sync_entry(NULL),
+      entry_stat(entry_stat),
+      result(net::OK) {
+}
+
+SimpleEntryCreationResults::~SimpleEntryCreationResults() {
+}
+
 SimpleSynchronousEntry::CRCRecord::CRCRecord() : index(-1),
                                                  has_crc32(false),
                                                  data_crc32(0) {
@@ -178,43 +188,44 @@ SimpleSynchronousEntry::EntryOperationData::EntryOperationData(int index_p,
       truncate(truncate_p) {}
 
 // static
-void SimpleSynchronousEntry::OpenEntry(const FilePath& path,
-                                       const uint64 entry_hash,
-                                       bool had_index,
-                                       SimpleSynchronousEntry** out_entry,
-                                       SimpleEntryStat* out_entry_stat,
-                                       int* out_result) {
+void SimpleSynchronousEntry::OpenEntry(
+    const FilePath& path,
+    const uint64 entry_hash,
+    bool had_index,
+    SimpleEntryCreationResults *out_results) {
   SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, "",
                                                                   entry_hash);
-  *out_result = sync_entry->InitializeForOpen(had_index, out_entry_stat);
-  if (*out_result != net::OK) {
+  out_results->result = sync_entry->InitializeForOpen(
+      had_index, &out_results->entry_stat);
+  if (out_results->result != net::OK) {
     sync_entry->Doom();
     delete sync_entry;
-    *out_entry = NULL;
+    out_results->sync_entry = NULL;
     return;
   }
-  *out_entry = sync_entry;
+  out_results->sync_entry = sync_entry;
 }
 
 // static
-void SimpleSynchronousEntry::CreateEntry(const FilePath& path,
-                                         const std::string& key,
-                                         const uint64 entry_hash,
-                                         bool had_index,
-                                         SimpleSynchronousEntry** out_entry,
-                                         SimpleEntryStat* out_entry_stat,
-                                         int* out_result) {
+void SimpleSynchronousEntry::CreateEntry(
+    const FilePath& path,
+    const std::string& key,
+    const uint64 entry_hash,
+    bool had_index,
+    SimpleEntryCreationResults *out_results) {
   DCHECK_EQ(entry_hash, GetEntryHashKey(key));
   SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key,
                                                                   entry_hash);
-  *out_result = sync_entry->InitializeForCreate(had_index, out_entry_stat);
-  if (*out_result != net::OK) {
-    if (*out_result != net::ERR_FILE_EXISTS)
+  out_results->result = sync_entry->InitializeForCreate(
+      had_index, &out_results->entry_stat);
+  if (out_results->result != net::OK) {
+    if (out_results->result != net::ERR_FILE_EXISTS)
       sync_entry->Doom();
     delete sync_entry;
+    out_results->sync_entry = NULL;
     return;
   }
-  *out_entry = sync_entry;
+  out_results->sync_entry = sync_entry;
 }
 
 // TODO(gavinp): Move this function to its correct location in this .cc file.
