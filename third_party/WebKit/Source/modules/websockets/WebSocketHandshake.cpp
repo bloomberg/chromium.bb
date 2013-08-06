@@ -548,6 +548,9 @@ bool WebSocketHandshake::checkResponseHeaders()
             m_failureReason = "Error during WebSocket handshake: Sec-WebSocket-Protocol mismatch";
             return false;
         }
+    } else if (!m_clientProtocol.isEmpty()) {
+        m_failureReason = "Error during WebSocket handshake: Sec-WebSocket-Protocol mismatch";
+        return false;
     }
     return true;
 }
