@@ -855,6 +855,55 @@ static void RoundTranslationComponents(gfx::Transform* transform) {
       setDouble(1, 3, MathUtil::Round(transform->matrix().getDouble(1, 3)));
 }
 
+template <typename LayerType>
+struct SubtreeGlobals {
+  LayerSorter* layer_sorter;
+  int max_texture_size;
+  float device_scale_factor;
+  float page_scale_factor;
+  LayerType* page_scale_application_layer;
+  bool can_adjust_raster_scales;
+};
+
+template<typename LayerType, typename RenderSurfaceType>
+struct DataForRecursion {
+  // The accumulated sequence of transforms a layer will use to determine its
+  // own draw transform.
+  gfx::Transform parent_matrix;
+
+  // The accumulated sequence of transforms a layer will use to determine its
+  // own screen-space transform.
+  gfx::Transform full_hierarchy_matrix;
+
+  // The transform that removes all scrolling that may have occurred between a
+  // fixed-position layer and its container, so that the layer actually does
+  // remain fixed.
+  gfx::Transform scroll_compensation_matrix;
+
+  // The ancestor that would be the container for any fixed-position / sticky
+  // layers.
+  LayerType* fixed_container;
+
+  // This is the normal clip rect that is propagated from parent to child.
+  gfx::Rect clip_rect_in_target_space;
+
+  // When the layer's children want to compute their visible content rect, they
+  // want to know what their target surface's clip rect will be. BUT - they
+  // want to know this clip rect represented in their own target space. This
+  // requires inverse-projecting the surface's clip rect from the surface's
+  // render target space down to the surface's own space. Instead of computing
+  // this value redundantly for each child layer, it is computed only once
+  // while dealing with the parent layer, and then this precomputed value is
+  // passed down the recursion to the children that actually use it.
+  gfx::Rect clip_rect_of_target_surface_in_target_space;
+
+  bool ancestor_clips_subtree;
+  RenderSurfaceType* nearest_ancestor_surface_that_moves_pixels;
+  bool in_subtree_of_page_scale_application_layer;
+  bool subtree_can_use_lcd_text;
+  bool subtree_is_visible_from_ancestor;
+};
+
 // Recursively walks the layer tree starting at the given node and computes all
 // the necessary transformations, clip rects, render surfaces, etc.
 template <typename LayerType,
@@ -862,25 +911,10 @@ template <typename LayerType,
           typename RenderSurfaceType>
 static void CalculateDrawPropertiesInternal(
     LayerType* layer,
-    const gfx::Transform& parent_matrix,
-    const gfx::Transform& full_hierarchy_matrix,
-    const gfx::Transform& current_scroll_compensation_matrix,
-    LayerType* current_fixed_container,
-    gfx::Rect clip_rect_from_ancestor_in_ancestor_target_space,
-    gfx::Rect clip_rect_of_target_surface_from_ancestor_in_target_space,
-    bool ancestor_clips_subtree,
-    RenderSurfaceType* nearest_ancestor_that_moves_pixels,
+    const SubtreeGlobals<LayerType>& globals,
+    const DataForRecursion<LayerType, RenderSurfaceType>& data_from_ancestor,
     LayerListType* render_surface_layer_list,
     LayerListType* layer_list,
-    LayerSorter* layer_sorter,
-    int max_texture_size,
-    float device_scale_factor,
-    float page_scale_factor,
-    LayerType* page_scale_application_layer,
-    bool in_subtree_of_page_scale_application_layer,
-    bool subtree_can_use_lcd_text,
-    bool subtree_can_adjust_raster_scales,
-    bool subtree_is_visible_from_ancestor,
     gfx::Rect* drawable_content_rect_of_subtree) {
   // This function computes the new matrix transformations recursively for this
   // layer and all its descendants. It also computes the appropriate render
@@ -1006,17 +1040,27 @@ static void CalculateDrawPropertiesInternal(
 
   // It makes no sense to have a non-unit page_scale_factor without specifying
   // which layer roots the subtree the scale is applied to.
-  DCHECK(page_scale_application_layer || (page_scale_factor == 1.f));
+  DCHECK(globals.page_scale_application_layer ||
+         (globals.page_scale_factor == 1.f));
 
   // If we early-exit anywhere in this function, the drawable_content_rect of
   // this subtree should be considered empty.
   *drawable_content_rect_of_subtree = gfx::Rect();
 
+  DataForRecursion<LayerType, RenderSurfaceType> data_for_children;
+  RenderSurfaceType* nearest_ancestor_surface_that_moves_pixels =
+      data_from_ancestor.nearest_ancestor_surface_that_moves_pixels;
+  data_for_children.in_subtree_of_page_scale_application_layer =
+      data_from_ancestor.in_subtree_of_page_scale_application_layer;
+  data_for_children.subtree_can_use_lcd_text =
+      data_from_ancestor.subtree_can_use_lcd_text;
+
   // Layers with a copy request are always visible, as well as un-hiding their
   // subtree. Otherise, layers that are marked as hidden will hide themselves
   // and their subtree.
   bool layer_is_visible =
-      subtree_is_visible_from_ancestor && !layer->hide_layer_and_subtree();
+      data_from_ancestor.subtree_is_visible_from_ancestor &&
+      !layer->hide_layer_and_subtree();
   if (layer->HasCopyRequest())
     layer_is_visible = true;
 
@@ -1064,7 +1108,7 @@ static void CalculateDrawPropertiesInternal(
   gfx::PointF anchor_point = layer->anchor_point();
   gfx::PointF position = layer->position() - layer->TotalScrollOffset();
 
-  gfx::Transform combined_transform = parent_matrix;
+  gfx::Transform combined_transform = data_from_ancestor.parent_matrix;
   if (!layer->transform().IsIdentity()) {
     // LT = Tr[origin] * Tr[origin2anchor]
     combined_transform.Translate3d(
@@ -1090,30 +1134,31 @@ static void CalculateDrawPropertiesInternal(
   }
 
   // Apply adjustment from position constraints.
-  ApplyPositionAdjustment(layer, current_fixed_container,
-      current_scroll_compensation_matrix, &combined_transform);
+  ApplyPositionAdjustment(layer, data_from_ancestor.fixed_container,
+      data_from_ancestor.scroll_compensation_matrix, &combined_transform);
 
   // Compute the 2d scale components of the transform hierarchy up to the target
   // surface. From there, we can decide on a contents scale for the layer.
-  float layer_scale_factors = device_scale_factor;
-  if (in_subtree_of_page_scale_application_layer)
-    layer_scale_factors *= page_scale_factor;
+  float layer_scale_factors = globals.device_scale_factor;
+  if (data_from_ancestor.in_subtree_of_page_scale_application_layer)
+    layer_scale_factors *= globals.page_scale_factor;
   gfx::Vector2dF combined_transform_scales =
       MathUtil::ComputeTransform2dScaleComponents(
           combined_transform,
           layer_scale_factors);
 
   float ideal_contents_scale =
-      subtree_can_adjust_raster_scales
+      globals.can_adjust_raster_scales
       ? std::max(combined_transform_scales.x(),
                  combined_transform_scales.y())
       : layer_scale_factors;
   UpdateLayerContentsScale(
       layer,
-      subtree_can_adjust_raster_scales,
+      globals.can_adjust_raster_scales,
       ideal_contents_scale,
-      device_scale_factor,
-      in_subtree_of_page_scale_application_layer ? page_scale_factor : 1.f,
+      globals.device_scale_factor,
+      data_from_ancestor.in_subtree_of_page_scale_application_layer ?
+          globals.page_scale_factor : 1.f,
       animating_transform_to_screen);
 
   // The draw_transform that gets computed below is effectively the layer's
@@ -1126,7 +1171,8 @@ static void CalculateDrawPropertiesInternal(
 
   // The layer's screen_space_transform represents the transform between root
   // layer's "screen space" and local content space.
-  layer_draw_properties.screen_space_transform = full_hierarchy_matrix;
+  layer_draw_properties.screen_space_transform =
+      data_from_ancestor.full_hierarchy_matrix;
   if (!layer->preserves_3d())
     layer_draw_properties.screen_space_transform.FlattenTo2d();
   layer_draw_properties.screen_space_transform.PreconcatTransform
@@ -1139,7 +1185,8 @@ static void CalculateDrawPropertiesInternal(
   // To avoid color fringing, LCD text should only be used on opaque layers with
   // just integral translation.
   bool layer_can_use_lcd_text =
-      subtree_can_use_lcd_text && (accumulated_draw_opacity == 1.f) &&
+      data_from_ancestor.subtree_can_use_lcd_text &&
+      accumulated_draw_opacity == 1.f &&
       layer_draw_properties.target_space_transform.
           IsIdentityOrIntegerTranslation();
 
@@ -1149,14 +1196,14 @@ static void CalculateDrawPropertiesInternal(
   // space (except projection matrix) and the most recent RenderSurfaceImpl's
   // space.  next_hierarchy_matrix will only change if this layer uses a new
   // RenderSurfaceImpl, otherwise remains the same.
-  gfx::Transform next_hierarchy_matrix = full_hierarchy_matrix;
-  gfx::Transform sublayer_matrix;
+  data_for_children.full_hierarchy_matrix =
+      data_from_ancestor.full_hierarchy_matrix;
 
   // If the subtree will scale layer contents by the transform hierarchy, then
   // we should scale things into the render surface by the transform hierarchy
   // to take advantage of that.
   gfx::Vector2dF render_surface_sublayer_scale =
-      subtree_can_adjust_raster_scales
+      globals.can_adjust_raster_scales
       ? combined_transform_scales
       : gfx::Vector2dF(layer_scale_factors, layer_scale_factors);
 
@@ -1174,7 +1221,7 @@ static void CalculateDrawPropertiesInternal(
       // The root layer's render surface size is predetermined and so the root
       // layer can't directly support non-identity transforms.  It should just
       // forward top-level transforms to the rest of the tree.
-      sublayer_matrix = combined_transform;
+      data_for_children.parent_matrix = combined_transform;
 
       // The root surface does not contribute to any other surface, it has no
       // target.
@@ -1202,12 +1249,13 @@ static void CalculateDrawPropertiesInternal(
       // scale at the point of the render surface in the transform hierarchy,
       // but we apply it explicitly to the owning layer and the remainder of the
       // subtree independently.
-      DCHECK(sublayer_matrix.IsIdentity());
-      sublayer_matrix.Scale(render_surface_sublayer_scale.x(),
+      DCHECK(data_for_children.parent_matrix.IsIdentity());
+      data_for_children.parent_matrix.Scale(render_surface_sublayer_scale.x(),
                             render_surface_sublayer_scale.y());
 
       layer->render_surface()->set_contributes_to_drawn_surface(
-          subtree_is_visible_from_ancestor && layer_is_visible);
+          data_from_ancestor.subtree_is_visible_from_ancestor &&
+          layer_is_visible);
     }
 
     // The opacity value is moved from the layer to its surface, so that the
@@ -1232,7 +1280,8 @@ static void CalculateDrawPropertiesInternal(
 
     // Update the aggregate hierarchy matrix to include the transform of the
     // newly created RenderSurfaceImpl.
-    next_hierarchy_matrix.PreconcatTransform(render_surface->draw_transform());
+    data_for_children.full_hierarchy_matrix.PreconcatTransform(
+        render_surface->draw_transform());
 
     // The new render_surface here will correctly clip the entire subtree. So,
     // we do not need to continue propagating the clipping state further down
@@ -1261,15 +1310,15 @@ static void CalculateDrawPropertiesInternal(
     // TODO(senorblanco): make this smarter for the SkImageFilter case (check
     // for pixel-moving filters)
     if (layer->filters().HasFilterThatMovesPixels() || layer->filter())
-      nearest_ancestor_that_moves_pixels = render_surface;
+      nearest_ancestor_surface_that_moves_pixels = render_surface;
 
     // The render surface clip rect is expressed in the space where this surface
     // draws, i.e. the same space as
-    // clip_rect_from_ancestor_in_ancestor_target_space.
-    render_surface->SetIsClipped(ancestor_clips_subtree);
-    if (ancestor_clips_subtree) {
+    // data_from_ancestor.clip_rect_in_target_space.
+    render_surface->SetIsClipped(data_from_ancestor.ancestor_clips_subtree);
+    if (data_from_ancestor.ancestor_clips_subtree) {
       render_surface->SetClipRect(
-          clip_rect_from_ancestor_in_ancestor_target_space);
+          data_from_ancestor.clip_rect_in_target_space);
 
       gfx::Transform inverse_surface_draw_transform(
           gfx::Transform::kSkipInitialization);
@@ -1284,16 +1333,16 @@ static void CalculateDrawPropertiesInternal(
     } else {
       render_surface->SetClipRect(gfx::Rect());
       clip_rect_of_target_surface_in_target_space =
-          clip_rect_of_target_surface_from_ancestor_in_target_space;
+          data_from_ancestor.clip_rect_of_target_surface_in_target_space;
     }
 
     render_surface->SetNearestAncestorThatMovesPixels(
-        nearest_ancestor_that_moves_pixels);
+        nearest_ancestor_surface_that_moves_pixels);
 
     // If the new render surface is drawn translucent or with a non-integral
     // translation then the subtree that gets drawn on this render surface
     // cannot use LCD text.
-    subtree_can_use_lcd_text = layer_can_use_lcd_text;
+    data_for_children.subtree_can_use_lcd_text = layer_can_use_lcd_text;
 
     render_surface_layer_list->push_back(layer);
   } else {
@@ -1309,22 +1358,23 @@ static void CalculateDrawPropertiesInternal(
     layer_draw_properties.opacity_is_animating = animating_opacity_to_target;
     layer_draw_properties.screen_space_opacity_is_animating =
         animating_opacity_to_screen;
-    sublayer_matrix = combined_transform;
+    data_for_children.parent_matrix = combined_transform;
 
     layer->ClearRenderSurface();
 
     // Layers without render_surfaces directly inherit the ancestor's clip
     // status.
-    layer_or_ancestor_clips_descendants = ancestor_clips_subtree;
-    if (ancestor_clips_subtree) {
+    layer_or_ancestor_clips_descendants =
+        data_from_ancestor.ancestor_clips_subtree;
+    if (data_from_ancestor.ancestor_clips_subtree) {
       clip_rect_in_target_space =
-          clip_rect_from_ancestor_in_ancestor_target_space;
+          data_from_ancestor.clip_rect_in_target_space;
     }
 
     // The surface's cached clip rect value propagates regardless of what
     // clipping goes on between layers here.
     clip_rect_of_target_surface_in_target_space =
-        clip_rect_of_target_surface_from_ancestor_in_target_space;
+        data_from_ancestor.clip_rect_of_target_surface_in_target_space;
 
     // Layers that are not their own render_target will render into the target
     // of their nearest ancestor.
@@ -1354,32 +1404,37 @@ static void CalculateDrawPropertiesInternal(
 
   if (LayerClipsSubtree(layer)) {
     layer_or_ancestor_clips_descendants = true;
-    if (ancestor_clips_subtree && !layer->render_surface()) {
+    if (data_from_ancestor.ancestor_clips_subtree && !layer->render_surface()) {
       // A layer without render surface shares the same target as its ancestor.
       clip_rect_in_target_space =
-          clip_rect_from_ancestor_in_ancestor_target_space;
+          data_from_ancestor.clip_rect_in_target_space;
       clip_rect_in_target_space.Intersect(rect_in_target_space);
     } else {
       clip_rect_in_target_space = rect_in_target_space;
     }
   }
 
-  if (layer == page_scale_application_layer) {
-    sublayer_matrix.Scale(page_scale_factor, page_scale_factor);
-    in_subtree_of_page_scale_application_layer = true;
+  if (layer == globals.page_scale_application_layer) {
+    data_for_children.parent_matrix.Scale(
+        globals.page_scale_factor,
+        globals.page_scale_factor);
+    data_for_children.in_subtree_of_page_scale_application_layer = true;
   }
 
   // Flatten to 2D if the layer doesn't preserve 3D.
   if (!layer->preserves_3d())
-    sublayer_matrix.FlattenTo2d();
+    data_for_children.parent_matrix.FlattenTo2d();
 
   // Apply the sublayer transform at the anchor point of the layer.
   if (!layer->sublayer_transform().IsIdentity()) {
-    sublayer_matrix.Translate(layer->anchor_point().x() * bounds.width(),
-                              layer->anchor_point().y() * bounds.height());
-    sublayer_matrix.PreconcatTransform(layer->sublayer_transform());
-    sublayer_matrix.Translate(-layer->anchor_point().x() * bounds.width(),
-                              -layer->anchor_point().y() * bounds.height());
+    data_for_children.parent_matrix.Translate(
+        layer->anchor_point().x() * bounds.width(),
+        layer->anchor_point().y() * bounds.height());
+    data_for_children.parent_matrix.PreconcatTransform(
+        layer->sublayer_transform());
+    data_for_children.parent_matrix.Translate(
+        -layer->anchor_point().x() * bounds.width(),
+        -layer->anchor_point().y() * bounds.height());
   }
 
   LayerListType& descendants =
@@ -1393,14 +1448,23 @@ static void CalculateDrawPropertiesInternal(
   if (!LayerShouldBeSkipped(layer, layer_is_visible))
     descendants.push_back(layer);
 
-  gfx::Transform next_scroll_compensation_matrix =
+  data_for_children.scroll_compensation_matrix =
       ComputeScrollCompensationMatrixForChildren(
           layer,
-          parent_matrix,
-          current_scroll_compensation_matrix);
-  LayerType* next_fixed_container =
+          data_from_ancestor.parent_matrix,
+          data_from_ancestor.scroll_compensation_matrix);
+  data_for_children.fixed_container =
       layer->IsContainerForFixedPositionLayers() ?
-          layer : current_fixed_container;
+          layer : data_from_ancestor.fixed_container;
+
+  data_for_children.clip_rect_in_target_space = clip_rect_in_target_space;
+  data_for_children.clip_rect_of_target_surface_in_target_space =
+      clip_rect_of_target_surface_in_target_space;
+  data_for_children.ancestor_clips_subtree =
+      layer_or_ancestor_clips_descendants;
+  data_for_children.nearest_ancestor_surface_that_moves_pixels =
+      nearest_ancestor_surface_that_moves_pixels;
+  data_for_children.subtree_is_visible_from_ancestor = layer_is_visible;
 
   gfx::Rect accumulated_drawable_content_rect_of_children;
   for (size_t i = 0; i < layer->children().size(); ++i) {
@@ -1412,25 +1476,10 @@ static void CalculateDrawPropertiesInternal(
                                     LayerListType,
                                     RenderSurfaceType>(
         child,
-        sublayer_matrix,
-        next_hierarchy_matrix,
-        next_scroll_compensation_matrix,
-        next_fixed_container,
-        clip_rect_in_target_space,
-        clip_rect_of_target_surface_in_target_space,
-        layer_or_ancestor_clips_descendants,
-        nearest_ancestor_that_moves_pixels,
+        globals,
+        data_for_children,
         render_surface_layer_list,
         &descendants,
-        layer_sorter,
-        max_texture_size,
-        device_scale_factor,
-        page_scale_factor,
-        page_scale_application_layer,
-        in_subtree_of_page_scale_application_layer,
-        subtree_can_use_lcd_text,
-        subtree_can_adjust_raster_scales,
-        layer_is_visible,
         &drawable_content_rect_of_child_subtree);
     if (!drawable_content_rect_of_child_subtree.IsEmpty()) {
       accumulated_drawable_content_rect_of_children.Union(
@@ -1486,7 +1535,7 @@ static void CalculateDrawPropertiesInternal(
     // The root layer's surface's content_rect is always the entire viewport.
     DCHECK(layer->render_surface());
     layer->render_surface()->SetContentRect(
-        clip_rect_from_ancestor_in_ancestor_target_space);
+        data_from_ancestor.clip_rect_in_target_space);
   } else if (layer->render_surface() && !IsRootLayer(layer)) {
     RenderSurfaceType* render_surface = layer->render_surface();
     gfx::Rect clipped_content_rect = local_drawable_content_rect_of_subtree;
@@ -1496,9 +1545,11 @@ static void CalculateDrawPropertiesInternal(
     // its target is not known on the main thread, and we should not use it
     // to clip.
     if (!layer->replica_layer() && TransformToParentIsKnown(layer)) {
-      // Note, it is correct to use ancestor_clips_subtree here, because we are
-      // looking at this layer's render_surface, not the layer itself.
-      if (ancestor_clips_subtree && !clipped_content_rect.IsEmpty()) {
+      // Note, it is correct to use data_from_ancestor.ancestor_clips_subtree
+      // here, because we are looking at this layer's render_surface, not the
+      // layer itself.
+      if (data_from_ancestor.ancestor_clips_subtree &&
+          !clipped_content_rect.IsEmpty()) {
         gfx::Rect surface_clip_rect = LayerTreeHostCommon::CalculateVisibleRect(
             render_surface->clip_rect(),
             clipped_content_rect,
@@ -1510,9 +1561,9 @@ static void CalculateDrawPropertiesInternal(
     // The RenderSurfaceImpl backing texture cannot exceed the maximum supported
     // texture size.
     clipped_content_rect.set_width(
-        std::min(clipped_content_rect.width(), max_texture_size));
+        std::min(clipped_content_rect.width(), globals.max_texture_size));
     clipped_content_rect.set_height(
-        std::min(clipped_content_rect.height(), max_texture_size));
+        std::min(clipped_content_rect.height(), globals.max_texture_size));
 
     if (clipped_content_rect.IsEmpty()) {
       RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
@@ -1576,11 +1627,11 @@ static void CalculateDrawPropertiesInternal(
   // drawn from back to front. If the preserves-3d property is also set on the
   // parent then skip the sorting as the parent will sort all the descendants
   // anyway.
-  if (layer_sorter && descendants.size() && layer->preserves_3d() &&
+  if (globals.layer_sorter && descendants.size() && layer->preserves_3d() &&
       (!layer->parent() || !layer->parent()->preserves_3d())) {
     SortLayers(descendants.begin() + sorting_start_index,
                descendants.end(),
-               layer_sorter);
+               globals.layer_sorter);
   }
 
   if (layer->render_surface()) {
@@ -1610,35 +1661,39 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
-  bool layer_or_ancestor_clips_descendants = true;
   gfx::Rect device_viewport_rect(inputs->device_viewport_size);
-  bool in_subtree_of_page_scale_application_layer = false;
-  bool subtree_is_visible = true;
+
+  SubtreeGlobals<Layer> globals;
+  globals.layer_sorter = NULL;
+  globals.max_texture_size = inputs->max_texture_size;
+  globals.device_scale_factor = inputs->device_scale_factor;
+  globals.page_scale_factor = inputs->page_scale_factor;
+  globals.page_scale_application_layer = inputs->page_scale_application_layer;
+  globals.can_adjust_raster_scales = inputs->can_adjust_raster_scales;
+
+  DataForRecursion<Layer, RenderSurface> data_for_recursion;
+  data_for_recursion.parent_matrix = scaled_device_transform;
+  data_for_recursion.full_hierarchy_matrix = identity_matrix;
+  data_for_recursion.scroll_compensation_matrix = identity_matrix;
+  data_for_recursion.fixed_container = inputs->root_layer;
+  data_for_recursion.clip_rect_in_target_space = device_viewport_rect;
+  data_for_recursion.clip_rect_of_target_surface_in_target_space =
+      device_viewport_rect;
+  data_for_recursion.ancestor_clips_subtree = true;
+  data_for_recursion.nearest_ancestor_surface_that_moves_pixels = NULL;
+  data_for_recursion.in_subtree_of_page_scale_application_layer = false;
+  data_for_recursion.subtree_can_use_lcd_text = inputs->can_use_lcd_text;
+  data_for_recursion.subtree_is_visible_from_ancestor = true;
 
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
 
   CalculateDrawPropertiesInternal<Layer, RenderSurfaceLayerList, RenderSurface>(
       inputs->root_layer,
-      scaled_device_transform,
-      identity_matrix,
-      identity_matrix,
-      inputs->root_layer,
-      device_viewport_rect,
-      device_viewport_rect,
-      layer_or_ancestor_clips_descendants,
-      NULL,
+      globals,
+      data_for_recursion,
       inputs->render_surface_layer_list,
       &dummy_layer_list,
-      NULL,
-      inputs->max_texture_size,
-      inputs->device_scale_factor,
-      inputs->page_scale_factor,
-      inputs->page_scale_application_layer,
-      in_subtree_of_page_scale_application_layer,
-      inputs->can_use_lcd_text,
-      inputs->can_adjust_raster_scales,
-      subtree_is_visible,
       &total_drawable_content_rect);
 
   // The dummy layer list should not have been used.
@@ -1664,35 +1719,39 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
-  bool layer_or_ancestor_clips_descendants = true;
   gfx::Rect device_viewport_rect(inputs->device_viewport_size);
-  bool in_subtree_of_page_scale_application_layer = false;
-  bool subtree_is_visible = true;
+
+  SubtreeGlobals<LayerImpl> globals;
+  globals.layer_sorter = &layer_sorter;
+  globals.max_texture_size = inputs->max_texture_size;
+  globals.device_scale_factor = inputs->device_scale_factor;
+  globals.page_scale_factor = inputs->page_scale_factor;
+  globals.page_scale_application_layer = inputs->page_scale_application_layer;
+  globals.can_adjust_raster_scales = inputs->can_adjust_raster_scales;
+
+  DataForRecursion<LayerImpl, RenderSurfaceImpl> data_for_recursion;
+  data_for_recursion.parent_matrix = scaled_device_transform;
+  data_for_recursion.full_hierarchy_matrix = identity_matrix;
+  data_for_recursion.scroll_compensation_matrix = identity_matrix;
+  data_for_recursion.fixed_container = inputs->root_layer;
+  data_for_recursion.clip_rect_in_target_space = device_viewport_rect;
+  data_for_recursion.clip_rect_of_target_surface_in_target_space =
+      device_viewport_rect;
+  data_for_recursion.ancestor_clips_subtree = true;
+  data_for_recursion.nearest_ancestor_surface_that_moves_pixels = NULL;
+  data_for_recursion.in_subtree_of_page_scale_application_layer = false;
+  data_for_recursion.subtree_can_use_lcd_text = inputs->can_use_lcd_text;
+  data_for_recursion.subtree_is_visible_from_ancestor = true;
 
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
 
   CalculateDrawPropertiesInternal<LayerImpl, LayerImplList, RenderSurfaceImpl>(
       inputs->root_layer,
-      scaled_device_transform,
-      identity_matrix,
-      identity_matrix,
-      inputs->root_layer,
-      device_viewport_rect,
-      device_viewport_rect,
-      layer_or_ancestor_clips_descendants,
-      NULL,
+      globals,
+      data_for_recursion,
       inputs->render_surface_layer_list,
       &dummy_layer_list,
-      &layer_sorter,
-      inputs->max_texture_size,
-      inputs->device_scale_factor,
-      inputs->page_scale_factor,
-      inputs->page_scale_application_layer,
-      in_subtree_of_page_scale_application_layer,
-      inputs->can_use_lcd_text,
-      inputs->can_adjust_raster_scales,
-      subtree_is_visible,
       &total_drawable_content_rect);
 
   // The dummy layer list should not have been used.
