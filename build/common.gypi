@@ -1178,14 +1178,14 @@
         # overridden from the command line the same way it is for a Mac build.
         'mac_sdk%': '<!(python <(DEPTH)/build/mac/find_sdk.py 10.6)',
 
-        # iOS SDK and deployment target support.  The iOS 5.0 SDK is actually
-        # what is required, but the value is left blank so when it is set in
-        # the project files it will be the "current" iOS SDK.  Forcing 5.0
-        # even though it is "current" causes Xcode to spit out a warning for
-        # every single project file for not using the "current" SDK.
+        # iOS SDK and deployment target support.  The |ios_sdk| value is left
+        # blank so that when it is set in the project files it will be the
+        # "current" iOS SDK.  Forcing a specific SDK even if it is "current"
+        # causes Xcode to spit out a warning for every single project file for
+        # not using the "current" SDK.
         'ios_sdk%': '',
         'ios_sdk_path%': '',
-        'ios_deployment_target%': '5.0',
+        'ios_deployment_target%': '6.0',
 
         'conditions': [
           # ios_product_name is set to the name of the .app bundle as it should
