@@ -332,6 +332,14 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     return;
   }
 
+  // MHTML pages currently cannot be translated.
+  // See bug: 217945.
+  if (web_contents->GetContentsMimeType() == "multipart/related") {
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::INITIATION_STATUS_MIME_TYPE_IS_NOT_SUPPORTED);
+    return;
+  }
+
   // Don't translate any Chrome specific page, e.g., New Tab Page, Download,
   // History, and so on.
   GURL page_url = web_contents->GetURL();
