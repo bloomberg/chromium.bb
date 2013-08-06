@@ -231,7 +231,6 @@ webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg
 # Many WIN and Linux SVG tests containing text are flaky. It seems different fonts are used at different times.
 webkit.org/b/83303 [ Linux ] svg/zoom/text/zoom-hixie-mixed-009.xml [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Linux ] svg/hixie/mixed/009.xml [ ImageOnlyFailure Pass ]
-webkit.org/b/83306 [ Win Lion ] svg/hixie/mixed/009.xml [ ImageOnlyFailure ]
 webkit.org/b/83303 [ Linux ] svg/text/scaling-font-with-geometric-precision.html [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Linux ] svg/transforms/text-with-mask-with-svg-transform.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Linux ] svg/transforms/text-with-pattern-with-svg-transform.svg [ ImageOnlyFailure Pass ]
@@ -570,10 +569,6 @@ webkit.org/b/48454 compositing/tiling/huge-layer-img.html [ Failure ]
 # New reftest failing on Win7.
 webkit.org/b/76050 [ Win7 ] fast/text/font-kerning.html [ ImageOnlyFailure ]
 
-webkit.org/b/76488 [ Win ] css3/images/cross-fade-background-size.html [ ImageOnlyFailure ]
-
-webkit.org/b/81542 css3/images/cross-fade-invalidation.html [ ImageOnlyFailure ]
-
 webkit.org/b/76727 fast/multicol/span/span-as-immediate-child-property-removal.html [ Failure ImageOnlyFailure Pass ]
 webkit.org/b/76727 fast/multicol/span/span-as-immediate-columns-child-removal.html [ Failure ImageOnlyFailure Pass ]
 
@@ -722,7 +717,6 @@ webkit.org/b/95506 http/tests/notifications [ Skip ]
 
 webkit.org/b/96441 [ Win Debug ] fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
 crbug.com/248155 [ Win Debug ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
-crbug.com/248155 [ Linux ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
 crbug.com/245611 [ Win ] fast/hidpi/image-set-as-background.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win ] fast/hidpi/image-set-background-repeat-without-size.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win7 Release ] virtual/gpu/fast/hidpi/image-set-background-repeat.html [ ImageOnlyFailure Pass ]
@@ -736,11 +730,6 @@ crbug.com/245611 [ Win ] fast/hidpi/image-set-without-specified-width.html [ Ima
 crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/98087 fast/css/lang-mapped-to-webkit-locale-dynamic.xhtml [ Failure Pass ]
-
-# TestPlugin needs GL.
-crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-alpha.html [ ImageOnlyFailure ]
-crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-no-alpha.html [ ImageOnlyFailure ]
-crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-reflection.html [ ImageOnlyFailure ]
 
 webkit.org/b/97179 http/tests/css/link-css-disabled-value-with-slow-loading-sheet.html [ Failure Pass ]
 
@@ -772,8 +761,6 @@ crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timin
 crbug.com/237003 [ Mac Linux ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]
 crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure Timeout ]
 
-webkit.org/b/103148 [ Lion ] fast/frames/iframe-scaling-with-scroll.html [ ImageOnlyFailure ]
-webkit.org/b/103148 [ Lion ] fast/frames/iframe-scrolling-attribute.html [ ImageOnlyFailure ]
 webkit.org/b/103148 [ Linux ] fast/text/atsui-small-caps-punctuation-size.html [ Failure ImageOnlyFailure Pass ]
 
 webkit.org/b/103446 [ Mac ] http/tests/canvas/canvas-slow-font-loading.html [ ImageOnlyFailure ]
@@ -802,8 +789,6 @@ webkit.org/b/106238 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Imag
 webkit.org/b/106238 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ ImageOnlyFailure Pass ]
 webkit.org/b/106249 fast/speech/scripted/navigate-away.html [ Failure Pass ]
 
-webkit.org/b/106390 [ Win ] svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ ImageOnlyFailure ]
-webkit.org/b/106390 [ Win ] svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr.html [ ImageOnlyFailure ]
 webkit.org/b/106426 inspector/geolocation-error.html [ Failure Pass ]
 webkit.org/b/106426 inspector/geolocation-success.html [ Failure Pass ]
 webkit.org/b/106426 inspector/geolocation-watchPosition.html [ Failure Pass ]
@@ -819,8 +804,6 @@ webkit.org/b/110247 [ Debug ] fast/workers/storage/interrupt-database.html [ Cra
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 crbug.com/225184 inspector/elements/highlight-node-scaled.html [ Failure ]
-crbug.com/225184 [ XP Mac Linux ] svg/as-image/image-respects-pageScaleFactor.html [ ImageOnlyFailure ]
-crbug.com/225184 [ Win7 ] svg/as-image/image-respects-pageScaleFactor.html [ Failure ]
 crbug.com/225184 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure ]
 crbug.com/225184 [ Win ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure Pass ]
 
@@ -918,10 +901,6 @@ crbug.com/260744 crbug.com/249894 [ Debug ] fast/js/regress/inline-arguments-acc
 # Caused by http://trac.webkit.org/changeset/56394.
 crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass Timeout ]
 
-crbug.com/130259 [ Linux ] fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ ImageOnlyFailure ]
-crbug.com/130259 [ Linux Mac ] fast/forms/checkbox/checkbox-appearance-basic.html [ ImageOnlyFailure ]
-crbug.com/130259 [ Linux Mac ] fast/forms/radio/radio-appearance-basic.html [ ImageOnlyFailure ]
-
 crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 webkit.org/b/81697 fast/notifications/notifications-request-permission.html [ Failure Pass ]
 crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
@@ -931,9 +910,8 @@ crbug.com/88588 [ Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pa
 
 crbug.com/252344 http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
 
-webkit.org/b/92811 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
-webkit.org/b/92811 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
-webkit.org/b/92811 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
+crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
+crbug.com/231357 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
 
 crbug.com/249580 svg/text/font-size-below-point-five.svg [ Failure ImageOnlyFailure Pass ]
 
@@ -1080,12 +1058,9 @@ crbug.com/178745 [ Release ] plugins/open-and-close-window-with-plugin.html [ Fa
 crbug.com/223583 http/tests/filesystem/no-cache-filesystem-url.html [ Skip ]
 crbug.com/231859 [ Win Linux ] compositing/plugins/invalidate_rect.html [ Failure ]
 crbug.com/231863 compositing/visibility/visibility-composited-animation.html [ Pass ImageOnlyFailure ]
-crbug.com/231864 [ Linux ] css3/font-feature-settings-rendering.html [ ImageOnlyFailure ]
 crbug.com/231865 editing/pasteboard/copy-image-with-alt-text.html [ Failure ]
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/231867 fast/css-grid-layout/grid-disabled-by-default.html [ Failure ]
-crbug.com/231869 [ Linux ] fast/css/font-face-opentype.html [ ImageOnlyFailure ]
-crbug.com/231873 [ Linux ] fast/css/font-face-weight-matching.html [ ImageOnlyFailure ]
 crbug.com/231875 fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
 crbug.com/231878 fast/dom/HTMLLinkElement/prefetch.html [ Failure ]
 crbug.com/231878 fast/dom/HTMLLinkElement/subresource.html [ Failure ]
@@ -1104,7 +1079,6 @@ crbug.com/231940 [ Mac ] storage/websql/sql-error-codes.html [ Failure ]
 crbug.com/231942 svg/dom/fuzz-path-parser.html [ Failure ]
 crbug.com/231859 [ Win Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure ]
 crbug.com/233887 plugins/call-as-function.html [ Failure ]
-crbug.com/233888 [ Lion ] virtual/softwarecompositing/reflections/nested-reflection-animated.html [ ImageOnlyFailure ]
 crbug.com/235449 fast/loader/stateobjects/state-attribute-history-getter.html [ Failure Pass ]
 crbug.com/235448 fast/loader/stateobjects/popstate-fires-on-history-traversal.html [ Failure Pass ]
 crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
@@ -1168,9 +1142,6 @@ crbug.com/244179 fast/js/date-parse-test.html [ Failure Pass ]
 # Makes the following test crash
 crbug.com/244225 inspector-protocol/dom/setFileInputFiles.html [ Skip ]
 
-crbug.com/244276 fast/images/gif-loop-count.html [ ImageOnlyFailure ]
-crbug.com/244276 crbug.com/245189 [ Linux Win ] virtual/deferred/fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ]
-
 crbug.com/246749 inspector/extensions/extensions-panel.html [ Timeout Pass ]
 
 crbug.com/245154 editing/selection/move-by-character-brute-force.html [ Pass Timeout ]
@@ -1194,17 +1165,12 @@ crbug.com/247888 fast/workers/worker-cloneport.html [ Failure Pass Timeout ]
 
 crbug.com/247889 [ Win ] http/tests/navigation/back-send-referrer.html [ Pass Timeout ]
 
-# Needs new pixel baselines on other platforms
-Bug(jamesr) compositing/video/video-controls-layer-creation.html [ ImageOnlyFailure ]
-Bug(jamesr) virtual/softwarecompositing/video/video-controls-layer-creation.html [ ImageOnlyFailure ]
-
 crbug.com/247979 [ Win Mac Release ] inspector/elements/edit-dom-actions.html [ Failure Pass ]
 crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ Timeout ]
 crbug.com/247979 [ Mac Linux Debug ] inspector/elements/edit-dom-actions.html [ Pass Timeout ]
 crbug.com/247981 [ Win Debug ] inspector/profiler/heap-snapshot-get-profile-crash.html [ Pass Crash ]
 crbug.com/247982 [ Mac Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/247982 [ Win ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
-crbug.com/248062 css3/compositing/effect-background-blend-mode-stacking.html [ ImageOnlyFailure ]
 crbug.com/248063 [ Debug ] plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/248063 [ Release Win ] plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/248065 [ Linux ] svg/text/foreignObject-text-clipping-bug.xml [ Pass ImageOnlyFailure ]
@@ -1217,8 +1183,6 @@ crbug.com/248121 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Failure
 crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 crbug.com/260655 [ Linux Debug ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Crash Pass ]
 
-crbug.com/248146 [ Linux ] editing/selection/after-line-wrap.html [ ImageOnlyFailure ]
-crbug.com/248146 [ Linux ] fast/text/whitespace/nbsp-mode-and-linewraps.html [ ImageOnlyFailure ]
 crbug.com/250970 [ Debug ] fast/events/simulated-key-state.html [ Crash Timeout ]
 
 crbug.com/254332 [ Linux ] fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
@@ -1304,4 +1268,3 @@ crbug.com/266957 svg/dynamic-updates/SVGFEDropShadowElement-svgdom-stdDeviation-
 crbug.com/266957 svg/filters/feDropShadow-zero-deviation.svg [ NeedsRebaseline ]
 crbug.com/266957 svg/filters/feDropShadow.svg [ NeedsRebaseline ]
 crbug.com/266957 svg/repaint/filter-child-repaint.svg [ NeedsRebaseline ]
-
