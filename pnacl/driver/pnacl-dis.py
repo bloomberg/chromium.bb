@@ -9,6 +9,7 @@
 # updates the copy in the toolchain/ tree.
 #
 
+import sys
 import driver_tools
 from driver_env import env
 from driver_log import Log, DriverOpen, DriverClose
@@ -21,6 +22,7 @@ EXTRA_ENV = {
 }
 
 DISPatterns = [
+  ( '--file-type',            "env.set('FILE_TYPE', '1')"),
   ( ('-o','(.*)'),            "env.set('OUTPUT', pathtools.normalize($0))"),
   ( '(-.*)',                  "env.append('FLAGS', $0)"),
   ( '(.*)',                   "env.append('INPUTS', pathtools.normalize($0))"),
@@ -50,7 +52,12 @@ def main(argv):
 
     if (filetype.IsLLVMBitcode(infile) or
         filetype.IsPNaClBitcode(infile)):
-      format = 'pnacl' if filetype.IsPNaClBitcode(infile) else 'llvm'
+      bitcodetype = 'PNaCl' if filetype.IsPNaClBitcode(infile) else 'LLVM'
+      format = bitcodetype.lower()
+
+      if env.has('FILE_TYPE'):
+        sys.stdout.write('%s: %s bitcode\n' % (infile, bitcodetype))
+        continue
       env.append('FLAGS', '-bitcode-format=' + format)
       if output == '':
         # LLVM by default outputs to a file if -o is missing
@@ -59,6 +66,9 @@ def main(argv):
         env.append('FLAGS', '-f')
       driver_tools.Run('${LLVM_DIS} ${FLAGS} ${input} -o ${output}')
     elif filetype.IsELF(infile):
+      if env.has('FILE_TYPE'):
+        sys.stdout.write('%s: ELF\n' % infile)
+        continue
       flags = env.get('FLAGS')
       if len(flags) == 0:
         env.append('FLAGS', '-d')
@@ -87,4 +97,5 @@ so this accepts the usual objdump flags.
 OPTIONS:
   -o <file>        Output to file
   -help | -h       Output this help.
+  --file-type      Detect and print the file type for each of the input files.
 """
