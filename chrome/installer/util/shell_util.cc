@@ -1208,7 +1208,7 @@ bool ShortcutOpDelete(const base::FilePath& shortcut_path) {
 bool ShortcutOpUpdate(const base::win::ShortcutProperties& shortcut_properties,
                       const base::FilePath& shortcut_path) {
   bool ret = base::win::CreateOrUpdateShortcutLink(
-      shortcut_path, shortcut_properties, base::win::SHORTCUT_REPLACE_EXISTING);
+      shortcut_path, shortcut_properties, base::win::SHORTCUT_UPDATE_EXISTING);
   LOG_IF(ERROR, !ret) << "Failed to update " << shortcut_path.value();
   return ret;
 }
