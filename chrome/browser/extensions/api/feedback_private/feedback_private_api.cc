@@ -59,10 +59,10 @@ void FeedbackPrivateAPI::RequestFeedback(
     info.system_information.reset(new SystemInformationList);
 
     FeedbackService::PopulateSystemInfo(
-        info.system_information.get(), feedback_util::kScreensizeHeightKey,
+        info.system_information.get(), kScreensizeHeightKey,
         base::IntToString(screen_size.height()));
     FeedbackService::PopulateSystemInfo(
-        info.system_information.get(), feedback_util::kScreensizeWidthKey,
+        info.system_information.get(), kScreensizeWidthKey,
         base::IntToString(screen_size.width()));
 
     scoped_ptr<base::ListValue> args(new base::ListValue());
@@ -164,8 +164,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
   if (!screenshot_url.empty())
     feedback_data->set_screenshot_url(GURL(screenshot_url));
 
-  scoped_ptr<feedback_util::SystemLogsMap> sys_logs(
-      new feedback_util::SystemLogsMap);
+  scoped_ptr<SystemLogsMap> sys_logs(new SystemLogsMap);
   SystemInformationList* sys_info = feedback_info.system_information.get();
   if (sys_info) {
     for (SystemInformationList::iterator it = sys_info->begin();

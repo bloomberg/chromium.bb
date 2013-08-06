@@ -5,17 +5,29 @@
 #ifndef CHROME_BROWSER_FEEDBACK_FEEDBACK_DATA_H_
 #define CHROME_BROWSER_FEEDBACK_FEEDBACK_DATA_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/feedback/feedback_util.h"
 #include "url/gurl.h"
 
 namespace base {
 class FilePath;
 }
 class Profile;
+
+
+namespace {
+
+typedef std::map<std::string, std::string> SystemLogsMap;
+
+const char kScreensizeHeightKey[] = "ScreensizeHeight";
+const char kScreensizeWidthKey[] = "ScreensizeWidth";
+
+}  // namespace
+
 
 class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
  public:
@@ -25,10 +37,10 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   void OnFeedbackPageDataComplete();
 
   // Called once we have read our system logs.
-  void CompressSyslogs(scoped_ptr<feedback_util::SystemLogsMap> sys_info);
+  void CompressSyslogs(scoped_ptr<SystemLogsMap> sys_info);
 
   // Called once we have read and compressed our system logs.
-  void OnCompressLogsComplete(scoped_ptr<feedback_util::SystemLogsMap> sys_info,
+  void OnCompressLogsComplete(scoped_ptr<SystemLogsMap> sys_info,
                               scoped_ptr<std::string> compressed_logs);
 
   // Returns true if we've completed all the tasks needed before we can send
@@ -54,7 +66,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   const GURL attached_file_url() const { return attached_file_url_; }
   std::string* attached_filedata() const { return attached_filedata_.get(); }
   const GURL screenshot_url() const { return screenshot_url_; }
-  feedback_util::SystemLogsMap* sys_info() const { return sys_info_.get(); }
+  SystemLogsMap* sys_info() const { return sys_info_.get(); }
   std::string* compressed_logs() const { return compressed_logs_.get(); }
 
   // Setters
@@ -78,7 +90,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   }
   void set_attached_file_url(const GURL& url) { attached_file_url_ = url; }
   void set_screenshot_url(const GURL& url) { screenshot_url_ = url; }
-  void set_sys_info(scoped_ptr<feedback_util::SystemLogsMap> sys_info);
+  void set_sys_info(scoped_ptr<SystemLogsMap> sys_info);
 
  private:
   friend class base::RefCountedThreadSafe<FeedbackData>;
@@ -98,7 +110,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   GURL attached_file_url_;
   GURL screenshot_url_;
 
-  scoped_ptr<feedback_util::SystemLogsMap> sys_info_;
+  scoped_ptr<SystemLogsMap> sys_info_;
   scoped_ptr<std::string> compressed_logs_;
 
   bool feedback_page_data_complete_;

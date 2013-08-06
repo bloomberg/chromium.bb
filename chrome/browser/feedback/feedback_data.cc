@@ -27,9 +27,9 @@ const char kMultilineIndicatorString[] = "<multiline>\n";
 const char kMultilineStartString[] = "---------- START ----------\n";
 const char kMultilineEndString[] = "---------- END ----------\n\n";
 
-std::string LogsToString(feedback_util::SystemLogsMap* sys_info) {
+std::string LogsToString(SystemLogsMap* sys_info) {
   std::string syslogs_string;
-  for (feedback_util::SystemLogsMap::const_iterator it = sys_info->begin();
+  for (SystemLogsMap::const_iterator it = sys_info->begin();
       it != sys_info->end(); ++it) {
     std::string key = it->first;
     std::string value = it->second;
@@ -50,8 +50,7 @@ std::string LogsToString(feedback_util::SystemLogsMap* sys_info) {
   return syslogs_string;
 }
 
-void ZipLogs(feedback_util::SystemLogsMap* sys_info,
-             std::string* compressed_logs) {
+void ZipLogs(SystemLogsMap* sys_info, std::string* compressed_logs) {
   DCHECK(compressed_logs);
   std::string logs_string = LogsToString(sys_info);
   if (!feedback_util::ZipString(logs_string, compressed_logs)) {
@@ -85,18 +84,18 @@ void FeedbackData::OnFeedbackPageDataComplete() {
 }
 
 void FeedbackData::set_sys_info(
-    scoped_ptr<feedback_util::SystemLogsMap> sys_info) {
+    scoped_ptr<SystemLogsMap> sys_info) {
   if (sys_info.get())
     CompressSyslogs(sys_info.Pass());
 }
 
 void FeedbackData::CompressSyslogs(
-    scoped_ptr<feedback_util::SystemLogsMap> sys_info) {
+    scoped_ptr<SystemLogsMap> sys_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We get the pointer first since base::Passed will nullify the scoper, hence
   // it's not safe to use <scoper>.get() as a parameter to PostTaskAndReply.
-  feedback_util::SystemLogsMap* sys_info_ptr = sys_info.get();
+  SystemLogsMap* sys_info_ptr = sys_info.get();
   std::string* compressed_logs_ptr = new std::string;
   scoped_ptr<std::string> compressed_logs(compressed_logs_ptr);
   BrowserThread::PostBlockingPoolTaskAndReply(
@@ -111,7 +110,7 @@ void FeedbackData::CompressSyslogs(
 }
 
 void FeedbackData::OnCompressLogsComplete(
-    scoped_ptr<feedback_util::SystemLogsMap> sys_info,
+    scoped_ptr<SystemLogsMap> sys_info,
     scoped_ptr<std::string> compressed_logs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

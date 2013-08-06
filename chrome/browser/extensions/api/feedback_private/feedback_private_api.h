@@ -5,14 +5,16 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_
 
-#include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/feedback_private.h"
+#include "ui/gfx/rect.h"
 
 namespace extensions {
 
 class FeedbackService;
+
+using extensions::api::feedback_private::SystemInformation;
 
 class FeedbackPrivateAPI : public ProfileKeyedAPI {
  public:
@@ -74,7 +76,8 @@ class FeedbackPrivateGetSystemInformationFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void OnCompleted(const SystemInformationList& sys_info);
+  void OnCompleted(
+      const std::vector<linked_ptr<SystemInformation> >& sys_info);
 };
 
 class FeedbackPrivateSendFeedbackFunction : public AsyncExtensionFunction {

@@ -34,11 +34,6 @@ extern const char kAppLauncherCategoryTag[];
 }  // namespace chrome
 
 namespace feedback_util {
-  typedef std::map<std::string, std::string> SystemLogsMap;
-
-  extern const char kScreensizeHeightKey[];
-  extern const char kScreensizeWidthKey[];
-
 
   void SendReport(scoped_refptr<FeedbackData> data);
   bool ZipString(const std::string& logs, std::string* compressed_logs);
