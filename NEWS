@@ -12,6 +12,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      instances.
    - en-us-g2.ctb, en-ueb-g2.ctb: Fixes for that's, can't and s'
      thanks to Ken Perry.
+   - en-us-g2.ctb: Fix for backtranslation of things like
+     http://address.com, thanks to Ken Perry.
 
 ** Backwards incompatible changes
    - Delete the table chardefs-ueb.cti as these rules are now
