@@ -93,19 +93,21 @@ public class ContentShellActivity extends ChromiumActivity {
                 mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
             }
 
-            BrowserStartupConfig.setAsync(new BrowserStartupConfig.StartupCallback() {
+            if (!CommandLine.getInstance().hasSwitch(CommandLine.DUMP_RENDER_TREE)) {
+                BrowserStartupConfig.setAsync(new BrowserStartupConfig.StartupCallback() {
 
-                @Override
-                public void run(int startupResult) {
-                    if (startupResult > 0) {
-                        // TODO: Show error message.
-                        Log.e(TAG, "ContentView initialization failed.");
-                        finish();
-                    } else {
-                        finishInitialization();
+                    @Override
+                    public void run(int startupResult) {
+                        if (startupResult > 0) {
+                            // TODO: Show error message.
+                            Log.e(TAG, "ContentView initialization failed.");
+                            finish();
+                        } else {
+                            finishInitialization();
+                        }
                     }
-                }
-            });
+                });
+            }
 
             if (!AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_LIMIT)) {
                 String shellUrl = ShellManager.DEFAULT_SHELL_URL;
