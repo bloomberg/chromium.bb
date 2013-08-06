@@ -50,10 +50,6 @@ descriptorShouldBe("document.getElementsByTagName('div')", "'length'", {writable
 descriptorShouldBe("document.getElementsByTagName('div')", "0", {writable: false, enumerable: true, configurable: false, value:"document.getElementsByTagName('div')[0]"});
 descriptorShouldBe("document.getElementsByClassName('pass')", "0", {writable: false, enumerable: true, configurable: false, value:"document.getElementsByClassName('pass')[0]"});
 descriptorShouldBe("document.getElementsByClassName('pass')", "'length'", {writable: false, enumerable: true, configurable: false, value:"document.getElementsByClassName('pass').length"});
-var canvas = document.createElement("canvas");
-var canvasPixelArray = canvas.getContext("2d").createImageData(10,10).data;
-descriptorShouldBe("canvasPixelArray", "'length'", {writable: false, enumerable: true, configurable: false, value:"canvasPixelArray.length"});
-descriptorShouldBe("canvasPixelArray", "0", {writable: true, enumerable: true, configurable: false, value:"canvasPixelArray[0]"});
 var select = document.createElement("select");
 select.innerHTML = "<option>foo</option>";
 descriptorShouldBe("select", "'length'", {writable: false, enumerable: true, configurable: false, value:"select.length"});

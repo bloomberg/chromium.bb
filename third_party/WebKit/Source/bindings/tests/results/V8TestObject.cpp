@@ -25,7 +25,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8DOMStringList.h"
 #include "V8Document.h"
-#include "V8Float32Array.h"
 #include "V8MessagePort.h"
 #include "V8Node.h"
 #include "V8SVGDocument.h"
@@ -50,6 +49,7 @@
 #include "bindings/v8/V8EventListenerList.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/custom/V8Float32ArrayCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/Document.h"
@@ -845,7 +845,7 @@ static void typedArrayAttrAttrGetterCallback(v8::Local<v8::String> name, const v
 static void typedArrayAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(Float32Array*, v, V8Float32Array::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Float32Array::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
+    V8TRYCATCH_VOID(Float32Array*, v, value->IsFloat32Array() ? V8Float32Array::toNative(v8::Handle<v8::Float32Array>::Cast(value)) : 0);
     imp->setTypedArrayAttr(WTF::getPtr(v));
     return;
 }

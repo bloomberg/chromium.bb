@@ -110,6 +110,13 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
         return data;
     }
 
+    virtual void* AllocateUninitialized(size_t size) OVERRIDE
+    {
+        void* data;
+        WTF::ArrayBufferContents::allocateMemory(size, WTF::ArrayBufferContents::DontInitialize, data);
+        return data;
+    }
+
     virtual void Free(void* data)
     {
         WTF::ArrayBufferContents::freeMemory(data);
