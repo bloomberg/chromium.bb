@@ -36,7 +36,6 @@ namespace sync_file_system {
 namespace drive_backend {
 
 class ServiceMetadata;
-class DriveFileMetadata;
 struct DatabaseContents;
 
 // MetadataDatabase instance holds and maintains database and its indexes.  The
@@ -73,19 +72,7 @@ struct DatabaseContents;
 //     - have all children at the stored largest change id.
 //
 class MetadataDatabase {
- private:
-  struct FileIDComparator {
-    bool operator()(DriveFileMetadata* left, DriveFileMetadata* right) const;
-  };
-
  public:
-  typedef std::set<DriveFileMetadata*, FileIDComparator> FileSet;
-  typedef std::map<std::string, DriveFileMetadata*> FileByFileID;
-  typedef std::map<std::string, FileSet> FilesByParent;
-  typedef std::map<std::pair<std::string, std::string>, DriveFileMetadata*>
-      FileByParentAndTitle;
-  typedef std::map<std::string, DriveFileMetadata*> FileByAppID;
-
   typedef base::Callback<
       void(SyncStatusCode status, scoped_ptr<MetadataDatabase> instance)>
       CreateCallback;
@@ -119,59 +106,12 @@ class MetadataDatabase {
   void UnregisterApp(const std::string& app_id,
                      const SyncStatusCallback& callback);
 
-  // Finds the app-root folder for |app_id|.  Returns true if exists.
-  // Copies the result to |folder| if it is non-NULL.
-  bool FindAppRootFolder(const std::string& app_id,
-                         DriveFileMetadata* folder) const;
-
-  // Finds file by |file_id|.  Returns true if the file was found.
-  // Copies the DriveFileMetadata instance identified by |file_id| into
-  // |file| if exists and |file| is non-NULL.
-  bool FindFileByFileID(const std::string& file_id,
-                        DriveFileMetadata* file) const;
-
-  // Finds files by |title| under the folder identified by |folder_id|, and
-  // returns the number of the files.
-  // Copies the DriveFileMetadata instances to |files| if it is non-NULL.
-  size_t FindFilesByParentAndTitle(
-      const std::string& folder_id,
-      const std::string& title,
-      ScopedVector<DriveFileMetadata>* files) const;
-
-  // Finds active file by |title| under the folder identified by |folder_id|.
-  // Returns true if the file exists.
-  bool FindActiveFileByParentAndTitle(
-      const std::string& folder_id,
-      const std::string& title,
-      DriveFileMetadata* file) const;
-
-  // Finds the active file identified by |app_id| and |path|, which must be
-  // unique.  Returns true if the file was found.
-  // Copies the DriveFileMetadata instance into |file| if the file is found and
-  // |file| is non-NULL.
-  // |path| must be an absolute path in |app_id|. (i.e. relative to the app-root
-  // folder.)
-  bool FindActiveFileByPath(const std::string& app_id,
-                            const base::FilePath& path,
-                            DriveFileMetadata* file) const;
-
-  // Looks up FilePath from FileID.  Returns true on success.
-  // |path| must be non-NULL.
-  bool BuildPathForFile(const std::string& file_id,
-                        base::FilePath* path) const;
-
   // Updates database by |changes|.
   // Marks dirty for each changed file if the file has the metadata in the
   // database.  Adds new metadata to track the file if the file doesn't have
   // the metadata and its parent folder has the active metadata.
   void UpdateByChangeList(ScopedVector<google_apis::ChangeResource> changes,
                           const SyncStatusCallback& callback);
-
-  // Populates |folder| with |children|.  Each |children| initially has empty
-  // |synced_details| and |remote_details|.
-  void PopulateFolder(const std::string& folder_id,
-                      ScopedVector<google_apis::ResourceEntry> children,
-                      const SyncStatusCallback& callback);
 
  private:
   friend class MetadataDatabaseTest;
@@ -187,27 +127,6 @@ class MetadataDatabase {
   SyncStatusCode InitializeOnTaskRunner(const base::FilePath& database_path);
   void BuildIndexes(DatabaseContents* contents);
 
-  // Database manipulation methods.
-  void RegisterFolderAsAppRoot(const std::string& app_id,
-                               const std::string& folder,
-                               leveldb::WriteBatch* batch);
-  void MakeFileActive(const std::string& file_id,
-                      leveldb::WriteBatch* batch);
-  void MakeFileInactive(const std::string& file_id,
-                        leveldb::WriteBatch* batch);
-  void UnregisterFolderAsAppRoot(const std::string& app_id,
-                                 leveldb::WriteBatch* batch);
-  void RemoveFile(const std::string& file_id,
-                  leveldb::WriteBatch* batch);
-  void UpdateRemoteDetails(int64 change_id,
-                           const std::string& file_id,
-                           const google_apis::FileResource* file,
-                           leveldb::WriteBatch* batch);
-  void RegisterNewFile(int64 change_id,
-                       const DriveFileMetadata& parent_folder,
-                       const google_apis::FileResource& new_file,
-                       leveldb::WriteBatch* batch);
-
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                        const SyncStatusCallback& callback);
 
@@ -215,12 +134,6 @@ class MetadataDatabase {
   scoped_ptr<leveldb::DB> db_;
 
   scoped_ptr<ServiceMetadata> service_metadata_;
-  FileByFileID file_by_file_id_;  // Owned.
-
-  FilesByParent files_by_parent_;  // Not owned.
-  FileByAppID app_root_by_app_id_;  // Not owned.
-  FileByParentAndTitle active_file_by_parent_and_title_;  // Not owned.
-  FileSet dirty_files_;  // Not owned.
 
   base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
 
