@@ -23,13 +23,12 @@
 #include "core/platform/graphics/filters/FEDropShadow.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/ShadowBlur.h"
 #include "core/platform/graphics/filters/FEGaussianBlur.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
-#include "wtf/MathExtras.h"
-#include "wtf/Uint8ClampedArray.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 
 using namespace std;
 
@@ -102,32 +101,24 @@ void FEDropShadow::applySoftware()
     FloatSize offset(filter->applyHorizontalScale(m_dx), filter->applyVerticalScale(m_dy));
 
     FloatRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
-    FloatRect drawingRegionWithOffset(drawingRegion);
-    drawingRegionWithOffset.move(offset);
-
-    ImageBuffer* sourceImage = in->asImageBuffer();
-    ASSERT(sourceImage);
     GraphicsContext* resultContext = resultImage->context();
     ASSERT(resultContext);
-    resultContext->setAlpha(m_shadowOpacity);
-    resultContext->drawImageBuffer(sourceImage, drawingRegionWithOffset);
-    resultContext->setAlpha(1);
 
-    ShadowBlur contextShadow(blurRadius, offset, m_shadowColor);
+    SkAutoTUnref<SkImageFilter> blurFilter(new SkBlurImageFilter(blurRadius.width(), blurRadius.height()));
+    SkAutoTUnref<SkColorFilter> colorFilter(SkColorFilter::CreateModeFilter(m_shadowColor.rgb(), SkXfermode::kSrcIn_Mode));
+    SkPaint paint;
+    paint.setImageFilter(blurFilter.get());
+    paint.setColorFilter(colorFilter.get());
+    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
 
-    // TODO: Direct pixel access to ImageBuffer would avoid copying the ImageData.
-    IntRect shadowArea(IntPoint(), resultImage->internalSize());
-    RefPtr<Uint8ClampedArray> srcPixelArray = resultImage->getPremultipliedImageData(shadowArea);
+    RefPtr<NativeImageSkia> nativeImage = image->nativeImageForCurrentFrame();
 
-    contextShadow.blurLayerImage(srcPixelArray->data(), shadowArea.size(), 4 * shadowArea.size().width());
+    if (!nativeImage)
+        return;
 
-    resultImage->putByteArray(Premultiplied, srcPixelArray.get(), shadowArea.size(), shadowArea, IntPoint());
-
-    resultContext->setCompositeOperation(CompositeSourceIn);
-    resultContext->fillRect(FloatRect(FloatPoint(), absolutePaintRect().size()), m_shadowColor);
-    resultContext->setCompositeOperation(CompositeDestinationOver);
-
-    resultImage->context()->drawImageBuffer(sourceImage, drawingRegion);
+    resultContext->drawBitmap(nativeImage->bitmap(), drawingRegion.x() + offset.width(), drawingRegion.y() + offset.height(), &paint);
+    resultContext->drawBitmap(nativeImage->bitmap(), drawingRegion.x(), drawingRegion.y());
 }
 
 TextStream& FEDropShadow::externalRepresentation(TextStream& ts, int indent) const
