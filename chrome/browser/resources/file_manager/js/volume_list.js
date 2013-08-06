@@ -311,9 +311,6 @@ VolumeList.prototype.renderRoot_ = function(path) {
     unmountCommand.execute(item);
   };
   item.addEventListener('eject', handleEject);
-  // TODO(yoshiki): Check if the following touch handler is necessary or not.
-  // If unnecessary, remove it.
-  item.addEventListener(cr.ui.TouchHandler.EventType.TOUCH_START, handleClick);
 
   if (this.contextMenu_)
     item.maybeSetContextMenu(this.contextMenu_);
