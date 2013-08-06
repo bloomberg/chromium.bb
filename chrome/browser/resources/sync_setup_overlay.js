@@ -651,7 +651,7 @@ cr.define('options', function() {
      *     visible.
      */
     setThrobbersVisible_: function(visible) {
-      var throbbers = document.getElementsByClassName('throbber');
+      var throbbers = this.pageDiv.getElementsByClassName('throbber');
       for (var i = 0; i < throbbers.length; i++)
         throbbers[i].style.visibility = visible ? 'visible' : 'hidden';
     },
