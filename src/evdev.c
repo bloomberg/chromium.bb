@@ -575,6 +575,7 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 	device->fd = device_fd;
 
 	ioctl(device->fd, EVIOCGNAME(sizeof(devname)), devname);
+	devname[sizeof(devname) - 1] = '\0';
 	device->devname = strdup(devname);
 
 	if (!evdev_handle_device(device)) {
