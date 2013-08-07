@@ -471,9 +471,9 @@ int KernelProxy::isatty(int fd) {
   return 0;
 }
 
-int KernelProxy::ioctl(int d, int request, char* argp) {
+int KernelProxy::ioctl(int fd, int request, char* argp) {
   ScopedKernelHandle handle;
-  Error error = AcquireHandle(d, &handle);
+  Error error = AcquireHandle(fd, &handle);
   if (error) {
     errno = error;
     return -1;
@@ -644,6 +644,58 @@ int KernelProxy::munmap(void* addr, size_t length) {
   // be munmapping those allocations. We never add to mmap_info_list_ for
   // anonymous maps, so the unmap_list should always be empty when called from
   // free().
+  return 0;
+}
+
+int KernelProxy::tcflush(int fd, int queue_selector) {
+  ScopedKernelHandle handle;
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  error = handle->node()->Tcflush(queue_selector);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
+}
+
+int KernelProxy::tcgetattr(int fd, struct termios* termios_p) {
+  ScopedKernelHandle handle;
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  error = handle->node()->Tcgetattr(termios_p);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
+}
+
+int KernelProxy::tcsetattr(int fd, int optional_actions,
+                           const struct termios *termios_p) {
+  ScopedKernelHandle handle;
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  error = handle->node()->Tcsetattr(optional_actions, termios_p);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
   return 0;
 }
 

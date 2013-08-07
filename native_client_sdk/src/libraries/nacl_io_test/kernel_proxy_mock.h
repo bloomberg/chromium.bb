@@ -11,6 +11,7 @@
 
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/ossocket.h"
+#include "nacl_io/ostermios.h"
 
 class KernelProxyMock : public nacl_io::KernelProxy {
  public:
@@ -43,6 +44,8 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD1(remove, int(const char*));
   MOCK_METHOD1(rmdir, int(const char*));
   MOCK_METHOD2(stat, int(const char*, struct stat*));
+  MOCK_METHOD2(tcgetattr, int(int, struct termios*));
+  MOCK_METHOD3(tcsetattr, int(int, int, const struct termios*));
   MOCK_METHOD1(umount, int(const char*));
   MOCK_METHOD1(unlink, int(const char*));
   MOCK_METHOD2(utime, int(const char*, const struct utimbuf*));

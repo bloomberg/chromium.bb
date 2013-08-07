@@ -11,6 +11,7 @@
 #include "nacl_io/event_listener.h"
 #include "nacl_io/osdirent.h"
 #include "nacl_io/osstat.h"
+#include "nacl_io/ostermios.h"
 
 #include "sdk_util/ref_object.h"
 #include "sdk_util/scoped_ref.h"
@@ -69,6 +70,10 @@ class MountNode : public EventListener {
                      int flags,
                      size_t offset,
                      void** out_addr);
+  virtual Error Tcflush(int queue_selector);
+  virtual Error Tcgetattr(struct termios* termios_p);
+  virtual Error Tcsetattr(int optional_actions,
+                          const struct termios *termios_p);
 
   virtual int GetLinks();
   virtual int GetMode();
@@ -78,6 +83,7 @@ class MountNode : public EventListener {
   virtual bool IsaDir();
   virtual bool IsaFile();
   virtual bool IsaTTY();
+
 
   // Number of children for this node (directory)
   virtual int ChildCount();

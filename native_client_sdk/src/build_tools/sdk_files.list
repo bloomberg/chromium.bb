@@ -340,6 +340,7 @@ include/nacl_io/osinttypes.h
 include/nacl_io/osmman.h
 include/nacl_io/ossocket.h
 include/nacl_io/osstat.h
+include/nacl_io/ostermios.h
 include/nacl_io/ostime.h
 include/nacl_io/ostypes.h
 include/nacl_io/osunistd.h
@@ -358,6 +359,7 @@ include/newlib/netinet6/in6.h
 include/newlib/poll.h
 include/newlib/sys/select.h
 include/newlib/sys/socket.h
+include/newlib/sys/termios.h
 include/newlib/sys/utsname.h
 include/pnacl/arpa/inet.h
 include/pnacl/netdb.h
@@ -366,6 +368,7 @@ include/pnacl/netinet6/in6.h
 include/pnacl/poll.h
 include/pnacl/sys/select.h
 include/pnacl/sys/socket.h
+include/pnacl/sys/termios.h
 include/pnacl/sys/utsname.h
 include/ppapi/c/dev/deprecated_bool.h
 include/ppapi/c/dev/pp_cursor_type_dev.h
@@ -877,6 +880,9 @@ src/nacl_io/syscalls/poll.c
 src/nacl_io/syscalls/remove.c
 src/nacl_io/syscalls/rmdir.c
 src/nacl_io/syscalls/select.c
+src/nacl_io/syscalls/tcflush.c
+src/nacl_io/syscalls/tcgetattr.c
+src/nacl_io/syscalls/tcsetattr.c
 src/nacl_io/syscalls/umount.c
 src/nacl_io/syscalls/uname.c
 src/nacl_io/syscalls/unlink.c

@@ -118,6 +118,10 @@ class KernelProxy : protected KernelObject {
                      int fd,
                      size_t offset);
   virtual int munmap(void* addr, size_t length);
+  virtual int tcflush(int fd, int queue_selector);
+  virtual int tcgetattr(int fd, struct termios* termios_p);
+  virtual int tcsetattr(int fd, int optional_actions,
+                           const struct termios *termios_p);
 
 #ifdef PROVIDES_SOCKET_API
   virtual int select(int nfds, fd_set* readfds, fd_set* writefds,

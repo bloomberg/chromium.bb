@@ -242,6 +242,22 @@ int ki_select(int nfds, fd_set* readfds, fd_set* writefds,
   return s_kp->select(nfds, readfds, writefds, exceptfds, timeout);
 }
 
+int ki_tcflush(int fd, int queue_selector) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->tcflush(fd, queue_selector);
+}
+
+int ki_tcgetattr(int fd, struct termios* termios_p) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->tcgetattr(fd, termios_p);
+}
+
+int ki_tcsetattr(int fd, int optional_actions,
+                 const struct termios *termios_p) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->tcsetattr(fd, optional_actions, termios_p);
+}
+
 #ifdef PROVIDES_SOCKET_API
 // Socket Functions
 int ki_accept(int fd, struct sockaddr* addr, socklen_t* len) {

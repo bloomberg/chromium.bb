@@ -10,6 +10,7 @@
 
 #include "nacl_io/ossocket.h"
 #include "nacl_io/osstat.h"
+#include "nacl_io/ostermios.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
 #include "sdk_util/macros.h"
@@ -69,6 +70,11 @@ int ki_utime(const char* filename, const struct utimbuf* times);
 int ki_poll(struct pollfd *fds, nfds_t nfds, int timeout);
 int ki_select(int nfds, fd_set* readfds, fd_set* writefds,
               fd_set* exceptfds, struct timeval* timeout);
+
+int ki_tcflush(int fd, int queue_selector);
+int ki_tcgetattr(int fd, struct termios* termios_p);
+int ki_tcsetattr(int fd, int optional_actions,
+                 const struct termios *termios_p);
 
 #ifdef PROVIDES_SOCKET_API
 // Socket Functions

@@ -125,6 +125,19 @@ Error MountNode::MMap(void* addr,
   return 0;
 }
 
+Error MountNode::Tcflush(int queue_selector) {
+  return EINVAL;
+}
+
+Error MountNode::Tcgetattr(struct termios* termios_p) {
+  return EINVAL;
+}
+
+Error MountNode::Tcsetattr(int optional_actions,
+                           const struct termios *termios_p) {
+  return EINVAL;
+}
+
 int MountNode::GetLinks() { return stat_.st_nlink; }
 
 int MountNode::GetMode() { return stat_.st_mode & ~S_IFMT; }
