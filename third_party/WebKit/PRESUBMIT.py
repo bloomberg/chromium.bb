@@ -233,10 +233,27 @@ def _CompileDevtoolsFrontend(input_api, output_api):
     return []
 
 
+def _CheckForPrintfDebugging(input_api, output_api):
+    """Generally speaking, we'd prefer not to land patches that printf
+    debug output."""
+    os_macro_re = input_api.re.compile(r'^\s*printf\(')
+    errors = input_api.canned_checks._FindNewViolationsOfRule(
+        lambda _, x: not os_macro_re.search(x),
+        input_api, None)
+    errors = ['  * %s' % violation for violation in errors]
+    if errors:
+        return [output_api.PresubmitPromptOrNotify(
+                    'printf debugging is best debugging! That said, it might '
+                    'be a good idea to drop the following occurances from '
+                    'your patch before uploading:\n%s' % '\n'.join(errors))]
+    return []
+
+
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
     results.extend(_CheckStyle(input_api, output_api))
+    results.extend(_CheckForPrintfDebugging(input_api, output_api))
     results.extend(_CompileDevtoolsFrontend(input_api, output_api))
     return results
 
