@@ -268,16 +268,12 @@ bool InProcessCommandBuffer::MakeCurrent() {
 }
 
 void InProcessCommandBuffer::PumpCommands() {
-  ScopedEvent handle_flush(&flush_event_);
   command_buffer_lock_.AssertAcquired();
 
   if (!MakeCurrent())
     return;
 
   gpu_scheduler_->PutChanged();
-  CommandBuffer::State state = command_buffer_->GetState();
-  DCHECK((!error::IsError(state.error) && !context_lost_) ||
-         (error::IsError(state.error) && context_lost_));
 }
 
 bool InProcessCommandBuffer::GetBufferChanged(int32 transfer_buffer_id) {
@@ -539,8 +535,10 @@ void InProcessCommandBuffer::OnContextLost() {
 }
 
 CommandBuffer::State InProcessCommandBuffer::GetStateFast() {
-  base::AutoLock lock(command_buffer_lock_);
-  return last_state_ = command_buffer_->GetState();
+  base::AutoLock lock(state_after_last_flush_lock_);
+  if (state_after_last_flush_.generation - last_state_.generation < 0x80000000U)
+    last_state_ = state_after_last_flush_;
+  return last_state_;
 }
 
 CommandBuffer::State InProcessCommandBuffer::GetState() {
@@ -551,11 +549,22 @@ CommandBuffer::State InProcessCommandBuffer::GetLastState() {
   return last_state_;
 }
 
-int32 InProcessCommandBuffer::GetLastToken() { return last_state_.token; }
+int32 InProcessCommandBuffer::GetLastToken() {
+  GetStateFast();
+  return last_state_.token;
+}
 
 void InProcessCommandBuffer::FlushOnGpuThread(int32 put_offset) {
+  ScopedEvent handle_flush(&flush_event_);
   base::AutoLock lock(command_buffer_lock_);
   command_buffer_->Flush(put_offset);
+  {
+    // Update state before signaling the flush event.
+    base::AutoLock lock(state_after_last_flush_lock_);
+    state_after_last_flush_ = command_buffer_->GetState();
+  }
+  DCHECK((!error::IsError(state_after_last_flush_.error) && !context_lost_) ||
+         (error::IsError(state_after_last_flush_.error) && context_lost_));
 }
 
 void InProcessCommandBuffer::Flush(int32 put_offset) {
@@ -597,7 +606,10 @@ void InProcessCommandBuffer::SetGetBuffer(int32 shm_id) {
     command_buffer_->SetGetBuffer(shm_id);
     last_put_offset_ = 0;
   }
-  GetStateFast();
+  {
+    base::AutoLock lock(state_after_last_flush_lock_);
+    state_after_last_flush_ = command_buffer_->GetState();
+  }
 }
 
 gpu::Buffer InProcessCommandBuffer::CreateTransferBuffer(size_t size,

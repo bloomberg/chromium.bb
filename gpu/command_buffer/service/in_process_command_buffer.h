@@ -146,6 +146,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer {
   base::Lock command_buffer_lock_;
   base::WaitableEvent flush_event_;
   scoped_ptr<SchedulerClient> queue_;
+  State state_after_last_flush_;
+  base::Lock state_after_last_flush_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessCommandBuffer);
 };
