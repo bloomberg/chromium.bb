@@ -57,6 +57,8 @@ import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.Callable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Exposes the native AwContents class, and together these classes wrap the ContentViewCore
@@ -181,11 +183,20 @@ public class AwContents {
         }
         @Override
         public void run() {
+            // This is a no-op if not currently attached.
+            nativeOnDetachedFromWindow(mNativeAwContents);
             nativeDestroy(mNativeAwContents);
         }
     }
 
+    // Reference to the active mNativeAwContents pointer while it is active use
+    // (ie before it is destroyed).
     private CleanupReference mCleanupReference;
+
+    // A list of references to native pointers where the Java counterpart has been
+    // destroyed, but are held here because they are waiting for onDetachFromWindow
+    // to release GL resources. This is cleared inside onDetachFromWindow.
+    private List<CleanupReference> mPendingDetachCleanupReferences;
 
     //--------------------------------------------------------------------------------------------
     private class IoThreadClientImpl implements AwContentsIoThreadClient {
@@ -565,8 +576,6 @@ public class AwContents {
         // Properly clean up existing mContentViewCore and mNativeAwContents.
         if (wasFocused) onWindowFocusChanged(false);
         if (wasVisible) setVisibilityInternal(false);
-        // TODO(boliu): This may destroy GL resources outside of functor.
-        if (wasAttached) onDetachedFromWindow();
         if (!wasPaused) onPause();
 
         setNewAwContents(popupNativeAwContents);
@@ -579,16 +588,37 @@ public class AwContents {
         if (wasFocused) onWindowFocusChanged(true);
     }
 
+    /**
+     * Deletes the native counterpart of this object. Normally happens immediately,
+     * but maybe deferred until the appropriate time for GL resource cleanup. Either way
+     * this is transparent to the caller: after this function returns the object is
+     * effectively dead and methods are no-ops.
+     */
     public void destroy() {
-        mContentViewCore.destroy();
-        // We explicitly do not null out the mContentViewCore reference here
-        // because ContentViewCore already has code to deal with the case
-        // methods are called on it after it's been destroyed, and other
-        // code relies on AwContents.mContentViewCore to be non-null.
+        if (mCleanupReference != null) {
+            // We explicitly do not null out the mContentViewCore reference here
+            // because ContentViewCore already has code to deal with the case
+            // methods are called on it after it's been destroyed, and other
+            // code relies on AwContents.mContentViewCore to be non-null.
+            mContentViewCore.destroy();
+            mNativeAwContents = 0;
 
-        if (mCleanupReference != null) mCleanupReference.cleanupNow();
-        mNativeAwContents = 0;
-        mCleanupReference = null;
+            // We cannot destroy immediately if we are still attached to the window.
+            // Instead if we make sure to null out the native pointer so there is no more native
+            // calls, and delay the actual destroy until onDetachedFromWindow.
+            if (mIsAttachedToWindow) {
+                if (mPendingDetachCleanupReferences == null) {
+                    mPendingDetachCleanupReferences = new ArrayList<CleanupReference>();
+                }
+                mPendingDetachCleanupReferences.add(mCleanupReference);
+            } else {
+                mCleanupReference.cleanupNow();
+            }
+            mCleanupReference = null;
+        }
+
+        assert !mContentViewCore.isAlive();
+        assert mNativeAwContents == 0;
     }
 
     @VisibleForTesting
@@ -1332,13 +1362,20 @@ public class AwContents {
      * @see android.view.View#onDetachedFromWindow()
      */
     public void onDetachedFromWindow() {
-        hideAutofillPopup();
         mIsAttachedToWindow = false;
+        hideAutofillPopup();
         if (mNativeAwContents != 0) {
             nativeOnDetachedFromWindow(mNativeAwContents);
         }
 
         mContentViewCore.onDetachedFromWindow();
+
+        if (mPendingDetachCleanupReferences != null) {
+            for (int i = 0; i < mPendingDetachCleanupReferences.size(); ++i) {
+                mPendingDetachCleanupReferences.get(i).cleanupNow();
+            }
+            mPendingDetachCleanupReferences = null;
+        }
     }
 
     /**
@@ -1758,7 +1795,7 @@ public class AwContents {
     private native void nativeScrollTo(int nativeAwContents, int x, int y);
     private native void nativeSetVisibility(int nativeAwContents, boolean visible);
     private native void nativeOnAttachedToWindow(int nativeAwContents, int w, int h);
-    private native void nativeOnDetachedFromWindow(int nativeAwContents);
+    private static native void nativeOnDetachedFromWindow(int nativeAwContents);
     private native void nativeSetDipScale(int nativeAwContents, float dipScale);
     private native void nativeSetDisplayedPageScaleFactor(int nativeAwContents,
             float pageScaleFactor);
