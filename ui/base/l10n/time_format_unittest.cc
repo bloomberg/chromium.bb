@@ -10,10 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_POSIX)
-#include "base/test/scoped_locale.h"
-#endif
-
 namespace ui {
 namespace {
 
@@ -72,30 +68,6 @@ TEST(TimeFormat, RelativeDate) {
   string16 a_week_ago_str = TimeFormat::RelativeDate(a_week_ago, NULL);
   EXPECT_TRUE(a_week_ago_str.empty());
 }
-
-// ScopedLocale is unavailable if not OS_POSIX.
-#if defined(OS_POSIX)
-#if defined(OS_MACOSX)
-// DecimalPointNotDot succeeds only on Mac OSX because of the locale load.
-// See crrev.com/91117
-#define MAYBE_DecimalPointNotDot DecimalPointNotDot
-#else
-#define MAYBE_DecimalPointNotDot DISABLED_DecimalPointNotDot
-#endif  // OS_MACOSX
-
-TEST(TimeFormat, MAYBE_DecimalPointNotDot) {
-  base::ScopedLocale scoped_locale("fr_FR.utf-8");
-
-  // Some locales use a comma ',' instead of a dot '.' as the separator for
-  // decimal digits. The icu library wasn't handling this, leading to "1"
-  // being internally converted to "+1,0e00" and ultimately leading to "NaN".
-  // This showed up on the browser on estimated download time, for example.
-  // http://crbug.com/60476
-
-  string16 one_min = TimeFormat::TimeRemainingShort(TimeDelta::FromMinutes(1));
-  EXPECT_EQ(ASCIIToUTF16("1 min"), one_min);
-}
-#endif  // OS_POSIX
 
 }  // namespace
 }  // namespace ui

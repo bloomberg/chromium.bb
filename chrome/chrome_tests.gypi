@@ -1658,6 +1658,7 @@
         'browser/unload_browsertest.cc',
         'common/mac/mock_launchd.cc',
         'common/mac/mock_launchd.h',
+        'common/time_format_browsertest.cc',
         'renderer/autofill/autofill_renderer_browsertest.cc',
         'renderer/autofill/form_autocomplete_browsertest.cc',
         'renderer/autofill/form_autofill_browsertest.cc',
@@ -2021,6 +2022,11 @@
         ['OS=="mac" or OS=="win"', {
           'sources': [
             'browser/media_galleries/fileapi/itunes_data_provider_browsertest.cc',
+          ],
+        }],
+        ['os_posix == 0 or chromeos == 1', {
+          'sources!': [
+            'common/time_format_browsertest.cc',
           ],
         }],
         ['os_posix == 1 and OS != "mac" and OS != "android"', {
