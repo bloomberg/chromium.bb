@@ -54,20 +54,29 @@
       <tbody id="rows">
       </tbody>
     </table>
+    <h2>Most recent upload log:</h2>
+    <pre id="log">
+    </pre>
     <script type="application/javascript">
-      function loadJson(url, callback) {
+      function loadText(url, callback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.onreadystatechange = function (e) {
           if (xhr.readyState == 4) {
             if (xhr.status == 200) {
-              callback(JSON.parse(xhr.responseText));
+              callback(xhr.responseText);
             } else {
               alert("Failed to load: error " + xhr.status);
             }
           }
         }
         xhr.send(null);
+      }
+
+      function loadJson(url, callback) {
+        loadText(url, function (text) {
+          callback(JSON.parse(text));
+        });
       }
 
       function removeAllChildren(elm) {
@@ -128,7 +137,12 @@
         }
       }
 
+      function displayLog(text) {
+        document.getElementById('log').textContent = text;
+      }
+
       loadJson('naclsdk_manifest2.json', display);
+      loadText('naclsdk_manifest2.json.log', displayLog);
     </script>
   </body>
 </html>
