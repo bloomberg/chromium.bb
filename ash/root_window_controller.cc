@@ -179,7 +179,9 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
       float device_scale_factor) OVERRIDE {
   }
   virtual void OnWindowDestroying() OVERRIDE {}
-  virtual void OnWindowDestroyed() OVERRIDE {}
+  virtual void OnWindowDestroyed() OVERRIDE {
+    delete this;
+  }
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
   }
   virtual bool HasHitTestMask() const OVERRIDE {
