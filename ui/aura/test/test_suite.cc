@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/compositor/compositor_setup.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -27,6 +28,8 @@ void AuraTestSuite::Initialize() {
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+
+  ui::SetupTestCompositor();
 }
 
 void AuraTestSuite::Shutdown() {

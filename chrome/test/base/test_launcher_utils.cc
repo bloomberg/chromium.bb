@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "ui/gl/gl_switches.h"
 
 #if defined(USE_AURA)
 #include "ui/views/corewm/corewm_switches.h"
@@ -94,6 +95,16 @@ bool OverrideUserDataDir(const base::FilePath& user_data_dir) {
 #endif
 
   return success;
+}
+
+bool OverrideGLImplementation(CommandLine* command_line,
+                              const std::string& implementation_name) {
+  if (command_line->HasSwitch(switches::kUseGL))
+    return false;
+
+  command_line->AppendSwitchASCII(switches::kUseGL, implementation_name);
+
+  return true;
 }
 
 }  // namespace test_launcher_utils

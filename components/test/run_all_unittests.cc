@@ -6,6 +6,7 @@
 #include "base/test/test_suite.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/compositor_setup.h"
 
 namespace components {
 
@@ -32,6 +33,9 @@ class ComponentsUnitTestEventListener : public testing::EmptyTestEventListener {
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
+
+  // Mock out the compositor on platforms that use it.
+  ui::SetupTestCompositor();
 
   // The listener will set up common test environment for all components unit
   // tests.

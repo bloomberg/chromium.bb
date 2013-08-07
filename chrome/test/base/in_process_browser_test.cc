@@ -51,6 +51,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "ui/compositor/compositor_switches.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -60,6 +61,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "ui/base/win/atl_module.h"
+#include "ui/compositor/compositor_setup.h"
 #include "win8/test/metro_registration_helper.h"
 #include "win8/test/test_registrar_constants.h"
 #endif
@@ -218,6 +220,9 @@ void InProcessBrowserTest::SetUp() {
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui::win::CreateATLModuleIfNeeded();
     ASSERT_TRUE(win8::MakeTestDefaultBrowserSynchronously());
+
+    // Ash browser tests need the real compositor.
+    ui::DisableTestCompositor();
   }
 #endif
 
@@ -372,6 +377,16 @@ CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   switches.erase(content::kSingleProcessTestsFlag);
   switches.erase(switches::kSingleProcess);
   new_command_line.AppendSwitch(content::kLaunchAsBrowser);
+
+#if defined(USE_AURA)
+  // Copy what UITestBase::SetLaunchSwitches() does, and also what
+  // ChromeTestSuite does if the process had went into the test path. Otherwise
+  // tests will fail on bots.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableTestCompositor)) {
+    new_command_line.AppendSwitch(switches::kTestCompositor);
+  }
+#endif
 
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);

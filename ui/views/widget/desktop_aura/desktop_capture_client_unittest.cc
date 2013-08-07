@@ -45,14 +45,6 @@ class DesktopCaptureClientTest : public aura::test::AuraTestBase {
 
   virtual void TearDown() OVERRIDE {
     RunAllPendingInMessageLoop();
-
-    second_desktop_position_client_.reset();
-    second_desktop_capture_client_.reset();
-
-    // Kill any active compositors before we hit the compositor shutdown paths.
-    second_root_.reset();
-
-    desktop_position_client_.reset();
     desktop_capture_client_.reset();
 
     AuraTestBase::TearDown();

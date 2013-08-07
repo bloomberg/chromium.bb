@@ -154,7 +154,7 @@ class GLHelper::CopyTextureToImpl :
       const base::Callback<void(bool)>& callback);
 
   void ReadbackPlane(TextureFrameBufferPair* source,
-                     const scoped_refptr<media::VideoFrame>& target,
+                     media::VideoFrame* target,
                      int plane,
                      int size_shift,
                      const gfx::Rect& dst_subrect,
@@ -232,7 +232,7 @@ class GLHelper::CopyTextureToImpl :
     virtual void ReadbackYUV(
         const gpu::Mailbox& mailbox,
         uint32 sync_point,
-        const scoped_refptr<media::VideoFrame>& target,
+        media::VideoFrame* target,
         const base::Callback<void(bool)>& callback) OVERRIDE;
 
     virtual ScalerInterface* scaler() OVERRIDE {
@@ -270,7 +270,7 @@ class GLHelper::CopyTextureToImpl :
     virtual void ReadbackYUV(
         const gpu::Mailbox& mailbox,
         uint32 sync_point,
-        const scoped_refptr<media::VideoFrame>& target,
+        media::VideoFrame* target,
         const base::Callback<void(bool)>& callback) OVERRIDE;
 
     virtual ScalerInterface* scaler() OVERRIDE {
@@ -729,7 +729,7 @@ void GLHelper::CopyTextureFullImage(WebKit::WebGLId texture,
 
 void GLHelper::CopyTextureToImpl::ReadbackPlane(
     TextureFrameBufferPair* source,
-    const scoped_refptr<media::VideoFrame>& target,
+    media::VideoFrame* target,
     int plane,
     int size_shift,
     const gfx::Rect& dst_subrect,
@@ -813,17 +813,11 @@ GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUVImpl(
   DCHECK(!(dst_subrect.y() & 1));
 }
 
-static void CallbackKeepingVideoFrameAlive(
-    scoped_refptr<media::VideoFrame> video_frame,
-    const base::Callback<void(bool)>& callback,
-    bool success) {
-  callback.Run(success);
-}
 
 void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
     const gpu::Mailbox& mailbox,
     uint32 sync_point,
-    const scoped_refptr<media::VideoFrame>& target,
+    media::VideoFrame *target,
     const base::Callback<void(bool)>& callback) {
   WebGLId mailbox_texture =
       copy_impl_->ConsumeMailboxToTexture(mailbox, sync_point);
@@ -844,8 +838,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
     return;
   }
 
-  // Read back planes, one at a time. Keep the video frame alive while doing the
-  // readback.
+  // Read back planes, one at a time.
   copy_impl_->ReadbackPlane(y_.texture_and_framebuffer(),
                             target,
                             media::VideoFrame::kYPlane,
@@ -863,9 +856,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
                             media::VideoFrame::kVPlane,
                             1,
                             dst_subrect_,
-                            base::Bind(&CallbackKeepingVideoFrameAlive,
-                                       target,
-                                       callback));
+                            callback);
   context_->bindFramebuffer(GL_FRAMEBUFFER, 0);
   media::LetterboxYUV(target, dst_subrect_);
 }
@@ -942,7 +933,7 @@ GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV_MRT(
 void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
     const gpu::Mailbox& mailbox,
     uint32 sync_point,
-    const scoped_refptr<media::VideoFrame>& target,
+    media::VideoFrame *target,
     const base::Callback<void(bool)>& callback) {
   WebGLId mailbox_texture =
       copy_impl_->ConsumeMailboxToTexture(mailbox, sync_point);
@@ -985,9 +976,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
                             media::VideoFrame::kVPlane,
                             1,
                             dst_subrect_,
-                            base::Bind(&CallbackKeepingVideoFrameAlive,
-                                       target,
-                                       callback));
+                            callback);
   context_->bindFramebuffer(GL_FRAMEBUFFER, 0);
   media::LetterboxYUV(target, dst_subrect_);
 }

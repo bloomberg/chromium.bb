@@ -99,10 +99,6 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Destroys per-compositor data.
   virtual void RemoveCompositor(Compositor* compositor) = 0;
-
-  // When true, the factory uses test contexts that do not do real GL
-  // operations.
-  virtual bool DoesCreateTestContexts() = 0;
 };
 
 // The default factory that creates in-process contexts.
@@ -127,7 +123,6 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForCompositorThread() OVERRIDE;
   virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
-  virtual bool DoesCreateTestContexts() OVERRIDE;
 
   bool Initialize();
 
@@ -166,7 +161,6 @@ class COMPOSITOR_EXPORT TestContextFactory : public ContextFactory {
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForCompositorThread() OVERRIDE;
   virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
-  virtual bool DoesCreateTestContexts() OVERRIDE;
 
  private:
   scoped_refptr<ContextProviderFromContextFactory>
@@ -295,14 +289,6 @@ class COMPOSITOR_EXPORT Compositor
   Compositor(CompositorDelegate* delegate,
              gfx::AcceleratedWidget widget);
   virtual ~Compositor();
-
-  // Set up the compositor ContextFactory for a test environment. Unit tests
-  // that do not have a full content environment need to call this before
-  // initializing the Compositor.
-  // Some tests expect pixel output, and they should pass false for
-  // |allow_test_contexts|. Most unit tests should pass true. Once this has been
-  // called, the Initialize() and Terminate() methods should be used as normal.
-  static void InitializeContextFactoryForTests(bool allow_test_contexts);
 
   static void Initialize();
   static bool WasInitializedWithThread();
