@@ -35,6 +35,12 @@ function test()
             }
             searchResults = searchResults.filter(filterOutEmptySearchResults);
 
+            function comparator(searchResultA, searchResultB)
+            {
+                return searchResultA.uiSourceCode.uri().compareTo(searchResultB.uiSourceCode.uri());
+            }
+            searchResults.sort(comparator);
+
             for (var i = 0; i < searchResults.length; ++i) {
                 var searchResult = searchResults[i];
                 var uiSourceCode = searchResult.uiSourceCode;
