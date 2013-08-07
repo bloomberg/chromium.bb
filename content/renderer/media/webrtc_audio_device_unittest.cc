@@ -722,7 +722,8 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, DISABLED_PlayLocalFile) {
 // TODO(henrika): improve quality by using a wideband codec, enabling noise-
 // suppressions etc.
 // FullDuplexAudioWithAGC is flaky on Android, disable it for now.
-#if defined(OS_ANDROID)
+// Also flakily hangs on Windows: crbug.com/269348.
+#if defined(OS_ANDROID) || defined(OS_WIN)
 #define MAYBE_FullDuplexAudioWithAGC DISABLED_FullDuplexAudioWithAGC
 #else
 #define MAYBE_FullDuplexAudioWithAGC FullDuplexAudioWithAGC
