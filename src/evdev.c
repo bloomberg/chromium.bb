@@ -469,7 +469,6 @@ evdev_handle_device(struct evdev_device *device)
 			device->abs.min_y = absinfo.minimum;
 			device->abs.max_y = absinfo.maximum;
 			device->is_mt = 1;
-			device->mt.slot = 0;
 			device->caps |= EVDEV_TOUCH;
 
 			if (!TEST_BIT(abs_bits, ABS_MT_SLOT)) {
@@ -479,6 +478,11 @@ evdev_handle_device(struct evdev_device *device)
 						   device->devnode);
 					return 0;
 				}
+				device->mt.slot = device->mtdev->caps.slot.value;
+			} else {
+				ioctl(device->fd, EVIOCGABS(ABS_MT_SLOT),
+				      &absinfo);
+				device->mt.slot = absinfo.value;
 			}
 		}
 	}
