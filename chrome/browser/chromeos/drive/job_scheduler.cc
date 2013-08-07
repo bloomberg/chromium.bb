@@ -951,15 +951,38 @@ void JobScheduler::OnUploadCompletionJobDone(
     params.upload_location = upload_location;
     params.local_file_path = resume_params.local_file_path;
     params.content_type = resume_params.content_type;
-    params.callback = base::Bind(&JobScheduler::OnUploadCompletionJobDone,
+    params.callback = base::Bind(&JobScheduler::OnResumeUploadFileDone,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  job_id,
-                                 resume_params,
+                                 job_entry->task,
                                  callback);
     params.progress_callback = base::Bind(&JobScheduler::UpdateProgress,
                                           weak_ptr_factory_.GetWeakPtr(),
                                           job_id);
     job_entry->task = base::Bind(&RunResumeUploadFile, uploader_.get(), params);
+  }
+
+  if (OnJobDone(job_id, error))
+    callback.Run(error, resource_entry.Pass());
+}
+
+void JobScheduler::OnResumeUploadFileDone(
+    JobID job_id,
+    const base::Callback<google_apis::CancelCallback()>& original_task,
+    const google_apis::GetResourceEntryCallback& callback,
+    google_apis::GDataErrorCode error,
+    const GURL& upload_location,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!original_task.is_null());
+  DCHECK(!callback.is_null());
+
+  if (upload_location.is_empty()) {
+    // If upload_location is not available, we should discard it and stop trying
+    // to resume. Restore the original task.
+    JobEntry* job_entry = job_map_.Lookup(job_id);
+    DCHECK(job_entry);
+    job_entry->task = original_task;
   }
 
   if (OnJobDone(job_id, error))
