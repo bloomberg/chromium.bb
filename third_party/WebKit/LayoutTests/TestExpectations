@@ -221,6 +221,9 @@ webkit.org/b/82217 [ Linux ] svg/zoom/text/zoom-foreignObject.svg [ ImageOnlyFai
 # Flaky since at least r111670
 webkit.org/b/82258 [ Debug ] svg/custom/circular-marker-reference-4.svg [ Failure Pass ]
 
+# Flaky across the board
+crbug.com/269664 fast/dom/custom/leaks.html [ Failure Pass ]
+
 webkit.org/b/82509 [ Linux ] svg/text/append-text-node-to-tspan.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/82954 [ Debug Mac Win ] svg/W3C-SVG-1.1/animate-elem-77-t.svg [ ImageOnlyFailure Pass ]
