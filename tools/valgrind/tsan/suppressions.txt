@@ -1127,3 +1127,12 @@
   fun:base::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking
   fun:base::MessagePumpLibevent::OnLibeventNotification
 }
+{
+  bug_268924
+  ThreadSanitizer:Race
+  fun:base::PowerMonitor::PowerMonitor
+  fun:content::ChildThread::Init
+  fun:content::ChildThread::ChildThread
+  fun:content::UtilityThreadImpl::UtilityThreadImpl
+  fun:content::UtilityMainThread::InitInternal
+}
