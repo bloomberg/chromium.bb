@@ -166,10 +166,8 @@ NavigationListItem.prototype.decorate = function() {
 /**
  * Associate a path with this item.
  * @param {string} path Path of this item.
- * @param {string=} opt_deviceType The type of the device. Available iff the
- *     path represents removable storage.
  */
-NavigationListItem.prototype.setPath = function(path, opt_deviceType) {
+NavigationListItem.prototype.setPath = function(path) {
   if (this.path_)
     console.warn('NavigationListItem.setPath should be called only once.');
 
@@ -178,8 +176,9 @@ NavigationListItem.prototype.setPath = function(path, opt_deviceType) {
   var rootType = PathUtil.getRootType(path);
 
   this.iconDiv_.setAttribute('volume-type-icon', rootType);
-  if (opt_deviceType) {
-    this.iconDiv_.setAttribute('volume-subtype', opt_deviceType);
+  if (rootType === RootType.REMOVABLE) {
+    this.iconDiv_.setAttribute('volume-subtype',
+        VolumeManager.getInstance().getDeviceType(path));
   }
 
   this.label_.textContent = PathUtil.getFolderLabel(path);
@@ -238,30 +237,27 @@ NavigationList.prototype.__proto__ = cr.ui.List.prototype;
 
 /**
  * @param {HTMLElement} el Element to be DirectoryItem.
- * @param {VolumeManager} volumeManager The VolumeManager of the system.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
  * @param {cr.ui.ArrayDataModel} pinnedFolderModel Current model of the pinned
  *     folders.
  */
-NavigationList.decorate = function(
-    el, volumeManager, directoryModel, pinnedFolderModel) {
+NavigationList.decorate = function(el, directoryModel, pinnedFolderModel) {
   el.__proto__ = NavigationList.prototype;
-  el.decorate(volumeManager, directoryModel, pinnedFolderModel);
+  el.decorate(directoryModel, pinnedFolderModel);
 };
 
 /**
- * @param {VolumeManager} volumeManager The VolumeManager of the system.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
  * @param {cr.ui.ArrayDataModel} pinnedFolderModel Current model of the pinned
  *     folders.
  */
 NavigationList.prototype.decorate =
-    function(volumeManager, directoryModel, pinnedFolderModel) {
+    function(directoryModel, pinnedFolderModel) {
   cr.ui.List.decorate(this);
   this.__proto__ = NavigationList.prototype;
 
   this.directoryModel_ = directoryModel;
-  this.volumeManager_ = volumeManager;
+  this.volumeManager_ = VolumeManager.getInstance();
   this.selectionModel = new cr.ui.ListSingleSelectionModel();
 
   this.directoryModel_.addEventListener('directory-changed',
@@ -303,7 +299,7 @@ NavigationList.prototype.decorate =
  */
 NavigationList.prototype.renderRoot_ = function(path) {
   var item = new NavigationListItem();
-  item.setPath(path, this.volumeManager_.getDeviceType(path));
+  item.setPath(path);
 
   var handleClick = function() {
     if (item.selected && path !== this.directoryModel_.getCurrentDirPath()) {

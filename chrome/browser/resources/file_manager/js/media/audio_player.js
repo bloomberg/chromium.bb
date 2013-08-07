@@ -6,15 +6,14 @@
 
 /**
  * @param {HTMLElement} container Container element.
- * @param {VolumeManager} volumeManager VolumeManager of the system.
  * @constructor
  */
-function AudioPlayer(container, volumeManager) {
+function AudioPlayer(container) {
   this.container_ = container;
   this.metadataCache_ = MetadataCache.createFull();
   this.currentTrack_ = -1;
   this.playlistGeneration_ = 0;
-  this.volumeManager_ = volumeManager;
+  this.volumeManager_ = VolumeManager.getInstance();
 
   this.container_.classList.add('collapsed');
 
@@ -68,9 +67,11 @@ AudioPlayer.TRACK_KEY = 'audioTrack';
 AudioPlayer.load = function() {
   document.ondragstart = function(e) { e.preventDefault() };
 
-  VolumeManager.getInstance(function(volumeManager) {
+  // If the audio player is starting before the first instance of the File
+  // Manager then it does not have access to filesystem URLs. Request it now.
+  chrome.fileBrowserPrivate.requestFileSystem(function() {
     AudioPlayer.instance =
-        new AudioPlayer(document.querySelector('.audio-player'), volumeManager);
+        new AudioPlayer(document.querySelector('.audio-player'));
     chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(getPlaylist);
     reload();
   });

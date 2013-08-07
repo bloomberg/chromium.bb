@@ -273,8 +273,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }.bind(this));
 
     // Mount Drive if enabled.
-    // TODO(hidehiko): Mounting state of Drive file system should be handled
-    // by C++ backend side.
     if (this.isDriveEnabled())
       this.volumeManager_.mountDrive(function() {}, function() {});
   };
@@ -683,13 +681,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.initializeQueue_.add(this.initGeneral_.bind(this), [], 'initGeneral');
     this.initializeQueue_.add(this.initStrings_.bind(this), [], 'initStrings');
     this.initializeQueue_.add(
-        this.initVolumeManager_.bind(this), [], 'initVolumeManager');
-    this.initializeQueue_.add(
         this.initPreferences_.bind(this), [], 'initPreferences');
     this.initializeQueue_.add(
         this.initFileSystem_.bind(this),
-        ['initGeneral', 'initPreferences', 'initVolumeManager'],
-        'initFileSystem');
+        ['initGeneral', 'initPreferences'], 'initFileSystem');
 
     this.initializeQueue_.run();
   };
@@ -721,6 +716,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initGeneral_ = function(callback) {
+    this.volumeManager_ = VolumeManager.getInstance();
     if (window.appState) {
       this.params_ = window.appState.params || {};
       this.defaultPath = window.appState.defaultPath;
@@ -753,18 +749,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         callback();
       });
     }
-  };
-
-  /**
-   * Initializes the VolumeManager instance.
-   * @param {function()} callback Completion callback.
-   * @private
-   */
-  FileManager.prototype.initVolumeManager_ = function(callback) {
-    VolumeManager.getInstance(function(volumeManager) {
-      this.volumeManager_ = volumeManager;
-      callback();
-    }.bind(this));
   };
 
   /**
@@ -1196,15 +1180,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.initSidebar_ = function() {
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
-    DirectoryTree.decorate(
-        this.directoryTree_, this.directoryModel_, this.volumeManager_);
+    DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
     this.directoryTree_.addEventListener('content-updated', function() {
       this.updateMiddleBarVisibility_(true);
     }.bind(this));
 
     this.navigationList_ = this.dialogDom_.querySelector('#volume-list');
     NavigationList.decorate(this.navigationList_,
-                            this.volumeManager_,
                             this.directoryModel_,
                             this.folderShortcutsModel_);
   };
