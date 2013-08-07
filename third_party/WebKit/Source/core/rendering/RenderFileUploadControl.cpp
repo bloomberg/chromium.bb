@@ -210,11 +210,9 @@ PositionWithAffinity RenderFileUploadControl::positionForPoint(const LayoutPoint
 
 HTMLInputElement* RenderFileUploadControl::uploadButton() const
 {
+    // FIXME: This should be on HTMLInputElement as an API like innerButtonElement().
     HTMLInputElement* input = toHTMLInputElement(node());
-
-    ASSERT(input->shadow());
-
-    Node* buttonNode = input->shadow()->oldestShadowRoot()->firstChild();
+    Node* buttonNode = input->userAgentShadowRoot()->firstChild();
     return buttonNode && buttonNode->isHTMLElement() && buttonNode->hasTagName(inputTag) ? toHTMLInputElement(buttonNode) : 0;
 }
 

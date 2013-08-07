@@ -376,7 +376,7 @@ static bool subtreeContainsDisallowedElement(Node* start)
 void SVGUseElement::clearResourceReferences()
 {
     // FIXME: We should try to optimize this, to at least allow partial reclones.
-    if (ShadowRoot* shadowTreeRootElement =  shadow()->oldestShadowRoot())
+    if (ShadowRoot* shadowTreeRootElement = userAgentShadowRoot())
         shadowTreeRootElement->removeChildren();
 
     if (m_targetElementInstance) {
@@ -468,7 +468,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     ASSERT(m_targetElementInstance->directUseElement() == this);
     ASSERT(m_targetElementInstance->correspondingElement() == target);
 
-    ShadowRoot* shadowTreeRootElement = shadow()->oldestShadowRoot();
+    ShadowRoot* shadowTreeRootElement = userAgentShadowRoot();
     ASSERT(shadowTreeRootElement);
 
     // Build shadow tree from instance tree
@@ -690,7 +690,7 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElementInstance* targ
     if (subtreeContainsDisallowedElement(newChild.get()))
         removeDisallowedElementsFromSubtree(newChild.get());
 
-    shadow()->oldestShadowRoot()->appendChild(newChild.release());
+    userAgentShadowRoot()->appendChild(newChild.release());
 }
 
 void SVGUseElement::expandUseElementsInShadowTree(Node* element)
