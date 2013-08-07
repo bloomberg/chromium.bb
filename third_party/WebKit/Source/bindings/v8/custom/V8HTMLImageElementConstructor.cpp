@@ -86,22 +86,25 @@ static void v8HTMLImageElementConstructorMethodCustom(const v8::FunctionCallback
     v8SetReturnValue(args, wrapper);
 }
 
-v8::Handle<v8::FunctionTemplate> V8HTMLImageElementConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType worldType)
+v8::Handle<v8::FunctionTemplate> V8HTMLImageElementConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    static v8::Persistent<v8::FunctionTemplate> cachedTemplate;
-    if (!cachedTemplate.IsEmpty())
-        return v8::Local<v8::FunctionTemplate>::New(isolate, cachedTemplate);
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static const char* privateTemplateUniqueKey = "V8HTMLImageElementConstructor::GetTemplatePrivateTemplate";
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    v8::Handle<v8::FunctionTemplate> result = data->privateTemplateIfExists(currentWorldType, &privateTemplateUniqueKey);
+    if (!result.IsEmpty())
+        return result;
 
     v8::HandleScope scope(isolate);
-    v8::Local<v8::FunctionTemplate> result = v8::FunctionTemplate::New(v8HTMLImageElementConstructorMethodCustom);
+    result = v8::FunctionTemplate::New(v8HTMLImageElementConstructorMethodCustom);
 
     v8::Local<v8::ObjectTemplate> instance = result->InstanceTemplate();
     instance->SetInternalFieldCount(V8HTMLImageElement::internalFieldCount);
     result->SetClassName(v8::String::NewSymbol("HTMLImageElement"));
-    result->Inherit(V8HTMLImageElement::GetTemplate(isolate, worldType));
+    result->Inherit(V8HTMLImageElement::GetTemplate(isolate, currentWorldType));
 
-    cachedTemplate.Reset(isolate, result);
-    return scope.Close(v8::Local<v8::FunctionTemplate>::New(isolate, cachedTemplate));
+    data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
+    return scope.Close(result);
 }
 
 } // namespace WebCore
