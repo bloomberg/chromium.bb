@@ -263,6 +263,12 @@ _PATH_RULES_SPECIFIER = [
     ([# On some systems the trailing CR is causing parser failure.
       "Source/JavaScriptCore/parser/Keywords.table"],
      ["+whitespace/carriage_return"]),
+
+    ([# Jinja templates: files have .cpp or .h extensions, but contain
+      # template code, which can't be handled, so disable tests.
+      "Source/bindings/templates",
+      "Source/core/scripts/templates"],
+     ["-"]),
 ]
 
 
