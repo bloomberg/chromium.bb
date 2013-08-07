@@ -134,33 +134,33 @@ function loadVideoPlayer() {
   document.ondragstart = function(e) { e.preventDefault() };
 
   chrome.fileBrowserPrivate.getStrings(function(strings) {
-    loadTimeData.data = strings;
+    VolumeManager.getInstance(function(inVolumeManager) {
+      loadTimeData.data = strings;
 
-    controls = new FullWindowVideoControls(
-       document.querySelector('#video-player'),
-       document.querySelector('#video-container'),
-       document.querySelector('#controls'));
+      controls = new FullWindowVideoControls(
+          document.querySelector('#video-player'),
+          document.querySelector('#video-container'),
+          document.querySelector('#controls'));
 
-    metadataCache = MetadataCache.createFull();
-    volumeManager = VolumeManager.getInstance();
+      metadataCache = MetadataCache.createFull();
+      volumeManager = inVolumeManager;
+      volumeManager.addEventListener('externally-unmounted',
+                                     onExternallyUnmounted);
 
-    // If the video player is starting before the first instance of the File
-    // Manager then it does not have access to filesystem URLs. Request it now.
-    chrome.fileBrowserPrivate.requestFileSystem(reload);
+      // If the video player is starting before the first instance of the File
+      // Manager then it does not have access to filesystem URLs.
+      // Request it now.
+      chrome.fileBrowserPrivate.requestFileSystem(reload);
+      var reloadVideo = function(e) {
+        if (decodeErrorOccured) {
+          reload();
+          e.preventDefault();
+        }
+      };
 
-    volumeManager.addEventListener('externally-unmounted',
-                                   onExternallyUnmounted);
-
-    var reloadVideo = function(e) {
-      if (decodeErrorOccured) {
-        reload();
-        e.preventDefault();
-      }
-    };
-
-    document.addEventListener('keydown', reloadVideo, true);
-    document.addEventListener('click', reloadVideo, true);
-
+      document.addEventListener('keydown', reloadVideo, true);
+      document.addEventListener('click', reloadVideo, true);
+    });
   });
 }
 
