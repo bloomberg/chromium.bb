@@ -531,12 +531,14 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
 
 bool CreateChromeApplicationShortcutView::Accept() {
-  close_callback_.Run();
+  if (!close_callback_.is_null())
+    close_callback_.Run();
   return CreateApplicationShortcutView::Accept();
 }
 
 bool CreateChromeApplicationShortcutView::Cancel() {
-  close_callback_.Run();
+  if (!close_callback_.is_null())
+    close_callback_.Run();
   return CreateApplicationShortcutView::Cancel();
 }
 
