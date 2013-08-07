@@ -728,7 +728,6 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     return;
   }
 
-#if !defined(USE_AURA)
   // If the window is a different size than the swap chain that is being
   // presented then drop the frame.
   gfx::Size window_size = GetWindowSize();
@@ -751,7 +750,6 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
                  "windowheight", window_size.height());
     return;
   }
-#endif
 
   // Round up size so the swap chain is not continuously resized with the
   // surface, which could lead to memory fragmentation.

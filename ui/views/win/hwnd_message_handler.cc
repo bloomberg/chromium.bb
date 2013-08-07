@@ -1030,17 +1030,16 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
   }
 }
 
-gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
-  gfx::Insets insets;
-  if (delegate_->GetClientAreaInsets(&insets))
-    return insets;
-  DCHECK(insets.empty());
+bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
+  if (delegate_->GetClientAreaInsets(insets))
+    return true;
+  DCHECK(insets->empty());
 
-  // Returning an empty Insets object causes the default handling in
-  // NativeWidgetWin::OnNCCalcSize() to be invoked.
+  // Returning false causes the default handling in OnNCCalcSize() to
+  // be invoked.
   if (!delegate_->IsWidgetWindow() ||
       (!delegate_->IsUsingCustomFrame() && !remove_standard_frame_)) {
-    return insets;
+    return false;
   }
 
   if (IsMaximized()) {
@@ -1049,8 +1048,9 @@ gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
     int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
     if (remove_standard_frame_)
       border_thickness -= 1;
-    return gfx::Insets(border_thickness, border_thickness, border_thickness,
-                       border_thickness);
+    *insets = gfx::Insets(
+        border_thickness, border_thickness, border_thickness, border_thickness);
+    return true;
   }
 
   // Returning empty insets for a window with the standard frame removed seems
@@ -1067,8 +1067,17 @@ gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
   // means that the client area is reported 1px larger than it really is, so
   // user code has to compensate by making its content shorter if it wants
   // everything to appear inside the window.
-  if (remove_standard_frame_)
-    return gfx::Insets(0, 0, IsMaximized() ? 0 : kClientAreaBottomInsetHack, 0);
+  if (remove_standard_frame_) {
+    *insets =
+        gfx::Insets(0, 0, IsMaximized() ? 0 : kClientAreaBottomInsetHack, 0);
+    return true;
+  }
+
+#if defined(USE_AURA)
+  // The -1 hack below breaks rendering in Aura.
+  // See http://crbug.com/172099 http://crbug.com/267131
+  *insets = gfx::Insets();
+#else
   // This is weird, but highly essential. If we don't offset the bottom edge
   // of the client rect, the window client area and window area will match,
   // and when returning to glass rendering mode from non-glass, the client
@@ -1080,7 +1089,9 @@ gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
   // rect when using the opaque frame.
   // Note: this is only required for non-fullscreen windows. Note that
   // fullscreen windows are in restored state, not maximized.
-  return gfx::Insets(0, 0, fullscreen_handler_->fullscreen() ? 0 : 1, 0);
+  *insets = gfx::Insets(0, 0, fullscreen_handler_->fullscreen() ? 0 : 1, 0);
+#endif
+  return true;
 }
 
 void HWNDMessageHandler::ResetWindowRegion(bool force) {
@@ -1643,8 +1654,9 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
     }
   }
 
-  gfx::Insets insets = GetClientAreaInsets();
-  if (insets.empty() && !fullscreen_handler_->fullscreen() &&
+  gfx::Insets insets;
+  bool got_insets = GetClientAreaInsets(&insets);
+  if (!got_insets && !fullscreen_handler_->fullscreen() &&
       !(mode && remove_standard_frame_)) {
     SetMsgHandled(FALSE);
     return 0;

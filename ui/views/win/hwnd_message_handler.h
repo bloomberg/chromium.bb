@@ -196,7 +196,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Returns the insets of the client area relative to the non-client area of
   // the window.
-  gfx::Insets GetClientAreaInsets() const;
+  bool GetClientAreaInsets(gfx::Insets* insets) const;
 
   // Resets the window region for the current widget bounds if necessary.
   // If |force| is true, the window region is reset to NULL even for native
