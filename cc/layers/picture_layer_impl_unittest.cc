@@ -69,6 +69,7 @@ class PictureLayerImplTest : public testing::Test {
         host_impl_.active_tree()->LayerById(id_));
 
     SetupPendingTree(pending_pile);
+    pending_layer_->UpdateTwinLayer();
   }
 
   void AddDefaultTilingsWithInvalidation(const Region& invalidation) {
@@ -78,6 +79,7 @@ class PictureLayerImplTest : public testing::Test {
     for (size_t i = 0; i < active_layer_->tilings()->num_tilings(); ++i)
       active_layer_->tilings()->tiling_at(i)->CreateAllTilesForTesting();
     pending_layer_->set_invalidation(invalidation);
+    pending_layer_->SyncFromActiveLayer();
     for (size_t i = 0; i < pending_layer_->tilings()->num_tilings(); ++i)
       pending_layer_->tilings()->tiling_at(i)->CreateAllTilesForTesting();
   }
@@ -96,7 +98,6 @@ class PictureLayerImplTest : public testing::Test {
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
-    pending_layer_->DoPostCommitInitializationIfNeeded();
   }
 
   static void VerifyAllTilesExistAndHavePile(
@@ -1004,41 +1005,6 @@ TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
 
   EXPECT_GT(num_visible, 0);
   EXPECT_GT(num_offscreen, 0);
-}
-
-TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
-  gfx::Size tile_size(100, 100);
-  gfx::Size layer_bounds(400, 400);
-  scoped_refptr<FakePicturePileImpl> pending_pile =
-      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-
-  host_impl_.CreatePendingTree();
-  LayerTreeImpl* pending_tree = host_impl_.pending_tree();
-
-  scoped_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pending_pile);
-  pending_layer->SetDrawsContent(true);
-  pending_tree->SetRootLayer(pending_layer.PassAs<LayerImpl>());
-
-  pending_layer_ = static_cast<FakePictureLayerImpl*>(
-      host_impl_.pending_tree()->LayerById(id_));
-
-  // Set some state on the pending layer, make sure it is not clobbered
-  // by a sync from the active layer.  This could happen because if the
-  // pending layer has not been post-commit initialized it will attempt
-  // to sync from the active layer.
-  bool default_lcd_text_setting = pending_layer_->is_using_lcd_text();
-  pending_layer_->force_set_lcd_text(!default_lcd_text_setting);
-  EXPECT_TRUE(pending_layer_->needs_post_commit_initialization());
-
-  host_impl_.ActivatePendingTree();
-
-  active_layer_ = static_cast<FakePictureLayerImpl*>(
-      host_impl_.active_tree()->LayerById(id_));
-
-  EXPECT_EQ(0u, active_layer_->num_tilings());
-  EXPECT_EQ(!default_lcd_text_setting, active_layer_->is_using_lcd_text());
-  EXPECT_FALSE(active_layer_->needs_post_commit_initialization());
 }
 
 }  // namespace

@@ -32,14 +32,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
   using PictureLayerImpl::CanHaveTilings;
   using PictureLayerImpl::MarkVisibleResourcesAsRequired;
-  using PictureLayerImpl::DoPostCommitInitializationIfNeeded;
-
-  bool needs_post_commit_initialization() const {
-    return needs_post_commit_initialization_;
-  }
-
-  bool is_using_lcd_text() const { return is_using_lcd_text_; }
-  void force_set_lcd_text(bool enabled) { is_using_lcd_text_ = enabled; }
 
   PictureLayerTiling* HighResTiling() const;
   PictureLayerTiling* LowResTiling() const;
