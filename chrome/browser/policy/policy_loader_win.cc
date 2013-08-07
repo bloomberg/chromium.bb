@@ -297,7 +297,6 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     }
 
     // Remove special-cased entries from the GPO dictionary.
-    base::DictionaryValue* temp_dict = NULL;
     scoped_ptr<RegistryDict> recommended_dict(
         gpo_dict.RemoveKey(kKeyRecommended));
     scoped_ptr<RegistryDict> third_party_dict(
