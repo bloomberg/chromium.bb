@@ -32,7 +32,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/StringImpl.h"
 #include "wtf/unicode/Unicode.h"
-#include <limits>
 
 namespace WTF {
 
@@ -44,7 +43,6 @@ public:
 
     explicit StringBuffer(unsigned length)
     {
-        RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max() / sizeof(CharType));
         CharType* characters;
         m_data = StringImpl::createUninitialized(length, characters);
     }
@@ -62,7 +60,6 @@ public:
 
     void resize(unsigned newLength)
     {
-        RELEASE_ASSERT(newLength <= std::numeric_limits<unsigned>::max() / sizeof(CharType));
         if (!m_data) {
             CharType* characters;
             m_data = StringImpl::createUninitialized(newLength, characters);
