@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/config/gpu_info.h"
@@ -28,6 +29,16 @@ namespace extensions {
 
 class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
  public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // We need to launch GPU process to decide if WebGL is allowed.
+    // Run it on top of osmesa to avoid bot driver issues.
+#if !defined(OS_MACOSX)
+    CHECK(test_launcher_utils::OverrideGLImplementation(
+        command_line, gfx::kGLImplementationOSMesaName)) <<
+        "kUseGL must not be set multiple times!";
+#endif
+  }
+
   scoped_refptr<const Extension> LoadExtensionFromDirName(
       const std::string& extension_dir_name) {
     base::FilePath extension_path;
@@ -179,4 +190,4 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, Check3DExtension) {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
-}  // namespace extensions
+}  // extensions

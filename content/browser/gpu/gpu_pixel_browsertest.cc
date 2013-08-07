@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/compositor/compositor_setup.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_switches.h"
@@ -105,13 +106,6 @@ class GpuPixelBrowserTest : public ContentBrowserTest {
         ref_img_option_(kReferenceImageNone) {
   }
 
-  virtual void SetUp() {
-    // We expect real pixel output for these tests.
-    UseRealGLContexts();
-
-    ContentBrowserTest::SetUp();
-  }
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kTestGLLib,
                                     "libllvmpipe.so");
@@ -156,6 +150,8 @@ class GpuPixelBrowserTest : public ContentBrowserTest {
       ReplaceFirstSubstringAfterOffset(
           &test_name_, 0, test_status_prefixes[i], std::string());
     }
+
+    ui::DisableTestCompositor();
   }
 
   // If the existing ref image was saved from an revision older than the

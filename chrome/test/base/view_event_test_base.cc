@@ -22,9 +22,6 @@
 #include "ash/shell.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
-#if defined(OS_WIN)
-#include "ui/compositor/compositor.h"
-#endif
 #endif
 
 #if defined(USE_AURA)
@@ -104,26 +101,20 @@ void ViewEventTestBase::SetUp() {
   // interactive_ui_tests is brought up on that platform.
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
-
-  // The ContextFactory must exist before any Compositors are created. The
-  // ash::Shell code path below handles this, but since we skip it we must
-  // do this here.
-  bool allow_test_contexts = true;
-  ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
-#else  // !OS_WIN
+#else
   // Ash Shell can't just live on its own without a browser process, we need to
   // also create the message center.
   message_center::MessageCenter::Initialize();
 #if defined(OS_CHROMEOS)
   chromeos::CrasAudioHandler::InitializeForTesting();
-#endif  // OS_CHROMEOS
+#endif
   ash::test::TestShellDelegate* shell_delegate =
       new ash::test::TestShellDelegate();
   ash::Shell::CreateInstance(shell_delegate);
   shell_delegate->test_session_state_delegate()
       ->SetActiveUserSessionStarted(true);
   context = ash::Shell::GetPrimaryRootWindow();
-#endif  // !OS_WIN
+#endif
 #elif defined(USE_AURA)
   // Instead of using the ash shell, use an AuraTestHelper to create and manage
   // the test screen.
@@ -131,7 +122,7 @@ void ViewEventTestBase::SetUp() {
       new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
   aura_test_helper_->SetUp();
   context = aura_test_helper_->root_window();
-#endif  // USE_AURA
+#endif
   window_ = views::Widget::CreateWindowWithContext(this, context);
 }
 

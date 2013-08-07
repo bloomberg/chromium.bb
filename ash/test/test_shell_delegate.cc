@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "content/public/test/test_browser_context.h"
 #include "ui/aura/window.h"
-#include "ui/compositor/compositor.h"
 
 namespace ash {
 namespace test {
@@ -214,10 +213,6 @@ double TestShellDelegate::GetSavedScreenMagnifierScale() {
 }
 
 RootWindowHostFactory* TestShellDelegate::CreateRootWindowHostFactory() {
-  // The ContextFactory must exist before any Compositors are created.
-  bool allow_test_contexts = true;
-  ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
-
   return RootWindowHostFactory::Create();
 }
 

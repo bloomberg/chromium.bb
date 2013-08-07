@@ -28,6 +28,7 @@
         'compositor.h',
         'compositor_export.h',
         'compositor_observer.h',
+        'compositor_setup.h',
         'compositor_switches.cc',
         'compositor_switches.h',
         'context_provider_from_context_factory.cc',

@@ -9,6 +9,10 @@
 #include "ui/test/test_suite.h"
 #include "ui/views/view.h"
 
+#if defined(TOOLKIT_VIEWS)
+#include "ui/compositor/compositor_setup.h"
+#endif
+
 class MessageCenterTestSuite : public ui::test::UITestSuite {
  public:
   MessageCenterTestSuite(int argc, char** argv)
@@ -25,6 +29,10 @@ class MessageCenterTestSuite : public ui::test::UITestSuite {
 
 void MessageCenterTestSuite::Initialize() {
   ui::test::UITestSuite::Initialize();
+
+#if defined(TOOLKIT_VIEWS)
+  ui::SetupTestCompositor();
+#endif
 }
 
 void MessageCenterTestSuite::Shutdown() {

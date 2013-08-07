@@ -23,6 +23,12 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line);
 bool OverrideUserDataDir(
     const base::FilePath& user_data_dir) WARN_UNUSED_RESULT;
 
+// Override the GL implementation. The names are the same as for the --use-gl
+// command line switch. Use the constants in the gfx namespace.
+bool OverrideGLImplementation(
+    CommandLine* command_line,
+    const std::string& implementation_name) WARN_UNUSED_RESULT;
+
 }  // namespace test_launcher_utils
 
 #endif  // CHROME_TEST_BASE_TEST_LAUNCHER_UTILS_H_

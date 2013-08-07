@@ -51,6 +51,13 @@ void SimulateGPUCrash(Browser* browser) {
 
 class WebGLInfobarTest : public InProcessBrowserTest {
  protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // GPU tests require gpu acceleration.
+#if !defined(OS_MACOSX)
+    command_line->AppendSwitchASCII(
+        switches::kUseGL, gfx::kGLImplementationOSMesaName);
+#endif
+  }
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     base::FilePath test_dir;
     ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &test_dir));

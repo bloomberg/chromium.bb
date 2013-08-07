@@ -37,14 +37,6 @@ class TabCaptureApiTest : public ExtensionApiTest {
  public:
   TabCaptureApiTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    // TODO(danakj): The GPU Video Decoder needs real GL bindings.
-    // crbug.com/269087
-    UseRealGLBindings();
-
-    ExtensionApiTest::SetUp();
-  }
-
   void AddExtensionToCommandLineWhitelist() {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, kExtensionId);

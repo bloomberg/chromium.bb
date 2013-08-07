@@ -16,7 +16,6 @@
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/base/ime/dummy_input_method.h"
-#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/screen.h"
@@ -60,11 +59,6 @@ AuraTestHelper::~AuraTestHelper() {
 
 void AuraTestHelper::SetUp() {
   setup_called_ = true;
-
-  // The ContextFactory must exist before any Compositors are created.
-  bool allow_test_contexts = true;
-  ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
-
   Env::GetInstance();
   test_screen_.reset(TestScreen::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
