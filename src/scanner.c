@@ -34,6 +34,10 @@ static int
 usage(int ret)
 {
 	fprintf(stderr, "usage: ./scanner [client-header|server-header|code]\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "Converts XML protocol descriptions supplied on "
+			"stdin to client headers,\n"
+			"server headers, or protocol marshalling code.\n");
 	exit(ret);
 }
 
