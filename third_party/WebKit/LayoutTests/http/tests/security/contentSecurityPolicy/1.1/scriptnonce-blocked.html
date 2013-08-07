@@ -6,6 +6,7 @@
 var tests = [
     ['yes', 'script-src 127.0.0.1:8000', 'resources/script.js', 'nonce'],
     ['yes', 'script-src 127.0.0.1:8000 \'nonce-nonce\'', 'resources/script.js', 'nonce'],
+    ['yes', 'script-src 127.0.0.1:8000 \'nonce-base64has+and/characters\'', 'resources/script.js', 'base64has+and/characters'],
     ['no', 'script-src \'nonce-nonce\'', 'resources/script.js', 'notnonce'],
     ['no', 'script-src \'nonce-notnonce\'', 'resources/script.js', 'nonce'],
 ];

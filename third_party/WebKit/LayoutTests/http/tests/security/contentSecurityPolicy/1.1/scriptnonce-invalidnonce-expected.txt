@@ -1,3 +1,6 @@
+CONSOLE MESSAGE: The source list for Content Security Policy directive 'script-src' contains an invalid source: ''nonce-''. It will be ignored.
+CONSOLE MESSAGE: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'nonce-'".
+
 CONSOLE MESSAGE: The source list for Content Security Policy directive 'script-src' contains an invalid source: ''nonce-'. It will be ignored.
 CONSOLE MESSAGE: The source list for Content Security Policy directive 'script-src' contains an invalid source: '''. It will be ignored.
 CONSOLE MESSAGE: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'nonce- '".
@@ -9,9 +12,6 @@ CONSOLE MESSAGE: Refused to load the script 'http://127.0.0.1:8000/security/cont
 CONSOLE MESSAGE: The source list for Content Security Policy directive 'script-src' contains an invalid source: ''nonce-'. It will be ignored.
 CONSOLE MESSAGE: The source list for Content Security Policy directive 'script-src' contains an invalid source: 'spaces''. It will be ignored.
 CONSOLE MESSAGE: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'nonce- nonces have no spaces'".
-
-CONSOLE MESSAGE: The source list for Content Security Policy directive 'script-src' contains an invalid source: ''nonce-1/1''. It will be ignored.
-CONSOLE MESSAGE: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'nonce-1/1'".
 
 CONSOLE MESSAGE: The source list for Content Security Policy directive 'script-src' contains an invalid source: ''nonce-{}''. It will be ignored.
 CONSOLE MESSAGE: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'nonce-{}'".

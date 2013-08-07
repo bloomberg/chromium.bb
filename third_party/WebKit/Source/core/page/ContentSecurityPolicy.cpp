@@ -70,7 +70,7 @@ bool isDirectiveValueCharacter(UChar c)
 
 bool isNonceCharacter(UChar c)
 {
-    return isASCIIAlphanumeric(c);
+    return isASCIIAlphanumeric(c) || c == '+' || c == '/';
 }
 
 bool isSourceCharacter(UChar c)
@@ -517,7 +517,7 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end,
 }
 
 // nonce-source      = "'nonce-" nonce-value "'"
-// nonce-value       = *( ALPHA / DIGIT )
+// nonce-value       = 1*( ALPHA / DIGIT / "+" / "/" )
 //
 bool CSPSourceList::parseNonce(const UChar* begin, const UChar* end, String& nonce)
 {
@@ -531,11 +531,11 @@ bool CSPSourceList::parseNonce(const UChar* begin, const UChar* end, String& non
 
     skipWhile<isNonceCharacter>(position, end);
     ASSERT(nonceBegin <= position);
-    nonce = String(nonceBegin, position - nonceBegin);
 
-    if ((position + 1) != end  && *position != '\'')
+    if (((position + 1) != end  && *position != '\'') || !(position - nonceBegin))
         return false;
 
+    nonce = String(nonceBegin, position - nonceBegin);
     return true;
 }
 

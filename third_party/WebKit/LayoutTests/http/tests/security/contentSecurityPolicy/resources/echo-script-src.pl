@@ -11,7 +11,7 @@ my ($text, $replacement) = ("FAIL", "PASS");
 ($text, $replacement) = ($replacement, $text) if $cgi->param('should_run') eq 'no';
 
 my $nonce = "";
-if ($cgi->param('nonce') ne '') {
+if (defined $cgi->param('nonce')) {
   $nonce = "nonce='".$cgi->param('nonce')."'";
 }
 

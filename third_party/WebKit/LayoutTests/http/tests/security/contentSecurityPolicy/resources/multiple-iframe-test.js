@@ -36,7 +36,7 @@ function testImpl(experimental, preescapedPolicy) {
                  "experimental=" + (experimental ? "true" : "false") +
                  "&should_run=" + encodeURIComponent(current[0]) +
                  "&csp=" + policy + "&q=" + scriptToLoad;
-    if (current[3])
+    if (current[3] !== undefined)
       iframe.src += "&nonce=" + encodeURIComponent(current[3]);
 
     iframe.onload = function() { testImpl(experimental, preescapedPolicy); };
