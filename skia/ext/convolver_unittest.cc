@@ -212,7 +212,13 @@ TEST(Convolver, AddFilter) {
   ASSERT_EQ(0, filter_length);
 }
 
-TEST(Convolver, SIMDVerification) {
+#if defined(THREAD_SANITIZER)
+// Times out under ThreadSanitizer, http://crbug.com/134400.
+#define MAYBE_SIMDVerification DISABLED_SIMDVerification
+#else
+#define MAYBE_SIMDVerification SIMDVerification
+#endif
+TEST(Convolver, MAYBE_SIMDVerification) {
   int source_sizes[][2] = {
     {1,1}, {1,2}, {1,3}, {1,4}, {1,5},
     {2,1}, {2,2}, {2,3}, {2,4}, {2,5},
