@@ -692,14 +692,20 @@ TEST_F(SearchTest, IsNTPURL) {
   EnableInstantExtendedAPIForTesting();
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
   GURL remote_ntp_url(GetInstantURL(profile(), kDisableStartMargin));
+  GURL search_url_with_search_terms("https://foo.com/url?strk&bar=abc");
+  GURL search_url_without_search_terms("https://foo.com/url?strk&bar");
 
   EXPECT_FALSE(chrome::IsNTPURL(ntp_url, profile()));
   EXPECT_TRUE(chrome::IsNTPURL(local_ntp_url, profile()));
   EXPECT_TRUE(chrome::IsNTPURL(remote_ntp_url, profile()));
+  EXPECT_FALSE(chrome::IsNTPURL(search_url_with_search_terms, profile()));
+  EXPECT_TRUE(chrome::IsNTPURL(search_url_without_search_terms, profile()));
 
   EXPECT_FALSE(chrome::IsNTPURL(ntp_url, NULL));
   EXPECT_FALSE(chrome::IsNTPURL(local_ntp_url, NULL));
   EXPECT_FALSE(chrome::IsNTPURL(remote_ntp_url, NULL));
+  EXPECT_FALSE(chrome::IsNTPURL(search_url_with_search_terms, NULL));
+  EXPECT_FALSE(chrome::IsNTPURL(search_url_without_search_terms, NULL));
 }
 
 }  // namespace chrome

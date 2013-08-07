@@ -324,7 +324,8 @@ bool IsNTPURL(const GURL& url, Profile* profile) {
     return url == GURL(chrome::kChromeUINewTabURL);
 
   return profile &&
-      (IsInstantURL(url, profile) ||
+      ((IsInstantURL(url, profile) &&
+        GetSearchTermsFromURL(profile, url).empty()) ||
        url == GURL(chrome::kChromeSearchLocalNtpUrl));
 }
 
