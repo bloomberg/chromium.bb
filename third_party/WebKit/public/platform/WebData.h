@@ -36,6 +36,7 @@
 #if WEBKIT_IMPLEMENTATION
 namespace WebCore { class SharedBuffer; }
 namespace WTF { template <typename T> class PassRefPtr; }
+namespace WTF { template <typename T> class RefPtr; }
 #endif
 
 namespace WebKit {
@@ -85,6 +86,7 @@ public:
     WebData(const WTF::PassRefPtr<WebCore::SharedBuffer>&);
     WebData& operator=(const WTF::PassRefPtr<WebCore::SharedBuffer>&);
     operator WTF::PassRefPtr<WebCore::SharedBuffer>() const;
+    operator WTF::RefPtr<WebCore::SharedBuffer>() const;
 #else
     template <class C>
     WebData(const C& c) : m_private(0)

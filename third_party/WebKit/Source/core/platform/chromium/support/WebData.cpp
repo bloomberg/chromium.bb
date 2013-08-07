@@ -92,6 +92,11 @@ WebData::operator PassRefPtr<SharedBuffer>() const
     return PassRefPtr<SharedBuffer>(const_cast<WebDataPrivate*>(m_private));
 }
 
+WebData::operator RefPtr<SharedBuffer>() const
+{
+    return PassRefPtr<SharedBuffer>(const_cast<WebDataPrivate*>(m_private));
+}
+
 void WebData::assign(WebDataPrivate* p)
 {
     // p is already ref'd for us by the caller

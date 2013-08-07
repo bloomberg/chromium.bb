@@ -34,6 +34,7 @@
 #include "core/loader/cache/Resource.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Logging.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
 #include "core/platform/network/ResourceError.h"
@@ -402,7 +403,9 @@ void ResourceLoader::loadResourceSynchronously(const ResourceRequest& request, S
 
     error = errorOut;
     data.clear();
-    data.append(dataOut.data(), dataOut.size());
+    RefPtr<SharedBuffer> buffer = dataOut;
+    if (buffer)
+        buffer->moveTo(data);
 }
 
 }

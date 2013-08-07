@@ -58,6 +58,8 @@ public:
     // for better performance.
     const char* data() const;
 
+    void moveTo(Vector<char>&);
+
     unsigned size() const;
 
     bool isEmpty() const { return !size(); }
