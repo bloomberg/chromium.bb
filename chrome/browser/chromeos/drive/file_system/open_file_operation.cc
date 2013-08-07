@@ -22,19 +22,6 @@ using content::BrowserThread;
 
 namespace drive {
 namespace file_system {
-namespace {
-
-FileError UpdateFileLocalState(internal::FileCache* cache,
-                               const std::string& resource_id,
-                               base::FilePath* local_file_path) {
-  FileError error = cache->MarkDirty(resource_id);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  return cache->GetFile(resource_id, local_file_path);
-}
-
-}  // namespace
 
 OpenFileOperation::OpenFileOperation(
     base::SequencedTaskRunner* blocking_task_runner,
@@ -130,27 +117,23 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
     return;
   }
 
-  // Note: after marking the file dirty, the local file path may be changed.
-  // So, it is necessary to take the path again.
-  base::FilePath* new_local_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&UpdateFileLocalState,
-                 cache_,
-                 entry->resource_id(),
-                 new_local_file_path),
-      base::Bind(&OpenFileOperation::OpenFileAfterUpdateLocalState,
+      base::Bind(&internal::FileCache::MarkDirty,
+                 base::Unretained(cache_),
+                 entry->resource_id()),
+      base::Bind(&OpenFileOperation::OpenFileAfterMarkDirty,
                  weak_ptr_factory_.GetWeakPtr(),
+                 local_file_path,
                  entry->resource_id(),
-                 callback,
-                 base::Owned(new_local_file_path)));
+                 callback));
 }
 
-void OpenFileOperation::OpenFileAfterUpdateLocalState(
+void OpenFileOperation::OpenFileAfterMarkDirty(
+    const base::FilePath& local_file_path,
     const std::string& resource_id,
     const OpenFileCallback& callback,
-    const base::FilePath* local_file_path,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -161,7 +144,7 @@ void OpenFileOperation::OpenFileAfterUpdateLocalState(
   }
 
   ++open_files_[resource_id];
-  callback.Run(error, *local_file_path,
+  callback.Run(error, local_file_path,
                base::Bind(&OpenFileOperation::CloseFile,
                           weak_ptr_factory_.GetWeakPtr(), resource_id));
 }

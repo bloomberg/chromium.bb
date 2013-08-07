@@ -67,11 +67,11 @@ class OpenFileOperation {
                                    const base::FilePath& local_file_path,
                                    scoped_ptr<ResourceEntry> entry);
 
-  // Part of OpenFile(). Called after the updating of the local state.
-  void OpenFileAfterUpdateLocalState(const std::string& resource_id,
-                                     const OpenFileCallback& callback,
-                                     const base::FilePath* local_file_path,
-                                     FileError error);
+  // Part of OpenFile(). Called after marking the cache file dirty.
+  void OpenFileAfterMarkDirty(const base::FilePath& local_file_path,
+                              const std::string& resource_id,
+                              const OpenFileCallback& callback,
+                              FileError error);
 
   // Closes the file with |resource_id|.
   void CloseFile(const std::string& resource_id);
