@@ -331,14 +331,14 @@
             "description": "Defines file transfer direction."
           },
           "processed": {
-            "type": "integer",
+            "type": "number",
             "optional": true,
-            "description": "Completed portion of the transfer operation."
+            "description": "Approximated completed portion of the transfer operation."
           },
           "total": {
-            "type": "integer",
+            "type": "number",
             "optional": true,
-            "description": "Total size (cost) of transfer operation."
+            "description": "Approximated total size of transfer operation."
           }
         }
       },

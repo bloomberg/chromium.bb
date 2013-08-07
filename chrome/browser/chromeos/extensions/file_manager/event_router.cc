@@ -171,9 +171,12 @@ scoped_ptr<base::DictionaryValue> JobInfoToDictionaryValue(
   result->SetString("transferState", job_status);
   result->SetString("transferType",
                     IsUploadJob(job_info.job_type) ? "upload" : "download");
-  result->SetInteger("processed",
-                     static_cast<int>(job_info.num_completed_bytes));
-  result->SetInteger("total", static_cast<int>(job_info.num_total_bytes));
+  // JavaScript does not have 64-bit integers. Instead we use double, which
+  // is in IEEE 754 formant and accurate up to 52-bits in JS, and in practice
+  // in C++. Larger values are rounded.
+  result->SetDouble("processed",
+                    static_cast<double>(job_info.num_completed_bytes));
+  result->SetDouble("total", static_cast<double>(job_info.num_total_bytes));
   return result.Pass();
 }
 
