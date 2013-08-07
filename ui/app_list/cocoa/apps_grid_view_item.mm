@@ -30,6 +30,10 @@ const CGFloat kIconSize = 48;
 const CGFloat kProgressBarHorizontalPadding = 8;
 const CGFloat kProgressBarVerticalPadding = 13;
 
+// On Mac, fonts of the same enum from ResourceBundle are larger. The smallest
+// enum is already used, so it needs to be reduced further to match Windows.
+const int kMacFontSizeDelta = -1;
+
 }  // namespace
 
 @class AppsGridItemBackgroundView;
@@ -238,8 +242,10 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   [paragraphStyle setAlignment:NSCenterTextAlignment];
   NSDictionary* titleAttributes = @{
     NSParagraphStyleAttributeName : paragraphStyle,
-    NSFontAttributeName : ui::ResourceBundle::GetSharedInstance().GetFont(
-        app_list::kItemTextFontStyle).GetNativeFont(),
+    NSFontAttributeName : ui::ResourceBundle::GetSharedInstance()
+        .GetFont(app_list::kItemTextFontStyle)
+        .DeriveFont(kMacFontSizeDelta)
+        .GetNativeFont(),
     NSForegroundColorAttributeName : [self isSelected] ?
         gfx::SkColorToSRGBNSColor(app_list::kGridTitleHoverColor) :
         gfx::SkColorToSRGBNSColor(app_list::kGridTitleColor)
