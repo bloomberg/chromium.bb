@@ -191,7 +191,6 @@ std::string NormalizeShortcutSuggestion(const std::string& suggestion,
   if (!normalize)
     return suggestion;
 
-  std::string key;
   std::vector<std::string> tokens;
   base::SplitString(suggestion, '+', &tokens);
   for (size_t i = 0; i < tokens.size(); i++) {
