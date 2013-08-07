@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Use the <code>chrome.audio</code> API to query audio device configuration and
-// be notified when it changes.
+// The <code>chrome.audio</code> API is provided to allow users to
+// get information about and control the audio devices attached to the
+// system. This API is currently only implemented for ChromeOS.
 namespace audio {
 
   dictionary OutputDeviceInfo {
