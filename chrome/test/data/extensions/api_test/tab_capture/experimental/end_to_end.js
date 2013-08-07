@@ -146,8 +146,10 @@ function endToEndVideoTestWithWebRTC() {
 }
 
 chrome.test.runTests([
-  endToEndVideoTest,
-  endToEndVideoTestWithWebRTC
+  endToEndVideoTest
+  // TODO(miu): Disabled test, since it is flaky on the bots.
+  // http://crbug.com/269659
+  //endToEndVideoTestWithWebRTC
 ]);
 
 // TODO(miu): Once the WebAudio API is finalized, we should add a test to emit a
