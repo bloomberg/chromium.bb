@@ -26,14 +26,9 @@ class ResourcesTest : public testing::Test {
   bool resources_available_;
 };
 
-// TODO(alexeypa): Reenable the test once http://crbug.com/269143 is fixed.
-#if !defined(OS_CHROMEOS)
-#define MAYBE_ProductName ProductName
-#else
-#define MAYBE_ProductName DISABLED_ProductName
-#endif
-
-TEST_F(ResourcesTest, MAYBE_ProductName) {
+// TODO(alexeypa): Reenable the test once http://crbug.com/269143 (ChromeOS) and
+// http://crbug.com/268043 (MacOS) are fixed.
+TEST_F(ResourcesTest, DISABLED_ProductName) {
 #if defined(GOOGLE_CHROME_BUILD)
   std::string expected_product_name = "Chrome Remote Desktop";
 #else  // defined(GOOGLE_CHROME_BUILD)

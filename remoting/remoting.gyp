@@ -2825,20 +2825,6 @@
             ],
           },
         }],
-        ['OS=="mac"', {
-          'mac_bundle': 1,
-          'xcode_settings': {
-            'INFOPLIST_FILE': 'unittests-Info.plist',
-            'INFOPLIST_PREPROCESS': 'YES',
-          },
-          'mac_bundle_resources': [
-            'unittests-Info.plist',
-            '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x <(PRODUCT_DIR) <(remoting_locales))',
-          ],
-          'mac_bundle_resources!': [
-            'unittests-Info.plist',
-          ],
-        }],  # OS=="mac"
         ['OS=="mac" or (OS=="linux" and chromeos==0)', {
           # Javascript unittests are disabled on CrOS because they cause
           # valgrind and test errors.
