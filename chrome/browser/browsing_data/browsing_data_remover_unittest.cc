@@ -170,7 +170,7 @@ class AwaitCompletionHelper : public BrowsingDataRemover::Observer {
 
 class RemoveCookieTester {
  public:
-  RemoveCookieTester() : get_cookie_success_(false) {
+  RemoveCookieTester() : get_cookie_success_(false), monster_(NULL) {
   }
 
   // Returns true, if the given cookie exists in the cookie store.
