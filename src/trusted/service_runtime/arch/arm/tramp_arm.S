@@ -30,34 +30,44 @@
  * trampoline (it is saved on stack in NaClSyscallSeg()).
  *
  * ARM passes parameters to a callee in registers r0-r3. If there are more
- * than 4 parameters, the first four args are passed in registers the rest are
- * placed on the stack. This code pushes all parameters from registers into the
+ * than 4 parameters, the first four are passed in registers and the rest are
+ * placed on the stack. This code saves all parameters from registers into the
  * stack; thus, we keep all parameters on the stack as follows:
  * top - arg0, arg1, arg2, arg3 .... argN
  *
- * On top of that we push the return address, so we will know where to return
+ * On top of that we save the return address, so we will know where to return
  * after the system call.
  *
- * After this code the stack layout must look like:
+ * At the point this code calls NaClSyscallSeg, the stack layout is as follows:
  *
- * sp+0: retaddr to user module
- * sp+4: arg0 (system call argument)
- * sp+8: arg1
- * ..........
- * sp+X: argN
+ *   sp+0x04: argument 5 (if present)
+ *   sp:      argument 4 (if present)
+ *   sp-0x04: argument 3
+ *   sp-0x08: argument 2
+ *   sp-0x0c: argument 1
+ *   sp-0x10: argument 0
+ *   sp-0x14: return address to untrusted code
+ *  (sp-0x18: return address to trampoline - saved later by NaClSyscallSeg)
+ *
+ * Usually, signal-safe code will not save data below the stack
+ * pointer, but it is safe to do so here because the trusted signal
+ * handler will never run on the untrusted stack.
  *
  * When service runtime serves a system call, it first creates a structure which
  * utilizes these arguments. The structure is created by Decoder functions in
  * nacl_syscall_handlers.c. (nacl_syscall_handlers.c is an automatically
  * generated file and placed in
  * scons-out//gen/native_client/src/trusted/service_runtime).
- *
  */
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
-
-  push {r0, r1, r2, r3}
-  push {lr}
+  /*
+   * Save first 4 syscall arguments below the stack pointer.  Any
+   * further arguments are already on the stack.
+   */
+  stmfd sp, {r0, r1, r2, r3}
+  /* Save the return address. */
+  str lr, [sp, #-0x14]
 
   /* this accesses the data item immediately after the halt */
   ldr r0, NaCl_trampoline_syscall_seg_addr
