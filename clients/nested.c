@@ -40,6 +40,7 @@
 #include <cairo-gl.h>
 
 #include <wayland-client.h>
+#define WL_HIDE_DEPRECATED
 #include <wayland-server.h>
 
 #include "window.h"

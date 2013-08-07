@@ -30,6 +30,8 @@ extern "C" {
 
 #include <pixman.h>
 #include <xkbcommon/xkbcommon.h>
+
+#define WL_HIDE_DEPRECATED
 #include <wayland-server.h>
 
 #include "version.h"

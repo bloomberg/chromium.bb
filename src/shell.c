@@ -34,7 +34,6 @@
 #include <math.h>
 #include <sys/types.h>
 
-#include <wayland-server.h>
 #include "compositor.h"
 #include "desktop-shell-server-protocol.h"
 #include "input-method-server-protocol.h"

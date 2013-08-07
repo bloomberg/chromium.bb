@@ -29,7 +29,6 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include <wayland-server.h>
 #include <wayland-util.h>
 
 #include "compositor.h"

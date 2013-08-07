@@ -52,7 +52,6 @@
 #include <libunwind.h>
 #endif
 
-#include <wayland-server.h>
 #include "compositor.h"
 #include "subsurface-server-protocol.h"
 #include "../shared/os-compatibility.h"
