@@ -118,7 +118,7 @@ def MultiQueryChanges(host, params_list, limit=None):
   q = '&'.join(['q=%s' % _QueryString(x[0], x[1]) for x in params_list])
   path = 'changes/?%s' % q
   if limit:
-    path = '%s&n%d' % (path, limit)
+    path = '%s&n=%d' % (path, limit)
   return ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=False)
 
 
