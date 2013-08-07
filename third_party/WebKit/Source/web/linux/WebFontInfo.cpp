@@ -150,9 +150,15 @@ private:
         FcDefaultSubstitute(pattern);
 
         // The result parameter returns if any fonts were found.
-        // We already handle 0 fonts correctly, so we ignore the param.
+        // We already handle empty FcFontSets correctly, so we ignore the param.
         FcResult result;
-        FcFontSet* fontSet = FcFontSort(0, pattern, 0, 0, &result);
+        // Unfortunately we cannot use "trim" as FCFontSort ignores
+        // FC_SCALABLE and we don't want bitmap fonts. If we used
+        // trim it might trim scalable fonts which only added characters
+        // covered by an earlier bitmap font. Instead we trim ourselves
+        // in fillFallbackList until FcFontSort is fixed:
+        // https://bugs.freedesktop.org/show_bug.cgi?id=67845
+        FcFontSet* fontSet = FcFontSort(0, pattern, FcFalse, 0, &result);
         FcPatternDestroy(pattern);
 
         // The caller will take ownership of this FcFontSet.
@@ -170,6 +176,8 @@ private:
         ASSERT(m_fallbackList.isEmpty());
         if (!m_fontSet)
             return;
+
+        FcCharSet* allGlyphs = FcCharSetCreate();
 
         for (int i = 0; i < m_fontSet->nfont; ++i) {
             FcPattern* pattern = m_fontSet->fonts[i];
@@ -192,8 +200,14 @@ private:
             if (FcPatternGetCharSet(pattern, FC_CHARSET, 0, &charSet) != FcResultMatch)
                 continue;
 
-            m_fallbackList.append(CachedFont(pattern, charSet));
+            FcBool addsGlyphs = FcFalse;
+            // FcCharSetMerge returns false on failure (out of memory, etc.)
+            if (!FcCharSetMerge(allGlyphs, charSet, &addsGlyphs) || addsGlyphs)
+                m_fallbackList.append(CachedFont(pattern, charSet));
         }
+        // FIXME: We could cache allGlyphs, or even send it to the renderer
+        // to avoid it needing to call us for glyphs we won't have.
+        FcCharSetDestroy(allGlyphs);
     }
 
     FcFontSet* m_fontSet; // Owned by this object.
