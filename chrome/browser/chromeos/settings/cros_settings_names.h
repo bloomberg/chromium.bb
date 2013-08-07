@@ -31,6 +31,7 @@ extern const char kAllowedConnectionTypesForUpdate[];
 
 extern const char kSystemTimezonePolicy[];
 extern const char kSystemTimezone[];
+extern const char kSystemUse24HourClock[];
 
 extern const char kDeviceOwner[];
 

@@ -569,6 +569,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_use_24hour_clock()) {
+    if (policy.use_24hour_clock().has_use_24hour_clock()) {
+      policies->Set(key::kSystemUse24HourClock,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(
+                        policy.use_24hour_clock().use_24hour_clock()),
+                    NULL);
+    }
+  }
+
   if (policy.has_allow_redeem_offers()) {
     const em::AllowRedeemChromeOsRegistrationOffersProto& container(
         policy.allow_redeem_offers());

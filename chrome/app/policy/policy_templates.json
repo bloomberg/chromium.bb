@@ -117,7 +117,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 235
+#   For your editing convenience: highest ID currently used: 236
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4063,6 +4063,20 @@
       New devices start out with the timezone set to "US/Pacific".
 
       The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "http://en.wikipedia.org/wiki/List_of_tz_database_time"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".''',
+    },
+    {
+      'name': 'SystemUse24HourClock',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:30-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 236,
+      'caption': '''Use 24 hour clock by default''',
+      'desc': '''Specifies the clock format be used for the device. Users can override clock format for the current session. However, on logout it is set back to the specified value. If an empty string is provided, device owner preference is used.''',
     },
     {
       'name': 'ShowLogoutButtonInTray',

@@ -66,6 +66,7 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/network_connect.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
@@ -970,13 +971,40 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       integration_service->job_list()->RemoveObserver(this);
   }
 
+  bool ShouldUse24HourClock() const {
+    // On login screen and in guest mode owner default is used for
+    // kUse24HourClock preference.
+    // All other modes default to the default locale value.
+    const ash::user::LoginStatus status = GetUserLoginStatus();
+    const CrosSettings* const cros_settings = CrosSettings::Get();
+    bool system_use_24_hour_clock = true;
+    const bool system_value_found = cros_settings->GetBoolean(
+        kSystemUse24HourClock, &system_use_24_hour_clock);
+
+    if (status == ash::user::LOGGED_IN_NONE)
+      return (system_value_found ? system_use_24_hour_clock : true);
+
+    const PrefService::Preference* user_pref =
+        user_pref_registrar_->prefs()->FindPreference(prefs::kUse24HourClock);
+    if (status == ash::user::LOGGED_IN_GUEST && user_pref->IsDefaultValue())
+      return (system_value_found ? system_use_24_hour_clock : true);
+
+    bool use_24_hour_clock = true;
+    user_pref->GetValue()->GetAsBoolean(&use_24_hour_clock);
+    return use_24_hour_clock;
+  }
+
   void UpdateClockType() {
     if (!user_pref_registrar_)
       return;
-    clock_type_ =
-        user_pref_registrar_->prefs()->GetBoolean(prefs::kUse24HourClock) ?
-        base::k24HourClock : base::k12HourClock;
+
+    const bool use_24_hour_clock = ShouldUse24HourClock();
+    clock_type_ = use_24_hour_clock ? base::k24HourClock : base::k12HourClock;
     GetSystemTrayNotifier()->NotifyDateFormatChanged();
+    // This also works for enterprise-managed devices because they never have
+    // local owner.
+    if (chromeos::UserManager::Get()->IsCurrentUserOwner())
+      CrosSettings::Get()->SetBoolean(kSystemUse24HourClock, use_24_hour_clock);
   }
 
   void UpdateShowLogoutButtonInTray() {

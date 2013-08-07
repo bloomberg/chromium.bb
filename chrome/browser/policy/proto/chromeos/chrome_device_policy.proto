@@ -236,6 +236,12 @@ message SystemTimezoneProto {
   optional string timezone = 1;
 }
 
+message SystemUse24HourClockProto {
+  // Specifies an owner-determined clock format that applies to the login
+  // screen and all users.
+  optional bool use_24hour_clock = 1;
+}
+
 // Parameters for Kiosk App device-local accounts.
 message KioskAppInfoProto {
   // Indicates the Kiosk App for the corresponding device-local account. The
@@ -539,4 +545,5 @@ message ChromeDeviceSettingsProto {
   optional AccessibilitySettingsProto accessibility_settings = 27;
   optional SupervisedUsersSettingsProto supervised_users_settings = 28;
   optional LoginScreenPowerManagementProto login_screen_power_management = 29;
+  optional SystemUse24HourClockProto use_24hour_clock = 30;
 }

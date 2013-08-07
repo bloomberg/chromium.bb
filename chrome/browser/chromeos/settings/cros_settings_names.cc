@@ -53,6 +53,10 @@ const char kAllowedConnectionTypesForUpdate[] =
 const char kSystemTimezone[] = "cros.system.timezone";
 const char kSystemTimezonePolicy[] = "cros.system.timezone_policy";
 
+// Value of kUse24HourClock user preference of device' owner.
+// ChromeOS device uses this setting on login screen.
+const char kSystemUse24HourClock[] = "cros.system.use_24hour_clock";
+
 const char kDeviceOwner[] = "cros.device.owner";
 
 const char kStatsReportingPref[] = "cros.metrics.reportingEnabled";

@@ -75,6 +75,7 @@ const char* kKnownSettings[] = {
   kStartUpUrls,
   kStatsReportingPref,
   kSystemTimezonePolicy,
+  kSystemUse24HourClock,
   kUpdateDisabled,
   kVariationsRestrictParameter,
 };
@@ -374,6 +375,16 @@ void DeviceSettingsProvider::SetInPolicy() {
         if ((*i)->GetAsString(&flag))
           flags_proto->add_flags(flag);
       }
+    }
+  } else if (prop == kSystemUse24HourClock) {
+    em::SystemUse24HourClockProto* use_24hour_clock_proto =
+        device_settings_.mutable_use_24hour_clock();
+    use_24hour_clock_proto->Clear();
+    bool use_24hour_clock_value;
+    if (value->GetAsBoolean(&use_24hour_clock_value)) {
+      use_24hour_clock_proto->set_use_24hour_clock(use_24hour_clock_value);
+    } else {
+      NOTREACHED();
     }
   } else {
     // The remaining settings don't support Set(), since they are not
@@ -701,6 +712,13 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
       new_values_cache->SetString(
           kSystemTimezonePolicy,
           policy.system_timezone().timezone());
+    }
+  }
+
+  if (policy.has_use_24hour_clock()) {
+    if (policy.use_24hour_clock().has_use_24hour_clock()) {
+      new_values_cache->SetBoolean(
+          kSystemUse24HourClock, policy.use_24hour_clock().use_24hour_clock());
     }
   }
 
