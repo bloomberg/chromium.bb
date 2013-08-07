@@ -275,6 +275,8 @@
         'browser/chromeos/drive/file_task_executor.h',
         'browser/chromeos/drive/file_write_helper.cc',
         'browser/chromeos/drive/file_write_helper.h',
+        'browser/chromeos/drive/file_write_watcher.cc',
+        'browser/chromeos/drive/file_write_watcher.h',
         'browser/chromeos/drive/fileapi_worker.cc',
         'browser/chromeos/drive/fileapi_worker.h',
         'browser/chromeos/drive/job_list.cc',

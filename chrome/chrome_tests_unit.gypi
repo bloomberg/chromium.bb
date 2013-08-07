@@ -629,6 +629,7 @@
         'browser/chromeos/drive/file_system_unittest.cc',
         'browser/chromeos/drive/file_system_util_unittest.cc',
         'browser/chromeos/drive/file_write_helper_unittest.cc',
+        'browser/chromeos/drive/file_write_watcher_unittest.cc',
         'browser/chromeos/drive/fileapi_worker_unittest.cc',
         'browser/chromeos/drive/job_queue_unittest.cc',
         'browser/chromeos/drive/job_scheduler_unittest.cc',
