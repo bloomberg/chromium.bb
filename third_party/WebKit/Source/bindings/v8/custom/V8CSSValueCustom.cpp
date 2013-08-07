@@ -52,9 +52,9 @@ v8::Handle<v8::Object> wrap(CSSValue* impl, v8::Handle<v8::Object> creationConte
     if (impl->isCSSFilterValue())
         return wrap(static_cast<CSSFilterValue*>(impl), creationContext, isolate);
     if (impl->isValueList())
-        return wrap(static_cast<CSSValueList*>(impl), creationContext, isolate);
+        return wrap(toCSSValueList(impl), creationContext, isolate);
     if (impl->isPrimitiveValue())
-        return wrap(static_cast<CSSPrimitiveValue*>(impl), creationContext, isolate);
+        return wrap(toCSSPrimitiveValue(impl), creationContext, isolate);
     if (impl->isSVGPaint())
         return wrap(static_cast<SVGPaint*>(impl), creationContext, isolate);
     if (impl->isSVGColor())

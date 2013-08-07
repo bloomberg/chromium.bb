@@ -219,7 +219,7 @@ bool HTMLTextDecorationEquivalent::valueIsPresentInStyle(Element* element, Style
     RefPtr<CSSValue> styleValue = style->getPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
     if (!styleValue)
         styleValue = style->getPropertyCSSValue(CSSPropertyTextDecoration);
-    return matches(element) && styleValue && styleValue->isValueList() && static_cast<CSSValueList*>(styleValue.get())->hasValue(m_primitiveValue.get());
+    return matches(element) && styleValue && styleValue->isValueList() && toCSSValueList(styleValue.get())->hasValue(m_primitiveValue.get());
 }
 
 class HTMLAttributeEquivalent : public HTMLElementEquivalent {
@@ -367,7 +367,7 @@ static RGBA32 cssValueToRGBA(CSSValue* colorValue)
     if (!colorValue || !colorValue->isPrimitiveValue())
         return Color::transparent;
 
-    CSSPrimitiveValue* primitiveColor = static_cast<CSSPrimitiveValue*>(colorValue);
+    CSSPrimitiveValue* primitiveColor = toCSSPrimitiveValue(colorValue);
     if (primitiveColor->isRGBColor())
         return primitiveColor->getRGBA32Value();
 
@@ -498,7 +498,7 @@ void EditingStyle::extractFontSizeDelta()
     if (!value || !value->isPrimitiveValue())
         return;
 
-    CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value.get());
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value.get());
 
     // Only PX handled now. If we handle more types in the future, perhaps
     // a switch statement here would be more appropriate.
@@ -1085,7 +1085,7 @@ void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverride
         // text decorations never override values
         if ((property.id() == CSSPropertyTextDecoration || property.id() == CSSPropertyWebkitTextDecorationsInEffect) && property.value()->isValueList() && value) {
             if (value->isValueList()) {
-                mergeTextDecorationValues(static_cast<CSSValueList*>(value.get()), static_cast<CSSValueList*>(property.value()));
+                mergeTextDecorationValues(toCSSValueList(value.get()), toCSSValueList(property.value()));
                 continue;
             }
             value = 0; // text-decoration: none is equivalent to not having the property
@@ -1139,7 +1139,7 @@ void EditingStyle::mergeStyleFromRulesForSerialization(Element* element)
             CSSValue* value = property.value();
             if (!value->isPrimitiveValue())
                 continue;
-            if (static_cast<CSSPrimitiveValue*>(value)->isPercentage()) {
+            if (toCSSPrimitiveValue(value)->isPercentage()) {
                 if (RefPtr<CSSValue> computedPropertyValue = computedStyleForElement->getPropertyCSSValue(property.id()))
                     fromComputedStyle->addParsedProperty(CSSProperty(property.id(), computedPropertyValue));
             }
@@ -1212,7 +1212,7 @@ int EditingStyle::legacyFontSize(Document* document) const
     RefPtr<CSSValue> cssValue = m_mutableStyle->getPropertyCSSValue(CSSPropertyFontSize);
     if (!cssValue || !cssValue->isPrimitiveValue())
         return 0;
-    return legacyFontSizeFromCSSValue(document, static_cast<CSSPrimitiveValue*>(cssValue.get()),
+    return legacyFontSizeFromCSSValue(document, toCSSPrimitiveValue(cssValue.get()),
         m_shouldUseFixedDefaultFontSize, AlwaysUseLegacyFontSize);
 }
 
@@ -1418,7 +1418,7 @@ void StyleChange::extractTextStyles(Document* document, MutableStylePropertySet*
         DEFINE_STATIC_LOCAL(RefPtr<CSSPrimitiveValue>, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
         DEFINE_STATIC_LOCAL(RefPtr<CSSPrimitiveValue>, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
 
-        RefPtr<CSSValueList> newTextDecoration = static_cast<CSSValueList*>(textDecoration.get())->copy();
+        RefPtr<CSSValueList> newTextDecoration = toCSSValueList(textDecoration.get())->copy();
         if (newTextDecoration->removeAll(underline.get()))
             m_applyUnderline = true;
         if (newTextDecoration->removeAll(lineThrough.get()))
@@ -1453,7 +1453,7 @@ void StyleChange::extractTextStyles(Document* document, MutableStylePropertySet*
     if (RefPtr<CSSValue> fontSize = style->getPropertyCSSValue(CSSPropertyFontSize)) {
         if (!fontSize->isPrimitiveValue())
             style->removeProperty(CSSPropertyFontSize); // Can't make sense of the number. Put no font size.
-        else if (int legacyFontSize = legacyFontSizeFromCSSValue(document, static_cast<CSSPrimitiveValue*>(fontSize.get()),
+        else if (int legacyFontSize = legacyFontSizeFromCSSValue(document, toCSSPrimitiveValue(fontSize.get()),
                 shouldUseFixedFontDefaultSize, UseLegacyFontSizeOnlyIfPixelValuesMatch)) {
             m_applyFontSize = String::number(legacyFontSize);
             style->removeProperty(CSSPropertyFontSize);
@@ -1467,8 +1467,8 @@ static void diffTextDecorations(MutableStylePropertySet* style, CSSPropertyID pr
     if (!textDecoration || !textDecoration->isValueList() || !refTextDecoration || !refTextDecoration->isValueList())
         return;
 
-    RefPtr<CSSValueList> newTextDecoration = static_cast<CSSValueList*>(textDecoration.get())->copy();
-    CSSValueList* valuesInRefTextDecoration = static_cast<CSSValueList*>(refTextDecoration);
+    RefPtr<CSSValueList> newTextDecoration = toCSSValueList(textDecoration.get())->copy();
+    CSSValueList* valuesInRefTextDecoration = toCSSValueList(refTextDecoration);
 
     for (size_t i = 0; i < valuesInRefTextDecoration->length(); i++)
         newTextDecoration->removeAll(valuesInRefTextDecoration->item(i));
