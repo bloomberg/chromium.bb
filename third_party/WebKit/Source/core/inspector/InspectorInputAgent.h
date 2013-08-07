@@ -38,7 +38,6 @@
 
 namespace WebCore {
 class InspectorClient;
-class InspectorState;
 class Page;
 
 typedef String ErrorString;

@@ -42,11 +42,9 @@
 
 namespace WebCore {
 
-class HeapObjectsStatsStream;
 class InjectedScriptManager;
 class HeapStatsUpdateTask;
 class ScriptHeapSnapshot;
-class ScriptProfile;
 
 typedef String ErrorString;
 

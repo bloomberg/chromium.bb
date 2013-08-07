@@ -55,7 +55,6 @@ class InspectorClient;
 class InspectorFrontend;
 class InspectorOverlay;
 class InspectorPageAgent;
-class InspectorState;
 class InstrumentingAgents;
 class JSONObject;
 class KURL;
@@ -65,10 +64,8 @@ class ResourceError;
 class ResourceLoader;
 class ResourceRequest;
 class ResourceResponse;
-class SharedBuffer;
 class ThreadableLoaderClient;
 class XHRReplayData;
-class XMLHttpRequest;
 
 struct WebSocketFrame;
 class WebSocketHandshakeRequest;

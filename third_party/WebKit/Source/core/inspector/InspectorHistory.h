@@ -37,11 +37,7 @@
 
 namespace WebCore {
 
-class ContainerNode;
-class Element;
 class ExceptionState;
-class Node;
-
 
 class InspectorHistory {
     WTF_MAKE_NONCOPYABLE(InspectorHistory); WTF_MAKE_FAST_ALLOCATED;

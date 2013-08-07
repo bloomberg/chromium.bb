@@ -47,7 +47,6 @@ class DocumentLoader;
 class InjectedScriptCanvasModule;
 class InjectedScriptManager;
 class InspectorPageAgent;
-class InspectorState;
 class InstrumentingAgents;
 class ScriptObject;
 

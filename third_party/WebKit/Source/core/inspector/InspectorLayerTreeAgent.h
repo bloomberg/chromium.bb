@@ -40,7 +40,6 @@
 
 namespace WebCore {
 
-class InspectorState;
 class InstrumentingAgents;
 
 typedef String ErrorString;

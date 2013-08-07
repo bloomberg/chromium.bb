@@ -44,7 +44,6 @@ class DocumentLoader;
 class DOMWindow;
 class Frame;
 class InspectorFrontend;
-class InspectorState;
 class InjectedScriptManager;
 class InstrumentingAgents;
 class ResourceError;

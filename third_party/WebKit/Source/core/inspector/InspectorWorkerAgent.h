@@ -37,7 +37,6 @@
 
 namespace WebCore {
 class InspectorFrontend;
-class InspectorState;
 class InstrumentingAgents;
 class JSONObject;
 class KURL;

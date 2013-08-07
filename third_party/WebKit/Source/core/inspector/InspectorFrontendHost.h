@@ -41,9 +41,7 @@ class ContextMenuItem;
 class DOMFileSystem;
 class Event;
 class FrontendMenuProvider;
-class InspectorClient;
 class InspectorFrontendClient;
-class Node;
 class Page;
 
 class InspectorFrontendHost : public RefCounted<InspectorFrontendHost>, public ScriptWrappable {

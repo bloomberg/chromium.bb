@@ -37,7 +37,6 @@
 
 namespace WebCore {
 
-class InspectorFrontend;
 class InspectorPageAgent;
 class ScriptExecutionContext;
 class SecurityOrigin;

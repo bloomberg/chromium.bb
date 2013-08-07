@@ -36,9 +36,6 @@
 
 namespace WebCore {
 
-class ContextMenuItem;
-class Event;
-
 class InspectorFrontendClient {
 public:
     enum DockSide {

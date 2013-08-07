@@ -49,7 +49,6 @@ class Element;
 class ExceptionState;
 class InspectorPageAgent;
 class InspectorStyleSheet;
-class Node;
 
 typedef Vector<RefPtr<CSSRule> > CSSRuleVector;
 typedef String ErrorString;

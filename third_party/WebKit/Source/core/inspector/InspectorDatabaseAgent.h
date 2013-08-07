@@ -42,7 +42,6 @@ class DocumentLoader;
 class Frame;
 class InspectorDatabaseResource;
 class InspectorFrontend;
-class InspectorState;
 class InstrumentingAgents;
 
 typedef String ErrorString;

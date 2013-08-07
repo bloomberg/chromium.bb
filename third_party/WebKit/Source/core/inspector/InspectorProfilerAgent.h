@@ -43,12 +43,9 @@ namespace WebCore {
 class InjectedScriptManager;
 class InspectorConsoleAgent;
 class InspectorFrontend;
-class InspectorState;
 class InstrumentingAgents;
-class Page;
 class ScriptCallStack;
 class ScriptProfile;
-class WorkerGlobalScope;
 
 typedef String ErrorString;
 

@@ -51,47 +51,18 @@
 namespace WebCore {
 
 struct CSSParserString;
-class CSSRule;
-class Resource;
-class CharacterData;
-class DOMWindow;
-class DOMWrapperWorld;
-class Database;
 class Document;
 class Element;
-class EventContext;
-class DocumentLoader;
-class DocumentStyleSheetCollection;
 class DeviceOrientationData;
 class GeolocationPosition;
 class GraphicsContext;
-class InspectorCSSAgent;
-class InspectorCSSOMWrappers;
 class InspectorTimelineAgent;
 class InstrumentingAgents;
-class KURL;
-class Node;
-class PseudoElement;
 class RenderLayer;
-class RenderLayerBacking;
-class RenderObject;
-class ResourceRequest;
-class ResourceResponse;
-class ScriptArguments;
-class ScriptCallStack;
 class ScriptExecutionContext;
-class ScriptObject;
-class ScriptProfile;
-class SecurityOrigin;
-class ShadowRoot;
-class StorageArea;
-class StyleResolver;
-class StyleRule;
-class StyleSheet;
 class ThreadableLoaderClient;
 class WorkerGlobalScope;
 class WorkerGlobalScopeProxy;
-class XMLHttpRequest;
 
 #define FAST_RETURN_IF_NO_FRONTENDS(value) if (!hasFrontends()) return value;
 

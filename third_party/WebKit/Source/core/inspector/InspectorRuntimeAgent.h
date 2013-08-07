@@ -40,11 +40,9 @@ namespace WebCore {
 
 class InjectedScript;
 class InjectedScriptManager;
-class InspectorFrontend;
 class InstrumentingAgents;
 class JSONArray;
 class ScriptDebugServer;
-class WorkerGlobalScope;
 
 typedef String ErrorString;
 

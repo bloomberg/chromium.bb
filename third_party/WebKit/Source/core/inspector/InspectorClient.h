@@ -34,9 +34,6 @@
 
 namespace WebCore {
 
-class InspectorController;
-class InspectorFrontendChannel;
-class Frame;
 class Page;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;

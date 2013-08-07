@@ -48,13 +48,10 @@
 namespace WebCore {
 
 class CharacterData;
-class ContainerNode;
 class DOMEditor;
 class Document;
 class Element;
-class Event;
 class ExceptionState;
-class HTMLElement;
 class InspectorClient;
 class InspectorFrontend;
 class InspectorHistory;
@@ -62,11 +59,9 @@ class InspectorOverlay;
 class InspectorPageAgent;
 class InspectorState;
 class InstrumentingAgents;
-class NameNodeMap;
 class Node;
 class PlatformTouchEvent;
 class RevalidateStyleAttributeTask;
-class ScriptValue;
 class ShadowRoot;
 
 struct HighlightConfig;

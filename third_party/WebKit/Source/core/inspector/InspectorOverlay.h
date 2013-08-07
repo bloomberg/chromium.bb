@@ -46,7 +46,6 @@ class EmptyChromeClient;
 class GraphicsContext;
 class InspectorClient;
 class InspectorOverlayHost;
-class IntRect;
 class JSONValue;
 class Node;
 class Page;

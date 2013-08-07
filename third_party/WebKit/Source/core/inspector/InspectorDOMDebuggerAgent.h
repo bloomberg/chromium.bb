@@ -46,7 +46,6 @@ class Event;
 class InspectorDOMAgent;
 class InspectorDebuggerAgent;
 class InspectorFrontend;
-class InspectorState;
 class InstrumentingAgents;
 class JSONObject;
 class Node;
