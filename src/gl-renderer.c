@@ -2085,8 +2085,10 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	else
 		ec->read_format = PIXMAN_a8b8g8r8;
 
+#ifdef GL_EXT_unpack_subimage
 	if (strstr(extensions, "GL_EXT_unpack_subimage"))
 		gr->has_unpack_subimage = 1;
+#endif
 
 	if (strstr(extensions, "GL_OES_EGL_image_external"))
 		gr->has_egl_image_external = 1;
