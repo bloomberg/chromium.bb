@@ -84,7 +84,7 @@ bool IsRangeValue(id value) {
 }
 
 NSArray* BuildAllAttributesArray() {
-  return [NSArray arrayWithObjects:
+  NSArray* array = [NSArray arrayWithObjects:
       NSAccessibilityRoleDescriptionAttribute,
       NSAccessibilityTitleAttribute,
       NSAccessibilityValueAttribute,
@@ -115,6 +115,7 @@ NSArray* BuildAllAttributesArray() {
       NSAccessibilityVisibleCharacterRangeAttribute,
       @"AXVisited",
       nil];
+  return [array retain];
 }
 
 }  // namespace
