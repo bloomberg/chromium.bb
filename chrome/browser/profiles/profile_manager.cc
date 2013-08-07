@@ -358,7 +358,6 @@ Profile* ProfileManager::GetLastUsedProfile(
 base::FilePath ProfileManager::GetLastUsedProfileDir(
     const base::FilePath& user_data_dir) {
   base::FilePath last_used_profile_dir(user_data_dir);
-  std::string last_used_profile;
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
