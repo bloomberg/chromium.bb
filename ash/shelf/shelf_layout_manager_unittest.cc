@@ -7,6 +7,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
+#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher.h"
@@ -775,6 +776,99 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
   generator.MoveMouseTo(1, root->bounds().bottom() - 1);
   UpdateAutoHideStateNow();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+}
+
+// Test the behavior of the shelf when it is auto hidden and it is on the
+// boundary between the primary and the secondary display.
+TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("800x600,800x600");
+  DisplayLayout display_layout(DisplayLayout::RIGHT, 0);
+  Shell::GetInstance()->display_controller()->SetLayoutForCurrentDisplays(
+      display_layout);
+  // Put the primary monitor's shelf on the display boundary.
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+
+  // Create a window because the shelf is always shown when no windows are
+  // visible.
+  CreateTestWidget();
+
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(root_windows[0],
+            GetShelfWidget()->GetNativeWindow()->GetRootWindow());
+
+  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+
+  int right_edge = root_windows[0]->GetBoundsInScreen().right() - 1;
+  int y = root_windows[0]->GetBoundsInScreen().y();
+
+  // Start off the mouse nowhere near the shelf; the shelf should be hidden.
+  aura::test::EventGenerator& generator(GetEventGenerator());
+  generator.MoveMouseTo(right_edge - 50, y);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  // Moving the mouse over the light bar (but not to the edge of the screen)
+  // should show the shelf.
+  generator.MoveMouseTo(right_edge - 1, y);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(right_edge - 1, Shell::GetScreen()->GetCursorScreenPoint().x());
+
+  // Moving the mouse off the light bar should hide the shelf.
+  generator.MoveMouseTo(right_edge - 50, y);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  // Moving the mouse to the right edge of the screen crossing the light bar
+  // should show the shelf despite the mouse cursor getting warped to the
+  // secondary display.
+  generator.MoveMouseTo(right_edge - 1, y);
+  generator.MoveMouseTo(right_edge, y);
+  UpdateAutoHideStateNow();
+  EXPECT_NE(right_edge - 1, Shell::GetScreen()->GetCursorScreenPoint().x());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+
+  // Hide the shelf.
+  generator.MoveMouseTo(right_edge - 50, y);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  // Moving the mouse to the right edge of the screen crossing the light bar and
+  // overshooting by a lot should keep the shelf hidden.
+  generator.MoveMouseTo(right_edge - 1, y);
+  generator.MoveMouseTo(right_edge + 50, y);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  // Moving the mouse to the right edge of the screen crossing the light bar and
+  // overshooting a bit should show the shelf.
+  generator.MoveMouseTo(right_edge - 1, y);
+  generator.MoveMouseTo(right_edge + 2, y);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+
+  // Keeping the mouse close to the left edge of the secondary display after the
+  // shelf is shown should keep the shelf shown.
+  generator.MoveMouseTo(right_edge + 2, y + 1);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+
+  // Moving the mouse far from the left edge of the secondary display should
+  // hide the shelf.
+  generator.MoveMouseTo(right_edge + 50, y);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  // Moving to the left edge of the secondary display without first crossing
+  // the primary display's right aligned shelf first should not show the shelf.
+  generator.MoveMouseTo(right_edge + 2, y);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 }
 
 // Assertions around the lock screen showing.

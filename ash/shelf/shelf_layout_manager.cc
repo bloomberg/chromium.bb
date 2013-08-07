@@ -60,6 +60,18 @@ const int kAutoHideDelayMS = 200;
 // keep the shelf from hiding.
 const int kNotificationBubbleGapHeight = 6;
 
+// The maximum size of the region on the display opposing the shelf managed by
+// this ShelfLayoutManager which can trigger showing the shelf.
+// For instance:
+// - Primary display is left of secondary display.
+// - Shelf is left aligned
+// - This ShelfLayoutManager manages the shelf for the secondary display.
+// |kMaxAutoHideShowShelfRegionSize| refers to the maximum size of the region
+// from the right edge of the primary display which can trigger showing the
+// auto hidden shelf. The region is used to make it easier to trigger showing
+// the auto hidden shelf when the shelf is on the boundary between displays.
+const int kMaxAutoHideShowShelfRegionSize = 10;
+
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -187,6 +199,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
       shelf_(shelf),
       workspace_controller_(NULL),
       window_overlaps_shelf_(false),
+      mouse_over_shelf_when_auto_hide_timer_started_(false),
       bezel_event_filter_(new ShelfBezelEventFilter(this)),
       gesture_drag_status_(GESTURE_DRAG_NONE),
       gesture_drag_amount_(0.f),
@@ -332,14 +345,18 @@ void ShelfLayoutManager::UpdateAutoHideState() {
       // Hides happen immediately.
       SetState(state_.visibility_state);
     } else {
-      auto_hide_timer_.Stop();
+      if (!auto_hide_timer_.IsRunning()) {
+        mouse_over_shelf_when_auto_hide_timer_started_ =
+            shelf_->GetWindowBoundsInScreen().Contains(
+                Shell::GetScreen()->GetCursorScreenPoint());
+      }
       auto_hide_timer_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kAutoHideDelayMS),
           this, &ShelfLayoutManager::UpdateAutoHideStateNow);
     }
   } else {
-    auto_hide_timer_.Stop();
+    StopAutoHideTimer();
   }
 }
 
@@ -575,7 +592,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     auto_hide_event_filter_.reset(NULL);
   }
 
-  auto_hide_timer_.Stop();
+  StopAutoHideTimer();
 
   // The transition of background from auto-hide to visible is janky if the
   // transition also cause the shelf's slide animation from the bottom edge.
@@ -889,6 +906,34 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {
   SetState(state_.visibility_state);
+
+  // If the state did not change, the auto hide timer may still be running.
+  StopAutoHideTimer();
+}
+
+void ShelfLayoutManager::StopAutoHideTimer() {
+  auto_hide_timer_.Stop();
+  mouse_over_shelf_when_auto_hide_timer_started_ = false;
+}
+
+gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
+  gfx::Rect shelf_bounds_in_screen = shelf_->GetWindowBoundsInScreen();
+  gfx::Vector2d offset = SelectValueForShelfAlignment(
+      gfx::Vector2d(0, shelf_bounds_in_screen.height()),
+      gfx::Vector2d(-kMaxAutoHideShowShelfRegionSize, 0),
+      gfx::Vector2d(shelf_bounds_in_screen.width(), 0),
+      gfx::Vector2d(0, -kMaxAutoHideShowShelfRegionSize));
+
+  gfx::Rect show_shelf_region_in_screen = shelf_bounds_in_screen;
+  show_shelf_region_in_screen += offset;
+  if (IsHorizontalAlignment())
+    show_shelf_region_in_screen.set_height(kMaxAutoHideShowShelfRegionSize);
+  else
+    show_shelf_region_in_screen.set_width(kMaxAutoHideShowShelfRegionSize);
+
+  // TODO: Figure out if we need any special handling when the keyboard is
+  // visible.
+  return show_shelf_region_in_screen;
 }
 
 ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
@@ -936,8 +981,29 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
                            -kNotificationBubbleGapHeight : 0);
   }
 
-  if (shelf_region.Contains(Shell::GetScreen()->GetCursorScreenPoint()))
+  gfx::Point cursor_position_in_screen =
+      Shell::GetScreen()->GetCursorScreenPoint();
+  if (shelf_region.Contains(cursor_position_in_screen))
     return SHELF_AUTO_HIDE_SHOWN;
+
+  // When the shelf is auto hidden and the shelf is on the boundary between two
+  // displays, it is hard to trigger showing the shelf. For instance, if a
+  // user's primary display is left of their secondary display, it is hard to
+  // unautohide a left aligned shelf on the secondary display.
+  // It is hard because:
+  // - It is hard to stop the cursor in the shelf "light bar" and not overshoot.
+  // - The cursor is warped to the other display if the cursor gets to the edge
+  //   of the display.
+  // Show the shelf if the cursor started on the shelf and the user overshot the
+  // shelf slightly to make it easier to show the shelf in this situation. We
+  // do not check |auto_hide_timer_|.IsRunning() because it returns false when
+  // the timer's task is running.
+  if ((state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN ||
+       mouse_over_shelf_when_auto_hide_timer_started_) &&
+      GetAutoHideShowShelfRegionInScreen().Contains(
+          cursor_position_in_screen)) {
+    return SHELF_AUTO_HIDE_SHOWN;
+  }
 
   const std::vector<aura::Window*> windows =
       ash::MruWindowTracker::BuildWindowList(false);

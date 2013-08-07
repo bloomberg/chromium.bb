@@ -277,6 +277,16 @@ class ASH_EXPORT ShelfLayoutManager :
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();
 
+  // Stops the auto hide timer and clears
+  // |mouse_over_shelf_when_auto_hide_timer_started_|.
+  void StopAutoHideTimer();
+
+  // Returns the bounds of an additional region which can trigger showing the
+  // shelf. This region exists to make it easier to trigger showing the shelf
+  // when the shelf is auto hidden and the shelf is on the boundary between
+  // two displays.
+  gfx::Rect GetAutoHideShowShelfRegionInScreen() const;
+
   // Returns the AutoHideState. This value is determined from the launcher and
   // tray.
   ShelfAutoHideState CalculateAutoHideState(
@@ -329,6 +339,10 @@ class ASH_EXPORT ShelfLayoutManager :
   bool window_overlaps_shelf_;
 
   base::OneShotTimer<ShelfLayoutManager> auto_hide_timer_;
+
+  // Whether the mouse was over the shelf when the auto hide timer started.
+  // False when neither the auto hide timer nor the timer task are running.
+  bool mouse_over_shelf_when_auto_hide_timer_started_;
 
   // EventFilter used to detect when user moves the mouse over the launcher to
   // trigger showing the launcher.

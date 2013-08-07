@@ -58,6 +58,19 @@ const int kNearTopContainerDistance = 8;
 // of just more vertical then horizontal.
 const int kSwipeVerticalThresholdMultiplier = 3;
 
+// The height in pixels of the region above the top edge of the display which
+// hosts the immersive fullscreen window in which mouse events are ignored
+// (cannot reveal or unreveal the top-of-window views).
+// See ShouldIgnoreMouseEventAtLocation() for more details.
+const int kHeightOfDeadRegionAboveTopContainer = 10;
+
+// The height in pixels of the region below the top edge of the display in which
+// the mouse can trigger revealing the top-of-window views. The height must be
+// greater than 1px because the top pixel is used to trigger moving the cursor
+// between displays if the user has a vertical display layout (primary display
+// above/below secondary display).
+const int kMouseRevealBoundsHeight = 3;
+
 // If |hovered| is true, moves the mouse above |view|. Moves it outside of
 // |view| otherwise.
 // Should not be called outside of tests.
@@ -255,7 +268,7 @@ ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
       reveal_state_(CLOSED),
       revealed_lock_count_(0),
       tab_indicator_visibility_(TAB_INDICATORS_HIDE),
-      mouse_x_when_hit_top_(-1),
+      mouse_x_when_hit_top_in_screen_(-1),
       gesture_begun_(false),
       native_window_(NULL),
       animation_(new ui::SlideAnimation(this)),
@@ -695,30 +708,33 @@ void ImmersiveModeControllerAsh::UpdateTopEdgeHoverTimer(
   }
 
   gfx::Point location_in_screen = GetEventLocationInScreen(*event);
-  gfx::Rect top_container_bounds_in_screen =
-      top_container_->GetBoundsInScreen();
+  if (ShouldIgnoreMouseEventAtLocation(location_in_screen))
+    return;
 
   // Stop the timer if the cursor left the top edge or is on a different
-  // display.
-  if (location_in_screen.y() != top_container_bounds_in_screen.y() ||
-      location_in_screen.x() < top_container_bounds_in_screen.x() ||
-      location_in_screen.x() >= top_container_bounds_in_screen.right()) {
+  // display. The bounds of |top_container_|'s parent are used to infer the hit
+  // bounds because |top_container_| will be partially offscreen if it is
+  // animating closed.
+  gfx::Rect hit_bounds_in_screen =
+      top_container_->parent()->GetBoundsInScreen();
+  hit_bounds_in_screen.set_height(kMouseRevealBoundsHeight);
+  if (!hit_bounds_in_screen.Contains(location_in_screen)) {
     top_edge_hover_timer_.Stop();
     return;
   }
 
   // The cursor is now at the top of the screen. Consider the cursor "not
-  // moving" even if it moves a little bit in x, because users don't have
-  // perfect pointing precision.
-  int mouse_x = location_in_screen.x() - top_container_bounds_in_screen.x();
+  // moving" even if it moves a little bit because users don't have perfect
+  // pointing precision. (The y position is not tested because
+  // |hit_bounds_in_screen| is short.)
   if (top_edge_hover_timer_.IsRunning() &&
-      abs(mouse_x - mouse_x_when_hit_top_) <=
+      abs(location_in_screen.x() - mouse_x_when_hit_top_in_screen_) <=
           ImmersiveFullscreenConfiguration::
               immersive_mode_reveal_x_threshold_pixels())
     return;
 
   // Start the reveal if the cursor doesn't move for some amount of time.
-  mouse_x_when_hit_top_ = mouse_x;
+  mouse_x_when_hit_top_in_screen_ = location_in_screen.x();
   top_edge_hover_timer_.Stop();
   // Timer is stopped when |this| is destroyed, hence Unretained() is safe.
   top_edge_hover_timer_.Start(
@@ -769,7 +785,19 @@ void ImmersiveModeControllerAsh::UpdateLocatedEventRevealedLock(
     location_in_screen = aura::Env::GetInstance()->last_mouse_location();
   }
 
-  gfx::Rect hit_bounds_in_screen = top_container_->GetBoundsInScreen();
+  if ((!event || event->IsMouseEvent()) &&
+      ShouldIgnoreMouseEventAtLocation(location_in_screen)) {
+    return;
+  }
+
+  gfx::Rect hit_bounds_in_top_container = top_container_->GetVisibleBounds();
+  // TODO(tdanderson): Implement View::ConvertRectToScreen();
+  gfx::Point hit_bounds_in_screen_origin = hit_bounds_in_top_container.origin();
+  views::View::ConvertPointToScreen(top_container_,
+      &hit_bounds_in_screen_origin);
+  gfx::Rect hit_bounds_in_screen(hit_bounds_in_screen_origin,
+      hit_bounds_in_top_container.size());
+
   gfx::Rect find_bar_hit_bounds_in_screen = find_bar_visible_bounds_in_screen_;
 
   // Allow the cursor to move slightly off the top-of-window views before
@@ -1070,6 +1098,27 @@ ImmersiveModeControllerAsh::SwipeType ImmersiveModeControllerAsh::GetSwipeType(
   else if (event->details().scroll_y() > 0)
     return SWIPE_OPEN;
   return SWIPE_NONE;
+}
+
+bool ImmersiveModeControllerAsh::ShouldIgnoreMouseEventAtLocation(
+    const gfx::Point& location) const {
+  // Ignore mouse events in the region immediately above the top edge of the
+  // display. This is to handle the case of a user with a vertical display
+  // layout (primary display above/below secondary display) and the immersive
+  // fullscreen window on the bottom display. It is really hard to trigger a
+  // reveal in this case because:
+  // - It is hard to stop the cursor in the top |kMouseRevealBoundsHeight|
+  //   pixels of the bottom display.
+  // - The cursor is warped to the top display if the cursor gets to the top
+  //   edge of the bottom display.
+  // Mouse events are ignored in the bottom few pixels of the top display
+  // (Mouse events in this region cannot start or end a reveal). This allows a
+  // user to overshoot the top of the bottom display and still reveal the
+  // top-of-window views.
+  gfx::Rect dead_region = top_container_->parent()->GetBoundsInScreen();
+  dead_region.set_y(dead_region.y() - kHeightOfDeadRegionAboveTopContainer);
+  dead_region.set_height(kHeightOfDeadRegionAboveTopContainer);
+  return dead_region.Contains(location);
 }
 
 bool ImmersiveModeControllerAsh::ShouldHandleGestureEvent(

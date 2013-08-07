@@ -211,6 +211,12 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Returns the type of swipe given |event|.
   SwipeType GetSwipeType(ui::GestureEvent* event) const;
 
+  // Returns true if a mouse event at |location_in_screen| should be ignored.
+  // Ignored mouse events should not contribute to revealing or unrevealing the
+  // top-of-window views.
+  bool ShouldIgnoreMouseEventAtLocation(
+      const gfx::Point& location_in_screen) const;
+
   // True when |location| is "near" to the top container. When the top container
   // is not closed "near" means within the displayed bounds or above it. When
   // the top container is closed "near" means either within the displayed
@@ -253,9 +259,9 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Timer to track cursor being held at the top edge of the screen.
   base::OneShotTimer<ImmersiveModeController> top_edge_hover_timer_;
 
-  // The cursor x position in root coordinates when the cursor first hit
-  // the top edge of the screen.
-  int mouse_x_when_hit_top_;
+  // The cursor x position in screen coordinates when the cursor first hit the
+  // top edge of the screen.
+  int mouse_x_when_hit_top_in_screen_;
 
   // Tracks if the controller has seen a ET_GESTURE_SCROLL_BEGIN, without the
   // following events.
