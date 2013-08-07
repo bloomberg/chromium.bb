@@ -26,7 +26,7 @@ This code has been patched to make the target protobuf_lite a component so that
 targets that depend on it can be componentized. See http://crbug.com/172800 for
 details, and r179806 for the patch.
 
-Revisions r427, r430, r475 and r476 were cherry-picked from upstream.
+Revisions r427, r430, r475, r476 and 504 were cherry-picked from upstream.
 Patch from http://code.google.com/p/protobuf/issues/detail?id=425 was
 cherry-picked from upstream.
 
