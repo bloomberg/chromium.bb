@@ -1091,8 +1091,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   ui::ThemeProvider* themeProvider = [[[self view] window] themeProvider];
   if (themeProvider) {
     NSColor* color =
-        themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT,
-                                  true);
+        themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
     [cell setTextColor:color];
   }
 
@@ -1703,8 +1702,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!themeProvider)
     return;
   NSColor* color =
-      themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT,
-                                true);
+      themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
   for (BookmarkButton* button in buttons_.get()) {
     BookmarkButtonCell* cell = [button cell];
     [cell setTextColor:color];

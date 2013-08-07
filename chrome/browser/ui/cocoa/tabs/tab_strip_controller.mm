@@ -1622,8 +1622,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
         ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
         if (theme && [tabController projecting]) {
           NSImage* projectorGlow =
-              theme->GetNSImageNamed(IDR_TAB_CAPTURE_GLOW, true);
-          NSImage* projector = theme->GetNSImageNamed(IDR_TAB_CAPTURE, true);
+              theme->GetNSImageNamed(IDR_TAB_CAPTURE_GLOW);
+          NSImage* projector = theme->GetNSImageNamed(IDR_TAB_CAPTURE);
 
           NSRect frame = NSMakeRect(0,
                                     0,
@@ -1641,8 +1641,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
           iconView = projectingView;
         } else if (theme && chrome::ShouldShowRecordingIndicator(contents)) {
           // Create a masked favicon.
-          NSImage* mask = theme->GetNSImageNamed(IDR_TAB_RECORDING_MASK, true);
-          NSImage* recording = theme->GetNSImageNamed(IDR_TAB_RECORDING, true);
+          NSImage* mask = theme->GetNSImageNamed(IDR_TAB_RECORDING_MASK);
+          NSImage* recording = theme->GetNSImageNamed(IDR_TAB_RECORDING);
           NSImage* favIconMasked = CreateMaskedFaviconForRecording(
                                        [imageView image], mask, recording);
 
@@ -2270,7 +2270,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   NSImage* pressed = rb.GetNativeImageNamed(IDR_NEWTAB_BUTTON_P).ToNSImage();
 
   NSImage* foreground = ApplyMask(
-      theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND, true), mask);
+      theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND), mask);
 
   [[newTabButton_ cell] setImage:Overlay(foreground, normal, 1.0)
                   forButtonState:image_button_cell::kDefaultState];
@@ -2283,7 +2283,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   if (theme->UsingDefaultTheme()) {
     const CGFloat alpha = tabs::kImageNoFocusAlpha;
     NSImage* background = ApplyMask(
-        theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND_INACTIVE, true), mask);
+        theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND_INACTIVE), mask);
     [[newTabButton_ cell] setImage:Overlay(background, normal, alpha)
                     forButtonState:image_button_cell::kDefaultStateBackground];
     [[newTabButton_ cell] setImage:Overlay(background, hover, alpha)

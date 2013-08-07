@@ -285,8 +285,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   if (!themeProvider)
     return;
 
-  NSColor* color =
-      themeProvider->GetNSColor(ThemeProperties::COLOR_TAB_TEXT, true);
+  NSColor* color = themeProvider->GetNSColor(ThemeProperties::COLOR_TAB_TEXT);
   [dangerousDownloadLabel_ setTextColor:color];
 }
 

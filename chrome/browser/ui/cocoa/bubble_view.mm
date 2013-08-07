@@ -92,7 +92,7 @@ const float kWindowEdge = 0.7f;
                         bottomRightCornerRadius:bottomRightRadius];
 
   if (themeProvider)
-    [themeProvider->GetNSColor(ThemeProperties::COLOR_TOOLBAR, true) set];
+    [themeProvider->GetNSColor(ThemeProperties::COLOR_TOOLBAR) set];
   [border fill];
 
   [[NSColor colorWithDeviceWhite:kWindowEdge alpha:1.0f] set];
@@ -101,8 +101,7 @@ const float kWindowEdge = 0.7f;
   // Text
   NSColor* textColor = [NSColor blackColor];
   if (themeProvider)
-    textColor = themeProvider->GetNSColor(ThemeProperties::COLOR_TAB_TEXT,
-                                          true);
+    textColor = themeProvider->GetNSColor(ThemeProperties::COLOR_TAB_TEXT);
   NSFont* textFont = [self font];
   base::scoped_nsobject<NSShadow> textShadow([[NSShadow alloc] init]);
   [textShadow setShadowBlurRadius:0.0f];

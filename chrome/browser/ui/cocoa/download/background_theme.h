@@ -24,11 +24,10 @@ class BackgroundTheme : public ui::ThemeProvider {
   virtual base::RefCountedMemory* GetRawData(
       int id,
       ui::ScaleFactor scale_factor) const OVERRIDE;
-  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const OVERRIDE;
-  virtual NSColor* GetNSImageColorNamed(int id,
-                                        bool allow_default) const OVERRIDE;
-  virtual NSColor* GetNSColor(int id, bool allow_default) const OVERRIDE;
-  virtual NSColor* GetNSColorTint(int id, bool allow_default) const OVERRIDE;
+  virtual NSImage* GetNSImageNamed(int id) const OVERRIDE;
+  virtual NSColor* GetNSImageColorNamed(int id) const OVERRIDE;
+  virtual NSColor* GetNSColor(int id) const OVERRIDE;
+  virtual NSColor* GetNSColorTint(int id) const OVERRIDE;
   virtual NSGradient* GetNSGradient(int id) const OVERRIDE;
 
  private:

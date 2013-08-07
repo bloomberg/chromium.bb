@@ -11,25 +11,21 @@
 namespace ui {
 
 #if !defined(TOOLKIT_VIEWS)
-NSImage* DefaultThemeProvider::GetNSImageNamed(int id,
-                                               bool allow_default) const {
+NSImage* DefaultThemeProvider::GetNSImageNamed(int id) const {
  return ResourceBundle::GetSharedInstance().
      GetNativeImageNamed(id).ToNSImage();
 }
 
-NSColor* DefaultThemeProvider::GetNSImageColorNamed(int id,
-                                                    bool allow_default) const {
-  NSImage* image = GetNSImageNamed(id, allow_default);
+NSColor* DefaultThemeProvider::GetNSImageColorNamed(int id) const {
+  NSImage* image = GetNSImageNamed(id);
   return [NSColor colorWithPatternImage:image];
 }
 
-NSColor* DefaultThemeProvider::GetNSColor(int id,
-                                          bool allow_default) const {
+NSColor* DefaultThemeProvider::GetNSColor(int id) const {
   return [NSColor redColor];
 }
 
-NSColor* DefaultThemeProvider::GetNSColorTint(int id,
-                                              bool allow_default) const {
+NSColor* DefaultThemeProvider::GetNSColorTint(int id) const {
   return [NSColor redColor];
 }
 

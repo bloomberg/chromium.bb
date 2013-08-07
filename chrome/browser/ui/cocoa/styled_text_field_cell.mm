@@ -93,8 +93,11 @@
   ThemeService* themeProvider =
       static_cast<ThemeService*>([[controlView window] themeProvider]);
   if (themeProvider) {
-    NSColor* backgroundImageColor =
-        themeProvider->GetNSImageColorNamed(IDR_THEME_BUTTON_BACKGROUND, false);
+    NSColor* backgroundImageColor = nil;
+    if (themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND)) {
+      backgroundImageColor =
+          themeProvider->GetNSImageColorNamed(IDR_THEME_BUTTON_BACKGROUND);
+    }
     if (backgroundImageColor) {
       // Set the phase to match window.
       NSRect trueRect = [controlView convertRect:cellFrame toView:nil];
@@ -114,8 +117,7 @@
     BOOL active = [[controlView window] isMainWindow];
     NSColor* strokeColor = themeProvider->GetNSColor(
         active ? ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE :
-                 ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
-        true);
+                 ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE);
     rect_path_utils::FrameRectWithInset(roundedCornerFlags, frame, 0.0, 0.0,
                                         radius, lineWidth, strokeColor);
   }
@@ -149,7 +151,7 @@
       themeProvider->UsingDefaultTheme()) {
 
     NSColor* bezelColor = themeProvider->GetNSColor(
-        ThemeProperties::COLOR_TOOLBAR_BEZEL, true);
+        ThemeProperties::COLOR_TOOLBAR_BEZEL);
     [[bezelColor colorWithAlphaComponent:0.5 / lineWidth] set];
     NSRect bezelRect = NSMakeRect(cellFrame.origin.x,
                                   NSMaxY(cellFrame) - lineWidth,

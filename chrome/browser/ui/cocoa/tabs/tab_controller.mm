@@ -359,16 +359,11 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (void)updateTitleColor {
   NSColor* titleColor = nil;
   ui::ThemeProvider* theme = [[[self view] window] themeProvider];
-  if (theme && ![self selected]) {
-    titleColor =
-        theme->GetNSColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT,
-                          true);
-  }
+  if (theme && ![self selected])
+    titleColor = theme->GetNSColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
   // Default to the selected text color unless told otherwise.
-  if (theme && !titleColor) {
-    titleColor = theme->GetNSColor(ThemeProperties::COLOR_TAB_TEXT,
-                                   true);
-  }
+  if (theme && !titleColor)
+    titleColor = theme->GetNSColor(ThemeProperties::COLOR_TAB_TEXT);
   [titleView_ setTextColor:titleColor ? titleColor : [NSColor textColor]];
 }
 

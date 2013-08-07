@@ -84,11 +84,10 @@ class ThemeService : public base::NonThreadSafe,
       int id,
       ui::ScaleFactor scale_factor) const OVERRIDE;
 #if defined(OS_MACOSX)
-  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const OVERRIDE;
-  virtual NSColor* GetNSImageColorNamed(int id,
-                                        bool allow_default) const OVERRIDE;
-  virtual NSColor* GetNSColor(int id, bool allow_default) const OVERRIDE;
-  virtual NSColor* GetNSColorTint(int id, bool allow_default) const OVERRIDE;
+  virtual NSImage* GetNSImageNamed(int id) const OVERRIDE;
+  virtual NSColor* GetNSImageColorNamed(int id) const OVERRIDE;
+  virtual NSColor* GetNSColor(int id) const OVERRIDE;
+  virtual NSColor* GetNSColorTint(int id) const OVERRIDE;
   virtual NSGradient* GetNSGradient(int id) const OVERRIDE;
 #elif defined(OS_POSIX) && !defined(TOOLKIT_VIEWS) && !defined(OS_ANDROID)
   // This mismatch between what this class defines and whether or not it
@@ -224,11 +223,12 @@ class ThemeService : public base::NonThreadSafe,
   typedef std::map<int, GdkPixbuf*> GdkPixbufMap;
   mutable GdkPixbufMap gdk_pixbufs_;
 #elif defined(OS_MACOSX)
+  // |nsimage_cache_| retains the images it has cached.
   typedef std::map<int, NSImage*> NSImageMap;
   mutable NSImageMap nsimage_cache_;
 
-  // The bool member of the pair is whether the color is a default color.
-  typedef std::map<int, std::pair<NSColor*, bool> > NSColorMap;
+  // |nscolor_cache_| retains the colors it has cached.
+  typedef std::map<int, NSColor*> NSColorMap;
   mutable NSColorMap nscolor_cache_;
 
   typedef std::map<int, NSGradient*> NSGradientMap;

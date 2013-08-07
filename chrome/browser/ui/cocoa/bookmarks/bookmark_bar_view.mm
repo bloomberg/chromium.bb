@@ -88,8 +88,7 @@ using content::UserMetricsAction;
     return;
 
   NSColor* color =
-      themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT,
-                                true);
+      themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
   [noItemTextfield_ setTextColor:color];
 }
 

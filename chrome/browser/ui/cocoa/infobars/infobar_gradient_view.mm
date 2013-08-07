@@ -56,8 +56,7 @@ const CGFloat kTipWidth = 23;
   BOOL active = [[self window] isMainWindow];
   return themeProvider->GetNSColor(
       active ? ThemeProperties::COLOR_TOOLBAR_STROKE :
-               ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE,
-      true);
+               ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE);
 }
 
 - (void)drawRect:(NSRect)rect {

@@ -37,7 +37,7 @@
   ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   return themeProvider ? themeProvider->GetNSColor(
       isActive ? ThemeProperties::COLOR_TOOLBAR_STROKE :
-                 ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE, true) :
+                 ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE) :
       [NSColor blackColor];
 }
 
@@ -65,7 +65,7 @@
   if (themeProvider) {
     int resourceName = themeProvider->UsingDefaultTheme() ?
         ThemeProperties::COLOR_TOOLBAR_BEZEL : ThemeProperties::COLOR_TOOLBAR;
-    NSColor* highlightColor = themeProvider->GetNSColor(resourceName, true);
+    NSColor* highlightColor = themeProvider->GetNSColor(resourceName);
     if (highlightColor) {
       [highlightColor set];
       borderRect.origin.y -= [self cr_lineWidth];

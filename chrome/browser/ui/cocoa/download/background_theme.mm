@@ -53,24 +53,23 @@ base::RefCountedMemory* BackgroundTheme::GetRawData(
   return NULL;
 }
 
-NSImage* BackgroundTheme::GetNSImageNamed(int id, bool allow_default) const {
+NSImage* BackgroundTheme::GetNSImageNamed(int id) const {
   return nil;
 }
 
-NSColor* BackgroundTheme::GetNSImageColorNamed(int id,
-                                               bool allow_default) const {
+NSColor* BackgroundTheme::GetNSImageColorNamed(int id) const {
   return nil;
 }
 
-NSColor* BackgroundTheme::GetNSColor(int id, bool allow_default) const {
-  return provider_->GetNSColor(id, allow_default);
+NSColor* BackgroundTheme::GetNSColor(int id) const {
+  return provider_->GetNSColor(id);
 }
 
-NSColor* BackgroundTheme::GetNSColorTint(int id, bool allow_default) const {
+NSColor* BackgroundTheme::GetNSColorTint(int id) const {
   if (id == ThemeProperties::TINT_BUTTONS)
     return borderColor_.get();
 
-  return provider_->GetNSColorTint(id, allow_default);
+  return provider_->GetNSColorTint(id);
 }
 
 NSGradient* BackgroundTheme::GetNSGradient(int id) const {

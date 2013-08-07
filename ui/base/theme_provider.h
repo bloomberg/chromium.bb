@@ -78,29 +78,17 @@ class UI_EXPORT ThemeProvider {
 
 #if defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS)
   // Gets the NSImage with the specified |id|.
-  //
-  // The bitmap is not assumed to exist. If a theme does not provide an image,
-  // if |allow_default| is true, then the default image will be returned, else
-  // this function will return nil.
-  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const = 0;
+  virtual NSImage* GetNSImageNamed(int id) const = 0;
 
   // Gets the NSImage that GetNSImageNamed (above) would return, but returns it
   // as a pattern color.
-  virtual NSColor* GetNSImageColorNamed(int id, bool allow_default) const = 0;
+  virtual NSColor* GetNSImageColorNamed(int id) const = 0;
 
   // Gets the NSColor with the specified |id|.
-  //
-  // The color is not assumed to exist. If a theme does not provide an color, if
-  // |allow_default| is true, then the default color will be returned, else this
-  // function will return nil.
-  virtual NSColor* GetNSColor(int id, bool allow_default) const = 0;
+  virtual NSColor* GetNSColor(int id) const = 0;
 
   // Gets the NSColor for tinting with the specified |id|.
-  //
-  // The tint is not assumed to exist. If a theme does not provide a tint with
-  // that id, if |allow_default| is true, then the default tint will be
-  // returned, else this function will return nil.
-  virtual NSColor* GetNSColorTint(int id, bool allow_default) const = 0;
+  virtual NSColor* GetNSColorTint(int id) const = 0;
 
   // Gets the NSGradient with the specified |id|.
   virtual NSGradient* GetNSGradient(int id) const = 0;

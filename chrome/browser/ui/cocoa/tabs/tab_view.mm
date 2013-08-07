@@ -297,8 +297,7 @@ const CGFloat kRapidCloseDist = 2.5;
   // theme.
   bool active = [[self window] isKeyWindow] || [[self window] isMainWindow] ||
                 !themeProvider->UsingDefaultTheme();
-  return themeProvider->GetNSImageColorNamed(
-      bitmapResources[active][selected], true);
+  return themeProvider->GetNSImageColorNamed(bitmapResources[active][selected]);
 }
 
 // Draws the active tab background.

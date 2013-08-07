@@ -423,7 +423,7 @@ const CGFloat kWindowGradientHeight = 24.0;
     else
       themeImageID = IDR_THEME_FRAME_INACTIVE;
     if (themeProvider->HasCustomImage(IDR_THEME_FRAME))
-      themeImageColor = themeProvider->GetNSImageColorNamed(themeImageID, true);
+      themeImageColor = themeProvider->GetNSImageColorNamed(themeImageID);
   }
 
   // If no theme image, use a gradient if incognito.
@@ -487,8 +487,7 @@ const CGFloat kWindowGradientHeight = 24.0;
       !popup) {
     overlayImage = themeProvider->
         GetNSImageNamed(active ? IDR_THEME_FRAME_OVERLAY :
-                                 IDR_THEME_FRAME_OVERLAY_INACTIVE,
-                        true);
+                                 IDR_THEME_FRAME_OVERLAY_INACTIVE);
   }
 
   if (overlayImage) {

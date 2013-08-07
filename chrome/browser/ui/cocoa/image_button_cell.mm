@@ -165,7 +165,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   if (!themeProvider)
     return nil;
 
-  return themeProvider->GetNSImageNamed(imageID, true);
+  return themeProvider->GetNSImageNamed(imageID);
 }
 
 - (void)setIsMouseInside:(BOOL)isMouseInside {

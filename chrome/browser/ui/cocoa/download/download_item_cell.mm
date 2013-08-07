@@ -414,7 +414,7 @@ using content::DownloadItem;
       [[[self controlView] window] themeProvider];
   if ([self pressedWithDefaultThemeOnPart:part] || !themeProvider)
     return [NSColor alternateSelectedControlTextColor];
-  return themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT, true);
+  return themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
 }
 
 - (void)drawSecondaryTitleInRect:(NSRect)innerFrame {

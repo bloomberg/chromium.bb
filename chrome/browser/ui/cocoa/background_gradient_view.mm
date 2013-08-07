@@ -93,7 +93,7 @@
     return [NSColor blackColor];
   return themeProvider->GetNSColor(
       isActive ? ThemeProperties::COLOR_TOOLBAR_STROKE :
-                 ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE, true);
+                 ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE);
 }
 
 - (NSColor*)backgroundImageColor {
@@ -106,12 +106,12 @@
   // theme.
   if (![[self window] isMainWindow] && themeProvider->UsingDefaultTheme()) {
     NSColor* color = themeProvider->GetNSImageColorNamed(
-        IDR_THEME_TOOLBAR_INACTIVE, true);
+        IDR_THEME_TOOLBAR_INACTIVE);
     if (color)
       return color;
   }
 
-  return themeProvider->GetNSImageColorNamed(IDR_THEME_TOOLBAR, true);
+  return themeProvider->GetNSImageColorNamed(IDR_THEME_TOOLBAR);
 }
 
 - (void)windowFocusDidChange:(NSNotification*)notification {

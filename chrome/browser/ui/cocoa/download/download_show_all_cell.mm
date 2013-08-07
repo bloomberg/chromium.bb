@@ -96,7 +96,7 @@ const CGFloat kOuterStrokeWidth = 1;
       [[[self controlView] window] themeProvider];
   if (!themeProvider || [self pressedWithDefaultTheme])
     return [NSColor alternateSelectedControlTextColor];
-  return themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT, true);
+  return themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
