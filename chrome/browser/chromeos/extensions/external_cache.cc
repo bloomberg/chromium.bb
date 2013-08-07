@@ -61,7 +61,7 @@ void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
   for (base::DictionaryValue::Iterator it(*cached_extensions_.get());
        !it.IsAtEnd(); it.Advance()) {
     const base::DictionaryValue* entry = NULL;
-    if (it.value().GetAsDictionary(&entry)) {
+    if (!it.value().GetAsDictionary(&entry)) {
       NOTREACHED() << "ExternalCache found bad entry with type "
                    << it.value().GetType();
       continue;
