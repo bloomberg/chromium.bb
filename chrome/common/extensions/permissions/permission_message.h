@@ -66,6 +66,7 @@ class PermissionMessage {
     kActivityLogPrivate,
     kBluetoothDevices,
     kDownloadsOpen,
+    kNetworkingPrivate,
     kEnumBoundary,
   };
 
