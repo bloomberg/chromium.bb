@@ -52,7 +52,7 @@ RunTests() {
   fi
 
   for device in 'iPhone' 'iPad'; do
-    iosVersion="5.1"
+    iosVersion="6.1"
     KillSimulator
     local command=(
       "${SimExecutable}" "-d${device}" "-s${iosVersion}" "${appPath}"
