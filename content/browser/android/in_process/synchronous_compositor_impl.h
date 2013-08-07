@@ -48,7 +48,8 @@ class SynchronousCompositorImpl
   // SynchronousCompositor
   virtual void SetClient(SynchronousCompositorClient* compositor_client)
       OVERRIDE;
-  virtual bool InitializeHwDraw() OVERRIDE;
+  virtual bool InitializeHwDraw(
+      scoped_refptr<gfx::GLSurface> surface) OVERRIDE;
   virtual void ReleaseHwDraw() OVERRIDE;
   virtual bool DemandDrawHw(
       gfx::Size view_size,

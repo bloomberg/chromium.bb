@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "gles2_impl_export.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
 
 namespace gfx {
@@ -23,26 +24,26 @@ class GLES2Implementation;
 
 class GpuMemoryBufferFactory;
 
+// The default uninitialized value is -1.
+struct GLES2_IMPL_EXPORT GLInProcessContextAttribs {
+  GLInProcessContextAttribs();
+
+  int32 alpha_size;
+  int32 blue_size;
+  int32 green_size;
+  int32 red_size;
+  int32 depth_size;
+  int32 stencil_size;
+  int32 samples;
+  int32 sample_buffers;
+};
+
 class GLES2_IMPL_EXPORT GLInProcessContext {
  public:
   virtual ~GLInProcessContext() {}
 
   // Must be called before any GLInProcessContext instances are created.
   static void SetGpuMemoryBufferFactory(GpuMemoryBufferFactory* factory);
-
-  // GLInProcessContext configuration attributes. These are the same as used by
-  // EGL. Attributes are matched using a closest fit algorithm.
-  enum Attribute {
-    ALPHA_SIZE     = 0x3021,
-    BLUE_SIZE      = 0x3022,
-    GREEN_SIZE     = 0x3023,
-    RED_SIZE       = 0x3024,
-    DEPTH_SIZE     = 0x3025,
-    STENCIL_SIZE   = 0x3026,
-    SAMPLES        = 0x3031,
-    SAMPLE_BUFFERS = 0x3032,
-    NONE           = 0x3038  // Attrib list = terminator
-  };
 
   // Create a GLInProcessContext, if |is_offscreen| is true, renders to an
   // offscreen context. |attrib_list| must be NULL or a NONE-terminated list
@@ -53,9 +54,21 @@ class GLES2_IMPL_EXPORT GLInProcessContext {
       const gfx::Size& size,
       bool share_resources,
       const char* allowed_extensions,
-      const int32* attrib_list,
-      gfx::GpuPreference gpu_preference,
-      const base::Closure& callback);
+      const GLInProcessContextAttribs& attribs,
+      gfx::GpuPreference gpu_preference);
+
+  // Create context with the provided GLSurface. All other arguments match
+  // CreateContext factory above. Can only be called if the command buffer
+  // service runs on the same thread as this client because GLSurface is not
+  // thread safe.
+  static GLInProcessContext* CreateWithSurface(
+      scoped_refptr<gfx::GLSurface> surface,
+      bool share_resources,
+      const char* allowed_extensions,
+      const GLInProcessContextAttribs& attribs,
+      gfx::GpuPreference gpu_preference);
+
+  virtual void SetContextLostCallback(const base::Closure& callback) = 0;
 
   virtual void SignalSyncPoint(unsigned sync_point,
                                const base::Closure& callback) = 0;

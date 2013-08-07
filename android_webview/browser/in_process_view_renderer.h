@@ -23,6 +23,8 @@ class SkCanvas;
 
 namespace android_webview {
 
+class AwGLSurface;
+
 // Provides RenderViewHost wrapper functionality for sending WebView-specific
 // IPC messages to the renderer and from there to WebKit.
 class InProcessViewRenderer : public BrowserViewRenderer,
@@ -93,6 +95,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
 
   void NoLongerExpectsDrawGL();
 
+  bool InitializeHwDraw();
+
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state and the |draw_info| if provided.
   std::string ToString(AwDrawGLInfo* draw_info) const;
@@ -127,6 +131,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   bool attached_to_window_;
   bool hardware_initialized_;
   bool hardware_failed_;
+  scoped_refptr<AwGLSurface> gl_surface_;
 
   // Used only for detecting Android View System context changes.
   // Not to be used between draw calls.

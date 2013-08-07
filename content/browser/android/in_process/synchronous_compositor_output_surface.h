@@ -61,7 +61,9 @@ class SynchronousCompositorOutputSurface
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
 
   // Partial SynchronousCompositor API implementation.
-  bool InitializeHwDraw(scoped_refptr<cc::ContextProvider> offscreen_context);
+  bool InitializeHwDraw(
+      scoped_refptr<gfx::GLSurface> surface,
+      scoped_refptr<cc::ContextProvider> offscreen_context);
   void ReleaseHwDraw();
   bool DemandDrawHw(gfx::Size surface_size,
                     const gfx::Transform& transform,

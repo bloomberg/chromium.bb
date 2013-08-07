@@ -39,6 +39,7 @@ using WebKit::WGC3Dsizeiptr;
 
 namespace gpu {
 class GLInProcessContext;
+struct GLInProcessContextAttribs;
 }
 
 namespace webkit {
@@ -54,7 +55,17 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   static scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
+  static scoped_ptr<WebKit::WebGraphicsContext3D> WrapContext(
+      scoped_ptr< ::gpu::GLInProcessContext> context,
+      const WebKit::WebGraphicsContext3D::Attributes& attributes);
+
   virtual ~WebGraphicsContext3DInProcessCommandBufferImpl();
+
+  // Convert WebGL context creation attributes into GLInProcessContext / EGL
+  // size requests.
+  static void ConvertAttributes(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes,
+      ::gpu::GLInProcessContextAttribs* output_attribs);
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
@@ -536,6 +547,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
  private:
   WebGraphicsContext3DInProcessCommandBufferImpl(
+      scoped_ptr< ::gpu::GLInProcessContext> context,
       const WebKit::WebGraphicsContext3D::Attributes& attributes,
       bool is_offscreen,
       gfx::AcceleratedWidget window);

@@ -17,7 +17,12 @@
 #include "gpu/gpu_export.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
+
+namespace base {
+class SequenceChecker;
+}
 
 namespace gfx {
 class GLContext;
@@ -57,7 +62,11 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer {
 
   static void EnableVirtualizedContext();
 
-  bool Initialize(bool is_offscreen,
+  // If |surface| is not NULL, use it directly; in this case, the command
+  // buffer gpu thread must be the same as the client thread. Otherwise create
+  // a new GLSurface.
+  bool Initialize(scoped_refptr<gfx::GLSurface> surface,
+                  bool is_offscreen,
                   bool share_resources,
                   gfx::AcceleratedWidget window,
                   const gfx::Size& size,
@@ -118,6 +127,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer {
   base::Closure WrapCallback(const base::Closure& callback);
   State GetStateFast();
   void QueueTask(const base::Closure& task) { queue_->QueueTask(task); }
+  void CheckSequencedThread();
 
   // Callbacks:
   void OnContextLost();
@@ -148,6 +158,10 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer {
   scoped_ptr<SchedulerClient> queue_;
   State state_after_last_flush_;
   base::Lock state_after_last_flush_lock_;
+
+  // Only used with explicit scheduling and the gpu thread is the same as
+  // the client thread.
+  scoped_ptr<base::SequenceChecker> sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessCommandBuffer);
 };

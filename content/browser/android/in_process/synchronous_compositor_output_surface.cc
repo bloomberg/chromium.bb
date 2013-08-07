@@ -15,30 +15,50 @@
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
-#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
-using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 namespace content {
 
 namespace {
 
-// TODO(boliu): RenderThreadImpl should create in process contexts as well.
-scoped_ptr<WebKit::WebGraphicsContext3D> CreateWebGraphicsContext3D() {
+scoped_ptr<WebKit::WebGraphicsContext3D> CreateWebGraphicsContext3D(
+    scoped_refptr<gfx::GLSurface> surface) {
+  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+  if (!gfx::GLSurface::InitializeOneOff())
+    return scoped_ptr<WebKit::WebGraphicsContext3D>();
+
+  const char* allowed_extensions = "*";
+  const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+
   WebKit::WebGraphicsContext3D::Attributes attributes;
   attributes.antialias = false;
   attributes.shareResources = true;
   attributes.noAutomaticFlushes = true;
 
+  gpu::GLInProcessContextAttribs in_process_attribs;
+  WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
+      attributes, &in_process_attribs);
+  scoped_ptr<gpu::GLInProcessContext> context(
+      gpu::GLInProcessContext::CreateWithSurface(surface,
+                                                 attributes.shareResources,
+                                                 allowed_extensions,
+                                                 in_process_attribs,
+                                                 gpu_preference));
+
+  if (!context.get())
+    return scoped_ptr<WebKit::WebGraphicsContext3D>();
+
   return scoped_ptr<WebKit::WebGraphicsContext3D>(
-      WebGraphicsContext3DInProcessCommandBufferImpl
-          ::CreateViewContext(attributes, NULL));
+      WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
+          context.Pass(), attributes));
 }
 
 void DidActivatePendingTree(int routing_id) {
@@ -176,13 +196,15 @@ void AdjustTransformForClip(gfx::Transform* transform, gfx::Rect clip) {
 } // namespace
 
 bool SynchronousCompositorOutputSurface::InitializeHwDraw(
+    scoped_refptr<gfx::GLSurface> surface,
     scoped_refptr<cc::ContextProvider> offscreen_context) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   DCHECK(!context3d_);
+  DCHECK(surface);
 
-  return InitializeAndSetContext3D(CreateWebGraphicsContext3D().Pass(),
-                                   offscreen_context);
+  return InitializeAndSetContext3D(
+      CreateWebGraphicsContext3D(surface).Pass(), offscreen_context);
 }
 
 void SynchronousCompositorOutputSurface::ReleaseHwDraw() {
@@ -204,8 +226,6 @@ bool SynchronousCompositorOutputSurface::DemandDrawHw(
   SetExternalDrawConstraints(adjusted_transform, clip);
   SetExternalStencilTest(stencil_enabled);
   InvokeComposite(clip.size());
-
-  // TODO(boliu): Check if context is lost here.
 
   return did_swap_buffer_;
 }

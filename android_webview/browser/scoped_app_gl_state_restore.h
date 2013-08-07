@@ -25,6 +25,7 @@ class ScopedAppGLStateRestore {
   ~ScopedAppGLStateRestore();
 
   bool stencil_enabled() const { return stencil_test_; }
+  GLint framebuffer_binding_ext() const { return framebuffer_binding_ext_; }
 
  private:
   const CallMode mode_;
@@ -82,6 +83,8 @@ class ScopedAppGLStateRestore {
   GLint stencil_func_;
   GLint stencil_mask_;
   GLint stencil_ref_;
+
+  GLint framebuffer_binding_ext_;
 
   struct TextureBindings {
     GLint texture_2d;

@@ -53,16 +53,17 @@ class GLInProcessContextImpl
   explicit GLInProcessContextImpl();
   virtual ~GLInProcessContextImpl();
 
-  bool Initialize(bool is_offscreen,
+  bool Initialize(scoped_refptr<gfx::GLSurface> surface,
+                  bool is_offscreen,
                   bool share_resources,
                   gfx::AcceleratedWidget window,
                   const gfx::Size& size,
                   const char* allowed_extensions,
-                  const int32* attrib_list,
-                  gfx::GpuPreference gpu_preference,
-                  const base::Closure& context_lost_callback);
+                  const GLInProcessContextAttribs& attribs,
+                  gfx::GpuPreference gpu_preference);
 
   // GLInProcessContext implementation:
+  virtual void SetContextLostCallback(const base::Closure& callback) OVERRIDE;
   virtual void SignalSyncPoint(unsigned sync_point,
                                const base::Closure& callback) OVERRIDE;
   virtual void SignalQuery(unsigned query, const base::Closure& callback)
@@ -79,7 +80,7 @@ class GLInProcessContextImpl
   void Destroy();
   void PollQueryCallbacks();
   void CallQueryCallback(size_t index);
-  void OnContextLost(const base::Closure& callback);
+  void OnContextLost();
   void OnSignalSyncPoint(const base::Closure& callback);
 
   scoped_ptr<gles2::GLES2CmdHelper> gles2_helper_;
@@ -92,6 +93,7 @@ class GLInProcessContextImpl
 
   unsigned int share_group_id_;
   bool context_lost_;
+  base::Closure context_lost_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GLInProcessContextImpl);
 };
@@ -147,9 +149,16 @@ gles2::GLES2Implementation* GLInProcessContextImpl::GetImplementation() {
   return gles2_implementation_.get();
 }
 
-void GLInProcessContextImpl::OnContextLost(const base::Closure& callback) {
+void GLInProcessContextImpl::SetContextLostCallback(
+    const base::Closure& callback) {
+  context_lost_callback_ = callback;
+}
+
+void GLInProcessContextImpl::OnContextLost() {
   context_lost_ = true;
-  callback.Run();
+  if (!context_lost_callback_.is_null()) {
+    context_lost_callback_.Run();
+  }
 }
 
 void GLInProcessContextImpl::OnSignalSyncPoint(const base::Closure& callback) {
@@ -159,47 +168,63 @@ void GLInProcessContextImpl::OnSignalSyncPoint(const base::Closure& callback) {
 }
 
 bool GLInProcessContextImpl::Initialize(
+    scoped_refptr<gfx::GLSurface> surface,
     bool is_offscreen,
     bool share_resources,
     gfx::AcceleratedWidget window,
     const gfx::Size& size,
     const char* allowed_extensions,
-    const int32* attrib_list,
-    gfx::GpuPreference gpu_preference,
-    const base::Closure& context_lost_callback) {
+    const GLInProcessContextAttribs& attribs,
+    gfx::GpuPreference gpu_preference) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
-  std::vector<int32> attribs;
-  while (attrib_list) {
-    int32 attrib = *attrib_list++;
-    switch (attrib) {
-      // Known attributes
-      case ALPHA_SIZE:
-      case BLUE_SIZE:
-      case GREEN_SIZE:
-      case RED_SIZE:
-      case DEPTH_SIZE:
-      case STENCIL_SIZE:
-      case SAMPLES:
-      case SAMPLE_BUFFERS:
-        attribs.push_back(attrib);
-        attribs.push_back(*attrib_list++);
-        break;
-      case NONE:
-        attribs.push_back(attrib);
-        attrib_list = NULL;
-        break;
-      default:
-        attribs.push_back(NONE);
-        attrib_list = NULL;
-        break;
-    }
+  const int32 ALPHA_SIZE     = 0x3021;
+  const int32 BLUE_SIZE      = 0x3022;
+  const int32 GREEN_SIZE     = 0x3023;
+  const int32 RED_SIZE       = 0x3024;
+  const int32 DEPTH_SIZE     = 0x3025;
+  const int32 STENCIL_SIZE   = 0x3026;
+  const int32 SAMPLES        = 0x3031;
+  const int32 SAMPLE_BUFFERS = 0x3032;
+  const int32 NONE           = 0x3038;
+
+  std::vector<int32> attrib_vector;
+  if (attribs.alpha_size >= 0) {
+    attrib_vector.push_back(ALPHA_SIZE);
+    attrib_vector.push_back(attribs.alpha_size);
   }
+  if (attribs.blue_size >= 0) {
+    attrib_vector.push_back(BLUE_SIZE);
+    attrib_vector.push_back(attribs.blue_size);
+  }
+  if (attribs.green_size >= 0) {
+    attrib_vector.push_back(GREEN_SIZE);
+    attrib_vector.push_back(attribs.green_size);
+  }
+  if (attribs.red_size >= 0) {
+    attrib_vector.push_back(RED_SIZE);
+    attrib_vector.push_back(attribs.red_size);
+  }
+  if (attribs.depth_size >= 0) {
+    attrib_vector.push_back(DEPTH_SIZE);
+    attrib_vector.push_back(attribs.depth_size);
+  }
+  if (attribs.stencil_size >= 0) {
+    attrib_vector.push_back(STENCIL_SIZE);
+    attrib_vector.push_back(attribs.stencil_size);
+  }
+  if (attribs.samples >= 0) {
+    attrib_vector.push_back(SAMPLES);
+    attrib_vector.push_back(attribs.samples);
+  }
+  if (attribs.sample_buffers >= 0) {
+    attrib_vector.push_back(SAMPLE_BUFFERS);
+    attrib_vector.push_back(attribs.sample_buffers);
+  }
+  attrib_vector.push_back(NONE);
 
   base::Closure wrapped_callback =
-      base::Bind(&GLInProcessContextImpl::OnContextLost,
-                 AsWeakPtr(),
-                 context_lost_callback);
+      base::Bind(&GLInProcessContextImpl::OnContextLost, AsWeakPtr());
   command_buffer_.reset(new InProcessCommandBuffer());
 
   scoped_ptr<base::AutoLock> scoped_shared_context_lock;
@@ -223,15 +248,16 @@ bool GLInProcessContextImpl::Initialize(
     if (!share_group && !++share_group_id_)
         ++share_group_id_;
   }
-  if (!command_buffer_->Initialize(is_offscreen,
-                              share_resources,
-                              window,
-                              size,
-                              allowed_extensions,
-                              attribs,
-                              gpu_preference,
-                              wrapped_callback,
-                              share_group_id_)) {
+  if (!command_buffer_->Initialize(surface,
+                                   is_offscreen,
+                                   share_resources,
+                                   window,
+                                   size,
+                                   allowed_extensions,
+                                   attrib_vector,
+                                   gpu_preference,
+                                   wrapped_callback,
+                                   share_group_id_)) {
     LOG(INFO) << "Failed to initialize InProcessCommmandBuffer";
     return false;
   }
@@ -337,6 +363,16 @@ void GLInProcessContextImpl::SignalQuery(
 
 }  // anonymous namespace
 
+GLInProcessContextAttribs::GLInProcessContextAttribs()
+    : alpha_size(-1),
+      blue_size(-1),
+      green_size(-1),
+      red_size(-1),
+      depth_size(-1),
+      stencil_size(-1),
+      samples(-1),
+      sample_buffers(-1) {}
+
 // static
 GLInProcessContext* GLInProcessContext::CreateContext(
     bool is_offscreen,
@@ -344,20 +380,42 @@ GLInProcessContext* GLInProcessContext::CreateContext(
     const gfx::Size& size,
     bool share_resources,
     const char* allowed_extensions,
-    const int32* attrib_list,
-    gfx::GpuPreference gpu_preference,
-    const base::Closure& callback) {
+    const GLInProcessContextAttribs& attribs,
+    gfx::GpuPreference gpu_preference) {
   scoped_ptr<GLInProcessContextImpl> context(
       new GLInProcessContextImpl());
   if (!context->Initialize(
+      NULL /* surface */,
       is_offscreen,
       share_resources,
       window,
       size,
       allowed_extensions,
-      attrib_list,
-      gpu_preference,
-      callback))
+      attribs,
+      gpu_preference))
+    return NULL;
+
+  return context.release();
+}
+
+// static
+GLInProcessContext* GLInProcessContext::CreateWithSurface(
+    scoped_refptr<gfx::GLSurface> surface,
+    bool share_resources,
+    const char* allowed_extensions,
+    const GLInProcessContextAttribs& attribs,
+    gfx::GpuPreference gpu_preference) {
+  scoped_ptr<GLInProcessContextImpl> context(
+      new GLInProcessContextImpl());
+  if (!context->Initialize(
+      surface,
+      surface->IsOffscreen(),
+      share_resources,
+      gfx::kNullAcceleratedWidget,
+      surface->GetSize(),
+      allowed_extensions,
+      attribs,
+      gpu_preference))
     return NULL;
 
   return context.release();

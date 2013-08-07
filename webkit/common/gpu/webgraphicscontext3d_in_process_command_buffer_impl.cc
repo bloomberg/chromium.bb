@@ -73,7 +73,7 @@ WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
   scoped_ptr<WebKit::WebGraphicsContext3D> context;
   if (gfx::GLSurface::InitializeOneOff()) {
     context.reset(new WebGraphicsContext3DInProcessCommandBufferImpl(
-      attributes, false, window));
+      scoped_ptr< ::gpu::GLInProcessContext>(), attributes, false, window));
   }
   return context.Pass();
 }
@@ -83,12 +83,29 @@ scoped_ptr<WebKit::WebGraphicsContext3D>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
-      attributes, true, gfx::kNullAcceleratedWidget))
+                             scoped_ptr< ::gpu::GLInProcessContext>(),
+                             attributes,
+                             true,
+                             gfx::kNullAcceleratedWidget))
+      .PassAs<WebKit::WebGraphicsContext3D>();
+}
+
+scoped_ptr<WebKit::WebGraphicsContext3D>
+WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
+    scoped_ptr< ::gpu::GLInProcessContext> context,
+    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
+  return make_scoped_ptr(
+      new WebGraphicsContext3DInProcessCommandBufferImpl(
+          context.Pass(),
+          attributes,
+          true /* is_offscreen. Not used. */,
+          gfx::kNullAcceleratedWidget /* window. Not used. */))
       .PassAs<WebKit::WebGraphicsContext3D>();
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     WebGraphicsContext3DInProcessCommandBufferImpl(
+        scoped_ptr< ::gpu::GLInProcessContext> context,
         const WebKit::WebGraphicsContext3D::Attributes& attributes,
         bool is_offscreen,
         gfx::AcceleratedWidget window)
@@ -96,6 +113,7 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
       window_(window),
       initialized_(false),
       initialize_failed_(false),
+      context_(context.Pass()),
       gl_(NULL),
       context_lost_callback_(NULL),
       context_lost_reason_(GL_NO_ERROR),
@@ -108,6 +126,17 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
     ~WebGraphicsContext3DInProcessCommandBufferImpl() {
 }
 
+// static
+void WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
+    const WebKit::WebGraphicsContext3D::Attributes& attributes,
+    ::gpu::GLInProcessContextAttribs* output_attribs) {
+  output_attribs->alpha_size = attributes.alpha ? 8 : 0;
+  output_attribs->depth_size = attributes.depth ? 24 : 0;
+  output_attribs->stencil_size = attributes.stencil ? 8 : 0;
+  output_attribs->samples = attributes.antialias ? 4 : 0;
+  output_attribs->sample_buffers = attributes.antialias ? 1 : 0;
+}
+
 bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   if (initialized_)
     return true;
@@ -118,46 +147,35 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   // Ensure the gles2 library is initialized first in a thread safe way.
   g_gles2_initializer.Get();
 
-  // Convert WebGL context creation attributes into GLInProcessContext / EGL
-  // size requests.
-  const int alpha_size = attributes_.alpha ? 8 : 0;
-  const int depth_size = attributes_.depth ? 24 : 0;
-  const int stencil_size = attributes_.stencil ? 8 : 0;
-  const int samples = attributes_.antialias ? 4 : 0;
-  const int sample_buffers = attributes_.antialias ? 1 : 0;
-  const int32 attribs[] = {
-    GLInProcessContext::ALPHA_SIZE, alpha_size,
-    GLInProcessContext::DEPTH_SIZE, depth_size,
-    GLInProcessContext::STENCIL_SIZE, stencil_size,
-    GLInProcessContext::SAMPLES, samples,
-    GLInProcessContext::SAMPLE_BUFFERS, sample_buffers,
-    GLInProcessContext::NONE,
-  };
-
-  const char* preferred_extensions = "*";
-
-  // TODO(kbr): More work will be needed in this implementation to
-  // properly support GPU switching. Like in the out-of-process
-  // command buffer implementation, all previously created contexts
-  // will need to be lost either when the first context requesting the
-  // discrete GPU is created, or the last one is destroyed.
-  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-
-  base::Closure context_lost_callback =
-      base::Bind(&WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost,
-                 base::Unretained(this));
-
-  context_.reset(GLInProcessContext::CreateContext(
-      is_offscreen_,
-      window_,
-      gfx::Size(1, 1),
-      attributes_.shareResources,
-      preferred_extensions,
-      attribs,
-      gpu_preference,
-      context_lost_callback));
-
   if (!context_) {
+    const char* preferred_extensions = "*";
+
+    // TODO(kbr): More work will be needed in this implementation to
+    // properly support GPU switching. Like in the out-of-process
+    // command buffer implementation, all previously created contexts
+    // will need to be lost either when the first context requesting the
+    // discrete GPU is created, or the last one is destroyed.
+    gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+
+    ::gpu::GLInProcessContextAttribs attrib_struct;
+    ConvertAttributes(attributes_, &attrib_struct),
+
+    context_.reset(GLInProcessContext::CreateContext(
+        is_offscreen_,
+        window_,
+        gfx::Size(1, 1),
+        attributes_.shareResources,
+        preferred_extensions,
+        attrib_struct,
+        gpu_preference));
+  }
+
+  if (context_) {
+    base::Closure context_lost_callback = base::Bind(
+        &WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost,
+        base::Unretained(this));
+    context_->SetContextLostCallback(context_lost_callback);
+  } else {
     initialize_failed_ = true;
     return false;
   }

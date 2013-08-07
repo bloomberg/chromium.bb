@@ -16,6 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
+#include "ui/gl/gl_surface.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
 
 namespace content {
@@ -143,10 +144,12 @@ void SynchronousCompositorImpl::SetClient(
   compositor_client_ = compositor_client;
 }
 
-bool SynchronousCompositorImpl::InitializeHwDraw() {
+bool SynchronousCompositorImpl::InitializeHwDraw(
+    scoped_refptr<gfx::GLSurface> surface) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
   return output_surface_->InitializeHwDraw(
+      surface,
       g_factory.Get().GetOffscreenContextProviderForCompositorThread());
 }
 

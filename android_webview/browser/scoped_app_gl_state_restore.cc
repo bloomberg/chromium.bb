@@ -132,6 +132,7 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
   glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencil_mask_);
   glGetIntegerv(GL_STENCIL_REF, &stencil_ref_);
 
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &framebuffer_binding_ext_);
 
   if (!g_gl_max_texture_units) {
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &g_gl_max_texture_units);
@@ -155,6 +156,7 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
   TRACE_EVENT0("android_webview", "AppGLStateRestore");
   MakeAppContextCurrent();
 
+  glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_binding_ext_);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding_);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_buffer_binding_);
 

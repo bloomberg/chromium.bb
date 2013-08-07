@@ -6,6 +6,7 @@
 
 #include <android/bitmap.h>
 
+#include "android_webview/browser/aw_gl_surface.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/public/browser/draw_gl.h"
@@ -289,6 +290,19 @@ bool InProcessViewRenderer::OnDraw(jobject java_canvas,
   return result;
 }
 
+bool InProcessViewRenderer::InitializeHwDraw() {
+  TRACE_EVENT0("android_webview", "InitializeHwDraw");
+  DCHECK(!gl_surface_);
+  gl_surface_  = new AwGLSurface;
+  hardware_failed_ = !compositor_->InitializeHwDraw(gl_surface_);
+  hardware_initialized_ = true;
+
+  if (hardware_failed_)
+    gl_surface_ = NULL;
+
+  return !hardware_failed_;
+}
+
 void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawGL");
   DCHECK(visible_);
@@ -309,13 +323,11 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   ScopedAllowGL allow_gl;
 
   if (attached_to_window_ && compositor_ && !hardware_initialized_) {
-    TRACE_EVENT0("android_webview", "InitializeHwDraw");
-    hardware_failed_ = !compositor_->InitializeHwDraw();
-    hardware_initialized_ = true;
-    last_egl_context_ = current_context;
-
-    if (hardware_failed_)
+    if (InitializeHwDraw()) {
+      last_egl_context_ = current_context;
+    } else {
       return;
+    }
   }
 
   if (draw_info->mode == AwDrawGLInfo::kModeProcess)
@@ -330,7 +342,6 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     TRACE_EVENT_INSTANT0(
         "android_webview", "EGLContextChanged", TRACE_EVENT_SCOPE_THREAD);
   }
-  last_egl_context_ = current_context;
 
   if (!compositor_) {
     TRACE_EVENT_INSTANT0(
@@ -338,21 +349,26 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     return;
   }
 
+  DCHECK(gl_surface_);
+  gl_surface_->SetBackingFrameBufferObject(
+      state_restore.framebuffer_binding_ext());
+
   gfx::Transform transform;
   transform.matrix().setColMajorf(draw_info->transform);
   transform.Translate(scroll_at_start_of_frame_.x(),
                       scroll_at_start_of_frame_.y());
-  // TODO(joth): Check return value.
-  block_invalidates_ = true;
   gfx::Rect clip_rect(draw_info->clip_left,
                       draw_info->clip_top,
                       draw_info->clip_right - draw_info->clip_left,
                       draw_info->clip_bottom - draw_info->clip_top);
+  block_invalidates_ = true;
+  // TODO(joth): Check return value.
   compositor_->DemandDrawHw(gfx::Size(draw_info->width, draw_info->height),
                             transform,
                             clip_rect,
                             state_restore.stencil_enabled());
   block_invalidates_ = false;
+  gl_surface_->ResetBackingFrameBufferObject();
 
   UpdateCachedGlobalVisibleRect();
   bool drew_full_visible_rect = clip_rect.Contains(cached_global_visible_rect_);
@@ -554,6 +570,7 @@ void InProcessViewRenderer::OnDetachedFromWindow() {
     hardware_initialized_ = false;
   }
 
+  gl_surface_ = NULL;
   attached_to_window_ = false;
 }
 

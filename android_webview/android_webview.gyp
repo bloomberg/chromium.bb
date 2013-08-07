@@ -111,6 +111,8 @@
         'browser/aw_download_manager_delegate.h',
         'browser/aw_form_database_service.cc',
         'browser/aw_form_database_service.h',
+        'browser/aw_gl_surface.cc',
+        'browser/aw_gl_surface.h',
         'browser/aw_http_auth_handler_base.cc',
         'browser/aw_http_auth_handler_base.h',
         'browser/aw_javascript_dialog_manager.cc',
