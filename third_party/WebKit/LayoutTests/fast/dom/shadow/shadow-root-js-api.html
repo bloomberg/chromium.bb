@@ -15,14 +15,18 @@ description("Tests for ShadowRoot JS APIs. Can only run within DRT");
 if (window.testRunner)
     testRunner.dumpAsText();
 
-shouldBeUndefined("window.ShadowRoot");
+// WebKitShadowRoot is always available, while ShadowRoot is available when a run-time flag is set
+// (which is always enabled in testing).
+shouldBeDefined("window.ShadowRoot");
 shouldBeDefined("window.WebKitShadowRoot");
+shouldThrow("new window.ShadowRoot(document.createElement('div'))");
 shouldThrow("new window.WebKitShadowRoot(document.createElement('div'))");
 
 var shadowHost = document.createElement('div');
 document.body.appendChild(shadowHost);
 var shadowRoot = shadowHost.createShadowRoot();
 
+shouldBeTrue("shadowRoot instanceof window.ShadowRoot");
 shouldBeTrue("shadowRoot instanceof window.WebKitShadowRoot");
 
 var div1 = document.createElement("div");
@@ -59,8 +63,6 @@ shouldBe("shadowRoot.querySelectorAll('foo')", "[]");
 
 var youngerShadowRoot = shadowHost.createShadowRoot();
 shouldNotBe("youngerShadowRoot", "shadowRoot");
-
-
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </body>

@@ -397,6 +397,7 @@ ScriptProcessorNode
 SecurityPolicy
 SecurityPolicyViolationEvent
 Selection
+ShadowRoot
 SharedWorker
 SpeechInputEvent
 SpeechSynthesisEvent

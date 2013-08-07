@@ -34,7 +34,7 @@ PASS PageTransitionEvent.length is 1
 FAIL PeerConnection.length should be 2. Threw exception ReferenceError: PeerConnection is not defined
 PASS PopStateEvent.length is 1
 PASS ProgressEvent.length is 1
-FAIL ShadowRoot.length should be 1. Threw exception ReferenceError: ShadowRoot is not defined
+PASS ShadowRoot.length is 0
 PASS SharedWorker.length is 1
 PASS StorageEvent.length is 1
 PASS TextTrackCue.length is 3
