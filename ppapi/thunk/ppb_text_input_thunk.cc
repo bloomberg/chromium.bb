@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
+#include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/ppb_text_input_controller.h"
-
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -14,10 +15,38 @@ namespace thunk {
 
 namespace {
 
+COMPILE_ASSERT(int(PP_TEXTINPUT_TYPE_DEV_NONE) == int(PP_TEXTINPUT_TYPE_NONE),
+               mismatching_enums);
+COMPILE_ASSERT(int(PP_TEXTINPUT_TYPE_DEV_TEXT) == int(PP_TEXTINPUT_TYPE_TEXT),
+               mismatching_enums);
+COMPILE_ASSERT(
+    int(PP_TEXTINPUT_TYPE_DEV_PASSWORD) == int(PP_TEXTINPUT_TYPE_PASSWORD),
+    mismatching_enums);
+COMPILE_ASSERT(
+    int(PP_TEXTINPUT_TYPE_DEV_SEARCH) == int(PP_TEXTINPUT_TYPE_SEARCH),
+    mismatching_enums);
+COMPILE_ASSERT(int(PP_TEXTINPUT_TYPE_DEV_EMAIL) == int(PP_TEXTINPUT_TYPE_EMAIL),
+               mismatching_enums);
+COMPILE_ASSERT(
+    int(PP_TEXTINPUT_TYPE_DEV_NUMBER) == int(PP_TEXTINPUT_TYPE_NUMBER),
+    mismatching_enums);
+COMPILE_ASSERT(
+    int(PP_TEXTINPUT_TYPE_DEV_TELEPHONE) == int(PP_TEXTINPUT_TYPE_TELEPHONE),
+    mismatching_enums);
+COMPILE_ASSERT(int(PP_TEXTINPUT_TYPE_DEV_URL) == int(PP_TEXTINPUT_TYPE_URL),
+               mismatching_enums);
+
 void SetTextInputType(PP_Instance instance, PP_TextInput_Type type) {
   EnterInstance enter(instance);
   if (enter.succeeded())
     enter.functions()->SetTextInputType(instance, type);
+}
+
+void SetTextInputType_0_2(PP_Instance instance, PP_TextInput_Type_Dev type) {
+  EnterInstance enter(instance);
+  if (enter.succeeded())
+    enter.functions()->SetTextInputType(instance,
+                                        static_cast<PP_TextInput_Type>(type));
 }
 
 void UpdateCaretPosition_0_2(PP_Instance instance,
@@ -66,13 +95,13 @@ void SelectionChanged(PP_Instance instance) {
 }
 
 const PPB_TextInput_Dev_0_1 g_ppb_textinput_0_1_thunk = {
-  &SetTextInputType,
+  &SetTextInputType_0_2,
   &UpdateCaretPosition_0_2,
   &CancelCompositionText,
 };
 
 const PPB_TextInput_Dev_0_2 g_ppb_textinput_0_2_thunk = {
-  &SetTextInputType,
+  &SetTextInputType_0_2,
   &UpdateCaretPosition_0_2,
   &CancelCompositionText,
   &UpdateSurroundingText_0_2,

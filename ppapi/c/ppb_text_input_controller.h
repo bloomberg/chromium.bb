@@ -3,12 +3,11 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_text_input_controller.idl modified Sat Jul 27 00:04:53 2013. */
+/* From ppb_text_input_controller.idl modified Thu Aug  1 09:30:48 2013. */
 
 #ifndef PPAPI_C_PPB_TEXT_INPUT_CONTROLLER_H_
 #define PPAPI_C_PPB_TEXT_INPUT_CONTROLLER_H_
 
-#include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
@@ -26,6 +25,39 @@
  * This file defines the <code>PPB_TextInputController</code> interface.
  */
 
+
+/**
+ * @addtogroup Enums
+ * @{
+ */
+/**
+ * PP_TextInput_Type is used to indicate the status of a plugin in regard to
+ * text input.
+ */
+typedef enum {
+  /**
+   * Input caret is not in an editable mode, no input method shall be used.
+   */
+  PP_TEXTINPUT_TYPE_NONE = 0,
+  /**
+   * Input caret is in a normal editable mode, any input method can be used.
+   */
+  PP_TEXTINPUT_TYPE_TEXT = 1,
+  /**
+   * Input caret is in a password box, an input method may be used only if
+   * it's suitable for password input.
+   */
+  PP_TEXTINPUT_TYPE_PASSWORD = 2,
+  PP_TEXTINPUT_TYPE_SEARCH = 3,
+  PP_TEXTINPUT_TYPE_EMAIL = 4,
+  PP_TEXTINPUT_TYPE_NUMBER = 5,
+  PP_TEXTINPUT_TYPE_TELEPHONE = 6,
+  PP_TEXTINPUT_TYPE_URL = 7
+} PP_TextInput_Type;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TextInput_Type, 4);
+/**
+ * @}
+ */
 
 /**
  * @addtogroup Interfaces

@@ -44,7 +44,6 @@
 #include "ppapi/cpp/dev/find_dev.h"
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/dev/selection_dev.h"
-#include "ppapi/cpp/dev/text_input_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/dev/zoom_dev.h"
 #include "ppapi/cpp/image_data.h"
@@ -52,6 +51,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/mouse_lock.h"
 #include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/text_input_controller.h"
 
 #include "ppapi/native_client/src/trusted/plugin/file_utils.h"
 #include "ppapi/native_client/src/trusted/plugin/json_manifest.h"
@@ -318,7 +318,7 @@ bool Plugin::Init(int argc, char* argn[], char* argv[]) {
   // This makes discrepancy among platforms and therefore we should remove
   // this hack when IME API is made available.
   // The default for non-Mac platforms is still off-the-spot IME mode.
-  pp::TextInput_Dev(this).SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
+  pp::TextInputController(this).SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
 #endif
 
   // Remember the embed/object argn/argv pairs.

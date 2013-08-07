@@ -1978,8 +1978,6 @@ static void Pnacl_M28_PPB_Testing_Dev_SetMinimumArrayBufferSizeForShmem(PP_Insta
 
 /* Not generating wrapper methods for PPB_TextInput_Dev_0_2 */
 
-/* Not generating wrapper methods for PPB_TextInput_Dev_None */
-
 /* Not generating wrapper methods for PPB_Trace_Event_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Trace_Event_Dev_0_2 */
@@ -4409,8 +4407,6 @@ struct PPB_Testing_Dev_0_92 Pnacl_Wrappers_PPB_Testing_Dev_0_92 = {
 /* Not generating wrapper interface for PPB_TextInput_Dev_0_1 */
 
 /* Not generating wrapper interface for PPB_TextInput_Dev_0_2 */
-
-/* Not generating wrapper interface for PPB_TextInput_Dev_None */
 
 /* Not generating wrapper interface for PPB_Trace_Event_Dev_0_1 */
 

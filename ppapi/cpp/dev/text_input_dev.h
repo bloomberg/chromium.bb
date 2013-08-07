@@ -45,7 +45,7 @@ class TextInput_Dev {
 
   virtual void RequestSurroundingText(uint32_t desired_number_of_characters);
 
-  void SetTextInputType(PP_TextInput_Type type);
+  void SetTextInputType(PP_TextInput_Type_Dev type);
   void UpdateCaretPosition(const Rect& caret, const Rect& bounding_box);
   void CancelCompositionText();
   void SelectionChanged();
