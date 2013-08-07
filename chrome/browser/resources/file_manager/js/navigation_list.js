@@ -85,26 +85,6 @@ NavigationListModel.prototype.item = function(index) {
 };
 
 /**
- * Type of the item on the navigation list.
- * @enum {number}
- */
-NavigationListModel.ItemType = {
-  ROOT: 1,
-  PINNED: 2
-};
-
-/**
- * Returns the type of the item at the given index.
- * @param {number} index The index of the entry to get.
- * @return {NavigationListModel.ItemType} The type of the item.
- */
-NavigationListModel.prototype.getItemType = function(index) {
-  var offset = this.volumesList_.length;
-  return index < offset ?
-      NavigationListModel.ItemType.ROOT : NavigationListModel.ItemType.PINNED;
-};
-
-/**
  * Returns the number of items in the model.
  * @return {number} The length of the model.
  * @private
