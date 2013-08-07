@@ -1,7 +1,7 @@
 <div>
   <h4 id="{{id}}">{{name}}</h4>
   <div class="summary{{^returns}} uncapitalize{{/}}">
-    <span>{{?returns}}{{+partials.variable_type}} {{/}}{{?parent_name}}{{parent_name}}{{:}}chrome.{{api.name}}{{/}}.{{name}}</span>({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
+    <span>{{?returns}}{{+partials.variable_type}} {{/}}{{?parentName}}{{parentName}}{{:}}chrome.{{api.name}}{{/}}.{{name}}</span>({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
   </div>
   <div class="description">
     {{?description}}

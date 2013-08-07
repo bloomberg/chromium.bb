@@ -316,7 +316,7 @@ class _JSCModel(object):
     }
     if (function.parent is not None and
         not isinstance(function.parent, model.Namespace)):
-      function_dict['parent_name'] = function.parent.simple_name
+      function_dict['parentName'] = function.parent.simple_name
     if function.returns:
       function_dict['returns'] = self._GenerateType(function.returns)
     for param in function.params:
@@ -347,7 +347,7 @@ class _JSCModel(object):
     }
     if (event.parent is not None and
         not isinstance(event.parent, model.Namespace)):
-      event_dict['parent_name'] = event.parent.simple_name
+      event_dict['parentName'] = event.parent.simple_name
     if event.callback is not None:
       # Show the callback as an extra parameter.
       event_dict['parameters'].append(
@@ -408,7 +408,7 @@ class _JSCModel(object):
 
     if (property_.parent is not None and
         not isinstance(property_.parent, model.Namespace)):
-      property_dict['parent_name'] = property_.parent.simple_name
+      property_dict['parentName'] = property_.parent.simple_name
 
     value = property_.value
     if value is not None:
@@ -431,7 +431,7 @@ class _JSCModel(object):
     }
     if (callback.parent is not None and
         not isinstance(callback.parent, model.Namespace)):
-      property_dict['parent_name'] = callback.parent.simple_name
+      property_dict['parentName'] = callback.parent.simple_name
     return property_dict
 
   def _RenderTypeInformation(self, type_, dst_dict):

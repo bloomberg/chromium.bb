@@ -1,7 +1,7 @@
 <div>
   <h4 id="{{id}}">{{name}}</h4>
   <div class="summary">
-    <span class="subdued">{{?parent_name}}{{parent_name}}{{:}}chrome.{{api.name}}{{/}}.</span>{{name}}<span class="subdued">.addListener</span>(function({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})<span class="subdued"> {...}</span>);
+    <span class="subdued">{{?parentName}}{{parentName}}{{:}}chrome.{{api.name}}{{/}}.</span>{{name}}<span class="subdued">.addListener</span>(function({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})<span class="subdued"> {...}</span>);
   </div>
   <div class="description">
     {{?description}}<p>
