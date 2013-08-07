@@ -119,6 +119,7 @@ JobScheduler::JobScheduler(
     DriveServiceInterface* drive_service,
     base::SequencedTaskRunner* blocking_task_runner)
     : throttle_count_(0),
+      wait_until_(base::Time::Now()),
       disable_throttling_(false),
       drive_service_(drive_service),
       uploader_(new DriveUploader(drive_service, blocking_task_runner)),
@@ -718,6 +719,18 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
     }
   }
 
+  // Wait when throttled.
+  const base::Time now = base::Time::Now();
+  if (now < wait_until_) {
+    base::MessageLoopProxy::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&JobScheduler::DoJobLoop,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   queue_type),
+        wait_until_ - now);
+    return;
+  }
+
   // Run the job with the highest priority in the queue.
   JobID job_id = -1;
   if (!queue_[queue_type]->PopForRun(accepted_priority, &job_id))
@@ -728,10 +741,12 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
 
   JobInfo* job_info = &entry->job_info;
   job_info->state = STATE_RUNNING;
-  job_info->start_time = base::Time::Now();
+  job_info->start_time = now;
   NotifyJobUpdated(*job_info);
 
   entry->cancel_callback = entry->task.Run();
+
+  UpdateWait();
 
   util::Log(logging::LOG_INFO,
             "Job started: %s - %s",
@@ -764,42 +779,19 @@ int JobScheduler::GetCurrentAcceptedPriority(QueueType queue_type) {
   return BACKGROUND;
 }
 
-void JobScheduler::ThrottleAndContinueJobLoop(QueueType queue_type) {
+void JobScheduler::UpdateWait() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (throttle_count_ < kMaxThrottleCount)
-    throttle_count_++;
+  if (disable_throttling_ || throttle_count_ == 0)
+    return;
 
-  base::TimeDelta delay;
-  if (disable_throttling_) {
-    delay = base::TimeDelta::FromSeconds(0);
-  } else {
-    // Exponential backoff: https://developers.google.com/drive/handle-errors.
-    delay =
+  // Exponential backoff: https://developers.google.com/drive/handle-errors.
+  base::TimeDelta delay =
       base::TimeDelta::FromSeconds(1 << (throttle_count_ - 1)) +
       base::TimeDelta::FromMilliseconds(base::RandInt(0, 1000));
-  }
   VLOG(1) << "Throttling for " << delay.InMillisecondsF();
 
-  const bool posted = base::MessageLoopProxy::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&JobScheduler::DoJobLoop,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 queue_type),
-      delay);
-  DCHECK(posted);
-}
-
-void JobScheduler::ResetThrottleAndContinueJobLoop(QueueType queue_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Post a task to continue the job loop.  This allows us to finish handling
-  // the current job before starting the next one.
-  throttle_count_ = 0;
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(&JobScheduler::DoJobLoop,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 queue_type));
+  wait_until_ = std::max(wait_until_, base::Time::Now() + delay);
 }
 
 bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
@@ -821,9 +813,20 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
             GetQueueInfo(queue_type).c_str());
 
   // Retry, depending on the error.
-  if ((error == google_apis::HTTP_SERVICE_UNAVAILABLE ||
-      error == google_apis::HTTP_INTERNAL_SERVER_ERROR) &&
-      job_entry->retry_count < kMaxRetryCount) {
+  const bool is_server_error =
+      error == google_apis::HTTP_SERVICE_UNAVAILABLE ||
+      error == google_apis::HTTP_INTERNAL_SERVER_ERROR;
+  if (is_server_error) {
+    if (throttle_count_ < kMaxThrottleCount)
+      ++throttle_count_;
+    UpdateWait();
+  } else {
+    throttle_count_ = 0;
+  }
+
+  const bool should_retry =
+      is_server_error && job_entry->retry_count < kMaxRetryCount;
+  if (should_retry) {
     job_entry->cancel_callback.Reset();
     job_info->state = STATE_RETRY;
     NotifyJobUpdated(*job_info);
@@ -832,18 +835,20 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
 
     // Requeue the job.
     QueueJob(job_id);
-
-    ThrottleAndContinueJobLoop(queue_type);
-    return false;
   } else {
     NotifyJobDone(*job_info, error);
     // The job has finished, no retry will happen in the scheduler. Now we can
     // remove the job info from the map.
     job_map_.Remove(job_id);
-
-    ResetThrottleAndContinueJobLoop(queue_type);
-    return true;
   }
+
+  // Post a task to continue the job loop.  This allows us to finish handling
+  // the current job before starting the next one.
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(&JobScheduler::DoJobLoop,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 queue_type));
+  return !should_retry;
 }
 
 void JobScheduler::OnGetResourceListJobDone(

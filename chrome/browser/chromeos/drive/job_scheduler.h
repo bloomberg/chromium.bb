@@ -244,12 +244,8 @@ class JobScheduler
   // currently allowed to start for the |queue_type|.
   int GetCurrentAcceptedPriority(QueueType queue_type);
 
-  // Increases the throttle delay if it's below the maximum value, and posts a
-  // task to continue the loop after the delay.
-  void ThrottleAndContinueJobLoop(QueueType queue_type);
-
-  // Resets the throttle delay to the initial value, and continues the job loop.
-  void ResetThrottleAndContinueJobLoop(QueueType queue_type);
+  // Updates |wait_until_| to throttle requests.
+  void UpdateWait();
 
   // Retries the job if needed and returns false. Otherwise returns true.
   bool OnJobDone(JobID job_id, google_apis::GDataErrorCode error);
@@ -351,6 +347,9 @@ class JobScheduler
   // kMaxThrottleCount.  This is used to calculate the delay before running the
   // next task.
   int throttle_count_;
+
+  // Jobs should not start running until this time. Used for throttling.
+  base::Time wait_until_;
 
   // Disables throttling for testing.
   bool disable_throttling_;
