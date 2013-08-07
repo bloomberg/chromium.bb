@@ -13,9 +13,12 @@ function test()
     }
 
     var workspace = WebInspector.workspace;
+    var snippetsProject = WebInspector.scriptSnippetModel.project();
     InspectorTest.runDebuggerTestSuite([
         function testCreateEditRenameRemove(next)
         {
+            var uiSourceCode1;
+
             function filterSnippet(uiSourceCode)
             {
                 return uiSourceCode.project().type() === WebInspector.projectTypes.Snippets;
@@ -60,64 +63,66 @@ function test()
             }
 
             resetSnippetsSettings();
-            var uiSourceCode1 = WebInspector.scriptSnippetModel.createScriptSnippet();
-            uiSourceCode1.requestContent(contentCallback);
-            uiSourceCode1.addRevision("<snippet content>");
-            InspectorTest.addResult("Snippet content set.");
-            delete uiSourceCode1._content;
-            delete uiSourceCode1._contentLoaded;
-            uiSourceCode1.requestContent(contentCallback);
-            InspectorTest.addResult("Snippet1 created.");
-            var uiSourceCode2 = WebInspector.scriptSnippetModel.createScriptSnippet();
-            InspectorTest.addResult("Snippet2 created.");
-            renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
-            renameSnippetAndCheckWorkspace(uiSourceCode1, "   ");
-            renameSnippetAndCheckWorkspace(uiSourceCode1, " bar ");
-            renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
-            renameSnippetAndCheckWorkspace(uiSourceCode2, "bar");
-            renameSnippetAndCheckWorkspace(uiSourceCode2, "foo");
-            delete uiSourceCode1._content;
-            delete uiSourceCode1._contentLoaded;
-            uiSourceCode1.requestContent(contentCallback);
+            
+            snippetsProject.createFile("", null, step2.bind(this));
+            
+            function step2(path)
+            {
+                uiSourceCode1 = snippetsProject.uiSourceCode(path);
+                
+                uiSourceCode1.requestContent(contentCallback);
+                uiSourceCode1.addRevision("<snippet content>");
+                InspectorTest.addResult("Snippet content set.");
+                delete uiSourceCode1._content;
+                delete uiSourceCode1._contentLoaded;
+                uiSourceCode1.requestContent(contentCallback);
+                InspectorTest.addResult("Snippet1 created.");
 
-            WebInspector.scriptSnippetModel.deleteScriptSnippet(uiSourceCode1);
-            WebInspector.scriptSnippetModel.deleteScriptSnippet(uiSourceCode2);
+                snippetsProject.createFile("", null, step3.bind(this));
+            }
 
-            var uiSourceCode3 = WebInspector.scriptSnippetModel.createScriptSnippet();
-            InspectorTest.addResult("Snippet3 created.");
-            WebInspector.scriptSnippetModel.deleteScriptSnippet(uiSourceCode3);
-            InspectorTest.addResult("Snippet3 deleted.");
+            function step3(path)
+            {
+                var uiSourceCode2 = snippetsProject.uiSourceCode(path);
+                InspectorTest.addResult("Snippet2 created.");
+                renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
+                renameSnippetAndCheckWorkspace(uiSourceCode1, "   ");
+                renameSnippetAndCheckWorkspace(uiSourceCode1, " bar ");
+                renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
+                renameSnippetAndCheckWorkspace(uiSourceCode2, "bar");
+                renameSnippetAndCheckWorkspace(uiSourceCode2, "foo");
+                delete uiSourceCode1._content;
+                delete uiSourceCode1._contentLoaded;
+                uiSourceCode1.requestContent(contentCallback);
+    
+                snippetsProject.deleteFile(uiSourceCode1);
+                snippetsProject.deleteFile(uiSourceCode2);
 
-            InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().filter(filterSnippet).length);
-            var storageSnippetsCount = WebInspector.scriptSnippetModel._snippetStorage.snippets().length;
-            InspectorTest.addResult("Number of snippets in the storage: " + storageSnippetsCount);
+                snippetsProject.createFile("", null, step4.bind(this));
+            }
 
-            workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
-            workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
-
-            next();
+            function step4(path)
+            {
+                var uiSourceCode3 = snippetsProject.uiSourceCode(path);
+                InspectorTest.addResult("Snippet3 created.");
+                snippetsProject.deleteFile(uiSourceCode3);
+                InspectorTest.addResult("Snippet3 deleted.");
+    
+                InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().filter(filterSnippet).length);
+                var storageSnippetsCount = WebInspector.scriptSnippetModel._snippetStorage.snippets().length;
+                InspectorTest.addResult("Number of snippets in the storage: " + storageSnippetsCount);
+    
+                workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+                workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+    
+                next();
+            }
         },
 
         function testEvaluate(next)
         {
-            resetSnippetsSettings();
-
-            var uiSourceCode1 = WebInspector.scriptSnippetModel.createScriptSnippet();
-            uiSourceCode1.rename("Snippet1", function() { });
-            var content = "";
-            content += "// This snippet does nothing.\n";
-            content += "var i = 2+2;\n";
-            uiSourceCode1.setWorkingCopy(content);
-
-            var uiSourceCode2 = WebInspector.scriptSnippetModel.createScriptSnippet();
-            uiSourceCode2.rename("Snippet2", function() { });
-            content = "";
-            content += "// This snippet creates a function that does nothing and returns it.\n";
-            content += "function doesNothing() {\n";
-            content += "    var  i = 2+2;\n";
-            content += "};\n";
-            content += "doesNothing;\n";
-            uiSourceCode2.setWorkingCopy(content);
+            var uiSourceCode1;
+            var uiSourceCode2;
 
             function evaluateSnippetAndDumpEvaluationDetails(uiSourceCode, callback)
             {
@@ -143,14 +148,41 @@ function test()
                 }
             }
 
-            evaluateSnippetAndDumpEvaluationDetails(uiSourceCode1, step2);
+            resetSnippetsSettings();
 
-            function step2()
+            snippetsProject.createFile("", null, step2.bind(this));
+            
+            function step2(path)
             {
-                evaluateSnippetAndDumpEvaluationDetails(uiSourceCode2, step3);
+                uiSourceCode1 = snippetsProject.uiSourceCode(path);
+                uiSourceCode1.rename("Snippet1", function() { });
+                var content = "";
+                content += "// This snippet does nothing.\n";
+                content += "var i = 2+2;\n";
+                uiSourceCode1.setWorkingCopy(content);
+                snippetsProject.createFile("", null, step3.bind(this));
+            }
+            
+            function step3(path)
+            {
+                uiSourceCode2 = snippetsProject.uiSourceCode(path);
+                uiSourceCode2.rename("Snippet2", function() { });
+                content = "";
+                content += "// This snippet creates a function that does nothing and returns it.\n";
+                content += "function doesNothing() {\n";
+                content += "    var  i = 2+2;\n";
+                content += "};\n";
+                content += "doesNothing;\n";
+                uiSourceCode2.setWorkingCopy(content);
+                evaluateSnippetAndDumpEvaluationDetails(uiSourceCode1, step4);
             }
 
-            function step3()
+            function step4()
+            {
+                evaluateSnippetAndDumpEvaluationDetails(uiSourceCode2, step5);
+            }
+
+            function step5()
             {
                 evaluateSnippetAndDumpEvaluationDetails(uiSourceCode1, next);
             }
@@ -158,15 +190,6 @@ function test()
 
         function testEvaluateEditReload(next)
         {
-            resetSnippetsSettings();
-
-            var uiSourceCode1 = WebInspector.scriptSnippetModel.createScriptSnippet();
-            uiSourceCode1.rename("Snippet1", function() { });
-            var content = "";
-            content += "// This snippet does nothing.\n";
-            content += "var i = 2+2;\n";
-            uiSourceCode1.setWorkingCopy(content);
-
             function evaluateSnippetAndReloadPage(uiSourceCode, callback)
             {
                 // JSC does not support compile-and-run for snippet evaluation, so different platforms have slightly different codeflow here, hence two sniffers.
@@ -183,7 +206,21 @@ function test()
                 }
             }
 
-            evaluateSnippetAndReloadPage(uiSourceCode1, next);
+            resetSnippetsSettings();
+
+            snippetsProject.createFile("", null, step3.bind(this));
+            
+            function step3(path)
+            {
+                var uiSourceCode1 = snippetsProject.uiSourceCode(path);
+                uiSourceCode1.rename("Snippet1", function() { });
+                var content = "";
+                content += "// This snippet does nothing.\n";
+                content += "var i = 2+2;\n";
+                uiSourceCode1.setWorkingCopy(content);
+
+                evaluateSnippetAndReloadPage(uiSourceCode1, next);
+            }
         }
     ]);
 };
