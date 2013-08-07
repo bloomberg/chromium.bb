@@ -60,11 +60,6 @@ class SurfaceFactoryOzone {
       gfx::AcceleratedWidget w,
       const gfx::Rect& bounds) = 0;
 
-  // TODO(rjkroege): keeping the old API for downstream compat asked by
-  // rjkroege; he promised to remove as soon as his implementation gets fixed,
-  // but we should take this function API as deprecated for now.
-  virtual bool AcceleratedWidgetCanBeResized(gfx::AcceleratedWidget w) = 0;
-
   // Returns a gfx::VsyncProvider for the provided AcceleratedWidget. Note
   // that this may be called after we have entered the sandbox so if there are
   // operations (e.g. opening a file descriptor providing vsync events) that

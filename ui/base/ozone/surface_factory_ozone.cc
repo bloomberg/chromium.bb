@@ -29,10 +29,6 @@ class SurfaceFactoryOzoneStub : public SurfaceFactoryOzone {
       const gfx::Rect& bounds) OVERRIDE {
     return false;
   }
-  virtual bool AcceleratedWidgetCanBeResized(
-      gfx::AcceleratedWidget w) OVERRIDE {
-    return false;
-  }
   virtual gfx::VSyncProvider* GetVSyncProvider(
       gfx::AcceleratedWidget w) OVERRIDE {
     return NULL;
