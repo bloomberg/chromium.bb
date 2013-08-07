@@ -45,7 +45,8 @@ public:
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void customAttrAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
     static void customAttrAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+    static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
     static inline void* toInternalPointer(TestObj* impl)
     {
         return impl;

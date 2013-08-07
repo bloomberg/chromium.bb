@@ -55,6 +55,7 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     attribute long long                longLongAttr;
     attribute unsigned long long       unsignedLongLongAttr;
     attribute DOMString                stringAttr;
+    attribute EventListener            eventListenerAttr;
     [MeasureAs=TestFeature] attribute TestObject testObjAttr;
 
     // WK_ucfirst, WK_lcfirst exceptional cases.
