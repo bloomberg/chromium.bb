@@ -123,18 +123,9 @@ sub determineSourceDir
 {
     return if $sourceDir;
     $sourceDir = $FindBin::Bin;
-    $sourceDir =~ s|/+$||; # Remove trailing '/' as we would die later
+    $sourceDir =~ s|/Tools/Scripts/?$||; # Remove trailing '/' as we would die later
 
-    # walks up path checking each directory to see if it is the main WebKit project dir,
-    # defined by containing Sources, core, and WebKit
-    until ((-d "$sourceDir/Source" && -d "$sourceDir/Source/core" && -d "$sourceDir/Source/WebKit") || (-d "$sourceDir/Internal" && -d "$sourceDir/OpenSource"))
-    {
-        if ($sourceDir !~ s|/[^/]+$||) {
-            die "Could not find top level webkit directory above source directory using FindBin.\n";
-        }
-    }
-
-    $sourceDir = "$sourceDir/OpenSource" if -d "$sourceDir/OpenSource";
+    die "Could not find top level Blink directory using FindBin.\n" unless -d "$sourceDir/Tools";
 }
 
 sub currentPerlPath()
