@@ -189,11 +189,27 @@
             test.eventExpectations_.waitForExpectedEvents(callback);
         };
 
+        test.waitForCurrentTimeChange = function(mediaElement, callback)
+        {
+            var initialTime = mediaElement.currentTime;
+
+            var onTimeUpdate = test.step_func(function()
+            {
+                if (mediaElement.currentTime != initialTime) {
+                    mediaElement.removeEventListener('timeupdate', onTimeUpdate);
+                    callback();
+                }
+            });
+
+            mediaElement.addEventListener('timeupdate', onTimeUpdate);
+        }
+
         var oldTestDone = test.done.bind(test);
         test.done = function()
         {
-            if (test.status == test.PASS)
+            if (test.status == test.PASS) {
                 assert_false(test.eventExpectations_.expectingEvents(), "No pending event expectations.");
+            }
             oldTestDone();
         };
     };
