@@ -1,0 +1,16 @@
+<html>
+<body>
+<canvas id="c"></canvas>
+<script>
+var canvas = document.getElementById("c");
+canvas.setAttribute("width", "250");
+canvas.setAttribute("height", "200");
+var ctx = canvas.getContext("2d");
+
+ctx.fillStyle = 'green';
+ctx.fillRect(0, 0, 100, 100);
+ctx.fillRect(120, 0, 150, 150);
+</script>
+<p>Two green squares with no color bleeding should be visible.</p>
+</body>
+</html>
