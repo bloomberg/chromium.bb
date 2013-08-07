@@ -2178,6 +2178,8 @@
         'browser/sync_file_system/drive_backend/remote_sync_delegate.h',
         'browser/sync_file_system/drive_backend/remote_sync_operation_resolver.cc',
         'browser/sync_file_system/drive_backend/remote_sync_operation_resolver.h',
+        'browser/sync_file_system/drive_backend/tracker_set.cc',
+        'browser/sync_file_system/drive_backend/tracker_set.h',
         'browser/sync_file_system/file_change.cc',
         'browser/sync_file_system/file_change.h',
         'browser/sync_file_system/file_status_observer.h',

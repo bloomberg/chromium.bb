@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_METADATA_DATABASE_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/sync_file_system/drive_backend/tracker_set.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 
@@ -35,6 +37,8 @@ class ResourceEntry;
 namespace sync_file_system {
 namespace drive_backend {
 
+class FileMetadata;
+class FileTracker;
 class ServiceMetadata;
 struct DatabaseContents;
 
@@ -73,6 +77,13 @@ struct DatabaseContents;
 //
 class MetadataDatabase {
  public:
+  typedef std::map<std::string, FileMetadata*> FileByID;
+  typedef std::map<int64, FileTracker*> TrackerByID;
+  typedef std::map<std::string, TrackerSet> TrackersByFileID;
+  typedef std::map<std::string, TrackerSet> TrackersByTitle;
+  typedef std::map<int64, TrackersByTitle> TrackersByParentAndTitle;
+  typedef std::map<std::string, FileTracker*> TrackerByAppID;
+
   typedef base::Callback<
       void(SyncStatusCode status, scoped_ptr<MetadataDatabase> instance)>
       CreateCallback;
@@ -114,6 +125,13 @@ class MetadataDatabase {
                           const SyncStatusCallback& callback);
 
  private:
+  struct DirtyTrackerComparator {
+    bool operator()(const FileTracker* left,
+                    const FileTracker* right) const;
+  };
+
+  typedef std::set<FileTracker*, DirtyTrackerComparator> DirtyTrackers;
+
   friend class MetadataDatabaseTest;
 
   explicit MetadataDatabase(base::SequencedTaskRunner* task_runner);
@@ -134,6 +152,30 @@ class MetadataDatabase {
   scoped_ptr<leveldb::DB> db_;
 
   scoped_ptr<ServiceMetadata> service_metadata_;
+
+  FileByID file_by_id_;  // Owned.
+  TrackerByID tracker_by_id_;  // Owned.
+
+  // Maps FileID to trackers.  The active tracker must be unique per FileID.
+  // This must be updated when updating |active| field of a tracker.
+  TrackersByFileID trackers_by_file_id_;  // Not owned.
+
+  // Maps AppID to the app-root tracker.
+  // This must be updated when a tracker is registered/unregistered as an
+  // app-root.
+  TrackerByAppID app_root_by_app_id_;  // Not owned.
+
+  // Maps |tracker_id| to its children grouped by their |title|.
+  // If the title is unknown for a tracker, treats its title as empty. Empty
+  // titled file must not be active.
+  // The active tracker must be unique per its parent_tracker and its title.
+  // This must be updated when updating |title|, |active| or
+  // |parent_tracker_id|.
+  TrackersByParentAndTitle trackers_by_parent_and_title_;
+
+  // Holds all trackers which marked as dirty.
+  // This must be updated when updating |dirty| field of a tracker.
+  DirtyTrackers dirty_trackers_;  // Not owned.
 
   base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
 

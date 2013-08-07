@@ -156,7 +156,6 @@ class MetadataDatabaseTest : public testing::Test {
   }
 
  private:
-
   base::ScopedTempDir database_dir_;
   base::MessageLoop message_loop_;
 
@@ -168,6 +167,12 @@ class MetadataDatabaseTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(MetadataDatabaseTest);
 };
+
+TEST_F(MetadataDatabaseTest, InitializationTest_Empty) {
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+  DropDatabase();
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+}
 
 }  // namespace drive_backend
 }  // namespace sync_file_system
