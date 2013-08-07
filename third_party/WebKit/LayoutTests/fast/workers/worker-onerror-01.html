@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        window.isOnErrorTest = true;
+    </script>
+    <script src="../js/resources/js-test-pre.js"></script>
+    <script src="resources/onerror-test.js"></script>
+</head>
+<body>
+    <!-- This script's body will be used to build a Blob URL to use as a Worker. -->
+    <script id="workerCode" type="text/plain">
+        } // This is an intentional syntax error.
+    </script>
+    <script>
+        description("This tests that invalid syntax triggers 'worker.onerror'.");
+
+        checkErrorEventInHandler({
+            message: "Uncaught SyntaxError: Unexpected token }",
+            filename: "[blob: URL]",
+            lineno: 2,
+            colno: 8,
+        });
+    </script>
+    <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

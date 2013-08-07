@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        window.isOnErrorTest = true;
+    </script>
+    <script src="../js/resources/js-test-pre.js"></script>
+    <script src="resources/onerror-test.js"></script>
+</head>
+<body>
+    <!-- This script's body will be used to build a Blob URL to use as a Worker. -->
+    <script id="workerCode" type="text/plain">
+        setTimeout(function() {
+            throw new Error("Exception in setTimeout callback");
+        }, 0);
+    </script>
+    <script>
+        description("This tests that exceptions in setTimeout triggers 'worker.onerror'.");
+
+        checkErrorEventInHandler({
+            message: "Uncaught Error: Exception in setTimeout callback",
+            filename: "[blob: URL]",
+            lineno: 3,
+            colno: 18,
+        });
+    </script>
+    <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
