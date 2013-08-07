@@ -43,8 +43,7 @@ bool GlContextMethodsAvailable() {
 
 namespace gfx {
 
-SurfaceTextureBridge::SurfaceTextureBridge(int texture_id)
-    : texture_id_(texture_id) {
+SurfaceTextureBridge::SurfaceTextureBridge(int texture_id) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
   RegisterNativesIfNeeded(env);
