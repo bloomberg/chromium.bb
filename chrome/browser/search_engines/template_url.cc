@@ -263,8 +263,6 @@ bool TemplateURLRef::UsesPOSTMethodUsingTermsData(
 
 bool TemplateURLRef::EncodeFormData(const PostParams& post_params,
                                     PostContent* post_content) const {
-  // TODO(jnd): implement this function once we have form encoding utility in
-  // Chrome side.
   if (post_params.empty())
     return true;
   if (!post_content)

@@ -852,20 +852,17 @@ void RenderViewContextMenu::AppendImageItems() {
                                   IDS_CONTENT_CONTEXT_COPYIMAGE);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
                                   IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
-  AppendPrintItem();
   const TemplateURL* const default_provider =
       TemplateURLServiceFactory::GetForProfile(profile_)->
           GetDefaultSearchProvider();
-  if (!default_provider)
-    return;
-  SearchTermsData search_terms;
-  if (!default_provider->image_url().empty() &&
-      default_provider->image_url_ref().IsValidUsingTermsData(search_terms)) {
+  if (default_provider && !default_provider->image_url().empty() &&
+      default_provider->image_url_ref().IsValid()) {
     menu_model_.AddItem(
         IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
                                    default_provider->short_name()));
   }
+  AppendPrintItem();
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
