@@ -1112,7 +1112,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	GLenum format;
 	int pixel_type;
 
-#ifdef GL_UNPACK_ROW_LENGTH
+#ifdef GL_EXT_unpack_subimage
 	pixman_box32_t *rectangles;
 	void *data;
 	int i, n;
@@ -1162,14 +1162,13 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 		goto done;
 	}
 
-#ifdef GL_UNPACK_ROW_LENGTH
-	/* Mesa does not define GL_EXT_unpack_subimage */
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, gs->pitch);
+#ifdef GL_EXT_unpack_subimage
+	glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, gs->pitch);
 	data = wl_shm_buffer_get_data(buffer->shm_buffer);
 
 	if (gs->needs_full_upload) {
-		glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
-		glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, 0);
 		glTexSubImage2D(GL_TEXTURE_2D, 0,
 				0, 0, gs->pitch, buffer->height,
 				format, pixel_type, data);
@@ -1182,8 +1181,8 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 
 		r = weston_surface_to_buffer_rect(surface, rectangles[i]);
 
-		glPixelStorei(GL_UNPACK_SKIP_PIXELS, r.x1);
-		glPixelStorei(GL_UNPACK_SKIP_ROWS, r.y1);
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, r.x1);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, r.y1);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, r.x1, r.y1,
 				r.x2 - r.x1, r.y2 - r.y1,
 				format, pixel_type, data);
