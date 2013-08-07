@@ -38,10 +38,8 @@ const int kDefaultPollingIntervalMs = 1000;
 const char kWatchingTokenName[] = "_storage_info_watching_token_";
 
 // Static member intialization.
-template<>
-base::LazyInstance<scoped_refptr<SystemInfoProvider<StorageUnitInfoList> > >
-  SystemInfoProvider<StorageUnitInfoList>::provider_
-      = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<scoped_refptr<StorageInfoProvider> >
+    StorageInfoProvider::provider_ = LAZY_INSTANCE_INITIALIZER;
 
 StorageInfoProvider::StorageInfoProvider()
     : observers_(new ObserverListThreadSafe<StorageFreeSpaceObserver>()),
@@ -58,6 +56,12 @@ StorageInfoProvider::~StorageInfoProvider() {
 
 const StorageUnitInfoList& StorageInfoProvider::storage_unit_info_list() const {
   return info_;
+}
+
+void StorageInfoProvider::InitializeForTesting(
+    scoped_refptr<StorageInfoProvider> provider) {
+  DCHECK(provider.get() != NULL);
+  provider_.Get() = provider;
 }
 
 void StorageInfoProvider::PrepareQueryOnUIThread() {
@@ -150,7 +154,7 @@ int64 StorageInfoProvider::GetStorageFreeSpaceFromTransientId(
        it != storage_list.end(); ++it) {
     if (device_id == it->device_id())
       return base::SysInfo::AmountOfFreeDiskSpace(
-                 base::FilePath(it->location()));
+          base::FilePath(it->location()));
   }
 
   return -1;
@@ -260,7 +264,9 @@ void StorageInfoProvider::StopWatchingTimerOnUIThread() {
 
 // static
 StorageInfoProvider* StorageInfoProvider::Get() {
-  return StorageInfoProvider::GetInstance<StorageInfoProvider>();
+  if (provider_.Get().get() == NULL)
+    provider_.Get() = new StorageInfoProvider();
+  return provider_.Get();
 }
 
 }  // namespace extensions

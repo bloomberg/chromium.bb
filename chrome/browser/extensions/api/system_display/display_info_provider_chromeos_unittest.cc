@@ -20,7 +20,7 @@ namespace {
 
 void BindRequestDisplayInfoResult(DisplayInfo* target, bool success) {
   ASSERT_TRUE(success);
-  *target = DisplayInfoProvider::GetProvider()->display_info();
+  *target = DisplayInfoProvider::Get()->display_info();
 }
 
 void BindSetDisplayUnitInfoResult(bool* success,
@@ -39,7 +39,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
 
  protected:
   void CallRequestDisplayInfo(DisplayInfo* result) {
-    DisplayInfoProvider::GetProvider()->RequestInfo(
+    DisplayInfoProvider::Get()->RequestInfo(
         base::Bind(&BindRequestDisplayInfoResult, result));
     RunAllPendingInMessageLoop();
   }
@@ -49,7 +49,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
       const api::system_display::DisplayProperties& info,
       bool* success,
       std::string* error) {
-    DisplayInfoProvider::GetProvider()->SetInfo(display_id, info,
+    DisplayInfoProvider::Get()->SetInfo(display_id, info,
         base::Bind(&BindSetDisplayUnitInfoResult, success, error));
     RunAllPendingInMessageLoop();
   }

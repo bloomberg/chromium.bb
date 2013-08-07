@@ -6,19 +6,31 @@
 
 namespace extensions {
 
+DisplayInfoProvider::DisplayInfoProvider() {
+}
+
+DisplayInfoProvider::~DisplayInfoProvider() {
+}
+
 // Static member intialization.
-template<>
-base::LazyInstance<scoped_refptr<SystemInfoProvider<DisplayInfo> > >
-  SystemInfoProvider<DisplayInfo>::provider_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<scoped_refptr<DisplayInfoProvider > >
+    DisplayInfoProvider::provider_ = LAZY_INSTANCE_INITIALIZER;
 
 const DisplayInfo& DisplayInfoProvider::display_info() const {
   return info_;
 }
 
+void DisplayInfoProvider::InitializeForTesting(
+    scoped_refptr<DisplayInfoProvider> provider) {
+  DCHECK(provider.get() != NULL);
+  provider_.Get() = provider;
+}
+
 // static
-DisplayInfoProvider* DisplayInfoProvider::GetProvider() {
-  return DisplayInfoProvider::GetInstance<DisplayInfoProvider>();
+DisplayInfoProvider* DisplayInfoProvider::Get() {
+  if (provider_.Get().get() == NULL)
+    provider_.Get() = new DisplayInfoProvider();
+  return provider_.Get();
 }
 
 }  // namespace extensions
-

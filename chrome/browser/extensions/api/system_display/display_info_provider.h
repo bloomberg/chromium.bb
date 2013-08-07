@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
 #include "chrome/common/extensions/api/system_display.h"
 
@@ -15,7 +16,7 @@ namespace extensions {
 typedef std::vector<linked_ptr<
     api::system_display::DisplayUnitInfo> > DisplayInfo;
 
-class DisplayInfoProvider : public SystemInfoProvider<DisplayInfo> {
+class DisplayInfoProvider : public SystemInfoProvider {
  public:
   typedef base::Callback<void(bool success)>
       RequestInfoCallback;
@@ -23,7 +24,7 @@ class DisplayInfoProvider : public SystemInfoProvider<DisplayInfo> {
       SetInfoCallback;
 
   // Gets a DisplayInfoProvider instance.
-  static DisplayInfoProvider* GetProvider();
+  static DisplayInfoProvider* Get();
 
   // Starts request for the display info, redirecting the request to a worker
   // thread if needed (using SystemInfoProvider<DisplayInfo>::StartQuery()).
@@ -44,15 +45,27 @@ class DisplayInfoProvider : public SystemInfoProvider<DisplayInfo> {
 
   const DisplayInfo& display_info() const;
 
+  static void InitializeForTesting(scoped_refptr<DisplayInfoProvider> provider);
+
  protected:
-  // Overriden from SystemInfoProvider<DisplayInfo>.
+  DisplayInfoProvider();
+  virtual ~DisplayInfoProvider();
+
+  // The last information filled up by QueryInfo and is accessed on multiple
+  // threads, but the whole class is being guarded by SystemInfoProvider base
+  // class.
+  //
+  // |info_| is accessed on the UI thread while |is_waiting_for_completion_| is
+  // false and on the sequenced worker pool while |is_waiting_for_completion_|
+  // is true.
+  DisplayInfo info_;
+
+ private:
+  // Overriden from SystemInfoProvider.
   // The implementation is platform specific.
   virtual bool QueryInfo() OVERRIDE;
 
-  friend class SystemInfoProvider<DisplayInfo>;
-
-  DisplayInfoProvider() {}
-  virtual ~DisplayInfoProvider() {}
+  static base::LazyInstance<scoped_refptr<DisplayInfoProvider> > provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProvider);
 };

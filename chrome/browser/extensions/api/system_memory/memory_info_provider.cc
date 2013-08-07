@@ -11,9 +11,8 @@ namespace extensions {
 using api::system_memory::MemoryInfo;
 
 // Static member intialization.
-template<>
-base::LazyInstance<scoped_refptr<SystemInfoProvider<MemoryInfo> > >
-  SystemInfoProvider<MemoryInfo>::provider_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<scoped_refptr<MemoryInfoProvider> >
+    MemoryInfoProvider::provider_ = LAZY_INSTANCE_INITIALIZER;
 
 MemoryInfoProvider::MemoryInfoProvider() {}
 
@@ -23,17 +22,24 @@ const MemoryInfo& MemoryInfoProvider::memory_info() const {
   return info_;
 }
 
+void MemoryInfoProvider::InitializeForTesting(
+    scoped_refptr<MemoryInfoProvider> provider) {
+  DCHECK(provider.get() != NULL);
+  provider_.Get() = provider;
+}
+
 bool MemoryInfoProvider::QueryInfo() {
   info_.capacity = static_cast<double>(base::SysInfo::AmountOfPhysicalMemory());
   info_.available_capacity =
-     static_cast<double>(base::SysInfo::AmountOfAvailablePhysicalMemory());
+      static_cast<double>(base::SysInfo::AmountOfAvailablePhysicalMemory());
   return true;
 }
 
 // static
 MemoryInfoProvider* MemoryInfoProvider::Get() {
-  return MemoryInfoProvider::GetInstance<MemoryInfoProvider>();
+  if (provider_.Get().get() == NULL)
+    provider_.Get() = new MemoryInfoProvider();
+  return provider_.Get();
 }
 
 }  // namespace extensions
-

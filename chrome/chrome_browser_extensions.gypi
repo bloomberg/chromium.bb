@@ -751,6 +751,7 @@
         'browser/extensions/suggest_permission_util.cc',
         'browser/extensions/api/system_info/system_info_api.cc',
         'browser/extensions/api/system_info/system_info_api.h',
+        'browser/extensions/api/system_info/system_info_provider.cc',
         'browser/extensions/api/system_info/system_info_provider.h',
         'browser/extensions/api/system_private/system_private_api.cc',
         'browser/extensions/api/system_private/system_private_api.h',

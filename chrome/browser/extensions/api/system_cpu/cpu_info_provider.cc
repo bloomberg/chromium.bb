@@ -11,9 +11,8 @@ namespace extensions {
 using api::system_cpu::CpuInfo;
 
 // Static member intialization.
-template<>
-base::LazyInstance<scoped_refptr<SystemInfoProvider<CpuInfo> > >
-  SystemInfoProvider<CpuInfo>::provider_ = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<scoped_refptr<CpuInfoProvider> >
+    CpuInfoProvider::provider_ = LAZY_INSTANCE_INITIALIZER;
 
 CpuInfoProvider::CpuInfoProvider() {}
 
@@ -21,6 +20,12 @@ CpuInfoProvider::~CpuInfoProvider() {}
 
 const CpuInfo& CpuInfoProvider::cpu_info() const {
   return info_;
+}
+
+void CpuInfoProvider::InitializeForTesting(
+    scoped_refptr<CpuInfoProvider> provider) {
+  DCHECK(provider.get() != NULL);
+  provider_.Get() = provider;
 }
 
 bool CpuInfoProvider::QueryInfo() {
@@ -32,7 +37,9 @@ bool CpuInfoProvider::QueryInfo() {
 
 // static
 CpuInfoProvider* CpuInfoProvider::Get() {
-  return CpuInfoProvider::GetInstance<CpuInfoProvider>();
+  if (provider_.Get().get() == NULL)
+    provider_.Get() = new CpuInfoProvider();
+  return provider_.Get();
 }
 
 }  // namespace extensions

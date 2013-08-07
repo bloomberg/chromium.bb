@@ -14,7 +14,7 @@ using api::system_display::DisplayUnitInfo;
 namespace SetDisplayProperties = api::system_display::SetDisplayProperties;
 
 bool SystemDisplayGetInfoFunction::RunImpl() {
-  DisplayInfoProvider::GetProvider()->RequestInfo(
+  DisplayInfoProvider::Get()->RequestInfo(
       base::Bind(
           &SystemDisplayGetInfoFunction::OnGetDisplayInfoCompleted,
           this));
@@ -25,7 +25,7 @@ void SystemDisplayGetInfoFunction::OnGetDisplayInfoCompleted(
     bool success) {
   if (success) {
     results_ = api::system_display::GetInfo::Results::Create(
-                   DisplayInfoProvider::GetProvider()->display_info());
+                   DisplayInfoProvider::Get()->display_info());
   } else {
     SetError("Error occurred when querying display information.");
   }
@@ -44,7 +44,7 @@ bool SystemDisplaySetDisplayPropertiesFunction::RunImpl() {
 
   scoped_ptr<SetDisplayProperties::Params> params(
       SetDisplayProperties::Params::Create(*args_));
-  DisplayInfoProvider::GetProvider()->SetInfo(params->id, params->info,
+  DisplayInfoProvider::Get()->SetInfo(params->id, params->info,
       base::Bind(
           &SystemDisplaySetDisplayPropertiesFunction::OnPropertiesSet,
           this));

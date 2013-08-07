@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/timer/timer.h"
@@ -33,12 +34,8 @@ typedef std::vector<linked_ptr<
     api::system_storage::StorageUnitInfo> >
         StorageUnitInfoList;
 
-class StorageInfoProvider : public SystemInfoProvider<StorageUnitInfoList> {
+class StorageInfoProvider : public SystemInfoProvider {
  public:
-  StorageInfoProvider();
-
-  explicit StorageInfoProvider(size_t watching_interval);
-
   // Get the single shared instance of StorageInfoProvider.
   static StorageInfoProvider* Get();
 
@@ -65,11 +62,25 @@ class StorageInfoProvider : public SystemInfoProvider<StorageUnitInfoList> {
 
   const StorageUnitInfoList& storage_unit_info_list() const;
 
+  static void InitializeForTesting(scoped_refptr<StorageInfoProvider> provider);
+
  protected:
+  StorageInfoProvider();
+  explicit StorageInfoProvider(size_t watching_interval);
+
   virtual ~StorageInfoProvider();
 
   // Put all available storages' information into |info_|.
   void GetAllStoragesIntoInfoList();
+
+  // The last information filled up by QueryInfo and is accessed on multiple
+  // threads, but the whole class is being guarded by SystemInfoProvider base
+  // class.
+  //
+  // |info_| is accessed on the UI thread while |is_waiting_for_completion_| is
+  // false and on the sequenced worker pool while |is_waiting_for_completion_|
+  // is true.
+  StorageUnitInfoList info_;
 
  private:
   typedef std::map<std::string, double> StorageTransientIdToSizeMap;
@@ -114,6 +125,10 @@ class StorageInfoProvider : public SystemInfoProvider<StorageUnitInfoList> {
   // The time interval for watching the free space change, in milliseconds.
   // Only changed for testing purposes.
   size_t watching_interval_;
+
+  static base::LazyInstance<scoped_refptr<StorageInfoProvider> > provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(StorageInfoProvider);
 };
 
 }  // namespace extensions
