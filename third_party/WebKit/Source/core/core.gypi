@@ -1622,7 +1622,6 @@
             'workers/WorkerThread.cpp',
             'workers/WorkerThreadStartupData.cpp',
             'workers/WorkerThreadStartupData.h',
-            'xml/parser/CharacterReferenceParserInlines.h',
             'xml/parser/MarkupTokenizerInlines.h',
             'xml/parser/XMLDocumentParser.cpp',
             'xml/parser/XMLDocumentParser.h',
