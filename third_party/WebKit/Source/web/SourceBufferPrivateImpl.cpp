@@ -38,13 +38,11 @@ namespace WebKit {
 SourceBufferPrivateImpl::SourceBufferPrivateImpl(PassOwnPtr<WebSourceBuffer> sourceBuffer)
     : m_sourceBuffer(sourceBuffer)
 {
+    ASSERT(m_sourceBuffer);
 }
 
 PassRefPtr<WebCore::TimeRanges> SourceBufferPrivateImpl::buffered()
 {
-    if (!m_sourceBuffer)
-        return WebCore::TimeRanges::create();
-
     WebTimeRanges webRanges = m_sourceBuffer->buffered();
     RefPtr<WebCore::TimeRanges> ranges = WebCore::TimeRanges::create();
     for (size_t i = 0; i < webRanges.size(); ++i)
@@ -54,30 +52,26 @@ PassRefPtr<WebCore::TimeRanges> SourceBufferPrivateImpl::buffered()
 
 void SourceBufferPrivateImpl::append(const unsigned char* data, unsigned length)
 {
-    if (!m_sourceBuffer)
-        return;
     m_sourceBuffer->append(data, length);
 }
 
 void SourceBufferPrivateImpl::abort()
 {
-    if (!m_sourceBuffer)
-        return;
     m_sourceBuffer->abort();
+}
+
+void SourceBufferPrivateImpl::remove(double start, double end)
+{
+    m_sourceBuffer->remove(start, end);
 }
 
 bool SourceBufferPrivateImpl::setTimestampOffset(double offset)
 {
-    if (!m_sourceBuffer)
-        return false;
-
     return m_sourceBuffer->setTimestampOffset(offset);
 }
 
 void SourceBufferPrivateImpl::removedFromMediaSource()
 {
-    if (!m_sourceBuffer)
-        return;
     m_sourceBuffer->removedFromMediaSource();
     m_sourceBuffer.clear();
 }

@@ -61,6 +61,7 @@ public:
     void appendBuffer(PassRefPtr<ArrayBuffer> data, ExceptionState&);
     void appendBuffer(PassRefPtr<ArrayBufferView> data, ExceptionState&);
     void abort(ExceptionState&);
+    void remove(double start, double end, ExceptionState&);
 
     void abortIfUpdating();
     void removedFromMediaSource();
@@ -92,6 +93,8 @@ private:
     void appendBufferInternal(unsigned char*, unsigned, ExceptionState&);
     void appendBufferTimerFired(Timer<SourceBuffer>*);
 
+    void removeTimerFired(Timer<SourceBuffer>*);
+
     OwnPtr<SourceBufferPrivate> m_private;
     MediaSource* m_source;
     GenericEventQueue* m_asyncEventQueue;
@@ -102,6 +105,10 @@ private:
 
     Vector<unsigned char> m_pendingAppendData;
     Timer<SourceBuffer> m_appendBufferTimer;
+
+    double m_pendingRemoveStart;
+    double m_pendingRemoveEnd;
+    Timer<SourceBuffer> m_removeTimer;
 };
 
 } // namespace WebCore

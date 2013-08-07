@@ -248,6 +248,20 @@
                 testFunction(test, mediaTag, mediaSource);
             });
         }, description, options);
+    };
 
+    function timeRangesToString(ranges)
+    {
+        var s = "{";
+        for (var i = 0; i < ranges.length; ++i) {
+            s += " [" + ranges.start(i).toFixed(3) + ", " + ranges.end(i).toFixed(3) + ")";
+        }
+        return s + " }";
+    }
+
+    window['assertBufferedEquals'] = function(obj, expected, description)
+    {
+        var actual = timeRangesToString(obj.buffered);
+        assert_equals(actual, expected, description);
     };
 })(window);

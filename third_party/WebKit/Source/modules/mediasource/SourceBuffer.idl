@@ -48,5 +48,6 @@
 
     // Abort the current segment append sequence.
     [RaisesException] void abort();
+    [RaisesException] void remove(double start, double end);
 };
 

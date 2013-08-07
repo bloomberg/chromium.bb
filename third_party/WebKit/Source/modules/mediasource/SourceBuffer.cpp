@@ -59,6 +59,9 @@ SourceBuffer::SourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, 
     , m_updating(false)
     , m_timestampOffset(0)
     , m_appendBufferTimer(this, &SourceBuffer::appendBufferTimerFired)
+    , m_removeTimer(this, &SourceBuffer::removeTimerFired)
+    , m_pendingRemoveStart(-1)
+    , m_pendingRemoveEnd(-1)
 {
     ASSERT(m_private);
     ASSERT(m_source);
@@ -92,15 +95,11 @@ double SourceBuffer::timestampOffset() const
 void SourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
 {
     // Section 3.1 timestampOffset attribute setter steps.
-    // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
+    // 1. Let new timestamp offset equal the new value being assigned to this attribute.
+    // 2. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw an
     //    InvalidStateError exception and abort these steps.
-    if (isRemoved()) {
-        es.throwDOMException(InvalidStateError);
-        return;
-    }
-
-    // 3. If the updating attribute equals true, then throw an INVALID_STATE_ERR exception and abort these steps.
-    if (m_updating) {
+    // 3. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
+    if (isRemoved() || m_updating) {
         es.throwDOMException(InvalidStateError);
         return;
     }
@@ -112,12 +111,14 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
 
     // 5. If this object is waiting for the end of a media segment to be appended, then throw an InvalidStateError
     // and abort these steps.
+    //
+    // FIXME: Add step 6 text when mode attribute is implemented.
     if (!m_private->setTimestampOffset(offset)) {
         es.throwDOMException(InvalidStateError);
         return;
     }
 
-    // 6. Update the attribute to the new value.
+    // 7. Update the attribute to new timestamp offset.
     m_timestampOffset = offset;
 }
 
@@ -169,6 +170,40 @@ void SourceBuffer::abort(ExceptionState& es)
     // FIXME(229408) Add steps 5-6 update appendWindowStart & appendWindowEnd.
 }
 
+void SourceBuffer::remove(double start, double end, ExceptionState& es)
+{
+    // Section 3.2 remove() method steps.
+    // 1. If start is negative or greater than duration, then throw an InvalidAccessError exception and abort these steps.
+    // 2. If end is less than or equal to start, then throw an InvalidAccessError exception and abort these steps.
+    if (start < 0 || (m_source && (std::isnan(m_source->duration()) || start > m_source->duration())) || end <= start) {
+        es.throwDOMException(InvalidAccessError);
+        return;
+    }
+
+    // 3. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
+    //    InvalidStateError exception and abort these steps.
+    // 4. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
+    if (isRemoved() || m_updating) {
+        es.throwDOMException(InvalidStateError);
+        return;
+    }
+
+    // 5. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
+    // 5.1. Set the readyState attribute of the parent media source to "open"
+    // 5.2. Queue a task to fire a simple event named sourceopen at the parent media source .
+    m_source->openIfInEndedState();
+
+    // 6. Set the updating attribute to true.
+    m_updating = true;
+
+    // 7. Queue a task to fire a simple event named updatestart at this SourceBuffer object.
+    scheduleEvent(eventNames().updatestartEvent);
+
+    // 8. Return control to the caller and run the rest of the steps asynchronously.
+    m_pendingRemoveStart = start;
+    m_pendingRemoveEnd = end;
+    m_removeTimer.startOneShot(0);
+}
 
 void SourceBuffer::abortIfUpdating()
 {
@@ -181,6 +216,10 @@ void SourceBuffer::abortIfUpdating()
     // 3.1. Abort the buffer append and stream append loop algorithms if they are running.
     m_appendBufferTimer.stop();
     m_pendingAppendData.clear();
+
+    m_removeTimer.stop();
+    m_pendingRemoveStart = -1;
+    m_pendingRemoveEnd = -1;
 
     // 3.2. Set the updating attribute to false.
     m_updating = false;
@@ -197,6 +236,8 @@ void SourceBuffer::removedFromMediaSource()
     if (isRemoved())
         return;
 
+    abortIfUpdating();
+
     m_private->removedFromMediaSource();
     m_source = 0;
     m_asyncEventQueue = 0;
@@ -210,6 +251,7 @@ bool SourceBuffer::hasPendingActivity() const
 void SourceBuffer::stop()
 {
     m_appendBufferTimer.stop();
+    m_removeTimer.stop();
 }
 
 ScriptExecutionContext* SourceBuffer::scriptExecutionContext() const
@@ -304,6 +346,30 @@ void SourceBuffer::appendBufferTimerFired(Timer<SourceBuffer>*)
     scheduleEvent(eventNames().updateEvent);
 
     // 5. Queue a task to fire a simple event named updateend at this SourceBuffer object.
+    scheduleEvent(eventNames().updateendEvent);
+}
+
+void SourceBuffer::removeTimerFired(Timer<SourceBuffer>*)
+{
+    ASSERT(m_updating);
+    ASSERT(m_pendingRemoveStart >= 0);
+    ASSERT(m_pendingRemoveStart < m_pendingRemoveEnd);
+
+    // Section 3.2 remove() method steps
+    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-remove-void-double-start-double-end
+
+    // 9. Run the coded frame removal algorithm with start and end as the start and end of the removal range.
+    m_private->remove(m_pendingRemoveStart, m_pendingRemoveEnd);
+
+    // 10. Set the updating attribute to false.
+    m_updating = false;
+    m_pendingRemoveStart = -1;
+    m_pendingRemoveEnd = -1;
+
+    // 11. Queue a task to fire a simple event named update at this SourceBuffer object.
+    scheduleEvent(eventNames().updateEvent);
+
+    // 12. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(eventNames().updateendEvent);
 }
 

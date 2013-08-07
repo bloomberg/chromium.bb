@@ -45,11 +45,12 @@ public:
     virtual ~SourceBufferPrivateImpl() { }
 
     // SourceBufferPrivate methods.
-    virtual PassRefPtr<WebCore::TimeRanges> buffered();
-    virtual void append(const unsigned char* data, unsigned length);
-    virtual void abort();
-    virtual bool setTimestampOffset(double);
-    virtual void removedFromMediaSource();
+    virtual PassRefPtr<WebCore::TimeRanges> buffered() OVERRIDE;
+    virtual void append(const unsigned char* data, unsigned length) OVERRIDE;
+    virtual void abort() OVERRIDE;
+    virtual void remove(double start, double end) OVERRIDE;
+    virtual bool setTimestampOffset(double) OVERRIDE;
+    virtual void removedFromMediaSource() OVERRIDE;
 
 private:
     OwnPtr<WebSourceBuffer> m_sourceBuffer;
