@@ -519,7 +519,7 @@ cr.define('cr.ui', function() {
       var doc = e.target.ownerDocument;
       window.setTimeout(function() {
         var activeElement = doc.activeElement;
-        if (!list.contains(activeElement))
+        if (activeElement != doc.body && !list.contains(activeElement))
           list.hasElementFocus = false;
       });
     },
