@@ -995,6 +995,12 @@ void FakeBluetoothDeviceClient::SimulateKeypress(
           DBusThreadManager::Get()->GetBluetoothAgentManagerClient());
   FakeBluetoothAgentServiceProvider* agent_service_provider =
       fake_bluetooth_agent_manager_client->GetAgentServiceProvider();
+
+  // The agent service provider object could have been destroyed after the
+  // pairing is canceled.
+  if (!agent_service_provider)
+    return;
+
   agent_service_provider->DisplayPasskey(object_path, 123456, entered);
 
   if (entered < 7) {
