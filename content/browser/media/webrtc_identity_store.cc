@@ -4,11 +4,14 @@
 
 #include "content/browser/media/webrtc_identity_store.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/threading/worker_pool.h"
+#include "content/browser/media/webrtc_identity_store_backend.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
@@ -18,11 +21,18 @@
 namespace content {
 
 struct WebRTCIdentityRequestResult {
+  WebRTCIdentityRequestResult(int error,
+                              const std::string& certificate,
+                              const std::string& private_key)
+      : error(error), certificate(certificate), private_key(private_key) {}
+
   int error;
   std::string certificate;
   std::string private_key;
 };
 
+// Generates a new identity using |common_name| and returns the result in
+// |result|.
 static void GenerateIdentityWorker(const std::string& common_name,
                                    WebRTCIdentityRequestResult* result) {
   result->error = net::OK;
@@ -60,33 +70,59 @@ static void GenerateIdentityWorker(const std::string& common_name,
       std::string(private_key_info.begin(), private_key_info.end());
 }
 
+class WebRTCIdentityRequestHandle;
+
 // The class represents an identity request internal to WebRTCIdentityStore.
-// It has a one-to-one mapping to the external version of the request
-// WebRTCIdentityRequestHandle, which is the target of the
-// WebRTCIdentityRequest's completion callback.
+// It has a one-to-many mapping to the external version of the request,
+// WebRTCIdentityRequestHandle, i.e. multiple identical external requests are
+// combined into one internal request.
 // It's deleted automatically when the request is completed.
 class WebRTCIdentityRequest {
  public:
-  WebRTCIdentityRequest(const WebRTCIdentityStore::CompletionCallback& callback)
-      : callback_(callback) {}
+  WebRTCIdentityRequest(const GURL& origin,
+                        const std::string& identity_name,
+                        const std::string& common_name)
+      : origin_(origin),
+        identity_name_(identity_name),
+        common_name_(common_name) {}
 
-  void Cancel() {
+  void Cancel(WebRTCIdentityRequestHandle* handle) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    callback_.Reset();
+    if (callbacks_.find(handle) == callbacks_.end())
+      return;
+    callbacks_.erase(handle);
   }
 
  private:
   friend class WebRTCIdentityStore;
 
-  void Post(WebRTCIdentityRequestResult* result) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (callback_.is_null())
-      return;
-    callback_.Run(result->error, result->certificate, result->private_key);
-    // "this" will be deleted after this point.
+  void AddCallback(WebRTCIdentityRequestHandle* handle,
+                   const WebRTCIdentityStore::CompletionCallback& callback) {
+    DCHECK(callbacks_.find(handle) == callbacks_.end());
+    callbacks_[handle] = callback;
   }
 
-  WebRTCIdentityStore::CompletionCallback callback_;
+  // This method deletes "this" and no one should access it after the request
+  // completes.
+  // We do not use base::Owned to tie its lifetime to the callback for
+  // WebRTCIdentityStoreBackend::FindIdentity, because it needs to live longer
+  // than that if the identity does not exist in DB.
+  void Post(const WebRTCIdentityRequestResult& result) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    if (callbacks_.empty())
+      return;
+    for (CallbackMap::iterator it = callbacks_.begin(); it != callbacks_.end();
+         ++it)
+      it->second.Run(result.error, result.certificate, result.private_key);
+    delete this;
+  }
+
+  GURL origin_;
+  std::string identity_name_;
+  std::string common_name_;
+  typedef std::map<WebRTCIdentityRequestHandle*,
+                   WebRTCIdentityStore::CompletionCallback> CallbackMap;
+  CallbackMap callbacks_;
 };
 
 // The class represents an identity request which calls back to the external
@@ -115,7 +151,7 @@ class WebRTCIdentityRequestHandle {
     request_ = NULL;
     // "this" will be deleted after the following call, because "this" is
     // owned by the Callback held by |request|.
-    request->Cancel();
+    request->Cancel(this);
   }
 
   void OnRequestStarted(WebRTCIdentityRequest* request) {
@@ -140,10 +176,12 @@ class WebRTCIdentityRequestHandle {
   DISALLOW_COPY_AND_ASSIGN(WebRTCIdentityRequestHandle);
 };
 
-WebRTCIdentityStore::WebRTCIdentityStore()
-    : task_runner_(base::WorkerPool::GetTaskRunner(true)) {}
+WebRTCIdentityStore::WebRTCIdentityStore(const base::FilePath& path,
+                                         quota::SpecialStoragePolicy* policy)
+    : task_runner_(base::WorkerPool::GetTaskRunner(true)),
+      backend_(new WebRTCIdentityStoreBackend(path, policy)) {}
 
-WebRTCIdentityStore::~WebRTCIdentityStore() {}
+WebRTCIdentityStore::~WebRTCIdentityStore() { backend_->Close(); }
 
 base::Closure WebRTCIdentityStore::RequestIdentity(
     const GURL& origin,
@@ -155,26 +193,118 @@ base::Closure WebRTCIdentityStore::RequestIdentity(
   WebRTCIdentityRequestHandle* handle =
       new WebRTCIdentityRequestHandle(this, callback);
 
-  WebRTCIdentityRequest* request = new WebRTCIdentityRequest(base::Bind(
-      &WebRTCIdentityRequestHandle::OnRequestComplete, base::Owned(handle)));
+  WebRTCIdentityRequest* request =
+      FindRequest(origin, identity_name, common_name);
+
+  // If there is no identical request in flight, create a new one, queue it,
+  // and make the backend request.
+  if (!request) {
+    request = new WebRTCIdentityRequest(origin, identity_name, common_name);
+
+    if (!backend_->FindIdentity(
+            origin,
+            identity_name,
+            common_name,
+            base::Bind(
+                &WebRTCIdentityStore::BackendFindCallback, this, request))) {
+      delete request;
+      return base::Closure();
+    }
+    in_flight_requests_.push_back(request);
+  }
+
+  request->AddCallback(
+      handle,
+      base::Bind(&WebRTCIdentityRequestHandle::OnRequestComplete,
+                 base::Owned(handle)));
   handle->OnRequestStarted(request);
-
-  WebRTCIdentityRequestResult* result = new WebRTCIdentityRequestResult();
-  if (!task_runner_->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(&GenerateIdentityWorker, common_name, result),
-          base::Bind(&WebRTCIdentityRequest::Post,
-                     base::Owned(request),
-                     base::Owned(result))))
-    return base::Closure();
-
   return base::Bind(&WebRTCIdentityRequestHandle::Cancel,
                     base::Unretained(handle));
 }
 
+void WebRTCIdentityStore::DeleteBetween(base::Time delete_begin,
+                                        base::Time delete_end,
+                                        const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  backend_->DeleteBetween(delete_begin, delete_end, callback);
+}
+
 void WebRTCIdentityStore::SetTaskRunnerForTesting(
     const scoped_refptr<base::TaskRunner>& task_runner) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   task_runner_ = task_runner;
+}
+
+void WebRTCIdentityStore::BackendFindCallback(WebRTCIdentityRequest* request,
+                                              int error,
+                                              const std::string& certificate,
+                                              const std::string& private_key) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (error == net::OK) {
+    DVLOG(2) << "Identity found in DB.";
+    WebRTCIdentityRequestResult result(error, certificate, private_key);
+    PostRequestResult(request, result);
+    return;
+  }
+  // Generate a new identity if not found in the DB.
+  WebRTCIdentityRequestResult* result =
+      new WebRTCIdentityRequestResult(0, "", "");
+  if (!task_runner_->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&GenerateIdentityWorker, request->common_name_, result),
+          base::Bind(&WebRTCIdentityStore::GenerateIdentityCallback,
+                     this,
+                     request,
+                     base::Owned(result)))) {
+    // Completes the request with error if failed to post the task.
+    WebRTCIdentityRequestResult result(net::ERR_UNEXPECTED, "", "");
+    PostRequestResult(request, result);
+  }
+}
+
+void WebRTCIdentityStore::GenerateIdentityCallback(
+    WebRTCIdentityRequest* request,
+    WebRTCIdentityRequestResult* result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (result->error == net::OK) {
+    DVLOG(2) << "New identity generated and added to the backend.";
+    backend_->AddIdentity(request->origin_,
+                          request->identity_name_,
+                          request->common_name_,
+                          result->certificate,
+                          result->private_key);
+  }
+  PostRequestResult(request, *result);
+}
+
+void WebRTCIdentityStore::PostRequestResult(
+    WebRTCIdentityRequest* request,
+    const WebRTCIdentityRequestResult& result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Removes the in flight request from the queue.
+  for (size_t i = 0; i < in_flight_requests_.size(); ++i) {
+    if (in_flight_requests_[i] == request) {
+      in_flight_requests_.erase(in_flight_requests_.begin() + i);
+      break;
+    }
+  }
+  // |request| will be deleted after this call.
+  request->Post(result);
+}
+
+// Find an identical request from the in flight requests.
+WebRTCIdentityRequest* WebRTCIdentityStore::FindRequest(
+    const GURL& origin,
+    const std::string& identity_name,
+    const std::string& common_name) {
+  for (size_t i = 0; i < in_flight_requests_.size(); ++i) {
+    if (in_flight_requests_[i]->origin_ == origin &&
+        in_flight_requests_[i]->identity_name_ == identity_name &&
+        in_flight_requests_[i]->common_name_ == common_name) {
+      return in_flight_requests_[i];
+    }
+  }
+  return NULL;
 }
 
 }  // namespace content

@@ -4,9 +4,11 @@
 
 #include <deque>
 
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/media/webrtc_identity_store.h"
 #include "content/browser/renderer_host/media/webrtc_identity_service_host.h"
 #include "content/common/media/webrtc_identity_messages.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,9 +23,12 @@ static const char FAKE_COMMON_NAME[] = "fake common name";
 static const char FAKE_CERTIFICATE[] = "fake cert";
 static const char FAKE_PRIVATE_KEY[] = "fake private key";
 static const int FAKE_ERROR = 100;
+static const int FAKE_RENDERER_ID = 10;
 
 class MockWebRTCIdentityStore : public WebRTCIdentityStore {
  public:
+  MockWebRTCIdentityStore() : WebRTCIdentityStore(base::FilePath(), NULL) {}
+
   virtual base::Closure RequestIdentity(
       const GURL& origin,
       const std::string& identity_name,
@@ -46,6 +51,8 @@ class MockWebRTCIdentityStore : public WebRTCIdentityStore {
   }
 
  private:
+  virtual ~MockWebRTCIdentityStore() {}
+
   void OnCancel() { callback_.Reset(); }
 
   CompletionCallback callback_;
@@ -54,7 +61,11 @@ class MockWebRTCIdentityStore : public WebRTCIdentityStore {
 class WebRTCIdentityServiceHostForTest : public WebRTCIdentityServiceHost {
  public:
   explicit WebRTCIdentityServiceHostForTest(WebRTCIdentityStore* identity_store)
-      : WebRTCIdentityServiceHost(identity_store) {}
+      : WebRTCIdentityServiceHost(FAKE_RENDERER_ID, identity_store) {
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    policy->Add(FAKE_RENDERER_ID);
+  }
 
   virtual bool Send(IPC::Message* message) OVERRIDE {
     messages_.push_back(*message);
@@ -75,7 +86,11 @@ class WebRTCIdentityServiceHostForTest : public WebRTCIdentityServiceHost {
   void ClearMessages() { messages_.clear(); }
 
  private:
-  virtual ~WebRTCIdentityServiceHostForTest() {}
+  virtual ~WebRTCIdentityServiceHostForTest() {
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    policy->Remove(FAKE_RENDERER_ID);
+  }
 
   std::deque<IPC::Message> messages_;
 };
@@ -83,7 +98,8 @@ class WebRTCIdentityServiceHostForTest : public WebRTCIdentityServiceHost {
 class WebRTCIdentityServiceHostTest : public ::testing::Test {
  public:
   WebRTCIdentityServiceHostTest()
-      : store_(new MockWebRTCIdentityStore()),
+      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        store_(new MockWebRTCIdentityStore()),
         host_(new WebRTCIdentityServiceHostForTest(store_.get())) {}
 
   void SendRequestToHost() {
@@ -124,7 +140,8 @@ class WebRTCIdentityServiceHostTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<MockWebRTCIdentityStore> store_;
+  TestBrowserThreadBundle browser_thread_bundle_;
+  scoped_refptr<MockWebRTCIdentityStore> store_;
   scoped_refptr<WebRTCIdentityServiceHostForTest> host_;
 };
 
@@ -156,6 +173,15 @@ TEST_F(WebRTCIdentityServiceHostTest, TestOnRequestFailed) {
   SendRequestToHost();
   store_->RunCompletionCallback(net::ERR_KEY_GENERATION_FAILED, "", "");
   VerifyRequestFailedMessage(net::ERR_KEY_GENERATION_FAILED);
+}
+
+TEST_F(WebRTCIdentityServiceHostTest, TestOriginAccessDenied) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->Remove(FAKE_RENDERER_ID);
+
+  SendRequestToHost();
+  VerifyRequestFailedMessage(net::ERR_ACCESS_DENIED);
 }
 
 }  // namespace content
