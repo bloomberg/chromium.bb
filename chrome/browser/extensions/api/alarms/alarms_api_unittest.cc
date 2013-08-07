@@ -44,10 +44,6 @@ class AlarmDelegate : public AlarmManager::Delegate {
 
 }  // namespace
 
-void RunScheduleNextPoll(AlarmManager* alarm_manager) {
-  alarm_manager->ScheduleNextPoll();
-}
-
 class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() {
@@ -139,23 +135,21 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
     }
   }
 
+ protected:
   base::SimpleTestClock* test_clock_;
   AlarmManager* alarm_manager_;
   AlarmDelegate* alarm_delegate_;
   scoped_refptr<extensions::Extension> extension_;
-
- protected:
   content::WebContents* contents_;
 };
 
-void ExtensionAlarmsTestGetAllAlarmsCallback(
-    const AlarmManager::AlarmList* alarms) {
-  // Ensure the alarm is gone.
-  ASSERT_FALSE(alarms);
-}
+TEST_F(ExtensionAlarmsTest, Create) {
+  test_clock_->SetNow(base::Time::FromDoubleT(10));
+  // Create 1 non-repeating alarm.
+  CreateAlarm("[null, {\"delayInMinutes\": 0}]");
 
-void ExtensionAlarmsTestGetAlarmCallback(
-    ExtensionAlarmsTest* test, Alarm* alarm) {
+  const Alarm* alarm =
+      alarm_manager_->GetAlarm(extension_->id(), std::string());
   ASSERT_TRUE(alarm);
   EXPECT_EQ("", alarm->js_alarm->name);
   EXPECT_DOUBLE_EQ(10000, alarm->js_alarm->scheduled_time);
@@ -165,43 +159,15 @@ void ExtensionAlarmsTestGetAlarmCallback(
   // MessageLoop when that happens.
   base::MessageLoop::current()->Run();
 
-  ASSERT_EQ(1u, test->alarm_delegate_->alarms_seen.size());
-  EXPECT_EQ("", test->alarm_delegate_->alarms_seen[0]);
+  ASSERT_EQ(1u, alarm_delegate_->alarms_seen.size());
+  EXPECT_EQ("", alarm_delegate_->alarms_seen[0]);
 
   // Ensure the alarm is gone.
-  test->alarm_manager_->GetAllAlarms(test->extension_->id(), base::Bind(
-      ExtensionAlarmsTestGetAllAlarmsCallback));
-}
-
-TEST_F(ExtensionAlarmsTest, Create) {
-  test_clock_->SetNow(base::Time::FromDoubleT(10));
-  // Create 1 non-repeating alarm.
-  CreateAlarm("[null, {\"delayInMinutes\": 0}]");
-
-  alarm_manager_->GetAlarm(extension_->id(), std::string(), base::Bind(
-      ExtensionAlarmsTestGetAlarmCallback, this));
-}
-
-void ExtensionAlarmsTestCreateRepeatingGetAlarmCallback(
-    ExtensionAlarmsTest* test, Alarm* alarm) {
-  ASSERT_TRUE(alarm);
-  EXPECT_EQ("", alarm->js_alarm->name);
-  EXPECT_DOUBLE_EQ(10060, alarm->js_alarm->scheduled_time);
-  EXPECT_THAT(alarm->js_alarm->period_in_minutes,
-              testing::Pointee(testing::DoubleEq(0.001)));
-
-  test->test_clock_->Advance(base::TimeDelta::FromSeconds(1));
-  // Now wait for the alarm to fire. Our test delegate will quit the
-  // MessageLoop when that happens.
-  base::MessageLoop::current()->Run();
-
-  test->test_clock_->Advance(base::TimeDelta::FromSeconds(1));
-  // Wait again, and ensure the alarm fires again.
-  RunScheduleNextPoll(test->alarm_manager_);
-  base::MessageLoop::current()->Run();
-
-  ASSERT_EQ(2u, test->alarm_delegate_->alarms_seen.size());
-  EXPECT_EQ("", test->alarm_delegate_->alarms_seen[0]);
+  {
+    const AlarmManager::AlarmList* alarms =
+        alarm_manager_->GetAllAlarms(extension_->id());
+    ASSERT_FALSE(alarms);
+  }
 }
 
 TEST_F(ExtensionAlarmsTest, CreateRepeating) {
@@ -210,97 +176,76 @@ TEST_F(ExtensionAlarmsTest, CreateRepeating) {
   // Create 1 repeating alarm.
   CreateAlarm("[null, {\"periodInMinutes\": 0.001}]");
 
-  alarm_manager_->GetAlarm(extension_->id(), std::string(), base::Bind(
-      ExtensionAlarmsTestCreateRepeatingGetAlarmCallback, this));
-}
-
-void ExtensionAlarmsTestCreateAbsoluteGetAlarm2Callback(
-    ExtensionAlarmsTest* test, Alarm* alarm) {
-  ASSERT_FALSE(alarm);
-
-  ASSERT_EQ(1u, test->alarm_delegate_->alarms_seen.size());
-  EXPECT_EQ("", test->alarm_delegate_->alarms_seen[0]);
-}
-
-void ExtensionAlarmsTestCreateAbsoluteGetAlarm1Callback(
-    ExtensionAlarmsTest* test, Alarm* alarm) {
+  const Alarm* alarm =
+      alarm_manager_->GetAlarm(extension_->id(), std::string());
   ASSERT_TRUE(alarm);
   EXPECT_EQ("", alarm->js_alarm->name);
-  EXPECT_DOUBLE_EQ(10001, alarm->js_alarm->scheduled_time);
+  EXPECT_DOUBLE_EQ(10060, alarm->js_alarm->scheduled_time);
   EXPECT_THAT(alarm->js_alarm->period_in_minutes,
-              testing::IsNull());
+              testing::Pointee(testing::DoubleEq(0.001)));
 
-  test->test_clock_->SetNow(base::Time::FromDoubleT(10.1));
+  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
   // Now wait for the alarm to fire. Our test delegate will quit the
   // MessageLoop when that happens.
   base::MessageLoop::current()->Run();
 
-  test->alarm_manager_->GetAlarm(
-      test->extension_->id(), std::string(), base::Bind(
-          ExtensionAlarmsTestCreateAbsoluteGetAlarm2Callback, test));
+  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  // Wait again, and ensure the alarm fires again.
+  alarm_manager_->ScheduleNextPoll();
+  base::MessageLoop::current()->Run();
+
+  ASSERT_EQ(2u, alarm_delegate_->alarms_seen.size());
+  EXPECT_EQ("", alarm_delegate_->alarms_seen[0]);
 }
 
 TEST_F(ExtensionAlarmsTest, CreateAbsolute) {
   test_clock_->SetNow(base::Time::FromDoubleT(9.99));
   CreateAlarm("[null, {\"when\": 10001}]");
 
-  alarm_manager_->GetAlarm(extension_->id(), std::string(), base::Bind(
-      ExtensionAlarmsTestCreateAbsoluteGetAlarm1Callback, this));
-}
-
-void ExtensionAlarmsTestCreateRepeatingWithQuickFirstCallGetAlarm3Callback(
-    ExtensionAlarmsTest* test, Alarm* alarm) {
-  ASSERT_TRUE(alarm);
-  EXPECT_THAT(test->alarm_delegate_->alarms_seen, testing::ElementsAre("", ""));
-}
-
-void ExtensionAlarmsTestCreateRepeatingWithQuickFirstCallGetAlarm2Callback(
-    ExtensionAlarmsTest* test, Alarm* alarm) {
-  ASSERT_TRUE(alarm);
-  EXPECT_THAT(test->alarm_delegate_->alarms_seen, testing::ElementsAre(""));
-
-  test->test_clock_->SetNow(base::Time::FromDoubleT(10.7));
-  base::MessageLoop::current()->Run();
-
-  test->alarm_manager_->GetAlarm(
-      test->extension_->id(), std::string(), base::Bind(
-          ExtensionAlarmsTestCreateRepeatingWithQuickFirstCallGetAlarm3Callback,
-          test));
-}
-
-void ExtensionAlarmsTestCreateRepeatingWithQuickFirstCallGetAlarm1Callback(
-    ExtensionAlarmsTest* test, Alarm* alarm) {
+  const Alarm* alarm =
+      alarm_manager_->GetAlarm(extension_->id(), std::string());
   ASSERT_TRUE(alarm);
   EXPECT_EQ("", alarm->js_alarm->name);
   EXPECT_DOUBLE_EQ(10001, alarm->js_alarm->scheduled_time);
   EXPECT_THAT(alarm->js_alarm->period_in_minutes,
-              testing::Pointee(testing::DoubleEq(0.001)));
+              testing::IsNull());
 
-  test->test_clock_->SetNow(base::Time::FromDoubleT(10.1));
+  test_clock_->SetNow(base::Time::FromDoubleT(10.1));
   // Now wait for the alarm to fire. Our test delegate will quit the
   // MessageLoop when that happens.
   base::MessageLoop::current()->Run();
 
-  test->alarm_manager_->GetAlarm(
-      test->extension_->id(), std::string(), base::Bind(
-          ExtensionAlarmsTestCreateRepeatingWithQuickFirstCallGetAlarm2Callback,
-          test));
+  ASSERT_FALSE(alarm_manager_->GetAlarm(extension_->id(), std::string()));
+
+  ASSERT_EQ(1u, alarm_delegate_->alarms_seen.size());
+  EXPECT_EQ("", alarm_delegate_->alarms_seen[0]);
 }
 
 TEST_F(ExtensionAlarmsTest, CreateRepeatingWithQuickFirstCall) {
   test_clock_->SetNow(base::Time::FromDoubleT(9.99));
   CreateAlarm("[null, {\"when\": 10001, \"periodInMinutes\": 0.001}]");
 
-  alarm_manager_->GetAlarm(extension_->id(), std::string(), base::Bind(
-      ExtensionAlarmsTestCreateRepeatingWithQuickFirstCallGetAlarm1Callback,
-      this));
-}
+  const Alarm* alarm =
+      alarm_manager_->GetAlarm(extension_->id(), std::string());
+  ASSERT_TRUE(alarm);
+  EXPECT_EQ("", alarm->js_alarm->name);
+  EXPECT_DOUBLE_EQ(10001, alarm->js_alarm->scheduled_time);
+  EXPECT_THAT(alarm->js_alarm->period_in_minutes,
+              testing::Pointee(testing::DoubleEq(0.001)));
 
-void ExtensionAlarmsTestCreateDupeGetAllAlarmsCallback(
-    const AlarmManager::AlarmList* alarms) {
-  ASSERT_TRUE(alarms);
-  EXPECT_EQ(1u, alarms->size());
-  EXPECT_DOUBLE_EQ(430000, (*alarms)[0].js_alarm->scheduled_time);
+  test_clock_->SetNow(base::Time::FromDoubleT(10.1));
+  // Now wait for the alarm to fire. Our test delegate will quit the
+  // MessageLoop when that happens.
+  base::MessageLoop::current()->Run();
+
+  ASSERT_TRUE(alarm_manager_->GetAlarm(extension_->id(), std::string()));
+  EXPECT_THAT(alarm_delegate_->alarms_seen, testing::ElementsAre(""));
+
+  test_clock_->SetNow(base::Time::FromDoubleT(10.7));
+  base::MessageLoop::current()->Run();
+
+  ASSERT_TRUE(alarm_manager_->GetAlarm(extension_->id(), std::string()));
+  EXPECT_THAT(alarm_delegate_->alarms_seen, testing::ElementsAre("", ""));
 }
 
 TEST_F(ExtensionAlarmsTest, CreateDupe) {
@@ -310,8 +255,13 @@ TEST_F(ExtensionAlarmsTest, CreateDupe) {
   CreateAlarm("[\"dup\", {\"delayInMinutes\": 1}]");
   CreateAlarm("[\"dup\", {\"delayInMinutes\": 7}]");
 
-  alarm_manager_->GetAllAlarms(extension_->id(), base::Bind(
-      ExtensionAlarmsTestCreateDupeGetAllAlarmsCallback));
+  {
+    const AlarmManager::AlarmList* alarms =
+        alarm_manager_->GetAllAlarms(extension_->id());
+    ASSERT_TRUE(alarms);
+    EXPECT_EQ(1u, alarms->size());
+    EXPECT_DOUBLE_EQ(430000, (*alarms)[0].js_alarm->scheduled_time);
+  }
 }
 
 TEST_F(ExtensionAlarmsTest, CreateDelayBelowMinimum) {
@@ -395,35 +345,6 @@ TEST_F(ExtensionAlarmsTest, GetAll) {
   }
 }
 
-void ExtensionAlarmsTestClearGetAllAlarms2Callback(
-    const AlarmManager::AlarmList* alarms) {
-  // Ensure the 0.001-minute alarm is still there, since it's repeating.
-  ASSERT_TRUE(alarms);
-  EXPECT_EQ(1u, alarms->size());
-  EXPECT_THAT((*alarms)[0].js_alarm->period_in_minutes,
-              testing::Pointee(0.001));
-}
-
-void ExtensionAlarmsTestClearGetAllAlarms1Callback(
-    ExtensionAlarmsTest* test, const AlarmManager::AlarmList* alarms) {
-  ASSERT_TRUE(alarms);
-  EXPECT_EQ(1u, alarms->size());
-  EXPECT_THAT((*alarms)[0].js_alarm->period_in_minutes,
-              testing::Pointee(0.001));
-
-  // Now wait for the alarms to fire, and ensure the cancelled alarms don't
-  // fire.
-  RunScheduleNextPoll(test->alarm_manager_);
-  base::MessageLoop::current()->Run();
-
-  ASSERT_EQ(1u, test->alarm_delegate_->alarms_seen.size());
-  EXPECT_EQ("", test->alarm_delegate_->alarms_seen[0]);
-
-  // Ensure the 0.001-minute alarm is still there, since it's repeating.
-  test->alarm_manager_->GetAllAlarms(test->extension_->id(), base::Bind(
-      ExtensionAlarmsTestClearGetAllAlarms2Callback));
-}
-
 TEST_F(ExtensionAlarmsTest, Clear) {
   // Clear a non-existent one.
   {
@@ -436,28 +357,35 @@ TEST_F(ExtensionAlarmsTest, Clear) {
   CreateAlarms(3);
 
   // Clear all but the 0.001-minute alarm.
-  RunFunction(new AlarmsClearFunction(), "[\"7\"]");
-  RunFunction(new AlarmsClearFunction(), "[\"0\"]");
+  {
+    RunFunction(new AlarmsClearFunction(), "[\"7\"]");
+    RunFunction(new AlarmsClearFunction(), "[\"0\"]");
 
-  alarm_manager_->GetAllAlarms(extension_->id(), base::Bind(
-      ExtensionAlarmsTestClearGetAllAlarms1Callback, this));
-}
+    const AlarmManager::AlarmList* alarms =
+        alarm_manager_->GetAllAlarms(extension_->id());
+    ASSERT_TRUE(alarms);
+    EXPECT_EQ(1u, alarms->size());
+    EXPECT_THAT((*alarms)[0].js_alarm->period_in_minutes,
+                testing::Pointee(0.001));
+  }
 
-void ExtensionAlarmsTestClearAllGetAllAlarms2Callback(
-    const AlarmManager::AlarmList* alarms) {
-  ASSERT_FALSE(alarms);
-}
+  // Now wait for the alarms to fire, and ensure the cancelled alarms don't
+  // fire.
+  alarm_manager_->ScheduleNextPoll();
+  base::MessageLoop::current()->Run();
 
-void ExtensionAlarmsTestClearAllGetAllAlarms1Callback(
-    ExtensionAlarmsTest* test, const AlarmManager::AlarmList* alarms) {
-  ASSERT_TRUE(alarms);
-  EXPECT_EQ(3u, alarms->size());
+  ASSERT_EQ(1u, alarm_delegate_->alarms_seen.size());
+  EXPECT_EQ("", alarm_delegate_->alarms_seen[0]);
 
-  // Clear them.
-  test->RunFunction(new AlarmsClearAllFunction(), "[]");
-  test->alarm_manager_->GetAllAlarms(
-      test->extension_->id(), base::Bind(
-          ExtensionAlarmsTestClearAllGetAllAlarms2Callback));
+  // Ensure the 0.001-minute alarm is still there, since it's repeating.
+  {
+    const AlarmManager::AlarmList* alarms =
+        alarm_manager_->GetAllAlarms(extension_->id());
+    ASSERT_TRUE(alarms);
+    EXPECT_EQ(1u, alarms->size());
+    EXPECT_THAT((*alarms)[0].js_alarm->period_in_minutes,
+                testing::Pointee(0.001));
+  }
 }
 
 TEST_F(ExtensionAlarmsTest, ClearAll) {
@@ -469,39 +397,31 @@ TEST_F(ExtensionAlarmsTest, ClearAll) {
   }
 
   // Create 3 alarms.
-  CreateAlarms(3);
-  alarm_manager_->GetAllAlarms(extension_->id(), base::Bind(
-      ExtensionAlarmsTestClearAllGetAllAlarms1Callback, this));
+  {
+    CreateAlarms(3);
+    const AlarmManager::AlarmList* alarms =
+        alarm_manager_->GetAllAlarms(extension_->id());
+    ASSERT_TRUE(alarms);
+    EXPECT_EQ(3u, alarms->size());
+  }
+
+  // Clear them.
+  {
+    RunFunction(new AlarmsClearAllFunction(), "[]");
+    const AlarmManager::AlarmList* alarms =
+        alarm_manager_->GetAllAlarms(extension_->id());
+    ASSERT_FALSE(alarms);
+  }
 }
 
 class ExtensionAlarmsSchedulingTest : public ExtensionAlarmsTest {
-  void GetAlarmCallback(Alarm* alarm) {
-    CHECK(alarm);
-    const base::Time scheduled_time =
-        base::Time::FromJsTime(alarm->js_alarm->scheduled_time);
-    EXPECT_EQ(scheduled_time, alarm_manager_->next_poll_time_);
-  }
-
-  static void RemoveAlarmCallback (bool success) { EXPECT_TRUE(success); }
-  static void RemoveAllAlarmsCallback () {}
  public:
   // Get the time that the alarm named is scheduled to run.
-  void VerifyScheduledTime(const std::string& alarm_name) {
-    alarm_manager_->GetAlarm(extension_->id(), alarm_name, base::Bind(
-        &ExtensionAlarmsSchedulingTest::GetAlarmCallback,
-        base::Unretained(this)));
-  }
-
-  void RemoveAlarm(const std::string& name) {
-    alarm_manager_->RemoveAlarm(
-        extension_->id(),
-        name,
-        base::Bind(&ExtensionAlarmsSchedulingTest::RemoveAlarmCallback));
-  }
-
-  void RemoveAllAlarms () {
-    alarm_manager_->RemoveAllAlarms(extension_->id(), base::Bind(
-        &ExtensionAlarmsSchedulingTest::RemoveAllAlarmsCallback));
+  base::Time GetScheduledTime(const std::string& alarm_name) {
+    const extensions::Alarm* alarm =
+        alarm_manager_->GetAlarm(extension_->id(), alarm_name);
+    CHECK(alarm);
+    return base::Time::FromJsTime(alarm->js_alarm->scheduled_time);
   }
 };
 
@@ -509,14 +429,14 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
   {
     CreateAlarm("[\"a\", {\"periodInMinutes\": 6}]");
     CreateAlarm("[\"bb\", {\"periodInMinutes\": 8}]");
-    VerifyScheduledTime("a");
-    RemoveAllAlarms();
+    EXPECT_EQ(GetScheduledTime("a"), alarm_manager_->next_poll_time_);
+    alarm_manager_->RemoveAllAlarms(extension_->id());
   }
   {
     CreateAlarm("[\"a\", {\"delayInMinutes\": 10}]");
     CreateAlarm("[\"bb\", {\"delayInMinutes\": 21}]");
-    VerifyScheduledTime("a");
-    RemoveAllAlarms();
+    EXPECT_EQ(GetScheduledTime("a"), alarm_manager_->next_poll_time_);
+    alarm_manager_->RemoveAllAlarms(extension_->id());
   }
   {
     test_clock_->SetNow(base::Time::FromDoubleT(10));
@@ -526,8 +446,9 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     alarm.js_alarm->scheduled_time = 30 * 60000;
     alarm.js_alarm->period_in_minutes.reset(new double(30));
     alarm_manager_->AddAlarmImpl(extension_->id(), alarm);
-    VerifyScheduledTime("a");
-    RemoveAllAlarms();
+    EXPECT_DOUBLE_EQ(GetScheduledTime("a").ToDoubleT(),
+                     alarm_manager_->next_poll_time_.ToDoubleT());
+    alarm_manager_->RemoveAllAlarms(extension_->id());
   }
   {
     test_clock_->SetNow(base::Time::FromDoubleT(3 * 60 + 1));
@@ -539,12 +460,12 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     base::MessageLoop::current()->Run();
     EXPECT_EQ(alarm_manager_->last_poll_time_ + base::TimeDelta::FromMinutes(3),
               alarm_manager_->next_poll_time_);
-    RemoveAllAlarms();
+    alarm_manager_->RemoveAllAlarms(extension_->id());
   }
   {
     test_clock_->SetNow(base::Time::FromDoubleT(4 * 60 + 1));
     CreateAlarm("[\"a\", {\"periodInMinutes\": 2}]");
-    RemoveAlarm("a");
+    alarm_manager_->RemoveAlarm(extension_->id(), "a");
     Alarm alarm2;
     alarm2.js_alarm->name = "bb";
     alarm2.js_alarm->scheduled_time = 4 * 60000;
@@ -558,7 +479,7 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     base::MessageLoop::current()->Run();
     EXPECT_EQ(alarm_manager_->last_poll_time_ + base::TimeDelta::FromMinutes(4),
               alarm_manager_->next_poll_time_);
-    RemoveAllAlarms();
+    alarm_manager_->RemoveAllAlarms(extension_->id());
   }
 }
 
@@ -591,7 +512,7 @@ TEST_F(ExtensionAlarmsSchedulingTest, TimerRunning) {
   EXPECT_FALSE(alarm_manager_->timer_.IsRunning());
   CreateAlarm("[\"bb\", {\"delayInMinutes\": 10}]");
   EXPECT_TRUE(alarm_manager_->timer_.IsRunning());
-  RemoveAllAlarms();
+  alarm_manager_->RemoveAllAlarms(extension_->id());
   EXPECT_FALSE(alarm_manager_->timer_.IsRunning());
 }
 

@@ -107,10 +107,8 @@ bool AlarmsCreateFunction::RunImpl() {
       params->name.get() ? *params->name : kDefaultAlarmName;
   std::vector<std::string> warnings;
   if (!ValidateAlarmCreateInfo(
-          alarm_name, params->alarm_info, GetExtension(), &error_, &warnings)) {
-    SendResponse(false);
+          alarm_name, params->alarm_info, GetExtension(), &error_, &warnings))
     return false;
-  }
   for (std::vector<std::string>::const_iterator it = warnings.begin();
        it != warnings.end(); ++it)
     WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING, *it);
@@ -121,14 +119,9 @@ bool AlarmsCreateFunction::RunImpl() {
                   Manifest::IsUnpackedLocation(GetExtension()->location()) ?
                   kDevDelayMinimum : kReleaseDelayMinimum),
               clock_->Now());
-  AlarmManager::Get(profile())->AddAlarm(extension_id(), alarm, base::Bind(
-      &AlarmsCreateFunction::Callback, this));
+  AlarmManager::Get(profile())->AddAlarm(extension_id(), alarm);
 
   return true;
-}
-
-void AlarmsCreateFunction::Callback() {
-  SendResponse(true);
 }
 
 bool AlarmsGetFunction::RunImpl() {
@@ -136,30 +129,21 @@ bool AlarmsGetFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string name = params->name.get() ? *params->name : kDefaultAlarmName;
-  AlarmManager::Get(profile())->GetAlarm(extension_id(), name, base::Bind(
-      &AlarmsGetFunction::Callback, this, name));
+  const Alarm* alarm =
+      AlarmManager::Get(profile())->GetAlarm(extension_id(), name);
 
-  return true;
-}
-
-void AlarmsGetFunction::Callback(
-    const std::string& name, extensions::Alarm* alarm) {
-  if (alarm) {
-    results_ = alarms::Get::Results::Create(*alarm->js_alarm);
-    SendResponse(true);
-  } else {
+  if (!alarm) {
     error_ = ErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
-    SendResponse(false);
+    return false;
   }
+
+  results_ = alarms::Get::Results::Create(*alarm->js_alarm);
+  return true;
 }
 
 bool AlarmsGetAllFunction::RunImpl() {
-  AlarmManager::Get(profile())->GetAllAlarms(extension_id(), base::Bind(
-      &AlarmsGetAllFunction::Callback, this));
-  return true;
-}
-
-void AlarmsGetAllFunction::Callback(const AlarmList* alarms) {
+  const AlarmManager::AlarmList* alarms =
+      AlarmManager::Get(profile())->GetAllAlarms(extension_id());
   if (alarms) {
     std::vector<linked_ptr<extensions::api::alarms::Alarm> > create_arg;
     create_arg.reserve(alarms->size());
@@ -170,7 +154,7 @@ void AlarmsGetAllFunction::Callback(const AlarmList* alarms) {
   } else {
     SetResult(new base::ListValue());
   }
-  SendResponse(true);
+  return true;
 }
 
 bool AlarmsClearFunction::RunImpl() {
@@ -179,27 +163,20 @@ bool AlarmsClearFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string name = params->name.get() ? *params->name : kDefaultAlarmName;
-  AlarmManager::Get(profile())->RemoveAlarm(extension_id(), name, base::Bind(
-      &AlarmsClearFunction::Callback, this, name));
+  bool success = AlarmManager::Get(profile())->RemoveAlarm(extension_id(),
+                                                           name);
+
+  if (!success) {
+    error_ = ErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
+    return false;
+  }
 
   return true;
-}
-
-void AlarmsClearFunction::Callback(const std::string& name, bool success) {
-  if (!success)
-    error_ = ErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
-
-  SendResponse(success);
 }
 
 bool AlarmsClearAllFunction::RunImpl() {
-  AlarmManager::Get(profile())->RemoveAllAlarms(extension_id(), base::Bind(
-      &AlarmsClearAllFunction::Callback, this));
+  AlarmManager::Get(profile())->RemoveAllAlarms(extension_id());
   return true;
-}
-
-void AlarmsClearAllFunction::Callback() {
-  SendResponse(true);
 }
 
 }  // namespace extensions
