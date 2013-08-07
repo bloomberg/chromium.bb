@@ -3057,7 +3057,6 @@
             ['exclude', '^browser/captive_portal/'],
             ['exclude', '^browser/diagnostics/'],
             ['exclude', '^browser/first_run/'],
-            ['include', '^browser/first_run/first_run.cc'], # For ctor/dtor of a struct.
             ['exclude', '^browser/importer/'],
             ['exclude', '^browser/media_galleries/'],
             ['exclude', '^browser/net/firefox_*'],

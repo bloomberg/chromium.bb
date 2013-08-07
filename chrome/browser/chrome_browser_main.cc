@@ -798,8 +798,8 @@ int ChromeBrowserMainParts::PreCreateThreads() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreCreateThreads");
   result_code_ = PreCreateThreadsImpl();
   // These members must be initialized before returning from this function.
-  DCHECK(master_prefs_.get());
 #if !defined(OS_ANDROID)
+  DCHECK(master_prefs_.get());
   DCHECK(browser_creator_.get());
 #endif
 
@@ -869,10 +869,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   local_state_ = InitializeLocalState(
       local_state_task_runner.get(), parsed_command_line());
 
+#if !defined(OS_ANDROID)
   // These members must be initialized before returning from this function.
   master_prefs_.reset(new first_run::MasterPrefs);
-
-#if !defined(OS_ANDROID)
   // Android doesn't use StartupBrowserCreator.
   browser_creator_.reset(new StartupBrowserCreator);
   // TODO(yfriedman): Refactor Android to re-use UMABrowsingActivityObserver

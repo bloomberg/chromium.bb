@@ -177,8 +177,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Android doesn't support multiple browser processes, so it doesn't implement
   // ProcessSingleton.
   scoped_ptr<ChromeProcessSingleton> process_singleton_;
-#endif
+
+  // Android's first run is done in Java instead of native.
   scoped_ptr<first_run::MasterPrefs> master_prefs_;
+#endif
   TranslateManager* translate_manager_;
   Profile* profile_;
   bool run_message_loop_;

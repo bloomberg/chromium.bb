@@ -295,7 +295,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   DownloadPrefs::RegisterProfilePrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
   ExtensionWebUI::RegisterProfilePrefs(registry);
-  first_run::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   IncognitoModePrefs::RegisterProfilePrefs(registry);
   InstantUI::RegisterProfilePrefs(registry);
@@ -344,15 +343,16 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if !defined(OS_ANDROID)
-  extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
+  CloudPrintURL::RegisterProfilePrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::ExtensionSettingsHandler::RegisterProfilePrefs(registry);
+  extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
+  first_run::RegisterProfilePrefs(registry);
   PepperFlashSettingsManager::RegisterProfilePrefs(registry);
   PinnedTabCodec::RegisterProfilePrefs(registry);
   PluginsUI::RegisterProfilePrefs(registry);
-  CloudPrintURL::RegisterProfilePrefs(registry);
   print_dialog_cloud::RegisterProfilePrefs(registry);
   printing::StickySettings::RegisterProfilePrefs(registry);
   RegisterAutolaunchUserPrefs(registry);
