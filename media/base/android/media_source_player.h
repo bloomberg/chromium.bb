@@ -43,7 +43,8 @@ class MediaDecoderJob {
     DECODE_TRY_ENQUEUE_INPUT_AGAIN_LATER,
     DECODE_TRY_DEQUEUE_OUTPUT_AGAIN_LATER,
     DECODE_FORMAT_CHANGED,
-    DECODE_END_OF_STREAM,
+    DECODE_INPUT_END_OF_STREAM,
+    DECODE_OUTPUT_END_OF_STREAM,
     DECODE_FAILED,
   };
 
@@ -110,6 +111,9 @@ class MediaDecoderJob {
 
   // Whether this is an audio decoder.
   bool is_audio_;
+
+  // Whether input EOS is encountered.
+  bool input_eos_encountered_;
 
   // Weak pointer passed to media decoder jobs for callbacks. It is bounded to
   // the decoder thread.

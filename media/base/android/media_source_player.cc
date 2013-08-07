@@ -67,6 +67,7 @@ MediaDecoderJob::MediaDecoderJob(
       media_codec_bridge_(media_codec_bridge),
       needs_flush_(false),
       is_audio_(is_audio),
+      input_eos_encountered_(false),
       weak_this_(this),
       is_decoding_(false) {
 }
@@ -130,7 +131,9 @@ MediaDecoderJob::DecodeStatus MediaDecoderJob::QueueInputBuffer(
   DCHECK(input_buf_index >= 0);
   if (unit.end_of_stream || unit.data.empty()) {
     media_codec_bridge_->QueueEOS(input_buf_index);
-  } else if (unit.key_id.empty()) {
+    return DECODE_INPUT_END_OF_STREAM;
+  }
+  if (unit.key_id.empty()) {
     media_codec_bridge_->QueueInputBuffer(
         input_buf_index, &unit.data[0], unit.data.size(), unit.timestamp);
   } else {
@@ -157,14 +160,21 @@ void MediaDecoderJob::DecodeInternal(
     const MediaDecoderJob::DecoderCallback& callback) {
   if (needs_flush) {
     DVLOG(1) << "DecodeInternal needs flush.";
+    input_eos_encountered_ = false;
     media_codec_bridge_->Reset();
   }
 
-  DecodeStatus decode_status = QueueInputBuffer(unit);
-  if (decode_status != DECODE_SUCCEEDED) {
-    ui_loop_->PostTask(FROM_HERE,
-        base::Bind(callback, decode_status, start_presentation_timestamp, 0));
-    return;
+  DecodeStatus decode_status = DECODE_INPUT_END_OF_STREAM;
+  if (!input_eos_encountered_) {
+    decode_status = QueueInputBuffer(unit);
+    if (decode_status == DECODE_INPUT_END_OF_STREAM) {
+      input_eos_encountered_ = true;
+    } else if (decode_status != DECODE_SUCCEEDED) {
+      ui_loop_->PostTask(FROM_HERE,
+                         base::Bind(callback, decode_status,
+                                    start_presentation_timestamp, 0));
+      return;
+    }
   }
 
   size_t offset = 0;
@@ -178,12 +188,14 @@ void MediaDecoderJob::DecodeInternal(
       timeout, &offset, &size, &presentation_timestamp, &end_of_stream);
 
   if (end_of_stream)
-    decode_status = DECODE_END_OF_STREAM;
+    decode_status = DECODE_OUTPUT_END_OF_STREAM;
   switch (outputBufferIndex) {
     case MediaCodecBridge::INFO_OUTPUT_BUFFERS_CHANGED:
+      DCHECK(decode_status != DECODE_INPUT_END_OF_STREAM);
       media_codec_bridge_->GetOutputBuffers();
       break;
     case MediaCodecBridge::INFO_OUTPUT_FORMAT_CHANGED:
+      DCHECK(decode_status != DECODE_INPUT_END_OF_STREAM);
       // TODO(qinmin): figure out what we should do if format changes.
       decode_status = DECODE_FORMAT_CHANGED;
       break;
@@ -232,7 +244,7 @@ void MediaDecoderJob::ReleaseOutputBuffer(
     static_cast<AudioCodecBridge*>(media_codec_bridge_.get())->PlayOutputBuffer(
         outputBufferIndex, size);
   }
-  if (status != DECODE_END_OF_STREAM || size != 0u)
+  if (status != DECODE_OUTPUT_END_OF_STREAM || size != 0u)
     media_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, !is_audio_);
   ui_loop_->PostTask(FROM_HERE, base::Bind(
       callback, status, presentation_timestamp, is_audio_ ? size : 0));
@@ -639,7 +651,9 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
-  if (decode_status != MediaDecoderJob::DECODE_TRY_ENQUEUE_INPUT_AGAIN_LATER) {
+  // If the input reaches input EOS, there is no need to request new data.
+  if (decode_status != MediaDecoderJob::DECODE_TRY_ENQUEUE_INPUT_AGAIN_LATER &&
+      decode_status != MediaDecoderJob::DECODE_INPUT_END_OF_STREAM) {
     if (is_audio)
       audio_access_unit_index_++;
     else
@@ -656,7 +670,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
     UpdateTimestamps(presentation_timestamp, audio_output_bytes);
   }
 
-  if (decode_status == MediaDecoderJob::DECODE_END_OF_STREAM) {
+  if (decode_status == MediaDecoderJob::DECODE_OUTPUT_END_OF_STREAM) {
     PlaybackCompleted(is_audio);
     return;
   }

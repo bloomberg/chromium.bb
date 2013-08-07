@@ -35,7 +35,10 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual void OnMediaMetadataChanged(
       int player_id, base::TimeDelta duration, int width, int height,
       bool success) OVERRIDE {}
-  virtual void OnPlaybackComplete(int player_id) OVERRIDE {}
+  virtual void OnPlaybackComplete(int player_id) OVERRIDE {
+    if (message_loop_.is_running())
+      message_loop_.Quit();
+  }
   virtual void OnMediaInterrupted(int player_id) OVERRIDE {}
   virtual void OnBufferingUpdate(int player_id, int percentage) OVERRIDE {}
   virtual void OnSeekComplete(int player_id,
@@ -424,6 +427,36 @@ TEST_F(MediaSourcePlayerTest,
   player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio());
   base::TimeTicks current = StartTimeTicks();
   EXPECT_LE(100.0, (current - previous).InMillisecondsF());
+}
+
+TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterInputEOS) {
+  if (!MediaCodecBridge::IsAvailable())
+    return;
+
+  // Test MediaSourcePlayer will not request for new data after input EOS is
+  // reached.
+  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
+      new gfx::SurfaceTextureBridge(0));
+  gfx::ScopedJavaSurface surface(surface_texture.get());
+  player_->SetVideoSurface(surface.Pass());
+  StartVideoDecoderJob();
+  player_->OnSeekRequestAck(manager_->last_seek_request_id());
+  EXPECT_EQ(1, manager_->num_requests());
+  // Send the first input chunk.
+  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForVideo());
+  manager_->message_loop()->Run();
+  EXPECT_EQ(2, manager_->num_requests());
+
+  // Send EOS.
+  MediaPlayerHostMsg_ReadFromDemuxerAck_Params ack_params;
+  ack_params.type = DemuxerStream::VIDEO;
+  ack_params.access_units.resize(1);
+  ack_params.access_units[0].status = DemuxerStream::kOk;
+  ack_params.access_units[0].end_of_stream = true;
+  player_->ReadFromDemuxerAck(ack_params);
+  manager_->message_loop()->Run();
+  // No more request for data should be made.
+  EXPECT_EQ(2, manager_->num_requests());
 }
 
 }  // namespace media
