@@ -27,6 +27,9 @@
             # Whether or not we are building the Ash shell.
             'use_ash%': 0,
 
+            # Whether or not we are using CRAS, the ChromeOS Audio Server.
+            'use_cras%': 0,
+
             # Use a raw surface abstraction.
             'use_ozone%': 0,
           },
@@ -34,6 +37,7 @@
           'chromeos%': '<(chromeos)',
           'use_aura%': '<(use_aura)',
           'use_ash%': '<(use_ash)',
+          'use_cras%': '<(use_cras)',
           'use_ozone%': '<(use_ozone)',
 
           # Whether we are using Views Toolkit
@@ -98,6 +102,7 @@
         'chromeos%': '<(chromeos)',
         'use_aura%': '<(use_aura)',
         'use_ash%': '<(use_ash)',
+        'use_cras%': '<(use_cras)',
         'use_ozone%': '<(use_ozone)',
         'use_openssl%': '<(use_openssl)',
         'enable_viewport%': '<(enable_viewport)',
@@ -179,6 +184,7 @@
       'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
       'use_aura%': '<(use_aura)',
       'use_ash%': '<(use_ash)',
+      'use_cras%': '<(use_cras)',
       'use_ozone%': '<(use_ozone)',
       'use_openssl%': '<(use_openssl)',
       'enable_viewport%': '<(enable_viewport)',
@@ -755,6 +761,7 @@
     'ui_compositor_image_transport%': '<(ui_compositor_image_transport)',
     'use_aura%': '<(use_aura)',
     'use_ash%': '<(use_ash)',
+    'use_cras%': '<(use_cras)',
     'use_openssl%': '<(use_openssl)',
     'use_nss%': '<(use_nss)',
     'os_bsd%': '<(os_bsd)',
@@ -1927,6 +1934,9 @@
       }],
       ['use_ash==1', {
         'defines': ['USE_ASH=1'],
+      }],
+      ['use_cras==1', {
+        'defines': ['USE_CRAS=1'],
       }],
       ['use_ozone==1', {
         'defines': ['USE_OZONE=1'],

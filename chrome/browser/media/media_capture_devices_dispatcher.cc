@@ -35,6 +35,10 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(USE_CRAS)
+#include "media/audio/cras/audio_manager_cras.h"
+#endif
+
 using content::BrowserThread;
 using content::MediaStreamDevices;
 
@@ -193,21 +197,33 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
     const extensions::Extension* extension) {
-  bool component_extension =
+  const bool component_extension =
     extension && extension->location() == extensions::Manifest::COMPONENT;
 
   content::MediaStreamDevices devices;
 
-  bool screen_capture_enabled =
+  const bool screen_capture_enabled =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableUserMediaScreenCapturing) ||
       IsOriginWhitelistedForScreenCapture(request.security_origin);
 
-  bool origin_is_secure =
+  const bool origin_is_secure =
       request.security_origin.SchemeIsSecure() ||
       request.security_origin.SchemeIs(extensions::kExtensionScheme) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowHttpScreenCapture);
+
+  const bool screen_video_capture_requested =
+      request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE;
+
+  const bool system_audio_capture_requested =
+      request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE;
+
+#if defined(USE_CRAS)
+  const bool system_audio_capture_supported = true;
+#else
+  const bool system_audio_capture_supported = false;
+#endif
 
   // Approve request only when the following conditions are met:
   //  1. Screen capturing is enabled via command line switch or white-listed for
@@ -216,9 +232,8 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
   //  3. Video capture is requested for screen video.
   //  4. Audio capture is either not requested, or requested for system audio.
   if (screen_capture_enabled && origin_is_secure &&
-      request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE &&
-      (request.audio_type == content::MEDIA_NO_SERVICE ||
-       request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE)) {
+      screen_video_capture_requested &&
+      (!system_audio_capture_requested || system_audio_capture_supported)) {
     // For component extensions, bypass message box.
     bool user_approved = false;
     if (!component_extension) {
@@ -240,9 +255,14 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     if (user_approved || component_extension) {
       devices.push_back(content::MediaStreamDevice(
           content::MEDIA_SCREEN_VIDEO_CAPTURE, std::string(), "Screen"));
-      if (request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE) {
+      if (system_audio_capture_requested) {
+#if defined(USE_CRAS)
+        // Use the special loopback device ID for system audio capture.
         devices.push_back(content::MediaStreamDevice(
-            content::MEDIA_SYSTEM_AUDIO_CAPTURE, std::string(), std::string()));
+            content::MEDIA_SYSTEM_AUDIO_CAPTURE,
+            media::AudioManagerCras::kLoopbackDeviceId,
+            "System Audio"));
+#endif
       }
     }
   }

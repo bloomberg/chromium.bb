@@ -15,10 +15,6 @@
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "media/audio/audio_manager_base.h"
 
-#if defined(USE_CRAS)
-#include "media/audio/cras/audio_manager_cras.h"
-#endif
-
 namespace content {
 
 struct AudioInputRendererHost::AudioEntry {
@@ -241,18 +237,7 @@ void AudioInputRendererHost::OnCreateStream(
       return;
     }
 
-    if (info->device.type == content::MEDIA_SYSTEM_AUDIO_CAPTURE) {
-#if defined(USE_CRAS)
-      // Use the special loopback device ID for system audio capture.
-      device_id = media::AudioManagerCras::kLoopbackDeviceId;
-#else
-      SendErrorMessage(stream_id);
-      DLOG(WARNING) << "Loopback device is not supported on this platform";
-      return;
-#endif
-    } else {
-      device_id = info->device.id;
-    }
+    device_id = info->device.id;
   }
 
   // Create a new AudioEntry structure.
