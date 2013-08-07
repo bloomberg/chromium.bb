@@ -48,8 +48,8 @@ shouldBeTrue("testSet('\xE0', 'data-\xE0')");
 debug("");
 
 shouldThrow("testSet('-foo', 'dummy')", "'SyntaxError: An invalid or illegal string was specified.'");
-shouldThrow("testSet('foo\x20', 'dummy')", "'InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name.'");
-shouldThrow("testSet('foo\uF900', 'dummy')", "'InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name.'");
+shouldThrow("testSet('foo\x20', 'dummy')", "'InvalidCharacterError: The string contains invalid characters.'");
+shouldThrow("testSet('foo\uF900', 'dummy')", "'InvalidCharacterError: The string contains invalid characters.'");
 debug("");
 
 function testDelete(attr, prop)

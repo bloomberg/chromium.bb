@@ -123,7 +123,7 @@ fooCreatedEmpty = document.createElement("x-foo", "");
 shouldBe("fooCreatedEmpty.outerHTML", fooOuterHTML);
 shouldBeTrue("fooCreatedEmpty instanceof fooConstructor");
 
-shouldThrow("document.createElement('@invalid', 'x-bar')", "'InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name.'");
+shouldThrow("document.createElement('@invalid', 'x-bar')", "'InvalidCharacterError: The string contains invalid characters.'");
 
 //
 // createElementNS() with type extensions

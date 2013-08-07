@@ -41,7 +41,7 @@ static struct CoreException {
     { "IndexSizeError", "Index or size was negative, or greater than the allowed value.", 1 },
     { "HierarchyRequestError", "A Node was inserted somewhere it doesn't belong.", 3 },
     { "WrongDocumentError", "A Node was used in a different document than the one that created it (that doesn't support it).", 4 },
-    { "InvalidCharacterError", "An invalid or illegal character was specified, such as in an XML name.", 5 },
+    { "InvalidCharacterError", "The string contains invalid characters.", 5 },
     { "NoModificationAllowedError", "An attempt was made to modify an object where modifications are not allowed.", 7 },
     { "NotFoundError", "An attempt was made to reference a Node in a context where it does not exist.", 8 },
     { "NotSupportedError", "The implementation did not support the requested type of object or operation.", 9 },

@@ -18,35 +18,35 @@ PASS window.btoa(undefined) is "dW5kZWZpbmVk"
 PASS window.btoa(window) is "W29iamVjdCBXaW5kb3dd"
 PASS window.btoa("éé") is "6ek="
 PASS window.btoa("\u0080\u0081") is "gIE="
-PASS window.btoa("тест") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
+PASS window.btoa("тест") threw exception InvalidCharacterError: The string contains invalid characters..
 PASS window.btoa is 0
 PASS typeof window.btoa is "number"
 PASS typeof window.atob is "function"
 PASS window.atob() threw exception TypeError: Not enough arguments.
 PASS window.atob("") is ""
 PASS window.atob(null) is "ée"
-PASS window.atob(undefined) threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob(" YQ==") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob("YQ==\u000a") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
+PASS window.atob(undefined) threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob(" YQ==") threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob("YQ==\u000a") threw exception InvalidCharacterError: The string contains invalid characters..
 PASS window.atob("6ek=") is "éé"
 PASS window.atob("6ek") is "éé"
 PASS window.atob("gIE=") is ""
-PASS window.atob("тест") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob("z") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
+PASS window.atob("тест") threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob("z") threw exception InvalidCharacterError: The string contains invalid characters..
 PASS window.atob("zz") is "Ï"
 PASS window.atob("zzz") is "Ï<"
 PASS window.atob("zzz=") is "Ï<"
-PASS window.atob("zzz==") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob("zzz===") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob("zzz====") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
+PASS window.atob("zzz==") threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob("zzz===") threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob("zzz====") threw exception InvalidCharacterError: The string contains invalid characters..
 PASS window.atob("zzzz") is "Ï<ó"
-PASS window.atob("zzzzz") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob("z=zz") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob("=") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob("==") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob("===") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob("====") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS window.atob("=====") threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
+PASS window.atob("zzzzz") threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob("z=zz") threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob("=") threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob("==") threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob("===") threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob("====") threw exception InvalidCharacterError: The string contains invalid characters..
+PASS window.atob("=====") threw exception InvalidCharacterError: The string contains invalid characters..
 PASS window.atob is 0
 PASS typeof window.atob is "number"
 PASS successfullyParsed is true

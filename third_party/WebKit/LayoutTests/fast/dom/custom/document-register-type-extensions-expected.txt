@@ -48,7 +48,7 @@ PASS fooCreatedNull.outerHTML is '<x-foo></x-foo>'
 PASS fooCreatedNull instanceof fooConstructor is true
 PASS fooCreatedEmpty.outerHTML is '<x-foo></x-foo>'
 PASS fooCreatedEmpty instanceof fooConstructor is true
-PASS document.createElement('@invalid', 'x-bar') threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
+PASS document.createElement('@invalid', 'x-bar') threw exception InvalidCharacterError: The string contains invalid characters..
 PASS fooCreatedNS.outerHTML is '<x-foo></x-foo>'
 PASS fooCreatedNS instanceof fooConstructor is true
 PASS barCreatedNS.outerHTML is '<input is="x-bar">'
