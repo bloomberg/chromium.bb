@@ -263,7 +263,6 @@ void DoGetEvents(ListValue* results,
 
       for (DictionaryValue::Iterator data(*(*event)->data()); !data.IsAtEnd();
            data.Advance()) {
-        std::string localized_key;
         Value* value = NULL;
 
         // The property 'eventType' is set in HandleGetEvents as part of the
