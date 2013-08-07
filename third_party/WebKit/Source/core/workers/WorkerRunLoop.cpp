@@ -149,29 +149,33 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
     ASSERT(context->thread());
     ASSERT(context->thread()->isCurrentThread());
 
-    double absoluteTime = 0.0;
-    bool nextTimeoutEventIsIdleWatchdog = false;
-    if (waitMode == WaitForMessage) {
-        absoluteTime = (predicate.isDefaultMode() && m_sharedTimer->isActive()) ? m_sharedTimer->fireTime() : MessageQueue<Task>::infiniteTime();
+    bool nextTimeoutEventIsIdleWatchdog;
+    MessageQueueWaitResult result;
+    OwnPtr<WorkerRunLoop::Task> task;
+    do {
+        double absoluteTime = 0.0;
+        nextTimeoutEventIsIdleWatchdog = false;
+        if (waitMode == WaitForMessage) {
+            absoluteTime = (predicate.isDefaultMode() && m_sharedTimer->isActive()) ? m_sharedTimer->fireTime() : MessageQueue<Task>::infiniteTime();
 
-        // Do a script engine idle notification if the next event is distant enough.
-        const double kMinIdleTimespan = 0.3; // seconds
-        if (m_messageQueue.isEmpty() && absoluteTime > currentTime() + kMinIdleTimespan) {
-            bool hasMoreWork = !context->idleNotification();
-            if (hasMoreWork) {
-                // Schedule a watchdog, so if there are no events within a particular time interval
-                // idle notifications won't stop firing.
-                const double kWatchdogInterval = 3; // seconds
-                double nextWatchdogTime = currentTime() + kWatchdogInterval;
-                if (absoluteTime > nextWatchdogTime) {
-                    absoluteTime = nextWatchdogTime;
-                    nextTimeoutEventIsIdleWatchdog = true;
+            // Do a script engine idle notification if the next event is distant enough.
+            const double kMinIdleTimespan = 0.3; // seconds
+            if (m_messageQueue.isEmpty() && absoluteTime > currentTime() + kMinIdleTimespan) {
+                bool hasMoreWork = !context->idleNotification();
+                if (hasMoreWork) {
+                    // Schedule a watchdog, so if there are no events within a particular time interval
+                    // idle notifications won't stop firing.
+                    const double kWatchdogInterval = 3; // seconds
+                    double nextWatchdogTime = currentTime() + kWatchdogInterval;
+                    if (absoluteTime > nextWatchdogTime) {
+                        absoluteTime = nextWatchdogTime;
+                        nextTimeoutEventIsIdleWatchdog = true;
+                    }
                 }
             }
         }
-    }
-    MessageQueueWaitResult result;
-    OwnPtr<WorkerRunLoop::Task> task = m_messageQueue.waitForMessageFilteredWithTimeout(result, predicate, absoluteTime);
+        task = m_messageQueue.waitForMessageFilteredWithTimeout(result, predicate, absoluteTime);
+    } while (result == MessageQueueTimeout && nextTimeoutEventIsIdleWatchdog);
 
     // If the context is closing, don't execute any further JavaScript tasks (per section 4.1.1 of the Web Workers spec).
     // However, there may be implementation cleanup tasks in the queue, so keep running through it.
@@ -185,7 +189,7 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
         break;
 
     case MessageQueueTimeout:
-        if (!context->isClosing() && !nextTimeoutEventIsIdleWatchdog)
+        if (!context->isClosing())
             m_sharedTimer->fire();
         break;
     }
