@@ -282,4 +282,14 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaConstraints) {
     ExpectTitle("OK");
   }
 }
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, AddTwoMediaStreamsToOnePC) {
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(
+      ExecuteJavascript("addTwoMediaStreamsToOneConnection();"));
+  ExpectTitle("OK");
+}
+
 }  // namespace content

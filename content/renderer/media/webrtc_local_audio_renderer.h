@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_RENDERER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_RENDERER_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -69,11 +71,14 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // WebRtcAudioCapturerSink implementation.
 
   // Called on the AudioInputDevice worker thread.
-  virtual void CaptureData(const int16* audio_data,
-                           int number_of_channels,
-                           int number_of_frames,
-                           int audio_delay_milliseconds,
-                           double volume) OVERRIDE;
+  virtual int CaptureData(const std::vector<int>& channels,
+                          const int16* audio_data,
+                          int sample_rate,
+                          int number_of_channels,
+                          int number_of_frames,
+                          int audio_delay_milliseconds,
+                          int current_volume,
+                          bool need_audio_processing) OVERRIDE;
 
   // Can be called on different user thread.
   virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;

@@ -10,12 +10,14 @@
 #include "base/strings/string_util.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/webrtc_audio_capturer_sink_owner.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/sample_rates.h"
 
 namespace content {
+
+namespace {
 
 // Supported hardware sample rates for input and output sides.
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -23,16 +25,16 @@ namespace content {
 // for its current sample rate (set by the user) on Windows and Mac OS X.
 // The listed rates below adds restrictions and WebRtcAudioDeviceImpl::Init()
 // will fail if the user selects any rate outside these ranges.
-static int kValidInputRates[] = {96000, 48000, 44100, 32000, 16000, 8000};
+const int kValidInputRates[] = {96000, 48000, 44100, 32000, 16000, 8000};
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
-static int kValidInputRates[] = {48000, 44100};
+const int kValidInputRates[] = {48000, 44100};
 #elif defined(OS_ANDROID)
-static int kValidInputRates[] = {48000, 44100};
+const int kValidInputRates[] = {48000, 44100};
 #else
-static int kValidInputRates[] = {44100};
+const int kValidInputRates[] = {44100};
 #endif
 
-static int GetBufferSizeForSampleRate(int sample_rate) {
+int GetBufferSizeForSampleRate(int sample_rate) {
   int buffer_size = 0;
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Use a buffer size of 10ms.
@@ -48,6 +50,8 @@ static int GetBufferSizeForSampleRate(int sample_rate) {
 #endif
   return buffer_size;
 }
+
+}  // namespace
 
 // This is a temporary audio buffer with parameters used to send data to
 // callbacks.
@@ -87,6 +91,68 @@ class WebRtcAudioCapturer::ConfiguredBuffer :
   media::AudioParameters params_;
 };
 
+// Reference counted container of WebRtcLocalAudioTrack delegate.
+class WebRtcAudioCapturer::TrackOwner
+    : public base::RefCountedThreadSafe<WebRtcAudioCapturer::TrackOwner> {
+ public:
+  explicit TrackOwner(WebRtcLocalAudioTrack* track)
+      : delegate_(track) {}
+
+  void CaptureData(const int16* audio_data,
+                   int number_of_channels,
+                   int number_of_frames,
+                   int audio_delay_milliseconds,
+                   int volume) {
+    base::AutoLock lock(lock_);
+    if (delegate_) {
+      delegate_->CaptureData(audio_data,
+                             number_of_channels,
+                             number_of_frames,
+                             audio_delay_milliseconds,
+                             volume);
+    }
+  }
+
+  void SetCaptureFormat(const media::AudioParameters& params) {
+    base::AutoLock lock(lock_);
+    if (delegate_)
+      delegate_->SetCaptureFormat(params);
+  }
+
+  void Reset() {
+    base::AutoLock lock(lock_);
+    delegate_ = NULL;
+  }
+
+  // Wrapper which allows to use std::find_if() when adding and removing
+  // sinks to/from the list.
+  struct TrackWrapper {
+    TrackWrapper(WebRtcLocalAudioTrack* track) : track_(track) {}
+    bool operator()(
+        const scoped_refptr<WebRtcAudioCapturer::TrackOwner>& owner) {
+      return owner->IsEqual(track_);
+    }
+    WebRtcLocalAudioTrack* track_;
+  };
+
+ protected:
+  virtual ~TrackOwner() {}
+
+ private:
+  friend class base::RefCountedThreadSafe<WebRtcAudioCapturer::TrackOwner>;
+
+  bool IsEqual(const WebRtcLocalAudioTrack* other) const {
+    base::AutoLock lock(lock_);
+    return (other == delegate_);
+  }
+
+  // Do NOT reference count the |delegate_| to avoid cyclic reference counting.
+  WebRtcLocalAudioTrack* delegate_;
+  mutable base::Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrackOwner);
+};
+
 // static
 scoped_refptr<WebRtcAudioCapturer> WebRtcAudioCapturer::CreateCapturer() {
   scoped_refptr<WebRtcAudioCapturer> capturer = new WebRtcAudioCapturer();
@@ -118,7 +184,8 @@ bool WebRtcAudioCapturer::Reconfigure(int sample_rate,
 bool WebRtcAudioCapturer::Initialize(int render_view_id,
                                      media::ChannelLayout channel_layout,
                                      int sample_rate,
-                                     int session_id) {
+                                     int session_id,
+                                     const std::string& device_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcAudioCapturer::Initialize()";
 
@@ -127,6 +194,14 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
                             channel_layout, media::CHANNEL_LAYOUT_MAX);
 
   session_id_ = session_id;
+  device_id_ = device_id;
+  if (render_view_id == -1) {
+    // This capturer is used by WebAudio, return true without creating a
+    // default capturing source. WebAudio will inject its own source via
+    // SetCapturerSource() at a later state.
+    DCHECK(device_id.empty());
+    return true;
+  }
 
   // Verify that the reported input channel configuration is supported.
   if (channel_layout != media::CHANNEL_LAYOUT_MONO &&
@@ -169,11 +244,11 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
 }
 
 WebRtcAudioCapturer::WebRtcAudioCapturer()
-    : default_sink_(NULL),
-      source_(NULL),
+    : source_(NULL),
       running_(false),
       agc_is_enabled_(false),
-      session_id_(0) {
+      session_id_(0),
+      volume_(0) {
   DVLOG(1) << "WebRtcAudioCapturer::WebRtcAudioCapturer()";
 }
 
@@ -181,66 +256,39 @@ WebRtcAudioCapturer::~WebRtcAudioCapturer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(tracks_.empty());
   DCHECK(!running_);
-  DCHECK(!default_sink_);
   DVLOG(1) << "WebRtcAudioCapturer::~WebRtcAudioCapturer()";
 }
 
-void WebRtcAudioCapturer::SetDefaultSink(WebRtcAudioCapturerSink* sink) {
-  DVLOG(1) << "WebRtcAudioCapturer::SetDefaultSink()";
-  if (sink) {
-    DCHECK(!default_sink_);
-    default_sink_ = sink;
-    AddSink(sink);
-  } else {
-    DCHECK(default_sink_);
-    RemoveSink(default_sink_);
-    default_sink_ = NULL;
-  }
-}
-
-void WebRtcAudioCapturer::AddSink(WebRtcAudioCapturerSink* track) {
+void WebRtcAudioCapturer::AddTrack(WebRtcLocalAudioTrack* track) {
   DCHECK(track);
-  DVLOG(1) << "WebRtcAudioCapturer::AddSink()";
+  DVLOG(1) << "WebRtcAudioCapturer::AddTrack()";
 
-  // Start the source if an audio track is connected to the capturer.
-  // |default_sink_| is not an audio track.
-  if (track != default_sink_)
-    Start();
+  // Start the source if the first audio track is connected to the capturer.
+  // Start() will do nothing if the capturer has already been started.
+  Start();
 
   base::AutoLock auto_lock(lock_);
   // Verify that |track| is not already added to the list.
-  DCHECK(std::find_if(
-      tracks_.begin(), tracks_.end(),
-      WebRtcAudioCapturerSinkOwner::WrapsSink(track)) == tracks_.end());
+  DCHECK(std::find_if(tracks_.begin(), tracks_.end(),
+                      TrackOwner::TrackWrapper(track)) == tracks_.end());
 
   if (buffer_.get()) {
     track->SetCaptureFormat(buffer_->params());
-  } else {
-    DLOG(WARNING) << "The format of the capturer has not been correctly "
-                  <<  "initialized";
   }
 
-  // Create (and add to the list) a new WebRtcAudioCapturerSinkOwner which owns
-  // the |track| and delagates all calls to the WebRtcAudioCapturerSink
-  // interface.
-  tracks_.push_back(new WebRtcAudioCapturerSinkOwner(track));
-  // TODO(xians): should we call SetCapturerFormat() to each track?
+  tracks_.push_back(new WebRtcAudioCapturer::TrackOwner(track));
 }
 
-void WebRtcAudioCapturer::RemoveSink(
-    WebRtcAudioCapturerSink* track) {
+void WebRtcAudioCapturer::RemoveTrack(WebRtcLocalAudioTrack* track) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "WebRtcAudioCapturer::RemoveSink()";
 
   bool stop_source = false;
   {
     base::AutoLock auto_lock(lock_);
-
     // Get iterator to the first element for which WrapsSink(track) returns
     // true.
     TrackList::iterator it = std::find_if(
-        tracks_.begin(), tracks_.end(),
-        WebRtcAudioCapturerSinkOwner::WrapsSink(track));
+        tracks_.begin(), tracks_.end(), TrackOwner::TrackWrapper(track));
     if (it != tracks_.end()) {
       // Clear the delegate to ensure that no more capture callbacks will
       // be sent to this sink. Also avoids a possible crash which can happen
@@ -250,16 +298,7 @@ void WebRtcAudioCapturer::RemoveSink(
     }
 
     // Stop the source if the last audio track is going away.
-    // The |tracks_| might contain the |default_sink_|, we need to stop the
-    // source if the only remaining element is |default_sink_|.
-    if (tracks_.size() == 1 && default_sink_ &&
-        (*tracks_.begin())->IsEqual(default_sink_)) {
-      stop_source = true;
-    } else {
-      // The source might have been stopped, but it is safe to call Stop()
-      // again to make sure the source is stopped correctly.
-      stop_source = tracks_.empty();
-    }
+    stop_source = tracks_.empty();
   }
 
   if (stop_source)
@@ -355,11 +394,22 @@ void WebRtcAudioCapturer::Stop() {
     source->Stop();
 }
 
-void WebRtcAudioCapturer::SetVolume(double volume) {
+void WebRtcAudioCapturer::SetVolume(int volume) {
   DVLOG(1) << "WebRtcAudioCapturer::SetVolume()";
+  DCHECK_LE(volume, MaxVolume());
+  double normalized_volume = static_cast<double>(volume) / MaxVolume();
   base::AutoLock auto_lock(lock_);
   if (source_.get())
-    source_->SetVolume(volume);
+    source_->SetVolume(normalized_volume);
+}
+
+int WebRtcAudioCapturer::Volume() const {
+  base::AutoLock auto_lock(lock_);
+  return volume_;
+}
+
+int WebRtcAudioCapturer::MaxVolume() const {
+  return WebRtcAudioDeviceImpl::kMaxVolumeLevel;
 }
 
 void WebRtcAudioCapturer::SetAutomaticGainControl(bool enable) {
@@ -378,12 +428,28 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
   // This callback is driven by AudioInputDevice::AudioThreadCallback if
   // |source_| is AudioInputDevice, otherwise it is driven by client's
   // CaptureCallback.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  DCHECK_LE(volume, 1.0);
+#elif defined(OS_LINUX) || defined(OS_OPENBSD)
+  // We have a special situation on Linux where the microphone volume can be
+  // "higher than maximum". The input volume slider in the sound preference
+  // allows the user to set a scaling that is higher than 100%. It means that
+  // even if the reported maximum levels is N, the actual microphone level can
+  // go up to 1.5x*N and that corresponds to a normalized |volume| of 1.5x.
+  DCHECK_LE(volume, 1.6);
+#endif
+
   TrackList tracks;
   scoped_refptr<ConfiguredBuffer> buffer_ref_while_calling;
   {
     base::AutoLock auto_lock(lock_);
     if (!running_)
       return;
+
+    // Map internal volume range of [0.0, 1.0] into [0, 255] used by the
+    // webrtc::VoiceEngine. webrtc::VoiceEngine will handle the case when the
+    // volume is higher than 255.
+    volume_ = static_cast<int>((volume * MaxVolume()) + 0.5);
 
     // Copy the stuff we will need to local variables. In particular, we grab
     // a reference to the buffer so we can ensure it stays alive even if the
@@ -406,7 +472,7 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
        ++it) {
     (*it)->CaptureData(buffer_ref_while_calling->buffer(),
                        audio_source->channels(), audio_source->frames(),
-                       audio_delay_milliseconds, volume);
+                       audio_delay_milliseconds, volume_);
   }
 }
 

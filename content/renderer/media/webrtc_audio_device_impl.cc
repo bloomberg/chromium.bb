@@ -20,12 +20,6 @@ using media::ChannelLayout;
 
 namespace content {
 
-namespace {
-
-const double kMaxVolumeLevel = 255.0;
-
-}  // namespace
-
 WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
     : ref_count_(0),
       audio_transport_callback_(NULL),
@@ -58,98 +52,64 @@ int32_t WebRtcAudioDeviceImpl::Release() {
   }
   return ret;
 }
-
-void WebRtcAudioDeviceImpl::CaptureData(const int16* audio_data,
-                                        int number_of_channels,
-                                        int number_of_frames,
-                                        int audio_delay_milliseconds,
-                                        double volume) {
-  DCHECK_LE(number_of_frames, input_buffer_size());
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  DCHECK_LE(volume, 1.0);
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
-  // We have a special situation on Linux where the microphone volume can be
-  // "higher than maximum". The input volume slider in the sound preference
-  // allows the user to set a scaling that is higher than 100%. It means that
-  // even if the reported maximum levels is N, the actual microphone level can
-  // go up to 1.5x*N and that corresponds to a normalized |volume| of 1.5x.
-  DCHECK_LE(volume, 1.6);
-#endif
-
-  media::AudioParameters input_audio_parameters;
-  int output_delay_ms = 0;
+int WebRtcAudioDeviceImpl::CaptureData(const std::vector<int>& channels,
+                                       const int16* audio_data,
+                                       int sample_rate,
+                                       int number_of_channels,
+                                       int number_of_frames,
+                                       int audio_delay_milliseconds,
+                                       int current_volume,
+                                       bool need_audio_processing) {
+  int total_delay_ms = 0;
   {
     base::AutoLock auto_lock(lock_);
     if (!recording_)
-      return;
-
-    // Take a copy of the input parameters while we are under a lock.
-    input_audio_parameters = input_audio_parameters_;
+      return 0;
 
     // Store the reported audio delay locally.
     input_delay_ms_ = audio_delay_milliseconds;
-    output_delay_ms = output_delay_ms_;
+    total_delay_ms = input_delay_ms_ + output_delay_ms_;
     DVLOG(2) << "total delay: " << input_delay_ms_ + output_delay_ms_;
-
-    // Map internal volume range of [0.0, 1.0] into [0, 255] used by the
-    // webrtc::VoiceEngine.
-    microphone_volume_ = static_cast<uint32_t>(volume * kMaxVolumeLevel);
   }
-
-  const int channels = number_of_channels;
-  DCHECK_LE(channels, input_channels());
-  uint32_t new_mic_level = 0;
-
-  int samples_per_sec = input_sample_rate();
-  const int samples_per_10_msec = (samples_per_sec / 100);
-  int bytes_per_sample = input_audio_parameters.bits_per_sample() / 8;
-  const int bytes_per_10_msec =
-      channels * samples_per_10_msec * bytes_per_sample;
-  int accumulated_audio_samples = 0;
-
-  const uint8* audio_byte_buffer = reinterpret_cast<const uint8*>(audio_data);
 
   // Write audio samples in blocks of 10 milliseconds to the registered
   // webrtc::AudioTransport sink. Keep writing until our internal byte
   // buffer is empty.
   // TODO(niklase): Wire up the key press detection.
+  const int16* audio_buffer = audio_data;
+  const int samples_per_10_msec = (sample_rate / 100);
+  int accumulated_audio_samples = 0;
   bool key_pressed = false;
+  uint32_t new_volume = 0;
   while (accumulated_audio_samples < number_of_frames) {
     // Deliver 10ms of recorded 16-bit linear PCM audio.
-    audio_transport_callback_->RecordedDataIsAvailable(
-        audio_byte_buffer,
+    int new_mic_level = audio_transport_callback_->OnDataAvailable(
+        &channels[0],
+        channels.size(),
+        audio_buffer,
+        sample_rate,
+        number_of_channels,
         samples_per_10_msec,
-        bytes_per_sample,
-        channels,
-        samples_per_sec,
-        input_delay_ms_ + output_delay_ms,
-        0,  // TODO(henrika): |clock_drift| parameter is not utilized today.
-        microphone_volume_,
+        total_delay_ms,
+        current_volume,
         key_pressed,
-        new_mic_level);
+        need_audio_processing);
 
     accumulated_audio_samples += samples_per_10_msec;
-    audio_byte_buffer += bytes_per_10_msec;
+    audio_buffer += samples_per_10_msec * number_of_channels;
+
+    // The latest non-zero new microphone level will be returned.
+    if (new_mic_level)
+      new_volume = new_mic_level;
   }
 
-  // The AGC returns a non-zero microphone level if it has been decided
-  // that a new level should be set.
-  if (new_mic_level != 0) {
-    // Use IPC and set the new level. Note that, it will take some time
-    // before the new level is effective due to the IPC scheme.
-    // During this time, |current_mic_level| will contain "non-valid" values
-    // and it might reduce the AGC performance. Measurements on Windows 7 have
-    // shown that we might receive old volume levels for one or two callbacks.
-    SetMicrophoneVolume(new_mic_level);
-  }
+  return new_volume;
 }
 
 void WebRtcAudioDeviceImpl::SetCaptureFormat(
     const media::AudioParameters& params) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::SetCaptureFormat()";
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::AutoLock auto_lock(lock_);
-  input_audio_parameters_ = params;
 }
 
 void WebRtcAudioDeviceImpl::RenderData(uint8* audio_data,
@@ -217,19 +177,6 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   DVLOG(1) << "WebRtcAudioDeviceImpl::Init()";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (initialized_)
-    return 0;
-
-  DCHECK(!capturer_.get());
-  capturer_ = WebRtcAudioCapturer::CreateCapturer();
-
-  // Add itself as an audio track to the |capturer_|. This is because WebRTC
-  // supports only one ADM but multiple audio tracks, so the ADM can't be the
-  // sink of certain audio track now.
-  // TODO(xians): Register the ADM as the sink of the audio track if WebRTC
-  // supports one ADM for each audio track. See http://crbug/247027.
-  capturer_->SetDefaultSink(this);
-
   // We need to return a success to continue the initialization of WebRtc VoE
   // because failure on the capturer_ initialization should not prevent WebRTC
   // from working. See issue http://crbug.com/144421 for details.
@@ -258,12 +205,7 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
     DCHECK(!renderer_.get());
   }
 
-  if (capturer_.get()) {
-    // |capturer_| is stopped by the media stream, so do not need to
-    // call Stop() here.
-    capturer_->SetDefaultSink(NULL);
-    capturer_ = NULL;
-  }
+  capturers_.clear();
 
   initialized_ = false;
   return 0;
@@ -283,14 +225,14 @@ bool WebRtcAudioDeviceImpl::PlayoutIsInitialized() const {
 }
 
 int32_t WebRtcAudioDeviceImpl::RecordingIsAvailable(bool* available) {
-  *available = (capturer_.get() != NULL);
+  *available = (!capturers_.empty());
   return 0;
 }
 
 bool WebRtcAudioDeviceImpl::RecordingIsInitialized() const {
   DVLOG(1) << "WebRtcAudioDeviceImpl::RecordingIsInitialized()";
   DCHECK(thread_checker_.CalledOnValidThread());
-  return (capturer_.get() != NULL);
+  return (!capturers_.empty());
 }
 
 int32_t WebRtcAudioDeviceImpl::StartPlayout() {
@@ -389,13 +331,17 @@ int32_t WebRtcAudioDeviceImpl::SetAGC(bool enable) {
   if (enable == agc_is_enabled_)
     return 0;
 
+  // Set the AGC on all the capturers. It depends on the source of the
+  // capturer whether AGC is supported or not.
   // The current implementation does not support changing the AGC state while
   // recording. Using this approach simplifies the design and it is also
-  // inline with the  latest WebRTC standard.
-  if (!capturer_.get() || capturer_->is_recording())
-    return -1;
+  // inline with the latest WebRTC standard.
+  for (CapturerList::const_iterator iter = capturers_.begin();
+       iter != capturers_.end(); ++iter) {
+    if (!(*iter)->is_recording())
+      (*iter)->SetAutomaticGainControl(enable);
+  }
 
-  capturer_->SetAutomaticGainControl(enable);
   agc_is_enabled_ = enable;
   return 0;
 }
@@ -411,35 +357,33 @@ bool WebRtcAudioDeviceImpl::AGC() const {
 int32_t WebRtcAudioDeviceImpl::SetMicrophoneVolume(uint32_t volume) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::SetMicrophoneVolume(" << volume << ")";
   DCHECK(initialized_);
-  if (!capturer_.get())
+
+  // Only one microphone is supported at the moment, which is represented by
+  // the default capturer.
+  scoped_refptr<WebRtcAudioCapturer> capturer(GetDefaultCapturer());
+  if (!capturer.get())
     return -1;
 
-  if (volume > kMaxVolumeLevel)
-    return -1;
-
-  // WebRTC uses a range of [0, 255] to represent the level of the microphone
-  // volume. The IPC channel between the renderer and browser process works
-  // with doubles in the [0.0, 1.0] range and we have to compensate for that.
-  double normalized_volume = static_cast<double>(volume) / kMaxVolumeLevel;
-  capturer_->SetVolume(normalized_volume);
+  capturer->SetVolume(volume);
   return 0;
 }
 
 // TODO(henrika): sort out calling thread once we start using this API.
 int32_t WebRtcAudioDeviceImpl::MicrophoneVolume(uint32_t* volume) const {
   DVLOG(1) << "WebRtcAudioDeviceImpl::MicrophoneVolume()";
-  // The microphone level is fed to this class using the Capture() callback
-  // and cached in the same method, i.e. we don't ask the native audio layer
-  // for the actual micropone level here.
+  // We only support one microphone now, which is accessed via the default
+  // capturer.
   DCHECK(initialized_);
-  if (!capturer_.get())
+  scoped_refptr<WebRtcAudioCapturer> capturer(GetDefaultCapturer());
+  if (!capturer.get())
     return -1;
-  base::AutoLock auto_lock(lock_);
-  *volume = microphone_volume_;
+
+  *volume = static_cast<uint32_t>(capturer->Volume());
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::MaxMicrophoneVolume(uint32_t* max_volume) const {
+  DCHECK(initialized_);
   *max_volume = kMaxVolumeLevel;
   return 0;
 }
@@ -458,9 +402,13 @@ int32_t WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable(bool* available) const {
 int32_t WebRtcAudioDeviceImpl::StereoRecordingIsAvailable(
     bool* available) const {
   DCHECK(initialized_);
-  if (!capturer_.get())
+  // TODO(xians): These kind of hardware methods do not make much sense since we
+  // support multiple sources. Remove or figure out new APIs for such methods.
+  scoped_refptr<WebRtcAudioCapturer> capturer(GetDefaultCapturer());
+  if (!capturer.get())
     return -1;
-  *available = (input_channels() == 2);
+
+  *available = (capturer->audio_parameters().channels() == 2);
   return 0;
 }
 
@@ -478,7 +426,13 @@ int32_t WebRtcAudioDeviceImpl::RecordingDelay(uint16_t* delay_ms) const {
 
 int32_t WebRtcAudioDeviceImpl::RecordingSampleRate(
     uint32_t* samples_per_sec) const {
-  *samples_per_sec = static_cast<uint32_t>(input_sample_rate());
+  // We use the default capturer as the recording sample rate.
+  scoped_refptr<WebRtcAudioCapturer> capturer(GetDefaultCapturer());
+  if (!capturer.get())
+    return -1;
+
+  *samples_per_sec = static_cast<uint32_t>(
+      capturer->audio_parameters().sample_rate());
   return 0;
 }
 
@@ -501,6 +455,35 @@ bool WebRtcAudioDeviceImpl::SetAudioRenderer(WebRtcAudioRenderer* renderer) {
 
   renderer_ = renderer;
   return true;
+}
+
+void WebRtcAudioDeviceImpl::AddAudioCapturer(
+    const scoped_refptr<WebRtcAudioCapturer>& capturer) {
+  DVLOG(1) << "WebRtcAudioDeviceImpl::AddAudioCapturer()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(capturer.get());
+
+  // Enable/disable the AGC on the new capture.
+  DCHECK(!capturer->is_recording());
+  capturer->SetAutomaticGainControl(agc_is_enabled_);
+
+  // We only support one microphone today, which means the list can contain
+  // only one capturer with a valid device id.
+  DCHECK(capturer->device_id().empty() || !GetDefaultCapturer());
+  base::AutoLock auto_lock(lock_);
+  capturers_.push_back(capturer);
+}
+
+scoped_refptr<WebRtcAudioCapturer>
+WebRtcAudioDeviceImpl::GetDefaultCapturer() const {
+  base::AutoLock auto_lock(lock_);
+  for (CapturerList::const_iterator iter = capturers_.begin();
+       iter != capturers_.end(); ++iter) {
+    if (!(*iter)->device_id().empty())
+      return *iter;
+  }
+
+  return NULL;
 }
 
 }  // namespace content

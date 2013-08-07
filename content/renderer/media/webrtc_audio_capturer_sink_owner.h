@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_CAPTURER_SINK_OWNER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_CAPTURER_SINK_OWNER_H_
 
-#include <list>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -24,11 +24,15 @@ class WebRtcAudioCapturerSinkOwner
   explicit WebRtcAudioCapturerSinkOwner(WebRtcAudioCapturerSink* sink);
 
   // WebRtcAudioCapturerSink implementation.
-  virtual void CaptureData(const int16* audio_data,
-                           int number_of_channels,
-                           int number_of_frames,
-                           int audio_delay_milliseconds,
-                           double volume) OVERRIDE;
+  virtual int CaptureData(const std::vector<int>& channels,
+                          const int16* audio_data,
+                          int sample_rate,
+                          int number_of_channels,
+                          int number_of_frames,
+                          int audio_delay_milliseconds,
+                          int current_volume,
+                          bool need_audio_processing) OVERRIDE;
+
   virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
 
   bool IsEqual(const WebRtcAudioCapturerSink* other) const;

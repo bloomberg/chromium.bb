@@ -152,6 +152,8 @@ class CONTENT_EXPORT MediaStreamImpl
   scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(
       webrtc::MediaStreamInterface* stream);
 
+  void StopLocalAudioTrack(const WebKit::WebMediaStream& web_stream);
+
   // Weak ref to a MediaStreamDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.
   MediaStreamDependencyFactory* dependency_factory_;

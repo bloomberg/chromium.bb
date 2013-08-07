@@ -132,8 +132,7 @@ void MediaStreamImpl::OnLocalMediaStreamStop(
 
   UserMediaRequestInfo* user_media_request = FindUserMediaRequestInfo(label);
   if (user_media_request) {
-    dependency_factory_->StopLocalAudioSource(user_media_request->web_stream);
-
+    StopLocalAudioTrack(user_media_request->web_stream);
     media_stream_dispatcher_->StopStream(label);
     DeleteUserMediaRequestInfo(user_media_request);
   } else {
@@ -514,7 +513,7 @@ void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
       // If not, we cancel the request and delete the request object.
       if ((*request_it)->generated) {
         // Stop the local audio track before closing the device in the browser.
-        dependency_factory_->StopLocalAudioSource((*request_it)->web_stream);
+        StopLocalAudioTrack((*request_it)->web_stream);
 
         media_stream_dispatcher_->StopStream(
             UTF16ToUTF8((*request_it)->web_stream.id()));
@@ -566,12 +565,6 @@ MediaStreamImpl::CreateLocalAudioRenderer(
   DVLOG(1) << "MediaStreamImpl::CreateLocalAudioRenderer label:"
            << stream->label();
 
-  scoped_refptr<WebRtcAudioCapturer> source =
-      dependency_factory_->GetWebRtcAudioDevice()->capturer();
-  if (!source.get()) {
-    return NULL;
-  }
-
   webrtc::AudioTrackVector audio_tracks = stream->GetAudioTracks();
   DCHECK_EQ(audio_tracks.size(), 1u);
   webrtc::AudioTrackInterface* audio_track = audio_tracks[0];
@@ -584,6 +577,27 @@ MediaStreamImpl::CreateLocalAudioRenderer(
   return new WebRtcLocalAudioRenderer(
       static_cast<WebRtcLocalAudioTrack*>(audio_track),
       RenderViewObserver::routing_id());
+}
+
+void MediaStreamImpl::StopLocalAudioTrack(
+    const WebKit::WebMediaStream& web_stream) {
+  MediaStreamExtraData* extra_data = static_cast<MediaStreamExtraData*>(
+      web_stream.extraData());
+  if (extra_data && extra_data->is_local() && extra_data->stream().get() &&
+      !extra_data->stream()->GetAudioTracks().empty()) {
+    webrtc::AudioTrackVector audio_tracks =
+        extra_data->stream()->GetAudioTracks();
+    for (size_t i = 0; i < audio_tracks.size(); ++i) {
+      WebRtcLocalAudioTrack* audio_track = static_cast<WebRtcLocalAudioTrack*>(
+          audio_tracks[i].get());
+      // Remove the WebRtcAudioDevice as the sink to the local audio track.
+      audio_track->RemoveSink(dependency_factory_->GetWebRtcAudioDevice());
+      // Stop the audio track. This will unhook the audio track from the
+      // capturer and will shutdown the source of the capturer if it is the
+      // last audio track connecting to the capturer.
+      audio_track->Stop();
+    }
+  }
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(

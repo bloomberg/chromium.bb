@@ -43,6 +43,7 @@ namespace content {
 class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class VideoCaptureImplManager;
+class WebRtcAudioCapturer;
 class WebRtcAudioDeviceImpl;
 class WebRtcLoggingHandlerImpl;
 class WebRtcLoggingMessageFilter;
@@ -135,11 +136,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
-  // Stop the audio source for local audio tracks.
-  // TODO(xians): Remove this function if each audio track takes care of their
-  // own source.
-  void StopLocalAudioSource(const WebKit::WebMediaStream& web_stream);
-
 #if defined(GOOGLE_TV)
   RTCVideoDecoderFactoryTv* decoder_factory_tv() { return decoder_factory_tv_; }
 #endif
@@ -161,21 +157,17 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
           bool is_screen_cast,
           const webrtc::MediaConstraintsInterface* constraints);
 
-  // Initializes the source using audio parameters for the selected
-  // capture device and specifies which capture device to use as capture
-  // source.
-  virtual bool InitializeAudioSource(int render_view_id,
-                                     const StreamDeviceInfo& device_info);
-
   // Creates a media::AudioCapturerSource with an implementation that is
   // specific for a WebAudio source. The created WebAudioCapturerSource
   // instance will function as audio source instead of the default
   // WebRtcAudioCapturer.
-  virtual bool CreateWebAudioSource(WebKit::WebMediaStreamSource* source);
+  virtual scoped_refptr<WebRtcAudioCapturer> CreateWebAudioSource(
+      WebKit::WebMediaStreamSource* source);
 
   // Asks the PeerConnection factory to create a Local AudioTrack object.
   virtual scoped_refptr<webrtc::AudioTrackInterface>
       CreateLocalAudioTrack(const std::string& id,
+                            const scoped_refptr<WebRtcAudioCapturer>& capturer,
                             webrtc::AudioSourceInterface* source);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object.
@@ -191,6 +183,12 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   virtual bool EnsurePeerConnectionFactory();
   virtual bool PeerConnectionFactoryCreated();
+
+  // Returns a new capturer or existing capturer based on the |render_view_id|
+  // and |device_info|. When the |render_view_id| and |device_info| are valid,
+  // it reuses existing capture if any; otherwise it creates a new capturer.
+  virtual scoped_refptr<WebRtcAudioCapturer> MaybeCreateAudioCapturer(
+      int render_view_id, const StreamDeviceInfo& device_info);
 
  private:
   // Creates and deletes |pc_factory_|, which in turn is used for

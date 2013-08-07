@@ -234,6 +234,14 @@
     }
   }
 
+  // Test call with a stream that has been created by getUserMedia, clone
+  // the stream to a cloned stream, send them via the same peer connection.
+  function addTwoMediaStreamsToOneConnection() {
+    createConnections(null);
+    navigator.webkitGetUserMedia({audio:true, video:true},
+        CloneStreamAndAddTwoStreamstoOneConnection, printGetUserMediaError);
+  }
+
   function onToneChange(tone) {
     gSentTones += tone.tone;
     document.title = gSentTones;
@@ -278,6 +286,45 @@
   function addStreamToTheFirstConnectionAndNegotiate(localStream) {
     displayAndRemember(localStream);
     gFirstConnection.addStream(localStream);
+    negotiate();
+  }
+
+  function verifyHasOneAudioAndVideoTrack(stream) {    
+    expectEquals(1, stream.getAudioTracks().length);
+    expectEquals(1, stream.getVideoTracks().length);
+  }
+
+  // Called if getUserMedia succeeds, then clone the stream, send two streams
+  // from one peer connection.
+  function CloneStreamAndAddTwoStreamstoOneConnection(localStream) {
+    displayAndRemember(localStream);
+    var clonedStream = new webkitMediaStream();
+    clonedStream.addTrack(localStream.getVideoTracks()[0]);
+    clonedStream.addTrack(localStream.getAudioTracks()[0]);
+    gFirstConnection.addStream(localStream);
+    gFirstConnection.addStream(clonedStream);
+
+    // Verify the local streams are correct.
+    expectEquals(2, gFirstConnection.getLocalStreams().length);
+    verifyHasOneAudioAndVideoTrack(gFirstConnection.getLocalStreams()[0]);
+    verifyHasOneAudioAndVideoTrack(gFirstConnection.getLocalStreams()[1]);
+
+    // The remote side should receive two streams. After that, verify the
+    // remote side has the correct number of streams and tracks.
+    addExpectedEvent();
+    addExpectedEvent();
+    gSecondConnection.onaddstream = function(event) {
+      eventOccured();
+    }
+    setAllEventsOccuredHandler(function() {
+      // Negotiation complete, verify remote streams on the receiving side.
+      expectEquals(2, gSecondConnection.getRemoteStreams().length);
+      verifyHasOneAudioAndVideoTrack(gSecondConnection.getRemoteStreams()[0]);
+      verifyHasOneAudioAndVideoTrack(gSecondConnection.getRemoteStreams()[1]);
+
+      document.title = "OK";
+    });
+
     negotiate();
   }
 
@@ -389,7 +436,7 @@
       <!-- Canvases are named after their corresponding video elements. -->
       <td><canvas width="320" height="240" id="remote-view-1-canvas"
           style="display:none"></canvas></td>
-      <td><canvas width="320" height="240" id="remote-view-2-canvas">
+      <td><canvas width="320" height="240" id="remote-view-2-canvas"
           style="display:none"></canvas></td>
     </tr>
   </table>

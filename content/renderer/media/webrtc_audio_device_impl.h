@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_DEVICE_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -204,11 +205,25 @@ class WebRtcAudioRendererSource {
 class WebRtcAudioCapturerSink {
  public:
   // Callback to deliver the captured interleaved data.
-  virtual void CaptureData(const int16* audio_data,
-                           int number_of_channels,
-                           int number_of_frames,
-                           int audio_delay_milliseconds,
-                           double volume) = 0;
+  // |channels| contains a vector of WebRtc VoE channels.
+  // |audio_data| is the pointer to the audio data.
+  // |sample_rate| is the sample frequency of audio data.
+  // |number_of_channels| is the number of channels reflecting the order of
+  // surround sound channels.
+  // |audio_delay_milliseconds| is recording delay value.
+  // |current_volume| is current microphone volume, in range of |0, 255].
+  // |need_audio_processing| indicates if the audio needs WebRtc AEC/NS/AGC
+  // audio processing.
+  // The return value is the new microphone volume, in the range of |0, 255].
+  // When the volume does not need to be updated, it returns 0.
+  virtual int CaptureData(const std::vector<int>& channels,
+                          const int16* audio_data,
+                          int sample_rate,
+                          int number_of_channels,
+                          int number_of_frames,
+                          int audio_delay_milliseconds,
+                          int current_volume,
+                          bool need_audio_processing) = 0;
 
   // Set the format for the capture audio parameters.
   virtual void SetCaptureFormat(const media::AudioParameters& params) = 0;
@@ -225,6 +240,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
       NON_EXPORTED_BASE(public WebRtcAudioCapturerSink),
       NON_EXPORTED_BASE(public WebRtcAudioRendererSource) {
  public:
+  // The maximum volume value WebRtc uses.
+  static const int kMaxVolumeLevel = 255;
+
   // Instances of this object are created on the main render thread.
   WebRtcAudioDeviceImpl();
 
@@ -283,43 +301,45 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Called on the main renderer thread.
   bool SetAudioRenderer(WebRtcAudioRenderer* renderer);
 
-  const scoped_refptr<WebRtcAudioCapturer>& capturer() const {
-    return capturer_;
-  }
+  // Adds the capturer to the ADM.
+  void AddAudioCapturer(const scoped_refptr<WebRtcAudioCapturer>& capturer);
+
+  // Gets the default capturer, which is the capturer in the list with
+  // a valid |device_id|. Microphones are represented by capturers with a valid
+  // |device_id|, since only one microphone is supported today, only one
+  // capturer in the |capturers_| can have a valid |device_id|.
+  scoped_refptr<WebRtcAudioCapturer> GetDefaultCapturer() const;
+
   const scoped_refptr<WebRtcAudioRenderer>& renderer() const {
     return renderer_;
-  }
-  int input_buffer_size() const {
-    return input_audio_parameters_.frames_per_buffer();
   }
   int output_buffer_size() const {
     return output_audio_parameters_.frames_per_buffer();
   }
-  int input_channels() const {
-    return input_audio_parameters_.channels();
-  }
   int output_channels() const {
     return output_audio_parameters_.channels();
-  }
-  int input_sample_rate() const {
-    return input_audio_parameters_.sample_rate();
   }
   int output_sample_rate() const {
     return output_audio_parameters_.sample_rate();
   }
 
  private:
+  typedef std::list<scoped_refptr<WebRtcAudioCapturer> > CapturerList;
+
   // Make destructor private to ensure that we can only be deleted by Release().
   virtual ~WebRtcAudioDeviceImpl();
 
   // WebRtcAudioCapturerSink implementation.
 
   // Called on the AudioInputDevice worker thread.
-  virtual void CaptureData(const int16* audio_data,
-                           int number_of_channels,
-                           int number_of_frames,
-                           int audio_delay_milliseconds,
-                           double volume) OVERRIDE;
+  virtual int CaptureData(const std::vector<int>& channels,
+                          const int16* audio_data,
+                          int sample_rate,
+                          int number_of_channels,
+                          int number_of_frames,
+                          int audio_delay_milliseconds,
+                          int current_volume,
+                          bool need_audio_processing) OVERRIDE;
 
   // Called on the main render thread.
   virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
@@ -341,8 +361,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
 
   int ref_count_;
 
-  // Provides access to the native audio input layer in the browser process.
-  scoped_refptr<WebRtcAudioCapturer> capturer_;
+  // List of captures which provides access to the native audio input layer
+  // in the browser process.
+  CapturerList capturers_;
 
   // Provides access to the audio renderer in the browser process.
   scoped_refptr<WebRtcAudioRenderer> renderer_;
@@ -352,8 +373,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // RegisterAudioCallback().
   webrtc::AudioTransport* audio_transport_callback_;
 
-  // Cached values of utilized audio parameters. Platform dependent.
-  media::AudioParameters input_audio_parameters_;
+  // Cached values of used output audio parameters. Platform dependent.
   media::AudioParameters output_audio_parameters_;
 
   // Cached value of the current audio delay on the input/capture side.

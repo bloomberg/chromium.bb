@@ -15,6 +15,7 @@
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
+#include "content/renderer/media/webrtc_audio_capturer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
@@ -248,8 +249,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
     local_stream.audioTracks(audio_tracks);
     const std::string audio_track_id = UTF16ToUTF8(audio_tracks[0].id());
+    scoped_refptr<WebRtcAudioCapturer> capturer;
     scoped_refptr<webrtc::AudioTrackInterface> audio_track(
         mock_dependency_factory_->CreateLocalAudioTrack(audio_track_id,
+                                                        capturer,
                                                         NULL));
     native_stream->AddTrack(audio_track.get());
 
@@ -282,8 +285,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       stream->AddTrack(video_track.get());
     }
     if (!audio_track_label.empty()) {
+      scoped_refptr<WebRtcAudioCapturer> capturer;
       scoped_refptr<webrtc::AudioTrackInterface> audio_track(
           mock_dependency_factory_->CreateLocalAudioTrack(audio_track_label,
+                                                          capturer,
                                                           NULL));
       stream->AddTrack(audio_track.get());
     }

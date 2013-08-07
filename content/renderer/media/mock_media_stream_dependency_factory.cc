@@ -406,15 +406,10 @@ MockMediaStreamDependencyFactory::CreateLocalVideoSource(
   return last_video_source_;
 }
 
-bool MockMediaStreamDependencyFactory::InitializeAudioSource(
-    int render_view_id,
-    const StreamDeviceInfo& device_info) {
-  return true;
-}
-
-bool MockMediaStreamDependencyFactory::CreateWebAudioSource(
+scoped_refptr<WebRtcAudioCapturer>
+MockMediaStreamDependencyFactory::CreateWebAudioSource(
     WebKit::WebMediaStreamSource* source) {
-  return true;
+  return NULL;
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>
@@ -451,11 +446,12 @@ MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
 scoped_refptr<webrtc::AudioTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& id,
+    const scoped_refptr<WebRtcAudioCapturer>& capturer,
     webrtc::AudioSourceInterface* source) {
   DCHECK(mock_pc_factory_created_);
-  scoped_refptr<WebRtcAudioCapturer> capturer(
-      WebRtcAudioCapturer::CreateCapturer());
-  return WebRtcLocalAudioTrack::Create(id, capturer, source);
+  DCHECK(!capturer.get());
+  return WebRtcLocalAudioTrack::Create(
+      id, WebRtcAudioCapturer::CreateCapturer(), source);
 }
 
 SessionDescriptionInterface*
@@ -472,6 +468,12 @@ MockMediaStreamDependencyFactory::CreateIceCandidate(
     int sdp_mline_index,
     const std::string& sdp) {
   return new MockIceCandidate(sdp_mid, sdp_mline_index, sdp);
+}
+
+scoped_refptr<WebRtcAudioCapturer>
+MockMediaStreamDependencyFactory::MaybeCreateAudioCapturer(
+    int render_view_id, const StreamDeviceInfo& device_info) {
+  return WebRtcAudioCapturer::CreateCapturer();
 }
 
 }  // namespace content

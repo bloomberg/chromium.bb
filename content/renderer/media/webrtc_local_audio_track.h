@@ -13,6 +13,7 @@
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreamtrack.h"
+#include "third_party/libjingle/source/talk/media/base/audiorenderer.h"
 
 namespace cricket {
 class AudioRenderer;
@@ -29,7 +30,7 @@ class WebRtcAudioCapturerSinkOwner;
 // WebRtcAudioCapturer to get the captured data, and forward the data to
 // its |sinks_|. The data flow can be stopped by disabling the audio track.
 class CONTENT_EXPORT WebRtcLocalAudioTrack
-    : NON_EXPORTED_BASE(public WebRtcAudioCapturerSink),
+    : NON_EXPORTED_BASE(public cricket::AudioRenderer),
       NON_EXPORTED_BASE(
           public webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>) {
  public:
@@ -55,28 +56,34 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // should be called only once when audio track going away.
   void Stop();
 
+  // Method called by the capturer to deliever the capture data.
+  void CaptureData(const int16* audio_data,
+                   int number_of_channels,
+                   int number_of_frames,
+                   int audio_delay_milliseconds,
+                   int volume);
+
+  // Method called by the capturer to set the audio parameters used by source
+  // of the capture data..
+  // Can be called on different user threads.
+  void SetCaptureFormat(const media::AudioParameters& params);
+
  protected:
   WebRtcLocalAudioTrack(const std::string& label,
                         const scoped_refptr<WebRtcAudioCapturer>& capturer,
-                        webrtc::AudioSourceInterface* stream_source);
+                        webrtc::AudioSourceInterface* track_source);
   virtual ~WebRtcLocalAudioTrack();
 
  private:
   typedef std::list<scoped_refptr<WebRtcAudioCapturerSinkOwner> > SinkList;
 
-  // content::WebRtcAudioCapturerSink implementation.
-  // Called on the AudioInputDevice worker thread.
-  virtual void CaptureData(const int16* audio_data,
-                           int number_of_channels,
-                           int number_of_frames,
-                           int audio_delay_milliseconds,
-                           double volume) OVERRIDE;
-
-  // Can be called on different user threads.
-  virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
+  // cricket::AudioCapturer implementation.
+  virtual void AddChannel(int channel_id) OVERRIDE;
+  virtual void RemoveChannel(int channel_id) OVERRIDE;
 
   // webrtc::AudioTrackInterface implementation.
   virtual webrtc::AudioSourceInterface* GetSource() const OVERRIDE;
+  virtual cricket::AudioRenderer* GetRenderer() OVERRIDE;
 
   // webrtc::MediaStreamTrack implementation.
   virtual std::string kind() const OVERRIDE;
@@ -100,6 +107,11 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
 
   // Protects |params_| and |sinks_|.
   mutable base::Lock lock_;
+
+  // A vector of WebRtc VoE channels that the capturer sends datat to.
+  std::vector<int> voe_channels_;
+
+  bool need_audio_processing_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioTrack);
 };

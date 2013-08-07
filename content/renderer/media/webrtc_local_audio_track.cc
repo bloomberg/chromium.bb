@@ -28,27 +28,29 @@ WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
     webrtc::AudioSourceInterface* track_source)
     : webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>(label),
       capturer_(capturer),
-      track_source_(track_source) {
+      track_source_(track_source),
+      need_audio_processing_(!capturer->device_id().empty()) {
+  // The capturer with a valid device id is using microphone as source,
+  // and APM (AudioProcessingModule) is turned on only for microphone data.
   DCHECK(capturer.get());
   DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
 }
 
 WebRtcLocalAudioTrack::~WebRtcLocalAudioTrack() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(sinks_.empty());
   DVLOG(1) << "WebRtcLocalAudioTrack::~WebRtcLocalAudioTrack()";
-
   // Users might not call Stop() on the track.
-  if (capturer_.get())
-    Stop();
+  Stop();
 }
 
-// Content::WebRtcAudioCapturerSink implementation.
 void WebRtcLocalAudioTrack::CaptureData(const int16* audio_data,
                                         int number_of_channels,
                                         int number_of_frames,
                                         int audio_delay_milliseconds,
-                                        double volume) {
+                                        int volume) {
+  scoped_refptr<WebRtcAudioCapturer> capturer;
+  std::vector<int> voe_channels;
+  int sample_rate = 0;
   SinkList sinks;
   {
     base::AutoLock auto_lock(lock_);
@@ -58,15 +60,20 @@ void WebRtcLocalAudioTrack::CaptureData(const int16* audio_data,
     if (!enabled())
       return;
 
+    capturer = capturer_;
+    voe_channels = voe_channels_;
+    sample_rate = params_.sample_rate(),
     sinks = sinks_;
   }
 
   // Feed the data to the sinks.
-  for (SinkList::const_iterator it = sinks.begin();
-       it != sinks.end();
-       ++it) {
-    (*it)->CaptureData(audio_data, number_of_channels, number_of_frames,
-                       audio_delay_milliseconds, volume);
+  for (SinkList::const_iterator it = sinks.begin(); it != sinks.end(); ++it) {
+    int new_volume = (*it)->CaptureData(voe_channels, audio_data, sample_rate,
+                                        number_of_channels, number_of_frames,
+                                        audio_delay_milliseconds, volume,
+                                        need_audio_processing_);
+    if (new_volume != 0 && capturer.get())
+      capturer->SetVolume(new_volume);
   }
 }
 
@@ -81,9 +88,37 @@ void WebRtcLocalAudioTrack::SetCaptureFormat(
     (*it)->SetCaptureFormat(params);
 }
 
+void WebRtcLocalAudioTrack::AddChannel(int channel_id) {
+  DVLOG(1) << "WebRtcLocalAudioTrack::AddChannel(channel_id="
+           << channel_id << ")";
+  base::AutoLock auto_lock(lock_);
+  if (std::find(voe_channels_.begin(), voe_channels_.end(), channel_id) !=
+      voe_channels_.end()) {
+    // We need to handle the case when the same channel is connected to the
+    // track more than once.
+    return;
+  }
+
+  voe_channels_.push_back(channel_id);
+}
+
+void WebRtcLocalAudioTrack::RemoveChannel(int channel_id) {
+  DVLOG(1) << "WebRtcLocalAudioTrack::RemoveChannel(channel_id="
+           << channel_id << ")";
+  base::AutoLock auto_lock(lock_);
+  std::vector<int>::iterator iter =
+      std::find(voe_channels_.begin(), voe_channels_.end(), channel_id);
+  DCHECK(iter != voe_channels_.end());
+  voe_channels_.erase(iter);
+}
+
 // webrtc::AudioTrackInterface implementation.
 webrtc::AudioSourceInterface* WebRtcLocalAudioTrack::GetSource() const {
   return track_source_;
+}
+
+cricket::AudioRenderer* WebRtcLocalAudioTrack::GetRenderer() {
+  return this;
 }
 
 std::string WebRtcLocalAudioTrack::kind() const {
@@ -113,7 +148,6 @@ void WebRtcLocalAudioTrack::RemoveSink(
   DVLOG(1) << "WebRtcLocalAudioTrack::RemoveSink()";
 
   base::AutoLock auto_lock(lock_);
-
   // Get iterator to the first element for which WrapsSink(sink) returns true.
   SinkList::iterator it = std::find_if(
       sinks_.begin(), sinks_.end(),
@@ -131,16 +165,28 @@ void WebRtcLocalAudioTrack::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::Start()";
   if (capturer_.get())
-    capturer_->AddSink(this);
+    capturer_->AddTrack(this);
 }
 
 void WebRtcLocalAudioTrack::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::Stop()";
-  if (capturer_.get()) {
-    capturer_->RemoveSink(this);
+  if (!capturer_.get())
+    return;
+
+  capturer_->RemoveTrack(this);
+
+  // Protect the pointers using the lock when accessing |sinks_| and
+  // setting the |capturer_| to NULL.
+  SinkList sinks;
+  {
+    base::AutoLock auto_lock(lock_);
+    sinks = sinks_;
     capturer_ = NULL;
   }
+
+  for (SinkList::const_iterator it = sinks.begin(); it != sinks.end(); ++it)
+    (*it)->Reset();
 }
 
 }  // namespace content

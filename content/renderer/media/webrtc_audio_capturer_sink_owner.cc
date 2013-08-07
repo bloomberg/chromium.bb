@@ -11,14 +11,23 @@ WebRtcAudioCapturerSinkOwner::WebRtcAudioCapturerSinkOwner(
     : delegate_(sink) {
 }
 
-void WebRtcAudioCapturerSinkOwner::CaptureData(
-    const int16* audio_data, int number_of_channels, int number_of_frames,
-    int audio_delay_milliseconds, double volume) {
+int WebRtcAudioCapturerSinkOwner::CaptureData(const std::vector<int>& channels,
+                                              const int16* audio_data,
+                                              int sample_rate,
+                                              int number_of_channels,
+                                              int number_of_frames,
+                                              int audio_delay_milliseconds,
+                                              int current_volume,
+                                              bool need_audio_processing) {
   base::AutoLock lock(lock_);
   if (delegate_) {
-    delegate_->CaptureData(audio_data, number_of_channels, number_of_frames,
-                           audio_delay_milliseconds, volume);
+    return delegate_->CaptureData(channels, audio_data, sample_rate,
+                                  number_of_channels, number_of_frames,
+                                  audio_delay_milliseconds, current_volume,
+                                  need_audio_processing);
   }
+
+  return 0;
 }
 
 void WebRtcAudioCapturerSinkOwner::SetCaptureFormat(
