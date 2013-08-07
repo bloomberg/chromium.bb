@@ -171,7 +171,7 @@ class ThemeService : public base::NonThreadSafe,
 #endif  // OS_MACOSX
 
   // Clears the platform-specific caches. Do not call directly; it's called
-  // from ClearCaches().
+  // from ClearAllThemeData().
   virtual void FreePlatformCaches();
 
   Profile* profile() const { return profile_; }
@@ -181,6 +181,11 @@ class ThemeService : public base::NonThreadSafe,
   const CustomThemeSupplier* get_theme_supplier() const {
     return theme_supplier_.get();
   }
+
+  // True if the theme service is ready to be used.
+  // TODO(pkotwicz): Add DCHECKS to the theme service's getters once
+  // ThemeSource no longer uses the ThemeService when it is not ready.
+  bool ready_;
 
  private:
   friend class theme_service_internal::ThemeServiceTest;
@@ -232,11 +237,6 @@ class ThemeService : public base::NonThreadSafe,
 
   ui::ResourceBundle& rb_;
   Profile* profile_;
-
-  // True if the theme service is ready to be used.
-  // TODO(pkotwicz): Add DCHECKS to the theme service's getters once
-  // ThemeSource no longer uses the ThemeService when it is not ready.
-  bool ready_;
 
   scoped_refptr<CustomThemeSupplier> theme_supplier_;
 

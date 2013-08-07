@@ -159,9 +159,6 @@ class GtkThemeService : public ThemeService {
   typedef std::map<int, color_utils::HSL> TintMap;
   typedef std::map<int, gfx::Image*> ImageCache;
 
-  // Clears all the GTK color overrides.
-  virtual void ClearAllThemeData() OVERRIDE;
-
   // Load theme data from preferences, possibly picking colors from GTK.
   virtual void LoadThemePrefs() OVERRIDE;
 

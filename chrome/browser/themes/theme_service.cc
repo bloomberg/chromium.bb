@@ -74,9 +74,9 @@ void WritePackToDiskCallback(BrowserThemePack* pack,
 }  // namespace
 
 ThemeService::ThemeService()
-    : rb_(ResourceBundle::GetSharedInstance()),
+    : ready_(false),
+      rb_(ResourceBundle::GetSharedInstance()),
       profile_(NULL),
-      ready_(false),
       number_of_infobars_(0) {
 }
 
@@ -273,10 +273,8 @@ void ThemeService::UseDefaultTheme() {
     SetManagedUserTheme();
     return;
   }
-  if (ready_) {
-    ClearAllThemeData();
-    NotifyThemeChanged();
-  }
+  ClearAllThemeData();
+  NotifyThemeChanged();
 }
 
 void ThemeService::SetNativeTheme() {
@@ -308,6 +306,9 @@ color_utils::HSL ThemeService::GetTint(int id) const {
 }
 
 void ThemeService::ClearAllThemeData() {
+  if (!ready_)
+    return;
+
   SwapThemeSupplier(NULL);
 
   // Clear our image cache.

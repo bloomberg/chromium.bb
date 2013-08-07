@@ -630,13 +630,6 @@ bool GtkThemeService::DefaultUsesSystemTheme() {
   return false;
 }
 
-void GtkThemeService::ClearAllThemeData() {
-  colors_.clear();
-  tints_.clear();
-
-  ThemeService::ClearAllThemeData();
-}
-
 void GtkThemeService::LoadThemePrefs() {
   // Initialize the values sent to webkit with the default values.
   // ThemeService::LoadThemePrefs() will replace them with values for the native
@@ -651,6 +644,9 @@ void GtkThemeService::LoadThemePrefs() {
 }
 
 void GtkThemeService::NotifyThemeChanged() {
+  if (!ready_)
+    return;
+
   ThemeService::NotifyThemeChanged();
 
   // Notify all GtkChromeButtons of their new rendering mode:
@@ -683,6 +679,8 @@ void GtkThemeService::NotifyThemeChanged() {
 }
 
 void GtkThemeService::FreePlatformCaches() {
+  colors_.clear();
+  tints_.clear();
   ThemeService::FreePlatformCaches();
   STLDeleteValues(&gtk_images_);
 }
