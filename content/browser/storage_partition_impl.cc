@@ -57,12 +57,22 @@ void ClearCookiesOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& rq_context,
     const base::Time begin,
     const base::Time end,
+    const GURL& remove_origin,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store = rq_context->
       GetURLRequestContext()->cookie_store();
-  cookie_store->DeleteAllCreatedBetweenAsync(begin, end,
-      base::Bind(&OnClearedCookies, callback));
+  if (remove_origin.is_empty()) {
+    cookie_store->GetCookieMonster()->DeleteAllCreatedBetweenAsync(
+        begin,
+        end,
+        base::Bind(&OnClearedCookies, callback));
+  } else {
+    cookie_store->GetCookieMonster()->DeleteAllCreatedBetweenForHostAsync(
+        begin,
+        end,
+        remove_origin, base::Bind(&OnClearedCookies, callback));
+  }
 }
 
 void OnQuotaManagedOriginDeleted(const GURL& origin,
@@ -549,7 +559,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ClearCookiesOnIOThread,
-                   make_scoped_refptr(rq_context), begin, end,
+                   make_scoped_refptr(rq_context), begin, end, remove_origin,
                    decrement_callback));
   }
 

@@ -189,7 +189,21 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
     return callback.result();
   }
 
-  int DeleteAllForHost(CookieMonster*cm,
+  int DeleteAllCreatedBetweenForHost(CookieMonster* cm,
+                                     const base::Time delete_begin,
+                                     const base::Time delete_end,
+                                     const GURL& url) {
+    DCHECK(cm);
+    IntResultCookieCallback callback;
+    cm->DeleteAllCreatedBetweenForHostAsync(
+        delete_begin, delete_end, url,
+        base::Bind(&IntResultCookieCallback::Run, base::Unretained(&callback)));
+    RunFor(kTimeout);
+    EXPECT_TRUE(callback.did_run());
+    return callback.result();
+  }
+
+  int DeleteAllForHost(CookieMonster* cm,
                        const GURL& url) {
     DCHECK(cm);
     IntResultCookieCallback callback;
@@ -201,7 +215,7 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
     return callback.result();
   }
 
-  bool DeleteCanonicalCookie(CookieMonster*cm, const CanonicalCookie& cookie) {
+  bool DeleteCanonicalCookie(CookieMonster* cm, const CanonicalCookie& cookie) {
     DCHECK(cm);
     BoolResultCookieCallback callback;
     cm->DeleteCanonicalCookieAsync(
@@ -2360,6 +2374,16 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
         base::Bind(&IntResultCookieCallback::Run, base::Unretained(callback)));
   }
 
+  void DeleteAllCreatedBetweenForHostTask(CookieMonster* cm,
+                                          const base::Time delete_begin,
+                                          const base::Time delete_end,
+                                          const GURL& url,
+                                          IntResultCookieCallback* callback) {
+    cm->DeleteAllCreatedBetweenForHostAsync(
+        delete_begin, delete_end, url,
+        base::Bind(&IntResultCookieCallback::Run, base::Unretained(callback)));
+  }
+
   void DeleteCanonicalCookieTask(CookieMonster* cm,
                                  const CanonicalCookie& cookie,
                                  BoolResultCookieCallback* callback) {
@@ -2508,6 +2532,50 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteAllForHost) {
   RunOnOtherThread(task);
   EXPECT_TRUE(callback.did_run());
   EXPECT_EQ(1, callback.result());
+}
+
+TEST_F(MultiThreadedCookieMonsterTest,
+       ThreadCheckDeleteAllCreatedBetweenForHost) {
+  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+  GURL url_not_google("http://www.notgoogle.com");
+
+  CookieOptions options;
+  Time now = Time::Now();
+  // ago1 < ago2 < ago3 < now.
+  Time ago1 = now - TimeDelta::FromDays(101);
+  Time ago2 = now - TimeDelta::FromDays(100);
+  Time ago3 = now - TimeDelta::FromDays(99);
+
+  // These 3 cookies match the first deletion.
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), url_google_, "A=B", options));
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), url_google_, "C=D", options));
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), url_google_, "Y=Z", options));
+
+  // This cookie does not match host.
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), url_not_google, "E=F", options));
+
+  // This cookie does not match time range: [ago3, inf], for first deletion, but
+  // matches for the second deletion.
+  EXPECT_TRUE(cm->SetCookieWithCreationTime(url_google_, "G=H", ago2));
+
+  // 1. First set of deletions.
+  EXPECT_EQ(
+      3,  // Deletes A=B, C=D, Y=Z
+      DeleteAllCreatedBetweenForHost(
+          cm.get(), ago3, Time::Max(), url_google_));
+
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), url_google_, "A=B", options));
+  IntResultCookieCallback callback(&other_thread_);
+
+  // 2. Second set of deletions.
+  base::Closure task = base::Bind(
+      &net::MultiThreadedCookieMonsterTest::DeleteAllCreatedBetweenForHostTask,
+      base::Unretained(this),
+      cm, ago1, Time(), url_google_,
+      &callback);
+  RunOnOtherThread(task);
+  EXPECT_TRUE(callback.did_run());
+  EXPECT_EQ(2, callback.result());  // Deletes A=B, G=H.
 }
 
 TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteCanonicalCookie) {

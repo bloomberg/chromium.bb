@@ -201,6 +201,14 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void DeleteAllForHostAsync(const GURL& url,
                              const DeleteCallback& callback);
 
+  // Same as DeleteAllForHostAsync, except it deletes cookies between
+  // [|delete_begin|, |delete_end|).
+  // Returns the number of cookies deleted.
+  void DeleteAllCreatedBetweenForHostAsync(const base::Time delete_begin,
+                                           const base::Time delete_end,
+                                           const GURL& url,
+                                           const DeleteCallback& callback);
+
   // Deletes one specific cookie.
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   const DeleteCookieCallback& callback);
@@ -304,6 +312,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // For queueing the cookie monster calls.
   class CookieMonsterTask;
   class DeleteAllCreatedBetweenTask;
+  class DeleteAllCreatedBetweenForHostTask;
   class DeleteAllForHostTask;
   class DeleteAllTask;
   class DeleteCookieTask;
@@ -320,6 +329,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // For SetCookieWithCreationTime.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
                            TestCookieDeleteAllCreatedBetweenTimestamps);
+  // For SetCookieWithCreationTime.
+  FRIEND_TEST_ALL_PREFIXES(MultiThreadedCookieMonsterTest,
+                           ThreadCheckDeleteAllCreatedBetweenForHost);
 
   // For gargage collection constants.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestHostGarbageCollection);
@@ -405,6 +417,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
                               const base::Time& delete_end);
 
   int DeleteAllForHost(const GURL& url);
+  int DeleteAllCreatedBetweenForHost(const base::Time delete_begin,
+                                     const base::Time delete_end,
+                                     const GURL& url);
 
   bool DeleteCanonicalCookie(const CanonicalCookie& cookie);
 
