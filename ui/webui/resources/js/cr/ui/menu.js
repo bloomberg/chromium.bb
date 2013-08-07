@@ -156,6 +156,19 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Returns if the menu has any visible item.
+     * @return {boolean} True if the menu has visible item. Otherwise, false.
+     */
+    hasVisibleItems: function() {
+      var menuItems = this.menuItems;  // Cache.
+      for (var i = 0, menuItem; menuItem = menuItems[i]; i++) {
+        if (!menuItem.hidden)
+          return true;
+      }
+      return false;
+    },
+
+    /**
      * This is the function that handles keyboard navigation. This is usually
      * called by the element responsible for managing the menu.
      * @param {Event} e The keydown event object.

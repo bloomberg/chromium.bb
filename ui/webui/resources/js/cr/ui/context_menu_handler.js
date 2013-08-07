@@ -35,8 +35,11 @@ cr.define('cr.ui', function() {
      * @param {!cr.ui.Menu} menu The menu to show.
      */
     showMenu: function(e, menu) {
-      this.menu_ = menu;
       menu.updateCommands(e.currentTarget);
+      if (!menu.hasVisibleItems())
+        return;
+
+      this.menu_ = menu;
       menu.classList.remove('hide-delayed');
       menu.hidden = false;
       menu.contextElement = e.currentTarget;
