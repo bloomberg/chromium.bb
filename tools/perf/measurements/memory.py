@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from metrics import histogram
+from metrics import memory
 from telemetry.page import page_measurement
 
 
@@ -26,6 +27,12 @@ class Memory(page_measurement.PageMeasurement):
         [histogram.HistogramMetric(
             h, histogram.BROWSER_HISTOGRAM)
          for h in BROWSER_MEMORY_HISTOGRAMS])
+
+    self._memory_metric = None
+
+  def DidStartBrowser(self, browser):
+    self._memory_metric = memory.MemoryMetric(browser)
+    self._memory_metric.Start()
 
   def DidNavigateToPage(self, page, tab):
     for h in self.histograms:
@@ -66,3 +73,8 @@ class Memory(page_measurement.PageMeasurement):
           chrome.memoryBenchmarking.heapProfilerDump('final', 'browser');
         }
       """)
+
+  def DidRunTest(self, tab, results):
+    self._memory_metric.Stop()
+    self._memory_metric.AddResults(tab, results)
+
