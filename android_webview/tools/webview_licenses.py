@@ -111,6 +111,8 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('tools/histograms')
   # Arm sysroot tools, doesn't exist in the snapshot
   excluded_dirs_list.append('arm-sysroot')
+  # Data is not part of open source chromium, but are included on some bots.
+  excluded_dirs_list.append('data')
 
   args = ['android_webview/tools/find_copyrights.pl',
           '.'
