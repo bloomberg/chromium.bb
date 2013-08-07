@@ -92,7 +92,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
   ASSERT_TRUE(file_entries.empty());
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsRestored) {
+// Flaky: crbug.com/269613
+#if defined(OS_LINUX)
+#define MAYBE_FileAccessIsRestored DISABLED_FileAccessIsRestored
+#else
+#define MAYBE_FileAccessIsRestored FileAccessIsRestored
+#endif
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_FileAccessIsRestored) {
   content::WindowedNotificationObserver extension_suspended(
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::NotificationService::AllSources());
