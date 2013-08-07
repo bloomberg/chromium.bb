@@ -102,10 +102,24 @@ static void signal_catch(int sig) {
  * a single "register" even though the two 32-bit words are split into
  * two physical registers: the ISA mandates that the registers be
  * subsequent, and that the first be even.
+ *
+ * In the LDRD case, the ARM specification classes it UNPREDICTABLE if
+ * the destination register pair overlaps with either register used in
+ * the address operand.  Ordinarily, the compiler's register allocator
+ * would be free to choose the same register for the destination of the
+ * load as is used in the address operand (if that input register would
+ * otherwise be dead after this instruction).  By making the constraint
+ * "=&r" rather than plain "=r", the compiler is constrained to using
+ * destination registers that can safely be clobbered while the input
+ * registers are still live; that's not exactly the requirement here,
+ * but it's equivalent in practice.  Note that the (looser) plain "=r"
+ * constraint would be fine for all cases other than LDRD; but for this
+ * code there is no reason to bother trying to help the compiler do the
+ * best register allocation possible.
  */
 #define LOAD_TEST(instr, address, offset_constraint, offset) do {       \
     asm(instr " %[Rt], [%[Rn], %[off]]\n"                               \
-        : [Rt] "=r" (out)                                               \
+        : [Rt] "=&r" (out)                                              \
         : [Rn] "r" (address), [off] offset_constraint (offset),         \
           "m" (*(const Value *) (address + offset)));                   \
     success &= (out == val);                                            \
