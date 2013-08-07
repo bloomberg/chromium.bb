@@ -6,12 +6,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -50,7 +48,6 @@
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
@@ -310,16 +307,6 @@ void BrowserWindowCocoa::SetStarredState(bool is_starred) {
 }
 
 void BrowserWindowCocoa::ZoomChangedForActiveTab(bool can_show_bubble) {
-  // Debug data for <http://crbug.com/254977>.
-  base::debug::ScopedCrashKey window_type(
-      crash_keys::mac::kZoomBubbleWindowType,
-      base::StringPrintf("type=%d,app_type=%d,app_name=%s",
-          browser_->type(), browser_->app_type(),
-          browser_->app_name().c_str()));
-  base::debug::ScopedCrashKey url(crash_keys::mac::kZoomBubbleURL,
-      browser_->tab_strip_model()->GetActiveWebContents()->
-          GetLastCommittedURL().possibly_invalid_spec());
-
   [controller_ zoomChangedForActiveTab:can_show_bubble ? YES : NO];
 }
 

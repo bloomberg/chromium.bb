@@ -39,10 +39,6 @@ extern const char kSendAction[];
 extern const char kZombie[];
 extern const char kZombieTrace[];
 
-// For http://crbug.com/254977.
-extern const char kZoomBubbleWindowType[];
-extern const char kZoomBubbleURL[];
-
 }  // namespace mac
 #endif
 
