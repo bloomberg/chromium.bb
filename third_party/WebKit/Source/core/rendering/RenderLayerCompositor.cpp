@@ -964,10 +964,6 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // At this point we have finished collecting all reasons to composite this layer.
     layer->setCompositingReasons(reasonsToComposite);
 
-    // If the layer is going into compositing mode, repaint its old location.
-    if (!layer->isComposited() && willBeComposited)
-        repaintOnCompositingChange(layer);
-
     // Update backing now, so that we can use isComposited() reliably during tree traversal in rebuildCompositingLayerTree().
     if (updateBacking(layer, CompositingChangeRepaintNow))
         layersChanged = true;
