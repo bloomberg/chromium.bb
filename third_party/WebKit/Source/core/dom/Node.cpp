@@ -861,11 +861,6 @@ void Node::lazyAttach(ShouldSetAttached shouldSetAttached)
     }
 }
 
-bool Node::supportsFocus() const
-{
-    return false;
-}
-
 Node* Node::focusDelegate()
 {
     return this;

@@ -508,6 +508,11 @@ public:
     virtual void focus(bool restorePreviousSelection = true, FocusDirection = FocusDirectionNone);
     virtual void updateFocusAppearance(bool restorePreviousSelection);
     virtual void blur();
+    // Whether this element can receive focus at all. Most elements are not
+    // focusable but some elements, such as form controls and links, are. Unlike
+    // rendererIsFocusable(), this method may be called when layout is not up to
+    // date, so it must not use the renderer to determine focusability.
+    virtual bool supportsFocus() const;
     // Whether the node can actually be focused.
     bool isFocusable() const;
     virtual bool isKeyboardFocusable() const;
@@ -671,10 +676,13 @@ protected:
 
     void clearTabIndexExplicitlyIfNeeded();
     void setTabIndexExplicitly(short);
-    virtual bool supportsFocus() const OVERRIDE;
     virtual short tabIndex() const OVERRIDE;
-    virtual bool rendererIsFocusable() const OVERRIDE;
-
+    // Subclasses may override this method to affect focusability. Unlike
+    // supportsFocus, this method must be called on an up-to-date layout, so it
+    // may use the renderer to reason about focusability. This method cannot be
+    // moved to RenderObject because some focusable nodes don't have renderers,
+    // e.g., HTMLOptionElement.
+    virtual bool rendererIsFocusable() const;
     PassRefPtr<HTMLCollection> ensureCachedHTMLCollection(CollectionType);
     HTMLCollection* cachedHTMLCollection(CollectionType);
 

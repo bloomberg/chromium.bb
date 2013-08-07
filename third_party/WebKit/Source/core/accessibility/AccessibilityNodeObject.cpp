@@ -739,7 +739,7 @@ bool AccessibilityNodeObject::canSetFocusAttribute() const
     if (isDisabledFormControl(node))
         return false;
 
-    return node->supportsFocus();
+    return node->isElementNode() && toElement(node)->supportsFocus();
 }
 
 bool AccessibilityNodeObject::canvasHasFallbackContent() const
