@@ -238,12 +238,13 @@ public class WebKitHitTestTest extends AwTestBase {
     }
 
     private void srcPhoneTypeTestBody(boolean byTouch) throws Throwable {
-        String phone_num = "1234567890";
+        String phone_num = "%2B1234567890";
+        String expected_phone_num = "+1234567890";
         String prefix = "tel:";
         String page = fullPageLink("tel:" + phone_num, ANCHOR_TEXT);
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.PHONE_TYPE, phone_num));
+        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.PHONE_TYPE, expected_phone_num));
         assertTrue(pollForHrefAndImageSrcOnUiThread(prefix + phone_num, ANCHOR_TEXT, null));
     }
 

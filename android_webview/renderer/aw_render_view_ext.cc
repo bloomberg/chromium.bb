@@ -10,6 +10,7 @@
 #include "android_webview/common/render_view_messages.h"
 #include "base/bind.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/android_content_detection_prefixes.h"
 #include "content/public/renderer/document_state.h"
@@ -27,6 +28,8 @@
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "url/url_canon.h"
+#include "url/url_util.h"
 
 namespace android_webview {
 
@@ -73,7 +76,12 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
   const base::StringPiece spec(url.possibly_invalid_spec());
 
   if (spec.starts_with(prefix)) {
-    dest->assign(spec.begin() + prefix.length(), spec.end());
+    url_canon::RawCanonOutputW<1024> output;
+    url_util::DecodeURLEscapeSequences(spec.data() + prefix.length(),
+        spec.length() - prefix.length(), &output);
+    std::string decoded_url = UTF16ToUTF8(
+        string16(output.data(), output.length()));
+    dest->assign(decoded_url.begin(), decoded_url.end());
     return true;
   }
   return false;
