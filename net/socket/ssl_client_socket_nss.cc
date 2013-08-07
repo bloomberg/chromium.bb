@@ -1271,7 +1271,6 @@ SECStatus SSLClientSocketNSS::Core::OwnAuthCertHandler(
     PRFileDesc* socket,
     PRBool checksig,
     PRBool is_server) {
-#ifdef SSL_ENABLE_FALSE_START
   Core* core = reinterpret_cast<Core*>(arg);
   if (!core->handshake_callback_called_) {
     // Only need to turn off False Start in the initial handshake. Also, it is
@@ -1293,7 +1292,6 @@ SECStatus SSLClientSocketNSS::Core::OwnAuthCertHandler(
       SSL_OptionSet(socket, SSL_ENABLE_FALSE_START, PR_FALSE);
     }
   }
-#endif
 
   // Tell NSS to not verify the certificate.
   return SECSuccess;
@@ -2419,8 +2417,8 @@ void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
          SSL_CONNECTION_COMPRESSION_MASK) <<
         SSL_CONNECTION_COMPRESSION_SHIFT;
 
-    // NSS 3.12.x doesn't have version macros for TLS 1.1 and 1.2 (because NSS
-    // doesn't support them yet), so we use 0x0302 and 0x0303 directly.
+    // NSS 3.14.x doesn't have a version macro for TLS 1.2 (because NSS didn't
+    // support it yet), so use 0x0303 directly.
     int version = SSL_CONNECTION_VERSION_UNKNOWN;
     if (channel_info.protocolVersion < SSL_LIBRARY_VERSION_3_0) {
       // All versions less than SSL_LIBRARY_VERSION_3_0 are treated as SSL
@@ -2430,7 +2428,7 @@ void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
       version = SSL_CONNECTION_VERSION_SSL3;
     } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_3_1_TLS) {
       version = SSL_CONNECTION_VERSION_TLS1;
-    } else if (channel_info.protocolVersion == 0x0302) {
+    } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_TLS_1_1) {
       version = SSL_CONNECTION_VERSION_TLS1_1;
     } else if (channel_info.protocolVersion == 0x0303) {
       version = SSL_CONNECTION_VERSION_TLS1_2;
@@ -2440,10 +2438,6 @@ void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
         SSL_CONNECTION_VERSION_SHIFT;
   }
 
-  // SSL_HandshakeNegotiatedExtension was added in NSS 3.12.6.
-  // Since SSL_MAX_EXTENSIONS was added at the same time, we can test
-  // SSL_MAX_EXTENSIONS for the presence of SSL_HandshakeNegotiatedExtension.
-#if defined(SSL_MAX_EXTENSIONS)
   PRBool peer_supports_renego_ext;
   ok = SSL_HandshakeNegotiatedExtension(nss_fd_, ssl_renegotiation_info_xtn,
                                         &peer_supports_renego_ext);
@@ -2477,7 +2471,6 @@ void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
                             peer_supports_renego_ext == PR_TRUE);
     }
   }
-#endif
 
   if (ssl_config_.version_fallback) {
     nss_handshake_state_.ssl_connection_status |=
@@ -3150,25 +3143,18 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
     SSL_CipherPrefSet(nss_fd_, *it, PR_FALSE);
   }
 
-#ifdef SSL_ENABLE_SESSION_TICKETS
   // Support RFC 5077
   rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_SESSION_TICKETS, PR_TRUE);
   if (rv != SECSuccess) {
     LogFailedNSSFunction(
         net_log_, "SSL_OptionSet", "SSL_ENABLE_SESSION_TICKETS");
   }
-#else
-  #error "You need to install NSS-3.12 or later to build chromium"
-#endif
 
-#ifdef SSL_ENABLE_FALSE_START
   rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_FALSE_START,
                      ssl_config_.false_start_enabled);
   if (rv != SECSuccess)
     LogFailedNSSFunction(net_log_, "SSL_OptionSet", "SSL_ENABLE_FALSE_START");
-#endif
 
-#ifdef SSL_ENABLE_RENEGOTIATION
   // We allow servers to request renegotiation. Since we're a client,
   // prohibiting this is rather a waste of time. Only servers are in a
   // position to prevent renegotiation attacks.
@@ -3180,14 +3166,12 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
     LogFailedNSSFunction(
         net_log_, "SSL_OptionSet", "SSL_ENABLE_RENEGOTIATION");
   }
-#endif  // SSL_ENABLE_RENEGOTIATION
 
-#ifdef SSL_CBC_RANDOM_IV
   rv = SSL_OptionSet(nss_fd_, SSL_CBC_RANDOM_IV, PR_TRUE);
   if (rv != SECSuccess)
     LogFailedNSSFunction(net_log_, "SSL_OptionSet", "SSL_CBC_RANDOM_IV");
-#endif
 
+// Added in NSS 3.15
 #ifdef SSL_ENABLE_OCSP_STAPLING
   if (IsOCSPStaplingSupported()) {
     rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_OCSP_STAPLING, PR_TRUE);
@@ -3198,6 +3182,7 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
   }
 #endif
 
+// Chromium patch to libssl
 #ifdef SSL_ENABLE_CACHED_INFO
   rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_CACHED_INFO,
                      ssl_config_.cached_info_enabled);

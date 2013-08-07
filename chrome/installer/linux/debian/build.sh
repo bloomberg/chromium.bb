@@ -288,14 +288,16 @@ fi
 rm -rf "$DUMMY_STAGING_DIR"
 
 # Additional dependencies not in the dpkg-shlibdeps output.
-ADDITION_DEPS="ca-certificates, libcurl3, \
+# Pull a more recent version of NSS than required by runtime linking, for
+# security and stability updates in NSS.
+ADDITION_DEPS="ca-certificates, libcurl3, libnss3 (>= 3.14.3), \
   lsb-base (>=3.2), xdg-utils (>= 1.0.2), wget"
 
 # Fix-up libnspr dependency due to renaming in Ubuntu (the old package still
 # exists, but it was moved to "universe" repository, which isn't installed by
 # default).
 DPKG_SHLIB_DEPS=$(sed \
-    's/\(libnspr4-0d ([^)]*)\), /\1 | libnspr4 (>= 4.8.7-0ubuntu1), /g' \
+    's/\(libnspr4-0d ([^)]*)\), /\1 | libnspr4 (>= 4.9.5-0ubuntu0), /g' \
     <<< $DPKG_SHLIB_DEPS)
 
 # Fix-up libudev dependency because Ubuntu 13.04 has libudev1 instead of

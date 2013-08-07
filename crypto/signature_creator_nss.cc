@@ -67,11 +67,7 @@ bool SignatureCreator::Sign(RSAPrivateKey* key,
 }
 
 bool SignatureCreator::Update(const uint8* data_part, int data_part_len) {
-  // TODO(wtc): Remove this const_cast when we require NSS 3.12.5.
-  // See NSS bug https://bugzilla.mozilla.org/show_bug.cgi?id=518255
-  SECStatus rv = SGN_Update(sign_context_,
-                            const_cast<unsigned char*>(data_part),
-                            data_part_len);
+  SECStatus rv = SGN_Update(sign_context_, data_part, data_part_len);
   if (rv != SECSuccess) {
     NOTREACHED();
     return false;

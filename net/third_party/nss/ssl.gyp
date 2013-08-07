@@ -68,7 +68,6 @@
         'ssl/win32err.c',
         'ssl/win32err.h',
         'ssl/bodge/secitem_array.c',
-        'ssl/bodge/secure_memcmp.c',
       ],
       'sources!': [
         'ssl/os2_err.c',

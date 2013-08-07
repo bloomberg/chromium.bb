@@ -75,10 +75,6 @@ Patches:
     patches/cbc.patch
     https://code.google.com/p/chromium/issues/detail?id=172658#c12
 
-  * Define AES_256_KEY_LENGTH if the system blapit.h header doesn't define it.
-    Remove this patch when all system NSS packages are NSS 3.12.10 or later.
-    patches/aes256keylength.patch
-
   * Change ssl3_SuiteBOnly to always return PR_TRUE. The softoken in NSS
     versions older than 3.15 report an EC key size range of 112 bits to 571
     bits, even when it is compiled to support only the NIST P-256, P-384, and

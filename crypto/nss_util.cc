@@ -384,23 +384,17 @@ class NSSInitSingleton {
     base::TimeTicks start_time = base::TimeTicks::Now();
     EnsureNSPRInit();
 
-    // We *must* have NSS >= 3.12.3.  See bug 26448.
+    // We *must* have NSS >= 3.14.3.
     COMPILE_ASSERT(
-        (NSS_VMAJOR == 3 && NSS_VMINOR == 12 && NSS_VPATCH >= 3) ||
-        (NSS_VMAJOR == 3 && NSS_VMINOR > 12) ||
+        (NSS_VMAJOR == 3 && NSS_VMINOR == 14 && NSS_VPATCH >= 3) ||
+        (NSS_VMAJOR == 3 && NSS_VMINOR > 14) ||
         (NSS_VMAJOR > 3),
         nss_version_check_failed);
     // Also check the run-time NSS version.
     // NSS_VersionCheck is a >= check, not strict equality.
-    if (!NSS_VersionCheck("3.12.3")) {
-      // It turns out many people have misconfigured NSS setups, where
-      // their run-time NSPR doesn't match the one their NSS was compiled
-      // against.  So rather than aborting, complain loudly.
-      LOG(ERROR) << "NSS_VersionCheck(\"3.12.3\") failed.  "
-                    "We depend on NSS >= 3.12.3, and this error is not fatal "
-                    "only because many people have busted NSS setups (for "
-                    "example, using the wrong version of NSPR). "
-                    "Please upgrade to the latest NSS and NSPR, and if you "
+    if (!NSS_VersionCheck("3.14.3")) {
+      LOG(FATAL) << "NSS_VersionCheck(\"3.14.3\") failed. NSS >= 3.14.3 is "
+                    "required. Please upgrade to the latest NSS, and if you "
                     "still get this error, contact your distribution "
                     "maintainer.";
     }
