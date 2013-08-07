@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "jni/PersonalDataManager_jni.h"
@@ -54,7 +55,7 @@ ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
           profile.GetRawInfo(ADDRESS_HOME_ZIP)).obj(),
       ConvertUTF16ToJavaString(
           env,
-          profile.GetInfo(ADDRESS_HOME_COUNTRY,
+          profile.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
                           g_browser_process->GetApplicationLocale())).obj(),
       ConvertUTF16ToJavaString(
           env,
@@ -98,7 +99,7 @@ void PopulateNativeProfileFromJava(
       ConvertJavaStringToUTF16(
           Java_AutofillProfile_getZip(env, jprofile)));
   profile->SetInfo(
-      ADDRESS_HOME_COUNTRY,
+      AutofillType(ADDRESS_HOME_COUNTRY),
       ConvertJavaStringToUTF16(
           Java_AutofillProfile_getCountry(env, jprofile)),
       g_browser_process->GetApplicationLocale());

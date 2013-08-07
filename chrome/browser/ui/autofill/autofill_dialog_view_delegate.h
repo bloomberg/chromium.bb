@@ -104,7 +104,7 @@ class AutofillDialogViewDelegate {
   // Returns the combobox model for inputs of type |type|, or NULL if the input
   // should be a text field.
   virtual ui::ComboboxModel* ComboboxModelForAutofillType(
-      AutofillFieldType type) = 0;
+      ServerFieldType type) = 0;
 
   // Returns the model for suggestions for fields that fall under |section|.
   // This may return NULL, in which case no menu should be shown for that
@@ -125,14 +125,14 @@ class AutofillDialogViewDelegate {
 
   // Returns an icon to be displayed along with the input for the given type.
   // |user_input| is the current text in the textfield.
-  virtual gfx::Image IconForField(AutofillFieldType type,
+  virtual gfx::Image IconForField(ServerFieldType type,
                                   const string16& user_input) const = 0;
 
   // Decides whether input of |value| is valid for a field of type |type|. If
   // valid, the returned string will be empty. Otherwise it will contain an
   // error message.
   virtual string16 InputValidityMessage(DialogSection section,
-                                        AutofillFieldType type,
+                                        ServerFieldType type,
                                         const string16& value) = 0;
 
 

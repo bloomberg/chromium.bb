@@ -30,7 +30,7 @@ const char kFieldSeparator[] = ": ";
 const char kProfileSeparator[] = "---";
 const size_t kFieldOffset = arraysize(kFieldSeparator) - 1;
 
-const AutofillFieldType kProfileFieldTypes[] = {
+const ServerFieldType kProfileFieldTypes[] = {
   NAME_FIRST,
   NAME_MIDDLE,
   NAME_LAST,
@@ -63,7 +63,7 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
     result += kProfileSeparator;
     result += "\n";
     for (size_t j = 0; j < arraysize(kProfileFieldTypes); ++j) {
-      AutofillFieldType type = kProfileFieldTypes[j];
+      ServerFieldType type = kProfileFieldTypes[j];
       std::vector<base::string16> values;
       profiles[i]->GetRawMultiInfo(type, &values);
       for (size_t k = 0; k < values.size(); ++k) {
@@ -209,7 +209,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
         // into the field's name.
         AutofillField* field =
             const_cast<AutofillField*>(form_structure.field(i));
-        AutofillFieldType type =
+        ServerFieldType type =
             AutofillType::StringToFieldType(UTF16ToUTF8(field->name));
         field->set_heuristic_type(type);
       }

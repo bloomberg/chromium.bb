@@ -29,7 +29,7 @@ class PhoneField : public FormField {
 
  protected:
   // FormField:
-  virtual bool ClassifyField(FieldTypeMap* map) const OVERRIDE;
+  virtual bool ClassifyField(ServerFieldTypeMap* map) const OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseOneLinePhone);

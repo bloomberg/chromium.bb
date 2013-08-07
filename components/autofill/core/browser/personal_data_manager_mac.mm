@@ -18,6 +18,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -203,7 +204,7 @@ void AuxiliaryProfilesImpl::GetAddressBookAddress(const std::string& app_locale,
     profile->SetRawInfo(ADDRESS_HOME_ZIP, base::SysNSStringToUTF16(zip));
 
   if (NSString* country = [address objectForKey:kABAddressCountryKey]) {
-    profile->SetInfo(ADDRESS_HOME_COUNTRY,
+    profile->SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
                      base::SysNSStringToUTF16(country),
                      app_locale);
   }

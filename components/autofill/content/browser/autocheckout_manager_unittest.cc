@@ -56,7 +56,7 @@ FormFieldData BuildField(const std::string& autocomplete_attribute) {
 }
 
 scoped_ptr<FormStructure> CreateTestFormStructure(
-    const std::vector<AutofillFieldType>& autofill_types) {
+    const std::vector<ServerFieldType>& autofill_types) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
   form.method = ASCIIToUTF16("POST");
@@ -84,7 +84,7 @@ scoped_ptr<FormStructure> CreateTestFormStructure(
 }
 
 scoped_ptr<FormStructure> CreateTestAddressFormStructure() {
-  std::vector<AutofillFieldType> autofill_types;
+  std::vector<ServerFieldType> autofill_types;
   autofill_types.push_back(NAME_FULL);
   autofill_types.push_back(PHONE_HOME_WHOLE_NUMBER);
   autofill_types.push_back(EMAIL_ADDRESS);
@@ -98,7 +98,7 @@ scoped_ptr<FormStructure> CreateTestAddressFormStructure() {
 }
 
 scoped_ptr<FormStructure> CreateTestCreditCardFormStructure() {
-  std::vector<AutofillFieldType> autofill_types;
+  std::vector<ServerFieldType> autofill_types;
   autofill_types.push_back(CREDIT_CARD_NAME);
   autofill_types.push_back(CREDIT_CARD_NUMBER);
   autofill_types.push_back(CREDIT_CARD_EXP_MONTH);
@@ -229,7 +229,7 @@ scoped_ptr<AutocheckoutPageMetaData> CreateMultiClickMetaData() {
 struct TestField {
   const char* const field_type;
   const char* const field_value;
-  AutofillFieldType autofill_type;
+  ServerFieldType autofill_type;
 };
 
 const TestField kTestFields[] = {

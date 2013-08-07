@@ -21,7 +21,6 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/component_strings.h"
@@ -276,7 +275,7 @@ std::string CreditCard::GetCreditCardType(const base::string16& number) {
   return kGenericCard;
 }
 
-base::string16 CreditCard::GetRawInfo(AutofillFieldType type) const {
+base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
   switch (type) {
     case CREDIT_CARD_NAME:
       return name_on_card_;
@@ -322,7 +321,7 @@ base::string16 CreditCard::GetRawInfo(AutofillFieldType type) const {
   }
 }
 
-void CreditCard::SetRawInfo(AutofillFieldType type,
+void CreditCard::SetRawInfo(ServerFieldType type,
                             const base::string16& value) {
   switch (type) {
     case CREDIT_CARD_NAME:
@@ -370,33 +369,35 @@ void CreditCard::SetRawInfo(AutofillFieldType type,
   }
 }
 
-base::string16 CreditCard::GetInfo(AutofillFieldType type,
+base::string16 CreditCard::GetInfo(const AutofillType& type,
                                    const std::string& app_locale) const {
-  if (type == CREDIT_CARD_NUMBER)
+  if (type.server_type() == CREDIT_CARD_NUMBER)
     return StripSeparators(number_);
 
-  return GetRawInfo(type);
+  return GetRawInfo(type.server_type());
 }
 
-bool CreditCard::SetInfo(AutofillFieldType type,
+bool CreditCard::SetInfo(const AutofillType& type,
                          const base::string16& value,
                          const std::string& app_locale) {
-  if (type == CREDIT_CARD_NUMBER)
-    SetRawInfo(type, StripSeparators(value));
-  else if (type == CREDIT_CARD_EXP_MONTH)
+  ServerFieldType server_type = type.server_type();
+  if (server_type == CREDIT_CARD_NUMBER)
+    SetRawInfo(server_type, StripSeparators(value));
+  else if (server_type == CREDIT_CARD_EXP_MONTH)
     SetExpirationMonthFromString(value, app_locale);
   else
-    SetRawInfo(type, value);
+    SetRawInfo(server_type, value);
 
   return true;
 }
 
 void CreditCard::GetMatchingTypes(const base::string16& text,
                                   const std::string& app_locale,
-                                  FieldTypeSet* matching_types) const {
+                                  ServerFieldTypeSet* matching_types) const {
   FormGroup::GetMatchingTypes(text, app_locale, matching_types);
 
-  base::string16 card_number = GetInfo(CREDIT_CARD_NUMBER, app_locale);
+  base::string16 card_number =
+      GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale);
   if (!card_number.empty() && StripSeparators(text) == card_number)
     matching_types->insert(CREDIT_CARD_NUMBER);
 
@@ -501,8 +502,8 @@ void CreditCard::operator=(const CreditCard& credit_card) {
 
 bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
                                         const std::string& app_locale) {
-  if (this->GetInfo(CREDIT_CARD_NUMBER, app_locale) !=
-          imported_card.GetInfo(CREDIT_CARD_NUMBER, app_locale)) {
+  if (this->GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale) !=
+          imported_card.GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale)) {
     return false;
   }
 
@@ -533,22 +534,24 @@ void CreditCard::FillFormField(const AutofillField& field,
                                size_t /*variant*/,
                                const std::string& app_locale,
                                FormFieldData* field_data) const {
-  DCHECK_EQ(CREDIT_CARD, AutofillType(field.type()).group());
+  DCHECK_EQ(CREDIT_CARD, field.Type().group());
   DCHECK(field_data);
 
   if (field_data->form_control_type == "select-one") {
-    FillSelectControl(field.type(), app_locale, field_data);
+    FillSelectControl(field.Type(), app_locale, field_data);
   } else if (field_data->form_control_type == "month") {
     // HTML5 input="month" consists of year-month.
-    base::string16 year = GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, app_locale);
-    base::string16 month = GetInfo(CREDIT_CARD_EXP_MONTH, app_locale);
+    base::string16 year =
+        GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale);
+    base::string16 month =
+        GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), app_locale);
     if (!year.empty() && !month.empty()) {
       // Fill the value only if |this| includes both year and month
       // information.
       field_data->value = year + ASCIIToUTF16("-") + month;
     }
   } else {
-    field_data->value = GetInfo(field.type(), app_locale);
+    field_data->value = GetInfo(field.Type(), app_locale);
   }
 }
 
@@ -556,13 +559,13 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
   // The following CreditCard field types are the only types we store in the
   // WebDB so far, so we're only concerned with matching these types in the
   // credit card.
-  const AutofillFieldType types[] = { CREDIT_CARD_NAME,
-                                      CREDIT_CARD_NUMBER,
-                                      CREDIT_CARD_EXP_MONTH,
-                                      CREDIT_CARD_EXP_4_DIGIT_YEAR };
-  for (size_t index = 0; index < arraysize(types); ++index) {
-    int comparison = GetRawInfo(types[index]).compare(
-        credit_card.GetRawInfo(types[index]));
+  const ServerFieldType types[] = { CREDIT_CARD_NAME,
+                                    CREDIT_CARD_NUMBER,
+                                    CREDIT_CARD_EXP_MONTH,
+                                    CREDIT_CARD_EXP_4_DIGIT_YEAR };
+  for (size_t i = 0; i < arraysize(types); ++i) {
+    int comparison =
+        GetRawInfo(types[i]).compare(credit_card.GetRawInfo(types[i]));
     if (comparison != 0)
       return comparison;
   }
@@ -581,7 +584,7 @@ bool CreditCard::operator!=(const CreditCard& credit_card) const {
 }
 
 bool CreditCard::IsEmpty(const std::string& app_locale) const {
-  FieldTypeSet types;
+  ServerFieldTypeSet types;
   GetNonEmptyTypes(app_locale, &types);
   return types.empty();
 }
@@ -599,7 +602,7 @@ bool CreditCard::IsValid() const {
              expiration_year_, expiration_month_, base::Time::Now());
 }
 
-void CreditCard::GetSupportedTypes(FieldTypeSet* supported_types) const {
+void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(CREDIT_CARD_NAME);
   supported_types->insert(CREDIT_CARD_NUMBER);
   supported_types->insert(CREDIT_CARD_TYPE);

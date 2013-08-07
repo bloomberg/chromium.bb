@@ -65,14 +65,15 @@ const char kIgnorePatternInFieldName[] = "\\d{5,}+";
 
 // Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
 // |available_field_types| and returns the hex representation as a string.
-std::string EncodeFieldTypes(const FieldTypeSet& available_field_types) {
+std::string EncodeFieldTypes(const ServerFieldTypeSet& available_field_types) {
   // There are |MAX_VALID_FIELD_TYPE| different field types and 8 bits per byte,
   // so we need ceil(MAX_VALID_FIELD_TYPE / 8) bytes to encode the bit field.
   const size_t kNumBytes = (MAX_VALID_FIELD_TYPE + 0x7) / 8;
 
   // Pack the types in |available_field_types| into |bit_field|.
   std::vector<uint8> bit_field(kNumBytes, 0);
-  for (FieldTypeSet::const_iterator field_type = available_field_types.begin();
+  for (ServerFieldTypeSet::const_iterator field_type =
+           available_field_types.begin();
        field_type != available_field_types.end();
        ++field_type) {
     // Set the appropriate bit in the field.  The bit we set is the one
@@ -107,9 +108,9 @@ void EncodeFieldForUpload(const AutofillField& field,
   if (field.is_checkable)
     return;
 
-  FieldTypeSet types = field.possible_types();
+  ServerFieldTypeSet types = field.possible_types();
   // |types| could be empty in unit-tests only.
-  for (FieldTypeSet::iterator field_type = types.begin();
+  for (ServerFieldTypeSet::iterator field_type = types.begin();
        field_type != types.end(); ++field_type) {
     buzz::XmlElement *field_element = new buzz::XmlElement(
         buzz::QName(kXMLElementField));
@@ -137,8 +138,8 @@ void EncodeFieldForQuery(const AutofillField& field,
 // in field assignments xml, and also add them to the parent XmlElement.
 void EncodeFieldForFieldAssignments(const AutofillField& field,
                                     buzz::XmlElement* parent) {
-  FieldTypeSet types = field.possible_types();
-  for (FieldTypeSet::iterator field_type = types.begin();
+  ServerFieldTypeSet types = field.possible_types();
+  for (ServerFieldTypeSet::iterator field_type = types.begin();
        field_type != types.end(); ++field_type) {
     buzz::XmlElement *field_element = new buzz::XmlElement(
         buzz::QName(kXMLElementFields));
@@ -164,8 +165,9 @@ bool IsContactTypeHint(const std::string& token) {
 // Returns |true| iff the |token| is a type hint appropriate for a field of the
 // given |field_type|, as specified in the implementation section of
 // http://is.gd/whatwg_autocomplete
+// TODO(isherman): This should use HTML field types, not native ones.
 bool ContactTypeHintMatchesFieldType(const std::string& token,
-                                     AutofillFieldType field_type) {
+                                     ServerFieldType field_type) {
   // The "home" and "work" type hints are only appropriate for email and phone
   // number field types.
   if (token == "home" || token == "work") {
@@ -189,7 +191,8 @@ bool ContactTypeHintMatchesFieldType(const std::string& token,
 // |autocomplete_type|, if there is one, in the context of the given |field|.
 // Chrome Autofill supports a subset of the field types listed at
 // http://is.gd/whatwg_autocomplete
-AutofillFieldType FieldTypeFromAutocompleteType(
+// TODO(isherman): This should use HTML field types, not native ones.
+ServerFieldType FieldTypeFromAutocompleteType(
     const std::string& autocomplete_type,
     const AutofillField& field) {
   if (autocomplete_type == "name")
@@ -379,11 +382,12 @@ void FormStructure::DetermineHeuristicTypes(
                                             &has_author_specified_sections);
 
   if (!has_author_specified_types_) {
-    FieldTypeMap field_type_map;
+    ServerFieldTypeMap field_type_map;
     FormField::ParseFormFields(fields_.get(), &field_type_map);
-    for (size_t index = 0; index < field_count(); index++) {
-      AutofillField* field = fields_[index];
-      FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
+    for (size_t i = 0; i < field_count(); ++i) {
+      AutofillField* field = fields_[i];
+      ServerFieldTypeMap::iterator iter =
+          field_type_map.find(field->unique_name());
       if (iter != field_type_map.end())
         field->set_heuristic_type(iter->second);
     }
@@ -403,7 +407,7 @@ void FormStructure::DetermineHeuristicTypes(
 }
 
 bool FormStructure::EncodeUploadRequest(
-    const FieldTypeSet& available_field_types,
+    const ServerFieldTypeSet& available_field_types,
     bool form_was_autofilled,
     std::string* encoded_xml) const {
   DCHECK(ShouldBeCrowdsourced());
@@ -413,7 +417,8 @@ bool FormStructure::EncodeUploadRequest(
   for (std::vector<AutofillField*>::const_iterator field = begin();
        field != end();
        ++field) {
-    for (FieldTypeSet::const_iterator type = (*field)->possible_types().begin();
+    for (ServerFieldTypeSet::const_iterator type =
+             (*field)->possible_types().begin();
          type != (*field)->possible_types().end();
          ++type) {
       DCHECK(*type == UNKNOWN_TYPE ||
@@ -448,7 +453,7 @@ bool FormStructure::EncodeUploadRequest(
 }
 
 bool FormStructure::EncodeFieldAssignments(
-    const FieldTypeSet& available_field_types,
+    const ServerFieldTypeSet& available_field_types,
     std::string* encoded_xml) const {
   DCHECK(ShouldBeCrowdsourced());
 
@@ -597,12 +602,12 @@ void FormStructure::ParseQueryResponse(
       // UNKNOWN_TYPE is reserved for use by the client.
       DCHECK_NE(current_info->field_type, UNKNOWN_TYPE);
 
-      AutofillFieldType heuristic_type = (*field)->type();
+      ServerFieldType heuristic_type = (*field)->heuristic_type();
       if (heuristic_type != UNKNOWN_TYPE)
         heuristics_detected_fillable_field = true;
 
       (*field)->set_server_type(current_info->field_type);
-      if (heuristic_type != (*field)->type())
+      if (heuristic_type != (*field)->Type().server_type())
         query_response_overrode_heuristics = true;
 
       // Copy default value into the field if available.
@@ -658,7 +663,7 @@ void FormStructure::GetFieldTypePredictions(
       annotated_field.server_type =
           AutofillType::FieldTypeToString((*field)->server_type());
       annotated_field.overall_type =
-          AutofillType::FieldTypeToString((*field)->type());
+          AutofillType::FieldTypeToString((*field)->Type().server_type());
       form.fields.push_back(annotated_field);
     }
 
@@ -806,7 +811,7 @@ void FormStructure::LogQualityMetrics(
 
     // No further logging for empty fields nor for fields where the entered data
     // does not appear to already exist in the user's stored Autofill data.
-    const FieldTypeSet& field_types = field->possible_types();
+    const ServerFieldTypeSet& field_types = field->possible_types();
     DCHECK(!field_types.empty());
     if (field_types.count(EMPTY_TYPE) || field_types.count(UNKNOWN_TYPE))
       continue;
@@ -819,8 +824,8 @@ void FormStructure::LogQualityMetrics(
 
     // Collapse field types that Chrome treats as identical, e.g. home and
     // billing address fields.
-    FieldTypeSet collapsed_field_types;
-    for (FieldTypeSet::const_iterator it = field_types.begin();
+    ServerFieldTypeSet collapsed_field_types;
+    for (ServerFieldTypeSet::const_iterator it = field_types.begin();
          it != field_types.end();
          ++it) {
       // Since we currently only support US phone numbers, the (city code + main
@@ -834,13 +839,13 @@ void FormStructure::LogQualityMetrics(
     }
 
     // Capture the field's type, if it is unambiguous.
-    AutofillFieldType field_type = UNKNOWN_TYPE;
+    ServerFieldType field_type = UNKNOWN_TYPE;
     if (collapsed_field_types.size() == 1)
       field_type = *collapsed_field_types.begin();
 
-    AutofillFieldType heuristic_type = field->heuristic_type();
-    AutofillFieldType server_type = field->server_type();
-    AutofillFieldType predicted_type = field->type();
+    ServerFieldType heuristic_type = field->heuristic_type();
+    ServerFieldType server_type = field->server_type();
+    ServerFieldType predicted_type = field->Type().server_type();
 
     // Log heuristic, server, and overall type quality metrics, independently of
     // whether the field was autofilled.
@@ -1127,7 +1132,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
     DCHECK(!tokens.empty());
     std::string field_type_token = tokens.back();
     tokens.pop_back();
-    AutofillFieldType field_type =
+    ServerFieldType field_type =
         FieldTypeFromAutocompleteType(field_type_token, *field);
     if (field_type == UNKNOWN_TYPE)
       continue;
@@ -1205,13 +1210,13 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
     base::string16 current_section = fields_.front()->unique_name();
 
     // Keep track of the types we've seen in this section.
-    std::set<AutofillFieldType> seen_types;
-    AutofillFieldType previous_type = UNKNOWN_TYPE;
+    std::set<ServerFieldType> seen_types;
+    ServerFieldType previous_type = UNKNOWN_TYPE;
 
     for (std::vector<AutofillField*>::iterator field = fields_.begin();
          field != fields_.end(); ++field) {
-      const AutofillFieldType current_type =
-          AutofillType::GetEquivalentFieldType((*field)->type());
+      const ServerFieldType current_type =
+          AutofillType::GetEquivalentFieldType((*field)->Type().server_type());
 
       bool already_saw_current_type = seen_types.count(current_type) > 0;
 
@@ -1250,7 +1255,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
   // This simplifies the section-aware logic in autofill_manager.cc.
   for (std::vector<AutofillField*>::iterator field = fields_.begin();
        field != fields_.end(); ++field) {
-    FieldTypeGroup field_type_group = AutofillType((*field)->type()).group();
+    FieldTypeGroup field_type_group = (*field)->Type().group();
     if (field_type_group == CREDIT_CARD)
       (*field)->set_section((*field)->section() + "-cc");
     else

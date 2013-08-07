@@ -13,7 +13,6 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/field_types.h"
 
 namespace {
 
@@ -44,16 +43,7 @@ Address& Address::operator=(const Address& address) {
   return *this;
 }
 
-void Address::GetSupportedTypes(FieldTypeSet* supported_types) const {
-  supported_types->insert(ADDRESS_HOME_LINE1);
-  supported_types->insert(ADDRESS_HOME_LINE2);
-  supported_types->insert(ADDRESS_HOME_CITY);
-  supported_types->insert(ADDRESS_HOME_STATE);
-  supported_types->insert(ADDRESS_HOME_ZIP);
-  supported_types->insert(ADDRESS_HOME_COUNTRY);
-}
-
-base::string16 Address::GetRawInfo(AutofillFieldType type) const {
+base::string16 Address::GetRawInfo(ServerFieldType type) const {
   type = AutofillType::GetEquivalentFieldType(type);
   if (type == ADDRESS_HOME_LINE1)
     return line1_;
@@ -76,7 +66,7 @@ base::string16 Address::GetRawInfo(AutofillFieldType type) const {
   return base::string16();
 }
 
-void Address::SetRawInfo(AutofillFieldType type, const base::string16& value) {
+void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
   type = AutofillType::GetEquivalentFieldType(type);
   if (type == ADDRESS_HOME_LINE1) {
     line1_ = value;
@@ -96,38 +86,49 @@ void Address::SetRawInfo(AutofillFieldType type, const base::string16& value) {
   }
 }
 
-base::string16 Address::GetInfo(AutofillFieldType type,
+base::string16 Address::GetInfo(const AutofillType& type,
                                 const std::string& app_locale) const {
-  type = AutofillType::GetEquivalentFieldType(type);
-  if (type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
+  ServerFieldType server_type =
+      AutofillType::GetEquivalentFieldType(type.server_type());
+  if (server_type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
     return AutofillCountry(UTF16ToASCII(country_code_), app_locale).name();
 
-  return GetRawInfo(type);
+  return GetRawInfo(server_type);
 }
 
-bool Address::SetInfo(AutofillFieldType type,
+bool Address::SetInfo(const AutofillType& type,
                       const base::string16& value,
                       const std::string& app_locale) {
-  type = AutofillType::GetEquivalentFieldType(type);
-  if (type == ADDRESS_HOME_COUNTRY && !value.empty()) {
+  ServerFieldType server_type =
+      AutofillType::GetEquivalentFieldType(type.server_type());
+  if (server_type == ADDRESS_HOME_COUNTRY && !value.empty()) {
     country_code_ =
         ASCIIToUTF16(AutofillCountry::GetCountryCode(value, app_locale));
     return !country_code_.empty();
   }
 
-  SetRawInfo(type, value);
+  SetRawInfo(server_type, value);
   return true;
 }
 
 void Address::GetMatchingTypes(const base::string16& text,
                                const std::string& app_locale,
-                               FieldTypeSet* matching_types) const {
+                               ServerFieldTypeSet* matching_types) const {
   FormGroup::GetMatchingTypes(text, app_locale, matching_types);
 
   // Check to see if the |text| canonicalized as a country name is a match.
   std::string country_code = AutofillCountry::GetCountryCode(text, app_locale);
   if (!country_code.empty() && country_code_ == ASCIIToUTF16(country_code))
     matching_types->insert(ADDRESS_HOME_COUNTRY);
+}
+
+void Address::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
+  supported_types->insert(ADDRESS_HOME_LINE1);
+  supported_types->insert(ADDRESS_HOME_LINE2);
+  supported_types->insert(ADDRESS_HOME_CITY);
+  supported_types->insert(ADDRESS_HOME_STATE);
+  supported_types->insert(ADDRESS_HOME_ZIP);
+  supported_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
 }  // namespace autofill

@@ -122,7 +122,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   virtual string16 InputValidityMessage(
       DialogSection section,
-      AutofillFieldType type,
+      ServerFieldType type,
       const string16& value) OVERRIDE {
     if (!use_validation_)
       return string16();
@@ -497,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   // All inputs should be filled.
   AutofillProfileWrapper wrapper(&full_profile, 0);
   for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_EQ(wrapper.GetInfo(inputs[i].type),
+    EXPECT_EQ(wrapper.GetInfo(AutofillType(inputs[i].type)),
               view->GetTextContentsOfInput(inputs[i]));
   }
 
@@ -509,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
     // Empty inputs should be filled, others should be left alone.
     string16 expectation =
         &inputs[i] == &triggering_input || users_input.empty() ?
-        wrapper.GetInfo(inputs[i].type) :
+        wrapper.GetInfo(AutofillType(inputs[i].type)) :
         users_input;
     expectations.push_back(expectation);
   }
@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // All inputs should be filled.
   AutofillCreditCardWrapper wrapper1(&card1);
   for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_EQ(wrapper1.GetInfo(inputs[i].type),
+    EXPECT_EQ(wrapper1.GetInfo(AutofillType(inputs[i].type)),
               view->GetTextContentsOfInput(inputs[i]));
   }
 
@@ -609,12 +609,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
     if (&input == &triggering_input ||
         input.type == CREDIT_CARD_EXP_MONTH ||
         input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
-      EXPECT_EQ(wrapper2.GetInfo(input.type),
+      EXPECT_EQ(wrapper2.GetInfo(AutofillType(input.type)),
                 view->GetTextContentsOfInput(input));
     } else if (input.type == CREDIT_CARD_VERIFICATION_CODE) {
       EXPECT_TRUE(view->GetTextContentsOfInput(input).empty());
     } else {
-      EXPECT_EQ(wrapper1.GetInfo(input.type),
+      EXPECT_EQ(wrapper1.GetInfo(AutofillType(input.type)),
                 view->GetTextContentsOfInput(input));
     }
   }
@@ -636,12 +636,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
     if (&input == &triggering_input ||
         input.type == CREDIT_CARD_EXP_MONTH ||
         input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
-      EXPECT_EQ(wrapper2.GetInfo(input.type),
+      EXPECT_EQ(wrapper2.GetInfo(AutofillType(input.type)),
                 view->GetTextContentsOfInput(input));
     } else if (input.type == CREDIT_CARD_VERIFICATION_CODE) {
       EXPECT_TRUE(view->GetTextContentsOfInput(input).empty());
     } else {
-      EXPECT_EQ(wrapper1.GetInfo(input.type),
+      EXPECT_EQ(wrapper1.GetInfo(AutofillType(input.type)),
                 view->GetTextContentsOfInput(input));
     }
   }

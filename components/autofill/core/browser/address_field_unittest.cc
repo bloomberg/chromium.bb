@@ -21,7 +21,7 @@ class AddressFieldTest : public testing::Test {
  protected:
   ScopedVector<const AutofillField> list_;
   scoped_ptr<AddressField> field_;
-  FieldTypeMap field_type_map_;
+  ServerFieldTypeMap field_type_map_;
 
   // Downcast for tests.
   static AddressField* Parse(AutofillScanner* scanner) {

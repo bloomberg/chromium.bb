@@ -112,22 +112,22 @@ bool IsWalletSupportedCard(const std::string& card_type) {
 
 // Returns true if |input| should be shown when |field_type| has been requested.
 bool InputTypeMatchesFieldType(const DetailInput& input,
-                               AutofillFieldType field_type) {
+                               const AutofillType& field_type) {
   // If any credit card expiration info is asked for, show both month and year
   // inputs.
-  if (field_type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
-      field_type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
-      field_type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR ||
-      field_type == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
-      field_type == CREDIT_CARD_EXP_MONTH) {
+  if (field_type.server_type() == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
+      field_type.server_type() == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
+      field_type.server_type() == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR ||
+      field_type.server_type() == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
+      field_type.server_type() == CREDIT_CARD_EXP_MONTH) {
     return input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
            input.type == CREDIT_CARD_EXP_MONTH;
   }
 
-  if (field_type == CREDIT_CARD_TYPE)
+  if (field_type.server_type() == CREDIT_CARD_TYPE)
     return input.type == CREDIT_CARD_NUMBER;
 
-  return input.type == field_type;
+  return input.type == field_type.server_type();
 }
 
 // Returns true if |input| in the given |section| should be used for a
@@ -135,16 +135,18 @@ bool InputTypeMatchesFieldType(const DetailInput& input,
 bool DetailInputMatchesField(DialogSection section,
                              const DetailInput& input,
                              const AutofillField& field) {
+  AutofillType field_type = field.Type();
+
   // The credit card name is filled from the billing section's data.
-  if (field.type() == CREDIT_CARD_NAME &&
+  if (field_type.server_type() == CREDIT_CARD_NAME &&
       (section == SECTION_BILLING || section == SECTION_CC_BILLING)) {
     return input.type == NAME_BILLING_FULL;
   }
 
-  return InputTypeMatchesFieldType(input, field.type());
+  return InputTypeMatchesFieldType(input, field_type);
 }
 
-bool IsCreditCardType(AutofillFieldType type) {
+bool IsCreditCardType(ServerFieldType type) {
   return AutofillType(type).group() == CREDIT_CARD;
 }
 
@@ -155,10 +157,10 @@ bool DetailInputMatchesShippingField(const DetailInput& input,
                                      const AutofillField& field) {
   // Equivalent billing field type is used to support UseBillingAsShipping
   // usecase.
-  AutofillFieldType field_type =
-      AutofillType::GetEquivalentBillingFieldType(field.type());
+  ServerFieldType field_type =
+      AutofillType::GetEquivalentBillingFieldType(field.Type().server_type());
 
-  return InputTypeMatchesFieldType(input, field_type);
+  return InputTypeMatchesFieldType(input, AutofillType(field_type));
 }
 
 // Constructs |inputs| from template data.
@@ -176,14 +178,14 @@ void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
                               FormGroup* form_group) {
   for (DetailOutputMap::const_iterator iter = detail_outputs.begin();
        iter != detail_outputs.end(); ++iter) {
+    ServerFieldType type = iter->first->type;
     if (!iter->second.empty()) {
-      AutofillFieldType type = iter->first->type;
       if (type == ADDRESS_HOME_COUNTRY || type == ADDRESS_BILLING_COUNTRY) {
-        form_group->SetInfo(type,
+        form_group->SetInfo(AutofillType(type),
                             iter->second,
                             g_browser_process->GetApplicationLocale());
       } else {
-        form_group->SetRawInfo(iter->first->type, iter->second);
+        form_group->SetRawInfo(type, iter->second);
       }
     }
   }
@@ -208,7 +210,7 @@ void GetBillingInfoFromOutputs(const DetailOutputMap& output,
     } else if (it->first->type == ADDRESS_HOME_COUNTRY ||
                it->first->type == ADDRESS_BILLING_COUNTRY) {
       if (profile) {
-        profile->SetInfo(it->first->type,
+        profile->SetInfo(AutofillType(it->first->type),
                          trimmed,
                          g_browser_process->GetApplicationLocale());
       }
@@ -248,7 +250,7 @@ ui::BaseWindow* GetBaseWindowForWebContents(
 // Extracts the string value of a field with |type| from |output|. This is
 // useful when you only need the value of 1 input from a section of view inputs.
 string16 GetValueForType(const DetailOutputMap& output,
-                         AutofillFieldType type) {
+                         ServerFieldType type) {
   for (DetailOutputMap::const_iterator it = output.begin();
        it != output.end(); ++it) {
     if (it->first->type == type)
@@ -314,12 +316,11 @@ bool HasCompleteAndVerifiedData(const AutofillDataModel& data_model,
   if (!data_model.IsVerified())
     return false;
 
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
   for (size_t i = 0; i < requested_fields.size(); ++i) {
-    AutofillFieldType type = requested_fields[i].type;
+    ServerFieldType type = requested_fields[i].type;
     if (type != ADDRESS_HOME_LINE2 &&
         type != CREDIT_CARD_VERIFICATION_CODE &&
-        data_model.GetInfo(type, app_locale).empty()) {
+        data_model.GetRawInfo(type).empty()) {
       return false;
     }
   }
@@ -849,7 +850,8 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
 
   // First-run, post-submit, Wallet expository page.
   if (full_wallet_ && full_wallet_->required_actions().empty()) {
-    string16 cc_number = full_wallet_->GetInfo(CREDIT_CARD_NUMBER);
+    string16 cc_number =
+        full_wallet_->GetInfo(AutofillType(CREDIT_CARD_NUMBER));
     DCHECK_EQ(16U, cc_number.size());
     state.image = GetGeneratedCardImage(
         ASCIIToUTF16("xxxx xxxx xxxx ") +
@@ -1197,7 +1199,7 @@ const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
 }
 
 ui::ComboboxModel* AutofillDialogControllerImpl::ComboboxModelForAutofillType(
-    AutofillFieldType type) {
+    ServerFieldType type) {
   switch (AutofillType::GetEquivalentFieldType(type)) {
     case CREDIT_CARD_EXP_MONTH:
       return &cc_exp_month_combobox_model_;
@@ -1504,7 +1506,7 @@ void AutofillDialogControllerImpl::EditCancelledForSection(
 }
 
 gfx::Image AutofillDialogControllerImpl::IconForField(
-    AutofillFieldType type, const string16& user_input) const {
+    ServerFieldType type, const string16& user_input) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (type == CREDIT_CARD_VERIFICATION_CODE)
     return rb.GetImageNamed(IDR_CREDIT_CARD_CVC_HINT);
@@ -1556,7 +1558,7 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
 // translateable ones. TODO(groby): Also add tests.
 string16 AutofillDialogControllerImpl::InputValidityMessage(
     DialogSection section,
-    AutofillFieldType type,
+    ServerFieldType type,
     const string16& value) {
   // If the field is edited, clear any Wallet errors.
   if (IsPayingWithWallet()) {
@@ -1656,14 +1658,14 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
     const DetailOutputMap& inputs,
     ValidationType validation_type) {
   ValidityData invalid_messages;
-  std::map<AutofillFieldType, string16> field_values;
+  std::map<ServerFieldType, string16> field_values;
   for (DetailOutputMap::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
     // Skip empty fields in edit mode.
     if (validation_type == VALIDATE_EDIT && iter->second.empty())
       continue;
 
-    const AutofillFieldType type = iter->first->type;
+    const ServerFieldType type = iter->first->type;
     string16 message = InputValidityMessage(section, type, iter->second);
     if (!message.empty())
       invalid_messages[type] = message;
@@ -1749,20 +1751,20 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
 
   std::vector<string16> popup_values, popup_labels, popup_icons;
   if (IsCreditCardType(input->type)) {
-    GetManager()->GetCreditCardSuggestions(input->type,
+    GetManager()->GetCreditCardSuggestions(AutofillType(input->type),
                                            field_contents,
                                            &popup_values,
                                            &popup_labels,
                                            &popup_icons,
                                            &popup_guids_);
   } else {
-    std::vector<AutofillFieldType> field_types;
+    std::vector<ServerFieldType> field_types;
     field_types.push_back(EMAIL_ADDRESS);
     for (DetailInputs::const_iterator iter = requested_shipping_fields_.begin();
          iter != requested_shipping_fields_.end(); ++iter) {
       field_types.push_back(iter->type);
     }
-    GetManager()->GetProfileSuggestions(input->type,
+    GetManager()->GetProfileSuggestions(AutofillType(input->type),
                                         field_contents,
                                         false,
                                         field_types,
@@ -2324,7 +2326,7 @@ bool AutofillDialogControllerImpl::RequestingCreditCardInfo() const {
   DCHECK_GT(form_structure_.field_count(), 0U);
 
   for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-    if (IsCreditCardType(form_structure_.field(i)->type()))
+    if (IsCreditCardType(form_structure_.field(i)->Type().server_type()))
       return true;
   }
 
@@ -2602,7 +2604,8 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 
       // Add all email addresses.
       std::vector<string16> values;
-      profiles[i]->GetMultiInfo(EMAIL_ADDRESS, app_locale, &values);
+      profiles[i]->GetMultiInfo(
+          AutofillType(EMAIL_ADDRESS), app_locale, &values);
       for (size_t j = 0; j < values.size(); ++j) {
         if (IsValidEmailAddress(values[j]))
           suggested_email_.AddKeyedItem(profiles[i]->guid(), values[j]);
@@ -2783,7 +2786,7 @@ bool AutofillDialogControllerImpl::FormStructureCaresAboutSection(
 void AutofillDialogControllerImpl::SetCvcResult(const string16& cvc) {
   for (size_t i = 0; i < form_structure_.field_count(); ++i) {
     AutofillField* field = form_structure_.field(i);
-    if (field->type() == CREDIT_CARD_VERIFICATION_CODE) {
+    if (field->Type().server_type() == CREDIT_CARD_VERIFICATION_CODE) {
       field->value = cvc;
       break;
     }
@@ -2792,12 +2795,12 @@ void AutofillDialogControllerImpl::SetCvcResult(const string16& cvc) {
 
 string16 AutofillDialogControllerImpl::GetValueFromSection(
     DialogSection section,
-    AutofillFieldType type) {
+    ServerFieldType type) {
   DCHECK(SectionIsActive(section));
 
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   if (wrapper)
-    return wrapper->GetInfo(type);
+    return wrapper->GetInfo(AutofillType(type));
 
   DetailOutputMap output;
   view_->GetUserInput(section, &output);
@@ -2974,7 +2977,9 @@ bool AutofillDialogControllerImpl::IsCreditCardExpirationValid(
     if (base::StringToInt(month, &month_int) &&
         instrument->status() ==
             wallet::WalletItems::MaskedInstrument::EXPIRED &&
-        year == instrument->GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, locale) &&
+        year ==
+            instrument->GetInfo(
+                AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), locale) &&
         month_int == instrument->expiration_month()) {
       // Otherwise, if the user is editing an instrument that's deemed expired
       // by the Online Wallet server, mark it invalid on selection.

@@ -51,15 +51,15 @@ class MockAutofillMetrics : public AutofillMetrics {
                      void(DeveloperEngagementMetric metric));
   MOCK_CONST_METHOD3(LogHeuristicTypePrediction,
                      void(FieldTypeQualityMetric metric,
-                          AutofillFieldType field_type,
+                          ServerFieldType field_type,
                           const std::string& experiment_id));
   MOCK_CONST_METHOD3(LogOverallTypePrediction,
                      void(FieldTypeQualityMetric metric,
-                          AutofillFieldType field_type,
+                          ServerFieldType field_type,
                           const std::string& experiment_id));
   MOCK_CONST_METHOD3(LogServerTypePrediction,
                      void(FieldTypeQualityMetric metric,
-                          AutofillFieldType field_type,
+                          ServerFieldType field_type,
                           const std::string& experiment_id));
   MOCK_CONST_METHOD2(LogQualityMetric, void(QualityMetric metric,
                                             const std::string& experiment_id));
@@ -158,8 +158,8 @@ class TestFormStructure : public FormStructure {
       : FormStructure(form, std::string()) {}
   virtual ~TestFormStructure() {}
 
-  void SetFieldTypes(const std::vector<AutofillFieldType>& heuristic_types,
-                     const std::vector<AutofillFieldType>& server_types) {
+  void SetFieldTypes(const std::vector<ServerFieldType>& heuristic_types,
+                     const std::vector<ServerFieldType>& server_types) {
     ASSERT_EQ(field_count(), heuristic_types.size());
     ASSERT_EQ(field_count(), server_types.size());
 
@@ -212,8 +212,8 @@ class TestAutofillManager : public AutofillManager {
   }
 
   void AddSeenForm(const FormData& form,
-                   const std::vector<AutofillFieldType>& heuristic_types,
-                   const std::vector<AutofillFieldType>& server_types,
+                   const std::vector<ServerFieldType>& heuristic_types,
+                   const std::vector<ServerFieldType>& server_types,
                    const std::string& experiment_id) {
     FormData empty_form = form;
     for (size_t i = 0; i < empty_form.fields.size(); ++i) {
@@ -339,7 +339,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
 
-  std::vector<AutofillFieldType> heuristic_types, server_types;
+  std::vector<ServerFieldType> heuristic_types, server_types;
   FormFieldData field;
 
   test::CreateTestFormField(
@@ -488,8 +488,8 @@ TEST_F(AutofillMetricsTest, QualityMetricsForFailure) {
     const char* label;
     const char* name;
     const char* value;
-    AutofillFieldType heuristic_type;
-    AutofillFieldType server_type;
+    ServerFieldType heuristic_type;
+    ServerFieldType server_type;
     AutofillMetrics::QualityMetric heuristic_metric;
     AutofillMetrics::QualityMetric server_metric;
   } failure_cases[] = {
@@ -549,7 +549,7 @@ TEST_F(AutofillMetricsTest, QualityMetricsForFailure) {
     }
   };
 
-  std::vector<AutofillFieldType> heuristic_types, server_types;
+  std::vector<ServerFieldType> heuristic_types, server_types;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(failure_cases); ++i) {
     FormFieldData field;
     test::CreateTestFormField(failure_cases[i].label,
@@ -602,7 +602,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
 
-  std::vector<AutofillFieldType> heuristic_types, server_types;
+  std::vector<ServerFieldType> heuristic_types, server_types;
 
   FormFieldData field;
   test::CreateTestFormField(
@@ -878,7 +878,7 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
 
-  std::vector<AutofillFieldType> heuristic_types, server_types;
+  std::vector<ServerFieldType> heuristic_types, server_types;
   FormFieldData field;
 
   test::CreateTestFormField(
@@ -1031,7 +1031,7 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
   form.user_submitted = true;
 
   FormFieldData field;
-  std::vector<AutofillFieldType> field_types;
+  std::vector<ServerFieldType> field_types;
   test::CreateTestFormField("Name", "name", "", "text", &field);
   form.fields.push_back(field);
   field_types.push_back(NAME_FULL);

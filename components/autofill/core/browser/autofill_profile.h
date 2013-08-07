@@ -18,7 +18,6 @@
 #include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/contact_info.h"
-#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/phone_number.h"
 
 namespace autofill {
@@ -41,15 +40,16 @@ class AutofillProfile : public AutofillDataModel {
   AutofillProfile& operator=(const AutofillProfile& profile);
 
   // FormGroup:
-  virtual void GetMatchingTypes(const base::string16& text,
-                                const std::string& app_locale,
-                                FieldTypeSet* matching_types) const OVERRIDE;
-  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
-  virtual void SetRawInfo(AutofillFieldType type,
+  virtual void GetMatchingTypes(
+      const base::string16& text,
+      const std::string& app_locale,
+      ServerFieldTypeSet* matching_types) const OVERRIDE;
+  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
+  virtual void SetRawInfo(ServerFieldType type,
                           const base::string16& value) OVERRIDE;
-  virtual base::string16 GetInfo(AutofillFieldType type,
-                           const std::string& app_locale) const OVERRIDE;
-  virtual bool SetInfo(AutofillFieldType type,
+  virtual base::string16 GetInfo(const AutofillType& type,
+                                 const std::string& app_locale) const OVERRIDE;
+  virtual bool SetInfo(const AutofillType& type,
                        const base::string16& value,
                        const std::string& app_locale) OVERRIDE;
 
@@ -60,11 +60,11 @@ class AutofillProfile : public AutofillDataModel {
                              FormFieldData* field_data) const OVERRIDE;
 
   // Multi-value equivalents to |GetInfo| and |SetInfo|.
-  void SetRawMultiInfo(AutofillFieldType type,
+  void SetRawMultiInfo(ServerFieldType type,
                        const std::vector<base::string16>& values);
-  void GetRawMultiInfo(AutofillFieldType type,
+  void GetRawMultiInfo(ServerFieldType type,
                        std::vector<base::string16>* values) const;
-  void GetMultiInfo(AutofillFieldType type,
+  void GetMultiInfo(const AutofillType& type,
                     const std::string& app_locale,
                     std::vector<base::string16>* values) const;
 
@@ -87,7 +87,7 @@ class AutofillProfile : public AutofillDataModel {
 
   // Returns true if the |type| of data in this profile is present, but invalid.
   // Otherwise returns false.
-  bool IsPresentButInvalid(AutofillFieldType type) const;
+  bool IsPresentButInvalid(ServerFieldType type) const;
 
   // Comparison for Sync.  Returns 0 if the profile is the same as |this|,
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
@@ -119,7 +119,7 @@ class AutofillProfile : public AutofillDataModel {
                             const std::string& app_locale);
 
   // Returns |true| if |type| accepts multi-values.
-  static bool SupportsMultiValue(AutofillFieldType type);
+  static bool SupportsMultiValue(ServerFieldType type);
 
   // Adjusts the labels according to profile data.
   // Labels contain minimal different combination of:
@@ -144,8 +144,8 @@ class AutofillProfile : public AutofillDataModel {
   // least |minimal_fields_shown| fields, if possible.
   static void CreateInferredLabels(
       const std::vector<AutofillProfile*>* profiles,
-      const std::vector<AutofillFieldType>* suggested_fields,
-      AutofillFieldType excluded_field,
+      const std::vector<ServerFieldType>* suggested_fields,
+      ServerFieldType excluded_field,
       size_t minimal_fields_shown,
       std::vector<base::string16>* created_labels);
 
@@ -155,12 +155,13 @@ class AutofillProfile : public AutofillDataModel {
   // FormGroup:
   virtual bool FillCountrySelectControl(const std::string& app_locale,
                                         FormFieldData* field) const OVERRIDE;
-  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
+  virtual void GetSupportedTypes(
+      ServerFieldTypeSet* supported_types) const OVERRIDE;
 
   // Shared implementation for GetRawMultiInfo() and GetMultiInfo().  Pass an
   // empty |app_locale| to get the raw info; otherwise, the returned info is
   // canonicalized according to the given |app_locale|, if appropriate.
-  void GetMultiInfoImpl(AutofillFieldType type,
+  void GetMultiInfoImpl(const AutofillType& type,
                         const std::string& app_locale,
                         std::vector<base::string16>* values) const;
 
@@ -176,7 +177,7 @@ class AutofillProfile : public AutofillDataModel {
   // fields in |label_fields|. Uses as many fields as possible if there are not
   // enough non-empty fields.
   base::string16 ConstructInferredLabel(
-      const std::vector<AutofillFieldType>& label_fields,
+      const std::vector<ServerFieldType>& label_fields,
       size_t num_fields_to_include) const;
 
   // Creates inferred labels for |profiles| at indices corresponding to
@@ -187,15 +188,15 @@ class AutofillProfile : public AutofillDataModel {
   static void CreateDifferentiatingLabels(
       const std::vector<AutofillProfile*>& profiles,
       const std::list<size_t>& indices,
-      const std::vector<AutofillFieldType>& fields,
+      const std::vector<ServerFieldType>& fields,
       size_t num_fields_to_include,
       std::vector<base::string16>* created_labels);
 
   // Utilities for listing and lookup of the data members that constitute
   // user-visible profile information.
   FormGroupList FormGroups() const;
-  const FormGroup* FormGroupForType(AutofillFieldType type) const;
-  FormGroup* MutableFormGroupForType(AutofillFieldType type);
+  const FormGroup* FormGroupForType(const AutofillType& type) const;
+  FormGroup* MutableFormGroupForType(const AutofillType& type);
 
   // The label presented to the user when selecting a profile.
   base::string16 label_;

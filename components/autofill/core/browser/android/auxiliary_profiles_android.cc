@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/android/auxiliary_profile_loader_android.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/phone_number.h"
 
 // Generates the autofill profile by accessing the Android
@@ -93,7 +94,7 @@ void AuxiliaryProfilesAndroid::LoadAddress(AutofillProfile* profile) {
   profile->SetRawInfo(ADDRESS_HOME_CITY, city);
   profile->SetRawInfo(ADDRESS_HOME_STATE, region);
   profile->SetRawInfo(ADDRESS_HOME_ZIP, postal_code);
-  profile->SetInfo(ADDRESS_HOME_COUNTRY, country, app_locale_);
+  profile->SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), country, app_locale_);
 }
 
 void AuxiliaryProfilesAndroid::LoadName(AutofillProfile* profile) {

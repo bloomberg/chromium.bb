@@ -20,6 +20,9 @@ class DictionaryValue;
 }
 
 namespace autofill {
+
+class AutofillType;
+
 namespace wallet {
 
 class FullWalletTest;
@@ -39,7 +42,7 @@ class FullWallet {
       CreateFullWallet(const base::DictionaryValue& dictionary);
 
   // Returns corresponding data for |type|.
-  base::string16 GetInfo(AutofillFieldType type);
+  base::string16 GetInfo(const AutofillType& type);
 
   // Whether or not |action| is in |required_actions_|.
   bool HasRequiredAction(RequiredAction action) const;

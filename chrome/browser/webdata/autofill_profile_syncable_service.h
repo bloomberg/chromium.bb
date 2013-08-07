@@ -14,7 +14,7 @@
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
-#include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
@@ -162,12 +162,12 @@ class AutofillProfileSyncableService
 
   // Helper to compare the local value and cloud value of a field, copy into
   // the local value if they differ, and return whether the change happened.
-  static bool UpdateField(autofill::AutofillFieldType field_type,
+  static bool UpdateField(autofill::ServerFieldType field_type,
                           const std::string& new_value,
                           autofill::AutofillProfile* autofill_profile);
   // The same as |UpdateField|, but for multi-valued fields.
   static bool UpdateMultivaluedField(
-      autofill::AutofillFieldType field_type,
+      autofill::ServerFieldType field_type,
       const ::google::protobuf::RepeatedPtrField<std::string>& new_value,
       autofill::AutofillProfile* autofill_profile);
 

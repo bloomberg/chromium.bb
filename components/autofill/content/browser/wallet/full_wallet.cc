@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 
 namespace {
@@ -126,8 +127,8 @@ scoped_ptr<FullWallet>
                                                required_actions));
 }
 
-base::string16 FullWallet::GetInfo(AutofillFieldType type) {
-  switch (type) {
+base::string16 FullWallet::GetInfo(const AutofillType& type) {
+  switch (type.server_type()) {
     case CREDIT_CARD_NUMBER:
       return UTF8ToUTF16(GetPan());
 
@@ -188,7 +189,8 @@ bool FullWallet::HasRequiredAction(RequiredAction action) const {
 
 base::string16 FullWallet::TypeAndLastFourDigits() {
   CreditCard card;
-  card.SetRawInfo(CREDIT_CARD_NUMBER, GetInfo(CREDIT_CARD_NUMBER));
+  card.SetRawInfo(CREDIT_CARD_NUMBER,
+                  GetInfo(AutofillType(CREDIT_CARD_NUMBER)));
   return card.TypeAndLastFourDigits();
 }
 

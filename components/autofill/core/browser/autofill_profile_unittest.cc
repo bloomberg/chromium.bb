@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_common_test.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/component_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -344,7 +345,7 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore., Dis"),
             labels[1]);
 
-  std::vector<AutofillFieldType> suggested_fields;
+  std::vector<ServerFieldType> suggested_fields;
   suggested_fields.push_back(ADDRESS_HOME_CITY);
   suggested_fields.push_back(ADDRESS_HOME_STATE);
   suggested_fields.push_back(ADDRESS_HOME_ZIP);
@@ -422,7 +423,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsFallsBackToFullName) {
 
   // If the only name field in the suggested fields is the excluded field, we
   // should not fall back to the full name as a distinguishing field.
-  std::vector<AutofillFieldType> suggested_fields;
+  std::vector<ServerFieldType> suggested_fields;
   suggested_fields.push_back(NAME_LAST);
   suggested_fields.push_back(ADDRESS_HOME_LINE1);
   suggested_fields.push_back(EMAIL_ADDRESS);
@@ -458,7 +459,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsNoDuplicatedFields) {
 
   // If the only name field in the suggested fields is the excluded field, we
   // should not fall back to the full name as a distinguishing field.
-  std::vector<AutofillFieldType> suggested_fields;
+  std::vector<ServerFieldType> suggested_fields;
   suggested_fields.push_back(ADDRESS_HOME_LINE1);
   suggested_fields.push_back(ADDRESS_BILLING_LINE1);
   suggested_fields.push_back(EMAIL_ADDRESS);
@@ -787,7 +788,8 @@ TEST(AutofillProfileTest, AddressCountryFull) {
 
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
-  profile.FillSelectControl(ADDRESS_HOME_COUNTRY, "en-US", &field);
+  profile.FillSelectControl(
+      AutofillType(ADDRESS_HOME_COUNTRY), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("Canada"), field.value);
 }
 
@@ -807,7 +809,8 @@ TEST(AutofillProfileTest, AddressCountryAbbrev) {
 
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
-  profile.FillSelectControl(ADDRESS_HOME_COUNTRY, "en-US", &field);
+  profile.FillSelectControl(
+      AutofillType(ADDRESS_HOME_COUNTRY), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }
 
@@ -827,7 +830,7 @@ TEST(AutofillProfileTest, AddressStateFull) {
 
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
-  profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
+  profile.FillSelectControl(AutofillType(ADDRESS_HOME_STATE), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
 }
 
@@ -847,7 +850,7 @@ TEST(AutofillProfileTest, AddressStateAbbrev) {
 
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
-  profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
+  profile.FillSelectControl(AutofillType(ADDRESS_HOME_STATE), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }
 
@@ -869,7 +872,7 @@ TEST(AutofillProfileTest, FillByValue) {
 
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
-  profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
+  profile.FillSelectControl(AutofillType(ADDRESS_HOME_STATE), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
 }
 
@@ -891,7 +894,7 @@ TEST(AutofillProfileTest, FillByContents) {
 
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
-  profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
+  profile.FillSelectControl(AutofillType(ADDRESS_HOME_STATE), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("2"), field.value);
 }
 

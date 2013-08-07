@@ -25,7 +25,7 @@ FormField* EmailField::Parse(AutofillScanner* scanner) {
 EmailField::EmailField(const AutofillField* field) : field_(field) {
 }
 
-bool EmailField::ClassifyField(FieldTypeMap* map) const {
+bool EmailField::ClassifyField(ServerFieldTypeMap* map) const {
   return AddClassification(field_, EMAIL_ADDRESS, map);
 }
 

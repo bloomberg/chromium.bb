@@ -38,7 +38,7 @@ struct DetailInput {
   // kBillingInputs. If negative, don't show the input at all (leave it hidden
   // at all times).
   int row_id;
-  AutofillFieldType type;
+  ServerFieldType type;
   // Placeholder text resource ID.
   int placeholder_text_rid;
   // A number between 0 and 1.0 that describes how much of the horizontal space
@@ -234,7 +234,7 @@ enum ValidationType {
 typedef std::vector<DetailInput> DetailInputs;
 typedef std::map<const DetailInput*, string16> DetailOutputMap;
 
-typedef std::map<AutofillFieldType, string16> ValidityData;
+typedef std::map<ServerFieldType, string16> ValidityData;
 
 // Returns the AutofillMetrics::DIALOG_UI_*_EDIT_UI_SHOWN metric corresponding
 // to the |section|.

@@ -64,7 +64,7 @@ class FormStructure {
   void DetermineHeuristicTypes(const AutofillMetrics& metric_logger);
 
   // Encodes the XML upload request from this FormStructure.
-  bool EncodeUploadRequest(const FieldTypeSet& available_field_types,
+  bool EncodeUploadRequest(const ServerFieldTypeSet& available_field_types,
                            bool form_was_autofilled,
                            std::string* encoded_xml) const;
 
@@ -72,7 +72,7 @@ class FormStructure {
   // This XML will be written VLOG only, never be sent to server. It will
   // help make FieldAssignments and feed back to autofill server as
   // experiment data.
-  bool EncodeFieldAssignments(const FieldTypeSet& available_field_types,
+  bool EncodeFieldAssignments(const ServerFieldTypeSet& available_field_types,
                               std::string* encoded_xml) const;
 
   // Encodes the XML query request for the set of forms.

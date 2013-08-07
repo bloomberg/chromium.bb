@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/state_names.h"
 
 namespace autofill {
@@ -261,9 +262,9 @@ string16 Address::DisplayNameDetail() const {
 #endif
 }
 
-string16 Address::GetInfo(AutofillFieldType type,
+string16 Address::GetInfo(const AutofillType& type,
                           const std::string& app_locale) const {
-  switch (AutofillType::GetEquivalentFieldType(type)) {
+  switch (AutofillType::GetEquivalentFieldType(type.server_type())) {
     case NAME_FULL:
       return recipient_name();
 

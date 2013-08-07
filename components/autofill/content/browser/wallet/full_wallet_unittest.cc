@@ -11,6 +11,8 @@
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/required_action.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
+#include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -452,9 +454,9 @@ TEST_F(FullWalletTest, RestLengthCorrectDecryptionTest) {
   EXPECT_TRUE(base::HexStringToBytes("5F04A8704183", &one_time_pad));
   full_wallet.set_one_time_pad(one_time_pad);
   EXPECT_EQ(ASCIIToUTF16("5285121925598459"),
-            full_wallet.GetInfo(CREDIT_CARD_NUMBER));
+            full_wallet.GetInfo(AutofillType(CREDIT_CARD_NUMBER)));
   EXPECT_EQ(ASCIIToUTF16("989"),
-            full_wallet.GetInfo(CREDIT_CARD_VERIFICATION_CODE));
+            full_wallet.GetInfo(AutofillType(CREDIT_CARD_VERIFICATION_CODE)));
 }
 
 TEST_F(FullWalletTest, RestLengthUnderDecryptionTest) {
@@ -470,9 +472,9 @@ TEST_F(FullWalletTest, RestLengthUnderDecryptionTest) {
   EXPECT_TRUE(base::HexStringToBytes("063AD35324BF", &one_time_pad));
   full_wallet.set_one_time_pad(one_time_pad);
   EXPECT_EQ(ASCIIToUTF16("5285127106109719"),
-            full_wallet.GetInfo(CREDIT_CARD_NUMBER));
+            full_wallet.GetInfo(AutofillType(CREDIT_CARD_NUMBER)));
   EXPECT_EQ(ASCIIToUTF16("385"),
-            full_wallet.GetInfo(CREDIT_CARD_VERIFICATION_CODE));
+            full_wallet.GetInfo(AutofillType(CREDIT_CARD_VERIFICATION_CODE)));
 }
 
 TEST_F(FullWalletTest, GetCreditCardInfo) {
@@ -486,19 +488,21 @@ TEST_F(FullWalletTest, GetCreditCardInfo) {
                          required_actions);
 
   EXPECT_EQ(ASCIIToUTF16("15"),
-            full_wallet.GetInfo(CREDIT_CARD_EXP_2_DIGIT_YEAR));
+            full_wallet.GetInfo(AutofillType(CREDIT_CARD_EXP_2_DIGIT_YEAR)));
 
   EXPECT_EQ(ASCIIToUTF16("12/15"),
-            full_wallet.GetInfo(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR));
+            full_wallet.GetInfo(
+                AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR)));
 
   EXPECT_EQ(ASCIIToUTF16("12/2015"),
-            full_wallet.GetInfo(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR));
+            full_wallet.GetInfo(
+                AutofillType(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR)));
 
   std::vector<uint8> one_time_pad;
   EXPECT_TRUE(base::HexStringToBytes("075DA779F98B", &one_time_pad));
   full_wallet.set_one_time_pad(one_time_pad);
   EXPECT_EQ(ASCIIToUTF16("MasterCard"),
-            full_wallet.GetInfo(CREDIT_CARD_TYPE));
+            full_wallet.GetInfo(AutofillType(CREDIT_CARD_TYPE)));
 }
 
 }  // namespace wallet

@@ -23,7 +23,7 @@ class FullNameField : public NameField {
 
  protected:
   // FormField:
-  virtual bool ClassifyField(FieldTypeMap* map) const OVERRIDE;
+  virtual bool ClassifyField(ServerFieldTypeMap* map) const OVERRIDE;
 
  private:
   explicit FullNameField(const AutofillField* field);
@@ -42,7 +42,7 @@ class FirstLastNameField : public NameField {
 
  protected:
   // FormField:
-  virtual bool ClassifyField(FieldTypeMap* map) const OVERRIDE;
+  virtual bool ClassifyField(ServerFieldTypeMap* map) const OVERRIDE;
 
  private:
   FirstLastNameField();
@@ -69,7 +69,7 @@ FormField* NameField::Parse(AutofillScanner* scanner) {
 }
 
 // This is overriden in concrete subclasses.
-bool NameField::ClassifyField(FieldTypeMap* map) const {
+bool NameField::ClassifyField(ServerFieldTypeMap* map) const {
   return false;
 }
 
@@ -92,7 +92,7 @@ FullNameField* FullNameField::Parse(AutofillScanner* scanner) {
   return NULL;
 }
 
-bool FullNameField::ClassifyField(FieldTypeMap* map) const {
+bool FullNameField::ClassifyField(ServerFieldTypeMap* map) const {
   return AddClassification(field_, NAME_FULL, map);
 }
 
@@ -206,10 +206,10 @@ FirstLastNameField::FirstLastNameField()
       middle_initial_(false) {
 }
 
-bool FirstLastNameField::ClassifyField(FieldTypeMap* map) const {
+bool FirstLastNameField::ClassifyField(ServerFieldTypeMap* map) const {
   bool ok = AddClassification(first_name_, NAME_FIRST, map);
   ok = ok && AddClassification(last_name_, NAME_LAST, map);
-  AutofillFieldType type = middle_initial_ ? NAME_MIDDLE_INITIAL : NAME_MIDDLE;
+  ServerFieldType type = middle_initial_ ? NAME_MIDDLE_INITIAL : NAME_MIDDLE;
   ok = ok && AddClassification(middle_name_, type, map);
   return ok;
 }

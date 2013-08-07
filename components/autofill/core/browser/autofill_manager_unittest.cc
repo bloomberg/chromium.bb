@@ -494,7 +494,7 @@ class TestAutofillManager : public AutofillManager {
 
 
   void set_expected_submitted_field_types(
-      const std::vector<FieldTypeSet>& expected_types) {
+      const std::vector<ServerFieldTypeSet>& expected_types) {
     expected_submitted_field_types_ = expected_types;
   }
 
@@ -514,11 +514,11 @@ class TestAutofillManager : public AutofillManager {
             base::StringPrintf(
                 "Field %d with value %s", static_cast<int>(i),
                 UTF16ToUTF8(submitted_form->field(i)->value).c_str()));
-        const FieldTypeSet& possible_types =
+        const ServerFieldTypeSet& possible_types =
             submitted_form->field(i)->possible_types();
         EXPECT_EQ(expected_submitted_field_types_[i].size(),
                   possible_types.size());
-        for (FieldTypeSet::const_iterator it =
+        for (ServerFieldTypeSet::const_iterator it =
                  expected_submitted_field_types_[i].begin();
              it != expected_submitted_field_types_[i].end(); ++it) {
           EXPECT_TRUE(possible_types.count(*it))
@@ -638,7 +638,7 @@ class TestAutofillManager : public AutofillManager {
 
   std::string autocheckout_url_prefix_;
   std::string submitted_form_signature_;
-  std::vector<FieldTypeSet> expected_submitted_field_types_;
+  std::vector<ServerFieldTypeSet> expected_submitted_field_types_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
@@ -864,8 +864,8 @@ class TestFormStructure : public FormStructure {
       : FormStructure(form, std::string()) {}
   virtual ~TestFormStructure() {}
 
-  void SetFieldTypes(const std::vector<AutofillFieldType>& heuristic_types,
-                     const std::vector<AutofillFieldType>& server_types) {
+  void SetFieldTypes(const std::vector<ServerFieldType>& heuristic_types,
+                     const std::vector<ServerFieldType>& server_types) {
     ASSERT_EQ(field_count(), heuristic_types.size());
     ASSERT_EQ(field_count(), server_types.size());
 
@@ -2649,10 +2649,10 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
   form_structure->DetermineHeuristicTypes(metrics_logger);
 
   // Clear the heuristic types, and instead set the appropriate server types.
-  std::vector<AutofillFieldType> heuristic_types, server_types;
+  std::vector<ServerFieldType> heuristic_types, server_types;
   for (size_t i = 0; i < form.fields.size(); ++i) {
     heuristic_types.push_back(UNKNOWN_TYPE);
-    server_types.push_back(form_structure->field(i)->type());
+    server_types.push_back(form_structure->field(i)->Type().server_type());
   }
   form_structure->SetFieldTypes(heuristic_types, server_types);
   autofill_manager_->AddSeenForm(form_structure);
@@ -2770,11 +2770,11 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   form.action = GURL("http://myform.com/submit.html");
   form.user_submitted = true;
 
-  std::vector<FieldTypeSet> expected_types;
+  std::vector<ServerFieldTypeSet> expected_types;
 
   // These fields should all match.
   FormFieldData field;
-  FieldTypeSet types;
+  ServerFieldTypeSet types;
   test::CreateTestFormField("", "1", "Elvis", "text", &field);
   types.clear();
   types.insert(NAME_FIRST);
@@ -3163,10 +3163,10 @@ TEST_F(AutofillManagerTest, TestBubbleShown) {
   form_structure->DetermineHeuristicTypes(metrics_logger);
 
   // Build and add form structure with server data.
-  std::vector<AutofillFieldType> heuristic_types, server_types;
+  std::vector<ServerFieldType> heuristic_types, server_types;
   for (size_t i = 0; i < form.fields.size(); ++i) {
     heuristic_types.push_back(UNKNOWN_TYPE);
-    server_types.push_back(form_structure->field(i)->type());
+    server_types.push_back(form_structure->field(i)->Type().server_type());
   }
   form_structure->SetFieldTypes(heuristic_types, server_types);
   autofill_manager_->AddSeenForm(form_structure);
@@ -3193,9 +3193,9 @@ TEST_F(AutofillManagerTest, TestAutocheckoutBubbleNotShown) {
   form_structure->DetermineHeuristicTypes(metrics_logger);
 
   // Build form structure without server data.
-  std::vector<AutofillFieldType> heuristic_types, server_types;
+  std::vector<ServerFieldType> heuristic_types, server_types;
   for (size_t i = 0; i < form.fields.size(); ++i) {
-    heuristic_types.push_back(form_structure->field(i)->type());
+    heuristic_types.push_back(form_structure->field(i)->Type().server_type());
     server_types.push_back(NO_SERVER_DATA);
   }
   form_structure->SetFieldTypes(heuristic_types, server_types);
@@ -3237,10 +3237,10 @@ TEST_F(AutofillManagerTest, DynamicFormsSeenAndIgnored) {
 
   // Build and add form structure with server data.
   scoped_ptr<TestFormStructure> form_structure(new TestFormStructure(address));
-  std::vector<AutofillFieldType> heuristic_types, server_types;
+  std::vector<ServerFieldType> heuristic_types, server_types;
   for (size_t i = 0; i < address.fields.size(); ++i) {
     heuristic_types.push_back(UNKNOWN_TYPE);
-    server_types.push_back(form_structure->field(i)->type());
+    server_types.push_back(form_structure->field(i)->Type().server_type());
   }
   form_structure->SetFieldTypes(heuristic_types, server_types);
   autofill_manager_->AddSeenForm(form_structure.release());

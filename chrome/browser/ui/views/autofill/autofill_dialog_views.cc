@@ -2022,7 +2022,7 @@ void AutofillDialogViews::MarkInputsInvalid(DialogSection section,
   DetailsGroup* group = GroupForSection(section);
   DCHECK(group->container->visible());
 
-  typedef std::map<AutofillFieldType,
+  typedef std::map<ServerFieldType,
       base::Callback<void(const base::string16&)> > FieldMap;
   FieldMap field_map;
 
@@ -2139,8 +2139,8 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   DetailsGroup* group = GroupForView(textfield);
   DCHECK(group);
 
-  // Figure out the AutofillFieldType this textfield represents.
-  AutofillFieldType type = UNKNOWN_TYPE;
+  // Figure out the ServerFieldType this textfield represents.
+  ServerFieldType type = UNKNOWN_TYPE;
   DecoratedTextfield* decorated = NULL;
 
   // Look for the input in the manual inputs.

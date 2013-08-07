@@ -32,7 +32,7 @@
 #include "ui/webui/web_ui_util.h"
 
 using autofill::AutofillCountry;
-using autofill::AutofillFieldType;
+using autofill::ServerFieldType;
 using autofill::AutofillProfile;
 using autofill::CreditCard;
 using autofill::PersonalDataManager;
@@ -77,7 +77,7 @@ void SetCountryData(DictionaryValue* localized_strings) {
 
 // Get the multi-valued element for |type| and return it in |ListValue| form.
 void GetValueList(const AutofillProfile& profile,
-                  AutofillFieldType type,
+                  ServerFieldType type,
                   scoped_ptr<ListValue>* list) {
   list->reset(new ListValue);
 
@@ -95,7 +95,7 @@ void GetValueList(const AutofillProfile& profile,
 
 // Set the multi-valued element for |type| from input |list| values.
 void SetValueList(const ListValue* list,
-                  AutofillFieldType type,
+                  ServerFieldType type,
                   AutofillProfile* profile) {
   std::vector<string16> values(list->GetSize());
   for (size_t i = 0; i < list->GetSize(); ++i) {

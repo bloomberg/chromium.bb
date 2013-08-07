@@ -32,7 +32,7 @@ class AutofillDataModel : public FormGroup {
 
   // Fills in select control with data matching |type| from |this|.
   // Public for testing purposes.
-  void FillSelectControl(AutofillFieldType type,
+  void FillSelectControl(const AutofillType& type,
                          const std::string& app_locale,
                          FormFieldData* field_data) const;
 

@@ -79,7 +79,7 @@ enum FieldTypeGroupForMetrics {
 //
 // Clients must ensure that |field_type| is one of the types Chrome supports
 // natively, e.g. |field_type| must not be a billng address.
-int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
+int GetFieldTypeGroupMetric(const ServerFieldType field_type,
                             const int metric,
                             const int num_possible_metrics) {
   DCHECK_LT(metric, num_possible_metrics);
@@ -250,7 +250,7 @@ void LogUMAHistogramLongTimes(const std::string& name,
 void LogTypeQualityMetric(const std::string& base_name,
                           const int metric,
                           const int num_possible_metrics,
-                          const AutofillFieldType field_type,
+                          const ServerFieldType field_type,
                           const std::string& experiment_id) {
   DCHECK_LT(metric, num_possible_metrics);
 
@@ -481,7 +481,7 @@ void AutofillMetrics::LogDeveloperEngagementMetric(
 
 void AutofillMetrics::LogHeuristicTypePrediction(
     FieldTypeQualityMetric metric,
-    AutofillFieldType field_type,
+    ServerFieldType field_type,
     const std::string& experiment_id) const {
   LogTypeQualityMetric("Autofill.Quality.HeuristicType",
                        metric, NUM_FIELD_TYPE_QUALITY_METRICS,
@@ -490,7 +490,7 @@ void AutofillMetrics::LogHeuristicTypePrediction(
 
 void AutofillMetrics::LogOverallTypePrediction(
     FieldTypeQualityMetric metric,
-    AutofillFieldType field_type,
+    ServerFieldType field_type,
     const std::string& experiment_id) const {
   LogTypeQualityMetric("Autofill.Quality.PredictedType",
                        metric, NUM_FIELD_TYPE_QUALITY_METRICS,
@@ -499,7 +499,7 @@ void AutofillMetrics::LogOverallTypePrediction(
 
 void AutofillMetrics::LogServerTypePrediction(
     FieldTypeQualityMetric metric,
-    AutofillFieldType field_type,
+    ServerFieldType field_type,
     const std::string& experiment_id) const {
   LogTypeQualityMetric("Autofill.Quality.ServerType",
                        metric, NUM_FIELD_TYPE_QUALITY_METRICS,

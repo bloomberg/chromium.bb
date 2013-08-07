@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_group.h"
 
 namespace autofill {
@@ -25,13 +24,14 @@ class NameInfo : public FormGroup {
   NameInfo& operator=(const NameInfo& info);
 
   // FormGroup:
-  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
-  virtual void SetRawInfo(AutofillFieldType type,
+  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
+  virtual void SetRawInfo(ServerFieldType type,
                           const base::string16& value) OVERRIDE;
 
  private:
   // FormGroup:
-  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
+  virtual void GetSupportedTypes(
+      ServerFieldTypeSet* supported_types) const OVERRIDE;
 
   // Returns the full name, which can include up to the first, middle, and last
   // name.
@@ -63,13 +63,14 @@ class EmailInfo : public FormGroup {
   EmailInfo& operator=(const EmailInfo& info);
 
   // FormGroup:
-  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
-  virtual void SetRawInfo(AutofillFieldType type,
+  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
+  virtual void SetRawInfo(ServerFieldType type,
                           const base::string16& value) OVERRIDE;
 
  private:
   // FormGroup:
-  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
+  virtual void GetSupportedTypes(
+      ServerFieldTypeSet* supported_types) const OVERRIDE;
 
   base::string16 email_;
 };
@@ -83,13 +84,14 @@ class CompanyInfo : public FormGroup {
   CompanyInfo& operator=(const CompanyInfo& info);
 
   // FormGroup:
-  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
-  virtual void SetRawInfo(AutofillFieldType type,
+  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
+  virtual void SetRawInfo(ServerFieldType type,
                           const base::string16& value) OVERRIDE;
 
  private:
   // FormGroup:
-  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
+  virtual void GetSupportedTypes(
+      ServerFieldTypeSet* supported_types) const OVERRIDE;
 
   base::string16 company_name_;
 };

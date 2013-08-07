@@ -136,17 +136,17 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const OVERRIDE;
   virtual ui::ComboboxModel* ComboboxModelForAutofillType(
-      AutofillFieldType type) OVERRIDE;
+      ServerFieldType type) OVERRIDE;
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) OVERRIDE;
   virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
   virtual SuggestionState SuggestionStateForSection(
       DialogSection section) OVERRIDE;
   virtual void EditClickedForSection(DialogSection section) OVERRIDE;
   virtual void EditCancelledForSection(DialogSection section) OVERRIDE;
-  virtual gfx::Image IconForField(AutofillFieldType type,
+  virtual gfx::Image IconForField(ServerFieldType type,
                                   const string16& user_input) const OVERRIDE;
   virtual string16 InputValidityMessage(DialogSection section,
-                                        AutofillFieldType type,
+                                        ServerFieldType type,
                                         const string16& value) OVERRIDE;
   virtual ValidityData InputsAreValid(
       DialogSection section,
@@ -378,7 +378,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Gets the value for |type| in |section|, whether it comes from manual user
   // input or the active suggestion.
   string16 GetValueFromSection(DialogSection section,
-                               AutofillFieldType type);
+                               ServerFieldType type);
 
   // Saves the data in |profile| to the personal data manager. This may add
   // a new profile or tack onto an existing profile.
@@ -410,7 +410,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Identifying info is loaded into the last three outparams as well as
   // |popup_guids_|.
   void GetProfileSuggestions(
-      AutofillFieldType type,
+      ServerFieldType type,
       const string16& field_contents,
       const DetailInputs& inputs,
       std::vector<string16>* popup_values,
@@ -686,7 +686,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Whether |callback_| was Run() with a filled |form_structure_|.
   bool data_was_passed_back_;
 
-  typedef std::map<AutofillFieldType,
+  typedef std::map<ServerFieldType,
       std::pair<base::string16, base::string16> > TypeErrorInputMap;
   typedef std::map<DialogSection, TypeErrorInputMap> WalletValidationErrors;
   // Wallet validation errors. section->type->(error_msg, input_value).

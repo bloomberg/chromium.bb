@@ -56,7 +56,7 @@ FormFieldError::FormFieldError(ErrorType error_type, Location location)
 
 FormFieldError::~FormFieldError() {}
 
-AutofillFieldType FormFieldError::GetAutofillType() const {
+ServerFieldType FormFieldError::GetAutofillType() const {
   switch (error_type_) {
     case INVALID_PHONE_NUMBER:
       if (location_ == LEGAL_ADDRESS || location_ == PAYMENT_INSTRUMENT)

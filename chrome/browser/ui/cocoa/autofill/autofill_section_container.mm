@@ -72,7 +72,7 @@ void BreakSuggestionText(const string16& text,
 // Autofill data comes from an AutofillProfile, leave the comboboxes alone.
 // TODO(groby): This kind of logic should _really_ live on the delegate.
 bool ShouldOverwriteComboboxes(autofill::DialogSection section,
-                               autofill::AutofillFieldType type) {
+                               autofill::ServerFieldType type) {
   if (autofill::AutofillType(type).group() != autofill::CREDIT_CARD) {
     return false;
   }
@@ -102,11 +102,11 @@ bool CompareInputRows(const autofill::DetailInput* input1,
                             edited:(BOOL)edited;
 
 // Convenience method to retrieve a field type via the control's tag.
-- (autofill::AutofillFieldType)fieldTypeForControl:(NSControl*)control;
+- (autofill::ServerFieldType)fieldTypeForControl:(NSControl*)control;
 
 // Find the DetailInput* associated with a field type.
 - (const autofill::DetailInput*)detailInputForType:
-    (autofill::AutofillFieldType)type;
+    (autofill::ServerFieldType)type;
 
 // Takes an NSArray of controls and builds a DetailOutputMap from them.
 // Translates between Cocoa code and delegate, essentially.
@@ -323,7 +323,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
       AutofillPopUpButton* popup =
           base::mac::ObjCCast<AutofillPopUpButton>(control);
       if (popup) {
-        autofill::AutofillFieldType fieldType =
+        autofill::ServerFieldType fieldType =
             [self fieldTypeForControl:popup];
         if (autofill::AutofillType(fieldType).group() ==
                 autofill::CREDIT_CARD) {
@@ -363,7 +363,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
       section_, detailOutputs, validationType);
 
   for (NSControl<AutofillInputField>* input in fields) {
-    const autofill::AutofillFieldType type = [self fieldTypeForControl:input];
+    const autofill::ServerFieldType type = [self fieldTypeForControl:input];
     if (invalidInputs.count(type))
       [input setValidityMessage:base::SysUTF16ToNSString(invalidInputs[type])];
     else
@@ -385,7 +385,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   if (!textfield)
     return;
 
-  autofill::AutofillFieldType type = [self fieldTypeForControl:field];
+  autofill::ServerFieldType type = [self fieldTypeForControl:field];
   string16 fieldValue = base::SysNSStringToUTF16([textfield fieldValue]);
 
   // Get the frame rectangle for the designated field, in screen coordinates.
@@ -431,13 +431,13 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   }
 }
 
-- (autofill::AutofillFieldType)fieldTypeForControl:(NSControl*)control {
+- (autofill::ServerFieldType)fieldTypeForControl:(NSControl*)control {
   DCHECK([control tag]);
-  return static_cast<autofill::AutofillFieldType>([control tag]);
+  return static_cast<autofill::ServerFieldType>([control tag]);
 }
 
 - (const autofill::DetailInput*)detailInputForType:
-    (autofill::AutofillFieldType)type {
+    (autofill::ServerFieldType)type {
   for (size_t i = 0; i < detailInputs_.size(); ++i) {
     if (detailInputs_[i]->type == type)
       return detailInputs_[i];
@@ -452,7 +452,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   for (NSControl<AutofillInputField>* input in controls) {
     DCHECK([input isKindOfClass:[NSControl class]]);
     DCHECK([input conformsToProtocol:@protocol(AutofillInputField)]);
-    autofill::AutofillFieldType fieldType = [self fieldTypeForControl:input];
+    autofill::ServerFieldType fieldType = [self fieldTypeForControl:input];
     DCHECK([self detailInputForType:fieldType]);
     NSString* value = [input fieldValue];
     outputs->insert(std::make_pair([self detailInputForType:fieldType],
@@ -604,7 +604,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
 @implementation AutofillSectionContainer (ForTesting)
 
-- (NSControl*)getField:(autofill::AutofillFieldType)type {
+- (NSControl*)getField:(autofill::ServerFieldType)type {
   return [inputs_ viewWithTag:type];
 }
 

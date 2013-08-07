@@ -109,7 +109,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   CreditCard* GetCreditCardByGUID(const std::string& guid);
 
   // Gets the field types availabe in the stored address and credit card data.
-  void GetNonEmptyTypes(FieldTypeSet* non_empty_types);
+  void GetNonEmptyTypes(ServerFieldTypeSet* non_empty_types);
 
   // Returns true if the credit card information is stored with a password.
   bool HasPassword();
@@ -130,10 +130,10 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // has already been autofilled. |other_field_types| represents the rest of
   // form. Identifying info is loaded into the last four outparams.
   void GetProfileSuggestions(
-      AutofillFieldType type,
+      const AutofillType& type,
       const base::string16& field_contents,
       bool field_is_autofilled,
-      std::vector<AutofillFieldType> other_field_types,
+      std::vector<ServerFieldType> other_field_types,
       std::vector<base::string16>* values,
       std::vector<base::string16>* labels,
       std::vector<base::string16>* icons,
@@ -143,7 +143,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // GetProfileSuggestions for argument descriptions. The variant in each
   // GUID pair should be ignored.
   void GetCreditCardSuggestions(
-      AutofillFieldType type,
+      const AutofillType& type,
       const base::string16& field_contents,
       std::vector<base::string16>* values,
       std::vector<base::string16>* labels,

@@ -2132,7 +2132,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
 
 TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   // Check that there are no available types with no profiles stored.
-  FieldTypeSet non_empty_types;
+  ServerFieldTypeSet non_empty_types;
   personal_data_->GetNonEmptyTypes(&non_empty_types);
   EXPECT_EQ(0U, non_empty_types.size());
 

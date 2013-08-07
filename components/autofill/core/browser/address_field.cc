@@ -136,14 +136,14 @@ AddressField::AddressField()
       type_(kGenericAddress) {
 }
 
-bool AddressField::ClassifyField(FieldTypeMap* map) const {
-  AutofillFieldType address_company;
-  AutofillFieldType address_line1;
-  AutofillFieldType address_line2;
-  AutofillFieldType address_city;
-  AutofillFieldType address_state;
-  AutofillFieldType address_zip;
-  AutofillFieldType address_country;
+bool AddressField::ClassifyField(ServerFieldTypeMap* map) const {
+  ServerFieldType address_company;
+  ServerFieldType address_line1;
+  ServerFieldType address_line2;
+  ServerFieldType address_city;
+  ServerFieldType address_state;
+  ServerFieldType address_zip;
+  ServerFieldType address_country;
 
   switch (type_) {
     case kShippingAddress:

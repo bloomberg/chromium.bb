@@ -63,7 +63,7 @@
 using autofill::AutofillChange;
 using autofill::AutofillChangeList;
 using autofill::AutofillEntry;
-using autofill::AutofillFieldType;
+using autofill::ServerFieldType;
 using autofill::AutofillKey;
 using autofill::AutofillProfile;
 using autofill::AutofillProfileChange;
@@ -923,7 +923,7 @@ namespace {
 // of the field in |profile2|.
 bool IncludesField(const AutofillProfile& profile1,
                    const AutofillProfile& profile2,
-                   AutofillFieldType field_type) {
+                   ServerFieldType field_type) {
   std::vector<string16> values1;
   profile1.GetRawMultiInfo(field_type, &values1);
   std::vector<string16> values2;

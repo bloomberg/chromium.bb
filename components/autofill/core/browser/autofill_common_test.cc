@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -69,7 +70,7 @@ void CreateTestAddressFormData(FormData* form) {
 }
 
 inline void check_and_set(
-    FormGroup* profile, AutofillFieldType type, const char* value) {
+    FormGroup* profile, ServerFieldType type, const char* value) {
   if (value)
     profile->SetRawInfo(type, UTF8ToUTF16(value));
 }

@@ -20,7 +20,7 @@
 #include "sync/protocol/sync.pb.h"
 
 using autofill::AutofillCountry;
-using autofill::AutofillFieldType;
+using autofill::ServerFieldType;
 using autofill::AutofillProfile;
 using autofill::AutofillProfileChange;
 using autofill::AutofillTable;
@@ -566,7 +566,7 @@ syncer::SyncData AutofillProfileSyncableService::CreateData(
 }
 
 bool AutofillProfileSyncableService::UpdateField(
-    AutofillFieldType field_type,
+    ServerFieldType field_type,
     const std::string& new_value,
     AutofillProfile* autofill_profile) {
   if (UTF16ToUTF8(autofill_profile->GetRawInfo(field_type)) == new_value)
@@ -576,7 +576,7 @@ bool AutofillProfileSyncableService::UpdateField(
 }
 
 bool AutofillProfileSyncableService::UpdateMultivaluedField(
-    AutofillFieldType field_type,
+    ServerFieldType field_type,
     const ::google::protobuf::RepeatedPtrField<std::string>& new_values,
     AutofillProfile* autofill_profile) {
   std::vector<string16> values;

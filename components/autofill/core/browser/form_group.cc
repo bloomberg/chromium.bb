@@ -4,48 +4,47 @@
 
 #include "components/autofill/core/browser/form_group.h"
 
+#include "components/autofill/core/browser/autofill_type.h"
+
 namespace autofill {
 
 void FormGroup::GetMatchingTypes(const base::string16& text,
                                  const std::string& app_locale,
-                                 FieldTypeSet* matching_types) const {
+                                 ServerFieldTypeSet* matching_types) const {
   if (text.empty()) {
     matching_types->insert(EMPTY_TYPE);
     return;
   }
 
-  FieldTypeSet types;
+  ServerFieldTypeSet types;
   GetSupportedTypes(&types);
-  for (FieldTypeSet::const_iterator type = types.begin();
+  for (ServerFieldTypeSet::const_iterator type = types.begin();
        type != types.end(); ++type) {
-    // TODO(isherman): Matches are case-sensitive for now.  Let's keep an eye on
-    // this and decide whether there are compelling reasons to add case-
-    // insensitivity.
-    if (GetInfo(*type, app_locale) == text)
+    if (GetInfo(AutofillType(*type), app_locale) == text)
       matching_types->insert(*type);
   }
 }
 
 void FormGroup::GetNonEmptyTypes(const std::string& app_locale,
-                                 FieldTypeSet* non_empty_types) const {
-  FieldTypeSet types;
+                                 ServerFieldTypeSet* non_empty_types) const {
+  ServerFieldTypeSet types;
   GetSupportedTypes(&types);
-  for (FieldTypeSet::const_iterator type = types.begin();
+  for (ServerFieldTypeSet::const_iterator type = types.begin();
        type != types.end(); ++type) {
-    if (!GetInfo(*type, app_locale).empty())
+    if (!GetInfo(AutofillType(*type), app_locale).empty())
       non_empty_types->insert(*type);
   }
 }
 
-base::string16 FormGroup::GetInfo(AutofillFieldType type,
-                            const std::string& app_locale) const {
-  return GetRawInfo(type);
+base::string16 FormGroup::GetInfo(const AutofillType& type,
+                                  const std::string& app_locale) const {
+  return GetRawInfo(type.server_type());
 }
 
-bool FormGroup::SetInfo(AutofillFieldType type,
+bool FormGroup::SetInfo(const AutofillType& type,
                         const base::string16& value,
                         const std::string& app_locale) {
-  SetRawInfo(type, value);
+  SetRawInfo(type.server_type(), value);
   return true;
 }
 

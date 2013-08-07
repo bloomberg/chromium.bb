@@ -32,13 +32,12 @@ namespace {
 
 // Like |AutofillType::GetEquivalentFieldType()|, but also returns |NAME_FULL|
 // for first, middle, and last name field types.
-AutofillFieldType GetEquivalentFieldTypeCollapsingNames(
-    AutofillFieldType field_type) {
-  if (field_type == NAME_FIRST || field_type == NAME_MIDDLE ||
-      field_type == NAME_LAST || field_type == NAME_MIDDLE_INITIAL)
+ServerFieldType GetEquivalentFieldTypeCollapsingNames(ServerFieldType type) {
+  if (type == NAME_FIRST || type == NAME_MIDDLE || type == NAME_LAST ||
+      type == NAME_MIDDLE_INITIAL)
     return NAME_FULL;
 
-  return AutofillType::GetEquivalentFieldType(field_type);
+  return AutofillType::GetEquivalentFieldType(type);
 }
 
 // Fills |distinguishing_fields| with a list of fields to use when creating
@@ -49,10 +48,10 @@ AutofillFieldType GetEquivalentFieldTypeCollapsingNames(
 // |UNKNOWN_TYPE| by convention. The resulting list of fields is sorted in
 // decreasing order of importance.
 void GetFieldsForDistinguishingProfiles(
-    const std::vector<AutofillFieldType>* suggested_fields,
-    AutofillFieldType excluded_field,
-    std::vector<AutofillFieldType>* distinguishing_fields) {
-  static const AutofillFieldType kDefaultDistinguishingFields[] = {
+    const std::vector<ServerFieldType>* suggested_fields,
+    ServerFieldType excluded_field,
+    std::vector<ServerFieldType>* distinguishing_fields) {
+  static const ServerFieldType kDefaultDistinguishingFields[] = {
     NAME_FULL,
     ADDRESS_HOME_LINE1,
     ADDRESS_HOME_LINE2,
@@ -75,16 +74,15 @@ void GetFieldsForDistinguishingProfiles(
 
   // Keep track of which fields we've seen so that we avoid duplicate entries.
   // Always ignore fields of unknown type and the excluded field.
-  std::set<AutofillFieldType> seen_fields;
+  std::set<ServerFieldType> seen_fields;
   seen_fields.insert(UNKNOWN_TYPE);
   seen_fields.insert(GetEquivalentFieldTypeCollapsingNames(excluded_field));
 
   distinguishing_fields->clear();
-  for (std::vector<AutofillFieldType>::const_iterator it =
+  for (std::vector<ServerFieldType>::const_iterator it =
            suggested_fields->begin();
        it != suggested_fields->end(); ++it) {
-    AutofillFieldType suggested_type =
-        GetEquivalentFieldTypeCollapsingNames(*it);
+    ServerFieldType suggested_type = GetEquivalentFieldTypeCollapsingNames(*it);
     if (seen_fields.insert(suggested_type).second)
       distinguishing_fields->push_back(suggested_type);
   }
@@ -95,7 +93,7 @@ void GetFieldsForDistinguishingProfiles(
   // distinguish between profiles that are identical except for the name.
   if (excluded_field != NAME_FULL &&
       GetEquivalentFieldTypeCollapsingNames(excluded_field) == NAME_FULL) {
-    for (std::vector<AutofillFieldType>::const_iterator it =
+    for (std::vector<ServerFieldType>::const_iterator it =
              suggested_fields->begin();
          it != suggested_fields->end(); ++it) {
       if (*it != excluded_field &&
@@ -110,7 +108,7 @@ void GetFieldsForDistinguishingProfiles(
 // A helper function for string streaming.  Concatenates multi-valued entries
 // stored for a given |type| into a single string.  This string is returned.
 const base::string16 MultiString(const AutofillProfile& p,
-                                 AutofillFieldType type) {
+                                 ServerFieldType type) {
   std::vector<base::string16> values;
   p.GetRawMultiInfo(type, &values);
   base::string16 accumulate;
@@ -123,15 +121,15 @@ const base::string16 MultiString(const AutofillProfile& p,
 }
 
 base::string16 GetFormGroupInfo(const FormGroup& form_group,
-                                AutofillFieldType type,
+                                const AutofillType& type,
                                 const std::string& app_locale) {
   return app_locale.empty() ?
-      form_group.GetRawInfo(type) :
+      form_group.GetRawInfo(type.server_type()) :
       form_group.GetInfo(type, app_locale);
 }
 
 template <class T>
-void CopyValuesToItems(AutofillFieldType type,
+void CopyValuesToItems(ServerFieldType type,
                        const std::vector<base::string16>& values,
                        std::vector<T>* form_group_items,
                        const T& prototype) {
@@ -146,7 +144,7 @@ void CopyValuesToItems(AutofillFieldType type,
 }
 
 template <class T>
-void CopyItemsToValues(AutofillFieldType type,
+void CopyItemsToValues(const AutofillType& type,
                        const std::vector<T>& form_group_items,
                        const std::string& app_locale,
                        std::vector<base::string16>* values) {
@@ -158,11 +156,11 @@ void CopyItemsToValues(AutofillFieldType type,
 
 // Collapse compound field types to their "full" type.  I.e. First name
 // collapses to full name, area code collapses to full phone, etc.
-void CollapseCompoundFieldTypes(FieldTypeSet* type_set) {
-  FieldTypeSet collapsed_set;
-  for (FieldTypeSet::iterator iter = type_set->begin(); iter != type_set->end();
-       ++iter) {
-    switch (*iter) {
+void CollapseCompoundFieldTypes(ServerFieldTypeSet* type_set) {
+  ServerFieldTypeSet collapsed_set;
+  for (ServerFieldTypeSet::iterator it = type_set->begin();
+       it != type_set->end(); ++it) {
+    switch (*it) {
       case NAME_FIRST:
       case NAME_MIDDLE:
       case NAME_LAST:
@@ -181,7 +179,7 @@ void CollapseCompoundFieldTypes(FieldTypeSet* type_set) {
         break;
 
       default:
-        collapsed_set.insert(*iter);
+        collapsed_set.insert(*it);
     }
   }
   std::swap(*type_set, collapsed_set);
@@ -267,41 +265,43 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   return *this;
 }
 
-void AutofillProfile::GetMatchingTypes(const base::string16& text,
-                                       const std::string& app_locale,
-                                       FieldTypeSet* matching_types) const {
+void AutofillProfile::GetMatchingTypes(
+    const base::string16& text,
+    const std::string& app_locale,
+    ServerFieldTypeSet* matching_types) const {
   FormGroupList info = FormGroups();
   for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
     (*it)->GetMatchingTypes(text, app_locale, matching_types);
 }
 
-base::string16 AutofillProfile::GetRawInfo(AutofillFieldType type) const {
-  AutofillFieldType return_type = AutofillType::GetEquivalentFieldType(type);
-  const FormGroup* form_group = FormGroupForType(return_type);
+base::string16 AutofillProfile::GetRawInfo(ServerFieldType type) const {
+  ServerFieldType return_type = AutofillType::GetEquivalentFieldType(type);
+  const FormGroup* form_group = FormGroupForType(AutofillType(return_type));
   if (!form_group)
     return base::string16();
 
   return form_group->GetRawInfo(return_type);
 }
 
-void AutofillProfile::SetRawInfo(AutofillFieldType type,
+void AutofillProfile::SetRawInfo(ServerFieldType type,
                                  const base::string16& value) {
-  FormGroup* form_group = MutableFormGroupForType(type);
+  FormGroup* form_group = MutableFormGroupForType(AutofillType(type));
   if (form_group)
     form_group->SetRawInfo(type, CollapseWhitespace(value, false));
 }
 
-base::string16 AutofillProfile::GetInfo(AutofillFieldType type,
-                                  const std::string& app_locale) const {
-  AutofillFieldType return_type = AutofillType::GetEquivalentFieldType(type);
-  const FormGroup* form_group = FormGroupForType(return_type);
+base::string16 AutofillProfile::GetInfo(const AutofillType& type,
+                                        const std::string& app_locale) const {
+  ServerFieldType return_type =
+      AutofillType::GetEquivalentFieldType(type.server_type());
+  const FormGroup* form_group = FormGroupForType(AutofillType(return_type));
   if (!form_group)
     return base::string16();
 
-  return form_group->GetInfo(return_type, app_locale);
+  return form_group->GetInfo(AutofillType(return_type), app_locale);
 }
 
-bool AutofillProfile::SetInfo(AutofillFieldType type,
+bool AutofillProfile::SetInfo(const AutofillType& type,
                               const base::string16& value,
                               const std::string& app_locale) {
   FormGroup* form_group = MutableFormGroupForType(type);
@@ -313,7 +313,7 @@ bool AutofillProfile::SetInfo(AutofillFieldType type,
 }
 
 void AutofillProfile::SetRawMultiInfo(
-    AutofillFieldType type,
+    ServerFieldType type,
     const std::vector<base::string16>& values) {
   switch (AutofillType(type).group()) {
     case NAME:
@@ -344,12 +344,12 @@ void AutofillProfile::SetRawMultiInfo(
 }
 
 void AutofillProfile::GetRawMultiInfo(
-    AutofillFieldType type,
+    ServerFieldType type,
     std::vector<base::string16>* values) const {
-  GetMultiInfoImpl(type, std::string(), values);
+  GetMultiInfoImpl(AutofillType(type), std::string(), values);
 }
 
-void AutofillProfile::GetMultiInfo(AutofillFieldType type,
+void AutofillProfile::GetMultiInfo(const AutofillType& type,
                                    const std::string& app_locale,
                                    std::vector<base::string16>* values) const {
   GetMultiInfoImpl(type, app_locale, values);
@@ -359,11 +359,12 @@ void AutofillProfile::FillFormField(const AutofillField& field,
                                     size_t variant,
                                     const std::string& app_locale,
                                     FormFieldData* field_data) const {
-  AutofillFieldType type = field.type();
-  DCHECK_NE(CREDIT_CARD, AutofillType(type).group());
+  AutofillType type = field.Type();
+  DCHECK_NE(CREDIT_CARD, type.group());
   DCHECK(field_data);
 
-  if (type == PHONE_HOME_NUMBER || type == PHONE_BILLING_NUMBER) {
+  if (type.server_type() == PHONE_HOME_NUMBER ||
+      type.server_type() == PHONE_BILLING_NUMBER) {
     FillPhoneNumberField(field, variant, app_locale, field_data);
   } else if (field_data->form_control_type == "select-one") {
     FillSelectControl(type, app_locale, field_data);
@@ -385,7 +386,7 @@ void AutofillProfile::FillPhoneNumberField(const AutofillField& field,
                                            const std::string& app_locale,
                                            FormFieldData* field_data) const {
   std::vector<base::string16> values;
-  GetMultiInfo(field.type(), app_locale, &values);
+  GetMultiInfo(field.Type(), app_locale, &values);
   DCHECK(variant < values.size());
 
   // If we are filling a phone number, check to see if the size field
@@ -412,12 +413,12 @@ const base::string16 AutofillProfile::Label() const {
 }
 
 bool AutofillProfile::IsEmpty(const std::string& app_locale) const {
-  FieldTypeSet types;
+  ServerFieldTypeSet types;
   GetNonEmptyTypes(app_locale, &types);
   return types.empty();
 }
 
-bool AutofillProfile::IsPresentButInvalid(AutofillFieldType type) const {
+bool AutofillProfile::IsPresentButInvalid(ServerFieldType type) const {
   std::string country = UTF16ToUTF8(GetRawInfo(ADDRESS_HOME_COUNTRY));
   base::string16 data = GetRawInfo(type);
   switch (type) {
@@ -447,13 +448,13 @@ bool AutofillProfile::IsPresentButInvalid(AutofillFieldType type) const {
 
 
 int AutofillProfile::Compare(const AutofillProfile& profile) const {
-  const AutofillFieldType single_value_types[] = { COMPANY_NAME,
-                                                   ADDRESS_HOME_LINE1,
-                                                   ADDRESS_HOME_LINE2,
-                                                   ADDRESS_HOME_CITY,
-                                                   ADDRESS_HOME_STATE,
-                                                   ADDRESS_HOME_ZIP,
-                                                   ADDRESS_HOME_COUNTRY };
+  const ServerFieldType single_value_types[] = { COMPANY_NAME,
+                                                 ADDRESS_HOME_LINE1,
+                                                 ADDRESS_HOME_LINE2,
+                                                 ADDRESS_HOME_CITY,
+                                                 ADDRESS_HOME_STATE,
+                                                 ADDRESS_HOME_ZIP,
+                                                 ADDRESS_HOME_COUNTRY };
 
   for (size_t i = 0; i < arraysize(single_value_types); ++i) {
     int comparison = GetRawInfo(single_value_types[i]).compare(
@@ -462,11 +463,11 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
       return comparison;
   }
 
-  const AutofillFieldType multi_value_types[] = { NAME_FIRST,
-                                                  NAME_MIDDLE,
-                                                  NAME_LAST,
-                                                  EMAIL_ADDRESS,
-                                                  PHONE_HOME_WHOLE_NUMBER };
+  const ServerFieldType multi_value_types[] = { NAME_FIRST,
+                                                NAME_MIDDLE,
+                                                NAME_LAST,
+                                                EMAIL_ADDRESS,
+                                                PHONE_HOME_WHOLE_NUMBER };
 
   for (size_t i = 0; i < arraysize(multi_value_types); ++i) {
     std::vector<base::string16> values_a;
@@ -503,30 +504,30 @@ const base::string16 AutofillProfile::PrimaryValue() const {
 
 bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
                                  const std::string& app_locale) const {
-  FieldTypeSet types;
+  ServerFieldTypeSet types;
   GetNonEmptyTypes(app_locale, &types);
 
-  for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
-       ++iter) {
-    if (*iter == NAME_FULL) {
+  for (ServerFieldTypeSet::const_iterator it = types.begin(); it != types.end();
+       ++it) {
+    if (*it == NAME_FULL) {
       // Ignore the compound "full name" field type.  We are only interested in
       // comparing the constituent parts.  For example, if |this| has a middle
       // name saved, but |profile| lacks one, |profile| could still be a subset
       // of |this|.
       continue;
-    } else if (AutofillType(*iter).group() == PHONE_HOME) {
+    } else if (AutofillType(*it).group() == PHONE_HOME) {
       // Phone numbers should be canonicalized prior to being compared.
-      if (*iter != PHONE_HOME_WHOLE_NUMBER) {
+      if (*it != PHONE_HOME_WHOLE_NUMBER) {
         continue;
       } else if (!i18n::PhoneNumbersMatch(
-            GetRawInfo(*iter),
-            profile.GetRawInfo(*iter),
+            GetRawInfo(*it),
+            profile.GetRawInfo(*it),
             UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
             app_locale)) {
         return false;
       }
-    } else if (StringToLowerASCII(GetRawInfo(*iter)) !=
-                   StringToLowerASCII(profile.GetRawInfo(*iter))) {
+    } else if (StringToLowerASCII(GetRawInfo(*it)) !=
+                   StringToLowerASCII(profile.GetRawInfo(*it))) {
       return false;
     }
   }
@@ -540,14 +541,14 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
   DCHECK(!IsVerified() || profile.IsVerified());
   set_origin(profile.origin());
 
-  FieldTypeSet field_types;
+  ServerFieldTypeSet field_types;
   profile.GetNonEmptyTypes(app_locale, &field_types);
 
   // Only transfer "full" types (e.g. full name) and not fragments (e.g.
   // first name, last name).
   CollapseCompoundFieldTypes(&field_types);
 
-  for (FieldTypeSet::const_iterator iter = field_types.begin();
+  for (ServerFieldTypeSet::const_iterator iter = field_types.begin();
        iter != field_types.end(); ++iter) {
     if (AutofillProfile::SupportsMultiValue(*iter)) {
       std::vector<base::string16> new_values;
@@ -588,7 +589,7 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
 }
 
 // static
-bool AutofillProfile::SupportsMultiValue(AutofillFieldType type) {
+bool AutofillProfile::SupportsMultiValue(ServerFieldType type) {
   FieldTypeGroup group = AutofillType(type).group();
   return group == NAME ||
          group == NAME_BILLING ||
@@ -620,14 +621,14 @@ bool AutofillProfile::AdjustInferredLabels(
 // static
 void AutofillProfile::CreateInferredLabels(
     const std::vector<AutofillProfile*>* profiles,
-    const std::vector<AutofillFieldType>* suggested_fields,
-    AutofillFieldType excluded_field,
+    const std::vector<ServerFieldType>* suggested_fields,
+    ServerFieldType excluded_field,
     size_t minimal_fields_shown,
     std::vector<base::string16>* created_labels) {
   DCHECK(profiles);
   DCHECK(created_labels);
 
-  std::vector<AutofillFieldType> fields_to_use;
+  std::vector<ServerFieldType> fields_to_use;
   GetFieldsForDistinguishingProfiles(suggested_fields, excluded_field,
                                      &fields_to_use);
 
@@ -660,7 +661,8 @@ void AutofillProfile::CreateInferredLabels(
   }
 }
 
-void AutofillProfile::GetSupportedTypes(FieldTypeSet* supported_types) const {
+void AutofillProfile::GetSupportedTypes(
+    ServerFieldTypeSet* supported_types) const {
   FormGroupList info = FormGroups();
   for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
     (*it)->GetSupportedTypes(supported_types);
@@ -689,10 +691,10 @@ bool AutofillProfile::FillCountrySelectControl(
 }
 
 void AutofillProfile::GetMultiInfoImpl(
-    AutofillFieldType type,
+    const AutofillType& type,
     const std::string& app_locale,
     std::vector<base::string16>* values) const {
-  switch (AutofillType(type).group()) {
+  switch (type.group()) {
     case NAME:
     case NAME_BILLING:
       CopyItemsToValues(type, name_, app_locale, values);
@@ -726,14 +728,14 @@ void AutofillProfile::AddPhoneIfUnique(
 }
 
 base::string16 AutofillProfile::ConstructInferredLabel(
-    const std::vector<AutofillFieldType>& included_fields,
+    const std::vector<ServerFieldType>& included_fields,
     size_t num_fields_to_use) const {
   const base::string16 separator =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR);
 
   base::string16 label;
   size_t num_fields_used = 0;
-  for (std::vector<AutofillFieldType>::const_iterator it =
+  for (std::vector<ServerFieldType>::const_iterator it =
            included_fields.begin();
        it != included_fields.end() && num_fields_used < num_fields_to_use;
        ++it) {
@@ -754,14 +756,14 @@ base::string16 AutofillProfile::ConstructInferredLabel(
 void AutofillProfile::CreateDifferentiatingLabels(
     const std::vector<AutofillProfile*>& profiles,
     const std::list<size_t>& indices,
-    const std::vector<AutofillFieldType>& fields,
+    const std::vector<ServerFieldType>& fields,
     size_t num_fields_to_include,
     std::vector<base::string16>* created_labels) {
   // For efficiency, we first construct a map of fields to their text values and
   // each value's frequency.
-  std::map<AutofillFieldType,
+  std::map<ServerFieldType,
            std::map<base::string16, size_t> > field_text_frequencies_by_field;
-  for (std::vector<AutofillFieldType>::const_iterator field = fields.begin();
+  for (std::vector<ServerFieldType>::const_iterator field = fields.begin();
        field != fields.end(); ++field) {
     std::map<base::string16, size_t>& field_text_frequencies =
         field_text_frequencies_by_field[*field];
@@ -791,9 +793,9 @@ void AutofillProfile::CreateDifferentiatingLabels(
        it != indices.end(); ++it) {
     const AutofillProfile* profile = profiles[*it];
 
-    std::vector<AutofillFieldType> label_fields;
+    std::vector<ServerFieldType> label_fields;
     bool found_differentiating_field = false;
-    for (std::vector<AutofillFieldType>::const_iterator field = fields.begin();
+    for (std::vector<ServerFieldType>::const_iterator field = fields.begin();
          field != fields.end(); ++field) {
       // Skip over empty fields.
       base::string16 field_text = profile->GetRawInfo(*field);
@@ -838,36 +840,37 @@ AutofillProfile::FormGroupList AutofillProfile::FormGroups() const {
 }
 
 const FormGroup* AutofillProfile::FormGroupForType(
-    AutofillFieldType type) const {
+    const AutofillType& type) const {
   return const_cast<AutofillProfile*>(this)->MutableFormGroupForType(type);
 }
 
-FormGroup* AutofillProfile::MutableFormGroupForType(AutofillFieldType type) {
-  FormGroup* form_group = NULL;
-  switch (AutofillType(type).group()) {
+FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
+  switch (type.group()) {
     case NAME:
     case NAME_BILLING:
-      form_group = &name_[0];
-      break;
+      return &name_[0];
+
     case EMAIL:
-      form_group = &email_[0];
-      break;
+      return &email_[0];
+
     case COMPANY:
-      form_group = &company_;
-      break;
+      return &company_;
+
     case PHONE_HOME:
     case PHONE_BILLING:
-      form_group = &phone_number_[0];
-      break;
+      return &phone_number_[0];
+
     case ADDRESS_HOME:
     case ADDRESS_BILLING:
-      form_group = &address_;
-      break;
-    default:
-      break;
+      return &address_;
+
+    case NO_GROUP:
+    case CREDIT_CARD:
+        return NULL;
   }
 
-  return form_group;
+  NOTREACHED();
+  return NULL;
 }
 
 // So we can compare AutofillProfiles with EXPECT_EQ().

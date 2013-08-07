@@ -10,14 +10,15 @@
 
 namespace autofill {
 
-AutofillType::AutofillType(AutofillFieldType field_type) {
+AutofillType::AutofillType(ServerFieldType field_type) {
   if ((field_type < NO_SERVER_DATA || field_type >= MAX_VALID_FIELD_TYPE) ||
       (field_type >= 15 && field_type <= 19) ||
       (field_type >= 25 && field_type <= 29) ||
-      (field_type >= 44 && field_type <= 50))
-    field_type_ = UNKNOWN_TYPE;
-  else
-    field_type_ = field_type;
+      (field_type >= 44 && field_type <= 50)) {
+    server_type_ = UNKNOWN_TYPE;
+  } else {
+    server_type_ = field_type;
+  }
 }
 
 AutofillType::AutofillType(const AutofillType& autofill_type) {
@@ -26,16 +27,12 @@ AutofillType::AutofillType(const AutofillType& autofill_type) {
 
 AutofillType& AutofillType::operator=(const AutofillType& autofill_type) {
   if (this != &autofill_type)
-    this->field_type_ = autofill_type.field_type_;
+    this->server_type_ = autofill_type.server_type_;
   return *this;
 }
 
-AutofillFieldType AutofillType::field_type() const {
-  return field_type_;
-}
-
 FieldTypeGroup AutofillType::group() const {
-  switch (field_type_) {
+  switch (server_type_) {
     case NAME_FIRST:
     case NAME_MIDDLE:
     case NAME_LAST:
@@ -107,8 +104,8 @@ FieldTypeGroup AutofillType::group() const {
 }
 
 // static
-AutofillFieldType AutofillType::GetEquivalentFieldType(
-    AutofillFieldType field_type) {
+ServerFieldType AutofillType::GetEquivalentFieldType(
+    ServerFieldType field_type) {
   // When billing information is requested from the profile we map to the
   // home address equivalents.
   switch (field_type) {
@@ -172,8 +169,8 @@ AutofillFieldType AutofillType::GetEquivalentFieldType(
 }
 
 // static
-AutofillFieldType AutofillType::GetEquivalentBillingFieldType(
-    AutofillFieldType field_type) {
+ServerFieldType AutofillType::GetEquivalentBillingFieldType(
+    ServerFieldType field_type) {
   switch (field_type) {
     case ADDRESS_HOME_LINE1:
       return ADDRESS_BILLING_LINE1;
@@ -235,7 +232,7 @@ AutofillFieldType AutofillType::GetEquivalentBillingFieldType(
 }
 
 // static
-std::string AutofillType::FieldTypeToString(AutofillFieldType type) {
+std::string AutofillType::FieldTypeToString(ServerFieldType type) {
   switch (type) {
     case NO_SERVER_DATA:
       return "NO_SERVER_DATA";
@@ -356,7 +353,7 @@ std::string AutofillType::FieldTypeToString(AutofillFieldType type) {
 }
 
 // static
-AutofillFieldType AutofillType::StringToFieldType(const std::string& str) {
+ServerFieldType AutofillType::StringToFieldType(const std::string& str) {
   if (str == "NO_SERVER_DATA")
     return NO_SERVER_DATA;
   if (str == "UNKNOWN_TYPE")
@@ -448,7 +445,7 @@ AutofillFieldType AutofillType::StringToFieldType(const std::string& str) {
   if (str == "COMPANY_NAME")
     return COMPANY_NAME;
 
-  NOTREACHED() << "Unknown AutofillFieldType " << str;
+  NOTREACHED() << "Unknown ServerFieldType " << str;
   return UNKNOWN_TYPE;
 }
 

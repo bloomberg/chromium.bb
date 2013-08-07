@@ -13,11 +13,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
 
-static const AutofillFieldType kAutofillNameInfoTypes[] = {
+static const ServerFieldType kAutofillNameInfoTypes[] = {
   NAME_FIRST,
   NAME_MIDDLE,
   NAME_LAST
@@ -44,7 +43,7 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
   return *this;
 }
 
-void NameInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
+void NameInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(NAME_FIRST);
   supported_types->insert(NAME_MIDDLE);
   supported_types->insert(NAME_LAST);
@@ -52,7 +51,7 @@ void NameInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(NAME_FULL);
 }
 
-base::string16 NameInfo::GetRawInfo(AutofillFieldType type) const {
+base::string16 NameInfo::GetRawInfo(ServerFieldType type) const {
   type = AutofillType::GetEquivalentFieldType(type);
   if (type == NAME_FIRST)
     return first();
@@ -72,7 +71,7 @@ base::string16 NameInfo::GetRawInfo(AutofillFieldType type) const {
   return base::string16();
 }
 
-void NameInfo::SetRawInfo(AutofillFieldType type, const base::string16& value) {
+void NameInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
   type = AutofillType::GetEquivalentFieldType(type);
   DCHECK_EQ(NAME, AutofillType(type).group());
   if (type == NAME_FIRST)
@@ -151,19 +150,18 @@ EmailInfo& EmailInfo::operator=(const EmailInfo& info) {
   return *this;
 }
 
-void EmailInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
+void EmailInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(EMAIL_ADDRESS);
 }
 
-base::string16 EmailInfo::GetRawInfo(AutofillFieldType type) const {
+base::string16 EmailInfo::GetRawInfo(ServerFieldType type) const {
   if (type == EMAIL_ADDRESS)
     return email_;
 
   return base::string16();
 }
 
-void EmailInfo::SetRawInfo(AutofillFieldType type,
-                           const base::string16& value) {
+void EmailInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
   DCHECK_EQ(EMAIL_ADDRESS, type);
   email_ = value;
 }
@@ -184,18 +182,18 @@ CompanyInfo& CompanyInfo::operator=(const CompanyInfo& info) {
   return *this;
 }
 
-void CompanyInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
+void CompanyInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(COMPANY_NAME);
 }
 
-base::string16 CompanyInfo::GetRawInfo(AutofillFieldType type) const {
+base::string16 CompanyInfo::GetRawInfo(ServerFieldType type) const {
   if (type == COMPANY_NAME)
     return company_name_;
 
   return base::string16();
 }
 
-void CompanyInfo::SetRawInfo(AutofillFieldType type,
+void CompanyInfo::SetRawInfo(ServerFieldType type,
                              const base::string16& value) {
   DCHECK_EQ(COMPANY_NAME, type);
   company_name_ = value;

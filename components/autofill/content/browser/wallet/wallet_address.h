@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/field_types.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,6 +18,7 @@ class DictionaryValue;
 namespace autofill {
 
 class AutofillProfile;
+class AutofillType;
 
 namespace wallet {
 
@@ -91,8 +91,8 @@ class Address {
   base::string16 DisplayNameDetail() const;
 
   // Returns data appropriate for |type|.
-  base::string16 GetInfo(AutofillFieldType type,
-                   const std::string& app_locale) const;
+  base::string16 GetInfo(const AutofillType& type,
+                         const std::string& app_locale) const;
 
   const std::string& country_name_code() const { return country_name_code_; }
   const base::string16& recipient_name() const { return recipient_name_; }

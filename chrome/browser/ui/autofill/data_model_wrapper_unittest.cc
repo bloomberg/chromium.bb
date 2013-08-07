@@ -23,7 +23,8 @@ TEST(AutofillCreditCardWrapperTest, GetInfoCreditCardExpMonth) {
   for (int month = 1; month <= 12; ++month) {
     card.SetRawInfo(CREDIT_CARD_EXP_MONTH, base::IntToString16(month));
     AutofillCreditCardWrapper wrapper(&card);
-    EXPECT_EQ(model.GetItemAt(month), wrapper.GetInfo(CREDIT_CARD_EXP_MONTH));
+    EXPECT_EQ(model.GetItemAt(month),
+              wrapper.GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH)));
   }
 }
 
@@ -61,7 +62,8 @@ TEST(WalletInstrumentWrapperTest, GetInfoCreditCardExpMonth) {
   for (int month = 1; month <= 12; ++month) {
     instrument->expiration_month_ = month;
     WalletInstrumentWrapper wrapper(instrument.get());
-    EXPECT_EQ(model.GetItemAt(month), wrapper.GetInfo(CREDIT_CARD_EXP_MONTH));
+    EXPECT_EQ(model.GetItemAt(month),
+              wrapper.GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH)));
   }
 }
 
@@ -86,10 +88,13 @@ TEST(DataModelWrapperTest, GetDisplayTextEmptyWithoutPhone) {
   const_cast<wallet::Address*>(&instrument->address())->set_phone_number(
       string16());
 
-  ASSERT_TRUE(instrument_wrapper.GetInfo(PHONE_HOME_WHOLE_NUMBER).empty());
+  ASSERT_TRUE(
+      instrument_wrapper.GetInfo(
+          AutofillType(PHONE_HOME_WHOLE_NUMBER)).empty());
   EXPECT_TRUE(instrument_wrapper.GetDisplayText().empty());
 
-  ASSERT_TRUE(address_wrapper.GetInfo(PHONE_HOME_WHOLE_NUMBER).empty());
+  ASSERT_TRUE(
+      address_wrapper.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)).empty());
   EXPECT_TRUE(address_wrapper.GetDisplayText().empty());
 }
 

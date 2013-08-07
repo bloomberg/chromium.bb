@@ -39,7 +39,7 @@ const size_t kMaxFormCacheSize = 16;
 // into the Autofill server as experiment data.
 static void LogFieldAssignments(
     const FormStructure& form,
-    const FieldTypeSet& available_field_types) {
+    const ServerFieldTypeSet& available_field_types) {
   std::string form_xml;
   if (!form.EncodeFieldAssignments(available_field_types, &form_xml))
     return;
@@ -124,7 +124,7 @@ bool AutofillDownloadManager::StartQueryRequest(
 bool AutofillDownloadManager::StartUploadRequest(
     const FormStructure& form,
     bool form_was_autofilled,
-    const FieldTypeSet& available_field_types) {
+    const ServerFieldTypeSet& available_field_types) {
   std::string form_xml;
   if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
                                 &form_xml))

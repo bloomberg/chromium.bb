@@ -12,6 +12,8 @@
 
 namespace autofill {
 
+class AutofillType;
+
 // This class is an interface for collections of form fields, grouped by type.
 class FormGroup {
  public:
@@ -23,31 +25,31 @@ class FormGroup {
   // additive on |matching_types|.
   virtual void GetMatchingTypes(const base::string16& text,
                                 const std::string& app_locale,
-                                FieldTypeSet* matching_types) const;
+                                ServerFieldTypeSet* matching_types) const;
 
-  // Returns a set of AutofillFieldTypes for which this FormGroup has non-empty
+  // Returns a set of server field types for which this FormGroup has non-empty
   // data.  This method is additive on |non_empty_types|.
   virtual void GetNonEmptyTypes(const std::string& app_locale,
-                                FieldTypeSet* non_empty_types) const;
+                                ServerFieldTypeSet* non_empty_types) const;
 
   // Returns the string associated with |type|, without canonicalizing the
   // returned value.  For user-visible strings, use GetInfo() instead.
-  virtual base::string16 GetRawInfo(AutofillFieldType type) const = 0;
+  virtual base::string16 GetRawInfo(ServerFieldType type) const = 0;
 
   // Sets this FormGroup object's data for |type| to |value|, without
   // canonicalizing the |value|.  For data that has not already been
   // canonicalized, use SetInfo() instead.
-  virtual void SetRawInfo(AutofillFieldType type,
+  virtual void SetRawInfo(ServerFieldType type,
                           const base::string16& value) = 0;
 
   // Returns the string that should be auto-filled into a text field given the
   // type of that field, localized to the given |app_locale| if appropriate.
-  virtual base::string16 GetInfo(AutofillFieldType type,
+  virtual base::string16 GetInfo(const AutofillType& type,
                                  const std::string& app_locale) const;
 
   // Used to populate this FormGroup object with data.  Canonicalizes the data
   // according to the specified |app_locale| prior to storing, if appropriate.
-  virtual bool SetInfo(AutofillFieldType type,
+  virtual bool SetInfo(const AutofillType& type,
                        const base::string16& value,
                        const std::string& app_locale);
 
@@ -56,9 +58,9 @@ class FormGroup {
   // non-AutofillProfile type, for which mere inheritance is insufficient.
   friend class AutofillProfile;
 
-  // Returns a set of AutofillFieldTypes for which this FormGroup can store
+  // Returns a set of server field types for which this FormGroup can store
   // data.  This method is additive on |supported_types|.
-  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const = 0;
+  virtual void GetSupportedTypes(ServerFieldTypeSet* supported_types) const = 0;
 };
 
 }  // namespace autofill

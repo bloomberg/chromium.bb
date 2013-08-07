@@ -13,7 +13,7 @@ namespace autofill {
 
 struct AutofillServerFieldInfo {
   // The predicted type returned by the Autofill server for this field.
-  AutofillFieldType field_type;
+  ServerFieldType field_type;
   // Default value to be used for the field (only applies to
   // FIELD_WITH_DEFAULT_TYPE field type)
   std::string default_value;

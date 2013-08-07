@@ -39,16 +39,16 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_CONST_METHOD1(RequestedFieldsForSection,
                      const DetailInputs&(DialogSection));
   MOCK_METHOD1(ComboboxModelForAutofillType,
-               ui::ComboboxModel*(AutofillFieldType));
+               ui::ComboboxModel*(ServerFieldType));
   MOCK_METHOD1(MenuModelForSection, ui::MenuModel*(DialogSection));
   MOCK_CONST_METHOD1(LabelForSection, string16(DialogSection section));
   MOCK_METHOD1(SuggestionStateForSection, SuggestionState(DialogSection));
   MOCK_METHOD1(EditClickedForSection, void(DialogSection section));
   MOCK_METHOD1(EditCancelledForSection, void(DialogSection section));
   MOCK_CONST_METHOD2(IconForField,
-                     gfx::Image(AutofillFieldType, const string16&));
+                     gfx::Image(ServerFieldType, const string16&));
   MOCK_METHOD3(InputValidityMessage,
-      string16(DialogSection, AutofillFieldType, const string16&));
+      string16(DialogSection, ServerFieldType, const string16&));
   MOCK_METHOD3(InputsAreValid, ValidityData(DialogSection,
                                             const DetailOutputMap&,
                                             ValidationType));

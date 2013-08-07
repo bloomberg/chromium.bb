@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -123,7 +124,7 @@ AutofillDataModel::AutofillDataModel(const std::string& guid,
       origin_(origin) {}
 AutofillDataModel::~AutofillDataModel() {}
 
-void AutofillDataModel::FillSelectControl(AutofillFieldType type,
+void AutofillDataModel::FillSelectControl(const AutofillType& type,
                                           const std::string& app_locale,
                                           FormFieldData* field) const {
   DCHECK(field);
@@ -157,18 +158,22 @@ void AutofillDataModel::FillSelectControl(AutofillFieldType type,
     return;
   }
 
-  if (type == ADDRESS_HOME_STATE || type == ADDRESS_BILLING_STATE) {
+  ServerFieldType server_type = type.server_type();
+  if (server_type == ADDRESS_HOME_STATE ||
+      server_type == ADDRESS_BILLING_STATE) {
     FillStateSelectControl(field_text, field);
-  } else if (type == ADDRESS_HOME_COUNTRY || type == ADDRESS_BILLING_COUNTRY) {
+  } else if (server_type == ADDRESS_HOME_COUNTRY ||
+             server_type == ADDRESS_BILLING_COUNTRY) {
     FillCountrySelectControl(app_locale, field);
-  } else if (type == CREDIT_CARD_EXP_MONTH) {
+  } else if (server_type == CREDIT_CARD_EXP_MONTH) {
     FillExpirationMonthSelectControl(field_text, field);
-  } else if (type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
+  } else if (server_type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
     // Attempt to fill the year as a 2-digit year.  This compensates for the
     // fact that our heuristics do not always correctly detect when a website
     // requests a 2-digit rather than a 4-digit year.
-    FillSelectControl(CREDIT_CARD_EXP_2_DIGIT_YEAR, app_locale, field);
-  } else if (type == CREDIT_CARD_TYPE) {
+    FillSelectControl(AutofillType(CREDIT_CARD_EXP_2_DIGIT_YEAR), app_locale,
+                      field);
+  } else if (server_type == CREDIT_CARD_TYPE) {
     FillCreditCardTypeSelectControl(field_text, field);
   }
 }

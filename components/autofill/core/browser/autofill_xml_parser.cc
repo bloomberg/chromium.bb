@@ -100,7 +100,7 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
       if (attribute_name.compare("autofilltype") == 0) {
         int value = GetIntValue(context, *attrs);
         if (value >= 0 && value < MAX_VALID_FIELD_TYPE)
-          field_info.field_type = static_cast<AutofillFieldType>(value);
+          field_info.field_type = static_cast<ServerFieldType>(value);
         else
           field_info.field_type = NO_SERVER_DATA;
       } else if (field_info.field_type == FIELD_WITH_DEFAULT_VALUE &&

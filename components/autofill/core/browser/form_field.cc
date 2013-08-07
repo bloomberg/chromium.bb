@@ -19,7 +19,6 @@
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/credit_card_field.h"
 #include "components/autofill/core/browser/email_field.h"
-#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/name_field.h"
 #include "components/autofill/core/browser/phone_field.h"
@@ -52,7 +51,7 @@ bool IsCheckable(const AutofillField* field) {
 
 // static
 void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
-                                FieldTypeMap* map) {
+                                ServerFieldTypeMap* map) {
   // Set up a working copy of the fields to be processed.
   std::vector<const AutofillField*> remaining_fields(fields.size());
   std::copy(fields.begin(), fields.end(), remaining_fields.begin());
@@ -126,8 +125,8 @@ bool FormField::ParseEmptyLabel(AutofillScanner* scanner,
 
 // static
 bool FormField::AddClassification(const AutofillField* field,
-                                  AutofillFieldType type,
-                                  FieldTypeMap* map) {
+                                  ServerFieldType type,
+                                  ServerFieldTypeMap* map) {
   // Several fields are optional.
   if (!field)
     return true;
@@ -176,7 +175,7 @@ bool FormField::Match(const AutofillField* field,
 // static
 void FormField::ParseFormFieldsPass(ParseFunction parse,
                                     std::vector<const AutofillField*>* fields,
-                                    FieldTypeMap* map) {
+                                    ServerFieldTypeMap* map) {
   // Store unmatched fields for further processing by the caller.
   std::vector<const AutofillField*> remaining_fields;
 

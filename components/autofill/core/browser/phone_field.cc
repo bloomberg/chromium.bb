@@ -196,7 +196,7 @@ FormField* PhoneField::Parse(AutofillScanner* scanner) {
   return phone_field.release();
 }
 
-bool PhoneField::ClassifyField(FieldTypeMap* map) const {
+bool PhoneField::ClassifyField(ServerFieldTypeMap* map) const {
   bool ok = true;
 
   DCHECK(parsed_phone_fields_[FIELD_PHONE]);  // Phone was correctly parsed.
@@ -210,7 +210,7 @@ bool PhoneField::ClassifyField(FieldTypeMap* map) const {
                                    map);
     }
 
-    AutofillFieldType field_number_type = PHONE_HOME_NUMBER;
+    ServerFieldType field_number_type = PHONE_HOME_NUMBER;
     if (parsed_phone_fields_[FIELD_AREA_CODE] != NULL) {
       ok = ok && AddClassification(parsed_phone_fields_[FIELD_AREA_CODE],
                                    PHONE_HOME_CITY_CODE,

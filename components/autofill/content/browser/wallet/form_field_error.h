@@ -59,8 +59,8 @@ class FormFieldError {
   ErrorType error_type() const { return error_type_; }
   Location location() const { return location_; }
 
-  // Gets the appropriate AutofillFieldType for |location| and |error_type|.
-  AutofillFieldType GetAutofillType() const;
+  // Gets the appropriate field type for |location| and |error_type|.
+  ServerFieldType GetAutofillType() const;
 
   // Gets a user facing error message appropriate for |location| and
   // |error_type|.

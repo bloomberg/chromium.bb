@@ -13,7 +13,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 
-using autofill::AutofillFieldType;
+using autofill::ServerFieldType;
 using autofill::AutofillKey;
 using autofill::AutofillProfile;
 
@@ -103,7 +103,7 @@ void AutofillSyncPerfTest::UpdateProfiles(int profile) {
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     autofill_profiles.push_back(*all_profiles[i]);
-    autofill_profiles.back().SetRawInfo(AutofillFieldType(autofill::NAME_FIRST),
+    autofill_profiles.back().SetRawInfo(autofill::NAME_FIRST,
                                         UTF8ToUTF16(NextName()));
   }
   SetProfiles(profile, &autofill_profiles);

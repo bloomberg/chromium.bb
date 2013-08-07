@@ -5,6 +5,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,19 +18,19 @@ TEST(AutofillFieldTest, Type) {
   ASSERT_EQ(UNKNOWN_TYPE, field.heuristic_type());
 
   // |server_type_| is NO_SERVER_DATA, so |heuristic_type_| is returned.
-  EXPECT_EQ(UNKNOWN_TYPE, field.type());
+  EXPECT_EQ(UNKNOWN_TYPE, field.Type().server_type());
 
   // Set the heuristic type and check it.
   field.set_heuristic_type(NAME_FIRST);
-  EXPECT_EQ(NAME_FIRST, field.type());
+  EXPECT_EQ(NAME_FIRST, field.Type().server_type());
 
   // Set the server type and check it.
   field.set_server_type(ADDRESS_BILLING_LINE1);
-  EXPECT_EQ(ADDRESS_BILLING_LINE1, field.type());
+  EXPECT_EQ(ADDRESS_BILLING_LINE1, field.Type().server_type());
 
   // Remove the server type to make sure the heuristic type is preserved.
   field.set_server_type(NO_SERVER_DATA);
-  EXPECT_EQ(NAME_FIRST, field.type());
+  EXPECT_EQ(NAME_FIRST, field.Type().server_type());
 }
 
 TEST(AutofillFieldTest, IsEmpty) {
@@ -71,7 +72,7 @@ TEST(AutofillFieldTest, FieldSignature) {
 
 TEST(AutofillFieldTest, IsFieldFillable) {
   AutofillField field;
-  ASSERT_EQ(UNKNOWN_TYPE, field.type());
+  ASSERT_EQ(UNKNOWN_TYPE, field.Type().server_type());
 
   // Type is unknown.
   EXPECT_FALSE(field.IsFieldFillable());

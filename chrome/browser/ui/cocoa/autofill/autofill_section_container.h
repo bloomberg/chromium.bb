@@ -86,7 +86,7 @@ namespace autofill {
 @interface AutofillSectionContainer (ForTesting)
 
 // Retrieve the field associated with the given type.
-- (NSControl<AutofillInputField>*)getField:(autofill::AutofillFieldType)type;
+- (NSControl<AutofillInputField>*)getField:(autofill::ServerFieldType)type;
 
 // Sets the value for the field matching |input|. Does nothing if the field is
 // not part of this section.

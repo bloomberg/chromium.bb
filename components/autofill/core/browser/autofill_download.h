@@ -82,7 +82,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // stored on the local client.
   bool StartUploadRequest(const FormStructure& form,
                           bool form_was_autofilled,
-                          const FieldTypeSet& available_field_types);
+                          const ServerFieldTypeSet& available_field_types);
 
  private:
   friend class AutofillDownloadTest;

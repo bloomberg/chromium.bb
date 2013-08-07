@@ -17,8 +17,9 @@ namespace autofill {
 // Autofill server, which is itself backward-compatible.  The list must be kept
 // up to date with the Autofill server list.
 //
-// This is the list of all valid field types.
-enum AutofillFieldType {
+// The list of all field types natively understood by the Autofill server.  A
+// subset of these types is used to store Autofill data in the user's profile.
+enum ServerFieldType {
   // Server indication that it has no data for the requested field.
   NO_SERVER_DATA = 0,
   // Client indication that the text entered did not match anything in the
@@ -117,8 +118,8 @@ enum FieldTypeGroup {
   CREDIT_CARD,
 };
 
-typedef std::set<AutofillFieldType> FieldTypeSet;
-typedef std::map<base::string16, AutofillFieldType> FieldTypeMap;
+typedef std::set<ServerFieldType> ServerFieldTypeSet;
+typedef std::map<base::string16, ServerFieldType> ServerFieldTypeMap;
 
 }  // namespace autofill
 

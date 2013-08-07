@@ -15,29 +15,32 @@ namespace autofill {
 // and for associating form fields with form values in the Web Database.
 class AutofillType {
  public:
-  explicit AutofillType(AutofillFieldType field_type);
+  explicit AutofillType(ServerFieldType field_type);
   AutofillType(const AutofillType& autofill_type);
   AutofillType& operator=(const AutofillType& autofill_type);
 
-  AutofillFieldType field_type() const;
+  // TODO(isherman): Audit all uses of this method.
+  ServerFieldType server_type() const { return server_type_; }
   FieldTypeGroup group() const;
 
   // Maps |field_type| to a field type that can be directly stored in a profile
   // (in the sense that it makes sense to call |AutofillProfile::SetInfo()| with
   // the returned field type as the first parameter).
-  static AutofillFieldType GetEquivalentFieldType(AutofillFieldType field_type);
+  static ServerFieldType GetEquivalentFieldType(ServerFieldType field_type);
 
   // Maps |field_type| to a field type from ADDRESS_BILLING FieldTypeGroup if
   // field type is an Address type.
-  static AutofillFieldType GetEquivalentBillingFieldType(
-      AutofillFieldType field_type);
+  static ServerFieldType GetEquivalentBillingFieldType(
+      ServerFieldType field_type);
 
-  // Utilities for serializing and deserializing an |AutofillFieldType|.
-  static std::string FieldTypeToString(AutofillFieldType field_type);
-  static AutofillFieldType StringToFieldType(const std::string& str);
+  // Utilities for serializing and deserializing a |ServerFieldType|.
+  // TODO(isherman): This should probably serialize an HTML type as well.
+  //                 Audit all uses of these functions.
+  static std::string FieldTypeToString(ServerFieldType field_type);
+  static ServerFieldType StringToFieldType(const std::string& str);
 
  private:
-  AutofillFieldType field_type_;
+  ServerFieldType server_type_;
 };
 
 }  // namespace autofill

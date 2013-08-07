@@ -138,7 +138,7 @@ TEST(FormFieldTest, ParseFormFields) {
   field_data.label = ASCIIToUTF16("Address line2");
   fields.push_back(new AutofillField(field_data, field_data.label));
 
-  FieldTypeMap field_type_map;
+  ServerFieldTypeMap field_type_map;
   FormField::ParseFormFields(fields.get(), &field_type_map);
   // Checkable element shouldn't interfere with inference of Address line2.
   EXPECT_EQ(2U, field_type_map.size());

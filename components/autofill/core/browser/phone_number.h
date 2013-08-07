@@ -10,7 +10,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_group.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 
@@ -30,15 +29,16 @@ class PhoneNumber : public FormGroup {
   void set_profile(AutofillProfile* profile) { profile_ = profile; }
 
   // FormGroup implementation:
-  virtual void GetMatchingTypes(const base::string16& text,
-                                const std::string& app_locale,
-                                FieldTypeSet* matching_types) const OVERRIDE;
-  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
-  virtual void SetRawInfo(AutofillFieldType type,
+  virtual void GetMatchingTypes(
+      const base::string16& text,
+      const std::string& app_locale,
+      ServerFieldTypeSet* matching_types) const OVERRIDE;
+  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE;
+  virtual void SetRawInfo(ServerFieldType type,
                           const base::string16& value) OVERRIDE;
-  virtual base::string16 GetInfo(AutofillFieldType type,
+  virtual base::string16 GetInfo(const AutofillType& type,
                            const std::string& app_locale) const OVERRIDE;
-  virtual bool SetInfo(AutofillFieldType type,
+  virtual bool SetInfo(const AutofillType& type,
                        const base::string16& value,
                        const std::string& app_locale) OVERRIDE;
 
@@ -56,7 +56,7 @@ class PhoneNumber : public FormGroup {
 
     // If |type| is a phone field type, saves the |value| accordingly and
     // returns true.  For all other field types returs false.
-    bool SetInfo(AutofillFieldType type, const base::string16& value);
+    bool SetInfo(const AutofillType& type, const base::string16& value);
 
     // Parses the number built up from pieces stored via SetInfo() according to
     // the specified |profile|'s country code, falling back to the given
@@ -78,7 +78,8 @@ class PhoneNumber : public FormGroup {
 
  private:
   // FormGroup:
-  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
+  virtual void GetSupportedTypes(
+      ServerFieldTypeSet* supported_types) const OVERRIDE;
 
   // Updates the cached parsed number if the profile's region has changed
   // since the last time the cache was updated.

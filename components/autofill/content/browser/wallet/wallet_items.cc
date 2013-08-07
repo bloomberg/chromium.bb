@@ -309,12 +309,12 @@ const gfx::Image& WalletItems::MaskedInstrument::CardIcon() const {
 }
 
 base::string16 WalletItems::MaskedInstrument::GetInfo(
-    AutofillFieldType type,
+    const AutofillType& type,
     const std::string& app_locale) const {
-  if (AutofillType(type).group() != CREDIT_CARD)
+  if (type.group() != CREDIT_CARD)
     return address().GetInfo(type, app_locale);
 
-  switch (type) {
+  switch (type.server_type()) {
     case CREDIT_CARD_NAME:
       return address().recipient_name();
 

@@ -150,7 +150,7 @@ void DeterminePossibleFieldTypesForUpload(
     AutofillField* field = submitted_form->field(i);
     base::string16 value = CollapseWhitespace(field->value, false);
 
-    FieldTypeSet matching_types;
+    ServerFieldTypeSet matching_types;
     for (std::vector<AutofillProfile>::const_iterator it = profiles.begin();
          it != profiles.end(); ++it) {
       it->GetMatchingTypes(value, app_locale, &matching_types);
@@ -424,9 +424,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       GetCachedFormAndField(form, field, &form_structure, &autofill_field) &&
       // Don't send suggestions for forms that aren't auto-fillable.
       form_structure->IsAutofillable(false)) {
-    AutofillFieldType type = autofill_field->type();
-    bool is_filling_credit_card =
-        (AutofillType(type).group() == CREDIT_CARD);
+    AutofillType type = autofill_field->Type();
+    bool is_filling_credit_card = (type.group() == CREDIT_CARD);
     if (is_filling_credit_card) {
       GetCreditCardSuggestions(
           field, type, &values, &labels, &icons, &unique_ids);
@@ -534,8 +533,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
   }
 
   // Cache the field type for the field from which the user initiated autofill.
-  FieldTypeGroup initiating_group_type =
-      AutofillType(autofill_field->type()).group();
+  FieldTypeGroup initiating_group_type = autofill_field->Type().group();
   DCHECK_EQ(form_structure->field_count(), form.fields.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     if (form_structure->field(i)->section() != autofill_field->section())
@@ -544,8 +542,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     DCHECK_EQ(*form_structure->field(i), result.fields[i]);
 
     const AutofillField* cached_field = form_structure->field(i);
-    FieldTypeGroup field_group_type =
-        AutofillType(cached_field->type()).group();
+    FieldTypeGroup field_group_type = cached_field->Type().group();
     if (field_group_type != NO_GROUP) {
       // If the field being filled is either
       //   (a) the field that the user initiated the fill from, or
@@ -857,7 +854,7 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
       was_autofilled = true;
   }
 
-  FieldTypeSet non_empty_types;
+  ServerFieldTypeSet non_empty_types;
   personal_data_->GetNonEmptyTypes(&non_empty_types);
 
   download_manager_->StartUploadRequest(submitted_form, was_autofilled,
@@ -1071,14 +1068,14 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
 void AutofillManager::GetProfileSuggestions(
     FormStructure* form,
     const FormFieldData& field,
-    AutofillFieldType type,
+    const AutofillType& type,
     std::vector<base::string16>* values,
     std::vector<base::string16>* labels,
     std::vector<base::string16>* icons,
     std::vector<int>* unique_ids) const {
-  std::vector<AutofillFieldType> field_types(form->field_count());
+  std::vector<ServerFieldType> field_types(form->field_count());
   for (size_t i = 0; i < form->field_count(); ++i) {
-    field_types[i] = form->field(i)->type();
+    field_types.push_back(form->field(i)->Type().server_type());
   }
   std::vector<GUIDPair> guid_pairs;
 
@@ -1094,7 +1091,7 @@ void AutofillManager::GetProfileSuggestions(
 
 void AutofillManager::GetCreditCardSuggestions(
     const FormFieldData& field,
-    AutofillFieldType type,
+    const AutofillType& type,
     std::vector<base::string16>* values,
     std::vector<base::string16>* labels,
     std::vector<base::string16>* icons,

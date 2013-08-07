@@ -204,10 +204,10 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   download_manager_.SetNegativeUploadRate(1.0);
   // Request with id 1.
   EXPECT_TRUE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, FieldTypeSet()));
+      *(form_structures[0]), true, ServerFieldTypeSet()));
   // Request with id 2.
   EXPECT_TRUE(download_manager_.StartUploadRequest(
-      *(form_structures[1]), false, FieldTypeSet()));
+      *(form_structures[1]), false, ServerFieldTypeSet()));
 
   const char *responses[] = {
     "<autofillqueryresponse>"
@@ -272,9 +272,9 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   download_manager_.SetNegativeUploadRate(0.0);
   // No actual requests for the next two calls, as we set upload rate to 0%.
   EXPECT_FALSE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, FieldTypeSet()));
+      *(form_structures[0]), true, ServerFieldTypeSet()));
   EXPECT_FALSE(download_manager_.StartUploadRequest(
-      *(form_structures[1]), false, FieldTypeSet()));
+      *(form_structures[1]), false, ServerFieldTypeSet()));
   fetcher = factory.GetFetcherByID(3);
   EXPECT_EQ(NULL, fetcher);
 
@@ -315,7 +315,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   form_structures[0]->upload_required_ = UPLOAD_REQUIRED;
   // Request with id 4.
   EXPECT_TRUE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, FieldTypeSet()));
+      *(form_structures[0]), true, ServerFieldTypeSet()));
   fetcher = factory.GetFetcherByID(4);
   ASSERT_TRUE(fetcher);
   fetcher->set_backoff_delay(TestTimeouts::action_max_timeout());
@@ -327,7 +327,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
 
   // Upload requests should be ignored for the next 10 seconds.
   EXPECT_FALSE(download_manager_.StartUploadRequest(
-      *(form_structures[0]), true, FieldTypeSet()));
+      *(form_structures[0]), true, ServerFieldTypeSet()));
   fetcher = factory.GetFetcherByID(5);
   EXPECT_EQ(NULL, fetcher);
 }

@@ -60,7 +60,8 @@ void AutofillProfile31FromStatement(const sql::Statement& s,
   profile->SetRawInfo(autofill::ADDRESS_HOME_STATE, s.ColumnString16(10));
   profile->SetRawInfo(autofill::ADDRESS_HOME_ZIP, s.ColumnString16(11));
   profile->SetInfo(
-      autofill::ADDRESS_HOME_COUNTRY, s.ColumnString16(12), "en-US");
+      autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
+      s.ColumnString16(12), "en-US");
   profile->SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(13));
   *date_modified = s.ColumnInt64(15);
   profile->set_guid(s.ColumnString(16));
@@ -81,7 +82,8 @@ void AutofillProfile33FromStatement(const sql::Statement& s,
   profile->SetRawInfo(autofill::ADDRESS_HOME_STATE, s.ColumnString16(5));
   profile->SetRawInfo(autofill::ADDRESS_HOME_ZIP, s.ColumnString16(6));
   profile->SetInfo(
-      autofill::ADDRESS_HOME_COUNTRY, s.ColumnString16(7), "en-US");
+      autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
+      s.ColumnString16(7), "en-US");
   *date_modified = s.ColumnInt64(8);
 }
 

@@ -86,7 +86,7 @@ const char kTestCCNumberInvalid[] = "4111111111111112";
 
 void SetOutputValue(const DetailInputs& inputs,
                     DetailOutputMap* outputs,
-                    AutofillFieldType type,
+                    ServerFieldType type,
                     const base::string16& value) {
   for (size_t i = 0; i < inputs.size(); ++i) {
     const DetailInput& input = inputs[i];
@@ -517,10 +517,10 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
 
   for (size_t i = 0; i < 2; ++i) {
-    AutofillFieldType phone = i == 0 ? PHONE_HOME_WHOLE_NUMBER :
-                                       PHONE_BILLING_WHOLE_NUMBER;
-    AutofillFieldType address = i == 0 ? ADDRESS_HOME_COUNTRY :
-                                         ADDRESS_BILLING_COUNTRY;
+    ServerFieldType phone = i == 0 ? PHONE_HOME_WHOLE_NUMBER :
+                                     PHONE_BILLING_WHOLE_NUMBER;
+    ServerFieldType address = i == 0 ? ADDRESS_HOME_COUNTRY :
+                                       ADDRESS_BILLING_COUNTRY;
     DialogSection section = i == 0 ? SECTION_SHIPPING : SECTION_BILLING;
 
     controller()->EditClickedForSection(section);
@@ -1011,19 +1011,22 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
 
   controller()->OnAccept();
   ASSERT_EQ(20U, form_structure()->field_count());
-  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(9)->type());
-  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(16)->type());
+  EXPECT_EQ(ADDRESS_BILLING_STATE,
+            form_structure()->field(9)->Type().server_type());
+  EXPECT_EQ(ADDRESS_HOME_STATE,
+            form_structure()->field(16)->Type().server_type());
   string16 billing_state = form_structure()->field(9)->value;
   string16 shipping_state = form_structure()->field(16)->value;
   EXPECT_FALSE(billing_state.empty());
   EXPECT_FALSE(shipping_state.empty());
   EXPECT_NE(billing_state, shipping_state);
 
-  EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(1)->type());
+  EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(1)->Type().server_type());
   string16 cc_name = form_structure()->field(1)->value;
-  EXPECT_EQ(NAME_BILLING_FULL, form_structure()->field(6)->type());
+  EXPECT_EQ(NAME_BILLING_FULL,
+            form_structure()->field(6)->Type().server_type());
   string16 billing_name = form_structure()->field(6)->value;
-  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->type());
+  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->Type().server_type());
   string16 shipping_name = form_structure()->field(13)->value;
 
   EXPECT_FALSE(cc_name.empty());
@@ -1048,19 +1051,23 @@ TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
 
   controller()->OnAccept();
   ASSERT_EQ(20U, form_structure()->field_count());
-  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(9)->type());
-  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(16)->type());
+  EXPECT_EQ(ADDRESS_BILLING_STATE,
+            form_structure()->field(9)->Type().server_type());
+  EXPECT_EQ(ADDRESS_HOME_STATE,
+            form_structure()->field(16)->Type().server_type());
   string16 billing_state = form_structure()->field(9)->value;
   string16 shipping_state = form_structure()->field(16)->value;
   EXPECT_FALSE(billing_state.empty());
   EXPECT_FALSE(shipping_state.empty());
   EXPECT_EQ(billing_state, shipping_state);
 
-  EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(1)->type());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            form_structure()->field(1)->Type().server_type());
   string16 cc_name = form_structure()->field(1)->value;
-  EXPECT_EQ(NAME_BILLING_FULL, form_structure()->field(6)->type());
+  EXPECT_EQ(NAME_BILLING_FULL,
+            form_structure()->field(6)->Type().server_type());
   string16 billing_name = form_structure()->field(6)->value;
-  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->type());
+  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->Type().server_type());
   string16 shipping_name = form_structure()->field(13)->value;
 
   EXPECT_FALSE(cc_name.empty());
@@ -1097,8 +1104,10 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingPhoneNumber) {
 
   controller()->OnAccept();
   ASSERT_EQ(2U, form_structure()->field_count());
-  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, form_structure()->field(0)->type());
-  EXPECT_EQ(PHONE_BILLING_WHOLE_NUMBER, form_structure()->field(1)->type());
+  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+            form_structure()->field(0)->Type().server_type());
+  EXPECT_EQ(PHONE_BILLING_WHOLE_NUMBER,
+            form_structure()->field(1)->Type().server_type());
   EXPECT_EQ(shipping_profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
             form_structure()->field(0)->value);
   EXPECT_EQ(billing_profile.GetRawInfo(PHONE_BILLING_WHOLE_NUMBER),
@@ -1497,7 +1506,7 @@ TEST_F(AutofillDialogControllerTest, EditAutofillProfile) {
     const DetailInput& input = inputs[i];
     EXPECT_EQ(input.type == NAME_FULL ? ASCIIToUTF16("Edited Name") :
                                         input.initial_value,
-              edited_profile.GetInfo(input.type, "en-US"));
+              edited_profile.GetInfo(AutofillType(input.type), "en-US"));
   }
 }
 
@@ -1521,7 +1530,7 @@ TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
   AutofillProfile full_profile2(test::GetVerifiedProfile2());
   for (size_t i = 0; i < inputs.size(); ++i) {
     const DetailInput& input = inputs[i];
-    outputs[&input] = full_profile2.GetInfo(input.type, "en-US");
+    outputs[&input] = full_profile2.GetInfo(AutofillType(input.type), "en-US");
   }
   controller()->GetView()->SetUserInput(SECTION_BILLING, outputs);
 
@@ -1533,16 +1542,17 @@ TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
   for (size_t i = 0; i < shipping_inputs.size(); ++i) {
     const DetailInput& input = shipping_inputs[i];
-    EXPECT_EQ(full_profile2.GetInfo(input.type, "en-US"),
-              added_profile.GetInfo(input.type, "en-US"));
+    EXPECT_EQ(full_profile2.GetInfo(AutofillType(input.type), "en-US"),
+              added_profile.GetInfo(AutofillType(input.type), "en-US"));
   }
 
   // Also, the currently selected email address should get added to the new
   // profile.
-  string16 original_email = full_profile.GetInfo(EMAIL_ADDRESS, "en-US");
+  string16 original_email =
+      full_profile.GetInfo(AutofillType(EMAIL_ADDRESS), "en-US");
   EXPECT_FALSE(original_email.empty());
   EXPECT_EQ(original_email,
-            added_profile.GetInfo(EMAIL_ADDRESS, "en-US"));
+            added_profile.GetInfo(AutofillType(EMAIL_ADDRESS), "en-US"));
 }
 
 // Makes sure that a newly added email address gets added to an existing profile
@@ -1570,7 +1580,8 @@ TEST_F(AutofillDialogControllerTest, AddEmail) {
   FillCreditCardInputs();
   controller()->OnAccept();
   std::vector<base::string16> email_values;
-  full_profile.GetMultiInfo(EMAIL_ADDRESS, "en-US", &email_values);
+  full_profile.GetMultiInfo(
+      AutofillType(EMAIL_ADDRESS), "en-US", &email_values);
   ASSERT_EQ(2U, email_values.size());
   EXPECT_EQ(new_email, email_values[1]);
 }
@@ -2030,7 +2041,7 @@ TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
 
   size_t i = 0;
   for (; i < form_structure()->field_count(); ++i) {
-    if (form_structure()->field(i)->type() == EMAIL_ADDRESS) {
+    if (form_structure()->field(i)->Type().server_type() == EMAIL_ADDRESS) {
       EXPECT_EQ(ASCIIToUTF16(kFakeEmail), form_structure()->field(i)->value);
       break;
     }
@@ -2045,10 +2056,13 @@ TEST_F(AutofillDialogControllerTest, AutofillTypes) {
   controller()->OnAccept();
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
   ASSERT_EQ(20U, form_structure()->field_count());
-  EXPECT_EQ(EMAIL_ADDRESS, form_structure()->field(0)->type());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure()->field(2)->type());
-  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(9)->type());
-  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(16)->type());
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure()->field(0)->Type().server_type());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            form_structure()->field(2)->Type().server_type());
+  EXPECT_EQ(ADDRESS_BILLING_STATE,
+            form_structure()->field(9)->Type().server_type());
+  EXPECT_EQ(ADDRESS_HOME_STATE,
+            form_structure()->field(16)->Type().server_type());
 }
 
 TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
@@ -2223,7 +2237,7 @@ TEST_F(AutofillDialogControllerTest, WalletExpiredCard) {
 
   EXPECT_TRUE(controller()->IsEditingExistingData(SECTION_CC_BILLING));
 
-  // Use |SetOutputValue()| to put the right AutofillFieldTypes into the map.
+  // Use |SetOutputValue()| to put the right ServerFieldTypes into the map.
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
   DetailOutputMap outputs;

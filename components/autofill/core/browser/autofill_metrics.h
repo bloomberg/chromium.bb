@@ -378,14 +378,14 @@ class AutofillMetrics {
 
   virtual void LogHeuristicTypePrediction(
       FieldTypeQualityMetric metric,
-      AutofillFieldType field_type,
+      ServerFieldType field_type,
       const std::string& experiment_id) const;
   virtual void LogOverallTypePrediction(
       FieldTypeQualityMetric metric,
-      AutofillFieldType field_type,
+      ServerFieldType field_type,
       const std::string& experiment_id) const;
   virtual void LogServerTypePrediction(FieldTypeQualityMetric metric,
-                                       AutofillFieldType field_type,
+                                       ServerFieldType field_type,
                                        const std::string& experiment_id) const;
 
   virtual void LogQualityMetric(QualityMetric metric,

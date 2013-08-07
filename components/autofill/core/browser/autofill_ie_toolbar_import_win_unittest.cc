@@ -170,9 +170,11 @@ TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {
   EXPECT_EQ(profile1[3].value, profiles[1].GetRawInfo(EMAIL_ADDRESS));
   EXPECT_EQ(profile1[4].value, profiles[1].GetRawInfo(COMPANY_NAME));
   EXPECT_EQ(profile1[7].value,
-            profiles[1].GetInfo(PHONE_HOME_COUNTRY_CODE, "US"));
-  EXPECT_EQ(profile1[6].value, profiles[1].GetInfo(PHONE_HOME_CITY_CODE, "US"));
-  EXPECT_EQ(L"5555555", profiles[1].GetInfo(PHONE_HOME_NUMBER, "US"));
+            profiles[1].GetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE), "US"));
+  EXPECT_EQ(profile1[6].value,
+            profiles[1].GetInfo(AutofillType(PHONE_HOME_CITY_CODE), "US"));
+  EXPECT_EQ(L"5555555",
+            profiles[1].GetInfo(AutofillType(PHONE_HOME_NUMBER), "US"));
   EXPECT_EQ(L"+1 650-555-5555",
             profiles[1].GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 

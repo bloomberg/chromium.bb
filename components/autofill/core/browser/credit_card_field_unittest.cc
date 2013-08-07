@@ -20,7 +20,7 @@ class CreditCardFieldTest : public testing::Test {
  protected:
   ScopedVector<const AutofillField> list_;
   scoped_ptr<CreditCardField> field_;
-  FieldTypeMap field_type_map_;
+  ServerFieldTypeMap field_type_map_;
 
   // Downcast for tests.
   static CreditCardField* Parse(AutofillScanner* scanner) {

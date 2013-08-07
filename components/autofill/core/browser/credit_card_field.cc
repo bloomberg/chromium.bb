@@ -193,7 +193,7 @@ CreditCardField::CreditCardField()
       is_two_digit_year_(false) {
 }
 
-bool CreditCardField::ClassifyField(FieldTypeMap* map) const {
+bool CreditCardField::ClassifyField(ServerFieldTypeMap* map) const {
   bool ok = AddClassification(number_, CREDIT_CARD_NUMBER, map);
   ok = ok && AddClassification(type_, CREDIT_CARD_TYPE, map);
   ok = ok && AddClassification(verification_, CREDIT_CARD_VERIFICATION_CODE,

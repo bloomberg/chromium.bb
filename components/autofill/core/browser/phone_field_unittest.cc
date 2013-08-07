@@ -20,7 +20,7 @@ class PhoneFieldTest : public testing::Test {
  protected:
   ScopedVector<const AutofillField> list_;
   scoped_ptr<PhoneField> field_;
-  FieldTypeMap field_type_map_;
+  ServerFieldTypeMap field_type_map_;
 
   // Downcast for tests.
   static PhoneField* Parse(AutofillScanner* scanner) {

@@ -19,13 +19,13 @@ class TestAutofillDataModel : public AutofillDataModel {
   virtual ~TestAutofillDataModel() {}
 
  private:
-  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE {
+  virtual base::string16 GetRawInfo(ServerFieldType type) const OVERRIDE {
     return base::string16();
   }
-  virtual void SetRawInfo(AutofillFieldType type,
+  virtual void SetRawInfo(ServerFieldType type,
                           const base::string16& value) OVERRIDE {}
   virtual void GetSupportedTypes(
-      FieldTypeSet* supported_types) const OVERRIDE {}
+      ServerFieldTypeSet* supported_types) const OVERRIDE {}
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
                              const std::string& app_locale,

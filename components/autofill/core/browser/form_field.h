@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
 
@@ -28,7 +28,7 @@ class FormField {
   // The association is stored into |map|.  Each field has a derived unique name
   // that is used as the key into the |map|.
   static void ParseFormFields(const std::vector<AutofillField*>& fields,
-                              FieldTypeMap* map);
+                              ServerFieldTypeMap* map);
 
  protected:
   // A bit-field used for matching specific parts of a field in question.
@@ -76,14 +76,14 @@ class FormField {
 
   // Adds an association between a field and a type to |map|.
   static bool AddClassification(const AutofillField* field,
-                                AutofillFieldType type,
-                                FieldTypeMap* map);
+                                ServerFieldType type,
+                                ServerFieldTypeMap* map);
 
   // Derived classes must implement this interface to supply field type
   // information.  |ParseFormFields| coordinates the parsing and extraction
   // of types from an input vector of |AutofillField| objects and delegates
   // the type extraction via this method.
-  virtual bool ClassifyField(FieldTypeMap* map) const = 0;
+  virtual bool ClassifyField(ServerFieldTypeMap* map) const = 0;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FormFieldTest, Match);
@@ -114,7 +114,7 @@ class FormField {
   // Classification results of the processed fields are stored in |map|.
   static void ParseFormFieldsPass(ParseFunction parse,
                                   std::vector<const AutofillField*>* fields,
-                                  FieldTypeMap* map);
+                                  ServerFieldTypeMap* map);
 
   DISALLOW_COPY_AND_ASSIGN(FormField);
 };

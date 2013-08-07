@@ -109,21 +109,22 @@ bool IsMinimumAddress(const AutofillProfile& profile,
 
 // Return true if the |field_type| and |value| are valid within the context
 // of importing a form.
-bool IsValidFieldTypeAndValue(const std::set<AutofillFieldType>& types_seen,
-                              AutofillFieldType field_type,
+bool IsValidFieldTypeAndValue(const std::set<ServerFieldType>& types_seen,
+                              ServerFieldType field_type,
                               const base::string16& value) {
   // Abandon the import if two fields of the same type are encountered.
   // This indicates ambiguous data or miscategorization of types.
   // Make an exception for PHONE_HOME_NUMBER however as both prefix and
   // suffix are stored against this type, and for EMAIL_ADDRESS because it is
   // common to see second 'confirm email address' fields on forms.
-  if (types_seen.count(field_type) && field_type != PHONE_HOME_NUMBER &&
+  if (types_seen.count(field_type) &&
+      field_type != PHONE_HOME_NUMBER &&
       field_type != EMAIL_ADDRESS)
     return false;
 
   // Abandon the import if an email address value shows up in a field that is
   // not an email address.
-  if (field_type != EMAIL_ADDRESS && autofill::IsValidEmailAddress(value))
+  if (field_type != EMAIL_ADDRESS && IsValidEmailAddress(value))
     return false;
 
   return true;
@@ -240,7 +241,9 @@ bool PersonalDataManager::ImportFormData(
   int importable_credit_card_fields = 0;
 
   // Detect and discard forms with multiple fields of the same type.
-  std::set<AutofillFieldType> types_seen;
+  // TODO(isherman): Some types are overlapping but not equal, e.g. phone number
+  // parts, address parts.
+  std::set<ServerFieldType> types_seen;
 
   // We only set complete phone, so aggregate phone parts in these vars and set
   // complete at the end.
@@ -255,15 +258,16 @@ bool PersonalDataManager::ImportFormData(
     if (!field->IsFieldFillable() || value.empty())
       continue;
 
-    AutofillFieldType field_type = field->type();
-    FieldTypeGroup group(AutofillType(field_type).group());
+    AutofillType field_type = field->Type();
+    ServerFieldType server_field_type = field_type.server_type();
+    FieldTypeGroup group(field_type.group());
 
     // There can be multiple email fields (e.g. in the case of 'confirm email'
     // fields) but they must all contain the same value, else the profile is
     // invalid.
-    if (field_type == EMAIL_ADDRESS) {
-      if (types_seen.count(field_type) &&
-          imported_profile->GetRawInfo(field_type) != value) {
+    if (server_field_type == EMAIL_ADDRESS) {
+      if (types_seen.count(server_field_type) &&
+          imported_profile->GetRawInfo(EMAIL_ADDRESS) != value) {
         imported_profile.reset();
         break;
       }
@@ -271,17 +275,17 @@ bool PersonalDataManager::ImportFormData(
 
     // If the |field_type| and |value| don't pass basic validity checks then
     // abandon the import.
-    if (!IsValidFieldTypeAndValue(types_seen, field_type, value)) {
+    if (!IsValidFieldTypeAndValue(types_seen, server_field_type, value)) {
       imported_profile.reset();
       local_imported_credit_card.reset();
       break;
     }
 
-    types_seen.insert(field_type);
+    types_seen.insert(server_field_type);
 
     if (group == CREDIT_CARD) {
       if (LowerCaseEqualsASCII(field->form_control_type, "month")) {
-        DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type);
+        DCHECK_EQ(CREDIT_CARD_EXP_MONTH, server_field_type);
         local_imported_credit_card->SetInfoForMonthInputType(value);
       } else {
         local_imported_credit_card->SetInfo(field_type, value, app_locale_);
@@ -296,7 +300,7 @@ bool PersonalDataManager::ImportFormData(
         imported_profile->SetInfo(field_type, value, app_locale_);
 
       // Reject profiles with invalid country information.
-      if (field_type == ADDRESS_HOME_COUNTRY &&
+      if (server_field_type == ADDRESS_HOME_COUNTRY &&
           !value.empty() &&
           imported_profile->GetRawInfo(ADDRESS_HOME_COUNTRY).empty()) {
         imported_profile.reset();
@@ -310,7 +314,8 @@ bool PersonalDataManager::ImportFormData(
     base::string16 constructed_number;
     if (!home.ParseNumber(*imported_profile, app_locale_,
                           &constructed_number) ||
-        !imported_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number,
+        !imported_profile->SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
+                                   constructed_number,
                                    app_locale_)) {
       imported_profile.reset();
     }
@@ -521,7 +526,7 @@ CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
 }
 
 void PersonalDataManager::GetNonEmptyTypes(
-    FieldTypeSet* non_empty_types) {
+    ServerFieldTypeSet* non_empty_types) {
   const std::vector<AutofillProfile*>& profiles = GetProfiles();
   for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
@@ -569,10 +574,10 @@ void PersonalDataManager::Refresh() {
 }
 
 void PersonalDataManager::GetProfileSuggestions(
-    AutofillFieldType type,
+    const AutofillType& type,
     const base::string16& field_contents,
     bool field_is_autofilled,
-    std::vector<AutofillFieldType> other_field_types,
+    std::vector<ServerFieldType> other_field_types,
     std::vector<base::string16>* values,
     std::vector<base::string16>* labels,
     std::vector<base::string16>* icons,
@@ -612,9 +617,11 @@ void PersonalDataManager::GetProfileSuggestions(
         // Phone numbers could be split in US forms, so field value could be
         // either prefix or suffix of the phone.
         bool matched_phones = false;
-        if (type == PHONE_HOME_NUMBER && !field_value_lower_case.empty() &&
-            (profile_value_lower_case.find(field_value_lower_case) !=
-             base::string16::npos)) {
+        if ((type.server_type() == PHONE_HOME_NUMBER ||
+             type.server_type() == PHONE_BILLING_NUMBER) &&
+            !field_value_lower_case.empty() &&
+            profile_value_lower_case.find(field_value_lower_case) !=
+                base::string16::npos) {
           matched_phones = true;
         }
 
@@ -639,7 +646,7 @@ void PersonalDataManager::GetProfileSuggestions(
   if (!field_is_autofilled) {
     AutofillProfile::CreateInferredLabels(
         &matched_profiles, &other_field_types,
-        type, 1, labels);
+        type.server_type(), 1, labels);
   } else {
     // No sub-labels for previously filled fields.
     labels->resize(values->size());
@@ -650,7 +657,7 @@ void PersonalDataManager::GetProfileSuggestions(
 }
 
 void PersonalDataManager::GetCreditCardSuggestions(
-    AutofillFieldType type,
+    const AutofillType& type,
     const base::string16& field_contents,
     std::vector<base::string16>* values,
     std::vector<base::string16>* labels,
@@ -671,13 +678,14 @@ void PersonalDataManager::GetCreditCardSuggestions(
         credit_card->GetInfo(type, app_locale_);
     if (!creditcard_field_value.empty() &&
         StartsWith(creditcard_field_value, field_contents, false)) {
-      if (type == CREDIT_CARD_NUMBER)
+      if (type.server_type() == CREDIT_CARD_NUMBER)
         creditcard_field_value = credit_card->ObfuscatedNumber();
 
       base::string16 label;
       if (credit_card->number().empty()) {
         // If there is no CC number, return name to show something.
-        label = credit_card->GetInfo(CREDIT_CARD_NAME, app_locale_);
+        label =
+            credit_card->GetInfo(AutofillType(CREDIT_CARD_NAME), app_locale_);
       } else {
         label = kCreditCardPrefix;
         label.append(credit_card->LastFourDigits());
@@ -704,7 +712,7 @@ bool PersonalDataManager::IsValidLearnableProfile(
     return false;
 
   base::string16 email = profile.GetRawInfo(EMAIL_ADDRESS);
-  if (!email.empty() && !autofill::IsValidEmailAddress(email))
+  if (!email.empty() && !IsValidEmailAddress(email))
     return false;
 
   // Reject profiles with invalid US state information.

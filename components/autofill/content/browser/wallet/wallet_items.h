@@ -28,6 +28,8 @@ class Image;
 
 namespace autofill {
 
+class AutofillType;
+
 FORWARD_DECLARE_TEST(WalletInstrumentWrapperTest, GetInfoCreditCardExpMonth);
 FORWARD_DECLARE_TEST(WalletInstrumentWrapperTest,
                      GetDisplayTextEmptyWhenExpired);
@@ -88,8 +90,8 @@ class WalletItems {
     base::string16 DisplayNameDetail() const;
 
     // Gets info that corresponds with |type|.
-    base::string16 GetInfo(AutofillFieldType type,
-                     const std::string& app_locale) const;
+    base::string16 GetInfo(const AutofillType& type,
+                           const std::string& app_locale) const;
 
     // Returns the display type of the and last four digits (e.g. Visa - 4444).
     base::string16 TypeAndLastFourDigits() const;

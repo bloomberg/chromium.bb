@@ -23,7 +23,6 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_download.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
-#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autocheckout_status.h"
@@ -54,10 +53,11 @@ class AutofillDataModel;
 class AutofillDownloadManager;
 class AutofillExternalDelegate;
 class AutofillField;
-class AutofillProfile;
 class AutofillManagerDelegate;
 class AutofillManagerTestDelegate;
 class AutofillMetrics;
+class AutofillProfile;
+class AutofillType;
 class CreditCard;
 class FormStructureBrowserTest;
 
@@ -283,7 +283,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // is filled with the Profile label.
   void GetProfileSuggestions(FormStructure* form,
                              const FormFieldData& field,
-                             AutofillFieldType type,
+                             const AutofillType& type,
                              std::vector<base::string16>* values,
                              std::vector<base::string16>* labels,
                              std::vector<base::string16>* icons,
@@ -292,7 +292,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Returns a list of values from the stored credit cards that match |type| and
   // the value of |field| and returns the labels of the matching credit cards.
   void GetCreditCardSuggestions(const FormFieldData& field,
-                                AutofillFieldType type,
+                                const AutofillType& type,
                                 std::vector<base::string16>* values,
                                 std::vector<base::string16>* labels,
                                 std::vector<base::string16>* icons,
