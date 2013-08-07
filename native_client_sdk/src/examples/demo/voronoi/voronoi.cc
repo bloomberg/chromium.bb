@@ -4,15 +4,11 @@
 
 #include <assert.h>
 #include <math.h>
-#include <ppapi/cpp/completion_callback.h>
-#include <ppapi/cpp/graphics_2d.h>
-#include <ppapi/cpp/image_data.h>
+#include <ppapi/c/ppb_input_event.h>
 #include <ppapi/cpp/input_event.h>
-#include <ppapi/cpp/instance.h>
-#include <ppapi/cpp/module.h>
-#include <ppapi/cpp/rect.h>
-#include <ppapi/cpp/size.h>
 #include <ppapi/cpp/var.h>
+#include <ppapi/cpp/var_array.h>
+#include <ppapi/cpp/var_array_buffer.h>
 #include <ppapi/cpp/var_dictionary.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -24,6 +20,11 @@
 #include <algorithm>
 #include <string>
 
+#include "ppapi_simple/ps.h"
+#include "ppapi_simple/ps_context_2d.h"
+#include "ppapi_simple/ps_event.h"
+#include "ppapi_simple/ps_interface.h"
+#include "ppapi_simple/ps_main.h"
 #include "sdk_util/thread_pool.h"
 
 using namespace sdk_util;  // For sdk_util::ThreadPool
@@ -39,6 +40,7 @@ const int kFramesToBenchmark = 100;
 const unsigned int kRandomStartSeed = 0xC0DE533D;
 const int kMaxPointCount = 1024;
 const int kStartPointCount = 256;
+const int kDefaultNumRegions = 256;
 
 unsigned int g_rand_state = kRandomStartSeed;
 
@@ -91,25 +93,18 @@ struct Vec2 {
 };
 
 // The main object that runs Voronoi simulation.
-class Voronoi : public pp::Instance {
+class Voronoi {
  public:
-  explicit Voronoi(PP_Instance instance);
+  Voronoi();
   virtual ~Voronoi();
-
-  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
-    return true;
-  }
-
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
-
-  // Catch events.
-  virtual bool HandleInputEvent(const pp::InputEvent& event);
-
-  // Catch messages posted from Javascript.
-  virtual void HandleMessage(const pp::Var& message);
+  // Runs a tick of the simulations, update 2D output.
+  void Update();
+  // Handle event from user, or message from JS.
+  void HandleEvent(PSEvent* ps_event);
 
  private:
   // Methods prefixed with 'w' are run on worker threads.
+  uint32_t* wGetAddr(int x, int y);
   int wCell(float x, float y);
   inline void wFillSpan(uint32_t *pixels, uint32_t color, int width);
   void wRenderTile(int x, int y, int w, int h);
@@ -131,45 +126,26 @@ class Voronoi : public pp::Instance {
   void Draw();
   void StartBenchmark();
   void EndBenchmark();
-
-  // Runs a tick of the simulations, updating all buffers.  Flushes the
-  // contents of |image_data_| to the 2D graphics context.
-  void Update();
-
   // Helper to post small update messages to JS.
   void PostUpdateMessage(const char* message_name, double value);
-  // Create and initialize the 2D context used for drawing.
-  void CreateContext(const pp::Size& size);
-  // Destroy the 2D drawing context.
-  void DestroyContext();
-  // Push the pixels to the browser, then attempt to flush the 2D context.
-  void FlushPixelBuffer();
-  static void FlushCallback(void* data, int32_t result);
 
-
-  pp::Graphics2D* graphics_2d_context_;
-  pp::ImageData* image_data_;
+  PSContext2D_t* ps_context_;
   Vec2 positions_[kMaxPointCount];
   Vec2 screen_positions_[kMaxPointCount];
   Vec2 velocities_[kMaxPointCount];
   uint32_t colors_[kMaxPointCount];
   float ang_;
-  int point_count_;
-  int num_threads_;
   const int num_regions_;
+  int num_threads_;
+  int point_count_;
   bool draw_points_;
   bool draw_interiors_;
   ThreadPool* workers_;
-  int width_;
-  int height_;
-  uint32_t stride_in_pixels_;
-  uint32_t* pixel_buffer_;
   int benchmark_frame_counter_;
   bool benchmarking_;
   double benchmark_start_time_;
   double benchmark_end_time_;
 };
-
 
 
 void Voronoi::Reset() {
@@ -190,34 +166,23 @@ void Voronoi::Reset() {
   }
 }
 
-Voronoi::Voronoi(PP_Instance instance) : pp::Instance(instance),
-                                         graphics_2d_context_(NULL),
-                                         image_data_(NULL),
-                                         num_regions_(256) {
-  draw_points_ = true;
-  draw_interiors_ = true;
-  width_ = 0;
-  height_ = 0;
-  stride_in_pixels_ = 0;
-  pixel_buffer_ = NULL;
-  benchmark_frame_counter_ = 0;
-  benchmarking_ = false;
-
-  point_count_ = kStartPointCount;
+Voronoi::Voronoi() : num_regions_(kDefaultNumRegions), num_threads_(0),
+    point_count_(kStartPointCount), draw_points_(true), draw_interiors_(true),
+    benchmark_frame_counter_(0), benchmarking_(false)  {
   Reset();
-
   // By default, render from the dispatch thread.
-  num_threads_ = 0;
   workers_ = new ThreadPool(num_threads_);
-
-  // Request PPAPI input events for mouse & keyboard.
-  RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
-  RequestInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
+  PSEventSetFilter(PSE_ALL);
+  ps_context_ = PSContext2DAllocate();
 }
 
 Voronoi::~Voronoi() {
   delete workers_;
-  DestroyContext();
+  PSContext2DFree(ps_context_);
+}
+
+inline uint32_t* Voronoi::wGetAddr(int x, int y) {
+  return ps_context_->data + x + y * ps_context_->stride / sizeof(uint32_t);
 }
 
 // This is the core of the Voronoi calculation.  At a given point on the
@@ -249,8 +214,8 @@ int Voronoi::wCell(float x, float y) {
 void Voronoi::wMakeRect(int r, int* x, int* y, int* w, int* h) {
   const int parts = 16;
   assert(parts * parts == num_regions_);
-  *w = width_ / parts;
-  *h = height_ / parts;
+  *w = ps_context_->width / parts;
+  *h = ps_context_->height / parts;
   *x = *w * (r % parts);
   *y = *h * ((r / parts) % parts);
 }
@@ -293,11 +258,11 @@ inline void Voronoi::wFillSpan(uint32_t* pixels, uint32_t color, int width) {
 // the width w parameter is evenly divisible by 4.
 // If multithreading, this function is only called by the worker threads.
 void Voronoi::wFillRect(int x, int y, int w, int h, uint32_t color) {
-  const uint32_t pitch = width_;
-  uint32_t* pixels = pixel_buffer_ + y * pitch + x;
+  const uint32_t stride_in_pixels = ps_context_->stride / sizeof(uint32_t);
+  uint32_t* pixels = wGetAddr(x, y);
   for (int j = 0; j < h; j++) {
     wFillSpan(pixels, color, w);
-    pixels += pitch;
+    pixels += stride_in_pixels;
   }
 }
 
@@ -309,7 +274,8 @@ void Voronoi::wFillRect(int x, int y, int w, int h, uint32_t color) {
 // voronoi membership per pixel.
 void Voronoi::wRenderTile(int x, int y, int w, int h) {
   // rip through a tile
-  uint32_t* pixels = pixel_buffer_ + y * stride_in_pixels_ + x;
+  const uint32_t stride_in_pixels = ps_context_->stride / sizeof(uint32_t);
+  uint32_t* pixels = wGetAddr(x, y);
   for (int j = 0; j < h; j++) {
     // get start and end cell values
     int ms = wCell(x + 0, y + j);
@@ -327,7 +293,7 @@ void Voronoi::wRenderTile(int x, int y, int w, int h) {
       }
       *p++ = colors_[me];
     }
-    pixels += stride_in_pixels_;
+    pixels += stride_in_pixels;
   }
 }
 
@@ -402,8 +368,8 @@ void Voronoi::UpdateSim() {
   for (int j = 0; j < kMaxPointCount; j++) {
     positions_[j].x += (velocities_[j].x) * z;
     positions_[j].y += (velocities_[j].y) * z;
-    screen_positions_[j].x = positions_[j].x * width_;
-    screen_positions_[j].y = positions_[j].y * height_;
+    screen_positions_[j].x = positions_[j].x * ps_context_->width;
+    screen_positions_[j].y = positions_[j].y * ps_context_->height;
   }
 }
 
@@ -411,18 +377,19 @@ void Voronoi::UpdateSim() {
 void Voronoi::RenderDot(float x, float y, uint32_t color1, uint32_t color2) {
   const int ix = static_cast<int>(x);
   const int iy = static_cast<int>(y);
+  const uint32_t stride_in_pixels = ps_context_->stride / sizeof(uint32_t);
   // clip it against window
   if (ix < 1) return;
-  if (ix >= (width_ - 1)) return;
+  if (ix >= (ps_context_->width - 1)) return;
   if (iy < 1) return;
-  if (iy >= (height_ - 1)) return;
-  uint32_t* pixel = pixel_buffer_ + iy * stride_in_pixels_ + ix;
+  if (iy >= (ps_context_->height - 1)) return;
+  uint32_t* pixel = wGetAddr(ix, iy);
   // render dot as a small diamond
   *pixel = color1;
   *(pixel - 1) = color2;
   *(pixel + 1) = color2;
-  *(pixel - stride_in_pixels_) = color2;
-  *(pixel + stride_in_pixels_) = color2;
+  *(pixel - stride_in_pixels) = color2;
+  *(pixel + stride_in_pixels) = color2;
 }
 
 // Superimposes dots on the positions.
@@ -436,25 +403,10 @@ void Voronoi::SuperimposePositions() {
 }
 
 // Renders the Voronoi diagram, dispatching the work to multiple threads.
-// Note: This Dispatch() is from the main PPAPI thread, so care must be taken
-// not to attempt PPAPI calls from the worker threads, since Dispatch() will
-// block here until all work is complete.  The worker threads are compute only
-// and do not make any PPAPI calls.
 void Voronoi::Render() {
   workers_->Dispatch(num_regions_, wRenderRegionEntry, this);
   if (draw_points_)
     SuperimposePositions();
-}
-
-void Voronoi::DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
-  if (position.size().width() == width_ &&
-      position.size().height() == height_)
-    return;  // Size didn't change, no need to update anything.
-
-  // Create a new device context with the new size.
-  DestroyContext();
-  CreateContext(position.size());
-  Update();
 }
 
 void Voronoi::StartBenchmark() {
@@ -475,41 +427,46 @@ void Voronoi::EndBenchmark() {
   PostUpdateMessage("benchmark_result", result);
 }
 
-// Handle input events from the user.
-bool Voronoi::HandleInputEvent(const pp::InputEvent& event) {
-  switch (event.GetType()) {
-    case PP_INPUTEVENT_TYPE_KEYDOWN: {
-      pp::KeyboardInputEvent key = pp::KeyboardInputEvent(event);
-      uint32_t key_code = key.GetKeyCode();
-      if (key_code == 84)  // 't' key
-        if (!benchmarking_)
-          StartBenchmark();
-      break;
+// Handle input events from the user and messages from JS.
+void Voronoi::HandleEvent(PSEvent* ps_event) {
+  // Give the 2D context a chance to process the event.
+  if (0 != PSContext2DHandleEvent(ps_context_, ps_event))
+    return;
+  if (ps_event->type == PSE_INSTANCE_HANDLEINPUT) {
+    // Convert Pepper Simple event to a PPAPI C++ event
+    pp::InputEvent event(ps_event->as_resource);
+    switch (event.GetType()) {
+      case PP_INPUTEVENT_TYPE_KEYDOWN: {
+        pp::KeyboardInputEvent key = pp::KeyboardInputEvent(event);
+        uint32_t key_code = key.GetKeyCode();
+        if (key_code == 84)  // 't' key
+          if (!benchmarking_)
+            StartBenchmark();
+        break;
+      }
+      default:
+        break;
     }
-    default:
-      return false;
-  }
-  return true;
-}
-
-// Handle messages sent from Javascript.
-void Voronoi::HandleMessage(const pp::Var& var) {
-  if (var.is_dictionary()) {
-    pp::VarDictionary dictionary(var);
-    std::string message = dictionary.Get("message").AsString();
-    if (message == "run_benchmark" && !benchmarking_)
-      StartBenchmark();
-    else if (message == "draw_points")
-      draw_points_ = dictionary.Get("value").AsBool();
-    else if (message == "draw_interiors")
-      draw_interiors_ = dictionary.Get("value").AsBool();
-    else if (message == "set_points") {
-      int num_points = dictionary.Get("value").AsInt();
-      point_count_ = std::min(kMaxPointCount, std::max(0, num_points));
-    } else if (message == "set_threads") {
-      int thread_count = dictionary.Get("value").AsInt();
-      delete workers_;
-      workers_ = new ThreadPool(thread_count);
+  } else if (ps_event->type == PSE_INSTANCE_HANDLEMESSAGE) {
+    // Convert Pepper Simple message to PPAPI C++ var
+    pp::Var var(ps_event->as_var);
+    if (var.is_dictionary()) {
+      pp::VarDictionary dictionary(var);
+      std::string message = dictionary.Get("message").AsString();
+      if (message == "run_benchmark" && !benchmarking_)
+       StartBenchmark();
+      else if (message == "draw_points")
+        draw_points_ = dictionary.Get("value").AsBool();
+      else if (message == "draw_interiors")
+        draw_interiors_ = dictionary.Get("value").AsBool();
+      else if (message == "set_points") {
+        int num_points = dictionary.Get("value").AsInt();
+        point_count_ = std::min(kMaxPointCount, std::max(0, num_points));
+      } else if (message == "set_threads") {
+        int thread_count = dictionary.Get("value").AsInt();
+        delete workers_;
+        workers_ = new ThreadPool(thread_count);
+      }
     }
   }
 }
@@ -519,22 +476,19 @@ void Voronoi::PostUpdateMessage(const char* message_name, double value) {
   pp::VarDictionary message;
   message.Set("message", message_name);
   message.Set("value", value);
-  PostMessage(message);
-}
-
-void Voronoi::FlushCallback(void* thiz, int32_t result) {
-  static_cast<Voronoi*>(thiz)->Update();
-}
-
-// Update the 2d region and flush to make it visible on the page.
-void Voronoi::FlushPixelBuffer() {
-  graphics_2d_context_->PaintImageData(*image_data_, pp::Point(0, 0));
-  graphics_2d_context_->Flush(pp::CompletionCallback(&FlushCallback, this));
+  PSInterfaceMessaging()->PostMessage(PSGetInstanceId(), message.pp_var());
 }
 
 void Voronoi::Update() {
-  // Don't call FlushPixelBuffer() when benchmarking - vsync is enabled by
-  // default, and will throttle the benchmark results.
+  PSContext2DGetBuffer(ps_context_);
+  if (NULL == ps_context_->data)
+    return;
+  assert(is_pow2(ps_context_->width));
+  assert(is_pow2(ps_context_->height));
+
+  // When benchmarking is running, don't update display via
+  // PSContext2DSwapBuffer() - vsync is enabled by default, and will throttle
+  // the benchmark results.
   do {
     UpdateSim();
     Render();
@@ -543,50 +497,28 @@ void Voronoi::Update() {
   } while (benchmark_frame_counter_ > 0);
   if (benchmarking_)
     EndBenchmark();
-  FlushPixelBuffer();
+
+  PSContext2DSwapBuffer(ps_context_);
 }
 
-void Voronoi::CreateContext(const pp::Size& size) {
-  graphics_2d_context_ = new pp::Graphics2D(this, size, false);
-  if (!BindGraphics(*graphics_2d_context_))
-    printf("Couldn't bind the device context\n");
-  image_data_ = new pp::ImageData(this,
-                                  PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                  size,
-                                  false);
-  width_ = image_data_->size().width();
-  height_ = image_data_->size().height();
-  // This demo requires power of two width & height buffers.
-  assert(is_pow2(width_) && is_pow2(height_));
-  stride_in_pixels_ = static_cast<uint32_t>(image_data_->stride() / 4);
-  pixel_buffer_ = static_cast<uint32_t*>(image_data_->data());
-}
-
-void Voronoi::DestroyContext() {
-  delete graphics_2d_context_;
-  delete image_data_;
-  graphics_2d_context_ = NULL;
-  image_data_ = NULL;
-  width_ = 0;
-  height_ = 0;
-  stride_in_pixels_ = 0;
-  pixel_buffer_ = NULL;
-}
-
-class VoronoiModule : public pp::Module {
- public:
-  VoronoiModule() : pp::Module() {}
-  virtual ~VoronoiModule() {}
-
-  // Create and return a Voronoi instance.
-  virtual pp::Instance* CreateInstance(PP_Instance instance) {
-    return new Voronoi(instance);
+// Starting point for the module.  We do not use main since it would
+// collide with main in libppapi_cpp.
+int example_main(int argc, char* argv[]) {
+  Voronoi voronoi;
+  while (true) {
+    PSEvent* ps_event;
+    // Consume all available events.
+    while ((ps_event = PSEventTryAcquire()) != NULL) {
+      voronoi.HandleEvent(ps_event);
+      PSEventRelease(ps_event);
+    }
+    // Do simulation, render and present.
+    voronoi.Update();
   }
-};
 
-namespace pp {
-Module* CreateModule() {
-  return new VoronoiModule();
+  return 0;
 }
-}  // namespace pp
 
+// Register the function to call once the Instance Object is initialized.
+// see: pappi_simple/ps_main.h
+PPAPI_SIMPLE_REGISTER_MAIN(example_main);

@@ -8,7 +8,7 @@
         'voronoi.cc'
       ],
 
-      'LIBS': ['sdk_util', 'ppapi_cpp', 'ppapi', 'pthread']
+      'LIBS': ['ppapi_simple', 'nacl_io', 'sdk_util', 'ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DATA': [

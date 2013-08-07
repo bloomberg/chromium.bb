@@ -4,16 +4,8 @@
 
 #include <assert.h>
 #include <math.h>
-#include <ppapi/c/pp_point.h>
 #include <ppapi/c/ppb_input_event.h>
-#include <ppapi/cpp/completion_callback.h>
-#include <ppapi/cpp/graphics_2d.h>
-#include <ppapi/cpp/image_data.h>
 #include <ppapi/cpp/input_event.h>
-#include <ppapi/cpp/instance.h>
-#include <ppapi/cpp/module.h>
-#include <ppapi/cpp/rect.h>
-#include <ppapi/cpp/size.h>
 #include <ppapi/cpp/var.h>
 #include <ppapi/cpp/var_array.h>
 #include <ppapi/cpp/var_array_buffer.h>
@@ -28,6 +20,11 @@
 #include <algorithm>
 #include <string>
 
+#include "ppapi_simple/ps.h"
+#include "ppapi_simple/ps_context_2d.h"
+#include "ppapi_simple/ps_event.h"
+#include "ppapi_simple/ps_interface.h"
+#include "ppapi_simple/ps_main.h"
 #include "sdk_util/macros.h"
 #include "sdk_util/thread_pool.h"
 
@@ -179,20 +176,14 @@ inline uint32_t Clamp255(float x) {
 
 
 // The main object that runs the Earth demo.
-class Planet : public pp::Instance {
+class Planet {
  public:
-  explicit Planet(PP_Instance instance);
+  Planet();
   virtual ~Planet();
-
-  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
-
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
-
-  // Catch events.
-  virtual bool HandleInputEvent(const pp::InputEvent& event);
-
-  // Catch messages posted from Javascript.
-  virtual void HandleMessage(const pp::Var& message);
+  // Runs a tick of the simulations, update 2D output.
+  void Update();
+  // Handle event from user, or message from JS.
+  void HandleEvent(PSEvent* ps_event);
 
  private:
   // Methods prefixed with 'w' are run on worker threads.
@@ -219,26 +210,14 @@ class Planet : public pp::Instance {
       uint32_t* pixels);
 
   void Reset();
-  void PostInit(int32_t result);
+  void RequestTextures();
   void UpdateSim();
   void Render();
   void Draw();
   void StartBenchmark();
   void EndBenchmark();
-
-  // Runs a tick of the simulations, updating all buffers.  Flushes the
-  // contents of |image_data_| to the 2D graphics context.
-  void Update();
-
   // Post a small key-value message to update JS.
   void PostUpdateMessage(const char* message_name, double value);
-  // Create and initialize the 2D context used for drawing.
-  void CreateContext(const pp::Size& size);
-  // Destroy the 2D drawing context.
-  void DestroyContext();
-  // Push the pixels to the browser, then attempt to flush the 2D context.
-  void FlushPixelBuffer();
-  static void FlushCallback(void* data, int32_t result);
 
   // User Interface settings.  These settings are controlled via html
   // controls or via user input.
@@ -280,33 +259,22 @@ class Planet : public pp::Instance {
   Texture* night_tex_;
   int width_for_tex_;
   int height_for_tex_;
-  std::string name_for_tex_;
 
   // Quick ArcCos helper.
   ArcCosine acos_;
 
   // Misc.
-  pp::Graphics2D* graphics_2d_context_;
-  pp::ImageData* image_data_;
+  PSContext2D_t* ps_context_;
   int num_threads_;
-  int num_regions_;
   ThreadPool* workers_;
-  int width_;
-  int height_;
-  uint32_t stride_in_pixels_;
-  uint32_t* pixel_buffer_;
-  int benchmark_frame_counter_;
   bool benchmarking_;
+  int benchmark_frame_counter_;
   double benchmark_start_time_;
   double benchmark_end_time_;
 };
 
 
-bool Planet::Init(uint32_t argc, const char* argn[], const char* argv[]) {
-  // Request PPAPI input events for mouse & keyboard.
-  RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
-  RequestInputEvents(PP_INPUTEVENT_CLASS_WHEEL);
-  RequestInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
+void Planet::RequestTextures() {
   // Request a set of images from JS.  After images are loaded by JS, a
   // message from JS -> NaCl will arrive containing the pixel data.  See
   // HandleMessage() method in this file.
@@ -316,8 +284,7 @@ bool Planet::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   names.Set(0, "earth.jpg");
   names.Set(1, "earthnight.jpg");
   message.Set("names", names);
-  PostMessage(message);
-  return true;
+  PSInterfaceMessaging()->PostMessage(PSGetInstanceId(), message.pp_var());
 }
 
 void Planet::Reset() {
@@ -378,47 +345,35 @@ void Planet::Reset() {
 }
 
 
-Planet::Planet(PP_Instance instance) : pp::Instance(instance),
-                                       graphics_2d_context_(NULL),
-                                       image_data_(NULL),
-                                       num_regions_(256) {
-  width_ = 0;
-  height_ = 0;
-  stride_in_pixels_ = 0;
-  pixel_buffer_ = NULL;
-  benchmark_frame_counter_ = 0;
-  benchmarking_ = false;
-  base_tex_ = NULL;
-  night_tex_ = NULL;
-  name_for_tex_ = "";
+Planet::Planet() : base_tex_(NULL), night_tex_(NULL), num_threads_(0),
+    benchmarking_(false), benchmark_frame_counter_(0) {
 
   Reset();
-
+  RequestTextures();
   // By default, render from the dispatch thread.
-  num_threads_ = 0;
   workers_ = new ThreadPool(num_threads_);
+  PSEventSetFilter(PSE_ALL);
+  ps_context_ = PSContext2DAllocate();
 }
 
 Planet::~Planet() {
   delete workers_;
-  DestroyContext();
+  PSContext2DFree(ps_context_);
 }
 
 // Given a region r, derive a rectangle.
 // This rectangle shouldn't overlap with work being done by other workers.
 // If multithreading, this function is only called by the worker threads.
 void Planet::wMakeRect(int r, int *x, int *y, int *w, int *h) {
-  int dy = height_ / num_regions_;
   *x = 0;
-  *w = width_;
-  *y = r * dy;
-  *h = dy;
+  *w = ps_context_->width;
+  *y = r;
+  *h = 1;
 }
 
 
 inline uint32_t* Planet::wGetAddr(int x, int y) {
-  assert(pixel_buffer_);
-  return (pixel_buffer_ + y * stride_in_pixels_) + x;
+  return ps_context_->data + x + y * ps_context_->stride / sizeof(uint32_t);
 }
 
 // This is the meat of the ray tracer.  Given a pixel span (x0, x1) on
@@ -430,7 +385,7 @@ void Planet::wRenderPixelSpan(int x0, int x1, int y) {
   const int kColorBlack = MakeRGBA(0, 0, 0, 0xFF);
   float y0 = eye_y_;
   float z0 = eye_z_;
-  float y1 = (static_cast<float>(y) / height_) * 2.0f - 1.0f;
+  float y1 = (static_cast<float>(y) / ps_context_->height) * 2.0f - 1.0f;
   float z1 = 0.0f;
   float dy = (y1 - y0);
   float dz = (z1 - z0);
@@ -439,7 +394,7 @@ void Planet::wRenderPixelSpan(int x0, int x1, int y) {
                                   2.0f * dz * (z0 - planet_z_);
   float planet_xyz_eye_xyz = planet_xyz_ + eye_xyz_;
   float y_y0_z_z0 = planet_y_ * y0 + planet_z_ * z0;
-  float oowidth = 1.0f / width_;
+  float oowidth = 1.0f / ps_context_->width;
   uint32_t* pixels = this->wGetAddr(x0, y);
   for (int x = x0; x <= x1; ++x) {
     // scan normalized screen -1..1
@@ -565,12 +520,8 @@ void Planet::wRenderRegionEntry(int region, void* thiz) {
 }
 
 // Renders the planet, dispatching the work to multiple threads.
-// Note: This Dispatch() is from the main PPAPI thread, so care must be taken
-// not to attempt PPAPI calls from the worker threads, since Dispatch() will
-// block here until all work is complete.  The worker threads are compute only
-// and do not make any PPAPI calls.
 void Planet::Render() {
-  workers_->Dispatch(num_regions_, wRenderRegionEntry, this);
+  workers_->Dispatch(ps_context_->height, wRenderRegionEntry, this);
 }
 
 // Pre-calculations to make inner loops faster.
@@ -669,16 +620,6 @@ void Planet::UpdateSim() {
   SetPlanetSpin(x, y);
 }
 
-void Planet::DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
-  if (position.size().width() == width_ &&
-      position.size().height() == height_)
-    return;  // Size didn't change, no need to update anything.
-  // Create a new device context with the new size.
-  DestroyContext();
-  CreateContext(position.size());
-  Update();
-}
-
 void Planet::StartBenchmark() {
   // For more consistent benchmark numbers, reset to default state.
   Reset();
@@ -723,43 +664,81 @@ void Planet::SetTexture(const std::string& name, int width, int height,
   }
 }
 
-// Handle input events from the user.
-bool Planet::HandleInputEvent(const pp::InputEvent& event) {
-  switch (event.GetType()) {
-    case PP_INPUTEVENT_TYPE_KEYDOWN: {
-      pp::KeyboardInputEvent key(event);
-      uint32_t key_code = key.GetKeyCode();
-      if (key_code == 84)  // 't' key
-        if (!benchmarking_)
-          StartBenchmark();
-      break;
-    }
-    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-    case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
-      pp::MouseInputEvent mouse = pp::MouseInputEvent(event);
-      if (mouse.GetModifiers() & PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN) {
-        PP_Point delta = mouse.GetMovement();
-        float delta_x = static_cast<float>(delta.x);
-        float delta_y = static_cast<float>(delta.y);
-        float spin_x = std::min(4.0f, std::max(-4.0f, delta_x * 0.5f));
-        float spin_y = std::min(4.0f, std::max(-4.0f, delta_y * 0.5f));
-        ui_spin_x_ = spin_x / 100.0f;
-        ui_spin_y_ = spin_y / 100.0f;
+// Handle input events from the user and messages from JS.
+void Planet::HandleEvent(PSEvent* ps_event) {
+  // Give the 2D context a chance to process the event.
+  if (0 != PSContext2DHandleEvent(ps_context_, ps_event))
+    return;
+  if (ps_event->type == PSE_INSTANCE_HANDLEINPUT) {
+    // Convert Pepper Simple event to a PPAPI C++ event
+    pp::InputEvent event(ps_event->as_resource);
+    switch (event.GetType()) {
+      case PP_INPUTEVENT_TYPE_KEYDOWN: {
+        pp::KeyboardInputEvent key(event);
+        uint32_t key_code = key.GetKeyCode();
+        if (key_code == 84)  // 't' key
+          if (!benchmarking_)
+            StartBenchmark();
+        break;
       }
-      break;
+      case PP_INPUTEVENT_TYPE_MOUSEMOVE:
+      case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
+        pp::MouseInputEvent mouse = pp::MouseInputEvent(event);
+        if (mouse.GetModifiers() & PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN) {
+          PP_Point delta = mouse.GetMovement();
+          float delta_x = static_cast<float>(delta.x);
+          float delta_y = static_cast<float>(delta.y);
+          float spin_x = std::min(4.0f, std::max(-4.0f, delta_x * 0.5f));
+          float spin_y = std::min(4.0f, std::max(-4.0f, delta_y * 0.5f));
+          ui_spin_x_ = spin_x / 100.0f;
+          ui_spin_y_ = spin_y / 100.0f;
+        }
+        break;
+      }
+      case PP_INPUTEVENT_TYPE_WHEEL: {
+        pp::WheelInputEvent wheel = pp::WheelInputEvent(event);
+        PP_FloatPoint ticks = wheel.GetTicks();
+        SetZoom(ui_zoom_ + (ticks.x + ticks.y) * kWheelSpeed);
+        // Update html slider by sending update message to JS.
+        PostUpdateMessage("set_zoom", ui_zoom_);
+        break;
+      }
+      default:
+        break;
     }
-    case PP_INPUTEVENT_TYPE_WHEEL: {
-      pp::WheelInputEvent wheel = pp::WheelInputEvent(event);
-      PP_FloatPoint ticks = wheel.GetTicks();
-      SetZoom(ui_zoom_ + (ticks.x + ticks.y) * kWheelSpeed);
-      // Update html slider by sending update message to JS.
-      PostUpdateMessage("set_zoom", ui_zoom_);
-      break;
+  } else if (ps_event->type == PSE_INSTANCE_HANDLEMESSAGE) {
+    // Convert Pepper Simple message to PPAPI C++ vars
+    pp::Var var(ps_event->as_var);
+    if (var.is_dictionary()) {
+      pp::VarDictionary dictionary(var);
+      std::string message = dictionary.Get("message").AsString();
+      if (message == "run benchmark" && !benchmarking_) {
+        StartBenchmark();
+      } else if (message == "set_light") {
+        SetLight(static_cast<float>(dictionary.Get("value").AsDouble()));
+      } else if (message == "set_zoom") {
+        SetZoom(static_cast<float>(dictionary.Get("value").AsDouble()));
+      } else if (message == "set_threads") {
+        int threads = dictionary.Get("value").AsInt();
+        delete workers_;
+        workers_ = new ThreadPool(threads);
+      } else if (message == "texture") {
+        std::string name = dictionary.Get("name").AsString();
+        int width = dictionary.Get("width").AsInt();
+        int height = dictionary.Get("height").AsInt();
+        pp::VarArrayBuffer array_buffer(dictionary.Get("data"));
+        if (!name.empty() && !array_buffer.is_null()) {
+          if (width > 0 && height > 0) {
+            uint32_t* pixels = static_cast<uint32_t*>(array_buffer.Map());
+            SetTexture(name, width, height, pixels);
+            array_buffer.Unmap();
+          }
+        }
+      }
+    } else {
+      printf("Handle message unknown type: %s\n", var.DebugString().c_str());
     }
-    default:
-      return false;
   }
-  return true;
 }
 
 // PostUpdateMessage() helper function for sending small messages to JS.
@@ -767,53 +746,17 @@ void Planet::PostUpdateMessage(const char* message_name, double value) {
   pp::VarDictionary message;
   message.Set("message", message_name);
   message.Set("value", value);
-  PostMessage(message);
-}
-
-// Handle message sent from Javascript.
-void Planet::HandleMessage(const pp::Var& var) {
-  if (var.is_dictionary()) {
-    pp::VarDictionary dictionary(var);
-    std::string message = dictionary.Get("message").AsString();
-    if (message == "run benchmark" && !benchmarking_) {
-      StartBenchmark();
-    } else if (message == "set_light") {
-      SetLight(static_cast<float>(dictionary.Get("value").AsDouble()));
-    } else if (message == "set_zoom") {
-      SetZoom(static_cast<float>(dictionary.Get("value").AsDouble()));
-    } else if (message == "set_threads") {
-      int threads = dictionary.Get("value").AsInt();
-      delete workers_;
-      workers_ = new ThreadPool(threads);
-    } else if (message == "texture") {
-      std::string name = dictionary.Get("name").AsString();
-      int width = dictionary.Get("width").AsInt();
-      int height = dictionary.Get("height").AsInt();
-      pp::VarArrayBuffer array_buffer(dictionary.Get("data"));
-      if (!name.empty() && width > 0 && height > 0 && !array_buffer.is_null()) {
-        uint32_t* pixels = static_cast<uint32_t*>(array_buffer.Map());
-        SetTexture(name, width, height, pixels);
-        array_buffer.Unmap();
-      }
-    }
-  } else {
-    printf("Handle message unknown type: %s\n", var.DebugString().c_str());
-  }
-}
-
-void Planet::FlushCallback(void* thiz, int32_t result) {
-  static_cast<Planet*>(thiz)->Update();
-}
-
-// Update the 2d region and flush to make it visible on the page.
-void Planet::FlushPixelBuffer() {
-  graphics_2d_context_->PaintImageData(*image_data_, pp::Point(0, 0));
-  graphics_2d_context_->Flush(pp::CompletionCallback(&FlushCallback, this));
+  PSInterfaceMessaging()->PostMessage(PSGetInstanceId(), message.pp_var());
 }
 
 void Planet::Update() {
-  // Don't call FlushPixelBuffer() when benchmarking - vsync is enabled by
-  // default, and will throttle the benchmark results.
+  // When benchmarking is running, don't update display via
+  // PSContext2DSwapBuffer() - vsync is enabled by default, and will throttle
+  // the benchmark results.
+  PSContext2DGetBuffer(ps_context_);
+  if (NULL == ps_context_->data)
+    return;
+
   do {
     UpdateSim();
     Render();
@@ -823,51 +766,28 @@ void Planet::Update() {
   if (benchmarking_)
     EndBenchmark();
 
-  FlushPixelBuffer();
+  PSContext2DSwapBuffer(ps_context_);
 }
 
-void Planet::CreateContext(const pp::Size& size) {
-  graphics_2d_context_ = new pp::Graphics2D(this, size, false);
-  if (graphics_2d_context_->is_null())
-    printf("Failed to create a 2D resource!\n");
-  if (!BindGraphics(*graphics_2d_context_))
-    printf("Couldn't bind the device context\n");
-  image_data_ = new pp::ImageData(this,
-                                  PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                  size,
-                                  false);
-  width_ = image_data_->size().width();
-  height_ = image_data_->size().height();
-  stride_in_pixels_ = static_cast<uint32_t>(image_data_->stride() / 4);
-  pixel_buffer_ = static_cast<uint32_t*>(image_data_->data());
-  num_regions_ = height_;
-}
 
-void Planet::DestroyContext() {
-  delete graphics_2d_context_;
-  delete image_data_;
-  graphics_2d_context_ = NULL;
-  image_data_ = NULL;
-  width_ = 0;
-  height_ = 0;
-  stride_in_pixels_ = 0;
-  pixel_buffer_ = NULL;
-}
-
-class PlanetModule : public pp::Module {
- public:
-  PlanetModule() : pp::Module() {}
-  virtual ~PlanetModule() {}
-
-  // Create and return a Planet instance.
-  virtual pp::Instance* CreateInstance(PP_Instance instance) {
-    return new Planet(instance);
+// Starting point for the module.  We do not use main since it would
+// collide with main in libppapi_cpp.
+int example_main(int argc, char* argv[]) {
+  Planet earth;
+  while (true) {
+    PSEvent* ps_event;
+    // Consume all available events
+    while ((ps_event = PSEventTryAcquire()) != NULL) {
+      earth.HandleEvent(ps_event);
+      PSEventRelease(ps_event);
+    }
+    // Do simulation, render and present.
+    earth.Update();
   }
-};
 
-namespace pp {
-Module* CreateModule() {
-  return new PlanetModule();
+  return 0;
 }
-}  // namespace pp
 
+// Register the function to call once the Instance Object is initialized.
+// see: pappi_simple/ps_main.h
+PPAPI_SIMPLE_REGISTER_MAIN(example_main);
