@@ -622,8 +622,7 @@ void MDnsTransactionImpl::ServeRecordsFromCache() {
     client_->core()->QueryCache(rrtype_, name_, &records);
     for (std::vector<const RecordParsed*>::iterator i = records.begin();
          i != records.end() && weak_this; ++i) {
-      weak_this->TriggerCallback(MDnsTransaction::RESULT_RECORD,
-                                 records.front());
+      weak_this->TriggerCallback(MDnsTransaction::RESULT_RECORD, *i);
     }
 
 #if defined(ENABLE_NSEC)

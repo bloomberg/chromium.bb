@@ -135,6 +135,40 @@ const uint8 kSamplePacketSRVA[] = {
   0x03, 0x04,
 };
 
+const uint8 kSamplePacketPTR2[] = {
+  // Header
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x02,               // 2 RR (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
+
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x02, 0x00,        // TTL (4 bytes) is 1 second.
+  0x00, 0x01,
+  0x00, 0x08,        // RDLENGTH is 8 bytes.
+  0x05, 'g', 'd', 'b', 'y', 'e',
+  0xc0, 0x0c,
+
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x0c,        // TYPE is PTR.
+  0x00, 0x01,        // CLASS is IN.
+  0x02, 0x00,        // TTL (4 bytes) is 1 second.
+  0x00, 0x01,
+  0x00, 0x08,        // RDLENGTH is 8 bytes.
+  0x05, 'h', 'e', 'l', 'l', 'o',
+  0xc0, 0x0c
+};
+
 class MockServiceWatcherClient {
  public:
   MOCK_METHOD2(OnServiceUpdated,
@@ -220,12 +254,6 @@ TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
 };
 
 TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
-  scoped_ptr<ServiceWatcher> watcher_irrelevant(
-      service_discovery_client_.CreateServiceWatcher(
-          "_privet._tcp.local", ServiceWatcher::UpdatedCallback()));
-
-  watcher_irrelevant->Start();
-
   socket_factory_->SimulateReceive(
       kSamplePacketPTR, sizeof(kSamplePacketPTR));
 
@@ -243,6 +271,30 @@ TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
 
   base::MessageLoop::current()->RunUntilIdle();
 };
+
+
+TEST_F(ServiceDiscoveryTest, ReadCachedServicesMultiple) {
+  socket_factory_->SimulateReceive(
+      kSamplePacketPTR2, sizeof(kSamplePacketPTR2));
+
+  StrictMock<MockServiceWatcherClient> delegate;
+  scoped_ptr<ServiceWatcher> watcher =
+      service_discovery_client_.CreateServiceWatcher(
+          "_privet._tcp.local", delegate.GetCallback());
+
+  watcher->Start();
+
+  EXPECT_CALL(delegate, OnServiceUpdated(ServiceWatcher::UPDATE_ADDED,
+                                         "hello._privet._tcp.local"))
+      .Times(Exactly(1));
+
+  EXPECT_CALL(delegate, OnServiceUpdated(ServiceWatcher::UPDATE_ADDED,
+                                         "gdbye._privet._tcp.local"))
+      .Times(Exactly(1));
+
+  base::MessageLoop::current()->RunUntilIdle();
+};
+
 
 TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
   StrictMock<MockServiceWatcherClient> delegate;
