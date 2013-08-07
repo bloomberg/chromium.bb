@@ -342,7 +342,7 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::IndexFiles() {
   FileUtilProxy::CreateOrOpen(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
       file_path,
-      base::PLATFORM_FILE_OPEN,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
       Bind(&FileSystemIndexingJob::StartFileIndexing, this));
 }
 
