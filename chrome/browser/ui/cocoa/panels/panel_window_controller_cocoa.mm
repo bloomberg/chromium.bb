@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -807,6 +809,12 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 }
 
 - (void)windowDidResize:(NSNotification*)notification {
+  // This is a temporary check to track down a crash that occurs occasionally
+  // (http://crbug.com/265932).
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY &&
+      CommandLine::ForCurrentProcess()->HasSwitch("enable-panel-experiment"))
+    return;
   // Hide the web contents view when the panel is not taller than the titlebar.
   // This is to ensure that the titlebar view is not overlapped with the web
   // contents view because the the web contents view assumes that its
