@@ -463,7 +463,7 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   GetMetricLogger().LogDialogInitialUserState(
       GetDialogType(), initial_user_state_);
 
-  if (deemphasized_render_view_) {
+  if (deemphasized_render_view_ && web_contents()) {
     web_contents()->GetRenderViewHost()->Send(
         new ChromeViewMsg_SetVisuallyDeemphasized(
             web_contents()->GetRenderViewHost()->GetRoutingID(), false));
@@ -514,8 +514,9 @@ void AutofillDialogControllerImpl::RegisterProfilePrefs(
 void AutofillDialogControllerImpl::Show() {
   dialog_shown_timestamp_ = base::Time::Now();
 
-  content::NavigationEntry* entry = contents_->GetController().GetActiveEntry();
-  const GURL& active_url = entry ? entry->GetURL() : contents_->GetURL();
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetActiveEntry();
+  const GURL& active_url = entry ? entry->GetURL() : web_contents()->GetURL();
   invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
 
   // Log any relevant UI metrics and security exceptions.
@@ -2033,8 +2034,8 @@ Profile* AutofillDialogControllerImpl::profile() {
   return profile_;
 }
 
-content::WebContents* AutofillDialogControllerImpl::web_contents() {
-  return contents_;
+content::WebContents* AutofillDialogControllerImpl::GetWebContents() {
+  return web_contents();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2351,8 +2352,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     const DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback)
-    : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
-      contents_(contents),
+    : WebContentsObserver(contents),
+      profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       initial_user_state_(AutofillMetrics::DIALOG_USER_STATE_UNKNOWN),
       dialog_type_(dialog_type),
       form_structure_(form_structure, std::string()),

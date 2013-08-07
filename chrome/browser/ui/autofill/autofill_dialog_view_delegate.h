@@ -205,7 +205,7 @@ class AutofillDialogViewDelegate {
   virtual Profile* profile() = 0;
 
   // The web contents that prompted the dialog.
-  virtual content::WebContents* web_contents() = 0;
+  virtual content::WebContents* GetWebContents() = 0;
 
  protected:
   virtual ~AutofillDialogViewDelegate();

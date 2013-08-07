@@ -74,7 +74,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_METHOD0(OnCancel, bool());
   MOCK_METHOD0(OnAccept, bool());
   MOCK_METHOD0(profile, Profile*());
-  MOCK_METHOD0(web_contents, content::WebContents*());
+  MOCK_METHOD0(GetWebContents, content::WebContents*());
  private:
   DetailInputs default_inputs_;
   DetailInputs cc_default_inputs_;  // Default inputs for SECTION_CC.

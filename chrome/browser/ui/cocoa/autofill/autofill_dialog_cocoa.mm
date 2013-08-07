@@ -54,13 +54,13 @@ void AutofillDialogCocoa::Show() {
   // This should only be called once.
   DCHECK(!sheet_delegate_.get());
   sheet_delegate_.reset([[AutofillDialogWindowController alloc]
-       initWithWebContents:delegate_->web_contents()
+       initWithWebContents:delegate_->GetWebContents()
             autofillDialog:this]);
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:[sheet_delegate_ window]]);
   constrained_window_.reset(
-      new ConstrainedWindowMac(this, delegate_->web_contents(), sheet));
+      new ConstrainedWindowMac(this, delegate_->GetWebContents(), sheet));
 }
 
 void AutofillDialogCocoa::Hide() {

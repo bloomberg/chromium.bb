@@ -1150,10 +1150,10 @@ void AutofillDialogViews::Show() {
   // care of deleting itself after calling DeleteDelegate().
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(
-          delegate_->web_contents());
+          delegate_->GetWebContents());
   window_ = CreateWebContentsModalDialogViews(
       this,
-      delegate_->web_contents()->GetView()->GetNativeView(),
+      delegate_->GetWebContents()->GetView()->GetNativeView(),
       web_contents_modal_dialog_manager->delegate()->
           GetWebContentsModalDialogHost());
   web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
@@ -1163,7 +1163,7 @@ void AutofillDialogViews::Show() {
   // Listen for size changes on the browser.
   views::Widget* browser_widget =
       views::Widget::GetTopLevelWidgetForNativeView(
-          delegate_->web_contents()->GetView()->GetNativeView());
+          delegate_->GetWebContents()->GetView()->GetNativeView());
   observer_.Add(browser_widget);
 
   gfx::Image splash_image = delegate_->SplashPageImage();
@@ -1432,7 +1432,7 @@ gfx::Size AutofillDialogViews::GetPreferredSize() {
     // bottom of the browser window.
     views::Widget* widget =
         views::Widget::GetTopLevelWidgetForNativeView(
-            delegate_->web_contents()->GetView()->GetNativeView());
+            delegate_->GetWebContents()->GetView()->GetNativeView());
     int browser_window_height =
         widget ? widget->GetContentsView()->bounds().height() : INT_MAX;
     const int kWindowDecorationHeight = 200;
@@ -1588,7 +1588,7 @@ views::NonClientFrameView* AutofillDialogViews::CreateNonClientFrameView(
     views::Widget* widget) {
   return CreateConstrainedStyleNonClientFrameView(
       widget,
-      delegate_->web_contents()->GetBrowserContext());
+      delegate_->GetWebContents()->GetBrowserContext());
 }
 
 void AutofillDialogViews::ButtonPressed(views::Button* sender,

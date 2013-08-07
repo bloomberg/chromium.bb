@@ -33,6 +33,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
@@ -69,6 +70,7 @@ class WalletSigninHelper;
 class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
                                      public AutofillPopupDelegate,
                                      public content::NotificationObserver,
+                                     public content::WebContentsObserver,
                                      public SuggestionsMenuModelDelegate,
                                      public wallet::WalletClientDelegate,
                                      public wallet::WalletSigninHelperDelegate,
@@ -174,7 +176,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual bool OnCancel() OVERRIDE;
   virtual bool OnAccept() OVERRIDE;
   virtual Profile* profile() OVERRIDE;
-  virtual content::WebContents* web_contents() OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
 
   // AutofillPopupDelegate implementation.
   virtual void OnPopupShown(content::KeyboardListener* listener) OVERRIDE;
@@ -548,9 +550,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // The |profile| for |contents_|.
   Profile* const profile_;
-
-  // The WebContents where the Autofill action originated.
-  content::WebContents* const contents_;
 
   // For logging UMA metrics.
   const AutofillMetrics metric_logger_;
