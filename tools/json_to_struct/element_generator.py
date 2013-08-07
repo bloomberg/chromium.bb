@@ -42,7 +42,7 @@ def _GenerateString16(content, lines):
     # json.dumps quotes the string and escape characters as required.
     lines.append('  L%s,' % _JSONToCString16(json.dumps(content)))
 
-def _GenerateArray(field_info, content, lines):
+def _GenerateArray(element_name, field_info, content, lines):
   """Generates an array to be included in a static structure initializer. If
   content is not specified, uses NULL. The array is assigned to a temporary
   variable which is initialized before the structure.
@@ -55,7 +55,7 @@ def _GenerateArray(field_info, content, lines):
   # Create a new array variable and use it in the structure initializer.
   # This prohibits nested arrays. Add a clash detection and renaming mechanism
   # to solve the problem.
-  var = 'array_%s' % field_info['field'];
+  var = 'array_%s_%s' % (element_name, field_info['field']);
   lines.append('  %s,' % var)
   lines.append('  %s,' % len(content))  # Size of the array.
   # Generate the array content.
@@ -64,7 +64,8 @@ def _GenerateArray(field_info, content, lines):
   array_lines.append(struct_generator.GenerateField(
                      field_info['contents']) + '[] = {')
   for subcontent in content:
-    GenerateFieldContent(field_info['contents'], subcontent, array_lines)
+    GenerateFieldContent(element_name, field_info['contents'], subcontent,
+                         array_lines)
   array_lines.append('};')
   # Prepend the generated array so it is initialized before the structure.
   lines.reverse()
@@ -72,7 +73,7 @@ def _GenerateArray(field_info, content, lines):
   lines.extend(array_lines)
   lines.reverse()
 
-def GenerateFieldContent(field_info, content, lines):
+def GenerateFieldContent(element_name, field_info, content, lines):
   """Generate the content of a field to be included in the static structure
   initializer. If the field's content is not specified, uses the default value
   if one exists.
@@ -87,7 +88,7 @@ def GenerateFieldContent(field_info, content, lines):
   elif type == 'string16':
     _GenerateString16(content, lines)
   elif type == 'array':
-    _GenerateArray(field_info, content, lines)
+    _GenerateArray(element_name, field_info, content, lines)
   else:
     raise RuntimeError('Unknown field type "%s"' % type)
 
@@ -101,7 +102,7 @@ def GenerateElement(type_name, schema, element_name, element):
     if (content == None and not field_info.get('optional', False)):
       raise RuntimeError('Mandatory field "%s" omitted in element "%s".' %
                          (field_info['field'], element_name))
-    GenerateFieldContent(field_info, content, lines)
+    GenerateFieldContent(element_name, field_info, content, lines)
   lines.append('};')
   return '\n'.join(lines)
 
