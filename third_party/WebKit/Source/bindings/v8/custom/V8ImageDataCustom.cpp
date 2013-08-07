@@ -31,7 +31,7 @@
 #include "config.h"
 #include "V8ImageData.h"
 
-#include "V8Uint8ClampedArray.h"
+#include "bindings/v8/custom/V8Uint8ClampedArrayCustom.h"
 
 namespace WebCore {
 

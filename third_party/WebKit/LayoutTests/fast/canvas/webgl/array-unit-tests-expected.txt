@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS testSlice
 test inheritance hierarchy of typed array views
 PASS ArrayBufferView has [NoInterfaceObject] extended attribute and was (correctly) not defined
-PASS new Uint8ClampedArray(1) instanceof Uint8Array is true
+PASS new Uint8ClampedArray(1) instanceof Uint8Array is false
 PASS test Float32Array SetAndGetPos10ToNeg10
 PASS test Float32Array ConstructWithArrayOfSignedValues
 PASS test Float32Array ConstructWithTypedArrayOfSignedValues
@@ -34,7 +34,6 @@ PASS Construction of Float32Array with negative size threw exception
 PASS Construction of Float32Array with negative out-of-range values threw an exception
 PASS Construction of Float32Array with unaligned offset threw an exception
 PASS Construction of Float32Array with unaligned length threw an exception
-PASS Construction of huge Float32Array threw exception
 PASS Array lengths matched with explicit and implicit creation of ArrayBuffer
 PASS new Float32Array(new ArrayBuffer(18), 0, 2) succeeded
 Testing subarray of Float32Array
@@ -90,7 +89,6 @@ PASS Construction of Float64Array with negative size threw exception
 PASS Construction of Float64Array with negative out-of-range values threw an exception
 PASS Construction of Float64Array with unaligned offset threw an exception
 PASS Construction of Float64Array with unaligned length threw an exception
-PASS Construction of huge Float64Array threw exception
 PASS Array lengths matched with explicit and implicit creation of ArrayBuffer
 PASS new Float64Array(new ArrayBuffer(36), 0, 2) succeeded
 Testing subarray of Float64Array
@@ -199,7 +197,6 @@ PASS Construction of Int16Array with negative size threw exception
 PASS Construction of Int16Array with negative out-of-range values threw an exception
 PASS Construction of Int16Array with unaligned offset threw an exception
 PASS Construction of Int16Array with unaligned length threw an exception
-PASS Construction of huge Int16Array threw exception
 PASS Array lengths matched with explicit and implicit creation of ArrayBuffer
 PASS new Int16Array(new ArrayBuffer(9), 0, 2) succeeded
 Testing subarray of Int16Array
@@ -256,7 +253,6 @@ PASS Construction of Int32Array with negative size threw exception
 PASS Construction of Int32Array with negative out-of-range values threw an exception
 PASS Construction of Int32Array with unaligned offset threw an exception
 PASS Construction of Int32Array with unaligned length threw an exception
-PASS Construction of huge Int32Array threw exception
 PASS Array lengths matched with explicit and implicit creation of ArrayBuffer
 PASS new Int32Array(new ArrayBuffer(18), 0, 2) succeeded
 Testing subarray of Int32Array
@@ -417,7 +413,6 @@ PASS Construction of Uint16Array with negative size threw exception
 PASS Construction of Uint16Array with negative out-of-range values threw an exception
 PASS Construction of Uint16Array with unaligned offset threw an exception
 PASS Construction of Uint16Array with unaligned length threw an exception
-PASS Construction of huge Uint16Array threw exception
 PASS Array lengths matched with explicit and implicit creation of ArrayBuffer
 PASS new Uint16Array(new ArrayBuffer(9), 0, 2) succeeded
 Testing subarray of Uint16Array
@@ -474,7 +469,6 @@ PASS Construction of Uint32Array with negative size threw exception
 PASS Construction of Uint32Array with negative out-of-range values threw an exception
 PASS Construction of Uint32Array with unaligned offset threw an exception
 PASS Construction of Uint32Array with unaligned length threw an exception
-PASS Construction of huge Uint32Array threw exception
 PASS Array lengths matched with explicit and implicit creation of ArrayBuffer
 PASS new Uint32Array(new ArrayBuffer(18), 0, 2) succeeded
 Testing subarray of Uint32Array

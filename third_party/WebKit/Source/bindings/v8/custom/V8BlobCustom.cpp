@@ -31,13 +31,13 @@
 #include "config.h"
 #include "core/fileapi/Blob.h"
 
-#include "V8ArrayBufferView.h"
 #include "V8Blob.h"
 #include "V8File.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
+#include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/fileapi/BlobBuilder.h"
 #include "wtf/RefPtr.h"
 

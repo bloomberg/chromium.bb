@@ -22,7 +22,6 @@
 #include "V8TestOverloadedConstructors.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8ArrayBufferView.h"
 #include "V8Blob.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
@@ -31,6 +30,7 @@
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
+#include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
@@ -78,7 +78,7 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    V8TRYCATCH_VOID(ArrayBufferView*, arrayBufferView, V8ArrayBufferView::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    V8TRYCATCH_VOID(ArrayBufferView*, arrayBufferView, args[0]->IsArrayBufferView() ? V8ArrayBufferView::toNative(v8::Handle<v8::ArrayBufferView>::Cast(args[0])) : 0);
 
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(arrayBufferView);
     v8::Handle<v8::Object> wrapper = args.Holder();

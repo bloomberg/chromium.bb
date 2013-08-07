@@ -1050,6 +1050,9 @@ crbug.com/248938 virtual/threaded/transitions/equivalent-background-image-no-tra
 
 crbug.com/255726 [ Debug ] compositing/contents-opaque/visibility-hidden.html [ Pass Failure ]
 
+crbug.com/260660 fast/canvas/webgl/array-large-array-tests.html [ Crash ]
+crbug.com/260660 virtual/gpu/fast/canvas/webgl/array-large-array-tests.html [ Crash ]
+
 # Switching to content shell failures
 crbug.com/178709 plugins/document-open.html [ Failure ]
 crbug.com/178744 plugins/npruntime/browser-object-identity.html [ Failure ]

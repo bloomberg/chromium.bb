@@ -29,7 +29,7 @@
 #include "config.h"
 #include "WebArrayBufferView.h"
 
-#include "V8ArrayBufferView.h"
+#include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "wtf/ArrayBufferView.h"
 
 using namespace WTF;
@@ -63,7 +63,7 @@ unsigned WebArrayBufferView::byteLength() const
 
 WebArrayBufferView* WebArrayBufferView::createFromV8Value(v8::Handle<v8::Value> value)
 {
-    if (!WebCore::V8ArrayBufferView::HasInstanceInAnyWorld(value, v8::Isolate::GetCurrent()))
+    if (!value->IsArrayBufferView())
         return 0;
     ArrayBufferView* view = WebCore::V8ArrayBufferView::toNative(value->ToObject());
     return new WebArrayBufferView(view);

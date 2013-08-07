@@ -44,19 +44,6 @@ function testConstructionWithNegativeOutOfRangeValues(type, name) {
     }
 }
 
-function testConstructionOfHugeArray(type, name, sz) {
-    if (sz == 1)
-        return;
-    try {
-        // Construction of huge arrays must fail because byteLength is
-        // an unsigned long
-        array = new type(3000000000);
-        testFailed("Construction of huge " + name + " should throw exception");
-    } catch (e) {
-        testPassed("Construction of huge " + name + " threw exception");
-    }
-}
-
 // These need to be global for shouldBe to see them
 var array;
 var typeSize;
@@ -138,7 +125,6 @@ for (var i = 0; i < typeNames.length; i++) {
         testConstructionWithNullBuffer(type, name);
         testConstructionWithOutOfRangeValues(type, name);
         testConstructionWithNegativeOutOfRangeValues(type, name);
-        testConstructionOfHugeArray(type, name, typeSizes[i]);
         testSubarrayWithOutOfRangeValues(type, name, typeSizes[i]);
         testSettingFromArrayWithOutOfRangeOffset(type, name);
         testSettingFromFakeArrayWithOutOfRangeLength(type, name);
