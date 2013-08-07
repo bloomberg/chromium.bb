@@ -65,6 +65,7 @@ evdev_led_update(struct evdev_device *device, enum weston_led leds)
 static inline void
 evdev_process_key(struct evdev_device *device, struct input_event *e, int time)
 {
+	/* ignore kernel key repeat */
 	if (e->value == 2)
 		return;
 
