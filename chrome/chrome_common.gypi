@@ -455,8 +455,6 @@
         'common/switch_utils.h',
         'common/thumbnail_score.cc',
         'common/thumbnail_score.h',
-        'common/time_format.cc',
-        'common/time_format.h',
         'common/translate/language_detection_details.cc',
         'common/translate/language_detection_details.h',
         'common/translate/language_detection_util.cc',

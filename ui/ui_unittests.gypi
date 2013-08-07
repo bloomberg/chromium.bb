@@ -99,6 +99,7 @@
         'base/l10n/l10n_util_mac_unittest.mm',
         'base/l10n/l10n_util_unittest.cc',
         'base/l10n/l10n_util_win_unittest.cc',
+        'base/l10n/time_format_unittest.cc',
         'base/models/tree_node_iterator_unittest.cc',
         'base/range/range_mac_unittest.mm',
         'base/range/range_unittest.cc',

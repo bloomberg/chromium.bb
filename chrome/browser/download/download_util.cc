@@ -27,7 +27,6 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/time_format.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/render_view_host.h"
@@ -40,6 +39,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
@@ -229,7 +229,7 @@ string16 GetProgressStatusText(DownloadItem* download) {
   if (download->IsPaused())
     time_remaining = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
   else if (download->TimeRemaining(&remaining))
-    time_remaining = TimeFormat::TimeRemaining(remaining);
+    time_remaining = ui::TimeFormat::TimeRemaining(remaining);
 
   if (time_remaining.empty()) {
     base::i18n::AdjustStringForLocaleDirection(&amount);

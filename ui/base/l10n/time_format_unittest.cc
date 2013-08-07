@@ -2,13 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/time_format.h"
+#include "ui/base/l10n/time_format.h"
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_POSIX)
+#include "base/test/scoped_locale.h"
+#endif
+
+namespace ui {
 namespace {
 
 using base::TimeDelta;
@@ -67,4 +73,29 @@ TEST(TimeFormat, RelativeDate) {
   EXPECT_TRUE(a_week_ago_str.empty());
 }
 
+// ScopedLocale is unavailable if not OS_POSIX.
+#if defined(OS_POSIX)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+// DecimalPointNotDot fails on ChromeOS because the fr_FR locale isn't
+// available. See crrev.com/91117
+#define MAYBE_DecimalPointNotDot DISABLED_DecimalPointNotDot
+#else
+#define MAYBE_DecimalPointNotDot DecimalPointNotDot
+#endif  // OS_CHROMEOS
+
+TEST(TimeFormat, MAYBE_DecimalPointNotDot) {
+  base::ScopedLocale scoped_locale("fr_FR.utf-8");
+
+  // Some locales use a comma ',' instead of a dot '.' as the separator for
+  // decimal digits. The icu library wasn't handling this, leading to "1"
+  // being internally converted to "+1,0e00" and ultimately leading to "NaN".
+  // This showed up on the browser on estimated download time, for example.
+  // http://crbug.com/60476
+
+  string16 one_min = TimeFormat::TimeRemainingShort(TimeDelta::FromMinutes(1));
+  EXPECT_EQ(ASCIIToUTF16("1 min"), one_min);
+}
+#endif  // OS_POSIX
+
 }  // namespace
+}  // namespace ui

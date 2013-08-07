@@ -37,7 +37,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
@@ -48,6 +47,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/gfx/image/image.h"
 
 #if defined(OS_CHROMEOS)
@@ -127,7 +127,7 @@ DictionaryValue* CreateDownloadItemValue(
   file_value->SetInteger(
       "started", static_cast<int>(download_item->GetStartTime().ToTimeT()));
   file_value->SetString(
-      "since_string", TimeFormat::RelativeDate(
+      "since_string", ui::TimeFormat::RelativeDate(
           download_item->GetStartTime(), NULL));
   file_value->SetString(
       "date_string", base::TimeFormatShortDate(download_item->GetStartTime()));

@@ -36,7 +36,6 @@
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
 #include "chrome/common/importer/pstore_declarations.h"
-#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/utility/importer/favicon_reencode.h"
 #include "content/public/common/password_form.h"

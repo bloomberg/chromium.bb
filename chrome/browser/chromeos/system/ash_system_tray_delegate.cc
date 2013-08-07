@@ -85,7 +85,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -112,6 +111,7 @@
 #include "net/base/escape.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 
 using drive::DriveIntegrationService;
 using drive::DriveIntegrationServiceFactory;
@@ -884,7 +884,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual string16 FormatTimeDuration(
       const base::TimeDelta& delta) const OVERRIDE {
-    return TimeFormat::TimeDurationLong(delta);
+    return ui::TimeFormat::TimeDurationLong(delta);
   }
 
   virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE {

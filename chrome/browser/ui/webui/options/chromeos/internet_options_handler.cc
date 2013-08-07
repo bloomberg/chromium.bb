@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
-#include "chrome/common/time_format.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/favorite_state.h"

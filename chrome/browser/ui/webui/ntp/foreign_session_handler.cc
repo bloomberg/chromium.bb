@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_service.h"
@@ -36,6 +35,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/webui/web_ui_util.h"
 
 namespace browser_sync {
@@ -221,7 +221,8 @@ string16 ForeignSessionHandler::FormatSessionTime(const base::Time& time) {
   // Return a time like "1 hour ago", "2 days ago", etc.
   base::Time now = base::Time::Now();
   // TimeElapsed does not support negative TimeDelta values, so then we use 0.
-  return TimeFormat::TimeElapsed(now < time ? base::TimeDelta() : now - time);
+  return ui::TimeFormat::TimeElapsed(
+      now < time ? base::TimeDelta() : now - time);
 }
 
 void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
@@ -401,7 +402,7 @@ bool ForeignSessionHandler::SessionWindowToValue(
   dictionary->SetString("userVisibleTimestamp",
       last_synced < base::TimeDelta::FromMinutes(1) ?
           l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW) :
-          TimeFormat::TimeElapsed(last_synced));
+          ui::TimeFormat::TimeElapsed(last_synced));
   dictionary->SetInteger("sessionId", window.window_id.id());
   dictionary->Set("tabs", tab_values.release());
   return true;

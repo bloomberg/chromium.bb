@@ -33,7 +33,6 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -46,6 +45,7 @@
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -153,11 +153,11 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
   dict->SetString("clientId", client_id);
   dict->SetString("username", username);
   dict->SetString("refreshInterval",
-                  TimeFormat::TimeRemainingShort(refresh_interval));
+                  ui::TimeFormat::TimeRemainingShort(refresh_interval));
   dict->SetString("timeSinceLastRefresh", last_refresh_time.is_null() ?
       l10n_util::GetStringUTF16(IDS_POLICY_NEVER_FETCHED) :
-      TimeFormat::TimeElapsed(base::Time::NowFromSystemTime() -
-                              last_refresh_time));
+      ui::TimeFormat::TimeElapsed(base::Time::NowFromSystemTime() -
+                                  last_refresh_time));
 }
 
 void ExtractDomainFromUsername(base::DictionaryValue* dict) {

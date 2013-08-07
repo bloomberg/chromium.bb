@@ -259,6 +259,8 @@
         'base/l10n/l10n_util_posix.cc',
         'base/l10n/l10n_util_win.cc',
         'base/l10n/l10n_util_win.h',
+        'base/l10n/time_format.cc',
+        'base/l10n/time_format.h',
         'base/layout.cc',
         'base/layout.h',
         'base/layout_mac.mm',

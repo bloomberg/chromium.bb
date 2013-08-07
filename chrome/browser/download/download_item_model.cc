@@ -13,13 +13,13 @@
 #include "base/time/time.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
-#include "chrome/common/time_format.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/base/text/text_elider.h"
 
@@ -519,14 +519,14 @@ string16 DownloadItemModel::GetInProgressStatusString() const {
 
     return l10n_util::GetStringFUTF16(
         IDS_DOWNLOAD_STATUS_OPEN_IN,
-        TimeFormat::TimeRemainingShort(time_remaining));
+        ui::TimeFormat::TimeRemainingShort(time_remaining));
   }
 
   // In progress download with known time left: "100/120 MB, 10 secs left"
   if (time_remaining_known) {
     return l10n_util::GetStringFUTF16(
         IDS_DOWNLOAD_STATUS_IN_PROGRESS, size_ratio,
-        TimeFormat::TimeRemaining(time_remaining));
+        ui::TimeFormat::TimeRemaining(time_remaining));
   }
 
   // In progress download with no known time left and non-zero completed bytes:

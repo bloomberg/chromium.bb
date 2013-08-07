@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/time_format.h"
+#include "ui/base/l10n/time_format.h"
 
 #include <vector>
 
@@ -14,7 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/plurfmt.h"
@@ -157,8 +157,6 @@ enum FormatType {
   FORMAT_DURATION_LONG,
   FORMAT_ELAPSED,
 };
-
-}  // namespace
 
 class TimeFormatter {
   public:
@@ -311,7 +309,7 @@ icu::PluralFormat* TimeFormatter::createFallbackFormat(
   return format;
 }
 
-static string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
+string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
   if (delta.ToInternalValue() < 0) {
     NOTREACHED() << "Negative duration";
     return string16();
@@ -360,6 +358,10 @@ static string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
   return result;
 }
 
+}  // namespace
+
+namespace ui {
+
 // static
 string16 TimeFormat::TimeElapsed(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_ELAPSED);
@@ -402,3 +404,5 @@ string16 TimeFormat::RelativeDate(
     return l10n_util::GetStringUTF16(IDS_PAST_TIME_YESTERDAY);
   return string16();
 }
+
+}  // namespace ui

@@ -1765,7 +1765,6 @@
         'common/service_process_util_unittest.cc',
         'common/switch_utils_unittest.cc',
         'common/thumbnail_score_unittest.cc',
-        'common/time_format_unittest.cc',
         'common/translate/language_detection_util_unittest.cc',
         'common/translate/translate_common_metrics_unittest.cc',
         'common/translate/translate_util_unittest.cc',

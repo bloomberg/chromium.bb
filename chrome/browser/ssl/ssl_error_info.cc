@@ -6,7 +6,6 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/time_format.h"
 #include "content/public/browser/cert_store.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

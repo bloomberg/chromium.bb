@@ -2,19 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_TIME_FORMAT_H_
-#define CHROME_COMMON_TIME_FORMAT_H_
+#ifndef UI_BASE_L10N_TIME_FORMAT_H_
+#define UI_BASE_L10N_TIME_FORMAT_H_
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "ui/base/ui_export.h"
 
 namespace base {
 class Time;
 class TimeDelta;
 }
 
+namespace ui {
+
 // Methods to format time values as strings.
-class TimeFormat {
+class UI_EXPORT TimeFormat {
  public:
   // TimeElapsed, TimeRemaining and TimeRemainingShort functions:
   // These functions return a localized string of approximate time duration. The
@@ -59,4 +62,6 @@ class TimeFormat {
   DISALLOW_IMPLICIT_CONSTRUCTORS(TimeFormat);
 };
 
-#endif  // CHROME_COMMON_TIME_FORMAT_H_
+}  // namespace ui
+
+#endif  // UI_BASE_L10N_TIME_FORMAT_H_
