@@ -73,11 +73,18 @@ message OmniboxEventProto {
     // Note that if the homepage is set to the new tab page or about blank,
     // then we'll classify the web page into those categories, not HOMEPAGE.
     OTHER = 4;          // everything not included somewhere else on this list
-    INSTANT_NEW_TAB_PAGE = 5;  // new tab page rendered by Instant
+    // The instant new tab page enum value was deprecated on August 2, 2013.
+    OBSOLETE_INSTANT_NEW_TAB_PAGE = 5;
     // The user is on a search result page that's doing search term
     // replacement, meaning the search terms should've appeared in the omnibox
     // before the user started editing it, not the URL of the page.
     SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT = 6;
+    // The new tab page in which this omnibox interaction first started
+    // with the user having focus in the omnibox.
+    INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS = 7;
+    // The new tab page in which this omnibox interaction first started
+    // with the user having focus in the fakebox.
+    INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS = 8;
   }
   optional PageClassification current_page_classification = 10;
 

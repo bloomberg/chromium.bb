@@ -146,13 +146,15 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
                                const string16& gray_text,
                                const string16& keyword,
                                bool is_keyword_hint,
-                               OmniboxFocusState focus_state)
+                               OmniboxFocusState focus_state,
+                               FocusSource focus_source)
     : user_input_in_progress(user_input_in_progress),
       user_text(user_text),
       gray_text(gray_text),
       keyword(keyword),
       is_keyword_hint(is_keyword_hint),
-      focus_state(focus_state) {
+      focus_state(focus_state),
+      focus_source(focus_source) {
 }
 
 OmniboxEditModel::State::~State() {
@@ -167,6 +169,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
     : view_(view),
       controller_(controller),
       focus_state_(OMNIBOX_FOCUS_NONE),
+      focus_source_(INVALID),
       user_input_in_progress_(false),
       user_input_since_focus_(true),
       just_deleted_text_(false),
@@ -207,11 +210,13 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
                view_->GetGrayTextAutocompletion(),
                keyword_,
                is_keyword_hint_,
-               focus_state_);
+               focus_state_,
+               focus_source_);
 }
 
 void OmniboxEditModel::RestoreState(const State& state) {
   SetFocusState(state.focus_state, OMNIBOX_FOCUS_CHANGE_TAB_SWITCH);
+  focus_source_ = state.focus_source;
   // Restore any user editing.
   if (state.user_input_in_progress) {
     // NOTE: Be sure and set keyword-related state BEFORE invoking
@@ -849,6 +854,7 @@ void OmniboxEditModel::OnKillFocus() {
   // OmniboxFocusChanged() from OnWillKillFocus() to here, which would let us
   // just call SetFocusState() to handle the state change.
   focus_state_ = OMNIBOX_FOCUS_NONE;
+  focus_source_ = INVALID;
   control_key_state_ = UP;
   paste_state_ = NONE;
 }
@@ -1022,10 +1028,18 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
   else if (text_differs)
     paste_state_ = NONE;
 
-  // Restore caret visibility whenever the user changes text or selection in the
-  // omnibox.
-  if (text_differs || selection_differs)
+  if (text_differs || selection_differs) {
+    // Record current focus state for this input if we haven't already.
+    DCHECK_NE(OMNIBOX_FOCUS_NONE, focus_state_);
+    if (focus_source_ == INVALID) {
+      focus_source_ = (focus_state_ == OMNIBOX_FOCUS_VISIBLE) ?
+          OMNIBOX : FAKEBOX;
+    }
+
+    // Restore caret visibility whenever the user changes text or selection in
+    // the omnibox.
     SetFocusState(OMNIBOX_FOCUS_VISIBLE, OMNIBOX_FOCUS_CHANGE_TYPING);
+  }
 
   // Modifying the selection counts as accepting the autocompleted text.
   const bool user_text_changed =
@@ -1260,8 +1274,13 @@ bool OmniboxEditModel::IsSpaceCharForAcceptingKeyword(wchar_t c) {
 AutocompleteInput::PageClassification OmniboxEditModel::ClassifyPage() const {
   if (!delegate_->CurrentPageExists())
     return AutocompleteInput::OTHER;
-  if (delegate_->IsInstantNTP())
-    return AutocompleteInput::INSTANT_NEW_TAB_PAGE;
+  if (delegate_->IsInstantNTP()) {
+    // Note that we treat OMNIBOX as the source if focus_source_ is INVALID,
+    // i.e., if input isn't actually in progress.
+    return (focus_source_ == FAKEBOX) ?
+        AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS :
+        AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS;
+  }
   const GURL& gurl = delegate_->GetURL();
   if (!gurl.is_valid())
     return AutocompleteInput::INVALID_SPEC;

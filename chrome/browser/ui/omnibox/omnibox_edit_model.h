@@ -43,13 +43,22 @@ enum EnteredKeywordModeMethod {
 
 class OmniboxEditModel {
  public:
+  // Did the Omnibox focus originate via the user clicking on the Omnibox or on
+  // the Fakebox?
+  enum FocusSource {
+    INVALID = 0,
+    OMNIBOX = 1,
+    FAKEBOX = 2
+  };
+
   struct State {
     State(bool user_input_in_progress,
           const string16& user_text,
           const string16& gray_text,
           const string16& keyword,
           bool is_keyword_hint,
-          OmniboxFocusState focus_state);
+          OmniboxFocusState focus_state,
+          FocusSource focus_source);
     ~State();
 
     bool user_input_in_progress;
@@ -58,6 +67,7 @@ class OmniboxEditModel {
     const string16 keyword;
     const bool is_keyword_hint;
     OmniboxFocusState focus_state;
+    FocusSource focus_source;
   };
 
   OmniboxEditModel(OmniboxView* view,
@@ -409,6 +419,11 @@ class OmniboxEditModel {
   scoped_ptr<OmniboxCurrentPageDelegate> delegate_;
 
   OmniboxFocusState focus_state_;
+
+  // Used to keep track whether the input currently in progress originated by
+  // focusing in the Omnibox or in the Fakebox. This will be INVALID if no input
+  // is in progress or the Omnibox is not focused.
+  FocusSource focus_source_;
 
   // The URL of the currently displayed page.
   string16 permanent_text_;

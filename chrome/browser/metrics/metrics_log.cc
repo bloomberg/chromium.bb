@@ -154,11 +154,15 @@ OmniboxEventProto::PageClassification AsOmniboxEventPageClassification(
       return OmniboxEventProto::HOMEPAGE;
     case AutocompleteInput::OTHER:
       return OmniboxEventProto::OTHER;
-    case AutocompleteInput::INSTANT_NEW_TAB_PAGE:
-      return OmniboxEventProto::INSTANT_NEW_TAB_PAGE;
     case AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT:
       return OmniboxEventProto::
           SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
+    case AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS:
+      return OmniboxEventProto::
+          INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS;
+    case AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS:
+      return OmniboxEventProto::
+          INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS;
   }
   return OmniboxEventProto::INVALID_SPEC;
 }
