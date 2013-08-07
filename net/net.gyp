@@ -393,6 +393,8 @@
         'disk_cache/simple/simple_entry_format.h',
         'disk_cache/simple/simple_entry_impl.cc',
         'disk_cache/simple/simple_entry_impl.h',
+        'disk_cache/simple/simple_entry_operation.cc',
+        'disk_cache/simple/simple_entry_operation.h',
         'disk_cache/simple/simple_index.cc',
         'disk_cache/simple/simple_index.h',
         'disk_cache/simple/simple_index_file.cc',

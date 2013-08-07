@@ -125,14 +125,6 @@ void AdjustOpenEntryCountBy(int offset) {
                              g_open_entry_count);
 }
 
-bool OperationsConflict(int index1, int offset1, int length1, bool truncate1,
-                        int index2, int offset2, int length2, bool truncate2) {
-  int end1 = truncate1 ? INT_MAX : offset1 + length1;
-  int end2 = truncate2 ? INT_MAX : offset2 + length2;
-  bool ranges_intersect = (offset1 < end2 && offset2 < end1);
-  return (index1 == index2 && ranges_intersect);
-}
-
 }  // namespace
 
 namespace disk_cache {
@@ -220,11 +212,8 @@ int SimpleEntryImpl::OpenEntry(Entry** out_entry,
     return net::ERR_FAILED;
   }
 
-  EnqueueOperation(base::Bind(&SimpleEntryImpl::OpenEntryInternal,
-                              this,
-                              have_index,
-                              callback,
-                              out_entry));
+  pending_operations_.push(SimpleEntryOperation::OpenOperation(
+      this, have_index, callback, out_entry));
   RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
@@ -243,18 +232,12 @@ int SimpleEntryImpl::CreateEntry(Entry** out_entry,
     net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_CREATE_OPTIMISTIC);
 
     ReturnEntryToCaller(out_entry);
-    EnqueueOperation(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
-                                this,
-                                have_index,
-                                CompletionCallback(),
-                                static_cast<Entry**>(NULL)));
+    pending_operations_.push(SimpleEntryOperation::CreateOperation(
+        this, have_index, CompletionCallback(), static_cast<Entry**>(NULL)));
     ret_value = net::OK;
   } else {
-    EnqueueOperation(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
-                                this,
-                                have_index,
-                                callback,
-                                out_entry));
+    pending_operations_.push(SimpleEntryOperation::CreateOperation(
+        this, have_index, callback, out_entry));
     ret_value = net::ERR_IO_PENDING;
   }
 
@@ -305,7 +288,7 @@ void SimpleEntryImpl::Close() {
     return;
   }
 
-  EnqueueOperation(base::Bind(&SimpleEntryImpl::CloseInternal, this));
+  pending_operations_.push(SimpleEntryOperation::CloseOperation(this));
   DCHECK(!HasOneRef());
   Release();  // Balanced in ReturnEntryToCaller().
   RunNextOperationIfNeeded();
@@ -368,16 +351,10 @@ int SimpleEntryImpl::ReadData(int stream_index,
 
   // TODO(felipeg): Optimization: Add support for truly parallel read
   // operations.
-  EnqueueReadOperation(base::Bind(&SimpleEntryImpl::ReadDataInternal,
-                                  this,
-                                  stream_index,
-                                  offset,
-                                  make_scoped_refptr(buf),
-                                  buf_len,
-                                  callback),
-                       stream_index,
-                       offset,
-                       buf_len);
+  bool alone_in_queue =
+      pending_operations_.size() == 0 && state_ == STATE_READY;
+  pending_operations_.push(SimpleEntryOperation::ReadOperation(
+      this, stream_index, offset, buf_len, buf, callback, alone_in_queue));
   RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
@@ -462,13 +439,14 @@ int SimpleEntryImpl::WriteData(int stream_index,
     }
   }
 
-  EnqueueWriteOperation(optimistic,
-                        stream_index,
-                        offset,
-                        op_buf.get(),
-                        buf_len,
-                        truncate,
-                        op_callback);
+  pending_operations_.push(SimpleEntryOperation::WriteOperation(this,
+                                                                stream_index,
+                                                                offset,
+                                                                buf_len,
+                                                                op_buf.get(),
+                                                                truncate,
+                                                                optimistic,
+                                                                op_callback));
   return ret_value;
 }
 
@@ -521,9 +499,6 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   return net::ERR_FAILED;
 }
 
-SimpleEntryImpl::LastQueuedOpInfo::LastQueuedOpInfo()
-    : is_optimistic_write(false), is_write(false), is_read(false) {}
-
 SimpleEntryImpl::~SimpleEntryImpl() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(0U, pending_operations_.size());
@@ -570,96 +545,49 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
   UMA_HISTOGRAM_CUSTOM_COUNTS("SimpleCache.EntryOperationsPending",
                               pending_operations_.size(), 0, 100, 20);
   if (!pending_operations_.empty() && state_ != STATE_IO_PENDING) {
-    base::Closure operation = pending_operations_.front();
+    scoped_ptr<SimpleEntryOperation> operation(
+        new SimpleEntryOperation(pending_operations_.front()));
     pending_operations_.pop();
-    operation.Run();
+    switch (operation->type()) {
+      case SimpleEntryOperation::TYPE_OPEN:
+        OpenEntryInternal(operation->have_index(),
+                          operation->callback(),
+                          operation->out_entry());
+        break;
+      case SimpleEntryOperation::TYPE_CREATE:
+        CreateEntryInternal(operation->have_index(),
+                            operation->callback(),
+                            operation->out_entry());
+        break;
+      case SimpleEntryOperation::TYPE_CLOSE:
+        CloseInternal();
+        break;
+      case SimpleEntryOperation::TYPE_READ:
+        RecordReadIsParallelizable(*operation);
+        ReadDataInternal(operation->index(),
+                         operation->offset(),
+                         operation->buf(),
+                         operation->length(),
+                         operation->callback());
+        break;
+      case SimpleEntryOperation::TYPE_WRITE:
+        RecordWriteDependencyType(*operation);
+        WriteDataInternal(operation->index(),
+                          operation->offset(),
+                          operation->buf(),
+                          operation->length(),
+                          operation->callback(),
+                          operation->truncate());
+        break;
+      default:
+        NOTREACHED();
+    }
+    // The operation is kept for histograms. Makes sure it does not leak
+    // resources.
+    executing_operation_.swap(operation);
+    executing_operation_->ReleaseReferences();
     // |this| may have been deleted.
   }
-}
-
-void SimpleEntryImpl::EnqueueOperation(const base::Closure& operation) {
-  last_op_info_.is_read = false;
-  last_op_info_.is_write = false;
-  last_op_info_.is_optimistic_write = false;
-  pending_operations_.push(operation);
-}
-
-void SimpleEntryImpl::EnqueueReadOperation(const base::Closure& operation,
-                                           int index,
-                                           int offset,
-                                           int length) {
-  bool parallelizable_read = last_op_info_.is_read &&
-      (!pending_operations_.empty() || state_ == STATE_IO_PENDING);
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.ReadIsParallelizable",
-                        parallelizable_read);
-  last_op_info_.is_read = true;
-  last_op_info_.is_write = false;
-  last_op_info_.is_optimistic_write = false;
-  last_op_info_.io_index = index;
-  last_op_info_.io_offset = offset;
-  last_op_info_.io_length = length;
-  pending_operations_.push(operation);
-}
-
-void SimpleEntryImpl::EnqueueWriteOperation(
-    bool optimistic,
-    int index,
-    int offset,
-    net::IOBuffer* buf,
-    int length,
-    bool truncate,
-    const CompletionCallback& callback) {
-  // Used in histograms, please only add entries at the end.
-  enum WriteDependencyType {
-    WRITE_OPTIMISTIC = 0,
-    WRITE_FOLLOWS_CONFLICTING_OPTIMISTIC = 1,
-    WRITE_FOLLOWS_NON_CONFLICTING_OPTIMISTIC = 2,
-    WRITE_FOLLOWS_CONFLICTING_WRITE = 3,
-    WRITE_FOLLOWS_NON_CONFLICTING_WRITE = 4,
-    WRITE_FOLLOWS_CONFLICTING_READ = 5,
-    WRITE_FOLLOWS_NON_CONFLICTING_READ = 6,
-    WRITE_FOLLOWS_OTHER = 7,
-    WRITE_DEPENDENCY_TYPE_MAX = 8,
-  };
-
-  WriteDependencyType type = WRITE_FOLLOWS_OTHER;
-  if (optimistic) {
-    type = WRITE_OPTIMISTIC;
-  } else if (last_op_info_.is_read || last_op_info_.is_write) {
-    bool conflicting = OperationsConflict(
-        index, offset, length, truncate,
-        last_op_info_.io_index,
-        last_op_info_.io_offset, last_op_info_.io_length,
-        last_op_info_.truncate && last_op_info_.is_write);
-
-    if (last_op_info_.is_optimistic_write) {
-      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_OPTIMISTIC
-                         : WRITE_FOLLOWS_NON_CONFLICTING_OPTIMISTIC;
-    } else if (last_op_info_.is_read) {
-      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_READ
-                         : WRITE_FOLLOWS_NON_CONFLICTING_READ;
-    } else {
-      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_WRITE
-                         : WRITE_FOLLOWS_NON_CONFLICTING_WRITE;
-    }
-  }
-  UMA_HISTOGRAM_ENUMERATION(
-      "SimpleCache.WriteDependencyType", type, WRITE_DEPENDENCY_TYPE_MAX);
-  last_op_info_.is_read = false;
-  last_op_info_.is_write = true;
-  last_op_info_.is_optimistic_write = optimistic;
-  last_op_info_.io_index = index;
-  last_op_info_.io_offset = offset;
-  last_op_info_.io_length = length;
-  last_op_info_.truncate = truncate;
-  pending_operations_.push(base::Bind(&SimpleEntryImpl::WriteDataInternal,
-                                      this,
-                                      index,
-                                      offset,
-                                      make_scoped_refptr(buf),
-                                      length,
-                                      callback,
-                                      truncate));
 }
 
 void SimpleEntryImpl::OpenEntryInternal(bool have_index,
@@ -1202,6 +1130,58 @@ int64 SimpleEntryImpl::GetDiskUsage() const {
         simple_util::GetFileSizeFromKeyAndDataSize(key_, data_size_[i]);
   }
   return file_size;
+}
+
+void SimpleEntryImpl::RecordReadIsParallelizable(
+    const SimpleEntryOperation& operation) const {
+  if (!executing_operation_)
+    return;
+  // TODO(clamy): The values of this histogram should be changed to something
+  // more useful.
+  bool parallelizable_read =
+      !operation.alone_in_queue() &&
+      executing_operation_->type() == SimpleEntryOperation::TYPE_READ;
+  UMA_HISTOGRAM_BOOLEAN("SimpleCache.ReadIsParallelizable",
+                        parallelizable_read);
+}
+
+void SimpleEntryImpl::RecordWriteDependencyType(
+    const SimpleEntryOperation& operation) const {
+  if (!executing_operation_)
+    return;
+  // Used in histograms, please only add entries at the end.
+  enum WriteDependencyType {
+    WRITE_OPTIMISTIC = 0,
+    WRITE_FOLLOWS_CONFLICTING_OPTIMISTIC = 1,
+    WRITE_FOLLOWS_NON_CONFLICTING_OPTIMISTIC = 2,
+    WRITE_FOLLOWS_CONFLICTING_WRITE = 3,
+    WRITE_FOLLOWS_NON_CONFLICTING_WRITE = 4,
+    WRITE_FOLLOWS_CONFLICTING_READ = 5,
+    WRITE_FOLLOWS_NON_CONFLICTING_READ = 6,
+    WRITE_FOLLOWS_OTHER = 7,
+    WRITE_DEPENDENCY_TYPE_MAX = 8,
+  };
+
+  WriteDependencyType type = WRITE_FOLLOWS_OTHER;
+  if (operation.optimistic()) {
+    type = WRITE_OPTIMISTIC;
+  } else if (executing_operation_->type() == SimpleEntryOperation::TYPE_READ ||
+             executing_operation_->type() == SimpleEntryOperation::TYPE_WRITE) {
+    bool conflicting = executing_operation_->ConflictsWith(operation);
+
+    if (executing_operation_->type() == SimpleEntryOperation::TYPE_READ) {
+      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_READ
+                         : WRITE_FOLLOWS_NON_CONFLICTING_READ;
+    } else if (executing_operation_->optimistic()) {
+      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_OPTIMISTIC
+                         : WRITE_FOLLOWS_NON_CONFLICTING_OPTIMISTIC;
+    } else {
+      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_WRITE
+                         : WRITE_FOLLOWS_NON_CONFLICTING_WRITE;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "SimpleCache.WriteDependencyType", type, WRITE_DEPENDENCY_TYPE_MAX);
 }
 
 }  // namespace disk_cache
