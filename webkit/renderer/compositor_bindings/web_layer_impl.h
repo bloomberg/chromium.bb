@@ -27,6 +27,7 @@ class SkImageFilter;
 
 namespace WebKit {
 class WebFilterOperations;
+class WebLayerClient;
 struct WebFloatRect;
 }
 
@@ -117,9 +118,11 @@ class WebLayerImpl : public WebKit::WebLayer {
   virtual WebKit::WebLayerPositionConstraint positionConstraint() const;
   virtual void setScrollClient(WebKit::WebLayerScrollClient* client);
   virtual bool isOrphan() const;
+  virtual void setWebLayerClient(WebKit::WebLayerClient* client);
 
  protected:
   scoped_refptr<cc::Layer> layer_;
+  WebKit::WebLayerClient* web_layer_client_;
 
  private:
   scoped_ptr<WebToCCAnimationDelegateAdapter> animation_delegate_adapter_;
