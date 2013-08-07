@@ -1040,7 +1040,7 @@ class RemoveSearchTermsFromAPITask : public SearchTermTask {
     RemoveSearchTermsFromAPITask(AndroidHistoryProviderService* service,
                                  CancelableRequestConsumer* cancelable_consumer,
                                  Profile* profile)
-        : SearchTermTask(service, cancelable_consumer, profile) {}
+        : SearchTermTask(service, cancelable_consumer, profile), result_() {}
 
   int Run(const std::string& selection,
           const std::vector<string16>& selection_args) {
