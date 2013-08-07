@@ -190,7 +190,7 @@ class SyncFileSystemServiceTest : public testing::Test {
   void InitializeAppForObserverTest(
       RemoteServiceState state_to_notify,
       SyncStatusCode status_to_return,
-      const std::vector<SyncServiceState> expected_states,
+      const std::vector<SyncServiceState>& expected_states,
       SyncStatusCode expected_status) {
     StrictMock<MockSyncEventObserver> event_observer;
     sync_service_->AddSyncEventObserver(&event_observer);
