@@ -257,6 +257,9 @@ function buildTaskManager(areConflicting) {
     return function() {
       // This is the wrapper for the callback.
       try {
+        verify(!isInInstrumentedCallback, 'Re-entering instrumented callback');
+        isInInstrumentedCallback = true;
+
         if (isTaskCallback) {
           verify(!isInTask, 'wrapCallback: already in task');
           isInTask = true;
@@ -265,12 +268,7 @@ function buildTaskManager(areConflicting) {
           delete pendingCallbacks[callbackId];
 
         // Call the original callback.
-        verify(!isInInstrumentedCallback, 'Re-entering instrumented callback');
-        isInInstrumentedCallback = true;
         callback.apply(null, arguments);
-        verify(isInInstrumentedCallback,
-               'Instrumented callback is not instrumented upon exit');
-        isInInstrumentedCallback = false;
 
         if (isTaskCallback) {
           verify(isInTask, 'wrapCallback: not in task at exit');
@@ -278,6 +276,10 @@ function buildTaskManager(areConflicting) {
           if (--taskPendingCallbackCount == 0)
             finish();
         }
+
+        verify(isInInstrumentedCallback,
+               'Instrumented callback is not instrumented upon exit');
+        isInInstrumentedCallback = false;
       } catch (error) {
         var message = 'Uncaught exception:\n' + error.stack;
         console.error(message);
