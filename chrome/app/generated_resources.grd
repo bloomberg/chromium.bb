@@ -8520,7 +8520,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- Managed User Avatar Menu -->
       <message name="IDS_MANAGED_USER_INFO" desc="Text which explains that a supervised user is managed by a custodian.">
-        This user is supervised by <ph name="CUSTODIAN_NAME">$1<ex>Jane Doe</ex></ph>. Usage and history from this user may be viewed by the manager.
+        This user is supervised by <ph name="CUSTODIAN_EMAIL">$1<ex>Jane.Doe@gmail.com</ex></ph>. Usage and history from this user can be reviewed by the manager on chrome.com.
       </message>
       <message name="IDS_MANAGED_USER_AVATAR_LABEL" desc="A label for the supervised user which is used in the avatar menu and as a label in the titlebar.">
         Supervised user
