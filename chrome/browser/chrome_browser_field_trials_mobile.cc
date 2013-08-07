@@ -16,16 +16,15 @@ namespace chrome {
 
 namespace {
 
-// Governs the rollout of the compression proxy for Chrome on mobile platforms.
-// Always enabled in DEV and BETA versions.
-// Stable percentage will be controlled from server.
-void DataCompressionProxyFieldTrial() {
-  const char kDataCompressionProxyFieldTrialName[] =
-      "DataCompressionProxyRollout";
-  const base::FieldTrial::Probability kDataCompressionProxyDivisor = 1000;
-
-  // 10/1000 = 1% for starters.
-  const base::FieldTrial::Probability kDataCompressionProxyStable = 10;
+// Base function used by all data reduction proxy field trials. A trial is
+// only conducted for installs that are in the "Enabled" group. They are always
+// enabled on DEV and BETA channels, and for STABLE, a percentage will be
+// controlled from the server. Until the percentage is learned from the server,
+// a client-side configuration is used.
+void DataCompressionProxyBaseFieldTrial(
+    const char* trial_name,
+    const base::FieldTrial::Probability enabled_group_probability,
+    const base::FieldTrial::Probability total_probability) {
   const char kEnabled[] = "Enabled";
   const char kDisabled[] = "Disabled";
 
@@ -36,18 +35,39 @@ void DataCompressionProxyFieldTrial() {
   // Experiment enabled until Jan 1, 2015. By default, disabled.
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
-          kDataCompressionProxyFieldTrialName, kDataCompressionProxyDivisor,
+          trial_name,
+          total_probability,
           kDisabled, 2015, 1, 1, base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
 
   // Non-stable channels will run with probability 1.
   const int kEnabledGroup = trial->AppendGroup(
       kEnabled,
-      kIsStableChannel ?
-          kDataCompressionProxyStable : kDataCompressionProxyDivisor);
+      kIsStableChannel ? enabled_group_probability : total_probability);
 
   const int v = trial->group();
-  VLOG(1) << "DataCompression proxy enabled group id: " << kEnabledGroup
+  VLOG(1) << trial_name <<  " enabled group id: " << kEnabledGroup
           << ". Selected group id: " << v;
+}
+
+void DataCompressionProxyFieldTrials() {
+  // Governs the rollout of the compression proxy for Chrome on mobile
+  // platforms. Always enabled in DEV and BETA channels. For STABLE, the
+  // percentage will be controlled from the server, and is configured to be
+  // 10% = 100 / 1000 until overridden by the server.
+  DataCompressionProxyBaseFieldTrial(
+      "DataCompressionProxyRollout", 100, 1000);
+
+  if (base::FieldTrialList::FindFullName(
+      "DataCompressionProxyRollout") == "Enabled") {
+
+    // Governs the rollout of the _promo_ for the compression proxy
+    // independently from the rollout of compression proxy. The enabled
+    // percentage is configured to be 100% = 1000 / 1000 until overridden by the
+    // server. When this trial is "Enabled," users get a promo, whereas
+    // otherwise, compression is enabled without a promo.
+    DataCompressionProxyBaseFieldTrial(
+        "DataCompressionProxyPromoVisibility", 1000, 1000);
+  }
 }
 
 void NewTabButtonInToolbarFieldTrial(const CommandLine& parsed_command_line) {
@@ -92,7 +112,7 @@ void NewTabButtonInToolbarFieldTrial(const CommandLine& parsed_command_line) {
 void SetupMobileFieldTrials(const CommandLine& parsed_command_line,
                             const base::Time& install_time,
                             PrefService* local_state) {
-  DataCompressionProxyFieldTrial();
+  DataCompressionProxyFieldTrials();
 
 #if defined(OS_ANDROID)
   NewTabButtonInToolbarFieldTrial(parsed_command_line);
