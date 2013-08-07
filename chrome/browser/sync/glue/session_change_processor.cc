@@ -28,6 +28,11 @@
 #include "sync/internal_api/public/read_node.h"
 #include "sync/protocol/session_specifics.pb.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
+
 using content::BrowserThread;
 using content::NavigationController;
 using content::WebContents;
@@ -54,6 +59,7 @@ SessionChangeProcessor::SessionChangeProcessor(
     DataTypeErrorHandler* error_handler,
     SessionModelAssociator* session_model_associator)
     : ChangeProcessor(error_handler),
+      weak_ptr_factory_(this),
       session_model_associator_(session_model_associator),
       profile_(NULL),
       setup_for_test_(false) {
@@ -67,6 +73,7 @@ SessionChangeProcessor::SessionChangeProcessor(
     SessionModelAssociator* session_model_associator,
     bool setup_for_test)
     : ChangeProcessor(error_handler),
+      weak_ptr_factory_(this),
       session_model_associator_(session_model_associator),
       profile_(NULL),
       setup_for_test_(setup_for_test) {
@@ -195,51 +202,7 @@ void SessionChangeProcessor::Observe(
       break;
   }
 
-  // Check if this tab should trigger a session sync refresh. By virtue of
-  // it being a modified tab, we know the tab is active (so we won't do
-  // refreshes just because the refresh page is open in a background tab).
-  if (!modified_tabs.empty()) {
-    SyncedTabDelegate* tab = modified_tabs.front();
-    const content::NavigationEntry* entry = tab->GetActiveEntry();
-    if (!tab->IsBeingDestroyed() &&
-        entry &&
-        entry->GetVirtualURL().is_valid() &&
-        entry->GetVirtualURL().spec() == kNTPOpenTabSyncURL) {
-      DVLOG(1) << "Triggering sync refresh for sessions datatype.";
-      const syncer::ModelTypeSet types(syncer::SESSIONS);
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
-          content::Source<Profile>(profile_),
-          content::Details<const syncer::ModelTypeSet>(&types));
-    }
-  }
-
-  // Associate tabs first so the synced session tracker is aware of them.
-  // Note that if we fail to associate, it means something has gone wrong,
-  // such as our local session being deleted, so we disassociate and associate
-  // again.
-  bool reassociation_needed = !modified_tabs.empty() &&
-      !session_model_associator_->AssociateTabs(modified_tabs, NULL);
-
-  // Note, we always associate windows because it's possible a tab became
-  // "interesting" by going to a valid URL, in which case it needs to be added
-  // to the window's tab information.
-  if (!reassociation_needed) {
-    reassociation_needed =
-        !session_model_associator_->AssociateWindows(false, NULL);
-  }
-
-  if (reassociation_needed) {
-    LOG(WARNING) << "Reassociation of local models triggered.";
-    syncer::SyncError error;
-    error = session_model_associator_->DisassociateModels();
-    error = session_model_associator_->AssociateModels(NULL, NULL);
-    if (error.IsSet()) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(
-          error.location(),
-          error.message());
-    }
-  }
+  ProcessModifiedTabs(modified_tabs);
 }
 
 void SessionChangeProcessor::ApplyChangesFromSyncModel(
@@ -247,8 +210,6 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
     int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  ScopedStopObserving<SessionChangeProcessor> stop_observing(this);
 
   syncer::ReadNode root(trans);
   if (root.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::SESSIONS)) !=
@@ -330,6 +291,68 @@ void SessionChangeProcessor::StartImpl(Profile* profile) {
   StartObserving();
 }
 
+void SessionChangeProcessor::OnNavigationBlocked(WebContents* web_contents) {
+  SyncedTabDelegate* tab =
+      SyncedTabDelegate::ImplFromWebContents(web_contents);
+  if (!tab)
+    return;
+
+  DCHECK(tab->profile() == profile_);
+
+  std::vector<SyncedTabDelegate*> modified_tabs;
+  modified_tabs.push_back(tab);
+  ProcessModifiedTabs(modified_tabs);
+}
+
+void SessionChangeProcessor::ProcessModifiedTabs(
+    const std::vector<SyncedTabDelegate*>& modified_tabs) {
+  // Check if this tab should trigger a session sync refresh. By virtue of
+  // it being a modified tab, we know the tab is active (so we won't do
+  // refreshes just because the refresh page is open in a background tab).
+  if (!modified_tabs.empty()) {
+    SyncedTabDelegate* tab = modified_tabs.front();
+    const content::NavigationEntry* entry = tab->GetActiveEntry();
+    if (!tab->IsBeingDestroyed() &&
+        entry &&
+        entry->GetVirtualURL().is_valid() &&
+        entry->GetVirtualURL().spec() == kNTPOpenTabSyncURL) {
+      DVLOG(1) << "Triggering sync refresh for sessions datatype.";
+      const syncer::ModelTypeSet types(syncer::SESSIONS);
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+          content::Source<Profile>(profile_),
+          content::Details<const syncer::ModelTypeSet>(&types));
+    }
+  }
+
+  // Associate tabs first so the synced session tracker is aware of them.
+  // Note that if we fail to associate, it means something has gone wrong,
+  // such as our local session being deleted, so we disassociate and associate
+  // again.
+  bool reassociation_needed = !modified_tabs.empty() &&
+      !session_model_associator_->AssociateTabs(modified_tabs, NULL);
+
+  // Note, we always associate windows because it's possible a tab became
+  // "interesting" by going to a valid URL, in which case it needs to be added
+  // to the window's tab information.
+  if (!reassociation_needed) {
+    reassociation_needed =
+        !session_model_associator_->AssociateWindows(false, NULL);
+  }
+
+  if (reassociation_needed) {
+    LOG(WARNING) << "Reassociation of local models triggered.";
+    syncer::SyncError error;
+    error = session_model_associator_->DisassociateModels();
+    error = session_model_associator_->AssociateModels(NULL, NULL);
+    if (error.IsSet()) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(
+          error.location(),
+          error.message());
+    }
+  }
+}
+
 void SessionChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!profile_)
@@ -355,11 +378,15 @@ void SessionChangeProcessor::StartObserving() {
       content::NotificationService::AllBrowserContextsAndSources());
   notification_registrar_.Add(this, chrome::NOTIFICATION_FAVICON_CHANGED,
       content::Source<Profile>(profile_));
-}
-
-void SessionChangeProcessor::StopObserving() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  notification_registrar_.RemoveAll();
+#if defined(ENABLE_MANAGED_USERS)
+  if (profile_->IsManaged()) {
+    ManagedUserService* managed_user_service =
+        ManagedUserServiceFactory::GetForProfile(profile_);
+    managed_user_service->AddNavigationBlockedCallback(
+        base::Bind(&SessionChangeProcessor::OnNavigationBlocked,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+#endif
 }
 
 }  // namespace browser_sync

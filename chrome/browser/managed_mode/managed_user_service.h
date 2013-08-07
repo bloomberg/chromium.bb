@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
@@ -46,6 +47,7 @@ class ManagedUserService : public BrowserContextKeyedService,
                            public chrome::BrowserListObserver {
  public:
   typedef std::vector<string16> CategoryList;
+  typedef base::Callback<void(content::WebContents*)> NavigationBlockedCallback;
 
   enum ManualBehavior {
     MANUAL_NONE = 0,
@@ -135,6 +137,9 @@ class ManagedUserService : public BrowserContextKeyedService,
   void set_elevated_for_testing(bool skip) {
     elevated_for_testing_ = skip;
   }
+
+  void AddNavigationBlockedCallback(const NavigationBlockedCallback& callback);
+  void DidBlockNavigation(content::WebContents* web_contents);
 
   // extensions::ManagementPolicy::Provider implementation:
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
@@ -248,6 +253,8 @@ class ManagedUserService : public BrowserContextKeyedService,
   // True iff we're waiting for the Sync service to be initialized.
   bool waiting_for_sync_initialization_;
   bool is_profile_active_;
+
+  std::vector<NavigationBlockedCallback> navigation_blocked_callbacks_;
 
   // Sets a profile in elevated state for testing if set to true.
   bool elevated_for_testing_;

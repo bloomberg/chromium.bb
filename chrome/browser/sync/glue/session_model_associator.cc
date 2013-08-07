@@ -1098,11 +1098,15 @@ bool SessionModelAssociator::IsValidTab(const SyncedTabDelegate& tab) const {
 
 bool SessionModelAssociator::TabHasValidEntry(
     const SyncedTabDelegate& tab) const {
-  int pending_index = tab.GetPendingEntryIndex();
+  if (tab.ProfileIsManaged() && tab.GetBlockedNavigations()->size() > 0)
+    return true;
+
   int entry_count = tab.GetEntryCount();
-  bool found_valid_url = false;
   if (entry_count == 0)
     return false;  // This deliberately ignores a new pending entry.
+
+  int pending_index = tab.GetPendingEntryIndex();
+  bool found_valid_url = false;
   for (int i = 0; i < entry_count; ++i) {
     const content::NavigationEntry* entry = (i == pending_index) ?
        tab.GetPendingEntry() : tab.GetEntryAtIndex(i);

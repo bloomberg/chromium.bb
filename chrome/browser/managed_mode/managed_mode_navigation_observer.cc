@@ -244,4 +244,7 @@ void ManagedModeNavigationObserver::OnRequestBlockedInternal(const GURL& url) {
   entry->SetVirtualURL(url);
   entry->SetTimestamp(timestamp);
   blocked_navigations_.push_back(entry.release());
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(profile);
+  managed_user_service->DidBlockNavigation(web_contents());
 }

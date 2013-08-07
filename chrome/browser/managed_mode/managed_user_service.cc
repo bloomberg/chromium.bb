@@ -247,6 +247,20 @@ std::string ManagedUserService::GetCustodianName() const {
   return name.empty() ? GetCustodianEmailAddress() : name;
 }
 
+void ManagedUserService::AddNavigationBlockedCallback(
+    const NavigationBlockedCallback& callback) {
+  navigation_blocked_callbacks_.push_back(callback);
+}
+
+void ManagedUserService::DidBlockNavigation(
+    content::WebContents* web_contents) {
+  for (std::vector<NavigationBlockedCallback>::iterator it =
+           navigation_blocked_callbacks_.begin();
+       it != navigation_blocked_callbacks_.end(); ++it) {
+    it->Run(web_contents);
+  }
+}
+
 std::string ManagedUserService::GetDebugPolicyProviderName() const {
   // Save the string space in official builds.
 #ifdef NDEBUG

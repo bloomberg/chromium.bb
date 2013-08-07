@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_SESSION_CHANGE_PROCESSOR_H_
 #define CHROME_BROWSER_SYNC_GLUE_SESSION_CHANGE_PROCESSOR_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/change_processor.h"
@@ -15,10 +17,15 @@
 
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 namespace browser_sync {
 
-class SessionModelAssociator;
 class DataTypeErrorHandler;
+class SessionModelAssociator;
+class SyncedTabDelegate;
 
 // This class is responsible for taking changes from the
 // SessionService and applying them to the sync API 'syncable'
@@ -56,10 +63,15 @@ class SessionChangeProcessor : public ChangeProcessor,
   virtual void StartImpl(Profile* profile) OVERRIDE;
 
  private:
-  friend class ScopedStopObserving<SessionChangeProcessor>;
+  void OnNavigationBlocked(content::WebContents* web_contents);
+
+  // Utility method to handle reassociation of tabs and windows.
+  void ProcessModifiedTabs(
+      const std::vector<SyncedTabDelegate*>& modified_tabs);
 
   void StartObserving();
-  void StopObserving();
+
+  base::WeakPtrFactory<SessionChangeProcessor> weak_ptr_factory_;
 
   SessionModelAssociator* session_model_associator_;
   content::NotificationRegistrar notification_registrar_;
