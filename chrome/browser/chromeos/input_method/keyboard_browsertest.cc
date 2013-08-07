@@ -13,7 +13,9 @@ namespace chromeos {
 
 typedef TextInputTestBase KeyboardEventEndToEndTest;
 
-IN_PROC_BROWSER_TEST_F(KeyboardEventEndToEndTest, AltGrToCtrlAltKeyDown) {
+// Flaky test: 268049
+IN_PROC_BROWSER_TEST_F(KeyboardEventEndToEndTest,
+                       DISABLED_AltGrToCtrlAltKeyDown) {
   TextInputTestHelper helper;
 
   GURL url = ui_test_utils::GetTestUrl(
