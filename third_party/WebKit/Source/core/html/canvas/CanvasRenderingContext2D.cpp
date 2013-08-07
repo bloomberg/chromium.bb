@@ -1171,14 +1171,14 @@ bool CanvasRenderingContext2D::shouldDrawShadows() const
     return alphaChannel(state().m_shadowColor) && (state().m_shadowBlur || !state().m_shadowOffset.isZero());
 }
 
-static LayoutSize size(HTMLImageElement* image)
+static LayoutSize sizeFor(HTMLImageElement* image)
 {
     if (CachedImage* cachedImage = image->cachedImage())
         return cachedImage->imageSizeForRenderer(image->renderer(), 1.0f); // FIXME: Not sure about this.
     return IntSize();
 }
 
-static IntSize size(HTMLVideoElement* video)
+static IntSize sizeFor(HTMLVideoElement* video)
 {
     if (MediaPlayer* player = video->player())
         return player->naturalSize();
@@ -1316,8 +1316,8 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, float x, float
         es.throwDOMException(TypeMismatchError);
         return;
     }
-    LayoutSize s = size(image);
-    drawImage(image, x, y, s.width(), s.height(), es);
+    LayoutSize size = sizeFor(image);
+    drawImage(image, x, y, size.width(), size.height(), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
@@ -1327,8 +1327,8 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
         es.throwDOMException(TypeMismatchError);
         return;
     }
-    LayoutSize s = size(image);
-    drawImage(image, FloatRect(0, 0, s.width(), s.height()), FloatRect(x, y, width, height), es);
+    LayoutSize size = sizeFor(image);
+    drawImage(image, FloatRect(0, 0, size.width(), size.height()), FloatRect(x, y, width, height), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
@@ -1354,16 +1354,23 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
         || !std::isfinite(srcRect.x()) || !std::isfinite(srcRect.y()) || !std::isfinite(srcRect.width()) || !std::isfinite(srcRect.height()))
         return;
 
-    if (!dstRect.width() || !dstRect.height())
+    CachedImage* cachedImage = image->cachedImage();
+    if (!cachedImage || !image->complete())
         return;
 
-    if (!image->complete())
+    LayoutSize size = sizeFor(image);
+    if (!size.width() || !size.height()) {
+        es.throwDOMException(InvalidStateError);
+        return;
+    }
+
+    if (!dstRect.width() || !dstRect.height())
         return;
 
     FloatRect normalizedSrcRect = normalizeRect(srcRect);
     FloatRect normalizedDstRect = normalizeRect(dstRect);
 
-    FloatRect imageRect = FloatRect(FloatPoint(), size(image));
+    FloatRect imageRect = FloatRect(FloatPoint(), size);
     if (!srcRect.width() || !srcRect.height()) {
         es.throwDOMException(IndexSizeError);
         return;
@@ -1372,10 +1379,6 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
         return;
 
     clipRectsToImageRect(imageRect, &normalizedSrcRect, &normalizedDstRect);
-
-    CachedImage* cachedImage = image->cachedImage();
-    if (!cachedImage)
-        return;
 
     checkOrigin(image);
 
@@ -1478,8 +1481,8 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, float x, float
         es.throwDOMException(TypeMismatchError);
         return;
     }
-    IntSize s = size(video);
-    drawImage(video, x, y, s.width(), s.height(), es);
+    IntSize size = sizeFor(video);
+    drawImage(video, x, y, size.width(), size.height(), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video,
@@ -1489,8 +1492,8 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video,
         es.throwDOMException(TypeMismatchError);
         return;
     }
-    IntSize s = size(video);
-    drawImage(video, FloatRect(0, 0, s.width(), s.height()), FloatRect(x, y, width, height), es);
+    IntSize size = sizeFor(video);
+    drawImage(video, FloatRect(0, 0, size.width(), size.height()), FloatRect(x, y, width, height), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video,
@@ -1510,7 +1513,7 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRec
     if (video->readyState() == HTMLMediaElement::HAVE_NOTHING || video->readyState() == HTMLMediaElement::HAVE_METADATA)
         return;
 
-    FloatRect videoRect = FloatRect(FloatPoint(), size(video));
+    FloatRect videoRect = FloatRect(FloatPoint(), sizeFor(video));
     if (!srcRect.width() || !srcRect.height()) {
         es.throwDOMException(IndexSizeError);
         return;
@@ -1537,7 +1540,7 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRec
     c->translate(normalizedDstRect.x(), normalizedDstRect.y());
     c->scale(FloatSize(normalizedDstRect.width() / normalizedSrcRect.width(), normalizedDstRect.height() / normalizedSrcRect.height()));
     c->translate(-normalizedSrcRect.x(), -normalizedSrcRect.y());
-    video->paintCurrentFrameInContext(c, IntRect(IntPoint(), size(video)));
+    video->paintCurrentFrameInContext(c, IntRect(IntPoint(), sizeFor(video)));
     stateSaver.restore();
     didDraw(dstRect);
 }

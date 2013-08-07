@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<script>
+    window.jsTestIsAsync = true;
+    description("This test checks behavior of Canvas::drawImage with a broken source image.");
+
+    var InvalidStateError = "InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.";
+    var TypeMismatchError = "TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object.";
+
+    // Create an image with invalid data.
+    var invalidImage = new Image();
+    invalidImage.src = 'resources/repaint.js';
+    invalidImage.onerror = draw;
+
+    var ctx = document.createElement("canvas").getContext('2d');
+    function draw() {
+        // null images should throw TypeError
+        shouldThrow("ctx.drawImage(null, 0, 0)", "TypeMismatchError");
+        shouldThrow("ctx.drawImage(null, 0, 0, 20, 20)", "TypeMismatchError");
+        shouldThrow("ctx.drawImage(null, 0, 0, 20, 20, 0, 0, 20, 20)", "TypeMismatchError");
+
+        // broken images should throw InvalidStateError
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0)", "InvalidStateError");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 20, 20)", "InvalidStateError");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 20, 20, 0, 0, 20, 20)", "InvalidStateError");
+
+        // InvalidStateError takes precedence over IndexSizeError
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 0, 20)", "InvalidStateError");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 0, 20, 0, 0, 20, 20)", "InvalidStateError");
+
+        finishJSTest();
+    }
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
