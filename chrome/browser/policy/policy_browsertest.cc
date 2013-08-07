@@ -1297,18 +1297,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
 }
 #endif
 
-// There's a bug filed for flakiness on windows: http://crbug.com/248464.
-// Unfortunately, the bug doesn't contain any actionable information, so this
-// test is temporarily enabled to get some cycles on the builders in order to
-// gather data on the nature of the flakes.
-#if defined(OS_WIN)
-// TODO(mnissler): Flip back to DISABLED after obtaining logs from flaky runs.
-#define MAYBE_ExtensionInstallBlacklist ExtensionInstallBlacklist
-#else
-#define MAYBE_ExtensionInstallBlacklist ExtensionInstallBlacklist
-#endif
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklist) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
   // Verifies that blacklisted extensions can't be installed.
   ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
@@ -1330,15 +1319,24 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklist) {
   EXPECT_EQ(kAdBlockCrxId, adblock->id());
   EXPECT_EQ(adblock,
             service->GetExtensionById(kAdBlockCrxId, true));
+}
 
-  // Now blacklist all extensions.
-  blacklist.Clear();
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistWildcard) {
+  // Verify that a wildcard blacklist takes effect.
+  EXPECT_TRUE(InstallExtension(kAdBlockCrxName));
+  ExtensionService* service = extension_service();
+  ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+  ASSERT_TRUE(service->GetExtensionById(kAdBlockCrxId, true));
+  base::ListValue blacklist;
   blacklist.Append(base::Value::CreateStringValue("*"));
+  PolicyMap policies;
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
   UpdateProviderPolicy(policies);
+
   // AdBlock was automatically removed.
   ASSERT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+
   // And can't be installed again, nor can good.crx.
   EXPECT_FALSE(InstallExtension(kAdBlockCrxName));
   EXPECT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
