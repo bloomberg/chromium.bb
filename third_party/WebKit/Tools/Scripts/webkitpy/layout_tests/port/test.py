@@ -103,10 +103,9 @@ class TestList(object):
 #
 TOTAL_TESTS = 106
 TOTAL_SKIPS = 27
-TOTAL_RETRIES = 14
 
-UNEXPECTED_PASSES = 6
-UNEXPECTED_FAILURES = 17
+UNEXPECTED_PASSES = 1
+UNEXPECTED_FAILURES = 22
 
 def unit_test_list():
     tests = TestList()

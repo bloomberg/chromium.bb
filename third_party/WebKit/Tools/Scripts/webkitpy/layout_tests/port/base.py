@@ -188,9 +188,6 @@ class Port(object):
             self._pretty_patch_available = self.check_pretty_patch(logging=False)
         return self._pretty_patch_available
 
-    def should_retry_crashes(self):
-        return self.get_option('retry_crashes', False)
-
     def default_child_processes(self):
         """Return the number of drivers to use for this port."""
         return self._executive.cpu_count()
@@ -984,13 +981,6 @@ class Port(object):
         if self._websocket_server:
             self._websocket_server.stop()
             self._websocket_server = None
-
-    def exit_code_from_summarized_results(self, unexpected_results):
-        """Given summarized results, compute the exit code to be returned by new-run-webkit-tests.
-        Bots turn red when this function returns a non-zero value. By default, return the number of regressions
-        to avoid turning bots red by flaky failures, unexpected passes, and missing results"""
-        # Don't turn bots red for flaky failures, unexpected passes, and missing results.
-        return unexpected_results['num_regressions']
 
     #
     # TEST EXPECTATION-RELATED METHODS

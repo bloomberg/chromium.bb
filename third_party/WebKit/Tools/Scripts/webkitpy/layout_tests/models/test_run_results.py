@@ -130,7 +130,6 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
         'skipped': The number of skipped tests (NOW & SKIPPED)
         'num_regressions': The number of non-flaky failures
         'num_flaky': The number of flaky failures
-        'num_missing': The number of tests with missing results
         'num_passes': The number of unexpected passes
         'tests': a dict of tests -> {'expected': '...', 'actual': '...'}
     """
@@ -145,7 +144,6 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
 
     num_passes = 0
     num_flaky = 0
-    num_missing = 0
     num_regressions = 0
     keywords = {}
     for expecation_string, expectation_enum in test_expectations.TestExpectations.EXPECTATIONS.iteritems():
@@ -163,9 +161,6 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
     tests = {}
 
     for test_name, result in initial_results.results_by_name.iteritems():
-        # Note that if a test crashed in the original run, we ignore
-        # whether or not it crashed when we retried it (if we retried it),
-        # and always consider the result not flaky.
         expected = expectations.get_expectations_string(test_name)
         result_type = result.type
         actual = [keywords[result_type]]
@@ -177,12 +172,6 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
             num_passes += 1
             if not result.has_stderr and only_include_failing:
                 continue
-        elif result_type == test_expectations.CRASH:
-            if test_name in initial_results.unexpected_results_by_name:
-                num_regressions += 1
-        elif result_type == test_expectations.MISSING:
-            if test_name in initial_results.unexpected_results_by_name:
-                num_missing += 1
         elif result_type != test_expectations.SKIP and test_name in initial_results.unexpected_results_by_name:
             if retry_results and test_name not in retry_results.unexpected_results_by_name:
                 actual.extend(expectations.get_expectations_string(test_name).split(" "))
@@ -259,7 +248,6 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
     results['num_passes'] = num_passes
     results['num_flaky'] = num_flaky
     # FIXME: Remove this. It is redundant with results['num_failures_by_type'].
-    results['num_missing'] = num_missing
     results['num_regressions'] = num_regressions
     results['interrupted'] = initial_results.interrupted  # Does results.html have enough information to compute this itself? (by checking total number of results vs. total number of tests?)
     results['layout_tests_dir'] = port_obj.layout_tests_dir()

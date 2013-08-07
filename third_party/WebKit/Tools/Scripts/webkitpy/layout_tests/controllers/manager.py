@@ -213,7 +213,7 @@ class Manager(object):
             initial_results = self._run_tests(tests_to_run, tests_to_skip, self._options.repeat_each, self._options.iterations,
                 int(self._options.child_processes), retrying=False)
 
-            tests_to_retry = self._tests_to_retry(initial_results, include_crashes=self._port.should_retry_crashes())
+            tests_to_retry = self._tests_to_retry(initial_results)
             if should_retry_failures and tests_to_retry and not initial_results.interrupted:
                 enabled_pixel_tests_in_retry = self._force_pixel_tests_if_needed()
 
@@ -242,7 +242,7 @@ class Manager(object):
         summarized_full_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry)
         summarized_failing_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry, only_include_failing=True)
 
-        exit_code = self._port.exit_code_from_summarized_results(summarized_failing_results)
+        exit_code = summarized_failing_results['num_regressions']
         if not self._options.dry_run:
             self._write_json_files(summarized_full_results, summarized_failing_results, initial_results)
             self._upload_json_files()
@@ -347,11 +347,8 @@ class Manager(object):
             if self._filesystem.isdir(self._filesystem.join(layout_tests_dir, dirname)):
                 self._filesystem.rmtree(self._filesystem.join(self._results_directory, dirname))
 
-    def _tests_to_retry(self, run_results, include_crashes):
-        return [result.test_name for result in run_results.unexpected_results_by_name.values() if
-                   ((result.type != test_expectations.PASS) and
-                    (result.type != test_expectations.MISSING) and
-                    (result.type != test_expectations.CRASH or include_crashes))]
+    def _tests_to_retry(self, run_results):
+        return [result.test_name for result in run_results.unexpected_results_by_name.values() if result.type != test_expectations.PASS]
 
     def _write_json_files(self, summarized_full_results, summarized_failing_results, initial_results):
         _log.debug("Writing JSON files in %s." % self._results_directory)
