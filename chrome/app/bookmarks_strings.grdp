@@ -2,12 +2,12 @@
 <!-- Bookmarks specific strings (included from generated_resources.grd). -->
 <grit-part>
   <!-- Begin of Bookmarks Bar strings-->
-  <if expr="not is_android and not pp_ifdef('ios') and not pp_ifdef('use_titlecase')">
+  <if expr="not is_android and not is_ios and not pp_ifdef('use_titlecase')">
     <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the Bookmarks Bar folder.">
       Bookmarks bar
     </message>
   </if>
-  <if expr="not is_android and not pp_ifdef('ios') and pp_ifdef('use_titlecase')">
+  <if expr="not is_android and not is_ios and pp_ifdef('use_titlecase')">
     <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the Bookmarks Bar folder.">
       Bookmarks Bar
     </message>
@@ -17,7 +17,7 @@
       Desktop bookmarks
     </message>
   </if>
-  <if expr="pp_ifdef('ios')">
+  <if expr="is_ios">
     <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
       Desktop Bookmarks
     </message>
@@ -247,7 +247,7 @@
   <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW" desc="Window title of editor for new bookmark folders">
     New folder
   </message>
-  <if expr="pp_ifdef('ios')">
+  <if expr="is_ios">
     <message name="IDS_BOOKMARK_FOLDER_CHOOSER_TITLE" desc="Title of the window the bookmark folder chooser is in.">
       Choose Folder
     </message>
@@ -359,7 +359,7 @@
       Search
     </message>
   </if>
-  <if expr="pp_ifdef('ios')">
+  <if expr="is_ios">
     <message name="IDS_BOOKMARK_MANAGER_FOLDER_SECTION" desc="The label for the folder section when editing or creating bookmarks on a phone.">
       In Folder:
     </message>
