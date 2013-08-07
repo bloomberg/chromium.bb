@@ -349,6 +349,7 @@ BASE_IMAGE_TAR = '%s.tar.xz' % BASE_IMAGE_NAME
 BASE_IMAGE_BIN = '%s.bin' % BASE_IMAGE_NAME
 IMAGE_SCRIPTS_NAME = 'image_scripts'
 IMAGE_SCRIPTS_TAR = '%s.tar.xz' % IMAGE_SCRIPTS_NAME
+
 METADATA_JSON = 'metadata.json'
 METADATA_STAGE_JSON = 'metadata_%(stage)s.json'
 DELTA_SYSROOT_TAR = 'delta_sysroot.tar.xz'

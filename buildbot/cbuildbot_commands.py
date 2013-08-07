@@ -1745,15 +1745,55 @@ def PatchChrome(chrome_root, patch, subdir):
 
 
 class ChromeSDK(object):
+  """Wrapper for the 'cros chrome-sdk' command."""
 
   DEFAULT_TARGETS = ('chrome', 'chrome_sandbox', 'nacl_helper',)
+  DEFAULT_JOBS = 24
+  DEFAULT_JOBS_GOMA = 500
 
-  @staticmethod
-  def Run(cwd, board, cmd):
-    cmd = ['cros', 'chrome-sdk', '--board', board, '--'] + cmd
-    cros_build_lib.RunCommand(cmd, cwd=cwd)
+  def __init__(self, cwd, board, extra_args=None, chrome_src=None, goma=False,
+               debug_log=True, cache_dir=None):
+    """Initialization.
 
-  @classmethod
-  def Ninja(cls, cwd, board, jobs=500, targets=DEFAULT_TARGETS):
-    cmd = ['ninja', '-j', str(jobs)] + list(targets)
-    cls.Run(cwd, board, cmd)
+    Args:
+      cwd: Where to invoke 'cros chrome-sdk'.
+      board: The board to run chrome-sdk for.
+      extra_args: Extra args to pass in on the command line.
+      chrome_src: Path to pass in with --chrome-src.
+      debug_log: If set, run with debug log-level.
+    """
+    self.cwd = cwd
+    self.board = board
+    self.extra_args = extra_args or []
+    if chrome_src:
+      self.extra_args += ['--chrome-src', chrome_src]
+    self.goma = goma
+    if not self.goma:
+      self.extra_args.append('--nogoma')
+    self.debug_log = debug_log
+    self.cache_dir = cache_dir
+
+  def Run(self, cmd, extra_args=None):
+    """Run a command inside the chrome-sdk context."""
+    cros_cmd = ['cros']
+    if self.debug_log:
+      cros_cmd += ['--log-level', 'debug']
+    if self.cache_dir:
+      cros_cmd += ['--cache-dir', self.cache_dir]
+    cros_cmd += ['chrome-sdk', '--board', self.board] + self.extra_args
+    cros_cmd += (extra_args or []) + ['--'] + cmd
+    cros_build_lib.RunCommand(cros_cmd, cwd=self.cwd)
+
+  def Ninja(self, jobs=None, debug=False, targets=DEFAULT_TARGETS):
+    """Run 'ninja' inside a chrome-sdk context.
+
+    Args:
+      jobs: The number of -j jobs to run.
+      debug: Whether to do a Debug build (defaults to Release).
+      targets: The targets to compile.
+    """
+    if jobs is None:
+      jobs = self.DEFAULT_JOBS_GOMA if self.goma else self.DEFAULT_JOBS
+    flavor = 'Debug' if debug else 'Release'
+    cmd = ['ninja', '-C', 'out_%s/%s' % (self.board, flavor) , '-j', str(jobs)]
+    self.Run(cmd + list(targets))

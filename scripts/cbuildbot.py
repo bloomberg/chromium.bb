@@ -390,11 +390,14 @@ class SimpleBuilder(Builder):
                      config=config)
       self._RunStage(stages.UnitTestStage, board, config=config)
       return
-    stage_list = [[stages.VMTestStage, board, archive_stage],
-                  [stages.SignerTestStage, board, archive_stage],
-                  [stages.UnitTestStage, board],
-                  [stages.UploadPrebuiltsStage, board, archive_stage],
-                  [stages.DevInstallerPrebuiltsStage, board, archive_stage]]
+    stage_list = []
+    if self.options.chrome_sdk and self.build_config['chrome_sdk']:
+      stage_list.append([stages.ChromeSDKStage, board, archive_stage])
+    stage_list += [[stages.VMTestStage, board, archive_stage],
+                   [stages.SignerTestStage, board, archive_stage],
+                   [stages.UnitTestStage, board],
+                   [stages.UploadPrebuiltsStage, board, archive_stage],
+                   [stages.DevInstallerPrebuiltsStage, board, archive_stage]]
 
     # We can not run hw tests without archiving the payloads.
     if self.options.archive:
@@ -987,6 +990,10 @@ def _CreateParser():
   group.add_remote_option('--nocgroups', action='store_false', dest='cgroups',
                           default=True,
                           help='Disable cbuildbots usage of cgroups.')
+  group.add_remote_option('--nochromesdk', action='store_false',
+                          dest='chrome_sdk', default=True,
+                          help="Don't run the ChromeSDK stage which builds "
+                               "Chrome outside of the chroot.")
   group.add_remote_option('--noprebuilts', action='store_false',
                           dest='prebuilts', default=True,
                           help="Don't upload prebuilts.")

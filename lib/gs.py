@@ -219,6 +219,8 @@ class GSContext(object):
     if not path.startswith(BASE_GS_URL):
       # gsutil doesn't support cat-ting a local path, so just run 'cat' in that
       # case.
+      kwargs.pop('retries', None)
+      kwargs.pop('headers', None)
       return cros_build_lib.RunCommand(['cat', path], **kwargs)
     return self._DoCommand(['cat', path], **kwargs)
 
@@ -343,6 +345,11 @@ class GSContext(object):
   def LS(self, path, **kwargs):
     """Does a directory listing of the given gs path."""
     kwargs['redirect_stdout'] = True
+    if not path.startswith(BASE_GS_URL):
+      # gsutil doesn't support listing a local path, so just run 'ls'.
+      kwargs.pop('retries', None)
+      kwargs.pop('headers', None)
+      return cros_build_lib.RunCommand(['ls', path], **kwargs)
     return self._DoCommand(['ls', '--', path], **kwargs)
 
   def SetACL(self, upload_url, acl=None):

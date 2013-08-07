@@ -61,6 +61,7 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     self.bot_id = 'x86-generic-paladin'
     self.build_config = copy.deepcopy(config.config[self.bot_id])
     self.build_root = os.path.join(self.tempdir, self.BUILDROOT)
+    osutils.SafeMakedirs(os.path.join(self.build_root, '.repo'))
     self._boards = self.build_config['boards']
     self._current_board = self._boards[0] if self._boards else None
 
@@ -481,7 +482,7 @@ class SDKStageTest(AbstractStageTest):
 
     # Prepare a fake chroot.
     self.fake_chroot = os.path.join(self.build_root, 'chroot/build/amd64-host')
-    os.makedirs(self.fake_chroot)
+    osutils.SafeMakedirs(self.fake_chroot)
     osutils.Touch(os.path.join(self.fake_chroot, 'file'))
     for package, v in self.fake_packages:
       cpv = portage_utilities.SplitCPV('%s-%s' % (package, v))
@@ -1020,7 +1021,8 @@ class ArchivingStageTest(AbstractStageTest):
 
     # The buildtools manifest doesn't have any overlays. In this case, we can't
     # find any toolchains.
-    overlays = portage_utilities.FindOverlays(constants.BOTH_OVERLAYS, None)
+    overlays = portage_utilities.FindOverlays(
+        constants.BOTH_OVERLAYS, board=None, buildroot=self.build_root)
     overlay_tuples = ['i686-pc-linux-gnu', 'arm-none-eabi']
     self.assertEquals(json_data['toolchain-tuple'],
                       overlay_tuples if overlays else [])
@@ -1070,24 +1072,6 @@ class ArchiveStageTest(AbstractStageTest):
     # pylint: disable=E1101
     self.assertEquals(commands.PushImages.call_count, 0)
 
-  def testChromeEnvironment(self):
-    """Test that the Chrome environment is built."""
-    # Create the chrome environment compressed file.
-    stage = self.ConstructStage()
-    chrome_env_dir = os.path.join(
-        stage._pkg_dir, constants.CHROME_CP + '-25.3643.0_rc1')
-    env_file = os.path.join(chrome_env_dir, 'environment')
-    osutils.Touch(env_file, makedirs=True)
-
-    cros_build_lib.RunCommand(['bzip2', env_file])
-
-    # Run the code.
-    stage.ArchiveChromeEbuildEnv()
-
-    env_tar = stage._upload_queue.get()[0]
-    env_tar = os.path.join(stage.archive_path, env_tar)
-    self.assertTrue(os.path.exists(env_tar))
-    cros_test_lib.VerifyTarball(env_tar, ['./', 'environment'])
 
   def ConstructStageForArchiveStep(self):
     """Stage construction for archive steps."""
@@ -1823,6 +1807,53 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
     self.PatchObject(stages.PreCQLauncherStage, '_HasLaunchTimedOut',
                      return_value=True)
     self.runTrybotTest(launching=2, waiting=1, failed=1, runs=3)
+
+
+class ChromeSDKStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
+  """Verify stage that creates the chrome-sdk and builds chrome with it."""
+
+  def setUp(self):
+    self.build_config = copy.deepcopy(config.config['link-paladin'])
+    self.StartPatcher(ArchiveStageMock())
+    self.StartPatcher(parallel_unittest.ParallelMock())
+    self.options.chrome_root = '/tmp/non-existent'
+
+  def ConstructStage(self):
+    archive_stage = stages.ArchiveStage(self.options, self.build_config,
+                                        self._current_board, None)
+    return stages.ChromeSDKStage(self.options, self.build_config,
+                                 self._current_board, archive_stage)
+
+  def testIt(self):
+    """A simple run-through test."""
+    rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc_mock.SetDefaultCmdResult()
+    self.PatchObject(stages.ChromeSDKStage, '_ArchiveChromeEbuildEnv',
+                     autospec=True)
+    self.PatchObject(stages.ChromeSDKStage, '_VerifyChromeDeployed',
+                     autospec=True)
+    self.PatchObject(stages.ChromeSDKStage, '_VerifySDKEnvironment',
+                     autospec=True)
+    self.RunStage()
+
+  def testChromeEnvironment(self):
+    """Test that the Chrome environment is built."""
+    # Create the chrome environment compressed file.
+    stage = self.ConstructStage()
+    chrome_env_dir = os.path.join(
+        stage._pkg_dir, constants.CHROME_CP + '-25.3643.0_rc1')
+    env_file = os.path.join(chrome_env_dir, 'environment')
+    osutils.Touch(env_file, makedirs=True)
+
+    cros_build_lib.RunCommand(['bzip2', env_file])
+
+    # Run the code.
+    stage._ArchiveChromeEbuildEnv()
+
+    env_tar_base = stage._upload_queue.get()[0]
+    env_tar = os.path.join(stage.archive_path, env_tar_base)
+    self.assertTrue(os.path.exists(env_tar))
+    cros_test_lib.VerifyTarball(env_tar, ['./', 'environment'])
 
 
 class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):

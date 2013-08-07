@@ -461,6 +461,13 @@ _settings = dict(
 # Enable rootfs verification on the image.
   rootfs_verification=True,
 
+# Runs through the chrome-sdk workflow.
+  chrome_sdk=False,
+
+# If chrome_sdk is set to True, this determines whether we use goma to build
+# chrome.
+  chrome_sdk_goma=False,
+
 # =============================================================================
 )
 
@@ -1366,6 +1373,7 @@ _release = full.derive(official, internal,
   trybot_list=True,
   hwqual=True,
   description="Release Builds (canary) (internal)",
+  chrome_sdk=True,
 )
 
 ### Master release config.

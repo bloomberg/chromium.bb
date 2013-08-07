@@ -80,13 +80,14 @@ def GetAllTargets():
   return targets
 
 
-def GetToolchainsForBoard(board):
+def GetToolchainsForBoard(board, buildroot=constants.SOURCE_ROOT):
   """Get a list of toolchain tuples for a given board name
 
   returns the list of toolchain tuples for the given board
   """
   overlays = portage_utilities.FindOverlays(
-      constants.BOTH_OVERLAYS, None if board in ('all', 'sdk') else board)
+      constants.BOTH_OVERLAYS, None if board in ('all', 'sdk') else board,
+      buildroot=buildroot)
   toolchains = GetTuplesForOverlays(overlays)
   if board == 'sdk':
     toolchains = FilterToolchains(toolchains, 'sdk', True)

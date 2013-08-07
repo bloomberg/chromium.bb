@@ -127,17 +127,32 @@ class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
 class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Basic tests for ChromeSDK commands with RunCommand mocked out."""
   BOARD = 'daisy_foo'
+  EXTRA_ARGS = ('--monkey', 'banana')
+  EXTRA_ARGS2 = ('--donkey', 'kong')
+  CHROME_SRC = 'chrome_src'
   CMD = ['bar', 'baz']
   CWD = 'fooey'
 
+  def setUp(self):
+    self.inst = commands.ChromeSDK(self.CWD, self.BOARD)
+
   def testRunCommand(self):
     """Test that running a command is possible."""
-    commands.ChromeSDK.Run(self.CWD, self.BOARD, self.CMD)
+    self.inst.Run(self.CMD)
     self.assertCommandContains([self.BOARD] + self.CMD, cwd=self.CWD)
+
+  def testRunCommandKwargs(self):
+    """Exercise optional arguments."""
+    custom_inst = commands.ChromeSDK(
+        self.CWD, self.BOARD, extra_args=list(self.EXTRA_ARGS),
+        chrome_src=self.CHROME_SRC, debug_log=True)
+    custom_inst.Run(self.CMD, list(self.EXTRA_ARGS2))
+    self.assertCommandContains(['debug', self.BOARD] + list(self.EXTRA_ARGS) +
+                               list(self.EXTRA_ARGS2) + self.CMD, cwd=self.CWD)
 
   def testNinja(self):
     """Test that running ninja is possible."""
-    commands.ChromeSDK.Ninja(self.CWD, self.BOARD)
+    self.inst.Ninja(self.BOARD)
     self.assertCommandContains([self.BOARD], cwd=self.CWD)
 
 

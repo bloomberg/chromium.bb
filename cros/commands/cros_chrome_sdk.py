@@ -853,6 +853,13 @@ class ChromeSDKCommand(cros.CrosCommand):
           # BASH_ENV, and ignores the --rcfile flag.
           extra_env = {'BASH_ENV': rcfile}
 
+        # Bash behaves differently when it detects that it's being launched by
+        # sshd - it ignores the BASH_ENV variable.  So prevent ssh-related
+        # environment variables from being passed through.
+        os.environ.pop('SSH_CLIENT', None)
+        os.environ.pop('SSH_CONNECTION', None)
+        os.environ.pop('SSH_TTY', None)
+
         cmd_result = cros_build_lib.RunCommand(
             bash_cmd, print_cmd=False, debug_level=logging.CRITICAL,
             error_code_ok=True, extra_env=extra_env, cwd=self.options.cwd)
