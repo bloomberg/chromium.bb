@@ -38,8 +38,10 @@ const struct BlackListedDeadKey {
   uint32 output_char;  // the character to be inserted if the filter is matched.
   bool consume;  // true if the original key event will be consumed.
 } kBlackListedDeadKeys[] = {
+  { GDK_KEY_dead_acute, GDK_KEY_m, GDK_KEY_apostrophe, false },
   { GDK_KEY_dead_acute, GDK_KEY_s, GDK_KEY_apostrophe, false },
   { GDK_KEY_dead_acute, GDK_KEY_t, GDK_KEY_apostrophe, false },
+  { GDK_KEY_dead_acute, GDK_KEY_v, GDK_KEY_apostrophe, false },
   { GDK_KEY_dead_acute, GDK_KEY_dead_acute, GDK_KEY_apostrophe, true },
 };
 
