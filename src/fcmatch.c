@@ -245,6 +245,7 @@ typedef enum _FcMatcherPriorityDummy {
 typedef enum _FcMatcherPriority {
     PRI1(HASH),
     PRI1(FILE),
+    PRI1(SCALABLE),
     PRI1(FOUNDRY),
     PRI1(CHARSET),
     PRI_FAMILY_STRONG,
