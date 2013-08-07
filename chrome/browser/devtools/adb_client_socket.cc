@@ -158,6 +158,7 @@ class HttpOverAdbSocket {
     response_ += std::string(response_buffer->data(), result);
     int expected_length = 0;
     if (bytes_total < 0) {
+      // TODO(kaznacheev): Use net::HttpResponseHeader to parse the header.
       size_t content_pos = response_.find("Content-Length:");
       if (content_pos != std::string::npos) {
         size_t endline_pos = response_.find("\n", content_pos);
@@ -181,7 +182,7 @@ class HttpOverAdbSocket {
 
     if (bytes_total == static_cast<int>(response_.length())) {
       if (!command_callback_.is_null())
-        command_callback_.Run(body_pos_, response_);
+        command_callback_.Run(net::OK, response_.substr(body_pos_));
       else
         socket_callback_.Run(net::OK, socket_.release());
       delete this;

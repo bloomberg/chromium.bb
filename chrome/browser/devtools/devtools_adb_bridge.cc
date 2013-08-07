@@ -276,8 +276,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
     }
 
     // Parse version, append to package name if available,
-    std::string body = response.substr(result);
-    scoped_ptr<base::Value> value(base::JSONReader::Read(body));
+    scoped_ptr<base::Value> value(base::JSONReader::Read(response));
     base::DictionaryValue* dict;
     if (value && value->GetAsDictionary(&dict)) {
       std::string browser;
@@ -303,8 +302,7 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
       return;
     }
 
-    std::string body = response.substr(result);
-    scoped_ptr<base::Value> value(base::JSONReader::Read(body));
+    scoped_ptr<base::Value> value(base::JSONReader::Read(response));
     base::ListValue* list_value;
     if (!value || !value->GetAsList(&list_value)) {
       ProcessSockets();
