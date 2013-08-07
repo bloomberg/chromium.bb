@@ -62,12 +62,12 @@ class AppListController : public ui::EventHandler,
   // Returns app list window or NULL if it is not visible.
   aura::Window* GetWindow();
 
+ private:
   // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(
       app_list::ApplicationDragAndDropHost* drag_and_drop_host);
 
- private:
   // Sets the app list view and attempts to show it.
   void SetView(app_list::AppListView* view);
 

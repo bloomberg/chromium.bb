@@ -25,7 +25,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -1524,11 +1523,6 @@ void LauncherView::ButtonPressed(views::Button* sender,
         Shell::GetInstance()->delegate()->RecordUserMetricsAction(
             UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
         Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
-        // By setting us as DnD recipient, the app list knows that we can
-        // handle items.
-        if (!CommandLine::ForCurrentProcess()->HasSwitch(
-                 ash::switches::kAshDisableDragAndDropAppListToLauncher))
-          Shell::GetInstance()->SetDragAndDropHostOfCurrentAppList(this);
         break;
     }
   }

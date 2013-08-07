@@ -675,13 +675,6 @@ void Shell::ToggleAppList(aura::Window* window) {
   app_list_controller_->SetVisible(!app_list_controller_->IsVisible(), window);
 }
 
-void Shell::SetDragAndDropHostOfCurrentAppList(
-    app_list::ApplicationDragAndDropHost* drag_and_drop_host) {
-  if (app_list_controller_.get())
-    app_list_controller_->SetDragAndDropHostOfCurrentAppList(
-        drag_and_drop_host);
-}
-
 bool Shell::GetAppListTargetVisibility() const {
   return app_list_controller_.get() &&
       app_list_controller_->GetTargetVisibility();

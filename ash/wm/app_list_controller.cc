@@ -12,6 +12,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
+#include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -192,6 +193,13 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
           true /* border_accepts_events */);
     }
     SetView(view);
+    // By setting us as DnD recipient, the app list knows that we can
+    // handle items.
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAshDisableDragAndDropAppListToLauncher)) {
+      SetDragAndDropHostOfCurrentAppList(
+          Launcher::ForWindow(window)->GetDragAndDropHostForAppList());
+    }
   }
 }
 
@@ -203,14 +211,14 @@ aura::Window* AppListController::GetWindow() {
   return is_visible_ && view_ ? view_->GetWidget()->GetNativeWindow() : NULL;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// AppListController, private:
+
 void AppListController::SetDragAndDropHostOfCurrentAppList(
     app_list::ApplicationDragAndDropHost* drag_and_drop_host) {
   if (view_ && is_visible_)
     view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// AppListController, private:
 
 void AppListController::SetView(app_list::AppListView* view) {
   DCHECK(view_ == NULL);

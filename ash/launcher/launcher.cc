@@ -186,4 +186,8 @@ gfx::Rect Launcher::GetLauncherViewBounds() const {
   return launcher_view_->bounds();
 }
 
+app_list::ApplicationDragAndDropHost* Launcher::GetDragAndDropHostForAppList() {
+  return launcher_view_;
+}
+
 }  // namespace ash

@@ -13,6 +13,10 @@
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget_observer.h"
 
+namespace app_list {
+class ApplicationDragAndDropHost;
+}
+
 namespace aura {
 class Window;
 }
@@ -102,6 +106,9 @@ class ASH_EXPORT Launcher {
   // Set the bounds of the launcher view.
   void SetLauncherViewBounds(gfx::Rect bounds);
   gfx::Rect GetLauncherViewBounds() const;
+
+  // Returns ApplicationDragAndDropHost for this Launcher.
+  app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
  private:
   // LauncherView used to display icons.
