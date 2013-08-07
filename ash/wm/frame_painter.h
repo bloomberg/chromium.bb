@@ -159,6 +159,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeaderMultiDisplay);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, GetHeaderOpacity);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, TitleIconAlignment);
+  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, ChildWindowVisibility);
 
   // Sets the images for a button based on IDs from the |frame_| theme provider.
   void SetButtonImages(views::ImageButton* button,

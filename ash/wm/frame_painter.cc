@@ -716,6 +716,10 @@ void FramePainter::OnWindowPropertyChanged(aura::Window* window,
 
 void FramePainter::OnWindowVisibilityChanged(aura::Window* window,
                                              bool visible) {
+  // OnWindowVisibilityChanged can be called for the child windows of |window_|.
+  if (window != window_)
+    return;
+
   // Window visibility change may trigger the change of window solo-ness in a
   // different window.
   UpdateSoloWindowInRoot(window_->GetRootWindow(), visible ? NULL : window_);

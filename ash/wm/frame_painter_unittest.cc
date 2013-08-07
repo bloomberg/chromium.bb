@@ -657,4 +657,37 @@ TEST_F(FramePainterTest, TitleIconAlignment) {
             short_header_title_bounds.CenterPoint().y());
 }
 
+TEST_F(FramePainterTest, ChildWindowVisibility) {
+  scoped_ptr<Widget> w1(CreateTestWidget());
+  scoped_ptr<FramePainter> p1(CreateTestPainter(w1.get()));
+  w1->Show();
+
+  // Solo active window has solo window opacity.
+  EXPECT_EQ(FramePainter::kSoloWindowOpacity,
+            p1->GetHeaderOpacity(FramePainter::ACTIVE,
+                                 IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
+                                 0));
+
+  // Create a child window which doesn't affect the solo header.
+  scoped_ptr<Widget> w2(new Widget);
+  Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent = w1->GetNativeView();
+  w2->Init(params);
+  w2->Show();
+
+  // Still has solo header if child window is added.
+  EXPECT_EQ(FramePainter::kSoloWindowOpacity,
+            p1->GetHeaderOpacity(FramePainter::ACTIVE,
+                                 IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
+                                 0));
+
+  // Change the visibility of w2 and verifies w1 still has solo header.
+  w2->Hide();
+  EXPECT_EQ(FramePainter::kSoloWindowOpacity,
+            p1->GetHeaderOpacity(FramePainter::ACTIVE,
+                                 IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
+                                 0));
+}
+
 }  // namespace ash
