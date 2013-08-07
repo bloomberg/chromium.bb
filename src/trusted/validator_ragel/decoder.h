@@ -79,6 +79,7 @@ enum OperandName {
   REG_R13,
   REG_R14,
   REG_R15,
+  REG_MASK = 0x0f,
   /* These are different kinds of operands used in special cases.             */
   REG_RM,           /* Address in memory via ModR/M (+SIB).                   */
   REG_RIP,          /* RIP - used as base in x86-64 mode.                     */

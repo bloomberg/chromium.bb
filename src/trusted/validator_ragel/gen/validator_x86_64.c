@@ -835,23 +835,24 @@ static const uint16_t _dfa_transitions[][256][2] = {
  * regulates the choice between %ah and %spl, as well as %ch and %bpl.
  */
 enum OperandKind {
-  OPERAND_SANDBOX_IRRELEVANT = 0,
+  OPERAND_SANDBOX_IRRELEVANT   = 0x00,
   /* 8bit register that is modified by instruction.  */
-  OPERAND_SANDBOX_8BIT,
+  OPERAND_SANDBOX_8BIT         = 0x10,
   /*
    * 32-bit register that is modified by instruction.  The high 32-bit bits of
    * the corresponding 64-bit register are set to zero.
    */
-  OPERAND_SANDBOX_RESTRICTED,
+  OPERAND_SANDBOX_RESTRICTED   = 0x20,
   /* 64-bit or 16-bit register that is modified by instruction.  */
-  OPERAND_SANDBOX_UNRESTRICTED
+  OPERAND_SANDBOX_UNRESTRICTED = 0x30,
+  /* This is mask for OperandKind.  */
+  OPERAND_KIND_MASK            = 0x030
 };
 
 /*
  * operand_states variable keeps one byte of information per operand in the
  * current instruction:
- *  * the first 5 bits (least significant ones) are for register numbers (16
-      posible registers regs plus RIZ),
+ *  * the first 4 bits (least significant ones) are for register numbers,
  *  * the next 2 bits for register kinds.
  *
  * Macroses below are used to access this data.
@@ -861,16 +862,17 @@ enum OperandKind {
 #define SET_OPERAND_FORMAT(INDEX, FORMAT)                                      \
   SET_OPERAND_FORMAT_ ## FORMAT(INDEX)
 #define SET_OPERAND_FORMAT_OPERAND_FORMAT_8_BIT(INDEX)                         \
-  operand_states |= OPERAND_SANDBOX_8BIT << (5 + ((INDEX) << 3))
+  operand_states |= OPERAND_SANDBOX_8BIT << ((INDEX) << 3)
 #define SET_OPERAND_FORMAT_OPERAND_FORMAT_16_BIT(INDEX)                        \
-  operand_states |= OPERAND_SANDBOX_UNRESTRICTED << (5 + ((INDEX) << 3))
+  operand_states |= OPERAND_SANDBOX_UNRESTRICTED << ((INDEX) << 3)
 #define SET_OPERAND_FORMAT_OPERAND_FORMAT_32_BIT(INDEX)                        \
-  operand_states |= OPERAND_SANDBOX_RESTRICTED << (5 + ((INDEX) << 3))
+  operand_states |= OPERAND_SANDBOX_RESTRICTED << ((INDEX) << 3)
 #define SET_OPERAND_FORMAT_OPERAND_FORMAT_64_BIT(INDEX)                        \
-  operand_states |= OPERAND_SANDBOX_UNRESTRICTED << (5 + ((INDEX) << 3))
+  operand_states |= OPERAND_SANDBOX_UNRESTRICTED << ((INDEX) << 3)
 #define CHECK_OPERAND(INDEX, REGISTER_NAME, KIND)                              \
-  ((operand_states & (0xff << ((INDEX) << 3))) ==                              \
-      ((((KIND) << 5) | (REGISTER_NAME)) << ((INDEX) << 3)))
+  ((operand_states &                                                           \
+    ((REG_MASK | OPERAND_KIND_MASK) << ((INDEX) << 3))) ==                     \
+    (((KIND) | (REGISTER_NAME)) << ((INDEX) << 3)))
 #define CHECK_OPERAND_R15_MODIFIED(INDEX)                                      \
   (CHECK_OPERAND((INDEX), REG_R15, OPERAND_SANDBOX_8BIT) ||                    \
    CHECK_OPERAND((INDEX), REG_R15, OPERAND_SANDBOX_RESTRICTED) ||              \
@@ -898,11 +900,10 @@ enum OperandKind {
   ((CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_8BIT) && rex_prefix) ||    \
     CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_UNRESTRICTED))
 #define CHECK_OPERAND_RESTRICTED(INDEX)                                        \
-  /* Take 2 bits of operand type from operand_states as *restricted_register */\
-  /* and also make sure operand_states denotes a register (4th bit == 0).    */\
-  (operand_states & (0x70 << ((INDEX) << 3))) ==                               \
-      (OPERAND_SANDBOX_RESTRICTED << (5 + ((INDEX) << 3)))
-#define GET_OPERAND_NAME(INDEX) ((operand_states >> ((INDEX) << 3)) & 0x1f)
+  ((operand_states &                                                           \
+    (OPERAND_KIND_MASK << ((INDEX) << 3))) ==                                  \
+     OPERAND_SANDBOX_RESTRICTED << ((INDEX) << 3))
+#define GET_OPERAND_NAME(INDEX) ((operand_states >> ((INDEX) << 3)) & REG_MASK)
 
 static INLINE void CheckMemoryAccess(ptrdiff_t instruction_begin,
                                      enum OperandName base,
