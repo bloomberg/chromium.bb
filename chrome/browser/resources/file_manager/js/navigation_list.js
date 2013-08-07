@@ -284,6 +284,10 @@ NavigationList.prototype.decorate =
   this.dataModel =
       new NavigationListModel(this.directoryModel_.getRootsList(),
                               this.pinnedItemList_);
+  this.dataModel.addEventListener(
+      'change', this.onDataModelChanged_.bind(this));
+  this.dataModel.addEventListener(
+      'permuted', this.onDataModelChanged_.bind(this));
 };
 
 /**
@@ -316,12 +320,6 @@ NavigationList.prototype.renderRoot_ = function(path) {
   if (this.contextMenu_)
     item.maybeSetContextMenu(this.contextMenu_);
 
-  // If the current directory is already set.
-  if (this.currentVolume_ == path) {
-    setTimeout(function() {
-      this.selectedItem = path;
-    }.bind(this), 0);
-  }
   return item;
 };
 
@@ -390,11 +388,28 @@ NavigationList.prototype.onSelectionChange_ = function(event) {
  * @private
  */
 NavigationList.prototype.onCurrentDirectoryChanged_ = function(event) {
-  var path = event.newDirEntry.fullPath || this.dataModel.getCurrentDirPath();
-  var newRootPath = PathUtil.getRootPath(path);
+  this.selectBestMatchItem_();
+};
 
-  // Synchronizes the navigation list selection with the current directory,
-  // after it is changed outside of the navigation list.
+/**
+ * Invoked when the content in the data model is changed.
+ * @param {Event} event The event.
+ * @private
+ */
+NavigationList.prototype.onDataModelChanged_ = function(event) {
+  this.selectBestMatchItem_();
+};
+
+/**
+ * Synchronizes the volume list selection with the current directory, after
+ * it is changed outside of the volume list.
+ * @private
+ */
+NavigationList.prototype.selectBestMatchItem_ = function() {
+  var entry = this.directoryModel_.getCurrentDirEntry();
+  var path = entry && entry.fullPath;
+  if (!path)
+    return;
 
   // (1) Select the nearest parent directory (including the pinned directories).
   var bestMatchIndex = -1;
@@ -417,6 +432,7 @@ NavigationList.prototype.onCurrentDirectoryChanged_ = function(event) {
   }
 
   // (2) Selects the volume of the current directory.
+  var newRootPath = PathUtil.getRootPath(path);
   for (var i = 0; i < this.dataModel.length; i++) {
     var itemPath = this.dataModel.item(i);
     if (PathUtil.getRootPath(itemPath) == newRootPath) {
