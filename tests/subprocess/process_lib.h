@@ -68,8 +68,7 @@ class ServiceRuntimeClient : public SrpcClientConnection {
   ServiceRuntimeClient() {}
 
   // Returns an NaClErrorCode -- LOAD_OK (0) is okay, non-zero is an error.
-  NaClErrorCode RunNaClModule(int module_descriptor,
-                              int irt_descriptor);
+  NaClErrorCode RunNaClModule(int module_descriptor);
   // module_descriptor must be a valid descriptor.
   // irt_descriptor may be -1 if no IRT is desired.
 };

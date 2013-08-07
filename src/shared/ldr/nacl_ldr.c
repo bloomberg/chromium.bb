@@ -91,35 +91,6 @@ int NaClLdrSetupCommandChannel(NaClSrpcImcDescType     socket_addr,
   return 1;
 }
 
-int NaClLdrLoadIrt(struct NaClSrpcChannel  *command_channel,
-                   NaClSrpcImcDescType     irt) {
-  NaClSrpcError   rpc_result;
-
-  NaClLog(4,
-          ("NaClLdrLoadIrt(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) command_channel,
-          (uintptr_t) irt);
-
-  CHECK(irt != kInvalidDesc);
-
-  /* Load integrated runtime. */
-  rpc_result = NaClSrpcInvokeBySignature(command_channel,
-                                         "load_irt:h:",
-                                         irt);
-  NaClLog(4, "NaClLdrLoadIrt: load_irt RPC result %d\n",
-          (int) rpc_result);
-  if (NACL_SRPC_RESULT_OK != rpc_result) {
-    NaClLog(LOG_ERROR,
-            "NaClLdrLoadIrt: load_irt failed: rpc_result=%d\n",
-            (int) rpc_result);
-    NaClSrpcDtor(command_channel);
-    return 0;
-  }
-
-  return 1;
-}
-
 int NaClLdrLoadModule(struct NaClSrpcChannel  *command_channel,
                       NaClSrpcImcDescType     nexe) {
   /* TODO(phosek): This argument to load_module is unused.  Remove it. */

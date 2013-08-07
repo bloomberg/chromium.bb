@@ -180,11 +180,8 @@ void TestState::Run() {
     return;
   }
 
-  ScopedNonPtr<int, close_desc> irt_desc(
-      manifest_service.Resolve("irt"));
-
   NaClErrorCode nec;
-  if (LOAD_OK != (nec = sr->RunNaClModule(subproc_desc, irt_desc))) {
+  if (LOAD_OK != (nec = sr->RunNaClModule(subproc_desc))) {
     fprintf(stderr,
             "Error while loading program: NaCl error code %d\n",
             nec);

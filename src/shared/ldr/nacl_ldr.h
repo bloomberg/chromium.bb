@@ -20,10 +20,6 @@ int NaClLdrSetupCommandChannel(
     NaClSrpcImcDescType     socket_addr,
     struct NaClSrpcChannel  *command_channel);
 
-int NaClLdrLoadIrt(
-    struct NaClSrpcChannel  *command_channel,
-    NaClSrpcImcDescType     irt);
-
 int NaClLdrLoadModule(
     struct NaClSrpcChannel  *command_channel,
     NaClSrpcImcDescType     nexe);

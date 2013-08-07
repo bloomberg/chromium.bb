@@ -143,25 +143,6 @@ bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
   return true;
 }
 
-bool SelLdrLauncherBase::LoadIrt(NaClSrpcChannel* command,
-                                 DescWrapper* irt) {
-  CHECK(irt != NULL);
-  // Load integrated runtime over command channel.
-  NaClSrpcResultCodes rpc_result =
-      NaClSrpcInvokeBySignature(command,
-                                "load_irt:h:",
-                                irt->desc());
-  if (NACL_SRPC_RESULT_OK != rpc_result) {
-    NaClLog(LOG_ERROR, "SelLdrLauncherBase::LoadIrt: "
-            "load_runtime failed: rpc_result=%d\n",
-            static_cast<int>(rpc_result));
-    NaClSrpcDtor(command);
-    return false;
-  }
-
-  return true;
-}
-
 bool SelLdrLauncherBase::StartModule(NaClSrpcChannel* command) {
   // Start untrusted code module.
   int start_result;

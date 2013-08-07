@@ -32,7 +32,10 @@
 // Mock of ReverseInterface for use by nexes.
 class ReverseEmulate : public nacl::ReverseInterface {
  public:
-  ReverseEmulate();
+  ReverseEmulate(
+      nacl::SelLdrLauncherStandaloneFactory* factory,
+      const vector<nacl::string>& prefix,
+      const vector<nacl::string>& sel_ldr_argv);
   virtual ~ReverseEmulate();
 
   // debugging, messaging
@@ -84,6 +87,11 @@ class ReverseEmulate : public nacl::ReverseInterface {
   NaClMutex mu_;
   std::vector<std::pair<bool, nacl::SelLdrLauncherStandalone*> > subprocesses_;
 
+  nacl::SelLdrLauncherStandaloneFactory* factory_;
+
+  std::vector<nacl::string> prefix_;
+  std::vector<nacl::string> sel_ldr_argv_;
+
   NACL_DISALLOW_COPY_AND_ASSIGN(ReverseEmulate);
 };
 
@@ -109,7 +117,10 @@ NaClCondVar g_exit_cv;
 
 
 bool ReverseEmulateInit(NaClSrpcChannel* command_channel,
-                        nacl::SelLdrLauncherStandalone* launcher) {
+                        nacl::SelLdrLauncherStandalone* launcher,
+                        nacl::SelLdrLauncherStandaloneFactory* factory,
+                        const std::vector<nacl::string>& prefix,
+                        const std::vector<nacl::string>& sel_ldr_argv) {
   // Do the SRPC to the command channel to set up the reverse channel.
   // This returns a NaClDesc* containing a socket address.
   NaClLog(1, "ReverseEmulateInit: launching reverse RPC service\n");
@@ -127,7 +138,8 @@ bool ReverseEmulateInit(NaClSrpcChannel* command_channel,
     return false;
   }
   // The implementation of the ReverseInterface is our emulator class.
-  nacl::scoped_ptr<ReverseEmulate> reverse_interface(new ReverseEmulate());
+  nacl::scoped_ptr<ReverseEmulate> reverse_interface(new ReverseEmulate(
+        factory, prefix, sel_ldr_argv));
   // Construct locks guarding exit status.
   NaClXMutexCtor(&g_exit_mu);
   NaClXCondVarCtor(&g_exit_cv);
@@ -204,7 +216,13 @@ bool HandlerWaitForExit(NaClCommandLoop* ncl,
   return true;
 }
 
-ReverseEmulate::ReverseEmulate() {
+ReverseEmulate::ReverseEmulate(
+    nacl::SelLdrLauncherStandaloneFactory* factory,
+    const vector<nacl::string>& prefix,
+    const vector<nacl::string>& sel_ldr_argv)
+  : factory_(factory),
+    prefix_(prefix),
+    sel_ldr_argv_(sel_ldr_argv) {
   NaClLog(1, "ReverseEmulate::ReverseEmulate\n");
   NaClXMutexCtor(&mu_);
 }
@@ -331,13 +349,13 @@ int ReverseEmulate::CreateProcess(nacl::DescWrapper** out_sock_addr,
 void ReverseEmulate::CreateProcessFunctorResult(
     nacl::CreateProcessFunctorInterface* functor) {
   NaClLog(1, "ReverseEmulate::CreateProcessFunctorResult)\n");
-  vector<nacl::string> command_prefix;
-  vector<nacl::string> sel_ldr_argv;
+  // We are passing in empty list of application arguments as the real
+  // arguments should be provided over the command channel.
   vector<nacl::string> app_argv;
 
   nacl::scoped_ptr<nacl::SelLdrLauncherStandalone> launcher(
-      new nacl::SelLdrLauncherStandalone());  // should be from launcher_factory
-  if (!launcher->StartViaCommandLine(command_prefix, sel_ldr_argv, app_argv)) {
+      factory_->MakeSelLdrLauncherStandalone());
+  if (!launcher->StartViaCommandLine(prefix_, sel_ldr_argv_, app_argv)) {
     NaClLog(LOG_FATAL,
             "ReverseEmulate::CreateProcess: failed to launch sel_ldr\n");
   }

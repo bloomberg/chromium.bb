@@ -65,7 +65,6 @@ static const char* kUsage =
     "  --url_alias <url> <filename>\n"
     "  --uses_reverse_service\n"
     "  --no_app_channel\n"
-    "  --irt <file>\n"
     "\n"
     "The following sel_ldr arguments might be useful:\n"
     "  -v                    increase verbosity\n"
@@ -93,7 +92,6 @@ static bool app_channel = true;
 // It will call exit with codes 0 (help message) and 1 (incorrect args).
 static nacl::string ProcessArguments(int argc,
                                      char* argv[],
-                                     nacl::string* irt_name,
                                      vector<nacl::string>* const sel_ldr_argv,
                                      vector<nacl::string>* const app_argv) {
   if (argc == 1) {
@@ -151,11 +149,6 @@ static nacl::string ProcessArguments(int argc,
       uses_reverse_service = true;
     } else if (flag == "--no_app_channel") {
       app_channel = false;
-    } else if (flag == "--irt") {
-      if (argc <= i + 1) {
-        NaClLog(LOG_FATAL, "not enough args for --irt option\n");
-      }
-      *irt_name = argv[++i];
     } else if (flag == "--") {
       // Done processing sel_ldr args.  The first argument after '--' is the
       // nexe.
@@ -208,9 +201,8 @@ int raii_main(int argc, char* argv[]) {
   // Get the arguments to sed_ldr and the nexe module
   vector<nacl::string> sel_ldr_argv;
   vector<nacl::string> app_argv;
-  nacl::string irt_name;
   nacl::string app_name =
-    ProcessArguments(argc, argv, &irt_name, &sel_ldr_argv, &app_argv);
+    ProcessArguments(argc, argv, &sel_ldr_argv, &app_argv);
 
   if (silence_nexe) {
     // redirect stdout/stderr in the nexe to /dev/null
@@ -261,23 +253,9 @@ int raii_main(int argc, char* argv[]) {
 
   delete host_file;
 
-  if (irt_name != "") {
-    DescWrapper* irt = factory.OpenHostFile(irt_name.c_str(), O_RDONLY, 0);
-    if (NULL == irt) {
-      NaClLog(LOG_ERROR, "Could not open %s\n", irt_name.c_str());
-      exit(1);
-    }
-
-    if (!launcher->LoadIrt(&command_channel, irt)) {
-      NaClLog(LOG_ERROR, "sel_universal: load irt failed\n");
-      exit(1);
-    }
-
-    delete irt;
-  }
-
   if (uses_reverse_service) {
-    ReverseEmulateInit(&command_channel, launcher);  // launcher factory
+    ReverseEmulateInit(&command_channel, launcher, &launcher_factory,
+        command_prefix, sel_ldr_argv);
   }
 
   if (!launcher->StartModule(&command_channel)) {

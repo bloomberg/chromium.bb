@@ -192,8 +192,7 @@ ServiceRuntimeClient* KernelServiceClient::ServiceRuntimeClientFactory(
   return src;
 }
 
-NaClErrorCode ServiceRuntimeClient::RunNaClModule(int module_descriptor,
-                                                  int irt_descriptor) {
+NaClErrorCode ServiceRuntimeClient::RunNaClModule(int module_descriptor) {
   NaClSrpcResultCodes result;
   int status;
   if (!initialized()) {
@@ -209,15 +208,6 @@ NaClErrorCode ServiceRuntimeClient::RunNaClModule(int module_descriptor,
     fprintf(stderr, "load_module RPC failed (%d): %s\n",
             result, NaClSrpcErrorString(result));
     return LOAD_INTERNAL;
-  }
-  if (-1 != irt_descriptor) {
-    result = NaClSrpcInvokeBySignature(chan(), "load_irt:h:",
-                                       irt_descriptor);
-    if (NACL_SRPC_RESULT_OK != result) {
-      fprintf(stderr, "load_irt RPC failed (%d): %s\n",
-              result, NaClSrpcErrorString(result));
-      return LOAD_INTERNAL;
-    }
   }
   result = NaClSrpcInvokeBySignature(chan(), "start_module::i", &status);
   printf("start_module result %d\n", result);

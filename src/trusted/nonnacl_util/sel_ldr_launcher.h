@@ -97,9 +97,6 @@ class SelLdrLauncherBase {
   // Sets up the command channel |command| and sends the SRPC to load |nexe|.
   bool SetupCommandAndLoad(NaClSrpcChannel* command, DescWrapper* nexe);
 
-  // Load integrated runtime |irt| over the command channel |command|.
-  bool LoadIrt(NaClSrpcChannel* command, DescWrapper* irt);
-
   // Sends the SRPC to start the nexe over |command|.
   bool StartModule(NaClSrpcChannel* command);
 

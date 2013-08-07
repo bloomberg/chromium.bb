@@ -38,16 +38,10 @@ subprogram_nexe = env.ComponentProgram('subprogram',
 
 subprogram_nexe = env.GetTranslatedNexe(subprogram_nexe)
 
-if env.Bit('tests_use_irt'):
-  irt_var_flags = [ '--var', 'irt_nexe', env.GetIrtNexe() ]
-else:
-  irt_var_flags = []
-
 node = env.SelUniversalTest('subprocess_test.out', init_nexe,
                             sel_universal_flags=[
                               '--uses_reverse_service',
-                              '--var', 'subprogram', subprogram_nexe]
-                            + irt_var_flags,
+                              '--var', 'subprogram', subprogram_nexe],
                             stdin=env.File('subprocess_test.stdin'),
                             filter_regex='"Hello world"',
                             stdout_golden=env.File('subprocess_test.stdout'))
