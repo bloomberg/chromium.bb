@@ -75,13 +75,13 @@ TEST(TimeFormat, RelativeDate) {
 
 // ScopedLocale is unavailable if not OS_POSIX.
 #if defined(OS_POSIX)
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-// DecimalPointNotDot fails on ChromeOS because the fr_FR locale isn't
-// available. See crrev.com/91117
-#define MAYBE_DecimalPointNotDot DISABLED_DecimalPointNotDot
-#else
+#if defined(OS_MACOSX)
+// DecimalPointNotDot succeeds only on Mac OSX because of the locale load.
+// See crrev.com/91117
 #define MAYBE_DecimalPointNotDot DecimalPointNotDot
-#endif  // OS_CHROMEOS
+#else
+#define MAYBE_DecimalPointNotDot DISABLED_DecimalPointNotDot
+#endif  // OS_MACOSX
 
 TEST(TimeFormat, MAYBE_DecimalPointNotDot) {
   base::ScopedLocale scoped_locale("fr_FR.utf-8");
