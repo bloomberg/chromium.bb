@@ -163,7 +163,8 @@ def CheckFinalRestrictedRegister(
     sandboxing,
     instruction,
     disassembly,
-    old_validator):
+    old_validator,
+    validator_inst):
   bundle = sandboxing + instruction
   assert len(bundle) <= validator.BUNDLE_SIZE
   bundle += [NOP] * (validator.BUNDLE_SIZE - len(bundle))
@@ -179,7 +180,7 @@ def CheckFinalRestrictedRegister(
     elif begin > len(sandboxing):
       assert bundle[begin:end] == [NOP]
 
-  result = validator.ValidateChunk(
+  result = validator_inst.ValidateChunk(
       ''.join(map(chr, bundle)),
       bitness=options.bitness,
       callback=Callback,
@@ -200,7 +201,7 @@ def CheckFinalRestrictedRegister(
     assert len(bundle) <= validator.BUNDLE_SIZE
     bundle += [NOP] * (validator.BUNDLE_SIZE - len(bundle))
 
-    assert validator.ValidateChunk(
+    assert validator_inst.ValidateChunk(
         ''.join(map(chr, bundle)),
         bitness=options.bitness), (bundle, disassembly, memory_reference)
 
@@ -209,12 +210,16 @@ def CheckFinalRestrictedRegister(
         (disassembly + '; ' + memory_reference, instruction))
 
 
-def ValidateInstruction(instruction, disassembly, old_validator):
+def ValidateInstruction(
+    instruction,
+    disassembly,
+    old_validator,
+    validator_inst):
   assert len(instruction) <= validator.BUNDLE_SIZE
   bundle = instruction + [NOP] * (validator.BUNDLE_SIZE - len(instruction))
 
   if options.bitness == 32:
-    result = validator.ValidateChunk(
+    result = validator_inst.ValidateChunk(
         ''.join(map(chr, bundle)),
         bitness=options.bitness)
 
@@ -224,7 +229,7 @@ def ValidateInstruction(instruction, disassembly, old_validator):
     return result
 
   else:
-    result = validator.ValidateChunk(
+    result = validator_inst.ValidateChunk(
         ''.join(map(chr, bundle)),
         bitness=options.bitness)
     if result:
@@ -236,7 +241,7 @@ def ValidateInstruction(instruction, disassembly, old_validator):
     for register, register_name in validator.REGISTER_NAMES.items():
       if register == validator.REG_R15:
         continue
-      if validator.ValidateChunk(
+      if validator_inst.ValidateChunk(
           ''.join(map(chr, bundle)),
           bitness=options.bitness,
           restricted_register=register):
@@ -425,7 +430,7 @@ options, xml_file = ParseOptions()
 # multiprocess. Passing it every time is slow.
 dfa = dfa_parser.ParseXml(xml_file)
 
-validator.Init(validator_dll=options.validator_dll)
+validator_inst = validator.Validator(validator_dll=options.validator_dll)
 
 
 def main():

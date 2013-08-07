@@ -10,7 +10,6 @@ import objdump_parser
 import spec
 import spec_val
 import test_format
-import validator
 
 
 class SpecValTestRunner(test_format.TestRunner):

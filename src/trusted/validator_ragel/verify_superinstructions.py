@@ -18,11 +18,12 @@ import spec
 import validator
 
 
-def ValidateSuperinstruction(superinstruction, bitness):
+def ValidateSuperinstruction(superinstruction, validator_inst, bitness):
   """Validate superinstruction using the actual validator.
 
   Args:
     superinstruction: superinstruction byte sequence to validate
+    validator_inst: instance of validator
     bitness: 32 or 64
   Returns:
     True if superinstruction is valid, otherwise False
@@ -32,7 +33,7 @@ def ValidateSuperinstruction(superinstruction, bitness):
                  ((-len(superinstruction)) % validator.BUNDLE_SIZE) *  b'\x90')
   assert len(bundle) % validator.BUNDLE_SIZE == 0
 
-  result = validator.ValidateChunk(bundle, bitness=bitness)
+  result = validator_inst.ValidateChunk(bundle, bitness=bitness)
 
   # Superinstructions are accepted if restricted_register != REG_RSP or REG_RBP
   if bitness == 64:
@@ -42,9 +43,9 @@ def ValidateSuperinstruction(superinstruction, bitness):
         continue
       expected = result and register not in (validator.REG_RBP,
                                              validator.REG_RSP)
-      assert validator.ValidateChunk(bundle,
-                                     restricted_register=register,
-                                     bitness=bitness) == expected
+      assert validator_inst.ValidateChunk(bundle,
+                                          restricted_register=register,
+                                          bitness=bitness) == expected
 
   # All bytes in the superinstruction are invalid jump targets
   #
@@ -57,12 +58,18 @@ def ValidateSuperinstruction(superinstruction, bitness):
     jmp_check = bundle + bytes(jmp_command) + (validator.BUNDLE_SIZE -
                                                len(jmp_command)) * b'\x90'
     expected = (offset == 0 or offset == len(superinstruction)) and result
-    assert validator.ValidateChunk(jmp_check, bitness=bitness) == expected
+    assert validator_inst.ValidateChunk(jmp_check, bitness=bitness) == expected
 
   return result
 
 
-def ProcessSuperinstructionsFile(filename, bitness, gas, objdump, out_file):
+def ProcessSuperinstructionsFile(
+    filename,
+    validator_inst,
+    bitness,
+    gas,
+    objdump,
+    out_file):
   """Process superinstructions file.
 
   Each line produces either "True" or "False" plus text of original command
@@ -76,9 +83,11 @@ def ProcessSuperinstructionsFile(filename, bitness, gas, objdump, out_file):
 
   Args:
       filename: name of file to process
+      validator_inst: instance of validator
       bitness: 32 or 64
       gas: path to the GAS executable
       objdump: path to the OBJDUMP executable
+      out_file: file object where log must be dumped
   Returns:
       None
   """
@@ -113,6 +122,7 @@ def ProcessSuperinstructionsFile(filename, bitness, gas, objdump, out_file):
                                   for byte in bytes_only.split(',')]
         superinstruction_validated = ValidateSuperinstruction(
             bytearray([int(byte, 16) for byte in superinstruction_bytes]),
+            validator_inst,
             bitness)
         # Pick disassembled form of the superinstruction from objdump output
         superinstruction = []
@@ -174,11 +184,12 @@ def main():
   else:
     out_file = sys.stdout
 
-  validator.Init(validator_dll=options.validator_dll)
+  validator_inst = validator.Validator(validator_dll=options.validator_dll)
 
   try:
     for file in args:
       ProcessSuperinstructionsFile(file,
+                                   validator_inst,
                                    options.bitness,
                                    options.gas,
                                    options.objdump,

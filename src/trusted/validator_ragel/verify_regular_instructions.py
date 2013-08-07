@@ -61,13 +61,14 @@ def RestrictedRegisterNumberToCondition(rr):
     return spec.Condition(validator.REGISTER_NAMES[rr])
 
 
-def ValidateAndGetPostcondition(chunk, precondition):
+def ValidateAndGetPostcondition(chunk, precondition, validator_inst):
   """Validate single x86-64 instruction and get postcondition for it.
 
   Args:
     chunk: sequence of bytes representing single instruction.
     precondition: instance of spec.Condition representing precondition validator
     is allowed to assume.
+    validator_inst: implementation of validator.
   Returns:
     Pair (validation_result, postcondition).
     Validation_result is True or False. When validation_result is True,
@@ -92,7 +93,7 @@ def ValidateAndGetPostcondition(chunk, precondition):
       assert bundle[begin:end] == [NOP]
 
   bundle = PadToBundleSize(chunk)
-  validator.ValidateChunk(
+  validator_inst.ValidateChunk(
     ''.join(map(chr, bundle)),
     bitness=64,
     callback=Callback,
@@ -110,19 +111,24 @@ def ValidateAndGetPostcondition(chunk, precondition):
   return True, postcondition
 
 
-def CheckValid64bitInstruction(instruction, dis, precondition, postcondition):
+def CheckValid64bitInstruction(
+    instruction,
+    dis,
+    precondition,
+    postcondition,
+    validator_inst):
   for conflicting_precondition in spec.Condition.All():
     if conflicting_precondition.Implies(precondition):
       continue  # not conflicting
     result, _ = ValidateAndGetPostcondition(
-        instruction, conflicting_precondition)
+        instruction, conflicting_precondition, validator_inst)
     assert not result, (
         'validator incorrectly accepted %s with precondition %s, '
         'while specification requires precondition %s'
         % (dis, conflicting_precondition, precondition))
 
   result, actual_postcondition = ValidateAndGetPostcondition(
-      instruction, precondition)
+      instruction, precondition, validator_inst)
   if not result:
     print 'warning: validator rejected %s with precondition %s' % (
         dis, precondition)
@@ -147,18 +153,22 @@ def CheckValid64bitInstruction(instruction, dis, precondition, postcondition):
           % (actual_postcondition, dis, postcondition))
 
 
-def CheckInvalid64bitInstruction(instruction, dis, sandboxing_error):
+def CheckInvalid64bitInstruction(
+    instruction,
+    dis,
+    sandboxing_error,
+    validator_inst):
   for precondition in spec.Condition.All():
     result, _ = ValidateAndGetPostcondition(
-        instruction, precondition)
+        instruction, precondition, validator_inst)
     assert not result, (
         'validator incorrectly accepted %s with precondition %s, '
         'while specification rejected because %s'
         % (dis, precondition, sandboxing_error))
 
 
-def ValidateInstruction(instruction):
-  dis = validator.DisassembleChunk(
+def ValidateInstruction(instruction, validator_inst):
+  dis = validator_inst.DisassembleChunk(
       ''.join(map(chr, instruction)),
       bitness=options.bitness)
 
@@ -184,7 +194,7 @@ def ValidateInstruction(instruction):
   assert dis.bytes == instruction, (instruction, dis)
 
   if options.bitness == 32:
-    result = validator.ValidateChunk(
+    result = validator_inst.ValidateChunk(
         ''.join(map(chr, PadToBundleSize(instruction))),
         bitness=32)
 
@@ -209,30 +219,41 @@ def ValidateInstruction(instruction):
       _, precondition, postcondition = (
           spec.ValidateDirectJumpOrRegularInstruction(dis, bitness=64))
 
-      CheckValid64bitInstruction(instruction, dis, precondition, postcondition)
+      CheckValid64bitInstruction(instruction,
+                                 dis,
+                                 precondition,
+                                 postcondition,
+                                 validator_inst)
       return True
     except spec.SandboxingError as e:
-      CheckInvalid64bitInstruction(instruction, dis, sandboxing_error=e)
+      CheckInvalid64bitInstruction(instruction,
+                                   dis,
+                                   validator_inst,
+                                   sandboxing_error=e)
     except spec.DoNotMatchError as e:
       CheckInvalid64bitInstruction(
-          instruction, dis, sandboxing_error=spec.SandboxingError(
+          instruction,
+          dis,
+          validator_inst,
+          sandboxing_error=spec.SandboxingError(
               'unrecognized instruction %s' % e))
 
     return False
 
 
 class WorkerState(object):
-  def __init__(self, prefix):
+  def __init__(self, prefix, validator_inst):
     self.total_instructions = 0
     self.num_valid = 0
+    self.validator_inst = validator_inst
 
   def ReceiveInstruction(self, bytes):
     self.total_instructions += 1
-    self.num_valid += ValidateInstruction(bytes)
+    self.num_valid += ValidateInstruction(bytes, self.validator_inst)
 
 
 def Worker((prefix, state_index)):
-  worker_state = WorkerState(prefix)
+  worker_state = WorkerState(prefix, worker_validator)
 
   try:
     dfa_traversal.TraverseTree(
@@ -278,8 +299,7 @@ options, xml_file = ParseOptions()
 # We are doing it here to share state graph between workers spawned by
 # multiprocess. Passing it every time is slow.
 dfa = dfa_parser.ParseXml(xml_file)
-
-validator.Init(
+worker_validator = validator.Validator(
     validator_dll=options.validator_dll,
     decoder_dll=options.decoder_dll)
 

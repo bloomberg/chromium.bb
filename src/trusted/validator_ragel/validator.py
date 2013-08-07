@@ -80,207 +80,188 @@ CALLBACK_TYPE = ctypes.CFUNCTYPE(
 )
 
 
-def GetFullCPUIDFeatures():
-  raise AssertionError('using validator without calling Init first')
-
-
-def ValidateChunkIA32_(*args):
-  raise AssertionError('using validator without calling Init first')
-
-
-def ValidateChunkAMD64_(*args):
-  raise AssertionError('using validator without calling Init first')
-
-def DisassembleChunk_(*args):
-  raise AssertionError('using validator without calling Init first')
-
-
-def Init(validator_dll=None, decoder_dll=None):
-  """Initialize python interface to the validator.
-
-  Should be called before any calls to ValidateChunk.
-
-  Args:
-    validator_dll: path to dll that provides ValidateChunkIA32 and
-        ValidateChynkAMD64 functions.
-
-  Returns:
-    None.
-  """
-  global GetFullCPUIDFeatures
-  global ValidateChunkIA32_
-  global ValidateChunkAMD64_
-  global DisassembleChunk_
-
-  if validator_dll is not None:
-    validator_dll = ctypes.cdll.LoadLibrary(validator_dll)
-
-    GetFullCPUIDFeatures = validator_dll.GetFullCPUIDFeatures
-    GetFullCPUIDFeatures.restype = ctypes.c_void_p
-
-    ValidateChunkIA32_ = validator_dll.ValidateChunkIA32
-    ValidateChunkAMD64_ = validator_dll.ValidateChunkAMD64
-
-    ValidateChunkIA32_.argtypes = ValidateChunkAMD64_.argtypes = [
-        ctypes.POINTER(ctypes.c_uint8),  # data
-        ctypes.c_uint32,  # size
-        ctypes.c_uint32,  # options
-        ctypes.c_void_p,  # CPU features
-        CALLBACK_TYPE,  # callback
-        ctypes.c_void_p,  # callback data
-    ]
-    ValidateChunkIA32_.restype = ctypes.c_bool  # Bool
-    ValidateChunkAMD64_.restype = ctypes.c_bool  # Bool
-
-  if decoder_dll is not None:
-    decoder_dll = ctypes.cdll.LoadLibrary(decoder_dll)
-    DisassembleChunk_ = decoder_dll.DisassembleChunk
-    DisassembleChunk_.argtypes = [
-        ctypes.POINTER(ctypes.c_uint8),  # data
-        ctypes.c_uint32,  # size
-        ctypes.c_int,  # bitness
-    ]
-    DisassembleChunk_.restype = ctypes.c_char_p
-
-
-def ValidateChunk(
-    data,
-    bitness,
-    callback=None,
-    on_each_instruction=False,
-    restricted_register=None):
-  """Validate chunk, calling the callback if there are errors.
-
-  Validator interface must be initialized by calling Init first.
-
-  Args:
-    data: raw data to validate as python string.
-    bitness: 32 or 64.
-    callback: function that takes three arguments
-        begin_index, end_index and info (info is combination of flags; it is
-        explained in validator.h). It is invoked for every erroneous
-        instruction.
-    on_each_instruction: whether to invoke callback on each instruction (not
-       only on erroneous ones).
-    restricted_register: initial value for the restricted_register variable (see
-                         validator_internals.html for the details)
-
-  Returns:
-    True if the chunk is valid, False if invalid.
-  """
-
-  data_addr = ctypes.cast(data, ctypes.c_void_p).value
-
-  def LowLevelCallback(begin, end, info, callback_data):
-    if callback is not None:
-      begin_index = ctypes.cast(begin, ctypes.c_void_p).value - data_addr
-      end_index = ctypes.cast(end, ctypes.c_void_p).value - data_addr
-      callback(begin_index, end_index, info)
-
-    # See validator.h for details
-    if info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET) != 0:
-      return 0
-    else:
-      return 1
-
-  options = 0
-  if on_each_instruction:
-    options |= CALL_USER_CALLBACK_ON_EACH_INSTRUCTION
-  if restricted_register is not None:
-    assert restricted_register in ALL_REGISTERS
-    options |= PACK_RESTRICTED_REGISTER_INITIAL_VALUE(restricted_register)
-
-  data_ptr = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
-
-  validate_chunk_function = {
-      32: ValidateChunkIA32_,
-      64: ValidateChunkAMD64_}[bitness]
-
-  result = validate_chunk_function(
-      data_ptr,
-      len(data),
-      options,
-      GetFullCPUIDFeatures(),
-      CALLBACK_TYPE(LowLevelCallback),
-      None)
-
-  return bool(result)
-
-
 class DisassemblerError(Exception):
   pass
 
 
-def DisassembleChunk(data, bitness):
-  data_ptr = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
-  result = DisassembleChunk_(data_ptr, len(data), bitness)
+class Validator(object):
 
-  instructions = []
-  total_bytes = 0
-  for line in cStringIO.StringIO(result):
-    m = re.match(r'rejected at ([\da-f]+)', line)
-    if m is not None:
-      offset = int(m.group(1), 16)
-      raise DisassemblerError(offset, ' '.join('%02x' % ord(c) for c in data))
-    insn = objdump_parser.ParseLine(line)
-    insn = objdump_parser.CanonicalizeInstruction(insn)
-    instructions.append(insn)
-    total_bytes += len(insn.bytes)
-  return instructions
+  def __init__(self, validator_dll=None, decoder_dll=None):
+    """Initialize python interface to the validator.
 
+    Should be called before any calls to ValidateChunk.
 
-# TODO(shcherbina): Remove it.
-# Currently I'm keeping it around just in case (might be helpful for
-# troubleshooting RDFA decoder).
-def DisassembleChunkWithObjdump(data, bitness):
-  """Disassemble chunk assuming it consists of valid instructions.
+    Args:
+      validator_dll: path to dll that provides ValidateChunkIA32 and
+          ValidateChynkAMD64 functions.
 
-  Args:
-    data: raw data as python string.
-    bitness: 32 or 64
+    Returns:
+      None.
+    """
 
-  Returns:
-    List of objdump_parser.Instruction tuples. If data can't be disassembled
-    (either contains invalid instructions or ends in a middle of instruction)
-    exception is raised.
-  """
-  # TODO(shcherbina):
-  # Replace this shameless plug with python interface to RDFA decoder once
-  # https://code.google.com/p/nativeclient/issues/detail?id=3456 is done.
+    if validator_dll is not None:
+      validator_dll = ctypes.cdll.LoadLibrary(validator_dll)
 
-  arch = {32: '-Mi386', 64: '-Mx86-64'}[bitness]
+      self.GetFullCPUIDFeatures = validator_dll.GetFullCPUIDFeatures
+      self.GetFullCPUIDFeatures.restype = ctypes.c_void_p
 
-  tmp = tempfile.NamedTemporaryFile(mode='wb', delete=False)
-  try:
-    tmp.write(data)
-    tmp.close()
+      self._ValidateChunkIA32 = validator_dll.ValidateChunkIA32
+      self._ValidateChunkAMD64 = validator_dll.ValidateChunkAMD64
 
-    objdump_proc = subprocess.Popen(
-        ['objdump',
-         '-mi386', arch, '--target=binary',
-         '--disassemble-all', '--disassemble-zeroes',
-         '--insn-width=15',
-         tmp.name],
-        stdout=subprocess.PIPE)
+      self._ValidateChunkIA32.argtypes = self._ValidateChunkAMD64.argtypes = [
+          ctypes.POINTER(ctypes.c_uint8),  # data
+          ctypes.c_uint32,  # size
+          ctypes.c_uint32,  # options
+          ctypes.c_void_p,  # CPU features
+          CALLBACK_TYPE,  # callback
+          ctypes.c_void_p,  # callback data
+      ]
+      self._ValidateChunkIA32.restype = ctypes.c_bool  # Bool
+      self._ValidateChunkAMD64.restype = ctypes.c_bool  # Bool
+
+    if decoder_dll is not None:
+      decoder_dll = ctypes.cdll.LoadLibrary(decoder_dll)
+      self.DisassembleChunk_ = decoder_dll.DisassembleChunk
+      self.DisassembleChunk_.argtypes = [
+          ctypes.POINTER(ctypes.c_uint8),  # data
+          ctypes.c_uint32,  # size
+          ctypes.c_int,  # bitness
+      ]
+      self.DisassembleChunk_.restype = ctypes.c_char_p
+
+  def ValidateChunk(
+      self,
+      data,
+      bitness,
+      callback=None,
+      on_each_instruction=False,
+      restricted_register=None):
+    """Validate chunk, calling the callback if there are errors.
+
+    Validator interface must be initialized by calling Init first.
+
+    Args:
+      data: raw data to validate as python string.
+      bitness: 32 or 64.
+      callback: function that takes three arguments
+          begin_index, end_index and info (info is combination of flags; it is
+          explained in validator.h). It is invoked for every erroneous
+          instruction.
+      on_each_instruction: whether to invoke callback on each instruction (not
+         only on erroneous ones).
+      restricted_register: initial value for the restricted_register variable
+                           (see validator_internals.html for the details)
+
+    Returns:
+      True if the chunk is valid, False if invalid.
+    """
+
+    data_addr = ctypes.cast(data, ctypes.c_void_p).value
+
+    def LowLevelCallback(begin, end, info, callback_data):
+      if callback is not None:
+        begin_index = ctypes.cast(begin, ctypes.c_void_p).value - data_addr
+        end_index = ctypes.cast(end, ctypes.c_void_p).value - data_addr
+        callback(begin_index, end_index, info)
+
+      # See validator.h for details
+      if info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET) != 0:
+        return 0
+      else:
+        return 1
+
+    options = 0
+    if on_each_instruction:
+      options |= CALL_USER_CALLBACK_ON_EACH_INSTRUCTION
+    if restricted_register is not None:
+      assert restricted_register in ALL_REGISTERS
+      options |= PACK_RESTRICTED_REGISTER_INITIAL_VALUE(restricted_register)
+
+    data_ptr = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
+
+    validate_chunk_function = {
+        32: self._ValidateChunkIA32,
+        64: self._ValidateChunkAMD64}[bitness]
+
+    result = validate_chunk_function(
+        data_ptr,
+        len(data),
+        options,
+        self.GetFullCPUIDFeatures(),
+        CALLBACK_TYPE(LowLevelCallback),
+        None)
+
+    return bool(result)
+
+  def DisassembleChunk(self, data, bitness):
+    data_ptr = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
+    result = self.DisassembleChunk_(data_ptr, len(data), bitness)
 
     instructions = []
     total_bytes = 0
-    for line in objdump_parser.SkipHeader(objdump_proc.stdout):
+    for line in cStringIO.StringIO(result):
+      m = re.match(r'rejected at ([\da-f]+)', line)
+      if m is not None:
+        offset = int(m.group(1), 16)
+        raise DisassemblerError(offset, ' '.join('%02x' % ord(c) for c in data))
       insn = objdump_parser.ParseLine(line)
       insn = objdump_parser.CanonicalizeInstruction(insn)
       instructions.append(insn)
       total_bytes += len(insn.bytes)
-
-    assert len(data) == total_bytes
-
-    return_code = objdump_proc.wait()
-    assert return_code == 0, 'error running objdump'
-
     return instructions
 
-  finally:
-    tmp.close()
-    os.remove(tmp.name)
+  # TODO(shcherbina): Remove it.
+  # Currently I'm keeping it around just in case (might be helpful for
+  # troubleshooting RDFA decoder).
+  def DisassembleChunkWithObjdump(self, data, bitness):
+    """Disassemble chunk assuming it consists of valid instructions.
+
+    Args:
+      data: raw data as python string.
+      bitness: 32 or 64
+
+    Returns:
+      List of objdump_parser.Instruction tuples. If data can't be disassembled
+      (either contains invalid instructions or ends in a middle of instruction)
+      exception is raised.
+    """
+    # TODO(shcherbina):
+    # Replace this shameless plug with python interface to RDFA decoder once
+    # https://code.google.com/p/nativeclient/issues/detail?id=3456 is done.
+
+    arch = {32: '-Mi386', 64: '-Mx86-64'}[bitness]
+
+    tmp = tempfile.NamedTemporaryFile(mode='wb', delete=False)
+    try:
+      tmp.write(data)
+      tmp.close()
+
+      objdump_proc = subprocess.Popen(
+          ['objdump',
+           '-mi386', arch, '--target=binary',
+           '--disassemble-all', '--disassemble-zeroes',
+           '--insn-width=15',
+           tmp.name],
+          stdout=subprocess.PIPE)
+
+      instructions = []
+      total_bytes = 0
+      for line in objdump_parser.SkipHeader(objdump_proc.stdout):
+        insn = objdump_parser.ParseLine(line)
+        insn = objdump_parser.CanonicalizeInstruction(insn)
+        instructions.append(insn)
+        total_bytes += len(insn.bytes)
+
+      assert len(data) == total_bytes
+
+      return_code = objdump_proc.wait()
+      assert return_code == 0, 'error running objdump'
+
+      return instructions
+
+    finally:
+      tmp.close()
+      os.remove(tmp.name)
 
 
 def main():
@@ -289,7 +270,7 @@ def main():
   validator_dll, = sys.argv[1:]
   print validator_dll
 
-  Init(validator_dll)
+  validator = Validator(validator_dll)
 
   # 'z' is the first byte of JP instruction (which does not validate in this
   # case because it crosses bundle boundary)
@@ -302,7 +283,7 @@ def main():
       errors.append(begin_index)
       print 'callback', begin_index, end_index
 
-    result = ValidateChunk(
+    result = validator.ValidateChunk(
         data,
         bitness=bitness,
         callback=Callback)
