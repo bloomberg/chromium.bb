@@ -220,7 +220,7 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
 
 void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, TreePosition treePosition, const MatchRequest& matchRequest, RuleRange& ruleRange)
 {
-    if (m_canUseFastReject && m_selectorFilter.fastRejectSelector(ruleData.selector()))
+    if (m_canUseFastReject && m_selectorFilter.fastRejectSelector<RuleData::maximumIdentifierCount>(ruleData.descendantSelectorIdentifierHashes()))
         return;
 
     StyleRule* rule = ruleData.rule();

@@ -109,36 +109,30 @@ void SelectorFilter::pushParent(Element* parent)
     pushParentStackFrame(parent);
 }
 
-static unsigned selectorIdentifierHash(const CSSSelector* selector)
+static inline void collectDescendantSelectorIdentifierHashes(const CSSSelector* selector, unsigned*& hash)
 {
     switch (selector->m_match) {
     case CSSSelector::Id:
         if (!selector->value().isEmpty())
-            return selector->value().impl()->existingHash() * IdAttributeSalt;
+            (*hash++) = selector->value().impl()->existingHash() * IdAttributeSalt;
         break;
     case CSSSelector::Class:
         if (!selector->value().isEmpty())
-            return selector->value().impl()->existingHash() * ClassAttributeSalt;
+            (*hash++) = selector->value().impl()->existingHash() * ClassAttributeSalt;
         break;
     case CSSSelector::Tag:
         if (selector->tagQName().localName() != starAtom)
-            return selector->tagQName().localName().impl()->existingHash() * TagNameSalt;
+            (*hash++) = selector->tagQName().localName().impl()->existingHash() * TagNameSalt;
         break;
     default:
         break;
     }
-    return 0;
 }
 
-bool SelectorFilter::fastRejectSelector(const CSSSelector* selector) const
+void SelectorFilter::collectIdentifierHashes(const CSSSelector* selector, unsigned* identifierHashes, unsigned maximumIdentifierCount)
 {
-    ASSERT(m_ancestorIdentifierFilter);
-
-    // FIXME: Tune this parameter. This parameter was originally selected when
-    // we materialized the selector identifier hashes in RuleData objects,
-    // which meant that increasing increased memory usage.
-    size_t remainingHashesToCheck = 4;
-
+    unsigned* hash = identifierHashes;
+    unsigned* end = identifierHashes + maximumIdentifierCount;
     CSSSelector::Relation relation = selector->relation();
     bool relationIsAffectedByPseudoContent = selector->relationIsAffectedByPseudoContent();
 
@@ -148,14 +142,8 @@ bool SelectorFilter::fastRejectSelector(const CSSSelector* selector) const
         // Only collect identifiers that match ancestors.
         switch (relation) {
         case CSSSelector::SubSelector:
-            if (!skipOverSubselectors) {
-                if (unsigned hash = selectorIdentifierHash(selector)) {
-                    if (!m_ancestorIdentifierFilter->mayContain(hash))
-                        return true;
-                    if (!--remainingHashesToCheck)
-                        return false;
-                }
-            }
+            if (!skipOverSubselectors)
+                collectDescendantSelectorIdentifierHashes(selector, hash);
             break;
         case CSSSelector::DirectAdjacent:
         case CSSSelector::IndirectAdjacent:
@@ -169,20 +157,15 @@ bool SelectorFilter::fastRejectSelector(const CSSSelector* selector) const
                 break;
             }
             skipOverSubselectors = false;
-            if (unsigned hash = selectorIdentifierHash(selector)) {
-                if (!m_ancestorIdentifierFilter->mayContain(hash))
-                    return true;
-                if (!--remainingHashesToCheck)
-                    return false;
-            }
+            collectDescendantSelectorIdentifierHashes(selector, hash);
             break;
         }
-
+        if (hash == end)
+            return;
         relation = selector->relation();
         relationIsAffectedByPseudoContent = selector->relationIsAffectedByPseudoContent();
     }
-
-    return false;
+    *hash = 0;
 }
 
 }

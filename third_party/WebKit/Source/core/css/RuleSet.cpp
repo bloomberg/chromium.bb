@@ -218,6 +218,7 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
 {
     ASSERT(m_position == position);
     ASSERT(m_selectorIndex == selectorIndex);
+    SelectorFilter::collectIdentifierHashes(selector(), m_descendantSelectorIdentifierHashes, maximumIdentifierCount);
 }
 
 static void collectFeaturesFromRuleData(RuleFeatureSet& features, const RuleData& ruleData)
