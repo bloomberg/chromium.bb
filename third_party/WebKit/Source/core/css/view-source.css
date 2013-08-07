@@ -70,6 +70,10 @@ td {
     -webkit-user-select: none;
 }
 
+.webkit-line-number::before {
+    content: attr(value);
+}
+
 tbody:last-child .webkit-line-content:empty:before {
     content: " ";
 }
