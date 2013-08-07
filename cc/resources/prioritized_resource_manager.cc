@@ -290,6 +290,7 @@ bool PrioritizedResourceManager::EvictBackingsToReduceMemory(
 
   // Destroy backings until we are below the limit,
   // or until all backings remaining are above the cutoff.
+  bool evicted_anything = false;
   while (backings_.size() > 0) {
     PrioritizedResource::Backing* backing = backings_.front();
     if (MemoryUseBytes() <= limit_bytes &&
@@ -302,8 +303,9 @@ bool PrioritizedResourceManager::EvictBackingsToReduceMemory(
     if (unlink_policy == UNLINK_BACKINGS && backing->owner())
       backing->owner()->Unlink();
     EvictFirstBackingResource(resource_provider);
+    evicted_anything = true;
   }
-  return true;
+  return evicted_anything;
 }
 
 void PrioritizedResourceManager::ReduceWastedMemory(

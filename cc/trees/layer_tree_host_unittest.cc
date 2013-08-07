@@ -4216,5 +4216,67 @@ class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayerInEmptyViewport);
 
+class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestAbortEvictedTextures()
+      : num_will_begin_frames_(0), num_impl_commits_(0) {}
+
+ protected:
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<SolidColorLayer> root_layer = SolidColorLayer::Create();
+    root_layer->SetBounds(gfx::Size(200, 200));
+    root_layer->SetIsDrawable(true);
+
+    layer_tree_host()->SetRootLayer(root_layer);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void WillBeginFrame() OVERRIDE {
+    num_will_begin_frames_++;
+    switch (num_will_begin_frames_) {
+      case 2:
+        // Send a redraw to the compositor thread.  This will (wrongly) be
+        // ignored unless aborting resets the texture state.
+        layer_tree_host()->SetNeedsRedraw();
+        break;
+    }
+  }
+
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    num_impl_commits_++;
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    switch (impl->SourceAnimationFrameNumber()) {
+      case 1:
+        // Prevent draws until commit.
+        impl->active_tree()->SetContentsTexturesPurged();
+        EXPECT_FALSE(impl->CanDraw());
+        // Trigger an abortable commit.
+        impl->SetNeedsCommit();
+        break;
+      case 2:
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    // Ensure that the commit was truly aborted.
+    EXPECT_EQ(2, num_will_begin_frames_);
+    EXPECT_EQ(1, num_impl_commits_);
+  }
+
+ private:
+  int num_will_begin_frames_;
+  int num_impl_commits_;
+};
+
+// Commits can only be aborted when using the thread proxy.
+MULTI_THREAD_TEST_F(LayerTreeHostTestAbortEvictedTextures);
+
 }  // namespace
+
 }  // namespace cc

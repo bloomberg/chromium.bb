@@ -234,6 +234,8 @@ void ThreadProxy::SetVisibleOnImplThread(CompletionEvent* completion,
   TRACE_EVENT0("cc", "ThreadProxy::SetVisibleOnImplThread");
   layer_tree_host_impl_->SetVisible(visible);
   scheduler_on_impl_thread_->SetVisible(visible);
+  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(
+      !scheduler_on_impl_thread_->WillDrawIfNeeded());
   completion->Signal();
 }
 
@@ -897,6 +899,7 @@ void ThreadProxy::BeginFrameAbortedByMainThreadOnImplThread(bool did_handle) {
   // values were applied and committed.
   if (did_handle) {
     layer_tree_host_impl_->active_tree()->ApplySentScrollAndScaleDeltas();
+    layer_tree_host_impl_->active_tree()->ResetContentsTexturesPurged();
     SetInputThrottledUntilCommitOnImplThread(false);
   }
   scheduler_on_impl_thread_->BeginFrameAbortedByMainThread(did_handle);

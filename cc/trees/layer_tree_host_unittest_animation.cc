@@ -270,6 +270,8 @@ class LayerTreeHostAnimationTestTickAnimationWhileBackgrounded
   virtual void WillAnimateLayers(
       LayerTreeHostImpl* host_impl,
       base::TimeTicks monotonic_time) OVERRIDE {
+    // Verify that the host can draw, it's just not visible.
+    EXPECT_TRUE(host_impl->CanDraw());
     if (num_animates_ < 2) {
       if (!num_animates_) {
         // We have a long animation running. It should continue to tick even

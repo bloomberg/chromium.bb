@@ -98,6 +98,9 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
 void SingleThreadProxy::SetVisible(bool visible) {
   DebugScopedSetImplThread impl(this);
   layer_tree_host_impl_->SetVisible(visible);
+
+  // Changing visibility could change ShouldComposite().
+  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(!ShouldComposite());
 }
 
 void SingleThreadProxy::CreateAndInitializeOutputSurface() {
