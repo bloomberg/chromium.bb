@@ -6431,14 +6431,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_DEVICE_MOTION_DESCRIPTION" desc="Description for the flag to enable device motion.">
         Enables device motion DOM events in JavaScript.
       </message>
-      <if expr="is_android">
-        <message name="IDS_FLAGS_ENABLE_CAST_NAME" desc="Name of the flag to enable Google Cast support.">
-          Enable Google Cast support
-        </message>
-        <message name="IDS_FLAGS_ENABLE_CAST_DESCRIPTION" desc="Description for the flag to enable playing videos remotely on Google Cast receivers.">
-          Enable playing videos remotely on Google Cast receivers.
-        </message>
-      </if>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

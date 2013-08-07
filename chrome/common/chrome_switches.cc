@@ -1491,10 +1491,6 @@ const char kFakeCloudPolicyType[]           = "fake-cloud-policy-type";
 
 // Uses the tablet specific UI components when available.
 const char kTabletUI[]                      = "tablet-ui";
-
-// Enables support for playing videos on Google Cast devices.
-const char kEnableCast[]                    = "enable-cast";
-
 #endif
 
 #if defined(USE_ASH)

@@ -408,7 +408,6 @@ extern const char kEnableNewNTP[];
 extern const char kEnableTranslate[];
 extern const char kFakeCloudPolicyType[];
 extern const char kTabletUI[];
-extern const char kEnableCast[];
 #endif
 
 #if defined(USE_ASH)
