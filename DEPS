@@ -11,6 +11,7 @@ vars = {
   "webkit_revision": "155634",
   "chromium_git": "https://chromium.googlesource.com",
   "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
+  "skia_git": "https://skia.googlesource.com",
   "swig_revision": "69281",
   "nacl_revision": "11930",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
@@ -28,7 +29,8 @@ vars = {
   "ffmpeg_hash": "894e6f715645528e815aee2dad45b59704238dcd",
 
   "sfntly_revision": "134",
-  "skia_revision": "10553",
+  "skia_revision": "10602",
+  "skia_hash": "6d04e64f56b658635eeb46fcdb02188ce54f1567",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.

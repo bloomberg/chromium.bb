@@ -127,6 +127,8 @@
     '../third_party/skia/src/ports/SkTLS_pthread.cpp',
     '../third_party/skia/src/ports/SkTLS_win.cpp',
 
+    '../third_party/skia/src/sfnt/SkOTTable_name.cpp',
+    '../third_party/skia/src/sfnt/SkOTTable_name.h',
     '../third_party/skia/src/sfnt/SkOTUtils.cpp',
     '../third_party/skia/src/sfnt/SkOTUtils.h',
 
