@@ -150,7 +150,7 @@ struct ClientContext {
   ContextType type;
 };
 
-// Option enum to control eligible entries for searchMetadata().
+// Option enum to control eligible entries for SearchMetadata().
 // SEARCH_METADATA_ALL is the default to investigate all the entries.
 // SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS excludes the hosted documents.
 // SEARCH_METADATA_EXCLUDE_DIRECTORIES excludes the directories from the result.

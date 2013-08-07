@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/logging.h"
 
 #include <stdarg.h>   // va_list
+#include <string>
 
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"

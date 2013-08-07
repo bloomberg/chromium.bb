@@ -20,14 +20,13 @@ class PrefChangeRegistrar;
 class PrefService;
 
 namespace base {
-struct PlatformFileInfo;
 class SequencedTaskRunner;
-}
+}  // namespace base
 
 namespace google_apis {
 class AboutResource;
 class ResourceEntry;
-}
+}  // namespace google_apis
 
 namespace drive {
 
@@ -166,12 +165,10 @@ class FileSystem : public FileSystemInterface,
   virtual void OnLoadFromServerComplete() OVERRIDE;
   virtual void OnInitialLoadComplete() OVERRIDE;
 
-  // Used in tests to update the file system using the change list loader.
-  internal::ChangeListLoader* change_list_loader() {
+  // Used by tests.
+  internal::ChangeListLoader* change_list_loader_for_testing() {
     return change_list_loader_.get();
   }
-
-  // Used by tests.
   internal::SyncClient* sync_client_for_testing() { return sync_client_.get(); }
 
  private:

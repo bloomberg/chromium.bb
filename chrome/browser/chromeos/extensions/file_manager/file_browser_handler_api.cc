@@ -142,7 +142,7 @@ class FileSelectorImpl : public FileSelector,
   // Reacts to the user action reported by the dialog and notifies |function_|
   // about file selection result (by calling |OnFilePathSelected()|).
   // The |this| object is self destruct after the function is notified.
-  // |success| indicates whether user has selectd the file.
+  // |success| indicates whether user has selected the file.
   // |selected_path| is path that was selected. It is empty if the file wasn't
   // selected.
   void SendResponse(bool success, const base::FilePath& selected_path);

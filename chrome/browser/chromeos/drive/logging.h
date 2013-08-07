@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_LOGGING_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_LOGGING_H_
 
-#include <string>
 #include <vector>
 
 #include "chrome/browser/drive/event_logger.h"

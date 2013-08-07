@@ -149,7 +149,7 @@ class FileSystemTest : public testing::Test {
   // Loads the full resource list via FakeDriveService.
   bool LoadFullResourceList() {
     FileError error = FILE_ERROR_FAILED;
-    file_system_->change_list_loader()->LoadIfNeeded(
+    file_system_->change_list_loader_for_testing()->LoadIfNeeded(
         DirectoryFetchInfo(),
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();

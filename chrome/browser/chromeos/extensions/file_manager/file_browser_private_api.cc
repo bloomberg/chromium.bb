@@ -45,7 +45,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<SelectFileFunction>();
   registry->RegisterFunction<SelectFilesFunction>();
 
-  // Mount points releated functions.
+  // Mount points related functions.
   registry->RegisterFunction<AddMountFunction>();
   registry->RegisterFunction<RemoveMountFunction>();
   registry->RegisterFunction<GetMountPointsFunction>();
