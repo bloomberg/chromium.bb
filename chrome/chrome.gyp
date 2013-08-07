@@ -192,6 +192,8 @@
             'browser/devtools/devtools_file_helper.h',
             'browser/devtools/devtools_file_system_indexer.cc',
             'browser/devtools/devtools_file_system_indexer.h',
+            'browser/devtools/devtools_protocol.cc',
+            'browser/devtools/devtools_protocol.h',
             'browser/devtools/devtools_toggle_action.h',
             'browser/devtools/devtools_window.cc',
             'browser/devtools/devtools_window.h',

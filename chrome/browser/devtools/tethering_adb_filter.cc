@@ -8,16 +8,14 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
 #include "chrome/browser/devtools/adb_client_socket.h"
 #include "chrome/browser/devtools/adb_web_socket.h"
+#include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_list.h"
@@ -33,9 +31,6 @@ namespace {
 const int kAdbPort = 5037;
 const int kBufferSize = 16 * 1024;
 
-static const char kIdAttribute[] = "id";
-static const char kMethodAttribute[] = "method";
-static const char kParamsAttribute[] = "params";
 static const char kPortAttribute[] = "port";
 static const char kConnectionIdAttribute[] = "connectionId";
 static const char kTetheringAccepted[] = "Tethering.accepted";
@@ -277,17 +272,10 @@ void TetheringAdbFilter::SerializeChanges(const std::string& method,
 }
 
 void TetheringAdbFilter::SendCommand(const std::string& method, int port) {
-  base::DictionaryValue command;
-  command.SetInteger(kIdAttribute, ++command_id_);
-  command.SetString(kMethodAttribute, method);
-
   base::DictionaryValue params;
   params.SetInteger(kPortAttribute, port);
-  command.Set(kParamsAttribute, params.DeepCopy());
-
-  std::string json_command;
-  base::JSONWriter::Write(&command, &json_command);
-  web_socket_->SendFrameOnHandlerThread(json_command);
+  DevToolsProtocol::Command command(++command_id_, method, &params);
+  web_socket_->SendFrameOnHandlerThread(command.Serialize());
 }
 
 bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
@@ -298,20 +286,15 @@ bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
       message.find(kTetheringAccepted) == std::string::npos)
     return false;
 
-  scoped_ptr<base::Value> value(base::JSONReader::Read(message));
-
-  DictionaryValue* dvalue;
-  if (!value || !value->GetAsDictionary(&dvalue))
+  scoped_ptr<DevToolsProtocol::Notification> notification(
+      DevToolsProtocol::ParseNotification(message));
+  if (!notification)
     return false;
 
-  std::string method;
-  if (!dvalue->GetString(kMethodAttribute, &method) ||
-      method != kTetheringAccepted) {
+  if (notification->method() != kTetheringAccepted)
     return false;
-  }
 
-  DictionaryValue* params = NULL;
-  dvalue->GetDictionary(kParamsAttribute, &params);
+  DictionaryValue* params = notification->params();
   if (!params)
     return false;
 
