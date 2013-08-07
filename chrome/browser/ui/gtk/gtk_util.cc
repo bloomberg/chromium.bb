@@ -655,7 +655,6 @@ std::string BuildTooltipTitleFor(string16 title, const GURL& url) {
   std::string escaped_url(escaped_url_cstr);
   g_free(escaped_url_cstr);
 
-  std::string tooltip;
   if (url_str == title_str || title.empty()) {
     return escaped_url;
   } else {
