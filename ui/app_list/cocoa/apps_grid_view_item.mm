@@ -329,6 +329,14 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   return imageRep;
 }
 
+- (void)onInitialModelBuilt {
+  if ([self model]->highlighted()) {
+    [self ensureVisible];
+    if (![self model]->is_installing())
+      [self setSelected:YES];
+  }
+}
+
 - (void)ensureVisible {
   NSCollectionView* collectionView = [self collectionView];
   AppsGridController* gridController =

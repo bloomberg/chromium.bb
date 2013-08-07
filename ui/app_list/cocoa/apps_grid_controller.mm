@@ -61,9 +61,6 @@ NSTimeInterval g_scroll_duration = 0.18;
 - (AppsGridViewItem*)itemAtPageIndex:(size_t)pageIndex
                          indexInPage:(size_t)indexInPage;
 
-// Update the model in full, and rebuild subviews.
-- (void)modelUpdated;
-
 // Return the button of the selected item.
 - (NSButton*)selectedButton;
 
@@ -197,13 +194,19 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
     // model.
     for (size_t i = 0; i < [items_ count]; ++i)
       [[self itemAtIndex:i] setModel:NULL];
+
+    [items_ removeAllObjects];
+    [self updatePages:0];
+    [self scrollToPage:0];
   }
 
   model_.reset(newModel.release());
-  if (model_)
-    model_->apps()->AddObserver(bridge_.get());
+  if (!model_)
+    return;
 
-  [self modelUpdated];
+  model_->apps()->AddObserver(bridge_.get());
+  [self listItemsAdded:0
+                 count:model_->apps()->item_count()];
 }
 
 - (void)setDelegate:(app_list::AppListViewDelegate*)newDelegate {
@@ -395,17 +398,6 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
                    indexInPage:itemIndex - pageIndex * kItemsPerPage];
 }
 
-- (void)modelUpdated {
-  [items_ removeAllObjects];
-  if (model_ && model_->apps()->item_count()) {
-    [self listItemsAdded:0
-                   count:model_->apps()->item_count()];
-  } else {
-    [self updatePages:0];
-  }
-  [self scrollToPage:0];
-}
-
 - (NSUInteger)selectedItemIndex {
   NSCollectionView* page = [self collectionViewAtPageIndex:visiblePage_];
   NSUInteger indexOnPage = [[page selectionIndexes] firstIndex];
@@ -554,6 +546,9 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   }
 
   [self updatePages:start];
+
+  for (size_t i = start; i < start + count; ++i)
+    [[self itemAtIndex:i] onInitialModelBuilt];
 }
 
 - (void)listItemsRemoved:(size_t)start
