@@ -31,6 +31,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/SecurityContext.h"
+#include "core/loader/CrossOriginAccessControl.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/DOMTimer.h"
 #include "core/platform/LifecycleContext.h"
@@ -69,9 +70,8 @@ public:
 
     virtual void disableEval(const String& errorMessage) = 0;
 
-    bool shouldSanitizeScriptError(const String& sourceURL);
-    bool sanitizeScriptError(String& errorMessage, int& lineNumber, int& columnNumber, String& sourceURL);
-    void reportException(PassRefPtr<ErrorEvent>, PassRefPtr<ScriptCallStack>);
+    bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
+    void reportException(PassRefPtr<ErrorEvent>, PassRefPtr<ScriptCallStack>, AccessControlStatus);
 
     void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* = 0, unsigned long requestIdentifier = 0);
     virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0) = 0;
@@ -158,7 +158,7 @@ private:
     virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState* = 0, unsigned long requestIdentifier = 0) = 0;
     virtual EventTarget* errorEventTarget() = 0;
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
-    bool dispatchErrorEvent(PassRefPtr<ErrorEvent>);
+    bool dispatchErrorEvent(PassRefPtr<ErrorEvent>, AccessControlStatus);
 
     void closeMessagePorts();
 

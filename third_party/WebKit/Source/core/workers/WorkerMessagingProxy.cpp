@@ -141,7 +141,7 @@ private:
         RefPtr<ErrorEvent> event = ErrorEvent::create(m_errorMessage, m_sourceURL, m_lineNumber, m_columnNumber);
         bool errorHandled = !workerObject->dispatchEvent(event);
         if (!errorHandled)
-            context->reportException(event, 0);
+            context->reportException(event, 0, NotSharableCrossOrigin);
     }
 
     String m_errorMessage;

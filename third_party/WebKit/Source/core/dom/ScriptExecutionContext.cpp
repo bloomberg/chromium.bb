@@ -194,23 +194,12 @@ void ScriptExecutionContext::closeMessagePorts() {
     }
 }
 
-bool ScriptExecutionContext::shouldSanitizeScriptError(const String& sourceURL)
+bool ScriptExecutionContext::shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus corsStatus)
 {
-    return !securityOrigin()->canRequest(completeURL(sourceURL));
+    return !(securityOrigin()->canRequest(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-bool ScriptExecutionContext::sanitizeScriptError(String& errorMessage, int& lineNumber, int& columnNumber, String& sourceURL)
-{
-    if (!shouldSanitizeScriptError(sourceURL))
-        return false;
-    errorMessage = "Script error.";
-    sourceURL = String();
-    lineNumber = 0;
-    columnNumber = 0;
-    return true;
-}
-
-void ScriptExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassRefPtr<ScriptCallStack> callStack)
+void ScriptExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
 {
     RefPtr<ErrorEvent> errorEvent = event;
     if (m_inDispatchErrorEvent) {
@@ -221,7 +210,7 @@ void ScriptExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassR
     }
 
     // First report the original exception and only then all the nested ones.
-    if (!dispatchErrorEvent(errorEvent))
+    if (!dispatchErrorEvent(errorEvent, corsStatus))
         logExceptionToConsole(errorEvent->message(), errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
 
     if (!m_pendingExceptions)
@@ -239,14 +228,14 @@ void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLeve
     addMessage(source, level, message, sourceURL, lineNumber, 0, state, requestIdentifier);
 }
 
-bool ScriptExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event)
+bool ScriptExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, AccessControlStatus corsStatus)
 {
     EventTarget* target = errorEventTarget();
     if (!target)
         return false;
 
     RefPtr<ErrorEvent> errorEvent = event;
-    if (shouldSanitizeScriptError(errorEvent->filename()))
+    if (shouldSanitizeScriptError(errorEvent->filename(), corsStatus))
         errorEvent = ErrorEvent::createSanitizedError();
 
     ASSERT(!m_inDispatchErrorEvent);

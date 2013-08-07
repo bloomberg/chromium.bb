@@ -335,10 +335,14 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
         if (isHTMLScriptLoader(m_element))
             executingDocument->pushCurrentScript(toHTMLScriptElement(m_element));
 
+        AccessControlStatus corsCheck = NotSharableCrossOrigin;
+        if (sourceCode.cachedScript() && sourceCode.cachedScript()->passesAccessControlCheck(m_element->document()->securityOrigin()))
+            corsCheck = SharableCrossOrigin;
+
         // Create a script from the script element node, using the script
         // block's source and the script block's type.
         // Note: This is where the script is compiled and actually executed.
-        frame->script()->executeScriptInMainWorld(sourceCode);
+        frame->script()->executeScriptInMainWorld(sourceCode, corsCheck);
 
         if (isHTMLScriptLoader(m_element)) {
             ASSERT(executingDocument->currentScript() == m_element);

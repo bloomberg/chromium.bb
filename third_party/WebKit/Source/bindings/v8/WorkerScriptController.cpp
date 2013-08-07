@@ -167,8 +167,8 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
         state->lineNumber = message->GetLineNumber();
         state->columnNumber = message->GetStartColumn();
         state->sourceURL = toWebCoreString(message->GetScriptResourceName());
-        if (m_workerGlobalScope->sanitizeScriptError(state->errorMessage, state->lineNumber, state->columnNumber, state->sourceURL))
-            state->exception = throwError(v8GeneralError, state->errorMessage.utf8().data(), m_isolate);
+        if (m_workerGlobalScope->shouldSanitizeScriptError(state->sourceURL, NotSharableCrossOrigin))
+            state->exception = throwError(v8GeneralError, "Script error.", m_isolate);
         else
             state->exception = ScriptValue(block.Exception());
 
@@ -194,7 +194,7 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, Script
             *exception = state.exception;
         } else {
             RefPtr<ErrorEvent> event = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber);
-            m_workerGlobalScope->reportException(event, 0);
+            m_workerGlobalScope->reportException(event, 0, NotSharableCrossOrigin);
         }
     }
 }

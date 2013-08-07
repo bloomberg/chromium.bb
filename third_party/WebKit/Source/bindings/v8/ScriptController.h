@@ -34,12 +34,13 @@
 #include "bindings/v8/ScriptInstance.h"
 #include "bindings/v8/ScriptValue.h"
 
-#include <v8.h>
+#include "core/loader/CrossOriginAccessControl.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"
+#include <v8.h>
 
 struct NPObject;
 
@@ -81,7 +82,7 @@ public:
     ScriptValue executeScript(const String& script, bool forceUserGesture = false);
 
     // Evaluate JavaScript in the main world.
-    ScriptValue executeScriptInMainWorld(const ScriptSourceCode&);
+    ScriptValue executeScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin);
 
     // Executes JavaScript in an isolated world. The script gets its own global scope,
     // its own prototypes for intrinsic JavaScript objects (String, Array, and so-on),
@@ -96,7 +97,7 @@ public:
     // Returns true if argument is a JavaScript URL.
     bool executeScriptIfJavaScriptURL(const KURL&);
 
-    v8::Local<v8::Value> compileAndRunScript(const ScriptSourceCode&);
+    v8::Local<v8::Value> compileAndRunScript(const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin);
 
     v8::Local<v8::Value> callFunction(v8::Handle<v8::Function>, v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> argv[]);
     ScriptValue callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function>, v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> argv[]);

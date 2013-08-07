@@ -40,6 +40,11 @@ class HTTPHeaderMap;
 class ResourceResponse;
 class SecurityOrigin;
 
+enum AccessControlStatus {
+    NotSharableCrossOrigin,
+    SharableCrossOrigin
+};
+
 bool isSimpleCrossOriginAccessRequest(const String& method, const HTTPHeaderMap&);
 bool isOnAccessControlSimpleRequestMethodWhitelist(const String&);
 bool isOnAccessControlSimpleRequestHeaderWhitelist(const String& name, const String& value);

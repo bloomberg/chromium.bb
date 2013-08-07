@@ -63,14 +63,15 @@ PassOwnPtr<v8::ScriptData> V8ScriptRunner::precompileScript(v8::Handle<v8::Strin
     return scriptData.release();
 }
 
-v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData, v8::Isolate* isolate)
+v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData, v8::Isolate* isolate, AccessControlStatus corsStatus)
 {
     TRACE_EVENT0("v8", "v8.compile");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "Compile");
     v8::Handle<v8::String> name = v8String(fileName, isolate);
     v8::Handle<v8::Integer> line = v8::Integer::New(scriptStartPosition.m_line.zeroBasedInt(), isolate);
     v8::Handle<v8::Integer> column = v8::Integer::New(scriptStartPosition.m_column.zeroBasedInt(), isolate);
-    v8::ScriptOrigin origin(name, line, column);
+    v8::Handle<v8::Boolean> isSharedCrossOrigin = corsStatus == SharableCrossOrigin ? v8::True() : v8::False();
+    v8::ScriptOrigin origin(name, line, column, isSharedCrossOrigin);
     return v8::Script::Compile(code, &origin, scriptData);
 }
 

@@ -102,7 +102,8 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
         ASSERT(wrappedEvent->IsObject());
         v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(), data);
     }
-    firstWindow->document()->reportException(event.release(), callStack);
+    AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
+    firstWindow->document()->reportException(event.release(), callStack, corsStatus);
 }
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
@@ -177,7 +178,8 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
             ASSERT(wrappedEvent->IsObject());
             v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(), data);
         }
-        context->reportException(event.release(), 0);
+        AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
+        context->reportException(event.release(), 0, corsStatus);
     }
 
     isReportingException = false;

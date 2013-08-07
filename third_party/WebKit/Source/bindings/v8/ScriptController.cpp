@@ -206,7 +206,7 @@ v8::Local<v8::Value> ScriptController::callFunctionWithInstrumentation(ScriptExe
     return result;
 }
 
-v8::Local<v8::Value> ScriptController::compileAndRunScript(const ScriptSourceCode& source)
+v8::Local<v8::Value> ScriptController::compileAndRunScript(const ScriptSourceCode& source, AccessControlStatus corsStatus)
 {
     ASSERT(v8::Context::InContext());
 
@@ -226,7 +226,7 @@ v8::Local<v8::Value> ScriptController::compileAndRunScript(const ScriptSourceCod
 
         // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
         // 1, whereas v8 starts at 0.
-        v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(code, source.url(), source.startPosition(), scriptData.get(), m_isolate);
+        v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(code, source.url(), source.startPosition(), scriptData.get(), m_isolate, corsStatus);
 
         // Keep Frame (and therefore ScriptController) alive.
         RefPtr<Frame> protect(m_frame);
@@ -657,7 +657,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
     return true;
 }
 
-ScriptValue ScriptController::executeScriptInMainWorld(const ScriptSourceCode& sourceCode)
+ScriptValue ScriptController::executeScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus)
 {
     String sourceURL = sourceCode.url();
     const String* savedSourceURL = m_sourceURL;
@@ -670,7 +670,7 @@ ScriptValue ScriptController::executeScriptInMainWorld(const ScriptSourceCode& s
 
     v8::Context::Scope scope(v8Context);
     RefPtr<Frame> protect(m_frame);
-    v8::Local<v8::Value> object = compileAndRunScript(sourceCode);
+    v8::Local<v8::Value> object = compileAndRunScript(sourceCode, corsStatus);
 
     m_sourceURL = savedSourceURL;
 
