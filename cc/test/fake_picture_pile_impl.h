@@ -21,6 +21,8 @@ class FakePicturePileImpl : public PicturePileImpl {
       gfx::Size tile_size,
       gfx::Size layer_bounds);
 
+  static scoped_refptr<FakePicturePileImpl> CreatePile();
+
   TilingData& tiling() { return tiling_; }
 
   void AddRecordingAt(int x, int y);

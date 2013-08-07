@@ -4,6 +4,7 @@
 
 #include "cc/test/fake_picture_pile_impl.h"
 
+#include <limits>
 #include <utility>
 
 #include "cc/test/fake_rendering_stats_instrumentation.h"
@@ -39,6 +40,15 @@ scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateEmptyPile(
   pile->tiling().SetMaxTextureSize(tile_size);
   pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_size);
   pile->UpdateRecordedRegion();
+  return pile;
+}
+
+scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreatePile() {
+  scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
+  gfx::Size size(std::numeric_limits<int>::max(),
+                 std::numeric_limits<int>::max());
+  pile->Resize(size);
+  pile->recorded_region_ = Region(gfx::Rect(size));
   return pile;
 }
 

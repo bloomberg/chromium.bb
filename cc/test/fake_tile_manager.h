@@ -24,7 +24,7 @@ class FakeTileManager : public TileManager {
   virtual ~FakeTileManager();
 
   std::vector<Tile*> tiles_for_raster;
-  std::vector<scoped_refptr<Tile> > all_tiles;
+  PrioritizedTileSet all_tiles;
 };
 
 }  // namespace cc

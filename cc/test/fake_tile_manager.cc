@@ -42,10 +42,10 @@ FakeTileManager::~FakeTileManager() {}
 
 void FakeTileManager::AssignMemoryToTiles() {
   tiles_for_raster.clear();
-  all_tiles.clear();
+  all_tiles.Clear();
 
-  GetSortedTilesWithAssignedBins(&all_tiles);
-  AssignGpuMemoryToTiles(all_tiles, &tiles_for_raster);
+  GetPrioritizedTileSet(&all_tiles);
+  AssignGpuMemoryToTiles(&all_tiles, &tiles_for_raster);
 }
 
 bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {

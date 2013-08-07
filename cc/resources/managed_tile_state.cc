@@ -12,15 +12,24 @@ namespace cc {
 
 scoped_ptr<base::Value> ManagedTileBinAsValue(ManagedTileBin bin) {
   switch (bin) {
+  case NOW_AND_READY_TO_DRAW_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "NOW_AND_READY_TO_DRAW_BIN"));
   case NOW_BIN:
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "NOW_BIN"));
   case SOON_BIN:
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "SOON_BIN"));
+  case EVENTUALLY_AND_ACTIVE_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "EVENTUALLY_AND_ACTIVE_BIN"));
   case EVENTUALLY_BIN:
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "EVENTUALLY_BIN"));
+  case NEVER_AND_ACTIVE_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "NEVER_AND_ACTIVE_BIN"));
   case NEVER_BIN:
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "NEVER_BIN"));

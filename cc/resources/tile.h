@@ -120,6 +120,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
  private:
   // Methods called by by tile manager.
   friend class TileManager;
+  friend class PrioritizedTileSet;
   friend class FakeTileManager;
   friend class BinComparator;
   ManagedTileState& managed_state() { return managed_state_; }

@@ -17,11 +17,14 @@ class TileManager;
 
 // Tile manager classifying tiles into a few basic bins:
 enum ManagedTileBin {
-  NOW_BIN = 0,         // Needed ASAP.
-  SOON_BIN = 1,        // Impl-side version of prepainting.
-  EVENTUALLY_BIN = 2,  // Nice to have, if we've got memory and time.
-  NEVER_BIN = 3,       // Dont bother.
-  NUM_BINS = 4
+  NOW_AND_READY_TO_DRAW_BIN = 0,  // Ready to draw and within viewport.
+  NOW_BIN = 1,                    // Needed ASAP.
+  SOON_BIN = 2,                   // Impl-side version of prepainting.
+  EVENTUALLY_AND_ACTIVE_BIN = 3,  // Nice to have, and has a task or resource.
+  EVENTUALLY_BIN = 4,             // Nice to have, if we've got memory and time.
+  NEVER_AND_ACTIVE_BIN = 5,       // Dont bother, but has a task or resource.
+  NEVER_BIN = 6,                  // Dont bother.
+  NUM_BINS = 7
   // NOTE: Be sure to update ManagedTileBinAsValue and kBinPolicyMap when adding
   // or reordering fields.
 };
@@ -98,6 +101,7 @@ class CC_EXPORT ManagedTileState {
 
     private:
       friend class TileManager;
+      friend class PrioritizedTileSet;
       friend class Tile;
       friend class ManagedTileState;
 
@@ -136,12 +140,10 @@ class CC_EXPORT ManagedTileState {
 
   // Ephemeral state, valid only during TileManager::ManageTiles.
   bool is_in_never_bin_on_both_trees() const {
-    return bin[HIGH_PRIORITY_BIN] == NEVER_BIN &&
-           bin[LOW_PRIORITY_BIN] == NEVER_BIN;
-  }
-  bool is_in_now_bin_on_either_tree() const {
-    return bin[HIGH_PRIORITY_BIN] == NOW_BIN ||
-           bin[LOW_PRIORITY_BIN] == NOW_BIN;
+    return (bin[HIGH_PRIORITY_BIN] == NEVER_BIN ||
+            bin[HIGH_PRIORITY_BIN] == NEVER_AND_ACTIVE_BIN) &&
+           (bin[LOW_PRIORITY_BIN] == NEVER_BIN ||
+            bin[LOW_PRIORITY_BIN] == NEVER_AND_ACTIVE_BIN);
   }
 
   ManagedTileBin bin[NUM_BIN_PRIORITIES];

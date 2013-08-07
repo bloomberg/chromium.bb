@@ -16,6 +16,7 @@
 #include "cc/resources/managed_tile_state.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/prioritized_tile_set.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
@@ -98,7 +99,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE;
 
   typedef std::vector<Tile*> TileVector;
-  typedef std::vector<scoped_refptr<Tile> > TileRefVector;
   typedef std::set<Tile*> TileSet;
 
   // Virtual for test
@@ -106,11 +106,10 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
       const TileVector& tiles_that_need_to_be_rasterized);
 
   void AssignGpuMemoryToTiles(
-      const TileRefVector& sorted_tiles,
+      PrioritizedTileSet* tiles,
       TileVector* tiles_that_need_to_be_rasterized);
-  void GetTilesWithAssignedBins(TileRefVector* tiles);
-  void SortTiles(TileRefVector* tiles);
-  void GetSortedTilesWithAssignedBins(TileRefVector* tiles);
+  void GetTilesWithAssignedBins(PrioritizedTileSet* tiles);
+  void GetPrioritizedTileSet(PrioritizedTileSet* tiles);
 
  private:
   void OnImageDecodeTaskCompleted(
@@ -142,7 +141,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   typedef base::hash_map<Tile::Id, Tile*> TileMap;
   TileMap tiles_;
 
-  TileRefVector sorted_tiles_;
+  PrioritizedTileSet prioritized_tiles_;
 
   bool all_tiles_that_need_to_be_rasterized_have_memory_;
   bool all_tiles_required_for_activation_have_memory_;

@@ -5,59 +5,14 @@
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
+#include "cc/test/test_tile_priorities.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
-
-class FakePicturePileImpl : public PicturePileImpl {
- public:
-  FakePicturePileImpl() {
-    gfx::Size size(std::numeric_limits<int>::max(),
-                   std::numeric_limits<int>::max());
-    Resize(size);
-    recorded_region_ = Region(gfx::Rect(size));
-  }
-
- protected:
-  virtual ~FakePicturePileImpl() {}
-};
-
-class TilePriorityForSoonBin : public TilePriority {
- public:
-  TilePriorityForSoonBin() : TilePriority(
-            HIGH_RESOLUTION,
-            0.5,
-            300.0) {}
-};
-
-class TilePriorityForEventualBin : public TilePriority {
- public:
-    TilePriorityForEventualBin() : TilePriority(
-            NON_IDEAL_RESOLUTION,
-            1.0,
-            315.0) {}
-};
-
-class TilePriorityForNowBin : public TilePriority {
- public:
-    TilePriorityForNowBin() : TilePriority(
-            HIGH_RESOLUTION,
-            0,
-            0) {}
-};
-
-class TilePriorityRequiredForActivation : public TilePriority {
- public:
-    TilePriorityRequiredForActivation() : TilePriority(
-            HIGH_RESOLUTION,
-            0,
-            0) {
-      required_for_activation = true;
-    }
-};
 
 class TileManagerTest : public testing::TestWithParam<bool> {
  public:
@@ -90,7 +45,7 @@ class TileManagerTest : public testing::TestWithParam<bool> {
     state.tree_priority = tree_priority;
 
     tile_manager_->SetGlobalState(state);
-    picture_pile_ = make_scoped_refptr(new FakePicturePileImpl());
+    picture_pile_ = FakePicturePileImpl::CreatePile();
   }
 
   void SetTreePriority(TreePriority tree_priority) {
