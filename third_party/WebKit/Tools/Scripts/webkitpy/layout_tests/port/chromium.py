@@ -127,15 +127,6 @@ class ChromiumPort(Port):
     def is_chromium(self):
         return True
 
-    def default_child_processes(self):
-        default_count = super(ChromiumPort, self).default_child_processes()
-        # Since content_shell spawns multiple subprocesses, we need to reduce
-        # the number of running processes.
-        if self.driver_name() == self.CONTENT_SHELL_NAME:
-            default_count = int(.75 * default_count)
-
-        return default_count
-
     def default_max_locked_shards(self):
         """Return the number of "locked" shards to run in parallel (like the http tests)."""
         max_locked_shards = int(self.default_child_processes()) / 4
