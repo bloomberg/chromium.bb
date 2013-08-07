@@ -53,6 +53,9 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD1(open_resource, int(const char*));
 
 #ifdef PROVIDES_SOCKET_API
+  MOCK_METHOD3(poll, int(struct pollfd*, nfds_t, int));
+  MOCK_METHOD5(select, int(int, fd_set*, fd_set*, fd_set*, struct timeval*));
+
   // Socket support functions
   MOCK_METHOD3(accept, int(int, struct sockaddr*, socklen_t*));
   MOCK_METHOD3(bind, int(int, const struct sockaddr*, socklen_t));

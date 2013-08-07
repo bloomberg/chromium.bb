@@ -4,12 +4,17 @@
 
 #include "nacl_io/kernel_proxy.h"
 
+
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
+#include <poll.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/time.h>
+
 #include <iterator>
 #include <string>
 
@@ -643,6 +648,182 @@ int KernelProxy::munmap(void* addr, size_t length) {
 }
 
 #ifdef PROVIDES_SOCKET_API
+
+int KernelProxy::select(int nfds, fd_set* readfds, fd_set* writefds,
+                        fd_set* exceptfds, struct timeval* timeout) {
+  ScopedEventListener listener(new EventListener);
+  std::vector<struct pollfd> fds;
+
+  fd_set readout, writeout, exceptout;
+
+  FD_ZERO(&readout);
+  FD_ZERO(&writeout);
+  FD_ZERO(&exceptout);
+
+  int fd;
+  size_t event_cnt = 0;
+  int event_track = 0;
+  for (fd = 0; fd < nfds; fd++) {
+    int events = 0;
+
+    if (readfds != NULL && FD_ISSET(fd, readfds))
+      events |= POLLIN;
+
+    if (writefds != NULL && FD_ISSET(fd, writefds))
+      events |= POLLOUT;
+
+    if (exceptfds != NULL && FD_ISSET(fd, exceptfds))
+      events |= POLLERR | POLLHUP;
+
+    // If we are not interested in this FD, skip it
+    if (0 == events) continue;
+
+    ScopedKernelHandle handle;
+    Error err = AcquireHandle(fd, &handle);
+
+    // Select will return immediately if there are bad FDs.
+    if (err != 0) {
+      errno = EBADF;
+      return -1;
+    }
+
+    int status = handle->node()->GetEventStatus() & events;
+    if (status & POLLIN) {
+      FD_SET(fd, &readout);
+      event_cnt++;
+    }
+
+    if (status & POLLOUT) {
+      FD_SET(fd, &writeout);
+      event_cnt++;
+    }
+
+    if (status & (POLLERR | POLLHUP)) {
+      FD_SET(fd, &exceptout);
+      event_cnt++;
+    }
+
+    // Otherwise track it.
+    if (0 == status) {
+      err = listener->Track(fd, handle->node(), events, fd);
+      if (err != 0) {
+        errno = EBADF;
+        return -1;
+      }
+      event_track++;
+    }
+  }
+
+  // If nothing is signaled, then we must wait.
+  if (event_cnt == 0) {
+    std::vector<EventData> events;
+    int ready_cnt;
+    int ms_timeout;
+
+    // NULL timeout signals wait forever.
+    if (timeout == NULL) {
+      ms_timeout = -1;
+    } else {
+      int64_t ms = timeout->tv_sec * 1000 + ((timeout->tv_usec + 500) / 1000);
+
+      // If the timeout is invalid or too long (larger than signed 32 bit).
+      if ((timeout->tv_sec < 0) || (timeout->tv_sec >= (INT_MAX / 1000)) ||
+          (timeout->tv_usec < 0) || (timeout->tv_usec >= 1000) ||
+          (ms < 0) || (ms >= INT_MAX)) {
+        errno = EINVAL;
+        return -1;
+      }
+
+      ms_timeout = static_cast<int>(ms);
+    }
+
+    events.resize(event_track);
+    listener->Wait(events.data(), event_track, ms_timeout, &ready_cnt);
+    for (fd = 0; static_cast<int>(fd) < ready_cnt; fd++) {
+      if (events[fd].events & POLLIN) {
+        FD_SET(events[fd].user_data, &readout);
+        event_cnt++;
+      }
+
+      if (events[fd].events & POLLOUT) {
+        FD_SET(events[fd].user_data, &writeout);
+        event_cnt++;
+      }
+
+      if (events[fd].events & (POLLERR | POLLHUP)) {
+        FD_SET(events[fd].user_data, &exceptout);
+        event_cnt++;
+      }
+    }
+  }
+
+  // Copy out the results
+  if (readfds != NULL)
+    *readfds = readout;
+
+  if (writefds != NULL)
+    *writefds = writeout;
+
+  if (exceptfds != NULL)
+    *exceptfds = exceptout;
+
+  return event_cnt;
+}
+
+int KernelProxy::poll(struct pollfd *fds, nfds_t nfds, int timeout) {
+  ScopedEventListener listener(new EventListener);
+
+  int index;
+  size_t event_cnt = 0;
+  size_t event_track = 0;
+  for (index = 0; static_cast<nfds_t>(index) < nfds; index++) {
+    ScopedKernelHandle handle;
+    struct pollfd* info = &fds[index];
+    Error err = AcquireHandle(info->fd, &handle);
+
+    // If the node isn't open, or somehow invalid, mark it so.
+    if (err != 0) {
+      info->revents = POLLNVAL;
+      event_cnt++;
+      continue;
+    }
+
+    // If it's already signaled, then just capture the event
+    if (handle->node()->GetEventStatus() & info->events) {
+      info->revents = info->events & handle->node()->GetEventStatus();
+      event_cnt++;
+      continue;
+    }
+
+    // Otherwise try to track it.
+    err = listener->Track(info->fd, handle->node(), info->events, index);
+    if (err != 0) {
+      info->revents = POLLNVAL;
+      event_cnt++;
+      continue;
+    }
+    event_track++;
+  }
+
+  // If nothing is signaled, then we must wait.
+  if (0 == event_cnt) {
+    std::vector<EventData> events;
+    int ready_cnt;
+
+    events.resize(event_track);
+    listener->Wait(events.data(), event_track, timeout, &ready_cnt);
+    for (index = 0; index < ready_cnt; index++) {
+      struct pollfd* info = &fds[events[index].user_data];
+
+      info->revents = events[index].events;
+      event_cnt++;
+    }
+  }
+
+  return event_cnt;
+}
+
+
 
 // Socket Functions
 int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {

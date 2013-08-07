@@ -4,6 +4,7 @@
  */
 
 #include <errno.h>
+#include <poll.h>
 #include <pthread.h>
 #include <stdio.h>
 
@@ -44,7 +45,7 @@ void EventListener::Destroy() {
 uint32_t EventListener::GetEventStatus() {
   // Always writable, but we can only assume it to be readable if there
   // is an event waiting.
-  return signaled_.empty() ? KE_WRITE_READY : KE_WRITE_READY | KE_READ_READY;
+  return signaled_.empty() ? POLLOUT : POLLIN | POLLOUT;
 }
 
 int EventListener::GetType() {
@@ -235,8 +236,8 @@ void EventListener::AbandonedEventInfo(const ScopedEventInfo& event) {
   }
 
   // EventInfos abandoned by the destroyed emitter must still be kept in
-  // signaled_ set for KE_SHUTDOWN.
-  event->events = KE_SHUTDOWN;
+  // signaled_ set for POLLHUP.
+  event->events = POLLHUP;
   Signal(event);
 }
 

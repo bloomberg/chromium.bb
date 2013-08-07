@@ -443,18 +443,25 @@ PPAPI_RELEASE = $(abspath $(OSNAME)/Release/$(TARGET)$(HOST_EXT));application/x-
 SYSARCH := $(shell $(GETOS) --nacl-arch)
 SEL_LDR_PATH := python $(NACL_SDK_ROOT)/tools/sel_ldr.py
 
+#
+# Common Compile Options
+#
+ifeq ($(CONFIG),Debug)
+SEL_LDR_ARGS += --debug-libs
+endif
+
 ifdef SEL_LDR
 run: all
 ifndef NACL_ARCH
 	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
 endif
-	$(SEL_LDR_PATH) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
+	$(SEL_LDR_PATH) $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
 
 debug: all
 ifndef NACL_ARCH
 	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
 endif
-	$(SEL_LDR_PATH) -d $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
+	$(SEL_LDR_PATH) -d $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
 else
 PAGE ?= index.html
 PAGE_TC_CONFIG ?= "$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"

@@ -51,8 +51,10 @@
         "syscalls/lchown.c",
         "syscalls/mkdir.c",
         "syscalls/mount.c",
+        "syscalls/poll.c",
         "syscalls/remove.c",
         "syscalls/rmdir.c",
+        "syscalls/select.c",
         "syscalls/unlink.c",
         "syscalls/umount.c",
         "syscalls/utime.c",
@@ -108,6 +110,8 @@
         "netdb.h",
         "netinet/in.h",
         "netinet6/in6.h",
+        "poll.h",
+        "sys/select.h",
         "sys/socket.h",
       ],
       'DEST': 'include/newlib',
@@ -118,9 +122,17 @@
         "netdb.h",
         "netinet/in.h",
         "netinet6/in6.h",
+        "poll.h",
+        "sys/select.h",
         "sys/socket.h",
       ],
       'DEST': 'include/pnacl',
+    },
+    {
+      'FILES': [
+        "poll.h",
+      ],
+      'DEST': 'include/win',
     },
     {
       'FILES': [

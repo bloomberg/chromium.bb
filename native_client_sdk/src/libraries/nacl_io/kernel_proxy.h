@@ -14,6 +14,8 @@
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
 
+struct timeval;
+
 namespace nacl_io {
 
 class PepperInterface;
@@ -118,6 +120,11 @@ class KernelProxy : protected KernelObject {
   virtual int munmap(void* addr, size_t length);
 
 #ifdef PROVIDES_SOCKET_API
+  virtual int select(int nfds, fd_set* readfds, fd_set* writefds,
+                    fd_set* exceptfds, struct timeval* timeout);
+
+  virtual int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+
   // Socket support functions
   virtual int accept(int fd, struct sockaddr* addr, socklen_t* len);
   virtual int bind(int fd, const struct sockaddr* addr, socklen_t len);

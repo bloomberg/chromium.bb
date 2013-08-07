@@ -9,7 +9,9 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 #define PROVIDES_SOCKET_API
 #endif
 

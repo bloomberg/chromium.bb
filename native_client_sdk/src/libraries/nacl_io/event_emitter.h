@@ -29,10 +29,10 @@ struct EventInfo : public sdk_util::RefObject {
   // User provied data to be returned on EventListener::Wait
   uint64_t user_data;
 
-  // Bitfield of enum KernelEventType currently signaled.
+  // Bitfield of POLL events currently signaled.
   uint32_t events;
 
-  // Bitfield of enum KernelEventType that can signal.
+  // Bitfield of POLL events of interest.
   uint32_t filter;
 
   // We do not use a ScopedRef to prevent circular references.
@@ -71,7 +71,7 @@ class EventEmitter : public sdk_util::RefObject {
   void UnregisterEventInfo(const ScopedEventInfo& info);
 
  public:
-  // Returns the current state of the emitter as KernelEventType bitfield.
+  // Returns the current state of the emitter as POLL events bitfield.
   virtual uint32_t GetEventStatus() = 0;
 
   // Returns the type of the emitter (compatible with st_mode in stat)

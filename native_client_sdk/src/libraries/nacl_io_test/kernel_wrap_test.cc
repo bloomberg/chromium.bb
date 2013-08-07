@@ -287,8 +287,17 @@ TEST_F(KernelWrapTest, write) {
 }
 
 #ifdef PROVIDES_SOCKET_API
-// Socket Functions
+TEST_F(KernelWrapTest, poll) {
+  EXPECT_CALL(mock, poll(NULL, 5, -1));
+  poll(NULL, 5, -1);
+}
 
+TEST_F(KernelWrapTest, select) {
+  EXPECT_CALL(mock, select(123, NULL, NULL, NULL, NULL));
+  select(123, NULL, NULL, NULL, NULL);
+}
+
+// Socket Functions
 TEST_F(KernelWrapTest, accept) {
   EXPECT_CALL(mock, accept(123, NULL, NULL)).Times(1);
   accept(123, NULL, NULL);

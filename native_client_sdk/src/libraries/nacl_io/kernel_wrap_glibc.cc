@@ -126,10 +126,12 @@ EXTERN_C_BEGIN
   OP(getdents);  \
   OP(mkdir); \
   OP(open); \
+  OP(poll);\
   OP(read); \
   OP(rmdir); \
   OP(seek); \
   OP(stat); \
+  OP(select); \
   OP(write); \
   OP(mmap); \
   OP(munmap); \
@@ -228,6 +230,12 @@ int WRAP(open_resource)(const char* file, int* fd) {
   return (*fd < 0) ? errno : 0;
 }
 
+int WRAP(poll)(struct pollfd *fds, nfds_t nfds, int timeout, int* count) {
+  *count = ki_poll(fds, nfds, timeout);
+  return (*count < 0) ? errno : 0;
+
+}
+
 int WRAP(read)(int fd, void *buf, size_t count, size_t *nread) {
   if (!ki_is_initialized())
     return REAL(read)(fd, buf, count, nread);
@@ -244,6 +252,12 @@ int WRAP(rmdir)(const char* pathname) {
 int WRAP(seek)(int fd, off_t offset, int whence, off_t* new_offset) {
   *new_offset = ki_lseek(fd, offset, whence);
   return (*new_offset < 0) ? errno : 0;
+}
+
+int WRAP(select)(int nfds, fd_set* readfds, fd_set* writefds,
+                 fd_set* exceptfds, struct timeval* timeout, int* count) {
+  *count = ki_select(nfds, readfds, writefds, exceptfds, timeout);
+  return (*count < 0) ? errno : 0;
 }
 
 int WRAP(stat)(const char *pathname, struct nacl_abi_stat *nacl_buf) {

@@ -5,6 +5,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 
@@ -12,20 +13,27 @@
 
 #include "nacl_io/event_emitter.h"
 #include "nacl_io/event_listener.h"
+#include "nacl_io/kernel_intercept.h"
+#include "nacl_io/kernel_proxy.h"
+#include "nacl_io/kernel_wrap.h"
 
 
 using namespace nacl_io;
 using namespace sdk_util;
 
-class EventEmitterTester : public EventEmitter {
+class EventEmitterTester : public MountNode {
  public:
-  EventEmitterTester() : event_status_(0), event_cnt_(0) {}
+  EventEmitterTester() : MountNode(NULL), event_status_(0), event_cnt_(0) {}
 
   void SetEventStatus(uint32_t bits) { event_status_ = bits; }
   uint32_t GetEventStatus() { return event_status_; }
 
-  int GetType() { return S_IFSOCK; }
+  Error Ioctl(int request, char* arg) {
+    event_status_ = static_cast<uint32_t>(request);
+    return 0;
+  }
 
+  int GetType() { return S_IFSOCK; }
   int NumEvents() { return event_cnt_; }
 
  public:
@@ -364,3 +372,109 @@ TEST(EventTest, EmitterSignalling) {
   EXPECT_EQ(USER_DATA_A, ev[0].user_data);
   EXPECT_EQ(KE_EXPECTED, ev[0].events);
 }
+
+
+namespace {
+
+class KernelProxyPolling : public KernelProxy {
+ public:
+  virtual int socket(int domain, int type, int protocol) {
+    ScopedMount mnt;
+    ScopedMountNode node(new EventEmitterTester());
+    ScopedKernelHandle handle(new KernelHandle(mnt, node));
+
+    Error error = handle->Init(0);
+    if (error) {
+      errno = error;
+      return -1;
+    }
+
+    return AllocateFD(handle);
+  }
+};
+
+class KernelProxyPollingTest : public ::testing::Test {
+ public:
+  KernelProxyPollingTest() : kp_(new KernelProxyPolling) {
+    ki_init(kp_);
+  }
+
+  ~KernelProxyPollingTest() {
+    ki_uninit();
+    delete kp_;
+  }
+
+  KernelProxyPolling* kp_;
+};
+
+}  // namespace
+
+
+#define SOCKET_CNT 4
+void SetFDs(fd_set* set, int* fds) {
+  FD_ZERO(set);
+
+  FD_SET(0, set);
+  FD_SET(1, set);
+  FD_SET(2, set);
+
+  for (int index = 0; index < SOCKET_CNT; index++)
+    FD_SET(fds[index], set);
+}
+
+TEST_F(KernelProxyPollingTest, Select) {
+  int fds[SOCKET_CNT];
+
+  fd_set rd_set;
+  fd_set wr_set;
+
+  FD_ZERO(&rd_set);
+  FD_ZERO(&wr_set);
+
+  FD_SET(0, &rd_set);
+  FD_SET(1, &rd_set);
+  FD_SET(2, &rd_set);
+
+  FD_SET(0, &wr_set);
+  FD_SET(1, &wr_set);
+  FD_SET(2, &wr_set);
+
+  // Expect normal files to select as read, write, and error
+  int cnt = select(4, &rd_set, &rd_set, &rd_set, NULL);
+  EXPECT_EQ(3 * 3, cnt);
+  EXPECT_NE(0, FD_ISSET(0, &rd_set));
+  EXPECT_NE(0, FD_ISSET(1, &rd_set));
+  EXPECT_NE(0, FD_ISSET(2, &rd_set));
+
+  for (int index = 0 ; index < SOCKET_CNT; index++) {
+    fds[index] = socket(0, 0, 0);
+    EXPECT_NE(-1, fds[index]);
+  }
+
+  // Highest numbered fd
+  const int fdnum = fds[SOCKET_CNT - 1] + 1;
+
+  // Expect only the normal files to select
+  SetFDs(&rd_set, fds);
+  cnt = select(fds[SOCKET_CNT-1] + 1, &rd_set, NULL, NULL, NULL);
+  EXPECT_EQ(3, cnt);
+  EXPECT_NE(0, FD_ISSET(0, &rd_set));
+  EXPECT_NE(0, FD_ISSET(1, &rd_set));
+  EXPECT_NE(0, FD_ISSET(2, &rd_set));
+  for (int index = 0 ; index < SOCKET_CNT; index++) {
+    EXPECT_EQ(0, FD_ISSET(fds[index], &rd_set));
+  }
+
+  // Poke one of the pollable nodes to be READ ready
+  ioctl(fds[0], POLLIN, NULL);
+
+  // Expect normal files to be read/write and one pollable node to be read.
+  SetFDs(&rd_set, fds);
+  SetFDs(&wr_set, fds);
+  cnt = select(fdnum, &rd_set, &wr_set, NULL, NULL);
+  EXPECT_EQ(7, cnt);
+  EXPECT_NE(0, FD_ISSET(fds[0], &rd_set));
+  EXPECT_EQ(0, FD_ISSET(fds[0], &wr_set));
+}
+
+

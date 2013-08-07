@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -49,9 +50,10 @@ void MountNode::Destroy() {
 }
 
 // Declared in EventEmitter, default to regular files which always return
-// a ready of TRUE.
+// a ready of TRUE for read, write, or error.
 uint32_t MountNode::GetEventStatus() {
-  return KE_READ_READY | KE_WRITE_READY | KE_SHUTDOWN;
+  uint32_t val = POLLIN | POLLOUT | POLLERR;
+  return val;
 }
 
 

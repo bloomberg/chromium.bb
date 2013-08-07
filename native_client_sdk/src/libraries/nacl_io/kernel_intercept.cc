@@ -233,6 +233,15 @@ int ki_utime(const char* filename, const struct utimbuf* times) {
   return s_kp->utime(filename, times);
 }
 
+int ki_poll(struct pollfd *fds, nfds_t nfds, int timeout) {
+  return s_kp->poll(fds, nfds, timeout);
+}
+
+int ki_select(int nfds, fd_set* readfds, fd_set* writefds,
+              fd_set* exceptfds, struct timeval* timeout) {
+  return s_kp->select(nfds, readfds, writefds, exceptfds, timeout);
+}
+
 #ifdef PROVIDES_SOCKET_API
 // Socket Functions
 int ki_accept(int fd, struct sockaddr* addr, socklen_t* len) {

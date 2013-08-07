@@ -85,8 +85,12 @@ def main(argv):
     cmd.insert(0, helper)
 
   if dynamic:
-    libpath = os.path.join(NACL_SDK_ROOT, 'lib',
-                           'glibc_%s' % arch_suffix, 'Release')
+    if options.debug_libs:
+      libpath = os.path.join(NACL_SDK_ROOT, 'lib',
+                            'glibc_%s' % arch_suffix, 'Debug')
+    else:
+      libpath = os.path.join(NACL_SDK_ROOT, 'lib',
+                            'glibc_%s' % arch_suffix, 'Release')
     toolchain = '%s_x86_glibc' % osname
     sdk_lib_dir = os.path.join(NACL_SDK_ROOT, 'toolchain',
                                toolchain, 'x86_64-nacl')

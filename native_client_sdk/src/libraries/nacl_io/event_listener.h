@@ -64,14 +64,8 @@
 
 namespace nacl_io {
 
-enum KernelEventType {
-  KE_READ_READY = 1,
-  KE_WRITE_READY = 2,
-  KE_SHUTDOWN = 4
-};
-
 struct EventData {
-  // Bit Mask of signaled KernelEvents
+  // Bit Mask of signaled POLL events.
   uint32_t events;
   uint64_t user_data;
 };
@@ -105,7 +99,7 @@ class EventListener : public EventEmitter {
    // The number of events recored is returned in |count|.
    Error Wait(EventData* events, int max, int ms_timeout, int* out_count);
 
-   // Tracks a new set of KernelEventTypes for a given unique |id|.  The
+   // Tracks a new set of POLL events for a given unique |id|.  The
    // |user_data| will be returned in the Wait when an event of type |filter|
    // is received with that |id|.
    Error Track(int id,

@@ -66,6 +66,10 @@ int ki_fchown(int fd, uid_t owner, gid_t group);
 int ki_lchown(const char* path, uid_t owner, gid_t group);
 int ki_utime(const char* filename, const struct utimbuf* times);
 
+int ki_poll(struct pollfd *fds, nfds_t nfds, int timeout);
+int ki_select(int nfds, fd_set* readfds, fd_set* writefds,
+              fd_set* exceptfds, struct timeval* timeout);
+
 #ifdef PROVIDES_SOCKET_API
 // Socket Functions
 int ki_accept(int fd, struct sockaddr* addr, socklen_t* len);
