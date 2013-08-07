@@ -54,6 +54,8 @@
         'app_window_contents.h',
         'field_trial_names.cc',
         'field_trial_names.h',
+        'launcher.cc',
+        'launcher.h',
         'metrics_names.h',
         'native_app_window.h',
         'pref_names.cc',
@@ -72,6 +74,13 @@
         'switches.h',
       ],
       'conditions': [
+        ['chromeos==1',
+          {
+            'dependencies': [
+              'browser_chromeos',
+            ]
+          }
+        ],
         ['enable_extensions==0',
           {
             'sources/': [

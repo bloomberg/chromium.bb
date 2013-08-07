@@ -5,6 +5,7 @@ include_rules = [
   # to depend on apps will be lifted.
   "-apps",
   "+apps/app_window_contents.h",
+  "+apps/launcher.h",
   "+apps/native_app_window.h",
   "+apps/shell_window.h",
 

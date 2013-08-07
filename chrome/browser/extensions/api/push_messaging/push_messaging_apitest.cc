@@ -4,12 +4,12 @@
 
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 
+#include "apps/launcher.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"

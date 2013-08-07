@@ -5,12 +5,12 @@
 #include "apps/app_load_service.h"
 
 #include "apps/app_load_service_factory.h"
+#include "apps/launcher.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -89,13 +89,13 @@ void AppLoadService::Observe(int type,
 
       switch (it->second.action_type) {
         case LAUNCH:
-          extensions::LaunchPlatformApp(profile_, extension);
+          LaunchPlatformApp(profile_, extension);
           break;
         case RESTART:
-          extensions::RestartPlatformApp(profile_, extension);
+          RestartPlatformApp(profile_, extension);
           break;
         case LAUNCH_WITH_COMMAND_LINE:
-          extensions::LaunchPlatformAppWithCommandLine(
+          LaunchPlatformAppWithCommandLine(
               profile_, extension, &it->second.command_line,
               it->second.current_dir);
           break;

@@ -4,6 +4,7 @@
 
 #include "apps/app_launch_for_metro_restart_win.h"
 
+#include "apps/launcher.h"
 #include "apps/pref_names.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "win8/util/win8_util.h"

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/platform_app_launcher.h"
+#include "apps/launcher.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -23,7 +23,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/extensions/app_metro_infobar_delegate_win.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,7 +30,6 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
-#include "webkit/common/fileapi/file_system_types.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -50,8 +48,11 @@ using extensions::app_file_handler_util::FileHandlerCanHandleFile;
 using extensions::app_file_handler_util::FirstFileHandlerForFile;
 using extensions::app_file_handler_util::CreateFileEntry;
 using extensions::app_file_handler_util::GrantedFileEntry;
+using extensions::Extension;
+using extensions::ExtensionHost;
+using extensions::ExtensionSystem;
 
-namespace extensions {
+namespace apps {
 
 namespace {
 
@@ -202,7 +203,7 @@ class PlatformAppPathLauncher
 
   void LaunchWithMimeType(const std::string& mime_type) {
     // Find file handler from the platform app for the file being opened.
-    const FileHandlerInfo* handler = NULL;
+    const extensions::FileHandlerInfo* handler = NULL;
     if (!handler_id_.empty())
       handler = FileHandlerForId(*extension_, handler_id_);
     else
@@ -231,7 +232,7 @@ class PlatformAppPathLauncher
     // available, or it might be in the process of being unloaded, in which case
     // the lazy background task queue is used to load the extension and then
     // call back to us.
-    LazyBackgroundTaskQueue* queue =
+    extensions::LazyBackgroundTaskQueue* queue =
         ExtensionSystem::Get(profile_)->lazy_background_task_queue();
     if (queue->ShouldEnqueueTask(profile_, extension_)) {
       queue->AddPendingTask(profile_, extension_->id(), base::Bind(
@@ -262,7 +263,7 @@ class PlatformAppPathLauncher
         host->render_process_host()->GetID(),
         file_path_,
         false);
-    AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
+    extensions::AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
         profile_, extension_, handler_id_, mime_type, file_entry);
   }
 
@@ -284,17 +285,6 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
                                       const Extension* extension,
                                       const CommandLine* command_line,
                                       const base::FilePath& current_directory) {
-#if defined(OS_WIN)
-  // On Windows 8's single window Metro mode we can not launch platform apps.
-  // Offer to switch Chrome to desktop mode.
-  if (win8::IsSingleWindowMetroMode()) {
-    AppMetroInfoBarDelegateWin::Create(
-        profile, AppMetroInfoBarDelegateWin::LAUNCH_PACKAGED_APP,
-        extension->id());
-    return;
-  }
-#endif
-
   base::FilePath path;
   if (!GetAbsolutePathFromCommandLine(command_line, current_directory, &path)) {
     LaunchPlatformAppWithNoData(profile, extension);
@@ -339,22 +329,24 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
   extensions::EventRouter* event_router =
       ExtensionSystem::Get(profile)->event_router();
   bool listening_to_restart = event_router->
-      ExtensionHasEventListener(extension->id(), event_names::kOnRestarted);
+      ExtensionHasEventListener(extension->id(),
+                                extensions::event_names::kOnRestarted);
 
   if (listening_to_restart) {
     extensions::AppEventRouter::DispatchOnRestartedEvent(profile, extension);
     return;
   }
 
-  ExtensionPrefs* extension_prefs = ExtensionSystem::Get(profile)->
+  extensions::ExtensionPrefs* extension_prefs = ExtensionSystem::Get(profile)->
       extension_service()->extension_prefs();
   bool had_windows = extension_prefs->IsActive(extension->id());
   extension_prefs->SetIsActive(extension->id(), false);
   bool listening_to_launch = event_router->
-      ExtensionHasEventListener(extension->id(), event_names::kOnLaunched);
+      ExtensionHasEventListener(extension->id(),
+                                extensions::event_names::kOnLaunched);
 
   if (listening_to_launch && had_windows)
     LaunchPlatformAppWithNoData(profile, extension);
 }
 
-}  // namespace extensions
+}  // namespace apps

@@ -6,13 +6,13 @@
 
 #include <string>
 
+#include "apps/launcher.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/app_metro_infobar_delegate_win.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -342,7 +343,18 @@ WebContents* OpenApplication(const AppLaunchParams& params) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
 
   if (extension->is_platform_app()) {
-    extensions::LaunchPlatformAppWithCommandLine(
+#if defined(OS_WIN)
+    // On Windows 8's single window Metro mode we can not launch platform apps.
+    // Offer to switch Chrome to desktop mode.
+    if (win8::IsSingleWindowMetroMode()) {
+      AppMetroInfoBarDelegateWin::Create(
+          profile, AppMetroInfoBarDelegateWin::LAUNCH_PACKAGED_APP,
+          extension->id());
+      return NULL;
+    }
+#endif
+
+    apps::LaunchPlatformAppWithCommandLine(
         profile, extension, params.command_line, params.current_directory);
     return NULL;
   }

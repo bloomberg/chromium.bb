@@ -723,8 +723,6 @@
         'browser/extensions/pending_extension_manager.h',
         'browser/extensions/permissions_updater.cc',
         'browser/extensions/permissions_updater.h',
-        'browser/extensions/platform_app_launcher.cc',
-        'browser/extensions/platform_app_launcher.h',
         'browser/extensions/plugin_manager.cc',
         'browser/extensions/plugin_manager.h',
         'browser/extensions/process_map.cc',
@@ -990,8 +988,6 @@
             'browser/extensions/extension_error_ui_default.cc',
             'browser/extensions/extension_error_ui_default.h',
             'browser/extensions/extension_tab_util.cc',
-            'browser/extensions/platform_app_launcher.cc',
-            'browser/extensions/platform_app_launcher.h',
           ],
         }],
         ['chrome_multiple_dll!=1', {

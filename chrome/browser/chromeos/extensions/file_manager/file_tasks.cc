@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 
+#include "apps/launcher.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/i18n/case_conversion.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
-#include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -559,7 +559,7 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   } else if (task_type == kTaskApp) {
     for (size_t i = 0; i != file_urls.size(); ++i) {
-      extensions::LaunchPlatformAppWithFileHandler(
+      apps::LaunchPlatformAppWithFileHandler(
           profile, extension, action_id, file_urls[i].path());
     }
 
