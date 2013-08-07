@@ -110,6 +110,11 @@ TreeScope::~TreeScope()
         m_parentTreeScope->guardDeref();
 }
 
+bool TreeScope::rootNodeHasTreeSharedParent() const
+{
+    return rootNode()->hasTreeSharedParent();
+}
+
 void TreeScope::destroyTreeScopeData()
 {
     m_elementsById.clear();

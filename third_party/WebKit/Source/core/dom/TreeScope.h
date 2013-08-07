@@ -117,7 +117,7 @@ public:
     {
         ASSERT(!deletionHasBegun());
         --m_guardRefCount;
-        if (!m_guardRefCount && !refCount() && this != noDocumentInstance()) {
+        if (!m_guardRefCount && !refCount() && this != noDocumentInstance() && !rootNodeHasTreeSharedParent()) {
             beginDeletion();
             delete this;
         }
@@ -159,6 +159,8 @@ private:
     bool deletionHasBegun() { return false; }
     void beginDeletion() { }
 #endif
+
+    bool rootNodeHasTreeSharedParent() const;
 
     Node* m_rootNode;
     Document* m_documentScope;
