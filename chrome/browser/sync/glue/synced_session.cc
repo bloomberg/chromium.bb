@@ -29,6 +29,7 @@ bool ShouldSyncSessionTab(const SessionTab& tab) {
         !tab.navigations.at(i).virtual_url().SchemeIs("chrome") &&
         !tab.navigations.at(i).virtual_url().SchemeIsFile()) {
       found_valid_url = true;
+      break;
     }
   }
   return found_valid_url;
