@@ -558,47 +558,6 @@
    fun:ash::Shell::Init
 }
 {
-   bug_169185_a
-   Heapcheck:Leak
-   fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
-   fun:v8::internal::SlotsBuffer::AddTo
-   fun:v8::internal::MarkCompactCollector::Record*
-   ...
-   fun:v8::internal::StaticMarkingVisitor::IterateBody
-   fun:v8::internal::IncrementalMarking::VisitObject
-   fun:v8::internal::IncrementalMarking::ProcessMarkingDeque
-   fun:v8::internal::IncrementalMarking::Step
-   ...
-   fun:v8::internal::*Space::AllocateRaw
-}
-{
-   bug_169678_b
-   Heapcheck:Leak
-   fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
-   fun:v8::internal::SlotsBuffer::AddTo
-   fun:v8::internal::MarkCompactCollector::RecordCodeEntrySlot
-   fun:v8::internal::StaticMarkingVisitor::VisitCodeEntry
-   ...
-   fun:v8::internal::IncrementalMarking::VisitObject
-   ...
-   fun:v8::internal::IncrementalMarking::OldSpaceStep
-   fun:v8::internal::FreeList::Allocate
-}
-{
-   bug_169678_c
-   Heapcheck:Leak
-   fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
-   fun:v8::internal::SlotsBuffer::AddTo
-   fun:v8::internal::MarkCompactCollector::Record*
-   ...
-   fun:v8::internal::Heap::DoScavenge*
-   fun:v8::internal::Heap::Scavenge*
-   ...
-   fun:v8::internal::Heap::PerformGarbageCollection
-   fun:v8::internal::Heap::CollectGarbage
-   fun:v8::internal::Heap::CollectGarbage
-}
-{
    bug_171547_b
    Heapcheck:Leak
    ...
