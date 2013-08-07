@@ -977,9 +977,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDefaultTileHeight,
     switches::kMaxUntiledLayerWidth,
     switches::kMaxUntiledLayerHeight,
-#if defined(OS_CHROMEOS)
-    switches::kEnableEncodedScreenCapture,
-#endif
     switches::kEnableViewport,
     switches::kEnableInbandTextTracks,
     switches::kEnableOpusPlayback,

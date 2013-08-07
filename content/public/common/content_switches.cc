@@ -335,11 +335,6 @@ const char kDisableDeviceMotion[]           = "disable-device-motion";
 // Enables restarting interrupted downloads.
 const char kEnableDownloadResumption[]      = "enable-download-resumption";
 
-#if defined(OS_CHROMEOS)
-// Enables hardware-encoded screen capture.
-const char kEnableEncodedScreenCapture[]    = "enable-encoded-screen-capture";
-#endif
-
 // Enables Web Platform features that are in development.
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";

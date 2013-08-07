@@ -13,17 +13,14 @@
 #include <list>
 #include <map>
 
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/video/capture/video_capture.h"
-#include "media/video/encoded_video_source.h"
 
 namespace content {
 
-class RtcEncodingVideoCapturerFactory;
 class VideoCaptureImpl;
 class VideoCaptureMessageFilter;
 
@@ -53,11 +50,6 @@ class CONTENT_EXPORT VideoCaptureImplManager
     return filter_.get();
   }
 
-  void set_encoding_capturer_factory(base::WeakPtr<
-      RtcEncodingVideoCapturerFactory> encoding_capturer_factory) {
-    encoding_capturer_factory_ = encoding_capturer_factory;
-  }
-
  protected:
   virtual ~VideoCaptureImplManager();
 
@@ -81,12 +73,6 @@ class CONTENT_EXPORT VideoCaptureImplManager
   scoped_refptr<VideoCaptureMessageFilter> filter_;
   base::Thread thread_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
-
-  // The encoding capturer factory is created by MediaStreamDependencyFactory
-  // and owned by its PeerConnectionFactory. It is passed to the manager
-  // as a weak pointer at CreatePeerConnectionFactory time because the
-  // PeerConnectionFactory may be released earlier than the manager.
-  base::WeakPtr<RtcEncodingVideoCapturerFactory> encoding_capturer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplManager);
 };

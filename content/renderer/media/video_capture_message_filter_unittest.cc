@@ -50,21 +50,6 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
     device_id_ = device_id;
   }
 
-  // TODO(hshi): implement the following methods for encoded video capture.
-  virtual void OnEncodingCapabilitiesAvailable(
-      const media::VideoEncodingCapabilities& capabilities) OVERRIDE {}
-  virtual void OnEncodedBitstreamOpened(
-      const media::VideoEncodingParameters& params,
-      const std::vector<base::SharedMemoryHandle>& buffers,
-      uint32 buffer_size) OVERRIDE {}
-  virtual void OnEncodedBitstreamClosed() OVERRIDE {}
-  virtual void OnEncodingConfigChanged(
-      const media::RuntimeVideoEncodingParameters& params) OVERRIDE {}
-  virtual void OnEncodedBufferReady(
-      int buffer_id,
-      uint32 size,
-      const media::BufferEncodingMetadata& metadata) OVERRIDE {}
-
   void Reset() {
     buffer_created_ = false;
     handle_ = base::SharedMemory::NULLHandle();

@@ -30,7 +30,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/java_bridge_messages.h"
 #include "content/common/media/audio_messages.h"
-#include "content/common/media/encoded_video_capture_messages.h"
 #include "content/common/media/midi_messages.h"
 #if defined(OS_ANDROID)
 #include "content/common/media/media_player_messages_android.h"

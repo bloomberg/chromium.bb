@@ -37,10 +37,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 
-#if defined(ENABLE_WEBRTC)
-#include "content/renderer/media/rtc_encoding_video_capturer_factory.h"
-#endif
-
 #if defined(USE_OPENSSL)
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
 #else
@@ -491,7 +487,6 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     audio_device_ = new WebRtcAudioDeviceImpl();
 
     scoped_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
-    scoped_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
 
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
     if (cmd_line->HasSwitch(switches::kEnableWebRtcHWDecoding)) {
@@ -508,24 +503,11 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     decoder_factory.reset(decoder_factory_tv_ = new RTCVideoDecoderFactoryTv);
 #endif
 
-#if defined(ENABLE_WEBRTC) && defined(OS_CHROMEOS)
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (command_line.HasSwitch(switches::kEnableEncodedScreenCapture)) {
-      // PeerConnectionFactory owns the encoder factory. Pass a weak pointer of
-      // encoder factory to |vc_manager_| because the manager outlives it.
-      RtcEncodingVideoCapturerFactory* rtc_encoding_capturer_factory =
-          new RtcEncodingVideoCapturerFactory();
-      encoder_factory.reset(rtc_encoding_capturer_factory);
-      vc_manager_->set_encoding_capturer_factory(
-          rtc_encoding_capturer_factory->AsWeakPtr());
-    }
-#endif
-
     scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
         webrtc::CreatePeerConnectionFactory(worker_thread_,
                                             signaling_thread_,
                                             audio_device_.get(),
-                                            encoder_factory.release(),
+                                            NULL,
                                             decoder_factory.release()));
     if (factory.get())
       pc_factory_ = factory;

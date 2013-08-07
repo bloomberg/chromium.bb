@@ -5,10 +5,8 @@
 #include "content/renderer/media/video_capture_impl.h"
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "content/child/child_process.h"
-#include "content/common/media/encoded_video_capture_messages.h"
 #include "content/common/media/video_capture_messages.h"
 #include "media/base/limits.h"
 
@@ -60,9 +58,7 @@ VideoCaptureImpl::VideoCaptureImpl(
       video_type_(media::VideoCaptureCapability::kI420),
       device_info_available_(false),
       suspended_(false),
-      state_(VIDEO_CAPTURE_STATE_STOPPED),
-      encoded_video_source_client_(NULL),
-      bitstream_open_(false) {
+      state_(VIDEO_CAPTURE_STATE_STOPPED) {
   DCHECK(filter);
   capture_format_.session_id = id;
 }
@@ -101,87 +97,6 @@ void VideoCaptureImpl::StopCapture(media::VideoCapture::EventHandler* handler) {
   capture_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureImpl::DoStopCaptureOnCaptureThread,
                  base::Unretained(this), handler));
-}
-
-void VideoCaptureImpl::RequestCapabilities(
-    const media::EncodedVideoSource::RequestCapabilitiesCallback& callback) {
-  capture_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(&VideoCaptureImpl::DoRequestCapabilitiesOnCaptureThread,
-                 base::Unretained(this), callback));
-}
-
-void VideoCaptureImpl::StartFetchCapabilities() {
-  Send(new EncodedVideoCaptureHostMsg_GetCapabilities(
-      device_id_, capture_format_.session_id));
-}
-
-void VideoCaptureImpl::OpenBitstream(
-    media::EncodedVideoSource::Client* client,
-    const media::VideoEncodingParameters& params) {
-  capture_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(&VideoCaptureImpl::DoOpenBitstreamOnCaptureThread,
-                 base::Unretained(this), client, params));
-}
-
-void VideoCaptureImpl::CloseBitstream() {
-  capture_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(&VideoCaptureImpl::DoCloseBitstreamOnCaptureThread,
-                 base::Unretained(this)));
-}
-
-void VideoCaptureImpl::ReturnBitstreamBuffer(
-    scoped_refptr<const media::EncodedBitstreamBuffer> buffer) {
-  Send(new EncodedVideoCaptureHostMsg_BitstreamBufferConsumed(
-      device_id_, buffer->buffer_id()));
-}
-
-void VideoCaptureImpl::TrySetBitstreamConfig(
-    const media::RuntimeVideoEncodingParameters& params) {
-  Send(new EncodedVideoCaptureHostMsg_TryConfigureBitstream(
-      device_id_, params));
-}
-
-void VideoCaptureImpl::RequestKeyFrame() {
-  Send(new EncodedVideoCaptureHostMsg_RequestKeyFrame(device_id_));
-}
-
-void VideoCaptureImpl::OnEncodingCapabilitiesAvailable(
-    const media::VideoEncodingCapabilities& capabilities) {
-  capture_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-      &VideoCaptureImpl::DoNotifyCapabilitiesAvailableOnCaptureThread,
-      base::Unretained(this), capabilities));
-}
-
-void VideoCaptureImpl::OnEncodedBitstreamOpened(
-    const media::VideoEncodingParameters& params,
-    const std::vector<base::SharedMemoryHandle>& buffers,
-    uint32 buffer_size) {
-  capture_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(&VideoCaptureImpl::DoNotifyBitstreamOpenedOnCaptureThread,
-                 base::Unretained(this), params, buffers, buffer_size));
-}
-
-void VideoCaptureImpl::OnEncodedBitstreamClosed() {
-  capture_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(&VideoCaptureImpl::DoNotifyBitstreamClosedOnCaptureThread,
-                 base::Unretained(this)));
-}
-
-void VideoCaptureImpl::OnEncodingConfigChanged(
-      const media::RuntimeVideoEncodingParameters& params) {
-  capture_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(
-          &VideoCaptureImpl::DoNotifyBitstreamConfigChangedOnCaptureThread,
-          base::Unretained(this), params));
-}
-
-void VideoCaptureImpl::OnEncodedBufferReady(
-    int buffer_id,
-    uint32 size,
-    const media::BufferEncodingMetadata& metadata) {
-  capture_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(&VideoCaptureImpl::DoNotifyBitstreamBufferReadyOnCaptureThread,
-                 base::Unretained(this), buffer_id, size, metadata));
 }
 
 void VideoCaptureImpl::FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) {
@@ -397,9 +312,6 @@ void VideoCaptureImpl::DoStateChangedOnCaptureThread(VideoCaptureState state) {
 
   switch (state) {
     case VIDEO_CAPTURE_STATE_STARTED:
-      if (!encoding_caps_callback_.is_null()) {
-        StartFetchCapabilities();
-      }
       break;
     case VIDEO_CAPTURE_STATE_STOPPED:
       state_ = VIDEO_CAPTURE_STATE_STOPPED;
@@ -481,118 +393,6 @@ void VideoCaptureImpl::DoSuspendCaptureOnCaptureThread(bool suspend) {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
 
   suspended_ = suspend;
-}
-
-void VideoCaptureImpl::DoRequestCapabilitiesOnCaptureThread(
-    const RequestCapabilitiesCallback& callback) {
-  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-  DCHECK(encoding_caps_callback_.is_null());
-  encoding_caps_callback_ = callback;
-
-  // Invoke callback immediately if capabilities are already available.
-  if (!encoding_caps_.empty())
-    base::ResetAndReturn(&encoding_caps_callback_).Run(encoding_caps_);
-}
-
-void VideoCaptureImpl::DoOpenBitstreamOnCaptureThread(
-    media::EncodedVideoSource::Client* client,
-    const media::VideoEncodingParameters& params) {
-  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-  DCHECK(!encoded_video_source_client_);
-  encoded_video_source_client_ = client;
-  Send(new EncodedVideoCaptureHostMsg_OpenBitstream(
-      device_id_, capture_format_.session_id, params));
-}
-
-void VideoCaptureImpl::DoCloseBitstreamOnCaptureThread() {
-  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-  DCHECK(bitstream_open_);
-
-  // Immediately clear EVS client pointer and release bitstream buffers if the
-  // client requests to close bitstream. Any further encoded capture messages
-  // from the browser process will be ignored.
-  bitstream_open_ = false;
-  for (size_t i = 0; i < bitstream_buffers_.size(); ++i) {
-    bitstream_buffers_[i]->Close();
-    delete bitstream_buffers_[i];
-  }
-  bitstream_buffers_.clear();
-  encoded_video_source_client_ = NULL;
-
-  Send(new EncodedVideoCaptureHostMsg_CloseBitstream(device_id_));
-}
-
-void VideoCaptureImpl::DoNotifyBitstreamOpenedOnCaptureThread(
-    const media::VideoEncodingParameters& params,
-    const std::vector<base::SharedMemoryHandle>& buffers,
-    uint32 buffer_size) {
-  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-  DCHECK(!bitstream_open_ && bitstream_buffers_.empty());
-  if (!encoded_video_source_client_)
-    return;
-  bitstream_open_ = true;
-  for (size_t i = 0; i < buffers.size(); ++i) {
-    base::SharedMemory* shm = new base::SharedMemory(buffers[i], true);
-    CHECK(shm->Map(buffer_size));
-    bitstream_buffers_.push_back(shm);
-  }
-  encoded_video_source_client_->OnOpened(params);
-}
-
-void VideoCaptureImpl::DoNotifyBitstreamClosedOnCaptureThread() {
-  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-
-  // Ignore the BitstreamClosed message if bitstream has already been closed
-  // by the EVS client.
-  if (!bitstream_open_)
-    return;
-
-  // The bitstream may still be open when we receive BitstreamClosed message
-  // if the request to close bitstream comes from the browser process.
-  bitstream_open_ = false;
-  for (size_t i = 0; i < bitstream_buffers_.size(); ++i) {
-    bitstream_buffers_[i]->Close();
-    delete bitstream_buffers_[i];
-  }
-  bitstream_buffers_.clear();
-  if (encoded_video_source_client_) {
-    encoded_video_source_client_->OnClosed();
-    encoded_video_source_client_ = NULL;
-  }
-}
-
-void VideoCaptureImpl::DoNotifyBitstreamConfigChangedOnCaptureThread(
-    const media::RuntimeVideoEncodingParameters& params) {
-  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-  if (!encoded_video_source_client_)
-    return;
-  encoded_video_source_client_->OnConfigChanged(params);
-}
-
-void VideoCaptureImpl::DoNotifyBitstreamBufferReadyOnCaptureThread(
-    int buffer_id,
-    uint32 size,
-    const media::BufferEncodingMetadata& metadata) {
-  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-  if (!encoded_video_source_client_)
-    return;
-  if (buffer_id >= 0 &&
-      static_cast<size_t>(buffer_id) < bitstream_buffers_.size()) {
-    base::SharedMemory* shm = bitstream_buffers_.at(buffer_id);
-    scoped_refptr<media::EncodedBitstreamBuffer> buffer =
-        new media::EncodedBitstreamBuffer(
-            buffer_id, (uint8*)shm->memory(), size, shm->handle(),
-            metadata, base::Bind(&base::DoNothing));
-    encoded_video_source_client_->OnBufferReady(buffer);
-  }
-}
-
-void VideoCaptureImpl::DoNotifyCapabilitiesAvailableOnCaptureThread(
-    const media::VideoEncodingCapabilities& capabilities) {
-  DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-  encoding_caps_ = capabilities;
-  if (!encoding_caps_callback_.is_null())
-    base::ResetAndReturn(&encoding_caps_callback_).Run(encoding_caps_);
 }
 
 void VideoCaptureImpl::StopDevice() {

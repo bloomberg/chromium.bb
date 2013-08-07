@@ -18,7 +18,6 @@
 #include "content/common/media/video_capture.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/video/capture/video_capture.h"
-#include "media/video/encoded_video_source.h"
 
 namespace content {
 
@@ -51,31 +50,6 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
     // Called when the delegate has been added to filter's delegate list.
     // |device_id| is the device id for the delegate.
     virtual void OnDelegateAdded(int32 device_id) = 0;
-
-    // Called when the encoding capabilities is received from video capture
-    // device in the browser process.
-    virtual void OnEncodingCapabilitiesAvailable(
-        const media::VideoEncodingCapabilities& capabilities) = 0;
-
-    // Called when a bitstream is opened on a video capture device.
-    virtual void OnEncodedBitstreamOpened(
-        const media::VideoEncodingParameters& params,
-        const std::vector<base::SharedMemoryHandle>& buffers,
-        uint32 buffer_size) = 0;
-
-    // Called when a bitstream is closed on a video capture device.
-    virtual void OnEncodedBitstreamClosed() = 0;
-
-    // Called when encoding parameters has changed.
-    virtual void OnEncodingConfigChanged(
-        const media::RuntimeVideoEncodingParameters& params) = 0;
-
-    // Called when an encoded bitstream buffer is received from video capture
-    // device in the browser process.
-    virtual void OnEncodedBufferReady(
-        int buffer_id,
-        uint32 size,
-        const media::BufferEncodingMetadata& metadata) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -122,31 +96,6 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
   // Receive device info from browser process.
   void OnDeviceInfoReceived(int device_id,
                             const media::VideoCaptureParams& params);
-
-  // Receive newly changed device info from browser process.
-  void OnDeviceInfoChanged(int device_id,
-                           const media::VideoCaptureParams& params);
-
-  // Receive encoding capabilities from browser process.
-  void OnCapabilitiesAvailable(int device_id,
-                               media::VideoEncodingCapabilities capabilities);
-
-  // Bitstream is opened on video capture device.
-  void OnBitstreamOpened(int device_id,
-                         media::VideoEncodingParameters params,
-                         std::vector<base::SharedMemoryHandle> buffers,
-                         uint32 buffer_size);
-
-  // Bitstream is closed on video capture device.
-  void OnBitstreamClosed(int device_id);
-
-  // Receive current encoding parameters from browser process.
-  void OnBitstreamConfigChanged(int device_id,
-                                media::RuntimeVideoEncodingParameters params);
-
-  // Receive an encoded bitstream buffer from browser process.
-  void OnBitstreamReady(int device_id, int buffer_id, uint32 size,
-                        media::BufferEncodingMetadata metadata);
 
   // Finds the delegate associated with |device_id|, NULL if not found.
   Delegate* find_delegate(int device_id) const;
