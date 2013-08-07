@@ -784,6 +784,14 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
 
     // First accumulate the straightforward compositing reasons.
     CompositingReasons directReasons = directReasonsForCompositing(layer);
+
+    // Video is special. It's the only RenderLayer type that can both have
+    // RenderLayer children and whose children can't use its backing to render
+    // into. These children (the controls) always need to be promoted into their
+    // own layers to draw on top of the accelerated video.
+    if (compositingState.m_compositingAncestor && compositingState.m_compositingAncestor->renderer()->isVideo())
+        directReasons |= CompositingReasonLayerForVideoOverlay;
+
     if (canBeComposited(layer)) {
         reasonsToComposite |= directReasons;
         reasonsToComposite |= (inCompositingMode() && layer->isRootLayer()) ? CompositingReasonRoot : CompositingReasonNone;
@@ -807,13 +815,6 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         haveComputedBounds = true;
         overlapCompositingReason = overlapMap->overlapsLayers(absBounds) ? CompositingReasonOverlap : CompositingReasonNone;
     }
-
-    // Video is special. It's the only RenderLayer type that can both have
-    // RenderLayer children and whose children can't use its backing to render
-    // into. These children (the controls) always need to be promoted into their
-    // own layers to draw on top of the accelerated video.
-    if (compositingState.m_compositingAncestor && compositingState.m_compositingAncestor->renderer()->isVideo())
-        overlapCompositingReason = CompositingReasonOverlap;
 
     reasonsToComposite |= overlapCompositingReason;
 

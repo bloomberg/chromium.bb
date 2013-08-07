@@ -54,6 +54,10 @@ const uint64_t CompositingReasonLayerForForeground                     = UINT64_
 const uint64_t CompositingReasonLayerForBackground                     = UINT64_C(1) << 30;
 const uint64_t CompositingReasonLayerForMask                           = UINT64_C(1) << 31;
 
+// FIXME: the following compositing reasons need to be re-organized to fit with categories
+// used in all the other reasons above.
+const uint64_t CompositingReasonLayerForVideoOverlay                   = UINT64_C(1) << 32;
+
 // Note: if you add more reasons here, you will need to update WebCompositingReasons as well.
 typedef uint64_t CompositingReasons;
 
