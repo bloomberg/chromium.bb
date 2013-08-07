@@ -66,12 +66,6 @@ enum NotificationType {
   // (std::pair<std::string, std::string>).
   NOTIFICATION_PAGE_TRANSLATED,
 
-  // Sent after the renderer returns a snapshot of tab contents.
-  // The source (Source<content::WebContents>) is the RenderViewHost for which
-  // the snapshot was generated and the details (Details<const SkBitmap>) is
-  // the actual snapshot.
-  NOTIFICATION_TAB_SNAPSHOT_TAKEN,
-
   // The user has changed the browser theme. The source is a
   // Source<ThemeService>. There are no details.
   NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -564,13 +558,6 @@ enum NotificationType {
   // Sent when a background page is ready so other components can load.
   NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
 
-  // Sent when a pop-up extension view is ready, so that notification may
-  // be sent to pending callbacks.  Note that this notification is sent
-  // after all onload callbacks have been invoked in the main frame.
-  // The details is the ExtensionHost* hosted within the popup, and the source
-  // is a Profile*.
-  NOTIFICATION_EXTENSION_POPUP_VIEW_READY,
-
   // Sent when a browser action's state has changed. The source is the
   // ExtensionAction* that changed.  The details are the Profile* that the
   // browser action belongs to.
@@ -857,11 +844,6 @@ enum NotificationType {
   // TokenRequestFailedDetails object.
   NOTIFICATION_TOKEN_REQUEST_FAILED,
 
-  // When a service has a new token they got from a frontend that the
-  // TokenService should know about, fire this notification. The source is the
-  // Profile. The details are a TokenAvailableDetails object.
-  NOTIFICATION_TOKEN_UPDATED,
-
   // Fired when the TokenService has had all of its tokens removed (such as due
   // to the user signing out). The source is the TokenService. There are no
   // details.
@@ -1023,12 +1005,6 @@ enum NotificationType {
 
   // Sent when the user list has changed.
   NOTIFICATION_USER_LIST_CHANGED,
-
-  // Sent when a panel state changed.
-  NOTIFICATION_PANEL_STATE_CHANGED,
-
-  // Sent when the window manager's layout mode has changed.
-  NOTIFICATION_LAYOUT_MODE_CHANGED,
 
   // Sent when the screen lock state has changed. The source is
   // ScreenLocker and the details is a bool specifing that the
