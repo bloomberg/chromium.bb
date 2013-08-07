@@ -56,6 +56,144 @@ fileOperationUtil.setLastModified = function(entry, modificationTime) {
 };
 
 /**
+ * Copies a file from source to the parent directory with newName.
+ * See also copyFileByStream_ and copyFileOnDrive_ for the implementation
+ * details.
+ *
+ * @param {FileEntry} source The file entry to be copied.
+ * @param {DirectoryEntry} parent The entry of the destination directory.
+ * @param {string} newName The name of copied file.
+ * @param {function(FileEntry, number)} progressCallback Callback invoked
+ *     periodically during the file writing. It takes source and the number of
+ *     copied bytes since the last invocation. This is also called just before
+ *     starting the operation (with '0' bytes) and just after the finishing the
+ *     operation (with the total copied size).
+ * @param {function(FileEntry)} successCallback Callback invoked when the copy
+ *     is successfully done with the entry of the created file.
+ * @param {function(FileError)} errorCallback Callback invoked when an error
+ *     is found.
+ * @return {function()} Callback to cancle the current file copy operation.
+ *     When the cancel is done, errorCallback will be called. The returned
+ *     callback must not be called more than once.
+ */
+fileOperationUtil.copyFile = function(
+    source, parent, newName, progressCallback, successCallback, errorCallback) {
+  if (!PathUtil.isDriveBasedPath(source.fullPath) &&
+      !PathUtil.isDriveBasedPath(parent.fullPath)) {
+    // Copying a file between non-Drive file systems.
+    return fileOperationUtil.copyFileByStream_(
+        source, parent, newName, progressCallback, successCallback,
+        errorCallback);
+  } else {
+    // Copying related to the Drive file system.
+    return fileOperationUtil.copyFileOnDrive_(
+        source, parent, newName, progressCallback, successCallback,
+        errorCallback);
+  }
+};
+
+/**
+ * Copies a file by using File and FileWriter objects.
+ *
+ * This is a js-implementation of FileEntry.copyTo(). Unfortunately, copyTo
+ * doesn't support periodical progress updating nor cancelling. To support
+ * these operations, this method implements copyTo by streaming way in
+ * JavaScript.
+ *
+ * Note that this is designed for file copying on local file system. We have
+ * some special cases about copying on Drive file system. See also
+ * copyFileOnDrive_() for more details.
+ *
+ * @param {FileEntry} source The file entry to be copied.
+ * @param {DirectoryEntry} parent The entry of the destination directory.
+ * @param {string} newName The name of copied file.
+ * @param {function(FileEntry, number)} progressCallback Callback invoked
+ *     periodically during the file writing. It takes source and the number of
+ *     copied bytes since the last invocation. This is also called just before
+ *     starting the operation (with '0' bytes) and just after the finishing the
+ *     operation (with the total copied size).
+ * @param {function(FileEntry)} successCallback Callback invoked when the copy
+ *     is successfully done with the entry of the created file.
+ * @param {function(FileError)} errorCallback Callback invoked when an error
+ *     is found.
+ * @return {function()} Callback to cancel the current file copy operation.
+ *     When the cancel is done, errorCallback will be called. The returned
+ *     callback must not be called more than once.
+ * @private
+ */
+fileOperationUtil.copyFileByStream_ = function(
+    source, parent, newName, progressCallback, successCallback, errorCallback) {
+  // Set to true when cancel is requested.
+  var cancelRequested = false;
+
+  source.file(function(file) {
+    if (cancelRequested) {
+      errorCallback(util.createFileError(FileError.ABORT_ERR));
+      return;
+    }
+
+    parent.getFile(newName, {create: true, exclusive: true}, function(target) {
+      if (cancelRequested) {
+        errorCallback(util.createFileError(FileError.ABORT_ERR));
+        return;
+      }
+
+      target.createWriter(function(writer) {
+        if (cancelRequested) {
+          errorCallback(util.createFileError(FileError.ABORT_ERR));
+          return;
+        }
+
+        writer.onerror = writer.onabort = function(progress) {
+          errorCallback(cancelRequested ?
+              util.createFileError(FileError.ABORT_ERR) :
+                  writer.error);
+        };
+
+        var reportedProgress = 0;
+        writer.onprogress = function(progress) {
+          if (cancelRequested) {
+            // If the copy was cancelled, we should abort the operation.
+            // The errorCallback will be called by writer.onabort after the
+            // termination.
+            writer.abort();
+            return;
+          }
+
+          // |progress.loaded| will contain total amount of data copied by now.
+          // |progressCallback| expects data amount delta from the last progress
+          // update.
+          progressCallback(target, progress.loaded - reportedProgress);
+          reportedProgress = progress.loaded;
+        };
+
+        writer.onwrite = function() {
+          if (cancelRequested) {
+            errorCallback(util.createFileError(FileError.ABORT_ERR));
+            return;
+          }
+
+          source.getMetadata(function(metadata) {
+            if (cancelRequested) {
+              errorCallback(util.createFileError(FileError.ABORT_ERR));
+              return;
+            }
+
+            fileOperationUtil.setLastModified(
+                target, metadata.modificationTime);
+            successCallback(target);
+          }, errorCallback);
+        };
+
+        writer.write(file);
+      }, errorCallback);
+    }, errorCallback);
+  }, errorCallback);
+
+  return function() { cancelRequested = true; };
+};
+
+/**
  * Copies a file a) from Drive to local, b) from local to Drive, or c) from
  * Drive to Drive.
  * Currently, we need to take care about following two things for Drive:
@@ -96,8 +234,9 @@ fileOperationUtil.setLastModified = function(entry, modificationTime) {
  * @return {function()} Callback to cancel the current file copy operation.
  *     When the cancel is done, errorCallback will be called. The returned
  *     callback must not be called more than once.
+ * @private
  */
-fileOperationUtil.copyFileOnDrive = function(
+fileOperationUtil.copyFileOnDrive_ = function(
     source, parent, newName, progressCallback, successCallback, errorCallback) {
   // Set to true when cancel is requested.
   var cancelRequested = false;
@@ -399,6 +538,8 @@ FileCopyManager.Task.prototype.getNextEntry = function() {
 
 /**
  * Remove the completed entry from the pending lists.
+ * TODO(hidehiko): On current code, size is always 0. Clean the code up.
+ *
  * @param {Entry} entry Entry.
  * @param {number} size Bytes completed.
  */
@@ -1022,9 +1163,9 @@ FileCopyManager.prototype.processCopyEntry_ = function(
   originalPath = task.applyRenames(originalPath);
 
   var onDeduplicated = function(targetRelativePath) {
-    var onCopyComplete = function(entry, size) {
+    var onCopyComplete = function(entry) {
       entryChangedCallback(util.EntryChangedType.CREATED, entry);
-      task.markEntryComplete(entry, size);
+      task.markEntryComplete(entry, 0);
       successCallback();
     };
 
@@ -1042,57 +1183,24 @@ FileCopyManager.prototype.processCopyEntry_ = function(
             if (targetRelativePath != originalPath) {
               task.registerRename(originalPath, targetRelativePath);
             }
-            onCopyComplete(targetEntry, 0);
+            onCopyComplete(targetEntry);
           },
           util.flog('Error getting dir: ' + targetRelativePath,
                     onFilesystemError));
-      return;
-    }
-
-    var onCopyProgress = function(entry, size) {
-      task.updateFileCopyProgress(entry, size);
-      progressCallback();
-    };
-
-    // Hereafter copy a file.
-    var isSourceOnDrive = PathUtil.isDriveBasedPath(sourceEntry.fullPath);
-    var isTargetOnDrive = PathUtil.isDriveBasedPath(targetDirEntry.fullPath);
-
-    if (!isSourceOnDrive && !isTargetOnDrive) {
-      // Sending a file from local to local.
-      // To copy local file, we use File blob and FileWriter to take the
-      // progress.
-      targetDirEntry.getFile(
-          targetRelativePath,
-          {create: true, exclusive: true},
-          function(targetEntry) {
-            self.cancelCallback_ = self.copyFileEntry_(
-                sourceEntry, targetEntry,
-                onCopyProgress,
-                function(entry, size) {
-                  self.cancelCallback_ = null;
-                  onCopyComplete(entry, size);
-                },
-                function(error) {
-                  self.cancelCallback_ = null;
-                  onFilesystemError(error);
-                });
-          },
-          util.flog('Error getting file: ' + targetRelativePath,
-                    onFilesystemError));
-      return;
     } else {
-      // Sending a file from a) Drive to Drive, b) Drive to local or c) local
-      // to Drive.
+      // Copy a file.
       targetDirEntry.getDirectory(
           PathUtil.dirname(targetRelativePath), {create: false},
           function(dirEntry) {
-            self.cancelCallback_ = fileOperationUtil.copyFileOnDrive(
+            self.cancelCallback_ = fileOperationUtil.copyFile(
                 sourceEntry, dirEntry, PathUtil.basename(targetRelativePath),
-                onCopyProgress,
+                function(entry, size) {
+                  task.updateFileCopyProgress(entry, size);
+                  progressCallback();
+                },
                 function(entry) {
                   self.cancelCallback_ = null;
-                  onCopyComplete(entry, 0);
+                  onCopyComplete(entry);
                 },
                 function(error) {
                   self.cancelCallback_ = null;
@@ -1105,97 +1213,6 @@ FileCopyManager.prototype.processCopyEntry_ = function(
 
   fileOperationUtil.deduplicatePath(
       targetDirEntry, originalPath, onDeduplicated, errorCallback);
-};
-
-/**
- * Copies the contents of sourceEntry into targetEntry.
- * TODO(hidehiko): Move this method into fileOperationUtil.
- *
- * @param {FileEntry} sourceEntry The file entry that will be copied.
- * @param {FileEntry} targetEntry The file entry to which sourceEntry will be
- *     copied.
- * @param {function(FileEntry, number)} progressCallback Function that will be
- *     called when a part of the source entry is copied. It takes |targetEntry|
- *     and size of the last copied chunk as parameters.
- * @param {function(FileEntry, number)} successCallback Function that will be
- *     called the copy operation finishes. It takes |targetEntry| and size of
- *     the last (not previously reported) copied chunk as parameters.
- * @param {function(FileError)} errorCallback Function that will be called
- *     if an error is encountered. Takes error type and additional error data
- *     as parameters.
- * @return {function()} Callback to cancel the current file copy operation.
- *     When the cancel is done, errorCallback will be called. The returned
- *     callback must not be called more than once.
- * @private
- */
-FileCopyManager.prototype.copyFileEntry_ = function(sourceEntry,
-                                                    targetEntry,
-                                                    progressCallback,
-                                                    successCallback,
-                                                    errorCallback) {
-  // Set to true when cancel is requested.
-  var cancelRequested = false;
-
-  sourceEntry.file(function(file) {
-    if (cancelRequested) {
-      errorCallback(util.createFileError(FileError.ABORT_ERR));
-      return;
-    }
-
-    targetEntry.createWriter(function(writer) {
-      if (cancelRequested) {
-        errorCallback(util.createFileError(FileError.ABORT_ERR));
-        return;
-      }
-
-      var reportedProgress = 0;
-      writer.onerror = writer.onabort = function(progress) {
-        errorCallback(cancelRequested ?
-            util.createFileError(FileError.ABORT_ERR) :
-            writer.error);
-      };
-
-      writer.onprogress = function(progress) {
-        if (cancelRequested) {
-          // If the copy was cancelled, we should abort the operation.
-          // The errorCallback will be called by writer.onabort after the
-          // termination.
-          writer.abort();
-          return;
-        }
-
-        // |progress.loaded| will contain total amount of data copied by now.
-        // |progressCallback| expects data amount delta from the last progress
-        // update.
-        progressCallback(targetEntry, progress.loaded - reportedProgress);
-        reportedProgress = progress.loaded;
-      };
-
-      writer.onwrite = function() {
-        if (cancelRequested) {
-          errorCallback(util.createFileError(FileError.ABORT_ERR));
-          return;
-        }
-
-        sourceEntry.getMetadata(function(metadata) {
-          if (cancelRequested) {
-            errorCallback(util.createFileError(FileError.ABORT_ERR));
-            return;
-          }
-
-          fileOperationUtil.setLastModified(
-              targetEntry, metadata.modificationTime);
-          successCallback(targetEntry, file.size - reportedProgress);
-        });
-      };
-
-      writer.write(file);
-    }, errorCallback);
-  }, errorCallback);
-
-  return function() {
-    cancelRequested = true;
-  };
 };
 
 /**
