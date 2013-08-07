@@ -261,6 +261,30 @@ void InstalledLoader::LoadAllExtensions() {
       UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionLocation",
                                 location, 100);
     }
+    if (!ManifestURL::UpdatesFromGallery(*ex)) {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.NonWebstoreLocation",
+                                location, 100);
+    }
+    if (Manifest::IsExternalLocation(location)) {
+      // See loop below for DISABLED.
+      UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
+                                Extension::ENABLED, 100);
+    }
+    if ((*ex)->from_webstore()) {
+      // Check for inconsistencies if the extension was supposedly installed
+      // from the webstore.
+      enum {
+        BAD_UPDATE_URL = 0,
+        IS_EXTERNAL = 1,
+      };
+      if (!ManifestURL::UpdatesFromGallery(*ex)) {
+        UMA_HISTOGRAM_ENUMERATION("Extensions.FromWebstoreInconsistency",
+                                  BAD_UPDATE_URL, 2);
+      } else if (Manifest::IsExternalLocation(location)) {
+        UMA_HISTOGRAM_ENUMERATION("Extensions.FromWebstoreInconsistency",
+                                  IS_EXTERNAL, 2);
+      }
+    }
 
     // Don't count component extensions, since they are only extensions as an
     // implementation detail.
@@ -357,6 +381,11 @@ void InstalledLoader::LoadAllExtensions() {
     if (extension_service_->extension_prefs()->
         DidExtensionEscalatePermissions((*ex)->id())) {
       ++disabled_for_permissions_count;
+    }
+    if (Manifest::IsExternalLocation((*ex)->location())) {
+      // See loop above for ENABLED.
+      UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
+                                Extension::DISABLED, 100);
     }
   }
 

@@ -3269,10 +3269,26 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ExternalItemState" enum="ExtensionState">
+  <summary>
+    The number of sideloaded apps/extensions loaded on startup grouped by
+    enabled/disabled state.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ExternalJsonCount">
   <summary>
     Number of extensions referenced in the external extensions source at path
     chrome::DIR_EXTERNAL_EXTENSIONS.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.FromWebstoreInconsistency"
+    enum="ExtensionFromWebstoreInconcistencyEnum">
+  <summary>
+    Number of apps/extensions loaded on startup with an inconsistent &quot;from
+    webstore&quot; state. This means an item that is flagged as from_webstore,
+    but with either a non-webstore update_url or an external install location.
   </summary>
 </histogram>
 
@@ -3503,6 +3519,13 @@ other types of suffix sets.
   <summary>
     Time that network requests were blocked due to relevant rule registries
     loading.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.NonWebstoreLocation" enum="ExtensionLocation">
+  <summary>
+    The number of apps/extensions with a non-webstore update_url loaded at
+    startup time grouped by Extension::Location.
   </summary>
 </histogram>
 
@@ -16840,6 +16863,11 @@ other types of suffix sets.
   <int value="3" label="CANT_READ_CRX_FILE"/>
 </enum>
 
+<enum name="ExtensionFromWebstoreInconcistencyEnum" type="int">
+  <int value="0" label="Non-webstore update URL"/>
+  <int value="1" label="External install location"/>
+</enum>
+
 <enum name="ExtensionFunctions" type="int">
 <!-- Generated from ../../../chrome/browser/extensions/extension_function_histogram_value.h -->
 
@@ -17419,6 +17447,13 @@ other types of suffix sets.
   <int value="26" label="SOCKET_ANY_HOST"/>
   <int value="27" label="SOCKET_DOMAIN_HOSTS"/>
   <int value="28" label="SOCKET_SPECIFIC_HOSTS"/>
+</enum>
+
+<enum name="ExtensionState" type="int">
+  <int value="0" label="DISABLED"/>
+  <int value="1" label="ENABLED"/>
+  <int value="2" label="EXTERNAL_EXTENSION_UNINSTALLED"/>
+  <int value="3" label="ENABLED_COMPONENT"/>
 </enum>
 
 <enum name="ExtensionType" type="int">
@@ -22713,6 +22748,14 @@ other types of suffix sets.
   <group name="Google" label="only Google cookies are recorded."/>
   <group name="Other" label="only NON-Google cookies are recorded."/>
   <affected-histogram name="Cookie.ReinstatedCookies"/>
+</fieldtrial>
+
+<fieldtrial name="ExternalExtensionEvent" separator="">
+  <group name="NonWebstore"
+      label="sideloaded extensions that don't update from the webstore"/>
+  <group name="Webstore"
+      label="sideloaded extensions that update from the webstore"/>
+  <affected-histogram name="Extensions.ExternalExtensionEvent"/>
 </fieldtrial>
 
 <fieldtrial name="FileBrowserLoad" separator=".">
