@@ -467,18 +467,24 @@ FileCopyManager.Task = function(targetDirEntry, opt_zipBaseDirEntry) {
   this.zipBaseDirEntry = opt_zipBaseDirEntry;
   this.originalEntries = null;
 
-  this.pendingDirectories = [];
-  this.pendingFiles = [];
-  this.pendingBytes = 0;
+  // TODO(hidehiko): When we support recursive copy, we should be able to
+  // rely on originalEntries. Then remove this.
+  this.entries = [];
 
-  this.completedDirectories = [];
-  this.completedFiles = [];
+  /**
+   * The index of entries being processed. The entries should be processed
+   * from 0, so this is also the number of completed entries.
+   * @type {number}
+   */
+  this.entryIndex = 0;
+  this.totalBytes = 0;
   this.completedBytes = 0;
 
   this.deleteAfterCopy = false;
   this.move = false;
   this.zip = false;
 
+  // TODO(hidehiko): After we support recursive copy, we don't need this.
   // If directory already exists, we try to make a copy named 'dir (X)',
   // where X is a number. When we do this, all subsequent copies from
   // inside the subtree should be mapped to the new directory name.
@@ -487,94 +493,46 @@ FileCopyManager.Task = function(targetDirEntry, opt_zipBaseDirEntry) {
   this.renamedDirectories_ = [];
 };
 
-
 /**
  * @param {Array.<Entry>} entries Entries.
  * @param {function()} callback When entries resolved.
  */
 FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
-  var self = this;
   this.originalEntries = entries;
+
   // When moving directories, FileEntry.moveTo() is used if both source
   // and target are on Drive. There is no need to recurse into directories.
   util.recurseAndResolveEntries(entries, !this.move, function(result) {
-    self.pendingDirectories = result.dirEntries;
-    self.pendingFiles = result.fileEntries;
-    self.totalBytes = result.fileBytes;
-    self.completedBytes = 0;
+    if (this.move) {
+      // This may be moving from search results, where it fails if we move
+      // parent entries earlier than child entries. We should process the
+      // deepest entry first. Since move of each entry is done by a single
+      // moveTo() call, we don't need to care about the recursive traversal
+      // order.
+      this.entries = result.dirEntries.concat(result.fileEntries).sort(
+          function(entry1, entry2) {
+            return entry2.fullPath.length - entry1.fullPath.length;
+          });
+    } else {
+      // Copying tasks are recursively processed. So, directories must be
+      // processed earlier than their child files. Since
+      // util.recurseAndResolveEntries is already listing entries in the
+      // recursive traversal order, we just keep the ordering.
+      this.entries = result.dirEntries.concat(result.fileEntries);
+    }
 
+    this.totalBytes = result.fileBytes;
     callback();
-  });
-};
-
-/**
- * @return {Entry} Next entry.
- */
-FileCopyManager.Task.prototype.getNextEntry = function() {
-  // We should keep the file in pending list and remove it after complete.
-  // Otherwise, if we try to get status in the middle of copying. The returned
-  // status is wrong (miss count the pasting item in totalItems).
-  var nextEntry = null;
-  if (this.move) {
-    // This may be moving from search results, where it fails if we move parent
-    // entries earlier than child entries. We should process the deepest entry
-    // first. Since move of each entry is done by a single .MoveTo() call, we
-    // don't need to care about the recursive traversal order.
-    nextEntry = this.getDeepestEntry_();
-  } else {
-    // Copying tasks are recursively processed. So, directories must be
-    // processed earlier than their child files. Since
-    // util.recurseAndResolveEntries is already listing entries in the recursive
-    // traversal order, we just keep the ordering.
-    if (this.pendingDirectories.length)
-      nextEntry = this.pendingDirectories[0];
-    else if (this.pendingFiles.length)
-      nextEntry = this.pendingFiles[0];
-  }
-  if (nextEntry)
-    nextEntry.inProgress = true;
-  return nextEntry;
-};
-
-/**
- * Remove the completed entry from the pending lists.
- * TODO(hidehiko): On current code, size is always 0. Clean the code up.
- *
- * @param {Entry} entry Entry.
- * @param {number} size Bytes completed.
- */
-FileCopyManager.Task.prototype.markEntryComplete = function(entry, size) {
-  if (entry.isDirectory && this.pendingDirectories) {
-    for (var i = 0; i < this.pendingDirectories.length; i++) {
-      if (this.pendingDirectories[i].inProgress) {
-        this.completedDirectories.push(entry);
-        this.pendingDirectories.splice(i, 1);
-        return;
-      }
-    }
-  } else if (this.pendingFiles) {
-    for (var i = 0; i < this.pendingFiles.length; i++) {
-      if (this.pendingFiles[i].inProgress) {
-        this.completedFiles.push(entry);
-        this.completedBytes += size;
-        this.pendingFiles.splice(i, 1);
-        return;
-      }
-    }
-  }
-  throw new Error('Try to remove a source entry which is not correspond to' +
-                  ' the finished target entry');
+  }.bind(this));
 };
 
 /**
  * Updates copy progress status for the entry.
  *
- * @param {Entry} entry Entry which is being coppied.
  * @param {number} size Number of bytes that has been copied since last update.
  */
-FileCopyManager.Task.prototype.updateFileCopyProgress = function(entry, size) {
-  if (entry.isFile && this.pendingFiles && this.pendingFiles[0].inProgress)
-    this.completedBytes += size;
+FileCopyManager.Task.prototype.updateFileCopyProgress = function(size) {
+  this.completedBytes += size;
 };
 
 /**
@@ -603,26 +561,6 @@ FileCopyManager.Task.prototype.applyRenames = function(path) {
     }
   }
   return path;
-};
-
-/**
- * Obtains the deepest entry by referring to its full path.
- * @return {Entry} The deepest entry.
- * @private
- */
-FileCopyManager.Task.prototype.getDeepestEntry_ = function() {
-  var result = null;
-  for (var i = 0; i < this.pendingDirectories.length; i++) {
-    if (!result ||
-        this.pendingDirectories[i].fullPath.length > result.fullPath.length)
-    result = this.pendingDirectories[i];
-  }
-  for (var i = 0; i < this.pendingFiles.length; i++) {
-    if (!result ||
-        this.pendingFiles[i].fullPath.length > result.fullPath.length)
-    result = this.pendingFiles[i];
-  }
-  return result;
 };
 
 /**
@@ -673,64 +611,47 @@ FileCopyManager.prototype.willRunNewMethod = function() {
  * @return {Object} Status object.
  */
 FileCopyManager.prototype.getStatus = function() {
+  // TODO(hidehiko): Reorganize the structure when delete queue is merged
+  // into copy task queue.
   var rv = {
-    pendingItems: 0,  // Files + Directories
-    pendingFiles: 0,
-    pendingDirectories: 0,
-    pendingBytes: 0,
+    totalItems: 0,
+    completedItems: 0,
 
-    completedItems: 0,  // Files + Directories
-    completedFiles: 0,
-    completedDirectories: 0,
+    totalBytes: 0,
     completedBytes: 0,
 
-    percentage: NaN,
     pendingCopies: 0,
     pendingMoves: 0,
     pendingZips: 0,
-    filename: ''  // In case pendingItems == 1
+
+    // In case the number of the incompleted entry is exactly one.
+    filename: '',
   };
 
-  var pendingFile = null;
-
+  var pendingEntry = null;
   for (var i = 0; i < this.copyTasks_.length; i++) {
     var task = this.copyTasks_[i];
-    var pendingFiles = task.pendingFiles.length;
-    var pendingDirectories = task.pendingDirectories.length;
-    rv.pendingFiles += pendingFiles;
-    rv.pendingDirectories += pendingDirectories;
-    rv.pendingBytes += (task.totalBytes - task.completedBytes);
+    rv.totalItems += task.entries.length;
+    rv.completedItems += task.entryIndex;
 
-    rv.completedFiles += task.completedFiles.length;
-    rv.completedDirectories += task.completedDirectories.length;
+    rv.totalBytes += task.totalBytes;
     rv.completedBytes += task.completedBytes;
 
+    var numPendingEntries = task.entries.length - task.entryIndex;
     if (task.zip) {
-      rv.pendingZips += pendingFiles + pendingDirectories;
+      rv.pendingZips += numPendingEntries;
     } else if (task.move || task.deleteAfterCopy) {
-      rv.pendingMoves += pendingFiles + pendingDirectories;
+      rv.pendingMoves += numPendingEntries;
     } else {
-      rv.pendingCopies += pendingFiles + pendingDirectories;
+      rv.pendingCopies += numPendingEntries;
     }
 
-    if (task.pendingFiles.length === 1)
-      pendingFile = task.pendingFiles[0];
-
-    if (task.pendingDirectories.length === 1)
-      pendingFile = task.pendingDirectories[0];
-
+    if (numPendingEntries == 1)
+      pendingEntry = task.entries[task.entries.length - 1];
   }
-  rv.pendingItems = rv.pendingFiles + rv.pendingDirectories;
-  rv.completedItems = rv.completedFiles + rv.completedDirectories;
 
-  rv.totalFiles = rv.pendingFiles + rv.completedFiles;
-  rv.totalDirectories = rv.pendingDirectories + rv.completedDirectories;
-  rv.totalItems = rv.pendingItems + rv.completedItems;
-  rv.totalBytes = rv.pendingBytes + rv.completedBytes;
-
-  rv.percentage = rv.completedBytes / rv.totalBytes;
-  if (rv.pendingItems === 1)
-    rv.filename = pendingFile.name;
+  if (rv.totalItems - rv.completedItems == 1 && pendingEntry)
+    rv.filename = pendingEntry.name;
 
   return rv;
 };
@@ -1073,7 +994,7 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
     errorCallback) {
   // TODO(hidehiko): We should be able to share the code to iterate on entries
   // with serviceMoveTask_().
-  if (task.pendingDirectories.length + task.pendingFiles.length == 0) {
+  if (task.entries.length == 0) {
     successCallback();
     return;
   }
@@ -1103,9 +1024,11 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
   };
 
   var onEntryServiced = function() {
+    task.entryIndex++;
+
     // We should not dispatch a PROGRESS event when there is no pending items
     // in the task.
-    if (task.pendingDirectories.length + task.pendingFiles.length == 0) {
+    if (task.entryIndex >= task.entries.length) {
       if (task.deleteAfterCopy) {
         deleteOriginals();
       } else {
@@ -1116,13 +1039,13 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
 
     progressCallback();
     self.processCopyEntry_(
-        task, task.getNextEntry(), entryChangedCallback, progressCallback,
-        onEntryServiced, errorCallback);
+        task, task.entries[task.entryIndex], entryChangedCallback,
+        progressCallback, onEntryServiced, errorCallback);
   };
 
   this.processCopyEntry_(
-      task, task.getNextEntry(), entryChangedCallback, progressCallback,
-      onEntryServiced, errorCallback);
+      task, task.entries[task.entryIndex], entryChangedCallback,
+      progressCallback, onEntryServiced, errorCallback);
 };
 
 /**
@@ -1165,7 +1088,6 @@ FileCopyManager.prototype.processCopyEntry_ = function(
   var onDeduplicated = function(targetRelativePath) {
     var onCopyComplete = function(entry) {
       entryChangedCallback(util.EntryChangedType.CREATED, entry);
-      task.markEntryComplete(entry, 0);
       successCallback();
     };
 
@@ -1195,7 +1117,7 @@ FileCopyManager.prototype.processCopyEntry_ = function(
             self.cancelCallback_ = fileOperationUtil.copyFile(
                 sourceEntry, dirEntry, PathUtil.basename(targetRelativePath),
                 function(entry, size) {
-                  task.updateFileCopyProgress(entry, size);
+                  task.updateFileCopyProgress(size);
                   progressCallback();
                 },
                 function(entry) {
@@ -1230,17 +1152,19 @@ FileCopyManager.prototype.processCopyEntry_ = function(
 FileCopyManager.prototype.serviceMoveTask_ = function(
     task, entryChangedCallback, progressCallback, successCallback,
     errorCallback) {
-  if (task.pendingDirectories.length + task.pendingFiles.length == 0) {
+  if (task.entries.length == 0) {
     successCallback();
     return;
   }
 
   this.processMoveEntry_(
-      task, task.getNextEntry(), entryChangedCallback,
+      task, task.entries[task.entryIndex], entryChangedCallback,
       (function onCompleted() {
+        task.entryIndex++;
+
         // We should not dispatch a PROGRESS event when there is no pending
         // items in the task.
-        if (task.pendingDirectories.length + task.pendingFiles.length == 0) {
+        if (task.entryIndex >= task.entries.length) {
           successCallback();
           return;
         }
@@ -1248,7 +1172,7 @@ FileCopyManager.prototype.serviceMoveTask_ = function(
         // Move the next entry.
         progressCallback();
         this.processMoveEntry_(
-            task, task.getNextEntry(), entryChangedCallback,
+            task, task.entries[task.entryIndex], entryChangedCallback,
             onCompleted.bind(this), errorCallback);
       }).bind(this),
       errorCallback);
@@ -1311,7 +1235,6 @@ FileCopyManager.prototype.processMoveEntry_ = function(
                         util.EntryChangedType.CREATED, targetEntry);
                     entryChangedCallback(
                         util.EntryChangedType.DELETED, sourceEntry);
-                    task.markEntryComplete(targetEntry, 0);
                     successCallback();
                   },
                   onFilesystemError);
@@ -1352,7 +1275,7 @@ FileCopyManager.prototype.serviceZipTask_ = function(
         progressCallback();
 
         fileOperationUtil.zipSelection(
-            task.pendingDirectories.concat(task.pendingFiles),
+            task.entries,
             task.zipBaseDirEntry,
             destPath,
             function(entry) {

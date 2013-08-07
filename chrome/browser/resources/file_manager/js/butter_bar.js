@@ -255,15 +255,16 @@ ButterBar.prototype.transferType_ = function() {
 ButterBar.prototype.showProgress_ = function(progress) {
   this.progress_ = progress;
   var options = {
-    progress: this.progress_.percentage,
+    progress: progress.completedBytes / progress.totalBytes,
     actions: {},
     timeout: false
   };
 
+  var pendingItems = progress.totalItems - progress.completedItems;
   var type = this.transferType_();
-  var progressString = (this.progress_.pendingItems === 1) ?
-          strf(type + '_FILE_NAME', this.progress_.filename) :
-          strf(type + '_ITEMS_REMAINING', this.progress_.pendingItems);
+  var progressString = (pendingItems === 1) ?
+          strf(type + '_FILE_NAME', progress.filename) :
+          strf(type + '_ITEMS_REMAINING', pendingItems);
 
   if (this.currentMode_ == ButterBar.Mode.COPY) {
     this.update_(progressString, options);
