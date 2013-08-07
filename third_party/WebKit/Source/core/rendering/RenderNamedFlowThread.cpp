@@ -29,7 +29,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/NamedFlow.h"
-#include "core/dom/NodeRenderingContext.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Position.h"
 #include "core/dom/Range.h"
@@ -455,18 +455,15 @@ const AtomicString& RenderNamedFlowThread::flowThreadName() const
 
 bool RenderNamedFlowThread::isChildAllowed(RenderObject* child, RenderStyle* style) const
 {
-    ASSERT(child);
-    ASSERT(style);
-
     if (!child->node())
         return true;
 
     ASSERT(child->node()->isElementNode());
-    RenderObject* parentRenderer = NodeRenderingContext(child->node()).parentRenderer();
-    if (!parentRenderer)
+    Node* originalParent = NodeRenderingTraversal::parent(child->node());
+    if (!originalParent || !originalParent->renderer())
         return true;
 
-    return parentRenderer->isChildAllowed(child, style);
+    return originalParent->renderer()->isChildAllowed(child, style);
 }
 
 void RenderNamedFlowThread::dispatchRegionLayoutUpdateEvent()
