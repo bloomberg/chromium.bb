@@ -593,6 +593,8 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 	device->devname = strdup(devname);
 
 	if (!evdev_handle_device(device)) {
+		if (device->dispatch)
+			device->dispatch->interface->destroy(dispatch);
 		if (device->mtdev)
 			mtdev_close_delete(device->mtdev);
 		free(device->devnode);
