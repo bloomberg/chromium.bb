@@ -86,8 +86,6 @@ bool WillHandleBrowserAboutURL(GURL* url,
 }
 
 bool HandleNonNavigationAboutURL(const GURL& url) {
-  std::string host(url.host());
-
   // chrome://ipc/ is currently buggy, so we disable it for official builds.
 #if !defined(OFFICIAL_BUILD)
 
