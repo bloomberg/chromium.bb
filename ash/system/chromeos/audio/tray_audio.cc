@@ -153,12 +153,12 @@ class BarSeparator : public views::View {
   BarSeparator() {}
   virtual ~BarSeparator() {}
 
- private:
   // Overriden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(kBarSeparatorWidth, kBarSeparatorHeight);
   }
 
+ private:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->FillRect(gfx::Rect(width() / 2, 0, 1, height()),
                      kButtonStrokeColor);
@@ -189,11 +189,11 @@ class VolumeView : public ActionableView,
     slider_ = new VolumeSlider(this);
     AddChildView(slider_);
 
-    device_type_ = new views::ImageView;
-    AddChildView(device_type_);
-
     bar_ = new BarSeparator;
     AddChildView(bar_);
+
+    device_type_ = new views::ImageView;
+    AddChildView(device_type_);
 
     more_ = new views::ImageView;
     more_->EnableCanvasFlippingForRTLUI(true);
@@ -252,15 +252,14 @@ class VolumeView : public ActionableView,
     if (!audio_handler->GetActiveOutputDevice(&device))
       return;
     int device_icon = GetAudioDeviceIconId(device.type);
+    bar_->SetVisible(show_more);
     if (device_icon != kNoAudioDeviceIcon) {
       device_type_->SetVisible(true);
       device_type_->SetImage(
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               device_icon).ToImageSkia());
-      bar_->SetVisible(false);
     } else {
       device_type_->SetVisible(false);
-      bar_->SetVisible(show_more);
     }
   }
 
@@ -302,24 +301,33 @@ class VolumeView : public ActionableView,
     bounds.set_y((height() - size.height()) / 2);
     more_->SetBoundsRect(bounds);
 
-    // Layout bar_ or device_type_ at the left of the more_ button.
+    // Layout either bar_ or device_type_ at the left of the more_ button.
     views::View* view_left_to_more;
-    if (bar_->visible())
-      view_left_to_more = bar_;
-    else
+    if (device_type_->visible())
       view_left_to_more = device_type_;
-    gfx::Size bar_size = view_left_to_more->GetPreferredSize();
-    gfx::Rect bar_bounds(bar_size);
-    bar_bounds.set_x(more_->bounds().x() - bar_size.width() -
+    else
+      view_left_to_more = bar_;
+    gfx::Size view_size = view_left_to_more->GetPreferredSize();
+    gfx::Rect view_bounds(view_size);
+    view_bounds.set_x(more_->bounds().x() - view_size.width() -
                      kExtraPaddingBetweenBarAndMore);
-    bar_bounds.set_y((height() - bar_size.height()) / 2);
-    view_left_to_more->SetBoundsRect(bar_bounds);
+    view_bounds.set_y((height() - view_size.height()) / 2);
+    view_left_to_more->SetBoundsRect(view_bounds);
 
+    // Layout vertical bar next to view_left_to_more if device_type_ is visible.
+    if (device_type_->visible()) {
+      gfx::Size bar_size = bar_->GetPreferredSize();
+      gfx::Rect bar_bounds(bar_size);
+      bar_bounds.set_x(view_left_to_more->bounds().x() - bar_size.width());
+      bar_bounds.set_y((height() - bar_size.height()) / 2);
+      bar_->SetBoundsRect(bar_bounds);
+    }
 
     // Layout slider, calculate slider width.
     gfx::Rect slider_bounds = slider_->bounds();
     slider_bounds.set_width(
-        view_left_to_more->bounds().x() - kTrayPopupPaddingBetweenItems
+        bar_->bounds().x()
+        - (device_type_->visible() ? 0 : kTrayPopupPaddingBetweenItems)
         - slider_bounds.x());
     slider_->SetBoundsRect(slider_bounds);
   }
