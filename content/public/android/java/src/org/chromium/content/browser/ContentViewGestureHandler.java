@@ -906,7 +906,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 // If confirmTouchEvent() is called synchronously with respect to sendTouchEvent(),
                 // then |event| will have been recycled. Only start the timer if the sent event has
                 // not yet been confirmed.
-                if (event == mPendingMotionEvents.peekFirst()
+                if (!mJavaScriptIsConsumingGesture
+                        && event == mPendingMotionEvents.peekFirst()
                         && event.getAction() != MotionEvent.ACTION_UP
                         && event.getAction() != MotionEvent.ACTION_CANCEL) {
                     mTouchEventTimeoutHandler.start(event.getEventTime(), pts);
