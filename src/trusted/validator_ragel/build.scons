@@ -185,7 +185,7 @@ if ragel_involved:
     rl_file = env.File('%s_x86_%s.rl' % (automaton, bits))
 
     (xml_file,) = env.AutoDepsCommand(
-        '%s_x86_%s.xml' % (automaton, bits),
+        '%s/%s_x86_%s.xml' % (gen_dir, automaton, bits),
         [ragel_binary,
          '-x',
          '-LL',
@@ -344,7 +344,9 @@ if ragel_involved:
     # Files which directly affect the validator behavior.
     protected_files = [
       'gen/validator_x86_32.c',
+      'gen/validator_x86_32.xml',
       'gen/validator_x86_64.c',
+      'gen/validator_x86_64.xml',
       'validator_internal.h',
       'decoder.h',
       'decoding.h',
