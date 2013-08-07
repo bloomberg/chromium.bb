@@ -101,7 +101,30 @@ img {
 
 a {
   color: rgb(17, 85, 204);
+  padding: 0 3px;
   text-decoration: none;
+}
+
+a.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.open {
+  margin-bottom: -4px;
+  margin-top: 5px;
+}
+
+.open > input {
+  border: 1px solid #aaa;
+  height: 17px;
+  line-height: 17px;
+  margin-left: 20px;
+  padding: 0 2px;
+}
+
+.open > button {
+  line-height: 13px;
 }
 
 #port-forwarding-settings {

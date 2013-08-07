@@ -95,9 +95,14 @@ class DevToolsAdbBridge
     std::string title() { return title_; }
     std::string description() { return description_; }
     std::string favicon_url() { return favicon_url_; }
-    std::string global_id() { return global_id_; }
+    bool attached() { return debug_url_.empty(); }
 
     void Inspect(Profile* profile);
+    void Close();
+    void Reload();
+
+    void SendProtocolCommand(const std::string& method,
+                             base::DictionaryValue* params);
 
    private:
     friend class base::RefCounted<RemotePage>;
@@ -113,7 +118,6 @@ class DevToolsAdbBridge
     std::string favicon_url_;
     std::string debug_url_;
     std::string frontend_url_;
-    std::string global_id_;
     DISALLOW_COPY_AND_ASSIGN(RemotePage);
   };
 
@@ -133,9 +137,17 @@ class DevToolsAdbBridge
     RemotePages& pages() { return pages_; }
     void AddPage(scoped_refptr<RemotePage> page) { pages_.push_back(page); }
 
+    void Open(const std::string& url);
+
    private:
     friend class base::RefCounted<RemoteBrowser>;
     virtual ~RemoteBrowser();
+
+    void PageCreatedOnHandlerThread(
+        const std::string& url, int result, const std::string& response);
+
+    void PageCreatedOnUIThread(
+        const std::string& response, const std::string& url);
 
     scoped_refptr<DevToolsAdbBridge> bridge_;
     scoped_refptr<AndroidDevice> device_;
@@ -183,12 +195,12 @@ class DevToolsAdbBridge
                             const CommandCallback& callback) = 0;
     virtual void OpenSocket(const std::string& socket_name,
                             const SocketCallback& callback) = 0;
-    virtual void HttpQuery(const std::string& la_name,
-                           const std::string& request,
-                           const CommandCallback& callback);
-    virtual void HttpQuery(const std::string& la_name,
-                           const std::string& request,
-                           const SocketCallback& callback);
+    void HttpQuery(const std::string& la_name,
+                   const std::string& request,
+                   const CommandCallback& callback);
+    void HttpUpgrade(const std::string& la_name,
+                     const std::string& request,
+                     const SocketCallback& callback);
 
     std::string serial() { return serial_; }
 

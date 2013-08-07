@@ -24,6 +24,7 @@
 #include "chrome/browser/devtools/adb/android_rsa.h"
 #include "chrome/browser/devtools/adb_client_socket.h"
 #include "chrome/browser/devtools/adb_web_socket.h"
+#include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/tethering_adb_filter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,9 +52,15 @@ static const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
 
 static const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
 static const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
+static const char kClosePageRequest[] = "GET /json/close/%s HTTP/1.1\r\n\r\n";
+static const char kNewPageRequest[] = "GET /json/new HTTP/1.1\r\n\r\n";
 const int kAdbPort = 5037;
 const int kBufferSize = 16 * 1024;
 const int kAdbPollingIntervalMs = 1000;
+
+static const char kUrlParam[] = "url";
+static const char kPageReloadCommand[] = "Page.reload";
+static const char kPageNavigateCommand[] = "Page.navigate";
 
 typedef DevToolsAdbBridge::Callback Callback;
 typedef std::vector<scoped_refptr<DevToolsAdbBridge::AndroidDevice> >
@@ -382,6 +389,57 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
   scoped_ptr<DevToolsAdbBridge::RemoteDevices> remote_devices_;
 };
 
+// AdbProtocolCommand ---------------------------------------------------------
+
+class AdbProtocolCommand : public AdbWebSocket::Delegate {
+ public:
+  AdbProtocolCommand(
+      scoped_refptr<DevToolsAdbBridge> bridge_,
+      scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
+      const std::string& socket_name,
+      const std::string& debug_url,
+      const std::string& command);
+
+ private:
+  virtual void OnSocketOpened() OVERRIDE;
+  virtual void OnFrameRead(const std::string& message) OVERRIDE;
+  virtual void OnSocketClosed(bool closed_by_device) OVERRIDE;
+  virtual bool ProcessIncomingMessage(const std::string& message) OVERRIDE;
+
+  scoped_refptr<DevToolsAdbBridge> bridge_;
+  const std::string command_;
+  scoped_refptr<AdbWebSocket> web_socket_;
+
+  DISALLOW_COPY_AND_ASSIGN(AdbProtocolCommand);
+};
+
+AdbProtocolCommand::AdbProtocolCommand(
+    scoped_refptr<DevToolsAdbBridge> bridge,
+    scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
+    const std::string& socket_name,
+    const std::string& debug_url,
+    const std::string& command)
+    : bridge_(bridge),
+      command_(command) {
+  web_socket_ = new AdbWebSocket(
+      device, socket_name, debug_url, bridge_->GetAdbMessageLoop(), this);
+}
+
+void AdbProtocolCommand::OnSocketOpened() {
+  web_socket_->SendFrame(command_);
+  web_socket_->Disconnect();
+}
+
+void AdbProtocolCommand::OnFrameRead(const std::string& message) {}
+
+void AdbProtocolCommand::OnSocketClosed(bool closed_by_device) {
+  delete this;
+}
+
+bool AdbProtocolCommand::ProcessIncomingMessage(const std::string& message) {
+  return false;
+}
+
 }  // namespace
 
 const char kDevToolsChannelNameFormat[] = "%s_devtools_remote";
@@ -443,7 +501,7 @@ void DevToolsAdbBridge::AndroidDevice::HttpQuery(
                                  request, callback));
 }
 
-void DevToolsAdbBridge::AndroidDevice::HttpQuery(
+void DevToolsAdbBridge::AndroidDevice::HttpUpgrade(
     const std::string& la_name,
     const std::string& request,
     const SocketCallback& callback) {
@@ -581,21 +639,46 @@ DevToolsAdbBridge::RemotePage::RemotePage(
     frontend_url_ = frontend_url_.substr(0, ws_param);
   if (frontend_url_.find("http:") == 0)
     frontend_url_ = "https:" + frontend_url_.substr(5);
-
-  global_id_ = base::StringPrintf(
-      "%s:%s:%s", device->serial().c_str(), socket_.c_str(), id_.c_str());
 }
 
 void DevToolsAdbBridge::RemotePage::Inspect(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::string agent_id = base::StringPrintf("%s:%s:%s",
+    device_->serial().c_str(), socket_.c_str(), id_.c_str());
   AgentHostDelegates::iterator it =
-      g_host_delegates.Get().find(global_id());
+      g_host_delegates.Get().find(agent_id);
   if (it != g_host_delegates.Get().end())
     it->second->OpenFrontend();
   else if (!debug_url_.empty())
     new AgentHostDelegate(
-        global_id_, device_, socket_, debug_url_,
+        agent_id, device_, socket_, debug_url_,
         frontend_url_, bridge_->GetAdbMessageLoop(), profile);
+}
+
+static void Noop(int, const std::string&) {}
+
+void DevToolsAdbBridge::RemotePage::Close() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (attached())
+    return;
+  std::string request = base::StringPrintf(kClosePageRequest, id_.c_str());
+  bridge_->GetAdbMessageLoop()->PostTask(FROM_HERE,
+      base::Bind(&AndroidDevice::HttpQuery,
+          device_, socket_, request, base::Bind(&Noop)));
+}
+
+void DevToolsAdbBridge::RemotePage::Reload() {
+  SendProtocolCommand(kPageReloadCommand, NULL);
+}
+
+void DevToolsAdbBridge::RemotePage::SendProtocolCommand(
+    const std::string& method,
+    base::DictionaryValue* params) {
+  if (attached())
+    return;
+  DevToolsProtocol::Command command(1, method, params);
+  new AdbProtocolCommand(
+      bridge_, device_, socket_, debug_url_, command.Serialize());
 }
 
 DevToolsAdbBridge::RemotePage::~RemotePage() {
@@ -610,6 +693,35 @@ DevToolsAdbBridge::RemoteBrowser::RemoteBrowser(
       device_(device),
       socket_(socket),
       name_(name) {
+}
+
+void DevToolsAdbBridge::RemoteBrowser::Open(const std::string& url) {
+  bridge_->GetAdbMessageLoop()->PostTask(FROM_HERE,
+      base::Bind(&AndroidDevice::HttpQuery,
+          device_, socket_, kNewPageRequest,
+          base::Bind(&RemoteBrowser::PageCreatedOnHandlerThread, this, url)));
+}
+
+void DevToolsAdbBridge::RemoteBrowser::PageCreatedOnHandlerThread(
+    const std::string& url, int result, const std::string& response) {
+  if (result < 0)
+    return;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&RemoteBrowser::PageCreatedOnUIThread, this, response, url));
+}
+
+void DevToolsAdbBridge::RemoteBrowser::PageCreatedOnUIThread(
+    const std::string& response, const std::string& url) {
+  scoped_ptr<base::Value> value(base::JSONReader::Read(response));
+  base::DictionaryValue* dict;
+  if (value && value->GetAsDictionary(&dict)) {
+    scoped_refptr<RemotePage> new_page =
+        new RemotePage(bridge_, device_, socket_, *dict);
+    base::DictionaryValue params;
+    params.SetString(kUrlParam, url);
+    new_page->SendProtocolCommand(kPageNavigateCommand, &params);
+  }
 }
 
 DevToolsAdbBridge::RemoteBrowser::~RemoteBrowser() {

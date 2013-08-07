@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -74,6 +75,9 @@ static const char kAdbTargetType[]  = "adb_page";
 static const char kInitUICommand[]  = "init-ui";
 static const char kInspectCommand[]  = "inspect";
 static const char kTerminateCommand[]  = "terminate";
+static const char kReloadCommand[]  = "reload";
+static const char kOpenCommand[]  = "open";
+
 static const char kPortForwardingEnabledCommand[] =
     "set-port-forwarding-enabled";
 static const char kPortForwardingConfigCommand[] = "set-port-forwarding-config";
@@ -89,7 +93,7 @@ static const char kPidField[]  = "pid";
 static const char kAdbSerialField[] = "adbSerial";
 static const char kAdbModelField[] = "adbModel";
 static const char kAdbBrowserNameField[] = "adbBrowserName";
-static const char kAdbPageIdField[] = "adbPageId";
+static const char kAdbGlobalIdField[] = "adbGlobalId";
 static const char kAdbBrowsersField[] = "browsers";
 static const char kAdbPagesField[] = "pages";
 
@@ -178,12 +182,16 @@ class InspectMessageHandler : public WebUIMessageHandler {
   void HandleInitUICommand(const ListValue* args);
   void HandleInspectCommand(const ListValue* args);
   void HandleTerminateCommand(const ListValue* args);
+  void HandleReloadCommand(const ListValue* args);
+  void HandleOpenCommand(const ListValue* args);
   void HandlePortForwardingEnabledCommand(const ListValue* args);
   void HandlePortForwardingConfigCommand(const ListValue* args);
 
-  bool GetProcessAndRouteId(const ListValue* args,
-                            int* process_id,
-                            int* route_id);
+  static bool GetProcessAndRouteId(const ListValue* args,
+                                   int* process_id,
+                                   int* route_id);
+
+  static bool GetRemotePageId(const ListValue* args, std::string* page_id);
 
   InspectUI* inspect_ui_;
 
@@ -206,6 +214,12 @@ void InspectMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kPortForwardingConfigCommand,
       base::Bind(&InspectMessageHandler::HandlePortForwardingConfigCommand,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kReloadCommand,
+      base::Bind(&InspectMessageHandler::HandleReloadCommand,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kOpenCommand,
+      base::Bind(&InspectMessageHandler::HandleOpenCommand,
+                 base::Unretained(this)));
 }
 
 void InspectMessageHandler::HandleInitUICommand(const ListValue*) {
@@ -217,17 +231,16 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
   if (!profile)
     return;
 
+  std::string page_id;
+  if (GetRemotePageId(args, &page_id)) {
+    inspect_ui_->InspectRemotePage(page_id);
+    return;
+  }
+
   int process_id;
   int route_id;
   if (!GetProcessAndRouteId(args, &process_id, &route_id) || process_id == 0
       || route_id == 0) {
-    // Check for ADB page id
-    const DictionaryValue* data;
-    std::string page_id;
-    if (args->GetSize() == 1 && args->GetDictionary(0, &data) &&
-        data->GetString(kAdbPageIdField, &page_id)) {
-      inspect_ui_->InspectRemotePage(page_id);
-    }
     return;
   }
 
@@ -250,6 +263,12 @@ static void TerminateWorker(int process_id, int route_id) {
 }
 
 void InspectMessageHandler::HandleTerminateCommand(const ListValue* args) {
+  std::string page_id;
+  if (GetRemotePageId(args, &page_id)) {
+    inspect_ui_->CloseRemotePage(page_id);
+    return;
+  }
+
   int process_id;
   int route_id;
   if (!GetProcessAndRouteId(args, &process_id, &route_id))
@@ -257,6 +276,22 @@ void InspectMessageHandler::HandleTerminateCommand(const ListValue* args) {
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&TerminateWorker, process_id, route_id));
+}
+
+void InspectMessageHandler::HandleReloadCommand(const ListValue* args) {
+  std::string page_id;
+  if (GetRemotePageId(args, &page_id))
+    inspect_ui_->ReloadRemotePage(page_id);
+}
+
+void InspectMessageHandler::HandleOpenCommand(const ListValue* args) {
+  std::string browser_id;
+  std::string url;
+  if (args->GetSize() == 2 &&
+      args->GetString(0, &browser_id) &&
+      args->GetString(1, &url)) {
+    inspect_ui_->OpenRemotePage(browser_id, url);
+  }
 }
 
 bool InspectMessageHandler::GetProcessAndRouteId(const ListValue* args,
@@ -293,6 +328,16 @@ void InspectMessageHandler::HandlePortForwardingConfigCommand(
   const DictionaryValue* dict_src;
   if (args->GetSize() == 1 && args->GetDictionary(0, &dict_src))
     profile->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig, *dict_src);
+}
+
+bool InspectMessageHandler::GetRemotePageId(const ListValue* args,
+                                            std::string* page_id) {
+  const DictionaryValue* data;
+  if (args->GetSize() == 1 && args->GetDictionary(0, &data) &&
+      data->GetString(kAdbGlobalIdField, page_id)) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -419,6 +464,31 @@ void InspectUI::InspectRemotePage(const std::string& id) {
   }
 }
 
+void InspectUI::ReloadRemotePage(const std::string& id) {
+  RemotePages::iterator it = remote_pages_.find(id);
+  if (it != remote_pages_.end())
+    it->second->Reload();
+}
+
+void InspectUI::CloseRemotePage(const std::string& id) {
+  RemotePages::iterator it = remote_pages_.find(id);
+  if (it != remote_pages_.end())
+    it->second->Close();
+}
+
+void InspectUI::OpenRemotePage(const std::string& browser_id,
+                               const std::string& url) {
+  GURL gurl(url);
+  if (!gurl.is_valid()) {
+    gurl = GURL("http://" + url);
+    if (!gurl.is_valid())
+      return;
+  }
+  RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
+  if (it != remote_browsers_.end())
+    it->second->Open(gurl.spec());
+}
+
 void InspectUI::PopulateLists() {
   std::set<RenderViewHost*> tab_rvhs;
   for (TabContentsIterator it; !it.done(); it.Next())
@@ -504,36 +574,53 @@ content::WebUIDataSource* InspectUI::CreateInspectUIHTMLSource() {
 
 void InspectUI::RemoteDevicesChanged(
     DevToolsAdbBridge::RemoteDevices* devices) {
+  remote_browsers_.clear();
   remote_pages_.clear();
   ListValue device_list;
   for (DevToolsAdbBridge::RemoteDevices::iterator dit = devices->begin();
        dit != devices->end(); ++dit) {
-    DevToolsAdbBridge::RemoteDevice& device = *(dit->get());
+    DevToolsAdbBridge::RemoteDevice* device = dit->get();
     DictionaryValue* device_data = new DictionaryValue();
-    device_data->SetString(kAdbModelField, device.model());
-    device_data->SetString(kAdbSerialField, device.serial());
+    device_data->SetString(kAdbModelField, device->model());
+    device_data->SetString(kAdbSerialField, device->serial());
+    std::string device_id = base::StringPrintf(
+        "device:%s",
+        device->serial().c_str());
+    device_data->SetString(kAdbGlobalIdField, device_id);
     ListValue* browser_list = new ListValue();
     device_data->Set(kAdbBrowsersField, browser_list);
 
-    DevToolsAdbBridge::RemoteBrowsers& browsers = device.browsers();
+    DevToolsAdbBridge::RemoteBrowsers& browsers = device->browsers();
     for (DevToolsAdbBridge::RemoteBrowsers::iterator bit =
         browsers.begin(); bit != browsers.end(); ++bit) {
-      DevToolsAdbBridge::RemoteBrowser& browser = *(bit->get());
+      DevToolsAdbBridge::RemoteBrowser* browser = bit->get();
       DictionaryValue* browser_data = new DictionaryValue();
-      browser_data->SetString(kAdbBrowserNameField, browser.name());
+      browser_data->SetString(kAdbBrowserNameField, browser->name());
+      std::string browser_id = base::StringPrintf(
+          "browser:%s:%s:%s",
+          device->serial().c_str(),
+          browser->socket().c_str(),
+          browser->name().c_str());
+      browser_data->SetString(kAdbGlobalIdField, browser_id);
+      remote_browsers_[browser_id] = browser;
       ListValue* page_list = new ListValue();
       browser_data->Set(kAdbPagesField, page_list);
 
-      DevToolsAdbBridge::RemotePages& pages = browser.pages();
+      DevToolsAdbBridge::RemotePages& pages = browser->pages();
       for (DevToolsAdbBridge::RemotePages::iterator it =
           pages.begin(); it != pages.end(); ++it) {
         DevToolsAdbBridge::RemotePage* page =  it->get();
-        DictionaryValue* page_data = BuildTargetDescriptor(kAdbTargetType,
-            false, GURL(page->url()), page->title(), GURL(page->favicon_url()),
+        DictionaryValue* page_data = BuildTargetDescriptor(
+            kAdbTargetType, page->attached(),
+            GURL(page->url()), page->title(), GURL(page->favicon_url()),
             0, 0);
-        page_data->SetString(kAdbPageIdField, page->global_id());
+        std::string page_id = base::StringPrintf("page:%s:%s:%s",
+            device->serial().c_str(),
+            browser->socket().c_str(),
+            page->id().c_str());
+        page_data->SetString(kAdbGlobalIdField, page_id);
+        remote_pages_[page_id] = page;
         page_list->Append(page_data);
-        remote_pages_[page->global_id()] = page;
       }
       browser_list->Append(browser_data);
     }

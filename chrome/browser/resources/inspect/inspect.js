@@ -10,6 +10,14 @@ function terminate(data) {
   chrome.send('terminate', [data]);
 }
 
+function reload(data) {
+  chrome.send('reload', [data]);
+}
+
+function open(browserId, url) {
+  chrome.send('open', [browserId, url]);
+}
+
 function removeChildren(element_id) {
   var element = $(element_id);
   element.textContent = '';
@@ -77,43 +85,122 @@ function populateWorkersList(data) {
 }
 
 function populateDeviceLists(devices) {
-  var devicesDigest = JSON.stringify(devices);
-  if (!devices || devicesDigest == window.devicesDigest)
+  if (!devices)
     return;
 
-  window.devicesDigest = devicesDigest;
+  function alreadyDisplayed(element, data) {
+    var json = JSON.stringify(data);
+    if (element.cachedJSON == json)
+      return true;
+    element.cachedJSON = json;
+    return false;
+  }
 
-  var containerElement = $('devices');
-  containerElement.textContent = '';
+  var deviceList = $('devices');
+  if (alreadyDisplayed(deviceList, devices))
+    return;
 
-  // Populate with new entries
+  function removeObsolete(validIds, section) {
+    if (validIds.indexOf(section.id) < 0)
+      section.remove();
+  }
+
+  var newDeviceIds = devices.map(function(d) { return d.adbGlobalId });
+  Array.prototype.forEach.call(
+      deviceList.querySelectorAll('.device'),
+      removeObsolete.bind(null, newDeviceIds));
+
   for (var d = 0; d < devices.length; d++) {
     var device = devices[d];
 
-    var deviceHeader = document.createElement('div');
-    deviceHeader.className = 'section';
-    deviceHeader.textContent = device.adbModel;
-    containerElement.appendChild(deviceHeader);
+    var browserList;
+    var deviceSection = $(device.adbGlobalId);
+    if (deviceSection) {
+      browserList = deviceSection.querySelector('.browsers');
+    } else {
+      deviceSection = document.createElement('div');
+      deviceSection.id = device.adbGlobalId;
+      deviceSection.className = 'device list';
+      deviceList.appendChild(deviceSection);
 
-    var deviceContent = document.createElement('div');
-    deviceContent.className = 'list';
-    containerElement.appendChild(deviceContent);
+      var deviceHeader = document.createElement('div');
+      deviceHeader.className = 'section';
+      deviceHeader.textContent = device.adbModel;
+      deviceSection.appendChild(deviceHeader);
+
+      browserList = document.createElement('div');
+      browserList.className = 'browsers';
+      deviceSection.appendChild(browserList);
+    }
+
+    if (alreadyDisplayed(deviceSection, device))
+      continue;
+
+    var newBrowserIds =
+        device.browsers.map(function(b) { return b.adbGlobalId });
+    Array.prototype.forEach.call(
+        browserList.querySelectorAll('.browser'),
+        removeObsolete.bind(null, newBrowserIds));
 
     for (var b = 0; b < device.browsers.length; b++) {
       var browser = device.browsers[b];
 
-      var browserHeader = document.createElement('div');
-      browserHeader.className = 'small-section';
-      browserHeader.textContent = browser.adbBrowserName;
-      deviceContent.appendChild(browserHeader);
+      var pageList;
+      var browserSection = $(browser.adbGlobalId);
+      if (browserSection) {
+        pageList = browserSection.querySelector('.pages');
+        pageList.textContent = '';
+      } else {
+        browserSection = document.createElement('div');
+        browserSection.id = browser.adbGlobalId;
+        browserSection.className = 'browser';
+        browserList.appendChild(browserSection);
 
-      var browserPages = document.createElement('div');
-      browserPages.className = 'list package';
-      deviceContent.appendChild(browserPages);
+        var browserHeader = document.createElement('div');
+        browserHeader.className = 'small-section';
+        browserHeader.textContent = browser.adbBrowserName;
+        browserSection.appendChild(browserHeader);
+
+        var newPage = document.createElement('div');
+        newPage.className = 'open';
+
+        var newPageUrl = document.createElement('input');
+        newPageUrl.type = 'text';
+        newPageUrl.placeholder = 'Open tab with url';
+        newPage.appendChild(newPageUrl);
+
+        var openHandler = function(browserId, input) {
+          open(browserId, input.value || 'about:blank');
+          input.value = '';
+        }.bind(null, browser.adbGlobalId, newPageUrl);
+        newPageUrl.addEventListener('keyup', function(handler, event) {
+          if (event.keyIdentifier == 'Enter' && event.target.value)
+            handler();
+        }.bind(null, openHandler), true);
+
+        var newPageButton = document.createElement('button');
+        newPageButton.textContent = 'Open';
+        newPage.appendChild(newPageButton);
+        newPageButton.addEventListener('click', openHandler, true);
+
+        browserSection.appendChild(newPage);
+
+        pageList = document.createElement('div');
+        pageList.className = 'list pages';
+        browserSection.appendChild(pageList);
+      }
+
+      if (alreadyDisplayed(browserSection, browser))
+        continue;
 
       for (var p = 0; p < browser.pages.length; p++) {
-        addTargetToList(
-            browser.pages[p], browserPages, ['faviconUrl', 'name', 'url']);
+        var page = browser.pages[p];
+        var row = addTargetToList(
+            page, pageList, ['faviconUrl', 'name', 'url']);
+        row.appendChild(createActionLink(
+            'reload', reload.bind(null, page), page.attached));
+        row.appendChild(createActionLink(
+            'close', terminate.bind(null, page), page.attached));
       }
     }
   }
@@ -132,10 +219,9 @@ function addToAppsList(data) {
 }
 
 function addToWorkersList(data) {
-  addTargetToList(data,
-                  $('workers'),
-                  ['name', 'url', 'pid'],
-                  true);
+  var row = addTargetToList(data, $('workers'), ['name', 'url', 'pid']);
+  row.appendChild(createActionLink(
+      'terminate', terminate.bind(null, data), data.attached));
 }
 
 function addToOthersList(data) {
@@ -165,45 +251,31 @@ function formatValue(data, property) {
   return span;
 }
 
-function addTargetToList(data, list, properties, canTerminate) {
+function addTargetToList(data, list, properties) {
   var row = document.createElement('div');
   row.className = 'row';
   for (var j = 0; j < properties.length; j++)
     row.appendChild(formatValue(data, properties[j]));
 
-  row.appendChild(createInspectElement(data));
-
-  if (canTerminate)
-    row.appendChild(createTerminateElement(data));
+  row.appendChild(createActionLink('inspect', inspect.bind(null, data)));
 
   row.processId = data.processId;
   row.routeId = data.routeId;
 
   list.appendChild(row);
+  return row;
 }
 
-function createInspectElement(data) {
+function createActionLink(text, handler, opt_disabled) {
   var link = document.createElement('a');
-  link.setAttribute('href', '#');
-  link.textContent = ' inspect ';
-  link.addEventListener(
-      'click',
-      inspect.bind(this, data),
-      true);
-  return link;
-}
-
-function createTerminateElement(data) {
-  var link = document.createElement('a');
-  if (data.attached)
-    link.disabled = true;
+  if (opt_disabled)
+    link.classList.add('disabled');
+  else
+    link.classList.remove('disabled');
 
   link.setAttribute('href', '#');
-  link.textContent = ' terminate ';
-  link.addEventListener(
-      'click',
-      terminate.bind(this, data),
-      true);
+  link.textContent = text;
+  link.addEventListener('click', handler, true);
   return link;
 }
 

@@ -63,7 +63,7 @@ void AdbWebSocket::SendFrameOnHandlerThread(const std::string& message) {
 AdbWebSocket::~AdbWebSocket() {}
 
 void AdbWebSocket::ConnectOnHandlerThread() {
-  device_->HttpQuery(
+  device_->HttpUpgrade(
       socket_name_,
       base::StringPrintf(kWebSocketUpgradeRequest, url_.c_str()),
       base::Bind(&AdbWebSocket::ConnectedOnHandlerThread, this));

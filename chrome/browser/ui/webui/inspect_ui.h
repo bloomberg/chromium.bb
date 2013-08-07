@@ -24,7 +24,10 @@ class InspectUI : public content::WebUIController,
   virtual ~InspectUI();
 
   void InitUI();
-  void InspectRemotePage(const std::string& id);
+  void InspectRemotePage(const std::string& page_id);
+  void CloseRemotePage(const std::string& page_id);
+  void ReloadRemotePage(const std::string& page_id);
+  void OpenRemotePage(const std::string& browser_id, const std::string& url);
 
  private:
   class WorkerCreationDestructionListener;
@@ -59,6 +62,10 @@ class InspectUI : public content::WebUIController,
   typedef std::map<std::string, scoped_refptr<DevToolsAdbBridge::RemotePage> >
       RemotePages;
   RemotePages remote_pages_;
+
+  typedef std::map<std::string,
+      scoped_refptr<DevToolsAdbBridge::RemoteBrowser> > RemoteBrowsers;
+  RemoteBrowsers remote_browsers_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectUI);
 };
