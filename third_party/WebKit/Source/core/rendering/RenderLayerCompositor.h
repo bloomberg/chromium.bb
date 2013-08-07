@@ -297,7 +297,6 @@ private:
     bool requiresScrollCornerLayer() const;
 #if ENABLE(RUBBER_BANDING)
     bool requiresOverhangAreasLayer() const;
-    bool requiresContentShadowLayer() const;
 #endif
 
 #if !LOG_DISABLED
@@ -349,7 +348,6 @@ private:
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
 #if ENABLE(RUBBER_BANDING)
     OwnPtr<GraphicsLayer> m_layerForOverhangAreas;
-    OwnPtr<GraphicsLayer> m_contentShadowLayer;
 #endif
 
 #if !LOG_DISABLED
