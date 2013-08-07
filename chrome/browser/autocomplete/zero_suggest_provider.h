@@ -86,6 +86,10 @@ class ZeroSuggestProvider : public AutocompleteProvider,
 
   bool ShouldRunZeroSuggest(const GURL& url) const;
 
+  // Whether the URL can get Zero Suggest.  For example, don't send the URL of
+  // non-Google HTTPS requests because it may contain sensitive information.
+  bool ShouldSendURL(const GURL& url) const;
+
   // The 4 functions below (that take classes defined in SearchProvider as
   // arguments) were copied and trimmed from SearchProvider.
   // TODO(hfung): Refactor them into a new base class common to both

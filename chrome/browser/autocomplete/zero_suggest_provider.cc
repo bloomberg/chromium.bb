@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
@@ -186,12 +187,7 @@ ZeroSuggestProvider::~ZeroSuggestProvider() {
 }
 
 bool ZeroSuggestProvider::ShouldRunZeroSuggest(const GURL& url) const {
-  if (!url.is_valid())
-    return false;
-
-  // Do not query non-http URLs. There will be no useful suggestions for https
-  // or chrome URLs.
-  if (url.scheme() != chrome::kHttpScheme)
+  if (!ShouldSendURL(url))
     return false;
 
   // Don't run if there's no profile or in incognito mode.
@@ -215,6 +211,18 @@ bool ZeroSuggestProvider::ShouldRunZeroSuggest(const GURL& url) const {
     return false;
   }
   return true;
+}
+
+bool ZeroSuggestProvider::ShouldSendURL(const GURL& url) const {
+  if (!url.is_valid())
+    return false;
+
+  // Only allow HTTP URLs or Google HTTPS URLs (including Google search
+  // result pages).  For the latter case, Google was already sent the HTTPS
+  // URLs when requesting the page, so the information is just re-sent.
+  return (url.scheme() == chrome::kHttpScheme) ||
+      google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
+                                     google_util::ALLOW_NON_STANDARD_PORTS);
 }
 
 void ZeroSuggestProvider::FillResults(
