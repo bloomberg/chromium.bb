@@ -10,13 +10,6 @@
 
 namespace remoting {
 
-// TODO(alexeypa): Reenable the test once http://crbug.com/269143 is fixed.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_ProductName ProductName
-#else
-#define MAYBE_ProductName DISABLED_ProductName
-#endif
-
 class ResourcesTest : public testing::Test {
  protected:
   ResourcesTest(): resources_available_(false) {
@@ -33,7 +26,14 @@ class ResourcesTest : public testing::Test {
   bool resources_available_;
 };
 
-TEST_F(ResourcesTest, ProductName) {
+// TODO(alexeypa): Reenable the test once http://crbug.com/269143 is fixed.
+#if !defined(OS_CHROMEOS)
+#define MAYBE_ProductName ProductName
+#else
+#define MAYBE_ProductName DISABLED_ProductName
+#endif
+
+TEST_F(ResourcesTest, MAYBE_ProductName) {
 #if defined(GOOGLE_CHROME_BUILD)
   std::string expected_product_name = "Chrome Remote Desktop";
 #else  // defined(GOOGLE_CHROME_BUILD)
