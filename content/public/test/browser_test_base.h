@@ -109,6 +109,14 @@ class BrowserTestBase : public testing::Test {
   // returns.
   void PostTaskToInProcessRendererAndWait(const base::Closure& task);
 
+  // Call this before SetUp() to use real GL contexts in Compositor for the
+  // test.
+  void UseRealGLContexts() { allow_test_contexts_ = false; }
+
+  // Call this before SetUp() to use real GL drivers instead of OSMesa for the
+  // test.
+  void UseRealGLBindings() { allow_osmesa_ = false; }
+
  private:
   void ProxyRunTestOnMainThreadLoop();
 
@@ -117,6 +125,14 @@ class BrowserTestBase : public testing::Test {
 
   // Embedded test server, cheap to create, started on demand.
   scoped_ptr<net::test_server::EmbeddedTestServer> embedded_test_server_;
+
+  // When false, the ui::Compositor will be forced to use real GL contexts for
+  // the test, so that it produces real pixel output.
+  bool allow_test_contexts_;
+
+  // When false, the GL backend will use a real GPU. When true, it uses OSMesa
+  // to run GL on the CPU in a way that works across all platforms.
+  bool allow_osmesa_;
 
 #if defined(OS_POSIX)
   bool handle_sigterm_;

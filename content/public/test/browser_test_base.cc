@@ -13,6 +13,9 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/compositor/compositor_switches.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_switches.h"
 
 #if defined(OS_POSIX)
 #include "base/process/process_handle.h"
@@ -64,7 +67,9 @@ extern int BrowserMain(const MainFunctionParams&);
 BrowserTestBase::BrowserTestBase()
     : embedded_test_server_(
         new net::test_server::EmbeddedTestServer(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))) {
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))),
+      allow_test_contexts_(true),
+      allow_osmesa_(true) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
   base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
@@ -97,6 +102,33 @@ void BrowserTestBase::SetUp() {
   params.ui_task =
       new base::Closure(
           base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop, this));
+
+#if defined(USE_AURA)
+  // Use test contexts for browser tests unless they override and force us to
+  // use a real context.
+  if (allow_test_contexts_)
+    command_line->AppendSwitch(switches::kTestCompositor);
+#endif
+
+  // When using real GL contexts, we usually use OSMesa as this works on all
+  // bots. The command line can override this behaviour to use a real GPU.
+  if (command_line->HasSwitch(switches::kUseGpuInTests))
+    allow_osmesa_ = false;
+
+#if defined(OS_MACOSX)
+  // On Mac we always use a real GPU.
+  allow_osmesa_ = false;
+#endif
+
+  if (command_line->HasSwitch(switches::kUseGL)) {
+    NOTREACHED() <<
+        "kUseGL should not be used with tests. Try kUseGpuInTests instead.";
+  }
+
+  if (allow_osmesa_) {
+    command_line->AppendSwitchASCII(
+        switches::kUseGL, gfx::kGLImplementationOSMesaName);
+  }
 
   SetUpInProcessBrowserTestFixture();
 #if defined(OS_ANDROID)

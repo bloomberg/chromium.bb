@@ -383,7 +383,7 @@ public:
   virtual void ReadbackYUV(
       const gpu::Mailbox& mailbox,
       uint32 sync_point,
-      media::VideoFrame* target,
+      const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) = 0;
   virtual GLHelper::ScalerInterface* scaler() = 0;
 };
