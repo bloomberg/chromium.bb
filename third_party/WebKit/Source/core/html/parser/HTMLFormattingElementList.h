@@ -53,7 +53,7 @@ public:
         {
         }
         enum MarkerEntryType { MarkerEntry };
-        Entry(MarkerEntryType)
+        explicit Entry(MarkerEntryType)
             : m_item(0)
         {
         }
@@ -81,7 +81,7 @@ public:
 
     class Bookmark {
     public:
-        Bookmark(Entry* entry)
+        explicit Bookmark(Entry* entry)
             : m_hasBeenMoved(false)
             , m_mark(entry)
         {
