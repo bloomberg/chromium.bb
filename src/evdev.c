@@ -471,6 +471,15 @@ evdev_handle_device(struct evdev_device *device)
 			device->is_mt = 1;
 			device->mt.slot = 0;
 			device->caps |= EVDEV_TOUCH;
+
+			if (!TEST_BIT(abs_bits, ABS_MT_SLOT)) {
+				device->mtdev = mtdev_new_open(device->fd);
+				if (!device->mtdev) {
+					weston_log("mtdev required but failed to open for %s\n",
+						   device->devnode);
+					return 0;
+				}
+			}
 		}
 	}
 	if (TEST_BIT(ev_bits, EV_REL)) {
@@ -580,6 +589,8 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 	device->devname = strdup(devname);
 
 	if (!evdev_handle_device(device)) {
+		if (device->mtdev)
+			mtdev_close_delete(device->mtdev);
 		free(device->devnode);
 		free(device->devname);
 		free(device);
@@ -595,13 +606,6 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 	if (device->dispatch == NULL)
 		goto err1;
 
-
-	if (device->is_mt) {
-		device->mtdev = mtdev_new_open(device->fd);
-		if (!device->mtdev)
-			weston_log("mtdev failed to open for %s\n", path);
-	}
-
 	device->source = wl_event_loop_add_fd(ec->input_loop, device->fd,
 					      WL_EVENT_READABLE,
 					      evdev_device_data, device);
@@ -613,6 +617,8 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 err2:
 	device->dispatch->interface->destroy(device->dispatch);
 err1:
+	if (device->mtdev)
+		mtdev_close_delete(device->mtdev);
 	free(device->devname);
 	free(device->devnode);
 	free(device);
