@@ -1371,10 +1371,6 @@ void ProfileSyncService::OnConfigureRetry() {
 
 void ProfileSyncService::OnConfigureStart() {
   sync_configure_start_time_ = base::Time::Now();
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SYNC_CONFIGURE_START,
-      content::Source<ProfileSyncService>(this),
-      content::NotificationService::NoDetails());
   NotifyObservers();
 }
 

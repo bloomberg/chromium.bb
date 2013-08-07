@@ -2376,11 +2376,6 @@ void ExtensionService::OnExtensionInstalled(
                    << extensions::ManifestURL::GetUpdateURL(extension).spec()
                    << "; not installing";
 
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_EXTENSION_INSTALL_NOT_ALLOWED,
-          content::Source<Profile>(profile_),
-          content::Details<const Extension>(extension));
-
       // Delete the extension directory since we're not going to
       // load it.
       if (!GetFileTaskRunner()->PostTask(

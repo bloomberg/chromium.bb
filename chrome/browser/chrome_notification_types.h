@@ -504,11 +504,6 @@ enum NotificationType {
   // details about why the install failed.
   NOTIFICATION_EXTENSION_INSTALL_ERROR,
 
-  // Sent when an extension install is not allowed, as indicated by
-  // PendingExtensionInfo::ShouldAllowInstall. The details are an Extension,
-  // and the source is a Profile.
-  NOTIFICATION_EXTENSION_INSTALL_NOT_ALLOWED,
-
   // Sent when an extension has been uninstalled. The details are an Extension,
   // and the source is a Profile.
   NOTIFICATION_EXTENSION_UNINSTALLED,
@@ -784,10 +779,6 @@ enum NotificationType {
   // source is the ProfileSyncService object of the Profile. There are no
   // details.
   NOTIFICATION_SYNC_CONFIGURE_DONE,
-
-  // The sync service has started the datatype configuration process. The source
-  // is the ProfileSyncService object of the Profile. There are no details.
-  NOTIFICATION_SYNC_CONFIGURE_START,
 
   // A service is requesting a sync datatype refresh for the current profile.
   // The details value is a const syncer::ModelTypeSet.
