@@ -679,7 +679,14 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, PostMessage) {
       LIST_TEST(PostMessage_ExtraParam)
   );
 }
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, PostMessage) {
+
+// Flaky: crbug.com/269530
+#if defined(OS_WIN)
+#define MAYBE_PostMessage DISABLED_PostMessage
+#else
+#define MAYBE_PostMessage PostMessage
+#endif
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_PostMessage) {
   RunTestViaHTTP(
       LIST_TEST(PostMessage_SendInInit)
       LIST_TEST(PostMessage_SendingData)
