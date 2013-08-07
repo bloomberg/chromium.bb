@@ -12,7 +12,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
-#include "net/ssl/ssl_client_cert_type.h"
 
 namespace net {
 
@@ -27,12 +26,11 @@ class NET_EXPORT ServerBoundCertStore
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // The ServerBoundCert class contains a private key in addition to the server
-  // cert, and cert type.
+  // cert.
   class NET_EXPORT ServerBoundCert {
    public:
     ServerBoundCert();
     ServerBoundCert(const std::string& server_identifier,
-                    SSLClientCertType type,
                     base::Time creation_time,
                     base::Time expiration_time,
                     const std::string& private_key,
@@ -41,8 +39,6 @@ class NET_EXPORT ServerBoundCertStore
 
     // Server identifier.  For domain bound certs, for instance "verisign.com".
     const std::string& server_identifier() const { return server_identifier_; }
-    // TLS ClientCertificateType.
-    SSLClientCertType type() const { return type_; }
     // The time the certificate was created, also the start of the certificate
     // validity period.
     base::Time creation_time() const { return creation_time_; }
@@ -57,7 +53,6 @@ class NET_EXPORT ServerBoundCertStore
 
    private:
     std::string server_identifier_;
-    SSLClientCertType type_;
     base::Time creation_time_;
     base::Time expiration_time_;
     std::string private_key_;
@@ -67,8 +62,8 @@ class NET_EXPORT ServerBoundCertStore
   typedef std::list<ServerBoundCert> ServerBoundCertList;
 
   typedef base::Callback<void(
+      int,
       const std::string&,
-      SSLClientCertType,
       base::Time,
       const std::string&,
       const std::string&)> GetCertCallback;
@@ -77,14 +72,13 @@ class NET_EXPORT ServerBoundCertStore
   virtual ~ServerBoundCertStore() {}
 
   // GetServerBoundCert may return the result synchronously through the
-  // output parameters, in which case it will return true.  Otherwise it will
-  // return false and the callback will be called with the result
+  // output parameters, in which case it will return either OK if a cert is
+  // found in the store, or ERR_FILE_NOT_FOUND if none is found.  If the
+  // result cannot be returned synchronously, GetServerBoundCert will
+  // return ERR_IO_PENDING and the callback will be called with the result
   // asynchronously.
-  // In either case, the type will be CLIENT_CERT_INVALID_TYPE if no cert
-  // existed for the given |server_identifier|.
-  virtual bool GetServerBoundCert(
+  virtual int GetServerBoundCert(
       const std::string& server_identifier,
-      SSLClientCertType* type,
       base::Time* expiration_time,
       std::string* private_key_result,
       std::string* cert_result,
@@ -93,7 +87,6 @@ class NET_EXPORT ServerBoundCertStore
   // Adds a server bound cert and the corresponding private key to the store.
   virtual void SetServerBoundCert(
       const std::string& server_identifier,
-      SSLClientCertType type,
       base::Time creation_time,
       base::Time expiration_time,
       const std::string& private_key,

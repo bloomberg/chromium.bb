@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "net/base/net_errors.h"
 
 namespace net {
 
@@ -60,16 +61,15 @@ DefaultServerBoundCertStore::GetServerBoundCertTask::~GetServerBoundCertTask() {
 
 void DefaultServerBoundCertStore::GetServerBoundCertTask::Run(
     DefaultServerBoundCertStore* store) {
-  SSLClientCertType type = CLIENT_CERT_INVALID_TYPE;
   base::Time expiration_time;
   std::string private_key_result;
   std::string cert_result;
-  bool was_sync = store->GetServerBoundCert(
-      server_identifier_, &type, &expiration_time, &private_key_result,
+  int err = store->GetServerBoundCert(
+      server_identifier_, &expiration_time, &private_key_result,
       &cert_result, GetCertCallback());
-  DCHECK(was_sync);
+  DCHECK(err != ERR_IO_PENDING);
 
-  InvokeCallback(base::Bind(callback_, server_identifier_, type,
+  InvokeCallback(base::Bind(callback_, err, server_identifier_,
                             expiration_time, private_key_result, cert_result));
 }
 
@@ -79,7 +79,6 @@ class DefaultServerBoundCertStore::SetServerBoundCertTask
     : public DefaultServerBoundCertStore::Task {
  public:
   SetServerBoundCertTask(const std::string& server_identifier,
-                         SSLClientCertType type,
                          base::Time creation_time,
                          base::Time expiration_time,
                          const std::string& private_key,
@@ -89,7 +88,6 @@ class DefaultServerBoundCertStore::SetServerBoundCertTask
 
  private:
   std::string server_identifier_;
-  SSLClientCertType type_;
   base::Time creation_time_;
   base::Time expiration_time_;
   std::string private_key_;
@@ -98,13 +96,11 @@ class DefaultServerBoundCertStore::SetServerBoundCertTask
 
 DefaultServerBoundCertStore::SetServerBoundCertTask::SetServerBoundCertTask(
     const std::string& server_identifier,
-    SSLClientCertType type,
     base::Time creation_time,
     base::Time expiration_time,
     const std::string& private_key,
     const std::string& cert)
     : server_identifier_(server_identifier),
-      type_(type),
       creation_time_(creation_time),
       expiration_time_(expiration_time),
       private_key_(private_key),
@@ -116,7 +112,7 @@ DefaultServerBoundCertStore::SetServerBoundCertTask::~SetServerBoundCertTask() {
 
 void DefaultServerBoundCertStore::SetServerBoundCertTask::Run(
     DefaultServerBoundCertStore* store) {
-  store->SyncSetServerBoundCert(server_identifier_, type_, creation_time_,
+  store->SyncSetServerBoundCert(server_identifier_, creation_time_,
                                 expiration_time_, private_key_, cert_);
 }
 
@@ -236,9 +232,8 @@ DefaultServerBoundCertStore::DefaultServerBoundCertStore(
       store_(store),
       weak_ptr_factory_(this) {}
 
-bool DefaultServerBoundCertStore::GetServerBoundCert(
+int DefaultServerBoundCertStore::GetServerBoundCert(
     const std::string& server_identifier,
-    SSLClientCertType* type,
     base::Time* expiration_time,
     std::string* private_key_result,
     std::string* cert_result,
@@ -249,34 +244,30 @@ bool DefaultServerBoundCertStore::GetServerBoundCert(
   if (!loaded_) {
     EnqueueTask(scoped_ptr<Task>(
         new GetServerBoundCertTask(server_identifier, callback)));
-    return false;
+    return ERR_IO_PENDING;
   }
 
   ServerBoundCertMap::iterator it = server_bound_certs_.find(server_identifier);
 
-  if (it == server_bound_certs_.end()) {
-    *type = CLIENT_CERT_INVALID_TYPE;
-    return true;
-  }
+  if (it == server_bound_certs_.end())
+    return ERR_FILE_NOT_FOUND;
 
   ServerBoundCert* cert = it->second;
-  *type = cert->type();
   *expiration_time = cert->expiration_time();
   *private_key_result = cert->private_key();
   *cert_result = cert->cert();
 
-  return true;
+  return OK;
 }
 
 void DefaultServerBoundCertStore::SetServerBoundCert(
     const std::string& server_identifier,
-    SSLClientCertType type,
     base::Time creation_time,
     base::Time expiration_time,
     const std::string& private_key,
     const std::string& cert) {
   RunOrEnqueueTask(scoped_ptr<Task>(new SetServerBoundCertTask(
-      server_identifier, type, creation_time, expiration_time, private_key,
+      server_identifier, creation_time, expiration_time, private_key,
       cert)));
 }
 
@@ -377,7 +368,6 @@ void DefaultServerBoundCertStore::OnLoaded(
 
 void DefaultServerBoundCertStore::SyncSetServerBoundCert(
     const std::string& server_identifier,
-    SSLClientCertType type,
     base::Time creation_time,
     base::Time expiration_time,
     const std::string& private_key,
@@ -389,7 +379,7 @@ void DefaultServerBoundCertStore::SyncSetServerBoundCert(
   InternalInsertServerBoundCert(
       server_identifier,
       new ServerBoundCert(
-          server_identifier, type, creation_time, expiration_time, private_key,
+          server_identifier, creation_time, expiration_time, private_key,
           cert));
 }
 

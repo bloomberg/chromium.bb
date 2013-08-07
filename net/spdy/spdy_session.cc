@@ -793,7 +793,6 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
 
 int SpdySession::CreateCredentialFrame(
     const std::string& origin,
-    SSLClientCertType type,
     const std::string& key,
     const std::string& cert,
     RequestPriority priority,
@@ -807,7 +806,7 @@ int SpdySession::CreateCredentialFrame(
   std::string tls_unique;
   ssl_socket->GetTLSUniqueChannelBinding(&tls_unique);
   size_t slot = credential_state_.SetHasCredential(GURL(origin));
-  int rv = SpdyCredentialBuilder::Build(tls_unique, type, key, cert, slot,
+  int rv = SpdyCredentialBuilder::Build(tls_unique, key, cert, slot,
                                         &credential);
   DCHECK_NE(rv, ERR_IO_PENDING);
   if (rv != OK)

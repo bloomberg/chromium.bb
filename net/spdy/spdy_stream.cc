@@ -108,7 +108,6 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       net_log_(net_log),
       send_bytes_(0),
       recv_bytes_(0),
-      domain_bound_cert_type_(CLIENT_CERT_INVALID_TYPE),
       just_completed_frame_type_(DATA),
       just_completed_frame_size_(0) {
   CHECK(type_ == SPDY_BIDIRECTIONAL_STREAM ||
@@ -741,11 +740,10 @@ int SpdyStream::DoGetDomainBoundCert() {
   io_state_ = STATE_GET_DOMAIN_BOUND_CERT_COMPLETE;
   ServerBoundCertService* sbc_service = session_->GetServerBoundCertService();
   DCHECK(sbc_service != NULL);
-  std::vector<uint8> requested_cert_types;
-  requested_cert_types.push_back(CLIENT_CERT_ECDSA_SIGN);
   int rv = sbc_service->GetDomainBoundCert(
-      url.GetOrigin().host(), requested_cert_types,
-      &domain_bound_cert_type_, &domain_bound_private_key_, &domain_bound_cert_,
+      url.GetOrigin().host(),
+      &domain_bound_private_key_,
+      &domain_bound_cert_,
       base::Bind(&SpdyStream::OnGetDomainBoundCertComplete, GetWeakPtr()),
       &domain_bound_cert_request_handle_);
   return rv;
@@ -771,8 +769,11 @@ int SpdyStream::DoSendDomainBoundCert() {
   origin.erase(origin.length() - 1);  // Trim trailing slash.
   scoped_ptr<SpdyFrame> frame;
   int rv = session_->CreateCredentialFrame(
-      origin, domain_bound_cert_type_, domain_bound_private_key_,
-      domain_bound_cert_, priority_, &frame);
+      origin,
+      domain_bound_private_key_,
+      domain_bound_cert_,
+      priority_,
+      &frame);
   if (rv != OK) {
     DCHECK_NE(rv, ERR_IO_PENDING);
     return rv;

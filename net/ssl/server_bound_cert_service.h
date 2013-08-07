@@ -17,7 +17,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/ssl/server_bound_cert_store.h"
-#include "net/ssl/ssl_client_cert_type.h"
 
 namespace base {
 class TaskRunner;
@@ -92,17 +91,13 @@ class NET_EXPORT ServerBoundCertService
   // longer hold.
   bool IsSystemTimeValid() const { return is_system_time_valid_; }
 
-  // Fetches the domain bound cert for the specified host of the specified
-  // type if one exists and creates one otherwise. Returns OK if successful or
-  // an error code upon failure.
-  //
-  // |requested_types| is a list of the TLS ClientCertificateTypes the site will
-  // accept, ordered from most preferred to least preferred.  Types we don't
-  // support will be ignored. See ssl_client_cert_type.h.
+  // Fetches the domain bound cert for the specified host if one exists and
+  // creates one otherwise. Returns OK if successful or an error code upon
+  // failure.
   //
   // On successful completion, |private_key| stores a DER-encoded
-  // PrivateKeyInfo struct, and |cert| stores a DER-encoded certificate, and
-  // |type| specifies the type of certificate that was returned.
+  // PrivateKeyInfo struct, and |cert| stores a DER-encoded certificate.
+  // The PrivateKeyInfo is always an ECDSA private key.
   //
   // |callback| must not be null. ERR_IO_PENDING is returned if the operation
   // could not be completed immediately, in which case the result code will
@@ -113,8 +108,6 @@ class NET_EXPORT ServerBoundCertService
   // ServerBoundCertService is destroyed.
   int GetDomainBoundCert(
       const std::string& host,
-      const std::vector<uint8>& requested_types,
-      SSLClientCertType* type,
       std::string* private_key,
       std::string* cert,
       const CompletionCallback& callback,
@@ -135,8 +128,8 @@ class NET_EXPORT ServerBoundCertService
   // callback will not be called.
   void CancelRequest(ServerBoundCertServiceRequest* req);
 
-  void GotServerBoundCert(const std::string& server_identifier,
-                          SSLClientCertType type,
+  void GotServerBoundCert(int err,
+                          const std::string& server_identifier,
                           base::Time expiration_time,
                           const std::string& key,
                           const std::string& cert);
@@ -146,7 +139,6 @@ class NET_EXPORT ServerBoundCertService
       scoped_ptr<ServerBoundCertStore::ServerBoundCert> cert);
   void HandleResult(int error,
                     const std::string& server_identifier,
-                    SSLClientCertType type,
                     const std::string& private_key,
                     const std::string& cert);
 

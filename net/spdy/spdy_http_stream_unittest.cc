@@ -540,23 +540,18 @@ void GetECServerBoundCertAndProof(
     std::string* cert,
     std::string* proof) {
   TestCompletionCallback callback;
-  std::vector<uint8> requested_cert_types;
-  requested_cert_types.push_back(CLIENT_CERT_ECDSA_SIGN);
-  SSLClientCertType cert_type;
   std::string key;
   ServerBoundCertService::RequestHandle request_handle;
   int rv = server_bound_cert_service->GetDomainBoundCert(
-      host, requested_cert_types, &cert_type, &key, cert, callback.callback(),
+      host, &key, cert, callback.callback(),
       &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
-  EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, cert_type);
 
   SpdyCredential credential;
   EXPECT_EQ(OK,
             SpdyCredentialBuilder::Build(
-                MockClientSocket::kTlsUnique, cert_type, key,
-                *cert, 2, &credential));
+                MockClientSocket::kTlsUnique, key, *cert, 2, &credential));
 
   ASSERT_FALSE(credential.certs.empty());
   cert->assign(credential.certs[0]);

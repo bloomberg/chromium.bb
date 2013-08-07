@@ -17,6 +17,7 @@
 #include "content/public/browser/indexed_db_context.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/ssl/ssl_client_cert_type.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -249,7 +250,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 
       dict->SetString(kKeyServerId, server_bound_cert.server_identifier());
       dict->SetString(kKeyCertType,
-                      ClientCertTypeToString(server_bound_cert.type()));
+                      ClientCertTypeToString(net::CLIENT_CERT_ECDSA_SIGN));
       dict->SetString(kKeyCreated, UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(
               server_bound_cert.creation_time())));

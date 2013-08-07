@@ -30,16 +30,12 @@ void CreateCertAndKey(std::string* cert, std::string* key) {
                                  sequenced_worker_pool));
 
   TestCompletionCallback callback;
-  std::vector<uint8> requested_cert_types;
-  requested_cert_types.push_back(CLIENT_CERT_ECDSA_SIGN);
-  SSLClientCertType cert_type;
   ServerBoundCertService::RequestHandle request_handle;
   int rv = server_bound_cert_service->GetDomainBoundCert(
-      "www.google.com", requested_cert_types, &cert_type, key, cert,
+      "www.google.com", key, cert,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
-  EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, cert_type);
 
   sequenced_worker_pool->Shutdown();
 }
@@ -53,13 +49,9 @@ class SpdyCredentialBuilderTest : public testing::Test {
   }
 
  protected:
-  int BuildWithType(SSLClientCertType type) {
-    return SpdyCredentialBuilder::Build(
-        MockClientSocket::kTlsUnique, type, key_, cert_, kSlot, &credential_);
-  }
-
   int Build() {
-    return BuildWithType(CLIENT_CERT_ECDSA_SIGN);
+    return SpdyCredentialBuilder::Build(
+        MockClientSocket::kTlsUnique, key_, cert_, kSlot, &credential_);
   }
 
   std::string GetCredentialSecret() {
@@ -89,35 +81,13 @@ TEST_F(SpdyCredentialBuilderTest, MAYBE_GetCredentialSecret) {
 }
 
 #if defined(USE_OPENSSL)
-#define MAYBE_SucceedsWithECDSACert DISABLED_SucceedsWithECDSACert
+#define MAYBE_Succeeds DISABLED_Succeeds
 #else
-#define MAYBE_SucceedsWithECDSACert SucceedsWithECDSACert
+#define MAYBE_Succeeds Succeeds
 #endif
 
-TEST_F(SpdyCredentialBuilderTest, MAYBE_SucceedsWithECDSACert) {
-  EXPECT_EQ(OK, BuildWithType(CLIENT_CERT_ECDSA_SIGN));
-}
-
-#if defined(USE_OPENSSL)
-#define MAYBE_FailsWithRSACert DISABLED_FailsWithRSACert
-#else
-#define MAYBE_FailsWithRSACert FailsWithRSACert
-#endif
-
-TEST_F(SpdyCredentialBuilderTest, MAYBE_FailsWithRSACert) {
-  EXPECT_EQ(ERR_BAD_SSL_CLIENT_AUTH_CERT,
-            BuildWithType(CLIENT_CERT_RSA_SIGN));
-}
-
-#if defined(USE_OPENSSL)
-#define MAYBE_FailsWithDSACert DISABLED_FailsWithDSACert
-#else
-#define MAYBE_FailsWithDSACert FailsWithDSACert
-#endif
-
-TEST_F(SpdyCredentialBuilderTest, MAYBE_FailsWithDSACert) {
-  EXPECT_EQ(ERR_BAD_SSL_CLIENT_AUTH_CERT,
-            BuildWithType(CLIENT_CERT_DSS_SIGN));
+TEST_F(SpdyCredentialBuilderTest, MAYBE_Succeeds) {
+  EXPECT_EQ(OK, Build());
 }
 
 #if defined(USE_OPENSSL)

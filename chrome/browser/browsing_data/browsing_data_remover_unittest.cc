@@ -284,8 +284,10 @@ class RemoveServerBoundCertTester : public net::SSLConfigService::Observer {
                                    base::Time creation_time,
                                    base::Time expiration_time) {
     GetCertStore()->SetServerBoundCert(server_identifier,
-                                       net::CLIENT_CERT_RSA_SIGN, creation_time,
-                                       expiration_time, "a", "b");
+                                       creation_time,
+                                       expiration_time,
+                                       "a",
+                                       "b");
   }
 
   // Add a server bound cert for |server|, with the current time as the

@@ -771,8 +771,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   ////////////////////////////////////////////////////////////////////////////
   int DoBufferRecv(IOBuffer* buffer, int len);
   int DoBufferSend(IOBuffer* buffer, int len);
-  int DoGetDomainBoundCert(const std::string& host,
-                           const std::vector<uint8>& requested_cert_types);
+  int DoGetDomainBoundCert(const std::string& host);
 
   void OnGetDomainBoundCertComplete(int result);
   void OnHandshakeStateUpdated(const HandshakeState& state);
@@ -903,7 +902,6 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // prior to invoking OnHandshakeIOComplete.
   // Read on the NSS task runner when once OnHandshakeIOComplete is invoked
   // on the NSS task runner.
-  SSLClientCertType domain_bound_cert_type_;
   std::string domain_bound_private_key_;
   std::string domain_bound_cert_;
 
@@ -944,8 +942,7 @@ SSLClientSocketNSS::Core::Core(
       user_write_buf_len_(0),
       network_task_runner_(network_task_runner),
       nss_task_runner_(nss_task_runner),
-      weak_net_log_(weak_net_log_factory_.GetWeakPtr()),
-      domain_bound_cert_type_(CLIENT_CERT_INVALID_TYPE) {
+      weak_net_log_(weak_net_log_factory_.GetWeakPtr()) {
 }
 
 SSLClientSocketNSS::Core::~Core() {
@@ -2318,17 +2315,15 @@ SECStatus SSLClientSocketNSS::Core::ClientChannelIDHandler(
   // We have negotiated the TLS channel ID extension.
   core->channel_id_xtn_negotiated_ = true;
   std::string host = core->host_and_port_.host();
-  std::vector<uint8> requested_cert_types;
-  requested_cert_types.push_back(CLIENT_CERT_ECDSA_SIGN);
   int error = ERR_UNEXPECTED;
   if (core->OnNetworkTaskRunner()) {
-    error = core->DoGetDomainBoundCert(host, requested_cert_types);
+    error = core->DoGetDomainBoundCert(host);
   } else {
     bool posted = core->network_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
             IgnoreResult(&Core::DoGetDomainBoundCert),
-            core, host, requested_cert_types));
+            core, host));
     error = posted ? ERR_IO_PENDING : ERR_ABORTED;
   }
 
@@ -2372,9 +2367,7 @@ int SSLClientSocketNSS::Core::ImportChannelIDKeys(SECKEYPublicKey** public_key,
     return MapNSSError(PORT_GetError());
 
   // Set the private key.
-  switch (domain_bound_cert_type_) {
-    case CLIENT_CERT_ECDSA_SIGN: {
-      if (!crypto::ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
+  if (!crypto::ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
           ServerBoundCertService::kEPKIPassword,
           reinterpret_cast<const unsigned char*>(
               domain_bound_private_key_.data()),
@@ -2384,15 +2377,8 @@ int SSLClientSocketNSS::Core::ImportChannelIDKeys(SECKEYPublicKey** public_key,
           false,
           key,
           public_key)) {
-        int error = MapNSSError(PORT_GetError());
-        return error;
-      }
-      break;
-    }
-
-    default:
-      NOTREACHED();
-      return ERR_INVALID_ARGUMENT;
+    int error = MapNSSError(PORT_GetError());
+    return error;
   }
 
   return OK;
@@ -2620,9 +2606,7 @@ int SSLClientSocketNSS::Core::DoBufferSend(IOBuffer* send_buffer, int len) {
   return rv;
 }
 
-int SSLClientSocketNSS::Core::DoGetDomainBoundCert(
-    const std::string& host,
-    const std::vector<uint8>& requested_cert_types) {
+int SSLClientSocketNSS::Core::DoGetDomainBoundCert(const std::string& host) {
   DCHECK(OnNetworkTaskRunner());
 
   if (detached_)
@@ -2632,8 +2616,6 @@ int SSLClientSocketNSS::Core::DoGetDomainBoundCert(
 
   int rv = server_bound_cert_service_->GetDomainBoundCert(
       host,
-      requested_cert_types,
-      &domain_bound_cert_type_,
       &domain_bound_private_key_,
       &domain_bound_cert_,
       base::Bind(&Core::OnGetDomainBoundCertComplete, base::Unretained(this)),

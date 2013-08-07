@@ -541,7 +541,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // Data received before delegate is attached.
   ScopedVector<SpdyBuffer> pending_buffers_;
 
-  SSLClientCertType domain_bound_cert_type_;
   std::string domain_bound_private_key_;
   std::string domain_bound_cert_;
   ServerBoundCertService::RequestHandle domain_bound_cert_request_handle_;

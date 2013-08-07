@@ -8,7 +8,6 @@
 #include <string>
 
 #include "net/base/net_export.h"
-#include "net/ssl/ssl_client_cert_type.h"
 
 namespace net {
 
@@ -20,7 +19,6 @@ struct SpdyCredential;
 class NET_EXPORT_PRIVATE SpdyCredentialBuilder {
  public:
   static int Build(const std::string& tls_unique,
-                   SSLClientCertType type,
                    const std::string& key,
                    const std::string& cert,
                    size_t slot,

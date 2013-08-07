@@ -35,7 +35,6 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
 #include "net/spdy/spdy_write_queue.h"
-#include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config_service.h"
 #include "url/gurl.h"
 
@@ -299,7 +298,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |credential_frame| and returns OK. Returns the error (guaranteed
   // to not be ERR_IO_PENDING) otherwise.
   int CreateCredentialFrame(const std::string& origin,
-                            SSLClientCertType type,
                             const std::string& key,
                             const std::string& cert,
                             RequestPriority priority,

@@ -26,14 +26,10 @@ std::vector<uint8> ToVector(base::StringPiece piece) {
 
 // static
 int SpdyCredentialBuilder::Build(const std::string& tls_unique,
-                                 SSLClientCertType type,
                                  const std::string& key,
                                  const std::string& cert,
                                  size_t slot,
                                  SpdyCredential* credential) {
-  if (type != CLIENT_CERT_ECDSA_SIGN)
-    return ERR_BAD_SSL_CLIENT_AUTH_CERT;
-
   std::string secret = SpdyCredentialBuilder::GetCredentialSecret(tls_unique);
 
   // Extract the SubjectPublicKeyInfo from the certificate.

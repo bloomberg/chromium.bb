@@ -28,8 +28,7 @@ void MockBrowsingDataServerBoundCertHelper::AddServerBoundCertSample(
   DCHECK(server_bound_certs_.find(server_id) == server_bound_certs_.end());
   server_bound_cert_list_.push_back(
       net::ServerBoundCertStore::ServerBoundCert(
-          server_id, net::CLIENT_CERT_ECDSA_SIGN,
-          base::Time(), base::Time(), "key", "cert"));
+          server_id, base::Time(), base::Time(), "key", "cert"));
   server_bound_certs_[server_id] = true;
 }
 

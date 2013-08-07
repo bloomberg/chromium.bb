@@ -43,16 +43,14 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
   virtual ~DefaultServerBoundCertStore();
 
   // ServerBoundCertStore implementation.
-  virtual bool GetServerBoundCert(
+  virtual int GetServerBoundCert(
       const std::string& server_identifier,
-      SSLClientCertType* type,
       base::Time* expiration_time,
       std::string* private_key_result,
       std::string* cert_result,
       const GetCertCallback& callback) OVERRIDE;
   virtual void SetServerBoundCert(
       const std::string& server_identifier,
-      SSLClientCertType type,
       base::Time creation_time,
       base::Time expiration_time,
       const std::string& private_key,
@@ -110,7 +108,6 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
   // initialization is complete.
   void SyncSetServerBoundCert(
       const std::string& server_identifier,
-      SSLClientCertType type,
       base::Time creation_time,
       base::Time expiration_time,
       const std::string& private_key,

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -27,8 +28,8 @@ void NotCalled() {
   ADD_FAILURE() << "Unexpected callback execution.";
 }
 
-void GetCertCallbackNotCalled(const std::string& server_identifier,
-                              SSLClientCertType type,
+void GetCertCallbackNotCalled(int err,
+                              const std::string& server_identifier,
                               base::Time expiration_time,
                               const std::string& private_key_result,
                               const std::string& cert_result) {
@@ -39,21 +40,21 @@ class AsyncGetCertHelper {
  public:
   AsyncGetCertHelper() : called_(false) {}
 
-  void Callback(const std::string& server_identifier,
-                SSLClientCertType type,
+  void Callback(int err,
+                const std::string& server_identifier,
                 base::Time expiration_time,
                 const std::string& private_key_result,
                 const std::string& cert_result) {
+    err_ = err;
     server_identifier_ = server_identifier;
-    type_ = type;
     expiration_time_ = expiration_time;
     private_key_ = private_key_result;
     cert_ = cert_result;
     called_ = true;
   }
 
+  int err_;
   std::string server_identifier_;
-  SSLClientCertType type_;
   base::Time expiration_time_;
   std::string private_key_;
   std::string cert_;
@@ -127,14 +128,12 @@ TEST(DefaultServerBoundCertStoreTest, TestLoading) {
   persistent_store->AddServerBoundCert(
       DefaultServerBoundCertStore::ServerBoundCert(
           "google.com",
-          CLIENT_CERT_RSA_SIGN,
           base::Time(),
           base::Time(),
           "a", "b"));
   persistent_store->AddServerBoundCert(
       DefaultServerBoundCertStore::ServerBoundCert(
           "verisign.com",
-          CLIENT_CERT_ECDSA_SIGN,
           base::Time(),
           base::Time(),
           "c", "d"));
@@ -145,7 +144,6 @@ TEST(DefaultServerBoundCertStoreTest, TestLoading) {
   EXPECT_EQ(0, store.GetCertCount());
   store.SetServerBoundCert(
       "verisign.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "e", "f");
@@ -154,7 +152,6 @@ TEST(DefaultServerBoundCertStoreTest, TestLoading) {
   EXPECT_EQ(2, store.GetCertCount());
   store.SetServerBoundCert(
       "twitter.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "g", "h");
@@ -166,32 +163,28 @@ TEST(DefaultServerBoundCertStoreTest, TestLoading) {
 TEST(DefaultServerBoundCertStoreTest, TestSettingAndGetting) {
   // No persistent store, all calls will be synchronous.
   DefaultServerBoundCertStore store(NULL);
-  SSLClientCertType type;
   base::Time expiration_time;
   std::string private_key, cert;
   EXPECT_EQ(0, store.GetCertCount());
-  EXPECT_TRUE(store.GetServerBoundCert("verisign.com",
-                                       &type,
-                                       &expiration_time,
-                                       &private_key,
-                                       &cert,
-                                       base::Bind(&GetCertCallbackNotCalled)));
-  EXPECT_EQ(CLIENT_CERT_INVALID_TYPE, type);
+  EXPECT_EQ(ERR_FILE_NOT_FOUND,
+            store.GetServerBoundCert("verisign.com",
+                                     &expiration_time,
+                                     &private_key,
+                                     &cert,
+                                     base::Bind(&GetCertCallbackNotCalled)));
   EXPECT_TRUE(private_key.empty());
   EXPECT_TRUE(cert.empty());
   store.SetServerBoundCert(
       "verisign.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time::FromInternalValue(123),
       base::Time::FromInternalValue(456),
       "i", "j");
-  EXPECT_TRUE(store.GetServerBoundCert("verisign.com",
-                                       &type,
-                                       &expiration_time,
-                                       &private_key,
-                                       &cert,
-                                       base::Bind(&GetCertCallbackNotCalled)));
-  EXPECT_EQ(CLIENT_CERT_RSA_SIGN, type);
+  EXPECT_EQ(OK,
+            store.GetServerBoundCert("verisign.com",
+                                     &expiration_time,
+                                     &private_key,
+                                     &cert,
+                                     base::Bind(&GetCertCallbackNotCalled)));
   EXPECT_EQ(456, expiration_time.ToInternalValue());
   EXPECT_EQ("i", private_key);
   EXPECT_EQ("j", cert);
@@ -201,19 +194,16 @@ TEST(DefaultServerBoundCertStoreTest, TestDuplicateCerts) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultServerBoundCertStore store(persistent_store.get());
 
-  SSLClientCertType type;
   base::Time expiration_time;
   std::string private_key, cert;
   EXPECT_EQ(0, store.GetCertCount());
   store.SetServerBoundCert(
       "verisign.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time::FromInternalValue(123),
       base::Time::FromInternalValue(1234),
       "a", "b");
   store.SetServerBoundCert(
       "verisign.com",
-      CLIENT_CERT_ECDSA_SIGN,
       base::Time::FromInternalValue(456),
       base::Time::FromInternalValue(4567),
       "c", "d");
@@ -221,13 +211,12 @@ TEST(DefaultServerBoundCertStoreTest, TestDuplicateCerts) {
   // Wait for load & queued set tasks.
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, store.GetCertCount());
-  EXPECT_TRUE(store.GetServerBoundCert("verisign.com",
-                                       &type,
-                                       &expiration_time,
-                                       &private_key,
-                                       &cert,
-                                       base::Bind(&GetCertCallbackNotCalled)));
-  EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, type);
+  EXPECT_EQ(OK,
+            store.GetServerBoundCert("verisign.com",
+                                     &expiration_time,
+                                     &private_key,
+                                     &cert,
+                                     base::Bind(&GetCertCallbackNotCalled)));
   EXPECT_EQ(4567, expiration_time.ToInternalValue());
   EXPECT_EQ("c", private_key);
   EXPECT_EQ("d", cert);
@@ -237,29 +226,31 @@ TEST(DefaultServerBoundCertStoreTest, TestAsyncGet) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   persistent_store->AddServerBoundCert(ServerBoundCertStore::ServerBoundCert(
       "verisign.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time::FromInternalValue(123),
       base::Time::FromInternalValue(1234),
       "a", "b"));
 
   DefaultServerBoundCertStore store(persistent_store.get());
   AsyncGetCertHelper helper;
-  SSLClientCertType type;
   base::Time expiration_time;
   std::string private_key;
   std::string cert = "not set";
   EXPECT_EQ(0, store.GetCertCount());
-  EXPECT_FALSE(store.GetServerBoundCert(
-      "verisign.com", &type, &expiration_time, &private_key, &cert,
-      base::Bind(&AsyncGetCertHelper::Callback, base::Unretained(&helper))));
+  EXPECT_EQ(ERR_IO_PENDING,
+            store.GetServerBoundCert("verisign.com",
+                                     &expiration_time,
+                                     &private_key,
+                                     &cert,
+                                     base::Bind(&AsyncGetCertHelper::Callback,
+                                                base::Unretained(&helper))));
 
   // Wait for load & queued get tasks.
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, store.GetCertCount());
   EXPECT_EQ("not set", cert);
   EXPECT_TRUE(helper.called_);
+  EXPECT_EQ(OK, helper.err_);
   EXPECT_EQ("verisign.com", helper.server_identifier_);
-  EXPECT_EQ(CLIENT_CERT_RSA_SIGN, helper.type_);
   EXPECT_EQ(1234, helper.expiration_time_.ToInternalValue());
   EXPECT_EQ("a", helper.private_key_);
   EXPECT_EQ("b", helper.cert_);
@@ -271,19 +262,16 @@ TEST(DefaultServerBoundCertStoreTest, TestDeleteAll) {
 
   store.SetServerBoundCert(
       "verisign.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "a", "b");
   store.SetServerBoundCert(
       "google.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "c", "d");
   store.SetServerBoundCert(
       "harvard.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "e", "f");
@@ -301,13 +289,11 @@ TEST(DefaultServerBoundCertStoreTest, TestAsyncGetAndDeleteAll) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   persistent_store->AddServerBoundCert(ServerBoundCertStore::ServerBoundCert(
       "verisign.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "a", "b"));
   persistent_store->AddServerBoundCert(ServerBoundCertStore::ServerBoundCert(
       "google.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "c", "d"));
@@ -333,13 +319,11 @@ TEST(DefaultServerBoundCertStoreTest, TestDelete) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultServerBoundCertStore store(persistent_store.get());
 
-  SSLClientCertType type;
   base::Time expiration_time;
   std::string private_key, cert;
   EXPECT_EQ(0, store.GetCertCount());
   store.SetServerBoundCert(
       "verisign.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "a", "b");
@@ -348,7 +332,6 @@ TEST(DefaultServerBoundCertStoreTest, TestDelete) {
 
   store.SetServerBoundCert(
       "google.com",
-      CLIENT_CERT_ECDSA_SIGN,
       base::Time(),
       base::Time(),
       "c", "d");
@@ -359,45 +342,40 @@ TEST(DefaultServerBoundCertStoreTest, TestDelete) {
                               base::Bind(&CallCounter, &delete_finished));
   ASSERT_EQ(1, delete_finished);
   EXPECT_EQ(1, store.GetCertCount());
-  EXPECT_TRUE(store.GetServerBoundCert("verisign.com",
-                                       &type,
-                                       &expiration_time,
-                                       &private_key,
-                                       &cert,
-                                       base::Bind(&GetCertCallbackNotCalled)));
-  EXPECT_EQ(CLIENT_CERT_INVALID_TYPE, type);
-  EXPECT_TRUE(store.GetServerBoundCert("google.com",
-                                       &type,
-                                       &expiration_time,
-                                       &private_key,
-                                       &cert,
-                                       base::Bind(&GetCertCallbackNotCalled)));
-  EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, type);
+  EXPECT_EQ(ERR_FILE_NOT_FOUND,
+            store.GetServerBoundCert("verisign.com",
+                                     &expiration_time,
+                                     &private_key,
+                                     &cert,
+                                     base::Bind(&GetCertCallbackNotCalled)));
+  EXPECT_EQ(OK,
+            store.GetServerBoundCert("google.com",
+                                     &expiration_time,
+                                     &private_key,
+                                     &cert,
+                                     base::Bind(&GetCertCallbackNotCalled)));
   int delete2_finished = 0;
   store.DeleteServerBoundCert("google.com",
                               base::Bind(&CallCounter, &delete2_finished));
   ASSERT_EQ(1, delete2_finished);
   EXPECT_EQ(0, store.GetCertCount());
-  EXPECT_TRUE(store.GetServerBoundCert("google.com",
-                                       &type,
-                                       &expiration_time,
-                                       &private_key,
-                                       &cert,
-                                       base::Bind(&GetCertCallbackNotCalled)));
-  EXPECT_EQ(CLIENT_CERT_INVALID_TYPE, type);
+  EXPECT_EQ(ERR_FILE_NOT_FOUND,
+            store.GetServerBoundCert("google.com",
+                                     &expiration_time,
+                                     &private_key,
+                                     &cert,
+                                     base::Bind(&GetCertCallbackNotCalled)));
 }
 
 TEST(DefaultServerBoundCertStoreTest, TestAsyncDelete) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   persistent_store->AddServerBoundCert(ServerBoundCertStore::ServerBoundCert(
       "a.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time::FromInternalValue(1),
       base::Time::FromInternalValue(2),
       "a", "b"));
   persistent_store->AddServerBoundCert(ServerBoundCertStore::ServerBoundCert(
       "b.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time::FromInternalValue(3),
       base::Time::FromInternalValue(4),
       "c", "d"));
@@ -408,17 +386,20 @@ TEST(DefaultServerBoundCertStoreTest, TestAsyncDelete) {
 
   AsyncGetCertHelper a_helper;
   AsyncGetCertHelper b_helper;
-  SSLClientCertType type;
   base::Time expiration_time;
   std::string private_key;
   std::string cert = "not set";
   EXPECT_EQ(0, store.GetCertCount());
-  EXPECT_FALSE(store.GetServerBoundCert(
-      "a.com", &type, &expiration_time, &private_key, &cert,
-      base::Bind(&AsyncGetCertHelper::Callback, base::Unretained(&a_helper))));
-  EXPECT_FALSE(store.GetServerBoundCert(
-      "b.com", &type, &expiration_time, &private_key, &cert,
-      base::Bind(&AsyncGetCertHelper::Callback, base::Unretained(&b_helper))));
+  EXPECT_EQ(ERR_IO_PENDING,
+      store.GetServerBoundCert(
+          "a.com", &expiration_time, &private_key, &cert,
+          base::Bind(&AsyncGetCertHelper::Callback,
+                     base::Unretained(&a_helper))));
+  EXPECT_EQ(ERR_IO_PENDING,
+      store.GetServerBoundCert(
+          "b.com", &expiration_time, &private_key, &cert,
+          base::Bind(&AsyncGetCertHelper::Callback,
+                     base::Unretained(&b_helper))));
 
   EXPECT_EQ(0, delete_finished);
   EXPECT_FALSE(a_helper.called_);
@@ -429,14 +410,14 @@ TEST(DefaultServerBoundCertStoreTest, TestAsyncDelete) {
   EXPECT_EQ(1, store.GetCertCount());
   EXPECT_EQ("not set", cert);
   EXPECT_TRUE(a_helper.called_);
+  EXPECT_EQ(ERR_FILE_NOT_FOUND, a_helper.err_);
   EXPECT_EQ("a.com", a_helper.server_identifier_);
-  EXPECT_EQ(CLIENT_CERT_INVALID_TYPE, a_helper.type_);
   EXPECT_EQ(0, a_helper.expiration_time_.ToInternalValue());
   EXPECT_EQ("", a_helper.private_key_);
   EXPECT_EQ("", a_helper.cert_);
   EXPECT_TRUE(b_helper.called_);
+  EXPECT_EQ(OK, b_helper.err_);
   EXPECT_EQ("b.com", b_helper.server_identifier_);
-  EXPECT_EQ(CLIENT_CERT_RSA_SIGN, b_helper.type_);
   EXPECT_EQ(4, b_helper.expiration_time_.ToInternalValue());
   EXPECT_EQ("c", b_helper.private_key_);
   EXPECT_EQ("d", b_helper.cert_);
@@ -449,25 +430,21 @@ TEST(DefaultServerBoundCertStoreTest, TestGetAll) {
   EXPECT_EQ(0, store.GetCertCount());
   store.SetServerBoundCert(
       "verisign.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "a", "b");
   store.SetServerBoundCert(
       "google.com",
-      CLIENT_CERT_ECDSA_SIGN,
       base::Time(),
       base::Time(),
       "c", "d");
   store.SetServerBoundCert(
       "harvard.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "e", "f");
   store.SetServerBoundCert(
       "mit.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "g", "h");
@@ -486,13 +463,11 @@ TEST(DefaultServerBoundCertStoreTest, TestInitializeFrom) {
 
   store.SetServerBoundCert(
       "preexisting.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "a", "b");
   store.SetServerBoundCert(
       "both.com",
-      CLIENT_CERT_ECDSA_SIGN,
       base::Time(),
       base::Time(),
       "c", "d");
@@ -503,14 +478,12 @@ TEST(DefaultServerBoundCertStoreTest, TestInitializeFrom) {
   ServerBoundCertStore::ServerBoundCertList source_certs;
   source_certs.push_back(ServerBoundCertStore::ServerBoundCert(
       "both.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       // Key differs from above to test that existing entries are overwritten.
       "e", "f"));
   source_certs.push_back(ServerBoundCertStore::ServerBoundCert(
       "copied.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "g", "h"));
@@ -538,13 +511,11 @@ TEST(DefaultServerBoundCertStoreTest, TestAsyncInitializeFrom) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   persistent_store->AddServerBoundCert(ServerBoundCertStore::ServerBoundCert(
       "preexisting.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "a", "b"));
   persistent_store->AddServerBoundCert(ServerBoundCertStore::ServerBoundCert(
       "both.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "c", "d"));
@@ -553,14 +524,12 @@ TEST(DefaultServerBoundCertStoreTest, TestAsyncInitializeFrom) {
   ServerBoundCertStore::ServerBoundCertList source_certs;
   source_certs.push_back(ServerBoundCertStore::ServerBoundCert(
       "both.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       // Key differs from above to test that existing entries are overwritten.
       "e", "f"));
   source_certs.push_back(ServerBoundCertStore::ServerBoundCert(
       "copied.com",
-      CLIENT_CERT_RSA_SIGN,
       base::Time(),
       base::Time(),
       "g", "h"));

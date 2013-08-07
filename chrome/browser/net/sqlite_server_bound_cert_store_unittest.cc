@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_data_directory.h"
+#include "net/ssl/ssl_client_cert_type.h"
 #include "net/test/cert_test_util.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,7 +90,6 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
     store_->AddServerBoundCert(
         net::DefaultServerBoundCertStore::ServerBoundCert(
             "google.com",
-            net::CLIENT_CERT_RSA_SIGN,
             base::Time::FromInternalValue(1),
             base::Time::FromInternalValue(2),
             "a", "b"));
@@ -106,7 +106,6 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
   store_->AddServerBoundCert(
       net::DefaultServerBoundCertStore::ServerBoundCert(
           "foo.com",
-          net::CLIENT_CERT_ECDSA_SIGN,
           base::Time::FromInternalValue(3),
           base::Time::FromInternalValue(4),
           "c", "d"));
@@ -124,27 +123,25 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
   // Reload and test for persistence
   Load(&certs);
   ASSERT_EQ(2U, certs.size());
-  net::DefaultServerBoundCertStore::ServerBoundCert* ec_cert;
-  net::DefaultServerBoundCertStore::ServerBoundCert* rsa_cert;
-  if (net::CLIENT_CERT_RSA_SIGN == certs[0]->type()) {
-    rsa_cert = certs[0];
-    ec_cert = certs[1];
+  net::DefaultServerBoundCertStore::ServerBoundCert* goog_cert;
+  net::DefaultServerBoundCertStore::ServerBoundCert* foo_cert;
+  if (certs[0]->server_identifier() == "google.com") {
+    goog_cert = certs[0];
+    foo_cert = certs[1];
   } else {
-    rsa_cert = certs[1];
-    ec_cert = certs[0];
+    goog_cert = certs[1];
+    foo_cert = certs[0];
   }
-  ASSERT_STREQ("google.com", rsa_cert->server_identifier().c_str());
-  ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, rsa_cert->type());
-  ASSERT_STREQ("a", rsa_cert->private_key().c_str());
-  ASSERT_STREQ("b", rsa_cert->cert().c_str());
-  ASSERT_EQ(1, rsa_cert->creation_time().ToInternalValue());
-  ASSERT_EQ(2, rsa_cert->expiration_time().ToInternalValue());
-  ASSERT_STREQ("foo.com", ec_cert->server_identifier().c_str());
-  ASSERT_EQ(net::CLIENT_CERT_ECDSA_SIGN, ec_cert->type());
-  ASSERT_STREQ("c", ec_cert->private_key().c_str());
-  ASSERT_STREQ("d", ec_cert->cert().c_str());
-  ASSERT_EQ(3, ec_cert->creation_time().ToInternalValue());
-  ASSERT_EQ(4, ec_cert->expiration_time().ToInternalValue());
+  ASSERT_EQ("google.com", goog_cert->server_identifier());
+  ASSERT_STREQ("a", goog_cert->private_key().c_str());
+  ASSERT_STREQ("b", goog_cert->cert().c_str());
+  ASSERT_EQ(1, goog_cert->creation_time().ToInternalValue());
+  ASSERT_EQ(2, goog_cert->expiration_time().ToInternalValue());
+  ASSERT_EQ("foo.com", foo_cert->server_identifier());
+  ASSERT_STREQ("c", foo_cert->private_key().c_str());
+  ASSERT_STREQ("d", foo_cert->cert().c_str());
+  ASSERT_EQ(3, foo_cert->creation_time().ToInternalValue());
+  ASSERT_EQ(4, foo_cert->expiration_time().ToInternalValue());
 
   // Now delete the cert and check persistence again.
   store_->DeleteServerBoundCert(*certs[0]);
@@ -207,23 +204,10 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV1) {
     ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
     store_ = new SQLiteServerBoundCertStore(v1_db_path, NULL);
 
-    // Load the database and ensure the certs can be read and are marked as RSA.
+    // Load the database. Because the existing v1 certs are implicitly of type
+    // RSA, which is unsupported, they're discarded.
     Load(&certs);
-    ASSERT_EQ(2U, certs.size());
-
-    ASSERT_STREQ("google.com", certs[0]->server_identifier().c_str());
-    ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, certs[0]->type());
-    ASSERT_EQ(GetTestCertExpirationTime(),
-              certs[0]->expiration_time());
-    ASSERT_EQ(key_data, certs[0]->private_key());
-    ASSERT_EQ(cert_data, certs[0]->cert());
-
-    ASSERT_STREQ("foo.com", certs[1]->server_identifier().c_str());
-    ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, certs[1]->type());
-    // Undecodable cert, expiration time will be uninitialized.
-    ASSERT_EQ(base::Time(), certs[1]->expiration_time());
-    ASSERT_STREQ("\xaa", certs[1]->private_key().c_str());
-    ASSERT_STREQ("\xbb", certs[1]->cert().c_str());
+    ASSERT_EQ(0U, certs.size());
 
     store_ = NULL;
     base::RunLoop().RunUntilIdle();
@@ -273,7 +257,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV2) {
     add_smt.BindString(0, "google.com");
     add_smt.BindBlob(1, key_data.data(), key_data.size());
     add_smt.BindBlob(2, cert_data.data(), cert_data.size());
-    add_smt.BindInt64(3, 1);
+    add_smt.BindInt64(3, 64);
     ASSERT_TRUE(add_smt.Run());
 
     ASSERT_TRUE(db.Execute(
@@ -291,19 +275,17 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV2) {
     ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
     store_ = new SQLiteServerBoundCertStore(v2_db_path, NULL);
 
-    // Load the database and ensure the certs can be read and are marked as RSA.
+    // Load the database and ensure the certs can be read.
     Load(&certs);
     ASSERT_EQ(2U, certs.size());
 
-    ASSERT_STREQ("google.com", certs[0]->server_identifier().c_str());
-    ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, certs[0]->type());
+    ASSERT_EQ("google.com", certs[0]->server_identifier());
     ASSERT_EQ(GetTestCertExpirationTime(),
               certs[0]->expiration_time());
     ASSERT_EQ(key_data, certs[0]->private_key());
     ASSERT_EQ(cert_data, certs[0]->cert());
 
-    ASSERT_STREQ("foo.com", certs[1]->server_identifier().c_str());
-    ASSERT_EQ(net::CLIENT_CERT_ECDSA_SIGN, certs[1]->type());
+    ASSERT_EQ("foo.com", certs[1]->server_identifier());
     // Undecodable cert, expiration time will be uninitialized.
     ASSERT_EQ(base::Time(), certs[1]->expiration_time());
     ASSERT_STREQ("\xaa", certs[1]->private_key().c_str());
@@ -359,7 +341,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
     add_smt.BindString(0, "google.com");
     add_smt.BindBlob(1, key_data.data(), key_data.size());
     add_smt.BindBlob(2, cert_data.data(), cert_data.size());
-    add_smt.BindInt64(3, 1);
+    add_smt.BindInt64(3, 64);
     add_smt.BindInt64(4, 1000);
     ASSERT_TRUE(add_smt.Run());
 
@@ -378,20 +360,18 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
     ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
     store_ = new SQLiteServerBoundCertStore(v3_db_path, NULL);
 
-    // Load the database and ensure the certs can be read and are marked as RSA.
+    // Load the database and ensure the certs can be read.
     Load(&certs);
     ASSERT_EQ(2U, certs.size());
 
-    ASSERT_STREQ("google.com", certs[0]->server_identifier().c_str());
-    ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, certs[0]->type());
+    ASSERT_EQ("google.com", certs[0]->server_identifier());
     ASSERT_EQ(1000, certs[0]->expiration_time().ToInternalValue());
     ASSERT_EQ(GetTestCertCreationTime(),
               certs[0]->creation_time());
     ASSERT_EQ(key_data, certs[0]->private_key());
     ASSERT_EQ(cert_data, certs[0]->cert());
 
-    ASSERT_STREQ("foo.com", certs[1]->server_identifier().c_str());
-    ASSERT_EQ(net::CLIENT_CERT_ECDSA_SIGN, certs[1]->type());
+    ASSERT_EQ("foo.com", certs[1]->server_identifier());
     ASSERT_EQ(2000, certs[1]->expiration_time().ToInternalValue());
     // Undecodable cert, creation time will be uninitialized.
     ASSERT_EQ(base::Time(), certs[1]->creation_time());
@@ -413,4 +393,77 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
       EXPECT_FALSE(smt.Step());
     }
   }
+}
+
+TEST_F(SQLiteServerBoundCertStoreTest, TestRSADiscarded) {
+  // Reset the store.  We'll be using a different database for this test.
+  store_ = NULL;
+
+  base::FilePath v4_db_path(temp_dir_.path().AppendASCII("v4dbrsa"));
+
+  std::string key_data;
+  std::string cert_data;
+  ReadTestKeyAndCert(&key_data, &cert_data);
+
+  // Create a version 4 database with a mix of RSA and ECDSA certs.
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(v4_db_path));
+    ASSERT_TRUE(db.Execute(
+        "CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY,"
+            "value LONGVARCHAR);"
+        "INSERT INTO \"meta\" VALUES('version','4');"
+        "INSERT INTO \"meta\" VALUES('last_compatible_version','1');"
+        "CREATE TABLE origin_bound_certs ("
+            "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
+            "private_key BLOB NOT NULL,"
+            "cert BLOB NOT NULL,"
+            "cert_type INTEGER,"
+            "expiration_time INTEGER,"
+            "creation_time INTEGER);"
+        ));
+
+    sql::Statement add_smt(db.GetUniqueStatement(
+        "INSERT INTO origin_bound_certs "
+        "(origin, private_key, cert, cert_type, expiration_time, creation_time)"
+        " VALUES (?,?,?,?,?,?)"));
+    add_smt.BindString(0, "google.com");
+    add_smt.BindBlob(1, key_data.data(), key_data.size());
+    add_smt.BindBlob(2, cert_data.data(), cert_data.size());
+    add_smt.BindInt64(3, 64);
+    add_smt.BindInt64(4, GetTestCertExpirationTime().ToInternalValue());
+    add_smt.BindInt64(5, base::Time::Now().ToInternalValue());
+    ASSERT_TRUE(add_smt.Run());
+
+    add_smt.Clear();
+    add_smt.Assign(db.GetUniqueStatement(
+        "INSERT INTO origin_bound_certs "
+        "(origin, private_key, cert, cert_type, expiration_time, creation_time)"
+        " VALUES (?,?,?,?,?,?)"));
+    add_smt.BindString(0, "foo.com");
+    add_smt.BindBlob(1, key_data.data(), key_data.size());
+    add_smt.BindBlob(2, cert_data.data(), cert_data.size());
+    add_smt.BindInt64(3, 1);
+    add_smt.BindInt64(4, GetTestCertExpirationTime().ToInternalValue());
+    add_smt.BindInt64(5, base::Time::Now().ToInternalValue());
+    ASSERT_TRUE(add_smt.Run());
+  }
+
+  ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
+  store_ = new SQLiteServerBoundCertStore(v4_db_path, NULL);
+
+  // Load the database and ensure the certs can be read.
+  Load(&certs);
+  // Only the ECDSA cert (for google.com) is read, the RSA one is discarded.
+  ASSERT_EQ(1U, certs.size());
+
+  ASSERT_EQ("google.com", certs[0]->server_identifier());
+  ASSERT_EQ(GetTestCertExpirationTime(),
+            certs[0]->expiration_time());
+  ASSERT_EQ(key_data, certs[0]->private_key());
+  ASSERT_EQ(cert_data, certs[0]->cert());
+
+  store_ = NULL;
+  // Make sure we wait until the destructor has run.
+  base::RunLoop().RunUntilIdle();
 }

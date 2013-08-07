@@ -39,11 +39,9 @@ class BrowsingDataServerBoundCertHelperTest
     net::ServerBoundCertStore* cert_store =
         context->server_bound_cert_service()->GetCertStore();
     cert_store->SetServerBoundCert("https://www.google.com:443",
-                                   net::CLIENT_CERT_RSA_SIGN,
                                    base::Time(), base::Time(),
                                    "key", "cert");
     cert_store->SetServerBoundCert("https://www.youtube.com:443",
-                                   net::CLIENT_CERT_RSA_SIGN,
                                    base::Time(), base::Time(),
                                    "key", "cert");
   }
@@ -131,34 +129,6 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, DeleteCert) {
   ASSERT_EQ(0UL, server_bound_cert_list_.size());
 }
 
-TEST_F(BrowsingDataServerBoundCertHelperTest, CannedUnique) {
-  std::string origin = "https://www.google.com:443";
-
-  scoped_refptr<CannedBrowsingDataServerBoundCertHelper> helper(
-      new CannedBrowsingDataServerBoundCertHelper());
-
-  ASSERT_TRUE(helper->empty());
-  helper->AddServerBoundCert(net::ServerBoundCertStore::ServerBoundCert(
-      origin, net::CLIENT_CERT_RSA_SIGN, base::Time(), base::Time(), "key",
-      "cert"));
-  helper->AddServerBoundCert(net::ServerBoundCertStore::ServerBoundCert(
-      origin, net::CLIENT_CERT_ECDSA_SIGN, base::Time(), base::Time(), "key",
-      "cert"));
-
-  helper->StartFetching(
-      base::Bind(&BrowsingDataServerBoundCertHelperTest::FetchCallback,
-                 base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(1UL, server_bound_cert_list_.size());
-  net::ServerBoundCertStore::ServerBoundCert& cert =
-      server_bound_cert_list_.front();
-
-  EXPECT_EQ("https://www.google.com:443", cert.server_identifier());
-  EXPECT_EQ(net::CLIENT_CERT_ECDSA_SIGN, cert.type());
-  EXPECT_EQ(0, ssl_config_changed_count_);
-}
-
 TEST_F(BrowsingDataServerBoundCertHelperTest, CannedEmpty) {
   std::string origin = "https://www.google.com";
 
@@ -167,8 +137,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, CannedEmpty) {
 
   ASSERT_TRUE(helper->empty());
   helper->AddServerBoundCert(net::ServerBoundCertStore::ServerBoundCert(
-      origin, net::CLIENT_CERT_RSA_SIGN, base::Time(), base::Time(), "key",
-      "cert"));
+      origin, base::Time(), base::Time(), "key", "cert"));
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
