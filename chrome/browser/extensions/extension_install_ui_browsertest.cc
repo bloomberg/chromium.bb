@@ -50,12 +50,8 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   // Install the given theme from the data dir and verify expected name.
   void InstallThemeAndVerify(const char* theme_name,
                              const std::string& expected_name) {
-    // If there is already a theme installed, the current theme should be
-    // disabled and the new one installed + enabled.
-    int expected_change = GetTheme() ? 0 : 1;
     const base::FilePath theme_path = test_data_dir_.AppendASCII(theme_name);
-    ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_path, expected_change,
-        browser()));
+    ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_path, 1, browser()));
     const Extension* theme = GetTheme();
     ASSERT_TRUE(theme);
     ASSERT_EQ(theme->name(), expected_name);
@@ -92,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   ASSERT_EQ(NULL, GetTheme());
 
   // Set the same theme twice and undo to verify we go back to default theme.
-  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 0, browser()));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 1, browser()));
   theme = GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_id, theme->id());

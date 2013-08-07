@@ -837,9 +837,7 @@ class ExtensionServiceTest
         EXPECT_EQ(0u, loaded_.size()) << path.value();
       } else {
         EXPECT_EQ(1u, loaded_.size()) << path.value();
-        size_t actual_extension_count = service_->extensions()->size() +
-            service_->disabled_extensions()->size();
-        EXPECT_EQ(expected_extensions_count_, actual_extension_count) <<
+        EXPECT_EQ(expected_extensions_count_, service_->extensions()->size()) <<
             path.value();
         extension = loaded_[0].get();
         EXPECT_TRUE(service_->GetExtensionById(extension->id(), false))
@@ -2359,7 +2357,6 @@ TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
 
 TEST_F(ExtensionServiceTest, InstallTheme) {
   InitializeEmptyExtensionService();
-  service_->Init();
 
   // A theme.
   base::FilePath path = data_dir_.AppendASCII("theme.crx");
@@ -2401,8 +2398,6 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
 TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   // Load.
   InitializeEmptyExtensionService();
-  service_->Init();
-
   base::FilePath extension_path = data_dir_
       .AppendASCII("theme_i18n");
 
@@ -2503,8 +2498,6 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
 
 TEST_F(ExtensionServiceTest, InstallLocalizedTheme) {
   InitializeEmptyExtensionService();
-  service_->Init();
-
   base::FilePath theme_path = data_dir_
       .AppendASCII("theme_i18n");
 

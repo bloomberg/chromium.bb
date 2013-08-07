@@ -312,21 +312,14 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
 
   void InstallThemeAndVerify(const std::string& theme_dir,
                              const std::string& theme_name) {
+    const base::FilePath theme_path = test_data_dir_.AppendASCII(theme_dir);
+    ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
+        theme_path, 1, ExtensionBrowserTest::browser()));
     const extensions::Extension* theme =
         ThemeServiceFactory::GetThemeForProfile(
             ExtensionBrowserTest::browser()->profile());
-    // If there is already a theme installed, the current theme should be
-    // disabled and the new one installed + enabled.
-    int expected_change = theme ? 0 : 1;
-
-    const base::FilePath theme_path = test_data_dir_.AppendASCII(theme_dir);
-    ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-        theme_path, expected_change, ExtensionBrowserTest::browser()));
-    const extensions::Extension* new_theme =
-        ThemeServiceFactory::GetThemeForProfile(
-            ExtensionBrowserTest::browser()->profile());
-    ASSERT_NE(static_cast<extensions::Extension*>(NULL), new_theme);
-    ASSERT_EQ(new_theme->name(), theme_name);
+    ASSERT_NE(static_cast<extensions::Extension*>(NULL), theme);
+    ASSERT_EQ(theme->name(), theme_name);
   }
 
  private:

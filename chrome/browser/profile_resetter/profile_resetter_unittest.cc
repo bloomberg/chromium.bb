@@ -445,8 +445,6 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
 }
 
 TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
-  service_->Init();
-
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 

@@ -65,6 +65,8 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -1142,6 +1144,16 @@ void ExtensionService::NotifyExtensionUnloaded(
       content::Source<Profile>(profile_),
       content::Details<UnloadedExtensionInfo>(&details));
 
+#if defined(ENABLE_THEMES)
+  // If the current theme is being unloaded, tell ThemeService to revert back
+  // to the default theme.
+  if (reason != extension_misc::UNLOAD_REASON_UPDATE && extension->is_theme()) {
+    ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
+    if (extension->id() == theme_service->GetThemeID())
+      theme_service->UseDefaultTheme();
+  }
+#endif
+
   for (content::RenderProcessHost::iterator i(
           content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
@@ -1971,6 +1983,15 @@ void ExtensionService::GarbageCollectExtensions() {
               extension_paths))) {
     NOTREACHED();
   }
+
+#if defined(ENABLE_THEMES)
+  // Also garbage-collect themes.  We check |profile_| to be
+  // defensive; in the future, we may call GarbageCollectExtensions()
+  // from somewhere other than Init() (e.g., in a timer).
+  if (profile_) {
+    ThemeServiceFactory::GetForProfile(profile_)->RemoveUnusedThemes();
+  }
+#endif
 }
 
 void ExtensionService::SyncExtensionChangeIfNeeded(const Extension& extension) {
@@ -2561,6 +2582,20 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
   }
 
   AddExtension(extension);
+
+#if defined(ENABLE_THEMES)
+  // We do this here since AddExtension() is always called on browser startup,
+  // and we only really care about the last theme installed.
+  // If that ever changes and we have to move this code somewhere
+  // else, it should be somewhere that's not in the startup path.
+  if (extension->is_theme() && extensions_.GetByID(extension->id())) {
+    DCHECK_EQ(extensions_.GetByID(extension->id()), extension);
+    // Now that the theme extension is visible from outside the
+    // ExtensionService, notify the ThemeService about the
+    // newly-installed theme.
+    ThemeServiceFactory::GetForProfile(profile_)->SetTheme(extension);
+  }
+#endif
 
   // If this is a new external extension that was disabled, alert the user
   // so he can reenable it. We do this last so that it has already been

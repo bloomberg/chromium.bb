@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -136,10 +135,8 @@ class ThemeService : public base::NonThreadSafe,
   // destroyed, uninstalls all themes that aren't the currently selected.
   void OnInfobarDestroyed();
 
-  // Uninstall theme extensions which are no longer in use. |ignore_infobars| is
-  // whether unused themes should be removed despite a theme infobar being
-  // visible.
-  void RemoveUnusedThemes(bool ignore_infobars);
+  // Remove preference values for themes that are no longer in use.
+  void RemoveUnusedThemes();
 
   // Returns the syncable service for syncing theme. The returned service is
   // owned by |this| object.
@@ -188,16 +185,13 @@ class ThemeService : public base::NonThreadSafe,
  private:
   friend class theme_service_internal::ThemeServiceTest;
 
-  // Called when the extension service is ready.
-  void OnExtensionServiceReady();
+  // Replaces the current theme supplier with a new one and calls
+  // StopUsingTheme() or StartUsingTheme() as appropriate.
+  void SwapThemeSupplier(scoped_refptr<CustomThemeSupplier> theme_supplier);
 
   // Migrate the theme to the new theme pack schema by recreating the data pack
   // from the extension.
   void MigrateTheme();
-
-  // Replaces the current theme supplier with a new one and calls
-  // StopUsingTheme() or StartUsingTheme() as appropriate.
-  void SwapThemeSupplier(scoped_refptr<CustomThemeSupplier> theme_supplier);
 
   // Saves the filename of the cached theme pack.
   void SavePackName(const base::FilePath& pack_path);
@@ -246,21 +240,12 @@ class ThemeService : public base::NonThreadSafe,
 
   scoped_refptr<CustomThemeSupplier> theme_supplier_;
 
-  // The id of the theme extension which has just been installed but has not
-  // been loaded yet. The theme extension with |installed_pending_load_id_| may
-  // never be loaded if the install is due to updating a disabled theme.
-  // |pending_install_id_| should be set to |kDefaultThemeID| if there are no
-  // recently installed theme extensions
-  std::string installed_pending_load_id_;
-
   // The number of infobars currently displayed.
   int number_of_infobars_;
 
   content::NotificationRegistrar registrar_;
 
   scoped_ptr<ThemeSyncableService> theme_syncable_service_;
-
-  base::WeakPtrFactory<ThemeService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeService);
 };
