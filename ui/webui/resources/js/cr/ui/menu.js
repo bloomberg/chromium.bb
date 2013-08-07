@@ -144,8 +144,10 @@ cr.define('cr.ui', function() {
         this.selectedIndex = 0;
       }
 
-      if (this.selectedItem)
+      if (this.selectedItem) {
         this.selectedItem.focus();
+        this.setAttribute('aria-activedescendant', this.selectedItem.id);
+      }
     },
 
     /**

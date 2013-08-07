@@ -215,16 +215,18 @@
     </menu>
 
     <menu id="gear-menu" class="chrome-menu" showShortcuts>
-      <menuitem command="#newwindow"></menuitem>
-      <menuitem command="#newfolder"></menuitem>
-      <menuitem command="#change-default-app"></menuitem>
+      <menuitem id="gear-menu-newwindow" command="#newwindow"></menuitem>
+      <menuitem id="gear-menu-newfolder" command="#newfolder"></menuitem>
+      <menuitem id="gear-menu-change-default-app"
+                command="#change-default-app"></menuitem>
       <hr id="drive-separator">
       <menuitem id="drive-sync-settings"
                 i18n-content=DRIVE_MOBILE_CONNECTION_OPTION></menuitem>
       <menuitem id="drive-hosted-settings"
                 i18n-content=DRIVE_SHOW_HOSTED_FILES_OPTION></menuitem>
       <hr command="#drive-clear-local-cache">
-      <menuitem command="#drive-clear-local-cache"></menuitem>
+      <menuitem id="gear-menu-drive-clear-local-cache"
+                command="#drive-clear-local-cache"></menuitem>
       <hr>
       <div>
         View
@@ -236,9 +238,12 @@
               i18n-values="aria-label:THUMBNAIL_VIEW_TOOLTIP">
       </menuitem>
       <hr>
-      <menuitem command="#drive-buy-more-space"></menuitem>
-      <menuitem command="#drive-go-to-drive"></menuitem>
-      <menuitem command="#volume-help"></menuitem>
+      <menuitem id="gear-menu-drive-buy-more-space"
+                command="#drive-buy-more-space"></menuitem>
+      <menuitem id="gear-menu-drive-go-to-drive"
+                command="#drive-go-to-drive"></menuitem>
+      <menuitem id="gear-menu-volume-help"
+                command="#volume-help"></menuitem>
       <hr>
       <div id="volume-space-info">
         <div id="volume-space-info-contents">
@@ -295,7 +300,8 @@
           <div class="buttonbar">
             <button class="menubutton" id="gear-button" tabindex="10"
                     menu="#gear-menu"
-                    i18n-values="aria-label:GEAR_BUTTON_TOOLTIP">
+                    i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
+                    aria-activedescendant="gear-menu">
             </button>
             <button id="maximize-button" visibleif="full-page" tabindex="-1">
             </button>
