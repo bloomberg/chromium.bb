@@ -28,19 +28,17 @@ EXTRA_ENV = {
   # Allow C++ exception handling in the pexe.
   'ALLOW_CXX_EXCEPTIONS' : '0',
 
-  # To simulate the sandboxed translator better and avoid user surprises,
-  # reject LLVM bitcode (non-finalized) by default, accepting only PNaCl
-  # (finalized) bitcode. --allow-llvm-bitcode-input has to be passed explicitly
-  # to override this.
-  # TODO(eliben): actually enable rejection in followup CL that includes other
-  # piping.
-  'ALLOW_LLVM_BITCODE_INPUT': '0',
-
   # Use the IRT shim by default. This can be disabled with an explicit
   # flag (--noirtshim) or via -nostdlib.
   'USE_IRT_SHIM'  : '${!SHARED ? 1 : 0}',
   # Experimental mode exploring newlib as a shared library
   'NEWLIB_SHARED_EXPERIMENT': '0',
+
+  # To simulate the sandboxed translator better and avoid user surprises,
+  # reject LLVM bitcode (non-finalized) by default, accepting only PNaCl
+  # (finalized) bitcode. --allow-llvm-bitcode-input has to be passed
+  # explicitly to override this.
+  'ALLOW_LLVM_BITCODE_INPUT': '0',
 
   # Flags for pnacl-nativeld
   'LD_FLAGS': '${STATIC ? -static} ${SHARED ? -shared}',
@@ -494,6 +492,10 @@ def RunLLC(infile, outfile, outfiletype):
     args = ["${RUN_LLC}"]
     if filetype.IsPNaClBitcode(infile):
       args.append("-bitcode-format=pnacl")
+    elif filetype.IsLLVMBitcode(infile):
+      if not env.getbool('ALLOW_LLVM_BITCODE_INPUT'):
+        Log.Fatal('Translator expects finalized PNaCl bitcode. '
+                  'Pass --allow-llvm-bitcode-input to override.')
     driver_tools.Run(' '.join(args))
     env.pop()
   return 0

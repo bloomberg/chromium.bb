@@ -617,7 +617,8 @@ def RunTranslate(infile, output, mode):
               'bitcode linking. This is supposed to wait until '
               'translation. Use --pnacl-allow-translate to override.',
               pathtools.touser(infile))
-  args = env.get('TRANSLATE_FLAGS') + [mode, infile, '-o', output]
+  args = env.get('TRANSLATE_FLAGS') + [mode, '--allow-llvm-bitcode-input',
+                                       infile, '-o', output]
   if env.getbool('PIC'):
     args += ['-fPIC']
   RunDriver('translate', args)

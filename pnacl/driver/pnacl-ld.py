@@ -53,6 +53,7 @@ EXTRA_ENV = {
                      '${SHARED ? -shared} ' +
                      '${#SONAME ? -Wl,--soname=${SONAME}} ' +
                      '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
+                     '--allow-llvm-bitcode-input ' +
                      '${TRANSLATE_FLAGS_USER}',
 
   # Extra pnacl-translate flags specified by the user using -Wt

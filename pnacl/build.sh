@@ -2250,7 +2250,7 @@ translate-sb-tool() {
     # http://code.google.com/p/nativeclient/issues/detail?id=1591
     # you will need to do a build without these flags.
     "${PNACL_TRANSLATE}" -ffunction-sections -fdata-sections --gc-sections \
-      --noirt -arch ${tarch} "${pexe}" -o "${nexe}" &
+      --allow-llvm-bitcode-input --noirt -arch ${tarch} "${pexe}" -o "${nexe}" &
     QueueLastProcess
   done
   StepBanner "TRANSLATE" "Waiting for translation processes to finish"
