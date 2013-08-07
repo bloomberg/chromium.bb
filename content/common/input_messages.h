@@ -126,9 +126,10 @@ IPC_MESSAGE_ROUTED3(InputMsg_ActivateNearestFindResult,
 // Messages sent from the renderer to the browser.
 
 // Acknowledges receipt of a InputMsg_HandleInputEvent message.
-IPC_MESSAGE_ROUTED2(InputHostMsg_HandleInputEvent_ACK,
+IPC_MESSAGE_ROUTED3(InputHostMsg_HandleInputEvent_ACK,
                     WebKit::WebInputEvent::Type,
-                    content::InputEventAckState /* ack_result */)
+                    content::InputEventAckState /* ack_result */,
+                    ui::LatencyInfo /* latency_info */)
 
 
 // Adding a new message? Stick to the sort order above: first platform

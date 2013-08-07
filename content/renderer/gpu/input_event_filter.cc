@@ -103,20 +103,6 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-// static
-const WebInputEvent* InputEventFilter::CrackMessage(
-    const IPC::Message& message,
-    ui::LatencyInfo* latency_info) {
-  DCHECK(message.type() == InputMsg_HandleInputEvent::ID);
-
-  PickleIterator iter(message);
-  const WebInputEvent* event = NULL;
-  IPC::ParamTraits<IPC::WebInputEventPointer>::Read(&message, &iter, &event);
-  if (latency_info)
-    IPC::ParamTraits<ui::LatencyInfo>::Read(&message, &iter, latency_info);
-  return event;
-}
-
 InputEventFilter::~InputEventFilter() {
 }
 
@@ -136,35 +122,43 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
     return;
   }
 
+  int routing_id = message.routing_id();
   ui::LatencyInfo latency_info;
-  const WebInputEvent* event = CrackMessage(message, &latency_info);
+  const WebInputEvent* event = NULL;
+  bool is_keyboard_shortcut;
+  if (!InputMsg_HandleInputEvent::Read(
+          &message, &event, &latency_info, &is_keyboard_shortcut))
+    return;
+  DCHECK(event);
 
   InputEventAckState ack =
-      handler_.Run(message.routing_id(), event, latency_info);
+      handler_.Run(routing_id, event, latency_info);
 
   if (ack == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
     TRACE_EVENT0("input", "InputEventFilter::ForwardToHandler");
+    IPC::Message new_msg = InputMsg_HandleInputEvent(
+        routing_id, event, latency_info, is_keyboard_shortcut);
     main_loop_->PostTask(
         FROM_HERE,
         base::Bind(&InputEventFilter::ForwardToMainListener,
-                   this, message));
+                   this, new_msg));
     return;
   }
 
-  SendACK(message, ack);
+  SendACK(event->type, ack, latency_info, routing_id);
 }
 
-void InputEventFilter::SendACK(const IPC::Message& message,
-                               InputEventAckState ack_result) {
+void InputEventFilter::SendACK(WebKit::WebInputEvent::Type type,
+                               InputEventAckState ack_result,
+                               const ui::LatencyInfo& latency_info,
+                               int routing_id) {
   DCHECK(target_loop_->BelongsToCurrentThread());
 
   io_loop_->PostTask(
       FROM_HERE,
       base::Bind(&InputEventFilter::SendMessageOnIOThread, this,
                  InputHostMsg_HandleInputEvent_ACK(
-                     message.routing_id(),
-                     CrackMessage(message, NULL)->type,
-                     ack_result)));
+                     routing_id, type, ack_result, latency_info)));
 }
 
 void InputEventFilter::SendMessageOnIOThread(const IPC::Message& message) {

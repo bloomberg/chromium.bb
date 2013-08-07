@@ -110,7 +110,8 @@ void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
     if (ShouldForwardToRenderer(event.event))
       client_->SendTouchEventImmediately(event);
     else
-      PopTouchEventWithAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      PopTouchEventToClient(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+                            ui::LatencyInfo());
     return;
   }
 
@@ -124,7 +125,8 @@ void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
   touch_queue_.push_back(new CoalescedWebTouchEvent(event));
 }
 
-void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result) {
+void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result,
+                                      const ui::LatencyInfo& latency_info) {
   DCHECK(!dispatching_touch_ack_);
   if (touch_queue_.empty())
     return;
@@ -149,7 +151,7 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result) {
     }
   }
 
-  PopTouchEventWithAck(ack_result);
+  PopTouchEventToClient(ack_result, latency_info);
 
   // If there are queued touch events, then try to forward them to the renderer
   // immediately, or ACK the events back to the client if appropriate.
@@ -160,14 +162,16 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result) {
       client_->SendTouchEventImmediately(touch);
       break;
     }
-    PopTouchEventWithAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    PopTouchEventToClient(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+                          ui::LatencyInfo());
   }
 }
 
 void TouchEventQueue::FlushQueue() {
   DCHECK(!dispatching_touch_ack_);
   while (!touch_queue_.empty())
-    PopTouchEventWithAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    PopTouchEventToClient(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+                          ui::LatencyInfo());
 }
 
 size_t TouchEventQueue::GetQueueSize() const {
@@ -178,7 +182,9 @@ const TouchEventWithLatencyInfo& TouchEventQueue::GetLatestEvent() const {
   return touch_queue_.back()->coalesced_event();
 }
 
-void TouchEventQueue::PopTouchEventWithAck(InputEventAckState ack_result) {
+void TouchEventQueue::PopTouchEventToClient(
+    InputEventAckState ack_result,
+    const ui::LatencyInfo& renderer_latency_info) {
   if (touch_queue_.empty())
     return;
   scoped_ptr<CoalescedWebTouchEvent> acked_event(touch_queue_.front());
@@ -193,6 +199,7 @@ void TouchEventQueue::PopTouchEventWithAck(InputEventAckState ack_result) {
        end = acked_event->end();
        iter != end; ++iter) {
     ui::LatencyInfo* latency = const_cast<ui::LatencyInfo*>(&(iter->latency));
+    latency->AddNewLatencyFrom(renderer_latency_info);
     latency->AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT, 0, 0, now, 1);
     client_->OnTouchEventAck((*iter), ack_result);

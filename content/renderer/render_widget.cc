@@ -868,8 +868,10 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
   }
 
   IPC::Message* response =
-      new InputHostMsg_HandleInputEvent_ACK(routing_id_, input_event->type,
-                                                ack_result);
+      new InputHostMsg_HandleInputEvent_ACK(routing_id_,
+                                            input_event->type,
+                                            ack_result,
+                                            latency_info);
   bool event_type_gets_rate_limited =
       input_event->type == WebInputEvent::MouseMove ||
       input_event->type == WebInputEvent::MouseWheel ||

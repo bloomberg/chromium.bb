@@ -59,6 +59,9 @@ struct UI_EXPORT LatencyInfo {
   // Merges the contents of another LatencyInfo into this one.
   void MergeWith(const LatencyInfo& other);
 
+  // Add LatencyComponents that are in |other| but not in |this|.
+  void AddNewLatencyFrom(const LatencyInfo& other);
+
   // Modifies the current sequence number for a component, and adds a new
   // sequence number with the current timestamp.
   void AddLatencyNumber(LatencyComponentType component,

@@ -187,9 +187,11 @@ TEST_F(InputEventFilterTest, Basic) {
 
     WebInputEvent::Type event_type = WebInputEvent::Undefined;
     InputEventAckState ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+    ui::LatencyInfo latency_info;
     EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message,
-                                                            &event_type,
-                                                            &ack_result));
+                                                        &event_type,
+                                                        &ack_result,
+                                                        &latency_info));
     EXPECT_EQ(kEvents[i].type, event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
@@ -211,7 +213,11 @@ TEST_F(InputEventFilterTest, Basic) {
     const IPC::Message& message = message_recorder_.message_at(i);
 
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    const WebInputEvent* event = InputEventFilter::CrackMessage(message, NULL);
+    const WebInputEvent* event = NULL;
+    ui::LatencyInfo latency_info;
+    bool is_kbd_shortcut;
+    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(
+        &message, &event, &latency_info, &is_kbd_shortcut));
 
     EXPECT_EQ(kEvents[i].size, event->size);
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
@@ -237,9 +243,11 @@ TEST_F(InputEventFilterTest, Basic) {
 
     WebInputEvent::Type event_type = WebInputEvent::Undefined;
     InputEventAckState ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+    ui::LatencyInfo latency_info;
     EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message,
-                                                            &event_type,
-                                                            &ack_result));
+                                                        &event_type,
+                                                        &ack_result,
+                                                        &latency_info));
     EXPECT_EQ(kEvents[i].type, event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_CONSUMED);
   }

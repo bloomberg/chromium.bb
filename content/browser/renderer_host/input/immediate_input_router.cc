@@ -361,7 +361,7 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
     case INPUT_EVENT_ACK_STATE_CONSUMED:
     case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
       next_mouse_move_.reset();
-      ProcessInputEventAck(input_event.type, filter_ack);
+      ProcessInputEventAck(input_event.type, filter_ack, latency_info);
       // WARNING: |this| may be deleted at this point.
       return;
 
@@ -389,7 +389,8 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
         // ACK to the touch-event queue immediately. Mark the event as not
         // processed, to make sure that the touch-scroll gesture that initiated
         // the overscroll is updated properly.
-        touch_event_queue_->ProcessTouchAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        touch_event_queue_->ProcessTouchAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+                                            latency_info);
       }
       return;
     }
@@ -417,15 +418,17 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
   next_mouse_move_.reset();
 }
 
-void ImmediateInputRouter::OnInputEventAck(WebInputEvent::Type event_type,
-                                           InputEventAckState ack_result) {
+void ImmediateInputRouter::OnInputEventAck(
+    WebInputEvent::Type event_type,
+    InputEventAckState ack_result,
+    const ui::LatencyInfo& latency_info) {
   // Log the time delta for processing an input event.
   TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
   UMA_HISTOGRAM_TIMES("MPArch.IIR_InputEventDelta", delta);
 
   client_->DecrementInFlightEventCount();
 
-  ProcessInputEventAck(event_type, ack_result);
+  ProcessInputEventAck(event_type, ack_result, latency_info);
 }
 
 void ImmediateInputRouter::OnMsgMoveCaretAck() {
@@ -449,8 +452,10 @@ void ImmediateInputRouter::OnHasTouchEventHandlers(bool has_handlers) {
   client_->OnHasTouchEventHandlers(has_handlers);
 }
 
-void ImmediateInputRouter::ProcessInputEventAck(WebInputEvent::Type event_type,
-                                                InputEventAckState ack_result) {
+void ImmediateInputRouter::ProcessInputEventAck(
+    WebInputEvent::Type event_type,
+    InputEventAckState ack_result,
+    const ui::LatencyInfo& latency_info) {
   TRACE_EVENT1("input", "ImmediateInputRouter::ProcessInputEventAck",
                "ack", GetEventAckName(ack_result));
 
@@ -472,7 +477,7 @@ void ImmediateInputRouter::ProcessInputEventAck(WebInputEvent::Type event_type,
   } else if (type == WebInputEvent::MouseWheel) {
     ProcessWheelAck(ack_result);
   } else if (WebInputEvent::isTouchEventType(type)) {
-    ProcessTouchAck(ack_result);
+    ProcessTouchAck(ack_result, latency_info);
   } else if (WebInputEvent::isGestureEventType(type)) {
     ProcessGestureAck(type, ack_result);
   }
@@ -544,9 +549,11 @@ void ImmediateInputRouter::ProcessGestureAck(int type,
   gesture_event_filter_->ProcessGestureAck(processed, type);
 }
 
-void ImmediateInputRouter::ProcessTouchAck(InputEventAckState ack_result) {
+void ImmediateInputRouter::ProcessTouchAck(
+    InputEventAckState ack_result,
+    const ui::LatencyInfo& latency_info) {
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
-  touch_event_queue_->ProcessTouchAck(ack_result);
+  touch_event_queue_->ProcessTouchAck(ack_result, latency_info);
 }
 
 }  // namespace content

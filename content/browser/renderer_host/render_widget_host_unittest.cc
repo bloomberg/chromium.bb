@@ -668,7 +668,8 @@ class RenderWidgetHostTest : public testing::Test {
   void SendInputEventACK(WebInputEvent::Type type,
                          InputEventAckState ack_result) {
     scoped_ptr<IPC::Message> response(
-        new InputHostMsg_HandleInputEvent_ACK(0, type, ack_result));
+        new InputHostMsg_HandleInputEvent_ACK(0, type, ack_result,
+                                              ui::LatencyInfo()));
     host_->OnMessageReceived(*response);
   }
 

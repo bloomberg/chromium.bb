@@ -95,7 +95,8 @@ private:
 
   // IPC message handlers
   void OnInputEventAck(WebKit::WebInputEvent::Type event_type,
-                       InputEventAckState ack_result);
+                       InputEventAckState ack_result,
+                       const ui::LatencyInfo& latency_info);
   void OnMsgMoveCaretAck();
   void OnSelectRangeAck();
   void OnHasTouchEventHandlers(bool has_handlers);
@@ -104,7 +105,8 @@ private:
   // processed in the renderer, or synchonously from |FilterAndSendInputevent()|
   // if the event was filtered by the |client_| prior to sending.
   void ProcessInputEventAck(WebKit::WebInputEvent::Type event_type,
-                            InputEventAckState ack_result);
+                            InputEventAckState ack_result,
+                            const ui::LatencyInfo& latency_info);
 
   // Called by ProcessInputEventAck() to process a keyboard event ack message.
   void ProcessKeyboardAck(int type, InputEventAckState ack_result);
@@ -122,7 +124,8 @@ private:
   // Called on ProcessInputEventAck() to process a touch event ack message.
   // This can result in a gesture event being generated and sent back to the
   // renderer.
-  void ProcessTouchAck(InputEventAckState ack_result);
+  void ProcessTouchAck(InputEventAckState ack_result,
+                       const ui::LatencyInfo& latency_info);
 
   int routing_id() const { return routing_id_; }
 
