@@ -141,6 +141,8 @@ ExtensionAppShimHandler::ExtensionAppShimHandler()
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
@@ -352,9 +354,15 @@ void ExtensionAppShimHandler::Observe(
       }
       break;
     }
+    case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      const std::string& app_id =
-          content::Details<extensions::Extension>(details).ptr()->id();
+      std::string app_id;
+      if (type == chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED) {
+        app_id = content::Details<extensions::ExtensionHost>(details).ptr()
+            ->extension_id();
+      } else {
+        app_id = content::Details<extensions::Extension>(details).ptr()->id();
+      }
       Host* host = FindHost(profile, app_id);
       if (host)
         host->OnAppClosed();
