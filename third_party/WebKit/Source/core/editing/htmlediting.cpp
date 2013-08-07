@@ -116,7 +116,10 @@ Node* highestEditableRoot(const Position& position, EditableType editableType)
     if (!highestRoot)
         return 0;
 
-    node = highestRoot;
+    if (highestRoot->hasTagName(bodyTag))
+        return highestRoot;
+
+    node = highestRoot->parentNode();
     while (node) {
         if (node->rendererIsEditable(editableType))
             highestRoot = node;
