@@ -44,70 +44,84 @@ Address& Address::operator=(const Address& address) {
 }
 
 base::string16 Address::GetRawInfo(ServerFieldType type) const {
-  type = AutofillType::GetEquivalentFieldType(type);
-  if (type == ADDRESS_HOME_LINE1)
-    return line1_;
+  // TODO(isherman): Is GetStorableType even necessary?
+  switch (AutofillType(type).GetStorableType()) {
+    case ADDRESS_HOME_LINE1:
+      return line1_;
 
-  if (type == ADDRESS_HOME_LINE2)
-    return line2_;
+    case ADDRESS_HOME_LINE2:
+      return line2_;
 
-  if (type == ADDRESS_HOME_CITY)
-    return city_;
+    case ADDRESS_HOME_CITY:
+      return city_;
 
-  if (type == ADDRESS_HOME_STATE)
-    return state_;
+    case ADDRESS_HOME_STATE:
+      return state_;
 
-  if (type ==  ADDRESS_HOME_ZIP)
-    return zip_code_;
+    case ADDRESS_HOME_ZIP:
+      return zip_code_;
 
-  if (type == ADDRESS_HOME_COUNTRY)
-    return country_code_;
+    case ADDRESS_HOME_COUNTRY:
+      return country_code_;
 
-  return base::string16();
+    default:
+      return base::string16();
+  }
 }
 
 void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
-  type = AutofillType::GetEquivalentFieldType(type);
-  if (type == ADDRESS_HOME_LINE1) {
-    line1_ = value;
-  } else if (type == ADDRESS_HOME_LINE2) {
-    line2_ = value;
-  } else if (type == ADDRESS_HOME_CITY) {
-    city_ = value;
-  } else if (type == ADDRESS_HOME_STATE) {
-    state_ = value;
-  } else if (type == ADDRESS_HOME_COUNTRY) {
-    DCHECK(value.empty() || value.length() == 2u);
-    country_code_ = value;
-  } else if (type == ADDRESS_HOME_ZIP) {
-    zip_code_ = value;
-  } else {
-    NOTREACHED();
+  // TODO(isherman): Is GetStorableType even necessary?
+  switch (AutofillType(type).GetStorableType()) {
+    case ADDRESS_HOME_LINE1:
+      line1_ = value;
+      break;
+
+    case ADDRESS_HOME_LINE2:
+      line2_ = value;
+      break;
+
+    case ADDRESS_HOME_CITY:
+      city_ = value;
+      break;
+
+    case ADDRESS_HOME_STATE:
+      state_ = value;
+      break;
+
+    case ADDRESS_HOME_COUNTRY:
+      DCHECK(value.empty() || value.length() == 2u);
+      country_code_ = value;
+      break;
+
+    case ADDRESS_HOME_ZIP:
+      zip_code_ = value;
+      break;
+
+    default:
+      NOTREACHED();
   }
 }
 
 base::string16 Address::GetInfo(const AutofillType& type,
                                 const std::string& app_locale) const {
-  ServerFieldType server_type =
-      AutofillType::GetEquivalentFieldType(type.server_type());
-  if (server_type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
+  ServerFieldType storable_type = type.GetStorableType();
+  if (storable_type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
     return AutofillCountry(UTF16ToASCII(country_code_), app_locale).name();
 
-  return GetRawInfo(server_type);
+  return GetRawInfo(storable_type);
 }
 
 bool Address::SetInfo(const AutofillType& type,
                       const base::string16& value,
                       const std::string& app_locale) {
-  ServerFieldType server_type =
-      AutofillType::GetEquivalentFieldType(type.server_type());
-  if (server_type == ADDRESS_HOME_COUNTRY && !value.empty()) {
+  ServerFieldType storable_type = type.GetStorableType();
+  if (storable_type == ADDRESS_HOME_COUNTRY && !value.empty()) {
     country_code_ =
         ASCIIToUTF16(AutofillCountry::GetCountryCode(value, app_locale));
     return !country_code_.empty();
   }
 
-  SetRawInfo(server_type, value);
+  SetRawInfo(storable_type, value);
   return true;
 }
 

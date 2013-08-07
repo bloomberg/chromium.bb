@@ -314,7 +314,7 @@ base::string16 WalletItems::MaskedInstrument::GetInfo(
   if (type.group() != CREDIT_CARD)
     return address().GetInfo(type, app_locale);
 
-  switch (type.server_type()) {
+  switch (type.GetStorableType()) {
     case CREDIT_CARD_NAME:
       return address().recipient_name();
 

@@ -123,18 +123,21 @@ void AutofillProfileWrapper::FillInputs(DetailInputs* inputs) {
 }
 
 void AutofillProfileWrapper::FillFormField(AutofillField* field) const {
-  AutofillType field_type = field->Type();
+  if (field->Type().GetStorableType() == CREDIT_CARD_NAME) {
+    // Cache the field's true type.
+    HtmlFieldType original_type = field->html_type();
 
-  if (field_type.server_type() == CREDIT_CARD_NAME) {
     // Requests for the user's credit card are filled from the billing address,
     // but the AutofillProfile class doesn't know how to fill credit card
     // fields. So, temporarily set the type to the corresponding profile type.
-    field->set_heuristic_type(NAME_FULL);
+    field->SetHtmlType(HTML_TYPE_NAME, field->html_mode());
+    AutofillDataModelWrapper::FillFormField(field);
+
+    // Restore the field's true type.
+    field->SetHtmlType(original_type, field->html_mode());
+  } else {
+    AutofillDataModelWrapper::FillFormField(field);
   }
-
-  AutofillDataModelWrapper::FillFormField(field);
-
-  field->set_heuristic_type(field_type.server_type());
 }
 
 // AutofillCreditCardWrapper
@@ -146,7 +149,7 @@ AutofillCreditCardWrapper::AutofillCreditCardWrapper(const CreditCard* card)
 AutofillCreditCardWrapper::~AutofillCreditCardWrapper() {}
 
 string16 AutofillCreditCardWrapper::GetInfo(const AutofillType& type) const {
-  if (type.server_type() == CREDIT_CARD_EXP_MONTH)
+  if (type.GetStorableType() == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(card_->expiration_month());
 
   return AutofillDataModelWrapper::GetInfo(type);
@@ -193,7 +196,7 @@ WalletInstrumentWrapper::WalletInstrumentWrapper(
 WalletInstrumentWrapper::~WalletInstrumentWrapper() {}
 
 string16 WalletInstrumentWrapper::GetInfo(const AutofillType& type) const {
-  if (type.server_type() == CREDIT_CARD_EXP_MONTH)
+  if (type.GetStorableType() == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(instrument_->expiration_month());
 
   return instrument_->GetInfo(type, g_browser_process->GetApplicationLocale());
@@ -228,7 +231,7 @@ FullWalletBillingWrapper::FullWalletBillingWrapper(
 FullWalletBillingWrapper::~FullWalletBillingWrapper() {}
 
 string16 FullWalletBillingWrapper::GetInfo(const AutofillType& type) const {
-  if (type.server_type() == CREDIT_CARD_EXP_MONTH)
+  if (type.GetStorableType() == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(full_wallet_->expiration_month());
 
   if (type.group() == CREDIT_CARD)
@@ -267,9 +270,10 @@ DetailOutputWrapper::DetailOutputWrapper(const DetailOutputMap& outputs)
 DetailOutputWrapper::~DetailOutputWrapper() {}
 
 base::string16 DetailOutputWrapper::GetInfo(const AutofillType& type) const {
+  ServerFieldType storable_type = type.GetStorableType();
   for (DetailOutputMap::const_iterator it = outputs_.begin();
        it != outputs_.end(); ++it) {
-    if (type.server_type() == it->first->type)
+    if (storable_type == AutofillType(it->first->type).GetStorableType())
       return it->second;
   }
   return base::string16();

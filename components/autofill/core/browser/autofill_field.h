@@ -33,17 +33,19 @@ class AutofillField : public FormFieldData {
   const std::string& section() const { return section_; }
   ServerFieldType heuristic_type() const { return heuristic_type_; }
   ServerFieldType server_type() const { return server_type_; }
+  HtmlFieldType html_type() const { return html_type_; }
+  HtmlFieldMode html_mode() const { return html_mode_; }
   const ServerFieldTypeSet& possible_types() const { return possible_types_; }
   PhonePart phone_part() const { return phone_part_; }
 
-  // Sets the heuristic type of this field, validating the input.
+  // Setters for the detected type and section for this field.
   void set_section(const std::string& section) { section_ = section; }
   void set_heuristic_type(ServerFieldType type);
   void set_server_type(ServerFieldType type);
   void set_possible_types(const ServerFieldTypeSet& possible_types) {
     possible_types_ = possible_types;
   }
-  void set_phone_part(PhonePart part) { phone_part_ = part; }
+  void SetHtmlType(HtmlFieldType type, HtmlFieldMode mode);
 
   // This function automatically chooses between server and heuristic autofill
   // type, depending on the data available.
@@ -76,6 +78,13 @@ class AutofillField : public FormFieldData {
 
   // The type of the field, as determined by the local heuristics.
   ServerFieldType heuristic_type_;
+
+  // The type of the field, as specified by the site author in HTML.
+  HtmlFieldType html_type_;
+
+  // The "mode" of the field, as specified by the site author in HTML.
+  // Currently this is used to distinguish between billing and shipping fields.
+  HtmlFieldMode html_mode_;
 
   // The set of possible types for this field.
   ServerFieldTypeSet possible_types_;

@@ -67,7 +67,7 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
       std::vector<base::string16> values;
       profiles[i]->GetRawMultiInfo(type, &values);
       for (size_t k = 0; k < values.size(); ++k) {
-        result += AutofillType::FieldTypeToString(type);
+        result += AutofillType(type).ToString();
         result += kFieldSeparator;
         result += UTF16ToUTF8(values[k]);
         result += "\n";

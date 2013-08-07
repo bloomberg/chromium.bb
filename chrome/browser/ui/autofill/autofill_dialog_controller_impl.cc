@@ -115,19 +115,23 @@ bool InputTypeMatchesFieldType(const DetailInput& input,
                                const AutofillType& field_type) {
   // If any credit card expiration info is asked for, show both month and year
   // inputs.
-  if (field_type.server_type() == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
-      field_type.server_type() == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
-      field_type.server_type() == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR ||
-      field_type.server_type() == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
-      field_type.server_type() == CREDIT_CARD_EXP_MONTH) {
+  ServerFieldType server_type = field_type.GetStorableType();
+  if (server_type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
+      server_type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
+      server_type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR ||
+      server_type == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
+      server_type == CREDIT_CARD_EXP_MONTH) {
     return input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
            input.type == CREDIT_CARD_EXP_MONTH;
   }
 
-  if (field_type.server_type() == CREDIT_CARD_TYPE)
+  if (server_type == CREDIT_CARD_TYPE)
     return input.type == CREDIT_CARD_NUMBER;
 
-  return input.type == field_type.server_type();
+  // Check the groups to distinguish billing types from shipping ones.
+  AutofillType input_type = AutofillType(input.type);
+  return input_type.GetStorableType() == server_type &&
+         input_type.group() == field_type.group();
 }
 
 // Returns true if |input| in the given |section| should be used for a
@@ -138,7 +142,7 @@ bool DetailInputMatchesField(DialogSection section,
   AutofillType field_type = field.Type();
 
   // The credit card name is filled from the billing section's data.
-  if (field_type.server_type() == CREDIT_CARD_NAME &&
+  if (field_type.GetStorableType() == CREDIT_CARD_NAME &&
       (section == SECTION_BILLING || section == SECTION_CC_BILLING)) {
     return input.type == NAME_BILLING_FULL;
   }
@@ -158,7 +162,8 @@ bool DetailInputMatchesShippingField(const DetailInput& input,
   // Equivalent billing field type is used to support UseBillingAsShipping
   // usecase.
   ServerFieldType field_type =
-      AutofillType::GetEquivalentBillingFieldType(field.Type().server_type());
+      AutofillType::GetEquivalentBillingFieldType(
+          field.Type().GetStorableType());
 
   return InputTypeMatchesFieldType(input, AutofillType(field_type));
 }
@@ -536,7 +541,7 @@ void AutofillDialogControllerImpl::Show() {
   bool has_types = false;
   bool has_sections = false;
   form_structure_.ParseFieldTypesFromAutocompleteAttributes(
-      FormStructure::PARSE_FOR_AUTOFILL_DIALOG, &has_types, &has_sections);
+      &has_types, &has_sections);
 
   // Fail if the author didn't specify autocomplete types.
   if (!has_types) {
@@ -1200,7 +1205,7 @@ const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
 
 ui::ComboboxModel* AutofillDialogControllerImpl::ComboboxModelForAutofillType(
     ServerFieldType type) {
-  switch (AutofillType::GetEquivalentFieldType(type)) {
+  switch (type) {
     case CREDIT_CARD_EXP_MONTH:
       return &cc_exp_month_combobox_model_;
 
@@ -1208,6 +1213,7 @@ ui::ComboboxModel* AutofillDialogControllerImpl::ComboboxModelForAutofillType(
       return &cc_exp_year_combobox_model_;
 
     case ADDRESS_HOME_COUNTRY:
+    case ADDRESS_BILLING_COUNTRY:
       return &country_combobox_model_;
 
     default:
@@ -1573,7 +1579,7 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
     }
   }
 
-  switch (AutofillType::GetEquivalentFieldType(type)) {
+  switch (AutofillType(type).GetStorableType()) {
     case EMAIL_ADDRESS:
       if (!value.empty() && !IsValidEmailAddress(value)) {
         return l10n_util::GetStringUTF16(
@@ -2326,7 +2332,8 @@ bool AutofillDialogControllerImpl::RequestingCreditCardInfo() const {
   DCHECK_GT(form_structure_.field_count(), 0U);
 
   for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-    if (IsCreditCardType(form_structure_.field(i)->Type().server_type()))
+    AutofillType type = form_structure_.field(i)->Type();
+    if (IsCreditCardType(type.GetStorableType()))
       return true;
   }
 
@@ -2786,7 +2793,7 @@ bool AutofillDialogControllerImpl::FormStructureCaresAboutSection(
 void AutofillDialogControllerImpl::SetCvcResult(const string16& cvc) {
   for (size_t i = 0; i < form_structure_.field_count(); ++i) {
     AutofillField* field = form_structure_.field(i);
-    if (field->Type().server_type() == CREDIT_CARD_VERIFICATION_CODE) {
+    if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE) {
       field->value = cvc;
       break;
     }

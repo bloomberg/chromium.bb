@@ -38,13 +38,13 @@ void FormGroup::GetNonEmptyTypes(const std::string& app_locale,
 
 base::string16 FormGroup::GetInfo(const AutofillType& type,
                                   const std::string& app_locale) const {
-  return GetRawInfo(type.server_type());
+  return GetRawInfo(type.GetStorableType());
 }
 
 bool FormGroup::SetInfo(const AutofillType& type,
                         const base::string16& value,
                         const std::string& app_locale) {
-  SetRawInfo(type.server_type(), value);
+  SetRawInfo(type.GetStorableType(), value);
   return true;
 }
 

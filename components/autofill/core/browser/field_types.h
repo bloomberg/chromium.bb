@@ -105,6 +105,70 @@ enum ServerFieldType {
   MAX_VALID_FIELD_TYPE = 73,
 };
 
+// The list of all HTML autocomplete field type hints supported by Chrome.
+// See [ http://is.gd/whatwg_autocomplete ] for the full list of specced hints.
+enum HtmlFieldType {
+  // Default type.
+  HTML_TYPE_UNKNOWN,
+
+  // Name types.
+  HTML_TYPE_NAME,
+  HTML_TYPE_GIVEN_NAME,
+  HTML_TYPE_ADDITIONAL_NAME,
+  HTML_TYPE_FAMILY_NAME,
+
+  // Business types.
+  HTML_TYPE_ORGANIZATION,
+
+  // Address types.
+  HTML_TYPE_ADDRESS_LINE1,
+  HTML_TYPE_ADDRESS_LINE2,
+  HTML_TYPE_LOCALITY,      // For U.S. addresses, corresponds to the city.
+  HTML_TYPE_REGION,        // For U.S. addresses, corresponds to the state.
+  HTML_TYPE_COUNTRY_CODE,  // The ISO 3166-1-alpha-2 country code.
+  HTML_TYPE_COUNTRY_NAME,  // The localized country name.
+  HTML_TYPE_POSTAL_CODE,
+
+  // Credit card types.
+  HTML_TYPE_CREDIT_CARD_NAME,
+  HTML_TYPE_CREDIT_CARD_NUMBER,
+  HTML_TYPE_CREDIT_CARD_EXP,
+  HTML_TYPE_CREDIT_CARD_EXP_MONTH,
+  HTML_TYPE_CREDIT_CARD_EXP_YEAR,
+  HTML_TYPE_CREDIT_CARD_VERIFICATION_CODE,
+  HTML_TYPE_CREDIT_CARD_TYPE,
+
+  // Phone number types.
+  HTML_TYPE_TEL,
+  HTML_TYPE_TEL_COUNTRY_CODE,
+  HTML_TYPE_TEL_NATIONAL,
+  HTML_TYPE_TEL_AREA_CODE,
+  HTML_TYPE_TEL_LOCAL,
+  HTML_TYPE_TEL_LOCAL_PREFIX,
+  HTML_TYPE_TEL_LOCAL_SUFFIX,
+
+  // Email.
+  HTML_TYPE_EMAIL,
+
+  // Variants of type hints specified in the HTML specification that are
+  // inferred based on a field's 'maxlength' attribute.
+  // TODO(isherman): Remove these types, in favor of understanding maxlength
+  // when filling fields.  See also: AutofillField::phone_part_.
+  HTML_TYPE_ADDITIONAL_NAME_INITIAL,
+  HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
+  HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
+  HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR,
+  HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR,
+};
+
+// The list of all HTML autocomplete field mode hints supported by Chrome.
+// See [ http://is.gd/whatwg_autocomplete ] for the full list of specced hints.
+enum HtmlFieldMode {
+  HTML_MODE_NONE,
+  HTML_MODE_BILLING,
+  HTML_MODE_SHIPPING,
+};
+
 enum FieldTypeGroup {
   NO_GROUP,
   NAME,

@@ -48,13 +48,6 @@ struct FormDataPredictions;
 // in the fields along with additional information needed by Autofill.
 class FormStructure {
  public:
-  // Whether the form fields should be parsed to match the semantics of plain
-  // ol' Autofill, or of the interactive Autofill dialog.
-  enum ParseTarget {
-    PARSE_FOR_AUTOFILL,
-    PARSE_FOR_AUTOFILL_DIALOG,
-  };
-
   FormStructure(const FormData& form,
                 const std::string& autocheckout_url_prefix);
   virtual ~FormStructure();
@@ -138,15 +131,12 @@ class FormStructure {
 
   // Classifies each field in |fields_| based upon its |autocomplete| attribute,
   // if the attribute is available.  The association is stored into the field's
-  // |heuristic_type|.  The exact method of classification depends on
-  // |parse_target|, as the Autofill dialog has slightly different semantics
-  // from regular ol' Autofill.
+  // |heuristic_type|.
   // Fills |found_types| with |true| if the attribute is available and neither
   // empty nor set to the special values "on" or "off" for at least one field.
   // Fills |found_sections| with |true| if the attribute specifies a section for
   // at least one field.
-  void ParseFieldTypesFromAutocompleteAttributes(ParseTarget parse_target,
-                                                 bool* found_types,
+  void ParseFieldTypesFromAutocompleteAttributes(bool* found_types,
                                                  bool* found_sections);
 
   const AutofillField* field(size_t index) const;

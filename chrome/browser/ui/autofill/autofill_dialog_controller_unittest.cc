@@ -1011,22 +1011,26 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
 
   controller()->OnAccept();
   ASSERT_EQ(20U, form_structure()->field_count());
-  EXPECT_EQ(ADDRESS_BILLING_STATE,
-            form_structure()->field(9)->Type().server_type());
   EXPECT_EQ(ADDRESS_HOME_STATE,
-            form_structure()->field(16)->Type().server_type());
+            form_structure()->field(9)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_BILLING, form_structure()->field(9)->Type().group());
+  EXPECT_EQ(ADDRESS_HOME_STATE,
+            form_structure()->field(16)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME, form_structure()->field(16)->Type().group());
   string16 billing_state = form_structure()->field(9)->value;
   string16 shipping_state = form_structure()->field(16)->value;
   EXPECT_FALSE(billing_state.empty());
   EXPECT_FALSE(shipping_state.empty());
   EXPECT_NE(billing_state, shipping_state);
 
-  EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(1)->Type().server_type());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            form_structure()->field(1)->Type().GetStorableType());
   string16 cc_name = form_structure()->field(1)->value;
-  EXPECT_EQ(NAME_BILLING_FULL,
-            form_structure()->field(6)->Type().server_type());
+  EXPECT_EQ(NAME_FULL, form_structure()->field(6)->Type().GetStorableType());
+  EXPECT_EQ(NAME_BILLING, form_structure()->field(6)->Type().group());
   string16 billing_name = form_structure()->field(6)->value;
-  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->Type().server_type());
+  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->Type().GetStorableType());
+  EXPECT_EQ(NAME, form_structure()->field(13)->Type().group());
   string16 shipping_name = form_structure()->field(13)->value;
 
   EXPECT_FALSE(cc_name.empty());
@@ -1051,10 +1055,12 @@ TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
 
   controller()->OnAccept();
   ASSERT_EQ(20U, form_structure()->field_count());
-  EXPECT_EQ(ADDRESS_BILLING_STATE,
-            form_structure()->field(9)->Type().server_type());
   EXPECT_EQ(ADDRESS_HOME_STATE,
-            form_structure()->field(16)->Type().server_type());
+            form_structure()->field(9)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_BILLING, form_structure()->field(9)->Type().group());
+  EXPECT_EQ(ADDRESS_HOME_STATE,
+            form_structure()->field(16)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME, form_structure()->field(16)->Type().group());
   string16 billing_state = form_structure()->field(9)->value;
   string16 shipping_state = form_structure()->field(16)->value;
   EXPECT_FALSE(billing_state.empty());
@@ -1062,12 +1068,13 @@ TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
   EXPECT_EQ(billing_state, shipping_state);
 
   EXPECT_EQ(CREDIT_CARD_NAME,
-            form_structure()->field(1)->Type().server_type());
+            form_structure()->field(1)->Type().GetStorableType());
   string16 cc_name = form_structure()->field(1)->value;
-  EXPECT_EQ(NAME_BILLING_FULL,
-            form_structure()->field(6)->Type().server_type());
+  EXPECT_EQ(NAME_FULL, form_structure()->field(6)->Type().GetStorableType());
+  EXPECT_EQ(NAME_BILLING, form_structure()->field(6)->Type().group());
   string16 billing_name = form_structure()->field(6)->value;
-  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->Type().server_type());
+  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->Type().GetStorableType());
+  EXPECT_EQ(NAME, form_structure()->field(13)->Type().group());
   string16 shipping_name = form_structure()->field(13)->value;
 
   EXPECT_FALSE(cc_name.empty());
@@ -1105,9 +1112,11 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingPhoneNumber) {
   controller()->OnAccept();
   ASSERT_EQ(2U, form_structure()->field_count());
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
-            form_structure()->field(0)->Type().server_type());
-  EXPECT_EQ(PHONE_BILLING_WHOLE_NUMBER,
-            form_structure()->field(1)->Type().server_type());
+            form_structure()->field(0)->Type().GetStorableType());
+  EXPECT_EQ(PHONE_HOME, form_structure()->field(0)->Type().group());
+  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+            form_structure()->field(1)->Type().GetStorableType());
+  EXPECT_EQ(PHONE_BILLING, form_structure()->field(1)->Type().group());
   EXPECT_EQ(shipping_profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
             form_structure()->field(0)->value);
   EXPECT_EQ(billing_profile.GetRawInfo(PHONE_BILLING_WHOLE_NUMBER),
@@ -2041,7 +2050,7 @@ TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
 
   size_t i = 0;
   for (; i < form_structure()->field_count(); ++i) {
-    if (form_structure()->field(i)->Type().server_type() == EMAIL_ADDRESS) {
+    if (form_structure()->field(i)->Type().GetStorableType() == EMAIL_ADDRESS) {
       EXPECT_EQ(ASCIIToUTF16(kFakeEmail), form_structure()->field(i)->value);
       break;
     }
@@ -2056,13 +2065,16 @@ TEST_F(AutofillDialogControllerTest, AutofillTypes) {
   controller()->OnAccept();
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
   ASSERT_EQ(20U, form_structure()->field_count());
-  EXPECT_EQ(EMAIL_ADDRESS, form_structure()->field(0)->Type().server_type());
+  EXPECT_EQ(EMAIL_ADDRESS,
+            form_structure()->field(0)->Type().GetStorableType());
   EXPECT_EQ(CREDIT_CARD_NUMBER,
-            form_structure()->field(2)->Type().server_type());
-  EXPECT_EQ(ADDRESS_BILLING_STATE,
-            form_structure()->field(9)->Type().server_type());
+            form_structure()->field(2)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_STATE,
-            form_structure()->field(16)->Type().server_type());
+            form_structure()->field(9)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_BILLING, form_structure()->field(9)->Type().group());
+  EXPECT_EQ(ADDRESS_HOME_STATE,
+            form_structure()->field(16)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME, form_structure()->field(16)->Type().group());
 }
 
 TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {

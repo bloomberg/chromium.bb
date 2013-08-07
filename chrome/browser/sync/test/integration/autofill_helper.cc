@@ -284,7 +284,7 @@ void UpdateProfile(int profile,
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     profiles.push_back(*all_profiles[i]);
     if (all_profiles[i]->guid() == guid)
-      profiles.back().SetRawInfo(type.server_type(), value);
+      profiles.back().SetRawInfo(type.GetStorableType(), value);
   }
   autofill_helper::SetProfiles(profile, &profiles);
 }

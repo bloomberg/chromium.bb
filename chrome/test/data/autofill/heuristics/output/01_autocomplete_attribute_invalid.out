@@ -1,4 +1,4 @@
-EMAIL_ADDRESS | valid-pre-garbage |  | 
+HTML_TYPE_EMAIL | valid-pre-garbage |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
@@ -20,7 +20,7 @@ UNKNOWN_TYPE |  |  |
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
-EMAIL_ADDRESS | valid-pre-order |  | 
+HTML_TYPE_EMAIL | valid-pre-order |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
@@ -62,13 +62,13 @@ UNKNOWN_TYPE |  |  |
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
-EMAIL_ADDRESS | valid-pre-repetition |  | 
+HTML_TYPE_EMAIL | valid-pre-repetition |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
-EMAIL_ADDRESS | valid-pre-combinations |  | 
+HTML_TYPE_EMAIL | valid-pre-combinations |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 
 UNKNOWN_TYPE |  |  | 

@@ -90,8 +90,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
             (*iter)->begin();
          field_iter != (*iter)->end();
          ++field_iter) {
-      forms_string +=
-          AutofillType::FieldTypeToString((*field_iter)->Type().server_type());
+      forms_string += (*field_iter)->Type().ToString();
       forms_string += " | " + UTF16ToUTF8((*field_iter)->name);
       forms_string += " | " + UTF16ToUTF8((*field_iter)->label);
       forms_string += " | " + UTF16ToUTF8((*field_iter)->value);

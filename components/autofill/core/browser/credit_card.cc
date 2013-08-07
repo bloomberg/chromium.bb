@@ -371,22 +371,23 @@ void CreditCard::SetRawInfo(ServerFieldType type,
 
 base::string16 CreditCard::GetInfo(const AutofillType& type,
                                    const std::string& app_locale) const {
-  if (type.server_type() == CREDIT_CARD_NUMBER)
+  ServerFieldType storable_type = type.GetStorableType();
+  if (storable_type == CREDIT_CARD_NUMBER)
     return StripSeparators(number_);
 
-  return GetRawInfo(type.server_type());
+  return GetRawInfo(storable_type);
 }
 
 bool CreditCard::SetInfo(const AutofillType& type,
                          const base::string16& value,
                          const std::string& app_locale) {
-  ServerFieldType server_type = type.server_type();
-  if (server_type == CREDIT_CARD_NUMBER)
-    SetRawInfo(server_type, StripSeparators(value));
-  else if (server_type == CREDIT_CARD_EXP_MONTH)
+  ServerFieldType storable_type = type.GetStorableType();
+  if (storable_type == CREDIT_CARD_NUMBER)
+    SetRawInfo(storable_type, StripSeparators(value));
+  else if (storable_type == CREDIT_CARD_EXP_MONTH)
     SetExpirationMonthFromString(value, app_locale);
   else
-    SetRawInfo(server_type, value);
+    SetRawInfo(storable_type, value);
 
   return true;
 }

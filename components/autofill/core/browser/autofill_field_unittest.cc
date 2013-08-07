@@ -18,19 +18,22 @@ TEST(AutofillFieldTest, Type) {
   ASSERT_EQ(UNKNOWN_TYPE, field.heuristic_type());
 
   // |server_type_| is NO_SERVER_DATA, so |heuristic_type_| is returned.
-  EXPECT_EQ(UNKNOWN_TYPE, field.Type().server_type());
+  EXPECT_EQ(UNKNOWN_TYPE, field.Type().GetStorableType());
 
   // Set the heuristic type and check it.
   field.set_heuristic_type(NAME_FIRST);
-  EXPECT_EQ(NAME_FIRST, field.Type().server_type());
+  EXPECT_EQ(NAME_FIRST, field.Type().GetStorableType());
+  EXPECT_EQ(NAME, field.Type().group());
 
   // Set the server type and check it.
   field.set_server_type(ADDRESS_BILLING_LINE1);
-  EXPECT_EQ(ADDRESS_BILLING_LINE1, field.Type().server_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_BILLING, field.Type().group());
 
   // Remove the server type to make sure the heuristic type is preserved.
   field.set_server_type(NO_SERVER_DATA);
-  EXPECT_EQ(NAME_FIRST, field.Type().server_type());
+  EXPECT_EQ(NAME_FIRST, field.Type().GetStorableType());
+  EXPECT_EQ(NAME, field.Type().group());
 }
 
 TEST(AutofillFieldTest, IsEmpty) {
@@ -72,7 +75,7 @@ TEST(AutofillFieldTest, FieldSignature) {
 
 TEST(AutofillFieldTest, IsFieldFillable) {
   AutofillField field;
-  ASSERT_EQ(UNKNOWN_TYPE, field.Type().server_type());
+  ASSERT_EQ(UNKNOWN_TYPE, field.Type().GetStorableType());
 
   // Type is unknown.
   EXPECT_FALSE(field.IsFieldFillable());

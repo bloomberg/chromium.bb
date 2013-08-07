@@ -74,8 +74,8 @@ void PhoneNumber::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
 }
 
 base::string16 PhoneNumber::GetRawInfo(ServerFieldType type) const {
-  type = AutofillType::GetEquivalentFieldType(type);
-  if (type == PHONE_HOME_WHOLE_NUMBER)
+  // TODO(isherman): Is GetStorableType even necessary?
+  if (AutofillType(type).GetStorableType() == PHONE_HOME_WHOLE_NUMBER)
     return number_;
 
   // Only the whole number is available as raw data.  All of the other types are
@@ -86,9 +86,9 @@ base::string16 PhoneNumber::GetRawInfo(ServerFieldType type) const {
 
 void PhoneNumber::SetRawInfo(ServerFieldType type,
                              const base::string16& value) {
-  type = AutofillType::GetEquivalentFieldType(type);
-  if (type != PHONE_HOME_CITY_AND_NUMBER &&
-      type != PHONE_HOME_WHOLE_NUMBER) {
+  // TODO(isherman): Is GetStorableType even necessary?
+  type = AutofillType(type).GetStorableType();
+  if (type != PHONE_HOME_CITY_AND_NUMBER && type != PHONE_HOME_WHOLE_NUMBER) {
     // Only full phone numbers should be set directly.  The remaining field
     // field types are read-only.
     return;
@@ -106,18 +106,17 @@ void PhoneNumber::SetRawInfo(ServerFieldType type,
 // If the phone cannot be normalized, returns the stored value verbatim.
 base::string16 PhoneNumber::GetInfo(const AutofillType& type,
                                     const std::string& app_locale) const {
-  ServerFieldType server_type =
-      AutofillType::GetEquivalentFieldType(type.server_type());
+  ServerFieldType storable_type = type.GetStorableType();
   UpdateCacheIfNeeded(app_locale);
 
   // Queries for whole numbers will return the non-normalized number if
   // normalization for the number fails.  All other field types require
   // normalization.
-  if (server_type != PHONE_HOME_WHOLE_NUMBER &&
+  if (storable_type != PHONE_HOME_WHOLE_NUMBER &&
       !cached_parsed_phone_.IsValidNumber())
     return base::string16();
 
-  switch (server_type) {
+  switch (storable_type) {
     case PHONE_HOME_WHOLE_NUMBER:
       return cached_parsed_phone_.GetWholeNumber();
 
@@ -143,9 +142,7 @@ base::string16 PhoneNumber::GetInfo(const AutofillType& type,
 bool PhoneNumber::SetInfo(const AutofillType& type,
                           const base::string16& value,
                           const std::string& app_locale) {
-  ServerFieldType server_type =
-      AutofillType::GetEquivalentFieldType(type.server_type());
-  SetRawInfo(server_type, value);
+  SetRawInfo(type.GetStorableType(), value);
 
   if (number_.empty())
     return true;
@@ -196,31 +193,30 @@ PhoneNumber::PhoneCombineHelper::PhoneCombineHelper() {
 PhoneNumber::PhoneCombineHelper::~PhoneCombineHelper() {
 }
 
-bool PhoneNumber::PhoneCombineHelper::SetInfo(const AutofillType& field_type,
+bool PhoneNumber::PhoneCombineHelper::SetInfo(const AutofillType& type,
                                               const base::string16& value) {
-  ServerFieldType server_field_type =
-      AutofillType::GetEquivalentFieldType(field_type.server_type());
-  if (server_field_type == PHONE_HOME_COUNTRY_CODE) {
+  ServerFieldType storable_type = type.GetStorableType();
+  if (storable_type == PHONE_HOME_COUNTRY_CODE) {
     country_ = value;
     return true;
   }
 
-  if (server_field_type == PHONE_HOME_CITY_CODE) {
+  if (storable_type == PHONE_HOME_CITY_CODE) {
     city_ = value;
     return true;
   }
 
-  if (server_field_type == PHONE_HOME_CITY_AND_NUMBER) {
+  if (storable_type == PHONE_HOME_CITY_AND_NUMBER) {
     phone_ = value;
     return true;
   }
 
-  if (server_field_type == PHONE_HOME_WHOLE_NUMBER) {
+  if (storable_type == PHONE_HOME_WHOLE_NUMBER) {
     whole_number_ = value;
     return true;
   }
 
-  if (server_field_type == PHONE_HOME_NUMBER) {
+  if (storable_type == PHONE_HOME_NUMBER) {
     phone_.append(value);
     return true;
   }

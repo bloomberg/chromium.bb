@@ -31,6 +31,8 @@ namespace autofill {
 AutofillField::AutofillField()
     : server_type_(NO_SERVER_DATA),
       heuristic_type_(UNKNOWN_TYPE),
+      html_type_(HTML_TYPE_UNKNOWN),
+      html_mode_(HTML_MODE_NONE),
       phone_part_(IGNORED) {
 }
 
@@ -40,6 +42,8 @@ AutofillField::AutofillField(const FormFieldData& field,
       unique_name_(unique_name),
       server_type_(NO_SERVER_DATA),
       heuristic_type_(UNKNOWN_TYPE),
+      html_type_(HTML_TYPE_UNKNOWN),
+      html_mode_(HTML_MODE_NONE),
       phone_part_(IGNORED) {
 }
 
@@ -65,7 +69,20 @@ void AutofillField::set_server_type(ServerFieldType type) {
   server_type_ = type;
 }
 
+void AutofillField::SetHtmlType(HtmlFieldType type, HtmlFieldMode mode) {
+  html_type_ = type;
+  html_mode_ = mode;
+
+  if (type == HTML_TYPE_TEL_LOCAL_PREFIX)
+    phone_part_ = AutofillField::PHONE_PREFIX;
+  else if (type == HTML_TYPE_TEL_LOCAL_SUFFIX)
+    phone_part_ = AutofillField::PHONE_SUFFIX;
+}
+
 AutofillType AutofillField::Type() const {
+  if (html_type_ != HTML_TYPE_UNKNOWN)
+    return AutofillType(html_type_, html_mode_);
+
   if (server_type_ != NO_SERVER_DATA)
     return AutofillType(server_type_);
 
@@ -83,7 +100,7 @@ std::string AutofillField::FieldSignature() const {
 }
 
 bool AutofillField::IsFieldFillable() const {
-  return Type().server_type() != UNKNOWN_TYPE;
+  return !Type().IsUnknown();
 }
 
 }  // namespace autofill

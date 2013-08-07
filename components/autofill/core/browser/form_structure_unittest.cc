@@ -442,9 +442,12 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttribute) {
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
 
-  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
-  EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
-  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(HTML_TYPE_GIVEN_NAME, form_structure->field(0)->html_type());
+  EXPECT_EQ(HTML_TYPE_FAMILY_NAME, form_structure->field(1)->html_type());
+  EXPECT_EQ(HTML_TYPE_EMAIL, form_structure->field(2)->html_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
 }
 
 // Verify that we can correctly process the 'autocomplete' attribute for phone
@@ -480,12 +483,12 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
   ASSERT_EQ(3U, form_structure->field_count());
   EXPECT_EQ(3U, form_structure->autofill_count());
 
-  EXPECT_EQ(PHONE_HOME_NUMBER, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(HTML_TYPE_TEL_LOCAL, form_structure->field(0)->html_type());
   EXPECT_EQ(AutofillField::IGNORED, form_structure->field(0)->phone_part());
-  EXPECT_EQ(PHONE_HOME_NUMBER, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(HTML_TYPE_TEL_LOCAL_PREFIX, form_structure->field(1)->html_type());
   EXPECT_EQ(AutofillField::PHONE_PREFIX,
             form_structure->field(1)->phone_part());
-  EXPECT_EQ(PHONE_HOME_NUMBER, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(HTML_TYPE_TEL_LOCAL_SUFFIX, form_structure->field(2)->html_type());
   EXPECT_EQ(AutofillField::PHONE_SUFFIX,
             form_structure->field(2)->phone_part());
 }

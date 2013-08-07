@@ -16,31 +16,45 @@ namespace autofill {
 class AutofillType {
  public:
   explicit AutofillType(ServerFieldType field_type);
+  AutofillType(HtmlFieldType field_type, HtmlFieldMode mode);
   AutofillType(const AutofillType& autofill_type);
   AutofillType& operator=(const AutofillType& autofill_type);
 
-  // TODO(isherman): Audit all uses of this method.
-  ServerFieldType server_type() const { return server_type_; }
   FieldTypeGroup group() const;
 
-  // Maps |field_type| to a field type that can be directly stored in a profile
-  // (in the sense that it makes sense to call |AutofillProfile::SetInfo()| with
-  // the returned field type as the first parameter).
-  static ServerFieldType GetEquivalentFieldType(ServerFieldType field_type);
+  // Returns true if both the |server_type_| and the |html_type_| are set to
+  // their respective enum's unknown value.
+  bool IsUnknown() const;
+
+  // Maps |this| type to a field type that can be directly stored in an Autofill
+  // data model (in the sense that it makes sense to call
+  // |AutofillDataModel::SetRawInfo()| with the returned field type as the first
+  // parameter).
+  ServerFieldType GetStorableType() const;
+
+  // Serializes |this| type to a string.
+  std::string ToString() const;
 
   // Maps |field_type| to a field type from ADDRESS_BILLING FieldTypeGroup if
   // field type is an Address type.
+  // TODO(isherman): This method is only used by the
+  // AutofillDialogControllerImpl class.  Consider moving it to a more focused
+  // location.
   static ServerFieldType GetEquivalentBillingFieldType(
       ServerFieldType field_type);
 
-  // Utilities for serializing and deserializing a |ServerFieldType|.
-  // TODO(isherman): This should probably serialize an HTML type as well.
-  //                 Audit all uses of these functions.
-  static std::string FieldTypeToString(ServerFieldType field_type);
+  // TODO(isherman): This method is only used be a single test class.  Move the
+  // logic into there or something, eh?
   static ServerFieldType StringToFieldType(const std::string& str);
 
  private:
+  // The server-native field type, or UNKNOWN_TYPE if unset.
   ServerFieldType server_type_;
+
+  // The HTML autocomplete field type and mode hints, or HTML_TYPE_UNKNOWN and
+  // HTML_MODE_NONE if unset.
+  HtmlFieldType html_type_;
+  HtmlFieldMode html_mode_;
 };
 
 }  // namespace autofill

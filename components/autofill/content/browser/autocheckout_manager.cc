@@ -356,25 +356,27 @@ void AutocheckoutManager::ReturnAutocheckoutData(
   for (size_t i = 0; i < result->field_count(); ++i) {
     const AutofillType& type = result->field(i)->Type();
     const base::string16& value = result->field(i)->value;
-    if (type.server_type() == CREDIT_CARD_VERIFICATION_CODE) {
+    ServerFieldType server_type = type.GetStorableType();
+    if (server_type == CREDIT_CARD_VERIFICATION_CODE) {
       cvv_ = result->field(i)->value;
       continue;
     }
     FieldTypeGroup group = type.group();
     if (group == CREDIT_CARD) {
-      credit_card_->SetRawInfo(type.server_type(), value);
+      credit_card_->SetRawInfo(server_type, value);
       // TODO(dgwallinga): Find a way of cleanly deprecating CREDIT_CARD_NAME.
       // code.google.com/p/chromium/issues/detail?id=263498
-      if (type.server_type() == CREDIT_CARD_NAME)
+      if (server_type == CREDIT_CARD_NAME)
         billing_address_->SetRawInfo(NAME_BILLING_FULL, value);
-    } else if (type.server_type() == ADDRESS_HOME_COUNTRY) {
-      profile_->SetInfo(type, value, autofill_manager_->app_locale());
-    } else if (type.server_type() == ADDRESS_BILLING_COUNTRY) {
-      billing_address_->SetInfo(type, value, autofill_manager_->app_locale());
+    } else if (server_type == ADDRESS_HOME_COUNTRY) {
+      if (IsBillingGroup(group))
+        billing_address_->SetInfo(type, value, autofill_manager_->app_locale());
+      else
+        profile_->SetInfo(type, value, autofill_manager_->app_locale());
     } else if (IsBillingGroup(group)) {
-      billing_address_->SetRawInfo(type.server_type(), value);
+      billing_address_->SetRawInfo(server_type, value);
     } else {
-      profile_->SetRawInfo(type.server_type(), value);
+      profile_->SetRawInfo(server_type, value);
     }
   }
 
@@ -454,7 +456,8 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
 
   const AutofillType& type = field.Type();
 
-  if (type.server_type() == FIELD_WITH_DEFAULT_VALUE) {
+  ServerFieldType server_type = type.GetStorableType();
+  if (server_type == FIELD_WITH_DEFAULT_VALUE) {
     // For a form with radio buttons, like:
     // <form>
     //   <input type="radio" name="sex" value="male">Male<br>
@@ -488,7 +491,7 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
   }
 
   // Handle verification code directly.
-  if (type.server_type() == CREDIT_CARD_VERIFICATION_CODE) {
+  if (server_type == CREDIT_CARD_VERIFICATION_CODE) {
     field_to_fill->value = cvv_;
     return;
   }

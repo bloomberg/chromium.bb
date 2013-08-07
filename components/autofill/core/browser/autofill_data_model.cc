@@ -158,22 +158,20 @@ void AutofillDataModel::FillSelectControl(const AutofillType& type,
     return;
   }
 
-  ServerFieldType server_type = type.server_type();
-  if (server_type == ADDRESS_HOME_STATE ||
-      server_type == ADDRESS_BILLING_STATE) {
+  ServerFieldType storable_type = type.GetStorableType();
+  if (storable_type == ADDRESS_HOME_STATE) {
     FillStateSelectControl(field_text, field);
-  } else if (server_type == ADDRESS_HOME_COUNTRY ||
-             server_type == ADDRESS_BILLING_COUNTRY) {
+  } else if (storable_type == ADDRESS_HOME_COUNTRY) {
     FillCountrySelectControl(app_locale, field);
-  } else if (server_type == CREDIT_CARD_EXP_MONTH) {
+  } else if (storable_type == CREDIT_CARD_EXP_MONTH) {
     FillExpirationMonthSelectControl(field_text, field);
-  } else if (server_type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
+  } else if (storable_type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
     // Attempt to fill the year as a 2-digit year.  This compensates for the
     // fact that our heuristics do not always correctly detect when a website
     // requests a 2-digit rather than a 4-digit year.
     FillSelectControl(AutofillType(CREDIT_CARD_EXP_2_DIGIT_YEAR), app_locale,
                       field);
-  } else if (server_type == CREDIT_CARD_TYPE) {
+  } else if (storable_type == CREDIT_CARD_TYPE) {
     FillCreditCardTypeSelectControl(field_text, field);
   }
 }

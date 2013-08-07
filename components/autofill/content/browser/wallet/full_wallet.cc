@@ -128,7 +128,7 @@ scoped_ptr<FullWallet>
 }
 
 base::string16 FullWallet::GetInfo(const AutofillType& type) {
-  switch (type.server_type()) {
+  switch (type.GetStorableType()) {
     case CREDIT_CARD_NUMBER:
       return UTF8ToUTF16(GetPan());
 

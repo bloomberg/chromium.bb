@@ -52,38 +52,53 @@ void NameInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
 }
 
 base::string16 NameInfo::GetRawInfo(ServerFieldType type) const {
-  type = AutofillType::GetEquivalentFieldType(type);
-  if (type == NAME_FIRST)
-    return first();
+  // TODO(isherman): Is GetStorableType even necessary?
+  switch (AutofillType(type).GetStorableType()) {
+    case NAME_FIRST:
+      return first();
 
-  if (type == NAME_MIDDLE)
-    return middle();
+    case NAME_MIDDLE:
+      return middle();
 
-  if (type == NAME_LAST)
-    return last();
+    case NAME_LAST:
+      return last();
 
-  if (type == NAME_MIDDLE_INITIAL)
-    return MiddleInitial();
+    case NAME_MIDDLE_INITIAL:
+      return MiddleInitial();
 
-  if (type == NAME_FULL)
-    return FullName();
+    case NAME_FULL:
+      return FullName();
 
-  return base::string16();
+    default:
+      return base::string16();
+  }
 }
 
 void NameInfo::SetRawInfo(ServerFieldType type, const base::string16& value) {
-  type = AutofillType::GetEquivalentFieldType(type);
-  DCHECK_EQ(NAME, AutofillType(type).group());
-  if (type == NAME_FIRST)
-    first_ = value;
-  else if (type == NAME_MIDDLE || type == NAME_MIDDLE_INITIAL)
-    middle_ = value;
-  else if (type == NAME_LAST)
-    last_ = value;
-  else if (type == NAME_FULL)
-    SetFullName(value);
-  else
-    NOTREACHED();
+  // TODO(isherman): Is GetStorableType even necessary?
+  ServerFieldType storable_type = AutofillType(type).GetStorableType();
+  DCHECK_EQ(NAME, AutofillType(storable_type).group());
+  switch (storable_type) {
+    case NAME_FIRST:
+      first_ = value;
+      break;
+
+    case NAME_MIDDLE:
+    case NAME_MIDDLE_INITIAL:
+      middle_ = value;
+      break;
+
+    case NAME_LAST:
+      last_ = value;
+      break;
+
+    case NAME_FULL:
+      SetFullName(value);
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 base::string16 NameInfo::FullName() const {

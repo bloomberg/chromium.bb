@@ -1075,7 +1075,7 @@ void AutofillManager::GetProfileSuggestions(
     std::vector<int>* unique_ids) const {
   std::vector<ServerFieldType> field_types(form->field_count());
   for (size_t i = 0; i < form->field_count(); ++i) {
-    field_types.push_back(form->field(i)->Type().server_type());
+    field_types.push_back(form->field(i)->Type().GetStorableType());
   }
   std::vector<GUIDPair> guid_pairs;
 

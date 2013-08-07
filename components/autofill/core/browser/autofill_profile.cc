@@ -30,14 +30,14 @@
 namespace autofill {
 namespace {
 
-// Like |AutofillType::GetEquivalentFieldType()|, but also returns |NAME_FULL|
-// for first, middle, and last name field types.
-ServerFieldType GetEquivalentFieldTypeCollapsingNames(ServerFieldType type) {
-  if (type == NAME_FIRST || type == NAME_MIDDLE || type == NAME_LAST ||
-      type == NAME_MIDDLE_INITIAL)
+// Like |AutofillType::GetStorableType()|, but also returns |NAME_FULL| for
+// first, middle, and last name field types.
+ServerFieldType GetStorableTypeCollapsingNames(ServerFieldType type) {
+  ServerFieldType storable_type = AutofillType(type).GetStorableType();
+  if (AutofillType(storable_type).group() == NAME)
     return NAME_FULL;
 
-  return AutofillType::GetEquivalentFieldType(type);
+  return storable_type;
 }
 
 // Fills |distinguishing_fields| with a list of fields to use when creating
@@ -76,13 +76,13 @@ void GetFieldsForDistinguishingProfiles(
   // Always ignore fields of unknown type and the excluded field.
   std::set<ServerFieldType> seen_fields;
   seen_fields.insert(UNKNOWN_TYPE);
-  seen_fields.insert(GetEquivalentFieldTypeCollapsingNames(excluded_field));
+  seen_fields.insert(GetStorableTypeCollapsingNames(excluded_field));
 
   distinguishing_fields->clear();
   for (std::vector<ServerFieldType>::const_iterator it =
            suggested_fields->begin();
        it != suggested_fields->end(); ++it) {
-    ServerFieldType suggested_type = GetEquivalentFieldTypeCollapsingNames(*it);
+    ServerFieldType suggested_type = GetStorableTypeCollapsingNames(*it);
     if (seen_fields.insert(suggested_type).second)
       distinguishing_fields->push_back(suggested_type);
   }
@@ -92,12 +92,12 @@ void GetFieldsForDistinguishingProfiles(
   // list of distinguishing fields as a last-ditch fallback. This allows us to
   // distinguish between profiles that are identical except for the name.
   if (excluded_field != NAME_FULL &&
-      GetEquivalentFieldTypeCollapsingNames(excluded_field) == NAME_FULL) {
+      GetStorableTypeCollapsingNames(excluded_field) == NAME_FULL) {
     for (std::vector<ServerFieldType>::const_iterator it =
              suggested_fields->begin();
          it != suggested_fields->end(); ++it) {
       if (*it != excluded_field &&
-          GetEquivalentFieldTypeCollapsingNames(*it) == NAME_FULL) {
+          GetStorableTypeCollapsingNames(*it) == NAME_FULL) {
         distinguishing_fields->push_back(NAME_FULL);
         break;
       }
@@ -124,7 +124,7 @@ base::string16 GetFormGroupInfo(const FormGroup& form_group,
                                 const AutofillType& type,
                                 const std::string& app_locale) {
   return app_locale.empty() ?
-      form_group.GetRawInfo(type.server_type()) :
+      form_group.GetRawInfo(type.GetStorableType()) :
       form_group.GetInfo(type, app_locale);
 }
 
@@ -275,12 +275,11 @@ void AutofillProfile::GetMatchingTypes(
 }
 
 base::string16 AutofillProfile::GetRawInfo(ServerFieldType type) const {
-  ServerFieldType return_type = AutofillType::GetEquivalentFieldType(type);
-  const FormGroup* form_group = FormGroupForType(AutofillType(return_type));
+  const FormGroup* form_group = FormGroupForType(AutofillType(type));
   if (!form_group)
     return base::string16();
 
-  return form_group->GetRawInfo(return_type);
+  return form_group->GetRawInfo(type);
 }
 
 void AutofillProfile::SetRawInfo(ServerFieldType type,
@@ -292,13 +291,11 @@ void AutofillProfile::SetRawInfo(ServerFieldType type,
 
 base::string16 AutofillProfile::GetInfo(const AutofillType& type,
                                         const std::string& app_locale) const {
-  ServerFieldType return_type =
-      AutofillType::GetEquivalentFieldType(type.server_type());
-  const FormGroup* form_group = FormGroupForType(AutofillType(return_type));
+  const FormGroup* form_group = FormGroupForType(type);
   if (!form_group)
     return base::string16();
 
-  return form_group->GetInfo(AutofillType(return_type), app_locale);
+  return form_group->GetInfo(type, app_locale);
 }
 
 bool AutofillProfile::SetInfo(const AutofillType& type,
@@ -363,8 +360,7 @@ void AutofillProfile::FillFormField(const AutofillField& field,
   DCHECK_NE(CREDIT_CARD, type.group());
   DCHECK(field_data);
 
-  if (type.server_type() == PHONE_HOME_NUMBER ||
-      type.server_type() == PHONE_BILLING_NUMBER) {
+  if (type.GetStorableType() == PHONE_HOME_NUMBER) {
     FillPhoneNumberField(field, variant, app_locale, field_data);
   } else if (field_data->form_control_type == "select-one") {
     FillSelectControl(type, app_locale, field_data);

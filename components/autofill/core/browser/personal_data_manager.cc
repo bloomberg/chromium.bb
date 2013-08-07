@@ -259,7 +259,7 @@ bool PersonalDataManager::ImportFormData(
       continue;
 
     AutofillType field_type = field->Type();
-    ServerFieldType server_field_type = field_type.server_type();
+    ServerFieldType server_field_type = field_type.GetStorableType();
     FieldTypeGroup group(field_type.group());
 
     // There can be multiple email fields (e.g. in the case of 'confirm email'
@@ -617,8 +617,7 @@ void PersonalDataManager::GetProfileSuggestions(
         // Phone numbers could be split in US forms, so field value could be
         // either prefix or suffix of the phone.
         bool matched_phones = false;
-        if ((type.server_type() == PHONE_HOME_NUMBER ||
-             type.server_type() == PHONE_BILLING_NUMBER) &&
+        if (type.GetStorableType() == PHONE_HOME_NUMBER &&
             !field_value_lower_case.empty() &&
             profile_value_lower_case.find(field_value_lower_case) !=
                 base::string16::npos) {
@@ -646,7 +645,7 @@ void PersonalDataManager::GetProfileSuggestions(
   if (!field_is_autofilled) {
     AutofillProfile::CreateInferredLabels(
         &matched_profiles, &other_field_types,
-        type.server_type(), 1, labels);
+        type.GetStorableType(), 1, labels);
   } else {
     // No sub-labels for previously filled fields.
     labels->resize(values->size());
@@ -678,7 +677,7 @@ void PersonalDataManager::GetCreditCardSuggestions(
         credit_card->GetInfo(type, app_locale_);
     if (!creditcard_field_value.empty() &&
         StartsWith(creditcard_field_value, field_contents, false)) {
-      if (type.server_type() == CREDIT_CARD_NUMBER)
+      if (type.GetStorableType() == CREDIT_CARD_NUMBER)
         creditcard_field_value = credit_card->ObfuscatedNumber();
 
       base::string16 label;
