@@ -22,7 +22,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/compositor/compositor_setup.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
