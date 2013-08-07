@@ -70,7 +70,7 @@ void TraceLog::StartATrace() {
     if (g_atrace_fd == -1) {
       LOG(WARNING) << "Couldn't open " << kATraceMarkerFile;
     } else {
-      EnableIncludedCategoryGroups();
+      UpdateCategoryGroupEnabledFlags();
     }
   }
 }
@@ -80,7 +80,7 @@ void TraceLog::StopATrace() {
   if (g_atrace_fd != -1) {
     close(g_atrace_fd);
     g_atrace_fd = -1;
-    EnableIncludedCategoryGroups();
+    UpdateCategoryGroupEnabledFlags();
   }
 }
 

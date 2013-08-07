@@ -867,14 +867,20 @@ const char* TraceLog::GetCategoryGroupName(
   return g_category_groups[category_index];
 }
 
-void TraceLog::EnableIncludedCategoryGroup(int category_index) {
-  bool is_enabled = category_filter_.IsCategoryGroupEnabled(
+void TraceLog::UpdateCategoryGroupEnabledFlag(int category_index) {
+  bool is_enabled = enable_count_ && category_filter_.IsCategoryGroupEnabled(
       g_category_groups[category_index]);
   SetCategoryGroupEnabled(category_index, is_enabled);
 }
 
+void TraceLog::UpdateCategoryGroupEnabledFlags() {
+  for (int i = 0; i < g_category_index; i++)
+    UpdateCategoryGroupEnabledFlag(i);
+}
+
 void TraceLog::SetCategoryGroupEnabled(int category_index, bool is_enabled) {
-  g_category_group_enabled[category_index] = is_enabled ? CATEGORY_ENABLED : 0;
+  g_category_group_enabled[category_index] =
+      is_enabled ? CATEGORY_GROUP_ENABLED : 0;
 
 #if defined(OS_ANDROID)
   ApplyATraceEnabledFlag(&g_category_group_enabled[category_index]);
@@ -885,12 +891,7 @@ bool TraceLog::IsCategoryGroupEnabled(
     const unsigned char* category_group_enabled) {
   // On Android, ATrace and normal trace can be enabled independently.
   // This function checks if the normal trace is enabled.
-  return *category_group_enabled & CATEGORY_ENABLED;
-}
-
-void TraceLog::EnableIncludedCategoryGroups() {
-  for (int i = 0; i < g_category_index; i++)
-    EnableIncludedCategoryGroup(i);
+  return *category_group_enabled & CATEGORY_GROUP_ENABLED;
 }
 
 const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
@@ -921,14 +922,10 @@ const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
       ANNOTATE_LEAKING_OBJECT_PTR(new_group);
       g_category_groups[new_index] = new_group;
       DCHECK(!g_category_group_enabled[new_index]);
-      if (enable_count_) {
-        // Note that if both included and excluded patterns in the
-        // CategoryFilter are empty, we exclude nothing,
-        // thereby enabling this category group.
-        EnableIncludedCategoryGroup(new_index);
-      } else {
-        SetCategoryGroupEnabled(new_index, false);
-      }
+      // Note that if both included and excluded patterns in the
+      // CategoryFilter are empty, we exclude nothing,
+      // thereby enabling this category group.
+      UpdateCategoryGroupEnabledFlag(new_index);
       category_group_enabled = &g_category_group_enabled[new_index];
     } else {
       category_group_enabled =
@@ -958,7 +955,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
       }
 
       category_filter_.Merge(category_filter);
-      EnableIncludedCategoryGroups();
+      UpdateCategoryGroupEnabledFlags();
       return;
     }
 
@@ -976,7 +973,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
     num_traces_recorded_++;
 
     category_filter_ = CategoryFilter(category_filter);
-    EnableIncludedCategoryGroups();
+    UpdateCategoryGroupEnabledFlags();
 
     if (options & ENABLE_SAMPLING) {
       sampling_thread_.reset(new TraceSamplingThread);
@@ -1044,8 +1041,7 @@ void TraceLog::SetDisabled() {
     category_filter_.Clear();
     watch_category_ = NULL;
     watch_event_name_ = "";
-    for (int i = 0; i < g_category_index; i++)
-      SetCategoryGroupEnabled(i, false);
+    UpdateCategoryGroupEnabledFlags();
     AddMetadataEvents();
 
     dispatching_to_observer_list_ = true;

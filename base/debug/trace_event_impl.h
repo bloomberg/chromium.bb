@@ -479,11 +479,13 @@ class BASE_EXPORT TraceLog {
   // by the Singleton class.
   friend struct DefaultSingletonTraits<TraceLog>;
 
-  // Enable/disable each category group based on the current category_filter_.
-  // If the category group contains a category that matches an included category
+  // Enable/disable each category group based on the current enable_count_
+  // and category_filter_. Disable the category group if enabled_count_ is 0, or
+  // if the category group contains a category that matches an included category
   // pattern, that category group will be enabled.
-  void EnableIncludedCategoryGroups();
-  void EnableIncludedCategoryGroup(int category_index);
+  // On Android, ATRACE_ENABLED flag will be applied if atrace is started.
+  void UpdateCategoryGroupEnabledFlags();
+  void UpdateCategoryGroupEnabledFlag(int category_index);
 
   static void SetCategoryGroupEnabled(int category_index, bool enabled);
   static bool IsCategoryGroupEnabled(
@@ -492,9 +494,9 @@ class BASE_EXPORT TraceLog {
   // The pointer returned from GetCategoryGroupEnabledInternal() points to a
   // value with zero or more of the following bits. Used in this class only.
   // The TRACE_EVENT macros should only use the value as a bool.
-  enum CategoryEnabledFlags {
-    // Normal enabled flag for categories enabled with Enable().
-    CATEGORY_ENABLED = 1 << 0,
+  enum CategoryGroupEnabledFlags {
+    // Normal enabled flag for category groups enabled with Enable().
+    CATEGORY_GROUP_ENABLED = 1 << 0,
     // On Android if ATrace is enabled, all categories will have this bit.
     // Not used on other platforms.
     ATRACE_ENABLED = 1 << 1
