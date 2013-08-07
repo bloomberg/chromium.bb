@@ -7,9 +7,6 @@
 #include <climits>
 #include <string>
 
-#include "base/bind.h"
-#include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -44,6 +41,7 @@ namespace {
 // TODO(dbeam): add back a sensible limit once it's decided or remove
 // kMaxGeneratedCardTimesToShow if this behavior is finalized.
 static const int kMaxGeneratedCardTimesToShow = INT_MAX;
+static const base::char16 kRangeSeparator = '|';
 static const char kWalletGeneratedCardLearnMoreLink[] =
     "http://support.google.com/wallet/bin/answer.py?hl=en&answer=2740044";
 
@@ -62,6 +60,8 @@ AutofillCreditCardBubbleController::AutofillCreditCardBubbleController(
       weak_ptr_factory_(this) {}
 
 AutofillCreditCardBubbleController::~AutofillCreditCardBubbleController() {
+  // In the case that the tab is closed, the controller can be deleted while the
+  // bubble is showing. Always calling |Hide()| ensures the bubble is closed.
   Hide();
 }
 
@@ -115,25 +115,27 @@ gfx::Image AutofillCreditCardBubbleController::AnchorIcon() const {
 }
 
 base::string16 AutofillCreditCardBubbleController::BubbleTitle() const {
-  return !IsGeneratedCardBubble() ? ASCIIToUTF16("Lorem ipsum, savum cardum") :
+  return !IsGeneratedCardBubble() ?
+      ASCIIToUTF16("Lorem ipsum, savum cardum") :
       l10n_util::GetStringUTF16(
           IDS_AUTOFILL_CREDIT_CARD_BUBBLE_GENERATED_TITLE);
 }
 
 base::string16 AutofillCreditCardBubbleController::BubbleText() const {
-  DCHECK(IsSetup());
+  DCHECK(IsSetUp());
   return bubble_text_;
 }
 
 const std::vector<ui::Range>& AutofillCreditCardBubbleController::
     BubbleTextRanges() const {
-  DCHECK(IsSetup());
+  DCHECK(IsSetUp());
   return bubble_text_ranges_;
 }
 
 base::string16 AutofillCreditCardBubbleController::LinkText() const {
-  return l10n_util::GetStringUTF16(IsGeneratedCardBubble() ?
-      IDS_LEARN_MORE : IDS_AUTOFILL_CREDIT_CARD_BUBBLE_MANAGE_CARDS);
+  return l10n_util::GetStringUTF16(
+      IsGeneratedCardBubble() ? IDS_LEARN_MORE :
+                                IDS_AUTOFILL_CREDIT_CARD_BUBBLE_MANAGE_CARDS);
 }
 
 void AutofillCreditCardBubbleController::OnAnchorClicked() {
@@ -143,6 +145,7 @@ void AutofillCreditCardBubbleController::OnAnchorClicked() {
 void AutofillCreditCardBubbleController::OnLinkClicked() {
   if (IsGeneratedCardBubble()) {
 #if !defined(OS_ANDROID)
+    // Open a new tab to the Online Wallet help link.
     chrome::NavigateParams params(
         chrome::FindBrowserWithWebContents(web_contents()),
         GURL(kWalletGeneratedCardLearnMoreLink),
@@ -221,13 +224,14 @@ void AutofillCreditCardBubbleController::ShowAsNewCardSavedBubble(
 void AutofillCreditCardBubbleController::Reset() {
   Hide();
 
+  // Clear any generated state or stored |ShowAs*()| arguments.
   fronting_card_name_.clear();
   backing_card_name_.clear();
   new_card_name_.clear();
   bubble_text_.clear();
   bubble_text_ranges_.clear();
 
-  DCHECK(!IsSetup());
+  DCHECK(!IsSetUp());
 }
 
 void AutofillCreditCardBubbleController::SetUp() {
@@ -244,30 +248,43 @@ void AutofillCreditCardBubbleController::SetUp() {
         NULL);
   }
 
-  base::char16 separator('|');
+  // Split the full text on '|' to highlight certain parts. For example, "sly"
+  // and "jumped" would be bolded in "The |sly| fox |jumped| over the lazy dog".
   std::vector<base::string16> pieces;
-  base::SplitStringDontTrim(full_text, separator, &pieces);
+  base::SplitStringDontTrim(full_text, kRangeSeparator, &pieces);
 
   while (!pieces.empty()) {
     base::string16 piece = pieces.front();
+
+    // Every second piece should be bolded. Because |base::SplitString*()|
+    // leaves an empty "" even if '|' is the first character, this is guaranteed
+    // to work for "|highlighting| starts here". Ignore empty pieces because
+    // there's nothing to highlight.
     if (!piece.empty() && pieces.size() % 2 == 0) {
       const size_t start = bubble_text_.size();
       bubble_text_ranges_.push_back(ui::Range(start, start + piece.size()));
     }
+
+    // Append the piece whether it's bolded or not and move on to the next one.
     bubble_text_.append(piece);
     pieces.erase(pieces.begin(), pieces.begin() + 1);
   }
 
   UpdateAnchor();
-  DCHECK(IsSetup());
+  DCHECK(IsSetUp());
 }
 
-bool AutofillCreditCardBubbleController::IsSetup() const {
+bool AutofillCreditCardBubbleController::IsSetUp() const {
+  // Because |bubble_text_| should never be empty after |SetUp()|, and all
+  // translations should have some text highlighting (i.e. "some |pipes|"),
+  // if there is text there should be text ranges as well. Sanity check this.
   DCHECK_EQ(bubble_text_.empty(), bubble_text_ranges_.empty());
   return !bubble_text_.empty();
 }
 
 bool AutofillCreditCardBubbleController::IsGeneratedCardBubble() const {
+  // Do a quick sanity check to ensure that the bubble isn't partially set up as
+  // the other type (i.e. a fronting card and a new card doesn't make sense).
   DCHECK_EQ(fronting_card_name_.empty(), backing_card_name_.empty());
   DCHECK_NE(backing_card_name_.empty(), new_card_name_.empty());
   return !fronting_card_name_.empty();

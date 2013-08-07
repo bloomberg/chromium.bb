@@ -28,16 +28,16 @@ class AutofillCreditCardBubble {
 
   virtual ~AutofillCreditCardBubble();
 
-  // Visually reveal the dialog bubble.
+  // Visually reveals the dialog bubble.
   virtual void Show() = 0;
 
-  // Hide the bubble from view.
+  // Hides the bubble from view.
   virtual void Hide() = 0;
 
-  // Whether the bubble is currently in the process of hiding itself.
+  // Returns whether the bubble is currently in the process of hiding itself.
   virtual bool IsHiding() const = 0;
 
-  // Create a bubble view that's operated by |controller| and owned by the
+  // Creates a bubble view that's operated by |controller| and owned by the
   // platform's widget or view management framework. |controller| is invalid
   // while the bubble is closing.
   static base::WeakPtr<AutofillCreditCardBubble> Create(

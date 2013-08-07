@@ -31,10 +31,10 @@ base::string16 BackingCard() {
   return ASCIIToUTF16("Visa - 1111");
 }
 base::string16 FrontingCard() {
-  return ASCIIToUTF16("Mastercard - 5888");
+  return ASCIIToUTF16("Mastercard - 4444");
 }
 base::string16 NewCard() {
-  return ASCIIToUTF16("Discover - 7582");
+  return ASCIIToUTF16("Discover - 7777");
 }
 
 base::string16 RangeOfString(const base::string16& string,
@@ -49,8 +49,8 @@ class TestAutofillCreditCardBubbleController
       content::WebContents* contents)
       : AutofillCreditCardBubbleController(contents) {
     contents->SetUserData(UserDataKey(), this);
-    EXPECT_TRUE(IsInstalled());
   }
+
   virtual ~TestAutofillCreditCardBubbleController() {}
 
   bool IsInstalled() const {
@@ -86,6 +86,7 @@ class AutofillCreditCardBubbleControllerTest : public testing::Test {
     // Attaches immediately to |test_web_contents_| so a test version will exist
     // before a non-test version can be created.
     new TestAutofillCreditCardBubbleController(test_web_contents_.get());
+    ASSERT_TRUE(controller()->IsInstalled());
   }
 
  protected:
@@ -113,7 +114,7 @@ class AutofillCreditCardBubbleControllerTest : public testing::Test {
   }
 
   void ShowNewCardSavedBubble() {
-    EXPECT_TRUE(controller()->IsInstalled());
+    ASSERT_TRUE(controller()->IsInstalled());
     TestAutofillCreditCardBubbleController::ShowNewCardSavedBubble(
         test_web_contents_.get(), NewCard());
   }
@@ -146,6 +147,7 @@ class AutofillCreditCardBubbleControllerTest : public testing::Test {
 TEST_F(AutofillCreditCardBubbleControllerTest, GeneratedCardBubbleTimesShown) {
   ASSERT_EQ(0, GeneratedCardBubbleTimesShown());
 
+  // Ensure that showing the generated card UI bumps the persistent count.
   ShowGeneratedCardUI();
   EXPECT_EQ(1, GeneratedCardBubbleTimesShown());
   EXPECT_TRUE(controller()->GetTestingBubble()->showing());
@@ -157,19 +159,24 @@ TEST_F(AutofillCreditCardBubbleControllerTest, GeneratedCardBubbleTimesShown) {
 }
 
 TEST_F(AutofillCreditCardBubbleControllerTest, BubbleText) {
+  // Ensure that while showing the generated card UI that the bubble's text
+  // contains "Visa - 1111" and "Mastercard - 4444".
   ShowGeneratedCardUI();
   base::string16 generated_text = controller()->BubbleText();
-  EXPECT_NE(generated_text.find(BackingCard()), base::string16::npos);
-  EXPECT_NE(generated_text.find(FrontingCard()), base::string16::npos);
-  EXPECT_EQ(generated_text.find(NewCard()), base::string16::npos);
+  EXPECT_NE(base::string16::npos, generated_text.find(BackingCard()));
+  EXPECT_NE(base::string16::npos, generated_text.find(FrontingCard()));
+  EXPECT_EQ(base::string16::npos, generated_text.find(NewCard()));
 
+  // Ensure that while showing the new card bubble that "Discover - 7777" is in
+  // the bubble text.
   ShowNewCardSavedBubble();
   base::string16 new_text = controller()->BubbleText();
   EXPECT_NE(new_text, generated_text);
-  EXPECT_EQ(new_text.find(BackingCard()), base::string16::npos);
-  EXPECT_EQ(new_text.find(FrontingCard()), base::string16::npos);
-  EXPECT_NE(new_text.find(NewCard()), base::string16::npos);
+  EXPECT_EQ(base::string16::npos, new_text.find(BackingCard()));
+  EXPECT_EQ(base::string16::npos, new_text.find(FrontingCard()));
+  EXPECT_NE(base::string16::npos, new_text.find(NewCard()));
 
+  // Make sure that |bubble_text_| is regenerated the same way in |Setup()|.
   ShowGeneratedCardUI();
   EXPECT_EQ(generated_text, controller()->BubbleText());
 
@@ -178,11 +185,12 @@ TEST_F(AutofillCreditCardBubbleControllerTest, BubbleText) {
 }
 
 TEST_F(AutofillCreditCardBubbleControllerTest, BubbleTextRanges) {
+  // Check that the highlighted ranges in the bubble's text are correct.
   ShowGeneratedCardUI();
   base::string16 text = controller()->BubbleText();
   std::vector<ui::Range> ranges = controller()->BubbleTextRanges();
 
-  ASSERT_EQ(ranges.size(), 2U);
+  ASSERT_EQ(2U, ranges.size());
   EXPECT_EQ(BackingCard(), RangeOfString(text, ranges[0]));
   EXPECT_EQ(FrontingCard(), RangeOfString(text, ranges[1]));
 
@@ -190,11 +198,13 @@ TEST_F(AutofillCreditCardBubbleControllerTest, BubbleTextRanges) {
   text = controller()->BubbleText();
   ranges = controller()->BubbleTextRanges();
 
-  ASSERT_EQ(ranges.size(), 1U);
+  ASSERT_EQ(1U, ranges.size());
   EXPECT_EQ(NewCard(), RangeOfString(text, ranges[0]));
 }
 
 TEST_F(AutofillCreditCardBubbleControllerTest, HideOnNavigate) {
+  // When a user navigates away from a page (or refreshes) normally, the bubbles
+  // should be hidden.
   EXPECT_FALSE(controller()->GetTestingBubble());
   ShowGeneratedCardUI();
   EXPECT_TRUE(controller()->GetTestingBubble()->showing());
@@ -213,6 +223,7 @@ TEST_F(AutofillCreditCardBubbleControllerTest, HideOnNavigate) {
 }
 
 TEST_F(AutofillCreditCardBubbleControllerTest, StayOnRedirect) {
+  // If a page redirects right after submitting, the bubble should remain.
   EXPECT_FALSE(controller()->GetTestingBubble());
   ShowGeneratedCardUI();
   EXPECT_TRUE(controller()->GetTestingBubble()->showing());

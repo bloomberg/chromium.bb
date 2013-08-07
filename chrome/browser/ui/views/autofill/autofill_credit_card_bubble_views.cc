@@ -22,6 +22,19 @@
 
 namespace autofill {
 
+namespace {
+
+// Get the view this bubble will be anchored to via |controller|.
+views::View* GetAnchor(
+    const base::WeakPtr<AutofillCreditCardBubbleController>& controller) {
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(controller->web_contents());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  return browser_view->GetLocationBarView()->autofill_credit_card_view();
+}
+
+}  // namespace
+
 AutofillCreditCardBubbleViews::~AutofillCreditCardBubbleViews() {}
 
 void AutofillCreditCardBubbleViews::Show() {
@@ -29,6 +42,9 @@ void AutofillCreditCardBubbleViews::Show() {
   views::BubbleDelegateView::CreateBubble(this);
 
   GetWidget()->Show();
+
+  // This bubble doesn't render correctly on Windows without calling
+  // |SizeToContents()|. This must be called after showing the widget.
   SizeToContents();
 }
 
@@ -88,10 +104,7 @@ base::WeakPtr<AutofillCreditCardBubble> AutofillCreditCardBubble::Create(
 
 AutofillCreditCardBubbleViews::AutofillCreditCardBubbleViews(
     const base::WeakPtr<AutofillCreditCardBubbleController>& controller)
-    : BubbleDelegateView(BrowserView::GetBrowserViewForBrowser(
-          chrome::FindBrowserWithWebContents(controller->web_contents()))->
-              GetLocationBarView()->autofill_credit_card_view(),
-        views::BubbleBorder::TOP_RIGHT),
+    : BubbleDelegateView(GetAnchor(controller), views::BubbleBorder::TOP_RIGHT),
       controller_(controller),
       weak_ptr_factory_(this) {
   // Match bookmarks bubble view's anchor view insets and margins.

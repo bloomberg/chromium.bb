@@ -74,11 +74,10 @@ class AutofillCreditCardBubbleController
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
 
-  // Whether |bubble_| is currently in the process of hiding.
+  // Returns whether |bubble_| is currently in the process of hiding.
   bool IsHiding() const;
 
-  // An image that should be shown as an icon in the omnibox and pointed to by
-  // the bubble.
+  // The image that should be shown as an icon in the omnibox.
   gfx::Image AnchorIcon() const;
 
   // The title of the bubble. May be empty.
@@ -93,10 +92,11 @@ class AutofillCreditCardBubbleController
   // The text of the link shown at the bubble of the bubble.
   base::string16 LinkText() const;
 
-  // Called when the anchor for this bubble is clicked.
+  // Called when the anchor for this bubble is clicked. Shows a new bubble.
   void OnAnchorClicked();
 
-  // Called when the link at the bottom of the bubble is clicked.
+  // Called when the link at the bottom of the bubble is clicked. Opens and
+  // navigates a new tab to an informational page and hides the bubble.
   void OnLinkClicked();
 
   // The web contents that successfully submitted the Autofill dialog (causing
@@ -105,8 +105,8 @@ class AutofillCreditCardBubbleController
   const content::WebContents* web_contents() const { return web_contents_; }
 
  protected:
-  // Create a bubble connected to |web_contents|. Its content will be based on
-  // which |SetupAs*()| method is called.
+  // Creates a bubble connected to |web_contents|. Its content will be based on
+  // which |ShowAs*()| method is called.
   explicit AutofillCreditCardBubbleController(content::WebContents* contents);
 
   // Returns a base::WeakPtr that references |this|. Exposed for testing.
@@ -118,7 +118,7 @@ class AutofillCreditCardBubbleController
   // Returns a weak reference to |bubble_|. May be invalid/NULL.
   virtual base::WeakPtr<AutofillCreditCardBubble> bubble();
 
-  // Whether the bubble can show currently.
+  // Returns whether the bubble can currently show itself.
   virtual bool CanShow() const;
 
   // Whether the generated card bubble should be shown initially when showing
@@ -132,7 +132,7 @@ class AutofillCreditCardBubbleController
       const base::string16& backing_card_name,
       const base::string16& fronting_card_name);
 
-  // Show a bubble notifying the user that new credit card data has been saved.
+  // Shows a bubble notifying the user that new credit card data has been saved.
   // Exposed for testing.
   virtual void ShowAsNewCardSavedBubble(const base::string16& new_card_name);
 
@@ -142,21 +142,21 @@ class AutofillCreditCardBubbleController
   // Nukes the state of this controller and hides |bubble_| (if it exists).
   void Reset();
 
-  // Generate bubble text and ranges now that this class knows which type of
-  // bubble it should be shown as. Called from |ShowAs*()| methods.
+  // Generates the correct bubble text and text highlighting ranges for the
+  // types of bubble being shown. Must be called before showing the bubble.
   void SetUp();
 
-  // Whether the controller has been setup as a certain type of bubble.
-  bool IsSetup() const;
+  // Returns whether the controller has been setup as a certain type of bubble.
+  bool IsSetUp() const;
 
-  // Whether the bubble is an educational bubble about generated cards.
+  // Returns whether the bubble is an educational bubble about generated cards.
   bool IsGeneratedCardBubble() const;
 
-  // An internal helper to show the bubble in response to successful Autofill
-  // dialog submission or anchor click.
+  // Hides any existing bubbles and creates and shows a new one. Called in
+  // response to successful Autofill dialog submission or anchor click.
   void Show(bool was_anchor_click);
 
-  // Update the omnibox icon that |bubble_| will be anchored to.
+  // Updates the omnibox icon that |bubble_| will be anchored to.
   void UpdateAnchor();
 
   // Hides |bubble_| (if it exists and isn't already hiding).
