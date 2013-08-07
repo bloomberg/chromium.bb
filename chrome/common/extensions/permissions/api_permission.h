@@ -91,6 +91,7 @@ class APIPermission {
     kInput,
     kInputMethodPrivate,
     kLocation,
+    kLogPrivate,
     kManagement,
     kMediaGalleries,
     kMediaGalleriesPrivate,
@@ -141,6 +142,8 @@ class APIPermission {
     kWebView,
     kSystemCpu,
     kSystemMemory,
+    kSystemInfoCpu,
+    kSystemInfoMemory,
     kEnumBoundary
   };
 

@@ -793,6 +793,7 @@
         'browser/extensions/api/identity/gaia_web_auth_flow_unittest.cc',
         'browser/extensions/api/identity/identity_mint_queue_unittest.cc',
         'browser/extensions/api/idle/idle_api_unittest.cc',
+        'browser/extensions/api/log_private/syslog_parser_unittest.cc',
         'browser/extensions/api/messaging/native_message_process_host_unittest.cc',
         'browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc',
         'browser/extensions/api/omnibox/omnibox_unittest.cc',
@@ -2211,6 +2212,7 @@
           'sources!': [
             'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
+            'browser/extensions/api/log_private/syslog_parser_unittest.cc',
           ],
         }],
         ['use_x11==1', {

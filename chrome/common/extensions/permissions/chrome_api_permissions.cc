@@ -166,6 +166,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kIdentityPrivate, "identityPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
+    { APIPermission::kLogPrivate, "logPrivate"},
     { APIPermission::kNetworkingPrivate, "networkingPrivate",
       APIPermissionInfo::kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_NETWORKING_PRIVATE,

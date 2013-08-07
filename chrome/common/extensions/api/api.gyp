@@ -66,6 +66,7 @@
           'idle.json',
           'infobars.json',
           'input_ime.json',
+          'log_private.idl',
           'management.json',
           'manifest_types.json',
           'media_galleries.idl',
@@ -123,6 +124,7 @@
         ['OS!="chromeos"', {
           'schema_files!': [
             'file_browser_handler_internal.json',
+            'log_private.idl',
             'rtc_private.idl',
           ],
         }],

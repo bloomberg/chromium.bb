@@ -308,6 +308,11 @@
     "dependencies": ["permission:location"],
     "contexts": ["blessed_extension"]
   },
+  "logPrivate": {
+    "dependencies": ["permission:logPrivate"],
+    "extension_types": ["extension", "packaged_app"],
+    "contexts": ["blessed_extension"]
+  },
   "management": {
     "dependencies": ["permission:management"],
     "contexts": ["blessed_extension"]
