@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/runner.js"></script>
+<script>
+
+var canvas2D = document.createElement("canvas");
+var ctx2D = canvas2D.getContext("2d");
+var canvas3D = document.createElement('canvas');
+var gl = canvas3D.getContext('experimental-webgl');
+if(!gl)
+    PerfTestRunner.log("\nWebGL is not supported or enabled on this platform!\n");
+var MEASURE_DRAW_TIMES = 1000;
+var MAX_COUNT = 60000;
+var count = 0;
+
+function setSize(width, height) {
+    canvas2D.width = width;
+    canvas2D.height = height;
+    canvas3D.width = width;
+    canvas3D.height = height;
+}
+
+function rand(range) {
+    return Math.floor(Math.random() * range);
+}
+
+function fillCanvas(ctx2d, canvas2d) {
+    ctx2d.fillStyle = "rgba(" + rand(255) + "," + rand(255) + "," + rand(255)  + "," + rand(255) + ")";
+    ctx2d.fillRect(0, 0, canvas2d.width, canvas2d.height);
+}
+
+function uploadCanvas2DToWebGLTexture() {
+    if (gl) {
+        var tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+
+        var start = PerfTestRunner.now();
+        for (var i = 0; i < MEASURE_DRAW_TIMES; i++) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas2D);
+        }
+        gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+        gl.deleteTexture(tex);
+        count++;
+
+        var elapsedTime = PerfTestRunner.now() - start;
+        PerfTestRunner.measureValueAsync(MEASURE_DRAW_TIMES * 1000 / elapsedTime);
+    } else
+        PerfTestRunner.measureValueAsync(0);
+    if (count < MAX_COUNT)
+        requestAnimationFrame(uploadCanvas2DToWebGLTexture);
+}
+
+function onCompletedRun() {
+    count = MAX_COUNT;
+}
+
+window.onload = function () {
+    PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'runs/s',
+        description: "This bench test checks the speed on uploading 2d Canvas(1024x1024) to Webgl Texture(1024x1024)."});
+    setSize(1024, 1024);
+    fillCanvas(ctx2D, canvas2D);
+    uploadCanvas2DToWebGLTexture();
+}
+
+</script>
+</body>
+</html>

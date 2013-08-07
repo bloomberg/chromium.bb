@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/runner.js"></script>
+<script>
+
+var sourceCanvas3D = document.createElement('canvas');
+var sourceCtx = sourceCanvas3D.getContext('experimental-webgl');
+var destCanvas3D = document.createElement('canvas');
+var destCtx = destCanvas3D.getContext('experimental-webgl');
+if (!sourceCtx || !destCtx)
+    PerfTestRunner.log("\nWebGL is not supported or enabled on this platform!\n");
+var MEASURE_DRAW_TIMES = 100;
+var MAX_COUNT = 60000;
+var count = 0;
+ 
+function setSize(width, height) {
+    sourceCanvas3D.width = width;
+    sourceCanvas3D.height = height;
+    destCanvas3D.width = width;
+    destCanvas3D.height = height;
+}
+
+function rand(range) {
+    return Math.floor(Math.random() * range);
+}
+
+function renderWebGL(gl) {
+    gl.disable(gl.SCISSOR_TEST);
+    gl.clear(gl.COLOR_BUFER_BIT);
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(rand(1024), rand(1024), rand(1024), rand(1024));
+    gl.clearColor(Math.random(), Math.random(), Math.random(), 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+}
+
+function uploadWebGLToWebGLTexture() {
+    if (sourceCtx && destCtx) {
+        var tex = destCtx.createTexture();
+        destCtx.bindTexture(destCtx.TEXTURE_2D, tex);
+
+        var start = PerfTestRunner.now();
+
+        for (var i = 0; i < MEASURE_DRAW_TIMES; i++) {
+            destCtx.texImage2D(destCtx.TEXTURE_2D, 0, destCtx.RGBA, destCtx.RGBA, destCtx.UNSIGNED_BYTE, sourceCanvas3D);
+        }
+        destCtx.readPixels(0, 0, 1, 1, sourceCtx.RGBA, sourceCtx.UNSIGNED_BYTE, new Uint8Array(4));
+        destCtx.deleteTexture(tex);
+        count++;
+
+        var elapsedTime = PerfTestRunner.now() - start;
+        PerfTestRunner.measureValueAsync(MEASURE_DRAW_TIMES * 1000 / elapsedTime);
+    } else
+        PerfTestRunner.measureValueAsync(0);
+    if (count < MAX_COUNT)
+        requestAnimationFrame(uploadWebGLToWebGLTexture);
+}
+
+function onCompletedRun() {
+    count = MAX_COUNT;
+}
+
+window.onload = function () {
+    PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'runs/s',
+        description: "This benchmark checks the speed on uploading WebGL(1024x1024) to WebGL Texture(1024x1024)."});
+    setSize(1024, 1024);
+    if (sourceCtx)
+        renderWebGL(sourceCtx);
+    uploadWebGLToWebGLTexture();
+}
+
+</script>
+</body>
+</html>
