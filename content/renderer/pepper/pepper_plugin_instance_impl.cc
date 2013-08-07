@@ -29,7 +29,6 @@
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
-#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
@@ -359,7 +358,6 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
 
 // static
 PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
-    PepperHelperImpl* helper,
     RenderViewImpl* render_view,
     PluginModule* module,
     WebPluginContainer* container,
@@ -370,7 +368,7 @@ PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
       PPP_Instance_Combined::Create(get_plugin_interface_func);
   if (!ppp_instance_combined)
     return NULL;
-  return new PepperPluginInstanceImpl(helper, render_view, module,
+  return new PepperPluginInstanceImpl(render_view, module,
                                       ppp_instance_combined, container,
                                       plugin_url);
 }
@@ -441,14 +439,12 @@ void PepperPluginInstanceImpl::GamepadImpl::Sample(
 }
 
 PepperPluginInstanceImpl::PepperPluginInstanceImpl(
-    PepperHelperImpl* helper,
     RenderViewImpl* render_view,
     PluginModule* module,
     ::ppapi::PPP_Instance_Combined* instance_interface,
     WebPluginContainer* container,
     const GURL& plugin_url)
-    : helper_(helper),
-      render_view_(render_view),
+    : render_view_(render_view),
       module_(module),
       instance_interface_(instance_interface),
       pp_instance_(0),
@@ -500,10 +496,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
   module_->InstanceCreated(this);
 
-  if (helper_)
-    helper_->InstanceCreated(this);
-
   if (render_view) {  // NULL in tests
+    render_view->PepperInstanceCreated(this);
     view_data_.is_page_visible = !render_view->is_hidden();
 
     // Set the initial focus.
@@ -552,8 +546,8 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   if (TrackedCallback::IsPending(lock_mouse_callback_))
     lock_mouse_callback_->Abort();
 
-  if (helper_)
-    helper_->InstanceDeleted(this);
+  if (render_view_)
+    render_view_->PepperInstanceDeleted(this);
 
   if (!module_->IsProxied() && render_view_) {
     PepperBrowserConnection* browser_connection =
@@ -950,7 +944,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
 
   if (WebInputEvent::isMouseEventType(event.type)) {
-    helper_->DidReceiveMouseEvent(this);
+    render_view_->PepperDidReceiveMouseEvent(this);
   }
 
   // Don't dispatch input events to crashed plugins.
@@ -1390,10 +1384,10 @@ bool PepperPluginInstanceImpl::PluginHasFocus() const {
 void PepperPluginInstanceImpl::SendFocusChangeNotification() {
   // This call can happen during PepperPluginIn>stanceImpl destruction, because
   // WebKit informs the plugin it's losing focus. See crbug.com/236574
-  if (!helper_ || !instance_interface_)
+  if (!instance_interface_)
     return;
   bool has_focus = PluginHasFocus();
-  helper_->PluginFocusChanged(this, has_focus);
+  render_view_->PepperFocusChanged(this, has_focus);
   instance_interface_->DidChangeFocus(pp_instance(), PP_FromBool(has_focus));
 }
 
@@ -2403,8 +2397,7 @@ void PepperPluginInstanceImpl::SetTextInputType(PP_Instance instance,
   if (itype < 0 || itype > ui::TEXT_INPUT_TYPE_URL)
     itype = ui::TEXT_INPUT_TYPE_NONE;
   text_input_type_ = static_cast<ui::TextInputType>(itype);
-  if (helper_->focused_plugin() == this)
-    render_view_->PpapiPluginTextInputTypeChanged();
+  render_view_->PepperTextInputTypeChanged(this);
 }
 
 void PepperPluginInstanceImpl::UpdateCaretPosition(
@@ -2414,13 +2407,11 @@ void PepperPluginInstanceImpl::UpdateCaretPosition(
   text_input_caret_ = PP_ToGfxRect(caret);
   text_input_caret_bounds_ = PP_ToGfxRect(bounding_box);
   text_input_caret_set_ = true;
-  if (helper_->focused_plugin() == this)
-    render_view_->PpapiPluginCaretPositionChanged();
+  render_view_->PepperCaretPositionChanged(this);
 }
 
 void PepperPluginInstanceImpl::CancelCompositionText(PP_Instance instance) {
-  if (helper_->focused_plugin() == this)
-    render_view_->PpapiPluginCancelComposition();
+  render_view_->PepperCancelComposition(this);
 }
 
 void PepperPluginInstanceImpl::SelectionChanged(PP_Instance instance) {
@@ -2446,8 +2437,7 @@ void PepperPluginInstanceImpl::UpdateSurroundingText(PP_Instance instance,
   surrounding_text_ = text;
   selection_caret_ = caret;
   selection_anchor_ = anchor;
-  if (helper_->focused_plugin() == this)
-    render_view_->PpapiPluginSelectionChanged();
+  render_view_->PepperSelectionChanged(this);
 }
 
 PP_Var PepperPluginInstanceImpl::ResolveRelativeToDocument(
@@ -2699,7 +2689,7 @@ void PepperPluginInstanceImpl::DoSetCursor(WebCursorInfo* cursor) {
   if (fullscreen_container_) {
     fullscreen_container_->DidChangeCursor(*cursor);
   } else {
-    helper_->DidChangeCursor(this, *cursor);
+    render_view_->PepperDidChangeCursor(this, *cursor);
   }
 }
 

@@ -110,22 +110,6 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
   }
 };
 
-class MockPepperHelper : public PepperHelper {
- public:
-  MockPepperHelper() : text_input_type_(ui::TEXT_INPUT_TYPE_NONE) {}
-  virtual bool IsPluginFocused() const OVERRIDE {
-    return true;
-  }
-  virtual ui::TextInputType GetTextInputType() const OVERRIDE {
-    return text_input_type_;
-  }
-  void SetTextInputType(ui::TextInputType text_input_type) {
-    text_input_type_ = text_input_type;
-  }
- private:
-   ui::TextInputType text_input_type_;
-};
-
 }  // namespace
 
 class RenderViewImplTest : public RenderViewTest {
@@ -1937,44 +1921,6 @@ TEST_F(RenderViewImplTest, NavigateFrame) {
 // frame in the RenderView.
 TEST_F(RenderViewImplTest, BasicRenderFrame) {
   EXPECT_TRUE(view()->main_render_frame_.get());
-}
-
-TEST_F(RenderViewImplTest, TextInputTypeWithPepper) {
-  MockPepperHelper* pepper_helper = new MockPepperHelper();
-  pepper_helper->SetTextInputType(ui::TEXT_INPUT_TYPE_EMAIL);
-  view()->pepper_helper_ .reset(pepper_helper);
-
-  view()->OnSetInputMethodActive(true);
-  view()->set_send_content_state_immediately(true);
-  LoadHTML("<html>"
-           "<head>"
-           "</head>"
-           "<body>"
-           "<input id=\"test1\" type=\"text\" value=\"some text\"></input>"
-           "</body>"
-           "</html>");
-  render_thread_->sink().ClearMessages();
-
-  // Move the input focus to the first <input> element, where we should
-  // activate IMEs.
-  ExecuteJavaScript("document.getElementById('test1').focus();");
-  ProcessPendingMessages();
-  render_thread_->sink().ClearMessages();
-
-  // Update the IME status and verify if our IME backend sends an IPC message
-  // using mock pepper status.
-  view()->UpdateTextInputType();
-  const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
-  EXPECT_TRUE(msg != NULL);
-  EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
-  ui::TextInputType type;
-  bool can_compose_inline;
-  ui::TextInputMode input_mode;
-  ViewHostMsg_TextInputTypeChanged::Read(msg,
-                                         &type,
-                                         &can_compose_inline,
-                                         &input_mode);
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_EMAIL, type);
 }
 
 TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {

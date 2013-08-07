@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message_macros.h"

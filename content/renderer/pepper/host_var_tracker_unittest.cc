@@ -83,7 +83,7 @@ class HostVarTrackerTest : public PpapiUnittest {
 TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
   // Make a second instance (the test harness already creates & manages one).
   scoped_refptr<PepperPluginInstanceImpl> instance2(
-      PepperPluginInstanceImpl::Create(NULL, NULL, module(), NULL, GURL()));
+      PepperPluginInstanceImpl::Create(NULL, module(), NULL, GURL()));
   PP_Instance pp_instance2 = instance2->pp_instance();
 
   // Make an object var.

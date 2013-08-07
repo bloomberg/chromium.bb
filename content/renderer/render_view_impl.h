@@ -36,7 +36,6 @@
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
-#include "content/renderer/pepper_helper.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
@@ -111,6 +110,7 @@ class WebTouchEvent;
 class WebURLRequest;
 class WebUserMediaClient;
 struct WebActiveWheelFlingParameters;
+struct WebCursorInfo;
 struct WebDateTimeChooserParams;
 struct WebFileChooserParams;
 struct WebFindOptions;
@@ -288,32 +288,53 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Plugin-related functions --------------------------------------------------
 
-  // Notification that the given plugin has crashed.
-  void PluginCrashed(const base::FilePath& plugin_path,
-                     base::ProcessId plugin_pid);
+#if defined(ENABLE_PLUGINS)
+  // Indicates that the given instance has been created.
+  void PepperInstanceCreated(PepperPluginInstanceImpl* instance);
+
+  // Indicates that the given instance is being destroyed. This is called from
+  // the destructor, so it's important that the instance is not dereferenced
+  // from this call.
+  void PepperInstanceDeleted(PepperPluginInstanceImpl* instance);
+
+  // Notifies that |instance| has changed the cursor.
+  // This will update the cursor appearance if it is currently over the plugin
+  // instance.
+  void PepperDidChangeCursor(PepperPluginInstanceImpl* instance,
+                             const WebKit::WebCursorInfo& cursor);
+
+  // Notifies that |instance| has received a mouse event.
+  void PepperDidReceiveMouseEvent(PepperPluginInstanceImpl* instance);
+
+  // Notification that the given plugin is focused or unfocused.
+  void PepperFocusChanged(PepperPluginInstanceImpl* instance, bool focused);
+
+  // Informs the render view that a PPAPI plugin has changed text input status.
+  void PepperTextInputTypeChanged(PepperPluginInstanceImpl* instance);
+  void PepperCaretPositionChanged(PepperPluginInstanceImpl* instance);
+
+  // Cancels current composition.
+  void PepperCancelComposition(PepperPluginInstanceImpl* instance);
+
+  // Informs the render view that a PPAPI plugin has changed selection.
+  void PepperSelectionChanged(PepperPluginInstanceImpl* instance);
 
   // Creates a fullscreen container for a pepper plugin instance.
   RenderWidgetFullscreenPepper* CreatePepperFullscreenContainer(
       PepperPluginInstanceImpl* plugin);
 
-  // Informs the render view that a PPAPI plugin has gained or lost focus.
-  void PpapiPluginFocusChanged();
-
-  // Informs the render view that a PPAPI plugin has changed text input status.
-  void PpapiPluginTextInputTypeChanged();
-  void PpapiPluginCaretPositionChanged();
-
-  // Cancels current composition.
-  void PpapiPluginCancelComposition();
-
-  // Informs the render view that a PPAPI plugin has changed selection.
-  void PpapiPluginSelectionChanged();
-
   // Notification that a PPAPI plugin has been created.
-  void PpapiPluginCreated(RendererPpapiHost* host);
+  void PepperPluginCreated(RendererPpapiHost* host);
 
   // Retrieves the current caret position if a PPAPI plugin has focus.
-  bool GetPpapiPluginCaretBounds(gfx::Rect* rect);
+  bool GetPepperCaretBounds(gfx::Rect* rect);
+
+  bool IsPepperAcceptingCompositionEvents() const;
+#endif
+
+  // Notification that the given plugin has crashed.
+  void PluginCrashed(const base::FilePath& plugin_path,
+                     base::ProcessId plugin_pid);
 
   // Simulates IME events for testing purpose.
   void SimulateImeSetComposition(
@@ -1445,6 +1466,24 @@ class CONTENT_EXPORT RenderViewImpl
   int focused_plugin_id_;
 #endif
 
+#if defined(ENABLE_PLUGINS)
+  typedef std::set<PepperPluginInstanceImpl*> PepperPluginSet;
+  PepperPluginSet active_pepper_instances_;
+
+  // Whether or not the focus is on a PPAPI plugin
+  PepperPluginInstanceImpl* focused_pepper_plugin_;
+
+  // Current text input composition text. Empty if no composition is in
+  // progress.
+  string16 pepper_composition_text_;
+
+  // The plugin instance that received the last mouse event. It is set to NULL
+  // if the last mouse event went to elements other than Pepper plugins.
+  // |pepper_last_mouse_event_target_| is not owned by this class. We can know
+  // about when it is destroyed via InstanceDeleted().
+  PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
+#endif
+
   // Misc ----------------------------------------------------------------------
 
   // The current and pending file chooser completion objects. If the queue is
@@ -1499,8 +1538,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // State associated with the GetWindowSnapshot function.
   int next_snapshot_id_;
-  typedef std::map<int, WindowSnapshotCallback>
-      PendingSnapshotMap;
+  typedef std::map<int, WindowSnapshotCallback> PendingSnapshotMap;
   PendingSnapshotMap pending_snapshots_;
 
   // Allows to selectively disable partial buffer swap for this renderer's
@@ -1520,10 +1558,8 @@ class CONTENT_EXPORT RenderViewImpl
   // session, this info is sent to the browser along with other drag/drop info.
   DragEventSourceInfo possible_drag_event_info_;
 
-  // NOTE: pepper_helper_ and stats_collection_observer_ should be the last
-  // members because their constructors call the AddObservers method of
-  // RenderViewImpl.
-  scoped_ptr<PepperHelper> pepper_helper_;
+  // NOTE: stats_collection_observer_ should be the last members because their
+  // constructors call the AddObservers method of RenderViewImpl.
   scoped_ptr<StatsCollectionObserver> stats_collection_observer_;
 
   ui::MenuSourceType context_menu_source_type_;

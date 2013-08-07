@@ -99,7 +99,6 @@ class ContentDecryptorDelegate;
 class FullscreenContainer;
 class MessageChannel;
 class PepperGraphics2DHost;
-class PepperHelperImpl;
 class PluginModule;
 class PluginObject;
 class PPB_Graphics3D_Impl;
@@ -122,12 +121,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // get_plugin_interface function. If the plugin does not support any valid
   // PPP_Instance interface, returns NULL.
   static PepperPluginInstanceImpl* Create(
-      PepperHelperImpl* helper,
       RenderViewImpl* render_view,
       PluginModule* module,
       WebKit::WebPluginContainer* container,
       const GURL& plugin_url);
-  PepperHelperImpl* helper() const { return helper_; }
   RenderViewImpl* render_view() const { return render_view_; }
   PluginModule* module() const { return module_.get(); }
   MessageChannel& message_channel() { return *message_channel_; }
@@ -549,8 +546,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // objects. This constructor is private so that we can hide the
   // PPP_Instance_Combined details while still having 1 constructor to maintain
   // for member initialization.
-  PepperPluginInstanceImpl(PepperHelperImpl* helper,
-                           RenderViewImpl* render_view,
+  PepperPluginInstanceImpl(RenderViewImpl* render_view,
                            PluginModule* module,
                            ::ppapi::PPP_Instance_Combined* instance_interface,
                            WebKit::WebPluginContainer* container,
@@ -646,7 +642,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
       int pending_host_id,
       const ppapi::URLResponseInfoData& data);
 
-  PepperHelperImpl* helper_;
   RenderViewImpl* render_view_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;

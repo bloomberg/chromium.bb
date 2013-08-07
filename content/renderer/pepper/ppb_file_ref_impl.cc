@@ -12,7 +12,6 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
-#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_thread_impl.h"

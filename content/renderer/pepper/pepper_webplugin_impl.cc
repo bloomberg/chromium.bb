@@ -48,7 +48,6 @@ namespace content {
 
 struct PepperWebPluginImpl::InitData {
   scoped_refptr<PluginModule> module;
-  base::WeakPtr<PepperHelperImpl> delegate;
   base::WeakPtr<RenderViewImpl> render_view;
   std::vector<std::string> arg_names;
   std::vector<std::string> arg_values;
@@ -58,7 +57,6 @@ struct PepperWebPluginImpl::InitData {
 PepperWebPluginImpl::PepperWebPluginImpl(
     PluginModule* plugin_module,
     const WebPluginParams& params,
-    const base::WeakPtr<PepperHelperImpl>& plugin_delegate,
     const base::WeakPtr<RenderViewImpl>& render_view)
     : init_data_(new InitData()),
       full_frame_(params.loadManually),
@@ -66,7 +64,6 @@ PepperWebPluginImpl::PepperWebPluginImpl(
       container_(NULL) {
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
-  init_data_->delegate = plugin_delegate;
   init_data_->render_view = render_view;
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
     init_data_->arg_names.push_back(params.attributeNames[i].utf8());
@@ -87,12 +84,8 @@ WebKit::WebPluginContainer* PepperWebPluginImpl::container() const {
 
 bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
   // The plugin delegate may have gone away.
-  if (!init_data_->delegate.get())
-    return false;
-
   instance_ = init_data_->module->CreateInstance(
-      init_data_->delegate.get(), init_data_->render_view.get(), container,
-      init_data_->url);
+      init_data_->render_view.get(), container, init_data_->url);
   if (!instance_.get())
     return false;
 

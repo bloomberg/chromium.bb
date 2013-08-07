@@ -17,7 +17,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "content/renderer/pepper/quota_file_io.h"

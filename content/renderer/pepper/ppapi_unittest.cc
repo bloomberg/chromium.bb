@@ -87,8 +87,7 @@ void PpapiUnittest::SetUp() {
   ASSERT_TRUE(module_->InitAsInternalPlugin(entry_points));
 
   // Initialize the mock instance.
-  instance_ = PepperPluginInstanceImpl::Create(
-      NULL, NULL, module(), NULL, GURL());
+  instance_ = PepperPluginInstanceImpl::Create(NULL, module(), NULL, GURL());
 }
 
 void PpapiUnittest::TearDown() {

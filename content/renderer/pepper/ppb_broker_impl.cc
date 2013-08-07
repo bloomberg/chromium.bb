@@ -9,7 +9,6 @@
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_broker.h"
-#include "content/renderer/pepper/pepper_helper_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/render_thread_impl.h"

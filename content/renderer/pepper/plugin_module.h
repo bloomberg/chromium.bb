@@ -47,7 +47,6 @@ class WebPluginContainer;
 
 namespace content {
 class HostDispatcherWrapper;
-class PepperHelperImpl;
 class PepperPluginInstanceImpl;
 class PepperBroker;
 class RendererPpapiHostImpl;
@@ -140,7 +139,6 @@ class CONTENT_EXPORT PluginModule :
   const ::ppapi::PpapiPermissions& permissions() const { return permissions_; }
 
   PepperPluginInstanceImpl* CreateInstance(
-      PepperHelperImpl* helper,
       RenderViewImpl* render_view,
       WebKit::WebPluginContainer* container,
       const GURL& plugin_url);

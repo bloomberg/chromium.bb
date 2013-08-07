@@ -166,7 +166,7 @@ void PepperPlatformAudioOutput::ShutDownOnIOThread() {
   ipc_.reset();
 
   Release();  // Release for the delegate, balances out the reference taken in
-              // PepperHelperImpl::CreateAudio.
+              // PepperPlatformAudioOutput::Create.
 }
 
 }  // namespace content

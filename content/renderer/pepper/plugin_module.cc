@@ -394,7 +394,7 @@ void CreateHostForInProcessModule(RenderViewImpl* render_view,
   RendererPpapiHostImpl* host_impl =
       RendererPpapiHostImpl::CreateOnModuleForInProcess(
           module, perms);
-  render_view->PpapiPluginCreated(host_impl);
+  render_view->PepperPluginCreated(host_impl);
 }
 
 }  // namespace
@@ -549,12 +549,11 @@ bool PluginModule::SupportsInterface(const char* name) {
 }
 
 PepperPluginInstanceImpl* PluginModule::CreateInstance(
-    PepperHelperImpl* helper,
     RenderViewImpl* render_view,
     WebKit::WebPluginContainer* container,
     const GURL& plugin_url) {
   PepperPluginInstanceImpl* instance = PepperPluginInstanceImpl::Create(
-      helper, render_view, this, container, plugin_url);
+      render_view, this, container, plugin_url);
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;
@@ -654,7 +653,7 @@ RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
   RendererPpapiHostImpl* host_impl =
       RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
           this, dispatcher->dispatcher(), permissions);
-  render_view->PpapiPluginCreated(host_impl);
+  render_view->PepperPluginCreated(host_impl);
 
   InitAsProxied(dispatcher.release());
   return host_impl;

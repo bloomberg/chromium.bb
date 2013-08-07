@@ -51,7 +51,10 @@ void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
 
 void TextInputClientObserver::OnFirstRectForCharacterRange(ui::Range range) {
   gfx::Rect rect;
-  if (!render_view_impl_->GetPpapiPluginCaretBounds(&rect)) {
+#if defined(ENABLE_PLUGINS)
+  if (!render_view_impl_->GetPepperCaretBounds(&rect))
+#endif
+  {
     WebKit::WebFrame* frame = webview()->focusedFrame();
     WebKit::WebRect web_rect;
     frame->firstRectForCharacterRange(range.start(), range.length(), web_rect);
