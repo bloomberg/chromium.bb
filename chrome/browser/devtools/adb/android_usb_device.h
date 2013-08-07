@@ -76,6 +76,8 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
                    int outbound_address,
                    int zero_mask);
 
+  void InitOnCallerThread();
+
   net::StreamSocket* CreateSocket(const std::string& command);
 
   void Send(uint32 command,

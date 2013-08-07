@@ -165,8 +165,9 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
      : bridge_(bridge),
        callback_(callback) {
     remote_devices_.reset(new DevToolsAdbBridge::RemoteDevices());
-    bridge_->EnumerateUsbDevices(
-        base::Bind(&AdbPagesCommand::ReceivedUsbDevices, this));
+    bridge_->GetAdbMessageLoop()->PostTask(FROM_HERE,
+        base::Bind(&DevToolsAdbBridge::EnumerateUsbDevices, bridge_,
+                   base::Bind(&AdbPagesCommand::ReceivedUsbDevices, this)));
   }
 
  private:
@@ -179,11 +180,10 @@ class AdbPagesCommand : public base::RefCountedThreadSafe<
   }
 
   void ReceivedUsbDevices(const AndroidDevices& devices) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_EQ(bridge_->GetAdbMessageLoop(), base::MessageLoop::current());
     devices_ = devices;
-    bridge_->GetAdbMessageLoop()->PostTask(FROM_HERE,
-        base::Bind(&DevToolsAdbBridge::EnumerateAdbDevices, bridge_,
-                   base::Bind(&AdbPagesCommand::ReceivedAdbDevices, this)));
+    bridge_->EnumerateAdbDevices(
+        base::Bind(&AdbPagesCommand::ReceivedAdbDevices, this));
   }
 
   void ReceivedAdbDevices(const AndroidDevices& devices) {
@@ -682,7 +682,7 @@ DevToolsAdbBridge::DevToolsAdbBridge(Profile* profile)
 
 void DevToolsAdbBridge::EnumerateUsbDevices(
     const AndroidDevicesCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(base::MessageLoop::current(), adb_thread_->message_loop());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRemoteDebuggingRawUSB)) {
     AndroidUsbDevice::Enumerate(rsa_key_.get(),

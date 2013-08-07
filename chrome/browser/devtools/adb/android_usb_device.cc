@@ -143,14 +143,8 @@ AdbMessage::AdbMessage(uint32 command,
 AdbMessage::~AdbMessage() {
 }
 
-static void RespondOnUIThread(const AndroidUsbDevicesCallback& callback,
-                              AndroidUsbDevices devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  callback.Run(devices);
-}
-
 static void EnumerateOnFileThread(crypto::RSAPrivateKey* rsa_key,
-                                  const AndroidUsbDevicesCallback& callback) {
+                                  AndroidUsbDevices* result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   UsbService* service = UsbService::GetInstance();
@@ -198,18 +192,28 @@ static void EnumerateOnFileThread(crypto::RSAPrivateKey* rsa_key,
     }
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&RespondOnUIThread, callback, devices));
+  *result = devices;
+}
+
+static void InitDevicesOnCallerThread(
+    AndroidUsbDevices* devices,
+    const AndroidUsbDevicesCallback& callback) {
+  for (AndroidUsbDevices::iterator it = devices->begin(); it != devices->end();
+       ++it) {
+    (*it)->InitOnCallerThread();
+  }
+  callback.Run(*devices);
+  delete devices;
 }
 
 // static
 void AndroidUsbDevice::Enumerate(crypto::RSAPrivateKey* rsa_key,
                                  const AndroidUsbDevicesCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
+  AndroidUsbDevices* devices = new AndroidUsbDevices();
+  BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&EnumerateOnFileThread, rsa_key, callback));
+      base::Bind(&EnumerateOnFileThread, rsa_key, devices),
+      base::Bind(&InitDevicesOnCallerThread, devices, callback));
 }
 
 AndroidUsbDevice::AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
@@ -229,6 +233,11 @@ AndroidUsbDevice::AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
       signature_sent_(false),
       last_socket_id_(256),
       terminated_(false) {
+}
+
+void AndroidUsbDevice::InitOnCallerThread() {
+  if (message_loop_)
+    return;
   message_loop_ = base::MessageLoop::current();
   Queue(new AdbMessage(AdbMessage::kCommandCNXN, kVersion, kMaxPayload,
                        kHostConnectMessage));
