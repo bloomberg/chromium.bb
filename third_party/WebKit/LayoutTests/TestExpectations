@@ -733,10 +733,10 @@ crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFa
 #crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ ImageOnlyFailure Pass ]
 #crbug.com/245611 [ Win ] fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
 #crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
-crbug.com/269627 [ Debug ] fast/hidpi/image-set-out-of-order.html [ Failure Pass ]
-crbug.com/269627 [ Debug ] fast/hidpi/image-set-without-specified-width.html [ Failure Pass ]
-crbug.com/269627 [ Debug ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Failure Pass ]
-crbug.com/269627 [ Debug ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Failure Pass ]
+crbug.com/269627 [ Debug ] fast/hidpi/image-set-out-of-order.html [ Crash Pass ]
+crbug.com/269627 [ Debug ] fast/hidpi/image-set-without-specified-width.html [ Crash Pass ]
+crbug.com/269627 [ Debug ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Crash Pass ]
+crbug.com/269627 [ Debug ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Crash Pass ]
 
 webkit.org/b/98087 fast/css/lang-mapped-to-webkit-locale-dynamic.xhtml [ Failure Pass ]
 
