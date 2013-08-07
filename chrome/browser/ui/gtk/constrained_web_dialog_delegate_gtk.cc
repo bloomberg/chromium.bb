@@ -34,7 +34,8 @@ class ConstrainedWebDialogDelegateGtk
       WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate)
       : ConstrainedWebDialogDelegateBase(
-            browser_context, delegate, tab_delegate) {}
+            browser_context, delegate, tab_delegate),
+        window_(NULL) {}
 
   // WebDialogWebContentsDelegate interface.
   virtual void CloseContents(WebContents* source) OVERRIDE {
