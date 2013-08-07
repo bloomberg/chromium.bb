@@ -648,7 +648,6 @@ void InstallerState::RemoveOldVersionDirectories(
     Version* existing_version,
     const base::FilePath& temp_path) const {
   Version version;
-  std::vector<base::FilePath> key_files;
   scoped_ptr<WorkItem> item;
 
   std::set<std::string> existing_version_strings;
