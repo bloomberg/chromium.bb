@@ -2342,7 +2342,10 @@ void CanvasRenderingContext2D::drawSystemFocusRing(Element* element)
         return;
 
     updateFocusRingAccessibility(m_path, element);
-    if (element->focused())
+    // Note: we need to check document->focusedElement() rather than just calling
+    // element->focused(), because element->focused() isn't updated until after
+    // focus events fire.
+    if (element->document() && element->document()->focusedElement() == element)
         drawFocusRing(m_path);
 }
 
