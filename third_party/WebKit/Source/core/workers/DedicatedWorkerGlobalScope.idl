@@ -32,6 +32,6 @@
     GlobalContext=DedicatedWorkerGlobalScope
 ] interface DedicatedWorkerGlobalScope : WorkerGlobalScope {
     [Custom, RaisesException] void postMessage(any message, optional Array messagePorts);
-    attribute EventListener onmessage;
+    attribute EventHandler onmessage;
 };
 

@@ -50,10 +50,10 @@
     readonly attribute long long position;
     readonly attribute long long length;
 
-             attribute EventListener onwritestart;
-             attribute EventListener onprogress;
-             attribute EventListener onwrite;
-             attribute EventListener onabort;
-             attribute EventListener onerror;
-             attribute EventListener onwriteend;
+             attribute EventHandler onwritestart;
+             attribute EventHandler onprogress;
+             attribute EventHandler onwrite;
+             attribute EventHandler onabort;
+             attribute EventHandler onerror;
+             attribute EventHandler onwriteend;
 };

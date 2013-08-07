@@ -45,8 +45,8 @@
     attribute DOMString text;
     DocumentFragment getCueAsHTML();
 
-    attribute EventListener onenter;
-    attribute EventListener onexit;
+    attribute EventHandler onenter;
+    attribute EventHandler onexit;
 
     [Conditional=WEBVTT_REGIONS] attribute DOMString regionId;
 };

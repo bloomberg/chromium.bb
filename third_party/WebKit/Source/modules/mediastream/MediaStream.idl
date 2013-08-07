@@ -44,8 +44,8 @@
     readonly attribute boolean ended;
     void stop();
 
-    attribute EventListener onended;
-    attribute EventListener onaddtrack;
-    attribute EventListener onremovetrack;
+    attribute EventHandler onended;
+    attribute EventHandler onaddtrack;
+    attribute EventHandler onremovetrack;
 };
 

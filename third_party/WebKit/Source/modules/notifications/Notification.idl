@@ -43,11 +43,11 @@
     [CallWith=ScriptExecutionContext, Conditional=NOTIFICATIONS] static readonly attribute DOMString permission;
     [CallWith=ScriptExecutionContext, Conditional=NOTIFICATIONS] static void requestPermission(optional NotificationPermissionCallback callback);
 
-    attribute EventListener onshow;
-    [Conditional=LEGACY_NOTIFICATIONS] attribute EventListener ondisplay;
-    attribute EventListener onerror;
-    attribute EventListener onclose;
-    attribute EventListener onclick;
+    attribute EventHandler onshow;
+    [Conditional=LEGACY_NOTIFICATIONS] attribute EventHandler ondisplay;
+    attribute EventHandler onerror;
+    attribute EventHandler onclose;
+    attribute EventHandler onclick;
 
     [Conditional=LEGACY_NOTIFICATIONS] attribute DOMString dir;
     [Conditional=LEGACY_NOTIFICATIONS] attribute DOMString replaceId;

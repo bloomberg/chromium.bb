@@ -35,11 +35,11 @@
     attribute float rate;
     attribute float pitch;
 
-    attribute EventListener onstart;
-    attribute EventListener onend;
-    attribute EventListener onerror;
-    attribute EventListener onpause;
-    attribute EventListener onresume;
-    attribute EventListener onmark;
-    attribute EventListener onboundary;
+    attribute EventHandler onstart;
+    attribute EventHandler onend;
+    attribute EventHandler onerror;
+    attribute EventHandler onpause;
+    attribute EventHandler onresume;
+    attribute EventHandler onmark;
+    attribute EventHandler onboundary;
 };

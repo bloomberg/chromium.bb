@@ -35,5 +35,5 @@
 
     [RaisesException] void insertDTMF(DOMString tones, optional long duration, optional long interToneGap);
 
-    attribute EventListener ontonechange;
+    attribute EventHandler ontonechange;
 };

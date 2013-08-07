@@ -35,6 +35,6 @@
     sequence<MIDIInput> inputs();
     sequence<MIDIOutput> outputs();
 
-    attribute EventListener onconnect;
-    attribute EventListener ondisconnect;
+    attribute EventHandler onconnect;
+    attribute EventHandler ondisconnect;
 };

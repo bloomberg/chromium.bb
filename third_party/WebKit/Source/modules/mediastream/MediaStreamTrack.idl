@@ -32,9 +32,9 @@
 
     readonly attribute DOMString readyState;
 
-    attribute EventListener onmute;
-    attribute EventListener onunmute;
-    attribute EventListener onended;
+    attribute EventHandler onmute;
+    attribute EventHandler onunmute;
+    attribute EventHandler onended;
 
     [CallWith=ScriptExecutionContext, RaisesException] static void getSources(MediaStreamTrackSourcesCallback callback);
 };

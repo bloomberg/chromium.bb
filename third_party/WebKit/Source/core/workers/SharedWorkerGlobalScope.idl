@@ -32,6 +32,6 @@
     GlobalContext=SharedWorkerGlobalScope
 ] interface SharedWorkerGlobalScope : WorkerGlobalScope {
     readonly attribute DOMString name;
-             attribute EventListener onconnect;
+             attribute EventHandler onconnect;
 };
 

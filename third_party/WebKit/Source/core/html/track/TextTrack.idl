@@ -34,7 +34,7 @@
 
     readonly attribute TextTrackCueList cues;
     readonly attribute TextTrackCueList activeCues;
-             attribute EventListener oncuechange;
+             attribute EventHandler oncuechange;
 
     void addCue(TextTrackCue cue);
     [RaisesException] void removeCue(TextTrackCue cue);

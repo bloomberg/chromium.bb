@@ -39,15 +39,15 @@
     [ImplementedAs=stopFunction] void stop();
     void abort();
 
-    attribute EventListener onaudiostart;
-    attribute EventListener onsoundstart;
-    attribute EventListener onspeechstart;
-    attribute EventListener onspeechend;
-    attribute EventListener onsoundend;
-    attribute EventListener onaudioend;
-    attribute EventListener onresult;
-    attribute EventListener onnomatch;
-    attribute EventListener onerror;
-    attribute EventListener onstart;
-    attribute EventListener onend;
+    attribute EventHandler onaudiostart;
+    attribute EventHandler onsoundstart;
+    attribute EventHandler onspeechstart;
+    attribute EventHandler onspeechend;
+    attribute EventHandler onsoundend;
+    attribute EventHandler onaudioend;
+    attribute EventHandler onresult;
+    attribute EventHandler onnomatch;
+    attribute EventHandler onerror;
+    attribute EventHandler onstart;
+    attribute EventHandler onend;
 };

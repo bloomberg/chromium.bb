@@ -48,8 +48,8 @@
     readonly attribute unsigned short readyState;
 
     // networking
-    attribute EventListener onopen;
-    attribute EventListener onmessage;
-    attribute EventListener onerror;
+    attribute EventHandler onopen;
+    attribute EventHandler onmessage;
+    attribute EventHandler onerror;
     void close();
 };

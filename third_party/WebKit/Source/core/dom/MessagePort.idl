@@ -36,6 +36,6 @@
     void close();
 
     // event handler attributes
-    attribute EventListener onmessage;
+    attribute EventHandler onmessage;
 };
 

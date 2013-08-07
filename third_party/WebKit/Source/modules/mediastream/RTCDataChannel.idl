@@ -49,8 +49,8 @@
 
     void close();
 
-    attribute EventListener onopen;
-    attribute EventListener onerror;
-    attribute EventListener onclose;
-    attribute EventListener onmessage;
+    attribute EventHandler onopen;
+    attribute EventHandler onerror;
+    attribute EventHandler onclose;
+    attribute EventHandler onmessage;
 };

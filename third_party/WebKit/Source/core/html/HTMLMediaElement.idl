@@ -92,10 +92,10 @@ readonly attribute unsigned long webkitVideoDecodedByteCount;
 [EnabledAtRuntime=legacyEncryptedMedia, RaisesException] void webkitAddKey([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, Uint8Array key, optional Uint8Array initData, [Default=NullString] optional DOMString sessionId);
 [EnabledAtRuntime=legacyEncryptedMedia, RaisesException] void webkitCancelKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, [Default=NullString] optional DOMString sessionId);
 
-[EnabledAtRuntime=legacyEncryptedMedia] attribute EventListener onwebkitkeyadded;
-[EnabledAtRuntime=legacyEncryptedMedia] attribute EventListener onwebkitkeyerror;
-[EnabledAtRuntime=legacyEncryptedMedia] attribute EventListener onwebkitkeymessage;
-[EnabledAtRuntime=legacyEncryptedMedia] attribute EventListener onwebkitneedkey;
+[EnabledAtRuntime=legacyEncryptedMedia] attribute EventHandler onwebkitkeyadded;
+[EnabledAtRuntime=legacyEncryptedMedia] attribute EventHandler onwebkitkeyerror;
+[EnabledAtRuntime=legacyEncryptedMedia] attribute EventHandler onwebkitkeymessage;
+[EnabledAtRuntime=legacyEncryptedMedia] attribute EventHandler onwebkitneedkey;
 
 [EnabledAtRuntime=encryptedMedia, Conditional=ENCRYPTED_MEDIA_V2] attribute MediaKeys mediaKeys;
 

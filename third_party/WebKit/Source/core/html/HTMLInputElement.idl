@@ -96,7 +96,7 @@
     [Reflect] attribute boolean incremental;
     [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=speechInput] attribute boolean webkitSpeech;
     [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=speechInput] attribute boolean webkitGrammar;
-    [Conditional=INPUT_SPEECH, NotEnumerable] attribute EventListener onwebkitspeechchange;
+    [Conditional=INPUT_SPEECH, NotEnumerable] attribute EventHandler onwebkitspeechchange;
 
     // See http://www.w3.org/TR/html-media-capture/
     [Conditional=MEDIA_CAPTURE, Reflect] attribute boolean capture;

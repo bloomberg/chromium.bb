@@ -30,6 +30,6 @@
     readonly attribute unsigned long length;
     getter TextTrack item(unsigned long index);
 
-    attribute EventListener onaddtrack;
+    attribute EventHandler onaddtrack;
 };
 

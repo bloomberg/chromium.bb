@@ -40,6 +40,6 @@
     readonly attribute DOMString readyState;
 
     // Events
-    attribute EventListener onsuccess;
-    attribute EventListener onerror;
+    attribute EventHandler onsuccess;
+    attribute EventHandler onerror;
 };

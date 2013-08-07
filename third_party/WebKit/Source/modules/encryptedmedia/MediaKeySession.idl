@@ -38,8 +38,8 @@
     [RaisesException] void update(Uint8Array key);
     void close();
 
-    // EventListeners
-    [EnabledAtRuntime=encryptedMedia] attribute EventListener onwebkitkeyadded;
-    [EnabledAtRuntime=encryptedMedia] attribute EventListener onwebkitkeyerror;
-    [EnabledAtRuntime=encryptedMedia] attribute EventListener onwebkitkeymessage;
+    // EventHandlers
+    [EnabledAtRuntime=encryptedMedia] attribute EventHandler onwebkitkeyadded;
+    [EnabledAtRuntime=encryptedMedia] attribute EventHandler onwebkitkeyerror;
+    [EnabledAtRuntime=encryptedMedia] attribute EventHandler onwebkitkeymessage;
 };

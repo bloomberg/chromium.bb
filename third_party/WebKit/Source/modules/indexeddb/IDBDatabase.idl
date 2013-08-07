@@ -31,10 +31,10 @@
     readonly attribute IDBAny version;
     readonly attribute DOMStringList objectStoreNames;
 
-    attribute EventListener onabort;
-    attribute EventListener onclose;
-    attribute EventListener onerror;
-    attribute EventListener onversionchange;
+    attribute EventHandler onabort;
+    attribute EventHandler onclose;
+    attribute EventHandler onerror;
+    attribute EventHandler onversionchange;
 
     [RaisesException] IDBObjectStore createObjectStore(DOMString name, optional Dictionary options);
     [RaisesException] void deleteObjectStore(DOMString name);

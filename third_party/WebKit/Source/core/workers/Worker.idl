@@ -32,7 +32,7 @@
     ActiveDOMObject
 ] interface Worker : EventTarget {
 
-    attribute EventListener onmessage;
+    attribute EventHandler onmessage;
 
     [Custom, RaisesException] void postMessage(SerializedScriptValue message, optional Array messagePorts);
     void terminate();

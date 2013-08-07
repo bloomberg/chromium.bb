@@ -35,11 +35,11 @@
     GenerateIsReachable=document
 ] interface FontLoader : EventTarget {
 
-    attribute EventListener onloading;
-    attribute EventListener onloadingdone;
-    attribute EventListener onloadstart;
-    attribute EventListener onload;
-    attribute EventListener onerror;
+    attribute EventHandler onloading;
+    attribute EventHandler onloadingdone;
+    attribute EventHandler onloadstart;
+    attribute EventHandler onload;
+    attribute EventHandler onerror;
 
     boolean checkFont(DOMString font, [Default=NullString] optional DOMString text);
     void loadFont(Dictionary params);

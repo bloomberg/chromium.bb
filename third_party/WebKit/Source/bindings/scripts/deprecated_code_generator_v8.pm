@@ -167,6 +167,7 @@ my %nonWrapperTypes = ("CompareHow" => 1,
                        "DOMTimeStamp" => 1,
                        "Dictionary" => 1,
                        "EventListener" => 1,
+                       "EventHandler" => 1,
                        "MediaQueryListListener" => 1,
                        "NodeFilter" => 1,
                        "SerializedScriptValue" => 1,
@@ -420,7 +421,7 @@ sub AddIncludesForType
     return if SkipIncludeHeader($type);
 
     # Default includes
-    if ($type eq "EventListener") {
+    if ($type eq "EventListener" or $type eq "EventHandler") {
         AddToImplIncludes("core/dom/EventListener.h");
     } elsif ($type eq "SerializedScriptValue") {
         AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
@@ -912,12 +913,12 @@ END
     }
 }
 
-sub HasEventListenerAttribute
+sub HasEventHandlerAttribute
 {
     my $interface = shift;
 
     foreach my $attribute (@{$interface->attributes}) {
-        return 1 if $attribute->type eq "EventListener";
+        return 1 if $attribute->type eq "EventHandler";
     }
 
     return 0;
@@ -930,7 +931,7 @@ sub GetInternalFields
     my @customInternalFields = ();
     # Event listeners on DOM nodes are explicitly supported in the GC controller.
     if (!InheritsInterface($interface, "Node") &&
-        (InheritsInterface($interface, "EventTarget") || HasEventListenerAttribute($interface))) {
+        (InheritsInterface($interface, "EventTarget") || HasEventHandlerAttribute($interface))) {
         push(@customInternalFields, "eventListenerCacheIndex");
     }
     return @customInternalFields;
@@ -1434,7 +1435,7 @@ END
     $getterString = "${functionName}(" . join(", ", @arguments) . ")";
 
     my $expression;
-    if ($attribute->type eq "EventListener" && $interface->name eq "Window") {
+    if ($attribute->type eq "EventHandler" && $interface->name eq "Window") {
         $code .= "    if (!imp->document())\n";
         $code .= "        return;\n";
     }
@@ -1568,7 +1569,7 @@ END
     v8SetReturnValue(info, value);
     return;
 END
-    } elsif ($attribute->type eq "EventListener") {
+    } elsif ($attribute->type eq "EventHandler") {
         AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
         my $getterFunc = ToMethodName($attribute->name);
         # FIXME: Pass the main world ID for main-world-only getters.
@@ -1802,7 +1803,7 @@ END
     }
 
     my $nativeType = GetNativeType($attribute->type, $attribute->extendedAttributes, "parameter");
-    if ($attribute->type eq "EventListener") {
+    if ($attribute->type eq "EventHandler") {
         if ($interface->name eq "Window") {
             $code .= "    if (!imp->document())\n";
             $code .= "        return;\n";
@@ -1841,7 +1842,7 @@ END
         $code .= "    ExceptionState es(info.GetIsolate());\n";
     }
 
-    if ($attribute->type eq "EventListener") {
+    if ($attribute->type eq "EventHandler") {
         my $implSetterFunctionName = FirstLetterToUpperCase($attrName);
         AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
         if (!InheritsInterface($interface, "Node")) {
@@ -3903,7 +3904,7 @@ END
             next;
         }
 
-        if ($attrType eq "EventListener" && $interfaceName eq "Window") {
+        if ($attrType eq "EventHandler" && $interfaceName eq "Window") {
             $attrExt->{"OnProto"} = 1;
         }
 

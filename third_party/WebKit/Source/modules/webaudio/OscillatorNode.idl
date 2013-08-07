@@ -55,5 +55,5 @@
 
     void setPeriodicWave(PeriodicWave periodicWave);
 
-    attribute EventListener onended;
+    attribute EventHandler onended;
 };
