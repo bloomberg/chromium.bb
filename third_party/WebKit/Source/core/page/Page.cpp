@@ -26,7 +26,7 @@
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/VisitedLinkState.h"
-#include "core/editing/Editor.h"
+#include "core/editing/Caret.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/inspector/InspectorController.h"

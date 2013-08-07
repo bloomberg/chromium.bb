@@ -793,6 +793,8 @@
             'editing/ApplyStyleCommand.h',
             'editing/BreakBlockquoteCommand.cpp',
             'editing/BreakBlockquoteCommand.h',
+            'editing/Caret.cpp',
+            'editing/Caret.h',
             'editing/CompositeEditCommand.cpp',
             'editing/CreateLinkCommand.cpp',
             'editing/CreateLinkCommand.h',

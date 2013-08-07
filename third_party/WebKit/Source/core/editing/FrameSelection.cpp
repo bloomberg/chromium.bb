@@ -77,27 +77,6 @@ static inline LayoutUnit NoXPosForVerticalArrowNavigation()
     return LayoutUnit::min();
 }
 
-CaretBase::CaretBase(CaretVisibility visibility)
-    : m_caretRectNeedsUpdate(true)
-    , m_caretVisibility(visibility)
-{
-}
-
-DragCaretController::DragCaretController()
-    : CaretBase(Visible)
-{
-}
-
-PassOwnPtr<DragCaretController> DragCaretController::create()
-{
-    return adoptPtr(new DragCaretController);
-}
-
-bool DragCaretController::isContentRichlyEditable() const
-{
-    return isRichlyEditablePosition(m_position.deepEquivalent());
-}
-
 static inline bool shouldAlwaysUseDirectionalSelection(Frame* frame)
 {
     return !frame || frame->editor()->behavior().shouldConsiderSelectionAsDirectional();
@@ -173,23 +152,6 @@ void FrameSelection::moveTo(const Position &base, const Position &extent, EAffin
     const bool selectionHasDirection = true;
     SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
     setSelection(VisibleSelection(base, extent, affinity, selectionHasDirection), options);
-}
-
-void DragCaretController::setCaretPosition(const VisiblePosition& position)
-{
-    if (Node* node = m_position.deepEquivalent().deprecatedNode())
-        invalidateCaretRect(node);
-    m_position = position;
-    setCaretRectNeedsUpdate();
-    Document* document = 0;
-    if (Node* node = m_position.deepEquivalent().deprecatedNode()) {
-        invalidateCaretRect(node);
-        document = node->document();
-    }
-    if (m_position.isNull() || m_position.isOrphan())
-        clearCaretRect();
-    else
-        updateCaretRect(document, m_position);
 }
 
 static void adjustEndpointsAtBidiBoundary(VisiblePosition& visibleBase, VisiblePosition& visibleExtent)
@@ -359,18 +321,6 @@ static void clearRenderViewSelection(const Position& position)
     document->updateStyleIfNeeded();
     if (RenderView* view = document->renderView())
         view->clearSelection();
-}
-
-void DragCaretController::nodeWillBeRemoved(Node* node)
-{
-    if (!hasCaret() || (node && !node->inDocument()))
-        return;
-
-    if (!removingNodeRemovesPosition(node, m_position.deepEquivalent()))
-        return;
-
-    clearRenderViewSelection(m_position.deepEquivalent());
-    clear();
 }
 
 void FrameSelection::nodeWillBeRemoved(Node* node)
@@ -1248,76 +1198,9 @@ void FrameSelection::setExtent(const Position &pos, EAffinity affinity, EUserTri
     setSelection(VisibleSelection(m_selection.base(), pos, affinity, selectionHasDirection), CloseTyping | ClearTypingStyle | userTriggered);
 }
 
-void CaretBase::clearCaretRect()
-{
-    m_caretLocalRect = LayoutRect();
-}
-
-static inline bool caretRendersInsideNode(Node* node)
-{
-    return node && !isTableElement(node) && !editingIgnoresContent(node);
-}
-
-static RenderObject* caretRenderer(Node* node)
-{
-    if (!node)
-        return 0;
-
-    RenderObject* renderer = node->renderer();
-    if (!renderer)
-        return 0;
-
-    // if caretNode is a block and caret is inside it then caret should be painted by that block
-    bool paintedByBlock = renderer->isBlockFlow() && caretRendersInsideNode(node);
-    return paintedByBlock ? renderer : renderer->containingBlock();
-}
-
-bool CaretBase::updateCaretRect(Document* document, const VisiblePosition& caretPosition)
-{
-    document->updateStyleIfNeeded();
-    m_caretLocalRect = LayoutRect();
-
-    m_caretRectNeedsUpdate = false;
-
-    if (caretPosition.isNull())
-        return false;
-
-    ASSERT(caretPosition.deepEquivalent().deprecatedNode()->renderer());
-
-    // First compute a rect local to the renderer at the selection start.
-    RenderObject* renderer;
-    LayoutRect localRect = caretPosition.localCaretRect(renderer);
-
-    // Get the renderer that will be responsible for painting the caret
-    // (which is either the renderer we just found, or one of its containers).
-    RenderObject* caretPainter = caretRenderer(caretPosition.deepEquivalent().deprecatedNode());
-
-    // Compute an offset between the renderer and the caretPainter.
-    bool unrooted = false;
-    while (renderer != caretPainter) {
-        RenderObject* containerObject = renderer->container();
-        if (!containerObject) {
-            unrooted = true;
-            break;
-        }
-        localRect.move(renderer->offsetFromContainer(containerObject, localRect.location()));
-        renderer = containerObject;
-    }
-
-    if (!unrooted)
-        m_caretLocalRect = localRect;
-
-    return true;
-}
-
 RenderObject* FrameSelection::caretRenderer() const
 {
-    return WebCore::caretRenderer(m_selection.start().deprecatedNode());
-}
-
-RenderObject* DragCaretController::caretRenderer() const
-{
-    return WebCore::caretRenderer(m_position.deepEquivalent().deprecatedNode());
+    return CaretBase::caretRenderer(m_selection.start().deprecatedNode());
 }
 
 static bool isNonOrphanedCaret(const VisibleSelection& selection)
@@ -1337,36 +1220,10 @@ LayoutRect FrameSelection::localCaretRect()
     return localCaretRectWithoutUpdate();
 }
 
-IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) const
-{
-    RenderObject* caretPainter = caretRenderer(node);
-    if (!caretPainter)
-        return IntRect();
-
-    LayoutRect localRect(rect);
-    if (caretPainter->isBox())
-        toRenderBox(caretPainter)->flipForWritingMode(localRect);
-    return caretPainter->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
-}
-
 IntRect FrameSelection::absoluteCaretBounds()
 {
     recomputeCaretRect();
     return m_absCaretBounds;
-}
-
-static void repaintCaretForLocalRect(Node* node, const LayoutRect& rect)
-{
-    RenderObject* caretPainter = caretRenderer(node);
-    if (!caretPainter)
-        return;
-
-    // FIXME: Need to over-paint 1 pixel to workaround some rounding problems.
-    // https://bugs.webkit.org/show_bug.cgi?id=108283
-    LayoutRect inflatedRect = rect;
-    inflatedRect.inflate(1);
-
-    caretPainter->repaintRectangle(inflatedRect);
 }
 
 bool FrameSelection::recomputeCaretRect()
@@ -1405,14 +1262,6 @@ bool FrameSelection::recomputeCaretRect()
     return true;
 }
 
-bool CaretBase::shouldRepaintCaret(const RenderView* view, bool isContentEditable) const
-{
-    ASSERT(view);
-    Frame* frame = view->frameView() ? view->frameView()->frame() : 0; // The frame where the selection started.
-    bool caretBrowsing = frame && frame->settings() && frame->settings()->caretBrowsingEnabled();
-    return (caretBrowsing || isContentEditable);
-}
-
 void FrameSelection::invalidateCaretRect()
 {
     if (!isCaret())
@@ -1421,62 +1270,10 @@ void FrameSelection::invalidateCaretRect()
     CaretBase::invalidateCaretRect(m_selection.start().deprecatedNode(), recomputeCaretRect());
 }
 
-void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
-{
-    // EDIT FIXME: This is an unfortunate hack.
-    // Basically, we can't trust this layout position since we
-    // can't guarantee that the check to see if we are in unrendered
-    // content will work at this point. We may have to wait for
-    // a layout and re-render of the document to happen. So, resetting this
-    // flag will cause another caret layout to happen the first time
-    // that we try to paint the caret after this call. That one will work since
-    // it happens after the document has accounted for any editing
-    // changes which may have been done.
-    // And, we need to leave this layout here so the caret moves right
-    // away after clicking.
-    m_caretRectNeedsUpdate = true;
-
-    if (caretRectChanged)
-        return;
-
-    if (RenderView* view = node->document()->renderView()) {
-        if (shouldRepaintCaret(view, node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable)))
-            repaintCaretForLocalRect(node, localCaretRectWithoutUpdate());
-    }
-}
-
 void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& paintOffset, const LayoutRect& clipRect)
 {
     if (m_selection.isCaret() && m_caretPaint)
         CaretBase::paintCaret(m_selection.start().deprecatedNode(), context, paintOffset, clipRect);
-}
-
-void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
-{
-    if (m_caretVisibility == Hidden)
-        return;
-
-    LayoutRect drawingRect = localCaretRectWithoutUpdate();
-    RenderObject* renderer = caretRenderer(node);
-    if (renderer && renderer->isBox())
-        toRenderBox(renderer)->flipForWritingMode(drawingRect);
-    drawingRect.moveBy(roundedIntPoint(paintOffset));
-    LayoutRect caret = intersection(drawingRect, clipRect);
-    if (caret.isEmpty())
-        return;
-
-    Color caretColor = Color::black;
-
-    Element* element;
-    if (node->isElementNode())
-        element = toElement(node);
-    else
-        element = node->parentElement();
-
-    if (element && element->renderer())
-        caretColor = element->renderer()->resolveColor(CSSPropertyColor);
-
-    context->fillRect(caret, caretColor);
 }
 
 void FrameSelection::debugRenderer(RenderObject *r, bool selected) const
@@ -1941,12 +1738,6 @@ void FrameSelection::setFocusedNodeIfNeeded()
 
     if (caretBrowsing)
         m_frame->page()->focusController()->setFocusedElement(0, m_frame);
-}
-
-void DragCaretController::paintDragCaret(Frame* frame, GraphicsContext* p, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
-{
-    if (m_position.deepEquivalent().deprecatedNode()->document()->frame() == frame)
-        paintCaret(m_position.deepEquivalent().deprecatedNode(), p, paintOffset, clipRect);
 }
 
 PassRefPtr<MutableStylePropertySet> FrameSelection::copyTypingStyle() const

@@ -27,6 +27,7 @@
 #define FrameSelection_h
 
 #include "core/dom/Range.h"
+#include "core/editing/Caret.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/platform/Timer.h"
@@ -52,60 +53,6 @@ enum EUserTriggered { NotUserTriggered = 0, UserTriggered = 1 };
 enum RevealExtentOption {
     RevealExtent,
     DoNotRevealExtent
-};
-
-class CaretBase {
-    WTF_MAKE_NONCOPYABLE(CaretBase);
-    WTF_MAKE_FAST_ALLOCATED;
-protected:
-    enum CaretVisibility { Visible, Hidden };
-    explicit CaretBase(CaretVisibility = Hidden);
-
-    void invalidateCaretRect(Node*, bool caretRectChanged = false);
-    void clearCaretRect();
-    bool updateCaretRect(Document*, const VisiblePosition& caretPosition);
-    IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
-    bool shouldRepaintCaret(const RenderView*, bool isContentEditable) const;
-    void paintCaret(Node*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
-
-    const LayoutRect& localCaretRectWithoutUpdate() const { return m_caretLocalRect; }
-
-    bool shouldUpdateCaretRect() const { return m_caretRectNeedsUpdate; }
-    void setCaretRectNeedsUpdate() { m_caretRectNeedsUpdate = true; }
-
-    void setCaretVisibility(CaretVisibility visibility) { m_caretVisibility = visibility; }
-    bool caretIsVisible() const { return m_caretVisibility == Visible; }
-    CaretVisibility caretVisibility() const { return m_caretVisibility; }
-
-private:
-    LayoutRect m_caretLocalRect; // caret rect in coords local to the renderer responsible for painting the caret
-    bool m_caretRectNeedsUpdate; // true if m_caretRect (and m_absCaretBounds in FrameSelection) need to be calculated
-    CaretVisibility m_caretVisibility;
-};
-
-class DragCaretController : private CaretBase {
-    WTF_MAKE_NONCOPYABLE(DragCaretController);
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    static PassOwnPtr<DragCaretController> create();
-
-    RenderObject* caretRenderer() const;
-    void paintDragCaret(Frame*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
-
-    bool isContentEditable() const { return m_position.rootEditableElement(); }
-    bool isContentRichlyEditable() const;
-
-    bool hasCaret() const { return m_position.isNotNull(); }
-    const VisiblePosition& caretPosition() { return m_position; }
-    void setCaretPosition(const VisiblePosition&);
-    void clear() { setCaretPosition(VisiblePosition()); }
-
-    void nodeWillBeRemoved(Node*);
-
-private:
-    DragCaretController();
-
-    VisiblePosition m_position;
 };
 
 class FrameSelection : private CaretBase {
