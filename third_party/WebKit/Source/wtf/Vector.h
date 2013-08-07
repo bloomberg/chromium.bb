@@ -34,6 +34,12 @@
 
 namespace WTF {
 
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+static const size_t kInitialVectorSize = 1;
+#else
+static const size_t kInitialVectorSize = 16;
+#endif
+
     template <bool needsDestruction, typename T>
     struct VectorDestructor;
 
@@ -798,7 +804,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity>
     void Vector<T, inlineCapacity>::expandCapacity(size_t newMinCapacity)
     {
-        reserveCapacity(std::max(newMinCapacity, std::max(static_cast<size_t>(16), capacity() + capacity() / 4 + 1)));
+        reserveCapacity(std::max(newMinCapacity, std::max(static_cast<size_t>(kInitialVectorSize), capacity() + capacity() / 4 + 1)));
     }
 
     template<typename T, size_t inlineCapacity>
