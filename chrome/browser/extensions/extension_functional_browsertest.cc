@@ -51,18 +51,14 @@ public:
   }
 };
 
-// Failing on mac_rel trybots with timeout error. Disabling for now.
-#if defined(OS_MACOSX)
-#define TestAdblockExtensionCrash DISABLED_TestAdblockExtensionCrash
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestAdblockExtensionCrash) {
+IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
+                       PRE_TestAdblockExtensionCrash) {
   ExtensionService* service = profile()->GetExtensionService();
   InstallExtensionSilently(service, "adblock.crx");
+}
 
-  // Restart the browser.
-  chrome::Exit();
-  chrome::NewWindow(browser());
-
+IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestAdblockExtensionCrash) {
+  ExtensionService* service = profile()->GetExtensionService();
   // Verify that the extension is enabled and allowed in incognito
   // is disabled.
   EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id_));
