@@ -392,7 +392,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Set the initial focus and set it as a fallback.
     this.document_.addEventListener('focusout', function(e) {
       if (!e.relatedTarget)
-        this.refocus();
+        setTimeout(this.refocus.bind(this), 0);
     }.bind(this));
     this.refocus();
 
