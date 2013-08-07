@@ -33,7 +33,7 @@ class PnaclTranslationResourceHost : public IPC::ChannelProxy::MessageFilter {
                      PP_Bool* is_hit,
                      PP_FileHandle* file_handle,
                      scoped_refptr<ppapi::TrackedCallback> callback);
-  void ReportTranslationFinished(PP_Instance instance);
+  void ReportTranslationFinished(PP_Instance instance, PP_Bool success);
 
   // Ensure that PNaCl resources (pnacl-llc.nexe, linker, libs) are installed.
   void EnsurePnaclInstalled(PP_Instance instance,
@@ -74,7 +74,8 @@ class PnaclTranslationResourceHost : public IPC::ChannelProxy::MessageFilter {
                          PP_Bool* is_hit,
                          PP_FileHandle* file_handle,
                          scoped_refptr<ppapi::TrackedCallback> callback);
-  void SendReportTranslationFinished(PP_Instance instance);
+  void SendReportTranslationFinished(PP_Instance instance,
+                                     PP_Bool success);
   void SendEnsurePnaclInstalled(PP_Instance instance,
                                 scoped_refptr<ppapi::TrackedCallback> callback);
 

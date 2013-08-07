@@ -336,13 +336,14 @@ void PnaclCoordinator::ExitWithError() {
 void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::TranslateFinished (pp_error=%"
                  NACL_PRId32 ")\n", pp_error));
-  // Bail out if there was an earlier error (e.g., pexe load failure).
-  if (translate_finish_error_ != PP_OK) {
-    ExitWithError();
-    return;
-  }
-  // Bail out if there is an error from the translation thread.
-  if (pp_error != PP_OK) {
+  // Bail out if there was an earlier error (e.g., pexe load failure),
+  // or if there is an error from the translation thread.
+  if (translate_finish_error_ != PP_OK || pp_error != PP_OK) {
+    if (use_new_cache_) {
+      plugin_->nacl_interface()->ReportTranslationFinished(
+          plugin_->pp_instance(),
+          PP_FALSE);
+    }
     ExitWithError();
     return;
   }
@@ -395,7 +396,7 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
     // Report to the browser that translation finished. The browser will take
     // care of caching.
     plugin_->nacl_interface()->ReportTranslationFinished(
-        plugin_->pp_instance());
+        plugin_->pp_instance(), PP_TRUE);
     NexeReadDidOpen(PP_OK);
     return;
   }
@@ -977,6 +978,11 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
       ss << "PnaclCoordinator: pexe load failed (pp_error=" << pp_error << ").";
       error_info_.SetReport(ERROR_PNACL_PEXE_FETCH_OTHER, ss.str());
     }
+    if (use_new_cache_) {
+      plugin_->nacl_interface()->ReportTranslationFinished(
+          plugin_->pp_instance(),
+          PP_FALSE);
+    }
     translate_thread_->AbortSubprocesses();
   } else {
     // Compare download completion pct (100% now), to compile completion pct.
@@ -1051,6 +1057,11 @@ void PnaclCoordinator::ObjectFileDidOpen(int32_t pp_error) {
     ReportPpapiError(ERROR_PNACL_CREATE_TEMP,
                      pp_error,
                      "Failed to open scratch object file.");
+    if (use_new_cache_) {
+      plugin_->nacl_interface()->ReportTranslationFinished(
+          plugin_->pp_instance(),
+          PP_FALSE);
+    }
     return;
   }
   // Open the nexe file for connecting ld and sel_ldr.

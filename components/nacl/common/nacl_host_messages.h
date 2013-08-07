@@ -91,8 +91,9 @@ IPC_MESSAGE_CONTROL3(NaClViewMsg_NexeTempFileReply,
 
 // A renderer sends this to the browser to report that its translation has
 // finished and its temp file contains the translated nexe.
-IPC_MESSAGE_CONTROL1(NaClHostMsg_ReportTranslationFinished,
-                     int /* instance */)
+IPC_MESSAGE_CONTROL2(NaClHostMsg_ReportTranslationFinished,
+                     int /* instance */,
+                     bool /* success */)
 
 // A renderer sends this to the browser process to report an error.
 IPC_MESSAGE_CONTROL2(NaClHostMsg_NaClErrorStatus,

@@ -180,7 +180,9 @@ void PnaclHost::GetNexeFd(int render_process_id,
 
 /////////////////// Cleanup
 
-void PnaclHost::TranslationFinished(int render_process_id, int pp_instance) {
+void PnaclHost::TranslationFinished(int render_process_id,
+                                    int pp_instance,
+                                    bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (cache_state_ != CacheReady)
     return;

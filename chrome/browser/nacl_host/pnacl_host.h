@@ -63,9 +63,11 @@ class PnaclHost {
                  const NexeFdCallback& cb);
 
   // Called after the translation of a pexe instance identified by
-  // |render_process_id| and |pp_instance| finishes. Store the nexe translated
-  // for the instance in the cache.
-  void TranslationFinished(int render_process_id, int pp_instance);
+  // |render_process_id| and |pp_instance| finishes. If |success| is true,
+  // store the nexe translated for the instance in the cache.
+  void TranslationFinished(int render_process_id,
+                           int pp_instance,
+                           bool success);
 
   // Called when the renderer identified by |render_process_id| is closing.
   // Clean up any outstanding translations for that renderer.

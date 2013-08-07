@@ -102,26 +102,30 @@ void PnaclTranslationResourceHost::SendRequestNexeFd(
 }
 
 void PnaclTranslationResourceHost::ReportTranslationFinished(
-    PP_Instance instance) {
+    PP_Instance instance,
+    PP_Bool success) {
   DCHECK(PpapiGlobals::Get()->
          GetMainThreadMessageLoop()->BelongsToCurrentThread());
   io_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&PnaclTranslationResourceHost::SendReportTranslationFinished,
                  this,
-                 instance));
+                 instance,
+                 success));
   return;
 }
 
 void PnaclTranslationResourceHost::SendReportTranslationFinished(
-    PP_Instance instance) {
+    PP_Instance instance,
+    PP_Bool success) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   // If the channel is closed or we have been detached, we are probably shutting
   // down, so just don't send anything.
   if (!channel_)
     return;
   DCHECK(pending_cache_requests_.count(instance) == 0);
-  channel_->Send(new NaClHostMsg_ReportTranslationFinished(instance));
+  channel_->Send(new NaClHostMsg_ReportTranslationFinished(instance,
+                                                           PP_ToBool(success)));
 }
 
 void PnaclTranslationResourceHost::OnNexeTempFileReply(

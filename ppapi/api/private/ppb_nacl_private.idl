@@ -122,13 +122,16 @@ interface PPB_NaCl_Private {
                     [in] PP_CompletionCallback callback);
 
   /* Report to the browser that translation of the pexe for |instance|
-   * has finished. The browser may then store the translation in the
-   * cache. The renderer must first have called GetNexeFd for the same
-   * instance. (It is not guaranteed to, however; if there is an error
-   * or the file is too big for the cache, or the browser is in incognito
-   * mode, no notification will be delivered to the plugin.)
+   * has finished, or aborted with an error. If |success| is true, the
+   * browser may then store the translation in the cache. The renderer
+   * must first have called GetNexeFd for the same instance. (The browser is
+   * not guaranteed to store the nexe even if |success| is true; if there is
+   * an error on the browser side, or the file is too big for the cache, or
+   * the browser is in incognito mode, no notification will be delivered to
+   * the plugin.)
    */
-  void ReportTranslationFinished([in] PP_Instance instance);
+  void ReportTranslationFinished([in] PP_Instance instance,
+                                 [in] PP_Bool success);
 
   /* Return true if we are off the record.
    */

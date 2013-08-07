@@ -186,9 +186,9 @@ void NaClHostMessageFilter::OnGetNexeFd(
                  pp_instance));
 }
 
-void NaClHostMessageFilter::OnTranslationFinished(int instance) {
+void NaClHostMessageFilter::OnTranslationFinished(int instance, bool success) {
   PnaclHost::GetInstance()->TranslationFinished(
-      render_process_id_, instance);
+      render_process_id_, instance, success);
 }
 
 void NaClHostMessageFilter::OnNaClErrorStatus(int render_view_id,

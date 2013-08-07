@@ -290,12 +290,12 @@ int32_t GetNexeFd(PP_Instance instance,
   return enter.SetResult(PP_OK_COMPLETIONPENDING);
 }
 
-void ReportTranslationFinished(PP_Instance instance) {
+void ReportTranslationFinished(PP_Instance instance, PP_Bool success) {
   // If the resource host isn't initialized, don't try to do that here.
   // Just return because something is already very wrong.
   if (g_pnacl_resource_host.Get() == NULL)
     return;
-  g_pnacl_resource_host.Get()->ReportTranslationFinished(instance);
+  g_pnacl_resource_host.Get()->ReportTranslationFinished(instance, success);
 }
 
 PP_Bool IsOffTheRecord() {

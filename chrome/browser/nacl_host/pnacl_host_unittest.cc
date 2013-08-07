@@ -73,7 +73,7 @@ TEST_F(PnaclHostTest, BasicMiss) {
   base::RunLoop().RunUntilIdle();
   EXPECT_PENDING_TRANSLATIONS(1);
   ExpectCallbackCount(1);
-  host_->TranslationFinished(0, 0);
+  host_->TranslationFinished(0, 0, true);
   EXPECT_PENDING_TRANSLATIONS(0);
   host_->RendererClosing(0);
 }
@@ -89,7 +89,7 @@ TEST_F(PnaclHostTest, BadArguments) {
       base::Bind(&PnaclHostTest::CallbackExpectMiss, base::Unretained(this)));
 
   EXPECT_PENDING_TRANSLATIONS(1);
-  host_->TranslationFinished(0, 1);  // nonexistent translation
+  host_->TranslationFinished(0, 1, true);  // nonexistent translation
   EXPECT_PENDING_TRANSLATIONS(1);
   host_->RendererClosing(1);  // nonexistent renderer
   EXPECT_PENDING_TRANSLATIONS(1);

@@ -59,7 +59,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   void OnGetNexeFd(int render_view_id,
                    int pp_instance,
                    const nacl::PnaclCacheInfo& cache_info);
-  void OnTranslationFinished(int instance);
+  void OnTranslationFinished(int instance, bool success);
   void OnNaClErrorStatus(int render_view_id, int error_id);
   void OnOpenNaClExecutable(int render_view_id,
                             const GURL& file_url,
