@@ -69,25 +69,33 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(connectNative)(
     jstring auth_token_jstr,
     jstring host_jid_jstr,
     jstring host_id_jstr,
-    jstring host_pubkey_jstr) {
+    jstring host_pubkey_jstr,
+    jstring pair_id_jstr,
+    jstring pair_secret_jstr) {
   const char* username_cstr = env->GetStringUTFChars(username_jstr, NULL);
   const char* auth_token_cstr = env->GetStringUTFChars(auth_token_jstr, NULL);
   const char* host_jid_cstr = env->GetStringUTFChars(host_jid_jstr, NULL);
   const char* host_id_cstr = env->GetStringUTFChars(host_id_jstr, NULL);
   const char* host_pubkey_cstr = env->GetStringUTFChars(host_pubkey_jstr, NULL);
+  const char* pair_id_cstr = env->GetStringUTFChars(pair_id_jstr, NULL);
+  const char* pair_secret_cstr = env->GetStringUTFChars(pair_secret_jstr, NULL);
 
   remoting::ChromotingJniRuntime::GetInstance()->ConnectToHost(
       username_cstr,
       auth_token_cstr,
       host_jid_cstr,
       host_id_cstr,
-      host_pubkey_cstr);
+      host_pubkey_cstr,
+      pair_id_cstr,
+      pair_secret_cstr);
 
   env->ReleaseStringUTFChars(username_jstr, username_cstr);
   env->ReleaseStringUTFChars(auth_token_jstr, auth_token_cstr);
   env->ReleaseStringUTFChars(host_jid_jstr, host_jid_cstr);
   env->ReleaseStringUTFChars(host_id_jstr, host_id_cstr);
   env->ReleaseStringUTFChars(host_pubkey_jstr, host_pubkey_cstr);
+  env->ReleaseStringUTFChars(pair_id_jstr, pair_id_cstr);
+  env->ReleaseStringUTFChars(pair_secret_jstr, pair_secret_cstr);
 }
 
 JNIEXPORT void JNICALL JNI_IMPLEMENTATION(disconnectNative)(JNIEnv* env,
@@ -98,11 +106,12 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(disconnectNative)(JNIEnv* env,
 JNIEXPORT void JNICALL JNI_IMPLEMENTATION(authenticationResponse)(
     JNIEnv* env,
     jobject that,
-    jstring pin_jstr) {
+    jstring pin_jstr,
+    jboolean create_pair) {
   const char* pin_cstr = env->GetStringUTFChars(pin_jstr, NULL);
 
   remoting::ChromotingJniRuntime::GetInstance()->
-      session()->ProvideSecret(pin_cstr);
+      session()->ProvideSecret(pin_cstr, create_pair);
 
   env->ReleaseStringUTFChars(pin_jstr, pin_cstr);
 }

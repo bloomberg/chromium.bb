@@ -9,13 +9,15 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Looper;
 import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -92,7 +94,9 @@ public class JniInterface {
         }
 
         sSuccessCallback = successCallback;
-        connectNative(username, authToken, hostJid, hostId, hostPubkey);
+        SharedPreferences prefs = sContext.getPreferences(Activity.MODE_PRIVATE);
+        connectNative(username, authToken, hostJid, hostId, hostPubkey,
+                prefs.getString(hostId + "_id", ""), prefs.getString(hostId + "_secret", ""));
         sConnected = true;
     }
 
@@ -113,8 +117,8 @@ public class JniInterface {
     }
 
     /** Performs the native portion of the connection. */
-    private static native void connectNative(
-            String username, String authToken, String hostJid, String hostId, String hostPubkey);
+    private static native void connectNative(String username, String authToken, String hostJid,
+            String hostId, String hostPubkey, String pairId, String pairSecret);
 
     /** Performs the native portion of the cleanup. */
     private static native void disconnectNative();
@@ -188,10 +192,7 @@ public class JniInterface {
         pinPrompt.setMessage(sContext.getString(R.string.pin_entry_message));
         pinPrompt.setIcon(android.R.drawable.ic_lock_lock);
 
-        final EditText pinEntry = new EditText(sContext);
-        pinEntry.setInputType(
-                InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD);
-        pinEntry.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        final View pinEntry = sContext.getLayoutInflater().inflate(R.layout.pin_dialog, null);
         pinPrompt.setView(pinEntry);
 
         pinPrompt.setPositiveButton(
@@ -199,7 +200,11 @@ public class JniInterface {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i("jniiface", "User provided a PIN code");
-                        authenticationResponse(String.valueOf(pinEntry.getText()));
+                        authenticationResponse(String.valueOf(
+                                ((TextView)
+                                        pinEntry.findViewById(R.id.pin_dialog_text)).getText()),
+                                ((CheckBox)
+                                        pinEntry.findViewById(R.id.pin_dialog_check)).isChecked());
                     }
                 });
 
@@ -217,7 +222,7 @@ public class JniInterface {
 
         final AlertDialog pinDialog = pinPrompt.create();
 
-        pinEntry.setOnEditorActionListener(
+        ((TextView)pinEntry.findViewById(R.id.pin_dialog_text)).setOnEditorActionListener(
                 new TextView.OnEditorActionListener() {
                     @Override
                     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -238,6 +243,16 @@ public class JniInterface {
                 });
 
         pinDialog.show();
+    }
+
+    /** Saves newly-received pairing credentials to permanent storage. */
+    private static void commitPairingCredentials(String host, byte[] id, byte[] secret) {
+        synchronized (sContext) {
+            sContext.getPreferences(Activity.MODE_PRIVATE).edit().
+                    putString(host + "_id", new String(id)).
+                    putString(host + "_secret", new String(secret)).
+                    apply();
+        }
     }
 
     /**
@@ -304,7 +319,7 @@ public class JniInterface {
     }
 
     /** Performs the native response to the user's PIN. */
-    private static native void authenticationResponse(String pin);
+    private static native void authenticationResponse(String pin, boolean createPair);
 
     /** Schedules a redraw on the native graphics thread. */
     private static native void scheduleRedrawNative();

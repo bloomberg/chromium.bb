@@ -1844,6 +1844,7 @@
               'files': [
                 'resources/layout/main.xml',
                 'resources/layout/host.xml',
+                'resources/layout/pin_dialog.xml',
               ],
             },
             {

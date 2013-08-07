@@ -266,7 +266,9 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
     }
 
     /** Called when a mouse action is made. */
-    private void handleMouseMovement(float[] coordinates, int button, boolean pressed) {
+    private void handleMouseMovement(float x, float y, int button, boolean pressed) {
+        float[] coordinates = {x, y};
+
         // Coordinates are relative to the canvas, but we need image coordinates.
         Matrix canvasToImage = new Matrix();
         mTransform.invert(canvasToImage);
@@ -289,7 +291,8 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
         boolean handled = mScroller.onTouchEvent(event) || mZoomer.onTouchEvent(event);
 
         if (event.getPointerCount() == 1) {
-            float[] coordinates = {event.getRawX(), event.getY()};
+            float x = event.getRawX();
+            float y = event.getY();
 
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
@@ -312,8 +315,7 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
                     if (mMouseButton == BUTTON_UNDEFINED) {
                         // The user pressed and released without moving: do left click and release.
                         Log.i("mouse", "\tStarting and finishing left click");
-                        handleMouseMovement(new float[] {coordinates[0], coordinates[1]},
-                                BUTTON_LEFT, true);
+                        handleMouseMovement(x, y, BUTTON_LEFT, true);
                         mMouseButton = BUTTON_LEFT;
                         mMousePressed = false;
                     }
@@ -329,7 +331,7 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
                 default:
                     return handled;
             }
-            handleMouseMovement(coordinates, mMouseButton, mMousePressed);
+            handleMouseMovement(x, y, mMouseButton, mMousePressed);
 
             return true;
         }
@@ -404,18 +406,19 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
                 return;
             }
 
-            float[] coordinates = new float[] {e.getRawX(), e.getY()};
+            float x = e.getRawX();
+            float y = e.getY();
 
             Log.i("mouse", "Finger held down");
             if (mMousePressed) {
                 Log.i("mouse", "\tReleasing the currently-pressed button");
-                handleMouseMovement(coordinates, mMouseButton, false);
+                handleMouseMovement(x, y, mMouseButton, false);
             }
 
             Log.i("mouse", "\tStarting right click");
             mMouseButton = BUTTON_RIGHT;
             mMousePressed = true;
-            handleMouseMovement(coordinates, mMouseButton, mMousePressed);
+            handleMouseMovement(x, y, mMouseButton, mMousePressed);
         }
     }
 }

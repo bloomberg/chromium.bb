@@ -37,13 +37,16 @@ class ChromotingJniInstance
     public base::RefCountedThreadSafe<ChromotingJniInstance> {
  public:
   // Initiates a connection with the specified host. Call from the UI thread.
-  // The instance does not take ownership of |jni_runtime|.
+  // The instance does not take ownership of |jni_runtime|. To connect with an
+  // unpaired host, pass in |pairing_id| and |pairing_secret| as empty strings.
   ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
                         const char* username,
                         const char* auth_token,
                         const char* host_jid,
                         const char* host_id,
-                        const char* host_pubkey);
+                        const char* host_pubkey,
+                        const char* pairing_id,
+                        const char* pairing_secret);
 
   // Terminates the current connection (if it hasn't already failed) and cleans
   // up. Must be called before destruction.
@@ -52,7 +55,7 @@ class ChromotingJniInstance
   // Provides the user's PIN and resumes the host authentication attempt. Call
   // on the UI thread once the user has finished entering this PIN into the UI,
   // but only after the UI has been asked to provide a PIN (via FetchSecret()).
-  void ProvideSecret(const std::string& pin);
+  void ProvideSecret(const std::string& pin, bool create_pair);
 
   // Schedules a redraw on the display thread. May be called from any thread.
   void RedrawDesktop();
@@ -131,6 +134,14 @@ class ChromotingJniInstance
   std::string host_jid_;
   std::string host_id_;
   std::string host_pubkey_;
+  std::string pairing_id_;
+  std::string pairing_secret_;
+
+  // Indicates whether to establish a new pairing with this host. This is
+  // modified in ProvideSecret(), but thereafter to be used only from the
+  // network thread. (This is safe because ProvideSecret() is invoked at most
+  // once per run, and always before any reference to this flag.)
+  bool create_pairing_;
 
   friend class base::RefCountedThreadSafe<ChromotingJniInstance>;
 

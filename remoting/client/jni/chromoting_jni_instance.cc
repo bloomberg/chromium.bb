@@ -9,6 +9,7 @@
 #include "remoting/client/audio_player.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 
 // TODO(solb) Move into location shared with client plugin.
@@ -23,13 +24,18 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
                                              const char* auth_token,
                                              const char* host_jid,
                                              const char* host_id,
-                                             const char* host_pubkey)
+                                             const char* host_pubkey,
+                                             const char* pairing_id,
+                                             const char* pairing_secret)
     : jni_runtime_(jni_runtime),
       username_(username),
       auth_token_(auth_token),
       host_jid_(host_jid),
       host_id_(host_id),
-      host_pubkey_(host_pubkey) {
+      host_pubkey_(host_pubkey),
+      pairing_id_(pairing_id),
+      pairing_secret_(pairing_secret),
+      create_pairing_(false) {
   DCHECK(jni_runtime_->ui_task_runner()->BelongsToCurrentThread());
 
   jni_runtime_->display_task_runner()->PostTask(
@@ -60,9 +66,12 @@ void ChromotingJniInstance::Cleanup() {
                  this));
 }
 
-void ChromotingJniInstance::ProvideSecret(const std::string& pin) {
+void ChromotingJniInstance::ProvideSecret(const std::string& pin,
+                                          bool create_pairing) {
   DCHECK(jni_runtime_->ui_task_runner()->BelongsToCurrentThread());
   DCHECK(!pin_callback_.is_null());
+
+  create_pairing_ = create_pairing;
 
   jni_runtime_->network_task_runner()->PostTask(FROM_HERE,
                                                 base::Bind(pin_callback_, pin));
@@ -132,28 +141,40 @@ void ChromotingJniInstance::PerformKeyboardAction(int key_code, bool key_down) {
 void ChromotingJniInstance::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
-  if (!jni_runtime_->ui_task_runner()->BelongsToCurrentThread()) {
-    jni_runtime_->ui_task_runner()->PostTask(
-            FROM_HERE,
-            base::Bind(&ChromotingJniInstance::OnConnectionState,
-                       this,
-                       state,
-                       error));
-    return;
+  DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
+
+  if (create_pairing_ && state == protocol::ConnectionToHost::CONNECTED) {
+    LOG(INFO) << "Attempting to pair with host";
+    protocol::PairingRequest request;
+    request.set_client_name("Android");
+    connection_->host_stub()->RequestPairing(request);
   }
 
-  jni_runtime_->ReportConnectionStatus(state, error);
+  jni_runtime_->ui_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ChromotingJniRuntime::ReportConnectionStatus,
+                 base::Unretained(jni_runtime_),
+                 state,
+                 error));
 }
 
 void ChromotingJniInstance::OnConnectionReady(bool ready) {
-  // We ignore this message, since OnConnectionState() tells us the same thing.
+  // We ignore this message, since OnConnectoinState tells us the same thing.
 }
 
 void ChromotingJniInstance::SetCapabilities(const std::string& capabilities) {}
 
 void ChromotingJniInstance::SetPairingResponse(
     const protocol::PairingResponse& response) {
-  NOTIMPLEMENTED();
+  LOG(INFO) << "Successfully established pairing with host";
+
+  jni_runtime_->ui_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ChromotingJniRuntime::CommitPairingCredentials,
+                 base::Unretained(jni_runtime_),
+                 host_id_,
+                 response.client_id(),
+                 response.shared_secret()));
 }
 
 protocol::ClipboardStub* ChromotingJniInstance::GetClipboardStub() {
@@ -206,6 +227,13 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       &ChromotingJniInstance::FetchSecret,
       this);
   client_config_->authentication_tag = host_id_;
+
+  if (!pairing_id_.empty() && !pairing_secret_.empty()) {
+    client_config_->client_pairing_id = pairing_id_;
+    client_config_->client_paired_secret = pairing_secret_;
+    client_config_->authentication_methods.push_back(
+        protocol::AuthenticationMethod::FromString("spake2_pair"));
+  }
 
   client_config_->authentication_methods.push_back(
       protocol::AuthenticationMethod::FromString("spake2_hmac"));
@@ -273,6 +301,13 @@ void ChromotingJniInstance::FetchSecret(
                    pairable,
                    callback));
     return;
+  }
+
+  if (!pairing_id_.empty() || !pairing_secret_.empty()) {
+    // We attempted to connect using an existing pairing that was rejected.
+    // Unless we forget about the stale credentials, we'll continue trying them.
+    LOG(INFO) << "Deleting rejected pairing credentials";
+    jni_runtime_->CommitPairingCredentials(host_id_, "", "");
   }
 
   pin_callback_ = callback;

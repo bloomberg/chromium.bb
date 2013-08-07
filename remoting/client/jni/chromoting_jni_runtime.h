@@ -45,12 +45,15 @@ class ChromotingJniRuntime {
 
   // Initiates a connection with the specified host. Only call when a host
   // connection is active (i.e. between a call to Connect() and the
-  // corresponding call to Disconnect()).
+  // corresponding call to Disconnect()). To skip the attempt at pair-based
+  // authentication, leave |pairing_id| and |pairing_secret| as empty strings.
   void ConnectToHost(const char* username,
                      const char* auth_token,
                      const char* host_jid,
                      const char* host_id,
-                     const char* host_pubkey);
+                     const char* host_pubkey,
+                     const char* pairing_id,
+                     const char* pairing_secret);
 
   // Terminates any ongoing connection attempt and cleans up by nullifying
   // |session_|. This is a no-op unless |session| is currently non-null.
@@ -63,12 +66,17 @@ class ChromotingJniRuntime {
     return session_;
   }
 
-  // Notifies the user that the connection status has changed.
+  // Notifies the user of the current connection status. Call on UI thread.
   void ReportConnectionStatus(protocol::ConnectionToHost::State state,
                               protocol::ErrorCode error);
 
-  // Pops up a dialog box asking the user to enter a PIN.
+  // Pops up a dialog box asking the user to enter a PIN. Call on UI thread.
   void DisplayAuthenticationPrompt();
+
+  // Saves new pairing credentials to permanent storage. Call on UI thread.
+  void CommitPairingCredentials(const std::string& host,
+                                const std::string& id,
+                                const std::string& secret);
 
   // Updates image dimensions and canvas memory space. Call on display thread.
   void UpdateImageBuffer(int width, int height, jobject buffer);

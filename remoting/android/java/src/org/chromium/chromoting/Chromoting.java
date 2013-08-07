@@ -201,7 +201,7 @@ public class Chromoting extends Activity {
                     mAccount = new Account(accountName, accountType);
                     mToken = authToken;
                     getPreferences(MODE_PRIVATE).edit().putString("account_name", accountName).
-                            putString("account_type", accountType).commit();
+                            putString("account_type", accountType).apply();
                 }
 
                 // Send our HTTP request to the directory server.

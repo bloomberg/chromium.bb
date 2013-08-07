@@ -76,7 +76,9 @@ void ChromotingJniRuntime::ConnectToHost(const char* username,
                                   const char* auth_token,
                                   const char* host_jid,
                                   const char* host_id,
-                                  const char* host_pubkey) {
+                                  const char* host_pubkey,
+                                  const char* pairing_id,
+                                  const char* pairing_secret) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(!session_);
   session_ = new ChromotingJniInstance(this,
@@ -84,7 +86,9 @@ void ChromotingJniRuntime::ConnectToHost(const char* username,
                                        auth_token,
                                        host_jid,
                                        host_id,
-                                       host_pubkey);
+                                       host_pubkey,
+                                       pairing_id,
+                                       pairing_secret);
 }
 
 void ChromotingJniRuntime::DisconnectFromHost() {
@@ -115,6 +119,34 @@ void ChromotingJniRuntime::DisplayAuthenticationPrompt() {
   env->CallStaticVoidMethod(
       class_,
       env->GetStaticMethodID(class_, "displayAuthenticationPrompt", "()V"));
+}
+
+void ChromotingJniRuntime::CommitPairingCredentials(const std::string& host,
+                                                    const std::string& id,
+                                                    const std::string& secret) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  jstring host_jstr = env->NewStringUTF(host.c_str());
+  jbyteArray id_arr = env->NewByteArray(id.size());
+  env->SetByteArrayRegion(id_arr, 0, id.size(),
+      reinterpret_cast<const jbyte*>(id.c_str()));
+  jbyteArray secret_arr = env->NewByteArray(secret.size());
+  env->SetByteArrayRegion(secret_arr, 0, secret.size(),
+      reinterpret_cast<const jbyte*>(secret.c_str()));
+
+  env->CallStaticVoidMethod(
+      class_,
+      env->GetStaticMethodID(
+          class_,
+          "commitPairingCredentials",
+          "(Ljava/lang/String;[B[B)V"),
+      host_jstr,
+      id_arr,
+      secret_arr);
+
+  // Because we passed them as arguments, their corresponding Java objects were
+  // GCd as soon as the managed method returned, so we mustn't release it here.
 }
 
 void ChromotingJniRuntime::UpdateImageBuffer(int width,
