@@ -460,7 +460,9 @@ void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
   if (!login_manager_.get())
     return;
 
-  if (chrome::IsRunningInForcedAppMode())
+  if (chrome::IsRunningInForcedAppMode() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kOobeSkipPostLogin))
     return;
 
   UserManager::Get()->SetMergeSessionState(
