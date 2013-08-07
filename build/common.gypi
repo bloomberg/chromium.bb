@@ -699,7 +699,16 @@
         }],
         ['OS=="win" or OS=="linux"', {
             'enable_mdns%' : 1,
-        }]
+        }],
+
+        # Turns on compiler optimizations in V8 in Debug build, except
+        # on android_clang, where we're hitting a weird linker error.
+        # TODO(dpranke): http://crbug.com/266155 .
+        ['OS=="android"', {
+          'v8_optimized_debug': 1,
+        }, {
+          'v8_optimized_debug': 2,
+        }],
       ],
 
       # Set this to 1 to enable use of concatenated impulse responses
@@ -854,6 +863,7 @@
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
     'enable_mdns%' : '<(enable_mdns)',
+    'v8_optimized_debug': '<(v8_optimized_debug)',
 
     # Use system nspr instead of the bundled one.
     'use_system_nspr%': 0,
@@ -1110,9 +1120,6 @@
     # Whether we are using the rlz library or not.  Platforms like Android send
     # rlz codes for searches but do not use the library.
     'enable_rlz%': 0,
-
-    # Turns on compiler optimizations in V8 in Debug build.
-    'v8_optimized_debug': 1,
 
     # Turns on the i18n support in V8.
     'v8_enable_i18n_support': 1,
