@@ -498,8 +498,11 @@ evdev_handle_device(struct evdev_device *device)
 		      key_bits);
 		if (TEST_BIT(key_bits, BTN_TOOL_FINGER) &&
 		    !TEST_BIT(key_bits, BTN_TOOL_PEN) &&
-		    has_abs)
+		    has_abs) {
 			device->dispatch = evdev_touchpad_create(device);
+			weston_log("input device %s, %s is a touchpad\n",
+				   device->devname, device->devnode);
+		}
 		for (i = KEY_ESC; i < KEY_MAX; i++) {
 			if (i >= BTN_MISC && i < KEY_OK)
 				continue;
