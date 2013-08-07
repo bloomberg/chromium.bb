@@ -1,8 +1,8 @@
 #!/usr/bin/python
 #
-# Copyright 2012 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 # Copyright 2012, Google Inc.
 #
 
@@ -35,11 +35,18 @@ def generate_decoder(tables, out):
     out.line()
     _generate_entry_point(tables[0].name, out)
     out.line()
-    out.line('}  // namespace')
+    out.line('}  // namespace nacl_mips_dec')
 
 def _generate_header(out):
-    # TODO do we need a big ridiculous license banner in generated code?
-    out.block_comment('DO NOT EDIT: GENERATED CODE')
+    out.block_comment(
+        'Copyright (c) 2013 The Native Client Authors. All rights reserved.',
+        'Use of this source code is governed by a BSD-style license that can '
+        'be',
+        'found in the LICENSE file.'
+    )
+    out.line()
+    out.line('// DO NOT EDIT: GENERATED CODE')
+    out.line()
     out.line('#include <stdio.h>')
     out.line('#include "native_client/src/trusted/validator_mips/decode.h"')
 
@@ -68,7 +75,7 @@ def _generate_decoder_state_type(tables, out):
         if first:
             out.line('_%s_instance()' % t)
         else:
-            out.line(',_%s_instance()' % t)
+            out.line(', _%s_instance()' % t)
         first = False
     out.line('{}')
 
@@ -78,8 +85,9 @@ def _generate_decoder_state_type(tables, out):
 def _generate_prototypes(tables, out):
     out.block_comment('Prototypes for static table-matching functions.')
     for t in tables:
-        out.line('static inline const ClassDecoder &decode_%s('
-            'const Instruction insn, const DecoderState *state);' % t.name)
+        out.line('static inline const ClassDecoder')
+        out.line('  &decode_%s(const Instruction insn, '
+            'const DecoderState *state);' % t.name)
 
 def _generate_implementations(tables, out):
     out.block_comment('Table-matching function implementations.')
@@ -94,13 +102,13 @@ def _generate_init_function(out):
     out.exit_block()
 
     out.enter_block('void delete_state(const DecoderState *state)')
-    out.line('delete (DecoderState *)state;')
+    out.line('delete state;')
     out.exit_block()
 
 def _generate_entry_point(initial_table_name, out):
     out.enter_block('const ClassDecoder &decode(const Instruction insn, '
         'const DecoderState *state)')
-    out.line('return decode_%s(insn, (DecoderState *)state);'
+    out.line('return decode_%s(insn, state);'
         % initial_table_name)
     out.exit_block()
 
@@ -111,7 +119,8 @@ def _generate_table(table, out):
         'Implementation of table %s.' % table.name,
         'Specified by: %s.' % table.citation
     )
-    out.enter_block('static inline const ClassDecoder &decode_%s('
+    out.line('static inline const ClassDecoder')
+    out.enter_block('&decode_%s('
         'const Instruction insn, const DecoderState *state)' % table.name)
 
     optimized = dgen_opt.optimize_rows(table.rows)
@@ -119,7 +128,16 @@ def _generate_table(table, out):
         % (table.name, len(table.rows), len(optimized)))
     for row in sorted(optimized):
         exprs = ["(%s)" % p.to_c_expr('insn') for p in row.patterns]
-        out.enter_block('if (%s)' % ' && '.join(exprs))
+        if len(exprs) == 1:
+            out.enter_block('if (%s)' % exprs[0])
+        else:
+            for ln in xrange(len(exprs)):
+                if ln == 0:
+                    out.line('if (%s' % exprs[ln])
+                elif ln < len(exprs) - 1:
+                    out.line('    && %s' % exprs[ln])
+                else:
+                    out.enter_block('    && %s)' % exprs[ln])
 
         if row.action.startswith('='):
             _generate_terminal(row.action[1:], out)
@@ -145,8 +163,9 @@ def _generate_table_change(name, out):
 
 def _generate_safety_net(table, out):
     out.line('// Catch any attempt to fall through...')
-    out.line('fprintf(stderr, "TABLE IS INCOMPLETE: %s could not parse %%08X",'
-        'insn.Bits(31,0));' % table.name)
+    out.line('fprintf(stderr, "TABLE IS INCOMPLETE: "')
+    out.line('        "%s could not parse %%08X", insn.Bits(31, 0));'
+        % table.name)
     _generate_terminal('Forbidden', out)
 
 
@@ -158,7 +177,8 @@ class COutput(object):
         self._indent = 0
 
     def line(self, str = ''):
-        self._out.write(self._tabs())
+        if len(str) > 0:
+            self._out.write(self._tabs())
         self._out.write(str + '\n')
 
     def enter_block(self, headline):
