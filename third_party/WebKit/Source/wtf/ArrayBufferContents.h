@@ -29,6 +29,7 @@
 
 #include "wtf/ArrayBufferDeallocationObserver.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PartitionAlloc.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {
@@ -62,8 +63,8 @@ public:
     void transfer(ArrayBufferContents& other);
     void copyTo(ArrayBufferContents& other);
 
-    static void allocateMemory(size_t, InitializationPolicy, void*& data);
-    static void freeMemory(void* data);
+    static void allocateMemory(size_t, InitializationPolicy, void*&);
+    static void freeMemory(void*, size_t);
 
 private:
     void* m_data;

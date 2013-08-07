@@ -37,7 +37,7 @@
 
 #include "wtf/CPU.h"
 #include "wtf/MathExtras.h"
-#include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 #include <stdio.h>
 

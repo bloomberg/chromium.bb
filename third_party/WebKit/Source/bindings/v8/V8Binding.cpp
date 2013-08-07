@@ -117,15 +117,14 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
         return data;
     }
 
-    virtual void Free(void* data)
+    virtual void Free(void*)
     {
-        WTF::ArrayBufferContents::freeMemory(data);
+        IMMEDIATE_CRASH();
     }
 
-    virtual void Free(void* data, size_t size)
+    virtual void Free(void* data, size_t size) OVERRIDE
     {
-        UNUSED_PARAM(size);
-        WTF::ArrayBufferContents::freeMemory(data);
+        WTF::ArrayBufferContents::freeMemory(data, size);
     }
 };
 

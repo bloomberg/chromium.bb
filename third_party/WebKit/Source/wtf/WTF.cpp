@@ -28,20 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
+#include "WTF.h"
+
+#include "wtf/PartitionAlloc.h"
+
+#ifndef NDEBUG
 #include "wtf/MainThread.h"
-#include "wtf/WTF.h"
-#include <base/test/test_suite.h>
-#include <gmock/gmock.h>
+#endif
 
-static double CurrentTime()
+namespace WTF {
+
+extern void initializeThreading();
+
+void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction)
 {
-    return 0.0;
+    partitionAllocInit(bufferPartition());
+    setCurrentTimeFunction(currentTimeFunction);
+    setMonotonicallyIncreasingTimeFunction(monotonicallyIncreasingTimeFunction);
+    initializeThreading();
 }
 
-int main(int argc, char** argv)
+void shutdown()
 {
-    ::testing::InitGoogleMock(&argc, argv);
-    WTF::initialize(CurrentTime, 0);
-    WTF::initializeMainThread(0);
-    return base::TestSuite(argc, argv).Run();
+    partitionAllocShutdown(bufferPartition());
 }
+
+PartitionRoot Partitions::m_bufferRoot;
+
+} // namespace WTF

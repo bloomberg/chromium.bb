@@ -24,25 +24,16 @@
  */
 
 #include "config.h"
-#include "Threading.h"
+#include "wtf/Threading.h"
+
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-
+#include "wtf/ThreadingPrimitives.h"
 #include <string.h>
 
 namespace WTF {
 
-extern void initializeThreading();
-
-void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction)
-{
-    setCurrentTimeFunction(currentTimeFunction);
-    setMonotonicallyIncreasingTimeFunction(monotonicallyIncreasingTimeFunction);
-    initializeThreading();
-}
-
 struct NewThreadContext {
-    WTF_MAKE_FAST_ALLOCATED;
 public:
     NewThreadContext(ThreadFunction entryPoint, void* data, const char* name)
         : entryPoint(entryPoint)

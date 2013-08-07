@@ -28,20 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/MainThread.h"
-#include "wtf/WTF.h"
-#include <base/test/test_suite.h>
-#include <gmock/gmock.h>
+#ifndef WTF_h
+#define WTF_h
 
-static double CurrentTime()
-{
-    return 0.0;
-}
+#include "wtf/Compiler.h"
+#include "wtf/CurrentTime.h"
 
-int main(int argc, char** argv)
-{
-    ::testing::InitGoogleMock(&argc, argv);
-    WTF::initialize(CurrentTime, 0);
-    WTF::initializeMainThread(0);
-    return base::TestSuite(argc, argv).Run();
-}
+namespace WTF {
+
+struct PartitionRoot;
+
+// This function must be called exactly once from the main thread before using anything else in WTF.
+WTF_EXPORT void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction);
+WTF_EXPORT void shutdown();
+
+class Partitions {
+public:
+    static PartitionRoot m_bufferRoot;
+};
+
+ALWAYS_INLINE PartitionRoot* bufferPartition() { return &Partitions::m_bufferRoot; }
+
+} // namespace WTF
+
+#endif // WTF_h

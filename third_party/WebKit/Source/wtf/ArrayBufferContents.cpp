@@ -29,6 +29,7 @@
 
 #include "wtf/ArrayBufferDeallocationObserver.h"
 #include "wtf/Assertions.h"
+#include "wtf/WTF.h"
 #include <string.h>
 
 namespace WTF {
@@ -64,14 +65,14 @@ ArrayBufferContents::ArrayBufferContents(void* data, unsigned sizeInBytes)
         ASSERT(!m_sizeInBytes);
         m_sizeInBytes = 0;
         // Allow null data if size is 0 bytes, make sure m_data is valid pointer.
-        // (fastMalloc guarantees valid pointer for size 0)
+        // (partitionAllocGeneric guarantees valid pointer for size 0)
         allocateMemory(0, ZeroInitialize, m_data);
     }
 }
 
 ArrayBufferContents::~ArrayBufferContents()
 {
-    freeMemory(m_data);
+    freeMemory(m_data, m_sizeInBytes);
     clear();
 }
 
@@ -95,7 +96,7 @@ void ArrayBufferContents::transfer(ArrayBufferContents& other)
 void ArrayBufferContents::copyTo(ArrayBufferContents& other)
 {
     ASSERT(!other.m_sizeInBytes);
-    other.freeMemory(other.m_data);
+    other.freeMemory(other.m_data, other.m_sizeInBytes);
     allocateMemory(m_sizeInBytes, DontInitialize, other.m_data);
     if (!other.m_data)
         return;
@@ -105,14 +106,15 @@ void ArrayBufferContents::copyTo(ArrayBufferContents& other)
 
 void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
 {
-    data = WTF::fastMalloc(size);
+    data = partitionAllocGeneric(WTF::bufferPartition(), size);
     if (policy == ZeroInitialize)
         memset(data, '\0', size);
 }
 
-void ArrayBufferContents::freeMemory(void * data)
+void ArrayBufferContents::freeMemory(void* data, size_t size)
 {
-    WTF::fastFree(data);
+    if (data)
+        partitionFreeGeneric(data, size);
 }
 
 } // namespace WTF

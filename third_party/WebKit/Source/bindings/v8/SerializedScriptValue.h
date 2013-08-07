@@ -32,8 +32,9 @@
 #define SerializedScriptValue_h
 
 #include "bindings/v8/ScriptValue.h"
+
+#include "wtf/ThreadSafeRefCounted.h"
 #include <v8.h>
-#include "wtf/Threading.h"
 
 namespace WTF {
 

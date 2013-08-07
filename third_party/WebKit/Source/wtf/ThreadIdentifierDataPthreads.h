@@ -31,7 +31,9 @@
 #ifndef ThreadIdentifierDataPthreads_h
 #define ThreadIdentifierDataPthreads_h
 
+#include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
+#include <pthread.h>
 
 namespace WTF {
 

@@ -21,12 +21,10 @@
  */
 
 #include "config.h"
-
 #include "AtomicString.h"
 
 #include "StringHash.h"
 #include "wtf/HashSet.h"
-#include "wtf/Threading.h"
 #include "wtf/WTFThreadData.h"
 #include "wtf/unicode/UTF8.h"
 
@@ -37,7 +35,6 @@ using namespace Unicode;
 COMPILE_ASSERT(sizeof(AtomicString) == sizeof(String), atomic_string_and_string_must_be_same_size);
 
 class AtomicStringTable {
-    WTF_MAKE_FAST_ALLOCATED;
 public:
     static AtomicStringTable* create(WTFThreadData& data)
     {

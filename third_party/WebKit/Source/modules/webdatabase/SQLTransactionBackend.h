@@ -34,6 +34,7 @@
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

@@ -32,9 +32,10 @@
 
 #if USE(PTHREADS)
 
-#include "ThreadIdentifierDataPthreads.h"
+#include "wtf/ThreadIdentifierDataPthreads.h"
 
-#include "Threading.h"
+#include "wtf/Assertions.h"
+#include "wtf/Threading.h"
 
 #if OS(ANDROID) || OS(HURD)
 // PTHREAD_KEYS_MAX is not defined in bionic nor in Hurd, so explicitly define it here.

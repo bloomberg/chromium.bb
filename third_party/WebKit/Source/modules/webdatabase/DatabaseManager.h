@@ -32,7 +32,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace WebCore {
 

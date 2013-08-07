@@ -36,7 +36,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Threading.h"
+#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/TypeTraits.h"
 
 namespace WebCore {

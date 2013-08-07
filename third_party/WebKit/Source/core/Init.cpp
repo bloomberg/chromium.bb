@@ -53,6 +53,8 @@ void init()
         return;
     isInited = true;
 
+    // It would make logical sense to do this and WTF::StringStatics::init() in
+    // WTF::initialize() but there are ordering dependencies.
     AtomicString::init();
     HTMLNames::init();
     SVGNames::init();

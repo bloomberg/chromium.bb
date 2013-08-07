@@ -145,6 +145,8 @@
             'VMTags.h',
             'Vector.h',
             'VectorTraits.h',
+            'WTF.cpp',
+            'WTF.h',
             'WTFExport.h',
             'WTFThreadData.cpp',
             'WTFThreadData.h',

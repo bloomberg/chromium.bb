@@ -30,16 +30,8 @@
 #ifndef Threading_h
 #define Threading_h
 
-#include "wtf/Platform.h"
-
-#include <stdint.h>
-#include "wtf/Assertions.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/Locker.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/ThreadingPrimitives.h"
 #include "wtf/WTFExport.h"
+#include <stdint.h>
 
 // For portability, we do not use thread-safe statics natively supported by some compilers (e.g. gcc).
 #define AtomicallyInitializedStatic(T, name) \
@@ -51,9 +43,6 @@ namespace WTF {
 
 typedef uint32_t ThreadIdentifier;
 typedef void (*ThreadFunction)(void* argument);
-
-// This function must be called exactly once from the main thread before using anything else in WTF.
-WTF_EXPORT void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction);
 
 // Returns 0 if thread creation failed.
 // The thread name must be a literal since on some platforms it's passed in to the thread.

@@ -26,7 +26,6 @@
 #include "wtf/text/StringImpl.h"
 
 #include "wtf/StdLibExtras.h"
-#include "wtf/WTFThreadData.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringHash.h"

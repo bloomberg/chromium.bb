@@ -47,7 +47,7 @@
 #include "wtf/Atomics.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 #endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE

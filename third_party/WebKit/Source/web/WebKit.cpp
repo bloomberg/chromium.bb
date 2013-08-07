@@ -49,10 +49,9 @@
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "wtf/Assertions.h"
 #include "wtf/CryptographicallyRandomNumber.h"
-#include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
-#include "wtf/Threading.h"
 #include "wtf/UnusedParam.h"
+#include "wtf/WTF.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextEncoding.h"
 #include "public/platform/Platform.h"
@@ -194,6 +193,7 @@ void shutdownWithoutV8()
     ASSERT(!s_endOfTaskRunner);
     WebCore::ImageDecodingStore::shutdown();
     WebCore::shutdown();
+    WTF::shutdown();
     Platform::shutdown();
     WebPrerenderingSupport::shutdown();
 }
