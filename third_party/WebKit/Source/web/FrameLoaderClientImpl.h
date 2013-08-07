@@ -82,7 +82,6 @@ public:
     virtual void dispatchDidHandleOnloadEvents();
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad();
     virtual void dispatchDidNavigateWithinPage();
-    virtual void dispatchDidChangeLocationWithinPage();
     virtual void dispatchWillClose();
     virtual void dispatchDidStartProvisionalLoad();
     virtual void dispatchDidReceiveTitle(const WebCore::StringWithDirection&);

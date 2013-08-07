@@ -500,11 +500,6 @@ public:
         WebTestProxyBase::didFinishLoad(frame);
         Base::didFinishLoad(frame);
     }
-    virtual void didChangeLocationWithinPage(WebKit::WebFrame* frame)
-    {
-        WebTestProxyBase::didChangeLocationWithinPage(frame);
-        Base::didChangeLocationWithinPage(frame);
-    }
     virtual void didDetectXSS(WebKit::WebFrame* frame, const WebKit::WebURL& insecureURL, bool didBlockEntirePage)
     {
         WebTestProxyBase::didDetectXSS(frame, insecureURL, didBlockEntirePage);

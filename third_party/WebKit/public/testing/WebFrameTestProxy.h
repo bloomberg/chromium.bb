@@ -106,13 +106,6 @@ public:
     {
         Base::didFinishLoad(frame);
     }
-    virtual void didChangeLocationWithinPage(WebKit::WebFrame* frame)
-    {
-        // This is not implemented in RenderFrameImpl, so need to explicitly call
-        // into the base proxy.
-        m_baseProxy->didChangeLocationWithinPage(frame);
-        Base::didChangeLocationWithinPage(frame);
-    }
     virtual void didDetectXSS(WebKit::WebFrame* frame, const WebKit::WebURL& insecureURL, bool didBlockEntirePage)
     {
         // This is not implemented in RenderFrameImpl, so need to explicitly call

@@ -1258,14 +1258,6 @@ void WebTestProxyBase::didFinishLoad(WebFrame* frame)
     locationChangeDone(frame);
 }
 
-void WebTestProxyBase::didChangeLocationWithinPage(WebFrame* frame)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpFrameLoadCallbacks()) {
-        printFrameDescription(m_delegate, frame);
-        m_delegate->printMessage(" - didChangeLocationWithinPageForFrame\n");
-    }
-}
-
 void WebTestProxyBase::didDetectXSS(WebFrame*, const WebURL&, bool)
 {
     if (m_testInterfaces->testRunner()->shouldDumpFrameLoadCallbacks())

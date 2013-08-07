@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/SerializedScriptValue.h"
+#include "core/loader/FrameLoaderTypes.h"
 #include "core/page/DOMWindowProperty.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -57,11 +58,7 @@ public:
     bool stateChanged() const;
     bool isSameAsCurrentState(SerializedScriptValue*) const;
 
-    enum StateObjectType {
-        StateObjectPush,
-        StateObjectReplace
-    };
-    void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, StateObjectType, ExceptionState&);
+    void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, SameDocumentNavigationSource, ExceptionState&);
 
 private:
     explicit History(Frame*);

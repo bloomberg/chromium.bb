@@ -196,7 +196,6 @@ public:
 
     virtual void dispatchDidHandleOnloadEvents() OVERRIDE { }
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() OVERRIDE { }
-    virtual void dispatchDidChangeLocationWithinPage() OVERRIDE { }
     virtual void dispatchWillClose() OVERRIDE { }
     virtual void dispatchDidStartProvisionalLoad() OVERRIDE { }
     virtual void dispatchDidReceiveTitle(const StringWithDirection&) OVERRIDE { }

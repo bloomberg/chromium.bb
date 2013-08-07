@@ -71,7 +71,7 @@ void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 
     ExceptionState es(args.GetIsolate());
     History* history = V8History::toNative(args.Holder());
-    history->stateObjectAdded(historyState.release(), title, url, History::StateObjectPush, es);
+    history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationPushState, es);
     args.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state());
     es.throwIfNeeded();
 }
@@ -88,7 +88,7 @@ void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Valu
 
     ExceptionState es(args.GetIsolate());
     History* history = V8History::toNative(args.Holder());
-    history->stateObjectAdded(historyState.release(), title, url, History::StateObjectReplace, es);
+    history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationReplaceState, es);
     args.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state());
     es.throwIfNeeded();
 }

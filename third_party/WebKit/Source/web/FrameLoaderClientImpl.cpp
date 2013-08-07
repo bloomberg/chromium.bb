@@ -360,12 +360,6 @@ void FrameLoaderClientImpl::dispatchDidNavigateWithinPage()
         m_webFrame->client()->didNavigateWithinPage(m_webFrame, isNewNavigation);
 }
 
-void FrameLoaderClientImpl::dispatchDidChangeLocationWithinPage()
-{
-    if (m_webFrame)
-        m_webFrame->client()->didChangeLocationWithinPage(m_webFrame);
-}
-
 void FrameLoaderClientImpl::dispatchWillClose()
 {
     if (m_webFrame->client())

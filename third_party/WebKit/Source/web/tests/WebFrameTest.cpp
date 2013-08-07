@@ -3437,7 +3437,7 @@ TEST_F(WebFrameTest, FirstPartyForCookiesForRedirect)
 class TestNavigationPolicyWebFrameClient : public WebFrameClient {
 public:
 
-    virtual void didChangeLocationWithinPage(WebFrame*)
+    virtual void didNavigateWithinPage(WebFrame*, bool)
     {
         EXPECT_TRUE(false);
     }

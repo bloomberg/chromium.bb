@@ -92,6 +92,11 @@ namespace WebCore {
         EndToEndReload
     };
 
+    enum SameDocumentNavigationSource {
+        SameDocumentNavigationDefault,
+        SameDocumentNavigationPushState,
+        SameDocumentNavigationReplaceState
+    };
 }
 
 #endif

@@ -238,6 +238,8 @@ public:
     };
     PageDismissalType pageDismissalEventBeingDispatched() const { return m_pageDismissalEventBeingDispatched; }
 
+    void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, const String& title);
+
 private:
     bool allChildrenAreComplete() const; // immediate children, not all descendants
 

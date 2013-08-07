@@ -907,7 +907,6 @@ public:
     void initSecurityContext(const DocumentInit&);
     void initContentSecurityPolicy(const ContentSecurityPolicyResponseHeaders&);
 
-    void updateURLForPushOrReplaceState(const KURL&);
     void statePopped(PassRefPtr<SerializedScriptValue>);
 
     bool processingLoadEvent() const { return m_processingLoadEvent; }

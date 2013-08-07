@@ -199,10 +199,6 @@ public:
     // named anchor or a PopState event may have been dispatched.
     virtual void didNavigateWithinPage(WebFrame*, bool isNewNavigation) { }
 
-    // The navigation resulted in scrolling the page to a named anchor instead
-    // of downloading a new document.
-    virtual void didChangeLocationWithinPage(WebFrame*) { }
-
     // Called upon update to scroll position, document state, and other
     // non-navigational events related to the data held by WebHistoryItem.
     // WARNING: This method may be called very frequently.

@@ -741,38 +741,56 @@ void FrameLoader::resetMultipleFormSubmissionProtection()
     m_submittedFormURL = KURL();
 }
 
+void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource, PassRefPtr<SerializedScriptValue> data, const String& title)
+{
+    // Update the data source's request with the new URL to fake the URL change
+    KURL oldURL = m_frame->document()->url();
+    m_frame->document()->setURL(newURL);
+    setOutgoingReferrer(newURL);
+    documentLoader()->replaceRequestURLForSameDocumentNavigation(newURL);
+
+    if (sameDocumentNavigationSource == SameDocumentNavigationDefault)
+        history()->updateForSameDocumentNavigation();
+    else if (sameDocumentNavigationSource == SameDocumentNavigationPushState)
+        history()->pushState(data, title, newURL.string());
+    else if (sameDocumentNavigationSource == SameDocumentNavigationReplaceState)
+        history()->replaceState(data, title, newURL.string());
+    else
+        ASSERT_NOT_REACHED();
+
+    // Generate start and stop notifications only when loader is completed so that we
+    // don't fire them for fragment redirection that happens in window.onload handler.
+    // See https://bugs.webkit.org/show_bug.cgi?id=31838
+    if (m_documentLoader->wasOnloadHandled())
+        m_client->postProgressStartedNotification();
+
+    m_documentLoader->clearRedirectChain();
+    if (m_documentLoader->isClientRedirect())
+        m_documentLoader->appendRedirect(oldURL);
+    m_documentLoader->appendRedirect(newURL);
+
+    m_client->dispatchDidNavigateWithinPage();
+
+    if (m_documentLoader->wasOnloadHandled())
+        m_client->postProgressFinishedNotification();
+}
+
 void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation)
 {
     // If we have a state object, we cannot also be a new navigation.
     ASSERT(!stateObject || (stateObject && !isNewNavigation));
 
-    // Update the data source's request with the new URL to fake the URL change
     KURL oldURL = m_frame->document()->url();
-    m_frame->document()->setURL(url);
-    setOutgoingReferrer(url);
-    documentLoader()->replaceRequestURLForSameDocumentNavigation(url);
-    if (isNewNavigation && !shouldTreatURLAsSameAsCurrent(url) && !stateObject) {
-        // NB: must happen after replaceRequestURLForSameDocumentNavigation(), since we add
-        // based on the current request. Must also happen before we openURL and displace the
-        // scroll position, since adding the BF item will save away scroll state.
-
-        // NB2: If we were loading a long, slow doc, and the user fragment navigated before
-        // it was done, currItem is now set the that slow doc, and prevItem is whatever was
-        // before it.  Adding the b/f item will bump the slow doc down to prevItem, even
-        // though its load is not yet done.  I think this all works out OK, for one because
-        // we have already saved away the scroll and doc state for the long slow load,
-        // but it's not an obvious case.
-
-        history()->updateBackForwardListForFragmentScroll();
+    // If we were in the autoscroll/panScroll mode we want to stop it before following the link to the anchor
+    bool hashChange = equalIgnoringFragmentIdentifier(url, oldURL) && url.fragmentIdentifier() != oldURL.fragmentIdentifier();
+    if (hashChange) {
+        m_frame->eventHandler()->stopAutoscrollTimer();
+        m_frame->document()->enqueueHashchangeEvent(oldURL, url);
     }
 
-    bool hashChange = equalIgnoringFragmentIdentifier(url, oldURL) && url.fragmentIdentifier() != oldURL.fragmentIdentifier();
-
-    history()->updateForSameDocumentNavigation();
-
-    // If we were in the autoscroll/panScroll mode we want to stop it before following the link to the anchor
-    if (hashChange)
-        m_frame->eventHandler()->stopAutoscrollTimer();
+    m_documentLoader->setIsClientRedirect((m_startingClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture());
+    m_documentLoader->setReplacesCurrentHistoryItem(!isNewNavigation);
+    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, 0, String());
 
     // It's important to model this as a load that starts and immediately finishes.
     // Otherwise, the parent frame may think we never finished loading.
@@ -785,30 +803,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     m_isComplete = false;
     checkCompleted();
 
-    // Generate start and stop notifications only when loader is completed so that we
-    // don't fire them for fragment redirection that happens in window.onload handler.
-    // See https://bugs.webkit.org/show_bug.cgi?id=31838
-    if (m_documentLoader->wasOnloadHandled())
-        m_client->postProgressStartedNotification();
-
-    m_documentLoader->clearRedirectChain();
-    m_documentLoader->setIsClientRedirect((m_startingClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture());
-    m_documentLoader->setReplacesCurrentHistoryItem(!isNewNavigation);
-    if (m_documentLoader->isClientRedirect())
-        m_documentLoader->appendRedirect(oldURL);
-    m_documentLoader->appendRedirect(url);
-
-    m_client->dispatchDidNavigateWithinPage();
-
-    if (m_documentLoader->wasOnloadHandled())
-        m_client->postProgressFinishedNotification();
-
     m_frame->document()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
-
-    if (hashChange) {
-        m_frame->document()->enqueueHashchangeEvent(oldURL, url);
-        m_client->dispatchDidChangeLocationWithinPage();
-    }
 }
 
 bool FrameLoader::isComplete() const
@@ -1570,6 +1565,8 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
             m_provisionalDocumentLoader->detachFromFrame();
         m_provisionalDocumentLoader = 0;
     }
+    if (isNewNavigation && !shouldTreatURLAsSameAsCurrent(request.url()))
+        history()->updateBackForwardListForFragmentScroll();
     loadInSameDocument(request.url(), 0, isNewNavigation);
 }
 

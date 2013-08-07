@@ -102,7 +102,6 @@ class FetchRequest;
         virtual void dispatchDidHandleOnloadEvents() = 0;
         virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
         virtual void dispatchDidNavigateWithinPage() { }
-        virtual void dispatchDidChangeLocationWithinPage() = 0;
         virtual void dispatchWillClose() = 0;
         virtual void dispatchDidStartProvisionalLoad() = 0;
         virtual void dispatchDidReceiveTitle(const StringWithDirection&) = 0;
