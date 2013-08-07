@@ -141,7 +141,6 @@ int BsdiffPatchFiles(const base::FilePath& src,
 
 Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
   VLOG(1) << "Looking for Chrome version folder under " << chrome_path.value();
-  Version* version = NULL;
   base::FileEnumerator version_enum(chrome_path, false,
       base::FileEnumerator::DIRECTORIES);
   // TODO(tommi): The version directory really should match the version of
