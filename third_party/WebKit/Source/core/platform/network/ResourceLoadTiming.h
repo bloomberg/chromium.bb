@@ -98,7 +98,7 @@ public:
     double sslStart;
     double sslEnd;
 
-    double calculateMillisecondDelta(double time) const { return (time - requestTime) * 1000; }
+    double calculateMillisecondDelta(double time) const { return time ? (time - requestTime) * 1000 : -1; }
 
 private:
     ResourceLoadTiming()
