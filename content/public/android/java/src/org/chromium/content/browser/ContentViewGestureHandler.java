@@ -86,12 +86,12 @@ class ContentViewGestureHandler implements LongPressDelegate {
     // will be mistakenly fired.
     private boolean mIgnoreSingleTap;
 
-    // Does native think we are scrolling?  True from right before we
-    // send the first scroll event until the last finger is raised.
-    // Call nativeScrollBegin() when setting this to true, and use
-    // tellNativeScrollingHasEnded() to set it to false.
-    private boolean mNativeScrolling;
+    // True from right before we send the first scroll event until the last finger is raised.
+    private boolean mTouchScrolling;
 
+    // TODO(wangxianzhu): For now it is true after a fling is started until the next
+    // touch. Should reset it to false on end of fling if the UI is able to know when the
+    // fling ends.
     private boolean mFlingMayBeActive;
 
     private boolean mSeenFirstScrollEvent;
@@ -352,7 +352,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     public boolean onDown(MotionEvent e) {
                         mShowPressIsCalled = false;
                         mIgnoreSingleTap = false;
-                        mNativeScrolling = false;
+                        mTouchScrolling = false;
                         mSeenFirstScrollEvent = false;
                         mSnapScrollController.resetSnapScrollMode();
                         mLastRawX = e.getRawX();
@@ -394,11 +394,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         mLastRawX = e2.getRawX();
                         mLastRawY = e2.getRawY();
                         if (didUIStealScroll) return true;
-                        if (!mNativeScrolling) {
+                        if (!mTouchScrolling) {
                             sendShowPressCancelIfNecessary(e1);
-                            endFling(e2.getEventTime());
+                            endFlingIfNecessary(e2.getEventTime());
                             if (sendMotionEventAsGesture(GESTURE_SCROLL_START, e1, null)) {
-                                mNativeScrolling = true;
+                                mTouchScrolling = true;
                             }
                         }
                         // distanceX and distanceY is the scrolling offset since last onScroll.
@@ -632,13 +632,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * @param velocityY Initial velocity of the fling (Y) measured in pixels per second.
      */
     void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
-        boolean nativeScrolling = mNativeScrolling;
-        endFling(timeMs);
-        if (!nativeScrolling) {
+        endFlingIfNecessary(timeMs);
+        if (!mTouchScrolling) {
             // The native side needs a GESTURE_SCROLL_BEGIN before GESTURE_FLING_START
             // to send the fling to the correct target. Send if it has not sent.
             sendGesture(GESTURE_SCROLL_START, timeMs, x, y, null);
         }
+        endTouchScrollIfNecessary(timeMs, false);
 
         mFlingMayBeActive = true;
 
@@ -649,15 +649,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     /**
-     * Send a FlingCancel gesture event and also cancel scrolling if it is active.
+     * Send a GESTURE_FLING_CANCEL event if necessary.
      * @param timeMs The time in ms for the event initiating this gesture.
      */
-    void endFling(long timeMs) {
-        if (mFlingMayBeActive) {
-            sendGesture(GESTURE_FLING_CANCEL, timeMs, 0, 0, null);
-            tellNativeScrollingHasEnded(timeMs, false);
-            mFlingMayBeActive = false;
-        }
+    void endFlingIfNecessary(long timeMs) {
+        if (!mFlingMayBeActive) return;
+        mFlingMayBeActive = false;
+        sendGesture(GESTURE_FLING_CANCEL, timeMs, 0, 0, null);
     }
 
     /**
@@ -675,23 +673,26 @@ class ContentViewGestureHandler implements LongPressDelegate {
         mDoubleTapDragMode = DOUBLE_TAP_DRAG_MODE_NONE;
     }
 
-    // If native thinks scrolling (or fling-scrolling) is going on, tell native
-    // it has ended.
-    private void tellNativeScrollingHasEnded(long timeMs, boolean sendScrollEndEvent) {
-        if (mNativeScrolling) {
-            mNativeScrolling = false;
-            if (sendScrollEndEvent) {
-                sendGesture(GESTURE_SCROLL_END, timeMs, 0, 0, null);
-            }
+    /**
+     * Reset touch scroll flag and optionally send a GESTURE_SCROLL_END event if necessary.
+     * @param timeMs The time in ms for the event initiating this gesture.
+     * @param sendScrollEndEvent Whether to send GESTURE_SCROLL_END event.
+     */
+    private void endTouchScrollIfNecessary(long timeMs, boolean sendScrollEndEvent) {
+        if (!mTouchScrolling) return;
+        mTouchScrolling = false;
+        if (sendScrollEndEvent) {
+            sendGesture(GESTURE_SCROLL_END, timeMs, 0, 0, null);
         }
     }
 
     /**
-     * @return Whether native is tracking a scroll (i.e. between sending GESTURE_SCROLL_START and
-     *         GESTURE_SCROLL_END, or during a fling before sending GESTURE_FLING_CANCEL).
+     * @return Whether native is tracking a scroll.
      */
     boolean isNativeScrolling() {
-        return mNativeScrolling;
+        // TODO(wangxianzhu): Also return true when fling is active once the UI knows exactly when
+        // the fling ends.
+        return mTouchScrolling;
     }
 
     /**
@@ -777,7 +778,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 mNoTouchHandlerForGesture = false;
                 mJavaScriptIsConsumingGesture = false;
-                endFling(event.getEventTime());
+                endFlingIfNecessary(event.getEventTime());
             } else if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
                 endDoubleTapDragMode(null);
             }
@@ -899,7 +900,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
         if (type == TouchPoint.CONVERSION_ERROR) return EVENT_NOT_FORWARDED;
 
-        if (!mNativeScrolling && !mPinchInProgress) {
+        if (!mTouchScrolling && !mPinchInProgress) {
             mTouchCancelEventSent = false;
 
             if (mMotionEventDelegate.sendTouchEvent(event.getEventTime(), type, pts)) {
@@ -941,7 +942,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         // give the mSimpleTouchDetector a chance to continue
         // scrolling with a fling.
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            if (mNativeScrolling) {
+            if (mTouchScrolling) {
                 possiblyEndMovement = true;
             }
         }
@@ -961,7 +962,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         handled |= mZoomManager.processTouchEvent(event);
 
         if (possiblyEndMovement && !handled) {
-            tellNativeScrollingHasEnded(event.getEventTime(), true);
+            endTouchScrollIfNecessary(event.getEventTime(), true);
         }
 
         return handled;

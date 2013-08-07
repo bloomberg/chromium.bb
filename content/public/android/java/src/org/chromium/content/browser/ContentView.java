@@ -314,10 +314,6 @@ public class ContentView extends FrameLayout
         mContentViewCore.getContentViewGestureHandler().fling(timeMs, x, y, velocityX, velocityY);
     }
 
-    void endFling(long timeMs) {
-        mContentViewCore.getContentViewGestureHandler().endFling(timeMs);
-    }
-
     /**
      * Start pinch zoom. You must call {@link #pinchEnd} to stop.
      */

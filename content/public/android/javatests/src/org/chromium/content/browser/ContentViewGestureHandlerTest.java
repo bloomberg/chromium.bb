@@ -605,7 +605,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
                 FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
-
+        assertTrue(mGestureHandler.isNativeScrolling());
         assertTrue("A scrollStart event should have been sent",
                 mockDelegate.mGestureTypeList.contains(
                         ContentViewGestureHandler.GESTURE_SCROLL_START));
@@ -619,6 +619,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 downTime, eventTime + 15, MotionEvent.ACTION_UP,
                 FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
+        assertFalse(mGestureHandler.isNativeScrolling());
         assertEquals("We should have started flinging",
                 ContentViewGestureHandler.GESTURE_FLING_START,
                         mockDelegate.mMostRecentGestureEvent.mType);
