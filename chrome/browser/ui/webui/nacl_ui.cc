@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
@@ -67,35 +68,6 @@ content::WebUIDataSource* CreateNaClUIHTMLSource() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class NaClDomHandler;
-
-// This class performs a check that the PNaCl path which was returned by
-// PathService is valid. One class instance is created per NaClDomHandler
-// and it is destroyed after the check is completed.
-class NaClDomHandlerProxy
-    : public base::RefCountedThreadSafe<NaClDomHandlerProxy> {
- public:
-  explicit NaClDomHandlerProxy(NaClDomHandler* handler);
-
-  // A helper to check if PNaCl path exists.
-  void ValidatePnaclPath();
-
-  void set_handler(NaClDomHandler* handler) { handler_ = handler; }
-
- private:
-  friend class base::RefCountedThreadSafe<NaClDomHandlerProxy>;
-  virtual ~NaClDomHandlerProxy() {}
-
-  // A helper callback that receives the result of checking if PNaCl path
-  // exists.
-  void ValidatePnaclPathCallback(bool is_valid);
-
-  // The handler that requested checking PNaCl file path.
-  NaClDomHandler* handler_;  // weak
-
-  DISALLOW_COPY_AND_ASSIGN(NaClDomHandlerProxy);
-};
-
 // The handler for JavaScript messages for the about:flags page.
 class NaClDomHandler : public WebUIMessageHandler {
  public:
@@ -114,7 +86,7 @@ class NaClDomHandler : public WebUIMessageHandler {
   // A helper callback that receives the result of checking if PNaCl path
   // exists. |is_valid| is true if the PNaCl path that was returned by
   // PathService is valid, and false otherwise.
-  void DidValidatePnaclPath(bool is_valid);
+  void DidValidatePnaclPath(bool* is_valid);
 
  private:
   // Called when enough information is gathered to return data back to the page.
@@ -153,62 +125,20 @@ class NaClDomHandler : public WebUIMessageHandler {
   bool pnacl_path_validated_;
   bool pnacl_path_exists_;
 
-  // A proxy for handling cross threads messages.
-  scoped_refptr<NaClDomHandlerProxy> proxy_;
-
   DISALLOW_COPY_AND_ASSIGN(NaClDomHandler);
 };
-
-NaClDomHandlerProxy::NaClDomHandlerProxy(NaClDomHandler* handler)
-    : handler_(handler) {
-}
-
-void NaClDomHandlerProxy::ValidatePnaclPath() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&NaClDomHandlerProxy::ValidatePnaclPath, this));
-    return;
-  }
-
-  base::FilePath pnacl_path;
-  bool got_path = PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_path);
-  // The PathService may return an empty string if PNaCl is not yet installed.
-  // However, do not trust that the path returned by the PathService exists.
-  // Check for existence here.
-  ValidatePnaclPathCallback(
-    got_path && !pnacl_path.empty() && base::PathExists(pnacl_path));
-}
-
-void NaClDomHandlerProxy::ValidatePnaclPathCallback(bool is_valid) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&NaClDomHandlerProxy::ValidatePnaclPathCallback,
-        this, is_valid));
-    return;
-  }
-
-  // Check that handler_ is still valid, it could be set to NULL if navigation
-  // happened while checking that the PNaCl file exists.
-  if (handler_)
-    handler_->DidValidatePnaclPath(is_valid);
-}
 
 NaClDomHandler::NaClDomHandler()
     : weak_ptr_factory_(this),
       page_has_requested_data_(false),
       has_plugin_info_(false),
       pnacl_path_validated_(false),
-      pnacl_path_exists_(false),
-      proxy_(new NaClDomHandlerProxy(this)) {
+      pnacl_path_exists_(false) {
   PluginService::GetInstance()->GetPlugins(base::Bind(
       &NaClDomHandler::OnGotPlugins, weak_ptr_factory_.GetWeakPtr()));
 }
 
 NaClDomHandler::~NaClDomHandler() {
-  if (proxy_.get())
-    proxy_->set_handler(NULL);
 }
 
 void NaClDomHandler::RegisterMessages() {
@@ -388,10 +318,16 @@ void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
   naclInfo->Set("naclInfo", list.release());
 }
 
-void NaClDomHandler::DidValidatePnaclPath(bool is_valid) {
+void NaClDomHandler::DidValidatePnaclPath(bool* is_valid) {
   pnacl_path_validated_ = true;
-  pnacl_path_exists_ = is_valid;
+  pnacl_path_exists_ = *is_valid;
   MaybeRespondToPage();
+}
+
+void ValidatePnaclPath(bool* is_valid) {
+  base::FilePath pnacl_path;
+  bool got_path = PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_path);
+  *is_valid = got_path && !pnacl_path.empty() && base::PathExists(pnacl_path);
 }
 
 void NaClDomHandler::MaybeRespondToPage() {
@@ -401,8 +337,13 @@ void NaClDomHandler::MaybeRespondToPage() {
     return;
 
   if (!pnacl_path_validated_) {
-    DCHECK(proxy_.get());
-    proxy_->ValidatePnaclPath();
+    bool* is_valid = new bool;
+    BrowserThread::PostBlockingPoolTaskAndReply(
+        FROM_HERE,
+        base::Bind(&ValidatePnaclPath, is_valid),
+        base::Bind(&NaClDomHandler::DidValidatePnaclPath,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Owned(is_valid)));
     return;
   }
 
