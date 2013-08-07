@@ -834,3 +834,24 @@
    fun:GetWeakPtr
    fun:base::WeakPtrTest_MoveOwnershipAfterInvalidate_Test::TestBody
 }
+{
+   bug_269716a
+   Heapcheck:Leak
+   fun:PL_ArenaAllocate
+   fun:net::NSSCertDatabase::DeleteCertAndKey
+   fun:chromeos::NetworkCertMigratorTest::CleanupTestCert
+}
+{
+   bug_269716b
+   Heapcheck:Leak
+   fun:PR_NewLock
+   fun:net::NSSCertDatabase::DeleteCertAndKey
+   fun:chromeos::NetworkCertMigratorTest::CleanupTestCert
+}
+{
+   bug_269716c
+   Heapcheck:Leak
+   fun:nss_ZAlloc
+   fun:net::NSSCertDatabase::DeleteCertAndKey
+   fun:chromeos::NetworkCertMigratorTest::CleanupTestCert
+}
