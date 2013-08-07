@@ -43,17 +43,17 @@ namespace {
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 
-// CRX hash. The extension id is: pdkaonnflpjcgibpgaanildgengnihcm.
-const uint8 kSha2Hash[] = { 0xf3, 0xa0, 0xed, 0xd5, 0xbf, 0x92, 0x68, 0x1f,
-                            0x60, 0x0d, 0x8b, 0x36, 0x4d, 0x6d, 0x87, 0x2c,
-                            0x86, 0x61, 0x12, 0x20, 0x21, 0xf8, 0x94, 0xdd,
-                            0xe1, 0xb6, 0xb4, 0x55, 0x34, 0x8c, 0x2e, 0x20 };
+// CRX hash. The extension id is: oimompecagnajdejgnnjijobebaeigek.
+const uint8 kSha2Hash[] = { 0xe8, 0xce, 0xcf, 0x42, 0x06, 0xd0, 0x93, 0x49,
+                            0x6d, 0xd9, 0x89, 0xe1, 0x41, 0x04, 0x86, 0x4a,
+                            0x8f, 0xbd, 0x86, 0x12, 0xb9, 0x58, 0x9b, 0xfb,
+                            0x4f, 0xbb, 0x1b, 0xa9, 0xd3, 0x85, 0x37, 0xef };
 
 // File name of the Widevine CDM component manifest on different platforms.
 const char kWidevineCdmManifestName[] = "WidevineCdm";
 
 // Name of the Widevine CDM OS in the component manifest.
-const char kWidevineCdmOperatingSystem[] =
+const char kWidevineCdmPlatform[] =
 #if defined(OS_MACOSX)
     "mac";
 #elif defined(OS_WIN)
@@ -65,7 +65,7 @@ const char kWidevineCdmOperatingSystem[] =
 // Name of the Widevine CDM architecture in the component manifest.
 const char kWidevineCdmArch[] =
 #if defined(ARCH_CPU_X86)
-    "ia32";
+    "x86";
 #elif defined(ARCH_CPU_X86_64)
     "x64";
 #else  // TODO(viettrungluu): Support an ARM check?
@@ -81,6 +81,16 @@ base::FilePath GetWidevineCdmBaseDirectory() {
   base::FilePath result;
   PathService::Get(chrome::DIR_COMPONENT_WIDEVINE_CDM, &result);
   return result;
+}
+
+// Widevine CDM is packaged as a multi-CRX. Widevine CDM binaries are located in
+// _platform_specific/<platform_arch> folder in the package. This function
+// returns the platform-specific subdirectory that is part of that multi-CRX.
+base::FilePath GetPlatformDirectory(const base::FilePath& base_path) {
+  std::string platform_arch = kWidevineCdmPlatform;
+  platform_arch += '_';
+  platform_arch += kWidevineCdmArch;
+  return base_path.AppendASCII("_platform_specific").AppendASCII(platform_arch);
 }
 
 // Widevine CDM has the version encoded in the path so we need to enumerate the
@@ -172,16 +182,6 @@ bool CheckWidevineCdmManifest(const base::DictionaryValue& manifest,
   if (!version.IsValid())
     return false;
 
-  std::string os;
-  manifest.GetStringASCII("x-widevine-cdm-os", &os);
-  if (os != kWidevineCdmOperatingSystem)
-    return false;
-
-  std::string arch;
-  manifest.GetStringASCII("x-widevine-cdm-arch", &arch);
-  if (arch != kWidevineCdmArch)
-    return false;
-
   *version_out = version;
   return true;
 }
@@ -221,8 +221,10 @@ bool WidevineCdmComponentInstaller::Install(
   if (current_version_.CompareTo(version) > 0)
     return false;
 
-  if (!base::PathExists(unpack_path.AppendASCII(kWidevineCdmFileName)))
+  if (!base::PathExists(
+      GetPlatformDirectory(unpack_path).AppendASCII(kWidevineCdmFileName))) {
     return false;
+  }
 
   base::FilePath adapter_source_path;
   PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, &adapter_source_path);
@@ -237,8 +239,8 @@ bool WidevineCdmComponentInstaller::Install(
   if (!base::Move(unpack_path, install_path))
     return false;
 
-  base::FilePath adapter_install_path =
-      install_path.AppendASCII(kWidevineCdmAdapterFileName);
+  base::FilePath adapter_install_path = GetPlatformDirectory(install_path)
+      .AppendASCII(kWidevineCdmAdapterFileName);
   if (!base::CopyFile(adapter_source_path, adapter_install_path))
     return false;
 
@@ -249,18 +251,17 @@ bool WidevineCdmComponentInstaller::Install(
   return true;
 }
 
+// Given |file|, a path like "_platform_specific/win_x86/widevinecdm.dll",
+// returns the assumed install path. The path separator in |file| is '/'
+// for all platforms. Caller is responsible for checking that the
+// |installed_file| actually exists.
 bool WidevineCdmComponentInstaller::GetInstalledFile(
     const std::string& file, base::FilePath* installed_file) {
-  // Only the CDM is component-updated.
-  if (file != kWidevineCdmFileName)
-    return false;
-
   if (current_version_.Equals(base::Version(kNullVersion)))
     return false;  // No CDM has been installed yet.
 
-  *installed_file =
-      GetWidevineCdmBaseDirectory().AppendASCII(current_version_.GetString())
-          .AppendASCII(kWidevineCdmFileName);
+  *installed_file = GetWidevineCdmBaseDirectory().AppendASCII(
+      current_version_.GetString()).AppendASCII(file);
   return true;
 }
 
@@ -292,9 +293,11 @@ void StartWidevineCdmUpdateRegistration(ComponentUpdateService* cus) {
   std::vector<base::FilePath> older_dirs;
 
   if (GetWidevineCdmDirectory(&latest_dir, &version, &older_dirs)) {
+    base::FilePath latest_platform_dir = GetPlatformDirectory(latest_dir);
     base::FilePath adapter_path =
-        latest_dir.AppendASCII(kWidevineCdmAdapterFileName);
-    base::FilePath cdm_path = latest_dir.AppendASCII(kWidevineCdmFileName);
+        latest_platform_dir.AppendASCII(kWidevineCdmAdapterFileName);
+    base::FilePath cdm_path =
+        latest_platform_dir.AppendASCII(kWidevineCdmFileName);
 
     if (base::PathExists(adapter_path) &&
         base::PathExists(cdm_path)) {
