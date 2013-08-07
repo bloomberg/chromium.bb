@@ -1197,6 +1197,17 @@
    fun:_ZN7WebCore16HTMLScriptRunner36executePendingScriptAndDispatchEventERNS_13PendingScriptE
 }
 
+# http://crbug.com/269278 causes really widespread, flaky leaks in
+# value objects that own some memory.  These suppressions will cover
+# all such objects, even though it's possible to get real leaks that
+# look the same way (e.g. by allocating such an object in an arena).
+{
+   bug_269278a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4Bind*Callback*BindState*
+}
+
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
