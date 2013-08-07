@@ -16,6 +16,7 @@
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -32,7 +33,8 @@
 namespace content {
 
 RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
-    : agent_(agent) {
+    : agent_(agent),
+      weak_factory_(this) {
   RegisterCommandHandler(
       devtools::DOM::setFileInputFiles::kName,
       base::Bind(
@@ -57,9 +59,9 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
 
 RendererOverridesHandler::~RendererOverridesHandler() {}
 
-scoped_ptr<DevToolsProtocol::Response>
+scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
-    DevToolsProtocol::Command* command) {
+    scoped_refptr<DevToolsProtocol::Command> command) {
   base::DictionaryValue* params = command->params();
   base::ListValue* file_list = NULL;
   const char* param =
@@ -68,7 +70,7 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
     return command->InvalidParamResponse(param);
   RenderViewHost* host = agent_->GetRenderViewHost();
   if (!host)
-    return scoped_ptr<DevToolsProtocol::Response>();
+    return NULL;
 
   for (size_t i = 0; i < file_list->GetSize(); ++i) {
     base::FilePath::StringType file;
@@ -77,12 +79,12 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         host->GetProcess()->GetID(), base::FilePath(file));
   }
-  return scoped_ptr<DevToolsProtocol::Response>();
+  return NULL;
 }
 
-scoped_ptr<DevToolsProtocol::Response>
+scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageHandleJavaScriptDialog(
-    DevToolsProtocol::Command* command) {
+    scoped_refptr<DevToolsProtocol::Command> command) {
   base::DictionaryValue* params = command->params();
   const char* paramAccept =
       devtools::Page::handleJavaScriptDialog::kParamAccept;
@@ -105,16 +107,16 @@ RendererOverridesHandler::PageHandleJavaScriptDialog(
           web_contents->GetDelegate()->GetJavaScriptDialogManager();
       if (manager && manager->HandleJavaScriptDialog(
               web_contents, accept, prompt_override_ptr)) {
-        return scoped_ptr<DevToolsProtocol::Response>();
+        return NULL;
       }
     }
   }
   return command->InternalErrorResponse("No JavaScript dialog to handle");
 }
 
-scoped_ptr<DevToolsProtocol::Response>
+scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageNavigate(
-    DevToolsProtocol::Command* command) {
+    scoped_refptr<DevToolsProtocol::Command> command) {
   base::DictionaryValue* params = command->params();
   std::string url;
   const char* param = devtools::Page::navigate::kParamUrl;
@@ -136,34 +138,47 @@ RendererOverridesHandler::PageNavigate(
   return command->InternalErrorResponse("No WebContents to navigate");
 }
 
-scoped_ptr<DevToolsProtocol::Response>
+scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageCaptureScreenshot(
-    DevToolsProtocol::Command* command) {
-  std::string base_64_data;
-  if (!CaptureScreenshot(&base_64_data))
-    return command->InternalErrorResponse("Unable to capture a screenshot");
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  // Emulate async processing.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&RendererOverridesHandler::CaptureScreenshot,
+                 weak_factory_.GetWeakPtr(),
+                 command));
 
-  base::DictionaryValue* response = new base::DictionaryValue();
-  response->SetString(
-      devtools::Page::captureScreenshot::kResponseData, base_64_data);
-  return command->SuccessResponse(response);
+  return command->AsyncResponsePromise();
 }
 
-bool RendererOverridesHandler::CaptureScreenshot(std::string* base_64_data) {
+void RendererOverridesHandler::CaptureScreenshot(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+
   RenderViewHost* host = agent_->GetRenderViewHost();
   gfx::Rect view_bounds = host->GetView()->GetViewBounds();
   gfx::Rect snapshot_bounds(view_bounds.size());
   gfx::Size snapshot_size = snapshot_bounds.size();
-  std::vector<unsigned char> png;
-  if (!ui::GrabViewSnapshot(host->GetView()->GetNativeView(),
-                            &png,
-                            snapshot_bounds))
-    return false;
 
-  return base::Base64Encode(base::StringPiece(
-                                reinterpret_cast<char*>(&*png.begin()),
-                                png.size()),
-                            base_64_data);
+  std::vector<unsigned char> png;
+  if (ui::GrabViewSnapshot(host->GetView()->GetNativeView(),
+                           &png,
+                           snapshot_bounds)) {
+    std::string base_64_data;
+    bool success = base::Base64Encode(
+        base::StringPiece(reinterpret_cast<char*>(&*png.begin()), png.size()),
+        &base_64_data);
+    if (success) {
+      base::DictionaryValue* result = new base::DictionaryValue();
+      result->SetString(
+          devtools::Page::captureScreenshot::kResponseData, base_64_data);
+      scoped_refptr<DevToolsProtocol::Response> response =
+          command->SuccessResponse(result);
+      SendRawMessage(response->Serialize());
+      return;
+    }
+  }
+  SendRawMessage(command->
+      InternalErrorResponse("Unable to capture a screenshot")->Serialize());
 }
 
 }  // namespace content

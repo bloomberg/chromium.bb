@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,8 +43,8 @@ void DevToolsBrowserTarget::RegisterDomainHandler(
 
 void DevToolsBrowserTarget::HandleMessage(const std::string& data) {
   std::string error_response;
-  scoped_ptr<DevToolsProtocol::Command> command(
-      DevToolsProtocol::ParseCommand(data, &error_response));
+  scoped_refptr<DevToolsProtocol::Command> command =
+      DevToolsProtocol::ParseCommand(data, &error_response);
   if (!command) {
     Respond(error_response);
     return;
@@ -61,8 +60,10 @@ void DevToolsBrowserTarget::HandleMessage(const std::string& data) {
   bool handle_directly = handle_on_ui_thread_.find(command->domain()) ==
       handle_on_ui_thread_.end();
   if (handle_directly) {
-    scoped_ptr<DevToolsProtocol::Response> response(
-        handler->HandleCommand(command.get()));
+    scoped_refptr<DevToolsProtocol::Response> response =
+        handler->HandleCommand(command);
+    if (response && response->is_async_promise())
+      return;
     if (response)
       Respond(response->Serialize());
     else
@@ -76,7 +77,7 @@ void DevToolsBrowserTarget::HandleMessage(const std::string& data) {
       base::Bind(&DevToolsBrowserTarget::HandleCommandOnUIThread,
                  this,
                  handler,
-                 command.release()));
+                 command));
 }
 
 void DevToolsBrowserTarget::Detach() {
@@ -106,10 +107,12 @@ DevToolsBrowserTarget::~DevToolsBrowserTarget() {
 
 void DevToolsBrowserTarget::HandleCommandOnUIThread(
     DevToolsProtocol::Handler* handler,
-    DevToolsProtocol::Command* command_ptr) {
-  scoped_ptr<DevToolsProtocol::Command> command(command_ptr);
-  scoped_ptr<DevToolsProtocol::Response> response(
-      handler->HandleCommand(command.get()));
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  scoped_refptr<DevToolsProtocol::Response> response =
+      handler->HandleCommand(command);
+  if (response && response->is_async_promise())
+    return;
+
   if (response)
     RespondFromUIThread(response->Serialize());
   else

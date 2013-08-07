@@ -156,15 +156,17 @@ RenderViewHost* RenderViewDevToolsAgentHost::GetRenderViewHost() {
 void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
     const std::string& message) {
   std::string error_message;
-  scoped_ptr<DevToolsProtocol::Command> command(
-      DevToolsProtocol::ParseCommand(message, &error_message));
+  scoped_refptr<DevToolsProtocol::Command> command =
+      DevToolsProtocol::ParseCommand(message, &error_message);
+
   if (command) {
-    scoped_ptr<DevToolsProtocol::Response> overridden_response(
-        overrides_handler_->HandleCommand(command.get()));
+    scoped_refptr<DevToolsProtocol::Response> overridden_response =
+        overrides_handler_->HandleCommand(command);
     if (!overridden_response)
-      overridden_response = tracing_handler_->HandleCommand(command.get());
+      overridden_response = tracing_handler_->HandleCommand(command);
     if (overridden_response) {
-      OnDispatchOnInspectorFrontend(overridden_response->Serialize());
+      if (!overridden_response->is_async_promise())
+        OnDispatchOnInspectorFrontend(overridden_response->Serialize());
       return;
     }
   }
@@ -290,9 +292,9 @@ void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(
 }
 
 void RenderViewDevToolsAgentHost::RenderViewCrashed() {
-  scoped_ptr<DevToolsProtocol::Notification> notification(
+  scoped_refptr<DevToolsProtocol::Notification> notification =
       DevToolsProtocol::CreateNotification(
-          devtools::Inspector::targetCrashed::kName, NULL));
+          devtools::Inspector::targetCrashed::kName, NULL);
   DevToolsManagerImpl::GetInstance()->
       DispatchOnInspectorFrontend(this, notification->Serialize());
 }

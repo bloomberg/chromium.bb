@@ -25,10 +25,10 @@ class TetheringHandler : public DevToolsProtocol::Handler {
 
  private:
   class BoundSocket;
-  scoped_ptr<DevToolsProtocol::Response> OnBind(
-      DevToolsProtocol::Command* command);
-  scoped_ptr<DevToolsProtocol::Response> OnUnbind(
-      DevToolsProtocol::Command* command);
+  scoped_refptr<DevToolsProtocol::Response> OnBind(
+      scoped_refptr<DevToolsProtocol::Command> command);
+  scoped_refptr<DevToolsProtocol::Response> OnUnbind(
+      scoped_refptr<DevToolsProtocol::Command>  command);
 
   typedef std::map<int, BoundSocket*> BoundSockets;
   BoundSockets bound_sockets_;

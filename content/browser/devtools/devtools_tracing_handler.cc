@@ -82,8 +82,9 @@ base::debug::TraceLog::Options DevToolsTracingHandler::TraceOptionsFromString(
   return static_cast<base::debug::TraceLog::Options>(ret);
 }
 
-scoped_ptr<DevToolsProtocol::Response>
-DevToolsTracingHandler::OnStart(DevToolsProtocol::Command* command) {
+scoped_refptr<DevToolsProtocol::Response>
+DevToolsTracingHandler::OnStart(
+    scoped_refptr<DevToolsProtocol::Command> command) {
   std::string categories;
   base::DictionaryValue* params = command->params();
   if (params)
@@ -102,8 +103,9 @@ DevToolsTracingHandler::OnStart(DevToolsProtocol::Command* command) {
   return command->SuccessResponse(NULL);
 }
 
-scoped_ptr<DevToolsProtocol::Response>
-DevToolsTracingHandler::OnEnd(DevToolsProtocol::Command* command) {
+scoped_refptr<DevToolsProtocol::Response>
+DevToolsTracingHandler::OnEnd(
+    scoped_refptr<DevToolsProtocol::Command> command) {
   TraceController::GetInstance()->EndTracingAsync(this);
   return command->SuccessResponse(NULL);
 }

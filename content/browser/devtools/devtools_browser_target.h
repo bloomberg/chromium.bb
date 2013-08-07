@@ -51,8 +51,9 @@ class DevToolsBrowserTarget
   friend class base::RefCountedThreadSafe<DevToolsBrowserTarget>;
   ~DevToolsBrowserTarget();
 
-  void HandleCommandOnUIThread(DevToolsProtocol::Handler*,
-                               DevToolsProtocol::Command* command);
+  void HandleCommandOnUIThread(
+      DevToolsProtocol::Handler*,
+      scoped_refptr<DevToolsProtocol::Command> command);
 
   void DeleteHandlersOnUIThread(
       std::vector<DevToolsProtocol::Handler*> handlers);

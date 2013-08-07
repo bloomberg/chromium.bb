@@ -264,7 +264,7 @@ void TetheringHandler::Accepted(int port, const std::string& name) {
   SendNotification(kTetheringAccepted, params);
 }
 
-static int GetPort(DevToolsProtocol::Command* command) {
+static int GetPort(scoped_refptr<DevToolsProtocol::Command> command) {
   base::DictionaryValue* params = command->params();
   int port = 0;
   if (!params || !params->GetInteger(kPortParam, &port) ||
@@ -273,8 +273,8 @@ static int GetPort(DevToolsProtocol::Command* command) {
   return port;
 }
 
-scoped_ptr<DevToolsProtocol::Response>
-TetheringHandler::OnBind(DevToolsProtocol::Command* command) {
+scoped_refptr<DevToolsProtocol::Response>
+TetheringHandler::OnBind(scoped_refptr<DevToolsProtocol::Command> command) {
   int port = GetPort(command);
   if (port == 0)
     return command->InvalidParamResponse(kPortParam);
@@ -290,8 +290,8 @@ TetheringHandler::OnBind(DevToolsProtocol::Command* command) {
   return command->SuccessResponse(NULL);
 }
 
-scoped_ptr<DevToolsProtocol::Response>
-TetheringHandler::OnUnbind(DevToolsProtocol::Command* command) {
+scoped_refptr<DevToolsProtocol::Response>
+TetheringHandler::OnUnbind(scoped_refptr<DevToolsProtocol::Command> command) {
   int port = GetPort(command);
   if (port == 0)
     return command->InvalidParamResponse(kPortParam);

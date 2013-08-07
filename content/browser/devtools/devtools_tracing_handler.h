@@ -26,10 +26,10 @@ class DevToolsTracingHandler
       const scoped_refptr<base::RefCountedString>& trace_fragment) OVERRIDE;
 
  private:
-  scoped_ptr<DevToolsProtocol::Response> OnStart(
-      DevToolsProtocol::Command* command);
-  scoped_ptr<DevToolsProtocol::Response> OnEnd(
-      DevToolsProtocol::Command* command);
+  scoped_refptr<DevToolsProtocol::Response> OnStart(
+      scoped_refptr<DevToolsProtocol::Command> command);
+  scoped_refptr<DevToolsProtocol::Response> OnEnd(
+      scoped_refptr<DevToolsProtocol::Command> command);
 
   base::debug::TraceLog::Options TraceOptionsFromString(
       const std::string& options);
