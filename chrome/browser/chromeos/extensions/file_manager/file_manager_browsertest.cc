@@ -455,7 +455,7 @@ INSTANTIATE_TEST_CASE_P(
 
 // TODO(mtomasz): Fix this test. crbug.com/252561
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_OpenSpecialTypes,
+    OpenSpecialTypes,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),

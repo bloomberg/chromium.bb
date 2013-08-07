@@ -56,13 +56,23 @@ cr.define('cr.ui', function() {
           delete unselected[index];
         } else {
           this.selectedIndexes_[index] = true;
-          this.changedIndexes_[index] = true;
+          // Mark the index as changed. If previously marked, then unmark,
+          // since it just got reverted to the original state.
+          if (index in this.changedIndexes_)
+            delete this.changedIndexes_[index];
+          else
+            this.changedIndexes_[index] = true;
         }
       }
 
       for (var index in unselected) {
         delete this.selectedIndexes_[index];
-        this.changedIndexes_[index] = false;
+        // Mark the index as changed. If previously marked, then unmark,
+        // since it just got reverted to the original state.
+        if (index in this.changedIndexes_)
+          delete this.changedIndexes_[index];
+        else
+          this.changedIndexes_[index] = false;
       }
 
       if (selectedIndexes.length) {
