@@ -281,12 +281,16 @@ string16 AppContextMenu::GetLabelForCommandId(int command_id) const {
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_UNPIN) :
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_PIN);
   } else if (command_id == LAUNCH_NEW) {
-    if (IsCommandIdChecked(LAUNCH_TYPE_PINNED_TAB) ||
-        IsCommandIdChecked(LAUNCH_TYPE_REGULAR_TAB)) {
-      return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB);
-    } else {
-      return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
-    }
+#if defined(OS_MACOSX)
+    // Even fullscreen windows launch in a browser tab on Mac.
+    const bool launches_in_tab = true;
+#else
+    const bool launches_in_tab = IsCommandIdChecked(LAUNCH_TYPE_PINNED_TAB) ||
+        IsCommandIdChecked(LAUNCH_TYPE_REGULAR_TAB);
+#endif
+    return launches_in_tab ?
+        l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_TAB) :
+        l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
   } else {
     NOTREACHED();
     return string16();
