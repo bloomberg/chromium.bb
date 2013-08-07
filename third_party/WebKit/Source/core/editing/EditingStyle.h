@@ -111,7 +111,6 @@ public:
     void removeBlockProperties();
     void removeStyleAddedByNode(Node*);
     void removeStyleConflictingWithStyleOfNode(Node*);
-    void removeNonEditingProperties();
     void collapseTextDecorationProperties();
     enum ShouldIgnoreTextOnlyProperties { IgnoreTextOnlyProperties, DoNotIgnoreTextOnlyProperties };
     TriState triStateOfStyle(EditingStyle*) const;

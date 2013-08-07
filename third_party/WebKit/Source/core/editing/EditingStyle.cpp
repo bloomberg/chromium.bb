@@ -636,12 +636,6 @@ void EditingStyle::removeStyleConflictingWithStyleOfNode(Node* node)
         m_mutableStyle->removeProperty(nodeStyle->propertyAt(i).id());
 }
 
-void EditingStyle::removeNonEditingProperties()
-{
-    if (m_mutableStyle)
-        m_mutableStyle = copyEditingProperties(m_mutableStyle.get());
-}
-
 void EditingStyle::collapseTextDecorationProperties()
 {
     if (!m_mutableStyle)
@@ -1000,11 +994,28 @@ static inline bool elementMatchesAndPropertyIsNotInInlineStyleDecl(const HTMLEle
         && (mode == EditingStyle::OverrideValues || !equivalent->propertyExistsInStyle(style));
 }
 
+static PassRefPtr<MutableStylePropertySet> extractEditingProperties(const StylePropertySet* style, EditingStyle::PropertiesToInclude propertiesToInclude)
+{
+    if (!style)
+        return 0;
+
+    switch (propertiesToInclude) {
+    case EditingStyle::AllProperties:
+    case EditingStyle::EditingPropertiesInEffect:
+        return copyEditingProperties(style, AllEditingProperties);
+    case EditingStyle::OnlyEditingInheritableProperties:
+        return copyEditingProperties(style, OnlyInheritableEditingProperties);
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
 void EditingStyle::mergeInlineAndImplicitStyleOfElement(Element* element, CSSPropertyOverrideMode mode, PropertiesToInclude propertiesToInclude)
 {
     RefPtr<EditingStyle> styleFromRules = EditingStyle::create();
     styleFromRules->mergeStyleFromRulesForSerialization(element);
-    styleFromRules->removeNonEditingProperties();
+    styleFromRules->m_mutableStyle = extractEditingProperties(styleFromRules->m_mutableStyle.get(), propertiesToInclude);
     mergeStyle(styleFromRules->m_mutableStyle.get(), mode);
 
     mergeInlineStyleOfElement(element, mode, propertiesToInclude);
