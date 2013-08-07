@@ -39,7 +39,7 @@ AshTestHelper::AshTestHelper(base::MessageLoopForUI* message_loop)
 AshTestHelper::~AshTestHelper() {
 }
 
-void AshTestHelper::SetUp() {
+void AshTestHelper::SetUp(bool start_session) {
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
@@ -60,9 +60,12 @@ void AshTestHelper::SetUp() {
 
   ash::Shell::CreateInstance(test_shell_delegate_);
   Shell* shell = Shell::GetInstance();
-  test_shell_delegate_->test_session_state_delegate()->
-      SetActiveUserSessionStarted(true);
-  test_shell_delegate_->test_session_state_delegate()->SetHasActiveUser(true);
+  if (start_session) {
+    test_shell_delegate_->test_session_state_delegate()->
+        SetActiveUserSessionStarted(true);
+    test_shell_delegate_->test_session_state_delegate()->
+        SetHasActiveUser(true);
+  }
 
   test::DisplayManagerTestApi(shell->display_manager()).
       DisableChangeDisplayUponHostResize();

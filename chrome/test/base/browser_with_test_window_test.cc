@@ -51,7 +51,7 @@ void BrowserWithTestWindowTest::SetUp() {
   // perhaps by AshTestHelper owning an AuraTestHelper.
   ash_test_helper_.reset(new ash::test::AshTestHelper(
       base::MessageLoopForUI::current()));
-  ash_test_helper_->SetUp();
+  ash_test_helper_->SetUp(true);
 #elif defined(USE_AURA)
   aura_test_helper_.reset(new aura::test::AuraTestHelper(
       base::MessageLoopForUI::current()));

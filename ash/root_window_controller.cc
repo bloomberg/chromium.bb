@@ -48,7 +48,9 @@
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -136,6 +138,62 @@ void SetUsesScreenCoordinates(aura::Window* container) {
 void DescendantShouldStayInSameRootWindow(aura::Window* container) {
   container->SetProperty(internal::kStayInSameRootWindowKey, true);
 }
+
+// A window delegate which does nothing. Used to create a window that
+// is a event target, but do nothing.
+class EmptyWindowDelegate : public aura::WindowDelegate {
+ public:
+  EmptyWindowDelegate() {}
+  virtual ~EmptyWindowDelegate() {}
+
+  // aura::WindowDelegate overrides:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+    return gfx::Size();
+  }
+  virtual gfx::Size GetMaximumSize() const OVERRIDE {
+    return gfx::Size();
+  }
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE {
+  }
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
+    return gfx::kNullCursor;
+  }
+  virtual int GetNonClientComponent(
+      const gfx::Point& point) const OVERRIDE {
+    return HTNOWHERE;
+  }
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) OVERRIDE {
+    return false;
+  }
+  virtual bool CanFocus() OVERRIDE {
+    return false;
+  }
+  virtual void OnCaptureLost() OVERRIDE {
+  }
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+  }
+  virtual void OnDeviceScaleFactorChanged(
+      float device_scale_factor) OVERRIDE {
+  }
+  virtual void OnWindowDestroying() OVERRIDE {}
+  virtual void OnWindowDestroyed() OVERRIDE {}
+  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
+  }
+  virtual bool HasHitTestMask() const OVERRIDE {
+    return false;
+  }
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
+  virtual scoped_refptr<ui::Texture> CopyTexture() OVERRIDE {
+    NOTREACHED();
+    return scoped_refptr<ui::Texture>();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EmptyWindowDelegate);
+};
 
 }  // namespace
 
@@ -278,6 +336,8 @@ void RootWindowController::OnLauncherCreated() {
 
 void RootWindowController::UpdateAfterLoginStatusChange(
     user::LoginStatus status) {
+  if (status != user::LOGGED_IN_NONE)
+    mouse_event_target_.reset();
   if (shelf_->status_area_widget())
     shelf_->status_area_widget()->UpdateAfterLoginStatusChange(status);
 }
@@ -316,6 +376,8 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
 }
 
 void RootWindowController::CloseChildWindows() {
+  mouse_event_target_.reset();
+
   if (!shelf_.get())
     return;
   // panel_layout_manager_ needs to be shut down before windows are destroyed.
@@ -459,6 +521,19 @@ void RootWindowController::InitLayoutManagers() {
       GetContainer(internal::kShellWindowId_StatusContainer);
   shelf_.reset(new ShelfWidget(
       shelf_container, status_container, workspace_controller()));
+
+  if (!Shell::GetInstance()->session_state_delegate()->
+      IsActiveUserSessionStarted()) {
+    // This window exists only to be a event target on login screen.
+    // It does not have to handle events, nor be visible.
+    mouse_event_target_.reset(new aura::Window(new EmptyWindowDelegate));
+    mouse_event_target_->Init(ui::LAYER_NOT_DRAWN);
+
+    aura::Window* lock_background_container =
+        GetContainer(internal::kShellWindowId_LockScreenBackgroundContainer);
+    lock_background_container->AddChild(mouse_event_target_.get());
+    mouse_event_target_->Show();
+  }
 
   // Create Docked windows layout manager
   aura::Window* docked_container = GetContainer(

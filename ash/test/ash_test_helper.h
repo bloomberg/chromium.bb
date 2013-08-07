@@ -33,7 +33,9 @@ class AshTestHelper {
   ~AshTestHelper();
 
   // Creates the ash::Shell and performs associated initialization.
-  void SetUp();
+  // Set |start_session| to true if the user should log in before
+  // the test is run.
+  void SetUp(bool start_session);
 
   // Destroys the ash::Shell and performs associated cleanup.
   void TearDown();

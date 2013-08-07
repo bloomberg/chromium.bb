@@ -18,7 +18,7 @@ class AshTestHelperTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
     ash_test_helper_.reset(new ash::test::AshTestHelper(&message_loop_));
-    ash_test_helper_->SetUp();
+    ash_test_helper_->SetUp(true);
   }
 
   virtual void TearDown() OVERRIDE {

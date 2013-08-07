@@ -473,5 +473,24 @@ TEST_F(RootWindowControllerTest, FocusBlockedWindow) {
   }
 }
 
+typedef test::NoSessionAshTestBase NoSessionRootWindowControllerTest;
+
+// Make sure that an event handler exists for entire display area.
+TEST_F(NoSessionRootWindowControllerTest, Event) {
+  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
+  const gfx::Size size = root->bounds().size();
+  aura::Window* event_target = root->GetEventHandlerForPoint(gfx::Point(0, 0));
+  EXPECT_TRUE(event_target);
+  EXPECT_EQ(event_target,
+            root->GetEventHandlerForPoint(gfx::Point(0, size.height() - 1)));
+  EXPECT_EQ(event_target,
+            root->GetEventHandlerForPoint(gfx::Point(size.width() - 1, 0)));
+  EXPECT_EQ(event_target,
+            root->GetEventHandlerForPoint(gfx::Point(0, size.height() - 1)));
+  EXPECT_EQ(event_target,
+            root->GetEventHandlerForPoint(
+                gfx::Point(size.width() - 1, size.height() - 1)));
+}
+
 }  // namespace test
 }  // namespace ash

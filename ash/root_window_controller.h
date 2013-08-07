@@ -241,6 +241,13 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // The shelf for managing the launcher and the status widget.
   scoped_ptr<ShelfWidget> shelf_;
 
+  // An invisible/empty window used as a event target for
+  // |MouseCursorEventFilter| before a user logs in.
+  // (crbug.com/266987)
+  // Its container is |LockScreenBackgroundContainer| and
+  // this must be deleted before the container is deleted.
+  scoped_ptr<aura::Window> mouse_event_target_;
+
   // Manages layout of docked windows. Owned by DockedContainer.
   DockedWindowLayoutManager* docked_layout_manager_;
 

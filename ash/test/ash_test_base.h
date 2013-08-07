@@ -110,6 +110,8 @@ class AshTestBase : public testing::Test {
   // or false otherwise (e.g. win8 bot).
   static bool SupportsHostWindowResize();
 
+  void set_start_session(bool start_session) { start_session_ = start_session; }
+
   void RunAllPendingInMessageLoop();
 
   // Utility methods to emulate user logged in or not, session started or not
@@ -127,6 +129,8 @@ class AshTestBase : public testing::Test {
  private:
   bool setup_called_;
   bool teardown_called_;
+  // |SetUp()| doesn't activate session if this is set to false.
+  bool start_session_;
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<AshTestHelper> ash_test_helper_;
   scoped_ptr<aura::test::EventGenerator> event_generator_;
@@ -139,6 +143,17 @@ class AshTestBase : public testing::Test {
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
+};
+
+class NoSessionAshTestBase : public AshTestBase {
+ public:
+  NoSessionAshTestBase() {
+    set_start_session(false);
+  }
+  virtual ~NoSessionAshTestBase() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NoSessionAshTestBase);
 };
 
 }  // namespace test

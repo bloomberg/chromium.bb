@@ -84,7 +84,8 @@ content::WebContents* AshTestViewsDelegate::CreateWebContents(
 
 AshTestBase::AshTestBase()
     : setup_called_(false),
-      teardown_called_(false) {
+      teardown_called_(false),
+      start_session_(true) {
   // Must initialize |ash_test_helper_| here because some tests rely on
   // AshTestBase methods before they call AshTestBase::SetUp().
   ash_test_helper_.reset(new AshTestHelper(base::MessageLoopForUI::current()));
@@ -109,7 +110,7 @@ void AshTestBase::SetUp() {
 #endif
   ui::InitializeInputMethodForTesting();
 
-  ash_test_helper_->SetUp();
+  ash_test_helper_->SetUp(start_session_);
 
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->ShowRootWindow();
