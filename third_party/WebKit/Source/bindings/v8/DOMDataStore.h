@@ -89,8 +89,12 @@ public:
     template<typename V8T, typename T>
     static v8::Handle<v8::Object> getWrapperForMainWorld(T* object)
     {
-        if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-            return ScriptWrappable::getUnsafeWrapperFromObject(object).deprecatedHandle();
+        if (ScriptWrappable::wrapperCanBeStoredInObject(object)) {
+            v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).deprecatedHandle();
+            // Security: always guard against malicious tampering.
+            RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
+            return result;
+        }
         return mainWorldStore()->template get<V8T>(object);
     }
 
