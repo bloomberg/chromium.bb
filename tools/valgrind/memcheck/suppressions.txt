@@ -7227,3 +7227,12 @@
   fun:_ZN7content10PluginList17ReadWebPluginInfoERKN4base8FilePathEPNS_13WebPluginInfoE
   fun:_ZN7content10PluginList14ReadPluginInfoERKN4base8FilePathEPNS_13WebPluginInfoE
 }
+{
+   bug_269201
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN4base8internal17IncomingTaskQueue18AddToIncomingQueueERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEENS_9TimeDeltaEb
+   fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
+   fun:_ZN8printing8PrintJob21UpdatePrintedDocumentEPNS_15PrintedDocumentE
+   fun:_ZN8printing8PrintJob4StopEv
+ }
