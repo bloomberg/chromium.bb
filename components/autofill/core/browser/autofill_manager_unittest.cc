@@ -3113,12 +3113,13 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
 
   virtual ~MockAutofillManagerDelegate() {}
 
-  virtual void ShowAutocheckoutBubble(
+  virtual bool ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
       bool is_google_user,
       const base::Callback<void(AutocheckoutBubbleState)>& callback) OVERRIDE {
     autocheckout_bubble_shown_ = true;
     callback.Run(AUTOCHECKOUT_BUBBLE_ACCEPTED);
+    return true;
   }
 
   virtual void ShowRequestAutocompleteDialog(

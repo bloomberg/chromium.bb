@@ -187,11 +187,12 @@ void AwAutofillManagerDelegate::ConfirmSaveCreditCard(
   NOTIMPLEMENTED();
 }
 
-void AwAutofillManagerDelegate::ShowAutocheckoutBubble(
+bool AwAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::RectF& bounding_box,
     bool is_google_user,
     const base::Callback<void(autofill::AutocheckoutBubbleState)>& callback) {
   NOTIMPLEMENTED();
+  return false;
 }
 
 void AwAutofillManagerDelegate::HideAutocheckoutBubble() {

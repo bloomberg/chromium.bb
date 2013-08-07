@@ -177,6 +177,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnFillFormsAndClick)
     IPC_MESSAGE_HANDLER(AutofillMsg_AutocheckoutSupported,
                         OnAutocheckoutSupported)
+    IPC_MESSAGE_HANDLER(AutofillMsg_PageShown,
+                        OnPageShown)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -611,6 +613,11 @@ void AutofillAgent::OnAutocheckoutSupported() {
   if (has_new_forms_for_browser_)
     MaybeSendDynamicFormsSeen();
   MaybeShowAutocheckoutBubble();
+}
+
+void AutofillAgent::OnPageShown() {
+  if (is_autocheckout_supported_)
+    MaybeShowAutocheckoutBubble();
 }
 
 void AutofillAgent::CompleteAutocheckoutPage(

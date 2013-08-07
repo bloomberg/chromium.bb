@@ -35,10 +35,12 @@ void TestAutofillManagerDelegate::ConfirmSaveCreditCard(
     const CreditCard& credit_card,
     const base::Closure& save_card_callback) {}
 
-void TestAutofillManagerDelegate::ShowAutocheckoutBubble(
+bool TestAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::RectF& bounding_box,
     bool is_google_user,
-    const base::Callback<void(AutocheckoutBubbleState)>& callback) {}
+    const base::Callback<void(AutocheckoutBubbleState)>& callback) {
+  return true;
+}
 
 void TestAutofillManagerDelegate::HideAutocheckoutBubble() {}
 

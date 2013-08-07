@@ -73,7 +73,7 @@ class AwAutofillManagerDelegate
       const autofill::AutofillMetrics& metric_logger,
       const autofill::CreditCard& credit_card,
       const base::Closure& save_card_callback) OVERRIDE;
-  virtual void ShowAutocheckoutBubble(
+  virtual bool ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
       bool is_google_user,
       const base::Callback<void(

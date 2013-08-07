@@ -433,11 +433,11 @@ void AutocheckoutManager::ShowAutocheckoutBubble(
       &AutocheckoutManager::MaybeShowAutocheckoutDialog,
       weak_ptr_factory_.GetWeakPtr(),
       frame_url);
-  autofill_manager_->delegate()->ShowAutocheckoutBubble(
-      bounding_box,
-      cookies.find("LSID") != std::string::npos,
-      callback);
-  is_autocheckout_bubble_showing_ = true;
+  is_autocheckout_bubble_showing_ =
+      autofill_manager_->delegate()->ShowAutocheckoutBubble(
+          bounding_box,
+          cookies.find("LSID") != std::string::npos,
+          callback);
 }
 
 bool AutocheckoutManager::IsStartOfAutofillableFlow() const {

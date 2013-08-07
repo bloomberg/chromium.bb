@@ -132,6 +132,10 @@ class AutofillAgent : public content::RenderViewObserver,
   // Called when |topmost_frame_| is supported for Autocheckout.
   void OnAutocheckoutSupported();
 
+  // Called when the page is actually shown in the browser, as opposed to simply
+  // being preloaded.
+  void OnPageShown();
+
   // Called when an Autocheckout page is completed by the renderer.
   void CompleteAutocheckoutPage(autofill::AutocheckoutStatus status);
 

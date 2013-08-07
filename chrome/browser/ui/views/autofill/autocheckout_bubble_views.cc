@@ -16,6 +16,10 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 namespace autofill {
 
 AutocheckoutBubbleViews::AutocheckoutBubbleViews(
@@ -136,6 +140,13 @@ void AutocheckoutBubbleViews::ButtonPressed(views::Button* sender,
 // static
 base::WeakPtr<AutocheckoutBubble> AutocheckoutBubble::Create(
     scoped_ptr<AutocheckoutBubbleController> controller) {
+#if defined(USE_AURA)
+  // If the page hasn't yet been attached to a RootWindow,
+  // Aura code for creating the bubble will fail.
+  if (!controller->native_window()->GetRootWindow())
+    return base::WeakPtr<AutocheckoutBubble>();
+#endif // defined(USE_AURA)
+
   views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
       controller->native_window());
   // The bubble owns itself.

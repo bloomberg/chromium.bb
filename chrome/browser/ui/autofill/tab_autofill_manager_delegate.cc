@@ -22,9 +22,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/rect.h"
 
@@ -105,13 +107,14 @@ void TabAutofillManagerDelegate::ConfirmSaveCreditCard(
       infobar_service, &metric_logger, save_card_callback);
 }
 
-void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
+bool TabAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::RectF& bounding_box,
     bool is_google_user,
     const base::Callback<void(AutocheckoutBubbleState)>& callback) {
 #if !defined(TOOLKIT_VIEWS)
   callback.Run(AUTOCHECKOUT_BUBBLE_CANCELED);
   NOTIMPLEMENTED();
+  return false;
 #else
   HideAutocheckoutBubble();
 
@@ -127,7 +130,12 @@ void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
               web_contents_->GetView()->GetTopLevelNativeWindow(),
               is_google_user,
               callback)));
+
+  if (!autocheckout_bubble_)
+    return false;
+
   autocheckout_bubble_->ShowBubble();
+  return true;
 #endif  // #if !defined(TOOLKIT_VIEWS)
 }
 
@@ -213,6 +221,13 @@ bool TabAutofillManagerDelegate::IsAutocompleteEnabled() {
 void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
   if (dialog_controller_.get())
     dialog_controller_->Hide();
+}
+
+void TabAutofillManagerDelegate::WasShown() {
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  if (!host)
+    return;
+  host->Send(new AutofillMsg_PageShown(host->GetRoutingID()));
 }
 
 void TabAutofillManagerDelegate::DidNavigateMainFrame(

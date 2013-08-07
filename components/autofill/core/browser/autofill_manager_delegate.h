@@ -96,8 +96,9 @@ class AutofillManagerDelegate {
   // Causes the Autocheckout bubble UI to be displayed. |bounding_box| is the
   // anchor for the bubble. |is_google_user| is whether or not the user is
   // logged into or has been logged into accounts.google.com. |callback| is run
-  // if the bubble is accepted.
-  virtual void ShowAutocheckoutBubble(
+  // if the bubble is accepted. The returned boolean informs the caller whether
+  // or not the bubble is successfully shown.
+  virtual bool ShowAutocheckoutBubble(
       const gfx::RectF& bounding_box,
       bool is_google_user,
       const base::Callback<void(AutocheckoutBubbleState)>& callback) = 0;

@@ -53,7 +53,7 @@ class TabAutofillManagerDelegate
       const AutofillMetrics& metric_logger,
       const CreditCard& credit_card,
       const base::Closure& save_card_callback) OVERRIDE;
-  virtual void ShowAutocheckoutBubble(
+  virtual bool ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
       bool is_google_user,
       const base::Callback<void(AutocheckoutBubbleState)>& callback) OVERRIDE;
@@ -89,6 +89,7 @@ class TabAutofillManagerDelegate
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
+  virtual void WasShown() OVERRIDE;
 
   // Exposed for testing.
   AutofillDialogControllerImpl* GetDialogControllerForTesting() {

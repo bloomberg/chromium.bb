@@ -183,6 +183,10 @@ IPC_MESSAGE_ROUTED4(AutofillMsg_FillFormsAndClick,
 // metadata.
 IPC_MESSAGE_ROUTED0(AutofillMsg_AutocheckoutSupported)
 
+// Sent when the current page is actually displayed in the browser, possibly
+// after being preloaded.
+IPC_MESSAGE_ROUTED0(AutofillMsg_PageShown)
+
 // Autofill messages sent from the renderer to the browser.
 
 // TODO(creis): check in the browser that the renderer actually has permission
