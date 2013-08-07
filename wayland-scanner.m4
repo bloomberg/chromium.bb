@@ -1,6 +1,8 @@
 AC_DEFUN([WAYLAND_SCANNER_RULES], [
     PKG_PROG_PKG_CONFIG
 
+    PKG_CHECK_MODULES([WAYLAND_SCANNER], [wayland-scanner])
+
     wayland_scanner=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
     AC_SUBST([wayland_scanner])
 
