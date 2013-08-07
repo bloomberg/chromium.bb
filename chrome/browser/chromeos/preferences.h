@@ -18,6 +18,8 @@ class PrefRegistrySimple;
 class PrefService;
 class PrefServiceSyncable;
 
+class TracingManager;
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -114,7 +116,9 @@ class Preferences : public PrefServiceSyncableObserver,
   PrefServiceSyncable* prefs_;
 
   input_method::InputMethodManager* input_method_manager_;
+  scoped_ptr<TracingManager> tracing_manager_;
 
+  BooleanPrefMember performance_tracing_enabled_;
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember tap_dragging_enabled_;
   BooleanPrefMember three_finger_click_enabled_;

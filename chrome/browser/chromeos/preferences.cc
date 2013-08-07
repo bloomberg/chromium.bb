@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/feedback/tracing_manager.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_switches.h"
@@ -94,6 +95,11 @@ void Preferences::RegisterProfilePrefs(
   } else {
     hardware_keyboard_id = "xkb:us::eng";  // only for testing.
   }
+
+  registry->RegisterBooleanPref(
+      prefs::kPerformanceTracingEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterBooleanPref(
       prefs::kTapToClickEnabled,
@@ -356,6 +362,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   BooleanPrefMember::NamedChangeCallback callback =
       base::Bind(&Preferences::OnPreferenceChanged, base::Unretained(this));
 
+  performance_tracing_enabled_.Init(prefs::kPerformanceTracingEnabled,
+                                    prefs, callback);
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, callback);
   tap_dragging_enabled_.Init(prefs::kTapDraggingEnabled, prefs, callback);
   three_finger_click_enabled_.Init(prefs::kEnableTouchpadThreeFingerClick,
@@ -480,6 +488,13 @@ void Preferences::OnPreferenceChanged(const std::string& pref_name) {
 }
 
 void Preferences::NotifyPrefChanged(const std::string* pref_name) {
+  if (!pref_name || *pref_name == prefs::kPerformanceTracingEnabled) {
+    const bool enabled = performance_tracing_enabled_.GetValue();
+    if (enabled)
+      tracing_manager_ = TracingManager::Create();
+    else
+      tracing_manager_.reset();
+  }
   if (!pref_name || *pref_name == prefs::kTapToClickEnabled) {
     const bool enabled = tap_to_click_enabled_.GetValue();
     system::touchpad_settings::SetTapToClick(enabled);
