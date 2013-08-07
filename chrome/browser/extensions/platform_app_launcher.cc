@@ -330,6 +330,12 @@ void LaunchPlatformAppWithFileHandler(Profile* profile,
 }
 
 void RestartPlatformApp(Profile* profile, const Extension* extension) {
+#if defined(OS_WIN)
+  // On Windows 8's single window Metro mode we can not launch platform apps.
+  // In restart we are just making sure launch doesn't slip through.
+  if (win8::IsSingleWindowMetroMode())
+    return;
+#endif
   extensions::EventRouter* event_router =
       ExtensionSystem::Get(profile)->event_router();
   bool listening_to_restart = event_router->
