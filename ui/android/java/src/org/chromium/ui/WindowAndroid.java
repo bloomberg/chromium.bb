@@ -52,10 +52,11 @@ public class WindowAndroid {
      * Shows an intent and returns the results to the callback object.
      * @param intent The intent that needs to be showed.
      * @param callback The object that will receive the results for the intent.
-     * @param error The error string to be show if activity is paused before intent results.
+     * @param errorId The ID of error string to be show if activity is paused before intent
+     *        results.
      * @return Whether the intent was shown.
      */
-    public boolean showIntent(Intent intent, IntentCallback callback, String error) {
+    public boolean showIntent(Intent intent, IntentCallback callback, int errorId) {
         int requestCode = REQUEST_CODE_PREFIX + mNextRequestCode;
         mNextRequestCode = (mNextRequestCode + 1) % REQUEST_CODE_RANGE_SIZE;
 
@@ -66,7 +67,7 @@ public class WindowAndroid {
         }
 
         mOutstandingIntents.put(requestCode, callback);
-        if (error != null) mIntentErrors.put(requestCode, error);
+        mIntentErrors.put(requestCode, mActivity.getString(errorId));
 
         return true;
     }

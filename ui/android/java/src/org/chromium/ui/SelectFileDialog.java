@@ -64,17 +64,16 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
         Intent camcorder = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         Intent soundRecorder = new Intent(
                 MediaStore.Audio.Media.RECORD_SOUND_ACTION);
-        String lowMemoryError = window.getContext().getString(R.string.low_memory_error);
 
         // Quick check - if the |capture| parameter is set and |fileTypes| has the appropriate MIME
         // type, we should just launch the appropriate intent. Otherwise build up a chooser based on
         // the accept type and then display that to the user.
         if (captureCamera()) {
-            if (window.showIntent(camera, this, lowMemoryError)) return;
+            if (window.showIntent(camera, this, R.string.low_memory_error)) return;
         } else if (captureCamcorder()) {
-            if (window.showIntent(camcorder, this, lowMemoryError)) return;
+            if (window.showIntent(camcorder, this, R.string.low_memory_error)) return;
         } else if (captureMicrophone()) {
-            if (window.showIntent(soundRecorder, this, lowMemoryError)) return;
+            if (window.showIntent(soundRecorder, this, R.string.low_memory_error)) return;
         }
 
         Intent getContentIntent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -109,7 +108,9 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
 
         chooser.putExtra(Intent.EXTRA_INTENT, getContentIntent);
 
-        if (!window.showIntent(chooser, this, lowMemoryError)) onFileNotSelected();
+        if (!window.showIntent(chooser, this, R.string.low_memory_error)) {
+            onFileNotSelected();
+        }
     }
 
     /**
