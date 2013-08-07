@@ -1158,9 +1158,22 @@ int main(int argc, char *argv[])
 	struct protocol protocol;
 	int len;
 	void *buf;
+	enum {
+		CLIENT_HEADER,
+		SERVER_HEADER,
+		CODE,
+	} mode;
 
 	if (argc != 2)
 		usage(EXIT_FAILURE);
+	else if (strcmp(argv[1], "help") == 0 || strcmp(argv[1], "--help") == 0)
+		usage(EXIT_SUCCESS);
+	else if (strcmp(argv[1], "client-header") == 0)
+		mode = CLIENT_HEADER;
+	else if (strcmp(argv[1], "server-header") == 0)
+		mode = SERVER_HEADER;
+	else if (strcmp(argv[1], "code") == 0)
+		mode = CODE;
 
 	wl_list_init(&protocol.interface_list);
 	protocol.type_index = 0;
@@ -1193,12 +1206,16 @@ int main(int argc, char *argv[])
 
 	XML_ParserFree(ctx.parser);
 
-	if (strcmp(argv[1], "client-header") == 0) {
-		emit_header(&protocol, 0);
-	} else if (strcmp(argv[1], "server-header") == 0) {
-		emit_header(&protocol, 1);
-	} else if (strcmp(argv[1], "code") == 0) {
-		emit_code(&protocol);
+	switch(mode) {
+		case CLIENT_HEADER:
+			emit_header(&protocol, 0);
+			break;
+		case SERVER_HEADER:
+			emit_header(&protocol, 1);
+			break;
+		case CODE:
+			emit_code(&protocol);
+			break;
 	}
 
 	return 0;
