@@ -7,6 +7,7 @@ include_rules = [
   "+chrome/renderer/chrome_content_renderer_client.h",
   "+chrome/utility/chrome_content_utility_client.h",
   "+chromeos/chromeos_paths.h",
+  "+chromeos/chromeos_switches.h",
   "+components/breakpad",
   "+components/nacl/common",
   "+components/nacl/zygote",

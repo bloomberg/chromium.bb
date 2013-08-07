@@ -325,15 +325,32 @@ class DiskSpaceTest : public DiagnosticsTest {
 // Checks that a given json file can be correctly parsed.
 class JSONTest : public DiagnosticsTest {
  public:
+  enum FileImportance {
+    NON_CRITICAL,
+    CRITICAL
+  };
+
   JSONTest(const base::FilePath& path,
            const std::string& id,
            const std::string& name,
-           int64 max_file_size)
-      : DiagnosticsTest(id, name), path_(path), max_file_size_(max_file_size) {}
+           int64 max_file_size,
+           FileImportance importance)
+      : DiagnosticsTest(id, name),
+        path_(path),
+        max_file_size_(max_file_size),
+        importance_(importance) {}
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     if (!base::PathExists(path_)) {
-      RecordFailure(DIAG_RECON_FILE_NOT_FOUND, "File not found");
+      if (importance_ == CRITICAL) {
+        RecordOutcome(DIAG_RECON_FILE_NOT_FOUND,
+                      "File not found",
+                      DiagnosticsModel::TEST_FAIL_CONTINUE);
+      } else {
+        RecordOutcome(DIAG_RECON_FILE_NOT_FOUND_OK,
+                      "File not found (but that is OK)",
+                      DiagnosticsModel::TEST_OK);
+      }
       return true;
     }
     int64 file_size;
@@ -374,6 +391,7 @@ class JSONTest : public DiagnosticsTest {
  private:
   base::FilePath path_;
   int64 max_file_size_;
+  FileImportance importance_;
   DISALLOW_COPY_AND_ASSIGN(JSONTest);
 };
 
@@ -406,23 +424,32 @@ DiagnosticsTest* MakeInstallTypeTest() { return new InstallTypeTest(); }
 DiagnosticsTest* MakePreferencesTest() {
   base::FilePath path = DiagnosticsTest::GetUserDefaultProfileDir();
   path = path.Append(chrome::kPreferencesFilename);
-  return new JSONTest(
-      path, kJSONProfileTest, "Profile JSON", 100 * kOneKilobyte);
+  return new JSONTest(path,
+                      kJSONProfileTest,
+                      "Profile JSON",
+                      100 * kOneKilobyte,
+                      JSONTest::CRITICAL);
 }
 
 DiagnosticsTest* MakeBookMarksTest() {
   base::FilePath path = DiagnosticsTest::GetUserDefaultProfileDir();
   path = path.Append(chrome::kBookmarksFileName);
-  return new JSONTest(
-      path, kJSONBookmarksTest, "Bookmarks JSON", 2 * kOneMegabyte);
+  return new JSONTest(path,
+                      kJSONBookmarksTest,
+                      "Bookmarks JSON",
+                      2 * kOneMegabyte,
+                      JSONTest::NON_CRITICAL);
 }
 
 DiagnosticsTest* MakeLocalStateTest() {
   base::FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.Append(chrome::kLocalStateFilename);
-  return new JSONTest(
-      path, kJSONLocalStateTest, "Local State JSON", 50 * kOneKilobyte);
+  return new JSONTest(path,
+                      kJSONLocalStateTest,
+                      "Local State JSON",
+                      50 * kOneKilobyte,
+                      JSONTest::CRITICAL);
 }
 
 }  // namespace diagnostics

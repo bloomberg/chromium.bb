@@ -24,7 +24,14 @@ class DiagnosticsModel {
     TEST_OK,
     TEST_FAIL_CONTINUE,
     TEST_FAIL_STOP,
+    RECOVERY_RUNNING,
+    RECOVERY_OK,
+    RECOVERY_FAIL_STOP,
   };
+
+  // Number of diagnostic tests available on the current platform. To be used
+  // only by tests to verify that the right number of tests were run.
+  static const int kDiagnosticsTestCount;
 
   // Observer derived form this class which provides a way to be notified of
   // changes to the model as the tests are run. For all the callbacks |id|
@@ -33,10 +40,14 @@ class DiagnosticsModel {
   class Observer {
    public:
     virtual ~Observer() {}
-    // Called when a test has finished regardless of outcome.
-    virtual void OnFinished(int index, DiagnosticsModel* model) = 0;
+    // Called when a test has finished, regardless of outcome.
+    virtual void OnTestFinished(int index, DiagnosticsModel* model) = 0;
     // Called once all the test are run.
-    virtual void OnDoneAll(DiagnosticsModel* model) = 0;
+    virtual void OnAllTestsDone(DiagnosticsModel* model) = 0;
+    // Called when a recovery has finished regardless of outcome.
+    virtual void OnRecoveryFinished(int index, DiagnosticsModel* model) = 0;
+    // Called once all the recoveries are run.
+    virtual void OnAllRecoveryDone(DiagnosticsModel* model) = 0;
   };
 
   // Encapsulates what you can know about a given test.
@@ -73,9 +84,16 @@ class DiagnosticsModel {
   // the diagnostics progress. |observer| maybe NULL if no observation is
   // needed.
   virtual void RunAll(DiagnosticsModel::Observer* observer) = 0;
+  // Attempt to recover from any failures discovered by testing.
+  virtual void RecoverAll(DiagnosticsModel::Observer* observer) = 0;
   // Get the information for a particular test. Lifetime of returned object is
   // limited to the lifetime of this model.
-  virtual const TestInfo& GetTest(size_t index) = 0;
+  virtual const TestInfo& GetTest(size_t index) const = 0;
+  // Get the information for a test with given |id|. Lifetime of returned object
+  // is limited to the lifetime of this model. Returns false if there is no such
+  // id. |result| may not be NULL.
+  virtual bool GetTestInfo(const std::string& id,
+                           const TestInfo** result) const = 0;
 };
 
 // The factory for the model. The main purpose is to hide the creation of

@@ -222,7 +222,7 @@ bool DiagnosticsWriter::WriteInfoLine(const std::string& info_text) {
   return true;
 }
 
-void DiagnosticsWriter::OnFinished(int index, DiagnosticsModel* model) {
+void DiagnosticsWriter::OnTestFinished(int index, DiagnosticsModel* model) {
   const DiagnosticsModel::TestInfo& test_info = model->GetTest(index);
   bool success = (DiagnosticsModel::TEST_OK == test_info.GetResult());
   WriteResult(success,
@@ -232,9 +232,18 @@ void DiagnosticsWriter::OnFinished(int index, DiagnosticsModel* model) {
               test_info.GetAdditionalInfo());
 }
 
-void DiagnosticsWriter::OnDoneAll(DiagnosticsModel* model) {
+void DiagnosticsWriter::OnAllTestsDone(DiagnosticsModel* model) {
   WriteInfoLine(
       base::StringPrintf("Finished %d tests.", model->GetTestRunCount()));
+}
+
+void DiagnosticsWriter::OnRecoveryFinished(int index, DiagnosticsModel* model) {
+  const DiagnosticsModel::TestInfo& test_info = model->GetTest(index);
+  WriteInfoLine("Finished Recovery for: " + test_info.GetTitle());
+}
+
+void DiagnosticsWriter::OnAllRecoveryDone(DiagnosticsModel* model) {
+  WriteInfoLine("Finished All Recovery operations.");
 }
 
 bool DiagnosticsWriter::WriteResult(bool success,

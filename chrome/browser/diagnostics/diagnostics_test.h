@@ -39,6 +39,11 @@ class DiagnosticsTest : public DiagnosticsModel::TestInfo {
   bool Execute(DiagnosticsModel::Observer* observer, DiagnosticsModel* model,
                size_t index);
 
+  // Runs any recovery steps for the test. Returning false signals that no more
+  // recovery should be attempted.
+  bool Recover(DiagnosticsModel::Observer* observer, DiagnosticsModel* model,
+               size_t index);
+
   void RecordStopFailure(int outcome_code, const std::string& additional_info) {
     RecordOutcome(
         outcome_code, additional_info, DiagnosticsModel::TEST_FAIL_STOP);
@@ -70,6 +75,10 @@ class DiagnosticsTest : public DiagnosticsModel::TestInfo {
  protected:
   // Derived classes override this method do perform the actual test.
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) = 0;
+
+  // Derived classes may override this method to perform a recovery, if recovery
+  // makes sense for the diagnostics test.
+  virtual bool RecoveryImpl(DiagnosticsModel::Observer* observer);
 
   const std::string id_;
   const std::string title_;

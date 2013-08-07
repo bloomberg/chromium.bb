@@ -74,6 +74,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chromeos/chromeos_paths.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -417,6 +418,59 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
         command_line, &writer);
     diagnostics::DiagnosticsController::GetInstance()->ClearResults();
     return true;
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  // If we are recovering from a crash on ChromeOS, then we will do some
+  // recovery using the diagnostics module, and then continue on. We fake up a
+  // command line to tell it that we want it to recover, and to preserve the
+  // original command line.
+  if (command_line.HasSwitch(chromeos::switches::kLoginUser) ||
+      command_line.HasSwitch(switches::kDiagnosticsRecovery)) {
+    CommandLine interim_command_line(command_line.GetProgram());
+    if (command_line.HasSwitch(switches::kUserDataDir)) {
+      interim_command_line.AppendSwitchPath(
+          switches::kUserDataDir,
+          command_line.GetSwitchValuePath(switches::kUserDataDir));
+    }
+    interim_command_line.AppendSwitch(switches::kDiagnostics);
+    interim_command_line.AppendSwitch(switches::kDiagnosticsRecovery);
+
+    diagnostics::DiagnosticsWriter::FormatType format =
+        diagnostics::DiagnosticsWriter::LOG;
+    if (command_line.HasSwitch(switches::kDiagnosticsFormat)) {
+      std::string format_str =
+          command_line.GetSwitchValueASCII(switches::kDiagnosticsFormat);
+      if (format_str == "machine") {
+        format = diagnostics::DiagnosticsWriter::MACHINE;
+      } else if (format_str == "human") {
+        format = diagnostics::DiagnosticsWriter::HUMAN;
+      } else {
+        DCHECK_EQ("log", format_str);
+      }
+    }
+
+    diagnostics::DiagnosticsWriter writer(format);
+    int diagnostics_exit_code =
+        diagnostics::DiagnosticsController::GetInstance()->Run(command_line,
+                                                               &writer);
+    if (diagnostics_exit_code) {
+      // Diagnostics has failed somehow, so we exit.
+      *exit_code = diagnostics_exit_code;
+      return true;
+    }
+
+    // Now we run the actual recovery tasks.
+    int recovery_exit_code =
+        diagnostics::DiagnosticsController::GetInstance()->RunRecovery(
+            command_line, &writer);
+
+    if (recovery_exit_code) {
+      // Recovery has failed somehow, so we exit.
+      *exit_code = recovery_exit_code;
+      return true;
+    }
   }
 #endif
 

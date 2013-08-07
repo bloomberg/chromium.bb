@@ -23,7 +23,11 @@ class DiagnosticsController {
   // diagnostics successfully, regardless of the results of the diagnostics.
   int Run(const CommandLine& command_line, DiagnosticsWriter* writer);
 
-  // Returns a model with the results that have accumulated.  They can then be
+  // Entry point for running recovery based on diagnostics that have already
+  // been run. In order for this to do anything, Run() must be executed first.
+  int RunRecovery(const CommandLine& command_line, DiagnosticsWriter* writer);
+
+  // Returns a model with the results that have accumulated. They can then be
   // queried for their attributes for human consumption later.
   const DiagnosticsModel& GetResults() const;
 

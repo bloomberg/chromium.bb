@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace diagnostics {
@@ -14,75 +15,81 @@ namespace diagnostics {
 class DiagnosticsModelTest : public testing::Test {
  protected:
   DiagnosticsModelTest()
-      : model_(NULL),
-        cmdline_(CommandLine::NO_PROGRAM) {
+      : cmdline_(CommandLine::NO_PROGRAM) {
   }
 
   virtual ~DiagnosticsModelTest() { }
 
   virtual void SetUp() {
-    model_ = MakeDiagnosticsModel(cmdline_);
-    ASSERT_TRUE(model_ != NULL);
+    model_.reset(MakeDiagnosticsModel(cmdline_));
+    ASSERT_TRUE(model_.get() != NULL);
   }
 
   virtual void TearDown() {
-    delete model_;
+    model_.reset();
   }
 
-  DiagnosticsModel* model_;
+  scoped_ptr<DiagnosticsModel> model_;
   CommandLine cmdline_;
+
+  DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelTest);
 };
 
 // The test observer is used to know if the callbacks are being called.
 class UTObserver: public DiagnosticsModel::Observer {
  public:
   UTObserver()
-      : done_(false),
-        finished_(0),
-        id_of_failed_stop_test(-1) {
+      : tests_done_(false),
+        recovery_done_(false),
+        num_tested_(0),
+        num_recovered_(0) {
   }
 
-  virtual void OnFinished(int index, DiagnosticsModel* model) OVERRIDE {
+  virtual void OnTestFinished(int index, DiagnosticsModel* model) OVERRIDE {
     EXPECT_TRUE(model != NULL);
-    ++finished_;
-    if (model->GetTest(index).GetResult() == DiagnosticsModel::TEST_FAIL_STOP) {
-      id_of_failed_stop_test = index;
-      ASSERT_TRUE(false);
-    }
+    ++num_tested_;
+    EXPECT_NE(DiagnosticsModel::TEST_FAIL_STOP,
+              model->GetTest(index).GetResult())
+        << "Failed stop test: " << index;
   }
 
-  virtual void OnDoneAll(DiagnosticsModel* model) OVERRIDE {
-    done_ = true;
+  virtual void OnAllTestsDone(DiagnosticsModel* model) OVERRIDE {
     EXPECT_TRUE(model != NULL);
+    tests_done_ = true;
   }
 
-  bool done() const { return done_; }
+  virtual void OnRecoveryFinished(int index, DiagnosticsModel* model) OVERRIDE {
+    EXPECT_TRUE(model != NULL);
+    ++num_recovered_;
+    EXPECT_NE(DiagnosticsModel::RECOVERY_FAIL_STOP,
+              model->GetTest(index).GetResult())
+        << "Failed stop recovery: " << index;
+  }
 
-  int finished() const { return finished_;}
+  virtual void OnAllRecoveryDone(DiagnosticsModel* model) OVERRIDE {
+    EXPECT_TRUE(model != NULL);
+    recovery_done_ = true;
+  }
+
+  bool tests_done() const { return tests_done_; }
+  bool recovery_done() const { return recovery_done_; }
+
+  int num_tested() const { return num_tested_;}
+  int num_recovered() const { return num_recovered_;}
 
  private:
-  bool done_;
-  int finished_;
-  int id_of_failed_stop_test;
-};
+  bool tests_done_;
+  bool recovery_done_;
+  int num_tested_;
+  int num_recovered_;
 
-// This is the count of tests on each platform.
-#if defined(OS_WIN)
-const int kDiagnosticsTestCount = 19;
-#elif defined(OS_MACOSX)
-const int kDiagnosticsTestCount = 16;
-#elif defined(OS_POSIX)
-#if defined(OS_CHROMEOS)
-const int kDiagnosticsTestCount = 19;
-#else
-const int kDiagnosticsTestCount = 17;
-#endif
-#endif
+  DISALLOW_COPY_AND_ASSIGN(UTObserver);
+};
 
 // Test that the initial state is correct.
 TEST_F(DiagnosticsModelTest, BeforeRun) {
   int available = model_->GetTestAvailableCount();
-  EXPECT_EQ(kDiagnosticsTestCount, available);
+  EXPECT_EQ(DiagnosticsModel::kDiagnosticsTestCount, available);
   EXPECT_EQ(0, model_->GetTestRunCount());
   EXPECT_EQ(DiagnosticsModel::TEST_NOT_RUN, model_->GetTest(0).GetResult());
 }
@@ -91,11 +98,15 @@ TEST_F(DiagnosticsModelTest, BeforeRun) {
 // final state is correct.
 TEST_F(DiagnosticsModelTest, RunAll) {
   UTObserver observer;
-  EXPECT_FALSE(observer.done());
+  EXPECT_FALSE(observer.tests_done());
   model_->RunAll(&observer);
-  EXPECT_TRUE(observer.done());
-  EXPECT_EQ(kDiagnosticsTestCount, model_->GetTestRunCount());
-  EXPECT_EQ(kDiagnosticsTestCount, observer.finished());
+  EXPECT_TRUE(observer.tests_done());
+  EXPECT_FALSE(observer.recovery_done());
+  model_->RecoverAll(&observer);
+  EXPECT_TRUE(observer.recovery_done());
+  EXPECT_EQ(DiagnosticsModel::kDiagnosticsTestCount, model_->GetTestRunCount());
+  EXPECT_EQ(DiagnosticsModel::kDiagnosticsTestCount, observer.num_tested());
+  EXPECT_EQ(DiagnosticsModel::kDiagnosticsTestCount, observer.num_recovered());
 }
 
 }  // namespace diagnostics

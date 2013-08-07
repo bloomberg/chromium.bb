@@ -21,6 +21,20 @@
 
 namespace diagnostics {
 
+// This is the count of diagnostic tests on each platform.  This should
+// only be used by testing code.
+#if defined(OS_WIN)
+const int DiagnosticsModel::kDiagnosticsTestCount = 19;
+#elif defined(OS_MACOSX)
+const int DiagnosticsModel::kDiagnosticsTestCount = 15;
+#elif defined(OS_POSIX)
+#if defined(OS_CHROMEOS)
+const int DiagnosticsModel::kDiagnosticsTestCount = 19;
+#else
+const int DiagnosticsModel::kDiagnosticsTestCount = 17;
+#endif
+#endif
+
 namespace {
 
 // Embodies the commonalities of the model across platforms. It manages the
@@ -56,19 +70,50 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
         break;
     }
     if (observer)
-      observer->OnDoneAll(this);
+      observer->OnAllTestsDone(this);
   }
 
-  virtual const TestInfo& GetTest(size_t index) OVERRIDE {
+  virtual void RecoverAll(DiagnosticsModel::Observer* observer) OVERRIDE {
+    size_t test_count = tests_.size();
+    for (size_t i = 0; i != test_count; ++i) {
+      bool do_next = RunRecovery(tests_[i], observer, i);
+      if (!do_next)
+        break;
+    }
+    if (observer)
+      observer->OnAllRecoveryDone(this);
+  }
+
+  virtual const TestInfo& GetTest(size_t index) const OVERRIDE {
     return *tests_[index];
   }
 
+  virtual bool GetTestInfo(const std::string& id,
+                           const TestInfo** result) const OVERRIDE {
+    for (size_t i = 0; i < tests_.size(); i++) {
+      if (tests_[i]->GetId() == id) {
+        *result = tests_[i];
+        return true;
+      }
+    }
+    return false;
+  }
+
  protected:
-  // Run a particular test. Return false if no other tests should be run.
+  // Run a particular diagnostic test. Return false if no other tests should be
+  // run.
   virtual bool RunTest(DiagnosticsTest* test,
                        Observer* observer,
                        size_t index) {
     return test->Execute(observer, this, index);
+  }
+
+  // Recover from a particular diagnostic test. Return false if no further
+  // recovery should be run.
+  virtual bool RunRecovery(DiagnosticsTest* test,
+                           Observer* observer,
+                           size_t index) {
+    return test->Recover(observer, this, index);
   }
 
   typedef std::vector<DiagnosticsTest*> TestArray;
@@ -118,7 +163,6 @@ class DiagnosticsModelMac : public DiagnosticsModelImpl {
     tests_.push_back(MakeUserDirTest());
     tests_.push_back(MakeLocalStateFileTest());
     tests_.push_back(MakeDictonaryDirTest());
-    tests_.push_back(MakeResourcesFileTest());
     tests_.push_back(MakeDiskSpaceTest());
     tests_.push_back(MakePreferencesTest());
     tests_.push_back(MakeLocalStateTest());

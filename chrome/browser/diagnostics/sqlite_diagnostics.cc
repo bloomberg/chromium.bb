@@ -47,12 +47,45 @@ namespace {
 // Generic diagnostic test class for checking SQLite database integrity.
 class SqliteIntegrityTest : public DiagnosticsTest {
  public:
+  // These are bit flags, so each value should be a power of two.
+  enum Flags {
+    NO_FLAGS_SET = 0,
+    CRITICAL = 0x01,
+    REMOVE_IF_CORRUPT = 0x02,
+  };
 
-  SqliteIntegrityTest(bool critical,
+  SqliteIntegrityTest(uint32 flags,
                       const std::string& id,
                       const std::string& title,
                       const base::FilePath& db_path)
-      : DiagnosticsTest(id, title), critical_(critical), db_path_(db_path) {}
+      : DiagnosticsTest(id, title),
+        flags_(flags),
+        db_path_(db_path) {}
+
+  virtual bool RecoveryImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
+    int outcome_code = GetOutcomeCode();
+    if (flags_ & REMOVE_IF_CORRUPT) {
+      switch (outcome_code) {
+        case DIAG_SQLITE_ERROR_HANDLER_CALLED:
+        case DIAG_SQLITE_CANNOT_OPEN_DB:
+        case DIAG_SQLITE_DB_LOCKED:
+        case DIAG_SQLITE_PRAGMA_FAILED:
+        case DIAG_SQLITE_DB_CORRUPTED:
+          LOG(WARNING) << "Removing broken SQLite database: "
+                       << db_path_.value();
+          base::DeleteFile(db_path_, false);
+          break;
+        case DIAG_SQLITE_SUCCESS:
+        case DIAG_SQLITE_FILE_NOT_FOUND_OK:
+        case DIAG_SQLITE_FILE_NOT_FOUND:
+          break;
+        default:
+          DCHECK(false) << "Invalid outcome code: " << outcome_code;
+          break;
+      }
+    }
+    return true;
+  }
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
     // If we're given an absolute path, use it. If not, then assume it's under
@@ -64,7 +97,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
       path = db_path_;
 
     if (!base::PathExists(path)) {
-      if (critical_) {
+      if (flags_ & CRITICAL) {
         RecordOutcome(DIAG_SQLITE_FILE_NOT_FOUND,
                       "File not found",
                       DiagnosticsModel::TEST_FAIL_CONTINUE);
@@ -178,7 +211,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
     DISALLOW_COPY_AND_ASSIGN(ErrorRecorder);
   };
 
-  bool critical_;
+  uint32 flags_;
   base::FilePath db_path_;
   DISALLOW_COPY_AND_ASSIGN(SqliteIntegrityTest);
 };
@@ -186,21 +219,21 @@ class SqliteIntegrityTest : public DiagnosticsTest {
 }  // namespace
 
 DiagnosticsTest* MakeSqliteWebDbTest() {
-  return new SqliteIntegrityTest(true,
+  return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
                                  kSQLiteIntegrityWebTest,
                                  "Web Database",
                                  base::FilePath(kWebDataFilename));
 }
 
 DiagnosticsTest* MakeSqliteCookiesDbTest() {
-  return new SqliteIntegrityTest(true,
+  return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
                                  kSQLiteIntegrityCookieTest,
                                  "Cookies Database",
                                  base::FilePath(chrome::kCookieFilename));
 }
 
 DiagnosticsTest* MakeSqliteHistoryDbTest() {
-  return new SqliteIntegrityTest(true,
+  return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
                                  kSQLiteIntegrityHistoryTest,
                                  "History Database",
                                  base::FilePath(chrome::kHistoryFilename));
@@ -208,14 +241,14 @@ DiagnosticsTest* MakeSqliteHistoryDbTest() {
 
 DiagnosticsTest* MakeSqliteArchivedHistoryDbTest() {
   return new SqliteIntegrityTest(
-      false,
+      SqliteIntegrityTest::NO_FLAGS_SET,
       kSQLiteIntegrityArchivedHistoryTest,
       "Archived History Database",
       base::FilePath(chrome::kArchivedHistoryFilename));
 }
 
 DiagnosticsTest* MakeSqliteThumbnailsDbTest() {
-  return new SqliteIntegrityTest(false,
+  return new SqliteIntegrityTest(SqliteIntegrityTest::NO_FLAGS_SET,
                                  kSQLiteIntegrityThumbnailsTest,
                                  "Thumbnails Database",
                                  base::FilePath(chrome::kThumbnailsFilename));
@@ -225,7 +258,7 @@ DiagnosticsTest* MakeSqliteAppCacheDbTest() {
   base::FilePath appcache_dir(content::kAppCacheDirname);
   base::FilePath appcache_db =
       appcache_dir.Append(appcache::kAppCacheDatabaseName);
-  return new SqliteIntegrityTest(false,
+  return new SqliteIntegrityTest(SqliteIntegrityTest::NO_FLAGS_SET,
                                  kSQLiteIntegrityAppCacheTest,
                                  "Application Cache Database",
                                  appcache_db);
@@ -235,7 +268,7 @@ DiagnosticsTest* MakeSqliteWebDatabaseTrackerDbTest() {
   base::FilePath databases_dir(webkit_database::kDatabaseDirectoryName);
   base::FilePath tracker_db =
       databases_dir.Append(webkit_database::kTrackerDatabaseFileName);
-  return new SqliteIntegrityTest(false,
+  return new SqliteIntegrityTest(SqliteIntegrityTest::NO_FLAGS_SET,
                                  kSQLiteIntegrityDatabaseTrackerTest,
                                  "Database Tracker Database",
                                  tracker_db);
@@ -244,7 +277,7 @@ DiagnosticsTest* MakeSqliteWebDatabaseTrackerDbTest() {
 #if defined(OS_CHROMEOS)
 DiagnosticsTest* MakeSqliteNssCertDbTest() {
   base::FilePath home_dir = file_util::GetHomeDir();
-  return new SqliteIntegrityTest(false,
+  return new SqliteIntegrityTest(SqliteIntegrityTest::REMOVE_IF_CORRUPT,
                                  kSQLiteIntegrityNSSCertTest,
                                  "NSS Certificate Database",
                                  home_dir.Append(chromeos::kNssCertDbPath));
@@ -252,7 +285,7 @@ DiagnosticsTest* MakeSqliteNssCertDbTest() {
 
 DiagnosticsTest* MakeSqliteNssKeyDbTest() {
   base::FilePath home_dir = file_util::GetHomeDir();
-  return new SqliteIntegrityTest(false,
+  return new SqliteIntegrityTest(SqliteIntegrityTest::REMOVE_IF_CORRUPT,
                                  kSQLiteIntegrityNSSKeyTest,
                                  "NSS Key Database",
                                  home_dir.Append(chromeos::kNssKeyDbPath));

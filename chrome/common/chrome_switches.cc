@@ -260,6 +260,9 @@ const char kDiagnostics[]                   = "diagnostics";
 // Sets the output format for diagnostic modes enabled by diagnostics flag.
 const char kDiagnosticsFormat[]             = "diagnostics-format";
 
+// Tells the diagnostics mode to do the requested recovery step(s).
+const char kDiagnosticsRecovery[]           = "diagnostics-recovery";
+
 // If set, the app list will be disabled at startup. Note this doesn't prevent
 // the app list from running, it just makes Chrome think the app list hasn't
 // been enabled (as in kEnableAppList) yet.

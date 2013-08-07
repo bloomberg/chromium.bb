@@ -27,7 +27,19 @@ bool DiagnosticsTest::Execute(DiagnosticsModel::Observer* observer,
   result_ = DiagnosticsModel::TEST_RUNNING;
   bool keep_going = ExecuteImpl(observer);
   if (observer)
-    observer->OnFinished(index, model);
+    observer->OnTestFinished(index, model);
+  return keep_going;
+}
+
+bool DiagnosticsTest::Recover(DiagnosticsModel::Observer* observer,
+                              DiagnosticsModel* model,
+                              size_t index) {
+  result_ = DiagnosticsModel::RECOVERY_RUNNING;
+  bool keep_going = RecoveryImpl(observer);
+  result_ = keep_going ? DiagnosticsModel::RECOVERY_OK
+                       : DiagnosticsModel::RECOVERY_FAIL_STOP;
+  if (observer)
+    observer->OnRecoveryFinished(index, model);
   return keep_going;
 }
 
@@ -65,5 +77,10 @@ std::string DiagnosticsTest::GetAdditionalInfo() const {
 base::Time DiagnosticsTest::GetStartTime() const { return start_time_; }
 
 base::Time DiagnosticsTest::GetEndTime() const { return end_time_; }
+
+bool DiagnosticsTest::RecoveryImpl(DiagnosticsModel::Observer* observer) {
+  return true;
+};
+
 
 }  // namespace diagnostics

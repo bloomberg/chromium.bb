@@ -734,6 +734,7 @@
         'browser/content_settings/tab_specific_content_settings_unittest.cc',
         'browser/custom_handlers/protocol_handler_registry_unittest.cc',
         'browser/diagnostics/diagnostics_model_unittest.cc',
+        'browser/diagnostics/diagnostics_controller_unittest.cc',
         'browser/download/chrome_download_manager_delegate_unittest.cc',
         'browser/download/download_item_model_unittest.cc',
         'browser/download/all_download_item_notifier_unittest.cc',

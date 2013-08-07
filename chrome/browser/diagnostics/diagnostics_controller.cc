@@ -34,8 +34,8 @@ bool DiagnosticsController::HasResults() {
 
 void DiagnosticsController::ClearResults() { model_.reset(); }
 
-// This entry point is called from ChromeMain() when very few things
-// have been initialized, so be careful what you use.
+// This entry point is called from early in startup when very few things have
+// been initialized, so be careful what you use.
 int DiagnosticsController::Run(const CommandLine& command_line,
                                DiagnosticsWriter* writer) {
   writer_ = writer;
@@ -43,6 +43,24 @@ int DiagnosticsController::Run(const CommandLine& command_line,
   model_.reset(MakeDiagnosticsModel(command_line));
   model_->RunAll(writer_);
 
+  return 0;
+}
+
+// This entry point is called from early in startup when very few things have
+// been initialized, so be careful what you use.
+int DiagnosticsController::RunRecovery(const CommandLine& command_line,
+                                       DiagnosticsWriter* writer) {
+  if (!HasResults()) {
+    if (writer) {
+      writer->WriteInfoLine("No diagnostics have been run.");
+      writer->OnAllRecoveryDone(model_.get());
+    }
+    return -1;
+  }
+
+  writer_ = writer;
+
+  model_->RecoverAll(writer_);
   return 0;
 }
 
