@@ -116,19 +116,6 @@ void SupportedImageTypeValidator::StartPreWriteValidation(
                  weak_factory_.GetWeakPtr()));
 }
 
-void SupportedImageTypeValidator::StartPostWriteValidation(
-    const base::FilePath& dest_platform_path,
-    const ResultCallback& result_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  post_write_callback_ = result_callback;
-
-  // TODO(gbillock): Insert AV call here in the right validator.
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(post_write_callback_, base::PLATFORM_FILE_OK));
-}
-
 SupportedImageTypeValidator::SupportedImageTypeValidator(
     const base::FilePath& path)
     : path_(path),
