@@ -95,11 +95,6 @@ private:
     double m_fraction;
 };
 
-bool compareOffsets(const RefPtr<Keyframe>& a, const RefPtr<Keyframe>& b)
-{
-    return a->offset() < b->offset();
-}
-
 } // namespace
 
 
@@ -167,7 +162,7 @@ KeyframeAnimationEffect::KeyframeVector KeyframeAnimationEffect::normalizedKeyfr
         ASSERT(!std::isnan((*iter)->offset()));
 
     // Sort by offset.
-    std::stable_sort(keyframes.begin(), keyframes.end(), compareOffsets);
+    std::stable_sort(keyframes.begin(), keyframes.end(), Keyframe::compareOffsets);
     return keyframes;
 }
 

@@ -51,6 +51,10 @@ public:
     {
         return adoptRef(new Keyframe);
     }
+    static bool compareOffsets(const RefPtr<Keyframe>& a, const RefPtr<Keyframe>& b)
+    {
+        return a->offset() < b->offset();
+    }
     void setOffset(double offset) { m_offset = offset; }
     double offset() const { return m_offset; }
     void setComposite(AnimationEffect::CompositeOperation composite) { m_composite = composite; }

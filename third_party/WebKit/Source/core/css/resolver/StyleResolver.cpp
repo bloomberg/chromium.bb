@@ -772,10 +772,9 @@ void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style,
 
     // Construct and populate the style for each keyframe
     const Vector<RefPtr<StyleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
-    for (unsigned i = 0; i < styleKeyframes.size(); ++i) {
+    for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
         RefPtr<RenderStyle> keyframeStyle = styleForKeyframe(element, style, styleKeyframe);
-
         Vector<float> offsets;
         styleKeyframe->getKeys(offsets);
         for (size_t j = 0; j < offsets.size(); ++j) {
@@ -785,15 +784,56 @@ void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style,
             // FIXME: AnimatableValues should be shared between the keyframes at different offsets.
             for (unsigned k = 0; k < properties->propertyCount(); k++) {
                 CSSPropertyID property = properties->propertyAt(k).id();
-                // FIXME: CSSValue needs to be resolved.
                 keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, keyframeStyle.get()).get());
             }
             keyframes.append(keyframe);
         }
     }
 
-    // FIXME: If the 0% keyframe is missing, create it (but only if there is at least one other keyframe)
-    // FIXME: If the 100% keyframe is missing, create it (but only if there is at least one other keyframe)
+    if (keyframes.isEmpty())
+        return;
+
+    // Remove duplicate keyframes. In CSS the last keyframe at a given offset takes priority.
+    size_t targetIndex = 0;
+    for (size_t i = 1; i < keyframes.size(); i++) {
+        if (keyframes[i]->offset() != keyframes[targetIndex]->offset())
+            targetIndex++;
+        if (targetIndex != i)
+            keyframes[targetIndex] = keyframes[i];
+    }
+    keyframes.shrink(targetIndex + 1);
+
+    bool isStartKeyframeMissing = keyframes[0]->offset();
+    bool isEndKeyframeMissing = keyframes[keyframes.size() - 1]->offset() != 1;
+    if (!isStartKeyframeMissing && !isEndKeyframeMissing)
+        return;
+
+    HashSet<CSSPropertyID> allProperties;
+    for (size_t i = 0; i < styleKeyframes.size(); ++i) {
+        const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
+        Vector<float> offsets;
+        styleKeyframe->getKeys(offsets);
+        const StylePropertySet* properties = styleKeyframe->properties();
+        for (unsigned j = 0; j < properties->propertyCount(); ++j) {
+            allProperties.add(properties->propertyAt(j).id());
+        }
+    }
+
+    if (isStartKeyframeMissing) {
+        RefPtr<Keyframe> keyframe = Keyframe::create();
+        keyframe->setOffset(0);
+        for (HashSet<CSSPropertyID>::const_iterator iter = allProperties.begin(); iter != allProperties.end(); ++iter)
+            keyframe->setPropertyValue(*iter, CSSAnimatableValueFactory::create(*iter, style).get());
+        keyframes.prepend(keyframe);
+    }
+
+    if (isEndKeyframeMissing) {
+        RefPtr<Keyframe> keyframe = Keyframe::create();
+        keyframe->setOffset(1);
+        for (HashSet<CSSPropertyID>::const_iterator iter = allProperties.begin(); iter != allProperties.end(); ++iter)
+            keyframe->setPropertyValue(*iter, CSSAnimatableValueFactory::create(*iter, style).get());
+        keyframes.append(keyframe);
+    }
 }
 
 const StylePropertySet* StyleResolver::firstKeyframeStyles(const Element* element, const StringImpl* animationName)

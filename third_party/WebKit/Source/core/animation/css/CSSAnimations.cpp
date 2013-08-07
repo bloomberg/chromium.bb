@@ -185,6 +185,7 @@ void CSSAnimations::update(Element* element, const RenderStyle* style)
                 Timing timing;
                 timingFromAnimationData(animationData, timing);
                 OwnPtr<CSSAnimations::EventDelegate> eventDelegate = adoptPtr(new EventDelegate(element, animationName));
+                // FIXME: crbug.com/268791 - Keyframes are already normalized, perhaps there should be a flag on KeyframeAnimationEffect to skip normalization.
                 m_animations.set(animationName.impl(), element->document()->timeline()->play(
                     Animation::create(element, KeyframeAnimationEffect::create(keyframes), timing, eventDelegate.release()).get()).get());
             }
