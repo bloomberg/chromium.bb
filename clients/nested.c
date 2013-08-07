@@ -612,7 +612,7 @@ main(int argc, char *argv[])
 
 	nested = nested_create(display);
 
-	launch_client(nested, "nested-client");
+	launch_client(nested, "weston-nested-client");
 
 	display_run(display);
 
