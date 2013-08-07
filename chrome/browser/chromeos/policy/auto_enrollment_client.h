@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
+#include "net/base/network_change_notifier.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 class PrefRegistrySimple;
@@ -30,7 +31,8 @@ class DeviceManagementService;
 // Interacts with the device management service and determines whether this
 // machine should automatically enter the Enterprise Enrollment screen during
 // OOBE.
-class AutoEnrollmentClient {
+class AutoEnrollmentClient
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // |completion_callback| will be invoked on completion of the protocol, after
   // Start() is invoked.
@@ -79,6 +81,10 @@ class AutoEnrollmentClient {
   // It can be reused for subsequent requests to the device management service.
   std::string device_id() const { return device_id_; }
 
+  // Implementation of net::NetworkChangeNotifier::NetworkChangeObserver:
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+
  private:
   // Tries to load the result of a previous execution of the protocol from
   // local state. Returns true if that decision has been made and is valid.
@@ -102,6 +108,10 @@ class AutoEnrollmentClient {
   // Invoked when the protocol completes. This invokes the callback and records
   // some UMA metrics.
   void OnProtocolDone();
+
+  // Invoked when a request job completes. Resets the internal state, and
+  // deletes the client if necessary.
+  void OnRequestDone();
 
   // Callback to invoke when the protocol completes.
   base::Closure completion_callback_;

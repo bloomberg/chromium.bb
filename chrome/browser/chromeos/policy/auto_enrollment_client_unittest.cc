@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
@@ -14,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,6 +101,12 @@ class AutoEnrollmentClientTest : public testing::Test {
         .WillOnce(service_->SucceedJob(response));
   }
 
+  void ServerWillReplyAsync(MockDeviceManagementJob** job) {
+    EXPECT_CALL(*service_,
+                CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT))
+        .WillOnce(service_->CreateAsyncJob(job));
+  }
+
   bool HasCachedDecision() {
     return local_state_->GetUserPref(prefs::kShouldAutoEnroll);
   }
@@ -118,6 +126,7 @@ class AutoEnrollmentClientTest : public testing::Test {
     return last_request_.auto_enrollment_request();
   }
 
+  content::TestBrowserThreadBundle browser_threads_;
   ScopedTestingLocalState scoped_testing_local_state_;
   TestingPrefServiceSimple* local_state_;
   MockDeviceManagementService* service_;
@@ -133,7 +142,7 @@ TEST_F(AutoEnrollmentClientTest, NetworkFailure) {
   ServerWillFail(DM_STATUS_TEMPORARY_UNAVAILABLE);
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
-  EXPECT_EQ(1, completion_callback_count_);
+  EXPECT_EQ(0, completion_callback_count_);
   EXPECT_FALSE(HasCachedDecision());
 }
 
@@ -164,7 +173,7 @@ TEST_F(AutoEnrollmentClientTest, AskForMoreThenFail) {
   ServerWillFail(DM_STATUS_TEMPORARY_UNAVAILABLE);
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());
-  EXPECT_EQ(1, completion_callback_count_);
+  EXPECT_EQ(0, completion_callback_count_);
   EXPECT_FALSE(HasCachedDecision());
 }
 
@@ -236,6 +245,11 @@ TEST_F(AutoEnrollmentClientTest, ConsumerDevice) {
   EXPECT_FALSE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
   VerifyCachedResult(false, 8);
+
+  // Network changes don't trigger retries after obtaining a response from
+  // the server.
+  client_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  EXPECT_EQ(1, completion_callback_count_);
 }
 
 TEST_F(AutoEnrollmentClientTest, EnterpriseDevice) {
@@ -244,6 +258,11 @@ TEST_F(AutoEnrollmentClientTest, EnterpriseDevice) {
   EXPECT_TRUE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
   VerifyCachedResult(true, 8);
+
+  // Network changes don't trigger retries after obtaining a response from
+  // the server.
+  client_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  EXPECT_EQ(1, completion_callback_count_);
 }
 
 TEST_F(AutoEnrollmentClientTest, NoSerial) {
@@ -321,6 +340,112 @@ TEST_F(AutoEnrollmentClientTest, RetryIfPowerLargerThanCached) {
   client_->Start();
   EXPECT_TRUE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
+}
+
+TEST_F(AutoEnrollmentClientTest, NetworkChangeRetryAfterErrors) {
+  ServerWillFail(DM_STATUS_TEMPORARY_UNAVAILABLE);
+  client_->Start();
+  EXPECT_FALSE(client_->should_auto_enroll());
+  // Don't invoke the callback if there was a network failure.
+  EXPECT_EQ(0, completion_callback_count_);
+  EXPECT_FALSE(HasCachedDecision());
+
+  // The client doesn't retry if no new connection became available.
+  client_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_FALSE(client_->should_auto_enroll());
+  EXPECT_EQ(0, completion_callback_count_);
+  EXPECT_FALSE(HasCachedDecision());
+
+  // Retry once the network is back.
+  ServerWillReply(-1, true, true);
+  client_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  EXPECT_TRUE(client_->should_auto_enroll());
+  EXPECT_EQ(1, completion_callback_count_);
+  EXPECT_TRUE(HasCachedDecision());
+
+  // Subsequent network changes don't trigger retries.
+  client_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_NONE);
+  client_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  EXPECT_TRUE(client_->should_auto_enroll());
+  EXPECT_EQ(1, completion_callback_count_);
+  EXPECT_TRUE(HasCachedDecision());
+}
+
+TEST_F(AutoEnrollmentClientTest, CancelAndDeleteSoonWithPendingRequest) {
+  MockDeviceManagementJob* job = NULL;
+  ServerWillReplyAsync(&job);
+  EXPECT_FALSE(job);
+  client_->Start();
+  ASSERT_TRUE(job);
+  EXPECT_EQ(0, completion_callback_count_);
+
+  // Cancel while a request is in flight.
+  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  client_.release()->CancelAndDeleteSoon();
+  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+
+  // The client cleans itself up once a reply is received.
+  job->SendResponse(DM_STATUS_TEMPORARY_UNAVAILABLE,
+                    em::DeviceManagementResponse());
+  // The DeleteSoon task has been posted:
+  EXPECT_FALSE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_EQ(0, completion_callback_count_);
+}
+
+TEST_F(AutoEnrollmentClientTest, NetworkChangedAfterCancelAndDeleteSoon) {
+  MockDeviceManagementJob* job = NULL;
+  ServerWillReplyAsync(&job);
+  EXPECT_FALSE(job);
+  client_->Start();
+  ASSERT_TRUE(job);
+  EXPECT_EQ(0, completion_callback_count_);
+
+  // Cancel while a request is in flight.
+  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  AutoEnrollmentClient* client = client_.release();
+  client->CancelAndDeleteSoon();
+  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+
+  // Network change events are ignored while a request is pending.
+  client->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  EXPECT_EQ(0, completion_callback_count_);
+
+  // The client cleans itself up once a reply is received.
+  job->SendResponse(DM_STATUS_TEMPORARY_UNAVAILABLE,
+                    em::DeviceManagementResponse());
+  // The DeleteSoon task has been posted:
+  EXPECT_FALSE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_EQ(0, completion_callback_count_);
+
+  // Network changes that have been posted before are also ignored:
+  client->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  EXPECT_EQ(0, completion_callback_count_);
+}
+
+TEST_F(AutoEnrollmentClientTest, CancelAndDeleteSoonAfterCompletion) {
+  ServerWillReply(-1, true, true);
+  client_->Start();
+  EXPECT_EQ(1, completion_callback_count_);
+  EXPECT_TRUE(client_->should_auto_enroll());
+
+  // The client will delete itself immediately if there are no pending
+  // requests.
+  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  client_.release()->CancelAndDeleteSoon();
+  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+}
+
+TEST_F(AutoEnrollmentClientTest, CancelAndDeleteSoonAfterNetworkFailure) {
+  ServerWillFail(DM_STATUS_TEMPORARY_UNAVAILABLE);
+  client_->Start();
+  EXPECT_EQ(0, completion_callback_count_);
+  EXPECT_FALSE(client_->should_auto_enroll());
+
+  // The client will delete itself immediately if there are no pending
+  // requests.
+  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  client_.release()->CancelAndDeleteSoon();
+  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
 }
 
 }  // namespace
