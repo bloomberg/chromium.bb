@@ -149,7 +149,6 @@ static bool GetProcessMemoryInfoUsingPS(
   }
 
   std::istringstream in(output, std::istringstream::in);
-  std::string line;
 
   // Process lines until done.
   while (true) {
