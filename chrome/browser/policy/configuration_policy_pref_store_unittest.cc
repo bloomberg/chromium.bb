@@ -246,6 +246,8 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kDisableSSLRecordSplitting),
         PolicyAndPref(key::kEnableOnlineRevocationChecks,
                       prefs::kCertRevocationCheckingEnabled),
+        PolicyAndPref(key::kRequireOnlineRevocationChecksForLocalAnchors,
+                      prefs::kCertRevocationCheckingRequiredLocalAnchors),
         PolicyAndPref(key::kDisableAuthNegotiateCnameLookup,
                       prefs::kDisableAuthNegotiateCnameLookup),
         PolicyAndPref(key::kEnableAuthNegotiatePort,

@@ -526,6 +526,16 @@
     ]
   },
 
+  "RequireOnlineRevocationChecksForLocalAnchors": {
+    "os": ["win", "linux", "chromeos"],
+    "test_policy": { "RequireOnlineRevocationChecksForLocalAnchors": true },
+    "pref_mappings": [
+      { "pref": "ssl.rev_checking.required_for_local_anchors",
+        "local_state": true
+      }
+    ]
+  },
+
   "AuthSchemes": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AuthSchemes": "AuthSchemes" },
