@@ -443,38 +443,9 @@ void Program::ExecuteBindAttribLocationCalls() {
 void ProgramManager::DoCompileShader(Shader* shader,
                                      ShaderTranslator* translator,
                                      FeatureInfo* feature_info) {
-  TimeTicks before = TimeTicks::HighResNow();
-  if (program_cache_ &&
-      program_cache_->GetShaderCompilationStatus(
-          shader->source() ? *shader->source() : std::string(),
-          translator) == ProgramCache::COMPILATION_SUCCEEDED) {
-    shader->SetStatus(true, "", translator);
-    shader->FlagSourceAsCompiled(false);
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "GPU.ProgramCache.CompilationCacheHitTime",
-        (TimeTicks::HighResNow() - before).InMicroseconds(),
-        0,
-        TimeDelta::FromSeconds(1).InMicroseconds(),
-        50);
-    return;
-  }
-  ForceCompileShader(shader->source(), shader, translator, feature_info);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "GPU.ProgramCache.CompilationCacheMissTime",
-      (TimeTicks::HighResNow() - before).InMicroseconds(),
-      0,
-      TimeDelta::FromSeconds(1).InMicroseconds(),
-      50);
-}
-
-void ProgramManager::ForceCompileShader(const std::string* source,
-                                        Shader* shader,
-                                        ShaderTranslator* translator,
-                                        FeatureInfo* feature_info) {
-  shader->FlagSourceAsCompiled(true);
-
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
   // glShaderSource and then glCompileShader.
+  const std::string* source = shader->source();
   const char* shader_src = source ? source->c_str() : "";
   if (translator) {
     if (!translator->Translate(shader_src)) {
@@ -506,11 +477,6 @@ void ProgramManager::ForceCompileShader(const std::string* source,
   glGetShaderiv(shader->service_id(), GL_COMPILE_STATUS, &status);
   if (status) {
     shader->SetStatus(true, "", translator);
-    if (program_cache_) {
-      const char* untranslated_source = source ? source->c_str() : "";
-      program_cache_->ShaderCompilationSucceeded(
-          untranslated_source, translator);
-    }
   } else {
     // We cannot reach here if we are using the shader translator.
     // All invalid shaders must be rejected by the translator.
@@ -551,10 +517,12 @@ bool Program::Link(ShaderManager* manager,
   bool link = true;
   ProgramCache* cache = manager_->program_cache_;
   if (cache) {
+    DCHECK(attached_shaders_[0]->signature_source() &&
+           attached_shaders_[1]->signature_source());
     ProgramCache::LinkedProgramStatus status = cache->GetLinkedProgramStatus(
-        *attached_shaders_[0]->deferred_compilation_source(),
+        *attached_shaders_[0]->signature_source(),
         vertex_translator,
-        *attached_shaders_[1]->deferred_compilation_source(),
+        *attached_shaders_[1]->signature_source(),
         fragment_translator,
         &bind_attrib_location_map_);
 
@@ -569,26 +537,6 @@ bool Program::Link(ShaderManager* manager,
                                    shader_callback);
       link = success != ProgramCache::PROGRAM_LOAD_SUCCESS;
       UMA_HISTOGRAM_BOOLEAN("GPU.ProgramCache.LoadBinarySuccess", !link);
-    }
-
-    if (link) {
-      // compile our shaders if they're pending
-      const int kShaders = Program::kMaxAttachedShaders;
-      for (int i = 0; i < kShaders; ++i) {
-        Shader* shader = attached_shaders_[i].get();
-        if (shader->compilation_status() ==
-            Shader::PENDING_DEFERRED_COMPILE) {
-          ShaderTranslator* translator = ShaderIndexToTranslator(
-              i,
-              vertex_translator,
-              fragment_translator);
-          manager_->ForceCompileShader(shader->deferred_compilation_source(),
-                                       attached_shaders_[i].get(),
-                                       translator,
-                                       feature_info);
-          DCHECK(shader->IsValid());
-        }
-      }
     }
   }
 

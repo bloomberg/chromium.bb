@@ -26,19 +26,7 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
  public:
   typedef ShaderTranslator::VariableInfo VariableInfo;
 
-  enum CompilationStatus {
-    NOT_COMPILED,
-    // We're pending compilation for a cache hit with the program cache.
-    PENDING_DEFERRED_COMPILE,
-    COMPILED
-  };
-
   void UpdateSource(const char* source) {
-    // If the source is flagged as compiled, then store our previous source
-    // for deferred compile and caching.
-    if (!deferred_compilation_source_.get()) {
-      deferred_compilation_source_.reset(source_.release());
-    }
     source_.reset(source ? new std::string(source) : NULL);
   }
 
@@ -63,30 +51,13 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
     return translated_source_.get();
   }
 
+  const std::string* signature_source() const {
+    return signature_source_.get();
+  }
+
   void SetStatus(
       bool valid, const char* log,
       ShaderTranslatorInterface* translator);
-
-  CompilationStatus compilation_status() const {
-    return compilation_status_;
-  }
-
-  // The source that was used when the user called CompileShader.
-  // This is used for a deferred compile and in the program cache
-  const std::string* deferred_compilation_source() const {
-    return deferred_compilation_source_.get() != NULL ?
-        deferred_compilation_source_.get() :
-        source_.get();
-  }
-
-  // Resets our deferred compilation source and stores if the source was
-  // actually compiled, or if we're expecting a cache hit
-  void FlagSourceAsCompiled(bool actually_compiled) {
-    compilation_status_ = actually_compiled ?
-        COMPILED :
-        PENDING_DEFERRED_COMPILE;
-    deferred_compilation_source_.reset();
-  }
 
   const VariableInfo* GetAttribInfo(const std::string& name) const;
   const VariableInfo* GetUniformInfo(const std::string& name) const;
@@ -165,6 +136,9 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   // The shader source as passed to glShaderSource.
   scoped_ptr<std::string> source_;
 
+  // The source the last compile used.
+  scoped_ptr<std::string> signature_source_;
+
   // The translated shader source.
   scoped_ptr<std::string> translated_source_;
 
@@ -177,12 +151,6 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
 
   // The name hashing info when the shader was last compiled.
   NameMap name_map_;
-
-  // The current compilation status of the shader
-  CompilationStatus compilation_status_;
-
-  // Holds on to the source for a deferred compile.
-  scoped_ptr<std::string> deferred_compilation_source_;
 };
 
 // Tracks the Shaders.

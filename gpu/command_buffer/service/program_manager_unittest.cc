@@ -1192,18 +1192,8 @@ class ProgramManagerWithCacheTest : public testing::Test {
   }
 
   void SetShadersCompiled() {
-    cache_->ShaderCompilationSucceeded(*vertex_shader_->source(), NULL);
-    cache_->ShaderCompilationSucceeded(*fragment_shader_->source(), NULL);
     vertex_shader_->SetStatus(true, NULL, NULL);
     fragment_shader_->SetStatus(true, NULL, NULL);
-    vertex_shader_->FlagSourceAsCompiled(true);
-    fragment_shader_->FlagSourceAsCompiled(true);
-  }
-
-  void SetShadersNotCompiledButCached() {
-    SetShadersCompiled();
-    vertex_shader_->FlagSourceAsCompiled(false);
-    fragment_shader_->FlagSourceAsCompiled(false);
   }
 
   void SetProgramCached() {
@@ -1363,31 +1353,6 @@ const GLuint ProgramManagerWithCacheTest::kVertexShaderServiceId;
 const GLuint ProgramManagerWithCacheTest::kFragmentShaderServiceId;
 #endif
 
-TEST_F(ProgramManagerWithCacheTest, CacheSuccessAfterShaderCompile) {
-  SetExpectationsForSuccessCompile(vertex_shader_);
-  scoped_refptr<FeatureInfo> info(new FeatureInfo());
-  manager_.DoCompileShader(vertex_shader_, NULL, info.get());
-  EXPECT_EQ(ProgramCache::COMPILATION_SUCCEEDED,
-            cache_->GetShaderCompilationStatus(
-                *vertex_shader_->source(), NULL));
-}
-
-TEST_F(ProgramManagerWithCacheTest, CacheUnknownAfterShaderError) {
-  SetExpectationsForErrorCompile(vertex_shader_);
-  scoped_refptr<FeatureInfo> info(new FeatureInfo());
-  manager_.DoCompileShader(vertex_shader_, NULL, info.get());
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(
-                *vertex_shader_->source(), NULL));
-}
-
-TEST_F(ProgramManagerWithCacheTest, NoCompileWhenShaderCached) {
-  cache_->ShaderCompilationSucceeded(vertex_shader_->source()->c_str(), NULL);
-  SetExpectationsForNoCompile(vertex_shader_);
-  scoped_refptr<FeatureInfo> info(new FeatureInfo());
-  manager_.DoCompileShader(vertex_shader_, NULL, info.get());
-}
-
 TEST_F(ProgramManagerWithCacheTest, CacheProgramOnSuccessfulLink) {
   SetShadersCompiled();
   SetExpectationsForProgramLink();
@@ -1396,21 +1361,8 @@ TEST_F(ProgramManagerWithCacheTest, CacheProgramOnSuccessfulLink) {
                              base::Bind(&ShaderCacheCb)));
 }
 
-TEST_F(ProgramManagerWithCacheTest, CompileShaderOnLinkCacheMiss) {
-  SetShadersCompiled();
-  vertex_shader_->FlagSourceAsCompiled(false);
-
-  scoped_refptr<FeatureInfo> info(new FeatureInfo());
-
-  SetExpectationsForSuccessCompile(vertex_shader_);
-  SetExpectationsForProgramLink();
-  SetExpectationsForProgramCached();
-  EXPECT_TRUE(program_->Link(&shader_manager_, NULL, NULL,
-                             info.get(), base::Bind(&ShaderCacheCb)));
-}
-
 TEST_F(ProgramManagerWithCacheTest, LoadProgramOnProgramCacheHit) {
-  SetShadersNotCompiledButCached();
+  SetShadersCompiled();
   SetProgramCached();
 
   SetExpectationsForNoCompile(vertex_shader_);
@@ -1421,127 +1373,6 @@ TEST_F(ProgramManagerWithCacheTest, LoadProgramOnProgramCacheHit) {
 
   EXPECT_TRUE(program_->Link(NULL, NULL, NULL, NULL,
                              base::Bind(&ShaderCacheCb)));
-}
-
-TEST_F(ProgramManagerWithCacheTest, CompileAndLinkOnProgramCacheError) {
-  SetShadersNotCompiledButCached();
-  SetProgramCached();
-
-  SetExpectationsForSuccessCompile(vertex_shader_);
-  SetExpectationsForSuccessCompile(fragment_shader_);
-  SetExpectationsForProgramLoad(ProgramCache::PROGRAM_LOAD_FAILURE);
-  SetExpectationsForProgramLink();
-  SetExpectationsForProgramCached();
-
-  scoped_refptr<FeatureInfo> info(new FeatureInfo());
-  EXPECT_TRUE(program_->Link(&shader_manager_, NULL, NULL, info.get(),
-                             base::Bind(&ShaderCacheCb)));
-}
-
-TEST_F(ProgramManagerWithCacheTest, CorrectCompileOnSourceChangeNoCompile) {
-  SetShadersNotCompiledButCached();
-  SetProgramCached();
-
-  const GLuint kNewShaderClientId = 4;
-  const GLuint kNewShaderServiceId = 40;
-  const GLuint kNewProgramClientId = 5;
-  const GLuint kNewProgramServiceId = 50;
-
-  Shader* new_vertex_shader =
-      shader_manager_.CreateShader(kNewShaderClientId,
-                                       kNewShaderServiceId,
-                                       GL_VERTEX_SHADER);
-
-  const std::string original_source = *vertex_shader_->source();
-  new_vertex_shader->UpdateSource(original_source.c_str());
-
-  Program* program = manager_.CreateProgram(
-      kNewProgramClientId, kNewProgramServiceId);
-  ASSERT_TRUE(program != NULL);
-  program->AttachShader(&shader_manager_, new_vertex_shader);
-  program->AttachShader(&shader_manager_, fragment_shader_);
-
-  SetExpectationsForNoCompile(new_vertex_shader);
-
-  manager_.DoCompileShader(new_vertex_shader, NULL, NULL);
-  EXPECT_EQ(Shader::PENDING_DEFERRED_COMPILE,
-            new_vertex_shader->compilation_status());
-
-  new_vertex_shader->UpdateSource("different!");
-  EXPECT_EQ(original_source,
-            *new_vertex_shader->deferred_compilation_source());
-
-  EXPECT_EQ(Shader::PENDING_DEFERRED_COMPILE,
-            new_vertex_shader->compilation_status());
-  EXPECT_EQ(Shader::PENDING_DEFERRED_COMPILE,
-            fragment_shader_->compilation_status());
-
-  SetExpectationsForNoCompile(fragment_shader_);
-  SetExpectationsForNotCachingProgram(program,
-                                      new_vertex_shader,
-                                      fragment_shader_);
-  SetExpectationsForProgramLoad(kNewProgramServiceId,
-                                program,
-                                new_vertex_shader,
-                                fragment_shader_,
-                                ProgramCache::PROGRAM_LOAD_SUCCESS);
-  SetExpectationsForProgramLoadSuccess(kNewProgramServiceId);
-
-  scoped_refptr<FeatureInfo> info(new FeatureInfo());
-  EXPECT_TRUE(program->Link(&shader_manager_, NULL, NULL, info.get(),
-                            base::Bind(&ShaderCacheCb)));
-}
-
-TEST_F(ProgramManagerWithCacheTest, CorrectCompileOnSourceChangeWithCompile) {
-  SetShadersNotCompiledButCached();
-  SetProgramCached();
-
-  const GLuint kNewShaderClientId = 4;
-  const GLuint kNewShaderServiceId = 40;
-  const GLuint kNewProgramClientId = 5;
-  const GLuint kNewProgramServiceId = 50;
-
-  Shader* new_vertex_shader =
-      shader_manager_.CreateShader(kNewShaderClientId,
-                                       kNewShaderServiceId,
-                                       GL_VERTEX_SHADER);
-
-  new_vertex_shader->UpdateSource(vertex_shader_->source()->c_str());
-
-  Program* program = manager_.CreateProgram(
-      kNewProgramClientId, kNewProgramServiceId);
-  ASSERT_TRUE(program != NULL);
-  program->AttachShader(&shader_manager_, new_vertex_shader);
-  program->AttachShader(&shader_manager_, fragment_shader_);
-
-  SetExpectationsForNoCompile(new_vertex_shader);
-
-  manager_.DoCompileShader(new_vertex_shader, NULL, NULL);
-
-  const std::string differentSource = "different!";
-  new_vertex_shader->UpdateSource(differentSource.c_str());
-  SetExpectationsForSuccessCompile(new_vertex_shader);
-
-  scoped_refptr<FeatureInfo> info(new FeatureInfo());
-  manager_.DoCompileShader(new_vertex_shader, NULL, info.get());
-  EXPECT_EQ(differentSource,
-            *new_vertex_shader->deferred_compilation_source());
-
-  EXPECT_EQ(Shader::COMPILED,
-            new_vertex_shader->compilation_status());
-  EXPECT_EQ(Shader::PENDING_DEFERRED_COMPILE,
-            fragment_shader_->compilation_status());
-
-  // so we don't recompile because we were pending originally
-  SetExpectationsForNoCompile(new_vertex_shader);
-  SetExpectationsForSuccessCompile(fragment_shader_);
-  SetExpectationsForProgramCached(program,
-                                  new_vertex_shader,
-                                  fragment_shader_);
-  SetExpectationsForProgramLink(kNewProgramServiceId);
-
-  EXPECT_TRUE(program->Link(&shader_manager_, NULL, NULL,
-                            info.get(), base::Bind(&ShaderCacheCb)));
 }
 
 }  // namespace gles2

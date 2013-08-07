@@ -117,10 +117,12 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     const ShaderCacheCallback& shader_callback) {
   char a_sha[kHashLength];
   char b_sha[kHashLength];
+  DCHECK(shader_a && shader_a->signature_source() &&
+         shader_b && shader_b->signature_source());
   ComputeShaderHash(
-      *shader_a->deferred_compilation_source(), translator_a, a_sha);
+      *shader_a->signature_source(), translator_a, a_sha);
   ComputeShaderHash(
-      *shader_b->deferred_compilation_source(), translator_b, b_sha);
+      *shader_b->signature_source(), translator_b, b_sha);
 
   char sha[kHashLength];
   ComputeProgramHash(a_sha,
@@ -189,10 +191,12 @@ void MemoryProgramCache::SaveLinkedProgram(
 
   char a_sha[kHashLength];
   char b_sha[kHashLength];
+  DCHECK(shader_a && shader_a->signature_source() &&
+         shader_b && shader_b->signature_source());
   ComputeShaderHash(
-      *shader_a->deferred_compilation_source(), translator_a, a_sha);
+      *shader_a->signature_source(), translator_a, a_sha);
   ComputeShaderHash(
-      *shader_b->deferred_compilation_source(), translator_b, b_sha);
+      *shader_b->signature_source(), translator_b, b_sha);
 
   char sha[kHashLength];
   ComputeProgramHash(a_sha,
@@ -243,7 +247,7 @@ void MemoryProgramCache::SaveLinkedProgram(
                                    this));
 
   UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
-                         curr_size_bytes_ / 1024);
+                       curr_size_bytes_ / 1024);
 }
 
 void MemoryProgramCache::LoadProgram(const std::string& program) {
@@ -289,10 +293,6 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
                                      fragment_uniforms,
                                      this));
 
-    ShaderCompilationSucceededSha(proto->sha());
-    ShaderCompilationSucceededSha(proto->vertex_shader().sha());
-    ShaderCompilationSucceededSha(proto->fragment_shader().sha());
-
     UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
                          curr_size_bytes_ / 1024);
   } else {
@@ -324,14 +324,12 @@ MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
       uniform_map_1_(uniform_map_1),
       program_cache_(program_cache) {
   program_cache_->curr_size_bytes_ += length_;
-  program_cache_->LinkedProgramCacheSuccess(program_hash,
-                                            shader_0_hash_,
-                                            shader_1_hash_);
+  program_cache_->LinkedProgramCacheSuccess(program_hash);
 }
 
 MemoryProgramCache::ProgramCacheValue::~ProgramCacheValue() {
   program_cache_->curr_size_bytes_ -= length_;
-  program_cache_->Evict(program_hash_, shader_0_hash_, shader_1_hash_);
+  program_cache_->Evict(program_hash_);
 }
 
 }  // namespace gles2

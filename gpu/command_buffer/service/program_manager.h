@@ -358,17 +358,9 @@ class GPU_EXPORT ProgramManager {
 
   static int32 MakeFakeLocation(int32 index, int32 element);
 
-  // Cache-aware shader compiling.  If no cache or if the shader wasn't
-  // previously compiled, ForceCompileShader is called
   void DoCompileShader(Shader* shader,
                        ShaderTranslator* translator,
                        FeatureInfo* feature_info);
-
-  // Actually compiles the shader
-  void ForceCompileShader(const std::string* source,
-                          Shader* shader,
-                          ShaderTranslator* translator,
-                          FeatureInfo* feature_info);
 
  private:
   friend class Program;

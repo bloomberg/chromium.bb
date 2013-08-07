@@ -27,11 +27,6 @@ class GPU_EXPORT ProgramCache {
 
   typedef std::map<std::string, GLint> LocationMap;
 
-  enum CompiledShaderStatus {
-    COMPILATION_UNKNOWN,
-    COMPILATION_SUCCEEDED
-  };
-
   enum LinkedProgramStatus {
     LINK_UNKNOWN,
     LINK_SUCCEEDED
@@ -44,13 +39,6 @@ class GPU_EXPORT ProgramCache {
 
   ProgramCache();
   virtual ~ProgramCache();
-
-  CompiledShaderStatus GetShaderCompilationStatus(
-      const std::string& shader_src,
-      const ShaderTranslatorInterface* translator) const;
-  void ShaderCompilationSucceeded(const std::string& shader_src,
-                                  const ShaderTranslatorInterface* translator);
-  void ShaderCompilationSucceededSha(const std::string& sha_string);
 
   LinkedProgramStatus GetLinkedProgramStatus(
       const std::string& untranslated_shader_a,
@@ -95,9 +83,7 @@ class GPU_EXPORT ProgramCache {
 
  protected:
   // called by implementing class after a shader was successfully cached
-  void LinkedProgramCacheSuccess(const std::string& program_hash,
-                                 const std::string& shader_a_hash,
-                                 const std::string& shader_b_hash);
+  void LinkedProgramCacheSuccess(const std::string& program_hash);
 
   // result is not null terminated
   void ComputeShaderHash(const std::string& shader,
@@ -112,30 +98,15 @@ class GPU_EXPORT ProgramCache {
       const LocationMap* bind_attrib_location_map,
       char* result) const;
 
-  void Evict(const std::string& program_hash,
-             const std::string& shader_0_hash,
-             const std::string& shader_1_hash);
+  void Evict(const std::string& program_hash);
 
  private:
-  struct CompiledShaderInfo {
-    CompiledShaderInfo() : status(COMPILATION_UNKNOWN), ref_count(0) { }
-    explicit CompiledShaderInfo(CompiledShaderStatus status_)
-        : status(status_),
-          ref_count(0) { }
-
-    CompiledShaderStatus status;
-    size_t ref_count;
-  };
-
-  typedef base::hash_map<std::string,
-                         CompiledShaderInfo> CompileStatusMap;
   typedef base::hash_map<std::string,
                          LinkedProgramStatus> LinkStatusMap;
 
   // called to clear the backend cache
   virtual void ClearBackend() = 0;
 
-  CompileStatusMap shader_status_;
   LinkStatusMap link_status_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramCache);

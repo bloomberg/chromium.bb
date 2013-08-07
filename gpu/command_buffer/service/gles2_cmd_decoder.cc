@@ -1584,8 +1584,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   void ProcessPendingReadPixels();
   void FinishReadPixels(const cmds::ReadPixels& c, GLuint buffer);
 
-  void ForceCompileShaderIfPending(Shader* shader);
-
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define GLES2_CMD_OP(name) \
@@ -5652,23 +5650,6 @@ void GLES2DecoderImpl::PerformanceWarning(
                      std::string("PERFORMANCE WARNING: ") + msg);
 }
 
-void GLES2DecoderImpl::ForceCompileShaderIfPending(Shader* shader) {
-  if (shader->compilation_status() ==
-      Shader::PENDING_DEFERRED_COMPILE) {
-    ShaderTranslator* translator = NULL;
-    if (use_shader_translator_) {
-      translator = shader->shader_type() == GL_VERTEX_SHADER ?
-          vertex_translator_.get() : fragment_translator_.get();
-    }
-    // We know there will be no errors, because we only defer compilation on
-    // shaders that were previously compiled successfully.
-    program_manager()->ForceCompileShader(shader->deferred_compilation_source(),
-                                          shader,
-                                          translator,
-                                          feature_info_.get());
-  }
-}
-
 void GLES2DecoderImpl::UpdateStreamTextureIfNeeded(Texture* texture) {
   if (texture && texture->IsStreamTexture()) {
     DCHECK(stream_texture_manager());
@@ -6366,7 +6347,6 @@ void GLES2DecoderImpl::DoGetShaderiv(
       *params = shader->log_info() ? shader->log_info()->size() + 1 : 0;
       return;
     case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
-      ForceCompileShaderIfPending(shader);
       *params = shader->translated_source() ?
           shader->translated_source()->size() + 1 : 0;
       return;
@@ -6402,7 +6382,6 @@ error::Error GLES2DecoderImpl::HandleGetTranslatedShaderSourceANGLE(
     bucket->SetSize(0);
     return error::kNoError;
   }
-  ForceCompileShaderIfPending(shader);
 
   bucket->SetFromString(shader->translated_source() ?
       shader->translated_source()->c_str() : NULL);

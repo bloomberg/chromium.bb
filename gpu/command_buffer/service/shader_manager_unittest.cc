@@ -248,45 +248,5 @@ TEST_F(ShaderManagerTest, ShaderInfoUseCount) {
   EXPECT_TRUE(shader2 == NULL);
 }
 
-TEST_F(ShaderManagerTest, ShaderInfoStoreCompilationStatus) {
-  const GLuint kClientId = 1;
-  const GLuint kServiceId = 11;
-  const GLenum kShaderType = GL_VERTEX_SHADER;
-  Shader* shader = manager_.CreateShader(
-      kClientId, kServiceId, kShaderType);
-  ASSERT_TRUE(shader != NULL);
-
-  EXPECT_EQ(Shader::NOT_COMPILED,
-            shader->compilation_status());
-  shader->UpdateSource("original source");
-  EXPECT_EQ(Shader::NOT_COMPILED,
-            shader->compilation_status());
-  shader->FlagSourceAsCompiled(false);
-  EXPECT_EQ(Shader::PENDING_DEFERRED_COMPILE,
-            shader->compilation_status());
-  shader->FlagSourceAsCompiled(true);
-  EXPECT_EQ(Shader::COMPILED,
-            shader->compilation_status());
-}
-
-TEST_F(ShaderManagerTest, ShaderInfoStoreDeferredSource) {
-  const GLuint kClientId = 1;
-  const GLuint kServiceId = 11;
-  const GLenum kShaderType = GL_VERTEX_SHADER;
-  Shader* shader = manager_.CreateShader(
-      kClientId, kServiceId, kShaderType);
-  ASSERT_TRUE(shader != NULL);
-
-  shader->UpdateSource("original source");
-  shader->FlagSourceAsCompiled(false);
-
-  EXPECT_EQ("original source", *shader->deferred_compilation_source());
-  shader->UpdateSource("different!");
-  EXPECT_EQ("original source", *shader->deferred_compilation_source());
-
-  shader->FlagSourceAsCompiled(true);
-  EXPECT_EQ("different!", *shader->deferred_compilation_source());
-}
-
 }  // namespace gles2
 }  // namespace gpu

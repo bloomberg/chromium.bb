@@ -16,43 +16,7 @@ ProgramCache::~ProgramCache() {}
 
 void ProgramCache::Clear() {
   ClearBackend();
-  shader_status_.clear();
   link_status_.clear();
-}
-
-ProgramCache::CompiledShaderStatus ProgramCache::GetShaderCompilationStatus(
-    const std::string& shader_src,
-    const ShaderTranslatorInterface* translator) const {
-  char sha[kHashLength];
-  ComputeShaderHash(shader_src, translator, sha);
-  const std::string sha_string(sha, kHashLength);
-
-  CompileStatusMap::const_iterator found = shader_status_.find(sha_string);
-
-  if (found == shader_status_.end()) {
-    return ProgramCache::COMPILATION_UNKNOWN;
-  } else {
-    return found->second.status;
-  }
-}
-
-void ProgramCache::ShaderCompilationSucceeded(
-    const std::string& shader_src,
-    const ShaderTranslatorInterface* translator) {
-  char sha[kHashLength];
-  ComputeShaderHash(shader_src, translator, sha);
-  const std::string sha_string(sha, kHashLength);
-  ShaderCompilationSucceededSha(sha_string);
-}
-
-void ProgramCache::ShaderCompilationSucceededSha(
-    const std::string& sha_string) {
-  CompileStatusMap::iterator it = shader_status_.find(sha_string);
-  if (it == shader_status_.end()) {
-    shader_status_[sha_string] = CompiledShaderInfo(COMPILATION_SUCCEEDED);
-  } else {
-    it->second.status = COMPILATION_SUCCEEDED;
-  }
 }
 
 ProgramCache::LinkedProgramStatus ProgramCache::GetLinkedProgramStatus(
@@ -98,17 +62,11 @@ void ProgramCache::LinkedProgramCacheSuccess(
                      sha);
   const std::string sha_string(sha, kHashLength);
 
-  LinkedProgramCacheSuccess(sha_string,
-                            std::string(a_sha, kHashLength),
-                            std::string(b_sha, kHashLength));
+  LinkedProgramCacheSuccess(sha_string);
 }
 
-void ProgramCache::LinkedProgramCacheSuccess(const std::string& program_hash,
-                                             const std::string& shader_a_hash,
-                                             const std::string& shader_b_hash) {
+void ProgramCache::LinkedProgramCacheSuccess(const std::string& program_hash) {
   link_status_[program_hash] = LINK_SUCCEEDED;
-  shader_status_[shader_a_hash].ref_count++;
-  shader_status_[shader_b_hash].ref_count++;
 }
 
 void ProgramCache::ComputeShaderHash(
@@ -122,21 +80,7 @@ void ProgramCache::ComputeShaderHash(
                       s.length(), reinterpret_cast<unsigned char*>(result));
 }
 
-void ProgramCache::Evict(const std::string& program_hash,
-                         const std::string& shader_0_hash,
-                         const std::string& shader_1_hash) {
-  CompileStatusMap::iterator info0 = shader_status_.find(shader_0_hash);
-  CompileStatusMap::iterator info1 = shader_status_.find(shader_1_hash);
-  DCHECK(info0 != shader_status_.end());
-  DCHECK(info1 != shader_status_.end());
-  DCHECK(info0->second.ref_count > 0);
-  DCHECK(info1->second.ref_count > 0);
-  if (--info0->second.ref_count <= 0) {
-    shader_status_.erase(shader_0_hash);
-  }
-  if (--info1->second.ref_count <= 0) {
-    shader_status_.erase(shader_1_hash);
-  }
+void ProgramCache::Evict(const std::string& program_hash) {
   link_status_.erase(program_hash);
 }
 

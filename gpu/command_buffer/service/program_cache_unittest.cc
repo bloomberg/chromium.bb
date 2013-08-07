@@ -55,9 +55,7 @@ class NoBackendProgramCache : public ProgramCache {
                        sha);
     const std::string shaString(sha, kHashLength);
 
-    LinkedProgramCacheSuccess(shaString,
-                              std::string(a_sha, kHashLength),
-                              std::string(b_sha, kHashLength));
+    LinkedProgramCacheSuccess(shaString);
   }
 
   void ComputeShaderHash(const std::string& shader,
@@ -76,10 +74,8 @@ class NoBackendProgramCache : public ProgramCache {
                                      result);
   }
 
-  void Evict(const std::string& program_hash,
-             const std::string& shader_0_hash,
-             const std::string& shader_1_hash) {
-    ProgramCache::Evict(program_hash, shader_0_hash, shader_1_hash);
+  void Evict(const std::string& program_hash) {
+    ProgramCache::Evict(program_hash);
   }
 };
 
@@ -91,54 +87,6 @@ class ProgramCacheTest : public testing::Test {
  protected:
   scoped_ptr<NoBackendProgramCache> cache_;
 };
-
-TEST_F(ProgramCacheTest, CompilationStatusSave) {
-  const std::string shader1 = "abcd1234";
-  {
-    std::string shader = shader1;
-    EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-              cache_->GetShaderCompilationStatus(shader, NULL));
-    cache_->ShaderCompilationSucceeded(shader, NULL);
-    shader.clear();
-  }
-  // make sure it was copied
-  EXPECT_EQ(ProgramCache::COMPILATION_SUCCEEDED,
-            cache_->GetShaderCompilationStatus(shader1, NULL));
-}
-
-TEST_F(ProgramCacheTest, CompilationStatusTranslatorOptionDependent) {
-  MockShaderTranslator translator;
-
-  EXPECT_CALL(translator, GetStringForOptionsThatWouldEffectCompilation())
-      .WillOnce(Return("foo"))   // GetShaderCompilationStatus
-      .WillOnce(Return("foo"))   // ShaderCompilationSucceeded
-      .WillOnce(Return("foo"))   // GetShaderCompilationStatus
-      .WillOnce(Return("bar"));  // GetShaderCompilationStatus
-
-  const std::string shader1 = "abcd1234";
-  {
-    std::string shader = shader1;
-    EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-              cache_->GetShaderCompilationStatus(shader, &translator));
-    cache_->ShaderCompilationSucceeded(shader, &translator);
-    shader.clear();
-  }
-  // make sure it was copied
-  EXPECT_EQ(ProgramCache::COMPILATION_SUCCEEDED,
-            cache_->GetShaderCompilationStatus(shader1, &translator));
-  // make sure if the options change it's not copied.
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader1, &translator));
-}
-
-TEST_F(ProgramCacheTest, CompilationUnknownOnSourceChange) {
-  std::string shader1 = "abcd1234";
-  cache_->ShaderCompilationSucceeded(shader1, NULL);
-
-  shader1 = "different!";
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader1, NULL));
-}
 
 TEST_F(ProgramCacheTest, LinkStatusSave) {
   const std::string shader1 = "abcd1234";
@@ -183,8 +131,6 @@ TEST_F(ProgramCacheTest, LinkUnknownOnVertexSourceChange) {
 TEST_F(ProgramCacheTest, StatusEviction) {
   const std::string shader1 = "abcd1234";
   const std::string shader2 = "abcda sda b1~#4 bbbbb1234";
-  cache_->ShaderCompilationSucceeded(shader1, NULL);
-  cache_->ShaderCompilationSucceeded(shader2, NULL);
   cache_->SaySuccessfullyCached(shader1, NULL, shader2, NULL, NULL);
   char a_sha[ProgramCache::kHashLength];
   char b_sha[ProgramCache::kHashLength];
@@ -196,13 +142,7 @@ TEST_F(ProgramCacheTest, StatusEviction) {
                              b_sha,
                              NULL,
                              sha);
-  cache_->Evict(std::string(sha, ProgramCache::kHashLength),
-                std::string(a_sha, ProgramCache::kHashLength),
-                std::string(b_sha, ProgramCache::kHashLength));
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader1, NULL));
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader2, NULL));
+  cache_->Evict(std::string(sha, ProgramCache::kHashLength));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
             cache_->GetLinkedProgramStatus(shader1, NULL, shader2, NULL, NULL));
 }
@@ -211,11 +151,7 @@ TEST_F(ProgramCacheTest, EvictionWithReusedShader) {
   const std::string shader1 = "abcd1234";
   const std::string shader2 = "abcda sda b1~#4 bbbbb1234";
   const std::string shader3 = "asbjbbjj239a";
-  cache_->ShaderCompilationSucceeded(shader1, NULL);
-  cache_->ShaderCompilationSucceeded(shader2, NULL);
   cache_->SaySuccessfullyCached(shader1, NULL, shader2, NULL, NULL);
-  cache_->ShaderCompilationSucceeded(shader1, NULL);
-  cache_->ShaderCompilationSucceeded(shader3, NULL);
   cache_->SaySuccessfullyCached(shader1, NULL, shader3, NULL, NULL);
 
   char a_sha[ProgramCache::kHashLength];
@@ -230,15 +166,7 @@ TEST_F(ProgramCacheTest, EvictionWithReusedShader) {
                              b_sha,
                              NULL,
                              sha);
-  cache_->Evict(std::string(sha, ProgramCache::kHashLength),
-                std::string(a_sha, ProgramCache::kHashLength),
-                std::string(b_sha, ProgramCache::kHashLength));
-  EXPECT_EQ(ProgramCache::COMPILATION_SUCCEEDED,
-            cache_->GetShaderCompilationStatus(shader1, NULL));
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader2, NULL));
-  EXPECT_EQ(ProgramCache::COMPILATION_SUCCEEDED,
-            cache_->GetShaderCompilationStatus(shader3, NULL));
+  cache_->Evict(std::string(sha, ProgramCache::kHashLength));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
             cache_->GetLinkedProgramStatus(shader1, NULL, shader2, NULL, NULL));
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED,
@@ -249,15 +177,7 @@ TEST_F(ProgramCacheTest, EvictionWithReusedShader) {
                              c_sha,
                              NULL,
                              sha);
-  cache_->Evict(std::string(sha, ProgramCache::kHashLength),
-                std::string(a_sha, ProgramCache::kHashLength),
-                std::string(c_sha, ProgramCache::kHashLength));
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader1, NULL));
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader2, NULL));
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader3, NULL));
+  cache_->Evict(std::string(sha, ProgramCache::kHashLength));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
             cache_->GetLinkedProgramStatus(shader1, NULL, shader2, NULL, NULL));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
@@ -268,18 +188,9 @@ TEST_F(ProgramCacheTest, StatusClear) {
   const std::string shader1 = "abcd1234";
   const std::string shader2 = "abcda sda b1~#4 bbbbb1234";
   const std::string shader3 = "asbjbbjj239a";
-  cache_->ShaderCompilationSucceeded(shader1, NULL);
-  cache_->ShaderCompilationSucceeded(shader2, NULL);
   cache_->SaySuccessfullyCached(shader1, NULL, shader2, NULL, NULL);
-  cache_->ShaderCompilationSucceeded(shader3, NULL);
   cache_->SaySuccessfullyCached(shader1, NULL, shader3, NULL, NULL);
   cache_->Clear();
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader1, NULL));
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader2, NULL));
-  EXPECT_EQ(ProgramCache::COMPILATION_UNKNOWN,
-            cache_->GetShaderCompilationStatus(shader3, NULL));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
             cache_->GetLinkedProgramStatus(shader1, NULL, shader2, NULL, NULL));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,

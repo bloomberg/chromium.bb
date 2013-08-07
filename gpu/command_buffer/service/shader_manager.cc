@@ -16,8 +16,7 @@ Shader::Shader(GLuint service_id, GLenum shader_type)
       : use_count_(0),
         service_id_(service_id),
         shader_type_(shader_type),
-        valid_(false),
-        compilation_status_(NOT_COMPILED) {
+        valid_(false) {
 }
 
 Shader::~Shader() {
@@ -49,6 +48,11 @@ void Shader::SetStatus(
     attrib_map_.clear();
     uniform_map_.clear();
     name_map_.clear();
+  }
+  if (valid && source_.get()) {
+    signature_source_.reset(new std::string(source_->c_str()));
+  } else {
+    signature_source_.reset();
   }
 }
 
