@@ -52,28 +52,28 @@ if (window.testRunner)
     shouldBeEqualToString("window.getComputedStyle(gridWithDefaultTemplate).getPropertyValue('grid-template')", "none")
 
     var gridWithSingleStringTemplate = document.getElementById("gridWithSingleStringTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithSingleStringTemplate).getPropertyValue('grid-template')", "'area'")
+    shouldBeEqualToString("window.getComputedStyle(gridWithSingleStringTemplate).getPropertyValue('grid-template')", '"area"')
 
     var gridWithTwoColumnsTemplate = document.getElementById("gridWithTwoColumnsTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithTwoColumnsTemplate).getPropertyValue('grid-template')", "'first second'")
+    shouldBeEqualToString("window.getComputedStyle(gridWithTwoColumnsTemplate).getPropertyValue('grid-template')", '"first second"')
 
     var gridWithTwoRowsTemplate = document.getElementById("gridWithTwoRowsTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithTwoRowsTemplate).getPropertyValue('grid-template')", "'first' 'second'")
+    shouldBeEqualToString("window.getComputedStyle(gridWithTwoRowsTemplate).getPropertyValue('grid-template')", '"first" "second"')
 
     var gridWithSpanningColumnsTemplate = document.getElementById("gridWithSpanningColumnsTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithSpanningColumnsTemplate).getPropertyValue('grid-template')", "'span span'")
+    shouldBeEqualToString("window.getComputedStyle(gridWithSpanningColumnsTemplate).getPropertyValue('grid-template')", '"span span"')
 
     var gridWithSpanningRowsDotTemplate = document.getElementById("gridWithSpanningRowsDotTemplate");
-    shouldBeEqualToString("window.getComputedStyle(gridWithSpanningRowsDotTemplate).getPropertyValue('grid-template')", "'span' '.'")
+    shouldBeEqualToString("window.getComputedStyle(gridWithSpanningRowsDotTemplate).getPropertyValue('grid-template')", '"span" "."')
 
     var gridWithDotColumn = document.getElementById("gridWithDotColumn");
-    shouldBeEqualToString("window.getComputedStyle(gridWithDotColumn).getPropertyValue('grid-template')", "'header .' 'footer .'")
+    shouldBeEqualToString("window.getComputedStyle(gridWithDotColumn).getPropertyValue('grid-template')", '"header ." "footer ."')
 
     debug("Test grid-template: initial");
     var element = document.createElement("div");
     document.body.appendChild(element);
     element.style.gridTemplate = "'foobar'";
-    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template')", "'foobar'")
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template')", '"foobar"')
     element.style.gridTemplate = "initial";
     document.body.removeChild(element);
 
@@ -81,12 +81,12 @@ if (window.testRunner)
     var parentElement = document.createElement("div");
     document.body.appendChild(parentElement);
     parentElement.style.gridTemplate = "'foo bar'";
-    shouldBeEqualToString("window.getComputedStyle(parentElement).getPropertyValue('grid-template')", "'foo bar'")
+    shouldBeEqualToString("window.getComputedStyle(parentElement).getPropertyValue('grid-template')", '"foo bar"')
 
     var element = document.createElement("div");
     parentElement.appendChild(element);
     element.style.gridTemplate = "inherit";
-    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template')", "'foo bar'")
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template')", '"foo bar"')
     document.body.removeChild(parentElement);
 
     debug("Test invalid grid-template values.");
@@ -116,7 +116,7 @@ if (window.testRunner)
     debug("");
     debug("FIXME: We currently don't validate that the named grid areas are &lt;indent&gt;.");
     // <ident> only allows a leading '-'.
-    element.style.gridTemplate = "'nav-up'";
+    element.style.gridTemplate = '"nav-up"';
     shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template')", "none")
 </script>
 <script src="../js/resources/js-test-post.js"></script>
