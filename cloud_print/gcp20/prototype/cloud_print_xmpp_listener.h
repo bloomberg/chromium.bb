@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 
 namespace base {
@@ -31,7 +32,9 @@ class PushClient;
 
 }  // namespace notifier
 
-class CloudPrintXmppListener: public notifier::PushClientObserver {
+class CloudPrintXmppListener
+    : public base::SupportsWeakPtr<CloudPrintXmppListener>,
+      public notifier::PushClientObserver {
  public:
   class Delegate {
    public:
@@ -52,12 +55,13 @@ class CloudPrintXmppListener: public notifier::PushClientObserver {
     // Invoked when local settings was updated.
     virtual void OnXmppNewLocalSettings(const std::string& device_id) = 0;
 
-    // Invoked when printer was deleted from server.
+    // Invoked when printer was deleted from the server.
     virtual void OnXmppDeleteNotification(const std::string& device_id) = 0;
   };
 
   CloudPrintXmppListener(
       const std::string& robot_email,
+      int standard_ping_interval,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       Delegate* delegate);
 
@@ -65,6 +69,9 @@ class CloudPrintXmppListener: public notifier::PushClientObserver {
 
   // Connects to the server.
   void Connect(const std::string& access_token);
+
+  // Update ping interval when new local_settings was received.
+  void set_standard_ping_interval(int interval);
 
  private:
   // notifier::PushClientObserver methods:
@@ -75,17 +82,40 @@ class CloudPrintXmppListener: public notifier::PushClientObserver {
       const notifier::Notification& notification) OVERRIDE;
   virtual void OnPingResponse() OVERRIDE;
 
-  // Is used for reconnection when number of retries is now exhausted.
-  void ReconnectInternal();
+  // Stops listening and sending pings.
+  void Disconnect();
+
+  // Schedules ping (unless it was already scheduled).
+  void SchedulePing();
+
+  // Sends ping.
+  void SendPing();
+
+  // Checks if ping was received.
+  void OnPingTimeoutReached();
 
   // Credentials:
   std::string robot_email_;
   std::string access_token_;
 
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
-
   // Internal listener.
   scoped_ptr<notifier::PushClient> push_client_;
+
+  // Interval between pings in regular workflow.
+  int standard_ping_interval_;
+
+  // Number of timeouts posted to MessageLoop. Is used for controlling "fake"
+  // timeout calls.
+  int ping_timeouts_posted_;
+
+  // Number of responses awaiting from XMPP server. Is used for controlling
+  // number of failed pings.
+  int ping_responses_pending_;
+
+  // Is used for preventing multiple pings at the moment.
+  bool ping_scheduled_;
+
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
 
   Delegate* delegate_;
 

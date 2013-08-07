@@ -27,7 +27,8 @@ const char kPrinterStatePathDefault[] = "printer_state.json";
 namespace {
 
 const uint16 kHttpPortDefault = 10101;
-const uint32 kTtlDefault = 60*60;
+const uint32 kTtlDefault = 60*60;  // in seconds
+const int kXmppPingIntervalDefault = 5*60;  // in seconds
 
 const char kServiceType[] = "_privet._tcp.local";
 const char kServiceNamePrefixDefault[] = "first_gcp20_device";
@@ -182,6 +183,7 @@ void Printer::Stop() {
 }
 
 void Printer::OnAuthError() {
+  LOG(ERROR) << "Auth error occurred";
   access_token_update_ = base::Time::Now();
   ChangeState(OFFLINE);
   // TODO(maksymb): Implement *instant* updating of access_token.
@@ -476,7 +478,8 @@ void Printer::TryConnect() {
 
 void Printer::ConnectXmpp() {
   xmpp_listener_.reset(
-      new CloudPrintXmppListener(reg_info_.xmpp_jid, GetTaskRunner(), this));
+      new CloudPrintXmppListener(reg_info_.xmpp_jid, kXmppPingIntervalDefault,
+                                 GetTaskRunner(), this));
   xmpp_listener_->Connect(access_token_);
 }
 

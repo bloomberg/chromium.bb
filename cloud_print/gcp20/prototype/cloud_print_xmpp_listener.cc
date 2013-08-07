@@ -4,13 +4,20 @@
 
 #include "cloud_print/gcp20/prototype/cloud_print_xmpp_listener.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "cloud_print/gcp20/prototype/cloud_print_url_request_context_getter.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"
 
 namespace {
+
+const int kUrgentPingInterval = 60;  // in seconds
+const int kPingTimeout = 30;  // in seconds
+const double kRandomDelayPercentage = 0.2;
 
 const char kCloudPrintPushNotificationsSource[] = "cloudprint.google.com";
 
@@ -32,21 +39,29 @@ void TokenizeXmppMessage(const std::string& message, std::string* device_id,
 
 CloudPrintXmppListener::CloudPrintXmppListener(
     const std::string& robot_email,
+    int standard_ping_interval,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     Delegate* delegate)
     : robot_email_(robot_email),
+      standard_ping_interval_(standard_ping_interval),
+      ping_timeouts_posted_(0),
+      ping_responses_pending_(0),
+      ping_scheduled_(false),
       context_getter_(new CloudPrintURLRequestContextGetter(task_runner)),
       delegate_(delegate) {
 }
 
 CloudPrintXmppListener::~CloudPrintXmppListener() {
-  push_client_->RemoveObserver(this);
-  push_client_.reset();
+  if (push_client_) {
+    push_client_->RemoveObserver(this);
+    push_client_.reset();
+  }
 }
 
 void CloudPrintXmppListener::Connect(const std::string& access_token) {
-  push_client_.reset();
   access_token_ = access_token;
+  ping_responses_pending_ = 0;
+  ping_scheduled_ = 0;
 
   notifier::NotifierOptions options;
   options.request_context_getter = context_getter_;
@@ -66,8 +81,13 @@ void CloudPrintXmppListener::Connect(const std::string& access_token) {
   push_client_->UpdateCredentials(robot_email_, access_token_);
 }
 
+void CloudPrintXmppListener::set_standard_ping_interval(int interval) {
+  standard_ping_interval_ = interval;
+}
+
 void CloudPrintXmppListener::OnNotificationsEnabled() {
   delegate_->OnXmppConnected();
+  SchedulePing();
 }
 
 void CloudPrintXmppListener::OnNotificationsDisabled(
@@ -77,7 +97,7 @@ void CloudPrintXmppListener::OnNotificationsDisabled(
       delegate_->OnXmppAuthError();
       break;
     case notifier::TRANSIENT_NOTIFICATION_ERROR:
-      delegate_->OnXmppNetworkError();
+      Disconnect();
       break;
     default:
       NOTREACHED() << "XMPP failed with unexpected reason code: " << reason;
@@ -102,7 +122,65 @@ void CloudPrintXmppListener::OnIncomingNotification(
 }
 
 void CloudPrintXmppListener::OnPingResponse() {
-  // TODO(maksymb): Implement pings
-  NOTIMPLEMENTED();
+  ping_responses_pending_ = 0;
+  SchedulePing();
+}
+
+void CloudPrintXmppListener::Disconnect() {
+  push_client_.reset();
+  delegate_->OnXmppNetworkError();
+}
+
+void CloudPrintXmppListener::SchedulePing() {
+  if (ping_scheduled_)
+    return;
+
+  DCHECK_LE(kPingTimeout, kUrgentPingInterval);
+  int delay = (ping_responses_pending_ > 0)
+      ? kUrgentPingInterval - kPingTimeout
+      : standard_ping_interval_;
+
+  delay += base::RandInt(0, delay*kRandomDelayPercentage);
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CloudPrintXmppListener::SendPing, AsWeakPtr()),
+      base::TimeDelta::FromSeconds(delay));
+
+  ping_scheduled_ = true;
+}
+
+void CloudPrintXmppListener::SendPing() {
+  ping_scheduled_ = false;
+
+  DCHECK(push_client_);
+  push_client_->SendPing();
+  ++ping_responses_pending_;
+
+  base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CloudPrintXmppListener::OnPingTimeoutReached, AsWeakPtr()),
+        base::TimeDelta::FromSeconds(kPingTimeout));
+  ++ping_timeouts_posted_;
+}
+
+void CloudPrintXmppListener::OnPingTimeoutReached() {
+  DCHECK_GT(ping_timeouts_posted_, 0);
+  --ping_timeouts_posted_;
+  if (ping_timeouts_posted_ > 0)
+    return;  // Fake (old) timeout.
+
+  switch (ping_responses_pending_) {
+    case 0:
+      break;
+    case 1:
+      SchedulePing();
+      break;
+    case 2:
+      Disconnect();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
