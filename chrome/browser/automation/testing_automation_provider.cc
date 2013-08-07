@@ -1281,7 +1281,7 @@ void TestingAutomationProvider::WaitForBookmarkModelToLoadJSON(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   Browser* browser;
-  std::string error_msg, bookmarks_as_json;
+  std::string error_msg;
   if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
     AutomationJSONReply(this, reply_message).SendError(error_msg);
     return;
