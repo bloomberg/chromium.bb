@@ -34,9 +34,10 @@ class MessageCenterNotificationManager
       public message_center::MessageCenter::Delegate,
       public message_center::MessageCenterObserver {
  public:
-  explicit MessageCenterNotificationManager(
+  MessageCenterNotificationManager(
       message_center::MessageCenter* message_center,
-      PrefService* local_state);
+      PrefService* local_state,
+      scoped_ptr<message_center::NotifierSettingsProvider> settings_provider);
   virtual ~MessageCenterNotificationManager();
 
   // NotificationUIManager
@@ -220,7 +221,7 @@ class MessageCenterNotificationManager
   base::WeakPtrFactory<MessageCenterNotificationManager> weak_factory_;
 #endif
 
-  scoped_ptr<MessageCenterSettingsController> settings_controller_;
+  scoped_ptr<message_center::NotifierSettingsProvider> settings_provider_;
 
   // Registrar for the other kind of notifications (event signaling).
   content::NotificationRegistrar registrar_;

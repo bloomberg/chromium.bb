@@ -54,6 +54,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   size_t NumMessageViewsForTest() const;
 
   void SetSettingsVisible(bool visible);
+  void OnSettingsChanged();
   bool settings_visible() const { return settings_visible_; }
 
   void SetIsClosing(bool is_closing);
@@ -86,7 +87,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
 
   MessageCenter* message_center_;  // Weak reference.
   MessageCenterTray* tray_;  // Weak reference.
-  std::vector<MessageView*> message_views_;
+  std::vector<MessageView*> message_views_;  // Weak references.
+
+  // Child views.
   views::ScrollView* scroller_;
   MessageListView* message_list_view_;
   NotifierSettingsView* settings_view_;
@@ -96,11 +99,17 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
 
   // Data for transition animation between settings view and message list.
   bool settings_visible_;
-  views::View* source_view_;
-  views::View* target_view_;
-  int source_height_;
-  int target_height_;
+
+  // Animation managing transition between message center and settings (and vice
+  // versa).
   scoped_ptr<ui::MultiAnimation> settings_transition_animation_;
+
+  // Helper data to keep track of the transition between settings and
+  // message center views.
+  views::View* source_view_;
+  int source_height_;
+  views::View* target_view_;
+  int target_height_;
 
   // True when the widget is closing so that further operations should be
   // ignored.

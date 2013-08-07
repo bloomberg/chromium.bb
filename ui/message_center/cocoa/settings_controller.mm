@@ -110,6 +110,8 @@ void NotifierSettingsObserverMac::UpdateIconImage(const NotifierId& notifier_id,
   [settings_controller_ setIcon:icon.AsNSImage() forNotifierId:notifier_id];
 }
 
+void NotifierSettingsObserverMac::NotifierGroupChanged() {}
+
 }  // namespace message_center
 
 @implementation MCSettingsController

@@ -8,14 +8,18 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_center_view.h"
@@ -23,8 +27,10 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
@@ -113,6 +119,78 @@ bool EntryView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 }  // namespace
+
+// NotifierGroupMenuModel //////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+class NotifierGroupMenuModel : public ui::SimpleMenuModel,
+                               public ui::SimpleMenuModel::Delegate {
+ public:
+  NotifierGroupMenuModel(NotifierSettingsProvider* notifier_settings_provider);
+  virtual ~NotifierGroupMenuModel();
+
+  // Overridden from ui::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+
+ private:
+  NotifierSettingsProvider* notifier_settings_provider_;
+};
+
+NotifierGroupMenuModel::NotifierGroupMenuModel(
+    NotifierSettingsProvider* notifier_settings_provider)
+    : ui::SimpleMenuModel(this),
+      notifier_settings_provider_(notifier_settings_provider) {
+  if (!notifier_settings_provider_)
+    return;
+
+  size_t num_menu_items = notifier_settings_provider_->GetNotifierGroupCount();
+  for (size_t i = 0; i < num_menu_items; ++i) {
+    const NotifierGroup& group =
+        notifier_settings_provider_->GetNotifierGroupAt(i);
+
+    AddItem(i, group.login_info.empty() ? group.name : group.login_info);
+
+    gfx::ImageSkia resized_icon = gfx::ImageSkiaOperations::CreateResizedImage(
+        *group.icon.ToImageSkia(),
+        skia::ImageOperations::RESIZE_BETTER,
+        gfx::Size(kSettingsIconSize, kSettingsIconSize));
+
+    SetIcon(i, gfx::Image(resized_icon));
+  }
+}
+
+NotifierGroupMenuModel::~NotifierGroupMenuModel() {}
+
+bool NotifierGroupMenuModel::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool NotifierGroupMenuModel::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+bool NotifierGroupMenuModel::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
+  return false;
+}
+
+void NotifierGroupMenuModel::ExecuteCommand(int command_id, int event_flags) {
+  if (!notifier_settings_provider_)
+    return;
+
+  size_t notifier_group_index = static_cast<size_t>(command_id);
+  size_t num_notifier_groups =
+      notifier_settings_provider_->GetNotifierGroupCount();
+  if (notifier_group_index >= num_notifier_groups)
+    return;
+
+  notifier_settings_provider_->SwitchToNotifierGroup(notifier_group_index);
+}
 
 // We do not use views::Checkbox class directly because it doesn't support
 // showing 'icon'.
@@ -240,30 +318,11 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   AddChildView(scroller_);
 
-  views::View* contents_view = new views::View();
-  contents_view->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, 0));
-
-  views::Label* top_label = new views::Label(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
-  top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  top_label->SetMultiLine(true);
-  top_label->SizeToFit(kMinimumWindowWidth - kMarginWidth * 2);
-  contents_view->AddChildView(new EntryView(top_label));
-
   std::vector<Notifier*> notifiers;
   if (provider_)
     provider_->GetNotifierList(&notifiers);
-  for (size_t i = 0; i < notifiers.size(); ++i) {
-    NotifierButton* button = new NotifierButton(notifiers[i], this);
-    EntryView* entry = new EntryView(button);
-    entry->set_focusable(true);
-    contents_view->AddChildView(entry);
-    buttons_.insert(button);
-  }
-  scroller_->SetContents(contents_view);
 
-  contents_view->SetBoundsRect(gfx::Rect(contents_view->GetPreferredSize()));
+  UpdateContentsView(notifiers);
 }
 
 NotifierSettingsView::~NotifierSettingsView() {
@@ -285,6 +344,57 @@ void NotifierSettingsView::UpdateIconImage(const NotifierId& notifier_id,
       return;
     }
   }
+}
+
+void NotifierSettingsView::NotifierGroupChanged() {
+  std::vector<Notifier*> notifiers;
+  if (provider_)
+    provider_->GetNotifierList(&notifiers);
+
+  UpdateContentsView(notifiers);
+}
+
+void NotifierSettingsView::UpdateContentsView(
+    const std::vector<Notifier*>& notifiers) {
+  buttons_.clear();
+
+  views::View* contents_view = new views::View();
+  contents_view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+
+  views::View* contents_title_view = new views::View();
+  contents_title_view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 5));
+  views::Label* top_label = new views::Label(l10n_util::GetStringUTF16(
+      IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
+  top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  top_label->SetMultiLine(true);
+  contents_title_view->AddChildView(top_label);
+
+  string16 notifier_group_text;
+  if (provider_) {
+    const NotifierGroup& active_group = provider_->GetActiveNotifierGroup();
+    notifier_group_text = active_group.login_info.empty()
+                              ? active_group.name
+                              : active_group.login_info;
+  }
+
+  views::View* notifier_group_selector =
+      new views::MenuButton(NULL, notifier_group_text, this, true);
+  contents_title_view->AddChildView(notifier_group_selector);
+  contents_view->AddChildView(new EntryView(contents_title_view));
+
+  for (size_t i = 0; i < notifiers.size(); ++i) {
+    NotifierButton* button = new NotifierButton(notifiers[i], this);
+    EntryView* entry = new EntryView(button);
+    entry->set_focusable(true);
+    contents_view->AddChildView(entry);
+    buttons_.insert(button);
+  }
+  scroller_->SetContents(contents_view);
+
+  contents_view->SetBoundsRect(gfx::Rect(contents_view->GetPreferredSize()));
+  InvalidateLayout();
 }
 
 void NotifierSettingsView::Layout() {
@@ -343,11 +453,30 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
 
   std::set<NotifierButton*>::iterator iter = buttons_.find(
       static_cast<NotifierButton*>(sender));
-  DCHECK(iter != buttons_.end());
+
+  if (iter == buttons_.end())
+    return;
 
   (*iter)->SetChecked(!(*iter)->checked());
   if (provider_)
     provider_->SetNotifierEnabled((*iter)->notifier(), (*iter)->checked());
+}
+
+void NotifierSettingsView::OnMenuButtonClicked(views::View* source,
+                                               const gfx::Point& point) {
+  notifier_group_menu_model_.reset(new NotifierGroupMenuModel(provider_));
+  notifier_group_menu_runner_.reset(
+      new views::MenuRunner(notifier_group_menu_model_.get()));
+  if (views::MenuRunner::MENU_DELETED ==
+      notifier_group_menu_runner_->RunMenuAt(GetWidget(),
+                                             NULL,
+                                             source->GetBoundsInScreen(),
+                                             views::MenuItemView::BUBBLE_ABOVE,
+                                             ui::MENU_SOURCE_MOUSE,
+                                             views::MenuRunner::CONTEXT_MENU))
+    return;
+  MessageCenterView* center_view = static_cast<MessageCenterView*>(parent());
+  center_view->OnSettingsChanged();
 }
 
 }  // namespace message_center

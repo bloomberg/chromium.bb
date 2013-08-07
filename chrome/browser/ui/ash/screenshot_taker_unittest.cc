@@ -14,9 +14,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/root_window.h"
@@ -36,13 +36,10 @@ class ScreenshotTakerTest : public AshTestBase,
 
   virtual void SetUp() {
     AshTestBase::SetUp();
-    local_state_.reset(
-        new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
   }
 
   virtual void TearDown() {
     RunAllPendingInMessageLoop();
-    local_state_.reset();
     AshTestBase::TearDown();
   }
 
@@ -87,7 +84,6 @@ class ScreenshotTakerTest : public AshTestBase,
     EXPECT_TRUE(screenshot_complete_);
   }
 
-  scoped_ptr<ScopedTestingLocalState> local_state_;
   bool running_;
   bool screenshot_complete_;
   ScreenshotTakerObserver::Result screenshot_result_;
@@ -98,14 +94,18 @@ class ScreenshotTakerTest : public AshTestBase,
 };
 
 TEST_F(ScreenshotTakerTest, TakeScreenshot) {
-  TestingProfile profile;
+  scoped_ptr<TestingProfileManager> profile_manager(
+      new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+  ASSERT_TRUE(profile_manager->SetUp());
+  TestingProfile* profile =
+      profile_manager->CreateTestingProfile("test_profile");
   ScreenshotTaker screenshot_taker;
   screenshot_taker.AddObserver(this);
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
   SetScreenshotDirectoryForTest(&screenshot_taker, directory.path());
   SetScreenshotBasenameForTest(&screenshot_taker, "Screenshot");
-  SetScreenshotProfileForTest(&screenshot_taker, &profile);
+  SetScreenshotProfileForTest(&screenshot_taker, profile);
 
   EXPECT_TRUE(screenshot_taker.CanTakeScreenshot());
 

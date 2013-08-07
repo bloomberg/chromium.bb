@@ -4,13 +4,35 @@
 
 #include "ui/message_center/fake_notifier_settings_provider.h"
 
+#include "base/strings/utf_string_conversions.h"
+#include "ui/gfx/image/image.h"
+
 namespace message_center {
 
 FakeNotifierSettingsProvider::FakeNotifierSettingsProvider(
     const std::vector<Notifier*>& notifiers)
-    : notifiers_(notifiers), closed_called_count_(0) {}
+    : notifiers_(notifiers),
+      notifier_group_(gfx::Image(),
+                      UTF8ToUTF16("Fake name"),
+                      UTF8ToUTF16("fake@email.com"),
+                      true),
+      closed_called_count_(0) {}
 
 FakeNotifierSettingsProvider::~FakeNotifierSettingsProvider() {}
+
+size_t FakeNotifierSettingsProvider::GetNotifierGroupCount() const { return 1; }
+
+const message_center::NotifierGroup&
+FakeNotifierSettingsProvider::GetNotifierGroupAt(size_t index) const {
+  return notifier_group_;
+}
+
+void FakeNotifierSettingsProvider::SwitchToNotifierGroup(size_t index) {}
+
+const message_center::NotifierGroup&
+FakeNotifierSettingsProvider::GetActiveNotifierGroup() const {
+  return notifier_group_;
+}
 
 void FakeNotifierSettingsProvider::GetNotifierList(
     std::vector<Notifier*>* notifiers) {

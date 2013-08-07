@@ -36,21 +36,22 @@ const int kFirstRunIdleDelaySeconds = 1;
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center,
-    PrefService* local_state)
+    PrefService* local_state,
+    scoped_ptr<message_center::NotifierSettingsProvider> settings_provider)
     : message_center_(message_center),
 #if defined(OS_WIN)
       first_run_idle_timeout_(
           base::TimeDelta::FromSeconds(kFirstRunIdleDelaySeconds)),
       weak_factory_(this),
 #endif
-      settings_controller_(new MessageCenterSettingsController) {
+      settings_provider_(settings_provider.Pass()) {
 #if defined(OS_WIN)
   first_run_pref_.Init(prefs::kMessageCenterShowedFirstRunBalloon, local_state);
 #endif
 
   message_center_->SetDelegate(this);
   message_center_->AddObserver(this);
-  message_center_->SetNotifierSettingsProvider(settings_controller_.get());
+  message_center_->SetNotifierSettingsProvider(settings_provider_.get());
 
 #if defined(OS_WIN) || defined(OS_MACOSX) \
   || (defined(USE_AURA) && !defined(USE_ASH))

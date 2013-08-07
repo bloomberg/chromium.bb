@@ -10,28 +10,36 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/content_settings.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/message_center/notifier_settings.h"
 
 class CancelableTaskTracker;
+class ProfileInfoCache;
 
 namespace chrome {
 struct FaviconImageResult;
+}
+
+namespace message_center {
+class ProfileNotifierGroup;
 }
 
 // The class to bridge between the settings UI of notifiers and the preference
 // storage.
 class MessageCenterSettingsController
     : public message_center::NotifierSettingsProvider,
-      public extensions::AppIconLoader::Delegate,
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public extensions::AppIconLoader::Delegate {
  public:
-  MessageCenterSettingsController();
+  explicit MessageCenterSettingsController(
+      ProfileInfoCache* profile_info_cache);
   virtual ~MessageCenterSettingsController();
 
   // Overridden from message_center::NotifierSettingsProvider.
@@ -39,12 +47,16 @@ class MessageCenterSettingsController
       message_center::NotifierSettingsObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
       message_center::NotifierSettingsObserver* observer) OVERRIDE;
-  virtual void GetNotifierList(
-      std::vector<message_center::Notifier*>* notifiers)
+  virtual size_t GetNotifierGroupCount() const OVERRIDE;
+  virtual const message_center::NotifierGroup& GetNotifierGroupAt(
+      size_t index) const OVERRIDE;
+  virtual void SwitchToNotifierGroup(size_t index) OVERRIDE;
+  virtual const message_center::NotifierGroup& GetActiveNotifierGroup() const
       OVERRIDE;
-  virtual void SetNotifierEnabled(
-      const message_center::Notifier& notifier,
-      bool enabled) OVERRIDE;
+  virtual void GetNotifierList(
+      std::vector<message_center::Notifier*>* notifiers) OVERRIDE;
+  virtual void SetNotifierEnabled(const message_center::Notifier& notifier,
+                                  bool enabled) OVERRIDE;
   virtual void OnNotifierSettingsClosing() OVERRIDE;
 
   // Overridden from extensions::AppIconLoader::Delegate.
@@ -60,6 +72,8 @@ class MessageCenterSettingsController
   void OnFaviconLoaded(const GURL& url,
                        const chrome::FaviconImageResult& favicon_result);
 
+  void RebuildNotifierGroups();
+
   // The views displaying notifier settings.
   ObserverList<message_center::NotifierSettingsObserver> observers_;
 
@@ -70,12 +84,14 @@ class MessageCenterSettingsController
 
   std::map<string16, ContentSettingsPattern> patterns_;
 
-  // The Registrar used to register for notifications.
+  // The list of all configurable notifier groups. This is each profile that is
+  // loaded (and in the ProfileInfoCache - so no incognito profiles go here).
+  ScopedVector<message_center::ProfileNotifierGroup> notifier_groups_;
+  size_t current_notifier_group_;
+
   content::NotificationRegistrar registrar_;
 
-  // TODO(sidharthms): Fix this for multi-profile.
-  // The profile associated with message center settings.
-  Profile* profile_;
+  ProfileInfoCache* profile_info_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsController);
 };

@@ -84,6 +84,30 @@ struct MESSAGE_CENTER_EXPORT Notifier {
   DISALLOW_COPY_AND_ASSIGN(Notifier);
 };
 
+struct MESSAGE_CENTER_EXPORT NotifierGroup {
+  NotifierGroup(const gfx::Image& icon,
+                const string16& name,
+                const string16& login_info,
+                size_t index);
+  ~NotifierGroup();
+
+  // Icon of a notifier group.
+  const gfx::Image icon;
+
+  // Display name of a notifier group.
+  const string16 name;
+
+  // More display information about the notifier group.
+  string16 login_info;
+
+  // Unique identifier for the notifier group so that they can be selected in
+  // the UI.
+  const size_t index;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NotifierGroup);
+};
+
 MESSAGE_CENTER_EXPORT std::string ToString(
     NotifierId::SystemComponentNotifierType type);
 MESSAGE_CENTER_EXPORT NotifierId::SystemComponentNotifierType
@@ -96,15 +120,35 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsObserver {
   // Called when an icon in the controller has been updated.
   virtual void UpdateIconImage(const NotifierId& notifier_id,
                                const gfx::Image& icon) = 0;
+
+  // Called when any change happens to the set of notifier groups.
+  virtual void NotifierGroupChanged() = 0;
 };
 
 // A class used by NotifierSettingsView to integrate with a setting system
 // for the clients of this module.
 class MESSAGE_CENTER_EXPORT NotifierSettingsProvider {
  public:
+  virtual ~NotifierSettingsProvider() {};
+
   // Sets the delegate.
   virtual void AddObserver(NotifierSettingsObserver* observer) = 0;
   virtual void RemoveObserver(NotifierSettingsObserver* observer) = 0;
+
+  // Returns the number of notifier groups available.
+  virtual size_t GetNotifierGroupCount() const = 0;
+
+  // Requests the model for a particular notifier group.
+  virtual const message_center::NotifierGroup& GetNotifierGroupAt(
+      size_t index) const = 0;
+
+  // Informs the settings provider that further requests to GetNotifierList
+  // should return notifiers for the specified notifier group.
+  virtual void SwitchToNotifierGroup(size_t index) = 0;
+
+  // Requests the currently active notifier group.
+  virtual const message_center::NotifierGroup& GetActiveNotifierGroup()
+      const = 0;
 
   // Collects the current notifier list and fills to |notifiers|. Caller takes
   // the ownership of the elements of |notifiers|.

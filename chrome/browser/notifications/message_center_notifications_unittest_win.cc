@@ -17,9 +17,11 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/fake_notifier_settings_provider.h"
 #include "ui/message_center/message_center_impl.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
+#include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
 class FakeMessageCenterTrayDelegate : public MessageCenterTrayDelegate {
@@ -72,8 +74,10 @@ class MessageCenterNotificationManagerTest : public testing::Test {
     // Initialize message center infrastructure with mock tray delegate.
     MessageCenter::Initialize();
     message_center_ = MessageCenter::Get();
-    notification_manager_.reset(
-        new MessageCenterNotificationManager(message_center_, &local_state_));
+    scoped_ptr<NotifierSettingsProvider> settings_provider(
+        new FakeNotifierSettingsProvider(notifiers_));
+    notification_manager_.reset(new MessageCenterNotificationManager(
+        message_center_, &local_state_, settings_provider.Pass()));
     delegate_ = new FakeMessageCenterTrayDelegate(message_center_,
                                                   run_loop_->QuitClosure());
     notification_manager_->SetMessageCenterTrayDelegateForTest(delegate_);
@@ -111,6 +115,7 @@ class MessageCenterNotificationManagerTest : public testing::Test {
   scoped_ptr<base::RunLoop> run_loop_;
   TestingPrefServiceSimple local_state_;
   MessageCenter* message_center_;
+  std::vector<Notifier*> notifiers_;
   scoped_ptr<MessageCenterNotificationManager> notification_manager_;
   FakeMessageCenterTrayDelegate* delegate_;
   content::TestBrowserThreadBundle thread_bundle_;

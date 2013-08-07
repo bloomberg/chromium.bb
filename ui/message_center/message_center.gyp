@@ -70,6 +70,8 @@
         'views/message_bubble_base.h',
         'views/message_center_bubble.cc',
         'views/message_center_bubble.h',
+        'views/message_center_button_bar.cc',
+        'views/message_center_button_bar.h',
         'views/message_center_view.cc',
         'views/message_center_view.h',
         'views/message_popup_collection.cc',

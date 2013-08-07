@@ -50,8 +50,15 @@ Notifier::Notifier(const NotifierId& notifier_id,
 Notifier::~Notifier() {
 }
 
-std::string ToString(
-    NotifierId::SystemComponentNotifierType type) {
+NotifierGroup::NotifierGroup(const gfx::Image& icon,
+                             const string16& name,
+                             const string16& login_info,
+                             size_t index)
+    : icon(icon), name(name), login_info(login_info), index(index) {}
+
+NotifierGroup::~NotifierGroup() {}
+
+std::string ToString(NotifierId::SystemComponentNotifierType type) {
   switch (type) {
     case NotifierId::SCREENSHOT:
       return "screenshot";

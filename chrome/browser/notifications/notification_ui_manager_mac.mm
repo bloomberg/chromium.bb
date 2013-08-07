@@ -6,12 +6,16 @@
 
 #include "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
+#include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "ui/message_center/message_center_util.h"
 
 @class NSUserNotificationCenter;
@@ -101,8 +105,14 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
   // TODO(rsesek): Remove this function and merge it with the one in
   // notification_ui_manager.cc.
   if (DelegatesToMessageCenter()) {
+    ProfileInfoCache* profile_info_cache =
+        &g_browser_process->profile_manager()->GetProfileInfoCache();
+    scoped_ptr<message_center::NotifierSettingsProvider> settings_provider(
+        new MessageCenterSettingsController(profile_info_cache));
     return new MessageCenterNotificationManager(
-        g_browser_process->message_center(), local_state);
+        g_browser_process->message_center(),
+        local_state,
+        settings_provider.Pass());
   }
 
   BalloonNotificationUIManager* balloon_manager = NULL;

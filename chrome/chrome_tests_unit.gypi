@@ -30,6 +30,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../ui/message_center/message_center.gyp:message_center_test_support',
       ],
       'export_dependent_settings': [
         'app/policy/cloud_policy_codegen.gyp:policy_test_support',
@@ -998,6 +999,7 @@
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
         'browser/notifications/message_center_notifications_unittest_win.cc',
+        'browser/notifications/message_center_settings_controller_unittest.cc',
         'browser/notifications/sync_notifier/chrome_notifier_service_unittest.cc',
         'browser/notifications/sync_notifier/synced_notification_unittest.cc',
         'browser/notifications/sync_notifier/sync_notifier_test_utils.cc',

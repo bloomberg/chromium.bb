@@ -14,7 +14,14 @@ namespace message_center {
 class FakeNotifierSettingsProvider : public NotifierSettingsProvider {
  public:
   FakeNotifierSettingsProvider(const std::vector<Notifier*>& notifiers);
-  ~FakeNotifierSettingsProvider();
+  virtual ~FakeNotifierSettingsProvider();
+
+  virtual size_t GetNotifierGroupCount() const OVERRIDE;
+  virtual const message_center::NotifierGroup& GetNotifierGroupAt(
+      size_t index) const OVERRIDE;
+  virtual void SwitchToNotifierGroup(size_t index) OVERRIDE;
+  virtual const message_center::NotifierGroup& GetActiveNotifierGroup() const
+      OVERRIDE;
 
   virtual void GetNotifierList(std::vector<Notifier*>* notifiers) OVERRIDE;
 
@@ -31,6 +38,7 @@ class FakeNotifierSettingsProvider : public NotifierSettingsProvider {
  private:
   std::vector<Notifier*> notifiers_;
   std::map<const Notifier*, bool> enabled_;
+  const NotifierGroup notifier_group_;
   int closed_called_count_;
 };
 

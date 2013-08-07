@@ -10,22 +10,17 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
-#include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/text_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
-#include "ui/message_center/message_center_tray.h"
-#include "ui/message_center/message_center_util.h"
+#include "ui/message_center/views/message_center_button_bar.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/message_center/views/notifier_settings_view.h"
@@ -34,237 +29,29 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 namespace message_center {
 
 namespace {
 
-const int kMinScrollViewHeight = 100;
-const int kFooterLeftMargin = 17;
-const int kFooterRightMargin = 14;
-const int kButtonSize = 40;
-const SkColor kNoNotificationsTextColor = SkColorSetRGB(0xb4, 0xb4, 0xb4);
 const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
-const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
 const SkColor kButtonTextHighlightColor = SkColorSetRGB(0x2a, 0x2a, 0x2a);
 const SkColor kButtonTextHoverColor = SkColorSetRGB(0x2a, 0x2a, 0x2a);
+const SkColor kNoNotificationsTextColor = SkColorSetRGB(0xb4, 0xb4, 0xb4);
+const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
 const int kAnimateClearingNextNotificationDelayMS = 40;
+const int kButtonBarBorderThickness = 1;
+const int kMinScrollViewHeight = 100;
 
-static const int kDefaultFrameRateHz = 60;
 static const int kDefaultAnimationDurationMs = 120;
+static const int kDefaultFrameRateHz = 60;
 
 }  // namespace
-
-// NotificationCenterButton ////////////////////////////////////////////////////
-
-class NotificationCenterButton : public views::ToggleImageButton {
- public:
-  NotificationCenterButton(views::ButtonListener* listener,
-                           int normal_id,
-                           int hover_id,
-                           int pressed_id,
-                           int text_id);
-
- protected:
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NotificationCenterButton);
-};
-
-NotificationCenterButton::NotificationCenterButton(
-    views::ButtonListener* listener,
-    int normal_id,
-    int hover_id,
-    int pressed_id,
-    int text_id)
-    : views::ToggleImageButton(listener) {
-  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  SetImage(STATE_NORMAL, resource_bundle.GetImageSkiaNamed(normal_id));
-  SetImage(STATE_HOVERED, resource_bundle.GetImageSkiaNamed(hover_id));
-  SetImage(STATE_PRESSED, resource_bundle.GetImageSkiaNamed(pressed_id));
-  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                    views::ImageButton::ALIGN_MIDDLE);
-  SetTooltipText(resource_bundle.GetLocalizedString(text_id));
-  set_focusable(true);
-  set_request_focus_on_press(false);
-}
-
-gfx::Size NotificationCenterButton::GetPreferredSize() {
-  return gfx::Size(kButtonSize, kButtonSize);
-}
-
-void NotificationCenterButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
-    canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
-                     kFocusBorderColor);
-  }
-}
-
-// MessageCenterButtonBar //////////////////////////////////////////////////
-
-class MessageCenterButtonBar : public views::View,
-                               public views::ButtonListener {
- public:
-  MessageCenterButtonBar(MessageCenterView* message_center_view,
-                         MessageCenter* message_center);
-  virtual ~MessageCenterButtonBar();
-
-  virtual void SetAllButtonsEnabled(bool enabled);
-  void SetCloseAllVisible(bool visible);
-
- private:
-  // Overridden from views::View:
-  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE;
-
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
-      OVERRIDE;
-
-  MessageCenterView* message_center_view() const {
-    return message_center_view_;
-  }
-  MessageCenter* message_center() const { return message_center_; }
-  MessageCenterTray* tray() const { return tray_; }
-  views::Button* close_all_button() const { return close_all_button_; }
-  void set_close_all_button(views::Button* button) {
-    close_all_button_ = button;
-  }
-
-  MessageCenterView* message_center_view_;  // Weak reference.
-  MessageCenter* message_center_;  // Weak reference.
-  MessageCenterTray* tray_;  // Weak reference.
-  views::Button* close_all_button_;
-  NotificationCenterButton* settings_button_;
-  NotificationCenterButton* quiet_mode_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterButtonBar);
-};
-
-MessageCenterButtonBar::MessageCenterButtonBar(
-    MessageCenterView* message_center_view,
-    MessageCenter* message_center)
-    : message_center_view_(message_center_view),
-      message_center_(message_center),
-      close_all_button_(NULL) {
-  if (get_use_acceleration_when_possible())
-    SetPaintToLayer(true);
-  set_background(views::Background::CreateSolidBackground(
-      kMessageCenterBackgroundColor));
-
-  views::Label* notification_label = new views::Label(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_FOOTER_TITLE));
-  notification_label->SetAutoColorReadabilityEnabled(false);
-  notification_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  notification_label->SetEnabledColor(kRegularTextColor);
-  AddChildView(notification_label);
-
-  views::View* button_container = new views::View;
-  button_container->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  quiet_mode_button_ = new NotificationCenterButton(
-      this,
-      IDR_NOTIFICATION_DO_NOT_DISTURB,
-      IDR_NOTIFICATION_DO_NOT_DISTURB_HOVER,
-      IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED,
-      IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP);
-  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  quiet_mode_button_->SetToggledImage(
-      views::Button::STATE_NORMAL,
-      resource_bundle.GetImageSkiaNamed(
-          IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED));
-  quiet_mode_button_->SetToggledImage(
-      views::Button::STATE_HOVERED,
-      resource_bundle.GetImageSkiaNamed(
-          IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED));
-  quiet_mode_button_->SetToggledImage(
-      views::Button::STATE_PRESSED,
-      resource_bundle.GetImageSkiaNamed(
-          IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED));
-  quiet_mode_button_->SetToggled(message_center->IsQuietMode());
-  button_container->AddChildView(quiet_mode_button_);
-
-  NotificationCenterButton* close_all_button = new NotificationCenterButton(
-      this,
-      IDR_NOTIFICATION_CLEAR_ALL,
-      IDR_NOTIFICATION_CLEAR_ALL_HOVER,
-      IDR_NOTIFICATION_CLEAR_ALL_PRESSED,
-      IDS_MESSAGE_CENTER_CLEAR_ALL);
-  button_container->AddChildView(close_all_button);
-  set_close_all_button(close_all_button);
-  settings_button_ = new NotificationCenterButton(
-      this,
-      IDR_NOTIFICATION_SETTINGS,
-      IDR_NOTIFICATION_SETTINGS_HOVER,
-      IDR_NOTIFICATION_SETTINGS_PRESSED,
-      IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL);
-  button_container->AddChildView(settings_button_);
-
-  gfx::ImageSkia* settings_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_NOTIFICATION_SETTINGS);
-  int image_margin = std::max(0, (kButtonSize - settings_image->width()) / 2);
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-  layout->SetInsets(
-      0, kFooterLeftMargin, 0, std::max(0, kFooterRightMargin - image_margin));
-  views::ColumnSet* column = layout->AddColumnSet(0);
-  column->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                    1.0f, views::GridLayout::USE_PREF, 0, 0);
-  column->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                    0, views::GridLayout::USE_PREF, 0, 0);
-  layout->StartRow(0, 0);
-  layout->AddView(notification_label);
-  layout->AddView(button_container);
-}
-
-MessageCenterButtonBar::~MessageCenterButtonBar() {}
-
-void MessageCenterButtonBar::SetAllButtonsEnabled(bool enabled) {
-  if (close_all_button_)
-    close_all_button_->SetEnabled(enabled);
-  settings_button_->SetEnabled(enabled);
-  quiet_mode_button_->SetEnabled(enabled);
-}
-
-void MessageCenterButtonBar::SetCloseAllVisible(bool visible) {
-  if (close_all_button_)
-    close_all_button_->SetVisible(visible);
-}
-
-// Overridden from views::View:
-void MessageCenterButtonBar::ChildVisibilityChanged(views::View* child) {
-  InvalidateLayout();
-}
-
-// Overridden from views::ButtonListener:
-void MessageCenterButtonBar::ButtonPressed(views::Button* sender,
-                                           const ui::Event& event) {
-  if (sender == close_all_button()) {
-    message_center_view()->ClearAllNotifications();
-  } else if (sender == settings_button_) {
-    MessageCenterView* center_view = static_cast<MessageCenterView*>(parent());
-    center_view->SetSettingsVisible(!center_view->settings_visible());
-  } else if (sender == quiet_mode_button_) {
-    if (message_center()->IsQuietMode())
-      message_center()->SetQuietMode(false);
-    else
-      message_center()->EnterQuietModeWithExpire(base::TimeDelta::FromDays(1));
-    quiet_mode_button_->SetToggled(message_center()->IsQuietMode());
-  } else {
-    NOTREACHED();
-  }
-}
 
 // BoundedScrollView ///////////////////////////////////////////////////////////
 
@@ -806,17 +593,33 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
       tray_(tray),
       top_down_(top_down),
       settings_visible_(initially_settings_visible),
+      source_view_(NULL),
+      source_height_(0),
+      target_view_(NULL),
+      target_height_(0),
       is_closing_(false) {
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
   set_background(views::Background::CreateSolidBackground(
       kMessageCenterBackgroundColor));
 
-  button_bar_ = new MessageCenterButtonBar(this, message_center);
+  NotifierSettingsProvider* notifier_settings_provider =
+      message_center_->GetNotifierSettingsProvider();
+  button_bar_ = new MessageCenterButtonBar(this,
+                                           message_center,
+                                           notifier_settings_provider,
+                                           initially_settings_visible);
 
   const int button_height = button_bar_->GetPreferredSize().height();
-  scroller_ = new BoundedScrollView(kMinScrollViewHeight,
-                                    max_height - button_height);
+  button_bar_->set_border(views::Border::CreateSolidSidedBorder(
+      top_down_ ? 0 : kButtonBarBorderThickness,
+      0,
+      top_down_ ? kButtonBarBorderThickness : 0,
+      0,
+      kFooterDelimiterColor));
+
+  scroller_ =
+      new BoundedScrollView(kMinScrollViewHeight, max_height - button_height);
 
   if (get_use_acceleration_when_possible()) {
     scroller_->SetPaintToLayer(true);
@@ -832,8 +635,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   message_list_view_->AddChildView(no_notifications_message_view_);
   scroller_->SetContents(message_list_view_);
 
-  settings_view_ = new NotifierSettingsView(
-      message_center_->GetNotifierSettingsProvider());
+  settings_view_ = new NotifierSettingsView(notifier_settings_provider);
 
   if (initially_settings_visible)
     scroller_->SetVisible(false);
@@ -915,13 +717,6 @@ void MessageCenterView::SetSettingsVisible(bool visible) {
   settings_transition_animation_->Start();
 }
 
-void MessageCenterView::SetIsClosing(bool is_closing) {
-  is_closing_ = is_closing;
-  if (is_closing)
-    message_center_->RemoveObserver(this);
-  else
-    message_center_->AddObserver(this);
-}
 
 void MessageCenterView::ClearAllNotifications() {
   if (is_closing_)
@@ -942,11 +737,26 @@ size_t MessageCenterView::NumMessageViewsForTest() const {
   return message_list_view_->child_count();
 }
 
+void MessageCenterView::OnSettingsChanged() {
+  scroller_->InvalidateLayout();
+  PreferredSizeChanged();
+  Layout();
+}
+
+void MessageCenterView::SetIsClosing(bool is_closing) {
+  is_closing_ = is_closing;
+  if (is_closing)
+    message_center_->RemoveObserver(this);
+  else
+    message_center_->AddObserver(this);
+}
+
 void MessageCenterView::Layout() {
   if (is_closing_)
     return;
 
-  int button_height = button_bar_->GetHeightForWidth(width());
+  int button_height = button_bar_->GetHeightForWidth(width()) +
+                      button_bar_->GetInsets().height();
   // Skip unnecessary re-layout of contents during the resize animation.
   if (settings_transition_animation_ &&
       settings_transition_animation_->is_animating() &&
@@ -965,27 +775,6 @@ void MessageCenterView::Layout() {
                             top_down_ ? button_height : 0,
                             width(),
                             height() - button_height);
-
-  bool is_scrollable = false;
-  if (scroller_->visible())
-    is_scrollable = scroller_->height() < message_list_view_->height();
-  else
-    is_scrollable = settings_view_->IsScrollable();
-
-  if (is_scrollable && !button_bar_->border()) {
-    // Draw separator line on the top of the button bar if it is on the bottom
-    // or draw it at the bottom if the bar is on the top.
-    button_bar_->set_border(views::Border::CreateSolidSidedBorder(
-        top_down_ ? 0 : 1,
-        0,
-        top_down_ ? 1 : 0,
-        0,
-        kFooterDelimiterColor));
-    button_bar_->SchedulePaint();
-  } else if (!is_scrollable && button_bar_->border()) {
-    button_bar_->set_border(NULL);
-    button_bar_->SchedulePaint();
-  }
 
   button_bar_->SetBounds(0,
                          top_down_ ? 0 : height() - button_height,
@@ -1030,7 +819,8 @@ int MessageCenterView::GetHeightForWidth(int width) {
     content_height += scroller_->GetHeightForWidth(width);
   else
     content_height += settings_view_->GetHeightForWidth(width);
-  return button_bar_->GetHeightForWidth(width) + content_height;
+  return button_bar_->GetHeightForWidth(width) +
+         button_bar_->GetInsets().height() + content_height;
 }
 
 bool MessageCenterView::OnMouseWheel(const ui::MouseWheelEvent& event) {
@@ -1178,15 +968,12 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
 }
 
 void MessageCenterView::NotificationsChanged() {
-  if (!message_views_.empty()) {
-    no_notifications_message_view_->SetVisible(false);
-    button_bar_->SetCloseAllVisible(true);
-    scroller_->set_focusable(true);
-  } else {
-    no_notifications_message_view_->SetVisible(true);
-    button_bar_->SetCloseAllVisible(false);
-    scroller_->set_focusable(false);
-  }
+  bool no_message_views = message_views_.empty();
+
+  no_notifications_message_view_->SetVisible(no_message_views);
+  button_bar_->SetCloseAllButtonVisible(!no_message_views);
+  scroller_->set_focusable(!no_message_views);
+
   scroller_->InvalidateLayout();
   PreferredSizeChanged();
   Layout();
