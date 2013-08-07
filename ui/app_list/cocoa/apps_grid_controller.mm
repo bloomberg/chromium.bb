@@ -22,7 +22,7 @@ const int kItemsPerPage = kFixedRows * kFixedColumns;
 
 // Padding space in pixels for fixed layout.
 const CGFloat kGridTopPadding = 1;
-const CGFloat kLeftRightPadding = 16;
+const CGFloat kLeftRightPadding = 21;
 const CGFloat kScrollerPadding = 16;
 
 // Preferred tile size when showing in fixed layout. These should be even
