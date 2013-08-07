@@ -310,7 +310,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     # else return a descriptive default value.
     response = dm.DeviceManagementResponse()
     response.service_api_access_response.auth_code = policy.get(
-        'robot_api_auth_code', 'policy_test_server.py-auth_code')
+        'robot_api_auth_code', 'policy_testserver.py-auth_code')
     self.DumpMessage('Response', response)
 
     return (200, response.SerializeToString())
@@ -592,6 +592,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     policy_data.valid_serial_number_missing = (
         token_info['machine_id'] in BAD_MACHINE_IDS)
     policy_data.settings_entity_id = msg.settings_entity_id
+    policy_data.service_account_identity = policy.get(
+        'service_account_identity',
+        'policy_testserver.py-service_account_identity')
 
     if signing_key:
       policy_data.public_key_version = current_key_index + 1
