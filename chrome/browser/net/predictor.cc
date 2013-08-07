@@ -414,7 +414,6 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url,
       !url.is_valid() || !url.has_host())
     return;
 
-  std::string host = url.HostNoBrackets();
   UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
   const int kConnectionsNeeded = 1;
   PreconnectUrl(CanonicalizeUrl(url), first_party_for_cookies,
