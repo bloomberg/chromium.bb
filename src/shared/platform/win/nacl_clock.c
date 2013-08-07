@@ -56,6 +56,8 @@ int NaClClockGetRes(nacl_clockid_t            clk_id,
   switch (clk_id) {
     case NACL_CLOCK_REALTIME:
     case NACL_CLOCK_MONOTONIC:
+    case NACL_CLOCK_PROCESS_CPUTIME_ID:
+    case NACL_CLOCK_THREAD_CPUTIME_ID:
       t_resolution_ns = NaClTimerResolutionNanoseconds();
       res->tv_sec  = (nacl_abi_time_t) (t_resolution_ns / NACL_NANOS_PER_UNIT);
       res->tv_nsec = (int32_t)         (t_resolution_ns % NACL_NANOS_PER_UNIT);
@@ -65,12 +67,13 @@ int NaClClockGetRes(nacl_clockid_t            clk_id,
        */
       rv = 0;
       break;
-    case NACL_CLOCK_PROCESS_CPUTIME_ID:
-    case NACL_CLOCK_THREAD_CPUTIME_ID:
-      break;
   }
 
   return rv;
+}
+
+static INLINE uint64_t FiletimeToUint64(FILETIME ft) {
+  return (((uint64_t) ft.dwHighDateTime << 32) | ft.dwLowDateTime);
 }
 
 int NaClClockGetTime(nacl_clockid_t           clk_id,
@@ -79,6 +82,11 @@ int NaClClockGetTime(nacl_clockid_t           clk_id,
   struct nacl_abi_timeval tv;
   uint64_t                t_mono_prev_us;
   uint64_t                t_mono_cur_us;
+  FILETIME                t_creat;
+  FILETIME                t_exit;
+  FILETIME                t_kernel;
+  FILETIME                t_user;
+  uint64_t                tick_ns;
 
   if (!g_NaClClock_is_initialized) {
     NaClLog(LOG_FATAL,
@@ -128,7 +136,22 @@ int NaClClockGetTime(nacl_clockid_t           clk_id,
       }
       break;
     case NACL_CLOCK_PROCESS_CPUTIME_ID:
+      if (GetProcessTimes(GetCurrentProcess(),
+            &t_creat, &t_exit, &t_kernel, &t_user)) {
+        tick_ns = (FiletimeToUint64(t_kernel) + FiletimeToUint64(t_user)) * 100;
+        tp->tv_sec =  tick_ns / NACL_NANOS_PER_UNIT;
+        tp->tv_nsec = tick_ns % NACL_NANOS_PER_UNIT;
+        rv = 0;
+      }
+      break;
     case NACL_CLOCK_THREAD_CPUTIME_ID:
+      if (GetThreadTimes(GetCurrentThread(),
+            &t_creat, &t_exit, &t_kernel, &t_user)) {
+        tick_ns = (FiletimeToUint64(t_kernel) + FiletimeToUint64(t_user)) * 100;
+        tp->tv_sec =  tick_ns / NACL_NANOS_PER_UNIT;
+        tp->tv_nsec = tick_ns % NACL_NANOS_PER_UNIT;
+        rv = 0;
+      }
       break;
   }
   return rv;

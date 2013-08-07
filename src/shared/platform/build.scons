@@ -7,6 +7,7 @@
 
 import atexit
 import os
+import platform
 import tempfile
 import shutil
 import sys
@@ -19,6 +20,12 @@ platform_inputs = []
 # time_slop_args is used in nacl_clock_test to permit some extra slop
 # in the elapsed time (in ms).
 time_slop_args = []
+
+# On Linux the older scheduler implementation did not account properly
+# for the time process spent waiting on the futex in thread join. This
+# affects the CLOCK_PROCESS/THREAD_CPUTIME_ID clock test and we therefore
+# disable this test on older kernels.
+cputime_args = []
 
 if env.Bit('windows'):
   platform_inputs += [
@@ -56,6 +63,9 @@ elif env.Bit('linux'):
     'linux/nacl_host_dir.c',
     'linux/nacl_semaphore.c',
     ]
+  kernel_version = map(int, platform.release().split('.', 2)[:2])
+  if kernel_version < [3, 0]:
+    cputime_args += [ '-c' ]
 elif env.Bit('mac'):
   platform_inputs += [
     'osx/nacl_clock.c',
@@ -171,7 +181,7 @@ nacl_clock_test_exe = env.ComponentProgram('nacl_clock_test',
                                            EXTRA_LIBS=['platform'])
 
 node = env.CommandTest('nacl_clock_test.out',
-                       [nacl_clock_test_exe] + time_slop_args)
+                       [nacl_clock_test_exe] + time_slop_args + cputime_args)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_clock_test')
 

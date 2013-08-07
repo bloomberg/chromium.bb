@@ -7,6 +7,7 @@
 #include "native_client/src/shared/platform/nacl_clock.h"
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_time.h"
@@ -16,7 +17,11 @@
  * OSX does not include POSIX.1-2011 functions, so we emulate using
  * Mach calls.
  */
+#include <mach/mach.h>
 #include <mach/mach_time.h>
+#include <mach/task.h>
+#include <mach/task_info.h>
+#include <mach/thread_info.h>
 
 static int                        g_NaClClock_is_initialized = 0;
 static mach_timebase_info_data_t  g_NaCl_time_base_info;
@@ -57,7 +62,9 @@ int NaClClockGetRes(nacl_clockid_t            clk_id,
       break;
     case NACL_CLOCK_PROCESS_CPUTIME_ID:
     case NACL_CLOCK_THREAD_CPUTIME_ID:
-      rv = -NACL_ABI_EINVAL;
+      host_res.tv_sec = 0;
+      host_res.tv_nsec = 1;
+      rv = 0;
       break;
   }
   if (0 == rv) {
@@ -69,10 +76,14 @@ int NaClClockGetRes(nacl_clockid_t            clk_id,
 
 int NaClClockGetTime(nacl_clockid_t            clk_id,
                      struct nacl_abi_timespec  *tp) {
-  int                     rv = -NACL_ABI_EINVAL;
-  struct nacl_abi_timeval tv;
-  uint64_t                tick_cur;
-  uint64_t                tick_ns;
+  int                               rv = -NACL_ABI_EINVAL;
+  struct nacl_abi_timeval           tv;
+  uint64_t                          tick_cur;
+  uint64_t                          tick_ns;
+  struct task_absolutetime_info     absolutetime_info;
+  thread_basic_info_data_t          _basic_info;
+  thread_basic_info_t               basic_info = &_basic_info;
+  mach_msg_type_number_t            count;
 
   if (!g_NaClClock_is_initialized) {
     NaClLog(LOG_FATAL,
@@ -101,8 +112,38 @@ int NaClClockGetTime(nacl_clockid_t            clk_id,
       rv = 0;
       break;
     case NACL_CLOCK_PROCESS_CPUTIME_ID:
+      count = TASK_ABSOLUTETIME_INFO_COUNT;
+
+      if (KERN_SUCCESS != task_info(mach_task_self(),
+                                    TASK_ABSOLUTETIME_INFO,
+                                    (task_info_t) &absolutetime_info,
+                                    &count)) {
+        break;
+      }
+      tp->tv_sec = ((absolutetime_info.total_user
+                     + absolutetime_info.total_system)
+                    / NACL_NANOS_PER_UNIT);
+      tp->tv_nsec = ((absolutetime_info.total_user
+                      + absolutetime_info.total_system)
+                     % NACL_NANOS_PER_UNIT);
+      rv = 0;
+      break;
     case NACL_CLOCK_THREAD_CPUTIME_ID:
-      rv = -NACL_ABI_EINVAL;
+      count = THREAD_BASIC_INFO_COUNT;
+
+      if (KERN_SUCCESS == thread_info(mach_thread_self(),
+                                      THREAD_BASIC_INFO,
+                                      (thread_info_t) basic_info,
+                                      &count)) {
+        tick_ns = ((basic_info->user_time.microseconds
+                    + basic_info->system_time.microseconds)
+                   * NACL_NANOS_PER_MICRO);
+        tp->tv_sec = (basic_info->user_time.seconds
+                      + basic_info->system_time.seconds
+                      + (tick_ns / NACL_NANOS_PER_UNIT));
+        tp->tv_nsec = tick_ns % NACL_NANOS_PER_UNIT;
+        rv = 0;
+      }
       break;
   }
   return rv;

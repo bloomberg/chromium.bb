@@ -44,8 +44,12 @@ int NaClClockGetRes(nacl_clockid_t            clk_id,
       rv = 0;
       break;
     case NACL_CLOCK_PROCESS_CPUTIME_ID:
+      host_clk_id = CLOCK_PROCESS_CPUTIME_ID;
+      rv = 0;
+      break;
     case NACL_CLOCK_THREAD_CPUTIME_ID:
-      rv = -NACL_ABI_EINVAL;
+      host_clk_id = CLOCK_THREAD_CPUTIME_ID;
+      rv = 0;
       break;
   }
   if (0 == rv) {
@@ -85,8 +89,25 @@ int NaClClockGetTime(nacl_clockid_t            clk_id,
       }
       break;
     case NACL_CLOCK_PROCESS_CPUTIME_ID:
+      /*
+       * This will include the time spent in an TCB-private service thread
+       * as well as the actual user threads. This not a major issue given
+       * all the trade-offs of implementing the proper semantics, but it is
+       * worth noting that the return value might be somewhat different from
+       * what this would be in a real POSIX OS.
+       */
+      if (0 != clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &host_time)) {
+        rv = -NaClXlateErrno(errno);
+      } else {
+        rv = 0;
+      }
+      break;
     case NACL_CLOCK_THREAD_CPUTIME_ID:
-      rv = -NACL_ABI_EINVAL;
+      if (0 != clock_gettime(CLOCK_THREAD_CPUTIME_ID, &host_time)) {
+        rv = -NaClXlateErrno(errno);
+      } else {
+        rv = 0;
+      }
       break;
   }
   if (0 == rv) {

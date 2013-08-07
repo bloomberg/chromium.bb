@@ -5,13 +5,16 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "native_client/src/shared/platform/nacl_clock.h"
 
 #include "native_client/src/shared/platform/platform_init.h"
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_time.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
 /*
@@ -48,6 +51,7 @@
  * Global testing parameters -- fuzziness coefficients in determining
  * what is considered accurate.
  */
+int      g_cputime = 1;
 double   g_fuzzy_factor = DEFAULT_NANOSLEEP_EXTRA_FACTOR;
 uint64_t g_syscall_overhead = DEFAULT_NANOSLEEP_EXTRA_OVERHEAD;
 uint64_t g_slop_ms = 0;
@@ -180,6 +184,168 @@ int ClockRealtimeAccuracyTest(void) {
   return num_failures;
 }
 
+#ifndef NACL_NO_CPUTIME_TEST
+struct ThreadInfo {
+  size_t                    cycles;
+  struct nacl_abi_timespec  thread_time;
+  struct nacl_abi_timespec  process_time;
+  int                       num_failures;
+};
+
+void WINAPI ThreadFunction(void *ptr) {
+  int                       err;
+
+  size_t                    i;
+  struct ThreadInfo         *info = (struct ThreadInfo *) ptr;
+
+  for (i = 1; i < info->cycles; i++) {
+#if defined(__GNUC__)
+    __asm__ volatile("" ::: "memory");
+#elif NACL_WINDOWS
+    _ReadWriteBarrier();
+#else
+# error Unsupported platform
+#endif
+  }
+
+  if (0 != (err = NaClClockGetTime(NACL_ABI_CLOCK_THREAD_CPUTIME_ID,
+                                   &info->thread_time))) {
+    fprintf(stderr,
+            "nacl_clock_test: NaClClockGetTime (now) failed, error %d\n",
+            err);
+    info->num_failures++;
+    return;
+  }
+
+  if (0 != (err = NaClClockGetTime(NACL_ABI_CLOCK_PROCESS_CPUTIME_ID,
+                                   &info->process_time))) {
+    fprintf(stderr,
+            "nacl_clock_test: NaClClockGetTime (now) failed, error %d\n",
+            err);
+    info->num_failures++;
+    return;
+  }
+}
+
+int ClockCpuTimeAccuracyTest(void) {
+  int                       num_failures = 0;
+
+  int                       err;
+  struct nacl_abi_timespec  t_process_start;
+  struct nacl_abi_timespec  t_process_end;
+  struct nacl_abi_timespec  t_thread_start;
+  struct nacl_abi_timespec  t_thread_end;
+
+  uint64_t                  thread_elapsed = 0;
+  uint64_t                  process_elapsed = 0;
+  uint64_t                  child_thread_elapsed = 0;
+  uint64_t                  elapsed_lower_bound;
+  uint64_t                  elapsed_upper_bound;
+
+  size_t                    i;
+  struct ThreadInfo         info[10];
+  struct NaClThread         thread[10];
+
+  printf("\nCLOCK_PROCESS/THREAD_CPUTIME_ID accuracy test:\n");
+
+  if (0 != (err = NaClClockGetTime(NACL_ABI_CLOCK_THREAD_CPUTIME_ID,
+                                   &t_thread_start))) {
+    fprintf(stderr,
+            "nacl_clock_test: NaClClockGetTime (now) failed, error %d\n",
+            err);
+    num_failures++;
+    goto done;
+  }
+
+  if (0 != (err = NaClClockGetTime(NACL_ABI_CLOCK_PROCESS_CPUTIME_ID,
+                                   &t_process_start))) {
+    fprintf(stderr,
+            "nacl_clock_test: NaClClockGetTime (now) failed, error %d\n",
+            err);
+    num_failures++;
+    goto done;
+  }
+
+  for (i = 0; i < NACL_ARRAY_SIZE(thread); i++) {
+    memset(&info[i], 0, sizeof info[i]);
+    info[i].cycles = i * 10000000;
+    if (!NaClThreadCreateJoinable(&thread[i], ThreadFunction, &info[i],
+                                  65536)) {
+      fprintf(stderr,
+              "nacl_clock_test: NaClThreadCreateJoinable failed\n");
+      num_failures++;
+      goto done;
+    }
+  }
+
+  for (i = 0; i < NACL_ARRAY_SIZE(thread); i++) {
+    NaClThreadJoin(&thread[i]);
+  }
+
+  if (0 != (err = NaClClockGetTime(NACL_ABI_CLOCK_PROCESS_CPUTIME_ID,
+                                   &t_process_end))) {
+    fprintf(stderr,
+            "nacl_clock_test: NaClClockGetTime (now) failed, error %d\n",
+            err);
+    num_failures++;
+    goto done;
+  }
+
+  if (0 != (err = NaClClockGetTime(NACL_ABI_CLOCK_THREAD_CPUTIME_ID,
+                                   &t_thread_end))) {
+    fprintf(stderr,
+            "nacl_clock_test: NaClClockGetTime (now) failed, error %d\n",
+            err);
+    num_failures++;
+    goto done;
+  }
+
+  thread_elapsed =
+      (t_thread_end.tv_sec - t_thread_start.tv_sec) * NANOS_PER_UNIT
+      + (t_thread_end.tv_nsec - t_thread_start.tv_nsec);
+
+  process_elapsed =
+      (t_process_end.tv_sec - t_process_start.tv_sec) * NANOS_PER_UNIT
+      + (t_process_end.tv_nsec - t_process_start.tv_nsec);
+
+  for (i = 0; i < NACL_ARRAY_SIZE(thread); i++) {
+    uint64_t thread_elapsed_nanos;
+    uint64_t process_elapsed_nanos;
+    if (info[i].num_failures > 0) {
+      num_failures += info[i].num_failures;
+      goto done;
+    }
+    thread_elapsed_nanos = info[i].thread_time.tv_sec * NANOS_PER_UNIT
+        + info[i].thread_time.tv_nsec;
+    process_elapsed_nanos = info[i].process_time.tv_sec * NANOS_PER_UNIT
+        + info[i].process_time.tv_nsec;
+    printf("%"NACL_PRIdS": thread=%20"NACL_PRIu64" nS, process=%20"
+           NACL_PRIu64" nS\n",
+           i, thread_elapsed_nanos, process_elapsed_nanos);
+    child_thread_elapsed += thread_elapsed_nanos;
+  }
+
+  elapsed_lower_bound = thread_elapsed + child_thread_elapsed;
+  elapsed_upper_bound = (uint64_t) (thread_elapsed
+      + child_thread_elapsed * g_fuzzy_factor + g_syscall_overhead);
+
+  printf("thread time:         %20"NACL_PRIu64" nS\n", thread_elapsed);
+  printf("process time:        %20"NACL_PRIu64" nS\n", process_elapsed);
+  printf("child thread time:   %20"NACL_PRIu64" nS\n", child_thread_elapsed);
+  printf("elapsed lower bound: %20"NACL_PRIu64" nS\n", elapsed_lower_bound);
+  printf("elapsed upper bound: %20"NACL_PRIu64" nS\n", elapsed_upper_bound);
+
+  if (process_elapsed < elapsed_lower_bound
+      || elapsed_upper_bound < process_elapsed) {
+    printf("discrepancy too large\n");
+    num_failures++;
+  }
+ done:
+  printf((0 == num_failures) ? "PASSED\n" : "FAILED\n");
+  return num_failures;
+}
+#endif
+
 int main(int ac, char **av) {
   uint64_t                  sleep_nanos = DEFAULT_NANOSLEEP_TIME;
 
@@ -196,10 +362,15 @@ int main(int ac, char **av) {
   puts("set of parameters.  On an unloaded i7, a sleep duration (-S) of");
   puts("1000000 ns (one millisecond), with a fuzziness factor (-f) of 1.25,");
   puts("a constant test overhead of 100000 ns (100 us), and a");
-  puts("sleep duration \"slop\" (-s) of 0 is fine.");
+  puts("sleep duration \"slop\" (-s) of 0 is fine. The CPU time tests can");
+  puts("be skipped (-c) if necessary on configurations with imprecise");
+  puts("scheduler accounting.");
 
-  while (-1 != (opt = getopt(ac, av, "f:o:s:S:"))) {
+  while (-1 != (opt = getopt(ac, av, "cf:o:s:S:"))) {
     switch (opt) {
+      case 'c':
+        g_cputime = 0;
+        break;
       case 'f':
         g_fuzzy_factor = strtod(optarg, (char **) NULL);
         break;
@@ -226,6 +397,9 @@ int main(int ac, char **av) {
 
   num_failures += ClockMonotonicAccuracyTest(sleep_nanos);
   num_failures += ClockRealtimeAccuracyTest();
+  if (g_cputime) {
+    num_failures += ClockCpuTimeAccuracyTest();
+  }
 
   NaClPlatformFini();
 
