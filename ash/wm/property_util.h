@@ -24,7 +24,7 @@ class RootWindowController;
 // Sets the restore bounds property on |window| in the virtual screen
 // coordinates.  Deletes existing bounds value if exists.
 ASH_EXPORT void SetRestoreBoundsInScreen(aura::Window* window,
-                                       const gfx::Rect& screen_bounds);
+                                         const gfx::Rect& screen_bounds);
 // Same as |SetRestoreBoundsInScreen| except that the bounds is in the
 // parent's coordinates.
 ASH_EXPORT void SetRestoreBoundsInParent(aura::Window* window,

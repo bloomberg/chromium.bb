@@ -62,6 +62,40 @@ TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
 }
 
+TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 30, 40)));
+  // Maximized -> Normal transition.
+  wm::MaximizeWindow(window.get());
+  SetRestoreBoundsInScreen(window.get(), gfx::Rect(-100, -100, 30, 40));
+  wm::RestoreWindow(window.get());
+  EXPECT_TRUE(
+      Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
+  EXPECT_EQ("-20,-30 30x40", window->bounds().ToString());
+
+  // Minimized -> Normal transition.
+  window->SetBounds(gfx::Rect(-100, -100, 30, 40));
+  wm::MinimizeWindow(window.get());
+  EXPECT_FALSE(
+      Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
+  EXPECT_EQ("-100,-100 30x40", window->bounds().ToString());
+  window->Show();
+  EXPECT_TRUE(
+      Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
+  EXPECT_EQ("-20,-30 30x40", window->bounds().ToString());
+
+  // Fullscreen -> Normal transition.
+  window->SetBounds(gfx::Rect(0, 0, 30, 40));  // reset bounds.
+  ASSERT_EQ("0,0 30x40", window->bounds().ToString());
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  EXPECT_EQ(window->bounds(), window->GetRootWindow()->bounds());
+  SetRestoreBoundsInScreen(window.get(), gfx::Rect(-100, -100, 30, 40));
+  wm::RestoreWindow(window.get());
+  EXPECT_TRUE(
+      Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
+  EXPECT_EQ("-20,-30 30x40", window->bounds().ToString());
+}
+
 // WindowObserver implementation used by DontClobberRestoreBoundsWindowObserver.
 // This code mirrors what BrowserFrameAura does. In particular when this code
 // sees the window was maximized it changes the bounds of a secondary
@@ -110,7 +144,7 @@ TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
   window->AddObserver(&window_observer);
   SetDefaultParentByPrimaryRootWindow(window.get());
   window->Show();
-  ash::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
 
   scoped_ptr<aura::Window> window2(
       CreateTestWindowInShellWithBounds(gfx::Rect(12, 20, 30, 40)));
@@ -128,12 +162,12 @@ TEST_F(WorkspaceLayoutManagerTest, ChildBoundsResetOnMaximize) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 20, 30, 40)));
   window->Show();
-  ash::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
   scoped_ptr<aura::Window> child_window(
       aura::test::CreateTestWindowWithBounds(gfx::Rect(5, 6, 7, 8),
                                              window.get()));
   child_window->Show();
-  ash::wm::MaximizeWindow(window.get());
+  wm::MaximizeWindow(window.get());
   EXPECT_EQ("5,6 7x8", child_window->bounds().ToString());
 }
 
@@ -146,7 +180,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
 
   // If the window is out of the workspace, it would be moved on screen.
   gfx::Rect root_window_bounds =
-      ash::Shell::GetInstance()->GetPrimaryRootWindow()->bounds();
+      Shell::GetInstance()->GetPrimaryRootWindow()->bounds();
   window_bounds.Offset(root_window_bounds.width(), root_window_bounds.height());
   ASSERT_FALSE(window_bounds.Intersects(root_window_bounds));
   scoped_ptr<aura::Window> out_window(
@@ -154,9 +188,45 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   EXPECT_EQ(window_bounds.size(), out_window->bounds().size());
   gfx::Rect bounds = out_window->bounds();
   bounds.Intersect(root_window_bounds);
-  // 2/3 of the window must be visible.
-  EXPECT_GT(bounds.width(), out_window->bounds().width() * 0.6);
-  EXPECT_GT(bounds.height(), out_window->bounds().height() * 0.6);
+
+  // 30% of the window edge must be visible.
+  EXPECT_GT(bounds.width(), out_window->bounds().width() * 0.29);
+  EXPECT_GT(bounds.height(), out_window->bounds().height() * 0.29);
+
+  // Make sure we always make more than 1/3 of the window edge visible even
+  // if the initial bounds intersects with display.
+  window_bounds.SetRect(-150, -150, 200, 200);
+  bounds = window_bounds;
+  bounds.Intersect(root_window_bounds);
+
+  // Make sure that the initial bounds' visible area is less than 26%
+  // so that the auto adjustment logic kicks in.
+  ASSERT_LT(bounds.width(), out_window->bounds().width() * 0.26);
+  ASSERT_LT(bounds.height(), out_window->bounds().height() * 0.26);
+  ASSERT_TRUE(window_bounds.Intersects(root_window_bounds));
+
+  scoped_ptr<aura::Window> partially_out_window(
+      CreateTestWindowInShellWithBounds(window_bounds));
+  EXPECT_EQ(window_bounds.size(), partially_out_window->bounds().size());
+  bounds = partially_out_window->bounds();
+  bounds.Intersect(root_window_bounds);
+  EXPECT_GT(bounds.width(), out_window->bounds().width() * 0.29);
+  EXPECT_GT(bounds.height(), out_window->bounds().height() * 0.29);
+
+  // Make sure the window whose 30% width/height is bigger than display
+  // will be placed correctly.
+  window_bounds.SetRect(-1900, -1900, 3000, 3000);
+  scoped_ptr<aura::Window> window_bigger_than_display(
+      CreateTestWindowInShellWithBounds(window_bounds));
+  EXPECT_GE(root_window_bounds.width(),
+            window_bigger_than_display->bounds().width());
+  EXPECT_GE(root_window_bounds.height(),
+            window_bigger_than_display->bounds().height());
+
+  bounds = window_bigger_than_display->bounds();
+  bounds.Intersect(root_window_bounds);
+  EXPECT_GT(bounds.width(), out_window->bounds().width() * 0.29);
+  EXPECT_GT(bounds.height(), out_window->bounds().height() * 0.29);
 }
 
 // Verifies the size of a window is enforced to be smaller than the work area.

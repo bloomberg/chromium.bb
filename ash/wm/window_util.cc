@@ -173,21 +173,19 @@ void AdjustBoundsToEnsureWindowVisibility(const gfx::Rect& work_area,
                                           gfx::Rect* bounds) {
   bounds->set_width(std::min(bounds->width(), work_area.width()));
   bounds->set_height(std::min(bounds->height(), work_area.height()));
-  if (!work_area.Intersects(*bounds)) {
-    int y_offset = 0;
-    if (work_area.bottom() < bounds->y()) {
-      y_offset = work_area.bottom() - bounds->y() - min_height;
-    } else if (bounds->bottom() < work_area.y()) {
-      y_offset = work_area.y() - bounds->bottom() + min_height;
-    }
 
-    int x_offset = 0;
-    if (work_area.right() < bounds->x()) {
-      x_offset = work_area.right() - bounds->x() - min_width;
-    } else if (bounds->right() < work_area.x()) {
-      x_offset = work_area.x() - bounds->right() + min_width;
-    }
-    bounds->Offset(x_offset, y_offset);
+  min_width = std::min(min_width, work_area.width());
+  min_height = std::min(min_height, work_area.height());
+
+  if (bounds->x() + min_width > work_area.right()) {
+    bounds->set_x(work_area.right() - min_width);
+  } else if (bounds->right() - min_width < 0) {
+    bounds->set_x(min_width - bounds->width());
+  }
+  if (bounds->y() + min_height > work_area.bottom()) {
+    bounds->set_y(work_area.bottom() - min_height);
+  } else if (bounds->bottom() - min_height < 0) {
+    bounds->set_y(min_height - bounds->height());
   }
 }
 

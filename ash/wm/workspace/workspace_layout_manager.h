@@ -60,11 +60,13 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
   // Overridden from BaseLayoutManager:
   virtual void ShowStateChanged(aura::Window* window,
                                 ui::WindowShowState last_show_state) OVERRIDE;
-  virtual void AdjustWindowSizesForScreenChange(
+  virtual void AdjustAllWindowsBoundsForWorkAreaChange(
       AdjustWindowReason reason) OVERRIDE;
-  virtual void AdjustWindowSizeForScreenChange(
+  virtual void AdjustWindowBoundsForWorkAreaChange(
       aura::Window* window,
       AdjustWindowReason reason) OVERRIDE;
+
+  void AdjustWindowBoundsWhenAdded(aura::Window* window);
 
   void UpdateDesktopVisibility();
 

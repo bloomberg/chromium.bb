@@ -107,7 +107,8 @@ void BaseLayoutManager::SetChildBounds(aura::Window* child,
 // BaseLayoutManager, ash::ShellObserver overrides:
 
 void BaseLayoutManager::OnDisplayWorkAreaInsetsChanged() {
-  AdjustWindowSizesForScreenChange(ADJUST_WINDOW_DISPLAY_INSETS_CHANGED);
+  AdjustAllWindowsBoundsForWorkAreaChange(
+      ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -145,7 +146,7 @@ void BaseLayoutManager::OnWindowBoundsChanged(aura::Window* window,
                                               const gfx::Rect& old_bounds,
                                               const gfx::Rect& new_bounds) {
   if (root_window_ == window)
-    AdjustWindowSizesForScreenChange(ADJUST_WINDOW_SCREEN_SIZE_CHANGED);
+    AdjustAllWindowsBoundsForWorkAreaChange(ADJUST_WINDOW_DISPLAY_SIZE_CHANGED);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -192,12 +193,12 @@ void BaseLayoutManager::ShowStateChanged(aura::Window* window,
   }
 }
 
-void BaseLayoutManager::AdjustWindowSizesForScreenChange(
+void BaseLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
     AdjustWindowReason reason) {
   // Don't do any adjustments of the insets while we are in screen locked mode.
   // This would happen if the launcher was auto hidden before the login screen
   // was shown and then gets shown when the login screen gets presented.
-  if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED &&
+  if (reason == ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED &&
       Shell::GetInstance()->session_state_delegate()->IsScreenLocked())
     return;
 
@@ -209,11 +210,11 @@ void BaseLayoutManager::AdjustWindowSizesForScreenChange(
   for (WindowSet::const_iterator it = windows_.begin();
        it != windows_.end();
        ++it) {
-    AdjustWindowSizeForScreenChange(*it, reason);
+    AdjustWindowBoundsForWorkAreaChange(*it, reason);
   }
 }
 
-void BaseLayoutManager::AdjustWindowSizeForScreenChange(
+void BaseLayoutManager::AdjustWindowBoundsForWorkAreaChange(
     aura::Window* window,
     AdjustWindowReason reason) {
   if (wm::IsWindowMaximized(window)) {

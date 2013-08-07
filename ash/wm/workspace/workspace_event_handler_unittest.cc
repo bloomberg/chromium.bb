@@ -248,20 +248,21 @@ TEST_F(WorkspaceEventHandlerTest,
 
 TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   aura::test::TestWindowDelegate wd;
-  scoped_ptr<aura::Window> window(CreateTestWindow(&wd, gfx::Rect(1, 2, 3, 4)));
+  scoped_ptr<aura::Window> window(
+      CreateTestWindow(&wd, gfx::Rect(1, 2, 30, 40)));
   window->SetProperty(aura::client::kCanMaximizeKey, true);
   wd.set_window_component(HTCAPTION);
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   aura::test::EventGenerator generator(root, window.get());
   generator.DoubleClickLeftButton();
-  EXPECT_NE("1,2 3x4", window->bounds().ToString());
+  EXPECT_NE("1,2 30x40", window->bounds().ToString());
 
   EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
   generator.DoubleClickLeftButton();
 
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
-  EXPECT_EQ("1,2 3x4", window->bounds().ToString());
+  EXPECT_EQ("1,2 30x40", window->bounds().ToString());
 
   // Double-clicking the middle button shouldn't toggle the maximized state.
   WindowPropertyObserver observer(window.get());
@@ -275,7 +276,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   root->AsRootWindowHostDelegate()->OnHostMouseEvent(&release);
 
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
-  EXPECT_EQ("1,2 3x4", window->bounds().ToString());
+  EXPECT_EQ("1,2 30x40", window->bounds().ToString());
   EXPECT_FALSE(observer.DidPropertyChange(aura::client::kShowStateKey));
 }
 

@@ -32,9 +32,9 @@ namespace internal {
 
 namespace {
 
-// This specifies how much percent (2/3=66%) of a window must be visible when
-// the window is added to the workspace.
-const float kMinimumPercentOnScreenArea = 0.66f;
+// This specifies how much percent 30% of a window rect (width / height)
+// must be visible when the window is added to the workspace.
+const float kMinimumPercentOnScreenArea = 0.3f;
 
 bool IsMaximizedState(ui::WindowShowState state) {
   return state == ui::SHOW_STATE_MAXIMIZED ||
@@ -59,8 +59,14 @@ void WorkspaceLayoutManager::SetShelf(internal::ShelfLayoutManager* shelf) {
 }
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
-  // Adjust window bounds in case that the new child is out of the workspace.
-  AdjustWindowSizeForScreenChange(child, ADJUST_WINDOW_WINDOW_ADDED);
+  // Adjust window bounds in case that the new child is given the bounds that
+  // is out of the workspace. Exclude the case where bounds is empty
+  // (this happens when a views::Widget is created), or the window
+  // is added with the bounds because a user explicitly moved to
+  // this position (drag and drop for example).
+  if (!child->bounds().IsEmpty() &&
+      !wm::HasUserChangedWindowPositionOrSize(child))
+    AdjustWindowBoundsWhenAdded(child);
   BaseLayoutManager::OnWindowAddedToLayout(child);
   UpdateDesktopVisibility();
   RearrangeVisibleWindowOnShow(child);
@@ -110,8 +116,10 @@ void WorkspaceLayoutManager::SetChildBounds(
 void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
   const gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
       window_->parent()));
-  if (work_area != work_area_)
-    AdjustWindowSizesForScreenChange(ADJUST_WINDOW_DISPLAY_INSETS_CHANGED);
+  if (work_area != work_area_) {
+    AdjustAllWindowsBoundsForWorkAreaChange(
+        ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED);
+  }
 }
 
 void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
@@ -170,13 +178,13 @@ void WorkspaceLayoutManager::ShowStateChanged(
   UpdateDesktopVisibility();
 }
 
-void WorkspaceLayoutManager::AdjustWindowSizesForScreenChange(
+void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
     AdjustWindowReason reason) {
   work_area_ = ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_->parent());
-  BaseLayoutManager::AdjustWindowSizesForScreenChange(reason);
+  BaseLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(reason);
 }
 
-void WorkspaceLayoutManager::AdjustWindowSizeForScreenChange(
+void WorkspaceLayoutManager::AdjustWindowBoundsForWorkAreaChange(
     Window* window,
     AdjustWindowReason reason) {
   if (!GetTrackedByWorkspace(window))
@@ -190,7 +198,7 @@ void WorkspaceLayoutManager::AdjustWindowSizeForScreenChange(
   // cross fade. I think this is better, but should reconsider if someone
   // raises voice for this.
   if (wm::IsWindowMaximized(window) &&
-      reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
+      reason == ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED) {
     CrossFadeToBounds(window, ScreenAsh::GetMaximizedWindowBoundsInParent(
         window->parent()->parent()));
     return;
@@ -200,18 +208,34 @@ void WorkspaceLayoutManager::AdjustWindowSizeForScreenChange(
     return;
 
   gfx::Rect bounds = window->bounds();
-  if (reason == ADJUST_WINDOW_SCREEN_SIZE_CHANGED) {
-    // The work area may be smaller than the full screen.  Put as much of the
-    // window as possible within the display area.
-    bounds.AdjustToFit(work_area_);
-  } else if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
-    ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_, &bounds);
-  } else if (reason == ADJUST_WINDOW_WINDOW_ADDED) {
-    int min_width = bounds.width() * kMinimumPercentOnScreenArea;
-    int min_height = bounds.height() * kMinimumPercentOnScreenArea;
-    ash::wm::AdjustBoundsToEnsureWindowVisibility(
-        work_area_, min_width, min_height, &bounds);
+  switch (reason) {
+    case ADJUST_WINDOW_DISPLAY_SIZE_CHANGED:
+      // The work area may be smaller than the full screen.  Put as much of the
+      // window as possible within the display area.
+      bounds.AdjustToFit(work_area_);
+      break;
+    case ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED:
+      ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_, &bounds);
+      break;
   }
+  if (window->bounds() != bounds)
+    window->SetBounds(bounds);
+}
+
+void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
+    Window* window) {
+  if (!GetTrackedByWorkspace(window))
+    return;
+
+  if (SetMaximizedOrFullscreenBounds(window))
+    return;
+
+  gfx::Rect bounds = window->bounds();
+  int min_width = bounds.width() * kMinimumPercentOnScreenArea;
+  int min_height = bounds.height() * kMinimumPercentOnScreenArea;
+  ash::wm::AdjustBoundsToEnsureWindowVisibility(
+      work_area_, min_width, min_height, &bounds);
+
   if (window->bounds() != bounds)
     window->SetBounds(bounds);
 }
@@ -229,10 +253,27 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_NORMAL: {
       const gfx::Rect* restore = GetRestoreBoundsInScreen(window);
+      // Make sure that the part of the window is always visible
+      // when restored.
+      gfx::Rect bounds_in_parent;
       if (restore) {
-        gfx::Rect bounds_in_parent =
+        bounds_in_parent =
             ScreenAsh::ConvertRectFromScreen(window->parent()->parent(),
                                              *restore);
+
+        ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(
+            work_area_, &bounds_in_parent);
+      } else {
+        // Minimized windows have no restore bounds.
+        // Use the current bounds instead.
+        bounds_in_parent = window->bounds();
+        ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(
+            work_area_, &bounds_in_parent);
+        // Don't start animation if the bounds didn't change.
+        if (bounds_in_parent == window->bounds())
+          bounds_in_parent.SetRect(0, 0, 0, 0);
+      }
+      if (!bounds_in_parent.IsEmpty()) {
         CrossFadeToBounds(
             window,
             BaseLayoutManager::BoundsWithScreenEdgeVisible(

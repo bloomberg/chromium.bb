@@ -19,7 +19,7 @@ class DragDropTrackerTest : public test::AshTestBase {
  public:
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    UpdateDisplay("200x200,200x200");
+    UpdateDisplay("200x200,300x300");
   }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
