@@ -158,7 +158,6 @@ public:
 
     void checkLoadComplete();
     void detachFromParent();
-    void detachViewsAndDocumentLoader();
 
     void addExtraFieldsToRequest(ResourceRequest&);
 
@@ -267,10 +266,6 @@ private:
     void scrollToFragmentWithParentBoundary(const KURL&);
 
     void checkLoadCompleteForThisFrame();
-
-    void setDocumentLoader(DocumentLoader*);
-    void setPolicyDocumentLoader(DocumentLoader*);
-    void setProvisionalDocumentLoader(DocumentLoader*);
 
     void closeOldDataSources();
 
