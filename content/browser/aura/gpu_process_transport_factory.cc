@@ -15,6 +15,7 @@
 #include "content/browser/aura/browser_compositor_output_surface.h"
 #include "content/browser/aura/browser_compositor_output_surface_proxy.h"
 #include "content/browser/aura/reflector_impl.h"
+#include "content/browser/aura/software_browser_compositor_output_surface.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -179,41 +180,6 @@ class CompositorSwapClient
   DISALLOW_COPY_AND_ASSIGN(CompositorSwapClient);
 };
 
-class SoftwareOutputSurface : public cc::OutputSurface {
- public:
-  explicit SoftwareOutputSurface(
-      scoped_ptr<cc::SoftwareOutputDevice> software_device)
-      : cc::OutputSurface(software_device.Pass()) {}
-
-  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE {
-    ui::LatencyInfo latency_info = frame->metadata.latency_info;
-    latency_info.swap_timestamp = base::TimeTicks::HighResNow();
-    RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
-    cc::OutputSurface::SwapBuffers(frame);
-  }
-};
-
-scoped_ptr<cc::OutputSurface> CreateSoftwareOutputSurface(
-    ui::Compositor* compositor) {
-  scoped_ptr<cc::OutputSurface> output_surface;
-
-#if defined(OS_WIN)
-  scoped_ptr<SoftwareOutputDeviceWin> software_device(
-      new SoftwareOutputDeviceWin(compositor));
-  output_surface.reset(new SoftwareOutputSurface(
-      software_device.PassAs<cc::SoftwareOutputDevice>()));
-#elif defined(USE_X11)
-  scoped_ptr<SoftwareOutputDeviceX11> software_device(
-      new SoftwareOutputDeviceX11(compositor));
-  output_surface.reset(new SoftwareOutputSurface(
-      software_device.PassAs<cc::SoftwareOutputDevice>()));
-#else
-  NOTIMPLEMENTED();
-#endif
-
-  return output_surface.Pass();
-}
-
 GpuProcessTransportFactory::GpuProcessTransportFactory()
     : callback_factory_(this) {
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
@@ -239,6 +205,20 @@ GpuProcessTransportFactory::CreateOffscreenContext() {
       .PassAs<WebKit::WebGraphicsContext3D>();
 }
 
+scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
+    ui::Compositor* compositor) {
+#if defined(OS_WIN)
+  return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceWin(
+      compositor));
+#elif defined(USE_X11)
+  return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceX11(
+      compositor));
+#endif
+
+  NOTREACHED();
+  return scoped_ptr<cc::SoftwareOutputDevice>();
+}
+
 scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     ui::Compositor* compositor) {
   PerCompositorData* data = per_compositor_data_[compositor];
@@ -251,8 +231,12 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     context =
         CreateContextCommon(data->swap_client->AsWeakPtr(), data->surface_id);
   }
-  if (!context)
-    return CreateSoftwareOutputSurface(compositor);
+  if (!context) {
+    scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface =
+        SoftwareBrowserCompositorOutputSurface::Create(
+            CreateSoftwareOutputDevice(compositor));
+    return surface.PassAs<cc::OutputSurface>();
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
       ui::Compositor::GetCompositorMessageLoop();

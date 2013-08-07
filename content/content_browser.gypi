@@ -305,6 +305,8 @@
     'browser/aura/no_transport_image_transport_factory.h',
     'browser/aura/reflector_impl.cc',
     'browser/aura/reflector_impl.h',
+    'browser/aura/software_browser_compositor_output_surface.cc',
+    'browser/aura/software_browser_compositor_output_surface.h',
     'browser/aura/software_output_device_win.cc',
     'browser/aura/software_output_device_win.h',
     'browser/aura/software_output_device_x11.cc',
