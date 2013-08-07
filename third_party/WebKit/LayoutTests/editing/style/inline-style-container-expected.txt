@@ -29,8 +29,8 @@ PASS fontSize(4) on all of "<i><b>hello</b></i>" yields "<i><b style="font-size:
 PASS fontSize(4) on all of "<i><b>hello</b> world</i>" yields "<i style="font-size: large;"><b>hello</b> world</i>"
 PASS fontSize(4) on all of "<font color="blue"><b>hello</b></font>" yields "<font color="blue"><b style="font-size: large;">hello</b></font>"
 PASS bold(null) on all of "<span style="font-style: italic;">hello</span>" yields "<span style="font-style: italic; font-weight: bold;">hello</span>"
-PASS underline(null) on all of "<span style="font-style: italic;"><b>hello</b></span>" yields "<span style="font-style: italic; text-decoration: underline;"><b>hello</b></span>"
-PASS underline(null) on all of "<span style="color: blue;"><i><span style="font-size: large;"><b>hello</b> world</span></i></span>" yields "<span style="color: blue;"><i><span style="font-size: large; text-decoration: underline;"><b>hello</b> world</span></i></span>"
+PASS underline(null) on all of "<span style="font-style: italic;"><b>hello</b></span>" yields "<span style="font-style: italic; text-decoration-line: underline;"><b>hello</b></span>"
+PASS underline(null) on all of "<span style="color: blue;"><i><span style="font-size: large;"><b>hello</b> world</span></i></span>" yields "<span style="color: blue;"><i><span style="font-size: large; text-decoration-line: underline;"><b>hello</b> world</span></i></span>"
 PASS successfullyParsed is true
 
 TEST COMPLETE

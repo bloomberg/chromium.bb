@@ -30,6 +30,7 @@ marker longhands=marker-start;marker-mid;marker-end
 outline longhands=outline-color;outline-style;outline-width
 overflow longhands=overflow-x;overflow-y
 padding longhands=padding-top;padding-right;padding-bottom;padding-left
+text-decoration longhands=text-decoration-line;text-decoration-style;text-decoration-color
 transition longhands=transition-property;transition-duration;transition-timing-function;transition-delay
 -webkit-animation longhands=-webkit-animation-name;-webkit-animation-duration;-webkit-animation-timing-function;-webkit-animation-delay;-webkit-animation-iteration-count;-webkit-animation-direction;-webkit-animation-fill-mode
 -webkit-border-after longhands=-webkit-border-after-width;-webkit-border-after-style;-webkit-border-after-color

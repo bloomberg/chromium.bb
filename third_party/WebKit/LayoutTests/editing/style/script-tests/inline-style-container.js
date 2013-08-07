@@ -50,10 +50,10 @@ testSingleToggle("fontSize", 4, '<i><b>hello</b></i>', '<i><b style="font-size: 
 testSingleToggle("fontSize", 4, '<i><b>hello</b> world</i>', '<i style="font-size: large;"><b>hello</b> world</i>');
 testSingleToggle("fontSize", 4, '<font color="blue"><b>hello</b></font>', '<font color="blue"><b style="font-size: large;">hello</b></font>');
 testSingleToggle("bold", null, '<span style="font-style: italic;">hello</span>', '<span style="font-style: italic; font-weight: bold;">hello</span>');
-testSingleToggle("underline", null, '<span style="font-style: italic;"><b>hello</b></span>', '<span style="font-style: italic; text-decoration: underline;"><b>hello</b></span>');
+testSingleToggle("underline", null, '<span style="font-style: italic;"><b>hello</b></span>', '<span style="font-style: italic; text-decoration-line: underline;"><b>hello</b></span>');
 testSingleToggle("underline", null,
     '<span style="color: blue;"><i><span style="font-size: large;"><b>hello</b> world</span></i></span>',
-    '<span style="color: blue;"><i><span style="font-size: large; text-decoration: underline;"><b>hello</b> world</span></i></span>');
+    '<span style="color: blue;"><i><span style="font-size: large; text-decoration-line: underline;"><b>hello</b> world</span></i></span>');
 
 document.body.removeChild(testContainer);
 var successfullyParsed = true;
