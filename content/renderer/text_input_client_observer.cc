@@ -56,18 +56,24 @@ void TextInputClientObserver::OnFirstRectForCharacterRange(ui::Range range) {
 #endif
   {
     WebKit::WebFrame* frame = webview()->focusedFrame();
-    WebKit::WebRect web_rect;
-    frame->firstRectForCharacterRange(range.start(), range.length(), web_rect);
-    rect = web_rect;
+    if (frame) {
+      WebKit::WebRect web_rect;
+      frame->firstRectForCharacterRange(range.start(), range.length(),
+                                        web_rect);
+      rect = web_rect;
+    }
   }
   Send(new TextInputClientReplyMsg_GotFirstRectForRange(routing_id(), rect));
 }
 
 void TextInputClientObserver::OnStringForRange(ui::Range range) {
 #if defined(OS_MACOSX)
-  NSAttributedString* string =
-      WebKit::WebSubstringUtil::attributedSubstringInRange(
-          webview()->focusedFrame(), range.start(), range.length());
+  NSAttributedString* string = nil;
+  WebKit::WebFrame* frame = webview()->focusedFrame();
+  if (frame) {
+    string = WebKit::WebSubstringUtil::attributedSubstringInRange(
+        frame, range.start(), range.length());
+  }
   scoped_ptr<const mac::AttributedStringCoder::EncodedString> encoded(
       mac::AttributedStringCoder::Encode(string));
   Send(new TextInputClientReplyMsg_GotStringForRange(routing_id(),
