@@ -426,8 +426,8 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
 
   // Connect a number of network channels to the |track_2|.
   static const int kNumberOfNetworkChannelsForTrack2 = 3;
-  for (int i = 0; i < kNumberOfNetworkChannelsForTrack1; ++i) {
-    static_cast<webrtc::AudioTrackInterface*>(track_1.get())->
+  for (int i = 0; i < kNumberOfNetworkChannelsForTrack2; ++i) {
+    static_cast<webrtc::AudioTrackInterface*>(track_2.get())->
         GetRenderer()->AddChannel(i);
   }
   // Verify the data flow by connecting the |sink_2| to |track_2|.
