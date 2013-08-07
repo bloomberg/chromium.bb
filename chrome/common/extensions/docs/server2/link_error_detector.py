@@ -4,6 +4,8 @@
 
 from collections import defaultdict, deque, namedtuple
 from HTMLParser import HTMLParser, HTMLParseError
+from itertools import groupby
+from operator import itemgetter
 import posixpath
 from urlparse import urlsplit
 
@@ -263,3 +265,32 @@ class LinkErrorDetector(object):
         [url for url, page in self._pages.iteritems() if page.status == 200])
 
     return [url for url in all_urls - found if url.endswith('.html')]
+
+def StringifyBrokenLinks(broken_links):
+  '''Prints out broken links in a more readable format.
+  '''
+  def fixed_width(string, width):
+    return "%s%s" % (string, (width - len(string)) * ' ')
+
+  first_col_width = max(len(link[1]) for link in broken_links)
+  second_col_width = max(len(link[2]) for link in broken_links)
+  target = itemgetter(2)
+  output = []
+
+  def pretty_print(link, col_offset=0):
+    return "%s -> %s %s" % (
+        fixed_width(link[1], first_col_width - col_offset),
+        fixed_width(link[2], second_col_width),
+        link[3])
+
+  for target, links in groupby(sorted(broken_links, key=target), target):
+    links = list(links)
+    # Compress messages
+    if len(links) > 50 and not links[0][2].startswith('#'):
+      message = "Found %d broken links (" % len(links)
+      output.append("%s%s)" % (message, pretty_print(links[0], len(message))))
+    else:
+      for link in links:
+        output.append(pretty_print(link))
+
+  return '\n'.join(output)

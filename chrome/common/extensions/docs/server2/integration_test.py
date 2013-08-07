@@ -8,8 +8,6 @@
 import build_server
 build_server.main()
 
-from itertools import groupby
-from operator import itemgetter
 import optparse
 import os
 import posixpath
@@ -18,7 +16,7 @@ import time
 import unittest
 
 from branch_utility import BranchUtility
-from link_error_detector import LinkErrorDetector
+from link_error_detector import LinkErrorDetector, StringifyBrokenLinks
 from local_file_system import LocalFileSystem
 from local_renderer import LocalRenderer
 from fake_fetchers import ConfigureFakeFetchers
@@ -44,35 +42,6 @@ def _GetPublicFiles():
       with open(os.path.join(path, filename), 'r') as f:
         public_files['/'.join((relative_posix_path, filename))] = f.read()
   return public_files
-
-def _PrintBrokenLinks(broken_links):
-  '''Prints out broken links in a more readable format.
-  '''
-  def fixed_width(string, width):
-    return "%s%s" % (string, (width - len(string)) * ' ')
-
-  first_col_width = max(len(link[1]) for link in broken_links)
-  second_col_width = max(len(link[2]) for link in broken_links)
-  target = itemgetter(2)
-
-  def pretty_print(link, col_offset=0):
-    return "%s -> %s %s" % (
-        fixed_width(link[1], first_col_width - col_offset),
-        fixed_width(link[2], second_col_width),
-        link[3])
-
-  for target, links in groupby(sorted(broken_links, key=target), target):
-    links = list(links)
-    # Compress messages
-    if len(links) > 50 and not links[0][2].startswith('#'):
-      message = "Found %d broken links (" % len(links)
-      print("%s%s)" % (message, pretty_print(links[0], len(message))))
-        # link = links[0]
-        # out = "%s and %d others" % (link[1], len(links) - 1)
-      # pretty_print(link, url=out)
-    else:
-      for link in links:
-        print(pretty_print(link))
 
 class IntegrationTest(unittest.TestCase):
   def setUp(self):
@@ -108,7 +77,7 @@ class IntegrationTest(unittest.TestCase):
       # TODO(jshumway): Test should fail when broken links are detected.
       print('Warning: Found %d broken links:' % (
         len(broken_links)))
-      _PrintBrokenLinks(broken_links)
+      print(StringifyBrokenLinks(broken_links))
 
     print('Took %s seconds.' % (time.time() - start_time))
 

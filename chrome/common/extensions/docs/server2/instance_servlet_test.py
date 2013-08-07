@@ -6,9 +6,9 @@
 import unittest
 
 from empty_dir_file_system import EmptyDirFileSystem
-from file_system import FileSystem
 from instance_servlet import InstanceServlet
 from servlet import Request
+from fail_on_access_file_system import FailOnAccessFileSystem
 from test_branch_utility import TestBranchUtility
 from test_util import DisableLogging
 
@@ -27,16 +27,10 @@ class _TestDelegate(InstanceServlet.Delegate):
   def CreateAppSamplesFileSystem(self, object_store_creator):
     return EmptyDirFileSystem()
 
-class _FailOnAccessFileSystem(FileSystem):
-  # All this needs to do is implement GetIdentity. All other methods will
-  # automatically fail with NotImplementedErrors.
-  def GetIdentity(self):
-    return '42'
-
 class InstanceServletTest(unittest.TestCase):
   @DisableLogging('warning')
   def testHostFileSystemNotAccessed(self):
-    delegate = _TestDelegate(_FailOnAccessFileSystem)
+    delegate = _TestDelegate(FailOnAccessFileSystem)
     constructor = InstanceServlet.GetConstructor(delegate_for_test=delegate)
     def test_path(path, status=404):
       response = constructor(Request.ForTest(path)).Get()

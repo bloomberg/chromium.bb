@@ -6,11 +6,13 @@ from cron_servlet import CronServlet
 from instance_servlet import InstanceServlet
 from patch_servlet import PatchServlet
 from servlet import Servlet, Request, Response
+from test_servlet import TestServlet
 
 _DEFAULT_SERVLET = InstanceServlet.GetConstructor()
 _SERVLETS = {
   'cron': CronServlet,
   'patch': PatchServlet,
+  'test': TestServlet,
 }
 
 class Handler(Servlet):

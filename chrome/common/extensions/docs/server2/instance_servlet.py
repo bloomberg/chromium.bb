@@ -13,7 +13,7 @@ from render_servlet import RenderServlet
 from object_store_creator import ObjectStoreCreator
 from server_instance import ServerInstance
 
-class _OfflineRenderServletDelegate(RenderServlet.Delegate):
+class OfflineRenderServletDelegate(RenderServlet.Delegate):
   '''AppEngine instances should never need to call out to SVN. That should only
   ever be done by the cronjobs, which then write the result into DataStore,
   which is as far as instances look. To enable this, crons can pass a custom
@@ -73,7 +73,7 @@ class InstanceServlet(object):
 
   @staticmethod
   def GetConstructor(delegate_for_test=None):
-    render_servlet_delegate = _OfflineRenderServletDelegate(
+    render_servlet_delegate = OfflineRenderServletDelegate(
         delegate_for_test or InstanceServlet.Delegate())
     return lambda request: RenderServlet(request, render_servlet_delegate)
 
