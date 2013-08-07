@@ -201,7 +201,7 @@ def merge_dependency_interface(target_interface, dependency_interface, dependenc
         for element in source_list:
             # FIXME: remove check for LegacyImplementedInBaseClass when this
             # attribute is removed
-            if dependency_interface.is_partial and not target_interface.extended_attributes.get('LegacyImplementedInBaseClass'):
+            if 'LegacyImplementedInBaseClass' not in dependency_interface.extended_attributes:
                 element.extended_attributes['ImplementedBy'] = dependency_interface_name
             element.extended_attributes.update(dependency_interface.extended_attributes)
             target_list.append(element)
