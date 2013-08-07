@@ -543,11 +543,10 @@ GURL AutocompleteController::GetDestinationURL(
       !match.search_terms_args->assisted_query_stats.empty()) {
     TemplateURLRef::SearchTermsArgs search_terms_args(*match.search_terms_args);
     search_terms_args.assisted_query_stats += base::StringPrintf(
-        ".%" PRId64 "j%dj%d",
+        ".%" PRId64 "j%d",
         query_formulation_time.InMilliseconds(),
         search_provider_ &&
-        search_provider_->field_trial_triggered_in_session(),
-        input_.current_page_classification());
+        search_provider_->field_trial_triggered_in_session());
     destination_url = GURL(template_url->url_ref().
                            ReplaceSearchTerms(search_terms_args));
   }
