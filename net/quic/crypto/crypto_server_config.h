@@ -198,8 +198,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
    public:
     Config();
 
-    // serialized contains the bytes of this server config, suitable for sending
-    // on the wire.
+    // TODO(rtenneti): since this is a class, we should probably do
+    // getters/setters here.
+    // |serialized| contains the bytes of this server config, suitable for
+    // sending on the wire.
     std::string serialized;
     // id contains the SCID of this server config.
     std::string id;

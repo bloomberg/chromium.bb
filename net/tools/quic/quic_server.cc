@@ -179,6 +179,19 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
   }
 }
 
+/* static */
+void QuicServer::MaybeDispatchPacket(QuicDispatcher* dispatcher,
+                                     const QuicEncryptedPacket& packet,
+                                     const IPEndPoint& server_address,
+                                     const IPEndPoint& client_address) {
+  QuicGuid guid;
+  if (!QuicFramer::ReadGuidFromPacket(packet, &guid)) {
+    return;
+  }
+
+  dispatcher->ProcessPacket(server_address, client_address, guid, packet);
+}
+
 bool QuicServer::ReadAndDispatchSinglePacket(int fd,
                                              int port,
                                              QuicDispatcher* dispatcher,
@@ -199,19 +212,9 @@ bool QuicServer::ReadAndDispatchSinglePacket(int fd,
   }
 
   QuicEncryptedPacket packet(buf, bytes_read, false);
-  QuicGuid guid;
-  QuicDataReader reader(packet.data(), packet.length());
-  uint8 public_flags;
-  if (!reader.ReadBytes(&public_flags, 1)) {
-    LOG(DFATAL) << "Unable to read public flags.";
-    return false;
-  }
-  if (!reader.ReadUInt64(&guid)) {
-    return true;  // We read, we just didn't like the results.
-  }
 
   IPEndPoint server_address(server_ip, port);
-  dispatcher->ProcessPacket(server_address, client_address, guid, packet);
+  MaybeDispatchPacket(dispatcher, packet, server_address, client_address);
 
   return true;
 }

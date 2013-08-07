@@ -111,16 +111,23 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   size_t bytes_consumed = 0;
 
   if (data.size() != 0) {
-    size_t min_last_stream_frame_size =
-        QuicFramer::GetMinStreamFrameSize(framer_->version(), id, offset, true);
-    // Comparing against the last stream frame size including the frame length
-    // guarantees that all the bytes will fit.  Otherwise there is a
-    // discontinuity where the packet goes one byte over due to the length data.
-    if (data.size() + min_last_stream_frame_size + kQuicStreamPayloadLengthSize
-        >= free_bytes) {
-      // Its the last frame, put as much data as possible in.
+    // When a STREAM frame is the last frame in a packet, it consumes two fewer
+    // bytes of framing overhead.
+    // Anytime more data is available than fits in with the extra two bytes,
+    // the frame will be the last, and up to two extra bytes are consumed.
+    // TODO(ianswett): If QUIC pads, the 1 byte PADDING frame does not fit when
+    // 1 byte is available, because then the STREAM frame isn't the last.
+
+    // The minimum frame size(0 bytes of data) if it's not the last frame.
+    size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
+        framer_->version(), id, offset, false);
+    // Check if it's the last frame in the packet.
+    if (data.size() + min_frame_size > free_bytes) {
+      // The minimum frame size(0 bytes of data) if it is the last frame.
+      size_t min_last_frame_size = QuicFramer::GetMinStreamFrameSize(
+          framer_->version(), id, offset, true);
       bytes_consumed =
-          min<size_t>(free_bytes - min_last_stream_frame_size, data.size());
+          min<size_t>(free_bytes - min_last_frame_size, data.size());
     } else {
       DCHECK_LT(data.size(), BytesFree());
       bytes_consumed = data.size();

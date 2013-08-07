@@ -59,6 +59,14 @@ class QuicServer : public EpollCallbackInterface {
 
   virtual void OnShutdown(EpollServer* eps, int fd) OVERRIDE {}
 
+  // Dispatches the given packet only if it looks like a valid QUIC packet.
+  // TODO(rjshade): Return a status describing why a packet was dropped, and log
+  //                somehow.  Maybe expose as a varz.
+  static void MaybeDispatchPacket(QuicDispatcher* dispatcher,
+                                  const QuicEncryptedPacket& packet,
+                                  const IPEndPoint& server_address,
+                                  const IPEndPoint& client_address);
+
   bool overflow_supported() { return overflow_supported_; }
 
   int packets_dropped() { return packets_dropped_; }

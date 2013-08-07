@@ -877,8 +877,6 @@ void QuicConnection::RetransmitPacket(
   RetransmissionInfo retransmission_info(serialized_packet.sequence_number);
   retransmission_info.number_retransmissions =
       retransmission_it->second.number_retransmissions + 1;
-  retransmission_map_.insert(make_pair(serialized_packet.sequence_number,
-                                       retransmission_info));
   // Remove info with old sequence number.
   unacked_packets_.erase(unacked_it);
   retransmission_map_.erase(retransmission_it);
@@ -888,6 +886,8 @@ void QuicConnection::RetransmitPacket(
          unacked_packets_.rbegin()->first < serialized_packet.sequence_number);
   unacked_packets_.insert(make_pair(serialized_packet.sequence_number,
                                     unacked));
+  retransmission_map_.insert(make_pair(serialized_packet.sequence_number,
+                                       retransmission_info));
   SendOrQueuePacket(unacked->encryption_level(),
                     serialized_packet.sequence_number,
                     serialized_packet.packet,

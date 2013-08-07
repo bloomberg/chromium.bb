@@ -70,6 +70,10 @@ class NET_EXPORT_PRIVATE QuicUtils {
   // "0x0010:  001c fb98 4000 4001 7e18 d8ef 2301 455d  ....@.@.~...#.E]\n"
   // "0x0020:  7fe2 0800 6bcb 0bc6 806e                 ....k....n\n"
   static std::string StringToHexASCIIDump(base::StringPiece in_buffer);
+
+  static char* AsChars(unsigned char* data) {
+    return reinterpret_cast<char*>(data);
+  }
 };
 
 }  // namespace net
