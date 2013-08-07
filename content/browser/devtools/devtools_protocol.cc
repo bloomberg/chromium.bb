@@ -181,8 +181,9 @@ void DevToolsProtocol::Handler::RegisterCommandHandler(
 void DevToolsProtocol::Handler::SendNotification(
     const std::string& method,
     base::DictionaryValue* params) {
-  DevToolsProtocol::Notification notification(method, params);
-  SendRawMessage(notification.Serialize());
+  scoped_refptr<DevToolsProtocol::Notification> notification =
+      new DevToolsProtocol::Notification(method, params);
+  SendRawMessage(notification->Serialize());
 }
 
 void DevToolsProtocol::Handler::SendRawMessage(const std::string& message) {
@@ -214,8 +215,9 @@ scoped_refptr<DevToolsProtocol::Command> DevToolsProtocol::ParseCommand(
   bool ok = command_dict->GetInteger(kIdParam, &id) && id >= 0;
   ok = ok && ParseMethod(command_dict.get(), &method);
   if (!ok) {
-    Response response(kNoId, kErrorInvalidRequest, "No such method");
-    *error_response = response.Serialize();
+    scoped_refptr<Response> response =
+        new Response(kNoId, kErrorInvalidRequest, "No such method");
+    *error_response = response->Serialize();
     return NULL;
   }
 
@@ -260,9 +262,10 @@ base::DictionaryValue* DevToolsProtocol::ParseMessage(
           json, 0, &parse_error_code, &error_message));
 
   if (!message || !message->IsType(Value::TYPE_DICTIONARY)) {
-    Response response(0, kErrorParseError, error_message);
+    scoped_refptr<Response> response =
+        new Response(0, kErrorParseError, error_message);
     if (error_response)
-      *error_response = response.Serialize();
+      *error_response = response->Serialize();
     return NULL;
   }
 
