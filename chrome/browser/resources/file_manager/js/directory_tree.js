@@ -88,18 +88,19 @@ DirectoryTreeUtil.updateSubElementsFromList = function(
 };
 
 /**
- * Finds a parent directory of the {@code path} from the {@code items}, and
- * invokes the DirectoryItem.selectPath() of the found directory.
+ * Finds a parent directory of the {@code entry} from the {@code items}, and
+ * invokes the DirectoryItem.selectByEntry() of the found directory.
  *
  * @param {Array.<DirectoryItem>} items Items to be searched.
- * @param {string} path Path to be searched for.
+ * @param {DirectoryEntry|Object} entry The entry to be searched for. Can be
+ *     a fake.
  * @return {boolean} True if the parent item is found.
  */
-DirectoryTreeUtil.searchAndSelectPath = function(items, path) {
+DirectoryTreeUtil.searchAndSelectByEntry = function(items, entry) {
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
-    if (PathUtil.isParentPath(item.entry.fullPath, path)) {
-      item.selectPath(path);
+    if (util.isParentEntry(item.entry, entry)) {
+      item.selectByEntry(entry);
       return true;
     }
   }
@@ -262,19 +263,18 @@ DirectoryItem.prototype = {
    * The DirectoryEntry corresponding to this DirectoryItem. This may be
    * a dummy DirectoryEntry.
    * @type {DirectoryEntry|Object}
-   * @override
-   **/
+   */
   get entry() {
-      return this.dirEntry_;
+    return this.dirEntry_;
   },
 
   /**
    * The element containing the label text and the icon.
    * @type {!HTMLElement}
    * @override
-   **/
+   */
   get labelElement() {
-      return this.firstElementChild.querySelector('.label');
+    return this.firstElementChild.querySelector('.label');
   }
 };
 
@@ -418,22 +418,22 @@ DirectoryItem.prototype.redrawSubDirectoryList_ = function(recursive) {
 };
 
 /**
- * Select the item corresponding to the given {@code path}.
- * @param {string} path Path to be selected.
+ * Select the item corresponding to the given {@code entry}.
+ * @param {DirectoryEntry|Object} entry The entry to be selected. Can be a fake.
  */
-DirectoryItem.prototype.selectPath = function(path) {
-  if (path == this.fullPath) {
+DirectoryItem.prototype.selectByEntry = function(entry) {
+  if (util.isSameEntry(entry, this.entry)) {
     this.selected = true;
     return;
   }
 
-  if (DirectoryTreeUtil.searchAndSelectPath(this.items, path))
+  if (DirectoryTreeUtil.searchAndSelectByEntry(this.items, entry))
     return;
 
   // If the path doesn't exist, updates sub directories and tryes again.
   this.updateSubDirectories(
       false /* recursive */,
-      DirectoryTreeUtil.searchAndSelectPath.bind(null, this.items, path));
+      DirectoryTreeUtil.searchAndSelectByEntry.bind(null, this.items, entry));
 };
 
 /**
@@ -530,18 +530,21 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
   this.dirEntry_ = null;
 
   /**
-   * The path of the current directory.
-   * @type {string}
+   * The currently selected entry.
+   * For special search entries, this could be a fake DirectoryEntry.
+   * @type {DirectoryEntry|Object}
    */
-  this.currentPath_ = null;
+  this.currentEntry_ = null;
 
   this.directoryModel_.addEventListener('directory-changed',
       this.onCurrentDirectoryChanged_.bind(this));
 
   // Add a handler for directory change.
   this.addEventListener('change', function() {
-    if (this.selectedItem && this.currentPath_ != this.selectedItem.fullPath) {
-      this.currentPath_ = this.selectedItem.fullPath;
+    if (this.selectedItem &&
+        (!this.currentEntry_ ||
+         !util.isSameEntry(this.currentEntry_, this.selectedItem.entry))) {
+      this.currentEntry_ = this.selectedItem.entry;
       this.selectedItem.doAction();
       return;
     }
@@ -557,27 +560,30 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
 };
 
 /**
- * Select the item corresponding to the given path.
- * @param {string} path Path to be selected.
+ * Select the item corresponding to the given entry.
+ * @param {DirectoryEntry|Object} entry The directory entry to be selected. Can
+ *     be a fake.
  */
-DirectoryTree.prototype.selectPath = function(path) {
-  if ((this.entry && this.entry.fullPath == path) || this.currentPath_ == path)
-    return;
-  this.currentPath_ = path;
-  if (DirectoryTreeUtil.shouldHideTree(path))
+DirectoryTree.prototype.selectByEntry = function(entry) {
+  if ((this.entry && util.isSameEntry(this.entry, entry)) ||
+      (this.currentEntry_ && util.isSameEntry(this.currentEntry_, entry)))
     return;
 
-  this.selectPathInternal_(path);
+  this.currentEntry_ = entry;
+  if (DirectoryTreeUtil.shouldHideTree(entry.fullPath))
+    return;
+
+  this.selectByEntryInternal_(entry);
 };
 
 /**
- * Select the item corresponding to the given path. This method is used
+ * Select the item corresponding to the given entry. This method is used
  * internally.
- * @param {string} path Path to be selected.
+ * @param {DirectoryEntry|Object} entry The directory entry to be selected.
  * @private
  */
-DirectoryTree.prototype.selectPathInternal_ = function(path) {
-  var rootDirPath = PathUtil.getRootPath(path);
+DirectoryTree.prototype.selectByEntryInternal_ = function(entry) {
+  var rootDirPath = PathUtil.getRootPath(entry.fullPath);
 
   if (PathUtil.isSpecialSearchRoot(rootDirPath) ||
       PathUtil.getRootType(rootDirPath) == RootType.DRIVE) {
@@ -589,36 +595,39 @@ DirectoryTree.prototype.selectPathInternal_ = function(path) {
   }.bind(this);
 
   if (this.fullPath != rootDirPath || !this.dirEntry_) {
+    // The old root is not the one for the new entry. So, first we try to set
+    // the root, then retry.
     this.fullPath = rootDirPath;
 
     this.directoryModel_.resolveDirectory(
         rootDirPath,
-        function(entry) {
+        function(rootDirEntry) {
           if (this.fullPath != rootDirPath)
             return;
 
-          this.dirEntry_ = entry;
-          this.selectPathInternal_(path);
+          this.dirEntry_ = rootDirEntry;
+          this.selectByEntryInternal_(entry);
         }.bind(this),
         onError);
-  } else {
-    if (this.selectedItem && path == this.selectedItem.fullPath)
-      return;
-
-    if (DirectoryTreeUtil.searchAndSelectPath(this.items, path))
-      return;
-
-    this.selectedItem = null;
-    this.updateSubDirectories(
-        false /* recursive */,
-        function() {
-          if (!DirectoryTreeUtil.searchAndSelectPath(
-              this.items, this.currentPath_))
-            this.selectedItem = null;
-          cr.dispatchSimpleEvent(this, 'content-updated');
-        }.bind(this),
-        onError);
+    return;
   }
+
+  if (this.selectedItem && util.isSameEntry(entry, this.selectedItem.entry))
+    return;
+
+  if (DirectoryTreeUtil.searchAndSelectByEntry(this.items, entry))
+    return;
+
+  this.selectedItem = null;
+  this.updateSubDirectories(
+      false /* recursive */,
+      function() {
+        if (!DirectoryTreeUtil.searchAndSelectByEntry(
+            this.items, this.currentEntry_))
+          this.selectedItem = null;
+        cr.dispatchSimpleEvent(this, 'content-updated');
+      }.bind(this),
+      onError);
 };
 
 /**
@@ -629,7 +638,7 @@ DirectoryTree.prototype.selectPathInternal_ = function(path) {
  */
 DirectoryTree.prototype.updateSubDirectories = function(
     recursive, opt_successCallback, opt_errorCallback) {
-  if (!this.currentPath_)
+  if (!this.currentEntry_)
     return;
 
   DirectoryTreeUtil.updateSubDirectories(
@@ -663,7 +672,8 @@ DirectoryTree.prototype.redraw = function(recursive) {
  */
 DirectoryTree.prototype.onFilterChanged_ = function() {
   // Returns immediately, if the tree is hidden.
-  if (!this.currentPath_ || DirectoryTreeUtil.shouldHideTree(this.currentPath_))
+  if (!this.currentEntry_ ||
+      DirectoryTreeUtil.shouldHideTree(this.currentEntry_.fullPath))
     return;
 
   this.redraw(true /* recursive */);
@@ -677,7 +687,8 @@ DirectoryTree.prototype.onFilterChanged_ = function() {
  */
 DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
   // Returns immediately, if the tree is hidden.
-  if (!this.currentPath_ || DirectoryTreeUtil.shouldHideTree(this.currentPath_))
+  if (!this.currentEntry_ ||
+      DirectoryTreeUtil.shouldHideTree(this.currentEntry_.fullPath))
     return;
 
   if (event.eventType == 'changed') {
@@ -692,7 +703,7 @@ DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
  * @private
  */
 DirectoryTree.prototype.onCurrentDirectoryChanged_ = function(event) {
-  this.selectPath(event.newDirEntry.fullPath);
+  this.selectByEntry(event.newDirEntry);
 };
 
 /**

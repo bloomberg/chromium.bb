@@ -1176,3 +1176,26 @@ util.createFileError = function(code) {
     code: { get: function() { return code; } }
   });
 };
+
+/**
+ * @param {Entry|Object} entry1 The entry to be compared. Can be a fake.
+ * @param {Entry|Object} entry2 The entry to be compared. Can be a fake.
+ * @return {boolean} True if the both entry represents a same file or directory.
+ */
+util.isSameEntry = function(entry1, entry2) {
+  // Currently, we can assume there is only one root.
+  // When we support multi-file system, we need to look at filesystem, too.
+  return entry1.fullPath == entry2.fullPath;
+};
+
+/**
+ * @param {Entry|Object} parent The parent entry. Can be a fake.
+ * @param {Entry|Object} child The child entry. Can be a fake.
+ * @return {boolean} True if parent entry is actualy the parent of the child
+ *     entry.
+ */
+util.isParentEntry = function(parent, child) {
+  // Currently, we can assume there is only one root.
+  // When we support multi-file system, we need to look at filesystem, too.
+  return PathUtil.isParentPath(parent.fullPath, child.fullPath);
+};
