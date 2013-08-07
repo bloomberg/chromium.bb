@@ -2552,9 +2552,7 @@ terminal_create(struct display *display)
 	cairo_t *cr;
 	cairo_text_extents_t text_extents;
 
-	terminal = malloc(sizeof *terminal);
-	if (terminal == NULL)
-		return terminal;
+	terminal = xmalloc(sizeof *terminal);
 
 	memset(terminal, 0, sizeof *terminal);
 	terminal->color_scheme = &DEFAULT_COLORS;

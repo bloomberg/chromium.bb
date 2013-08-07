@@ -233,9 +233,7 @@ resizor_create(struct display *display)
 {
 	struct resizor *resizor;
 
-	resizor = malloc(sizeof *resizor);
-	if (resizor == NULL)
-		return resizor;
+	resizor = xmalloc(sizeof *resizor);
 	memset(resizor, 0, sizeof *resizor);
 
 	resizor->window = window_create(display);

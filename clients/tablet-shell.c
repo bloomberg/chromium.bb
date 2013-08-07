@@ -230,7 +230,7 @@ homescreen_create(struct tablet *tablet)
 {
 	struct homescreen *homescreen;
 
-	homescreen = malloc (sizeof *homescreen);
+	homescreen = xmalloc(sizeof *homescreen);
 	memset(homescreen, 0, sizeof *homescreen);
 
 	homescreen->window = window_create_custom(tablet->display);
@@ -248,7 +248,7 @@ lockscreen_create(struct tablet *tablet)
 {
 	struct lockscreen *lockscreen;
 
-	lockscreen = malloc (sizeof *lockscreen);
+	lockscreen = xmalloc(sizeof *lockscreen);
 	memset(lockscreen, 0, sizeof *lockscreen);
 
 	lockscreen->window = window_create_custom(tablet->display);
@@ -395,7 +395,7 @@ tablet_shell_add_launcher(struct tablet *tablet,
 	struct launcher *launcher;
 	struct homescreen *homescreen = tablet->homescreen;
 
-	launcher = malloc(sizeof *launcher);
+	launcher = xmalloc(sizeof *launcher);
 	launcher->icon = load_cairo_surface(icon);
 	if ( !launcher->icon ||
 	     cairo_surface_status (launcher->icon) != CAIRO_STATUS_SUCCESS) {

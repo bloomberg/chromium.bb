@@ -1164,7 +1164,9 @@ shm_surface_create(struct display *display, struct wl_surface *wl_surface,
 	struct shm_surface *surface;
 	DBG_OBJ(wl_surface, "\n");
 
-	surface = calloc(1, sizeof *surface);
+	surface = xmalloc(sizeof *surface);
+	memset(surface, 0, sizeof *surface);
+
 	if (!surface)
 		return NULL;
 
@@ -1309,7 +1311,7 @@ create_cursors(struct display *display)
 
 	display->cursor_theme = wl_cursor_theme_load(theme, size, display->shm);
 	display->cursors =
-		malloc(ARRAY_LENGTH(cursors) * sizeof display->cursors[0]);
+		xmalloc(ARRAY_LENGTH(cursors) * sizeof display->cursors[0]);
 
 	for (i = 0; i < ARRAY_LENGTH(cursors); i++) {
 		cursor = NULL;
@@ -1606,7 +1608,7 @@ widget_create(struct window *window, struct surface *surface, void *data)
 {
 	struct widget *widget;
 
-	widget = malloc(sizeof *widget);
+	widget = xmalloc(sizeof *widget);
 	memset(widget, 0, sizeof *widget);
 	widget->window = window;
 	widget->surface = surface;
@@ -2388,7 +2390,7 @@ frame_button_create(struct frame *frame, void *data, enum frame_button_action ty
 	struct frame_button *frame_button;
 	const char *icon = data;
 
-	frame_button = malloc (sizeof *frame_button);
+	frame_button = xmalloc(sizeof *frame_button);
 	memset(frame_button, 0, sizeof *frame_button);
 
 	frame_button->icon = cairo_image_surface_create_from_png(icon);
@@ -3229,7 +3231,7 @@ data_device_data_offer(void *data,
 {
 	struct data_offer *offer;
 
-	offer = malloc(sizeof *offer);
+	offer = xmalloc(sizeof *offer);
 
 	wl_array_init(&offer->types);
 	offer->refcount = 1;
@@ -4138,7 +4140,7 @@ surface_enter(void *data,
 	if (!output_found)
 		return;
 
-	window_output = malloc (sizeof *window_output);
+	window_output = xmalloc(sizeof *window_output);
 	window_output->output = output_found;
 
 	wl_list_insert (&window->window_output_list, &window_output->link);
@@ -4185,7 +4187,8 @@ surface_create(struct window *window)
 	struct display *display = window->display;
 	struct surface *surface;
 
-	surface = calloc(1, sizeof *surface);
+	surface = xmalloc(sizeof *surface);
+	memset(surface, 0, sizeof *surface);
 	if (!surface)
 		return NULL;
 
@@ -4773,7 +4776,7 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 	struct display *d = data;
 	struct global *global;
 
-	global = malloc(sizeof *global);
+	global = xmalloc(sizeof *global);
 	global->name = id;
 	global->interface = strdup(interface);
 	global->version = version;

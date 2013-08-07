@@ -384,7 +384,7 @@ resize_handler(struct widget *widget,
 static char *
 insert_text(const char *text, uint32_t offset, const char *insert)
 {
-	char *new_text = malloc(strlen(text) + strlen(insert) + 1);
+	char *new_text = xmalloc(strlen(text) + strlen(insert) + 1);
 
 	strncat(new_text, text, offset);
 	new_text[offset] = '\0';
@@ -836,7 +836,7 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 
 	layout = get_current_layout(virtual_keyboard);
 
-	keyboard = malloc(sizeof *keyboard);
+	keyboard = xmalloc(sizeof *keyboard);
 	memset(keyboard, 0, sizeof *keyboard);
 
 	keyboard->keyboard = virtual_keyboard;

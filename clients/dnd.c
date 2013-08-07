@@ -391,7 +391,7 @@ dnd_button_handler(struct widget *widget,
 	y -= allocation.y;
 
 	if (item && state == WL_POINTER_BUTTON_STATE_PRESSED) {
-		dnd_drag = malloc(sizeof *dnd_drag);
+		dnd_drag = xmalloc(sizeof *dnd_drag);
 		dnd_drag->dnd = dnd;
 		dnd_drag->input = input;
 		dnd_drag->time = time;
@@ -567,9 +567,7 @@ dnd_create(struct display *display)
 	int32_t width, height;
 	unsigned int i;
 
-	dnd = malloc(sizeof *dnd);
-	if (dnd == NULL)
-		return dnd;
+	dnd = xmalloc(sizeof *dnd);
 	memset(dnd, 0, sizeof *dnd);
 
 	dnd->window = window_create(display);

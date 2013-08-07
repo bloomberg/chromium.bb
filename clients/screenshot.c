@@ -115,7 +115,7 @@ handle_global(void *data, struct wl_registry *registry,
 	static struct screenshooter_output *output;
 
 	if (strcmp(interface, "wl_output") == 0) {
-		output = malloc(sizeof *output);
+		output = xmalloc(sizeof *output);
 		output->output = wl_registry_bind(registry, name,
 						  &wl_output_interface, 1);
 		wl_list_insert(&output_list, &output->link);
