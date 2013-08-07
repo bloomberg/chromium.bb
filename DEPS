@@ -250,6 +250,9 @@ deps = {
 
   "src/third_party/mesa/src":
     "/trunk/deps/third_party/mesa@210110",
+
+  "src/third_party/cld2":
+    (Var("googlecode_url") % "cld2") + "/trunk@19",
 }
 
 
@@ -339,6 +342,7 @@ deps_os = {
     "src/native_client/src/third_party/ppapi": None,
     "src/third_party/angle": None,
     "src/third_party/angle_dx11": None,
+    "src/third_party/cld2": None,
     "src/third_party/bidichecker": None,
     "src/third_party/webgl_conformance": None,
     "src/third_party/ffmpeg": None,
@@ -494,6 +498,8 @@ deps_os = {
 
     "src/third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille":
       (Var("googlecode_url") % "eyes-free") + "/trunk/braille/client/src/com/googlecode/eyesfree/braille@797",
+
+    "src/third_party/cld2": None,
   },
 }
 
