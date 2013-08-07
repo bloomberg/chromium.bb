@@ -4,6 +4,7 @@
     '.',
     'pepper',
     '../third_party/newlib-extras',
+    'include',
   ],
   'TARGETS': [
     {
@@ -57,6 +58,7 @@
         "syscalls/select.c",
         "syscalls/unlink.c",
         "syscalls/umount.c",
+        "syscalls/uname.c",
         "syscalls/utime.c",
       ],
     }
@@ -113,6 +115,7 @@
         "poll.h",
         "sys/select.h",
         "sys/socket.h",
+        "sys/utsname.h",
       ],
       'DEST': 'include/newlib',
     },
@@ -125,6 +128,7 @@
         "poll.h",
         "sys/select.h",
         "sys/socket.h",
+        "sys/utsname.h",
       ],
       'DEST': 'include/pnacl',
     },
