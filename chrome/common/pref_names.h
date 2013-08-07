@@ -818,6 +818,9 @@ extern const char kHttpOriginalContentLength[];
 #if defined(OS_ANDROID) || defined(OS_IOS)
 extern const char kDailyHttpOriginalContentLength[];
 extern const char kDailyHttpReceivedContentLength[];
+extern const char kDailyHttpReceivedContentLengthViaDataReductionProxy[];
+extern const char
+    kDailyHttpReceivedContentLengthWithDataReductionProxyEnabled[];
 extern const char kDailyHttpContentLengthLastUpdateDate[];
 #endif
 

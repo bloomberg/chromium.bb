@@ -816,6 +816,10 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   registry->RegisterListPref(prefs::kDailyHttpOriginalContentLength);
   registry->RegisterListPref(prefs::kDailyHttpReceivedContentLength);
+  registry->RegisterListPref(
+      prefs::kDailyHttpReceivedContentLengthViaDataReductionProxy);
+  registry->RegisterListPref(
+      prefs::kDailyHttpReceivedContentLengthWithDataReductionProxyEnabled);
   registry->RegisterInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
 #endif
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);

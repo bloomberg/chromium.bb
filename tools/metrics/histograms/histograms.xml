@@ -5977,6 +5977,66 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.DailyHttpContentLengthViaDataReductionProxy" units="KB">
+  <summary>
+    Total size in KB of all response bodies in the previous calendar day that
+    were received through the data reduction proxy.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyHttpContentLengthWithDataReductionProxyEnabled"
+    units="KB">
+  <summary>
+    Total size in KB of all response bodies in the previous calendar day that
+    were received when the data reduction proxy was enabled.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyHttpContentSavings" units="Percent">
+  <summary>
+    The percentage of data saving in the previous calendar day. A negative
+    saving will be shown as zero.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyHttpContentSavings_DataReductionProxy"
+    units="Percent">
+  <summary>
+    The percentage of data saving in the previous calendar day when the data
+    reduction proxy was enabled for at least some responses during the day. A
+    negative saving will be shown as zero.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyHttpOriginalContentLength" units="KB">
+  <summary>
+    Total size in KB specified in the X-Original-Content-Length headers of all
+    responses in the previous calendar day. If the header is not present in a
+    response, the size of the response body is used.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyHttpReceivedContentLength" units="KB">
+  <summary>
+    Total size in KB of all response bodies in the previous calendar day.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyReceivedContentViaDataReductionProxy" units="Percent">
+  <summary>
+    The percentage of Net.DailyHttpContentLengthViaDataReductionProxy in
+    Net.DailyHttpReceivedContentLength.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyReceivedContentWithDataReductionProxyEnabled"
+    units="Percent">
+  <summary>
+    The percentage of Net.DailyHttpContentLengthWithDataReductionProxyEnabled in
+    Net.DailyHttpReceivedContentLength.
+  </summary>
+</histogram>
+
 <histogram name="Net.DhcpWpadCancelTime" units="milliseconds">
   <summary>
     Measures time from initiating a fetch of a PAC file from DHCP WPAD to
