@@ -18,6 +18,7 @@
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/screen_capture_notification_ui.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -177,8 +178,7 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
   if (request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE ||
       request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE) {
     ProcessScreenCaptureAccessRequest(
-        web_contents, request, callback,
-        extension && extension->location() == extensions::Manifest::COMPONENT);
+        web_contents, request, callback, extension);
   } else if (extension) {
     // For extensions access is approved based on extension permissions.
     ProcessMediaAccessRequestFromExtension(
@@ -192,7 +192,10 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
-    bool component_extension) {
+    const extensions::Extension* extension) {
+  bool component_extension =
+    extension && extension->location() == extensions::Manifest::COMPONENT;
+
   content::MediaStreamDevices devices;
 
   bool screen_capture_enabled =
@@ -248,8 +251,16 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
   // Unless we're being invoked from a component extension, register to display
   // the notification for stream capture.
   if (!devices.empty() && !component_extension) {
-    ui = media_stream_capture_indicator_->RegisterMediaStream(
-        web_contents, devices);
+    // Use extension name as title for extensions and origin for drive-by web.
+    std::string title;
+    if (extension) {
+      title = extension->name();
+    } else {
+      title = web_contents->GetURL().GetOrigin().spec();
+    }
+
+    ui = ScreenCaptureNotificationUI::Create(l10n_util::GetStringFUTF16(
+        IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT, UTF8ToUTF16(title)));
   }
   callback.Run(devices, ui.Pass());
 }

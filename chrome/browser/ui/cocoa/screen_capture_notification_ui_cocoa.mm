@@ -20,21 +20,23 @@
 
 class ScreenCaptureNotificationUICocoa : public ScreenCaptureNotificationUI {
  public:
-  ScreenCaptureNotificationUICocoa();
+  explicit ScreenCaptureNotificationUICocoa(const string16& text);
   virtual ~ScreenCaptureNotificationUICocoa();
 
   // ScreenCaptureNotificationUI interface.
-  virtual bool Show(const base::Closure& stop_callback,
-                    const string16& title) OVERRIDE;
+  virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE;
 
  private:
+  const string16 text_;
   ScreenCaptureNotificationController* window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUICocoa);
 };
 
-ScreenCaptureNotificationUICocoa::ScreenCaptureNotificationUICocoa()
-    : window_controller_(nil) {
+ScreenCaptureNotificationUICocoa::ScreenCaptureNotificationUICocoa(
+    const string16& text)
+    : text_(text),
+      window_controller_(nil) {
 }
 
 ScreenCaptureNotificationUICocoa::~ScreenCaptureNotificationUICocoa() {
@@ -44,34 +46,34 @@ ScreenCaptureNotificationUICocoa::~ScreenCaptureNotificationUICocoa() {
   window_controller_ = nil;
 }
 
-bool ScreenCaptureNotificationUICocoa::Show(const base::Closure& stop_callback,
-                                            const string16& title) {
+void ScreenCaptureNotificationUICocoa::OnStarted(
+    const base::Closure& stop_callback) {
   DCHECK(!stop_callback.is_null());
   DCHECK(window_controller_ == nil);
 
   window_controller_ =
       [[ScreenCaptureNotificationController alloc]
           initWithCallback:stop_callback
-                     title:title];
+                     text:text_];
   [window_controller_ showWindow:nil];
-  return true;
 }
 
-scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create() {
+scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
+    const string16& text) {
   return scoped_ptr<ScreenCaptureNotificationUI>(
-      new ScreenCaptureNotificationUICocoa());
+      new ScreenCaptureNotificationUICocoa(text));
 }
 
 @implementation ScreenCaptureNotificationController
 - (id)initWithCallback:(const base::Closure&)stop_callback
-                 title:(const string16&)title {
+                  text:(const string16&)text {
   NSString* nibpath =
       [base::mac::FrameworkBundle() pathForResource:@"ScreenCaptureNotification"
                                              ofType:@"nib"];
   self = [super initWithWindowNibPath:nibpath owner:self];
   if (self) {
     stop_callback_ = stop_callback;
-    title_ = title;
+    text_ = text;
   }
   return self;
 }
@@ -92,9 +94,7 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create() {
 }
 
 - (void)windowDidLoad {
-  string16 text = l10n_util::GetStringFUTF16(
-      IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT, title_);
-  [statusField_ setStringValue:base::SysUTF16ToNSString(text)];
+  [statusField_ setStringValue:base::SysUTF16ToNSString(text_)];
 
   string16 button_label =
       l10n_util::GetStringUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP);

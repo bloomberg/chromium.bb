@@ -23,7 +23,6 @@ namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
-class ScreenCaptureNotificationUI;
 class StatusIcon;
 class StatusTray;
 
@@ -77,8 +76,7 @@ class MediaStreamCaptureIndicator
   // when WebContents is being destroyed.
   void UnregisterWebContents(content::WebContents* web_contents);
 
-  // Updates the status tray menu and the screen capture notification. Called by
-  // WebContentsDeviceUsage.
+  // Updates the status tray menu. Called by WebContentsDeviceUsage.
   void UpdateNotificationUserInterface();
 
   // Helpers to create and destroy status tray icon. Called from
@@ -92,9 +90,6 @@ class MediaStreamCaptureIndicator
                              bool video,
                              gfx::ImageSkia* image,
                              string16* tool_tip);
-
-  // Callback for ScreenCaptureNotificationUI.
-  void OnStopScreenCapture(const base::Closure& stop);
 
   // Reference to our status icon - owned by the StatusTray. If null,
   // the platform doesn't support status icons.
@@ -114,8 +109,6 @@ class MediaStreamCaptureIndicator
   // updated.
   typedef std::vector<content::WebContents*> CommandTargets;
   CommandTargets command_targets_;
-
-  scoped_ptr<ScreenCaptureNotificationUI> screen_capture_notification_;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_

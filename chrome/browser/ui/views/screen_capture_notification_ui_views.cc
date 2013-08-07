@@ -73,12 +73,11 @@ class ScreenCaptureNotificationUIViews
       public views::WidgetDelegateView,
       public views::ButtonListener {
  public:
-  ScreenCaptureNotificationUIViews();
+  explicit ScreenCaptureNotificationUIViews(const string16& text);
   virtual ~ScreenCaptureNotificationUIViews();
 
   // ScreenCaptureNotificationUI interface.
-  virtual bool Show(const base::Closure& stop_callback,
-                    const string16& title) OVERRIDE;
+  virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE;
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -102,8 +101,8 @@ class ScreenCaptureNotificationUIViews
   // Helper to call |stop_callback_|.
   void NotifyStopped();
 
+  const string16 text_;
   base::Closure stop_callback_;
-  string16 window_title_;
   NotificationBarClientView* client_view_;
   views::ImageView* gripper_;
   views::Label* label_;
@@ -112,8 +111,10 @@ class ScreenCaptureNotificationUIViews
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUIViews);
 };
 
-ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews()
-    : client_view_(NULL),
+ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
+    const string16& text)
+    : text_(text),
+      client_view_(NULL),
       gripper_(NULL),
       label_(NULL),
       stop_button_(NULL) {
@@ -142,18 +143,13 @@ ScreenCaptureNotificationUIViews::~ScreenCaptureNotificationUIViews() {
   delete GetWidget();
 }
 
-bool ScreenCaptureNotificationUIViews::Show(
-    const base::Closure& stop_callback,
-    const string16& title) {
+void ScreenCaptureNotificationUIViews::OnStarted(
+    const base::Closure& stop_callback) {
   stop_callback_ = stop_callback;
 
   label_->SetElideBehavior(views::Label::ELIDE_IN_MIDDLE);
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  string16 text = l10n_util::GetStringFUTF16(
-      IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT, title);
-  label_->SetText(text);
-  window_title_ = l10n_util::GetStringFUTF16(
-      IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TITLE, title);
+  label_->SetText(text_);
 
   views::Widget* widget = new views::Widget;
 
@@ -192,8 +188,6 @@ bool ScreenCaptureNotificationUIViews::Show(
   widget->SetBounds(bounds);
 
   widget->Show();
-
-  return true;
 }
 
 gfx::Size ScreenCaptureNotificationUIViews::GetPreferredSize() {
@@ -254,7 +248,7 @@ ScreenCaptureNotificationUIViews::CreateNonClientFrameView(
 }
 
 string16 ScreenCaptureNotificationUIViews::GetWindowTitle() const {
-  return window_title_;
+  return text_;
 }
 
 bool ScreenCaptureNotificationUIViews::ShouldShowWindowTitle() const {
@@ -280,7 +274,8 @@ void ScreenCaptureNotificationUIViews::NotifyStopped() {
 
 }  // namespace
 
-scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create() {
+scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
+    const string16& text) {
   return scoped_ptr<ScreenCaptureNotificationUI>(
-      new ScreenCaptureNotificationUIViews());
+      new ScreenCaptureNotificationUIViews(text));
 }

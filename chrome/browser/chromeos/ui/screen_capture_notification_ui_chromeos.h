@@ -13,16 +13,16 @@ namespace chromeos {
 // Chromeos implementation for ScreenCaptureNotificationUI.
 class ScreenCaptureNotificationUIChromeOS : public ScreenCaptureNotificationUI {
  public:
-  ScreenCaptureNotificationUIChromeOS();
+  // |text| is used to specify the text for the notification.
+  explicit ScreenCaptureNotificationUIChromeOS(const string16& text);
   virtual ~ScreenCaptureNotificationUIChromeOS();
 
   // ScreenCaptureNotificationUI overrides.
-  virtual bool Show(const base::Closure& stop_callback,
-                    const string16& title) OVERRIDE;
-
-  static scoped_ptr<ScreenCaptureNotificationUI> Create();
+  virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE;
 
  private:
+  const string16 text_;
+
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUIChromeOS);
 };
 

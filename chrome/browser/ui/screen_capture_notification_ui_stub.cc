@@ -12,15 +12,14 @@ class ScreenCaptureNotificationUIStub : public ScreenCaptureNotificationUI {
   ScreenCaptureNotificationUIStub() {}
   virtual ~ScreenCaptureNotificationUIStub() {}
 
-  virtual bool Show(const base::Closure& stop_callback,
-                    const string16& title) OVERRIDE {
+  virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE {
     NOTIMPLEMENTED();
-    return true;
   }
 };
 
 // static
-scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create() {
+scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
+    const string16& title) {
   return scoped_ptr<ScreenCaptureNotificationUI>(
       new ScreenCaptureNotificationUIStub());
 }

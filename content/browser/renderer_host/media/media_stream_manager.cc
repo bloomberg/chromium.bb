@@ -139,14 +139,12 @@ MediaStreamManager::MediaStreamManager()
     : audio_manager_(NULL),
       monitoring_started_(false),
       io_loop_(NULL),
-      screen_capture_active_(false),
       use_fake_ui_(false) {}
 
 MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
     : audio_manager_(audio_manager),
       monitoring_started_(false),
       io_loop_(NULL),
-      screen_capture_active_(false),
       use_fake_ui_(false) {
   DCHECK(audio_manager_);
   memset(active_enumeration_ref_count_, 0,
@@ -277,15 +275,6 @@ std::string MediaStreamManager::GenerateStream(
       LOG(ERROR) << "Invalid screen capture request.";
       return std::string();
     }
-
-    if (screen_capture_active_) {
-      // TODO(sergeyu): Implement support for more than one concurrent screen
-      // capture streams.
-      LOG(ERROR) << "Another screen capture stream is active.";
-      return std::string();
-    }
-
-    screen_capture_active_ = true;
   }
 
   // Create a new request based on options.
@@ -584,11 +573,6 @@ std::string MediaStreamManager::AddRequest(DeviceRequest* request) {
 }
 
 void MediaStreamManager::RemoveRequest(DeviceRequests::iterator it) {
-  if (it->second->request.video_type == MEDIA_SCREEN_VIDEO_CAPTURE) {
-    DCHECK(screen_capture_active_);
-    screen_capture_active_ = false;
-  }
-
   requests_.erase(it);
 }
 

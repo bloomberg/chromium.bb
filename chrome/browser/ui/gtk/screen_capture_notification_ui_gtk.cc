@@ -17,12 +17,11 @@
 
 class ScreenCaptureNotificationUIGtk : public ScreenCaptureNotificationUI {
  public:
-  ScreenCaptureNotificationUIGtk();
+  explicit ScreenCaptureNotificationUIGtk(const string16& text);
   virtual ~ScreenCaptureNotificationUIGtk();
 
   // ScreenCaptureNotificationUI interface
-  virtual bool Show(const base::Closure& stop_callback,
-                    const string16& page_title) OVERRIDE;
+  virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(ScreenCaptureNotificationUIGtk, gboolean, OnDelete,
@@ -33,8 +32,10 @@ class ScreenCaptureNotificationUIGtk : public ScreenCaptureNotificationUI {
   CHROMEGTK_CALLBACK_1(ScreenCaptureNotificationUIGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
 
-  void CreateWindow(const string16& title);
+  void CreateWindow();
   void HideWindow();
+
+  const std::string text_;
 
   base::Closure stop_callback_;
   GtkWidget* window_;
@@ -49,8 +50,10 @@ class ScreenCaptureNotificationUIGtk : public ScreenCaptureNotificationUI {
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUIGtk);
 };
 
-ScreenCaptureNotificationUIGtk::ScreenCaptureNotificationUIGtk()
-    : window_(NULL),
+ScreenCaptureNotificationUIGtk::ScreenCaptureNotificationUIGtk(
+    const string16& text)
+    : text_(UTF16ToUTF8(text)),
+      window_(NULL),
       current_width_(0),
       current_height_(0) {
 }
@@ -59,7 +62,7 @@ ScreenCaptureNotificationUIGtk::~ScreenCaptureNotificationUIGtk() {
   HideWindow();
 }
 
-void ScreenCaptureNotificationUIGtk::CreateWindow(const string16& title) {
+void ScreenCaptureNotificationUIGtk::CreateWindow() {
   if (window_)
     return;
 
@@ -67,10 +70,7 @@ void ScreenCaptureNotificationUIGtk::CreateWindow(const string16& title) {
   GtkWindow* window = GTK_WINDOW(window_);
 
   g_signal_connect(window_, "delete-event", G_CALLBACK(OnDeleteThunk), this);
-  std::string window_title =
-      l10n_util::GetStringFUTF8(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TITLE,
-                                title);
-  gtk_window_set_title(window, window_title.c_str());
+  gtk_window_set_title(window, text_.c_str());
   gtk_window_set_resizable(window, FALSE);
 
   // Try to keep the window always visible.
@@ -131,24 +131,20 @@ void ScreenCaptureNotificationUIGtk::CreateWindow(const string16& title) {
   gtk_label_set_attributes(GTK_LABEL(message_), attributes);
   pango_attr_list_unref(attributes);
 
-  std::string text = l10n_util::GetStringFUTF8(
-      IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT, title);
-  gtk_label_set_text(GTK_LABEL(message_), text.c_str());
+  gtk_label_set_text(GTK_LABEL(message_), text_.c_str());
 
   gtk_widget_show_all(window_);
   gtk_window_present(GTK_WINDOW(window_));
 }
 
-bool ScreenCaptureNotificationUIGtk::Show(const base::Closure& stop_callback,
-                                          const string16& title) {
+void ScreenCaptureNotificationUIGtk::OnStarted(
+    const base::Closure& stop_callback) {
   DCHECK(stop_callback_.is_null());
   DCHECK(!stop_callback.is_null());
   DCHECK(!window_);
 
   stop_callback_ = stop_callback;
-  CreateWindow(title);
-
-  return true;
+  CreateWindow();
 }
 
 void ScreenCaptureNotificationUIGtk::HideWindow() {
@@ -285,7 +281,8 @@ gboolean ScreenCaptureNotificationUIGtk::OnButtonPress(GtkWidget* widget,
   return FALSE;
 }
 
-scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create() {
+scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
+    const string16& text) {
   return scoped_ptr<ScreenCaptureNotificationUI>(
-      new ScreenCaptureNotificationUIGtk());
+      new ScreenCaptureNotificationUIGtk(text));
 }

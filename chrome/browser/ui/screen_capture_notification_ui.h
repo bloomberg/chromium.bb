@@ -7,23 +7,17 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "content/public/common/media_stream_request.h"
 
 // Interface for screen capture notification UI shown when content of the screen
 // is being captured.
-class ScreenCaptureNotificationUI {
+class ScreenCaptureNotificationUI : public content::MediaStreamUI {
  public:
   virtual ~ScreenCaptureNotificationUI() {}
 
-  // Shows the screen capture notification, allowing the user to stop it.
-  // |stop_callback| will be invoked when the user chooses to stop capturing.
-  // |title| specifies the title of the application that's capturing the screen.
-  // Returns false if the window cannot be shown for any reason (|stop_callback|
-  // is ignored in that case).
-  virtual bool Show(const base::Closure& stop_callback,
-                    const string16& title) = 0;
-
-  // Creates platform-specific screen capture notification UI.
-  static scoped_ptr<ScreenCaptureNotificationUI> Create();
+  // Creates platform-specific screen capture notification UI. |text| specifies
+  // the text that should be shown in the notification.
+  static scoped_ptr<ScreenCaptureNotificationUI> Create(const string16& text);
 };
 
 #endif  // CHROME_BROWSER_UI_SCREEN_CAPTURE_NOTIFICATION_UI_H_
