@@ -26,14 +26,10 @@ namespace file_manager {
 // files is handled differently in EventRouter.
 class FileWatcher {
  public:
-  typedef std::map<std::string, int> ExtensionUsageRegistry;
   typedef base::Callback<void(bool success)> BoolCallback;
 
-  // AddExtension() is internally called for |extension_id|.
-  // TODO(satorux): Remove |extension_id| and stop calling AddExtension().
-  FileWatcher(const base::FilePath& virtual_path,
-              const std::string& extension_id,
-              bool is_remote_file_system);
+  // Creates a FileWatcher associated with the virtual path.
+  explicit FileWatcher(const base::FilePath& virtual_path);
 
   ~FileWatcher();
 
@@ -51,31 +47,22 @@ class FileWatcher {
   // comment at AddExtension() for details.
   void RemoveExtension(const std::string& extension_id);
 
-  // Returns IDs of the extensions watching virtual_path.
-  // TODO(satorux): Should just return a list of extension IDs rather than a
-  // map.
-  const ExtensionUsageRegistry& extensions() const { return extensions_; }
+  // Returns IDs of the extensions watching virtual_path. The returned list
+  // is sorted in the alphabetical order and contains no duplicates.
+  std::vector<std::string> GetExtensionIds() const;
 
-  // Returns 0 when no extensions are watching the virtual path.
-  // TODO(satorux): Should be replaced with extensions().empty().
-  int ref_count() const { return ref_count_; }
-
-  // Returns the path being watched.
+  // Returns the virtual path associated with the FileWatcher.
   const base::FilePath& virtual_path() const { return virtual_path_; }
 
-  // Starts watching |local_path|. For a local file, a base::FilePathWatcher
-  // will be created and |file_watcher_callback| will be called when changes
-  // are notified.
-  //
-  // For a remote file, this function actually does nothing but
-  // runs |callback| with true. See also the class comment.
-  // TODO(satorux): This function shouldn't be called for remote files.
+  // Starts watching a local file at |local_path|. |file_watcher_callback|
+  // will be called when changes are notified.
   //
   // |callback| will be called with true, if the file watch is started
   // successfully, or false if failed. |callback| must not be null.
-  void Watch(const base::FilePath& local_path,
-             const base::FilePathWatcher::Callback& file_watcher_callback,
-             const BoolCallback& callback);
+  void WatchLocalFile(
+      const base::FilePath& local_path,
+      const base::FilePathWatcher::Callback& file_watcher_callback,
+      const BoolCallback& callback);
 
  private:
   // Called when a FilePathWatcher is created and started.
@@ -84,11 +71,11 @@ class FileWatcher {
                         base::FilePathWatcher* file_path_watcher);
 
   base::FilePathWatcher* local_file_watcher_;
-  base::FilePath local_path_;
   base::FilePath virtual_path_;
-  ExtensionUsageRegistry extensions_;
-  int ref_count_;
-  bool is_remote_file_system_;
+  // Map of extension-id to counter. See the comment at AddExtension() for
+  // why we need to count.
+  typedef std::map<std::string, int> ExtensionCountMap;
+  ExtensionCountMap extensions_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

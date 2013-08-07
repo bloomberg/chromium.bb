@@ -220,10 +220,6 @@ EventRouter::EventRouter(
       profile_(profile),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  file_watcher_callback_ =
-      base::Bind(&EventRouter::HandleFileWatchNotification,
-                 weak_factory_.GetWeakPtr());
 }
 
 EventRouter::~EventRouter() {
@@ -321,20 +317,31 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
   DCHECK(!callback.is_null());
 
   base::FilePath watch_path = local_path;
-  bool is_remote_watch = false;
+  bool is_on_drive = drive::util::IsUnderDriveMountPoint(watch_path);
   // Tweak watch path for remote sources - we need to drop leading /special
   // directory from there in order to be able to pair these events with
   // their change notifications.
-  if (drive::util::IsUnderDriveMountPoint(watch_path)) {
+  if (is_on_drive)
     watch_path = drive::util::ExtractDrivePath(watch_path);
-    is_remote_watch = true;
-  }
 
   WatcherMap::iterator iter = file_watchers_.find(watch_path);
   if (iter == file_watchers_.end()) {
-    scoped_ptr<FileWatcher> watcher(
-        new FileWatcher(virtual_path, extension_id, is_remote_watch));
-    watcher->Watch(watch_path, file_watcher_callback_, callback);
+    scoped_ptr<FileWatcher> watcher(new FileWatcher(virtual_path));
+    watcher->AddExtension(extension_id);
+
+    if (is_on_drive) {
+      // For Drive, file watching is done via OnDirectoryChanged().
+      base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, true));
+    } else {
+      // For local files, start watching using FileWatcher.
+      watcher->WatchLocalFile(
+          watch_path,
+          base::Bind(&EventRouter::HandleFileWatchNotification,
+                     weak_factory_.GetWeakPtr()),
+          callback);
+    }
+
     file_watchers_[watch_path] = watcher.release();
   } else {
     iter->second->AddExtension(extension_id);
@@ -357,9 +364,9 @@ void EventRouter::RemoveFileWatch(const base::FilePath& local_path,
   WatcherMap::iterator iter = file_watchers_.find(watch_path);
   if (iter == file_watchers_.end())
     return;
-  // Remove the renderer process for this watch.
+  // Remove the watcher if |watch_path| is no longer watched by any extensions.
   iter->second->RemoveExtension(extension_id);
-  if (iter->second->ref_count() == 0) {
+  if (iter->second->GetExtensionIds().empty()) {
     delete iter->second;
     file_watchers_.erase(iter);
   }
@@ -637,22 +644,23 @@ void EventRouter::HandleFileWatchNotification(const base::FilePath& local_path,
     return;
   }
   DispatchDirectoryChangeEvent(iter->second->virtual_path(), got_error,
-                               iter->second->extensions());
+                               iter->second->GetExtensionIds());
 }
 
 void EventRouter::DispatchDirectoryChangeEvent(
     const base::FilePath& virtual_path,
     bool got_error,
-    const FileWatcher::ExtensionUsageRegistry& extensions) {
+    const std::vector<std::string>& extension_ids) {
   if (!profile_) {
     NOTREACHED();
     return;
   }
 
-  for (FileWatcher::ExtensionUsageRegistry::const_iterator iter =
-           extensions.begin(); iter != extensions.end(); ++iter) {
+  for (size_t i = 0; i < extension_ids.size(); ++i) {
+    const std::string& extension_id = extension_ids[i];
+
     GURL target_origin_url(extensions::Extension::GetBaseURLFromExtensionId(
-        iter->first));
+        extension_id));
     GURL base_url = fileapi::GetFileSystemRootURI(
         target_origin_url,
         fileapi::kFileSystemTypeExternal);
@@ -671,7 +679,7 @@ void EventRouter::DispatchDirectoryChangeEvent(
     scoped_ptr<extensions::Event> event(new extensions::Event(
         extensions::event_names::kOnDirectoryChanged, args.Pass()));
     extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(iter->first, event.Pass());
+        DispatchEventToExtension(extension_id, event.Pass());
   }
 }
 

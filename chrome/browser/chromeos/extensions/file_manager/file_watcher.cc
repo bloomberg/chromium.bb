@@ -31,17 +31,11 @@ base::FilePathWatcher* CreateAndStartFilePathWatcher(
 
 }  // namespace
 
-FileWatcher::FileWatcher(const base::FilePath& virtual_path,
-                         const std::string& extension_id,
-                         bool is_remote_file_system)
+FileWatcher::FileWatcher(const base::FilePath& virtual_path)
     : local_file_watcher_(NULL),
       virtual_path_(virtual_path),
-      ref_count_(0),
-      is_remote_file_system_(is_remote_file_system),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  AddExtension(extension_id);
 }
 
 FileWatcher::~FileWatcher() {
@@ -56,42 +50,42 @@ void FileWatcher::AddExtension(const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   extensions_[extension_id]++;
-  ref_count_++;
 }
 
 void FileWatcher::RemoveExtension(const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ExtensionUsageRegistry::iterator it = extensions_.find(extension_id);
+  ExtensionCountMap::iterator it = extensions_.find(extension_id);
   if (it == extensions_.end()) {
     LOG(ERROR) << " Extension [" << extension_id
-               << "] tries to unsubscribe from folder [" << local_path_.value()
+               << "] tries to unsubscribe from folder ["
+               << virtual_path_.value()
                << "] it isn't subscribed";
     return;
   }
 
   // If entry found - decrease it's count and remove if necessary
-  if (it->second-- == 0)
+  --it->second;
+  if (it->second == 0)
     extensions_.erase(it);
-
-  ref_count_--;
 }
 
-void FileWatcher::Watch(
+std::vector<std::string> FileWatcher::GetExtensionIds() const {
+  std::vector<std::string> extension_ids;
+  for (ExtensionCountMap::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    extension_ids.push_back(iter->first);
+  }
+  return extension_ids;
+}
+
+void FileWatcher::WatchLocalFile(
     const base::FilePath& local_path,
     const base::FilePathWatcher::Callback& file_watcher_callback,
     const BoolCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(!local_file_watcher_);
-
-  local_path_ = local_path;  // For error message in RemoveExtension().
-
-  if (is_remote_file_system_) {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-                                                base::Bind(callback, true));
-    return;
-  }
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,

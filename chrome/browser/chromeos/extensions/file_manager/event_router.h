@@ -126,7 +126,7 @@ class EventRouter
   void DispatchDirectoryChangeEvent(
       const base::FilePath& path,
       bool error,
-      const FileWatcher::ExtensionUsageRegistry& extensions);
+      const std::vector<std::string>& extension_ids);
 
   void DispatchMountEvent(
       chromeos::disks::DiskMountManager::MountEvent event,
@@ -156,7 +156,6 @@ class EventRouter
   std::map<drive::JobID, DriveJobInfoWithStatus> drive_jobs_;
   base::Time last_file_transfer_event_;
 
-  base::FilePathWatcher::Callback file_watcher_callback_;
   WatcherMap file_watchers_;
   scoped_ptr<DesktopNotifications> notifications_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
