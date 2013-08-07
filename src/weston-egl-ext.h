@@ -62,4 +62,15 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYWAYLANDBUFFERWL) (EGLDisplay dpy, st
 #define EGL_BUFFER_AGE_EXT              0x313D
 #endif
 
+/* Mesas gl2ext.h and probably Khronos upstream defined
+ * GL_EXT_unpack_subimage with non _EXT suffixed GL_UNPACK_* tokens.
+ * In case we're using that mess, manually define the _EXT versions
+ * of the tokens here.*/
+#if defined(GL_EXT_unpack_subimage) && !defined(GL_UNPACK_ROW_LENGTH_EXT)
+#define GL_UNPACK_ROW_LENGTH_EXT                                0x0CF2
+#define GL_UNPACK_SKIP_ROWS_EXT                                 0x0CF3
+#define GL_UNPACK_SKIP_PIXELS_EXT                               0x0CF4
+#endif
+
+
 #endif
