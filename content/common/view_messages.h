@@ -2016,10 +2016,6 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_AddMessageToConsole,
                     int32, /* line number */
                     string16 /* source id */)
 
-// Sent to the renderer process to indicate completion of the previous
-// ViewHostMsg_AddMessageToConsole operation.
-IPC_MESSAGE_ROUTED0(ViewMsg_AddMessageToConsole_ACK)
-
 // Sent by the renderer process to indicate that a plugin instance has crashed.
 // Note: |plugin_pid| should not be trusted. The corresponding process has
 // probably died. Moreover, the ID may have been reused by a new process. Any

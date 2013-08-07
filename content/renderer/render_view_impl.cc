@@ -842,8 +842,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       handling_select_range_(false),
       next_snapshot_id_(0),
       allow_partial_swap_(params->allow_partial_swap),
-      context_menu_source_type_(ui::MENU_SOURCE_MOUSE),
-      inflight_console_message_count_(0) {
+      context_menu_source_type_(ui::MENU_SOURCE_MOUSE) {
 }
 
 void RenderViewImpl::Initialize(RenderViewImplParams* params) {
@@ -1006,12 +1005,6 @@ RenderViewImpl::~RenderViewImpl() {
           WebVector<WebString>());
     }
     file_chooser_completions_.pop_front();
-  }
-
-  // There may be unsent console log messages, but it is OK.
-  while (!deferred_console_messages_.empty()) {
-    delete deferred_console_messages_.front();
-    deferred_console_messages_.pop_front();
   }
 
 #if defined(OS_ANDROID)
@@ -1419,8 +1412,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnReleaseDisambiguationPopupDIB)
     IPC_MESSAGE_HANDLER(ViewMsg_WindowSnapshotCompleted,
                         OnWindowSnapshotCompleted)
-    IPC_MESSAGE_HANDLER(ViewMsg_AddMessageToConsole_ACK,
-                        OnConsoleMessageAck)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -1677,16 +1668,6 @@ void RenderViewImpl::OnUpdateTargetURLAck() {
   }
 
   target_url_status_ = TARGET_NONE;
-}
-
-void RenderViewImpl::OnConsoleMessageAck() {
-  if (!deferred_console_messages_.empty()) {
-    Send(deferred_console_messages_.front());
-    deferred_console_messages_.pop_front();
-    return;
-  }
-  --inflight_console_message_count_;
-  DCHECK(inflight_console_message_count_ >= 0);
 }
 
 void RenderViewImpl::OnCopy() {
@@ -2373,7 +2354,6 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace() {
 void RenderViewImpl::didAddMessageToConsole(
     const WebConsoleMessage& message, const WebString& source_name,
     unsigned source_line) {
-  static const int kMaximumInflightConsoleMessages = 10;
   logging::LogSeverity log_severity = logging::LOG_VERBOSE;
   switch (message.level) {
     case WebConsoleMessage::LevelDebug:
@@ -2392,19 +2372,11 @@ void RenderViewImpl::didAddMessageToConsole(
       NOTREACHED();
   }
 
-  IPC::Message* msg = new ViewHostMsg_AddMessageToConsole(
-      routing_id_, static_cast<int32>(log_severity), message.text,
-      static_cast<int32>(source_line), source_name);
-
-  if (RenderThreadImpl::current() &&
-      !RenderThreadImpl::current()->layout_test_mode() &&
-      inflight_console_message_count_ >= kMaximumInflightConsoleMessages) {
-    deferred_console_messages_.push_back(msg);
-    return;
-  }
-
-  Send(msg);
-  ++inflight_console_message_count_;
+  Send(new ViewHostMsg_AddMessageToConsole(routing_id_,
+                                           static_cast<int32>(log_severity),
+                                           message.text,
+                                           static_cast<int32>(source_line),
+                                           source_name));
 }
 
 void RenderViewImpl::printPage(WebFrame* frame) {
