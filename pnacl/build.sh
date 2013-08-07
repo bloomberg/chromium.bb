@@ -3120,7 +3120,7 @@ HAS_FRONTEND=0""" > "${destdir}"/driver.conf
 
 DumpAllRevisions() {
   one-line-rev-info ${NACL_ROOT}
-  for d in ${PNACL_ROOT}/src/*/ ${PNACL_ROOT}/git/*/ ; do
+  for d in ${PNACL_ROOT}/git/*/ ; do
     one-line-rev-info $d
   done
 }
