@@ -458,7 +458,14 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
     return DispatchEventForRootWindow(event);
 
   switch (xev->type) {
-    case EnterNotify:
+    case EnterNotify: {
+      ui::MouseEvent mouse_event(xev);
+      // EnterNotify creates ET_MOUSE_MOVE. Mark as synthesized as this is not
+      // real mouse move event.
+      mouse_event.set_flags(mouse_event.flags() | ui::EF_IS_SYNTHESIZED);
+      TranslateAndDispatchMouseEvent(&mouse_event);
+      break;
+    }
     case LeaveNotify: {
       ui::MouseEvent mouse_event(xev);
       TranslateAndDispatchMouseEvent(&mouse_event);

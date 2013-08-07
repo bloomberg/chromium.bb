@@ -169,11 +169,9 @@ void CompoundEventFilter::FilterTouchEvent(ui::TouchEvent* event) {
 void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
                                                      ui::Event* event,
                                                      bool show) {
-  if (event->flags() & ui::EF_IS_SYNTHESIZED ||
-      event->type() == ui::ET_MOUSE_ENTERED ||
-      event->type() == ui::ET_MOUSE_EXITED) {
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
     return;
-  }
+
   aura::client::CursorClient* client =
       aura::client::GetCursorClient(target->GetRootWindow());
   if (!client)

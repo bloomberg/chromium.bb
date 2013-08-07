@@ -64,25 +64,32 @@ TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
   root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(&key);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
-  // Mouse enter event should not show the cursor.
+  // Synthesized mouse event should not show the cursor.
   ui::MouseEvent enter(ui::ET_MOUSE_ENTERED, gfx::Point(10, 10),
                        gfx::Point(10, 10), 0);
+  enter.set_flags(enter.flags() | ui::EF_IS_SYNTHESIZED);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&enter);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
-  // Mouse move event will show the cursor.
   ui::MouseEvent move(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                       gfx::Point(10, 10), 0);
+  move.set_flags(enter.flags() | ui::EF_IS_SYNTHESIZED);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&move);
+  EXPECT_FALSE(cursor_client.IsCursorVisible());
+
+  ui::MouseEvent real_move(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                           gfx::Point(10, 10), 0);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&real_move);
   EXPECT_TRUE(cursor_client.IsCursorVisible());
 
   // Send key event to hide the cursor again.
   root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(&key);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
-  // Mouse exit event should not show the cursor.
+  // Mouse synthesized exit event should not show the cursor.
   ui::MouseEvent exit(ui::ET_MOUSE_EXITED, gfx::Point(10, 10),
                       gfx::Point(10, 10), 0);
+  exit.set_flags(enter.flags() | ui::EF_IS_SYNTHESIZED);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 }
