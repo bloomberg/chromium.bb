@@ -2,5 +2,5 @@ Test for bug 3565 - posting data via XMLHttpRequest doesn't work (wrong Content-
 
 Should be application/xml:
 
-application/xml
+text/plain;charset=UTF-8
 

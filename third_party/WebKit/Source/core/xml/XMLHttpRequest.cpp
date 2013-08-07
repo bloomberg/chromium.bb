@@ -595,7 +595,7 @@ void XMLHttpRequest::send(const String& body, ExceptionState& es)
     if (!body.isNull() && areMethodAndURLValidForSend()) {
         String contentType = getRequestHeader("Content-Type");
         if (contentType.isEmpty()) {
-            setRequestHeaderInternal("Content-Type", "application/xml");
+            setRequestHeaderInternal("Content-Type", "text/plain;charset=UTF-8");
         } else {
             replaceCharsetInMediaType(contentType, "UTF-8");
             m_requestHeaders.set("Content-Type", contentType);
