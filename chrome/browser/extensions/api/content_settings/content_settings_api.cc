@@ -185,7 +185,6 @@ bool ContentSettingsContentSettingSetFunction::RunImpl() {
   }
 
   ContentSettingsPattern secondary_pattern = ContentSettingsPattern::Wildcard();
-  std::string secondary_pattern_str;
   if (params->details.secondary_pattern.get()) {
     std::string secondary_error;
     secondary_pattern =
