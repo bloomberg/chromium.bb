@@ -21918,6 +21918,8 @@ other types of suffix sets.
   <int value="9" label="DONT_PROCEED_AUTHORITY"/>
   <int value="10" label="MORE"/>
   <int value="11" label="SHOW_UNDERSTAND"/>
+  <int value="12" label="SHOW_INTERNAL_HOSTNAME"/>
+  <int value="13" label="PROCEED_INTERNAL_HOSTNAME"/>
 </enum>
 
 <enum name="SuspendStatus" type="int">
