@@ -94,7 +94,7 @@ void ManagedUserRegistrationUtility::Register(
 
   browser_sync::DeviceInfo::GetClientName(
       base::Bind(&ManagedUserRegistrationUtility::FetchToken,
-                 weak_ptr_factory_.GetWeakPtr(), info.name));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ManagedUserRegistrationUtility::CancelPendingRegistration() {
@@ -118,10 +118,9 @@ void ManagedUserRegistrationUtility::OnManagedUsersSyncingStopped() {
 }
 
 void ManagedUserRegistrationUtility::FetchToken(
-    const string16& name,
     const std::string& client_name) {
   token_fetcher_->Start(
-      pending_managed_user_id_, name, client_name,
+      pending_managed_user_id_, client_name,
       base::Bind(&ManagedUserRegistrationUtility::OnReceivedToken,
                  weak_ptr_factory_.GetWeakPtr()));
 }

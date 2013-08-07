@@ -68,7 +68,6 @@ class MockManagedUserRefreshTokenFetcher
 
   // ManagedUserRefreshTokenFetcher implementation:
   virtual void Start(const std::string& managed_user_id,
-                     const string16& name,
                      const std::string& device_name,
                      const TokenCallback& callback) OVERRIDE {
     GoogleServiceAuthError error(GoogleServiceAuthError::NONE);

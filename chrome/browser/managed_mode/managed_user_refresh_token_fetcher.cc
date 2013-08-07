@@ -7,9 +7,7 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -40,7 +38,6 @@ static const char kIssueTokenBodyFormat[] =
     "&scope=%s"
     "&response_type=code"
     "&profile_id=%s"
-    "&profile_name=%s"
     "&device_name=%s";
 
 static const char kAuthorizationHeaderFormat[] =
@@ -60,7 +57,6 @@ class ManagedUserRefreshTokenFetcherImpl
 
   // ManagedUserRefreshTokenFetcher implementation:
   virtual void Start(const std::string& managed_user_id,
-                     const string16& name,
                      const std::string& device_name,
                      const TokenCallback& callback) OVERRIDE;
 
@@ -97,7 +93,6 @@ class ManagedUserRefreshTokenFetcherImpl
 
   std::string device_name_;
   std::string managed_user_id_;
-  string16 name_;
   TokenCallback callback_;
 
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
@@ -118,12 +113,10 @@ ManagedUserRefreshTokenFetcherImpl::~ManagedUserRefreshTokenFetcherImpl() {}
 
 void ManagedUserRefreshTokenFetcherImpl::Start(
     const std::string& managed_user_id,
-    const string16& name,
     const std::string& device_name,
     const TokenCallback& callback) {
   DCHECK(callback_.is_null());
   managed_user_id_ = managed_user_id;
-  name_ = name;
   device_name_ = device_name;
   callback_ = callback;
   StartFetching();
@@ -162,7 +155,6 @@ void ManagedUserRefreshTokenFetcherImpl::OnGetTokenSuccess(
           GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true).c_str(),
       net::EscapeUrlEncodedData(kChromeSyncManagedOAuth2Scope, true).c_str(),
       net::EscapeUrlEncodedData(managed_user_id_, true).c_str(),
-      net::EscapeUrlEncodedData(UTF16ToUTF8(name_), true).c_str(),
       net::EscapeUrlEncodedData(device_name_, true).c_str());
   url_fetcher_->SetUploadData("application/x-www-form-urlencoded", body);
 

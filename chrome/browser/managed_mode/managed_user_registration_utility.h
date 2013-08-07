@@ -87,8 +87,7 @@ class ManagedUserRegistrationUtility
       scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher,
       ManagedUserSyncService* service);
   // Fetches the managed user token when we have the device name.
-  void FetchToken(const string16& name,
-                  const std::string& client_name);
+  void FetchToken(const std::string& client_name);
 
   // Called when we have received a token for the managed user.
   void OnReceivedToken(const GoogleServiceAuthError& error,

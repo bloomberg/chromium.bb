@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/managed_mode/managed_user_refresh_token_fetcher.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/test/base/testing_profile.h"
@@ -24,7 +23,6 @@
 namespace {
 
 const char kManagedUserId[] = "abcdef";
-const char kName[] = "Homestar";
 const char kDeviceName[] = "Compy";
 
 const char kAccessToken[] = "accesstoken";
@@ -213,7 +211,7 @@ ManagedUserRefreshTokenFetcherTest::ManagedUserRefreshTokenFetcherTest()
       weak_ptr_factory_(this) {}
 
 void ManagedUserRefreshTokenFetcherTest::StartFetching() {
-  token_fetcher_->Start(kManagedUserId, UTF8ToUTF16(kName), kDeviceName,
+  token_fetcher_->Start(kManagedUserId, kDeviceName,
                         base::Bind(
                             &ManagedUserRefreshTokenFetcherTest::OnTokenFetched,
                             weak_ptr_factory_.GetWeakPtr()));
@@ -246,9 +244,6 @@ ManagedUserRefreshTokenFetcherTest::GetIssueTokenRequest() {
   std::string managed_user_id;
   EXPECT_TRUE(GetValueForKey(upload_data, "profile_id", &managed_user_id));
   EXPECT_EQ(kManagedUserId, managed_user_id);
-  std::string name;
-  EXPECT_TRUE(GetValueForKey(upload_data, "profile_name", &name));
-  EXPECT_EQ(kName, name);
   std::string device_name;
   EXPECT_TRUE(GetValueForKey(upload_data, "device_name", &device_name));
   EXPECT_EQ(kDeviceName, device_name);
