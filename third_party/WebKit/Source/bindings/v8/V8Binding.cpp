@@ -153,7 +153,7 @@ PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, v8::Isolate*
     RefPtr<NodeFilter> filter = NodeFilter::create();
 
     // FIXME: Should pass in appropriate creationContext
-    v8::Handle<v8::Object> filterWrapper = toV8(filter.get(), v8::Handle<v8::Object>(), isolate).As<v8::Object>();
+    v8::Handle<v8::Object> filterWrapper = toV8(filter, v8::Handle<v8::Object>(), isolate).As<v8::Object>();
 
     RefPtr<NodeFilterCondition> condition = V8NodeFilterCondition::create(callback, filterWrapper);
     filter->setCondition(condition.release());

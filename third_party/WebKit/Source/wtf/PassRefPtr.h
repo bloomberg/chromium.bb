@@ -23,6 +23,7 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/NullPtr.h"
+#include "wtf/TypeTraits.h"
 
 namespace WTF {
 
@@ -52,11 +53,11 @@ namespace WTF {
         // a const PassRefPtr. However, it makes it much easier to work with PassRefPtr
         // temporaries, and we don't have a need to use real const PassRefPtrs anyway.
         PassRefPtr(const PassRefPtr& o) : m_ptr(o.leakRef()) { }
-        template<typename U> PassRefPtr(const PassRefPtr<U>& o) : m_ptr(o.leakRef()) { }
+        template<typename U> PassRefPtr(const PassRefPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T)) : m_ptr(o.leakRef()) { }
 
         ALWAYS_INLINE ~PassRefPtr() { derefIfNotNull(m_ptr); }
 
-        template<typename U> PassRefPtr(const RefPtr<U>&);
+        template<typename U> PassRefPtr(const RefPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
 
         T* get() const { return m_ptr; }
 
@@ -82,7 +83,7 @@ namespace WTF {
         mutable T* m_ptr;
     };
 
-    template<typename T> template<typename U> inline PassRefPtr<T>::PassRefPtr(const RefPtr<U>& o)
+    template<typename T> template<typename U> inline PassRefPtr<T>::PassRefPtr(const RefPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
         : m_ptr(o.get())
     {
         T* ptr = m_ptr;
@@ -157,7 +158,7 @@ namespace WTF {
         return adoptRef(static_cast<T*>(p.leakRef()));
     }
 
-    template<typename T, typename U> inline PassRefPtr<T> const_pointer_cast(const PassRefPtr<U>& p)
+    template<typename T> inline PassRefPtr<T> const_pointer_cast(const PassRefPtr<T>& p)
     {
         return adoptRef(const_cast<T*>(p.leakRef()));
     }
