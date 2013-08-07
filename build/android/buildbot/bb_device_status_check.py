@@ -11,6 +11,7 @@ import os
 import smtplib
 import sys
 import re
+import urllib
 
 import bb_annotations
 
@@ -148,9 +149,19 @@ def CheckForMissingDevices(options, adb_online_devs):
 
     # TODO(navabi): Debug by printing both output from GetCmdOutput and
     # GetAttachedDevices to compare results.
+    crbug_link = ('https://code.google.com/p/chromium/issues/entry?summary='
+                  '%s&comment=%s&labels=Restrict-View-Google,OS-Android,Infra' %
+                  (urllib.quote('Device Offline'),
+                   urllib.quote('Buildbot: %s %s\n'
+                                'Build: %s\n'
+                                '(please don\'t change any labels)' %
+                                (os.environ.get('BUILDBOT_BUILDERNAME'),
+                                 os.environ.get('BUILDBOT_SLAVENAME'),
+                                 os.environ.get('BUILDBOT_BUILDNUMBER')))))
     return ['Current online devices: %s' % adb_online_devs,
             '%s are no longer visible. Were they removed?\n' % missing_devs,
-            'SHERIFF: See go/chrome_device_monitor',
+            'SHERIFF:\n',
+            '@@@STEP_LINK@Click here to file a bug@%s@@@\n' % crbug_link,
             'Cache file: %s\n\n' % last_devices_path,
             'adb devices: %s' % GetCmdOutput(['adb', 'devices']),
             'adb devices(GetAttachedDevices): %s' %
