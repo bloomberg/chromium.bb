@@ -28,6 +28,12 @@
  "zeroSearchResults": {
    "message": "Zero matches",
    "description": ""},
+ "managementPermissionInfo": {
+   "message": "Some files were downloaded by an extension.",
+   "description": ""},
+ "grantManagementPermission": {
+   "message": "Show links to extensions that download files.",
+   "description": ""},
  "showOlderDownloads": {
    "message": "Show Older Downloads",
    "description": ""},

@@ -3,11 +3,7 @@
   "description": "Select links on a page and download them.",
   "version": "0.1",
   "minimum_chrome_version": "16.0.884",
-  "permissions": [
-    "experimental", "tabs", "http://*/*", "https://*/*"
-  ],
-  "browser_action": {
-    "default_popup": "popup.html"
-  },
+  "permissions": ["tabs", "downloads"],
+  "browser_action": {"default_popup": "popup.html"},
   "manifest_version": 2
 }

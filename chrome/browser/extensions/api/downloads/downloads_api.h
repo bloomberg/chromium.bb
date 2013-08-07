@@ -40,7 +40,6 @@ namespace download_extension_errors {
 // Errors that can be returned through chrome.runtime.lastError.message.
 extern const char kEmptyFile[];
 extern const char kFileAlreadyDeleted[];
-extern const char kHostPermission[];
 extern const char kIconNotFound[];
 extern const char kInvalidDangerType[];
 extern const char kInvalidFilename[];

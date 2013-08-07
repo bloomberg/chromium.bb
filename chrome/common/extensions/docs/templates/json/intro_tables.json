@@ -84,10 +84,6 @@
       {
         "class": "code",
         "text": "\"downloads\""
-      },
-      {
-        "link": "declare_permissions.html",
-        "text": "host permissions"
       }
     ]
   },

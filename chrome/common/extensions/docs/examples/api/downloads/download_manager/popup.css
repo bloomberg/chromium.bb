@@ -2,10 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-body {
-  text-align: center;
-}
-
 #outer,
 #empty,
 #open-folder,
@@ -13,6 +9,16 @@ body {
 .time-left,
 .more-left {
   display: inline-block;
+}
+
+#q-outer {
+  display:inline-block;
+  height:1.7em;
+  overflow:hidden;
+}
+
+#q {
+  margin-right: 2em;
 }
 
 #head {
@@ -58,13 +64,7 @@ body {
 }
 
 #q {
-  margin-top: 0.5em;
   margin-left: 3%;
-}
-
-#clear-all,
-#open-folder {
-  float: right;
 }
 
 .by-ext img,
@@ -94,11 +94,6 @@ svg rect.border {
 .remove-file svg,
 .erase svg {
   stroke: black;
-}
-
-.clearfix {
-  clear: both;
-  float: right;
 }
 
 #older,

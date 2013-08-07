@@ -26,6 +26,10 @@ function loadI18nMessages() {
   setProperty('#empty', 'innerText', 'zeroItems');
   setProperty('#searching', 'innerText', 'searching');
   setProperty('#search-zero', 'innerText', 'zeroSearchResults');
+  setProperty('#management-permission-info', 'innerText',
+              'managementPermissionInfo');
+  setProperty('#grant-management-permission', 'innerText',
+              'grantManagementPermission');
   setProperty('#older', 'innerText', 'showOlderDownloads');
   setProperty('#loading-older', 'innerText', 'loadingOlderDownloads');
   setProperty('.pause', 'title', 'pauseTitle');
@@ -296,9 +300,9 @@ DownloadItem.prototype.render = function() {
     });
   }
 
-  item.getElement('removed').style.display = openable ? 'none' : 'inline-block';
+  item.getElement('removed').style.display = openable ? 'none' : 'inline';
   item.getElement('open-filename').style.display = (
-    openable ? 'inline-block' : 'none');
+    openable ? 'inline' : 'none');
   item.getElement('in-progress').hidden = !in_progress;
   item.getElement('pause').style.display = (
     !in_progress || item.paused) ? 'none' : 'inline-block';
@@ -321,14 +325,43 @@ DownloadItem.prototype.render = function() {
   item.getElement('removed').innerText = item.basename;
   item.getElement('open-filename').innerText = item.basename;
 
+  function setByExtension(show) {
+    if (show) {
+      item.getElement('by-ext').title = item.byExtensionName;
+      item.getElement('by-ext').href =
+        'chrome://extensions#' + item.byExtensionId;
+      item.getElement('by-ext img').src =
+        'chrome://extension-icon/' + item.byExtensionId + '/48/1';
+    } else {
+      item.getElement('by-ext').hidden = true;
+    }
+  }
   if (item.byExtensionId && item.byExtensionName) {
-    item.getElement('by-ext').title = item.byExtensionName;
-    item.getElement('by-ext').href =
-      'chrome://extensions#' + item.byExtensionId;
-    item.getElement('by-ext img').src =
-      'chrome://extension-icon/' + item.byExtensionId + '/48/1';
+    chrome.permissions.contains({permissions: ['management']},
+                                function(result) {
+      if (result) {
+        setByExtension(true);
+      } else {
+        setByExtension(false);
+        if (!localStorage.managementPermissionDenied) {
+          document.getElementById('request-management-permission').hidden =
+            false;
+          document.getElementById('grant-management-permission').onclick =
+              function() {
+            chrome.permissions.request({permissions: ['management']},
+                                      function(granted) {
+              setByExtension(granted);
+              if (!granted) {
+                localStorage.managementPermissionDenied = true;
+              }
+            });
+            return false;
+          };
+        }
+      }
+    });
   } else {
-    item.getElement('by-ext').hidden = true;
+    setByExtension(false);
   }
 
   if (!item.getElement('error').hidden) {
@@ -509,9 +542,9 @@ DownloadManager.showNew = function() {
   var any_items = (document.getElementById('items').childNodes.length > 0);
   document.getElementById('empty').style.display =
     any_items ? 'none' : 'inline-block';
+  document.getElementById('head').style.borderBottomWidth =
+    (any_items ? 1 : 0) + 'px';
   document.getElementById('clear-all').hidden = !any_items;
-  document.getElementById('open-folder').style.float =
-    any_items ? 'right' : 'none';
 
   var query_search = document.getElementById('q');
   query_search.hidden = !any_items;
@@ -682,7 +715,7 @@ if (chrome.downloads) {
 
   window.onload = function() {
     document.body.style.minWidth = (
-      document.getElementById('q').offsetWidth +
+      document.getElementById('q-outer').offsetWidth +
       document.getElementById('clear-all').offsetWidth +
       document.getElementById('open-folder').offsetWidth) + 'px';
     setLastOpened();
