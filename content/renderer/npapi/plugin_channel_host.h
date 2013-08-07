@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PLUGIN_CHANNEL_HOST_H_
-#define CONTENT_RENDERER_PLUGIN_CHANNEL_HOST_H_
+#ifndef CONTENT_RENDERER_NPAPI_PLUGIN_CHANNEL_HOST_H_
+#define CONTENT_RENDERER_NPAPI_PLUGIN_CHANNEL_HOST_H_
 
 #include "base/containers/hash_tables.h"
 #include "content/child/npapi/np_channel_base.h"
@@ -72,4 +72,4 @@ class PluginChannelHost : public NPChannelBase {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PLUGIN_CHANNEL_HOST_H_
+#endif  // CONTENT_RENDERER_NPAPI_PLUGIN_CHANNEL_HOST_H_

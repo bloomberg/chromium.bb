@@ -6,7 +6,6 @@
 
 #include "content/child/npapi/np_channel_base.h"
 #include "content/child/npapi/npobject_util.h"
-#include "content/child/npapi/plugin_host.h"
 #include "content/child/plugin_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -339,7 +338,7 @@ void NPObjectStub::OnEnumeration(std::vector<NPIdentifier_Param>* value,
     value->push_back(param);
   }
 
-  PluginHost::Singleton()->host_functions()->memfree(value_np);
+  free(value_np);
 }
 
 void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,

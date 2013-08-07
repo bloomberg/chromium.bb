@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/plugin_channel_host.h"
+#include "content/renderer/npapi/plugin_channel_host.h"
 
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"

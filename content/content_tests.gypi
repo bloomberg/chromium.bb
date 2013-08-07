@@ -440,6 +440,7 @@
         'renderer/media/video_capture_message_filter_unittest.cc',
         'renderer/media/video_destination_handler_unittest.cc',
         'renderer/media/webaudiosourceprovider_impl_unittest.cc',
+        'renderer/npapi/webplugin_impl_unittest.cc',
         'renderer/paint_aggregator_unittest.cc',
         'renderer/pepper/host_var_tracker_unittest.cc',
         'renderer/pepper/mock_resource.h',
@@ -452,9 +453,9 @@
         'renderer/render_view_impl_unittest.cc',
         'renderer/skia_benchmarking_extension_unittest.cc',
         'renderer/v8_value_converter_impl_unittest.cc',
-        'renderer/webplugin_impl_unittest.cc',
         'test/image_decoder_test.cc',
         'test/image_decoder_test.h',
+        'test/run_all_unittests.cc',
         '../webkit/browser/appcache/appcache_database_unittest.cc',
         '../webkit/browser/appcache/appcache_group_unittest.cc',
         '../webkit/browser/appcache/appcache_host_unittest.cc',
@@ -526,7 +527,6 @@
         '../webkit/browser/fileapi/timed_task_helper_unittest.cc',
         '../webkit/browser/fileapi/transient_file_util_unittest.cc',
         '../webkit/browser/fileapi/upload_file_system_file_element_reader_unittest.cc',
-        'test/run_all_unittests.cc',
         '../webkit/child/multipart_response_delegate_unittest.cc',
         '../webkit/child/touch_fling_gesture_curve_unittest.cc',
         '../webkit/child/worker_task_runner_unittest.cc',
@@ -599,8 +599,10 @@
         }],
         ['enable_plugins==0', {
           'sources/': [
-            ['exclude', '^renderer/pepper/'],
             ['exclude', '^browser/renderer_host/pepper/'],
+            ['exclude', '^child/npapi/'],
+            ['exclude', '^renderer/npapi/'],
+            ['exclude', '^renderer/pepper/'],
           ],
           'sources!': [
             'browser/plugin_loader_posix_unittest.cc',

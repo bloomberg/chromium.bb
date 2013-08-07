@@ -6,10 +6,12 @@
 
 #include "content/child/npapi/np_channel_base.h"
 #include "content/child/npapi/npobject_util.h"
-#include "content/child/npapi/plugin_host.h"
-#include "content/child/npapi/plugin_instance.h"
 #include "content/child/plugin_messages.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "content/child/npapi/plugin_instance.h"
+#endif
 
 using WebKit::WebBindings;
 
@@ -388,9 +390,7 @@ bool NPObjectProxy::NPNEnumerate(NPObject *obj,
     return false;
 
   *count = static_cast<unsigned int>(value_param.size());
-  *value = static_cast<NPIdentifier *>(
-      PluginHost::Singleton()->host_functions()->memalloc(
-          sizeof(NPIdentifier) * *count));
+  *value = static_cast<NPIdentifier *>(malloc(sizeof(NPIdentifier) * *count));
   for (unsigned int i = 0; i < *count; ++i)
     (*value)[i] = CreateNPIdentifier(value_param[i]);
 
@@ -468,12 +468,14 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
   int render_view_id = proxy->render_view_id_;
   bool popups_allowed = false;
 
+#if defined(ENABLE_PLUGINS)
   if (npp) {
     PluginInstance* plugin_instance =
         reinterpret_cast<PluginInstance*>(npp->ndata);
     if (plugin_instance)
       popups_allowed = plugin_instance->popups_allowed();
   }
+#endif
 
   NPVariant_Param result_param;
   std::string script_str = std::string(

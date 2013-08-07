@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/webplugin_delegate_proxy.h"
+#include "content/renderer/npapi/webplugin_delegate_proxy.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
@@ -32,7 +32,7 @@
 #include "content/child/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/plugin_channel_host.h"
+#include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_channel_handle.h"

@@ -26,7 +26,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
-#include "content/renderer/webplugin_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"

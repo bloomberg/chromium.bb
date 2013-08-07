@@ -125,8 +125,6 @@
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/web_ui_extension_data.h"
-#include "content/renderer/webplugin_delegate_proxy.h"
-#include "content/renderer/webplugin_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -245,6 +243,8 @@
 #endif
 
 #if defined(ENABLE_PLUGINS)
+#include "content/renderer/npapi/webplugin_delegate_proxy.h"
+#include "content/renderer/npapi/webplugin_impl.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
@@ -1229,8 +1229,6 @@ bool RenderViewImpl::IsPepperAcceptingCompositionEvents() const {
   return focused_pepper_plugin_->IsPluginAcceptingCompositionEvents();
 }
 
-#endif  // ENABLE_PLUGINS
-
 void RenderViewImpl::PluginCrashed(const base::FilePath& plugin_path,
                                    base::ProcessId plugin_pid) {
   Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path, plugin_pid));
@@ -1268,6 +1266,45 @@ bool RenderViewImpl::GetPluginInfo(const GURL& url,
       actual_mime_type));
   return found;
 }
+
+void RenderViewImpl::SimulateImeSetComposition(
+    const string16& text,
+    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    int selection_start,
+    int selection_end) {
+  OnImeSetComposition(text, underlines, selection_start, selection_end);
+}
+
+void RenderViewImpl::SimulateImeConfirmComposition(
+    const string16& text,
+    const ui::Range& replacement_range) {
+  OnImeConfirmComposition(text, replacement_range, false);
+}
+
+#if defined(OS_WIN)
+void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
+  if (focused)
+    focused_plugin_id_ = plugin_id;
+  else
+    focused_plugin_id_ = -1;
+}
+#endif
+
+#if defined(OS_MACOSX)
+void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
+  Send(new ViewHostMsg_PluginFocusChanged(routing_id(), focused, plugin_id));
+}
+
+void RenderViewImpl::StartPluginIme() {
+  IPC::Message* msg = new ViewHostMsg_StartPluginIme(routing_id());
+  // This message can be sent during event-handling, and needs to be delivered
+  // within that context.
+  msg->set_unblock(true);
+  Send(msg);
+}
+#endif  // defined(OS_MACOSX)
+
+#endif  // ENABLE_PLUGINS
 
 void RenderViewImpl::TransferActiveWheelFlingAnimation(
     const WebKit::WebActiveWheelFlingParameters& params) {
@@ -5606,7 +5643,7 @@ void RenderViewImpl::OnSetActive(bool active) {
   if (webview())
     webview()->setIsActive(active);
 
-#if defined(OS_MACOSX)
+#if defined(ENABLE_PLUGINS) && defined(OS_MACOSX)
   std::set<WebPluginDelegateProxy*>::iterator plugin_it;
   for (plugin_it = plugin_delegates_.begin();
        plugin_it != plugin_delegates_.end(); ++plugin_it) {
@@ -5617,22 +5654,26 @@ void RenderViewImpl::OnSetActive(bool active) {
 
 #if defined(OS_MACOSX)
 void RenderViewImpl::OnSetWindowVisibility(bool visible) {
+#if defined(ENABLE_PLUGINS)
   // Inform plugins that their container has changed visibility.
   std::set<WebPluginDelegateProxy*>::iterator plugin_it;
   for (plugin_it = plugin_delegates_.begin();
        plugin_it != plugin_delegates_.end(); ++plugin_it) {
     (*plugin_it)->SetContainerVisibility(visible);
   }
+#endif
 }
 
 void RenderViewImpl::OnWindowFrameChanged(const gfx::Rect& window_frame,
                                           const gfx::Rect& view_frame) {
+#if defined(ENABLE_PLUGINS)
   // Inform plugins that their window's frame has changed.
   std::set<WebPluginDelegateProxy*>::iterator plugin_it;
   for (plugin_it = plugin_delegates_.begin();
        plugin_it != plugin_delegates_.end(); ++plugin_it) {
     (*plugin_it)->WindowFrameChanged(window_frame, view_frame);
   }
+#endif
 }
 
 void RenderViewImpl::OnPluginImeCompositionCompleted(const string16& text,
@@ -5736,7 +5777,6 @@ void RenderViewImpl::OnWasHidden() {
   for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
        i != active_pepper_instances_.end(); ++i)
     (*i)->PageVisibilityChanged(false);
-#endif
 
 #if defined(OS_MACOSX)
   // Inform NPAPI plugins that their container is no longer visible.
@@ -5746,6 +5786,7 @@ void RenderViewImpl::OnWasHidden() {
     (*plugin_it)->SetContainerVisibility(false);
   }
 #endif  // OS_MACOSX
+#endif // ENABLE_PLUGINS
 }
 
 void RenderViewImpl::OnWasShown(bool needs_repainting) {
@@ -5764,7 +5805,6 @@ void RenderViewImpl::OnWasShown(bool needs_repainting) {
   for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
        i != active_pepper_instances_.end(); ++i)
     (*i)->PageVisibilityChanged(true);
-#endif
 
 #if defined(OS_MACOSX)
   // Inform NPAPI plugins that their container is now visible.
@@ -5774,6 +5814,7 @@ void RenderViewImpl::OnWasShown(bool needs_repainting) {
     (*plugin_it)->SetContainerVisibility(true);
   }
 #endif  // OS_MACOSX
+#endif  // ENABLE_PLUGINS
 }
 
 GURL RenderViewImpl::GetURLForGraphicsContext3D() {
@@ -5791,6 +5832,7 @@ bool RenderViewImpl::ForceCompositingModeEnabled() {
 void RenderViewImpl::OnSetFocus(bool enable) {
   RenderWidget::OnSetFocus(enable);
 
+#if defined(ENABLE_PLUGINS)
   if (webview() && webview()->isActive()) {
     // Notify all NPAPI plugins.
     std::set<WebPluginDelegateProxy*>::iterator plugin_it;
@@ -5805,7 +5847,6 @@ void RenderViewImpl::OnSetFocus(bool enable) {
       (*plugin_it)->SetContentAreaFocus(enable);
     }
   }
-#if defined(ENABLE_PLUGINS)
   // Notify all Pepper plugins.
   for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
        i != active_pepper_instances_.end(); ++i)
@@ -5814,20 +5855,6 @@ void RenderViewImpl::OnSetFocus(bool enable) {
   // Notify all BrowserPlugins of the RenderView's focus state.
   if (browser_plugin_manager_.get())
     browser_plugin_manager_->UpdateFocusState();
-}
-
-void RenderViewImpl::SimulateImeSetComposition(
-    const string16& text,
-    const std::vector<WebKit::WebCompositionUnderline>& underlines,
-    int selection_start,
-    int selection_end) {
-  OnImeSetComposition(text, underlines, selection_start, selection_end);
-}
-
-void RenderViewImpl::SimulateImeConfirmComposition(
-    const string16& text,
-    const ui::Range& replacement_range) {
-  OnImeConfirmComposition(text, replacement_range, false);
 }
 
 void RenderViewImpl::OnImeSetComposition(
@@ -5862,7 +5889,6 @@ void RenderViewImpl::OnImeSetComposition(
     }
     return;
   }
-#endif
 
 #if defined(OS_WIN)
   // When a plug-in has focus, we create platform-specific IME data used by
@@ -5888,7 +5914,8 @@ void RenderViewImpl::OnImeSetComposition(
     }
     return;
   }
-#endif
+#endif  // OS_WIN
+#endif  // ENABLE_PLUGINS
   RenderWidget::OnImeSetComposition(text,
                                     underlines,
                                     selection_start,
@@ -5933,7 +5960,6 @@ void RenderViewImpl::OnImeConfirmComposition(const string16& text,
     pepper_composition_text_.clear();
     return;
   }
-#endif
 #if defined(OS_WIN)
   // Same as OnImeSetComposition(), we send the text from IMEs directly to
   // plug-ins. When we send IME text directly to plug-ins, we should not send
@@ -5947,7 +5973,8 @@ void RenderViewImpl::OnImeConfirmComposition(const string16& text,
     }
     return;
   }
-#endif
+#endif  // OS_WIN
+#endif  // ENABLE_PLUGINS
   if (replacement_range.IsValid() && webview()) {
     // Select the text in |replacement_range|, it will then be replaced by
     // text added by the call to RenderWidget::OnImeConfirmComposition().
@@ -6099,29 +6126,6 @@ void RenderViewImpl::InstrumentWillComposite() {
 bool RenderViewImpl::AllowPartialSwap() const {
   return allow_partial_swap_;
 }
-
-#if defined(OS_WIN)
-void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
-  if (focused)
-    focused_plugin_id_ = plugin_id;
-  else
-    focused_plugin_id_ = -1;
-}
-#endif
-
-#if defined(OS_MACOSX)
-void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
-  Send(new ViewHostMsg_PluginFocusChanged(routing_id(), focused, plugin_id));
-}
-
-void RenderViewImpl::StartPluginIme() {
-  IPC::Message* msg = new ViewHostMsg_StartPluginIme(routing_id());
-  // This message can be sent during event-handling, and needs to be delivered
-  // within that context.
-  msg->set_unblock(true);
-  Send(msg);
-}
-#endif  // defined(OS_MACOSX)
 
 bool RenderViewImpl::ScheduleFileChooser(
     const FileChooserParams& params,

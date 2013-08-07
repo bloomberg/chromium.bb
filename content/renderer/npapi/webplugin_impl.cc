@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/webplugin_impl.h"
+#include "content/renderer/npapi/webplugin_impl.h"
 
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
@@ -18,9 +18,9 @@
 #include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/npapi/webplugin_delegate_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/webplugin_delegate_proxy.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"

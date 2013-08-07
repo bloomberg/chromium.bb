@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "content/common/devtools_messages.h"
 #include "content/renderer/devtools/devtools_agent.h"
-#include "content/renderer/plugin_channel_host.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 

@@ -330,7 +330,6 @@ class CONTENT_EXPORT RenderViewImpl
   bool GetPepperCaretBounds(gfx::Rect* rect);
 
   bool IsPepperAcceptingCompositionEvents() const;
-#endif
 
   // Notification that the given plugin has crashed.
   void PluginCrashed(const base::FilePath& plugin_path,
@@ -368,6 +367,8 @@ class CONTENT_EXPORT RenderViewImpl
                      const std::string& mime_type,
                      WebPluginInfo* plugin_info,
                      std::string* actual_mime_type);
+
+#endif  // ENABLE_PLUGINS
 
   void TransferActiveWheelFlingAnimation(
       const WebKit::WebActiveWheelFlingParameters& params);

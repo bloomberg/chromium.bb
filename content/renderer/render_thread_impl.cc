@@ -75,7 +75,6 @@
 #include "content/renderer/media/webrtc_identity_service.h"
 #include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
-#include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_process_visibility_manager.h"
 #include "content/renderer/render_view_impl.h"
@@ -129,6 +128,10 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 #include "content/renderer/android/synchronous_compositor_factory.h"
+#endif
+
+#if defined(ENABLE_PLUGINS)
+#include "content/renderer/npapi/plugin_channel_host.h"
 #endif
 
 using base::ThreadRestrictions;
@@ -509,7 +512,9 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
   bool notify_webkit_of_modal_loop = true;  // default value
   std::swap(notify_webkit_of_modal_loop, notify_webkit_of_modal_loop_);
 
+#if defined(ENABLE_PLUGINS)
   int render_view_id = MSG_ROUTING_NONE;
+#endif
 
   if (pumping_events) {
     if (suspend_webkit_shared_timer)
@@ -517,7 +522,7 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
 
     if (notify_webkit_of_modal_loop)
       WebView::willEnterModalLoop();
-
+#if defined(ENABLE_PLUGINS)
     RenderViewImpl* render_view =
         RenderViewImpl::FromRoutingID(msg->routing_id());
     if (render_view) {
@@ -525,15 +530,18 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
       PluginChannelHost::Broadcast(
           new PluginMsg_SignalModalDialogEvent(render_view_id));
     }
+#endif
   }
 
   bool rv = ChildThread::Send(msg);
 
   if (pumping_events) {
+#if defined(ENABLE_PLUGINS)
     if (render_view_id != MSG_ROUTING_NONE) {
       PluginChannelHost::Broadcast(
           new PluginMsg_ResetModalDialogEvent(render_view_id));
     }
+#endif
 
     if (notify_webkit_of_modal_loop)
       WebView::didExitModalLoop();

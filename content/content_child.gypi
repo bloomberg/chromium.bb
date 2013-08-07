@@ -23,6 +23,8 @@
     'child/appcache_backend_proxy.h',
     'child/appcache_dispatcher.cc',
     'child/appcache_dispatcher.h',
+    'child/browser_font_resource_trusted.cc',
+    'child/browser_font_resource_trusted.h',
     'child/child_histogram_message_filter.cc',
     'child/child_histogram_message_filter.h',
     'child/child_process.cc',
@@ -135,10 +137,13 @@
         '../build/android/cpufeatures.gypi',
       ],
     }],
-    ['enable_plugins==1', {
-      'sources': [
+    ['enable_plugins==0', {
+      'sources!': [
         'child/browser_font_resource_trusted.cc',
-        'child/browser_font_resource_trusted.h',
+      ],
+      'sources/': [
+        ['exclude', '^child/npapi/plugin_'],
+        ['exclude', '^child/npapi/webplugin_'],
       ],
     }],
     ['OS=="ios"', {
