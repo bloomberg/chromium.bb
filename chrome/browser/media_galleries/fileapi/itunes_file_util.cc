@@ -12,7 +12,6 @@
 #include "base/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,9 +41,10 @@ base::PlatformFileError MakeDirectoryFileInfo(
 
 }  // namespace
 
-ItunesFileUtil::ItunesFileUtil()
-    : weak_factory_(this),
-      imported_registry_(NULL)  {
+ItunesFileUtil::ItunesFileUtil(chrome::MediaPathFilter* media_path_filter)
+    : chrome::NativeMediaFileUtil(media_path_filter),
+      weak_factory_(this),
+      imported_registry_(NULL) {
 }
 
 ItunesFileUtil::~ItunesFileUtil() {
@@ -195,13 +195,10 @@ base::PlatformFileError ItunesFileUtil::ReadDirectorySync(
         GetDataProvider()->GetAlbum(components[1], components[2]);
     if (album.size() == 0)
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    chrome::MediaPathFilter* path_filter =
-        context->GetUserValue<chrome::MediaPathFilter*>(
-            chrome::MediaFileSystemBackend::kMediaPathFilterKey);
     ITunesDataProvider::Album::const_iterator it;
     for (it = album.begin(); it != album.end(); ++it) {
       base::PlatformFileInfo file_info;
-      if (path_filter->Match(it->second) &&
+      if (media_path_filter()->Match(it->second) &&
           file_util::GetFileInfo(it->second, &file_info)) {
         file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,
                                             file_info.size,

@@ -26,8 +26,6 @@ class DeviceMediaAsyncFileUtil;
 class MediaFileSystemBackend : public fileapi::FileSystemBackend {
  public:
   static const char kMediaTaskRunnerName[];
-  static const char kMediaPathFilterKey[];
-  static const char kMTPDeviceDelegateURLKey[];
 
   MediaFileSystemBackend(
       const base::FilePath& profile_path,

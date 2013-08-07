@@ -18,7 +18,7 @@ extern const char kPicasaDirFolders[];
 
 class PicasaFileUtil : public chrome::NativeMediaFileUtil {
  public:
-  PicasaFileUtil();
+  explicit PicasaFileUtil(chrome::MediaPathFilter* media_path_filter);
   virtual ~PicasaFileUtil();
 
  protected:

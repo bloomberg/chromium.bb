@@ -53,8 +53,9 @@ base::PlatformFileError FindAlbumInfo(const std::string& key,
 const char kPicasaDirAlbums[]  = "albums";
 const char kPicasaDirFolders[] = "folders";
 
-PicasaFileUtil::PicasaFileUtil()
-    : weak_factory_(this) {
+PicasaFileUtil::PicasaFileUtil(chrome::MediaPathFilter* media_path_filter)
+    : chrome::NativeMediaFileUtil(media_path_filter),
+      weak_factory_(this) {
 }
 
 PicasaFileUtil::~PicasaFileUtil() {}

@@ -77,30 +77,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemOperationContext
     root_path_ = root_path;
   }
 
-  // Gets and sets value-type (or not-owned) variable as UserData.
-  // (SetUserValue can be called only on the same thread as this context
-  // is created as well as other setters.)
-  template <typename T> T GetUserValue(const char* key) const {
-    ValueAdapter<T>* v = static_cast<ValueAdapter<T>*>(GetUserData(key));
-    return v ? v->value() : T();
-  }
-  template <typename T> void SetUserValue(const char* key, const T& value) {
-    DCHECK(setter_thread_checker_.CalledOnValidThread());
-    SetUserData(key, new ValueAdapter<T>(value));
-  }
-
  private:
-  // An adapter for setting a value-type (or not owned) data as UserData.
-  template <typename T> class ValueAdapter
-      : public base::SupportsUserData::Data {
-   public:
-    ValueAdapter(const T& value) : value_(value) {}
-    const T& value() const { return value_; }
-   private:
-    T value_;
-    DISALLOW_COPY_AND_ASSIGN(ValueAdapter);
-  };
-
   scoped_refptr<FileSystemContext> file_system_context_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

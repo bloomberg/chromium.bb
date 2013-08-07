@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
@@ -29,12 +28,10 @@ namespace {
 const char kDeviceMediaAsyncFileUtilTempDir[] = "DeviceMediaFileSystem";
 
 // Called on the IO thread.
-MTPDeviceAsyncDelegate* GetMTPDeviceDelegate(
-    FileSystemOperationContext* context) {
+MTPDeviceAsyncDelegate* GetMTPDeviceDelegate(const FileSystemURL& url) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   return MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(
-      context->GetUserValue<std::string>(
-          MediaFileSystemBackend::kMTPDeviceDelegateURLKey));
+      url.filesystem_id());
 }
 
 // Called on a blocking pool thread to create a snapshot file to hold the
@@ -109,7 +106,7 @@ void DeviceMediaAsyncFileUtil::GetFileInfo(
     const FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context.get());
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate) {
     OnGetFileInfoError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
@@ -129,7 +126,7 @@ void DeviceMediaAsyncFileUtil::ReadDirectory(
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context.get());
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate) {
     OnReadDirectoryError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
@@ -226,7 +223,7 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
     const FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context.get());
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate) {
     OnCreateSnapshotFileError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
@@ -243,7 +240,7 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Passed(&context),
                      callback,
-                     url.path(),
+                     url,
                      base::Owned(snapshot_file_path)));
   DCHECK(success);
 }
@@ -319,20 +316,20 @@ void DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError(
 void DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask(
     scoped_ptr<FileSystemOperationContext> context,
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-    const base::FilePath& device_file_path,
+    const FileSystemURL& url,
     base::FilePath* snapshot_file_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (!snapshot_file_path || snapshot_file_path->empty()) {
     OnCreateSnapshotFileError(callback, base::PLATFORM_FILE_ERROR_FAILED);
     return;
   }
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context.get());
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate) {
     OnCreateSnapshotFileError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
   delegate->CreateSnapshotFile(
-      device_file_path,
+      url.path(),  // device file path
       *snapshot_file_path,
       base::Bind(&DeviceMediaAsyncFileUtil::OnDidCreateSnapshotFile,
                  weak_ptr_factory_.GetWeakPtr(),

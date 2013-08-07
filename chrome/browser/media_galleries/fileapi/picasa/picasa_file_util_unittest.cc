@@ -178,8 +178,10 @@ class TestPicasaDataProvider : public PicasaDataProvider {
 
 class TestPicasaFileUtil : public PicasaFileUtil {
  public:
-  explicit TestPicasaFileUtil(PicasaDataProvider* data_provider)
-      : data_provider_(data_provider) {
+  TestPicasaFileUtil(chrome::MediaPathFilter* media_path_filter,
+                     PicasaDataProvider* data_provider)
+      : PicasaFileUtil(media_path_filter),
+        data_provider_(data_provider) {
   }
   virtual ~TestPicasaFileUtil() {}
  private:
@@ -225,12 +227,14 @@ class PicasaFileUtilTest : public testing::Test {
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
         new quota::MockSpecialStoragePolicy();
 
+    media_path_filter_.reset(new chrome::MediaPathFilter());
     picasa_data_provider_.reset(new TestPicasaDataProvider());
 
     ScopedVector<fileapi::FileSystemBackend> additional_providers;
     additional_providers.push_back(new TestMediaFileSystemBackend(
         profile_dir_.path(),
-        new TestPicasaFileUtil(picasa_data_provider_.get())));
+        new TestPicasaFileUtil(media_path_filter_.get(),
+                               picasa_data_provider_.get())));
 
     file_system_context_ = new fileapi::FileSystemContext(
         base::MessageLoopProxy::current().get(),
@@ -333,6 +337,7 @@ class PicasaFileUtilTest : public testing::Test {
   base::ScopedTempDir profile_dir_;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_ptr<chrome::MediaPathFilter> media_path_filter_;
   scoped_ptr<TestPicasaDataProvider> picasa_data_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(PicasaFileUtilTest);

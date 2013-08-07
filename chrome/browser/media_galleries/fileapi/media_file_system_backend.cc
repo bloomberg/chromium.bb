@@ -44,10 +44,6 @@ namespace chrome {
 
 const char MediaFileSystemBackend::kMediaTaskRunnerName[] =
     "media-task-runner";
-const char MediaFileSystemBackend::kMediaPathFilterKey[] =
-    "MediaPathFilterKey";
-const char MediaFileSystemBackend::kMTPDeviceDelegateURLKey[] =
-    "MTPDeviceDelegateKey";
 
 MediaFileSystemBackend::MediaFileSystemBackend(
     const base::FilePath& profile_path,
@@ -56,13 +52,14 @@ MediaFileSystemBackend::MediaFileSystemBackend(
       media_task_runner_(media_task_runner),
       media_path_filter_(new MediaPathFilter),
       media_copy_or_move_file_validator_factory_(new MediaFileValidatorFactory),
-      native_media_file_util_(new NativeMediaFileUtil()),
+      native_media_file_util_(
+          new NativeMediaFileUtil(media_path_filter_.get())),
       device_media_async_file_util_(
           DeviceMediaAsyncFileUtil::Create(profile_path_))
 #if defined(OS_WIN) || defined(OS_MACOSX)
       ,
-      picasa_file_util_(new picasa::PicasaFileUtil()),
-      itunes_file_util_(new itunes::ItunesFileUtil())
+      picasa_file_util_(new picasa::PicasaFileUtil(media_path_filter_.get())),
+      itunes_file_util_(new itunes::ItunesFileUtil(media_path_filter_.get()))
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 {
 }
@@ -172,14 +169,6 @@ MediaFileSystemBackend::CreateFileSystemOperation(
   scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
       new fileapi::FileSystemOperationContext(
           context, media_task_runner_.get()));
-
-  operation_context->SetUserValue(kMediaPathFilterKey,
-                                  media_path_filter_.get());
-  if (url.type() == fileapi::kFileSystemTypeDeviceMedia) {
-    operation_context->SetUserValue(kMTPDeviceDelegateURLKey,
-                                    url.filesystem_id());
-  }
-
   return new fileapi::FileSystemOperationImpl(url, context,
                                               operation_context.Pass());
 }

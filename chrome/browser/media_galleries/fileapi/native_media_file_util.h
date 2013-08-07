@@ -11,12 +11,14 @@
 
 namespace chrome {
 
+class MediaPathFilter;
+
 // This class handles native file system operations with media type filtering.
 // To support virtual file systems it implements the AsyncFileUtil interface
 // from scratch and provides synchronous override points.
 class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
  public:
-  NativeMediaFileUtil();
+  explicit NativeMediaFileUtil(MediaPathFilter* media_path_filter);
   virtual ~NativeMediaFileUtil();
 
   // Uses the MIME sniffer code, which actually looks into the file,
@@ -169,6 +171,11 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
       base::FilePath* platform_path,
       scoped_refptr<webkit_blob::ShareableFileReference>* file_ref);
 
+ protected:
+  chrome::MediaPathFilter* media_path_filter() {
+    return media_path_filter_;
+  }
+
  private:
   // Like GetLocalFilePath(), but always take media_path_filter() into
   // consideration. If the media_path_filter() check fails, return
@@ -192,6 +199,9 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
 
 
   base::WeakPtrFactory<NativeMediaFileUtil> weak_factory_;
+
+  // Not owned, owned by the backend which owns this.
+  chrome::MediaPathFilter* media_path_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMediaFileUtil);
 };

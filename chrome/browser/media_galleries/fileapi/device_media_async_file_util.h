@@ -165,15 +165,15 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
       base::PlatformFileError error);
 
   // Called when the snapshot file specified by the |snapshot_file_path| is
-  // created to hold the contents of the |device_file_path|. If the snapshot
+  // created to hold the contents of the url.path(). If the snapshot
   // file is successfully created, |snapshot_file_path| will be an non-empty
   // file path. In case of failure, |snapshot_file_path| will be an empty file
   // path. Forwards the CreateSnapshot request to the delegate to copy the
-  // contents of |device_file_path| to |snapshot_file_path|.
+  // contents of url.path() to |snapshot_file_path|.
   void OnSnapshotFileCreatedRunTask(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      const base::FilePath& device_file_path,
+      const fileapi::FileSystemURL& url,
       base::FilePath* snapshot_file_path);
 
   // Profile path.

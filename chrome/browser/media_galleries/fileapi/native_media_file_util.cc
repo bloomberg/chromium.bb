@@ -13,7 +13,6 @@
 #include "base/files/scoped_platform_file_closer.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_sniffer.h"
@@ -76,15 +75,11 @@ bool IsOnTaskRunnerThread(fileapi::FileSystemOperationContext* context) {
   return context->task_runner()->RunsTasksOnCurrentThread();
 }
 
-MediaPathFilter* GetMediaPathFilter(
-    fileapi::FileSystemOperationContext* context) {
-  return context->GetUserValue<MediaPathFilter*>(
-          MediaFileSystemBackend::kMediaPathFilterKey);
-}
-
 }  // namespace
 
-NativeMediaFileUtil::NativeMediaFileUtil() : weak_factory_(this) {
+NativeMediaFileUtil::NativeMediaFileUtil(MediaPathFilter* media_path_filter)
+    : weak_factory_(this),
+      media_path_filter_(media_path_filter) {
 }
 
 NativeMediaFileUtil::~NativeMediaFileUtil() {
@@ -440,7 +435,7 @@ base::PlatformFileError NativeMediaFileUtil::CopyOrMoveFileSync(
     return error;
   if (error == base::PLATFORM_FILE_OK && file_info.is_directory)
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  if (!GetMediaPathFilter(context)->Match(dest_file_path))
+  if (!media_path_filter_->Match(dest_file_path))
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
   return fileapi::NativeFileUtil::CopyOrMoveFile(src_file_path, dest_file_path,
@@ -472,7 +467,6 @@ base::PlatformFileError NativeMediaFileUtil::GetFileInfoSync(
   DCHECK(context);
   DCHECK(IsOnTaskRunnerThread(context));
   DCHECK(file_info);
-  DCHECK(GetMediaPathFilter(context));
 
   base::FilePath file_path;
   base::PlatformFileError error = GetLocalFilePath(context, url, &file_path);
@@ -487,7 +481,7 @@ base::PlatformFileError NativeMediaFileUtil::GetFileInfoSync(
   if (platform_path)
     *platform_path = file_path;
   if (file_info->is_directory ||
-      GetMediaPathFilter(context)->Match(file_path)) {
+      media_path_filter_->Match(file_path)) {
     return base::PLATFORM_FILE_OK;
   }
   return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -541,7 +535,7 @@ base::PlatformFileError NativeMediaFileUtil::ReadDirectorySync(
     // NativeMediaFileUtil skip criteria.
     if (ShouldSkip(enum_path))
       continue;
-    if (!info.IsDirectory() && !GetMediaPathFilter(context)->Match(enum_path))
+    if (!info.IsDirectory() && !media_path_filter_->Match(enum_path))
       continue;
 
     fileapi::DirectoryEntry entry;
@@ -597,7 +591,7 @@ base::PlatformFileError NativeMediaFileUtil::GetFilteredLocalFilePath(
       GetLocalFilePath(context, file_system_url, &file_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
-  if (!GetMediaPathFilter(context)->Match(file_path))
+  if (!media_path_filter_->Match(file_path))
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
   *local_file_path = file_path;
@@ -624,7 +618,7 @@ NativeMediaFileUtil::GetFilteredLocalFilePathForExistingFileOrDirectory(
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   if (!file_info.is_directory &&
-      !GetMediaPathFilter(context)->Match(file_path)) {
+      !media_path_filter_->Match(file_path)) {
     return failure_error;
   }
 

@@ -19,7 +19,7 @@ class ITunesDataProvider;
 
 class ItunesFileUtil : public chrome::NativeMediaFileUtil {
  public:
-  ItunesFileUtil();
+  explicit ItunesFileUtil(chrome::MediaPathFilter* media_path_filter);
   virtual ~ItunesFileUtil();
 
  protected:
