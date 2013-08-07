@@ -231,6 +231,19 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
         return web_contents;
     }
   }
+  // Coming here our application was not in the LRU list. This could have
+  // happened because it did never get activated yet. So check the browser list
+  // as well.
+  for (BrowserList::const_iterator it = ash_browser_list->begin();
+       it != ash_browser_list->end(); ++it) {
+    Browser* browser = *it;
+    TabStripModel* tab_strip = browser->tab_strip_model();
+    for (int index = 0; index < tab_strip->count(); index++) {
+      content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
+      if (WebContentMatchesApp(extension, refocus_pattern, web_contents))
+        return web_contents;
+    }
+  }
   return NULL;
 }
 

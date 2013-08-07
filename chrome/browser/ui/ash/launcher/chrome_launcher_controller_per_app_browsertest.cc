@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -1342,6 +1343,66 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
   // After activation our browser should be active again.
   launcher_->ActivateLauncherItem(0);
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
+}
+
+// Checks that after a session restore, we do not start applications on an
+// activation.
+IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest,
+    ActivateAfterSessionRestore) {
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Create a known application.
+  ChromeLauncherController* controller =
+      static_cast<ChromeLauncherController*>(launcher_->delegate());
+  ash::LauncherID shortcut_id = CreateShortcut("app1");
+
+  // Create a new browser - without activating it - and load an "app" into it.
+  Browser::CreateParams params =
+      Browser::CreateParams(profile(), chrome::GetActiveDesktop());
+  params.initial_show_state = ui::SHOW_STATE_INACTIVE;
+  Browser* browser2 = new Browser(params);
+  controller->SetRefocusURLPatternForTest(
+      shortcut_id, GURL("http://www.example.com/path/*"));
+  std::string url = "http://www.example.com/path/bla";
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser2,
+      GURL(url),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Remember the number of tabs for each browser.
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  int tab_count1 = tab_strip->count();
+  TabStripModel* tab_strip2 = browser2->tab_strip_model();
+  int tab_count2 = tab_strip2->count();
+
+  // Check that we have two browsers and the inactive browser remained inactive.
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow()),
+            browser());
+  // Check that the LRU browser list does only contain the original browser.
+  BrowserList* ash_browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList::const_reverse_iterator it =
+      ash_browser_list->begin_last_active();
+  EXPECT_EQ(*it, browser());
+  ++it;
+  EXPECT_EQ(it, ash_browser_list->end_last_active());
+
+  // Now request to either activate an existing app or create a new one.
+  controller->ItemSelected(*model_->ItemByID(shortcut_id),
+                           ui::KeyEvent(ui::ET_KEY_RELEASED,
+                                        ui::VKEY_RETURN,
+                                        0,
+                                        false));
+
+  // Check that we have set focus on the existing application and nothing new
+  // was created.
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(tab_count1, tab_strip->count());
+  EXPECT_EQ(tab_count2, tab_strip2->count());
+  EXPECT_EQ(chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow()),
+            browser2);
 }
 
 // Do various drag and drop interaction tests between the application list and
