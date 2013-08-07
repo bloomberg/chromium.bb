@@ -70,15 +70,13 @@ void DevToolsBrowserTarget::HandleMessage(const std::string& data) {
     return;
   }
 
-  // Calling Noop ensures that |this| is never deleted on the UI thread.
-  BrowserThread::PostTaskAndReply(
+  BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&DevToolsBrowserTarget::HandleCommandOnUIThread,
                  this,
                  handler,
-                 command.release()),
-      base::Bind(&DevToolsBrowserTarget::Noop, this));
+                 command.release()));
 }
 
 void DevToolsBrowserTarget::Detach() {
@@ -95,14 +93,12 @@ void DevToolsBrowserTarget::Detach() {
     handlers_.erase(handler_it);
   }
 
-  // Calling Noop ensures that |this| is never deleted on the UI thread.
-  BrowserThread::PostTaskAndReply(
+  BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&DevToolsBrowserTarget::DeleteHandlersOnUIThread,
                  this,
-                 ui_handlers),
-      base::Bind(&DevToolsBrowserTarget::Noop, this));
+                 ui_handlers));
 }
 
 DevToolsBrowserTarget::~DevToolsBrowserTarget() {
@@ -123,9 +119,6 @@ void DevToolsBrowserTarget::HandleCommandOnUIThread(
 void DevToolsBrowserTarget::DeleteHandlersOnUIThread(
     std::vector<DevToolsProtocol::Handler*> handlers) {
   STLDeleteElements(&handlers);
-}
-
-void DevToolsBrowserTarget::Noop() {
 }
 
 void DevToolsBrowserTarget::Respond(const std::string& message) {

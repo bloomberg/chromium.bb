@@ -57,8 +57,6 @@ class DevToolsBrowserTarget
   void DeleteHandlersOnUIThread(
       std::vector<DevToolsProtocol::Handler*> handlers);
 
-  void Noop();
-
   void Respond(const std::string& message);
   void RespondFromUIThread(const std::string& message);
 
