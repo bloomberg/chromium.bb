@@ -593,41 +593,29 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 	device->devname = strdup(devname);
 
 	if (!evdev_handle_device(device)) {
-		if (device->dispatch)
-			device->dispatch->interface->destroy(dispatch);
-		if (device->mtdev)
-			mtdev_close_delete(device->mtdev);
-		free(device->devnode);
-		free(device->devname);
-		free(device);
+		evdev_device_destroy(device);
 		return EVDEV_UNHANDLED_DEVICE;
 	}
 
 	if (evdev_configure_device(device) == -1)
-		goto err1;
+		goto err;
 
 	/* If the dispatch was not set up use the fallback. */
 	if (device->dispatch == NULL)
 		device->dispatch = fallback_dispatch_create();
 	if (device->dispatch == NULL)
-		goto err1;
+		goto err;
 
 	device->source = wl_event_loop_add_fd(ec->input_loop, device->fd,
 					      WL_EVENT_READABLE,
 					      evdev_device_data, device);
 	if (device->source == NULL)
-		goto err2;
+		goto err;
 
 	return device;
 
-err2:
-	device->dispatch->interface->destroy(device->dispatch);
-err1:
-	if (device->mtdev)
-		mtdev_close_delete(device->mtdev);
-	free(device->devname);
-	free(device->devnode);
-	free(device);
+err:
+	evdev_device_destroy(device);
 	return NULL;
 }
 
@@ -640,8 +628,10 @@ evdev_device_destroy(struct evdev_device *device)
 	if (dispatch)
 		dispatch->interface->destroy(dispatch);
 
-	wl_event_source_remove(device->source);
-	wl_list_remove(&device->link);
+	if (device->source)
+		wl_event_source_remove(device->source);
+	if (!wl_list_empty(&device->link))
+		wl_list_remove(&device->link);
 	if (device->mtdev)
 		mtdev_close_delete(device->mtdev);
 	close(device->fd);
