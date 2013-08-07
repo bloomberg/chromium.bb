@@ -277,11 +277,15 @@ cr.define('options', function() {
     this.setTitle_(overlay.title);
 
     // Change focus to the overlay if any other control was focused by keyboard
-    // before.
-    if (document.activeElement != document.body &&
-        document.documentElement.classList.contains(
-            cr.ui.FocusOutlineManager.CLASS_NAME))
-      overlay.focus();
+    // before. Otherwise, no one should have focus.
+    if (document.activeElement != document.body) {
+      if (document.documentElement.classList.contains(
+          cr.ui.FocusOutlineManager.CLASS_NAME)) {
+        overlay.focus();
+      } else {
+        document.activeElement.blur();
+      }
+    }
 
     $('searchBox').setAttribute('aria-hidden', true);
 
