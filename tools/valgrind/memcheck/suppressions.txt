@@ -5866,13 +5866,11 @@
    fun:_ZN4base13WaitableEvent7EnqueueEPNS0_6WaiterE
    fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
    fun:_ZN4base13WaitableEvent4WaitEv
-   fun:_ZN4base12SimpleThread5StartEv
+   ...
    fun:_ZN4base19SequencedWorkerPool6WorkerC1ERK13scoped_refptrIS0_EiRKSs
    fun:_ZN4base19SequencedWorkerPool5Inner30FinishStartingAdditionalThreadEi
    fun:_ZN4base19SequencedWorkerPool5Inner10ThreadLoopEPNS0_6WorkerE
    fun:_ZN4base19SequencedWorkerPool6Worker3RunEv
-   fun:_ZN4base12SimpleThread10ThreadMainEv
-   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
 {
    bug_167175a
