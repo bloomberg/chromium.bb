@@ -1222,6 +1222,12 @@ crbug.com/252865 [ Debug ] http/tests/media/media-source/mediasource-seek-during
 
 crbug.com/252573 [ Mac Win ] fast/forms/empty-textarea-toggle-disabled.html [ Pass Timeout ]
 
+crbug.com/269100 fast/canvas/canvas-longlived-context.html [ Crash Pass ]
+crbug.com/269100 fast/canvas/canvas-lost-gpu-context.html [ Crash Pass ]
+crbug.com/269100 fast/canvas/canvas-negative-size.html [ Crash Pass ]
+crbug.com/269100 fast/canvas/canvas-overloads-drawImage.html [ Crash Pass ]
+crbug.com/269100 fast/canvas/change-context.html [ Crash Pass ]
+
 # Causes the test following it ( fast/loader/subresource-willSendRequest-null.html ) to Timeout.
 crbug.com/253619 fast/loader/subresource-load-failed-crash.html [ Skip ]
 
