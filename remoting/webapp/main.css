@@ -291,7 +291,7 @@ section {
 }
 
 .centered {
-  text-align: center;
+  margin: auto;
 }
 
 .button-row {
@@ -644,6 +644,10 @@ html.apps-v2.scrollable {
  * a style for the former and the 'hidden' property for the latter. */
 #nat-box.traversal-enabled {
   display: none;
+}
+
+#remember-pin {
+  width: 315px;
 }
 
 #session-mode {
