@@ -4391,7 +4391,6 @@ void TestingAutomationProvider::GetV8HeapStats(
     IPC::Message* reply_message) {
   WebContents* web_contents;
   int tab_index;
-  std::string error;
 
   if (!args->GetInteger("tab_index", &tab_index)) {
     AutomationJSONReply(this, reply_message).SendError(
@@ -4425,7 +4424,6 @@ void TestingAutomationProvider::GetFPS(
     IPC::Message* reply_message) {
   WebContents* web_contents;
   int tab_index;
-  std::string error;
 
   if (!args->GetInteger("tab_index", &tab_index)) {
     AutomationJSONReply(this, reply_message).SendError(
@@ -4794,7 +4792,6 @@ void TestingAutomationProvider::ExecuteJavascriptInRenderView(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   string16 frame_xpath, javascript, extension_id, url_text;
-  std::string error;
   int render_process_id, render_view_id;
   if (!args->GetString("frame_xpath", &frame_xpath)) {
     AutomationJSONReply(this, reply_message)
@@ -5165,7 +5162,7 @@ void TestingAutomationProvider::DeleteCookieInBrowserContext(
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   WebContents* web_contents;
-  std::string cookie_name, error, url_string;
+  std::string cookie_name, url_string;
   int windex;
   bool success = false;
   if (!args->GetInteger("windex", &windex)) {
@@ -5205,7 +5202,7 @@ void TestingAutomationProvider::SetCookieInBrowserContext(
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   WebContents* web_contents;
-  std::string value, error, url_string;
+  std::string value, url_string;
   int windex, response_value = -1;
   if (!args->GetInteger("windex", &windex)) {
     reply.SendError("'windex' missing or invalid.");
