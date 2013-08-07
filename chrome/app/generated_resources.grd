@@ -10881,9 +10881,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_DETAILS_FROM_WALLET" desc="Text explaining where the dialog got its payment info from (on first run of this dialog while using Google Wallet).">
         The following details are saved in your Google Wallet.
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_SIGN_IN_AND_SAVE_DETAILS" desc="Text promoting signing in to Google Wallet so a user can save details in Wallet.">
-        Sign in to use Google Wallet for faster checkout.
-      </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET" desc="Text that shows on the top of the autofill dialog promoting saving info in Google Wallet.">
         Save and protect my details with Google Wallet.
       </message>
