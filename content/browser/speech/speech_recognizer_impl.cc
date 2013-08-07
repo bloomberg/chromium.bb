@@ -511,7 +511,6 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
 
   int chunk_duration_ms = recognition_engine_->GetDesiredAudioChunkDurationMs();
 
-  // TODO(xians): use the correct input device here.
   AudioParameters in_params = audio_manager->GetInputStreamParameters(
       device_id_);
   if (!in_params.IsValid() && !unit_test_is_active) {
@@ -564,7 +563,6 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
   audio_converter_.reset(
       new OnDataConverter(input_parameters, output_parameters));
 
-  // TODO(xians): use the correct input device here.
   audio_controller_ = AudioInputController::Create(
       audio_manager, this, input_parameters, device_id_);
 
