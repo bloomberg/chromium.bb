@@ -188,11 +188,11 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
   // will be needed.
   static ExtensionFunction* TestSelectFileFunctionFactory() {
     EXPECT_TRUE(test_cases_);
-    EXPECT_TRUE(current_test_case_ < test_cases_->size());
+    EXPECT_TRUE(!test_cases_ || current_test_case_ < test_cases_->size());
 
     // If this happens, test failed. But, we still don't want to crash, so
     // return valid extension function.
-    if (!test_cases_ && current_test_case_ >= test_cases_->size())
+    if (!test_cases_ || current_test_case_ >= test_cases_->size())
       return new FileBrowserHandlerInternalSelectFileFunction();
 
     // Create file creator factory for the current test case.
