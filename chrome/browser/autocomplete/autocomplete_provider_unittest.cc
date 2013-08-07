@@ -628,7 +628,7 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
       "chrome.0.69i57j69i58j5l2j0l3j69i59";
   url = controller_->GetDestinationURL(match,
                                        base::TimeDelta::FromMilliseconds(2456));
-  EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j0&", url.path());
+  EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j0j0&", url.path());
 
   // Test field trial triggered bit set.
   controller_->search_provider_->field_trial_triggered_in_session_ = true;
@@ -636,5 +636,26 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
       controller_->search_provider_->field_trial_triggered_in_session());
   url = controller_->GetDestinationURL(match,
                                        base::TimeDelta::FromMilliseconds(2456));
-  EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1&", url.path());
+  EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j0&", url.path());
+
+  // Test page classification set.
+  controller_->Start(AutocompleteInput(
+      string16(), string16::npos, string16(), GURL(),
+      AutocompleteInput::OTHER, true, false, true,
+      AutocompleteInput::ALL_MATCHES));
+
+  controller_->search_provider_->field_trial_triggered_in_session_ = false;
+  EXPECT_FALSE(
+      controller_->search_provider_->field_trial_triggered_in_session());
+  url = controller_->GetDestinationURL(match,
+                                       base::TimeDelta::FromMilliseconds(2456));
+  EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j0j4&", url.path());
+
+  // Test page classification and field trial triggered set.
+  controller_->search_provider_->field_trial_triggered_in_session_ = true;
+  EXPECT_TRUE(
+      controller_->search_provider_->field_trial_triggered_in_session());
+  url = controller_->GetDestinationURL(match,
+                                       base::TimeDelta::FromMilliseconds(2456));
+  EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j4&", url.path());
 }
