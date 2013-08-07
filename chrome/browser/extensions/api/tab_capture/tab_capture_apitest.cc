@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
 }
 
 // http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_WIN)
 #define MAYBE_ActiveTabPermission DISABLED_ActiveTabPermission
 #else
 #define MAYBE_ActiveTabPermission ActiveTabPermission
