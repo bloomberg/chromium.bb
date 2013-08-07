@@ -9,18 +9,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
+#include "content/common/dom_storage/dom_storage_types.h"
 #include "url/gurl.h"
-#include "webkit/common/dom_storage/dom_storage_types.h"
 
 namespace content {
 
 // Abstract interface for cached area, renderer to browser communications.
-class DomStorageProxy : public base::RefCounted<DomStorageProxy> {
+class DOMStorageProxy : public base::RefCounted<DOMStorageProxy> {
  public:
   typedef base::Callback<void(bool)> CompletionCallback;
 
   virtual void LoadArea(int connection_id,
-                        dom_storage::ValuesMap* values,
+                        DOMStorageValuesMap* values,
                         const CompletionCallback& callback) = 0;
 
   virtual void SetItem(int connection_id,
@@ -39,8 +39,8 @@ class DomStorageProxy : public base::RefCounted<DomStorageProxy> {
                          const CompletionCallback& callback) = 0;
 
  protected:
-  friend class base::RefCounted<DomStorageProxy>;
-  virtual ~DomStorageProxy() {}
+  friend class base::RefCounted<DOMStorageProxy>;
+  virtual ~DOMStorageProxy() {}
 };
 
 }  // namespace content

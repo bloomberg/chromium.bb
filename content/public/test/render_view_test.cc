@@ -5,6 +5,7 @@
 #include "content/public/test/render_view_test.h"
 
 #include "base/run_loop.h"
+#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -25,7 +26,6 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
@@ -173,7 +173,7 @@ void RenderViewTest::SetUp() {
       kRouteId,
       kMainFrameRouteId,
       kSurfaceId,
-      dom_storage::kInvalidSessionStorageNamespaceId,
+      kInvalidSessionStorageNamespaceId,
       string16(),
       false,
       false,

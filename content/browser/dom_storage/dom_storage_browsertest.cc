@@ -4,21 +4,21 @@
 
 #include "base/path_service.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "net/base/net_util.h"
-#include "webkit/common/dom_storage/dom_storage_types.h"
 
 namespace content {
 
-// This browser test is aimed towards exercising the DomStorage system
+// This browser test is aimed towards exercising the DOMStorage system
 // from end-to-end.
-class DomStorageBrowserTest : public ContentBrowserTest {
+class DOMStorageBrowserTest : public ContentBrowserTest {
  public:
-  DomStorageBrowserTest() {}
+  DOMStorageBrowserTest() {}
 
   void SimpleTest(const GURL& test_url, bool incognito) {
     // The test page will perform tests then navigate to either
@@ -40,11 +40,11 @@ class DomStorageBrowserTest : public ContentBrowserTest {
 static const bool kIncognito = true;
 static const bool kNotIncognito = false;
 
-IN_PROC_BROWSER_TEST_F(DomStorageBrowserTest, SanityCheck) {
+IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, SanityCheck) {
   SimpleTest(GetTestUrl("dom_storage", "sanity_check.html"), kNotIncognito);
 }
 
-IN_PROC_BROWSER_TEST_F(DomStorageBrowserTest, SanityCheckIncognito) {
+IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, SanityCheckIncognito) {
   SimpleTest(GetTestUrl("dom_storage", "sanity_check.html"), kIncognito);
 }
 

@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -490,9 +490,10 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
   BrowserContext* browser_context = web_contents()->GetBrowserContext();
   scoped_refptr<SiteInstance> site_instance =
       SiteInstance::Create(browser_context);
-  DOMStorageContextImpl* dom_storage_context =
-      static_cast<DOMStorageContextImpl*>(BrowserContext::GetStoragePartition(
-          browser_context, site_instance.get())->GetDOMStorageContext());
+  DOMStorageContextWrapper* dom_storage_context =
+      static_cast<DOMStorageContextWrapper*>(
+          BrowserContext::GetStoragePartition(
+              browser_context, site_instance.get())->GetDOMStorageContext());
   session_storage_namespace_ =
       new SessionStorageNamespaceImpl(dom_storage_context);
 

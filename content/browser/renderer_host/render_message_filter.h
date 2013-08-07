@@ -66,7 +66,7 @@ class URLRequestContextGetter;
 
 namespace content {
 class BrowserContext;
-class DOMStorageContextImpl;
+class DOMStorageContextWrapper;
 class MediaInternals;
 class PluginServiceImpl;
 class RenderWidgetHelper;
@@ -88,7 +88,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                       RenderWidgetHelper* render_widget_helper,
                       media::AudioManager* audio_manager,
                       MediaInternals* media_internals,
-                      DOMStorageContextImpl* dom_storage_context);
+                      DOMStorageContextWrapper* dom_storage_context);
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnChannelClosing() OVERRIDE;
@@ -284,7 +284,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // Initialized to 0, accessed on FILE thread only.
   base::TimeTicks last_plugin_refresh_time_;
 
-  scoped_refptr<DOMStorageContextImpl> dom_storage_context_;
+  scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
 
   int render_process_id_;
 

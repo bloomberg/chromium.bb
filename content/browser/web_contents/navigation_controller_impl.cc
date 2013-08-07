@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/browser_url_handler_impl.h"
-#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
@@ -1393,7 +1393,7 @@ NavigationControllerImpl::GetSessionStorageNamespace(SiteInstance* instance) {
               BrowserContext::GetStoragePartition(browser_context_, instance);
   SessionStorageNamespaceImpl* session_storage_namespace =
       new SessionStorageNamespaceImpl(
-          static_cast<DOMStorageContextImpl*>(
+          static_cast<DOMStorageContextWrapper*>(
               partition->GetDOMStorageContext()));
   session_storage_namespace_map_[partition_id] = session_storage_namespace;
 

@@ -6,7 +6,7 @@
 
 #if !defined(OS_IOS)
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -65,7 +65,7 @@ StoragePartition* GetStoragePartitionFromConfig(
   return partition_map->Get(partition_domain, partition_name, in_memory);
 }
 
-// Run |callback| on each DOMStorageContextImpl in |browser_context|.
+// Run |callback| on each DOMStorageContextWrapper in |browser_context|.
 void PurgeDOMStorageContextInPartition(StoragePartition* storage_partition) {
   static_cast<StoragePartitionImpl*>(storage_partition)->
       GetDOMStorageContext()->PurgeMemory();
@@ -233,10 +233,10 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
             storage_partition->GetAppCacheService()));
   }
 
-  DOMStorageContextImpl* dom_storage_context_impl =
-      static_cast<DOMStorageContextImpl*>(
+  DOMStorageContextWrapper* dom_storage_context_proxy =
+      static_cast<DOMStorageContextWrapper*>(
           storage_partition->GetDOMStorageContext());
-  dom_storage_context_impl->SetForceKeepSessionState();
+  dom_storage_context_proxy->SetForceKeepSessionState();
 
   IndexedDBContextImpl* indexed_db_context_impl =
       static_cast<IndexedDBContextImpl*>(

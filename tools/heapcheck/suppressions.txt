@@ -493,7 +493,7 @@
    bug_157885
    Heapcheck:Leak
    ...
-   fun:dom_storage::DomStorageContext::CreateSessionNamespace
+   fun:content::DOMStorageContextImpl::CreateSessionNamespace
 }
 {
    bug_159191

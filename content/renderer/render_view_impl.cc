@@ -39,6 +39,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"
+#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/drag_messages.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input_messages.h"
@@ -206,7 +207,6 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "v8/include/v8.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
-#include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/webpreferences_renderer.h"
 
@@ -2366,8 +2366,7 @@ WebExternalPopupMenu* RenderViewImpl::createExternalPopupMenu(
 }
 
 WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace() {
-  CHECK(session_storage_namespace_id_ !=
-        dom_storage::kInvalidSessionStorageNamespaceId);
+  CHECK(session_storage_namespace_id_ != kInvalidSessionStorageNamespaceId);
   return new WebStorageNamespaceImpl(session_storage_namespace_id_);
 }
 

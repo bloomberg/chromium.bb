@@ -4,28 +4,25 @@
 
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 
-#include "content/browser/dom_storage/dom_storage_context_impl.h"
-#include "webkit/browser/dom_storage/dom_storage_session.h"
-
-using dom_storage::DomStorageContext;
-using dom_storage::DomStorageSession;
+#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
+#include "content/browser/dom_storage/dom_storage_session.h"
 
 namespace content {
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
-    DOMStorageContextImpl* context)
-    : session_(new DomStorageSession(context->context())) {
+    DOMStorageContextWrapper* context)
+    : session_(new DOMStorageSession(context->context())) {
 }
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
-    DOMStorageContextImpl* context, int64 namepace_id_to_clone)
-    : session_(DomStorageSession::CloneFrom(context->context(),
+    DOMStorageContextWrapper* context, int64 namepace_id_to_clone)
+    : session_(DOMStorageSession::CloneFrom(context->context(),
                                             namepace_id_to_clone)) {
 }
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
-    DOMStorageContextImpl* context, const std::string& persistent_id)
-    : session_(new DomStorageSession(context->context(), persistent_id)) {
+    DOMStorageContextWrapper* context, const std::string& persistent_id)
+    : session_(new DOMStorageSession(context->context(), persistent_id)) {
 }
 
 int64 SessionStorageNamespaceImpl::id() const {
@@ -49,12 +46,12 @@ SessionStorageNamespaceImpl* SessionStorageNamespaceImpl::Clone() {
 }
 
 bool SessionStorageNamespaceImpl::IsFromContext(
-    DOMStorageContextImpl* context) {
+    DOMStorageContextWrapper* context) {
   return session_->IsFromContext(context->context());
 }
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
-    DomStorageSession* clone)
+    DOMStorageSession* clone)
     : session_(clone) {
 }
 

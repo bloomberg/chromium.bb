@@ -13,13 +13,10 @@
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
-namespace dom_storage {
-class DomStorageMap;
-}
-
 namespace content {
 
-class DomStorageProxy;
+class DOMStorageMap;
+class DOMStorageProxy;
 
 // Unlike the other classes in the dom_storage library, this one is intended
 // for use in renderer processes. It maintains a complete cache of the
@@ -27,12 +24,12 @@ class DomStorageProxy;
 // first access and changes are written to the backend thru the |proxy|.
 // Mutations originating in other processes are applied to the cache via
 // the ApplyMutation method.
-class CONTENT_EXPORT DomStorageCachedArea
-    : public base::RefCounted<DomStorageCachedArea> {
+class CONTENT_EXPORT DOMStorageCachedArea
+    : public base::RefCounted<DOMStorageCachedArea> {
  public:
-  DomStorageCachedArea(int64 namespace_id,
+  DOMStorageCachedArea(int64 namespace_id,
                        const GURL& origin,
-                       DomStorageProxy* proxy);
+                       DOMStorageProxy* proxy);
 
   int64 namespace_id() const { return namespace_id_; }
   const GURL& origin() const { return origin_; }
@@ -55,9 +52,9 @@ class CONTENT_EXPORT DomStorageCachedArea
   size_t MemoryBytesUsedByCache() const;
 
  private:
-  friend class DomStorageCachedAreaTest;
-  friend class base::RefCounted<DomStorageCachedArea>;
-  ~DomStorageCachedArea();
+  friend class DOMStorageCachedAreaTest;
+  friend class base::RefCounted<DOMStorageCachedArea>;
+  ~DOMStorageCachedArea();
 
   // Primes the cache, loading all values for the area.
   void Prime(int connection_id);
@@ -87,9 +84,9 @@ class CONTENT_EXPORT DomStorageCachedArea
 
   int64 namespace_id_;
   GURL origin_;
-  scoped_refptr<dom_storage::DomStorageMap> map_;
-  scoped_refptr<DomStorageProxy> proxy_;
-  base::WeakPtrFactory<DomStorageCachedArea> weak_factory_;
+  scoped_refptr<DOMStorageMap> map_;
+  scoped_refptr<DOMStorageProxy> proxy_;
+  base::WeakPtrFactory<DOMStorageCachedArea> weak_factory_;
 };
 
 }  // namespace content

@@ -7,9 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "webkit/browser/dom_storage/dom_storage_context.h"
-#include "webkit/common/dom_storage/dom_storage_types.h"
 
 class GURL;
 
@@ -17,22 +17,21 @@ namespace base {
 class NullableString16;
 }
 
-namespace dom_storage {
-class DomStorageArea;
-class DomStorageContext;
-class DomStorageHost;
-}
-
 namespace content {
+
+class DOMStorageArea;
 class DOMStorageContextImpl;
+class DOMStorageContextWrapper;
+class DOMStorageHost;
 
 // This class handles the logistics of DOM Storage within the browser process.
 // It mostly ferries information between IPCs and the dom_storage classes.
 class DOMStorageMessageFilter
     : public BrowserMessageFilter,
-      public dom_storage::DomStorageContext::EventObserver {
+      public DOMStorageContextImpl::EventObserver {
  public:
-  explicit DOMStorageMessageFilter(int unused, DOMStorageContextImpl* context);
+  explicit DOMStorageMessageFilter(int unused,
+                                   DOMStorageContextWrapper* context);
 
  private:
   virtual ~DOMStorageMessageFilter();
@@ -52,7 +51,7 @@ class DOMStorageMessageFilter
   void OnOpenStorageArea(int connection_id, int64 namespace_id,
                          const GURL& origin);
   void OnCloseStorageArea(int connection_id);
-  void OnLoadStorageArea(int connection_id, dom_storage::ValuesMap* map);
+  void OnLoadStorageArea(int connection_id, DOMStorageValuesMap* map);
   void OnSetItem(int connection_id, const string16& key,
                  const string16& value, const GURL& page_url);
   void OnRemoveItem(int connection_id, const string16& key,
@@ -60,32 +59,32 @@ class DOMStorageMessageFilter
   void OnClear(int connection_id, const GURL& page_url);
   void OnFlushMessages();
 
-  // DomStorageContext::EventObserver implementation which
+  // DOMStorageContextImpl::EventObserver implementation which
   // sends events back to our renderer process.
-  virtual void OnDomStorageItemSet(
-      const dom_storage::DomStorageArea* area,
+  virtual void OnDOMStorageItemSet(
+      const DOMStorageArea* area,
       const string16& key,
       const string16& new_value,
       const base::NullableString16& old_value,
       const GURL& page_url) OVERRIDE;
-  virtual void OnDomStorageItemRemoved(
-      const dom_storage::DomStorageArea* area,
+  virtual void OnDOMStorageItemRemoved(
+      const DOMStorageArea* area,
       const string16& key,
       const string16& old_value,
       const GURL& page_url) OVERRIDE;
-  virtual void OnDomStorageAreaCleared(
-      const dom_storage::DomStorageArea* area,
+  virtual void OnDOMStorageAreaCleared(
+      const DOMStorageArea* area,
       const GURL& page_url) OVERRIDE;
 
-  void SendDomStorageEvent(
-      const dom_storage::DomStorageArea* area,
+  void SendDOMStorageEvent(
+      const DOMStorageArea* area,
       const GURL& page_url,
       const base::NullableString16& key,
       const base::NullableString16& new_value,
       const base::NullableString16& old_value);
 
-  scoped_refptr<dom_storage::DomStorageContext> context_;
-  scoped_ptr<dom_storage::DomStorageHost> host_;
+  scoped_refptr<DOMStorageContextImpl> context_;
+  scoped_ptr<DOMStorageHost> host_;
   int connection_dispatching_message_for_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageMessageFilter);

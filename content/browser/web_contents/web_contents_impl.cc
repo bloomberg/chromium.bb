@@ -24,7 +24,7 @@
 #include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
-#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/mhtml_generation_manager.h"
@@ -1465,8 +1465,8 @@ void WebContentsImpl::CreateNewWindow(
                                        site_instance->GetSiteURL());
   StoragePartition* partition = BrowserContext::GetStoragePartition(
       GetBrowserContext(), site_instance.get());
-  DOMStorageContextImpl* dom_storage_context =
-      static_cast<DOMStorageContextImpl*>(partition->GetDOMStorageContext());
+  DOMStorageContextWrapper* dom_storage_context =
+      static_cast<DOMStorageContextWrapper*>(partition->GetDOMStorageContext());
   SessionStorageNamespaceImpl* session_storage_namespace_impl =
       static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace);
   CHECK(session_storage_namespace_impl->IsFromContext(dom_storage_context));

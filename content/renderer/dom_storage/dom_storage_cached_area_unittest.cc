@@ -14,17 +14,17 @@
 namespace content {
 
 namespace {
-// A mock implementation of the DomStorageProxy interface.
-class MockProxy : public DomStorageProxy {
+// A mock implementation of the DOMStorageProxy interface.
+class MockProxy : public DOMStorageProxy {
  public:
   MockProxy() {
     ResetObservations();
   }
 
-  // DomStorageProxy interface for use by DomStorageCachedArea.
+  // DOMStorageProxy interface for use by DOMStorageCachedArea.
 
   virtual void LoadArea(int connection_id,
-                        dom_storage::ValuesMap* values,
+                        DOMStorageValuesMap* values,
                         const CompletionCallback& callback) OVERRIDE {
     pending_callbacks_.push_back(callback);
     observed_load_area_ = true;
@@ -91,7 +91,7 @@ class MockProxy : public DomStorageProxy {
 
   typedef std::list<CompletionCallback> CallbackList;
 
-  dom_storage::ValuesMap load_area_return_values_;
+  DOMStorageValuesMap load_area_return_values_;
   CallbackList pending_callbacks_;
   bool observed_load_area_;
   bool observed_set_item_;
@@ -108,9 +108,9 @@ class MockProxy : public DomStorageProxy {
 
 }  // namespace
 
-class DomStorageCachedAreaTest : public testing::Test {
+class DOMStorageCachedAreaTest : public testing::Test {
  public:
-  DomStorageCachedAreaTest()
+  DOMStorageCachedAreaTest()
     : kNamespaceId(10),
       kOrigin("http://dom_storage/"),
       kKey(ASCIIToUTF16("key")),
@@ -128,26 +128,26 @@ class DomStorageCachedAreaTest : public testing::Test {
     mock_proxy_ = new MockProxy();
   }
 
-  bool IsPrimed(DomStorageCachedArea* cached_area) {
+  bool IsPrimed(DOMStorageCachedArea* cached_area) {
     return cached_area->map_.get();
   }
 
-  bool IsIgnoringAllMutations(DomStorageCachedArea* cached_area) {
+  bool IsIgnoringAllMutations(DOMStorageCachedArea* cached_area) {
     return cached_area->ignore_all_mutations_;
   }
 
-  bool IsIgnoringKeyMutations(DomStorageCachedArea* cached_area,
+  bool IsIgnoringKeyMutations(DOMStorageCachedArea* cached_area,
                               const base::string16& key) {
     return cached_area->should_ignore_key_mutation(key);
   }
 
-  void ResetAll(DomStorageCachedArea* cached_area) {
+  void ResetAll(DOMStorageCachedArea* cached_area) {
     cached_area->Reset();
     mock_proxy_->ResetObservations();
     mock_proxy_->pending_callbacks_.clear();
   }
 
-  void ResetCacheOnly(DomStorageCachedArea* cached_area) {
+  void ResetCacheOnly(DOMStorageCachedArea* cached_area) {
     cached_area->Reset();
   }
 
@@ -155,10 +155,10 @@ class DomStorageCachedAreaTest : public testing::Test {
   scoped_refptr<MockProxy> mock_proxy_;
 };
 
-TEST_F(DomStorageCachedAreaTest, Basics) {
+TEST_F(DOMStorageCachedAreaTest, Basics) {
   EXPECT_TRUE(mock_proxy_->HasOneRef());
-  scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
+  scoped_refptr<DOMStorageCachedArea> cached_area =
+      new DOMStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
   EXPECT_EQ(kNamespaceId, cached_area->namespace_id());
   EXPECT_EQ(kOrigin, cached_area->origin());
   EXPECT_FALSE(mock_proxy_->HasOneRef());
@@ -180,10 +180,10 @@ TEST_F(DomStorageCachedAreaTest, Basics) {
   EXPECT_EQ(0u, cached_area->GetLength(kConnectionId));
 }
 
-TEST_F(DomStorageCachedAreaTest, Getters) {
+TEST_F(DOMStorageCachedAreaTest, Getters) {
   const int kConnectionId = 7;
-  scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
+  scoped_refptr<DOMStorageCachedArea> cached_area =
+      new DOMStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
 
   // GetLength, we expect to see one call to load in the proxy.
   EXPECT_FALSE(IsPrimed(cached_area.get()));
@@ -215,10 +215,10 @@ TEST_F(DomStorageCachedAreaTest, Getters) {
   EXPECT_EQ(1u, mock_proxy_->pending_callbacks_.size());
 }
 
-TEST_F(DomStorageCachedAreaTest, Setters) {
+TEST_F(DOMStorageCachedAreaTest, Setters) {
   const int kConnectionId = 7;
-  scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
+  scoped_refptr<DOMStorageCachedArea> cached_area =
+      new DOMStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
 
   // SetItem, we expect a call to load followed by a call to set item
   // in the proxy.
@@ -270,10 +270,10 @@ TEST_F(DomStorageCachedAreaTest, Setters) {
   EXPECT_EQ(2u, mock_proxy_->pending_callbacks_.size());
 }
 
-TEST_F(DomStorageCachedAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
+TEST_F(DOMStorageCachedAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
   const int kConnectionId = 7;
-  scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
+  scoped_refptr<DOMStorageCachedArea> cached_area =
+      new DOMStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
   EXPECT_TRUE(cached_area->GetItem(kConnectionId, kKey).is_null());
   EXPECT_TRUE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(IsIgnoringAllMutations(cached_area.get()));
@@ -293,10 +293,10 @@ TEST_F(DomStorageCachedAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
   EXPECT_EQ(kValue, cached_area->GetItem(kConnectionId, kKey).string());
 }
 
-TEST_F(DomStorageCachedAreaTest, MutationsAreIgnoredUntilClearCompletion) {
+TEST_F(DOMStorageCachedAreaTest, MutationsAreIgnoredUntilClearCompletion) {
   const int kConnectionId = 4;
-  scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
+  scoped_refptr<DOMStorageCachedArea> cached_area =
+      new DOMStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
   cached_area->Clear(kConnectionId, kPageUrl);
   EXPECT_TRUE(IsIgnoringAllMutations(cached_area.get()));
   mock_proxy_->CompleteOnePendingCallback(true);
@@ -315,10 +315,10 @@ TEST_F(DomStorageCachedAreaTest, MutationsAreIgnoredUntilClearCompletion) {
   EXPECT_FALSE(IsIgnoringAllMutations(cached_area.get()));
 }
 
-TEST_F(DomStorageCachedAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
+TEST_F(DOMStorageCachedAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
   const int kConnectionId = 8;
-  scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
+  scoped_refptr<DOMStorageCachedArea> cached_area =
+      new DOMStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
 
   // SetItem
   EXPECT_TRUE(cached_area->SetItem(kConnectionId, kKey, kValue, kPageUrl));
@@ -353,4 +353,4 @@ TEST_F(DomStorageCachedAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
   EXPECT_FALSE(IsPrimed(cached_area.get()));
 }
 
-}  // namespace dom_storage
+}  // namespace content

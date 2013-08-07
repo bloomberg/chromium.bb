@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/media/webrtc_identity_store.h"
 #include "content/common/content_export.h"
@@ -29,7 +29,7 @@ class StoragePartitionImpl : public StoragePartition {
   virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
   virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
-  virtual DOMStorageContextImpl* GetDOMStorageContext() OVERRIDE;
+  virtual DOMStorageContextWrapper* GetDOMStorageContext() OVERRIDE;
   virtual IndexedDBContextImpl* GetIndexedDBContext() OVERRIDE;
 
   virtual void ClearDataForOrigin(
@@ -75,7 +75,7 @@ class StoragePartitionImpl : public StoragePartition {
       ChromeAppCacheService* appcache_service,
       fileapi::FileSystemContext* filesystem_context,
       webkit_database::DatabaseTracker* database_tracker,
-      DOMStorageContextImpl* dom_storage_context,
+      DOMStorageContextWrapper* dom_storage_context,
       IndexedDBContextImpl* indexed_db_context,
       scoped_ptr<WebRTCIdentityStore> webrtc_identity_store);
 
@@ -110,7 +110,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<fileapi::FileSystemContext> filesystem_context_;
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
-  scoped_refptr<DOMStorageContextImpl> dom_storage_context_;
+  scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_ptr<WebRTCIdentityStore> webrtc_identity_store_;
 

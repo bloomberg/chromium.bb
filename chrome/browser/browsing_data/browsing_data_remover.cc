@@ -50,8 +50,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_data_remover.h"
+#include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_errors.h"
@@ -65,7 +67,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-#include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/common/quota/quota_types.h"
 
 using content::BrowserContext;
@@ -896,7 +897,7 @@ void BrowsingDataRemover::ClearLocalStorageOnUIThread() {
 }
 
 void BrowsingDataRemover::OnGotLocalStorageUsageInfo(
-    const std::vector<dom_storage::LocalStorageUsageInfo>& infos) {
+    const std::vector<content::LocalStorageUsageInfo>& infos) {
   DCHECK(waiting_for_clear_local_storage_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -924,7 +925,7 @@ void BrowsingDataRemover::ClearSessionStorageOnUIThread() {
 }
 
 void BrowsingDataRemover::OnGotSessionStorageUsageInfo(
-    const std::vector<dom_storage::SessionStorageUsageInfo>& infos) {
+    const std::vector<content::SessionStorageUsageInfo>& infos) {
   DCHECK(waiting_for_clear_session_storage_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

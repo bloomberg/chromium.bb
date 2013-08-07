@@ -14,7 +14,7 @@ class GURL;
 
 namespace content {
 
-class DomStorageCachedArea;
+class DOMStorageCachedArea;
 
 class WebStorageAreaImpl : public WebKit::WebStorageArea {
  public:
@@ -37,7 +37,7 @@ class WebStorageAreaImpl : public WebKit::WebStorageArea {
 
  private:
   int connection_id_;
-  scoped_refptr<DomStorageCachedArea> cached_area_;
+  scoped_refptr<DOMStorageCachedArea> cached_area_;
 };
 
 }  // namespace content

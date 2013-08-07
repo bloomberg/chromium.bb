@@ -9,10 +9,13 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_disk_cache.h"
+#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
+#include "content/public/browser/local_storage_usage_info.h"
+#include "content/public/browser/session_storage_usage_info.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_monster.h"
@@ -20,7 +23,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/quota/quota_manager.h"
-#include "webkit/common/dom_storage/dom_storage_types.h"
 
 namespace content {
 
@@ -143,11 +145,11 @@ void ClearShaderCacheOnIOThread(const base::FilePath& path,
 }
 
 void OnLocalStorageUsageInfo(
-    const scoped_refptr<DOMStorageContextImpl>& dom_storage_context,
+    const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const base::Time delete_begin,
     const base::Time delete_end,
     const base::Closure& callback,
-    const std::vector<dom_storage::LocalStorageUsageInfo>& infos) {
+    const std::vector<LocalStorageUsageInfo>& infos) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < infos.size(); ++i) {
@@ -160,9 +162,9 @@ void OnLocalStorageUsageInfo(
 }
 
 void OnSessionStorageUsageInfo(
-    const scoped_refptr<DOMStorageContextImpl>& dom_storage_context,
+    const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const base::Closure& callback,
-    const std::vector<dom_storage::SessionStorageUsageInfo>& infos) {
+    const std::vector<SessionStorageUsageInfo>& infos) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < infos.size(); ++i)
@@ -172,7 +174,7 @@ void OnSessionStorageUsageInfo(
 }
 
 void ClearLocalStorageOnUIThread(
-    const scoped_refptr<DOMStorageContextImpl>& dom_storage_context,
+    const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const GURL& remove_origin,
     const base::Time begin,
     const base::Time end,
@@ -191,7 +193,7 @@ void ClearLocalStorageOnUIThread(
 }
 
 void ClearSessionStorageOnUIThread(
-    const scoped_refptr<DOMStorageContextImpl>& dom_storage_context,
+    const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -248,7 +250,7 @@ struct StoragePartitionImpl::DataDeletionHelper {
                            const GURL& remove_origin,
                            const base::FilePath& path,
                            net::URLRequestContextGetter* rq_context,
-                           DOMStorageContextImpl* dom_storage_context,
+                           DOMStorageContextWrapper* dom_storage_context,
                            quota::QuotaManager* quota_manager,
                            const base::Time begin,
                            const base::Time end);
@@ -280,7 +282,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     ChromeAppCacheService* appcache_service,
     fileapi::FileSystemContext* filesystem_context,
     webkit_database::DatabaseTracker* database_tracker,
-    DOMStorageContextImpl* dom_storage_context,
+    DOMStorageContextWrapper* dom_storage_context,
     IndexedDBContextImpl* indexed_db_context,
     scoped_ptr<WebRTCIdentityStore> webrtc_identity_store)
     : partition_path_(partition_path),
@@ -345,8 +347,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
               .get());
 
   base::FilePath path = in_memory ? base::FilePath() : partition_path;
-  scoped_refptr<DOMStorageContextImpl> dom_storage_context =
-      new DOMStorageContextImpl(path, context->GetSpecialStoragePolicy());
+  scoped_refptr<DOMStorageContextWrapper> dom_storage_context =
+      new DOMStorageContextWrapper(path, context->GetSpecialStoragePolicy());
 
   // BrowserMainLoop may not be initialized in unit tests. Tests will
   // need to inject their own task runner into the IndexedDBContext.
@@ -407,7 +409,7 @@ webkit_database::DatabaseTracker* StoragePartitionImpl::GetDatabaseTracker() {
   return database_tracker_.get();
 }
 
-DOMStorageContextImpl* StoragePartitionImpl::GetDOMStorageContext() {
+DOMStorageContextWrapper* StoragePartitionImpl::GetDOMStorageContext() {
   return dom_storage_context_.get();
 }
 
@@ -542,7 +544,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     const GURL& remove_origin,
     const base::FilePath& path,
     net::URLRequestContextGetter* rq_context,
-    DOMStorageContextImpl* dom_storage_context,
+    DOMStorageContextWrapper* dom_storage_context,
     quota::QuotaManager* quota_manager,
     const base::Time begin,
     const base::Time end) {

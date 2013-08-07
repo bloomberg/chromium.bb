@@ -5,10 +5,10 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 
 #include "base/logging.h"
+#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "url/gurl.h"
-#include "webkit/common/dom_storage/dom_storage_types.h"
 
 using WebKit::WebStorageArea;
 using WebKit::WebStorageNamespace;
@@ -17,13 +17,13 @@ using WebKit::WebString;
 namespace content {
 
 WebStorageNamespaceImpl::WebStorageNamespaceImpl()
-    : namespace_id_(dom_storage::kLocalStorageNamespaceId) {
+    : namespace_id_(kLocalStorageNamespaceId) {
 }
 
 WebStorageNamespaceImpl::WebStorageNamespaceImpl(
     int64 namespace_id)
     : namespace_id_(namespace_id) {
-  DCHECK_NE(dom_storage::kInvalidSessionStorageNamespaceId, namespace_id);
+  DCHECK_NE(kInvalidSessionStorageNamespaceId, namespace_id);
 }
 
 WebStorageNamespaceImpl::~WebStorageNamespaceImpl() {

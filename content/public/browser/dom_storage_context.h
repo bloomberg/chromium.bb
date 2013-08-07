@@ -9,29 +9,25 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "content/common/content_export.h"
 
 class GURL;
-
-namespace dom_storage {
-struct LocalStorageUsageInfo;
-struct SessionStorageUsageInfo;
-}
 
 namespace content {
 
 class BrowserContext;
+struct LocalStorageUsageInfo;
 class SessionStorageNamespace;
+struct SessionStorageUsageInfo;
 
 // Represents the per-BrowserContext Local Storage data.
 class DOMStorageContext {
  public:
   typedef base::Callback<
-      void(const std::vector<dom_storage::LocalStorageUsageInfo>&)>
+      void(const std::vector<LocalStorageUsageInfo>&)>
           GetLocalStorageUsageCallback;
 
   typedef base::Callback<
-      void(const std::vector<dom_storage::SessionStorageUsageInfo>&)>
+      void(const std::vector<SessionStorageUsageInfo>&)>
           GetSessionStorageUsageCallback;
 
   // Returns a collection of origins using local storage to the given callback.
@@ -48,12 +44,12 @@ class DOMStorageContext {
 
   // Deletes the session storage data identified by |usage_info|.
   virtual void DeleteSessionStorage(
-      const dom_storage::SessionStorageUsageInfo& usage_info) = 0;
+      const SessionStorageUsageInfo& usage_info) = 0;
 
   // If this is called, sessionStorage data will be stored on disk, and can be
   // restored after a browser restart (with RecreateSessionStorage). This
-  // function must be called right after DOMStorageContextImpl is created, and
-  // before it's used.
+  // function must be called right after DOMStorageContextWrapper is created,
+  // and before it's used.
   virtual void SetSaveSessionStorageOnDisk() = 0;
 
   // Creates a SessionStorageNamespace with the given |persistent_id|. Used

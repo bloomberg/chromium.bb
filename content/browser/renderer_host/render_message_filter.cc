@@ -16,7 +16,7 @@
 #include "base/threading/worker_pool.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -295,7 +295,7 @@ RenderMessageFilter::RenderMessageFilter(
     RenderWidgetHelper* render_widget_helper,
     media::AudioManager* audio_manager,
     MediaInternals* media_internals,
-    DOMStorageContextImpl* dom_storage_context)
+    DOMStorageContextWrapper* dom_storage_context)
     : resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       plugin_service_(plugin_service),
       profile_data_directory_(browser_context->GetPath()),

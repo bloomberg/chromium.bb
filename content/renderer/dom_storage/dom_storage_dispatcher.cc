@@ -9,7 +9,8 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
-#include "content/common/dom_storage_messages.h"
+#include "content/common/dom_storage/dom_storage_messages.h"
+#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/renderer/dom_storage/dom_storage_cached_area.h"
 #include "content/renderer/dom_storage/dom_storage_proxy.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
@@ -18,9 +19,6 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
-#include "webkit/common/dom_storage/dom_storage_types.h"
-
-using dom_storage::ValuesMap;
 
 namespace content {
 
@@ -92,24 +90,24 @@ bool MessageThrottlingFilter::OnMessageReceived(const IPC::Message& message) {
 }  // namespace
 
 // ProxyImpl -----------------------------------------------------
-// An implementation of the DomStorageProxy interface in terms of IPC.
+// An implementation of the DOMStorageProxy interface in terms of IPC.
 // This class also manages the collection of cached areas and pending
 // operations awaiting completion callbacks.
-class DomStorageDispatcher::ProxyImpl : public DomStorageProxy {
+class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
  public:
   explicit ProxyImpl(RenderThreadImpl* sender);
 
   // Methods for use by DomStorageDispatcher directly.
-  DomStorageCachedArea* OpenCachedArea(
+  DOMStorageCachedArea* OpenCachedArea(
       int64 namespace_id, const GURL& origin);
-  void CloseCachedArea(DomStorageCachedArea* area);
-  DomStorageCachedArea* LookupCachedArea(
+  void CloseCachedArea(DOMStorageCachedArea* area);
+  DOMStorageCachedArea* LookupCachedArea(
       int64 namespace_id, const GURL& origin);
   void CompleteOnePendingCallback(bool success);
   void Shutdown();
 
-  // DomStorageProxy interface for use by DomStorageCachedArea.
-  virtual void LoadArea(int connection_id, ValuesMap* values,
+  // DOMStorageProxy interface for use by DOMStorageCachedArea.
+  virtual void LoadArea(int connection_id, DOMStorageValuesMap* values,
                         const CompletionCallback& callback) OVERRIDE;
   virtual void SetItem(int connection_id, const string16& key,
                        const string16& value, const GURL& page_url,
@@ -125,10 +123,10 @@ class DomStorageDispatcher::ProxyImpl : public DomStorageProxy {
   // Struct to hold references to our contained areas and
   // to keep track of how many tabs have a given area open.
   struct CachedAreaHolder {
-    scoped_refptr<DomStorageCachedArea> area_;
+    scoped_refptr<DOMStorageCachedArea> area_;
     int open_count_;
     CachedAreaHolder() : open_count_(0) {}
-    CachedAreaHolder(DomStorageCachedArea* area, int count)
+    CachedAreaHolder(DOMStorageCachedArea* area, int count)
         : area_(area), open_count_(count) {}
   };
   typedef std::map<std::string, CachedAreaHolder> CachedAreaMap;
@@ -176,21 +174,21 @@ DomStorageDispatcher::ProxyImpl::ProxyImpl(RenderThreadImpl* sender)
   sender_->AddFilter(throttling_filter_.get());
 }
 
-DomStorageCachedArea* DomStorageDispatcher::ProxyImpl::OpenCachedArea(
+DOMStorageCachedArea* DomStorageDispatcher::ProxyImpl::OpenCachedArea(
     int64 namespace_id, const GURL& origin) {
   std::string key = GetCachedAreaKey(namespace_id, origin);
   if (CachedAreaHolder* holder = GetAreaHolder(key)) {
     ++(holder->open_count_);
     return holder->area_.get();
   }
-  scoped_refptr<DomStorageCachedArea> area =
-      new DomStorageCachedArea(namespace_id, origin, this);
+  scoped_refptr<DOMStorageCachedArea> area =
+      new DOMStorageCachedArea(namespace_id, origin, this);
   cached_areas_[key] = CachedAreaHolder(area.get(), 1);
   return area.get();
 }
 
 void DomStorageDispatcher::ProxyImpl::CloseCachedArea(
-    DomStorageCachedArea* area) {
+    DOMStorageCachedArea* area) {
   std::string key = GetCachedAreaKey(area->namespace_id(), area->origin());
   CachedAreaHolder* holder = GetAreaHolder(key);
   DCHECK(holder);
@@ -201,7 +199,7 @@ void DomStorageDispatcher::ProxyImpl::CloseCachedArea(
   }
 }
 
-DomStorageCachedArea* DomStorageDispatcher::ProxyImpl::LookupCachedArea(
+DOMStorageCachedArea* DomStorageDispatcher::ProxyImpl::LookupCachedArea(
     int64 namespace_id, const GURL& origin) {
   std::string key = GetCachedAreaKey(namespace_id, origin);
   CachedAreaHolder* holder = GetAreaHolder(key);
@@ -223,7 +221,7 @@ void DomStorageDispatcher::ProxyImpl::Shutdown() {
 }
 
 void DomStorageDispatcher::ProxyImpl::LoadArea(
-    int connection_id, ValuesMap* values,
+    int connection_id, DOMStorageValuesMap* values,
     const CompletionCallback& callback) {
   PushPendingCallback(callback);
   throttling_filter_->SendThrottled(new DOMStorageHostMsg_LoadStorageArea(
@@ -265,7 +263,7 @@ DomStorageDispatcher::~DomStorageDispatcher() {
   proxy_->Shutdown();
 }
 
-scoped_refptr<DomStorageCachedArea> DomStorageDispatcher::OpenCachedArea(
+scoped_refptr<DOMStorageCachedArea> DomStorageDispatcher::OpenCachedArea(
     int connection_id, int64 namespace_id, const GURL& origin) {
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_OpenStorageArea(
@@ -274,7 +272,7 @@ scoped_refptr<DomStorageCachedArea> DomStorageDispatcher::OpenCachedArea(
 }
 
 void DomStorageDispatcher::CloseCachedArea(
-    int connection_id, DomStorageCachedArea* area) {
+    int connection_id, DOMStorageCachedArea* area) {
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_CloseStorageArea(connection_id));
   proxy_->CloseCachedArea(area);
@@ -301,13 +299,13 @@ void DomStorageDispatcher::OnStorageEvent(
     originating_area = WebStorageAreaImpl::FromConnectionId(
         params.connection_id);
   } else {
-    DomStorageCachedArea* cached_area = proxy_->LookupCachedArea(
+    DOMStorageCachedArea* cached_area = proxy_->LookupCachedArea(
         params.namespace_id, params.origin);
     if (cached_area)
       cached_area->ApplyMutation(params.key, params.new_value);
   }
 
-  if (params.namespace_id == dom_storage::kLocalStorageNamespaceId) {
+  if (params.namespace_id == kLocalStorageNamespaceId) {
     WebKit::WebStorageEventDispatcher::dispatchLocalStorageEvent(
         params.key,
         params.old_value,

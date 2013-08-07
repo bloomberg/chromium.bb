@@ -11,6 +11,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/resource_response.h"
@@ -30,7 +31,6 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/ui_base_switches.h"
 #include "url/gurl.h"
-#include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace content {
@@ -87,8 +87,7 @@ void RenderViewFakeResourcesTest::SetUp() {
   ViewMsg_New_Params params;
   params.view_id = kViewId;
   params.opener_route_id = MSG_ROUTING_NONE;
-  params.session_storage_namespace_id =
-      dom_storage::kInvalidSessionStorageNamespaceId;
+  params.session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
   ASSERT_TRUE(channel_->Send(new ViewMsg_New(params)));
   message_loop_.Run();
 }
