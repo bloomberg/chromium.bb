@@ -98,11 +98,11 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kTapToClickEnabled,
       true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kTapDraggingEnabled,
       false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kEnableTouchpadThreeFingerClick,
       false,
@@ -111,11 +111,11 @@ void Preferences::RegisterProfilePrefs(
       prefs::kNaturalScroll,
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kPrimaryMouseButtonRight,
       false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kLabsMediaplayerEnabled,
       false,
@@ -127,7 +127,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kStickyKeysEnabled,
       false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kLargeCursorEnabled,
       false,
@@ -135,19 +135,19 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kSpokenFeedbackEnabled,
       false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kHighContrastEnabled,
       false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kScreenMagnifierEnabled,
       false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterIntegerPref(
       prefs::kScreenMagnifierType,
       ash::kDefaultMagnifierType,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterDoublePref(
       prefs::kScreenMagnifierScale,
       std::numeric_limits<double>::min(),
@@ -155,15 +155,15 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kShouldAlwaysShowAccessibilityMenu,
       false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterIntegerPref(
       prefs::kMouseSensitivity,
       3,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterIntegerPref(
       prefs::kTouchpadSensitivity,
       3,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kUse24HourClock,
       base::GetHourClockType() == base::k24HourClock,
@@ -231,7 +231,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterStringPref(
       prefs::kLanguageHangulKeyboard,
       language_prefs::kHangulKeyboardNameIDPairs[0].keyboard_id,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterStringPref(
       prefs::kLanguageHangulHanjaBindingKeys,
       language_prefs::kHangulHanjaBindingKeys,
@@ -275,15 +275,15 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapSearchKeyTo,
       input_method::kSearchKey,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapControlKeyTo,
       input_method::kControlKey,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapAltKeyTo,
       input_method::kAltKey,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   // We don't sync the CapsLock remapping pref, since the UI hides this pref
   // on certain devices, so syncing a non-default value to a device that
   // doesn't allow changing the pref would be odd. http://crbug.com/167237
@@ -294,7 +294,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapDiamondKeyTo,
       input_method::kControlKey,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   // We don't sync the following keyboard prefs since they are not user-
   // configurable.
   registry->RegisterBooleanPref(
