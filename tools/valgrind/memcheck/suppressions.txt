@@ -1207,6 +1207,14 @@
    fun:_Znw*
    fun:_ZN4base4Bind*Callback*BindState*
 }
+{
+   bug_269278b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocator*allocate*
+   fun:_ZNSt12_Vector_base*_M_allocate*
+}
+
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -5772,19 +5780,6 @@
    fun:_ZN11dom_storage14DomStorageArea26DatabaseFileNameFromOriginERK4GURL
    fun:_ZN11dom_storage14DomStorageAreaC1E*
    fun:_ZN11dom_storage19DomStorageNamespace24DeleteLocalStorageOriginERK4GURL
-   fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
-}
-{
-   bug_166485
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocator*FilePath*allocate*
-   fun:_ZNSt12_Vector_base*FilePath*_M_allocate*
-   fun:_ZNSt6vector*FilePath*_M_insert_aux*
-   fun:_ZNSt6vector*FilePath*push_back*
-   fun:_ZN9file_util26CreateDirectoryAndGetError*
-   fun:_ZN9file_util15CreateDirectory*
-   fun:_ZN11dom_storage17DomStorageContext19GetStorageNamespaceEl
    fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
 }
 {
