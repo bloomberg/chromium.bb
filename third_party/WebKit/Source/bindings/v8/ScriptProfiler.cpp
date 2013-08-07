@@ -31,7 +31,6 @@
 #include "config.h"
 #include "bindings/v8/ScriptProfiler.h"
 
-#include "V8ArrayBufferView.h"
 #include "V8Node.h"
 #include "V8Window.h"
 #include "bindings/v8/RetainedDOMInfo.h"
