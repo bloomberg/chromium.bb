@@ -504,7 +504,6 @@ int GpuChannel::TakeRendererFileDescriptor() {
 #endif  // defined(OS_POSIX)
 
 bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
-  bool message_processed = true;
   if (log_messages_) {
     DVLOG(1) << "received message @" << &message << " on channel @" << this
              << " with type " << message.type();
@@ -526,20 +525,14 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
       }
 
       deferred_messages_.insert(point, new IPC::Message(message));
-      message_processed = false;
     } else {
       // Move GetStateFast commands to the head of the queue, so the renderer
       // doesn't have to wait any longer than necessary.
       deferred_messages_.push_front(new IPC::Message(message));
-      message_processed = false;
     }
   } else {
     deferred_messages_.push_back(new IPC::Message(message));
-    message_processed = false;
   }
-
-  if (message_processed)
-    MessageProcessed();
 
   OnScheduled();
 
