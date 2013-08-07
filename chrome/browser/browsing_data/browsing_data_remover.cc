@@ -173,7 +173,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_server_bound_certs_(false),
       waiting_for_clear_session_storage_(false),
       waiting_for_clear_shader_cache_(false),
-      waiting_for_clear_webrtc_identity_store_(false),
       remove_mask_(0),
       remove_origin_(GURL()),
       origin_set_mask_(0) {
@@ -546,15 +545,6 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     content::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
 
     ClearShaderCacheOnUIThread();
-
-    waiting_for_clear_webrtc_identity_store_ = true;
-    BrowserContext::GetDefaultStoragePartition(profile_)->ClearDataForRange(
-        content::StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY,
-        content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-        delete_begin_,
-        delete_end_,
-        base::Bind(&BrowsingDataRemover::OnClearWebRTCIdentityStore,
-                   base::Unretained(this)));
   }
 
 #if defined(ENABLE_PLUGINS)
@@ -627,21 +617,24 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
 }
 
 bool BrowsingDataRemover::AllDone() {
-  return registrar_.IsEmpty() && !waiting_for_clear_autofill_origin_urls_ &&
-         !waiting_for_clear_cache_ && !waiting_for_clear_nacl_cache_ &&
-         !waiting_for_clear_cookies_count_ && !waiting_for_clear_history_ &&
-         !waiting_for_clear_local_storage_ &&
-         !waiting_for_clear_logged_in_predictor_ &&
-         !waiting_for_clear_session_storage_ &&
-         !waiting_for_clear_networking_history_ &&
-         !waiting_for_clear_server_bound_certs_ &&
-         !waiting_for_clear_plugin_data_ &&
-         !waiting_for_clear_quota_managed_data_ &&
-         !waiting_for_clear_content_licenses_ && !waiting_for_clear_form_ &&
-         !waiting_for_clear_hostname_resolution_cache_ &&
-         !waiting_for_clear_network_predictor_ &&
-         !waiting_for_clear_shader_cache_ &&
-         !waiting_for_clear_webrtc_identity_store_;
+  return registrar_.IsEmpty() &&
+      !waiting_for_clear_autofill_origin_urls_ &&
+      !waiting_for_clear_cache_ &&
+      !waiting_for_clear_nacl_cache_ &&
+      !waiting_for_clear_cookies_count_&&
+      !waiting_for_clear_history_ &&
+      !waiting_for_clear_local_storage_ &&
+      !waiting_for_clear_logged_in_predictor_ &&
+      !waiting_for_clear_session_storage_ &&
+      !waiting_for_clear_networking_history_ &&
+      !waiting_for_clear_server_bound_certs_ &&
+      !waiting_for_clear_plugin_data_ &&
+      !waiting_for_clear_quota_managed_data_ &&
+      !waiting_for_clear_content_licenses_ &&
+      !waiting_for_clear_form_ &&
+      !waiting_for_clear_hostname_resolution_cache_ &&
+      !waiting_for_clear_network_predictor_ &&
+      !waiting_for_clear_shader_cache_;
 }
 
 void BrowsingDataRemover::Observe(int type,
@@ -1128,11 +1121,5 @@ void BrowsingDataRemover::OnClearedFormData() {
 void BrowsingDataRemover::OnClearedAutofillOriginURLs() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   waiting_for_clear_autofill_origin_urls_ = false;
-  NotifyAndDeleteIfDone();
-}
-
-void BrowsingDataRemover::OnClearWebRTCIdentityStore() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  waiting_for_clear_webrtc_identity_store_ = false;
   NotifyAndDeleteIfDone();
 }

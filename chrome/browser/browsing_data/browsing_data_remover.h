@@ -361,9 +361,6 @@ class BrowsingDataRemover : public content::NotificationObserver
   // Invoked on the IO thread to delete from the shader cache.
   void ClearShaderCacheOnUIThread();
 
-  // Callback on UI thread when the WebRTC identities are cleared.
-  void OnClearWebRTCIdentityStore();
-
   // Returns true if we're all done.
   bool AllDone();
 
@@ -428,7 +425,6 @@ class BrowsingDataRemover : public content::NotificationObserver
   bool waiting_for_clear_server_bound_certs_;
   bool waiting_for_clear_session_storage_;
   bool waiting_for_clear_shader_cache_;
-  bool waiting_for_clear_webrtc_identity_store_;
 
   // Tracking how many origins need to be deleted, and whether we're finished
   // gathering origins.

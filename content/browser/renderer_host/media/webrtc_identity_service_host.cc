@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/media/webrtc_identity_store.h"
 #include "content/common/media/webrtc_identity_messages.h"
 #include "net/base/net_errors.h"
@@ -14,10 +13,8 @@
 namespace content {
 
 WebRTCIdentityServiceHost::WebRTCIdentityServiceHost(
-    int renderer_process_id,
     WebRTCIdentityStore* identity_store)
-    : renderer_process_id_(renderer_process_id),
-      identity_store_(identity_store) {}
+    : identity_store_(identity_store) {}
 
 WebRTCIdentityServiceHost::~WebRTCIdentityServiceHost() {
   if (!cancel_callback_.is_null())
@@ -45,15 +42,6 @@ void WebRTCIdentityServiceHost::OnRequestIdentity(
     SendErrorMessage(net::ERR_INSUFFICIENT_RESOURCES);
     return;
   }
-
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessCookiesForOrigin(renderer_process_id_, origin)) {
-    DLOG(WARNING) << "Request rejected because origin access is denied.";
-    SendErrorMessage(net::ERR_ACCESS_DENIED);
-    return;
-  }
-
   cancel_callback_ = identity_store_->RequestIdentity(
       origin,
       identity_name,

@@ -252,7 +252,6 @@ struct StoragePartitionImpl::DataDeletionHelper {
                            net::URLRequestContextGetter* rq_context,
                            DOMStorageContextWrapper* dom_storage_context,
                            quota::QuotaManager* quota_manager,
-                           WebRTCIdentityStore* webrtc_identity_store,
                            const base::Time begin,
                            const base::Time end);
 
@@ -285,7 +284,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     webkit_database::DatabaseTracker* database_tracker,
     DOMStorageContextWrapper* dom_storage_context,
     IndexedDBContextImpl* indexed_db_context,
-    WebRTCIdentityStore* webrtc_identity_store)
+    scoped_ptr<WebRTCIdentityStore> webrtc_identity_store)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -293,7 +292,7 @@ StoragePartitionImpl::StoragePartitionImpl(
       database_tracker_(database_tracker),
       dom_storage_context_(dom_storage_context),
       indexed_db_context_(indexed_db_context),
-      webrtc_identity_store_(webrtc_identity_store) {}
+      webrtc_identity_store_(webrtc_identity_store.Pass()) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
   // These message loop checks are just to avoid leaks in unittests.
@@ -368,8 +367,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(quota_manager->proxy());
 
-  scoped_refptr<WebRTCIdentityStore> webrtc_identity_store(
-      new WebRTCIdentityStore(path, context->GetSpecialStoragePolicy()));
+  scoped_ptr<WebRTCIdentityStore> webrtc_identity_store(
+      new WebRTCIdentityStore());
 
   return new StoragePartitionImpl(partition_path,
                                   quota_manager.get(),
@@ -378,7 +377,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                   database_tracker.get(),
                                   dom_storage_context.get(),
                                   indexed_db_context.get(),
-                                  webrtc_identity_store.get());
+                                  webrtc_identity_store.Pass());
 }
 
 base::FilePath StoragePartitionImpl::GetPath() {
@@ -432,8 +431,7 @@ void StoragePartitionImpl::ClearDataImpl(
   // DataDeletionHelper::DecrementTaskCountOnUI().
   helper->ClearDataOnUIThread(
       remove_mask, quota_storage_remove_mask, remove_origin,
-      GetPath(), rq_context, dom_storage_context_, quota_manager_,
-      webrtc_identity_store_, begin, end);
+      GetPath(), rq_context, dom_storage_context_, quota_manager_, begin, end);
 }
 
 void StoragePartitionImpl::
@@ -548,7 +546,6 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     net::URLRequestContextGetter* rq_context,
     DOMStorageContextWrapper* dom_storage_context,
     quota::QuotaManager* quota_manager,
-    WebRTCIdentityStore* webrtc_identity_store,
     const base::Time begin,
     const base::Time end) {
   DCHECK_NE(remove_mask, 0u);
@@ -603,18 +600,6 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ClearShaderCacheOnIOThread,
                    path, begin, end, decrement_callback));
-  }
-
-  if (remove_mask & REMOVE_DATA_MASK_WEBRTC_IDENTITY) {
-    IncrementTaskCountOnUI();
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&WebRTCIdentityStore::DeleteBetween,
-                   webrtc_identity_store,
-                   begin,
-                   end,
-                   decrement_callback));
   }
 
   DecrementTaskCountOnUI();
