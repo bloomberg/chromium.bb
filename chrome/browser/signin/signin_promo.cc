@@ -79,12 +79,12 @@ bool AllowPromoAtStartupForCurrentBrand() {
 
 // Returns true if a user has seen the sign in promo at startup previously.
 bool HasShownPromoAtStartup(Profile* profile) {
-  return profile->GetPrefs()->HasPrefPath(prefs::kSyncPromoStartupCount);
+  return profile->GetPrefs()->HasPrefPath(prefs::kSignInPromoStartupCount);
 }
 
 // Returns true if the user has previously skipped the sign in promo.
 bool HasUserSkippedPromo(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kSyncPromoUserSkipped);
+  return profile->GetPrefs()->GetBoolean(prefs::kSignInPromoUserSkipped);
 }
 
 }  // namespace
@@ -137,14 +137,14 @@ bool ShouldShowPromoAtStartup(Profile* profile, bool is_new_profile) {
     return false;
 
   PrefService* prefs = profile->GetPrefs();
-  int show_count = prefs->GetInteger(prefs::kSyncPromoStartupCount);
+  int show_count = prefs->GetInteger(prefs::kSignInPromoStartupCount);
   if (show_count >= kSignInPromoShowAtStartupMaximum)
     return false;
 
   // This pref can be set in the master preferences file to allow or disallow
   // showing the sign in promo at startup.
-  if (prefs->HasPrefPath(prefs::kSyncPromoShowOnFirstRunAllowed))
-    return prefs->GetBoolean(prefs::kSyncPromoShowOnFirstRunAllowed);
+  if (prefs->HasPrefPath(prefs::kSignInPromoShowOnFirstRunAllowed))
+    return prefs->GetBoolean(prefs::kSignInPromoShowOnFirstRunAllowed);
 
   // For now don't show the promo for some brands.
   if (!AllowPromoAtStartupForCurrentBrand())
@@ -160,13 +160,13 @@ bool ShouldShowPromoAtStartup(Profile* profile, bool is_new_profile) {
 
 void DidShowPromoAtStartup(Profile* profile) {
   int show_count = profile->GetPrefs()->GetInteger(
-      prefs::kSyncPromoStartupCount);
+      prefs::kSignInPromoStartupCount);
   show_count++;
-  profile->GetPrefs()->SetInteger(prefs::kSyncPromoStartupCount, show_count);
+  profile->GetPrefs()->SetInteger(prefs::kSignInPromoStartupCount, show_count);
 }
 
 void SetUserSkippedPromo(Profile* profile) {
-  profile->GetPrefs()->SetBoolean(prefs::kSyncPromoUserSkipped, true);
+  profile->GetPrefs()->SetBoolean(prefs::kSignInPromoUserSkipped, true);
 }
 
 GURL GetLandingURL(const char* option, int value) {
@@ -254,27 +254,21 @@ void ForceWebBasedSigninFlowForTesting(bool force) {
 
 void RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  // TODO(fdoray): Rename these preferences to start with kSignInPromo.
-  // (crbug.com/264283)
   registry->RegisterIntegerPref(
-      prefs::kSyncPromoStartupCount,
+      prefs::kSignInPromoStartupCount,
       0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kSyncPromoUserSkipped,
+      prefs::kSignInPromoUserSkipped,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kSyncPromoShowOnFirstRunAllowed,
+      prefs::kSignInPromoShowOnFirstRunAllowed,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kSyncPromoShowNTPBubble,
+      prefs::kSignInPromoShowNTPBubble,
       false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSyncPromoErrorMessage,
-      std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 

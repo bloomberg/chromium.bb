@@ -178,6 +178,12 @@ const char kBackupPref[] = "backup";
 // Chrome To Mobile has been removed; this pref will be cleared from user data.
 const char kChromeToMobilePref[] = "chrome_to_mobile.device_list";
 
+#if !defined(OS_ANDROID)
+// The sync promo error message preference has been removed; this pref will
+// be cleared from user data.
+const char kSyncPromoErrorMessage[] = "sync_promo.error_message";
+#endif
+
 }  // namespace
 
 namespace chrome {
@@ -388,6 +394,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(
       kChromeToMobilePref,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#if !defined(OS_ANDROID)
+  registry->RegisterStringPref(
+      kSyncPromoErrorMessage,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -414,6 +426,12 @@ void MigrateUserPrefs(Profile* profile) {
 
   // Cleanup prefs from now-removed Chrome To Mobile feature.
   prefs->ClearPref(kChromeToMobilePref);
+
+#if !defined(OS_ANDROID)
+  // Cleanup now-removed sync promo error message preference.
+  // TODO(fdoray): Remove this when it's safe to do so (crbug.com/268442).
+  prefs->ClearPref(kSyncPromoErrorMessage);
+#endif
 
   PrefsTabHelper::MigrateUserPrefs(prefs);
   PromoResourceService::MigrateUserPrefs(prefs);

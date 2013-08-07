@@ -1047,7 +1047,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, SyncPromoForbidden) {
   // }
   StartupBrowserCreator browser_creator;
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSyncPromoShowOnFirstRunAllowed, false);
+      prefs::kSignInPromoShowOnFirstRunAllowed, false);
 
   // Do a process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -1081,7 +1081,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, SyncPromoAllowed) {
   // }
   StartupBrowserCreator browser_creator;
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSyncPromoShowOnFirstRunAllowed, true);
+      prefs::kSignInPromoShowOnFirstRunAllowed, true);
 
   // Do a process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -1117,7 +1117,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSyncPromoShowOnFirstRunAllowed, true);
+      prefs::kSignInPromoShowOnFirstRunAllowed, true);
 
   // Do a process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -1156,7 +1156,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   browser_creator.AddFirstRunTab(signin::GetPromoURL(signin::SOURCE_START_PAGE,
                                                      false));
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSyncPromoShowOnFirstRunAllowed, true);
+      prefs::kSignInPromoShowOnFirstRunAllowed, true);
 
   // Do a process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -1195,7 +1195,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   browser_creator.AddFirstRunTab(GURL("new_tab_page"));
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSyncPromoShowOnFirstRunAllowed, true);
+      prefs::kSignInPromoShowOnFirstRunAllowed, true);
 
   // Do a process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -1234,7 +1234,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   browser_creator.AddFirstRunTab(GURL("new_tab_page"));
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSyncPromoShowOnFirstRunAllowed, false);
+      prefs::kSignInPromoShowOnFirstRunAllowed, false);
 
   // Do a process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -1271,7 +1271,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSyncPromoShowOnFirstRunAllowed, false);
+      prefs::kSignInPromoShowOnFirstRunAllowed, false);
 
   // Do a process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -1302,7 +1302,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // }
   StartupBrowserCreator browser_creator;
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSyncPromoShowOnFirstRunAllowed, true);
+      prefs::kSignInPromoShowOnFirstRunAllowed, true);
 
   // Set the following user policies:
   // * RestoreOnStartup = RestoreOnStartupIsURLs

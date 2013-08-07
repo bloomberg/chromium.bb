@@ -393,7 +393,7 @@ void FirstRunBubbleLauncher::Observe(
               SigninTracker::GetSigninState(profile, NULL) !=
                   SigninTracker::SIGNIN_COMPLETE);
       bool is_promo_bubble_visible =
-          profile->GetPrefs()->GetBoolean(prefs::kSyncPromoShowNTPBubble);
+          profile->GetPrefs()->GetBoolean(prefs::kSignInPromoShowNTPBubble);
 
       if (is_promo_bubble_visible || signin_in_progress)
         return;

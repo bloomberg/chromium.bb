@@ -676,11 +676,10 @@ extern const char kInvalidatorClientId[];
 extern const char kInvalidatorInvalidationState[];
 extern const char kInvalidatorMaxInvalidationVersions[];
 
-extern const char kSyncPromoStartupCount[];
-extern const char kSyncPromoUserSkipped[];
-extern const char kSyncPromoShowOnFirstRunAllowed[];
-extern const char kSyncPromoShowNTPBubble[];
-extern const char kSyncPromoErrorMessage[];
+extern const char kSignInPromoStartupCount[];
+extern const char kSignInPromoUserSkipped[];
+extern const char kSignInPromoShowOnFirstRunAllowed[];
+extern const char kSignInPromoShowNTPBubble[];
 
 extern const char kProfileGAIAInfoUpdateTime[];
 extern const char kProfileGAIAInfoPictureURL[];

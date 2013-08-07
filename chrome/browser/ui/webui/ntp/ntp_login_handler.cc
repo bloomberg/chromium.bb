@@ -186,7 +186,7 @@ void NTPLoginHandler::RecordInHistogram(int type) {
 
 void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
-      prefs::kSyncPromoShowNTPBubble, false);
+      prefs::kSignInPromoShowNTPBubble, false);
   NewTabUI* ntp_ui = NewTabUI::FromWebUIController(web_ui()->GetController());
   // When instant extended is enabled, there may not be a NewTabUI object.
   if (ntp_ui)
@@ -269,20 +269,17 @@ bool NTPLoginHandler::ShouldShow(Profile* profile) {
 void NTPLoginHandler::GetLocalizedValues(Profile* profile,
                                          DictionaryValue* values) {
   PrefService* prefs = profile->GetPrefs();
-  std::string error_message = prefs->GetString(prefs::kSyncPromoErrorMessage);
-  bool hide_sync = !prefs->GetBoolean(prefs::kSyncPromoShowNTPBubble);
+  bool hide_sync = !prefs->GetBoolean(prefs::kSignInPromoShowNTPBubble);
 
-  string16 message =
-      hide_sync ? string16() :
-          !error_message.empty() ? UTF8ToUTF16(error_message) :
-              l10n_util::GetStringFUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE,
-                  l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  string16 message = hide_sync ? string16() :
+      l10n_util::GetStringFUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 
   values->SetString("login_status_message", message);
   values->SetString("login_status_url",
       hide_sync ? std::string() : chrome::kSyncLearnMoreURL);
   values->SetString("login_status_advanced",
-      hide_sync || !error_message.empty() ? string16() :
+      hide_sync ? string16() :
       l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED));
   values->SetString("login_status_dismiss",
       hide_sync ? string16() :

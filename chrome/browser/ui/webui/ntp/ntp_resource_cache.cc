@@ -189,7 +189,8 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
                                      callback);
   profile_pref_change_registrar_.Add(prefs::kShowBookmarkBar, callback);
   profile_pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
-  profile_pref_change_registrar_.Add(prefs::kSyncPromoShowNTPBubble, callback);
+  profile_pref_change_registrar_.Add(prefs::kSignInPromoShowNTPBubble,
+                                     callback);
   profile_pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
 
   // Some tests don't have a local state.
