@@ -83,7 +83,6 @@ public:
     String findFirstMisspelling(int& firstMisspellingOffset, bool markAll, RefPtr<Range>& firstMisspellingRange);
     String findFirstMisspellingOrBadGrammar(bool checkGrammar, bool& outIsSpelling, int& outFirstFoundOffset, GrammarDetail& outGrammarDetail);
     String findFirstBadGrammar(GrammarDetail& outGrammarDetail, int& outGrammarPhraseOffset, bool markAll);
-    int findFirstGrammarDetail(const Vector<GrammarDetail>& grammarDetails, int badGrammarPhraseLocation, int badGrammarPhraseLength, int startOffset, int endOffset, bool markAll);
     void markAllMisspellings(RefPtr<Range>& firstMisspellingRange);
     void markAllBadGrammar();
 
@@ -91,6 +90,7 @@ private:
     EditorClient* m_client;
     RefPtr<Range> m_range;
 
+    int findFirstGrammarDetail(const Vector<GrammarDetail>& grammarDetails, int badGrammarPhraseLocation, int startOffset, int endOffset, bool markAll) const;
     bool unifiedTextCheckerEnabled() const;
 };
 
