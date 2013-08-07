@@ -1723,7 +1723,7 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     }
 }
 
-void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header, const String& contextURL, const WTF::OrdinalNumber& contextLine, ScriptState* state) const
+void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header, const String& contextURL, const WTF::OrdinalNumber& contextLine, ScriptState* state)
 {
     logToConsole(consoleMessage, contextURL, contextLine, state);
 
@@ -1772,11 +1772,17 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
 
     RefPtr<JSONObject> reportObject = JSONObject::create();
     reportObject->setObject("csp-report", cspReport.release());
+    String stringifiedReport = reportObject->toJSONString();
 
-    RefPtr<FormData> report = FormData::create(reportObject->toJSONString().utf8());
+    if (!shouldSendViolationReport(stringifiedReport))
+        return;
+
+    RefPtr<FormData> report = FormData::create(stringifiedReport.utf8());
 
     for (size_t i = 0; i < reportURIs.size(); ++i)
         PingLoader::sendViolationReport(frame, reportURIs[i], report, PingLoader::ContentSecurityPolicyViolationReport);
+
+    didSendViolationReport(stringifiedReport);
 }
 
 void ContentSecurityPolicy::reportUnsupportedDirective(const String& name) const
@@ -1892,4 +1898,15 @@ bool ContentSecurityPolicy::shouldBypassMainWorld(ScriptExecutionContext* contex
     return false;
 }
 
+bool ContentSecurityPolicy::shouldSendViolationReport(const String& report) const
+{
+    // Collisions have no security impact, so we can save space by storing only the string's hash rather than the whole report.
+    return !m_violationReportsSent.contains(report.impl()->hash());
 }
+
+void ContentSecurityPolicy::didSendViolationReport(const String& report)
+{
+    m_violationReportsSent.add(report.impl()->hash());
+}
+
+} // namespace WebCore
