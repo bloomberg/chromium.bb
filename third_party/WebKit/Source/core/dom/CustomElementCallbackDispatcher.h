@@ -85,7 +85,8 @@ private:
         // is popped when empty, this sentinel will cause a null deref
         // crash.
         CustomElementCallbackQueue* sentinel = 0;
-        m_flattenedProcessingStack.append(sentinel);
+        for (size_t i = 0; i < kNumSentinels; i++)
+            m_flattenedProcessingStack.append(sentinel);
         ASSERT(s_elementQueueEnd == m_flattenedProcessingStack.size());
     }
 
@@ -111,6 +112,7 @@ private:
     // The processing stack, flattened. Element queues lower in the
     // stack appear toward the head of the vector. The first element
     // is a null sentinel value.
+    static const size_t kNumSentinels = 1;
     Vector<CustomElementCallbackQueue*> m_flattenedProcessingStack;
 
     typedef HashMap<Element*, OwnPtr<CustomElementCallbackQueue> > ElementCallbackQueueMap;

@@ -39,7 +39,7 @@ namespace WebCore {
 size_t CustomElementCallbackDispatcher::s_elementQueueStart = 0;
 
 // The base of the stack has a null sentinel value.
-size_t CustomElementCallbackDispatcher::s_elementQueueEnd = 1;
+size_t CustomElementCallbackDispatcher::s_elementQueueEnd = kNumSentinels;
 
 CustomElementCallbackDispatcher& CustomElementCallbackDispatcher::instance()
 {
@@ -54,21 +54,27 @@ bool CustomElementCallbackDispatcher::dispatch()
     if (inCallbackDeliveryScope())
         return false;
 
-    size_t start = 1; // skip null sentinel
+    size_t start = kNumSentinels; // skip null sentinel
     size_t end = s_elementQueueEnd;
+    ElementQueue thisQueue = currentElementQueue();
 
     for (size_t i = start; i < end; i++) {
-        m_flattenedProcessingStack[i]->processInElementQueue(currentElementQueue());
+        {
+            // The created callback may schedule entered document
+            // callbacks.
+            CallbackDeliveryScope deliveryScope;
+            m_flattenedProcessingStack[i]->processInElementQueue(thisQueue);
+        }
 
-        // new callbacks as a result of recursion must be scheduled in
-        // a CallbackDeliveryScope which restore this queue on completion
         ASSERT(!s_elementQueueStart);
         ASSERT(s_elementQueueEnd == end);
     }
 
-    s_elementQueueEnd = 1;
+    s_elementQueueEnd = kNumSentinels;
     m_flattenedProcessingStack.resize(s_elementQueueEnd);
-    m_elementCallbackQueueMap.clear();
+
+    ElementCallbackQueueMap emptyMap;
+    m_elementCallbackQueueMap.swap(emptyMap);
 
     bool didWork = start < end;
     return didWork;
@@ -83,14 +89,16 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop()
 void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, size_t end)
 {
     ASSERT(isMainThread());
+    ElementQueue thisQueue = currentElementQueue();
 
     for (size_t i = start; i < end; i++) {
-        m_flattenedProcessingStack[i]->processInElementQueue(currentElementQueue());
+        {
+            // The created callback may schedule entered document
+            // callbacks.
+            CallbackDeliveryScope deliveryScope;
+            m_flattenedProcessingStack[i]->processInElementQueue(thisQueue);
+        }
 
-        // process() may run script which grows and shrinks the
-        // processing stack above this entry, but the processing stack
-        // should always drop back to having this entry at the
-        // top-of-stack on exit
         ASSERT(start == s_elementQueueStart);
         ASSERT(end == s_elementQueueEnd);
     }
@@ -99,8 +107,10 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
     m_flattenedProcessingStack.resize(start);
     s_elementQueueEnd = start;
 
-    if (start == /* allow sentinel */ 1)
-        m_elementCallbackQueueMap.clear();
+    if (start == kNumSentinels) {
+        ElementCallbackQueueMap emptyMap;
+        m_elementCallbackQueueMap.swap(emptyMap);
+    }
 }
 
 CustomElementCallbackQueue* CustomElementCallbackDispatcher::createCallbackQueue(PassRefPtr<Element> element)
@@ -144,7 +154,7 @@ CustomElementCallbackQueue* CustomElementCallbackDispatcher::createAtFrontOfCurr
 
     // The created callback is unique in being prepended to the front
     // of the element queue
-    m_flattenedProcessingStack.insert(inCallbackDeliveryScope() ? s_elementQueueStart : /* skip null sentinel */ 1, queue);
+    m_flattenedProcessingStack.insert(inCallbackDeliveryScope() ? s_elementQueueStart : kNumSentinels, queue);
     ++s_elementQueueEnd;
 
     return queue;
