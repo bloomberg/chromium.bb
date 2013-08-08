@@ -62,9 +62,13 @@ class PnaclHost {
   // The returned temp fd may be closed at any time by PnaclHost, so it should
   // be duplicated (e.g. with IPC::GetFileHandleForProcess) before the callback
   // returns.
+  // If |is_incognito| is true, the nexe will not be stored
+  // in the cache, but the renderer is still expected to call
+  // TranslationFinished.
   void GetNexeFd(int render_process_id,
                  int render_view_id,
                  int pp_instance,
+                 bool is_incognito,
                  const nacl::PnaclCacheInfo& cache_info,
                  const NexeFdCallback& cb);
 
@@ -104,6 +108,7 @@ class PnaclHost {
     bool got_nexe_fd;
     bool got_cache_reply;
     bool got_cache_hit;
+    bool is_incognito;
     scoped_refptr<net::DrainableIOBuffer> nexe_read_buffer;
     NexeFdCallback callback;
     std::string cache_key;

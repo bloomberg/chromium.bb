@@ -97,13 +97,14 @@ static nacl::PnaclCacheInfo GetTestCacheInfo() {
   return info;
 }
 
-#define GET_NEXE_FD(renderer, instance, info, expect_hit)           \
+#define GET_NEXE_FD(renderer, instance, incognito, info, expect_hit)\
   do {                                                              \
     SCOPED_TRACE("");                                               \
     host_->GetNexeFd(                                               \
         renderer,                                                   \
         0, /* ignore render_view_id for now */                      \
         instance,                                                   \
+        incognito,                                                  \
         info,                                                       \
         base::Bind(expect_hit ? &PnaclHostTest::CallbackExpectHit   \
                               : &PnaclHostTest::CallbackExpectMiss, \
@@ -113,7 +114,7 @@ static nacl::PnaclCacheInfo GetTestCacheInfo() {
 TEST_F(PnaclHostTest, BasicMiss) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   // Test cold miss.
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   EXPECT_EQ(1U, host_->pending_translations());
   FlushQueues();
   EXPECT_EQ(1U, host_->pending_translations());
@@ -123,7 +124,7 @@ TEST_F(PnaclHostTest, BasicMiss) {
   EXPECT_EQ(0U, host_->pending_translations());
   // Test that a different cache info field also misses.
   info.etag = std::string("something else");
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
   EXPECT_EQ(2, temp_callback_count_);
   EXPECT_EQ(1U, host_->pending_translations());
@@ -132,7 +133,7 @@ TEST_F(PnaclHostTest, BasicMiss) {
 
 TEST_F(PnaclHostTest, BadArguments) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   EXPECT_EQ(1U, host_->pending_translations());
   host_->TranslationFinished(0, 1, true);  // nonexistent translation
   EXPECT_EQ(1U, host_->pending_translations());
@@ -145,12 +146,12 @@ TEST_F(PnaclHostTest, BadArguments) {
 
 TEST_F(PnaclHostTest, BasicHit) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
   EXPECT_EQ(1, temp_callback_count_);
   host_->TranslationFinished(0, 0, true);
   FlushQueues();
-  GET_NEXE_FD(0, 1, info, true);
+  GET_NEXE_FD(0, 1, false, info, true);
   FlushQueues();
   EXPECT_EQ(2, temp_callback_count_);
   EXPECT_EQ(0U, host_->pending_translations());
@@ -159,14 +160,14 @@ TEST_F(PnaclHostTest, BasicHit) {
 TEST_F(PnaclHostTest, TranslationErrors) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   info.pexe_url = GURL("http://www.google.com");
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   // Early abort, before temp file request returns
   host_->TranslationFinished(0, 0, false);
   FlushQueues();
   EXPECT_EQ(0U, host_->pending_translations());
   EXPECT_EQ(0, temp_callback_count_);
   // Check that another request for the same info misses successfully.
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
   host_->TranslationFinished(0, 0, true);
   FlushQueues();
@@ -175,14 +176,14 @@ TEST_F(PnaclHostTest, TranslationErrors) {
 
   // Now try sending the error after the temp file request returns
   info.abi_version = 222;
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
   EXPECT_EQ(2, temp_callback_count_);
   host_->TranslationFinished(0, 0, false);
   FlushQueues();
   EXPECT_EQ(0U, host_->pending_translations());
   // Check another successful miss
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
   EXPECT_EQ(3, temp_callback_count_);
   host_->TranslationFinished(0, 0, false);
@@ -191,13 +192,13 @@ TEST_F(PnaclHostTest, TranslationErrors) {
 
 TEST_F(PnaclHostTest, OverlappedMissesAfterTempReturn) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
   EXPECT_EQ(1, temp_callback_count_);
   EXPECT_EQ(1U, host_->pending_translations());
   // Test that a second request for the same nexe while the first one is still
   // outstanding eventually hits.
-  GET_NEXE_FD(0, 1, info, true);
+  GET_NEXE_FD(0, 1, false, info, true);
   FlushQueues();
   EXPECT_EQ(2U, host_->pending_translations());
   // The temp file should not be returned to the second request until after the
@@ -211,9 +212,9 @@ TEST_F(PnaclHostTest, OverlappedMissesAfterTempReturn) {
 
 TEST_F(PnaclHostTest, OverlappedMissesBeforeTempReturn) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   // Send the 2nd fd request before the first one returns a temp file.
-  GET_NEXE_FD(0, 1, info, true);
+  GET_NEXE_FD(0, 1, false, info, true);
   FlushQueues();
   EXPECT_EQ(1, temp_callback_count_);
   EXPECT_EQ(2U, host_->pending_translations());
@@ -229,15 +230,15 @@ TEST_F(PnaclHostTest, OverlappedMissesBeforeTempReturn) {
 TEST_F(PnaclHostTest, OverlappedHitsBeforeTempReturn) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   // Store one in the cache and complete it.
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
   EXPECT_EQ(1, temp_callback_count_);
   host_->TranslationFinished(0, 0, true);
   FlushQueues();
   EXPECT_EQ(0U, host_->pending_translations());
-  GET_NEXE_FD(0, 0, info, true);
+  GET_NEXE_FD(0, 0, false, info, true);
   // Request the second before the first temp file returns.
-  GET_NEXE_FD(0, 1, info, true);
+  GET_NEXE_FD(0, 1, false, info, true);
   FlushQueues();
   EXPECT_EQ(3, temp_callback_count_);
   EXPECT_EQ(0U, host_->pending_translations());
@@ -246,15 +247,15 @@ TEST_F(PnaclHostTest, OverlappedHitsBeforeTempReturn) {
 TEST_F(PnaclHostTest, OverlappedHitsAfterTempReturn) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   // Store one in the cache and complete it.
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
   EXPECT_EQ(1, temp_callback_count_);
   host_->TranslationFinished(0, 0, true);
   FlushQueues();
   EXPECT_EQ(0U, host_->pending_translations());
-  GET_NEXE_FD(0, 0, info, true);
+  GET_NEXE_FD(0, 0, false, info, true);
   FlushQueues();
-  GET_NEXE_FD(0, 1, info, true);
+  GET_NEXE_FD(0, 1, false, info, true);
   FlushQueues();
   EXPECT_EQ(3, temp_callback_count_);
   EXPECT_EQ(0U, host_->pending_translations());
@@ -262,10 +263,10 @@ TEST_F(PnaclHostTest, OverlappedHitsAfterTempReturn) {
 
 TEST_F(PnaclHostTest, OverlappedMissesRendererClosing) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
-  GET_NEXE_FD(0, 0, info, false);
+  GET_NEXE_FD(0, 0, false, info, false);
   // Send the 2nd fd request from a different renderer.
   // Test that it eventually gets an fd after the first renderer closes.
-  GET_NEXE_FD(1, 1, info, false);
+  GET_NEXE_FD(1, 1, false, info, false);
   FlushQueues();
   EXPECT_EQ(1, temp_callback_count_);
   EXPECT_EQ(2U, host_->pending_translations());
@@ -277,6 +278,68 @@ TEST_F(PnaclHostTest, OverlappedMissesRendererClosing) {
   EXPECT_EQ(2, temp_callback_count_);
   EXPECT_EQ(1U, host_->pending_translations());
   host_->RendererClosing(1);
+}
+
+TEST_F(PnaclHostTest, Incognito) {
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  GET_NEXE_FD(0, 0, true, info, false);
+  FlushQueues();
+  EXPECT_EQ(1, temp_callback_count_);
+  host_->TranslationFinished(0, 0, true);
+  FlushQueues();
+  // Check that an incognito translation is not stored in the cache
+  GET_NEXE_FD(0, 0, false, info, false);
+  FlushQueues();
+  EXPECT_EQ(2, temp_callback_count_);
+  host_->TranslationFinished(0, 0, true);
+  FlushQueues();
+  // Check that an incognito translation can hit from a normal one.
+  GET_NEXE_FD(0, 0, true, info, true);
+  FlushQueues();
+  EXPECT_EQ(3, temp_callback_count_);
+}
+
+TEST_F(PnaclHostTest, IncognitoOverlappedMiss) {
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  GET_NEXE_FD(0, 0, true, info, false);
+  GET_NEXE_FD(0, 1, false, info, false);
+  FlushQueues();
+  // Check that both translations have returned misses, (i.e. that the
+  // second one has not blocked on the incognito one)
+  EXPECT_EQ(2, temp_callback_count_);
+  host_->TranslationFinished(0, 0, true);
+  host_->TranslationFinished(0, 1, true);
+  FlushQueues();
+  EXPECT_EQ(0U, host_->pending_translations());
+
+  // Same test, but issue the 2nd request after the first has returned a miss.
+  info.abi_version = 222;
+  GET_NEXE_FD(0, 0, true, info, false);
+  FlushQueues();
+  EXPECT_EQ(3, temp_callback_count_);
+  GET_NEXE_FD(0, 1, false, info, false);
+  FlushQueues();
+  EXPECT_EQ(4, temp_callback_count_);
+  host_->RendererClosing(0);
+}
+
+TEST_F(PnaclHostTest, IncognitoSecondOverlappedMiss) {
+  // If the non-incognito request comes first, it should
+  // behave exactly like OverlappedMissBeforeTempReturn
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  GET_NEXE_FD(0, 0, false, info, false);
+  // Send the 2nd fd request before the first one returns a temp file.
+  GET_NEXE_FD(0, 1, true, info, true);
+  FlushQueues();
+  EXPECT_EQ(1, temp_callback_count_);
+  EXPECT_EQ(2U, host_->pending_translations());
+  FlushQueues();
+  EXPECT_EQ(2U, host_->pending_translations());
+  EXPECT_EQ(1, temp_callback_count_);
+  host_->TranslationFinished(0, 0, true);
+  FlushQueues();
+  EXPECT_EQ(2, temp_callback_count_);
+  EXPECT_EQ(0U, host_->pending_translations());
 }
 
 }  // namespace pnacl

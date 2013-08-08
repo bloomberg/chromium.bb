@@ -176,10 +176,12 @@ void NaClHostMessageFilter::OnGetNexeFd(
     BadMessageReceived();
     return;
   }
+
   PnaclHost::GetInstance()->GetNexeFd(
       render_process_id_,
       render_view_id,
       pp_instance,
+      off_the_record_,
       cache_info,
       base::Bind(&NaClHostMessageFilter::AsyncReturnTemporaryFile,
                  this,

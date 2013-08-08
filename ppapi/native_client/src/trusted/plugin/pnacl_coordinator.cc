@@ -839,7 +839,7 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
     return;
   }
 
-  if (!off_the_record_) {
+  if (!off_the_record_ || use_new_cache_) {
     // Get the cache key and try to open an existing entry.
     nacl::string headers = streaming_downloader_->GetResponseHeaders();
     NaClHttpResponseHeaders parser;
