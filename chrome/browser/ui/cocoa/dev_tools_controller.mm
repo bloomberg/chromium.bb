@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/base/cocoa/focus_tracker.h"
 
 using content::WebContents;
 
@@ -119,6 +120,8 @@ using content::WebContents;
   NSArray* subviews = [splitView_ subviews];
   DCHECK_EQ([subviews count], 1u);
   WebContents* devToolsContents = devToolsWindow_->web_contents();
+  focusTracker_.reset(
+      [[FocusTracker alloc] initWithWindow:[splitView_ window]]);
 
   // |devToolsView| is a TabContentsViewCocoa object, whose ViewID was
   // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
@@ -138,6 +141,8 @@ using content::WebContents;
   NSView* oldDevToolsContentsView = [subviews objectAtIndex:1];
   [oldDevToolsContentsView removeFromSuperview];
   [splitView_ adjustSubviews];
+  [focusTracker_ restoreFocusInWindow:[splitView_ window]];
+  focusTracker_.reset();
 }
 
 - (void)updateDevToolsSplitPosition {
