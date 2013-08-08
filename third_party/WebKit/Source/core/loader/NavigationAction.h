@@ -47,11 +47,7 @@ namespace WebCore {
         NavigationAction(const ResourceRequest&, NavigationType, PassRefPtr<Event>);
         NavigationAction(const ResourceRequest&, FrameLoadType, bool isFormSubmission, PassRefPtr<Event>);
 
-        bool isEmpty() const { return m_resourceRequest.url().isEmpty(); }
-
-        KURL url() const { return m_resourceRequest.url(); }
         const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
-
         NavigationType type() const { return m_type; }
         Event* event() const { return m_event.get(); }
 

@@ -179,8 +179,6 @@ namespace WebCore {
         void ensureWriter();
         void ensureWriter(const String& mimeType, const KURL& overridingURL = KURL());
 
-        // The URL of the document resulting from this DocumentLoader.
-        KURL documentURL() const;
         Document* document() const;
 
         void setRequest(const ResourceRequest&);
