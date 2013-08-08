@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/error_console/extension_error.h"
+#include "extensions/browser/extension_error.h"
 
 #include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension.h"
 #include "extensions/common/constants.h"
+#include "url/gurl.h"
 
 using base::string16;
 
@@ -28,7 +28,7 @@ const char kStackTraceKey[] = "stackTrace";
 // populates |extension_id| with the ID. On failure, returns false and leaves
 // extension_id untouched.
 bool GetExtensionIDFromGURL(const GURL& url, std::string* extension_id) {
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
+  if (url.SchemeIs(kExtensionScheme)) {
     *extension_id = url.host();
     return true;
   }
@@ -38,10 +38,12 @@ bool GetExtensionIDFromGURL(const GURL& url, std::string* extension_id) {
 }  // namespace
 
 ExtensionError::ExtensionError(Type type,
+                               const std::string& extension_id,
                                bool from_incognito,
                                const string16& source,
                                const string16& message)
     : type_(type),
+      extension_id_(extension_id),
       from_incognito_(from_incognito),
       source_(source),
       message_(message) {
@@ -58,15 +60,13 @@ std::string ExtensionError::PrintForTest() const {
          "\n  ID:      " + extension_id_;
 }
 
-ManifestParsingError::ManifestParsingError(bool from_incognito,
-                                           const string16& source,
-                                           const string16& message,
-                                           size_t line_number)
+ManifestParsingError::ManifestParsingError(const std::string& extension_id,
+                                           const string16& message)
     : ExtensionError(ExtensionError::MANIFEST_PARSING_ERROR,
-                     from_incognito,
-                     source,
-                     message),
-      line_number_(line_number) {
+                     extension_id,
+                     false,  // extensions can't be installed while incognito.
+                     base::FilePath(kManifestFilename).AsUTF16Unsafe(),
+                     message) {
 }
 
 ManifestParsingError::~ManifestParsingError() {
@@ -74,8 +74,7 @@ ManifestParsingError::~ManifestParsingError() {
 
 std::string ManifestParsingError::PrintForTest() const {
   return ExtensionError::PrintForTest() +
-         "\n  Type:    ManifestParsingError" +
-         "\n  Line:    " + base::IntToString(line_number_);
+         "\n  Type:    ManifestParsingError";
 }
 
 JavascriptRuntimeError::StackFrame::StackFrame() : line_number(-1),
@@ -101,6 +100,7 @@ JavascriptRuntimeError::JavascriptRuntimeError(bool from_incognito,
                                                logging::LogSeverity level,
                                                const string16& details)
     : ExtensionError(ExtensionError::JAVASCRIPT_RUNTIME_ERROR,
+                     std::string(),  // We don't know the id yet.
                      from_incognito,
                      source,
                      message),
