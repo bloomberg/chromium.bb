@@ -28,6 +28,7 @@
 #define ScopedStyleResolver_h
 
 #include "core/css/CSSKeyframesRule.h"
+#include "core/css/ElementRuleCollector.h"
 #include "core/css/RuleSet.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Element.h"
@@ -68,6 +69,7 @@ public:
 
     void matchHostRules(ElementRuleCollector&, bool includeEmptyRules);
     void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles);
+    void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
     void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver*);
     void addHostRule(StyleRuleHost*, bool hasDocumentSecurityOrigin, const ContainerNode* scopingNode);
@@ -108,6 +110,7 @@ public:
     ScopedStyleResolver* scopedStyleResolverForDocument() { return m_scopedResolverForDocument; }
 
     void resolveScopedStyles(const Element*, Vector<ScopedStyleResolver*, 8>&);
+    void collectScopedResolversForHostedShadowTrees(const Element*, Vector<ScopedStyleResolver*, 8>&);
     void resolveScopedKeyframesRules(const Element*, Vector<ScopedStyleResolver*, 8>&);
     ScopedStyleResolver* scopedResolverFor(const Element*);
 

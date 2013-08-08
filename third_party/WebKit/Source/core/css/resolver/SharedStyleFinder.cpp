@@ -42,6 +42,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/SpaceSplitString.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptGroupElement.h"
@@ -78,6 +79,8 @@ Node* SharedStyleFinder::locateCousinList(Element* parent, unsigned& visitedNode
     if (parent->isSVGElement() && toSVGElement(parent)->animatedSMILStyleProperties())
         return 0;
     if (parent->hasID() && m_features.idsInRules.contains(parent->idForStyleResolution().impl()))
+        return 0;
+    if (isShadowHost(parent) && parent->shadow()->containsActiveStyles())
         return 0;
 
     RenderStyle* parentStyle = parent->renderStyle();
@@ -247,6 +250,8 @@ bool SharedStyleFinder::canShareStyleWithElement(const ElementResolveContext& co
         return false;
     if (element->hasScopedHTMLStyleChild())
         return false;
+    if (isShadowHost(element) && element->shadow()->containsActiveStyles())
+        return 0;
 
     // FIXME: We should share style for option and optgroup whenever possible.
     // Before doing so, we need to resolve issues in HTMLSelectElement::recalcListItems
@@ -355,6 +360,8 @@ RenderStyle* SharedStyleFinder::locateSharedStyle(const ElementResolveContext& c
     // viewport. So the styles can't be shared since the viewport position and
     // size may be different each time a dialog is opened.
     if (context.element()->hasTagName(dialogTag))
+        return 0;
+    if (isShadowHost(context.element()) && context.element()->shadow()->containsActiveStyles())
         return 0;
 
     STYLE_STATS_ADD_ELEMENT_ELIGIBLE_FOR_SHARING();

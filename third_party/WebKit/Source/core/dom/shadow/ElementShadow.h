@@ -55,6 +55,7 @@ public:
     ElementShadow* containingShadow() const;
 
     ShadowRoot* addShadowRoot(Element* shadowHost, ShadowRoot::ShadowRootType);
+    bool applyAuthorStyles() const { return m_applyAuthorStyles; }
 
     void attach(const Node::AttachContext&);
     void detach(const Node::AttachContext&);
@@ -79,16 +80,22 @@ public:
 
     void setNeedsDistributionRecalc();
 
+    bool didAffectApplyAuthorStyles();
+    bool containsActiveStyles() const;
+
 private:
     ElementShadow()
         : m_needsDistributionRecalc(false)
+        , m_applyAuthorStyles(false)
     { }
 
     void removeAllShadowRoots();
+    bool resolveApplyAuthorStyles() const;
 
     DoublyLinkedList<ShadowRoot> m_shadowRoots;
     ContentDistributor m_distributor;
     bool m_needsDistributionRecalc;
+    bool m_applyAuthorStyles;
 };
 
 inline Element* ElementShadow::host() const

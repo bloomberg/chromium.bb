@@ -140,6 +140,7 @@ Node::InsertionNotificationRequest InsertionPoint::insertedInto(ContainerNode* i
             if (isActive() && !m_registeredWithShadowRoot && insertionPoint->treeScope()->rootNode() == root) {
                 m_registeredWithShadowRoot = true;
                 root->ensureScopeDistribution()->registerInsertionPoint(this);
+                rootOwner->didAffectApplyAuthorStyles();
                 if (canAffectSelector())
                     rootOwner->willAffectSelector();
             }
@@ -170,8 +171,11 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
         ASSERT(root);
         m_registeredWithShadowRoot = false;
         root->ensureScopeDistribution()->unregisterInsertionPoint(this);
-        if (rootOwner && canAffectSelector())
-            rootOwner->willAffectSelector();
+        if (rootOwner) {
+            rootOwner->didAffectApplyAuthorStyles();
+            if (canAffectSelector())
+                rootOwner->willAffectSelector();
+        }
     }
 
     HTMLElement::removedFrom(insertionPoint);

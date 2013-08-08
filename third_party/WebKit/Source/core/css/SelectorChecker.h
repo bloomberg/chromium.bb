@@ -51,6 +51,7 @@ public:
         StaysWithinTreeScope = 2,
         BoundaryBehaviorMask = 3, // 2bit for boundary behavior
         ScopeContainsLastMatchedElement = 4,
+        ScopeIsShadowHost = 8,
     };
 
     struct SelectorCheckingContext {
@@ -107,6 +108,8 @@ public:
 
 private:
     bool checkScrollbarPseudoClass(const SelectorCheckingContext&, Document*, const CSSSelector*) const;
+    Element* parentElement(const SelectorCheckingContext&) const;
+    bool scopeContainsLastMatchedElement(const SelectorCheckingContext&) const;
 
     static bool isFrameFocused(const Element*);
 

@@ -41,6 +41,10 @@ ShadowRoot* ElementShadow::addShadowRoot(Element* shadowHost, ShadowRoot::Shadow
     ChildNodeInsertionNotifier(shadowHost).notify(shadowRoot.get());
     setNeedsDistributionRecalc();
 
+    // addShadowRoot() affects apply-author-styles. However, we know that the youngest shadow root has not had any children yet.
+    // The youngest shadow root's apply-author-styles is default (false). So we can just set m_applyAuthorStyles false.
+    m_applyAuthorStyles = false;
+
     if (shadowHost->attached())
         shadowHost->lazyReattach();
 
@@ -107,6 +111,39 @@ void ElementShadow::setNeedsDistributionRecalc()
     m_needsDistributionRecalc = true;
     host()->markAncestorsWithChildNeedsDistributionRecalc();
     clearDistribution();
+}
+
+bool ElementShadow::didAffectApplyAuthorStyles()
+{
+    bool applyAuthorStyles = resolveApplyAuthorStyles();
+
+    if (m_applyAuthorStyles == applyAuthorStyles)
+        return false;
+
+    m_applyAuthorStyles = applyAuthorStyles;
+    return true;
+}
+
+bool ElementShadow::containsActiveStyles() const
+{
+    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+        if (root->hasScopedHTMLStyleChild())
+            return true;
+        if (!root->containsShadowElements())
+            return false;
+    }
+    return false;
+}
+
+bool ElementShadow::resolveApplyAuthorStyles() const
+{
+    for (const ShadowRoot* shadowRoot = youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
+        if (shadowRoot->applyAuthorStyles())
+            return true;
+        if (!shadowRoot->containsShadowElements())
+            break;
+    }
+    return false;
 }
 
 } // namespace

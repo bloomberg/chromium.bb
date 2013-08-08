@@ -29,7 +29,6 @@
 
 #include "HTMLNames.h"
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/ElementRuleCollector.h"
 #include "core/css/PageRuleCollector.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
@@ -124,6 +123,23 @@ void ScopedStyleTree::resolveScopedStyles(const Element* element, Vector<ScopedS
 {
     for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent())
         resolvers.append(scopedResolver);
+}
+
+void ScopedStyleTree::collectScopedResolversForHostedShadowTrees(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
+{
+    ElementShadow* shadow = element->shadow();
+    if (!shadow)
+        return;
+
+    // Adding scoped resolver for active shadow roots for shadow host styling.
+    for (ShadowRoot* shadowRoot = shadow->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
+        if (shadowRoot->hasScopedHTMLStyleChild()) {
+            if (ScopedStyleResolver* resolver = scopedStyleResolverFor(shadowRoot))
+                resolvers.append(resolver);
+        }
+        if (!shadowRoot->containsShadowElements())
+            break;
+    }
 }
 
 void ScopedStyleTree::resolveScopedKeyframesRules(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
@@ -334,7 +350,7 @@ inline RuleSet* ScopedStyleResolver::atHostRuleSetFor(const ShadowRoot* shadowRo
 void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool includeEmptyRules)
 {
     // FIXME: Determine tree position.
-    TreePosition treePosition = ignoreTreePosition;
+    CascadeScope cascadeScope = ignoreCascadeScope;
 
     if (m_atHostRules.isEmpty() || !m_scopingNode->isElementNode())
         return;
@@ -362,7 +378,7 @@ void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool i
     collector.setBehaviorAtBoundary(static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::DoesNotCrossBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
     for (; shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
         if (RuleSet* ruleSet = atHostRuleSetFor(shadowRoot))
-            collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, m_scopingNode), ruleRange, treePosition);
+            collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, m_scopingNode), ruleRange, cascadeScope);
     }
 
     collector.sortAndTransferMatchedRules();
@@ -370,21 +386,33 @@ void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool i
 
 void ScopedStyleResolver::matchAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, bool applyAuthorStyles)
 {
-    // FIXME: Determine tree position.
-    TreePosition treePosition = ignoreTreePosition;
+    collector.clearMatchedRules();
+    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
+    collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, ignoreCascadeScope);
+    collector.sortAndTransferMatchedRules();
+}
 
-    if (m_authorStyle) {
-        collector.clearMatchedRules();
-        collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
+void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
+{
+    if (!m_authorStyle)
+        return;
 
-        // Match author rules.
-        MatchRequest matchRequest(m_authorStyle.get(), includeEmptyRules, m_scopingNode);
-        RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
-        collector.setBehaviorAtBoundary(applyAuthorStyles ? SelectorChecker::DoesNotCrossBoundary : static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::DoesNotCrossBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
-        collector.collectMatchingRules(matchRequest, ruleRange, treePosition);
-        collector.collectMatchingRulesForRegion(matchRequest, ruleRange, treePosition);
-        collector.sortAndTransferMatchedRules();
+    const ContainerNode* scopingNode = m_scopingNode;
+    unsigned behaviorAtBoundary = SelectorChecker::DoesNotCrossBoundary;
+
+    if (!applyAuthorStyles)
+        behaviorAtBoundary |= SelectorChecker::ScopeContainsLastMatchedElement;
+
+    if (m_scopingNode->isShadowRoot()) {
+        scopingNode = toShadowRoot(m_scopingNode)->host();
+        behaviorAtBoundary |= SelectorChecker::ScopeIsShadowHost;
     }
+
+    MatchRequest matchRequest(m_authorStyle.get(), includeEmptyRules, scopingNode, applyAuthorStyles);
+    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
+    collector.setBehaviorAtBoundary(static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary));
+    collector.collectMatchingRules(matchRequest, ruleRange, cascadeScope, cascadeOrder);
+    collector.collectMatchingRulesForRegion(matchRequest, ruleRange, cascadeScope, cascadeOrder);
 }
 
 void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)
