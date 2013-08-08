@@ -596,7 +596,7 @@ Commands.createFolderShortcutCommand = {
     var eligible = path && PathUtil.isEligibleForFolderShortcut(path);
     event.canExecute =
         eligible && onlyOneFolderSelected && !folderShortcutExists;
-    event.command.setHidden(!onlyOneFolderSelected);
+    event.command.setHidden(!eligible || !onlyOneFolderSelected);
   }
 };
 
@@ -632,7 +632,7 @@ Commands.removeFolderShortcutCommand = {
     var eligible = path && PathUtil.isEligibleForFolderShortcut(path);
     var isShortcut = path && fileManager.folderShortcutExists(path);
     event.canExecute = isShortcut && eligible;
-    event.command.setHidden(!isShortcut);
+    event.command.setHidden(!event.canExecute);
   }
 };
 

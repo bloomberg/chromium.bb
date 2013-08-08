@@ -341,5 +341,6 @@ PathUtil.getFolderLabel = function(directoryPath) {
  */
 PathUtil.isEligibleForFolderShortcut = function(directoryPath) {
   return !PathUtil.isSpecialSearchRoot(directoryPath) &&
-         !PathUtil.isRootPath(directoryPath);
+         !PathUtil.isRootPath(directoryPath) &&
+         PathUtil.isDriveBasedPath(directoryPath);
 };
