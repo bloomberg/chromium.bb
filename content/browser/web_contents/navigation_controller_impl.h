@@ -155,7 +155,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   // be a reload, while only a different ref would be in-page (pages can't clear
   // refs without reload, only change to "#" which we don't count as empty).
   bool IsURLInPageNavigation(const GURL& url) const {
-    return IsURLInPageNavigation(url, false);
+    return IsURLInPageNavigation(url, false, NAVIGATION_TYPE_UNKNOWN);
   }
 
   // The situation is made murkier by history.replaceState(), which could
@@ -163,7 +163,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   // we need this form which lets the (untrustworthy) renderer resolve the
   // ambiguity, but only when the URLs are equal. This should be safe since the
   // origin isn't changing.
-  bool IsURLInPageNavigation(const GURL& url, bool renderer_says_in_page) const;
+  bool IsURLInPageNavigation(
+      const GURL& url,
+      bool renderer_says_in_page,
+      NavigationType navigation_type) const;
 
   // Sets the SessionStorageNamespace for the given |partition_id|. This is
   // used during initialization of a new NavigationController to allow

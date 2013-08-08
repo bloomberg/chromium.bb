@@ -1922,6 +1922,7 @@ TEST_F(NavigationControllerTest, InPage) {
   params.gesture = NavigationGestureUser;
   params.is_post = false;
   params.page_state = PageState::CreateFromURL(url2);
+  params.was_within_same_page = true;
 
   // This should generate a new entry.
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
@@ -1939,9 +1940,7 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_TRUE(controller.RendererDidNavigate(back_params, &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
-  // is_in_page is false in that case but should be true.
-  // See comment in AreURLsInPageNavigation() in navigation_controller.cc
-  // EXPECT_TRUE(details.is_in_page);
+  EXPECT_TRUE(details.is_in_page);
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
   EXPECT_EQ(back_params.url, controller.GetActiveEntry()->GetURL());
@@ -2756,8 +2755,17 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
   EXPECT_FALSE(controller.IsURLInPageNavigation(url));
   EXPECT_FALSE(controller.IsURLInPageNavigation(other_url));
   const GURL other_url_with_ref("http://www.google.com/home.html#my_other_ref");
-  EXPECT_TRUE(controller.IsURLInPageNavigation(
-      other_url_with_ref));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(other_url_with_ref));
+
+  // Going to the same url again will be considered in-page
+  // if the renderer says it is even if the navigation type isn't IN_PAGE.
+  EXPECT_TRUE(controller.IsURLInPageNavigation(url_with_ref, true,
+      NAVIGATION_TYPE_UNKNOWN));
+
+  // Going back to the non ref url will be considered in-page if the navigation
+  // type is IN_PAGE.
+  EXPECT_TRUE(controller.IsURLInPageNavigation(url, true,
+      NAVIGATION_TYPE_IN_PAGE));
 }
 
 // Some pages can have subframes with the same base URL (minus the reference) as
