@@ -77,7 +77,7 @@ class StoragePartitionImpl : public StoragePartition {
       webkit_database::DatabaseTracker* database_tracker,
       DOMStorageContextWrapper* dom_storage_context,
       IndexedDBContextImpl* indexed_db_context,
-      scoped_ptr<WebRTCIdentityStore> webrtc_identity_store);
+      WebRTCIdentityStore* webrtc_identity_store);
 
   void ClearDataImpl(uint32 remove_mask,
                      uint32 quota_storage_remove_mask,
@@ -112,7 +112,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
-  scoped_ptr<WebRTCIdentityStore> webrtc_identity_store_;
+  scoped_refptr<WebRTCIdentityStore> webrtc_identity_store_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };

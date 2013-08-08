@@ -707,6 +707,8 @@
     'browser/media/media_internals_ui.h',
     'browser/media/webrtc_identity_store.cc',
     'browser/media/webrtc_identity_store.h',
+    'browser/media/webrtc_identity_store_backend.cc',
+    'browser/media/webrtc_identity_store_backend.h',
     'browser/media/webrtc_internals.cc',
     'browser/media/webrtc_internals.h',
     'browser/media/webrtc_internals_message_handler.cc',
