@@ -1,0 +1,43 @@
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+    window.jsTestIsAsync = true;
+
+    function shouldBeGreen(x, y) {
+        d = ctx.getImageData(x, y, 1, 1).data;
+        shouldBeTrue("d[0] == 0");
+        shouldBeTrue("d[1] == 255");
+        shouldBeTrue("d[2] == 0");
+        shouldBeTrue("d[3] == 255");
+    }
+
+    var canvas = document.createElement("canvas");
+    canvas.width = 200;
+    canvas.height = 200;
+    var ctx = canvas.getContext("2d");
+
+    var img = new Image();
+    img.src = 'resources/green-red-animated.gif';
+    img.onload = imageLoaded;
+
+    function imageLoaded() {
+        // The gif switches from green to red in 10ms. We wait 50ms to ensure that the gif will have changed colors.
+        // If the ImageBitmap is green, we know that it is a snapshot of the gif's 0th frame.
+        window.setTimeout(function() {
+            createImageBitmap(img).then(function (imageBitmap) {
+                ctx.drawImage(imageBitmap, 0, 0);
+                shouldBeGreen(100, 100);
+                finishJSTest();
+            }, function() {
+                testFailed("Promise was rejected.");
+                finishJSTest();
+            });
+        }, 50);
+    }
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
