@@ -6,7 +6,6 @@
 
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/omnibox/omnibox_popup_non_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
@@ -57,11 +56,6 @@ OmniboxPopupView* OmniboxPopupContentsView::Create(
     OmniboxView* omnibox_view,
     OmniboxEditModel* edit_model,
     LocationBarView* location_bar_view) {
-#if defined(HTML_INSTANT_EXTENDED_POPUP)
-  if (chrome::IsInstantExtendedAPIEnabled())
-    return new OmniboxPopupNonView(edit_model);
-#endif
-
   OmniboxPopupContentsView* view = NULL;
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     view = new TouchOmniboxPopupContentsView(
@@ -165,7 +159,8 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
 }
 
 void OmniboxPopupContentsView::UpdatePopupAppearance() {
-  if (model_->result().empty() ||
+  const size_t hidden_matches = model_->result().ShouldHideTopMatch() ? 1 : 0;
+  if (model_->result().size() <= hidden_matches ||
       omnibox_view_->IsImeShowingPopup()) {
     // No matches or the IME is showing a popup window which may overlap
     // the omnibox popup window.  Close any existing popup.
@@ -188,7 +183,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   for (size_t i = 0; i < result_size; ++i) {
     OmniboxResultView* view = result_view_at(i);
     view->SetMatch(GetMatchAtIndex(i));
-    view->SetVisible(true);
+    view->SetVisible(i >= hidden_matches);
   }
   for (size_t i = result_size; i < AutocompleteResult::kMaxMatches; ++i)
     child_at(i)->SetVisible(false);
@@ -393,7 +388,8 @@ void OmniboxPopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
 int OmniboxPopupContentsView::CalculatePopupHeight() {
   DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());
   int popup_height = 0;
-  for (size_t i = 0; i < model_->result().size(); ++i)
+  for (size_t i = model_->result().ShouldHideTopMatch() ? 1 : 0;
+       i < model_->result().size(); ++i)
     popup_height += child_at(i)->GetPreferredSize().height();
 
   // Add enough space on the top and bottom so it looks like there is the same
@@ -488,7 +484,7 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(
     views::View* child = child_at(i);
     gfx::Point point_in_child_coords(point);
     View::ConvertPointToTarget(this, child, &point_in_child_coords);
-    if (child->HitTestPoint(point_in_child_coords))
+    if (child->visible() && child->HitTestPoint(point_in_child_coords))
       return i;
   }
   return OmniboxPopupModel::kNoMatch;
