@@ -379,9 +379,50 @@ bool GetPlatformFileInfo(PlatformFile file, PlatformFileInfo* info) {
   info->is_directory = S_ISDIR(file_info.st_mode);
   info->is_symbolic_link = S_ISLNK(file_info.st_mode);
   info->size = file_info.st_size;
-  info->last_modified = base::Time::FromTimeT(file_info.st_mtime);
-  info->last_accessed = base::Time::FromTimeT(file_info.st_atime);
-  info->creation_time = base::Time::FromTimeT(file_info.st_ctime);
+
+#if defined(OS_LINUX)
+  const time_t last_modified_sec = file_info.st_mtim.tv_sec;
+  const int64 last_modified_nsec = file_info.st_mtim.tv_nsec;
+  const time_t last_accessed_sec = file_info.st_atim.tv_sec;
+  const int64 last_accessed_nsec = file_info.st_atim.tv_nsec;
+  const time_t creation_time_sec = file_info.st_ctim.tv_sec;
+  const int64 creation_time_nsec = file_info.st_ctim.tv_nsec;
+#elif defined(OS_ANDROID)
+  const time_t last_modified_sec = file_info.st_mtime;
+  const int64 last_modified_nsec = file_info.st_mtime_nsec;
+  const time_t last_accessed_sec = file_info.st_atime;
+  const int64 last_accessed_nsec = file_info.st_atime_nsec;
+  const time_t creation_time_sec = file_info.st_ctime;
+  const int64 creation_time_nsec = file_info.st_ctime_nsec;
+#elif defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_BSD)
+  const time_t last_modified_sec = file_info.st_mtimespec.tv_sec;
+  const int64 last_modified_nsec = file_info.st_mtimespec.tv_nsec;
+  const time_t last_accessed_sec = file_info.st_atimespec.tv_sec;
+  const int64 last_accessed_nsec = file_info.st_atimespec.tv_nsec;
+  const time_t creation_time_sec = file_info.st_ctimespec.tv_sec;
+  const int64 creation_time_nsec = file_info.st_ctimespec.tv_nsec;
+#else
+  // TODO(gavinp): Investigate a good high resolution option for OS_NACL.
+  const time_t last_modified_sec = file_info.st_mtime;
+  const int64 last_modified_nsec = 0;
+  const time_t last_accessed_sec = file_info.st_atime;
+  const int64 last_accessed_nsec = 0;
+  const time_t creation_time_sec = file_info.st_ctime;
+  const int64 creation_time_nsec = 0;
+#endif
+
+  info->last_modified =
+      base::Time::FromTimeT(last_modified_sec) +
+      base::TimeDelta::FromMicroseconds(last_modified_nsec /
+                                        base::Time::kNanosecondsPerMicrosecond);
+  info->last_accessed =
+      base::Time::FromTimeT(last_accessed_sec) +
+      base::TimeDelta::FromMicroseconds(last_accessed_nsec /
+                                        base::Time::kNanosecondsPerMicrosecond);
+  info->creation_time =
+      base::Time::FromTimeT(creation_time_sec) +
+      base::TimeDelta::FromMicroseconds(creation_time_nsec /
+                                        base::Time::kNanosecondsPerMicrosecond);
   return true;
 }
 
