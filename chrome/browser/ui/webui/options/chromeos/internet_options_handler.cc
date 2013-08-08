@@ -945,6 +945,7 @@ void InternetOptionsHandler::InitializePage() {
   web_ui()->CallJavascriptFunction(kSetDefaultNetworkIconsFunction,
                                    dictionary);
   NetworkHandler::Get()->network_state_handler()->RequestScan();
+  RefreshNetworkData();
 }
 
 void InternetOptionsHandler::RegisterMessages() {
