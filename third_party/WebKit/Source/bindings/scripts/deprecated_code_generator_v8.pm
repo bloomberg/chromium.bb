@@ -1682,7 +1682,7 @@ sub GenerateCustomElementInvocationScopeIfNeeded
         return $code;
     }
 
-    if ($annotation eq "Deliver" or $ext->{"Reflect"}) {
+    if ($annotation eq "Enable" or $ext->{"Reflect"}) {
         AddToImplIncludes("core/dom/CustomElementCallbackDispatcher.h");
         $code .= <<END;
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;

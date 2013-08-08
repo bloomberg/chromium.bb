@@ -39,7 +39,7 @@
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        nodeName;
 
              // FIXME: the spec says this can also raise on retrieval.
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings] attribute DOMString        nodeValue;
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, CustomElementCallbacks=Enable] attribute DOMString nodeValue;
 
     [PerWorldBindings] readonly attribute unsigned short   nodeType;
     [PerWorldBindings] readonly attribute Node             parentNode;
@@ -56,9 +56,9 @@
     [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Node appendChild(Node newChild);
 
     boolean            hasChildNodes();
-    [CustomElementCallbacks=Deliver, PerWorldBindings]
+    [CustomElementCallbacks=Enable, PerWorldBindings]
     Node               cloneNode(optional boolean deep);
-    void               normalize();
+    [CustomElementCallbacks=Enable] void normalize();
 
     // Introduced in DOM Level 2:
      boolean isSupported([Default=Undefined] optional DOMString feature,
@@ -72,7 +72,7 @@
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString       baseURI;
 
              // FIXME: the spec says this can also raise on retrieval.
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException, CustomElementCallbacks=Deliver] attribute DOMString       textContent;
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException, CustomElementCallbacks=Enable] attribute DOMString       textContent;
 
     boolean            isSameNode([Default=Undefined] optional Node other);
     boolean            isEqualNode([Default=Undefined] optional Node other);

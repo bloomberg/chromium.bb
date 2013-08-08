@@ -26,28 +26,28 @@
              attribute boolean             translate;
              [Reflect] attribute DOMString dir;
 
-             attribute long              tabIndex;
-             attribute boolean           draggable;
+             [CustomElementCallbacks=Enable] attribute long              tabIndex;
+             [CustomElementCallbacks=Enable] attribute boolean           draggable;
              [Reflect] attribute DOMString webkitdropzone;
              [Reflect] attribute boolean hidden;
              [Reflect] attribute DOMString accessKey;
 
     // Extensions
-             [TreatNullAs=NullString, CustomElementCallbacks=Deliver, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
-             [TreatNullAs=NullString, SetterRaisesException] attribute DOMString innerText;
-             [TreatNullAs=NullString, CustomElementCallbacks=Deliver, SetterRaisesException] attribute DOMString outerHTML;
-             [TreatNullAs=NullString, SetterRaisesException] attribute DOMString outerText;
+             [TreatNullAs=NullString, CustomElementCallbacks=Enable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
+             [TreatNullAs=NullString, CustomElementCallbacks=Enable, SetterRaisesException] attribute DOMString innerText;
+             [TreatNullAs=NullString, CustomElementCallbacks=Enable, SetterRaisesException] attribute DOMString outerHTML;
+             [TreatNullAs=NullString, CustomElementCallbacks=Enable, SetterRaisesException] attribute DOMString outerText;
 
-    [RaisesException] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
+    [RaisesException, CustomElementCallbacks=Enable] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
                                   [Default=Undefined] optional Element element);
-    [CustomElementCallbacks=Deliver, RaisesException] void insertAdjacentHTML([Default=Undefined] optional DOMString where,
+    [CustomElementCallbacks=Enable, RaisesException] void insertAdjacentHTML([Default=Undefined] optional DOMString where,
                             [Default=Undefined] optional DOMString html);
     [RaisesException] void insertAdjacentText([Default=Undefined] optional DOMString where,
                             [Default=Undefined] optional DOMString text);
 
     [EnabledAtRuntime=imeAPI] readonly attribute InputMethodContext inputMethodContext;
 
-             [TreatNullAs=NullString, SetterRaisesException] attribute DOMString contentEditable;
+    [TreatNullAs=NullString, CustomElementCallbacks=Enable, SetterRaisesException] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;
 
              attribute boolean spellcheck;

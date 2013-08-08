@@ -34,15 +34,15 @@
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22682
     attribute FileList files;
     [Reflect, URL] attribute DOMString formAction;
-    [TreatNullAs=NullString] attribute DOMString formEnctype;
-    [TreatNullAs=NullString] attribute DOMString formMethod;
+    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString formEnctype;
+    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString formMethod;
     [Reflect] attribute boolean formNoValidate;
     [Reflect] attribute DOMString formTarget;
-    attribute unsigned long height;
+    [CustomElementCallbacks=Enable] attribute unsigned long height;
     attribute boolean indeterminate;
     [EnabledAtRuntime=DataListElement] readonly attribute HTMLElement list;
     [Reflect] attribute DOMString max;
-    [SetterRaisesException] attribute long maxLength;
+    [SetterRaisesException, CustomElementCallbacks=Enable] attribute long maxLength;
     [Reflect] attribute DOMString min;
     [Reflect] attribute boolean multiple;
     [Reflect] attribute DOMString name;
@@ -50,21 +50,21 @@
     [Reflect] attribute DOMString placeholder;
     [Reflect] attribute boolean readOnly;
     [Reflect] attribute boolean required;
-    [SetterRaisesException] attribute unsigned long size; // Changed string -> long -> unsigned long
+    [SetterRaisesException, CustomElementCallbacks=Enable] attribute unsigned long size; // Changed string -> long -> unsigned long
     [Reflect, URL] attribute DOMString src;
     [Reflect] attribute DOMString step;
-    [TreatNullAs=NullString] attribute DOMString type; // readonly dropped as part of DOM level 2
-    [TreatNullAs=NullString] attribute DOMString defaultValue;
+    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString type; // readonly dropped as part of DOM level 2
+    [TreatNullAs=NullString, CustomElementCallbacks=Enable] attribute DOMString defaultValue;
     // See the discussion in https://bugs.webkit.org/show_bug.cgi?id=100085
-    [TreatNullAs=NullString, SetterRaisesException] attribute DOMString value;
-    [SetterRaisesException] attribute Date valueAsDate;
-    [SetterRaisesException] attribute double valueAsNumber;
+    [TreatNullAs=NullString, SetterRaisesException, CustomElementCallbacks=Enable] attribute DOMString value;
+    [SetterRaisesException, CustomElementCallbacks=Enable] attribute Date valueAsDate;
+    [SetterRaisesException, CustomElementCallbacks=Enable] attribute double valueAsNumber;
     [EnabledAtRuntime=inputModeAttribute, Reflect] attribute DOMString inputMode;
 
-    [RaisesException] void stepUp(optional long n);
-    [RaisesException] void stepDown(optional long n);
+    [RaisesException, CustomElementCallbacks=Enable] void stepUp(optional long n);
+    [RaisesException, CustomElementCallbacks=Enable] void stepDown(optional long n);
 
-    attribute unsigned long width;
+    [CustomElementCallbacks=Enable] attribute unsigned long width;
     readonly attribute boolean willValidate;
     readonly attribute ValidityState validity;
     readonly attribute DOMString validationMessage;

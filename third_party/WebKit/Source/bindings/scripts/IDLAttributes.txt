@@ -33,7 +33,7 @@ ConstructorRaisesException
 ConstructorTemplate=Event|TypedArray
 Custom
 CustomConstructor
-CustomElementCallbacks=Deliver|None
+CustomElementCallbacks=Enable|Disable
 CustomEnumerateProperty
 CustomGetter
 CustomIsReachable

@@ -26,6 +26,6 @@
 ] interface ChildNode {
     [PerWorldBindings] readonly attribute Element previousElementSibling;
     [PerWorldBindings] readonly attribute Element nextElementSibling;
-    [RaisesException, CustomElementCallbacks=Deliver] void remove();
+    [RaisesException, CustomElementCallbacks=Enable] void remove();
 };
 
