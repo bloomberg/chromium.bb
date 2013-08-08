@@ -55,6 +55,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   fmxr fpscr, r2
 
   bl  NaClSyscallCSegHook
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegEnd):
 
   /* NOTREACHED */
 

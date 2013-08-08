@@ -27,22 +27,46 @@ uint32_t g_regs_should_match;
 
 #if defined(__i386__)
 # define SYSCALL_CALLER(suffix) \
-    __asm__("SyscallCaller" suffix ":\n" \
+    __asm__(".pushsection .text, \"ax\", @progbits\n" \
+            "SyscallCaller" suffix ":\n" \
             "movl $1, g_regs_should_match\n" \
             "naclcall %esi\n" \
             "SyscallReturnAddress" suffix ":\n" \
             "movl $0, g_regs_should_match\n" \
-            "jmp ReturnFromSyscall\n");
+            "jmp ReturnFromSyscall\n" \
+            ".popsection\n");
 #elif defined(__x86_64__)
 # define SYSCALL_CALLER(suffix) \
-    __asm__("SyscallCaller" suffix ":\n" \
+    __asm__(".pushsection .text, \"ax\", @progbits\n" \
+            "SyscallCaller" suffix ":\n" \
             "movl $1, g_regs_should_match(%rip)\n" \
             /* Call via a temporary register so as not to modify %r12. */ \
             "movl %r12d, %eax\n" \
             "naclcall %eax, %r15\n" \
             "SyscallReturnAddress" suffix ":\n" \
             "movl $0, g_regs_should_match(%rip)\n" \
-            "jmp ReturnFromSyscall\n");
+            "jmp ReturnFromSyscall\n" \
+            ".popsection\n");
+#elif defined(__arm__)
+# define SYSCALL_CALLER(suffix) \
+    __asm__(".pushsection .text, \"ax\", %progbits\n" \
+            ".p2align 4\n" \
+            "SyscallCaller" suffix ":\n" \
+            /* Set g_regs_should_match = 1. */ \
+            "bic r5, r5, #0xc0000000\n" \
+            "str r6, [r5]\n" \
+            /* Call syscall. */ \
+            "adr lr, SyscallReturnAddress" suffix "\n" \
+            "nop\n" /* Pad to bundle-align next instruction */ \
+            "bic r4, r4, #0xc000000f\n" \
+            "bx r4\n" \
+            ".p2align 4\n" \
+            "SyscallReturnAddress" suffix ":\n" \
+            /* Set g_regs_should_match = 0. */ \
+            "bic r5, r5, #0xc0000000\n" \
+            "str r7, [r5]\n" \
+            "b ReturnFromSyscall\n" \
+            ".popsection\n");
 #else
 # error Unsupported architecture
 #endif
@@ -96,9 +120,14 @@ int main(int argc, char **argv) {
      */
     RegsFillTestValues(&call_regs, /* seed= */ call_count);
 #if defined(__i386__)
-  call_regs.esi = syscall_addr;
+    call_regs.esi = syscall_addr;
 #elif defined(__x86_64__)
-  call_regs.r12 = syscall_addr;
+    call_regs.r12 = syscall_addr;
+#elif defined(__arm__)
+    call_regs.r4 = syscall_addr;
+    call_regs.r5 = (uintptr_t) &g_regs_should_match;
+    call_regs.r6 = 1;
+    call_regs.r7 = 0;
 #else
 # error Unsupported architecture
 #endif

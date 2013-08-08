@@ -11,12 +11,10 @@
 
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
-#if NACL_ARCH(NACL_BUILD_ARCH) != NACL_x86
-# error This test uses x86 single-stepping and so is x86-only
-#endif
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 /* Start single-stepping by setting the trap flag (bit 8). */
 static INLINE void SetTrapFlag(void) {
@@ -51,6 +49,8 @@ static INLINE uintptr_t GetTrapFlag(void) {
 #endif
   return (flags & NACL_X86_TRAP_FLAG) != 0;
 }
+
+#endif
 
 static INLINE void SignalSafeWrite(const void *buf, size_t size) {
   if (write(2, buf, size) != (ssize_t) size) {

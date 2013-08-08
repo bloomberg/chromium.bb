@@ -12,5 +12,6 @@ extern const char NaCl_trampoline_seg_end;
 extern const char NaCl_trampoline_syscall_seg_addr;
 
 extern void NaClSyscallSeg(void);
+extern void NaClSyscallSegEnd(void);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_ARM_TRAMP_ARM_H_ */

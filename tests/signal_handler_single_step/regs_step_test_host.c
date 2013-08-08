@@ -6,12 +6,14 @@
 
 #include <signal.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/tramp_arm.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/load_file.h"
@@ -46,6 +48,11 @@
  *     initial context switch are different from the
  *     more-easily-recorded register values for the system calls made
  *     during this test.
+ *
+ * On x86, we use single-stepping by setting the x86 trap flag.
+ *
+ * ARM does not support single-stepping in hardware, so instead we set
+ * breakpoints on the code ranges we are interested in.
  */
 
 static const int kNumberOfCallsToTest = 5;
@@ -57,19 +64,152 @@ static int g_context_switch_count = 0;
 static struct NaClAppThread *g_natp;
 static struct RegsTestShm *g_test_shm;
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+static const int kSteppingSignal = SIGILL;
+#else
+static const int kSteppingSignal = SIGTRAP;
+#endif
+
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+
+/*
+ * This represents a range of address space that has been patched to
+ * overwrite normal instructions with breakpoint instructions.
+ */
+struct PatchInfo {
+  uintptr_t start_addr;
+  uintptr_t end_addr;
+  void *old_data;
+};
+
+static struct PatchInfo g_patches[2];
+static unsigned g_patch_count = 0;
+/* Address from which the breakpoint has been temporarily removed. */
+uint32_t *g_unpatched_addr = NULL;
+
+const int kArmInstructionBundleSize = 16;
+
+/* Add breakpoints covering the given range of instructions. */
+static void AddBreakpoints(struct NaClApp *nap,
+                           uintptr_t start, uintptr_t end) {
+  size_t size = end - start;
+  size_t page_mask = NACL_PAGESIZE - 1;
+  uintptr_t page_addr = start & ~page_mask;
+  uintptr_t mapping_size = ((end + page_mask) & ~page_mask) - page_addr;
+  int rc;
+  struct PatchInfo *patch;
+  uint32_t *dest;
+
+  CHECK(start % sizeof(uint32_t) == 0);
+  CHECK(end % sizeof(uint32_t) == 0);
+
+  rc = mprotect((void *) page_addr, mapping_size,
+                PROT_READ | PROT_WRITE | PROT_EXEC);
+  CHECK(rc == 0);
+
+  CHECK(g_patch_count < NACL_ARRAY_SIZE(g_patches));
+  patch = &g_patches[g_patch_count++];
+  patch->start_addr = start;
+  patch->end_addr = end;
+  patch->old_data = malloc(size);
+  CHECK(patch->old_data != NULL);
+  memcpy(patch->old_data, (void *) start, size);
+  for (dest = (uint32_t *) start; dest < (uint32_t *) end; ) {
+    /* In untrusted address space, avoid overwriting any constant pools. */
+    if (NaClIsUserAddr(nap, (uintptr_t) dest) &&
+        (*dest == NACL_HALT_WORD ||
+         *dest == NACL_INSTR_ARM_LITERAL_POOL_HEAD)) {
+      do {
+        dest++;
+      } while ((uintptr_t) dest % kArmInstructionBundleSize != 0);
+    } else {
+      *dest++ = NACL_INSTR_ARM_HALT_FILL;
+    }
+  }
+  __builtin___clear_cache((void *) start, (void *) end);
+}
+
+/*
+ * This is a workaround for qemu-arm: Writing to an address that has
+ * been executed doesn't seem to work unless we re-call mprotect() on
+ * the address.
+ */
+static void ResetPagePermissions(uintptr_t addr) {
+  int rc = mprotect((void *) (addr & ~(NACL_PAGESIZE - 1)), NACL_PAGESIZE,
+                    PROT_READ | PROT_WRITE | PROT_EXEC);
+  CHECK(rc == 0);
+}
+
+static uint32_t GetOverwrittenInstruction(uintptr_t addr) {
+  struct PatchInfo *patch;
+  struct PatchInfo *patches_end = &g_patches[g_patch_count];
+  for (patch = g_patches; patch < patches_end; patch++) {
+    if (patch->start_addr <= addr && addr < patch->end_addr) {
+      return *(uint32_t *) (addr - patch->start_addr +
+                            (uintptr_t) patch->old_data);
+    }
+  }
+  SignalSafeLogStringLiteral("Address not covered by breakpoint\n");
+  _exit(1);
+}
+
+static void TemporarilyRemoveBreakpoint(uintptr_t addr) {
+  uint32_t *dest;
+
+  /* Reapply previously-removed patch. */
+  if (g_unpatched_addr != NULL) {
+    ResetPagePermissions((uintptr_t) g_unpatched_addr);
+    CHECK(*g_unpatched_addr
+          == GetOverwrittenInstruction((uintptr_t) g_unpatched_addr));
+    *g_unpatched_addr = NACL_INSTR_ARM_HALT_FILL;
+    __builtin___clear_cache(g_unpatched_addr, &g_unpatched_addr[1]);
+  }
+
+  dest = (uint32_t *) addr;
+  ResetPagePermissions(addr);
+  CHECK(*dest == NACL_INSTR_ARM_HALT_FILL);
+  *dest = GetOverwrittenInstruction(addr);
+  __builtin___clear_cache(dest, &dest[1]);
+  g_unpatched_addr = dest;
+}
+
+static void SetUpBreakpoints(struct NaClApp *nap) {
+  AddBreakpoints(nap, (uintptr_t) &NaClSyscallSeg,
+                 (uintptr_t) &NaClSyscallSegEnd);
+  /* Set up breakpoints on the syscall trampolines and on untrusted code. */
+  AddBreakpoints(nap, NACL_TRAMPOLINE_START, nap->static_text_end);
+}
+
+#endif
+
 
 static int32_t TestSyscall(struct NaClAppThread *natp) {
   NaClCopyDropLock(natp->nap);
 
   if (g_call_count == 0) {
     g_natp = natp;
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+    SetUpBreakpoints(natp->nap);
+#else
     SetTrapFlag();
+#endif
   }
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
   /* Check that the trap flag has not been unset by anything unexpected. */
   CHECK(GetTrapFlag());
+#endif
 
   if (++g_call_count == kNumberOfCallsToTest) {
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+    /*
+     * Unset the trap flag, otherwise, on x86-32, stepping into a
+     * system call instruction generates a SIGTRAP that we cannot
+     * handle.
+     */
     UnsetTrapFlag();
+#endif
     NaClReportExitStatus(natp->nap, 0);
     NaClAppThreadTeardown(natp);
   }
@@ -85,10 +225,15 @@ static void TrapSignalHandler(int signal,
   struct NaClSignalContext *expected_regs = &g_test_shm->expected_regs;
   struct NaClSignalContext context = *context_ptr;
 
-  if (signal != SIGTRAP) {
+  if (signal != kSteppingSignal) {
     SignalSafeLogStringLiteral("Error: Received unexpected signal\n");
     _exit(1);
   }
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  /* Remove breakpoint to allow the instruction to be executed. */
+  TemporarilyRemoveBreakpoint(context_ptr->prog_ctr);
+#endif
 
   /* Get the prog_ctr value relative to untrusted address space. */
   prog_ctr = (uint32_t) context.prog_ctr;
@@ -143,11 +288,21 @@ static void TrapSignalHandler(int signal,
     NaClGetRegistersForContextSwitch(g_natp, &context, &unwind_case);
 
     str = NaClUnwindCaseToString(unwind_case);
-    CHECK(str != NULL);
+    /* TODO(mseaborn): Make this work fully for ARM. */
+    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm) {
+      if (str == NULL) {
+        str = "?";
+      }
+    } else {
+      CHECK(str != NULL);
+    }
     SignalSafeWrite(str, strlen(str));
     SignalSafeLogStringLiteral("\n");
 
-    RegsAssertEqual(&context, expected_regs);
+    /* TODO(mseaborn): Make this work fully for ARM. */
+    if (NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm) {
+      RegsAssertEqual(&context, expected_regs);
+    }
   }
 }
 
@@ -156,6 +311,8 @@ int main(int argc, char **argv) {
   uint32_t mmap_addr;
   char arg_string[32];
   char *args[] = {"prog_name", arg_string};
+
+  NaClHandleBootstrapArgs(&argc, &argv);
 
   NaClAllModulesInit();
 
@@ -191,6 +348,7 @@ int main(int argc, char **argv) {
   CHECK(!g_in_untrusted_code);
   ASSERT_EQ(g_context_switch_count,
             (kNumberOfCallsToTest + kFastPathSyscallsToTest - 1) * 2);
+  fprintf(stderr, "Finished OK\n");
 
   /*
    * Avoid calling exit() because it runs process-global destructors

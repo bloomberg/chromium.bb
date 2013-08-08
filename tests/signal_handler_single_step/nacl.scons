@@ -17,8 +17,7 @@ trusted_env = env['TRUSTED_ENV']
 if not env.AllowInlineAssembly():
   Return()
 
-# This test uses x86 single-stepping.
-if not env.Bit('build_x86'):
+if not (env.Bit('build_x86') or env.Bit('build_arm')):
   Return()
 # This test uses POSIX signal handling so does not build on Windows.
 if env.Bit('host_windows'):
@@ -29,26 +28,27 @@ if env.Bit('host_windows'):
 if env.Bit('host_mac'):
   Return()
 
-step_test_guest = env.ComponentProgram(
-    'step_test_guest', ['step_test_guest.c'],
-    EXTRA_LIBS=['${NONIRT_LIBS}'],
-    EXTRA_LINKFLAGS=['-nostdlib'])
+if env.Bit('build_x86'):
+  step_test_guest = env.ComponentProgram(
+      'step_test_guest', ['step_test_guest.c'],
+      EXTRA_LIBS=['${NONIRT_LIBS}'],
+      EXTRA_LINKFLAGS=['-nostdlib'])
 
-step_test_host = trusted_env.ComponentProgram(
-    'step_test_host', ['step_test_host.c'], EXTRA_LIBS=['sel'])
+  step_test_host = trusted_env.ComponentProgram(
+      'step_test_host', ['step_test_host.c'], EXTRA_LIBS=['sel'])
 
-# We don't use AddBootstrap() to run this with nacl_bootstrap because:
-#  * there is no need in the current x86 sandboxes;
-#  * avoiding nacl_bootstrap means that we are testing that the
-#    software-under-test works with a non-zero sandbox base.
-node = env.CommandTest('signal_handler_single_step.out',
-                       [step_test_host, step_test_guest],
-                       # Don't hide output: This test reports a
-                       # "RESULTS" line for Buildbot to record.
-                       capture_output=False)
-env.AddNodeToTestSuite(node, ['small_tests'],
-                       'run_signal_handler_single_step_test',
-                       is_broken=not env.Bit('nacl_static_link'))
+  # We don't use AddBootstrap() to run this with nacl_bootstrap because:
+  #  * there is no need in the current x86 sandboxes;
+  #  * avoiding nacl_bootstrap means that we are testing that the
+  #    software-under-test works with a non-zero sandbox base.
+  node = env.CommandTest('signal_handler_single_step.out',
+                         [step_test_host, step_test_guest],
+                         # Don't hide output: This test reports a
+                         # "RESULTS" line for Buildbot to record.
+                         capture_output=False)
+  env.AddNodeToTestSuite(node, ['small_tests'],
+                         'run_signal_handler_single_step_test',
+                         is_broken=not env.Bit('nacl_static_link'))
 
 
 regs_step_test_guest = env.ComponentProgram(
@@ -59,9 +59,9 @@ regs_step_test_host = trusted_env.ComponentProgram(
     'regs_step_test_host', ['regs_step_test_host.c'],
     EXTRA_LIBS=['sel', 'test_common'])
 
-# We don't use AddBootstrap() to run this -- see above.
-node = env.CommandTest('signal_handler_regs_single_step.out',
-                       [regs_step_test_host, regs_step_test_guest])
-env.AddNodeToTestSuite(node, ['small_tests'],
+node = env.CommandTest(
+    'signal_handler_regs_single_step.out',
+    env.AddBootstrap(regs_step_test_host, [regs_step_test_guest]))
+env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
                        'run_signal_handler_regs_single_step_test',
                        is_broken=not env.Bit('nacl_static_link'))
