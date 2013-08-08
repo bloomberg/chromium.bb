@@ -891,7 +891,11 @@ void EventSender::contextClick(const CppArgumentList& arguments, CppVariant* res
     pressedButton = WebMouseEvent::ButtonNone;
 #endif
 
-    result->set(WebBindings::makeStringArray(makeMenuItemStringsFor(m_lastContextMenuData.get(), m_delegate)));
+    NPObject* resultArray = WebBindings::makeStringArray(makeMenuItemStringsFor(m_lastContextMenuData.get(), m_delegate));
+    result->set(resultArray);
+    WebBindings::releaseObject(resultArray);
+
+    m_lastContextMenuData.reset();
 }
 
 class MouseDownTask: public WebMethodTask<EventSender> {
