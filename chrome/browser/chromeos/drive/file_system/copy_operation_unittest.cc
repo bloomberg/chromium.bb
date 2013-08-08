@@ -72,6 +72,43 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
       remote_dest_path.DirName()));
 }
 
+TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_QuotaCheck) {
+  const base::FilePath local_src_path = temp_dir().AppendASCII("local.txt");
+  const base::FilePath remote_dest_path(
+      FILE_PATH_LITERAL("drive/root/remote.txt"));
+
+  const size_t kFileSize = 10;
+
+  // Prepare a local file.
+  ASSERT_TRUE(
+      google_apis::test_util::WriteStringToFile(local_src_path,
+                                                std::string(kFileSize, 'a')));
+
+  // Set insufficient quota.
+  fake_service()->SetQuotaValue(100, 100 + kFileSize - 1);
+
+  // Transfer the local file to Drive.
+  FileError error = FILE_ERROR_FAILED;
+  operation_->TransferFileFromLocalToRemote(
+      local_src_path,
+      remote_dest_path,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_NO_SERVER_SPACE, error);
+
+  // Set sufficient quota.
+  fake_service()->SetQuotaValue(100, 100 + kFileSize);
+
+  // Transfer the local file to Drive.
+  error = FILE_ERROR_FAILED;
+  operation_->TransferFileFromLocalToRemote(
+      local_src_path,
+      remote_dest_path,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+}
+
 TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_HostedDocument) {
   const base::FilePath local_src_path = temp_dir().AppendASCII("local.gdoc");
   const base::FilePath remote_dest_path(FILE_PATH_LITERAL(

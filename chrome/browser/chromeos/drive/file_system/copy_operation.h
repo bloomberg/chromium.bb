@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace base {
@@ -154,14 +155,25 @@ class CopyOperation {
                                 const base::FilePath& local_file_path,
                                 scoped_ptr<ResourceEntry> entry);
 
-  // Part of TransferFileFromLocalToRemote(). Called after
-  // GetResourceEntryByPath() is complete.
-  void TransferFileFromLocalToRemoteAfterGetResourceEntry(
+  // Part of TransferFileFromLocalToRemote(). Called after |parent_entry| and
+  // |local_file_size| are retrieved in the blocking pool.
+  void TransferFileFromLocalToRemoteAfterPrepare(
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
+      int64* local_file_size,
+      ResourceEntry* parent_entry,
+      FileError error);
+
+  // Part of TransferFileFromLocalToRemote(). Called after the result of
+  // GetAboutResource() is avaiable.
+  void TransferFileFromLocalToRemoteAfterGetQuota(
+      const base::FilePath& local_src_file_path,
+      const base::FilePath& remote_dest_file_path,
+      const FileOperationCallback& callback,
+      int64 local_file_size,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Initiates transfer of |local_file_path| with |resource_id| to
   // |remote_dest_file_path|. |local_file_path| must be a file from the local

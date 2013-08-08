@@ -52,6 +52,9 @@ class FakeDriveService : public DriveServiceInterface {
     share_url_base_ = share_url_base;
   }
 
+  // Changes the quota fields returned from GetAboutResource().
+  void SetQuotaValue(int64 used, int64 total);
+
   // Returns the largest changestamp, which starts from 0 by default. See
   // also comments at LoadAccountMetadataForWapi().
   int64 largest_changestamp() const { return largest_changestamp_; }
@@ -270,7 +273,7 @@ class FakeDriveService : public DriveServiceInterface {
   GURL GetNewUploadSessionUrl();
 
   scoped_ptr<base::DictionaryValue> resource_list_value_;
-  scoped_ptr<base::Value> account_metadata_value_;
+  scoped_ptr<base::DictionaryValue> account_metadata_value_;
   scoped_ptr<base::Value> app_info_value_;
   std::map<GURL, UploadSession> upload_sessions_;
   int64 largest_changestamp_;

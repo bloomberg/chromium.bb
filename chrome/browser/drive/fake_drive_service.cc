@@ -216,7 +216,12 @@ bool FakeDriveService::LoadResourceListForWapi(
 bool FakeDriveService::LoadAccountMetadataForWapi(
     const std::string& relative_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  account_metadata_value_ = test_util::LoadJSONFile(relative_path);
+
+  // Load JSON data, which must be a dictionary.
+  scoped_ptr<base::Value> value = test_util::LoadJSONFile(relative_path);
+  CHECK_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
+  account_metadata_value_.reset(
+      static_cast<base::DictionaryValue*>(value.release()));
 
   // Update the largest_changestamp_.
   scoped_ptr<AccountMetadata> account_metadata =
@@ -246,6 +251,16 @@ bool FakeDriveService::LoadAppListForDriveApi(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   app_info_value_ = test_util::LoadJSONFile(relative_path);
   return app_info_value_;
+}
+
+void FakeDriveService::SetQuotaValue(int64 used, int64 total) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(account_metadata_value_);
+
+  account_metadata_value_->SetString("entry.gd$quotaBytesUsed.$t",
+                                     base::Int64ToString16(used));
+  account_metadata_value_->SetString("entry.gd$quotaBytesTotal.$t",
+                                     base::Int64ToString16(total));
 }
 
 GURL FakeDriveService::GetFakeLinkUrl(const std::string& resource_id) {

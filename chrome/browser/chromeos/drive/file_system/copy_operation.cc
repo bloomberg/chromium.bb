@@ -49,6 +49,23 @@ FileError StoreAndMarkDirty(internal::FileCache* cache,
   return cache->MarkDirty(resource_id);
 }
 
+// Gets the file size of the |local_path|, and the ResourceEntry for the parent
+// of |remote_path| to prepare the necessary information for transfer.
+FileError PrepareTransferFileFromLocalToRemote(
+    internal::ResourceMetadata* metadata,
+    const base::FilePath& local_path,
+    const base::FilePath& remote_path,
+    int64* local_file_size,
+    ResourceEntry* parent_entry) {
+  DCHECK(metadata);
+  DCHECK(local_file_size);
+  DCHECK(parent_entry);
+
+  if (!file_util::GetFileSize(local_path, local_file_size))
+      return FILE_ERROR_NOT_FOUND;
+  return metadata->GetResourceEntryByPath(remote_path.DirName(), parent_entry);
+}
+
 }  // namespace
 
 CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
@@ -149,15 +166,25 @@ void CopyOperation::TransferFileFromLocalToRemote(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Make sure the destination directory exists.
-  metadata_->GetResourceEntryByPathOnUIThread(
-      remote_dest_file_path.DirName(),
+  int64* local_file_size = new int64(-1);
+  ResourceEntry* parent_entry = new ResourceEntry;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&PrepareTransferFileFromLocalToRemote,
+                 metadata_,
+                 local_src_file_path,
+                 remote_dest_file_path,
+                 local_file_size,
+                 parent_entry),
       base::Bind(
-          &CopyOperation::TransferFileFromLocalToRemoteAfterGetResourceEntry,
+          &CopyOperation::TransferFileFromLocalToRemoteAfterPrepare,
           weak_ptr_factory_.GetWeakPtr(),
           local_src_file_path,
           remote_dest_file_path,
-          callback));
+          callback,
+          base::Owned(local_file_size),
+          base::Owned(parent_entry)));
 }
 
 void CopyOperation::ScheduleTransferRegularFile(
@@ -424,22 +451,24 @@ void CopyOperation::OnGetFileCompleteForCopy(
   ScheduleTransferRegularFile(local_file_path, remote_dest_file_path, callback);
 }
 
-void CopyOperation::TransferFileFromLocalToRemoteAfterGetResourceEntry(
+void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
     const base::FilePath& local_src_file_path,
     const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
+    int64* local_file_size,
+    ResourceEntry* parent_entry,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+  DCHECK(parent_entry);
+  DCHECK(local_file_size);
 
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
 
-  DCHECK(entry.get());
-  if (!entry->file_info().is_directory()) {
+  if (!parent_entry->file_info().is_directory()) {
     // The parent of |remote_dest_file_path| is not a directory.
     callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
     return;
@@ -456,9 +485,43 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterGetResourceEntry(
                    remote_dest_file_path,
                    callback));
   } else {
-    ScheduleTransferRegularFile(local_src_file_path, remote_dest_file_path,
-                                callback);
+    // For regular files, check the server-side quota whether sufficient space
+    // is available for the file to be uploaded.
+    scheduler_->GetAboutResource(
+        base::Bind(&CopyOperation::TransferFileFromLocalToRemoteAfterGetQuota,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   local_src_file_path,
+                   remote_dest_file_path,
+                   callback,
+                   *local_file_size));
   }
+}
+
+void CopyOperation::TransferFileFromLocalToRemoteAfterGetQuota(
+    const base::FilePath& local_src_file_path,
+    const base::FilePath& remote_dest_file_path,
+    const FileOperationCallback& callback,
+    int64 local_file_size,
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::AboutResource> about_resource) {
+  DCHECK(!callback.is_null());
+
+  FileError error = GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  DCHECK(about_resource);
+  const int64 space =
+      about_resource->quota_bytes_total() - about_resource->quota_bytes_used();
+  if (space < local_file_size) {
+    callback.Run(FILE_ERROR_NO_SERVER_SPACE);
+    return;
+  }
+
+  ScheduleTransferRegularFile(local_src_file_path, remote_dest_file_path,
+                              callback);
 }
 
 void CopyOperation::TransferFileForResourceId(
