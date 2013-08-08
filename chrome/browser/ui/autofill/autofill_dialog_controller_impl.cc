@@ -809,8 +809,7 @@ bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
   return !IsPayingWithWallet() &&
       !profile_->IsOffTheRecord() &&
       IsManuallyEditingAnySection() &&
-      ShouldShowDetailArea() &&
-      !ShouldShowSpinner();
+      ShouldShowDetailArea();
 }
 
 int AutofillDialogControllerImpl::GetDialogButtons() const {
