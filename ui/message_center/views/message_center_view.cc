@@ -715,8 +715,9 @@ void MessageCenterView::SetSettingsVisible(bool visible) {
   settings_transition_animation_->set_delegate(this);
   settings_transition_animation_->set_continuous(false);
   settings_transition_animation_->Start();
-}
 
+  button_bar_->SetBackArrowVisible(visible);
+}
 
 void MessageCenterView::ClearAllNotifications() {
   if (is_closing_)
@@ -730,6 +731,7 @@ void MessageCenterView::ClearAllNotifications() {
 void MessageCenterView::OnAllNotificationsCleared() {
   scroller_->SetEnabled(true);
   button_bar_->SetAllButtonsEnabled(true);
+  button_bar_->SetCloseAllButtonEnabled(false);
   message_center_->RemoveAllNotifications(true);  // Action by user.
 }
 
@@ -971,7 +973,7 @@ void MessageCenterView::NotificationsChanged() {
   bool no_message_views = message_views_.empty();
 
   no_notifications_message_view_->SetVisible(no_message_views);
-  button_bar_->SetCloseAllButtonVisible(!no_message_views);
+  button_bar_->SetCloseAllButtonEnabled(!no_message_views);
   scroller_->set_focusable(!no_message_views);
 
   scroller_->InvalidateLayout();

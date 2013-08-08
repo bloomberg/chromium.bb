@@ -19,7 +19,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_center_view.h"
@@ -27,6 +26,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -34,6 +34,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -43,11 +44,16 @@
 
 namespace message_center {
 namespace {
-
-const int kSpaceInButtonComponents = 16;
-const int kMarginWidth = 16;
-const int kMinimumWindowWidth = 320;
+const int kButtonPainterInsets = 5;
+const int kMarginWidth = 20;
+const int kMenuButtonLeftPadding = 11;
+const int kMenuButtonRightPadding = 14;
+const int kMenuButtonVerticalPadding = 9;
 const int kMinimumWindowHeight = 480;
+const int kMinimumWindowWidth = 320;
+const int kSettingsTitleBottomMargin = 7;
+const int kSettingsTitleTopMargin = 15;
+const int kSpaceInButtonComponents = 16;
 const int kEntryHeight = kMinimumWindowHeight / 10;
 
 // The view to guarantee the 48px height and place the contents at the
@@ -120,6 +126,40 @@ bool EntryView::OnKeyReleased(const ui::KeyEvent& event) {
 
 }  // namespace
 
+// NotifierGroupMenuButtonBorder ///////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+class NotifierGroupMenuButtonBorder : public views::TextButtonDefaultBorder {
+ public:
+  NotifierGroupMenuButtonBorder();
+
+ private:
+  virtual ~NotifierGroupMenuButtonBorder();
+};
+
+NotifierGroupMenuButtonBorder::NotifierGroupMenuButtonBorder()
+    : views::TextButtonDefaultBorder() {
+  ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  gfx::Insets insets(kButtonPainterInsets,
+                     kButtonPainterInsets,
+                     kButtonPainterInsets,
+                     kButtonPainterInsets);
+
+  set_normal_painter(views::Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BUTTON_NORMAL), insets));
+  set_hot_painter(views::Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BUTTON_HOVER), insets));
+  set_pushed_painter(views::Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BUTTON_PRESSED), insets));
+
+  SetInsets(gfx::Insets(kMenuButtonVerticalPadding,
+                        kMenuButtonLeftPadding,
+                        kMenuButtonVerticalPadding,
+                        kMenuButtonRightPadding));
+}
+
+NotifierGroupMenuButtonBorder::~NotifierGroupMenuButtonBorder() {}
+
 // NotifierGroupMenuModel //////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 class NotifierGroupMenuModel : public ui::SimpleMenuModel,
@@ -153,13 +193,6 @@ NotifierGroupMenuModel::NotifierGroupMenuModel(
         notifier_settings_provider_->GetNotifierGroupAt(i);
 
     AddItem(i, group.login_info.empty() ? group.name : group.login_info);
-
-    gfx::ImageSkia resized_icon = gfx::ImageSkiaOperations::CreateResizedImage(
-        *group.icon.ToImageSkia(),
-        skia::ImageOperations::RESIZE_BETTER,
-        gfx::Size(kSettingsIconSize, kSettingsIconSize));
-
-    SetIcon(i, gfx::Image(resized_icon));
   }
 }
 
@@ -280,39 +313,20 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   if (get_use_acceleration_when_possible())
     SetPaintToLayer(true);
 
-  ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
-
-  views::View* title_container = new views::View;
-  // The title_arrow and title_label aren't aligned well in Windows for the
-  // horizontal BoxLayout. That's why GridLayout with vertical alignment is
-  // used here.
-  views::GridLayout* title_layout = new views::GridLayout(title_container);
-  title_container->SetLayoutManager(title_layout);
-  views::ColumnSet* columns = title_layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                     0, views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kMarginWidth);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                     1, views::GridLayout::USE_PREF, 0, 0);
-  title_arrow_ = new views::ImageButton(this);
-  title_arrow_->SetImage(views::Button::STATE_NORMAL, bundle.GetImageSkiaNamed(
-      IDR_NOTIFICATION_ARROW));
-  title_arrow_->SetImage(views::Button::STATE_HOVERED, bundle.GetImageSkiaNamed(
-      IDR_NOTIFICATION_ARROW_HOVER));
-  title_arrow_->SetImage(views::Button::STATE_PRESSED, bundle.GetImageSkiaNamed(
-      IDR_NOTIFICATION_ARROW_PRESSED));
   gfx::Font title_font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
-  views::Label* title_label = new views::Label(
+  title_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL),
       title_font);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetMultiLine(true);
-  title_layout->StartRow(0, 0);
-  title_layout->AddView(title_arrow_);
-  title_layout->AddView(title_label);
-  title_entry_ = new EntryView(title_container);
-  AddChildView(title_entry_);
+  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label_->SetMultiLine(true);
+  title_label_->set_border(
+      views::Border::CreateEmptyBorder(kSettingsTitleTopMargin,
+                                       kMarginWidth,
+                                       kSettingsTitleBottomMargin,
+                                       kMarginWidth));
+
+  AddChildView(title_label_);
 
   scroller_ = new views::ScrollView();
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
@@ -365,8 +379,16 @@ void NotifierSettingsView::UpdateContentsView(
   views::View* contents_title_view = new views::View();
   contents_title_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 5));
-  views::Label* top_label = new views::Label(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
+
+  bool need_account_switcher =
+      provider_ && provider_->GetNotifierGroupCount() > 1;
+  int top_label_resource_id =
+      need_account_switcher ? IDS_MESSAGE_CENTER_SETTINGS_DESCRIPTION_MULTIUSER
+                            : IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION;
+
+  views::Label* top_label =
+      new views::Label(l10n_util::GetStringUTF16(top_label_resource_id));
+
   top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   top_label->SetMultiLine(true);
   contents_title_view->AddChildView(top_label);
@@ -379,9 +401,16 @@ void NotifierSettingsView::UpdateContentsView(
                               : active_group.login_info;
   }
 
-  views::View* notifier_group_selector =
-      new views::MenuButton(NULL, notifier_group_text, this, true);
-  contents_title_view->AddChildView(notifier_group_selector);
+  if (need_account_switcher) {
+    views::MenuButton* notifier_group_selector =
+        new views::MenuButton(NULL, notifier_group_text, this, true);
+    notifier_group_selector->set_border(new NotifierGroupMenuButtonBorder);
+    notifier_group_selector->set_focus_border(NULL);
+    notifier_group_selector->set_animate_on_state_change(false);
+    notifier_group_selector->set_focusable(true);
+    contents_title_view->AddChildView(notifier_group_selector);
+  }
+
   contents_view->AddChildView(new EntryView(contents_title_view));
 
   for (size_t i = 0; i < notifiers.size(); ++i) {
@@ -391,6 +420,7 @@ void NotifierSettingsView::UpdateContentsView(
     contents_view->AddChildView(entry);
     buttons_.insert(button);
   }
+
   scroller_->SetContents(contents_view);
 
   contents_view->SetBoundsRect(gfx::Rect(contents_view->GetPreferredSize()));
@@ -398,8 +428,8 @@ void NotifierSettingsView::UpdateContentsView(
 }
 
 void NotifierSettingsView::Layout() {
-  int title_height = title_entry_->GetHeightForWidth(width());
-  title_entry_->SetBounds(0, 0, width(), title_height);
+  int title_height = title_label_->GetHeightForWidth(width());
+  title_label_->SetBounds(0, 0, width(), title_height);
 
   views::View* contents_view = scroller_->contents();
   int content_width = width();
@@ -414,8 +444,8 @@ void NotifierSettingsView::Layout() {
 
 gfx::Size NotifierSettingsView::GetMinimumSize() {
   gfx::Size size(kMinimumWindowWidth, kMinimumWindowHeight);
-  int total_height = title_entry_->GetPreferredSize().height() +
-      scroller_->contents()->GetPreferredSize().height();
+  int total_height = title_label_->GetPreferredSize().height() +
+                     scroller_->contents()->GetPreferredSize().height();
   if (total_height > kMinimumWindowHeight)
     size.Enlarge(scroller_->GetScrollBarWidth(), 0);
   return size;
@@ -424,7 +454,7 @@ gfx::Size NotifierSettingsView::GetMinimumSize() {
 gfx::Size NotifierSettingsView::GetPreferredSize() {
   gfx::Size preferred_size;
   std::vector<gfx::Size> child_sizes;
-  gfx::Size title_size = title_entry_->GetPreferredSize();
+  gfx::Size title_size = title_label_->GetPreferredSize();
   gfx::Size content_size = scroller_->contents()->GetPreferredSize();
   return gfx::Size(std::max(title_size.width(), content_size.width()),
                    title_size.height() + content_size.height());

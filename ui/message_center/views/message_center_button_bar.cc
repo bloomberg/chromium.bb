@@ -29,8 +29,8 @@ namespace message_center {
 
 namespace {
 const int kButtonSize = 40;
-const int kChevronMargin = 4;
-const int kFooterLeftMargin = 17;
+const int kChevronWidth = 8;
+const int kFooterLeftMargin = 20;
 const int kFooterRightMargin = 14;
 }  // namespace
 
@@ -43,6 +43,7 @@ class NotificationCenterButton : public views::ToggleImageButton {
                            int hover_id,
                            int pressed_id,
                            int text_id);
+  void set_size(gfx::Size size) { size_ = size; }
 
  protected:
   // Overridden from views::View:
@@ -50,6 +51,8 @@ class NotificationCenterButton : public views::ToggleImageButton {
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
  private:
+  gfx::Size size_;
+
   DISALLOW_COPY_AND_ASSIGN(NotificationCenterButton);
 };
 
@@ -59,21 +62,21 @@ NotificationCenterButton::NotificationCenterButton(
     int hover_id,
     int pressed_id,
     int text_id)
-    : views::ToggleImageButton(listener) {
+    : views::ToggleImageButton(listener), size_(kButtonSize, kButtonSize) {
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
   SetImage(STATE_NORMAL, resource_bundle.GetImageSkiaNamed(normal_id));
   SetImage(STATE_HOVERED, resource_bundle.GetImageSkiaNamed(hover_id));
   SetImage(STATE_PRESSED, resource_bundle.GetImageSkiaNamed(pressed_id));
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
-  SetTooltipText(resource_bundle.GetLocalizedString(text_id));
+  if (text_id)
+    SetTooltipText(resource_bundle.GetLocalizedString(text_id));
+
   set_focusable(true);
   set_request_focus_on_press(false);
 }
 
-gfx::Size NotificationCenterButton::GetPreferredSize() {
-  return gfx::Size(kButtonSize, kButtonSize);
-}
+gfx::Size NotificationCenterButton::GetPreferredSize() { return size_; }
 
 void NotificationCenterButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
@@ -91,22 +94,41 @@ MessageCenterButtonBar::MessageCenterButtonBar(
     bool settings_initially_visible)
     : message_center_view_(message_center_view),
       message_center_(message_center),
+      title_arrow_(NULL),
+      notification_label_(NULL),
+      button_container_(NULL),
       close_all_button_(NULL),
+      settings_button_(NULL),
       quiet_mode_button_(NULL) {
   if (get_use_acceleration_when_possible())
     SetPaintToLayer(true);
   set_background(
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
 
-  views::Label* notification_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_FOOTER_TITLE));
-  notification_label->SetAutoColorReadabilityEnabled(false);
-  notification_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  notification_label->SetEnabledColor(kRegularTextColor);
-  AddChildView(notification_label);
+  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
 
-  views::View* button_container = new views::View;
-  button_container->SetLayoutManager(
+  title_arrow_ = new NotificationCenterButton(this,
+                                              IDR_NOTIFICATION_ARROW,
+                                              IDR_NOTIFICATION_ARROW_HOVER,
+                                              IDR_NOTIFICATION_ARROW_PRESSED,
+                                              0);
+  title_arrow_->set_size(gfx::Size(kChevronWidth, kButtonSize));
+
+  // Keyboardists can use the gear button to switch modes.
+  title_arrow_->set_focusable(false);
+
+  gfx::Font notification_label_font =
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
+  notification_label_ = new views::Label(
+      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_FOOTER_TITLE),
+      notification_label_font);
+  notification_label_->SetAutoColorReadabilityEnabled(false);
+  notification_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  notification_label_->SetEnabledColor(kRegularTextColor);
+  AddChildView(notification_label_);
+
+  button_container_ = new views::View;
+  button_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
   quiet_mode_button_ = new NotificationCenterButton(
       this,
@@ -114,7 +136,6 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       IDR_NOTIFICATION_DO_NOT_DISTURB_HOVER,
       IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED,
       IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP);
-  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
   quiet_mode_button_->SetToggledImage(
       views::Button::STATE_NORMAL,
       resource_bundle.GetImageSkiaNamed(
@@ -128,7 +149,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       resource_bundle.GetImageSkiaNamed(
           IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED));
   quiet_mode_button_->SetToggled(message_center->IsQuietMode());
-  button_container->AddChildView(quiet_mode_button_);
+  button_container_->AddChildView(quiet_mode_button_);
 
   close_all_button_ =
       new NotificationCenterButton(this,
@@ -136,15 +157,21 @@ MessageCenterButtonBar::MessageCenterButtonBar(
                                    IDR_NOTIFICATION_CLEAR_ALL_HOVER,
                                    IDR_NOTIFICATION_CLEAR_ALL_PRESSED,
                                    IDS_MESSAGE_CENTER_CLEAR_ALL);
-  button_container->AddChildView(close_all_button_);
+  button_container_->AddChildView(close_all_button_);
   settings_button_ =
       new NotificationCenterButton(this,
                                    IDR_NOTIFICATION_SETTINGS,
                                    IDR_NOTIFICATION_SETTINGS_HOVER,
                                    IDR_NOTIFICATION_SETTINGS_PRESSED,
                                    IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL);
-  button_container->AddChildView(settings_button_);
+  button_container_->AddChildView(settings_button_);
 
+  SetCloseAllButtonEnabled(!settings_initially_visible);
+  SetBackArrowVisible(settings_initially_visible);
+  ViewVisibilityChanged();
+}
+
+void MessageCenterButtonBar::ViewVisibilityChanged() {
   gfx::ImageSkia* settings_image =
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_NOTIFICATION_SETTINGS);
@@ -154,21 +181,42 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   layout->SetInsets(
       0, kFooterLeftMargin, 0, std::max(0, kFooterRightMargin - image_margin));
   views::ColumnSet* column = layout->AddColumnSet(0);
-  column->AddColumn(views::GridLayout::FILL,
-                    views::GridLayout::FILL,
-                    1.0f,
-                    views::GridLayout::USE_PREF,
-                    0,
-                    0);
+  if (title_arrow_->visible()) {
+    // Column for the left-arrow used to back out of settings.
+    column->AddColumn(views::GridLayout::LEADING,
+                      views::GridLayout::CENTER,
+                      0.0f,
+                      views::GridLayout::USE_PREF,
+                      0,
+                      0);
+
+    column->AddPaddingColumn(0.0f, 10);
+  }
+
+  // Column for the label "Notifications".
   column->AddColumn(views::GridLayout::LEADING,
-                    views::GridLayout::FILL,
-                    0,
+                    views::GridLayout::CENTER,
+                    0.0f,
                     views::GridLayout::USE_PREF,
                     0,
                     0);
+
+  // Fills in the remaining space between "Notifications" and buttons.
+  column->AddPaddingColumn(1.0f, image_margin);
+
+  // The button area column.
+  column->AddColumn(views::GridLayout::LEADING,
+                    views::GridLayout::CENTER,
+                    0.0f,
+                    views::GridLayout::USE_PREF,
+                    0,
+                    0);
+
   layout->StartRow(0, 0);
-  layout->AddView(notification_label);
-  layout->AddView(button_container);
+  if (title_arrow_->visible())
+    layout->AddView(title_arrow_);
+  layout->AddView(notification_label_);
+  layout->AddView(button_container_);
 }
 
 MessageCenterButtonBar::~MessageCenterButtonBar() {}
@@ -180,9 +228,16 @@ void MessageCenterButtonBar::SetAllButtonsEnabled(bool enabled) {
   quiet_mode_button_->SetEnabled(enabled);
 }
 
-void MessageCenterButtonBar::SetCloseAllButtonVisible(bool visible) {
+void MessageCenterButtonBar::SetCloseAllButtonEnabled(bool enabled) {
   if (close_all_button_)
-    close_all_button_->SetVisible(visible);
+    close_all_button_->SetEnabled(enabled);
+}
+
+void MessageCenterButtonBar::SetBackArrowVisible(bool visible) {
+  if (title_arrow_)
+    title_arrow_->SetVisible(visible);
+  ViewVisibilityChanged();
+  Layout();
 }
 
 void MessageCenterButtonBar::ChildVisibilityChanged(views::View* child) {
@@ -193,7 +248,7 @@ void MessageCenterButtonBar::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
   if (sender == close_all_button_) {
     message_center_view()->ClearAllNotifications();
-  } else if (sender == settings_button_) {
+  } else if (sender == settings_button_ || sender == title_arrow_) {
     MessageCenterView* center_view = message_center_view();
     center_view->SetSettingsVisible(!center_view->settings_visible());
   } else if (sender == quiet_mode_button_) {

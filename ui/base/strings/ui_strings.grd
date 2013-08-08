@@ -1530,16 +1530,12 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_SETTINGS_GO_BACK_BUTTON_TOOLTIP" desc="The tooltip on back button that returns from settings to the notification list.">
         Go back to notifications
       </message>
-      <if expr="is_macosx">
-        <message name="IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION" desc="The label to describe the settings dialog.">
-          Allow notifications from the following:
-        </message>
-      </if>
-      <if expr="not is_macosx">
-        <message name="IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION" desc="The label to describe the settings dialog.">
-          Manage notifications per profile:
-        </message>
-      </if>
+      <message name="IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION" desc="The label to describe the settings dialog.">
+        Allow notifications from the following:
+      </message>
+      <message name="IDS_MESSAGE_CENTER_SETTINGS_DESCRIPTION_MULTIUSER" desc="The label to describe the settings dialog if there is more than one user.">
+        Allow notifications from the following for each user:
+      </message>
       <message name="IDS_MESSAGE_CENTER_SETTINGS" desc="The menu entry or button for visiting the appropriate settings page.">
         Settings...
       </message>

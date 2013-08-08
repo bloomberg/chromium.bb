@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_CENTER_BUTTON_BAR_H_
 
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -37,9 +38,16 @@ class MessageCenterButtonBar : public views::View,
   virtual void SetAllButtonsEnabled(bool enabled);
 
   // Sometimes we shouldn't see the close-all button.
-  void SetCloseAllButtonVisible(bool visible);
+  void SetCloseAllButtonEnabled(bool enabled);
+
+  // Sometimes we shouldn't see the back arrow (not in settings).
+  void SetBackArrowVisible(bool visible);
 
  private:
+  // Updates the layout manager which can have differing configuration
+  // depending on the visibilty of different parts of the button bar.
+  void ViewVisibilityChanged();
+
   // Overridden from views::View:
   virtual void ChildVisibilityChanged(views::View* child) OVERRIDE;
 
@@ -56,6 +64,9 @@ class MessageCenterButtonBar : public views::View,
   MessageCenter* message_center_;           // Weak reference.
 
   // Sub-views of the button bar.
+  NotificationCenterButton* title_arrow_;
+  views::Label* notification_label_;
+  views::View* button_container_;
   views::Button* close_all_button_;
   NotificationCenterButton* settings_button_;
   NotificationCenterButton* quiet_mode_button_;
