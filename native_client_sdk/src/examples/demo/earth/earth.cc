@@ -383,9 +383,14 @@ void Planet::wRenderPixelSpan(int x0, int x1, int y) {
   if (!base_tex_ || !night_tex_)
     return;
   const int kColorBlack = MakeRGBA(0, 0, 0, 0xFF);
+  float width = ps_context_->width;
+  float height = ps_context_->height;
+  float min_dim = width < height ? width : height;
+  float offset_x = width < height ? 0 : (width - min_dim) * 0.5f;
+  float offset_y = width < height ? (height - min_dim) * 0.5f : 0;
   float y0 = eye_y_;
   float z0 = eye_z_;
-  float y1 = (static_cast<float>(y) / ps_context_->height) * 2.0f - 1.0f;
+  float y1 = (static_cast<float>(y - offset_y) / min_dim) * 2.0f - 1.0f;
   float z1 = 0.0f;
   float dy = (y1 - y0);
   float dz = (z1 - z0);
@@ -394,11 +399,11 @@ void Planet::wRenderPixelSpan(int x0, int x1, int y) {
                                   2.0f * dz * (z0 - planet_z_);
   float planet_xyz_eye_xyz = planet_xyz_ + eye_xyz_;
   float y_y0_z_z0 = planet_y_ * y0 + planet_z_ * z0;
-  float oowidth = 1.0f / ps_context_->width;
+  float oowidth = 1.0f / min_dim;
   uint32_t* pixels = this->wGetAddr(x0, y);
   for (int x = x0; x <= x1; ++x) {
     // scan normalized screen -1..1
-    float x1 = (static_cast<float>(x) * oowidth) * 2.0f - 1.0f;
+    float x1 = (static_cast<float>(x - offset_x) * oowidth) * 2.0f - 1.0f;
     // eye
     float x0 = eye_x_;
     // delta from screen to eye
