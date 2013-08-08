@@ -238,15 +238,6 @@ std::string GetNetworkName(const std::string& service_path) {
   return network->name();
 }
 
-// Returns network unique id by service path.
-std::string GetNetworkUniqueId(const std::string& service_path) {
-  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
-  if (!network)
-    return std::string();
-  return network->guid();
-}
-
 // Returns captive portal state for a network by its service path.
 NetworkPortalDetector::CaptivePortalState GetCaptivePortalState(
     const std::string& service_path) {
@@ -560,9 +551,8 @@ void SigninScreenHandler::OnNetworkReady() {
   MaybePreloadAuthExtension();
 }
 
-void SigninScreenHandler::UpdateState(NetworkStateInformer::State state,
-                                      ErrorScreenActor::ErrorReason reason) {
-  UpdateStateInternal(state, reason, false);
+void SigninScreenHandler::UpdateState(ErrorScreenActor::ErrorReason reason) {
+  UpdateStateInternal(reason, false);
 }
 
 // SigninScreenHandler, private: -----------------------------------------------
@@ -586,7 +576,6 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state,
 
 // TODO (ygorshenin@): split this method into small parts.
 void SigninScreenHandler::UpdateStateInternal(
-    NetworkStateInformer::State state,
     ErrorScreenActor::ErrorReason reason,
     bool force_update) {
   // Do nothing once user has signed in or sign in is in progress.
@@ -598,16 +587,15 @@ void SigninScreenHandler::UpdateStateInternal(
     return;
   }
 
-  const std::string service_path =
-      network_state_informer_->last_network_service_path();
-  const std::string network_id =
-      GetNetworkUniqueId(service_path);
+  NetworkStateInformer::State state = network_state_informer_->state();
+  const std::string network_path = network_state_informer_->network_path();
+  const std::string network_name = GetNetworkName(network_path);
 
   // Skip "update" notification about OFFLINE state from
   // NetworkStateInformer if previous notification already was
   // delayed.
-  if (state == NetworkStateInformer::OFFLINE &&
-      reason == ErrorScreenActor::ERROR_REASON_UPDATE &&
+  if ((state == NetworkStateInformer::OFFLINE || has_pending_auth_ui_) &&
+      !force_update &&
       !update_state_closure_.IsCancelled()) {
     return;
   }
@@ -616,31 +604,23 @@ void SigninScreenHandler::UpdateStateInternal(
   // will be tested well.
   LOG(WARNING) << "SigninScreenHandler::UpdateStateInternal(): "
                << "state=" << NetworkStateStatusString(state) << ", "
-               << "network_id=" << network_id << ", "
+               << "network_name=" << network_name << ", "
                << "reason=" << ErrorReasonString(reason) << ", "
                << "force_update=" << force_update;
   update_state_closure_.Cancel();
 
-  // Delay UpdateStateInternal() call in the following cases:
-  // 1. this is the first call and it's about offline state of the
-  //    current network. This can happen because device is just powered
-  //    up and network stack isn't ready now.
-  // 2. proxy auth ui is displayed. UpdateStateCall() is delayed to
-  //    prevent screen change behind proxy auth ui.
-  if ((state == NetworkStateInformer::OFFLINE && is_first_update_state_call_) ||
+  if ((state == NetworkStateInformer::OFFLINE && !force_update) ||
       has_pending_auth_ui_) {
-    is_first_update_state_call_ = false;
     update_state_closure_.Reset(
         base::Bind(
             &SigninScreenHandler::UpdateStateInternal,
-            weak_factory_.GetWeakPtr(), state, reason, force_update));
+            weak_factory_.GetWeakPtr(), reason, true));
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         update_state_closure_.callback(),
         base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
     return;
   }
-  is_first_update_state_call_ = false;
 
   // Don't show or hide error screen if we're in connecting state.
   if (state == NetworkStateInformer::CONNECTING && !force_update) {
@@ -648,7 +628,7 @@ void SigninScreenHandler::UpdateStateInternal(
       // First notification about CONNECTING state.
       connecting_closure_.Reset(
           base::Bind(&SigninScreenHandler::UpdateStateInternal,
-                     weak_factory_.GetWeakPtr(), state, reason, true));
+                     weak_factory_.GetWeakPtr(), reason, true));
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           connecting_closure_.callback(),
@@ -715,19 +695,15 @@ void SigninScreenHandler::UpdateStateInternal(
 void SigninScreenHandler::SetupAndShowOfflineMessage(
     NetworkStateInformer:: State state,
     ErrorScreenActor::ErrorReason reason) {
-  const std::string service_path =
-      network_state_informer_->last_network_service_path();
-  const std::string network_id = GetNetworkUniqueId(service_path);
+  const std::string network_path = network_state_informer_->network_path();
   const bool is_under_captive_portal = IsUnderCaptivePortal(state, reason);
   const bool is_proxy_error = IsProxyError(state, reason, frame_error_);
   const bool is_gaia_loading_timeout =
       (reason == ErrorScreenActor::ERROR_REASON_LOADING_TIMEOUT);
 
-  LOG(WARNING) << "Offline message is displayed";
-
   // Record portal detection stats only if we're going to show or
   // change state of the error screen.
-  RecordNetworkPortalDetectorStats(service_path);
+  RecordNetworkPortalDetectorStats(network_path);
 
   if (is_proxy_error) {
     error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_PROXY,
@@ -742,7 +718,7 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
          ErrorScreen::ERROR_STATE_PORTAL)) {
       error_screen_actor_->FixCaptivePortal();
     }
-    const std::string network_name = GetNetworkName(service_path);
+    const std::string network_name = GetNetworkName(network_path);
     error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_PORTAL,
                                        network_name);
   } else if (is_gaia_loading_timeout) {
@@ -765,9 +741,8 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
 
   if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
     DictionaryValue params;
-    const std::string connection_type =
-        network_state_informer_->last_network_type();
-    params.SetString("lastNetworkType", connection_type);
+    const std::string network_type = network_state_informer_->network_type();
+    params.SetString("lastNetworkType", network_type);
     error_screen_actor_->SetUIState(ErrorScreen::UI_STATE_SIGNIN);
     error_screen_actor_->Show(OobeUI::SCREEN_GAIA_SIGNIN, &params);
   }
@@ -779,7 +754,6 @@ void SigninScreenHandler::HideOfflineMessage(
   if (!IsSigninScreenHiddenByError())
     return;
 
-  LOG(WARNING) << "Offline message is hidden";
   error_screen_actor_->Hide();
 
   // Forces a reload for Gaia screen on hiding error message.
@@ -1072,11 +1046,10 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_ || !delegate_)
     return;
 
-  std::string active_network =
-      network_state_informer_->active_network_service_path();
+  std::string active_network_path = network_state_informer_->network_path();
   if (gaia_silent_load_ &&
-      (!network_state_informer_->is_online() ||
-       gaia_silent_load_network_ != active_network)) {
+      (network_state_informer_->state() != NetworkStateInformer::ONLINE ||
+       gaia_silent_load_network_ != active_network_path)) {
     // Network has changed. Force Gaia reload.
     gaia_silent_load_ = false;
     // Gaia page will be realoded, so focus isn't stolen anymore.
@@ -1104,8 +1077,7 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
       HandleLoginWebuiReady();
   }
 
-  UpdateState(network_state_informer_->state(),
-              ErrorScreenActor::ERROR_REASON_UPDATE);
+  UpdateState(ErrorScreenActor::ERROR_REASON_UPDATE);
 }
 
 
@@ -1618,18 +1590,14 @@ void SigninScreenHandler::HandleFrameLoadingCompleted(int status) {
 
   if (network_state_informer_->state() != NetworkStateInformer::ONLINE)
     return;
-  if (frame_state_ == FRAME_STATE_LOADED) {
-    UpdateState(network_state_informer_->state(),
-                ErrorScreenActor::ERROR_REASON_UPDATE);
-  } else if (frame_state_ == FRAME_STATE_ERROR) {
-    UpdateState(network_state_informer_->state(),
-                ErrorScreenActor::ERROR_REASON_FRAME_ERROR);
-  }
+  if (frame_state_ == FRAME_STATE_LOADED)
+    UpdateState(ErrorScreenActor::ERROR_REASON_UPDATE);
+  else if (frame_state_ == FRAME_STATE_ERROR)
+    UpdateState(ErrorScreenActor::ERROR_REASON_FRAME_ERROR);
 }
 
 void SigninScreenHandler::HandleShowLoadingTimeoutError() {
-  UpdateState(network_state_informer_->state(),
-              ErrorScreenActor::ERROR_REASON_LOADING_TIMEOUT);
+  UpdateState(ErrorScreenActor::ERROR_REASON_LOADING_TIMEOUT);
 }
 
 void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
@@ -1672,10 +1640,9 @@ void SigninScreenHandler::MaybePreloadAuthExtension() {
       !ScreenLocker::default_screen_locker() &&
       !cookies_cleared_ &&
       !dns_clear_task_running_ &&
-      network_state_informer_->is_online()) {
+      network_state_informer_->state() == NetworkStateInformer::ONLINE) {
     gaia_silent_load_ = true;
-    gaia_silent_load_network_ =
-        network_state_informer_->active_network_service_path();
+    gaia_silent_load_network_ = network_state_informer_->network_path();
     LoadAuthExtension(true, true, false);
   }
 }

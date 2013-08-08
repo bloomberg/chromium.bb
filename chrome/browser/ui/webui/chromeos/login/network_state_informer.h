@@ -49,8 +49,7 @@ class NetworkStateInformer
     NetworkStateInformerObserver() {}
     virtual ~NetworkStateInformerObserver() {}
 
-    virtual void UpdateState(State state,
-                             ErrorScreenActor::ErrorReason reason) = 0;
+    virtual void UpdateState(ErrorScreenActor::ErrorReason reason) = 0;
     virtual void OnNetworkReady() {}
   };
 
@@ -81,18 +80,9 @@ class NetworkStateInformer
   // CaptivePortalWindowProxyDelegate implementation:
   virtual void OnPortalDetected() OVERRIDE;
 
-  // Returns active network's service path. It can be used to uniquely
-  // identify the network.
-  std::string active_network_service_path() {
-    return last_online_service_path_;
-  }
-
-  bool is_online() { return state_ == ONLINE; }
   State state() const { return state_; }
-  std::string last_network_service_path() const {
-    return last_network_service_path_;
-  }
-  std::string last_network_type() const { return last_network_type_; }
+  std::string network_path() const { return network_path_; }
+  std::string network_type() const { return network_type_; }
 
  private:
   friend class base::RefCounted<NetworkStateInformer>;
@@ -108,14 +98,12 @@ class NetworkStateInformer
   State GetNetworkState(const NetworkState* network);
   bool IsProxyConfigured(const NetworkState* network);
 
-  content::NotificationRegistrar registrar_;
   State state_;
+  std::string network_path_;
+  std::string network_type_;
+
   ObserverList<NetworkStateInformerObserver> observers_;
-  std::string last_online_service_path_;
-  std::string last_connected_service_path_;
-  std::string last_network_service_path_;
-  std::string last_network_type_;
-  base::CancelableClosure check_state_;
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<NetworkStateInformer> weak_ptr_factory_;
 };

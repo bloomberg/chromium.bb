@@ -17,13 +17,6 @@
 #include "net/proxy/proxy_config.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace {
-
-// Timeout to smooth temporary network state transitions for flaky networks.
-const int kNetworkStateCheckDelaySec = 3;
-
-}  // namespace
-
 namespace chromeos {
 
 NetworkStateInformer::NetworkStateInformer()
@@ -71,50 +64,17 @@ void NetworkStateInformer::RemoveObserver(
 }
 
 void NetworkStateInformer::NetworkManagerChanged() {
-  const NetworkState* default_network =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  State new_state = OFFLINE;
-  std::string new_network_service_path;
-  if (default_network) {
-    new_state = GetNetworkState(default_network);
-    new_network_service_path = default_network->path();
-  }
-  if ((state_ != ONLINE && (new_state == ONLINE || new_state == CONNECTING)) ||
-      (state_ == ONLINE && (new_state == ONLINE || new_state == CONNECTING) &&
-       new_network_service_path != last_online_service_path_) ||
-      (new_state == CAPTIVE_PORTAL &&
-       new_network_service_path == last_network_service_path_)) {
-    last_network_service_path_ = new_network_service_path;
-    if (new_state == ONLINE)
-      last_online_service_path_ = new_network_service_path;
-    // Transitions {OFFLINE, PORTAL} -> ONLINE and connections to
-    // different network are processed without delay.
-    // Transitions {OFFLINE, ONLINE} -> PORTAL in the same network are
-    // also processed without delay.
-    UpdateStateAndNotify();
-  } else {
-    check_state_.Cancel();
-    check_state_.Reset(
-        base::Bind(&NetworkStateInformer::UpdateStateAndNotify,
-                   weak_ptr_factory_.GetWeakPtr()));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        check_state_.callback(),
-        base::TimeDelta::FromSeconds(kNetworkStateCheckDelaySec));
-  }
+  UpdateStateAndNotify();
 }
 
 void NetworkStateInformer::DefaultNetworkChanged(const NetworkState* network) {
-  NetworkManagerChanged();
+  UpdateStateAndNotify();
 }
 
 void NetworkStateInformer::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  if (NetworkHandler::IsInitialized() &&
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork() ==
-      network)
-    NetworkManagerChanged();
+  UpdateStateAndNotify();
 }
 
 void NetworkStateInformer::Observe(
@@ -130,26 +90,27 @@ void NetworkStateInformer::Observe(
 }
 
 void NetworkStateInformer::OnPortalDetected() {
-  SendStateToObservers(ErrorScreenActor::ERROR_REASON_PORTAL_DETECTED);
+  UpdateStateAndNotify();
 }
 
 bool NetworkStateInformer::UpdateState() {
-  State new_state = OFFLINE;
-
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  State new_state = OFFLINE;
+  std::string new_network_path;
+  std::string new_network_type;
   if (default_network) {
     new_state = GetNetworkState(default_network);
-    last_network_service_path_ = default_network->path();
-    last_network_type_ = default_network->type();
+    new_network_path = default_network->path();
+    new_network_type = default_network->type();
   }
 
   bool updated = (new_state != state_) ||
-      (new_state != OFFLINE &&
-       last_network_service_path_ != last_connected_service_path_);
+      (new_network_path != network_path_) ||
+      (new_network_type != network_type_);
   state_ = new_state;
-  if (state_ != OFFLINE)
-    last_connected_service_path_ = last_network_service_path_;
+  network_path_ = new_network_path;
+  network_type_ = new_network_type;
 
   if (updated && state_ == ONLINE) {
     FOR_EACH_OBSERVER(NetworkStateInformerObserver, observers_,
@@ -160,9 +121,6 @@ bool NetworkStateInformer::UpdateState() {
 }
 
 void NetworkStateInformer::UpdateStateAndNotify() {
-  // Cancel pending update request if any.
-  check_state_.Cancel();
-
   if (UpdateState())
     SendStateToObservers(ErrorScreenActor::ERROR_REASON_NETWORK_STATE_CHANGED);
   else
@@ -172,7 +130,7 @@ void NetworkStateInformer::UpdateStateAndNotify() {
 void NetworkStateInformer::SendStateToObservers(
     ErrorScreenActor::ErrorReason reason) {
   FOR_EACH_OBSERVER(NetworkStateInformerObserver, observers_,
-      UpdateState(state_, reason));
+      UpdateState(reason));
 }
 
 NetworkStateInformer::State NetworkStateInformer::GetNetworkState(

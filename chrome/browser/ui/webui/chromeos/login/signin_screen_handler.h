@@ -191,9 +191,7 @@ class SigninScreenHandler
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
   virtual void OnNetworkReady() OVERRIDE;
-
-  virtual void UpdateState(NetworkStateInformer::State state,
-                           ErrorScreenActor::ErrorReason reason) OVERRIDE;
+  virtual void UpdateState(ErrorScreenActor::ErrorReason reason) OVERRIDE;
 
   // Required Local State preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -222,8 +220,7 @@ class SigninScreenHandler
   // |params| argument.
   void UpdateUIState(UIState ui_state, DictionaryValue* params);
 
-  void UpdateStateInternal(NetworkStateInformer::State state,
-                           ErrorScreenActor::ErrorReason reason,
+  void UpdateStateInternal(ErrorScreenActor::ErrorReason reason,
                            bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
                                   ErrorScreenActor::ErrorReason reason);
