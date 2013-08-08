@@ -58,6 +58,9 @@ class DummyFileSystem : public FileSystemInterface {
                      const FileOperationCallback& callback) OVERRIDE {}
   virtual void GetFileByPath(const base::FilePath& file_path,
                              const GetFileCallback& callback) OVERRIDE {}
+  virtual void GetFileByPathForSaving(
+      const base::FilePath& file_path,
+      const GetFileCallback& callback) OVERRIDE {}
   virtual void GetFileContentByPath(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,

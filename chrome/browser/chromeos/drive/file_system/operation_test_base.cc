@@ -39,6 +39,10 @@ void OperationTestBase::LoggingObserver::OnCacheFileUploadNeededByOperation(
 OperationTestBase::OperationTestBase() {
 }
 
+OperationTestBase::OperationTestBase(int test_thread_bundle_options)
+    : thread_bundle_(test_thread_bundle_options) {
+}
+
 OperationTestBase::~OperationTestBase() {
 }
 

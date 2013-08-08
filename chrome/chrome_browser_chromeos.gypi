@@ -248,6 +248,8 @@
         'browser/chromeos/drive/file_system/create_file_operation.h',
         'browser/chromeos/drive/file_system/download_operation.cc',
         'browser/chromeos/drive/file_system/download_operation.h',
+        'browser/chromeos/drive/file_system/get_file_for_saving_operation.cc',
+        'browser/chromeos/drive/file_system/get_file_for_saving_operation.h',
         'browser/chromeos/drive/file_system/move_operation.cc',
         'browser/chromeos/drive/file_system/move_operation.h',
         'browser/chromeos/drive/file_system/open_file_operation.cc',

@@ -318,14 +318,22 @@ class FileSystemInterface {
   virtual void Unpin(const base::FilePath& file_path,
                      const FileOperationCallback& callback) = 0;
 
-  // Gets |file_path| from the file system. The file entry represented by
-  // |file_path| needs to be present in in-memory representation of the file
-  // system in order to be retrieved. If the file is not cached, the file
-  // will be downloaded through GData API or Drive V2 API.
+  // Makes sure that |file_path| in the file system is available in the local
+  // cache. If the file is not cached, the file will be downloaded. The entry
+  // needs to be present in the file system.
   //
-  // |callback| must not be null.
+  // Returns the cache path and entry info to |callback|. It must not be null.
   virtual void GetFileByPath(const base::FilePath& file_path,
                              const GetFileCallback& callback) = 0;
+
+  // Makes sure that |file_path| in the file system is available in the local
+  // cache, and mark it as dirty. The next modification to the cache file is
+  // watched and is automatically uploaded to the server. If the entry is not
+  // present in the file system, it is created.
+  //
+  // Returns the cache path and entry info to |callback|. It must not be null.
+  virtual void GetFileByPathForSaving(const base::FilePath& file_path,
+                                      const GetFileCallback& callback) = 0;
 
   // Gets a file by the given |file_path|.
   // Calls |initialized_callback| when either:

@@ -134,6 +134,11 @@ void FakeFileSystem::GetFileByPath(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeFileSystem::GetFileByPathForSaving(const base::FilePath& file_path,
+                                            const GetFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeFileSystem::GetFileContentByPath(
     const base::FilePath& file_path,
     const GetFileContentInitializedCallback& initialized_callback,

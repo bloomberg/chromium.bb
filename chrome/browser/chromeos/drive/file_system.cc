@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/drive/file_system/create_directory_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/get_file_for_saving_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/open_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
@@ -208,13 +209,20 @@ void FileSystem::Initialize() {
                                        cache_));
   search_operation_.reset(new file_system::SearchOperation(
       blocking_task_runner_.get(), scheduler_, resource_metadata_));
+  get_file_for_saving_operation_.reset(
+      new file_system::GetFileForSavingOperation(blocking_task_runner_.get(),
+                                                 observer,
+                                                 scheduler_,
+                                                 resource_metadata_,
+                                                 cache_,
+                                                 temporary_file_directory_));
+
   sync_client_.reset(new internal::SyncClient(blocking_task_runner_.get(),
                                               observer,
                                               scheduler_,
                                               resource_metadata_,
                                               cache_,
                                               temporary_file_directory_));
-
   hide_hosted_docs_ =
       pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles);
 
@@ -489,6 +497,14 @@ void FileSystem::GetFileByPath(const base::FilePath& file_path,
       GetFileContentInitializedCallback(),
       google_apis::GetContentCallback(),
       callback);
+}
+
+void FileSystem::GetFileByPathForSaving(const base::FilePath& file_path,
+                                        const GetFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  get_file_for_saving_operation_->GetFileForSaving(file_path, callback);
 }
 
 void FileSystem::GetFileContentByPath(

@@ -67,6 +67,7 @@ class OperationTestBase : public testing::Test {
   };
 
   OperationTestBase();
+  explicit OperationTestBase(int test_thread_bundle_options);
   virtual ~OperationTestBase();
 
   // testing::Test overrides.

@@ -46,7 +46,7 @@ class FileWriteWatcher {
   // 5 seconds has passed after the last write operation is detected.
   //
   // TODO(kinaba): investigate the possibility to continuously watch the whole
-  // cache directory.
+  // cache directory. http://crbug.com/269424
   void StartWatch(const base::FilePath& path,
                   const std::string& resource_id,
                   const StartWatchCallback& callback);

@@ -46,6 +46,7 @@ class CopyOperation;
 class CreateDirectoryOperation;
 class CreateFileOperation;
 class DownloadOperation;
+class GetFileForSavingOperation;
 class MoveOperation;
 class OpenFileOperation;
 class OperationObserver;
@@ -122,6 +123,8 @@ class FileSystem : public FileSystemInterface,
                      const FileOperationCallback& callback) OVERRIDE;
   virtual void GetFileByPath(const base::FilePath& file_path,
                              const GetFileCallback& callback) OVERRIDE;
+  virtual void GetFileByPathForSaving(const base::FilePath& file_path,
+                                      const GetFileCallback& callback) OVERRIDE;
   virtual void GetFileContentByPath(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,
@@ -319,6 +322,8 @@ class FileSystem : public FileSystemInterface,
   scoped_ptr<file_system::DownloadOperation> download_operation_;
   scoped_ptr<file_system::UpdateOperation> update_operation_;
   scoped_ptr<file_system::SearchOperation> search_operation_;
+  scoped_ptr<file_system::GetFileForSavingOperation>
+      get_file_for_saving_operation_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
