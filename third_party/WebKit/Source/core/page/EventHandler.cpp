@@ -356,6 +356,7 @@ void EventHandler::clear()
     m_maxMouseMovedDuration = 0;
     m_baseEventType = PlatformEvent::NoType;
     m_didStartDrag = false;
+    m_touchPressed = false;
 }
 
 void EventHandler::nodeWillBeRemoved(Node* nodeToBeRemoved)
