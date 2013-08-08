@@ -39,7 +39,8 @@ class ConstrainedWebDialogDelegateViews
       views::WebView* view)
       : ConstrainedWebDialogDelegateBase(
             browser_context, delegate, tab_delegate),
-        view_(view) {}
+        view_(view),
+        window_(NULL) {}
 
   virtual ~ConstrainedWebDialogDelegateViews() {}
 
