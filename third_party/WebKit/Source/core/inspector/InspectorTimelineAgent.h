@@ -86,14 +86,18 @@ extern const char PaintSetup[];
 class TimelineTimeConverter {
 public:
     TimelineTimeConverter()
-        : m_startOffset(0)
+        : m_timestampsBaseMs(0)
+        , m_startTimeMs(0)
     {
     }
-    double fromMonotonicallyIncreasingTime(double time) const  { return (time - m_startOffset) * 1000.0; }
+    double toProtocolTimestamp(double seconds) const  { return seconds * 1000.0 - m_timestampsBaseMs; }
+    double startTimeMs() const { return m_startTimeMs; }
+    double timestampsBaseMs() const { return m_timestampsBaseMs; }
     void reset();
 
 private:
-    double m_startOffset;
+    double m_timestampsBaseMs;
+    double m_startTimeMs;
 };
 
 class InspectorTimelineAgent
@@ -252,7 +256,7 @@ private:
     long long idForNode(Node*);
     void releaseNodeIds();
 
-    double timestamp();
+    double timestamp() const;
     Page* page();
 
     InspectorPageAgent* m_pageAgent;

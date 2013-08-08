@@ -153,7 +153,8 @@ static bool eventHasListeners(const AtomicString& eventType, DOMWindow* window, 
 
 void TimelineTimeConverter::reset()
 {
-    m_startOffset = monotonicallyIncreasingTime() - currentTime();
+    m_startTimeMs = currentTime() * 1000;
+    m_timestampsBaseMs = monotonicallyIncreasingTime() * 1000;
 }
 
 void InspectorTimelineAgent::pushGCEventRecords()
@@ -164,9 +165,9 @@ void InspectorTimelineAgent::pushGCEventRecords()
     GCEvents events = m_gcEvents;
     m_gcEvents.clear();
     for (GCEvents::iterator i = events.begin(); i != events.end(); ++i) {
-        RefPtr<JSONObject> record = TimelineRecordFactory::createGenericRecord(m_timeConverter.fromMonotonicallyIncreasingTime(i->startTime), m_maxCallStackDepth, TimelineRecordType::GCEvent);
+        RefPtr<JSONObject> record = TimelineRecordFactory::createGenericRecord(m_timeConverter.toProtocolTimestamp(i->startTime), m_maxCallStackDepth, TimelineRecordType::GCEvent);
         record->setObject("data", TimelineRecordFactory::createGCEventData(i->collectedBytes));
-        record->setNumber("endTime", m_timeConverter.fromMonotonicallyIncreasingTime(i->endTime));
+        record->setNumber("endTime", m_timeConverter.toProtocolTimestamp(i->endTime));
         addRecordToTimeline(record.release());
     }
 }
@@ -218,6 +219,7 @@ void InspectorTimelineAgent::start(ErrorString*, const int* maxCallStackDepth, c
     m_state->setBoolean(TimelineAgentState::includeDomCounters, includeDomCounters && *includeDomCounters);
     m_state->setBoolean(TimelineAgentState::includeNativeMemoryStatistics, includeNativeMemoryStatistics && *includeNativeMemoryStatistics);
     m_timeConverter.reset();
+    m_frontend->timelineStarted(m_timeConverter.timestampsBaseMs(), m_timeConverter.startTimeMs());
 
     m_instrumentingAgents->setInspectorTimelineAgent(this);
     ScriptGCEvent::addEventListener(this);
@@ -803,9 +805,9 @@ void InspectorTimelineAgent::releaseNodeIds()
         m_domAgent->releaseBackendNodeIds(&unused, BackendNodeIdGroup);
 }
 
-double InspectorTimelineAgent::timestamp()
+double InspectorTimelineAgent::timestamp() const
 {
-    return m_timeConverter.fromMonotonicallyIncreasingTime(WTF::monotonicallyIncreasingTime());
+    return m_timeConverter.toProtocolTimestamp(WTF::monotonicallyIncreasingTime());
 }
 
 Page* InspectorTimelineAgent::page()
