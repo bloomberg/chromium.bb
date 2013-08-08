@@ -270,6 +270,9 @@ void RenderRegion::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
 
     checkRegionStyle();
     updateRegionHasAutoLogicalHeightFlag();
+
+    if (oldStyle && oldStyle->writingMode() != style()->writingMode())
+        m_flowThread->regionChangedWritingMode(this);
 }
 
 void RenderRegion::layoutBlock(bool relayoutChildren, LayoutUnit)
