@@ -246,6 +246,9 @@ const char kDisableWebSecurity[]            = "disable-web-security";
 // Enable an experimental WebSocket implementation.
 const char kEnableExperimentalWebSocket[] = "enable-experimental-websocket";
 
+// Enable HTML Imports
+extern const char kEnableHTMLImports[] = "enable-html-imports";
+
 // Disables WebKit's XSSAuditor. The XSSAuditor mitigates reflective XSS.
 const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 

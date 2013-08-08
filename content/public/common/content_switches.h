@@ -90,6 +90,7 @@ extern const char kEnableWebAnimationsSVG[];
 extern const char kEnableWebMIDI[];
 extern const char kDisableWebSecurity[];
 extern const char kEnableExperimentalWebSocket[];
+extern const char kEnableHTMLImports[];
 extern const char kDisableXSSAuditor[];
 CONTENT_EXPORT extern const char kDomAutomationController[];
 CONTENT_EXPORT extern const char kStatsCollectionController[];
