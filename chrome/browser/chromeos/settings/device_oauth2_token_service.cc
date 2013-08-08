@@ -193,13 +193,18 @@ void DeviceOAuth2TokenService::ValidatingConsumer::InformConsumer() {
   token_service_->OnValidationComplete(token_is_valid_);
   // Note: this object (which is also the Request instance) may be deleted in
   // these consumer callbacks, so the callbacks must be the last line executed.
+  // Also, make copies of the parameters passed to the consumer to avoid invalid
+  // memory accesses when the consumer deletes |this| immediately.
   if (!token_is_valid_) {
     consumer_->OnGetTokenFailure(this, GoogleServiceAuthError(
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   } else if (error_) {
-    consumer_->OnGetTokenFailure(this, *error_.get());
+    GoogleServiceAuthError error_copy = *error_;
+    consumer_->OnGetTokenFailure(this, error_copy);
   } else {
-    consumer_->OnGetTokenSuccess(this, access_token_, expiration_time_);
+    std::string access_token_copy = access_token_;
+    base::Time expiration_time_copy = expiration_time_;
+    consumer_->OnGetTokenSuccess(this, access_token_copy, expiration_time_copy);
   }
 }
 
