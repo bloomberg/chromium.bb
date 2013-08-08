@@ -269,18 +269,15 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
 
   const base::TimeDelta kCloseDelay =
       base::TimeDelta::FromSeconds(kStreamCloseDelaySeconds);
-
+  scoped_refptr<AudioOutputDispatcher> dispatcher;
   if (output_params.format() != AudioParameters::AUDIO_FAKE) {
-    scoped_refptr<AudioOutputDispatcher> dispatcher =
-        new AudioOutputResampler(this, params, output_params, input_device_id,
-                                 kCloseDelay);
-    dispatcher_params->dispatcher = dispatcher;
-    return new AudioOutputProxy(dispatcher.get());
+    dispatcher = new AudioOutputResampler(this, params, output_params,
+                                          input_device_id, kCloseDelay);
+  } else {
+    dispatcher = new AudioOutputDispatcherImpl(this, output_params,
+                                               input_device_id, kCloseDelay);
   }
 
-  scoped_refptr<AudioOutputDispatcher> dispatcher =
-      new AudioOutputDispatcherImpl(this, output_params, input_device_id,
-                                    kCloseDelay);
   dispatcher_params->dispatcher = dispatcher;
   output_dispatchers_.push_back(dispatcher_params);
   return new AudioOutputProxy(dispatcher.get());
