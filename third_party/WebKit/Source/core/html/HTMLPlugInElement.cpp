@@ -79,6 +79,13 @@ bool HTMLPlugInElement::willRespondToMouseClickEvents()
     return true;
 }
 
+void HTMLPlugInElement::removeAllEventListeners()
+{
+    HTMLFrameOwnerElement::removeAllEventListeners();
+    if (Widget* widget = pluginWidget())
+        widget->eventListenersRemoved();
+}
+
 void HTMLPlugInElement::detach(const AttachContext& context)
 {
     m_instance.clear();

@@ -66,6 +66,8 @@ public:
 
     virtual bool isPlugInImageElement() const { return false; }
 
+    virtual void removeAllEventListeners() OVERRIDE;
+
 protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document*);
 
