@@ -19,6 +19,10 @@
     "channel": "stable",
     "version": 21
   },
+  "notifications": {
+    "channel": "stable",
+    "version": 28
+  },
   "storage": {
     "channel": "stable",
     "version": 20

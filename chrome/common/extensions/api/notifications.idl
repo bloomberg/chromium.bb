@@ -61,7 +61,7 @@ namespace notifications {
     // epoch (e.g. <code>Date.now() + n</code>).
     double? eventTime;
 
-    // Text and icons of notification action buttons.
+    // Text and icons for up to two notification action buttons.
     NotificationButton[]? buttons;
 
     // Secondary notification content.
