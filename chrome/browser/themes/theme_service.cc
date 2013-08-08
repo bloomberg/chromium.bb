@@ -147,6 +147,11 @@ SkColor ThemeService::GetColor(int id) const {
     case Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND:
       return color_utils::BlendTowardOppositeLuminance(
           GetColor(Properties::COLOR_FRAME), 0x80);
+    case Properties::COLOR_MANAGED_USER_LABEL_BORDER:
+      return color_utils::AlphaBlend(
+          GetColor(Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND),
+          SK_ColorBLACK,
+          230);
   }
 
   return Properties::GetDefaultColor(id);

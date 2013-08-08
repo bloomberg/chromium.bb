@@ -10,15 +10,12 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
+@class AvatarLabelButton;
 @class AvatarMenuBubbleController;
 class Browser;
 
 namespace AvatarButtonControllerInternal {
 class Observer;
-}
-
-namespace ui {
-class ThemeProvider;
 }
 
 // This view controller manages the button/image that sits in the top of the
@@ -38,8 +35,8 @@ class ThemeProvider;
   // The avatar button.
   base::scoped_nsobject<NSButton> button_;
 
-  // The managed user avatar label. Only used for managed user profiles.
-  base::scoped_nsobject<NSButton> labelButton_;
+  // The managed user avatar label button. Only used for managed user profiles.
+  base::scoped_nsobject<AvatarLabelButton> labelButton_;
 }
 
 // The avatar button view.

@@ -14,11 +14,10 @@
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_label_button.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -31,8 +30,20 @@
 
 namespace {
 
-// Space between the avatar icon and the managed user avatar label.
+// Space between the avatar icon and the avatar menu bubble.
+const CGFloat kMenuYOffsetAdjust = 1.0;
+
+// Space between the avatar label and the left edge of the container containing
+// the label and the icon.
 const CGFloat kAvatarSpacing = 4;
+
+// Space between the bottom of the avatar icon and the bottom of the avatar
+// label.
+const CGFloat kAvatarLabelBottomSpacing = 3;
+
+// Space between the right edge of the avatar label and the right edge of the
+// avatar icon.
+const CGFloat kAvatarLabelRightSpacing = 2;
 
 }  // namespace
 
@@ -83,12 +94,6 @@ class Observer : public content::NotificationObserver {
 
 }  // namespace AvatarButtonControllerInternal
 
-namespace {
-
-const CGFloat kMenuYOffsetAdjust = 1.0;
-
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 
 @implementation AvatarButtonController
@@ -136,8 +141,6 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
         l10n_util::GetNSString(IDS_PROFILES_BUBBLE_ACCESSIBLE_DESCRIPTION)
                            forAttribute:NSAccessibilityDescriptionAttribute];
 
-    [[self view] addSubview:button_];
-
     Profile* profile = browser_->profile();
     if (profile->IsOffTheRecord()) {
       ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
@@ -152,32 +155,26 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
       // Managed users cannot enter incognito mode, so we only need to check
       // it in this code path.
       if (profile->IsManaged()) {
-        labelButton_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
-        [labelButton_ setButtonType:NSMomentaryLightButton];
-        [labelButton_ setBezelStyle:NSRecessedBezelStyle];
-        [labelButton_ setTitle:
-            l10n_util::GetNSString(IDS_MANAGED_USER_AVATAR_LABEL)];
-        [labelButton_ setShowsBorderOnlyWhileMouseInside:YES];
-
+        // Initialize the avatar label button.
+        CGFloat extraWidth =
+            profiles::kAvatarIconWidth + kAvatarLabelRightSpacing;
+        NSRect frame = NSMakeRect(
+            kAvatarSpacing, kAvatarLabelBottomSpacing, extraWidth, 0);
+        labelButton_.reset([[AvatarLabelButton alloc] initWithFrame:frame]);
         [labelButton_ setTarget:self];
         [labelButton_ setAction:@selector(buttonClicked:)];
-
-        [labelButton_ sizeToFit];
-        [labelButton_ setFrameOrigin:
-            NSMakePoint(kAvatarSpacing,
-                        (profiles::kAvatarIconHeight -
-                             NSHeight([labelButton_ frame])) / 2)];
         [[self view] addSubview:labelButton_];
 
-        // Reposition the avatar button and resize the container.
-        CGFloat avatarButtonXOffset =
-            NSWidth([labelButton_ frame]) + 2 * kAvatarSpacing;
+        // Resize the container and reposition the avatar button.
+        NSSize textSize = [[labelButton_ cell] labelTextSize];
         [container setFrameSize:
-            NSMakeSize(avatarButtonXOffset + NSWidth([button_ frame]),
+            NSMakeSize([labelButton_ frame].size.width + kAvatarSpacing,
                        profiles::kAvatarIconHeight)];
-        [button_ setFrameOrigin:NSMakePoint(avatarButtonXOffset, 0)];
+        [button_
+            setFrameOrigin:NSMakePoint(kAvatarSpacing + textSize.width, 0)];
       }
     }
+    [[self view] addSubview:button_];
   }
   return self;
 }
@@ -241,7 +238,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 
 - (IBAction)buttonClicked:(id)sender {
   DCHECK(sender == button_.get() || sender == labelButton_.get());
-  [self showAvatarBubble:sender];
+  [self showAvatarBubble:button_];
 }
 
 - (void)bubbleWillClose:(NSNotification*)notif {
@@ -282,7 +279,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 
   [destination unlockFocus];
 
-  return [destination.release() autorelease];
+  return destination.autorelease();
 }
 
 // Updates the avatar information from the profile cache.
