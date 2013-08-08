@@ -41,7 +41,6 @@ class CSSValue;
 class AnimatableValue : public RefCounted<AnimatableValue> {
 public:
     virtual ~AnimatableValue() { }
-    virtual PassRefPtr<CSSValue> toCSSValue() const = 0;
 
     static const AnimatableValue* neutralValue();
 

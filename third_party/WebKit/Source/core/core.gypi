@@ -744,6 +744,8 @@
             'css/StyleSheetContents.h',
             'css/StyleSheetList.cpp',
             'css/StyleSheetList.h',
+            'css/resolver/AnimatedStyleBuilder.cpp',
+            'css/resolver/AnimatedStyleBuilder.h',
             'css/resolver/ElementResolveContext.cpp',
             'css/resolver/ElementResolveContext.h',
             'css/resolver/ElementStyleResources.cpp',

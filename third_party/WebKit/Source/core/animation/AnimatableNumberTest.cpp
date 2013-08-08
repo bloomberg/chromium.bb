@@ -77,11 +77,11 @@ protected:
     }
     bool testInterpolate(CSSValue* cssValueExpected, AnimatableNumber* numberA, AnimatableNumber* numberB, double fraction)
     {
-        return AnimatableValue::interpolate(numberA, numberB, fraction)->toCSSValue()->equals(*cssValueExpected);
+        return toAnimatableNumber(AnimatableValue::interpolate(numberA, numberB, fraction).get())->toCSSValue()->equals(*cssValueExpected);
     }
     bool testAdd(CSSValue* cssValueExpected, AnimatableNumber* numberA, AnimatableNumber* numberB)
     {
-        return AnimatableValue::add(numberA, numberB)->toCSSValue()->equals(*cssValueExpected);
+        return toAnimatableNumber(AnimatableValue::add(numberA, numberB).get())->toCSSValue()->equals(*cssValueExpected);
     }
 };
 

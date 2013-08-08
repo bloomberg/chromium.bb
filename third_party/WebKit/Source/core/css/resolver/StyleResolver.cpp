@@ -33,6 +33,7 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "StylePropertyShorthand.h"
+#include "core/animation/AnimatableNumber.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
@@ -55,6 +56,7 @@
 #include "core/css/PageRuleCollector.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StylePropertySet.h"
+#include "core/css/resolver/AnimatedStyleBuilder.h"
 #include "core/css/resolver/MatchResult.h"
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/css/resolver/SharedStyleFinder.h"
@@ -1160,11 +1162,11 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
             CSSPropertyID property = iter->key;
             if (!isPropertyForPass<pass>(property))
                 continue;
-            RefPtr<CSSValue> value = iter->value->compositeOnto(AnimatableValue::neutralValue())->toCSSValue();
+            RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(AnimatableValue::neutralValue());
             if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
-                state.setLineHeightValue(value.get());
+                state.setLineHeightValue(toAnimatableNumber(animatableValue.get())->toCSSValue().get());
             else
-                StyleBuilder::applyProperty(property, state, value.get());
+                AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
         }
     }
 }

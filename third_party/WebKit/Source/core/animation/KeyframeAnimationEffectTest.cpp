@@ -64,7 +64,15 @@ KeyframeAnimationEffect::KeyframeVector keyframesAtZeroAndOne(AnimatableValue* z
 
 void expectDoubleValue(double expectedValue, PassRefPtr<AnimatableValue> value)
 {
-    EXPECT_FLOAT_EQ(static_cast<float>(expectedValue), toCSSPrimitiveValue(value->toCSSValue().get())->getDoubleValue());
+    ASSERT_TRUE(value->isNumber() || value->isUnknown());
+
+    double actualValue;
+    if (value->isNumber())
+        actualValue = toCSSPrimitiveValue(toAnimatableNumber(value.get())->toCSSValue().get())->getDoubleValue();
+    else
+        actualValue = toCSSPrimitiveValue(toAnimatableUnknown(value.get())->toCSSValue().get())->getDoubleValue();
+
+    EXPECT_FLOAT_EQ(static_cast<float>(expectedValue), actualValue);
 }
 
 

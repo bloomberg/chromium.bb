@@ -39,12 +39,6 @@ class AnimatableNeutral : public AnimatableValue {
 public:
     virtual ~AnimatableNeutral() { }
 
-    virtual PassRefPtr<CSSValue> toCSSValue() const OVERRIDE
-    {
-        ASSERT_NOT_REACHED();
-        return 0;
-    }
-
 protected:
     static PassRefPtr<AnimatableNeutral> create() { return adoptRef(new AnimatableNeutral()); }
 

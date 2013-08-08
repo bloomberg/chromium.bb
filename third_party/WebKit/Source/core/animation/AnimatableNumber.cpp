@@ -31,7 +31,9 @@
 #include "config.h"
 #include "core/animation/AnimatableNumber.h"
 
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/platform/CalculationValue.h"
+#include "core/platform/Length.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {
@@ -82,6 +84,22 @@ bool AnimatableNumber::canCreateFrom(const CSSValue* value)
 PassRefPtr<CSSValue> AnimatableNumber::toCSSValue() const
 {
     return toCSSPrimitiveValue();
+}
+
+double AnimatableNumber::toDouble() const
+{
+    ASSERT(m_unitType == UnitTypeNumber);
+    return m_number;
+}
+
+Length AnimatableNumber::toLength(const RenderStyle* style, const RenderStyle* rootStyle, double zoom) const
+{
+    // Avoid creating a CSSValue in the common cases
+    if (m_unitType == UnitTypeLength)
+        return Length(m_number, Fixed);
+    if (m_unitType == UnitTypePercentage)
+        return Length(m_number, Percent);
+    return toCSSPrimitiveValue()->convertToLength<AnyConversion>(style, rootStyle, zoom);
 }
 
 PassRefPtr<AnimatableValue> AnimatableNumber::interpolateTo(const AnimatableValue* value, double fraction) const

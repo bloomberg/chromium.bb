@@ -44,7 +44,7 @@ public:
         return adoptRef(new AnimatableUnknown(value));
     }
 
-    virtual PassRefPtr<CSSValue> toCSSValue() const OVERRIDE { return m_value; }
+    PassRefPtr<CSSValue> toCSSValue() const { return m_value; }
 
 protected:
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const OVERRIDE
@@ -67,6 +67,12 @@ private:
 
     const RefPtr<CSSValue> m_value;
 };
+
+inline const AnimatableUnknown* toAnimatableUnknown(const AnimatableValue* value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isUnknown());
+    return static_cast<const AnimatableUnknown*>(value);
+}
 
 } // namespace WebCore
 

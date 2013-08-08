@@ -214,7 +214,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyWidth:
         return createFromLength(style->width(), style);
     default:
-        ASSERT_WITH_MESSAGE(false, "Unable to create AnimatableValue from render style, not yet implemented!");
+        RELEASE_ASSERT_WITH_MESSAGE(false, "Unable to create AnimatableValue from render style, not yet implemented!");
         return 0;
     }
 }

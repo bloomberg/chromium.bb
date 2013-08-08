@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,30 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/animation/AnimatableNeutral.h"
+#ifndef AnimatedStyleBuilder_h
+#define AnimatedStyleBuilder_h
 
-#include "core/animation/AnimatableUnknown.h"
-#include "core/css/CSSArrayFunctionValue.h"
+#include "CSSPropertyNames.h"
 
-#include <gtest/gtest.h>
+namespace WebCore {
 
-using namespace WebCore;
+class AnimatableValue;
+class StyleResolverState;
 
-namespace {
+class AnimatedStyleBuilder {
+public:
+    static void applyProperty(CSSPropertyID, StyleResolverState&, const AnimatableValue*);
+};
 
-TEST(AnimatableNeutral, Create)
-{
-    EXPECT_TRUE(AnimatableValue::neutralValue());
-}
+} // namespace WebCore
 
-TEST(AnimatableNeutral, Add)
-{
-    RefPtr<CSSValue> cssValue = CSSArrayFunctionValue::create();
-    RefPtr<AnimatableValue> animatableUnknown = AnimatableUnknown::create(cssValue);
-
-    EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::add(animatableUnknown.get(), AnimatableValue::neutralValue()).get())->toCSSValue());
-    EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::add(AnimatableValue::neutralValue(), animatableUnknown.get()).get())->toCSSValue());
-}
-
-}
+#endif // AnimatedStyleBuilder_h
