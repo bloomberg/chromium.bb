@@ -13,6 +13,10 @@ namespace content {
 class WebContents;
 }
 
+// Executes javascript code which will sleep for |timeout_msec| milliseconds.
+// Returns true on success.
+bool SleepInJavascript(content::WebContents* tab_contents, int timeout_msec);
+
 // This function will execute the provided |javascript| until it causes a call
 // to window.domAutomationController.send() with |evaluates_to| as the message.
 // That is, we are NOT checking what the javascript evaluates to. Returns false

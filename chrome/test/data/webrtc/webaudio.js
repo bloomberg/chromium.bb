@@ -20,7 +20,6 @@ function loadAudioAndAddToPeerConnection(url, peerconnection) {
     peerconnection.webAudioBufferSource = gContext.createBufferSource();
     peerconnection.webAudioBufferSource.buffer = voiceSoundBuffer;
     peerconnection.webAudioBufferSource.connect(inputSink);
-
     returnToTest('ok-added');
   });
 }
@@ -33,8 +32,6 @@ function playPreviouslyLoadedAudioFile(peerconnection) {
 
 /** @private */
 function loadAudioBuffer_(url, callback) {
-  debug('loadAudioBuffer()');
-
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
   request.responseType = 'arraybuffer';
@@ -43,6 +40,5 @@ function loadAudioBuffer_(url, callback) {
     voiceSoundBuffer = gContext.createBuffer(request.response, false);
     callback(voiceSoundBuffer);
   }
-
   request.send();
 }
