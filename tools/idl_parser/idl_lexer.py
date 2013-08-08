@@ -14,7 +14,6 @@ PLY can be found at:
    http://www.dabeaz.com/ply/
 """
 
-import optparse
 import os.path
 import sys
 
@@ -26,7 +25,7 @@ try:
   # Disable lint check which fails to find the ply module.
   # pylint: disable=F0401
   from ply import lex
-except:
+except ImportError:
   module_path, module_name = os.path.split(__file__)
   third_party = os.path.join(module_path, '..', '..', 'third_party')
   sys.path.append(third_party)
@@ -37,6 +36,13 @@ except:
 # IDL Lexer
 #
 class IDLLexer(object):
+  # 'literals' is a value expected by lex which specifies a list of valid
+  # literal tokens, meaning the token type and token value are identical.
+  literals = r'"*.(){}[],;:=+-/~|&^?<>'
+
+  # 't_ignore' contains ignored characters (spaces and tabs)
+  t_ignore = ' \t'
+
   # 'tokens' is a value required by lex which specifies the complete list
   # of valid token types.
   tokens = [
@@ -106,10 +112,15 @@ class IDLLexer(object):
   # regular expression where a match will emit a token of type <TYPE>.  In the
   # case of a function, the function is called when a match is made. These
   # definitions come from WebIDL.
+  #
+  # These need to be methods for lexer construction, despite not using self.
+  # pylint: disable=R0201
   def t_ELLIPSIS(self, t):
     r'\.\.\.'
     return t
 
+  # Regex needs to be in the docstring
+  # pylint: disable=C0301
   def t_float(self, t):
     r'-?(([0-9]+\.[0-9]*|[0-9]*\.[0-9]+)([Ee][+-]?[0-9]+)?|[0-9]+[Ee][+-]?[0-9]+)'
     return t
@@ -236,12 +247,6 @@ class IDLLexer(object):
       self._lexobj = lex.lex(object=self, lextab=None, optimize=0)
     return self._lexobj
 
-  def _AddConstDefs(self):
-    # 'literals' is a value expected by lex which specifies a list of valid
-    # literal tokens, meaning the token type and token value are identical.
-    self.literals = r'"*.(){}[],;:=+-/~|&^?<>'
-    self.t_ignore = ' \t'
-
   def _AddToken(self, token):
     if token in self.tokens:
       raise RuntimeError('Same token: ' + token)
@@ -269,11 +274,12 @@ class IDLLexer(object):
     self.filename = None
     self.keywords = {}
     self.tokens = []
-    self._AddConstDefs()
     self._AddTokens(IDLLexer.tokens)
     self._AddKeywords(IDLLexer.keywords)
     self._lexobj = None
+    self.last = None
+    self.lines = None
 
 # If run by itself, attempt to build the lexer
 if __name__ == '__main__':
-  lexer = IDLLexer()
+  lexer_object = IDLLexer()
