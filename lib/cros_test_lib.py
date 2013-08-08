@@ -68,7 +68,7 @@ def CreateOnDiskHierarchy(base_path, dir_struct):
   for f in flattened:
     f = os.path.join(base_path, f)
     if f.endswith(os.sep):
-      os.mkdir(f)
+      osutils.SafeMakedirs(f)
     else:
       osutils.Touch(f, makedirs=True)
 

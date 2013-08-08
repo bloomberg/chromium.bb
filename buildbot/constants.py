@@ -79,6 +79,7 @@ REPO_URL = '%s/%s' % (GIT_HTTP_URL, REPO_PROJECT)
 CHROMITE_PROJECT = 'chromiumos/chromite'
 CHROMITE_URL = '%s/%s' % (GIT_HTTP_URL, CHROMITE_PROJECT)
 CHROMIUM_SRC_PROJECT = 'chromium/src'
+CHROMIUM_GOB_URL = '%s/%s.git' % (PUBLIC_GOB_URL, CHROMIUM_SRC_PROJECT)
 
 MANIFEST_PROJECT = 'chromiumos/manifest'
 MANIFEST_INT_PROJECT = 'chromeos/manifest-internal'

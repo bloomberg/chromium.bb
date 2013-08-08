@@ -19,8 +19,6 @@ from chromite.cros.commands import init_unittest
 from chromite.lib import cache
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
-from chromite.lib import gclient
-from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
@@ -415,10 +413,12 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
 
   def testUpdateDefaultChromeVersion(self):
     """We pick up the right LKGM version from the Chrome tree."""
+    dir_struct = [
+        'gclient_root/.gclient'
+    ]
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, dir_struct)
     gclient_root = os.path.join(self.tempdir, 'gclient_root')
-    self.PatchObject(git, 'FindRepoCheckoutRoot', return_value=None)
-    self.PatchObject(gclient, 'FindGclientCheckoutRoot',
-                     return_value=gclient_root)
+    self.PatchObject(os, 'getcwd', return_value=gclient_root)
 
     lkgm_file = os.path.join(gclient_root, 'src', constants.PATH_TO_CHROME_LKGM)
     osutils.Touch(lkgm_file, makedirs=True)
@@ -427,8 +427,6 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     self.sdk.UpdateDefaultVersion()
     self.assertEquals(self.sdk.GetDefaultVersion(),
                       self.VERSION)
-    # pylint: disable=E1101
-    self.assertTrue(gclient.FindGclientCheckoutRoot.called)
 
   def testFullVersion(self):
     """Test full version calculation."""

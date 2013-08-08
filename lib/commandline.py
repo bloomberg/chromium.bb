@@ -23,7 +23,6 @@ import tempfile
 # lib shouldn't have to import from buildbot like this.
 from chromite.buildbot import constants
 from chromite.lib import git
-from chromite.lib import gclient
 from chromite.lib import gs
 from chromite.lib import osutils
 
@@ -48,25 +47,25 @@ def DetermineCheckout(cwd):
       chrome_src_dir: If the checkout is a Chrome checkout, the path to the
         Chrome src/ directory.
   """
-  debug_msg = 'Looking for %s checkout root.'
-
-  # Determine checkout checkout_type and root.
   checkout_type = CHECKOUT_TYPE_UNKNOWN
-  logging.debug(debug_msg, 'gclient')
-  root = gclient.FindGclientCheckoutRoot(cwd)
-  checkout_type = CHECKOUT_TYPE_GCLIENT if root else checkout_type
-  if root is None:
-    logging.debug(debug_msg, 'git submodule')
-    chrome_url = '%s/%s.git' % (
-        constants.PUBLIC_GOB_URL, constants.CHROMIUM_SRC_PROJECT)
-    root = git.FindGitSubmoduleCheckoutRoot(os.getcwd(), 'origin', chrome_url)
-    checkout_type = CHECKOUT_TYPE_SUBMODULE if root else checkout_type
-  # Check for a repo checkout last, because in some cases a chrome checkout
-  # could be embedded within a Chrome OS checkout.
-  if root is None:
-    logging.debug(debug_msg, 'repo')
-    root = git.FindRepoCheckoutRoot(cwd)
-    checkout_type = CHECKOUT_TYPE_REPO if root else checkout_type
+  root, path = None, None
+  for path in osutils.IteratePathParents(cwd):
+    repo_dir = os.path.join(path, '.repo')
+    if os.path.isdir(repo_dir):
+      checkout_type = CHECKOUT_TYPE_REPO
+      break
+    gclient_file = os.path.join(path, '.gclient')
+    if os.path.exists(gclient_file):
+      checkout_type = CHECKOUT_TYPE_GCLIENT
+      break
+    submodule_git = os.path.join(path, '.git')
+    if (os.path.isdir(submodule_git) and
+        git.IsSubmoduleCheckoutRoot(cwd, 'origin', constants.CHROMIUM_GOB_URL)):
+      checkout_type = CHECKOUT_TYPE_SUBMODULE
+      break
+
+  if checkout_type != CHECKOUT_TYPE_UNKNOWN:
+    root = path
 
   # Determine the chrome src directory.
   chrome_src_dir = None

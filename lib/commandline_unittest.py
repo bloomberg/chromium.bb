@@ -12,11 +12,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
-from chromite.lib import git
-from chromite.lib import gclient
 from chromite.lib import gs
+from chromite.lib import partial_mock
 
+from chromite.buildbot import constants
 
 # pylint: disable=W0212
 class TestShutDownException(cros_test_lib.TestCase):
@@ -70,7 +71,82 @@ class GSPathTest(cros_test_lib.TestCase):
           check_attrs={'code': 2})
 
 
-class CacheTest(cros_test_lib.MockTestCase):
+class DetermineCheckoutTest(cros_test_lib.MockTempDirTestCase):
+  """Verify functionality for figuring out what checkout we're in."""
+
+  def setUp(self):
+    self.rc_mock = cros_build_lib_unittest.RunCommandMock()
+    self.StartPatcher(self.rc_mock)
+    self.rc_mock.SetDefaultCmdResult()
+
+  def RunTest(self, dir_struct, cwd, expected_root, expected_type,
+              expected_src):
+    """Run a test with specific parameters and expected results."""
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, dir_struct)
+    cwd = os.path.join(self.tempdir, cwd)
+    checkout_info = commandline.DetermineCheckout(cwd)
+    full_root = expected_root
+    if expected_root is not None:
+      full_root = os.path.join(self.tempdir, expected_root)
+    full_src = expected_src
+    if expected_src is not None:
+      full_src = os.path.join(self.tempdir, expected_src)
+
+    self.assertEquals(checkout_info.root, full_root)
+    self.assertEquals(checkout_info.type, expected_type)
+    self.assertEquals(checkout_info.chrome_src_dir, full_src)
+
+  def testGclientRepo(self):
+    dir_struct = [
+        'a/.gclient',
+        'a/b/.repo/',
+        'a/b/c/.gclient',
+        'a/b/c/d/somefile',
+    ]
+    self.RunTest(dir_struct, 'a/b/c', 'a/b/c',
+                 commandline.CHECKOUT_TYPE_GCLIENT,
+                 'a/b/c/src')
+    self.RunTest(dir_struct, 'a/b/c/d', 'a/b/c',
+                 commandline.CHECKOUT_TYPE_GCLIENT,
+                 'a/b/c/src')
+    self.RunTest(dir_struct, 'a/b', 'a/b',
+                 commandline.CHECKOUT_TYPE_REPO,
+                 None)
+    self.RunTest(dir_struct, 'a', 'a',
+                 commandline.CHECKOUT_TYPE_GCLIENT,
+                 'a/src')
+
+  def testGitSubmodule(self):
+    """Recognizes a chrome git submodule checkout."""
+    self.rc_mock.AddCmdResult(
+        partial_mock.In('config'), output=constants.CHROMIUM_GOB_URL)
+    dir_struct = [
+        'a/.gclient',
+        'a/.repo',
+        'a/b/.git/',
+    ]
+    self.RunTest(dir_struct, 'a/b', 'a/b',
+                 commandline.CHECKOUT_TYPE_SUBMODULE,
+                 'a/b')
+
+  def testBadGit1(self):
+    """.git is not a directory."""
+    self.RunTest(['a/.git'], 'a', None,
+                 commandline.CHECKOUT_TYPE_UNKNOWN, None)
+
+  def testBadGit2(self):
+    """'git config' returns nothing."""
+    self.RunTest(['a/.repo/', 'a/b/.git/'], 'a/b', 'a',
+                 commandline.CHECKOUT_TYPE_REPO, None)
+
+  def testBadGit3(self):
+    """'git config' returns error."""
+    self.rc_mock.AddCmdResult(partial_mock.In('config'), returncode=5)
+    self.RunTest(['a/.git/'], 'a', None,
+                 commandline.CHECKOUT_TYPE_UNKNOWN, None)
+
+
+class CacheTest(cros_test_lib.MockTempDirTestCase):
   """Test cache dir specification and finding functionality."""
 
   REPO_ROOT = '/fake/repo/root'
@@ -80,16 +156,22 @@ class CacheTest(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.PatchObject(commandline.ArgumentParser, 'ConfigureCacheDir')
-    self.PatchObject(git, 'FindRepoCheckoutRoot')
-    self.PatchObject(git, 'FindGitSubmoduleCheckoutRoot')
-    self.PatchObject(gclient, 'FindGclientCheckoutRoot')
-    self.parser = commandline.ArgumentParser(caching=True)
+    dir_struct = [
+      'repo/.repo/',
+      'gclient/.gclient',
+      'submodule/.git/',
+    ]
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, dir_struct)
+    self.repo_root = os.path.join(self.tempdir, 'repo')
+    self.gclient_root = os.path.join(self.tempdir, 'gclient')
+    self.submodule_root = os.path.join(self.tempdir, 'submodule')
+    self.nocheckout_root = os.path.join(self.tempdir, 'nothing')
 
-  def _SetCheckoutRoots(self, repo_root=None, gclient_root=None,
-                        submodule_root=None):
-    git.FindRepoCheckoutRoot.return_value = repo_root
-    gclient.FindGclientCheckoutRoot.return_value = gclient_root
-    git.FindGitSubmoduleCheckoutRoot.return_value = submodule_root
+    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.rc_mock.AddCmdResult(
+        partial_mock.In('config'), output=constants.CHROMIUM_GOB_URL)
+    self.cwd_mock = self.PatchObject(os, 'getcwd')
+    self.parser = commandline.ArgumentParser(caching=True)
 
   def _CheckCall(self, expected):
     f = self.parser.ConfigureCacheDir
@@ -98,31 +180,31 @@ class CacheTest(cros_test_lib.MockTestCase):
 
   def testRepoRoot(self):
     """Test when we are inside a repo checkout."""
-    self._SetCheckoutRoots(repo_root=self.REPO_ROOT)
+    self.cwd_mock.return_value = self.repo_root
     self.parser.parse_args([])
-    self._CheckCall(self.REPO_ROOT)
+    self._CheckCall(self.repo_root)
 
   def testGclientRoot(self):
     """Test when we are inside a gclient checkout."""
-    self._SetCheckoutRoots(gclient_root=self.GCLIENT_ROOT)
+    self.cwd_mock.return_value = self.gclient_root
     self.parser.parse_args([])
-    self._CheckCall(self.GCLIENT_ROOT)
+    self._CheckCall(self.gclient_root)
 
   def testSubmoduleRoot(self):
     """Test when we are inside a git submodule Chrome checkout."""
-    self._SetCheckoutRoots(submodule_root=self.SUBMODULE_ROOT)
+    self.cwd_mock.return_value = self.submodule_root
     self.parser.parse_args([])
-    self._CheckCall(self.SUBMODULE_ROOT)
+    self._CheckCall(self.submodule_root)
 
   def testTempdir(self):
     """Test when we are not in any checkout."""
-    self._SetCheckoutRoots()
+    self.cwd_mock.return_value = self.nocheckout_root
     self.parser.parse_args([])
     self._CheckCall('/tmp')
 
   def testSpecifiedDir(self):
     """Test when user specifies a cache dir."""
-    self._SetCheckoutRoots(repo_root=self.REPO_ROOT)
+    self.cwd_mock.return_value = self.repo_root
     self.parser.parse_args(['--cache-dir', self.CACHE_DIR])
     self._CheckCall(self.CACHE_DIR)
 
