@@ -11,6 +11,7 @@ import urllib
 BOOTSTRAPPED_FILES_DIR = 'support/bootstrap_files'
 PERF_DIR = 'src/tools/perf'
 DEPS_FILE = 'bootstrap_deps'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def BootstrapIfNeeded(module_name, module_path, module_deps_url):
   """Ensures that the given module_name is available, grab from URL if not."""
@@ -18,9 +19,7 @@ def BootstrapIfNeeded(module_name, module_path, module_deps_url):
     imp.find_module(module_name)
     return
   except ImportError:
-    sys.path.append(os.path.join(os.path.dirname(__file__),
-                                 BOOTSTRAPPED_FILES_DIR,
-                                 module_path))
+    sys.path.append(os.path.join(BASE_DIR, BOOTSTRAPPED_FILES_DIR, module_path))
     try:
       imp.find_module(module_name)
       return
@@ -30,8 +29,7 @@ def BootstrapIfNeeded(module_name, module_path, module_deps_url):
                                      'telemetry_bootstrap.py').read()
       bootstrap = imp.new_module('bootstrap')
       exec bootstrap_txt in bootstrap.__dict__
-      bootstrap.DownloadDepsURL(os.path.join(os.path.dirname(__file__),
-                                             BOOTSTRAPPED_FILES_DIR),
+      bootstrap.DownloadDepsURL(os.path.join(BASE_DIR, BOOTSTRAPPED_FILES_DIR),
                                 module_deps_url)
       return
 
@@ -41,14 +39,12 @@ def ListBootstrapDeps():
   Returns: a list of telemetry deps.
   """
   # Add telemetry_tools to sys.path for the import below
-  telemetry_tools_path = os.path.join(os.path.dirname(__file__),
-                                      os.pardir, 'telemetry_tools')
+  telemetry_tools_path = os.path.join(BASE_DIR, os.pardir, 'telemetry_tools')
   sys.path.append(telemetry_tools_path)
 
   import perf_tools
   import telemetry_bootstrap
-  deps_file = os.path.join(os.path.dirname(perf_tools.__file__),
-                           DEPS_FILE)
+  deps_file = os.path.join(BASE_DIR, DEPS_FILE)
   return telemetry_bootstrap.ListAllDepsPaths(open(deps_file).read())
 
 def main():
@@ -57,8 +53,7 @@ def main():
                     '/perf/perf_tools/' + DEPS_FILE)
 
   # Add telemetry to sys.path for the import below
-  telemetry_path = os.path.join(os.path.dirname(__file__),
-                                os.pardir, 'telemetry')
+  telemetry_path = os.path.join(BASE_DIR, os.pardir, 'telemetry')
   sys.path.append(telemetry_path)
 
   if '--print-bootstrap-deps' in sys.argv:
@@ -101,7 +96,7 @@ def main():
       return old_benchmark_names[arg]
 
   runner = MeasurementRunner()
-  sys.exit(runner.Run(os.path.dirname(__file__), page_set_filenames))
+  sys.exit(runner.Run(BASE_DIR, page_set_filenames))
 
 if __name__ == '__main__':
   sys.exit(main())
