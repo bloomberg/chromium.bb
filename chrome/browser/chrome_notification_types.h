@@ -355,9 +355,6 @@ enum NotificationType {
 
   // Task Manager ------------------------------------------------------------
 
-  // Sent when WebUI TaskManager opens and is ready for showing tasks.
-  NOTIFICATION_TASK_MANAGER_WINDOW_READY,
-
   // The TaskManagerChildProcessResourceProvider collects the list of child
   // processes when StartUpdating is called. This data is collected on the IO
   // thread and passed back to the UI thread. Once all entries are added to the
