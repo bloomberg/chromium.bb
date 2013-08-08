@@ -63,6 +63,9 @@ std::string FileErrorToString(FileError error) {
 
     case FILE_ERROR_NO_LOCAL_SPACE:
       return "FILE_ERROR_NO_LOCAL_SPACE";
+
+    case FILE_ERROR_SERVICE_UNAVAILABLE:
+      return "FILE_ERROR_SERVICE_UNAVAILABLE";
   }
 
   NOTREACHED();
@@ -124,6 +127,9 @@ base::PlatformFileError FileErrorToPlatformError(FileError error) {
 
     case FILE_ERROR_NO_LOCAL_SPACE:
       return base::PLATFORM_FILE_ERROR_FAILED;
+
+    case FILE_ERROR_SERVICE_UNAVAILABLE:
+      return base::PLATFORM_FILE_ERROR_FAILED;
   }
 
   NOTREACHED();
@@ -141,6 +147,9 @@ FileError GDataToFileError(google_apis::GDataErrorCode status) {
       return FILE_ERROR_ACCESS_DENIED;
     case google_apis::HTTP_NOT_FOUND:
       return FILE_ERROR_NOT_FOUND;
+    case google_apis::HTTP_INTERNAL_SERVER_ERROR:
+    case google_apis::HTTP_SERVICE_UNAVAILABLE:
+      return FILE_ERROR_SERVICE_UNAVAILABLE;
     case google_apis::HTTP_NOT_IMPLEMENTED:
       return FILE_ERROR_INVALID_OPERATION;
     case google_apis::GDATA_CANCELLED:

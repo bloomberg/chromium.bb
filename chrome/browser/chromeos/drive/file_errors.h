@@ -30,6 +30,7 @@ enum FileError {
   FILE_ERROR_INVALID_URL = -15,
   FILE_ERROR_NO_CONNECTION = -16,
   FILE_ERROR_NO_LOCAL_SPACE = -17,
+  FILE_ERROR_SERVICE_UNAVAILABLE = -18,
 };
 
 // Used as callbacks for file operations.
