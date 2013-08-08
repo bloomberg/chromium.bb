@@ -15052,7 +15052,52 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebFont.DownloadTime.0.Under10KB" units="milliseconds">
+  <summary>
+    The time it takes for a webfont download to finish, for webfonts of under
+    10KB.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.DownloadTime.1.10KBTo50KB" units="milliseconds">
+  <summary>
+    The time it takes for a webfont download to finish, for webfonts of
+    10KB-50KB.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.DownloadTime.2.50KBTo100KB" units="milliseconds">
+  <summary>
+    The time it takes for a webfont download to finish, for webfonts of
+    50KB-100KB.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.DownloadTime.3.100KBTo1MB" units="milliseconds">
+  <summary>
+    The time it takes for a webfont download to finish, for webfonts of
+    100KB-1MB.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.DownloadTime.4.Over1MB" units="milliseconds">
+  <summary>
+    The time it takes for a webfont download to finish, for webfonts of over
+    1MB.
+  </summary>
+</histogram>
+
+<histogram name="WebFont.DownloadTime.LoadError" units="milliseconds">
+  <summary>
+    The time taken for a webfont download that failed. Includes aborted
+    requests.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.LoadTime.0.Under10KB" units="milliseconds">
+  <obsolete>
+    Deprecated as of 8/2013, replaced by WebFont.DownloadTime.0.Under10KB.
+  </obsolete>
   <summary>
     The time it takes for a webfont download to finish, for webfonts of under
     10KB.
@@ -15060,6 +15105,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebFont.LoadTime.1.10KBTo50KB" units="milliseconds">
+  <obsolete>
+    Deprecated as of 8/2013, replaced by WebFont.DownloadTime.1.10KBTo50KB.
+  </obsolete>
   <summary>
     The time it takes for a webfont download to finish, for webfonts of
     10KB-50KB.
@@ -15067,6 +15115,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebFont.LoadTime.2.50KBTo100KB" units="milliseconds">
+  <obsolete>
+    Deprecated as of 8/2013, replaced by WebFont.DownloadTime.2.50KBTo100KB.
+  </obsolete>
   <summary>
     The time it takes for a webfont download to finish, for webfonts of
     50KB-100KB.
@@ -15074,6 +15125,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebFont.LoadTime.3.100KBTo1MB" units="milliseconds">
+  <obsolete>
+    Deprecated as of 8/2013, replaced by WebFont.DownloadTime.3.100KBTo1MB.
+  </obsolete>
   <summary>
     The time it takes for a webfont download to finish, for webfonts of
     100KB-1MB.
@@ -15081,6 +15135,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebFont.LoadTime.4.Over1MB" units="milliseconds">
+  <obsolete>
+    Deprecated as of 8/2013, replaced by WebFont.DownloadTime.4.Over1MB.
+  </obsolete>
   <summary>
     The time it takes for a webfont download to finish, for webfonts of over
     1MB.
@@ -15088,6 +15145,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebFont.LoadTime.LoadError" units="milliseconds">
+  <obsolete>
+    Deprecated as of 8/2013, replaced by WebFont.DownloadTime.LoadError.
+  </obsolete>
   <summary>
     The time taken for a webfont download that failed. Includes aborted
     requests.
