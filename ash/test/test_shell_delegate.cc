@@ -191,16 +191,6 @@ void TestShellDelegate::HandleMediaPlayPause() {
 void TestShellDelegate::HandleMediaPrevTrack() {
 }
 
-base::string16 TestShellDelegate::GetTimeRemainingString(
-    base::TimeDelta delta) {
-  return base::string16();
-}
-
-base::string16 TestShellDelegate::GetTimeDurationLongString(
-    base::TimeDelta delta) {
-  return base::string16();
-}
-
 void TestShellDelegate::SaveScreenMagnifierScale(double scale) {
 }
 

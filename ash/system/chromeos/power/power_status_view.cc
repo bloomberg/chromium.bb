@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -193,13 +194,8 @@ void PowerStatusView::UpdateTextForNotificationView() {
     } else {
       // This is a low battery warning prompting the user in minutes.
       min = hour * 60 + min;
-      ShellDelegate* delegate = Shell::GetInstance()->delegate();
-      if (delegate) {
-        time_label_->SetText(delegate->GetTimeRemainingString(
-            base::TimeDelta::FromMinutes(min)));
-      } else {
-        time_label_->SetText(base::string16());
-      }
+      time_label_->SetText(ui::TimeFormat::TimeRemaining(
+          base::TimeDelta::FromMinutes(min)));
     }
   } else {
     time_label_->SetText(base::string16());

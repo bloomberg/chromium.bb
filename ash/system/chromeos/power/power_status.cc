@@ -17,6 +17,7 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -47,19 +48,15 @@ void SanitizeProto(power_manager::PowerSupplyProperties* proto) {
 base::string16 GetBatteryTimeAccessibilityString(int hour, int min) {
   DCHECK(hour || min);
   if (hour && !min) {
-    return Shell::GetInstance()->delegate()->GetTimeDurationLongString(
-        base::TimeDelta::FromHours(hour));
+    return ui::TimeFormat::TimeDurationLong(base::TimeDelta::FromHours(hour));
   }
   if (min && !hour) {
-    return Shell::GetInstance()->delegate()->GetTimeDurationLongString(
-        base::TimeDelta::FromMinutes(min));
+    return ui::TimeFormat::TimeDurationLong(base::TimeDelta::FromMinutes(min));
   }
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_BATTERY_TIME_ACCESSIBLE,
-      Shell::GetInstance()->delegate()->GetTimeDurationLongString(
-          base::TimeDelta::FromHours(hour)),
-      Shell::GetInstance()->delegate()->GetTimeDurationLongString(
-          base::TimeDelta::FromMinutes(min)));
+      ui::TimeFormat::TimeDurationLong(base::TimeDelta::FromHours(hour)),
+      ui::TimeFormat::TimeDurationLong(base::TimeDelta::FromMinutes(min)));
 }
 
 static PowerStatus* g_power_status = NULL;

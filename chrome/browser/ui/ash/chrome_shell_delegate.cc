@@ -48,7 +48,6 @@
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/time_format.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
@@ -415,14 +414,6 @@ void ChromeShellDelegate::RecordUserMetricsAction(
       content::RecordAction(content::UserMetricsAction("MaxButton_ShowBubble"));
       break;
   }
-}
-
-string16 ChromeShellDelegate::GetTimeRemainingString(base::TimeDelta delta) {
-  return ui::TimeFormat::TimeRemainingLong(delta);
-}
-
-string16 ChromeShellDelegate::GetTimeDurationLongString(base::TimeDelta delta) {
-  return ui::TimeFormat::TimeDurationLong(delta);
 }
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(aura::RootWindow* root) {

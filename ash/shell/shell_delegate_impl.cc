@@ -231,16 +231,6 @@ void ShellDelegateImpl::HandleMediaPlayPause() {
 void ShellDelegateImpl::HandleMediaPrevTrack() {
 }
 
-base::string16 ShellDelegateImpl::GetTimeRemainingString(
-    base::TimeDelta delta) {
-  return base::string16();
-}
-
-base::string16 ShellDelegateImpl::GetTimeDurationLongString(
-    base::TimeDelta delta) {
-  return base::string16();
-}
-
 void ShellDelegateImpl::SaveScreenMagnifierScale(double scale) {
 }
 

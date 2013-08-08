@@ -74,9 +74,6 @@ class TestShellDelegate : public ShellDelegate {
   virtual void HandleMediaNextTrack() OVERRIDE;
   virtual void HandleMediaPlayPause() OVERRIDE;
   virtual void HandleMediaPrevTrack() OVERRIDE;
-  virtual base::string16 GetTimeRemainingString(base::TimeDelta delta) OVERRIDE;
-  virtual base::string16 GetTimeDurationLongString(
-      base::TimeDelta delta) OVERRIDE;
   virtual void SaveScreenMagnifierScale(double scale) OVERRIDE;
   virtual double GetSavedScreenMagnifierScale() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root) OVERRIDE;
