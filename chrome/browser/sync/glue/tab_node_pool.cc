@@ -39,10 +39,8 @@ std::string TabNodePool::TabIdToTag(
   return base::StringPrintf("%s %d", machine_tag.c_str(), tab_node_id);
 }
 
-void TabNodePool::AddTabNode(int tab_node_id,
-                             const SessionID& tab_id) {
+void TabNodePool::AddTabNode(int tab_node_id) {
   DCHECK_GT(tab_node_id, kInvalidTabNodeID);
-  DCHECK_GT(tab_id.id(), kInvalidTabID);
   DCHECK(nodeid_tabid_map_.find(tab_node_id) == nodeid_tabid_map_.end());
   unassociated_nodes_.insert(tab_node_id);
   if (max_used_tab_node_id_ < tab_node_id)
@@ -168,10 +166,18 @@ SessionID::id_type TabNodePool::GetTabIdFromTabNodeId(
   return kInvalidTabID;
 }
 
-void TabNodePool::FreeUnassociatedTabNodes() {
+void TabNodePool::DeleteUnassociatedTabNodes() {
+  syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   for (std::set<int>::iterator it = unassociated_nodes_.begin();
        it != unassociated_nodes_.end();) {
-    FreeTabNodeInternal(*it);
+    syncer::WriteNode tab_node(&trans);
+    const std::string tab_node_tag = TabIdToTag(machine_tag_, *it);
+    if (tab_node.InitByClientTagLookup(syncer::SESSIONS, tab_node_tag) !=
+        syncer::BaseNode::INIT_OK) {
+      LOG(ERROR) << "Could not find sync node with tag: " << tab_node_tag;
+    } else {
+      tab_node.Tombstone();
+    }
     unassociated_nodes_.erase(it++);
   }
   DCHECK(unassociated_nodes_.empty());

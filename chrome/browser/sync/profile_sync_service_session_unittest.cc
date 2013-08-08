@@ -792,13 +792,13 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
   ASSERT_TRUE(create_root.success());
 
   const size_t num_starting_nodes = 3;
-  SessionID session_id;
   for (size_t i = 0; i < num_starting_nodes; ++i) {
-    session_id.set_id(i + 1);
-    model_associator_->local_tab_pool_.AddTabNode(i + 1, session_id);
+    size_t node_id = i + 1;
+    model_associator_->local_tab_pool_.AddTabNode(node_id);
+    model_associator_->local_tab_pool_.AssociateTabNode(node_id, i);
+    model_associator_->local_tab_pool_.FreeTabNode(node_id);
   }
 
-  model_associator_->local_tab_pool_.FreeUnassociatedTabNodes();
   std::vector<int> node_ids;
   ASSERT_EQ(num_starting_nodes, model_associator_->local_tab_pool_.Capacity());
   ASSERT_FALSE(model_associator_->local_tab_pool_.Empty());
@@ -1370,6 +1370,35 @@ TEST_F(ProfileSyncServiceSessionTest, TabPoolFreeNodeLimits) {
   EXPECT_TRUE(model_associator_->local_tab_pool_.Full());
   EXPECT_EQ(TabNodePool::kFreeNodesLowWatermark,
             model_associator_->local_tab_pool_.Capacity());
+}
+
+TEST_F(ProfileSyncServiceSessionTest, TabNodePoolDeleteUnassociatedNodes) {
+  CreateRootHelper create_root(this);
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+  std::string local_tag = model_associator_->GetCurrentMachineTag();
+  syncer::SyncError error;
+  // Create a free node and then dissassociate sessions so that it ends up
+  // unassociated.
+  int tab_node_id = model_associator_->local_tab_pool_.GetFreeTabNode();
+  // Update the tab_id of the node, so that it is considered a valid
+  // unassociated node otherwise it will be mistaken for a corrupted node and
+  // will be deleted before being added to the tab node pool.
+  {
+    std::string tab_tag = TabNodePool::TabIdToTag(local_tag, tab_node_id);
+    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    syncer::WriteNode tab_node(&trans);
+    ASSERT_EQ(syncer::BaseNode::INIT_OK,
+              tab_node.InitByClientTagLookup(syncer::SESSIONS, tab_tag));
+    sync_pb::SessionSpecifics specifics = tab_node.GetSessionSpecifics();
+    sync_pb::SessionTab* tab = specifics.mutable_tab();
+    tab->set_tab_id(1);
+    tab_node.SetSessionSpecifics(specifics);
+  }
+
+  error = model_associator_->DisassociateModels();
+  ASSERT_FALSE(error.IsSet());
+  error = model_associator_->AssociateModels(NULL, NULL);
+  ASSERT_FALSE(error.IsSet());
 }
 
 }  // namespace browser_sync

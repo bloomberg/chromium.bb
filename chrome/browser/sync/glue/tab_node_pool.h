@@ -32,7 +32,7 @@ namespace browser_sync {
 //                   restart. Nodes are only unassociated temporarily while the
 //                   model associator figures out which tabs belong to which
 //                   nodes. Eventually any remaining unassociated nodes are
-//                   freed.
+//                   deleted.
 // 3. Free         : Sync node is unused.
 
 class TabNodePool {
@@ -77,7 +77,7 @@ class TabNodePool {
   // Note: this should only be called when we discover tab sync nodes from
   // previous sessions, not for freeing tab nodes we created through
   // GetFreeTabNode (use FreeTabNode below for that).
-  void AddTabNode(int tab_node_id, const SessionID& tab_id);
+  void AddTabNode(int tab_node_id);
 
   // Returns the tab_id for |tab_node_id| if it is associated else returns
   // kInvalidTabID.
@@ -90,8 +90,8 @@ class TabNodePool {
   // Returns true if |tab_node_id| is an unassociated tab node.
   bool IsUnassociatedTabNode(int tab_node_id);
 
-  // Returns any unassociated nodes to the free node pool.
-  void FreeUnassociatedTabNodes();
+  // Deletes any unassociated nodes.
+  void DeleteUnassociatedTabNodes();
 
   // Clear tab pool.
   void Clear();

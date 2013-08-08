@@ -313,12 +313,6 @@ SessionTab* SyncedSessionTracker::GetTabImpl(
       // node for this session before actually associating the tab itself, so
       // the tab node id wasn't available at the time.  Update it.
 
-      // TODO(shashishekhar): Make sure the following constraint works.
-      // All nodes either have unique tab_ids or have kInvalidTabID as their
-      // tab_id. There can be multiple nodes associated with kInvalidTabID but
-      // there is always one-to-one mapping between valid tab_ids and
-      // tab_node_ids.
-
       if (iter->second.tab_node_id != tab_node_id &&
           iter->second.tab_node_id != TabNodePool::kInvalidTabNodeID) {
         // We are updating tab_node_id for a valid tab_id, ideally this should

@@ -285,8 +285,7 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
     }
   }
 
-  // Free old sync nodes.
-  local_tab_pool_.FreeUnassociatedTabNodes();
+  local_tab_pool_.DeleteUnassociatedTabNodes();
   // Free memory for closed windows and tabs.
   synced_session_tracker_.CleanupSession(local_tag);
 
@@ -749,9 +748,7 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
         } else {
           // This is a valid old tab node, add it to the pool so it can be
           // reused for reassociation.
-          SessionID tab_id;
-          tab_id.set_id(specifics.tab().tab_id());
-          local_tab_pool_.AddTabNode(specifics.tab_node_id(), tab_id);
+          local_tab_pool_.AddTabNode(specifics.tab_node_id());
         }
       }
     }

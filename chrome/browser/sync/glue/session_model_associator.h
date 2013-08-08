@@ -224,6 +224,8 @@ class SessionModelAssociator
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, MissingLocalTabNode);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest,
                            TabPoolFreeNodeLimits);
+  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest,
+                           TabNodePoolDeleteUnassociatedNodes);
   FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
                            PopulateSessionHeader);
   FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
