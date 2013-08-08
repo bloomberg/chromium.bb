@@ -49,17 +49,24 @@ void StartPrinter(Printer* printer) {
 
 base::RunLoop* g_runner = NULL;
 Printer* g_printer = NULL;
+base::MessageLoop* g_message_loop;
+
+void StopLoop() {
+  // Always do after printer.Stop() to make sure XMPP will
+  // be disabled fully before |Quit| will be called
+  // (XMPP disables itself via MessageLoop call).
+  g_message_loop->PostTask(FROM_HERE, g_runner->QuitClosure());
+  g_message_loop = NULL;
+  g_runner = NULL;
+}
 
 void OnAbort(int val) {
-  if (g_runner) {
-    g_printer->Stop();  // TODO(maksymb): Make this call in safe place call:
-                        // |OnAbort| is called from different thread.
+  if (g_printer) {
+    g_message_loop->PostTask(
+        FROM_HERE,
+        base::Bind(&Printer::Stop, base::Unretained(g_printer)));
+    g_message_loop->PostTask(FROM_HERE, base::Bind(&StopLoop));
     g_printer = NULL;
-
-    g_runner->Quit();   // Always do after printer.Stop() to make sure XMPP will
-                        // be disabled fully before |Quit| will be called
-                        // (XMPP disables itself via MessageLoop call).
-    g_runner = NULL;
   }
 }
 
@@ -83,8 +90,8 @@ int main(int argc, char* argv[]) {
   signal(SIGINT, OnAbort);  // Handle Ctrl+C signal.
 
   base::MessageLoop loop(base::MessageLoop::TYPE_IO);
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(&StartPrinter, &printer));
+  g_message_loop = &loop;
+  g_message_loop->PostTask(FROM_HERE, base::Bind(&StartPrinter, &printer));
   base::RunLoop runner;
   g_printer = &printer;
   g_runner = &runner;
