@@ -26,6 +26,7 @@ class BrowserContext;
 }
 
 namespace autofill {
+class AutofillInteractiveTest;
 class AutofillMetrics;
 class AutofillTest;
 class FormStructure;
@@ -182,6 +183,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtStartup);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            AggregateExistingAuxiliaryProfile);
+  friend class autofill::AutofillInteractiveTest;
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
