@@ -117,17 +117,14 @@ class CC_EXPORT RenderPass {
 
 namespace BASE_HASH_NAMESPACE {
 #if defined(COMPILER_MSVC)
-template<>
-inline size_t hash_value<cc::RenderPass::Id>(const cc::RenderPass::Id& key) {
-  return hash_value<std::pair<int, int> >(
-      std::pair<int, int>(key.layer_id, key.index));
+inline size_t hash_value(const cc::RenderPass::Id& key) {
+  return base::HashPair(key.layer_id, key.index);
 }
 #elif defined(COMPILER_GCC)
 template<>
 struct hash<cc::RenderPass::Id> {
   size_t operator()(cc::RenderPass::Id key) const {
-    return hash<std::pair<int, int> >()(
-        std::pair<int, int>(key.layer_id, key.index));
+    return base::HashPair(key.layer_id, key.index);
   }
 };
 #else
