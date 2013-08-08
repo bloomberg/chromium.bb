@@ -350,6 +350,8 @@ IMAGE_SCRIPTS_NAME = 'image_scripts'
 IMAGE_SCRIPTS_TAR = '%s.tar.xz' % IMAGE_SCRIPTS_NAME
 METADATA_JSON = 'metadata.json'
 METADATA_STAGE_JSON = 'metadata_%(stage)s.json'
+DELTA_SYSROOT_TAR = 'delta_sysroot.tar.xz'
+DELTA_SYSROOT_BATCH = 'batch'
 
 # Global configuration constants.
 CHROMITE_CONFIG_DIR = os.path.expanduser('~/.chromite')
