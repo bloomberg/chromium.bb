@@ -299,6 +299,7 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeAdvanced) {
     EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
               TemplateURLPrepopulateData::GetEngineType(kGoogleURLs[i]));
   }
+
   // Non-Google URLs.
   const char* kYahooURLs[] = {
       "http://search.yahoo.com/search?"
@@ -311,10 +312,16 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeAdvanced) {
     EXPECT_EQ(SEARCH_ENGINE_YAHOO,
               TemplateURLPrepopulateData::GetEngineType(kYahooURLs[i]));
   }
+
   // URLs for engines not present in country-specific lists.
   EXPECT_EQ(SEARCH_ENGINE_NIGMA,
             TemplateURLPrepopulateData::GetEngineType(
-                "http://www.nigma.ru/?s={searchTerms}&arg1=value1"));
+                "http://nigma.ru/?s={searchTerms}&arg1=value1"));
+  // Also test matching against alternate URLs (and TLD+1 matching).
+  EXPECT_EQ(SEARCH_ENGINE_SOFTONIC,
+            TemplateURLPrepopulateData::GetEngineType(
+                "http://test.softonic.com.br/?{searchTerms}"));
+
   // Search URL for which no prepopulated search provider exists.
   EXPECT_EQ(SEARCH_ENGINE_OTHER,
             TemplateURLPrepopulateData::GetEngineType(

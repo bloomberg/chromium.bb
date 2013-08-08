@@ -9,8 +9,8 @@
 // definitions.
 
 // The following unique IDs are available:
-//    53, 56, 58, 60, 61, 64, 65, 66, 70, 74, 78, 79, 80, 81, 84, 86, 88, 91,
-//    92, 93, 94, 95, 96, 97, 98, 99, 102+
+//    11, 12, 14, 18, 19, 20, 22, 24, 26, 28, 29, 30, 32, 33, 34, 39, 37, 38,
+//    40, 41, 42, 46, 47, 48, 49, 51, 52, 59, 71, 72, 82, 84, 86, 88, 89, 91+
 //
 // IDs > 1000 are reserved for distribution custom engines.
 //
@@ -22,114 +22,42 @@
   "int_variables": {
     // The following id is for UMA stats only. Please update it if you add new
     // engines outside the current range or it will not be counted in stats.
-    "kMaxPrepopulatedEngineID": 101,
+    "kMaxPrepopulatedEngineID": 90,
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 59
+    "kCurrentDataVersion": 60
   },
 
   // The following engines are included in country lists and are added to the
   // list of search engines on the first run depending on user's country.
   "elements": {
-    "abcsok": {
-      "name": "ABC S\u00f8k",
-      "keyword": "abcsok.no",
-      "favicon_url": "http://abcsok.no/favicon.ico",
-      "search_url": "http://abcsok.no/index.html?q={searchTerms}",
-      "type": "SEARCH_ENGINE_ABCSOK",
-      "id": 72
-    },
-
-    "altavista": {
-      "name": "AltaVista",
-      "keyword": "altavista.com",
-      "favicon_url": "http://www.altavista.com/favicon.ico",
-      "search_url": "http://www.altavista.com/web/results?q={searchTerms}",
-      "type": "SEARCH_ENGINE_ALTAVISTA",
-      "id": 89
-    },
-
-    "altavista_ar": {
-      "name": "AltaVista",
-      "keyword": "ar.altavista.com",
-      "favicon_url": "http://ar.altavista.com/favicon.ico",
-      "search_url": "http://ar.altavista.com/web/results?q={searchTerms}",
-      "type": "SEARCH_ENGINE_ALTAVISTA",
-      "id": 89
-    },
-
-    "altavista_se": {
-      "name": "AltaVista",
-      "keyword": "se.altavista.com",
-      "favicon_url": "http://se.altavista.com/favicon.ico",
-      "search_url": "http://se.altavista.com/web/results?q={searchTerms}",
-      "type": "SEARCH_ENGINE_ALTAVISTA",
-      "id": 89
-    },
-
     "aol": {
       "name": "AOL",
       "keyword": "aol.com",
       "favicon_url": "http://search.aol.com/favicon.ico",
       "search_url": "http://search.aol.com/aol/search?query={searchTerms}",
+      "suggest_url": "http://autocomplete.search.aol.com/autocomplete/get?output=json&it=&q={searchTerms}",
+      "type": "SEARCH_ENGINE_AOL",
       "id": 35
-    },
-
-    "araby": {
-      "name": "\u0639\u0631\u0628\u064a",
-      "keyword": "araby.com",
-      "favicon_url": "http://araby.com/favicon.ico",
-      "search_url": "http://araby.com/?q={searchTerms}",
-      "id": 12
     },
 
     "ask": {
       "name": "Ask",
       "keyword": "ask.com",
-      "favicon_url": "http://www.ask.com/favicon.ico",
+      "favicon_url": "http://sp.ask.com/sh/i/a16/favicon/favicon.ico",
       "search_url": "http://www.ask.com/web?q={searchTerms}",
       "suggest_url": "http://ss.ask.com/query?q={searchTerms}&li=ff",
       "type": "SEARCH_ENGINE_ASK",
       "id": 4
     },
 
-    "ask_de": {
-      "name": "Ask.com Deutschland",
-      "keyword": "de.ask.com",
-      "favicon_url": "http://de.ask.com/favicon.ico",
-      "search_url": "http://de.ask.com/web?q={searchTerms}",
-      "suggest_url": "http://ss.de.ask.com/query?q={searchTerms}&li=ff",
-      "type": "SEARCH_ENGINE_ASK",
-      "id": 4
-    },
-
-    "ask_es": {
-      "name": "Ask.com Espa\u00f1a",
-      "keyword": "es.ask.com",
-      "favicon_url": "http://es.ask.com/favicon.ico",
-      "search_url": "http://es.ask.com/web?q={searchTerms}",
-      "suggest_url": "http://ss.es.ask.com/query?q={searchTerms}&li=ff",
-      "type": "SEARCH_ENGINE_ASK",
-      "id": 4
-    },
-
-    "ask_it": {
-      "name": "Ask.com Italia",
-      "keyword": "it.ask.com",
-      "favicon_url": "http://it.ask.com/favicon.ico",
-      "search_url": "http://it.ask.com/web?q={searchTerms}",
-      "suggest_url": "http://ss.it.ask.com/query?q={searchTerms}&li=ff",
-      "type": "SEARCH_ENGINE_ASK",
-      "id": 4
-    },
-
-    "ask_nl": {
-      "name": "Ask.com Nederland",
-      "keyword": "nl.ask.com",
-      "favicon_url": "http://nl.ask.com/favicon.ico",
-      "search_url": "http://nl.ask.com/web?q={searchTerms}",
-      "suggest_url": "http://ss.nl.ask.com/query?q={searchTerms}&li=ff",
+    "ask_br": {
+      "name": "Ask Brasil",
+      "keyword": "br.ask.com",
+      "favicon_url": "http://sp.br.ask.com/sh/i/a14/favicon/favicon.ico",
+      "search_url": "http://br.ask.com/web?q={searchTerms}",
+      "suggest_url": "http://ss.ask.com/query?q={searchTerms}&li=ff",
       "type": "SEARCH_ENGINE_ASK",
       "id": 4
     },
@@ -137,36 +65,18 @@
     "ask_uk": {
       "name": "Ask Jeeves",
       "keyword": "uk.ask.com",
-      "favicon_url": "http://uk.ask.com/favicon.ico",
+      "favicon_url": "http://sp.uk.ask.com/sh/i/a16/favicon/favicon.ico",
       "search_url": "http://uk.ask.com/web?q={searchTerms}",
       "suggest_url": "http://ss.uk.ask.com/query?q={searchTerms}&li=ff",
       "type": "SEARCH_ENGINE_ASK",
       "id": 4
     },
 
-    "atlas_cz": {
-      "name": "Atlas",
-      "keyword": "atlas.cz",
-      "favicon_url": "http://img.atlas.cz/favicon.ico",
-      "search_url": "http://search.atlas.cz/?q={searchTerms}",
-      "encoding": "windows-1250",
-      "id": 27
-    },
-
-    "atlas_sk": {
-      "name": "ATLAS.SK",
-      "keyword": "atlas.sk",
-      "favicon_url": "http://www.atlas.sk/images/favicon.ico",
-      "search_url": "http://hladaj.atlas.sk/fulltext/?phrase={searchTerms}",
-      "id": 27
-    },
-
     "baidu": {
       "name": "\u767e\u5ea6",
       "keyword": "baidu.com",
       "favicon_url": "http://www.baidu.com/favicon.ico",
-      "search_url": "http://www.baidu.com/s?wd={searchTerms}",
-      "encoding": "GB2312",
+      "search_url": "http://www.baidu.com/s?ie={inputEncoding}&wd={searchTerms}",
       "type": "SEARCH_ENGINE_BAIDU",
       "id": 21
     },
@@ -182,7 +92,7 @@
     },
 
     "bing_ar_XA": {
-      "name": "Bing",
+      "name": "Bing (\u0627\u0644\u0639\u0631\u0628\u064a\u0629)",
       "keyword": "bing.com_",  // bing.com is taken by bing_en_XA.
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=ar-XA&q={searchTerms}",
@@ -190,26 +100,6 @@
       "type": "SEARCH_ENGINE_BING",
       "id": 7  // Can't be 3 as this has to appear in the Arabian countries'
                // lists alongside bing_en_XA.
-    },
-
-    "bing_bg_BG": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=bg-BG&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_cs_CZ": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=cs-CZ&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
     },
 
     "bing_da_DK": {
@@ -233,7 +123,7 @@
     },
 
     "bing_de_CH": {
-      "name": "Bing",
+      "name": "Bing (Deutsch)",
       "keyword": "bing.com",
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=de-CH&q={searchTerms}",
@@ -252,16 +142,6 @@
       "id": 3
     },
 
-    "bing_el_GR": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=el-GR&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
     "bing_en_AU": {
       "name": "Bing",
       "keyword": "bing.com",
@@ -273,7 +153,7 @@
     },
 
     "bing_en_CA": {
-      "name": "Bing",
+      "name": "Bing (English)",
       "keyword": "bing.com",
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=en-CA&q={searchTerms}",
@@ -287,16 +167,6 @@
       "keyword": "bing.com",
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=en-GB&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_en_ID": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-ID&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "type": "SEARCH_ENGINE_BING",
       "id": 3
@@ -317,16 +187,6 @@
       "keyword": "bing.com",
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=en-IN&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_en_MY": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-MY&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "type": "SEARCH_ENGINE_BING",
       "id": 3
@@ -373,20 +233,10 @@
     },
 
     "bing_en_XA": {
-      "name": "Bing",
+      "name": "Bing (English)",
       "keyword": "bing.com",
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=en-XA&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_en_ZA": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=en-ZA&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "type": "SEARCH_ENGINE_BING",
       "id": 3
@@ -442,16 +292,6 @@
       "id": 3
     },
 
-    "bing_et_EE": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=et-EE&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
     "bing_fi_FI": {
       "name": "Bing",
       "keyword": "bing.com",
@@ -463,7 +303,7 @@
     },
 
     "bing_fr_BE": {
-      "name": "Bing",
+      "name": "Bing (Fran\u00e7ais)",
       "keyword": "bing.com_",  // bing.com is taken by bing_nl_BE.
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=fr-BE&q={searchTerms}",
@@ -473,7 +313,7 @@
     },
 
     "bing_fr_CA": {
-      "name": "Bing",
+      "name": "Bing (Fran\u00e7ais)",
       "keyword": "bing.com_",  // bing.com is taken by bing_en_CA.
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=fr-CA&q={searchTerms}",
@@ -483,7 +323,7 @@
     },
 
     "bing_fr_CH": {
-      "name": "Bing",
+      "name": "Bing (Fran\u00e7ais)",
       "keyword": "bing.com_",  // bing.com is taken by bing_de_CH.
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=fr-CH&q={searchTerms}",
@@ -497,36 +337,6 @@
       "keyword": "bing.com",
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=fr-FR&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_he_IL": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=he-IL&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_hr_HR": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=hr-HR&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_hu_HU": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=hu-HU&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "type": "SEARCH_ENGINE_BING",
       "id": 3
@@ -547,26 +357,6 @@
       "keyword": "bing.com",
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=ja-JP&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_ko_KR": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=ko-KR&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_lt_LT": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=lt-LT&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "type": "SEARCH_ENGINE_BING",
       "id": 3
@@ -593,20 +383,10 @@
     },
 
     "bing_nl_BE": {
-      "name": "Bing",
+      "name": "Bing (Nederlandstalige)",
       "keyword": "bing.com",
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=nl-BE&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_nl_NL": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=nl-NL&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "type": "SEARCH_ENGINE_BING",
       "id": 3
@@ -642,41 +422,11 @@
       "id": 3
     },
 
-    "bing_ro_RO": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=ro-RO&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
     "bing_ru_RU": {
       "name": "Bing",
       "keyword": "bing.com",
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=ru-RU&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_sl_SI": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=sl-SI&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_sk_SK": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=sk-SK&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "type": "SEARCH_ENGINE_BING",
       "id": 3
@@ -692,41 +442,11 @@
       "id": 3
     },
 
-    "bing_th_TH": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=th-TH&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
     "bing_tr_TR": {
       "name": "Bing",
       "keyword": "bing.com",
       "favicon_url": "http://www.bing.com/s/wlflag.ico",
       "search_url": "http://www.bing.com/search?setmkt=tr-TR&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_uk_UA": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=uk-UA&q={searchTerms}",
-      "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
-      "type": "SEARCH_ENGINE_BING",
-      "id": 3
-    },
-
-    "bing_zh_CN": {
-      "name": "Bing",
-      "keyword": "bing.com",
-      "favicon_url": "http://www.bing.com/s/wlflag.ico",
-      "search_url": "http://www.bing.com/search?setmkt=zh-CN&q={searchTerms}",
       "suggest_url": "http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
       "type": "SEARCH_ENGINE_BING",
       "id": 3
@@ -752,95 +472,14 @@
       "id": 3
     },
 
-    "centrum_cz": {
-      "name": "Centrum.cz",
-      "keyword": "centrum.cz",
-      "favicon_url": "http://img.centrum.cz/6/vy2/o/favicon.ico",
-      "search_url": "http://search.centrum.cz/index.php?charset={inputEncoding}&q={searchTerms}",
-      "type": "SEARCH_ENGINE_CENTRUM",
-      "id": 26
-    },
-
-    "centrum_sk": {
-      "name": "Centrum.sk",
-      "keyword": "centrum.sk",
-      "favicon_url": "http://img.centrum.sk/4/favicon.ico",
-      "search_url": "http://search.centrum.sk/index.php?charset={inputEncoding}&q={searchTerms}",
-      "type": "SEARCH_ENGINE_CENTRUM",
-      "id": 26
-    },
-
     "daum": {
       "name": "Daum",
       "keyword": "daum.net",
-      "favicon_url": "http://icon.daum-img.net/favicon.ico",
-      "search_url": "http://search.daum.net/search?q={searchTerms}",
-      "suggest_url": "http://sug.search.daum.net/search_nsuggest?mod=fxjson&code=utf_in_out&q={searchTerms}",
+      "favicon_url": "http://search.daum.net/favicon.ico",
+      "search_url": "http://search.daum.net/search?ie={inputEncoding}&q={searchTerms}",
+      "suggest_url": "http://sug.search.daum.net/search_nsuggest?mod=fxjson&ie={inputEncoding}&code=utf_in_out&q={searchTerms}",
       "type": "SEARCH_ENGINE_DAUM",
       "id": 68
-    },
-
-    "delfi_lt": {
-      "name": "DELFI",
-      "keyword": "delfi.lt",
-      "favicon_url": "http://search.delfi.lt/img/favicon.png",
-      "search_url": "http://search.delfi.lt/search.php?q={searchTerms}",
-      "type": "SEARCH_ENGINE_DELFI",
-      "id": 45
-    },
-
-    "delfi_lv": {
-      "name": "DELFI",
-      "keyword": "delfi.lv",
-      "favicon_url": "http://smart.delfi.lv/img/smart_search.png",
-      "search_url": "http://smart.delfi.lv/i.php?enc={inputEncoding}&q={searchTerms}",
-      "type": "SEARCH_ENGINE_DELFI",
-      "id": 45
-    },
-
-    "diri": {
-      "name": "diri",
-      "keyword": "diri.bg",
-      "favicon_url": "http://i.dir.bg/diri/images/favicon.ico",
-      "search_url": "http://diri.bg/search.php?textfield={searchTerms}",
-      "encoding": "windows-1251",
-      "type": "SEARCH_ENGINE_DIRI",
-      "id": 32
-    },
-
-    "eniro_fi": {
-      "name": "Eniro",
-      "keyword": "eniro.fi",
-      "favicon_url": "http://eniro.fi/favicon.ico",
-      "search_url": "http://eniro.fi/query?search_word={searchTerms}&what=web_local",
-      "encoding": "ISO-8859-1",
-      "id": 29
-    },
-
-    "eniro_se": {
-      "name": "Eniro",
-      "keyword": "eniro.se",
-      "favicon_url": "http://eniro.se/favicon.ico",
-      "search_url": "http://eniro.se/query?search_word={searchTerms}&what=web_local",
-      "encoding": "ISO-8859-1",
-      "id": 29
-    },
-
-    "fonecta_02_fi": {
-      "name": "Fonecta 02.fi",
-      "keyword": "www.fi",
-      "favicon_url": "http://www.02.fi/img/favicon.ico",
-      "search_url": "http://www.02.fi/haku/{searchTerms}",
-      "id": 46
-    },
-
-    "goo": {
-      "name": "goo",
-      "keyword": "search.goo.ne.jp",
-      "favicon_url": "http://goo.ne.jp/favicon.ico",
-      "search_url": "http://search.goo.ne.jp/web.jsp?MT={searchTerms}&IE={inputEncoding}",
-      "type": "SEARCH_ENGINE_GOO",
-      "id": 23
     },
 
     "google": {
@@ -851,7 +490,7 @@
       "suggest_url": "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}client={google:suggestClient}&q={searchTerms}&{google:cursorPosition}{google:zeroPrefixUrl}{google:pageClassification}sugkey={google:suggestAPIKeyParameter}",
       "instant_url": "{google:baseURL}webhp?sourceid=chrome-instant&{google:RLZ}{google:instantEnabledParameter}{google:instantExtendedEnabledParameter}{google:ntpIsThemedParameter}{google:omniboxStartMarginParameter}ie={inputEncoding}",
       "image_url": "{google:baseURL}searchbyimage/upload",
-      "image_url_post_params": "encoded_image={google:imageThumbnail},image_url={google:imageURL},sbisrc={google:imageSearchSource}",
+      "image_url_post_params": "image_content={google:imageThumbnail},image_url={google:imageURL},sbisrc={google:imageSearchSource}",
       "alternate_urls": [
         "{google:baseURL}#q={searchTerms}",
         "{google:baseURL}search#q={searchTerms}",
@@ -862,83 +501,13 @@
       "id": 1
     },
 
-    "guruji": {
-      "name": "guruji",
-      "keyword": "guruji.com",
-      "favicon_url": "http://guruji.com/favicon.ico",
-      "search_url": "http://guruji.com/search?q={searchTerms}",
-      "id": 38
-    },
-
-    "hispavista": {
-      "name": "hispavista",
-      "keyword": "hispavista.com",
-      "favicon_url": "http://buscar.hispavista.com/favicon.ico",
-      "search_url": "http://buscar.hispavista.com/?cadena={searchTerms}",
-      "encoding": "iso-8859-1",
-      "id": 18
-    },
-
-    "in": {
-      "name": "in.gr",
-      "keyword": "in.gr",
-      "favicon_url": "http://www.in.gr/favicon.ico",
-      "search_url": "http://find.in.gr/?qs={searchTerms}",
-      "encoding": "ISO-8859-7",
-      "type": "SEARCH_ENGINE_IN",
-      "id": 54
-    },
-
-    "jabse": {
-      "name": "Jabse",
-      "keyword": "jabse.com",
-      "favicon_url": "http://www.jabse.com/favicon.ico",
-      "search_url": "http://www.jabse.com/searchmachine.php?query={searchTerms}",
-      "id": 19
-    },
-
-    "jubii": {
-      "name": "Jubii",
-      "keyword": "jubii.dk",
-      "favicon_url": "http://search.jubii.dk/favicon_jubii.ico",
-      "search_url": "http://search.jubii.dk/cgi-bin/pursuit?query={searchTerms}",
-      "encoding": "ISO-8859-1",
-      "id": 28
-    },
-
     "kvasir": {
       "name": "Kvasir",
       "keyword": "kvasir.no",
-      "favicon_url": "http://www.kvasir.no/img/favicon.ico",
-      "search_url": "http://www.kvasir.no/nettsok/searchResult.html?searchExpr={searchTerms}",
-      "encoding": "ISO-8859-1",
+      "favicon_url": "http://www.kvasir.no/grafikk/favicon.ico",
+      "search_url": "http://www.kvasir.no/alle?q={searchTerms}",
+      "type": "SEARCH_ENGINE_KVASIR",
       "id": 73
-    },
-
-    "latne": {
-      "name": "LATNE",
-      "keyword": "latne.lv",
-      "favicon_url": "http://latne.lv/favicon.ico",
-      "search_url": "http://latne.lv/siets.php?q={searchTerms}",
-      "id": 71
-    },
-
-    "leit": {
-      "name": "leit.is",
-      "keyword": "leit.is",
-      "favicon_url": "http://leit.is/leit.ico",
-      "search_url": "http://leit.is/query.aspx?qt={searchTerms}",
-      "encoding": "ISO-8859-1",
-      "id": 59
-    },
-
-    "libero": {
-      "name": "Libero",
-      "keyword": "libero.it",
-      "favicon_url": "http://arianna.libero.it/favicon.ico",
-      "search_url": "http://arianna.libero.it/search/abin/integrata.cgi?query={searchTerms}",
-      "encoding": "ISO-8859-1",
-      "id": 63
     },
 
     "mail_ru": {
@@ -952,175 +521,42 @@
       "id": 83
     },
 
-    "maktoob": {
-      "name": "\u0645\u0643\u062a\u0648\u0628",
-      "keyword": "maktoob.com",
-      "favicon_url": "http://www.maktoob.com/favicon.ico",
-      "search_url": "http://www.maktoob.com/searchResult.php?q={searchTerms}",
-      "id": 13
-    },
-
-    "masrawy": {
-      "name": "\u0645\u0635\u0631\u0627\u0648\u064a",
-      "keyword": "masrawy.com",
-      "favicon_url": "http://www.masrawy.com/new/images/masrawy.ico",
-      "search_url": "http://masrawy.com/new/search.aspx?sr={searchTerms}",
-      "encoding": "windows-1256",
-      "id": 14
-    },
-
-    "mynet": {
-      "name": "MYNET",
-      "keyword": "mynet.com",
-      "favicon_url": "http://img.mynet.com/mynetfavori.ico",
-      "search_url": "http://arama.mynet.com/search.aspx?q={searchTerms}&pg=q",
-      "encoding": "windows-1254",
-      "id": 101
-    },
-
     "najdi": {
       "name": "Najdi.si",
       "keyword": "najdi.si",
-      "favicon_url": "http://www.najdi.si/master/favicon.ico",
+      "favicon_url": "http://nsi2.sdn.si/master/v2/favicon.ico",
       "search_url": "http://www.najdi.si/search.jsp?q={searchTerms}",
       "type": "SEARCH_ENGINE_NAJDI",
       "id": 87
     },
 
     "nate": {
-      "name": "\ub124\uc774\ud2b8\ub2f7\ucef4",
+      "name": "\ub124\uc774\ud2b8",
       "keyword": "nate.com",
-      "favicon_url": "http://nate.search.empas.com/favicon.ico",
-      "search_url": "http://nate.search.empas.com/search/all.html?q={searchTerms}",
+      "favicon_url": "http://search.nate.com/favicon.ico",
+      "search_url": "http://search.nate.com/search/all.html?q={searchTerms}",
       "encoding": "EUC-KR",
+      "type": "SEARCH_ENGINE_NATE",
       "id": 69
     },
 
     "naver": {
       "name": "\ub124\uc774\ubc84",
       "keyword": "naver.com",
-      "favicon_url": "http://search.naver.com/favicon.ico",
+      "favicon_url": "http://static.naver.net/www/favicon.ico",
       "search_url": "http://search.naver.com/search.naver?ie={inputEncoding}&query={searchTerms}",
-      "suggest_url": "http://ac.search.naver.com/autocompl?m=s&ie={inputEncoding}&oe=utf-8&q={searchTerms}",
+      "suggest_url": "http://ac.search.naver.com/autocompl?m=s&ie={inputEncoding}&oe={outputEncoding}&q={searchTerms}",
       "type": "SEARCH_ENGINE_NAVER",
       "id": 67
-    },
-
-    "neti": {
-      "name": "NETI",
-      "keyword": "neti.ee",
-      "favicon_url": "http://www.neti.ee/favicon.ico",
-      "search_url": "http://www.neti.ee/cgi-bin/otsing?query={searchTerms}",
-      "encoding": "ISO-8859-1",
-      "type": "SEARCH_ENGINE_NETI",
-      "id": 44
-    },
-
-    "netsprint": {
-      "name": "NetSprint",
-      "keyword": "netsprint.pl",
-      "favicon_url": "http://netsprint.pl/favicon.ico",
-      "search_url": "http://www.netsprint.pl/serwis/search?q={searchTerms}",
-      "type": "SEARCH_ENGINE_NETSPRINT",
-      "id": 30
-    },
-
-    "nur_kz": {
-      "name": "NUR.KZ",
-      "keyword": "nur.kz",
-      "favicon_url": "http://www.nur.kz/favicon_kz.ico",
-      "search_url": "http://search.nur.kz/?encoding={inputEncoding}&query={searchTerms}",
-      "id": 20
-    },
-
-    "ok": {
-      "name": "OK.hu",
-      "keyword": "ok.hu",
-      "favicon_url": "http://ok.hu/gfx/favicon.ico",
-      "search_url": "http://ok.hu/katalogus?q={searchTerms}",
-      "encoding": "ISO-8859-2",
-      "type": "SEARCH_ENGINE_OK",
-      "id": 6
     },
 
     "onet": {
       "name": "Onet.pl",
       "keyword": "onet.pl",
       "favicon_url": "http://szukaj.onet.pl/favicon.ico",
-      "search_url": "http://szukaj.onet.pl/query.html?qt={searchTerms}",
-      "encoding": "ISO-8859-2",
+      "search_url": "http://szukaj.onet.pl/wyniki.html?qt={searchTerms}",
+      "type": "SEARCH_ENGINE_ONET",
       "id": 75
-    },
-
-    "pogodak_rs": {
-      "name": "Pogodak!",
-      "keyword": "pogodak.rs",
-      "favicon_url": "http://www.pogodak.rs/favicon.ico",
-      "search_url": "http://www.pogodak.rs/search.jsp?q={searchTerms}",
-      "type": "SEARCH_ENGINE_POGODAK",
-      "id": 24
-    },
-
-    "rambler": {
-      "name": "Rambler",
-      "keyword": "rambler.ru",
-      "favicon_url": "http://www.rambler.ru/favicon.ico",
-      "search_url": "http://www.rambler.ru/srch?words={searchTerms}",
-      "encoding": "windows-1251",
-      "type": "SEARCH_ENGINE_RAMBLER",
-      "id": 16
-    },
-
-    "rediff": {
-      "name": "Rediff",
-      "keyword": "rediff.com",
-      "favicon_url": "http://search1.rediff.com/favicon.ico",
-      "search_url": "http://search1.rediff.com/dirsrch/default.asp?MT={searchTerms}",
-      "id": 37
-    },
-
-    "rednano": {
-      "name": "Rednano",
-      "keyword": "rednano.sg",
-      "favicon_url": "http://rednano.sg/favicon.ico",
-      "search_url": "http://rednano.sg/sfe/lwi.action?querystring={searchTerms}",
-      "id": 41
-    },
-
-    "sanook": {
-      "name": "\u0e2a\u0e19\u0e38\u0e01!",
-      "keyword": "sanook.com",
-      "favicon_url": "http://search.sanook.com/favicon.ico",
-      "search_url": "http://search.sanook.com/search.php?q={searchTerms}",
-      "type": "SEARCH_ENGINE_SANOOK",
-      "id": 100
-    },
-
-    "sapo": {
-      "name": "SAPO",
-      "keyword": "sapo.pt",
-      "favicon_url": "http://imgs.sapo.pt/images/sapo.ico",
-      "search_url": "http://pesquisa.sapo.pt/?q={searchTerms}",
-      "suggest_url": "http://pesquisa.sapo.pt/livesapo?q={searchTerms}",
-      "type": "SEARCH_ENGINE_SAPO",
-      "id": 77
-    },
-
-    "search_de_CH": {
-      "name": "search.ch",
-      "keyword": "search.ch",
-      "favicon_url": "http://www.search.ch/favicon.ico",
-      "search_url": "http://www.search.ch/index.de.html?q={searchTerms}",
-      "encoding": "ISO-8859-1",
-      "id": 51
-    },
-
-    "search_fr_CH": {
-      "name": "search.ch",
-      "keyword": "search.ch_",  // search.ch is taken by search_de_CH.
-      "favicon_url": "http://www.search.ch/favicon.ico",
-      "search_url": "http://www.search.ch/index.fr.html?q={searchTerms}",
-      "id": 22
     },
 
     "seznam": {
@@ -1133,70 +569,41 @@
       "id": 25
     },
 
-    "terra_ar": {
-      "name": "Terra Argentina",
-      "keyword": "terra.com.ar",
-      "favicon_url": "http://buscar.terra.com.ar/favicon.ico",
-      "search_url": "http://buscar.terra.com.ar/Default.aspx?query={searchTerms}&source=Search",
-      "encoding": "ISO-8859-1",
-      "id": 90
+    "sogou": {
+      "name": "\u641c\u72d7",
+      "keyword": "sogou.com",
+      "favicon_url": "http://www.sogou.com/favicon.ico",
+      "search_url": "http://www.sogou.com/web?ie={inputEncoding}&query={searchTerms}",
+      "type": "SEARCH_ENGINE_SOGOU",
+      "id": 56
     },
 
-    "terra_es": {
-      "name": "Terra",
-      "keyword": "terra.es",
-      "favicon_url": "http://buscador.terra.es/favicon.ico",
-      "search_url": "http://buscador.terra.es/Default.aspx?query={searchTerms}&source=Search",
-      "encoding": "ISO-8859-1",
-      "id": 90
+    "soso": {
+      "name": "\u641c\u641c",
+      "keyword": "soso.com",
+      "favicon_url": "http://www.soso.com/favicon.ico",
+      "search_url": "http://www.soso.com/q?ie={inputEncoding}&w={searchTerms}",
+      "type": "SEARCH_ENGINE_SOSO",
+      "id": 58
     },
 
-    "tut": {
-      "name": "TUT.BY",
-      "keyword": "tut.by",
-      "favicon_url": "http://www.tut.by/favicon.ico",
-      "search_url": "http://search.tut.by/?query={searchTerms}",
-      "encoding": "windows-1251",
-      "type": "SEARCH_ENGINE_TUT",
-      "id": 17
-    },
-
-    "uol": {
-      "name": "UOL Busca",
-      "keyword": "busca.uol.com.br",
-      "favicon_url": "http://busca.uol.com.br/favicon.ico",
-      "search_url": "http://busca.uol.com.br/www/index.html?q={searchTerms}",
-      "encoding": "ISO-8859-1",
-      "id": 82
+    "vinden": {
+      "name": "Vinden.nl",
+      "keyword": "vinden.nl",
+      "favicon_url": "http://www.vinden.nl/favicon.ico",
+      "search_url": "http://www.vinden.nl/?q={searchTerms}",
+      "type": "SEARCH_ENGINE_VINDEN",
+      "id": 53
     },
 
     "virgilio": {
       "name": "Virgilio",
       "keyword": "virgilio.it",
-      "favicon_url": "http://ricerca.alice.it/favicon.ico",
-      "search_url": "http://ricerca.alice.it/ricerca?qs={searchTerms}",
+      "favicon_url": "http://ricerca.virgilio.it/common/favicon.ico",
+      "search_url": "http://ricerca.virgilio.it/ricerca?qs={searchTerms}",
       "encoding": "ISO-8859-1",
       "type": "SEARCH_ENGINE_VIRGILIO",
       "id": 62
-    },
-
-    "walla": {
-      "name": "\u05d5\u05d5\u05d0\u05dc\u05d4!",
-      "keyword": "walla.co.il",
-      "favicon_url": "http://www.walla.co.il/favicon.ico",
-      "search_url": "http://search.walla.co.il/?e=hew&q={searchTerms}",
-      "encoding": "windows-1255",
-      "type": "SEARCH_ENGINE_WALLA",
-      "id": 55
-    },
-
-    "wp": {
-      "name": "Wirtualna Polska",
-      "keyword": "wp.pl",
-      "favicon_url": "http://szukaj.wp.pl/favicon.ico",
-      "search_url": "http://szukaj.wp.pl/szukaj.html?szukaj={searchTerms}",
-      "encoding": "ISO-8859-2",
-      "id": 76
     },
 
     "yahoo": {
@@ -1209,9 +616,6 @@
       "id": 2
     },
 
-    // For regional Yahoo variants without region-specific suggestion service,
-    // suggestion is disabled. For some of them, we might consider
-    // using a fallback (e.g. de for at/ch, ca or fr for qc, en for nl, no, hk).
     "yahoo_ar": {
       "name": "Yahoo! Argentina",
       "keyword": "ar.yahoo.com",
@@ -1223,10 +627,11 @@
     },
 
     "yahoo_at": {
-      "name": "Yahoo! Suche",
+      "name": "Yahoo! \u00d6sterreich",
       "keyword": "at.yahoo.com",
       "favicon_url": "http://at.search.yahoo.com/favicon.ico",
       "search_url": "http://at.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "suggest_url": "http://de-sayt.ff.search.yahoo.com/gossip-de-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -1237,6 +642,18 @@
       "favicon_url": "http://au.search.yahoo.com/favicon.ico",
       "search_url": "http://au.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://aue-sayt.ff.search.yahoo.com/gossip-au-sayt?output=fxjson&command={searchTerms}",
+      "type": "SEARCH_ENGINE_YAHOO",
+      "id": 2
+    },
+
+    // For regional Yahoo variants without a region-specific suggestion service,
+    // suggestion is disabled. For some of them, we might consider using one of
+    // the other language/country URLs as a fallback.
+    "yahoo_be": {
+      "name": "Yahoo! Belgi\u00eb",
+      "keyword": "be.yahoo.com",
+      "favicon_url": "http://be.search.yahoo.com/favicon.ico",
+      "search_url": "http://be.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -1262,10 +679,11 @@
     },
 
     "yahoo_ch": {
-      "name": "Yahoo! Suche",
+      "name": "Yahoo! Schweiz",
       "keyword": "ch.yahoo.com",
       "favicon_url": "http://ch.search.yahoo.com/favicon.ico",
       "search_url": "http://ch.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "suggest_url": "http://de-sayt.ff.search.yahoo.com/gossip-de-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -1276,16 +694,6 @@
       "favicon_url": "http://cl.search.yahoo.com/favicon.ico",
       "search_url": "http://cl.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "http://gossip.telemundo.yahoo.com/gossip-e1-sayt?output=fxjson&command={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
-    },
-
-    "yahoo_cn": {
-      "name": "\u4e2d\u56fd\u96c5\u864e",
-      "keyword": "cn.yahoo.com",
-      "favicon_url": "http://search.cn.yahoo.com/favicon.ico",
-      "search_url": "http://search.cn.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "encoding": "GB2312",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -1330,7 +738,7 @@
     },
 
     "yahoo_fi": {
-      "name": "Yahoo!-haku",
+      "name": "Yahoo! Suomi",
       "keyword": "fi.yahoo.com",
       "favicon_url": "http://fi.search.yahoo.com/favicon.ico",
       "search_url": "http://fi.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
@@ -1348,11 +756,32 @@
       "id": 2
     },
 
+    "yahoo_fr_be": {
+      "name": "Yahoo! Belgique",
+      "keyword": "fr-be.yahoo.com",
+      "favicon_url": "http://fr.search.yahoo.com/favicon.ico",
+      "search_url": "http://fr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "suggest_url": "http://fr-sayt.ff.search.yahoo.com/gossip-fr-sayt?output=fxjson&command={searchTerms}",
+      "type": "SEARCH_ENGINE_YAHOO",
+      "id": 5  // Can't be 2 as this has to appear in the Belgium list alongside
+               // yahoo_be.
+    },
+
+    "yahoo_gr": {
+      "name": "Yahoo! \u0395\u03bb\u03bb\u03ac\u03b4\u03b1\u03c2",
+      "keyword": "gr.yahoo.com",
+      "favicon_url": "http://gr.search.yahoo.com/favicon.ico",
+      "search_url": "http://gr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "type": "SEARCH_ENGINE_YAHOO",
+      "id": 2
+    },
+
     "yahoo_hk": {
       "name": "Yahoo! Hong Kong",
       "keyword": "hk.yahoo.com",
       "favicon_url": "http://hk.search.yahoo.com/favicon.ico",
       "search_url": "http://hk.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "suggest_url": "http://hk-sayt.ff.search.yahoo.com/gossip-hk-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -1377,43 +806,23 @@
       "id": 2
     },
 
-    "yahoo_it": {
-      "name": "Yahoo! Italia",
-      "keyword": "it.yahoo.com",
-      "favicon_url": "http://it.search.yahoo.com/favicon.ico",
-      "search_url": "http://it.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "suggest_url": "http://it-sayt.ff.search.yahoo.com/gossip-it-sayt?output=fxjson&command={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
-    },
-
     "yahoo_jp": {
       "name": "Yahoo! JAPAN",
       "keyword": "yahoo.co.jp",
       "favicon_url": "http://search.yahoo.co.jp/favicon.ico",
       "search_url": "http://search.yahoo.co.jp/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOOJP",
-      "id": 2
-    },
-
-    "yahoo_kr": {
-      "name": "\uc57c\ud6c4! \ucf54\ub9ac\uc544",
-      "keyword": "kr.yahoo.com",
-      "favicon_url": "http://kr.search.yahoo.com/favicon.ico",
-      "search_url": "http://kr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "suggest_url": "http://kr.atc.search.yahoo.com/atcx.php?property=main&ot=fxjson&ei=utf8&eo=utf8&command={searchTerms}",
+      "suggest_url": "http://search.yahooapis.jp/AssistSearchService/V2/webassistSearch?p={searchTerms}&appid=oQsoxcyxg66enp0TYoirkKoryq6rF8bK76mW0KYxZ0v0WPLtn.Lix6wy8F_LwGWHUII-&output=fxjson&fr=crmas",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
 
-    "yahoo_malaysia": {
-      "name": "Yahoo! Malaysia",
-      "keyword": "malaysia.yahoo.com",
-      "favicon_url": "http://malaysia.search.yahoo.com/favicon.ico",
-      "search_url": "http://malaysia.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "suggest_url": "http://my-sayt.ff.search.yahoo.com/gossip-my-sayt?output=fxjson&command={searchTerms}",
+    "yahoo_maktoob": {
+      "name": "Yahoo!\u200e \u0645\u0643\u062a\u0648\u0628",
+      "keyword": "maktoob.yahoo.com",
+      "favicon_url": "http://maktoob.yahoo.com/favicon.ico",
+      "search_url": "http://maktoob.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
+      "id": 13  // Should be 2, but is 13 due to historical reasons.
     },
 
     "yahoo_mx": {
@@ -1426,26 +835,28 @@
       "id": 2
     },
 
+    "yahoo_my": {
+      "name": "Yahoo! Malaysia",
+      "keyword": "malaysia.yahoo.com",
+      "favicon_url": "http://malaysia.search.yahoo.com/favicon.ico",
+      "search_url": "http://malaysia.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "suggest_url": "http://my-sayt.ff.search.yahoo.com/gossip-my-sayt?output=fxjson&command={searchTerms}",
+      "type": "SEARCH_ENGINE_YAHOO",
+      "id": 2
+    },
+
     "yahoo_nl": {
       "name": "Yahoo! Nederland",
       "keyword": "nl.yahoo.com",
       "favicon_url": "http://nl.search.yahoo.com/favicon.ico",
       "search_url": "http://nl.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
-    },
-
-    "yahoo_no": {
-      "name": "Yahoo! Norge",
-      "keyword": "no.yahoo.com",
-      "favicon_url": "http://no.search.yahoo.com/favicon.ico",
-      "search_url": "http://no.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "suggest_url": "http://ff.search.yahoo.com/gossip?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
 
     "yahoo_nz": {
-      "name": "Yahoo!Xtra",
+      "name": "Yahoo! New Zealand",
       "keyword": "nz.yahoo.com",
       "favicon_url": "http://nz.search.yahoo.com/favicon.ico",
       "search_url": "http://nz.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
@@ -1479,9 +890,19 @@
       "keyword": "qc.yahoo.com",
       "favicon_url": "http://qc.search.yahoo.com/favicon.ico",
       "search_url": "http://qc.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOOQC",
+      "suggest_url": "http://gossip.ca.yahoo.com/gossip-ca-sayt?output=fxjsonp&command={searchTerms}",
+      "type": "SEARCH_ENGINE_YAHOO",
       "id": 5  // Can't be 2 as this has to appear in the Canada list alongside
                // yahoo_ca.
+    },
+
+    "yahoo_ro": {
+      "name": "Yahoo! Rom\u00e2nia",
+      "keyword": "ro.yahoo.com",
+      "favicon_url": "http://ro.search.yahoo.com/favicon.ico",
+      "search_url": "http://ro.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "type": "SEARCH_ENGINE_YAHOO",
+      "id": 2
     },
 
     "yahoo_ru": {
@@ -1522,11 +943,21 @@
       "id": 2
     },
 
+    "yahoo_tr": {
+      "name": "Yahoo! T\u00fcrkiye",
+      "keyword": "tr.yahoo.com",
+      "favicon_url": "http://tr.search.yahoo.com/favicon.ico",
+      "search_url": "http://tr.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "type": "SEARCH_ENGINE_YAHOO",
+      "id": 2
+    },
+
     "yahoo_tw": {
       "name": "Yahoo!\u5947\u6469",
       "keyword": "tw.yahoo.com",
       "favicon_url": "http://tw.search.yahoo.com/favicon.ico",
       "search_url": "http://tw.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "suggest_url": "http://hk-sayt.ff.search.yahoo.com/gossip-hk-sayt?output=fxjson&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -1561,12 +992,13 @@
       "id": 2
     },
 
-    "yamli": {
-      "name": "Yamli",
-      "keyword": "yamli.com",
-      "favicon_url": "http://www.yamli.com/favicon.ico",
-      "search_url": "http://www.yamli.com/#q={searchTerms}",
-      "id": 11
+    "yahoo_za": {
+      "name": "Yahoo! South Africa",
+      "keyword": "sa.yahoo.com",
+      "favicon_url": "http://sa.search.yahoo.com/favicon.ico",
+      "search_url": "http://sa.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "type": "SEARCH_ENGINE_YAHOO",
+      "id": 2
     },
 
     "yandex_ru": {
@@ -1589,16 +1021,6 @@
       "id": 15
     },
 
-    "zoznam": {
-      "name": "Zoznam",
-      "keyword": "zoznam.sk",
-      "favicon_url": "http://zoznam.sk/favicon.ico",
-      "search_url": "http://zoznam.sk/hladaj.fcgi?s={searchTerms}",
-      "encoding": "windows-1250",
-      "type": "SEARCH_ENGINE_ZOZNAM",
-      "id": 85
-    },
-
 
     // UMA-only engines ////////////////////////////////////////////////////////
 
@@ -1606,122 +1028,369 @@
     // are listed in |kAllEngines|, however, so that GetEngineType can find them
     // for UMA reporting purposes.
 
-    "all_by": {
-      "name": "ALL.BY",
-      "keyword": "all.by",
-      "favicon_url": "http://all.by/favicon.ico",
-      "search_url": "http://www.all.by/cgi-bin/search.cgi?mode=by&query={searchTerms}",
-      "type": "SEARCH_ENGINE_ALL_BY",
-      "id": 33
+    "atlas_cz": {
+      "name": "Atlas.cz",
+      "keyword": "atlas.cz",
+      "favicon_url": "http://searchatlas.centrum.cz/favicon.ico",
+      "search_url": "http://searchatlas.centrum.cz/?q={searchTerms}",
+      "suggest_url": "http://radce.centrum.cz/?q={searchTerms}&of=1",
+      "type": "SEARCH_ENGINE_ATLAS",
+      "id": 27
     },
 
-    "aport": {
-      "name": "Aport",
-      "keyword": "aport.ru",
-      "favicon_url": "http://www.aport.ru/favicon.png",
-      "search_url": "http://www.aport.ru/search/?r={searchTerms}",
-      "type": "SEARCH_ENGINE_APORT",
-      "id": 34
+    "atlas_sk": {
+      "name": "ATLAS.SK",
+      "keyword": "atlas.sk",
+      "favicon_url": "http://static.mediacentrum.sk/katalog/atlas.sk/images/favicon.ico",
+      "search_url": "http://hladaj.atlas.sk/fulltext/?phrase={searchTerms}",
+      "id": 27
     },
 
     "avg": {
-      "name": "AVG Secure Search",
+      "name": "AVG",
       "keyword": "search.avg.com",
       "favicon_url": "http://search.avg.com/favicon.ico",
-      "search_url": "http://search.avg.com/route/?q={searchTerms}&lng={language}",
+      "search_url": "http://search.avg.com/search?q={searchTerms}",
+      "alternate_urls": [
+        "http://isearch.avg.com/search?q={searchTerms}",
+        "http://search.avg.com/route/?q={searchTerms}&lng={language}"
+      ],
       "type": "SEARCH_ENGINE_AVG",
       "id": 50
     },
 
-    "avg_i": {
-      "name": "AVG Secure Search",
-      "keyword": "isearch.avg.com",
-      "favicon_url": "http://isearch.avg.com/favicon.ico",
-      "search_url": "http://isearch.avg.com/search?q={searchTerms}&lng={language}",
-      "type": "SEARCH_ENGINE_AVG",
-      "id": 52
+    "babylon": {
+      "name": "Babylon",
+      "keyword": "search.babylon.com",
+      "favicon_url": "http://search.babylon.com/favicon.ico",
+      "search_url": "http://search.babylon.com/home?q={searchTerms}",
+      "alternate_urls": [
+        "http://search.babylon.com/?q={searchTerms}"
+      ],
+      "type": "SEARCH_ENGINE_BABYLON",
+      "id": 64
     },
 
     "conduit": {
       "name": "Conduit",
       "keyword": "conduit.com",
-      "favicon_url": "http://search.conduit.com/favicon.ico",
-      "search_url": "http://search.conduit.com/Results.aspx?q={searchTerms}",
+      "favicon_url": "http://www.conduit.com/favicon.ico",
+      "search_url": "http://www.conduit.com/search?q={searchTerms}&ie={inputEncoding}&cx=010301873083402539744%3Anxaq5wgrtuo&cof=forid%3A11",
+      "alternate_urls": [
+        "http://search.conduit.com/Results.aspx?q={searchTerms}"
+      ],
       "type": "SEARCH_ENGINE_CONDUIT",
       "id": 36
     },
 
-    "icq": {
-      "name": "ICQ",
-      "keyword": "icq.com",
-      "favicon_url": "http://www.icq.com/favicon.ico",
-      "search_url": "http://search.icq.com/search/results.php?q={searchTerms}",
-      "type": "SEARCH_ENGINE_ICQ",
-      "id": 39
+    "delfi_lt": {
+      "name": "DELFI",
+      "keyword": "delfi.lt",
+      "favicon_url": "http://www.delfi.lt/favicon.ico",
+      "search_url": "http://www.delfi.lt/paieska/?q={searchTerms}",
+      "type": "SEARCH_ENGINE_DELFI",
+      "id": 45
     },
 
-    "meta_ua": {
-      "name": "Meta-Ukraine",
-      "keyword": "meta.ua",
-      "favicon_url": "http://meta.ua/favicon.ico",
-      "search_url": "http://meta.ua/search.asp?q={searchTerms}",
-      "type": "SEARCH_ENGINE_META_UA",
-      "id": 40
+    "delfi_lv": {
+      "name": "DELFI",
+      "keyword": "delfi.lv",
+      "favicon_url": "http://g1.delphi.lv/favicon.ico",
+      "search_url": "http://www.delfi.lv/search_all/?ie={inputEncoding}&q={searchTerms}&lang={language}&cx=partner-pub-7754285690273419%3A1507605038&cof=FORID%3A10",
+      "type": "SEARCH_ENGINE_DELFI",
+      "id": 45
     },
 
-    "metabot_ru": {
-      "name": "Metabot",
-      "keyword": "metabot.ru",
-      "favicon_url": "http://www.metabot.ru/favicon.ico",
-      "search_url": "http://results.metabot.ru/?st={searchTerms}",
-      "type": "SEARCH_ENGINE_METABOT_RU",
-      "id": 42
+    "delta": {
+      "name": "Delta",
+      "keyword": "delta-search.com",
+      "favicon_url": "http://www.delta-search.com/favicon.ico",
+      "search_url": "http://www.delta-search.com/home?q={searchTerms}",
+      "alternate_urls": [
+        "http://www.delta-search.com/?q={searchTerms}",
+        "http://www1.delta-search.com/home?q={searchTerms}",
+        "http://www1.delta-search.com/?q={searchTerms}",
+        "http://www2.delta-search.com/home?q={searchTerms}",
+        "http://www2.delta-search.com/?q={searchTerms}",
+        "http://www.search.delta-search.com/home?q={searchTerms}",
+        "http://www.search.delta-search.com/?q={searchTerms}",
+        "http://www.yhs.delta-search.com/home?q={searchTerms}",
+        "http://www.yhs.delta-search.com/?q={searchTerms}",
+        "http://mixidj.delta-search.com/home?q={searchTerms}",
+        "http://mixidj.delta-search.com/?q={searchTerms}",
+        "http://www.search.delta-search.com/home?q={searchTerms}",
+        "http://www.search.delta-search.com/?q={searchTerms}"
+      ],
+      "type": "SEARCH_ENGINE_DELTA",
+      "id": 66
+    },
+
+    "funmoods": {
+      "name": "Funmoods",
+      "keyword": "searchfunmoods.com",
+      "favicon_url": "http://searchfunmoods.com/favicon.ico",
+      "search_url": "http://searchfunmoods.com/results.php?q={searchTerms}",
+      "type": "SEARCH_ENGINE_FUNMOODS",
+      "id": 60
+    },
+
+    "goo": {
+      "name": "goo",
+      "keyword": "search.goo.ne.jp",
+      "favicon_url": "http://goo.ne.jp/favicon.ico",
+      "search_url": "http://search.goo.ne.jp/web.jsp?MT={searchTerms}&IE={inputEncoding}",
+      "suggest_url": "http://search.goo.ne.jp/sgt.jsp?MT={searchTerms}&CL=plugin&FM=json&IE={inputEncoding}",
+      "encoding": "EUC-JP",
+      "type": "SEARCH_ENGINE_GOO",
+      "id": 23
+    },
+
+    "imesh": {
+      "name": "IMesh",
+      "keyword": "search.imesh.net",
+      "favicon_url": "http://search.imesh.net/favicon.ico",
+      "search_url": "http://search.imesh.net/music?hl={language}&si={searchTerms}",
+      "type": "SEARCH_ENGINE_IMESH",
+      "id": 81
+    },
+
+    "iminent": {
+      "name": "SearchTheWeb",
+      "keyword": "iminent.com",
+      "favicon_url": "http://search.iminent.com/Shared/Images/favicon_gl.ico",
+      "search_url": "http://search.iminent.com/?q={searchTerms}",
+      "alternate_urls": [
+        "http://search.iminent.com/SearchTheWeb/v6/1033/homepage/Default.aspx#q={searchTerms}",
+        "http://search.iminent.com/SearchTheWeb/v6/1033/homepage/Result.aspx#q={searchTerms}",
+        "http://start.iminent.com/?q={searchTerms}",
+        "http://start.iminent.com/StartWeb/1033/homepage/#q={searchTerms}"
+      ],
+      "type": "SEARCH_ENGINE_IMINENT",
+      "id": 79
+    },
+
+    "in": {
+      "name": "in.gr",
+      "keyword": "in.gr",
+      "favicon_url": "http://find.in.gr/Themes/1/Default/Media/Layout/icon_in.png",
+      "search_url": "http://find.in.gr/?q={searchTerms}&ie={inputEncoding}&cx=partner-pub-3451081775397713%3Aklnvxp4nycj&cof=FORID%3A9",
+      "type": "SEARCH_ENGINE_IN",
+      "id": 54
+    },
+
+    "incredibar": {
+      "name": "MyStart",
+      "keyword": "mystart.incredibar.com",
+      "favicon_url": "http://search.incredibar.com/favicon.ico",
+      "search_url": "http://search.incredibar.com/search.php?q={searchTerms}",
+      "alternate_urls": [
+        "http://search.incredibar.com/?q={searchTerms}",
+        "http://mystart.incredibar.com/?search={searchTerms}"
+      ],
+      "type": "SEARCH_ENGINE_INCREDIBAR",
+      "id": 74
+    },
+
+    "libero": {
+      "name": "Libero",
+      "keyword": "libero.it",
+      "favicon_url": "http://ms1.iol.it/graph_hf/v.8.3.04/themes/default/img/favicon.ico",
+      "search_url": "http://arianna.libero.it/search/abin/integrata.cgi?query={searchTerms}",
+      "encoding": "ISO-8859-1",
+      "type": "SEARCH_ENGINE_LIBERO",
+      "id": 63
+    },
+
+    "neti": {
+      "name": "NETI",
+      "keyword": "neti.ee",
+      "favicon_url": "http://www.neti.ee/favicon.ico",
+      "search_url": "http://www.neti.ee/cgi-bin/otsing?query={searchTerms}",
+      "suggest_url": "http://www.neti.ee/api/suggestOS?suggestQuery={searchTerms}",
+      "encoding": "ISO-8859-1",
+      "type": "SEARCH_ENGINE_NETI",
+      "id": 44
     },
 
     "nigma": {
-      "name": "Nigma",
+      "name": "\u041d\u0438\u0433\u043c\u0430",
       "keyword": "nigma.ru",
-      "favicon_url": "http://nigma.ru/favicon.ico",
-      "search_url": "http://www.nigma.ru/?s={searchTerms}",
+      "favicon_url": "http://nigma.ru/themes/nigma/img/favicon.ico",
+      "search_url": "http://nigma.ru/?s={searchTerms}",
+      "suggest_url": "http://autocomplete.nigma.ru/complete/query_help.php?suggest=true&q={searchTerms}",
       "type": "SEARCH_ENGINE_NIGMA",
       "id": 43
     },
 
-    "qip": {
-      "name": "QIP",
-      "keyword": "qip.ru",
-      "favicon_url": "http://search.qip.ru/favicon.ico",
-      "search_url": "http://search.qip.ru/?query={searchTerms}",
-      "type": "SEARCH_ENGINE_QIP",
-      "id": 47
+    "ok": {
+      "name": "OK.hu",
+      "keyword": "ok.hu",
+      "favicon_url": "http://ok.hu/gfx/favicon.ico",
+      "search_url": "http://ok.hu/katalogus?q={searchTerms}",
+      "encoding": "ISO-8859-2",
+      "type": "SEARCH_ENGINE_OK",
+      "id": 6
     },
 
-    "ukr_net": {
-      "name": "Ukr.net",
-      "keyword": "ukr.net",
-      "favicon_url": "http://search.ukr.net/i/favicon.ico",
-      "search_url": "http://search.ukr.net/google/search.php?q={searchTerms}",
-      "type": "SEARCH_ENGINE_UKR_NET",
-      "id": 48
+    "rambler": {
+      "name": "\u0420\u0430\u043c\u0431\u043b\u0435\u0440",
+      "keyword": "rambler.ru",
+      "favicon_url": "http://nova.rambler.ru/static/blocks/images/favicon.ico",
+      "search_url": "http://nova.rambler.ru/search?query={searchTerms}",
+      "suggest_url": "http://nova.rambler.ru/suggest?v=3&query={searchTerms}",
+      "type": "SEARCH_ENGINE_RAMBLER",
+      "id": 16
     },
 
-    "webalta": {
-      "name": "Webalta",
-      "keyword": "webalta.ru",
-      "favicon_url": "http://webalta.ru/favicon.ico",
-      "search_url": "http://webalta.ru/search?q={searchTerms}",
-      "type": "SEARCH_ENGINE_WEBALTA",
-      "id": 49
+    "sapo": {
+      "name": "SAPO",
+      "keyword": "sapo.pt",
+      "favicon_url": "http://imgs.sapo.pt/images/sapo.ico",
+      "search_url": "http://pesquisa.sapo.pt/?q={searchTerms}",
+      "suggest_url": "http://pesquisa.sapo.pt/livesapo?q={searchTerms}",
+      "type": "SEARCH_ENGINE_SAPO",
+      "id": 77
+    },
+
+    "searchnu": {
+      "name": "searchnu",
+      "keyword": "searchnu.com",
+      "favicon_url": "http://www.searchnu.com/favicon.ico",
+      "search_url": "http://www.searchnu.com/web?hl={language}&si={searchTerms}",
+      "type": "SEARCH_ENGINE_SEARCHNU",
+      "id": 61
+    },
+
+    "search_results": {
+      "name": "Search-results",
+      "keyword": "search-results.com",
+      "favicon_url": "http://ak.apnstatic.com/media/images/favicon_search-results.ico",
+      "search_url": "http://dts.search-results.com/sr?lng={language}&src=hmp&q={searchTerms}",
+      "alternate_urls": [
+        "http://www.search-results.com/web?q={searchTerms}"
+      ],
+      "type": "SEARCH_ENGINE_SEARCH_RESULTS",
+      "id": 78
+    },
+
+    "snapdo": {
+      "name": "SnapDo",
+      "keyword": "search.snapdo.com",
+      "favicon_url": "http://linkurystoragenorthus.blob.core.windows.net/static/favicon.ico",
+      "search_url": "http://search.snapdo.com/?q={searchTerms}",
+      "alternate_urls": [
+        "http://search.snap.do/?q={searchTerms}",
+        "http://feed.snapdo.com/?q={searchTerms}",
+        "http://feed.snap.do/?q={searchTerms}"
+      ],
+      "type": "SEARCH_ENGINE_SNAPDO",
+      "id": 70
+    },
+
+    "softonic": {
+      "name": "softonic",
+      "keyword": "search.softonic.com",
+      "favicon_url": "http://search.softonic.com/img/favicon.ico",
+      "search_url": "http://search.softonic.com/?q={searchTerms}",
+      "alternate_urls": [
+        "http://en.softonic.com/s/{searchTerms}",
+        "http://www.softonic.com/s/{searchTerms}",
+        "http://www.softonic.com.br/s/{searchTerms}",
+        "http://buscador.softonic.com/?q={searchTerms}",
+        "http://nl.softonic.com/s/{searchTerms}"
+      ],
+      "type": "SEARCH_ENGINE_SOFTONIC",
+      "id": 80
+    },
+
+    "sweetim": {
+      "name": "SweetIM",
+      "keyword": "home.sweetim.com",
+      "favicon_url": "http://search.sweetim.com/favicon.ico",
+      "search_url": "http://search.sweetim.com/search.asp?q={searchTerms}&ln={language}",
+      "type": "SEARCH_ENGINE_SWEETPACKS",
+      "id": 65
+    },
+
+    "sweetpacks": {
+      "name": "Sweetpacks",
+      "keyword": "start.sweetpacks.com",
+      "favicon_url": "http://start.sweetpacks.com/favicon.ico",
+      "search_url": "http://start.sweetpacks.com/search.asp?q={searchTerms}&ln={language}",
+      "alternate_urls": [
+        "http://start.sweetpacks.com/?q={searchTerms}",
+        "http://mysearch.sweetpacks.com/?q={searchTerms}"
+      ],
+      "type": "SEARCH_ENGINE_SWEETPACKS",
+      "id": 65
+    },
+
+    "terra_ar": {
+      "name": "Terra Argentina",
+      "keyword": "terra.com.ar",
+      "favicon_url": "http://buscar.terra.com.ar/favicon.ico",
+      "search_url": "http://buscar.terra.com.ar/Default.aspx?source=Search&ca=s&query={searchTerms}",
+      "encoding": "ISO-8859-1",
+      "type": "SEARCH_ENGINE_TERRA",
+      "id": 90
+    },
+
+    "terra_es": {
+      "name": "Terra",
+      "keyword": "terra.es",
+      "favicon_url": "http://buscador.terra.es/favicon.ico",
+      "search_url": "http://buscador.terra.es/Default.aspx?source=Search&ca=s&query={searchTerms}",
+      "encoding": "ISO-8859-1",
+      "type": "SEARCH_ENGINE_TERRA",
+      "id": 90
+    },
+
+    "tut": {
+      "name": "TUT.BY",
+      "keyword": "tut.by",
+      "favicon_url": "http://search.tut.by/favicon.ico",
+      "search_url": "http://search.tut.by/?ru=1&query={searchTerms}",
+      "suggest_url": "http://suggest.yandex.ru/suggest-ff.cgi?part={searchTerms}&limit=10",
+      "type": "SEARCH_ENGINE_TUT",
+      "id": 17
+    },
+
+    "walla": {
+      "name": "\u05d5\u05d5\u05d0\u05dc\u05d4!",
+      "keyword": "walla.co.il",
+      "favicon_url": "http://www.walla.co.il/favicon.ico",
+      "search_url": "http://search.walla.co.il/?q={searchTerms}",
+      "type": "SEARCH_ENGINE_WALLA",
+      "id": 55
+    },
+
+    "wp": {
+      "name": "Wirtualna Polska",
+      "keyword": "wp.pl",
+      "favicon_url": "http://i.wp.pl/a/i/stg/500/favicon.ico",
+      "search_url": "http://szukaj.wp.pl/szukaj.html?q={searchTerms}",
+      "type": "SEARCH_ENGINE_WP",
+      "id": 76
     },
 
     "yandex_tr": {
       "name": "Yandex",
       "keyword": "yandex.com.tr",
-      "favicon_url": "http://yandex.com.tr/favicon.ico",
-      "search_url": "http://yandex.com.tr/yandsearch?text={searchTerms}",
-      "suggest_url": "http://suggest.yandex.net/suggest-ff.cgi?part={searchTerms}",
+      "favicon_url": "http://yandex.st/islands-icons/_/6jyHGXR8-HAc8oJ1bU8qMUQQz_g.ico",
+      "search_url": "http://www.yandex.com.tr/yandsearch?text={searchTerms}",
+      "suggest_url": "http://suggest.yandex.com.tr/suggest-ff.cgi?part={searchTerms}",
       "type": "SEARCH_ENGINE_YANDEX",
       "id": 15
+    },
+
+    "zoznam": {
+      "name": "Zoznam",
+      "keyword": "zoznam.sk",
+      "favicon_url": "http://www.zoznam.sk/favicon.ico",
+      "search_url": "http://www.zoznam.sk/hladaj.fcgi?s={searchTerms}",
+      "encoding": "windows-1250",
+      "type": "SEARCH_ENGINE_ZOZNAM",
+      "id": 85
     }
   }
 }
