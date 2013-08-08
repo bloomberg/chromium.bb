@@ -17,6 +17,8 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
     const GURL& referrer_url,
     const base::Time& start_time,
     const base::Time& end_time,
+    const std::string& etag,
+    const std::string& last_modified,
     int64 received_bytes,
     int64 total_bytes,
     DownloadItem::DownloadState state,
@@ -46,6 +48,8 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
       referrer_url(rhs.referrer_url),
       start_time(rhs.start_time),
       end_time(rhs.end_time),
+      etag(rhs.etag),
+      last_modified(rhs.last_modified),
       received_bytes(rhs.received_bytes),
       total_bytes(rhs.total_bytes),
       state(rhs.state),
@@ -64,6 +68,8 @@ bool MockDownloadManager::CreateDownloadItemAdapter::operator==(
           referrer_url == rhs.referrer_url &&
           start_time == rhs.start_time &&
           end_time == rhs.end_time &&
+          etag == rhs.etag &&
+          last_modified == rhs.last_modified &&
           received_bytes == rhs.received_bytes &&
           total_bytes == rhs.total_bytes &&
           state == rhs.state &&
@@ -91,6 +97,8 @@ DownloadItem* MockDownloadManager::CreateDownloadItem(
     const GURL& referrer_url,
     const base::Time& start_time,
     const base::Time& end_time,
+    const std::string& etag,
+    const std::string& last_modified,
     int64 received_bytes,
     int64 total_bytes,
     DownloadItem::DownloadState state,
@@ -99,8 +107,8 @@ DownloadItem* MockDownloadManager::CreateDownloadItem(
     bool opened) {
   CreateDownloadItemAdapter adapter(
       id, current_path, target_path, url_chain, referrer_url, start_time,
-      end_time, received_bytes, total_bytes, state, danger_type,
-      interrupt_reason, opened);
+      end_time, etag, last_modified, received_bytes, total_bytes, state,
+      danger_type, interrupt_reason, opened);
   return MockCreateDownloadItem(adapter);
 }
 

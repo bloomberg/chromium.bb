@@ -52,7 +52,6 @@ class DownloadManagerDelegate;
 class DownloadQuery;
 class DownloadRequestHandle;
 struct DownloadCreateInfo;
-struct DownloadRetrieveInfo;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
@@ -145,6 +144,8 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       const GURL& referrer_url,
       const base::Time& start_time,
       const base::Time& end_time,
+      const std::string& etag,
+      const std::string& last_modified,
       int64 received_bytes,
       int64 total_bytes,
       DownloadItem::DownloadState state,

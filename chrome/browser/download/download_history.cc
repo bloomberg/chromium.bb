@@ -116,6 +116,8 @@ history::DownloadRow GetDownloadRow(
       item->GetReferrerUrl(),
       item->GetStartTime(),
       item->GetEndTime(),
+      item->GetETag(),
+      item->GetLastModifiedTime(),
       item->GetReceivedBytes(),
       item->GetTotalBytes(),
       item->GetState(),
@@ -136,6 +138,8 @@ bool ShouldUpdateHistory(const history::DownloadRow* previous,
           (previous->end_time != current.end_time) ||
           (previous->received_bytes != current.received_bytes) ||
           (previous->total_bytes != current.total_bytes) ||
+          (previous->etag != current.etag) ||
+          (previous->last_modified != current.last_modified) ||
           (previous->state != current.state) ||
           (previous->danger_type != current.danger_type) ||
           (previous->interrupt_reason != current.interrupt_reason) ||
@@ -233,6 +237,8 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
         it->referrer_url,
         it->start_time,
         it->end_time,
+        it->etag,
+        it->last_modified,
         it->received_bytes,
         it->total_bytes,
         it->state,

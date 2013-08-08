@@ -146,6 +146,8 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
         GURL(std::string()),
         current,
         current,
+        std::string(),
+        std::string(),
         128,
         128,
         content::DownloadItem::COMPLETE,

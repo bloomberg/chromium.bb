@@ -28,6 +28,8 @@ struct DownloadRow {
       const GURL& referrer,
       const base::Time& start,
       const base::Time& end,
+      const std::string& etag,
+      const std::string& last_modified,
       int64 received,
       int64 total,
       content::DownloadItem::DownloadState download_state,
@@ -60,6 +62,12 @@ struct DownloadRow {
 
   // The time when the download completed.
   base::Time end_time;
+
+  // Contents of most recently seen ETag header.
+  std::string etag;
+
+  // Contents of most recently seen Last-Modified header.
+  std::string last_modified;
 
   // The number of bytes received (so far).
   int64 received_bytes;

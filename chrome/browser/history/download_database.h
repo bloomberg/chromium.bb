@@ -69,6 +69,10 @@ class DownloadDatabase {
   // columns to the downloads table.
   bool MigrateDownloadedByExtension();
 
+  // Returns true if able to successfully add the etag and last-modified columns
+  // to the downloads table.
+  bool MigrateDownloadValidators();
+
   // Creates the downloads table if needed.
   bool InitDownloadTable();
 

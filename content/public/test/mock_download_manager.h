@@ -33,6 +33,8 @@ class MockDownloadManager : public DownloadManager {
     GURL referrer_url;
     base::Time start_time;
     base::Time end_time;
+    std::string etag;
+    std::string last_modified;
     int64 received_bytes;
     int64 total_bytes;
     DownloadItem::DownloadState state;
@@ -48,6 +50,8 @@ class MockDownloadManager : public DownloadManager {
       const GURL& referrer_url,
       const base::Time& start_time,
       const base::Time& end_time,
+      const std::string& etag,
+      const std::string& last_modified,
       int64 received_bytes,
       int64 total_bytes,
       DownloadItem::DownloadState state,
@@ -99,6 +103,8 @@ class MockDownloadManager : public DownloadManager {
       const GURL& referrer_url,
       const base::Time& start_time,
       const base::Time& end_time,
+      const std::string& etag,
+      const std::string& last_modified,
       int64 received_bytes,
       int64 total_bytes,
       DownloadItem::DownloadState state,

@@ -173,6 +173,8 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
                          GURL("http://referrer.com/"),
                          time,
                          time,
+                         std::string(),
+                         std::string(),
                          0,
                          512,
                          state,
@@ -551,6 +553,71 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadedByExtension) {
   }
 }
 
+TEST_F(HistoryBackendDBTest, MigrateDownloadValidators) {
+  Time now(base::Time::Now());
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(27));
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "INSERT INTO downloads (id, current_path, target_path, start_time, "
+          "received_bytes, total_bytes, state, danger_type, interrupt_reason, "
+          "end_time, opened, referrer, by_ext_id, by_ext_name) VALUES "
+          "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      s.BindInt64(0, 1);
+      s.BindString(1, "current_path");
+      s.BindString(2, "target_path");
+      s.BindInt64(3, now.ToTimeT());
+      s.BindInt64(4, 100);
+      s.BindInt64(5, 100);
+      s.BindInt(6, 1);
+      s.BindInt(7, 0);
+      s.BindInt(8, 0);
+      s.BindInt64(9, now.ToTimeT());
+      s.BindInt(10, 1);
+      s.BindString(11, "referrer");
+      s.BindString(12, "by extension ID");
+      s.BindString(13, "by extension name");
+      ASSERT_TRUE(s.Run());
+    }
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "INSERT INTO downloads_url_chains (id, chain_index, url) VALUES "
+          "(?, ?, ?)"));
+      s.BindInt64(0, 4);
+      s.BindInt64(1, 0);
+      s.BindString(2, "url");
+      ASSERT_TRUE(s.Run());
+    }
+  }
+  // Re-open the db using the HistoryDatabase, which should migrate to the
+  // current version, creating the etag and last_modified columns.
+  CreateBackendAndDatabase();
+  DeleteBackend();
+  {
+    // Re-open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    // The version should have been updated.
+    int cur_version = HistoryDatabase::GetCurrentVersion();
+    ASSERT_LE(28, cur_version);
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT value FROM meta WHERE key = 'version'"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(cur_version, s.ColumnInt(0));
+    }
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT etag, last_modified from downloads"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(std::string(), s.ColumnString(0));
+      EXPECT_EQ(std::string(), s.ColumnString(1));
+    }
+  }
+}
+
 TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
   // Create the DB.
   CreateBackendAndDatabase();
@@ -609,6 +676,8 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
                        GURL(std::string()),
                        now,
                        now,
+                       std::string(),
+                       std::string(),
                        0,
                        512,
                        DownloadItem::COMPLETE,
