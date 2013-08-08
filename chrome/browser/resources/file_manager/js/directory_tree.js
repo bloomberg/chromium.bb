@@ -108,39 +108,22 @@ DirectoryTreeUtil.searchAndSelectByEntry = function(items, entry) {
 };
 
 /**
- * Modifies a list of the directory entries to match the new UI sepc.
- *
- * TODO(yoshiki): remove this after the old UI is removed.
- *
- * @param {Array.<DirectoryEntry>} entries The list of entty.
- * @return {Array.<DirectoryEntries>} Modified entries.
+ * Generate a list of the directory entries for the top level on the tree.
+ * @return {Array.<DirectoryEntry>} Entries for the top level on the tree.
  */
-DirectoryTreeUtil.addAndRemoveDriveSpecialDirs = function(entries) {
-  var modifiedEntries = [];
+DirectoryTreeUtil.generateTopLevelEntries = function() {
+  var entries = [
+    DirectoryModel.fakeDriveEntry_,
+    DirectoryModel.fakeDriveOfflineEntry_,
+    DirectoryModel.fakeDriveSharedWithMeEntry_,
+    DirectoryModel.fakeDriveRecentEntry_,
+  ];
+
   for (var i in entries) {
-    // Removes '/drive/other'.
-    var entry = entries[i];
-    if (entry.fullPath ==
-        (RootDirectory.DRIVE + '/' + DriveSubRootDirectory.OTHER)) {
-      continue;
-    }
-
-    // Changes the label of '/drive/root' to 'My Drive'.
-    if (entry.fullPath == DirectoryModel.fakeDriveEntry_.fullPath) {
-      entry.label = str('DRIVE_MY_DRIVE_LABEL');
-    }
-
-    modifiedEntries.push(entry);
+    entries[i]['label'] = PathUtil.getRootLabel(entries[i].fullPath);
   }
 
-  // Adds the special directories.
-  var specialDirs = DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES;
-  for (var i in specialDirs) {
-    var dir = specialDirs[i];
-    dir['label'] = PathUtil.getRootLabel(dir.fullPath);
-    modifiedEntries.push(dir);
-  }
-  return modifiedEntries;
+  return entries;
 };
 
 /**
@@ -180,12 +163,8 @@ DirectoryTreeUtil.updateSubDirectories = function(
   var readEntry = function() {
     reader.readEntries(function(results) {
       if (!results.length) {
-        if (item.entry.fullPath == RootDirectory.DRIVE)
-          successCallback(
-              DirectoryTreeUtil.addAndRemoveDriveSpecialDirs(entries));
-        else
-          successCallback(
-              DirectoryTreeUtil.sortEntries(item.fileFilter_, entries));
+        successCallback(
+            DirectoryTreeUtil.sortEntries(item.fileFilter_, entries));
         return;
       }
 
@@ -215,14 +194,14 @@ DirectoryTreeUtil.sortEntries = function(fileFilter, entries) {
 };
 
 /**
- * Checks if tre tree should be hidden on the given directory.
+ * Checks if the given directory can be on the tree or not.
  *
  * @param {string} path Path to be checked.
- * @return {boolean} True if the tree should NOT be visible on the given
- *     directory. Otherwise, false.
+ * @return {boolean} True if the path is eligible for the directory tree.
+ *     Otherwise, false.
  */
-DirectoryTreeUtil.shouldHideTree = function(path) {
-  return !PathUtil.isDriveBasedPath(path);
+DirectoryTreeUtil.isEligiblePathForDirectoryTree = function(path) {
+  return PathUtil.isDriveBasedPath(path);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -492,16 +471,6 @@ DirectoryTree.prototype = {
    */
   set expanded(value) {},
 
-  /**
-   * The DirectoryEntry corresponding to this DirectoryItem. This may be
-   * a dummy DirectoryEntry.
-   * @type {DirectoryEntry|Object}
-   * @override
-   **/
-  get entry() {
-      return this.dirEntry_;
-  },
-
   get directoryModel() {
     return this.directoryModel_;
   }
@@ -517,24 +486,11 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
   cr.ui.Tree.prototype.decorate.call(this);
 
   this.directoryModel_ = directoryModel;
-  this.entries_ = [];
+  this.entries_ = DirectoryTreeUtil.generateTopLevelEntries();
 
   this.fileFilter_ = this.directoryModel_.getFileFilter();
   this.fileFilter_.addEventListener('changed',
                                     this.onFilterChanged_.bind(this));
-  /**
-   * The path of the root directory.
-   * @type {string}
-   */
-  this.fullPath = '/';
-  this.dirEntry_ = null;
-
-  /**
-   * The currently selected entry.
-   * For special search entries, this could be a fake DirectoryEntry.
-   * @type {DirectoryEntry|Object}
-   */
-  this.currentEntry_ = null;
 
   this.directoryModel_.addEventListener('directory-changed',
       this.onCurrentDirectoryChanged_.bind(this));
@@ -557,6 +513,8 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
 
   this.scrollBar_ = MainPanelScrollBar();
   this.scrollBar_.initialize(this.parentNode, this);
+
+  this.redraw(false /* recursive */);
 };
 
 /**
@@ -565,52 +523,9 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
  *     be a fake.
  */
 DirectoryTree.prototype.selectByEntry = function(entry) {
-  if ((this.entry && util.isSameEntry(this.entry, entry)) ||
-      (this.currentEntry_ && util.isSameEntry(this.currentEntry_, entry)))
+  // If the target directory is not in the tree, do nothing.
+  if (!DirectoryTreeUtil.isEligiblePathForDirectoryTree(entry.fullPath))
     return;
-
-  this.currentEntry_ = entry;
-  if (DirectoryTreeUtil.shouldHideTree(entry.fullPath))
-    return;
-
-  this.selectByEntryInternal_(entry);
-};
-
-/**
- * Select the item corresponding to the given entry. This method is used
- * internally.
- * @param {DirectoryEntry|Object} entry The directory entry to be selected.
- * @private
- */
-DirectoryTree.prototype.selectByEntryInternal_ = function(entry) {
-  var rootDirPath = PathUtil.getRootPath(entry.fullPath);
-
-  if (PathUtil.isSpecialSearchRoot(rootDirPath) ||
-      PathUtil.getRootType(rootDirPath) == RootType.DRIVE) {
-    rootDirPath = RootDirectory.DRIVE;
-  }
-
-  var onError = function() {
-    this.clearTree_(true);
-  }.bind(this);
-
-  if (this.fullPath != rootDirPath || !this.dirEntry_) {
-    // The old root is not the one for the new entry. So, first we try to set
-    // the root, then retry.
-    this.fullPath = rootDirPath;
-
-    this.directoryModel_.resolveDirectory(
-        rootDirPath,
-        function(rootDirEntry) {
-          if (this.fullPath != rootDirPath)
-            return;
-
-          this.dirEntry_ = rootDirEntry;
-          this.selectByEntryInternal_(entry);
-        }.bind(this),
-        onError);
-    return;
-  }
 
   if (this.selectedItem && util.isSameEntry(entry, this.selectedItem.entry))
     return;
@@ -621,12 +536,11 @@ DirectoryTree.prototype.selectByEntryInternal_ = function(entry) {
   this.selectedItem = null;
   this.updateSubDirectories(
       false /* recursive */,
+      // Success callback, failure is not handled.
       function() {
-        if (!DirectoryTreeUtil.searchAndSelectByEntry(
-            this.items, this.currentEntry_))
+        if (!DirectoryTreeUtil.searchAndSelectByEntry(this.items, entry))
           this.selectedItem = null;
-      }.bind(this),
-      onError);
+      }.bind(this));
 };
 
 /**
@@ -637,11 +551,9 @@ DirectoryTree.prototype.selectByEntryInternal_ = function(entry) {
  */
 DirectoryTree.prototype.updateSubDirectories = function(
     recursive, opt_successCallback, opt_errorCallback) {
-  if (!this.currentEntry_)
-    return;
-
+  var myDriveItem = this.items[0];
   DirectoryTreeUtil.updateSubDirectories(
-      this,
+      myDriveItem,
       this.directoryModel_,
       function(entries) {
         this.entries_ = entries;
@@ -671,8 +583,7 @@ DirectoryTree.prototype.redraw = function(recursive) {
  */
 DirectoryTree.prototype.onFilterChanged_ = function() {
   // Returns immediately, if the tree is hidden.
-  if (!this.currentEntry_ ||
-      DirectoryTreeUtil.shouldHideTree(this.currentEntry_.fullPath))
+  if (this.hidden)
     return;
 
   this.redraw(true /* recursive */);
@@ -684,14 +595,13 @@ DirectoryTree.prototype.onFilterChanged_ = function() {
  * @private
  */
 DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
-  // Returns immediately, if the tree is hidden.
-  if (!this.currentEntry_ ||
-      DirectoryTreeUtil.shouldHideTree(this.currentEntry_.fullPath))
-    return;
-
   if (event.eventType == 'changed') {
     var path = util.extractFilePath(event.directoryUrl);
-    DirectoryTreeUtil.updateChangedDirectoryItem(path, this);
+    if (!DirectoryTreeUtil.isEligiblePathForDirectoryTree(path))
+      return;
+
+    var myDriveItem = this.items[0];
+    DirectoryTreeUtil.updateChangedDirectoryItem(path, myDriveItem);
   }
 };
 
@@ -702,29 +612,6 @@ DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
  */
 DirectoryTree.prototype.onCurrentDirectoryChanged_ = function(event) {
   this.selectByEntry(event.newDirEntry);
-};
-
-/**
- * Returns the path of the selected item.
- * @return {string} The current path.
- */
-DirectoryTree.prototype.getCurrentPath = function() {
-  return this.selectedItem ? this.selectedItem.fullPath : null;
-};
-
-/**
- * Clears the tree.
- * @param {boolean} redraw Redraw the tree if true.
- * @private
- */
-DirectoryTree.prototype.clearTree_ = function(redraw) {
-  this.dirEntry_ = null;
-  this.fullPath = '';
-  this.selectedItem = null;
-  this.entries_ = [];
-
-  if (redraw)
-    this.redraw(false);
 };
 
 /**
