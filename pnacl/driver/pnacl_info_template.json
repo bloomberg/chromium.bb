@@ -4,8 +4,7 @@
     "the NaCl Chrome plugin.  It is kept in the NaCl repository to prevent ",
     "hard-coding of NaCl-specific information inside the Chrome repository."],
 
-  "abi-version": "%(abi-version)s",
-  "pnacl-arch": "%(arch)s",
+  "abi-version": 1,
   "pnacl-llc-name": "pnacl-llc.nexe",
   "pnacl-ld-name": "ld.nexe"
 }
