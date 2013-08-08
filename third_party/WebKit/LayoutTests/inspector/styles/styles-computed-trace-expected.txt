@@ -25,14 +25,8 @@ font-family: Courier;
     #id1 - Courier styles-computed-trace.html:18
     /-- overloaded --/ #id1 - Times styles-computed-trace.html:13
     /-- overloaded --/ body - Arial styles-computed-trace.html:4
-text-decoration: underline solid rgb(0, 0, 0);
+text-decoration: underline;
     div - underline styles-computed-trace.html:9
-text-decoration-color: rgb(0, 0, 0);
-    div - initial styles-computed-trace.html:9
-text-decoration-line: underline;
-    div - underline styles-computed-trace.html:9
-text-decoration-style: solid;
-    div - initial styles-computed-trace.html:9
 
 [expanded] 
 element.style  { ()
@@ -49,15 +43,9 @@ font-family: Courier;
     /-- overloaded --/ #id1 - Courier styles-computed-trace.html:18
     /-- overloaded --/ #id1 - Times styles-computed-trace.html:13
     /-- overloaded --/ body - Arial styles-computed-trace.html:4
-text-decoration: underline solid rgb(0, 0, 0);
+text-decoration: underline;
     /-- overloaded --/ #id2 - invalidvalue styles-computed-trace.html:27
     div - underline styles-computed-trace.html:9
-text-decoration-color: rgb(0, 0, 0);
-    div - initial styles-computed-trace.html:9
-text-decoration-line: underline;
-    div - underline styles-computed-trace.html:9
-text-decoration-style: solid;
-    div - initial styles-computed-trace.html:9
 
 [expanded] 
 element.style  { ()

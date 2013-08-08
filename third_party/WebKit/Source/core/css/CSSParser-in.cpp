@@ -2113,12 +2113,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     }
 
     case CSSPropertyTextDecoration:
-        // Fall through 'text-decoration-line' parsing if CSS 3 Text Decoration
-        // is disabled to match CSS 2.1 rules for parsing 'text-decoration'.
-        if (RuntimeEnabledFeatures::css3TextDecorationsEnabled()) {
-            // [ <text-decoration-line> || <text-decoration-style> || <text-decoration-color> ] | inherit
-            return parseShorthand(CSSPropertyTextDecoration, textDecorationShorthand(), important);
-        }
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyTextDecorationLine:
         // none | [ underline || overline || line-through || blink ] | inherit
@@ -9019,8 +9013,7 @@ bool CSSParser::parseTextDecoration(CSSPropertyID propId, bool important)
             value = m_valueList->next();
     }
 
-    // Values are either valid or in shorthand scope.
-    if (list->length() && (isValid || inShorthand())) {
+    if (list->length() && isValid) {
         addTextDecorationProperty(propId, list.release(), important);
         return true;
     }
