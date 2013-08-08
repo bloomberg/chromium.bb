@@ -646,11 +646,6 @@
             "items": {"type": "string"}
           },
           {
-            "name": "id",
-            "type": "string",
-            "description": "File browser handler id as for internal tasks."
-          },
-          {
             "name": "callback",
             "type": "function",
             "parameters": [

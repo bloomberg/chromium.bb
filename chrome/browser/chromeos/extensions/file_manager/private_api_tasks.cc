@@ -621,9 +621,6 @@ bool ViewFilesFunction::RunImpl() {
   args_->GetList(0, &path_list);
   DCHECK(path_list);
 
-  std::string internal_task_id;
-  args_->GetString(1, &internal_task_id);
-
   std::vector<base::FilePath> files;
   for (size_t i = 0; i < path_list->GetSize(); ++i) {
     std::string url_as_string;
@@ -641,8 +638,7 @@ bool ViewFilesFunction::RunImpl() {
 
   if (browser) {
     for (size_t i = 0; i < files.size(); ++i) {
-      bool handled = util::ExecuteBuiltinHandler(
-          browser, files[i], internal_task_id);
+      bool handled = util::ExecuteBuiltinHandler(browser, files[i]);
       if (!handled && files.size() == 1)
         success = false;
     }

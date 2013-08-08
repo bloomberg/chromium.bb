@@ -79,12 +79,9 @@ void ViewItem(const base::FilePath& path);
 // Opens file browser on the folder containing the file, with the file selected.
 void ShowFileInFolder(const base::FilePath& path);
 
-// Executes the built-in File Manager handler or tries to open |file| directly
+// Executes the built-in File Manager handler or tries to open |path| directly
 // in the browser. Returns false if neither is possible.
-bool ExecuteBuiltinHandler(
-    Browser* browser,
-    const base::FilePath& path,
-    const std::string& internal_task_id);
+bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path);
 
 // Checks whether a pepper plugin for |file_extension| is enabled.
 bool ShouldBeOpenedWithPlugin(Profile* profile, const char* file_extension);

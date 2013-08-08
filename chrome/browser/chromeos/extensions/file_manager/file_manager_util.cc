@@ -414,7 +414,7 @@ bool ExecuteExtensionHandler(Profile* profile,
                      file_tasks::kTaskFile);
       return true;
     }
-    return ExecuteBuiltinHandler(browser, path, action_id);
+    return ExecuteBuiltinHandler(browser, path);
   }
 
   ExecuteHandler(profile, extension_id, action_id, url,
@@ -755,8 +755,7 @@ void ShowFileInFolder(const base::FilePath& path) {
   OpenFileBrowserImpl(path, "select");
 }
 
-bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
-    const std::string& internal_task_id) {
+bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile = browser->profile();
