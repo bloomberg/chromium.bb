@@ -25,14 +25,39 @@ const int kSelectionHandleLineWidth = 1;
 const SkColor kSelectionHandleLineColor =
     SkColorSetRGB(0x42, 0x81, 0xf4);
 
+// When a handle is dragged, the drag position reported to the client view is
+// offset vertically to represent the cursor position. This constant specifies
+// the offset in  pixels above the "O" (see pic below). This is required because
+// say if this is zero, that means the drag position we report is the point
+// right above the "O" or the bottom most point of the cursor "|". In that case,
+// a vertical movement of even one pixel will make the handle jump to the line
+// below it. So when the user just starts dragging, the handle will jump to the
+// next line if the user makes any vertical movement. It is correct but
+// looks/feels weird. So we have this non-zero offset to prevent this jumping.
+//
+// Editing handle widget showing the difference between the position of the
+// ET_GESTURE_SCROLL_UPDATE event and the drag position reported to the client:
+//                                  _____
+//                                 |  |<-|---- Drag position reported to client
+//                              _  |  O  |
+//          Vertical Padding __|   |   <-|---- ET_GESTURE_SCROLL_UPDATE position
+//                             |_  |_____|<--- Editing handle widget
+//
+//                                 | |
+//                                  T
+//                          Horizontal Padding
+//
+const int kSelectionHandleVerticalDragOffset = 5;
+
 // Padding around the selection handle defining the area that will be included
-// in the touch target to make dragging the handle easier.
-const int kSelectionHandlePadding = 10;
+// in the touch target to make dragging the handle easier (see pic above).
+const int kSelectionHandleHorizPadding = 10;
+const int kSelectionHandleVertPadding = 20;
 
 // The minimum selection size to trigger selection controller.
 // TODO(varunjain): Figure out if this is really required and get rid of it if
 // it isnt.
-const int kMinSelectionSize = 2;
+const int kMinSelectionSize = 1;
 
 const int kContextMenuTimoutMs = 200;
 
@@ -107,7 +132,9 @@ class TouchSelectionControllerImpl::EditingHandleView
  public:
   explicit EditingHandleView(TouchSelectionControllerImpl* controller,
                              gfx::NativeView context)
-      : controller_(controller) {
+      : controller_(controller),
+        drag_offset_(0),
+        draw_invisible_(false) {
     widget_.reset(CreateTouchSelectionPopupWidget(context, this));
     widget_->SetContentsView(this);
     widget_->SetAlwaysOnTop(true);
@@ -132,9 +159,9 @@ class TouchSelectionControllerImpl::EditingHandleView
   virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE {
     gfx::Size image_size = GetHandleImageSize();
     mask->addRect(SkIntToScalar(0), SkIntToScalar(cursor_height()),
-        SkIntToScalar(image_size.width()) + 2 * kSelectionHandlePadding,
+        SkIntToScalar(image_size.width()) + 2 * kSelectionHandleHorizPadding,
         SkIntToScalar(cursor_height() + image_size.height() +
-            kSelectionHandlePadding));
+            kSelectionHandleVertPadding));
   }
 
   virtual void DeleteDelegate() OVERRIDE {
@@ -143,9 +170,11 @@ class TouchSelectionControllerImpl::EditingHandleView
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    if (draw_invisible_)
+      return;
     gfx::Size image_size = GetHandleImageSize();
     int cursor_pos_x = image_size.width() / 2 - kSelectionHandleLineWidth +
-        kSelectionHandlePadding;
+        kSelectionHandleHorizPadding;
 
     // Draw the cursor line.
     canvas->FillRect(
@@ -155,7 +184,7 @@ class TouchSelectionControllerImpl::EditingHandleView
 
     // Draw the handle image.
     canvas->DrawImageInt(*GetHandleImage()->ToImageSkia(),
-        kSelectionHandlePadding, cursor_height());
+        kSelectionHandleHorizPadding, cursor_height());
   }
 
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
@@ -164,10 +193,15 @@ class TouchSelectionControllerImpl::EditingHandleView
       case ui::ET_GESTURE_SCROLL_BEGIN:
         widget_->SetCapture(this);
         controller_->SetDraggingHandle(this);
+        drag_offset_ = event->y() - cursor_height() -
+            kSelectionHandleVerticalDragOffset;
         break;
-      case ui::ET_GESTURE_SCROLL_UPDATE:
-        controller_->SelectionHandleDragged(event->location());
+      case ui::ET_GESTURE_SCROLL_UPDATE: {
+        gfx::Point drag_pos(event->location().x(),
+            event->location().y() - drag_offset_);
+        controller_->SelectionHandleDragged(drag_pos);
         break;
+      }
       case ui::ET_GESTURE_SCROLL_END:
       case ui::ET_SCROLL_FLING_START:
         widget_->ReleaseCapture();
@@ -191,8 +225,8 @@ class TouchSelectionControllerImpl::EditingHandleView
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size image_size = GetHandleImageSize();
-    return gfx::Size(image_size.width() + 2 * kSelectionHandlePadding,
-        image_size.height() + cursor_height() + kSelectionHandlePadding);
+    return gfx::Size(image_size.width() + 2 * kSelectionHandleHorizPadding,
+        image_size.height() + cursor_height() + kSelectionHandleVertPadding);
   }
 
   bool IsWidgetVisible() const {
@@ -203,10 +237,10 @@ class TouchSelectionControllerImpl::EditingHandleView
     gfx::Size image_size = GetHandleImageSize();
     selection_rect_ = rect;
     gfx::Rect widget_bounds(
-        rect.x() - image_size.width() / 2 - kSelectionHandlePadding,
+        rect.x() - image_size.width() / 2 - kSelectionHandleHorizPadding,
         rect.y(),
-        image_size.width() + 2 * kSelectionHandlePadding,
-        rect.height() + image_size.height() + kSelectionHandlePadding);
+        image_size.width() + 2 * kSelectionHandleHorizPadding,
+        rect.height() + image_size.height() + kSelectionHandleVertPadding);
     widget_->SetBounds(widget_bounds);
   }
 
@@ -214,10 +248,24 @@ class TouchSelectionControllerImpl::EditingHandleView
     return widget_->GetClientAreaBoundsInScreen().origin();
   }
 
+  void SetDrawInvisible(bool draw_invisible) {
+    if (draw_invisible_ == draw_invisible)
+      return;
+    draw_invisible_ = draw_invisible;
+    SchedulePaint();
+  }
+
  private:
   scoped_ptr<Widget> widget_;
   TouchSelectionControllerImpl* controller_;
   gfx::Rect selection_rect_;
+  int drag_offset_;
+
+  // If set to true, the handle will not draw anything, hence providing an empty
+  // widget. We need this because we may want to stop showing the handle while
+  // it is being dragged. Since it is being dragged, we cannot destroy the
+  // handle.
+  bool draw_invisible_;
 
   DISALLOW_COPY_AND_ASSIGN(EditingHandleView);
 };
@@ -273,6 +321,13 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     // the start.
     dragging_handle_->SetSelectionRectInScreen(screen_rect_2);
 
+    // Temporary fix for selection handle going outside a window. On a webpage,
+    // the page should scroll if the selection handle is dragged outside the
+    // window. That does not happen currently. So we just hide the handle for
+    // now.
+    // TODO(varunjain): Fix this: crbug.com/269003
+    dragging_handle_->SetDrawInvisible(!client_view_->GetBounds().Contains(r2));
+
     if (dragging_handle_ != cursor_handle_.get()) {
       // The non-dragging-handle might have recently become visible.
       EditingHandleView* non_dragging_handle =
@@ -321,13 +376,11 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
   HideContextMenu();
 
   DCHECK(dragging_handle_);
+  gfx::Point drag_pos_in_client = drag_pos;
+  ConvertPointToClientView(dragging_handle_, &drag_pos_in_client);
 
-  gfx::Size image_size = GetHandleImageSize();
-  gfx::Point offset_drag_pos(drag_pos.x(),
-      drag_pos.y() - image_size.height() - kSelectionHandlePadding - 1);
-  ConvertPointToClientView(dragging_handle_, &offset_drag_pos);
   if (dragging_handle_ == cursor_handle_.get()) {
-    client_view_->MoveCaretTo(offset_drag_pos);
+    client_view_->MoveCaretTo(drag_pos_in_client);
     return;
   }
 
@@ -344,7 +397,7 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
   // Instruct client_view to select the region between p1 and p2. The position
   // of |fixed_handle| is the start and that of |dragging_handle| is the end
   // of selection.
-  client_view_->SelectRect(p2, offset_drag_pos);
+  client_view_->SelectRect(p2, drag_pos_in_client);
 }
 
 void TouchSelectionControllerImpl::ConvertPointToClientView(
