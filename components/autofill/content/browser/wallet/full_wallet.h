@@ -41,6 +41,16 @@ class FullWallet {
   static scoped_ptr<FullWallet>
       CreateFullWallet(const base::DictionaryValue& dictionary);
 
+  // Returns a wallet built from the provided clear-text data.
+  // Data is not validated; |pan|, |cvn| and |billing_address| must be set.
+  static scoped_ptr<FullWallet>
+      CreateFullWalletFromClearText(int expiration_month,
+                                    int expiration_year,
+                                    const std::string& pan,
+                                    const std::string& cvn,
+                                    scoped_ptr<Address> billing_address,
+                                    scoped_ptr<Address> shipping_address);
+
   // Returns corresponding data for |type|.
   base::string16 GetInfo(const AutofillType& type);
 
@@ -80,6 +90,7 @@ class FullWallet {
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, RestLengthCorrectDecryptionTest);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, RestLengthUnderDecryptionTest);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, GetCreditCardInfo);
+
   FullWallet(int expiration_month,
              int expiration_year,
              const std::string& iin,

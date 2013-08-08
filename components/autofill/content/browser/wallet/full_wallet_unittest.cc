@@ -505,5 +505,26 @@ TEST_F(FullWalletTest, GetCreditCardInfo) {
             full_wallet.GetInfo(AutofillType(CREDIT_CARD_TYPE)));
 }
 
+TEST_F(FullWalletTest, CreateFullWalletFromClearTextData) {
+  scoped_ptr<FullWallet> full_wallet =
+      FullWallet::CreateFullWalletFromClearText(
+          11, 2012,
+          "5555555555554444", "123",
+          GetTestAddress(), GetTestShippingAddress());
+  EXPECT_EQ(ASCIIToUTF16("5555555555554444"),
+            full_wallet->GetInfo(AutofillType(CREDIT_CARD_NUMBER)));
+  EXPECT_EQ(ASCIIToUTF16("MasterCard"),
+            full_wallet->GetInfo(AutofillType(CREDIT_CARD_TYPE)));
+  EXPECT_EQ(ASCIIToUTF16("123"),
+            full_wallet->GetInfo(AutofillType(CREDIT_CARD_VERIFICATION_CODE)));
+  EXPECT_EQ(ASCIIToUTF16("11/12"),
+            full_wallet->GetInfo(
+                AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR)));
+  EXPECT_TRUE(GetTestAddress()->EqualsIgnoreID(
+      *full_wallet->billing_address()));
+  EXPECT_TRUE(GetTestShippingAddress()->EqualsIgnoreID(
+      *full_wallet->shipping_address()));
+}
+
 }  // namespace wallet
 }  // namespace autofill
