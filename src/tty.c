@@ -174,7 +174,7 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	if (tty->starting_vt != tty->vt) {
 		if (ioctl(tty->fd, VT_ACTIVATE, tty->vt) < 0 ||
 		    ioctl(tty->fd, VT_WAITACTIVE, tty->vt) < 0) {
-			weston_log("failed to swtich to new vt\n");
+			weston_log("failed to switch to new vt\n");
 			goto err;
 		}
 	}
