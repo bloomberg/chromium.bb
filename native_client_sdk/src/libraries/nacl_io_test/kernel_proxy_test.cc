@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <stdio.h>
 #include <sys/stat.h>
 
 #include <map>
@@ -520,3 +521,4 @@ TEST_F(KernelProxyErrorTest, ReadError) {
   // propagate through.
   EXPECT_EQ(1234, errno);
 }
+

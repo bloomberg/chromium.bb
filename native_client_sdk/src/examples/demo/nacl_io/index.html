@@ -16,8 +16,8 @@ found in the LICENSE file.
   <h1>{{title}}</h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <p>
-    This example shows how you can use standard C library file operation
-    functions in Native Client using a library called nacl_io.
+    This example shows how you can use standard C library file and socket
+    operation functions in Native Client using a library called nacl_io.
   </p>
   <p>
     nacl_io provides a virtual filesystem. The filesystem can be "mounted"
@@ -37,18 +37,25 @@ found in the LICENSE file.
           /dev/zero, etc.</li>
     </ol>
   </p>
+  <p>
+    nacl_io also provides a (currently incomplete) posix socket api. Like the
+    virtual filesystem, it is an abstraction layer on top of ppapi. To use this
+    API, an app must be a packaged app with the appropriate socket permissions
+    specified in the manifest file.
+  <hr>
+  <p><b>File Operations:</b></p>
   <div>
     <span>
-      <input type="radio" id="radiofopen" name="group" checked="checked">fopen
-      <input type="radio" id="radiofclose" name="group">fclose
-      <input type="radio" id="radiofread" name="group">fread
-      <input type="radio" id="radiofwrite" name="group">fwrite
-      <input type="radio" id="radiofseek" name="group">fseek
-      <input type="radio" id="radiostat" name="group">stat
-      <input type="radio" id="radioopendir" name="group">opendir
-      <input type="radio" id="radioreaddir" name="group">readdir
-      <input type="radio" id="radioclosedir" name="group">closedir
-      <input type="radio" id="radiomkdir" name="group">mkdir
+      <input type="radio" id="radiofopen" name="filegroup" checked="checked">fopen
+      <input type="radio" id="radiofclose" name="filegroup">fclose
+      <input type="radio" id="radiofread" name="filegroup">fread
+      <input type="radio" id="radiofwrite" name="filegroup">fwrite
+      <input type="radio" id="radiofseek" name="filegroup">fseek
+      <input type="radio" id="radiostat" name="filegroup">stat
+      <input type="radio" id="radioopendir" name="filegroup">opendir
+      <input type="radio" id="radioreaddir" name="filegroup">readdir
+      <input type="radio" id="radioclosedir" name="filegroup">closedir
+      <input type="radio" id="radiomkdir" name="filegroup">mkdir
     </span>
   </div>
   <div class="function" id="fopen">
@@ -137,6 +144,23 @@ found in the LICENSE file.
       <button>mkdir</button>
     </span>
   </div>
+  <hr>
+  <p><b>Socket Operations:</b></p>
+  <div>
+    <span>
+      <input type="radio" id="radiogethostbyname" name="socketgroup" checked="checked">gethostbyname
+    </span>
+  </div>
+  <div class="function" id="gethostbyname">
+    <span>
+      Name:
+      <input type="text" id="gethostbynameName">
+      <button>gethostbyname</button>
+    </span>
+  </div>
+
+  <hr>
+  <p><b>Log:</b></p>
   <pre id="log" style="font-weight: bold"></pre>
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->

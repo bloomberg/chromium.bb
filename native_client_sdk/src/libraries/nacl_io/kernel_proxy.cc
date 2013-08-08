@@ -18,6 +18,7 @@
 #include <iterator>
 #include <string>
 
+#include "nacl_io/host_resolver.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/mount.h"
@@ -77,6 +78,10 @@ void KernelProxy::Init(PepperInterface* ppapi) {
   open("/dev/stdin", O_RDONLY);
   open("/dev/stdout", O_WRONLY);
   open("/dev/stderr", O_WRONLY);
+
+#ifdef PROVIDES_SOCKET_API
+  host_resolver_.Init(ppapi_);
+#endif
 }
 
 int KernelProxy::open_resource(const char* path) {
@@ -920,6 +925,10 @@ int KernelProxy::connect(int fd, const struct sockaddr* addr, socklen_t len) {
   return -1;
 }
 
+struct hostent* KernelProxy::gethostbyname(const char* name) {
+  return host_resolver_.gethostbyname(name);
+}
+
 int KernelProxy::getpeername(int fd, struct sockaddr* addr, socklen_t* len) {
   if (NULL == addr || NULL == len) {
     errno = EFAULT;
@@ -964,6 +973,14 @@ int KernelProxy::getsockopt(int fd,
 
   errno = EINVAL;
   return -1;
+}
+
+void KernelProxy::herror(const char* s) {
+  return host_resolver_.herror(s);
+}
+
+const char* KernelProxy::hstrerror(int err) {
+  return host_resolver_.hstrerror(err);
 }
 
 int KernelProxy::listen(int fd, int backlog) {
@@ -1163,6 +1180,6 @@ int KernelProxy::AcquireSocketHandle(int fd, ScopedKernelHandle* handle) {
   return 0;
 }
 
-#endif // PROVIDES_SOCKET_API
+#endif  // PROVIDES_SOCKET_API
 
-} // namespace_nacl_io
+}  // namespace_nacl_io

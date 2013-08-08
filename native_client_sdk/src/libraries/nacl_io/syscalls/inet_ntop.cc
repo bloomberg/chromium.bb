@@ -1,31 +1,21 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 #include "nacl_io/ossocket.h"
-
-#ifdef PROVIDES_SOCKET_API
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
 
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 
 #include <iostream>
 #include <sstream>
 #include <string>
 
-static inline uint8_t get_byte(const void* addr, int byte) {
-  const char* buf = static_cast<const char*>(addr);
-  return static_cast<uint8_t>(buf[byte]);
-}
+#include "sdk_util/macros.h"
 
-char* inet_ntoa(struct in_addr in) {
-  static char addr[INET_ADDRSTRLEN];
-  snprintf(addr, INET_ADDRSTRLEN, "%u.%u.%u.%u",
-           get_byte(&in, 0), get_byte(&in, 1),
-           get_byte(&in, 2), get_byte(&in, 3));
-  return addr;
-}
+
+EXTERN_C_BEGIN
 
 const char* inet_ntop(int af, const void* src, char* dst, socklen_t size) {
   if (AF_INET == af) {
@@ -62,4 +52,7 @@ const char* inet_ntop(int af, const void* src, char* dst, socklen_t size) {
   return NULL;
 }
 
-#endif // PROVIDES_SOCKET_API
+EXTERN_C_END
+
+#endif  // defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
+

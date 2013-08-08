@@ -68,6 +68,28 @@ BEGIN_INTERFACE(VarInterface, PPB_Var, PPB_VAR_INTERFACE_1_1)
   METHOD2(VarInterface, const char*, VarToUtf8, PP_Var, uint32_t*)
 END_INTERFACE(VarInterface, PPB_Var)
 
+BEGIN_INTERFACE(HostResolverInterface, PPB_HostResolver,
+                PPB_HOSTRESOLVER_INTERFACE_1_0)
+  METHOD1(HostResolverInterface, PP_Resource, Create, PP_Instance)
+  METHOD5(HostResolverInterface, int32_t, Resolve, PP_Resource, const char*,
+          uint16_t, const struct PP_HostResolver_Hint*,
+          struct PP_CompletionCallback)
+  METHOD1(HostResolverInterface, PP_Var, GetCanonicalName, PP_Resource)
+  METHOD1(HostResolverInterface, uint32_t, GetNetAddressCount, PP_Resource)
+  METHOD2(HostResolverInterface, PP_Resource, GetNetAddress,
+          PP_Resource, uint32_t)
+END_INTERFACE(HostResolverInterface, PPB_HostResolver)
+
+BEGIN_INTERFACE(NetAddressInterface, PPB_NetAddress,
+                PPB_NETADDRESS_INTERFACE_1_0)
+  METHOD1(NetAddressInterface, PP_Bool, IsNetAddress, PP_Resource)
+  METHOD1(NetAddressInterface, PP_NetAddress_Family, GetFamily, PP_Resource)
+  METHOD2(NetAddressInterface, PP_Bool, DescribeAsIPv4Address, PP_Resource,
+          struct PP_NetAddress_IPv4*)
+  METHOD2(NetAddressInterface, PP_Bool, DescribeAsIPv6Address, PP_Resource,
+          struct PP_NetAddress_IPv6*)
+END_INTERFACE(NetAddressInterface, PPB_NetAddress)
+
 BEGIN_INTERFACE(URLLoaderInterface, PPB_URLLoader, PPB_URLLOADER_INTERFACE_1_0)
   METHOD1(URLLoaderInterface, PP_Resource, Create, PP_Instance)
   METHOD3(URLLoaderInterface, int32_t, Open, PP_Resource, PP_Resource,

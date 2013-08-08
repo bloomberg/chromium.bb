@@ -102,9 +102,12 @@ read_ssize_t NAME(write)(int fd, const void* buf, size_t nbyte);
 int accept(int fd, struct sockaddr* addr, socklen_t* len);
 int bind(int fd, const struct sockaddr* addr, socklen_t len);
 int connect(int fd, const struct sockaddr* addr, socklen_t len);
+struct hostent* gethostbyname(const char* name);
 int getpeername(int fd, struct sockaddr* addr, socklen_t* len);
 int getsockname(int fd, struct sockaddr* addr, socklen_t* len);
 int getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len);
+void herror(const char *s);
+const char *hstrerror(int err);
 int listen(int fd, int backlog);
 ssize_t recv(int fd, void* buf, size_t len, int flags);
 ssize_t recvfrom(int fd, void* buf, size_t len, int flags,
@@ -119,7 +122,7 @@ int setsockopt(int fd, int lvl, int optname, const void* optval,
 int shutdown(int fd, int how);
 int socket(int domain, int type, int protocol);
 int socketpair(int domain, int type, int protocl, int* sv);
-#endif // PROVIDES_SOCKET_API
+#endif  // PROVIDES_SOCKET_API
 
 EXTERN_C_END
 

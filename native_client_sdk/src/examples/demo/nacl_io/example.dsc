@@ -25,5 +25,8 @@
   'GROUP': 'Demo',
   'PERMISSIONS': [
     'unlimitedStorage'
+  ],
+  'SOCKET_PERMISSIONS': [
+    'resolve-host'
   ]
 }

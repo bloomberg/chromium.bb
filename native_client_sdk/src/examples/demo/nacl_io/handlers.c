@@ -5,13 +5,17 @@
 
 #include "handlers.h"
 
+#include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 
 #include "nacl_io/osdirent.h"
@@ -639,5 +643,84 @@ int HandleMkdir(int num_params, char** params, char** output) {
   }
 
   *output = PrintfToNewString("mkdir\1%s", dirname);
+  return 0;
+}
+
+/**
+ * Handle a call to gethostbyname() made by JavaScript.
+ *
+ * gethostbyname expects 1 parameter:
+ *   0: The name of the host to look up.
+ * on success, gethostbyname returns a result in |output| separated by \1:
+ *   0: "gethostbyname"
+ *   1: Host name
+ *   2: Address type (either "AF_INET" or "AF_INET6")
+ *   3. The first address.
+ *   4+ The second, third, etc. addresses.
+ * on failure, gethostbyname returns an error string in |output|.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure. */
+int HandleGethostbyname(int num_params, char** params, char** output) {
+  struct hostent* info;
+  struct in_addr **addr_list;
+  const char* addr_type;
+  const char* name;
+  char inet6_addr_str[INET6_ADDRSTRLEN];
+  int non_variable_len, output_len;
+  int current_pos;
+  int i;
+
+  if (num_params != 1) {
+    *output = PrintfToNewString("Error: gethostbyname takes 1 parameter.");
+    return 1;
+  }
+
+  name = params[0];
+
+  info = gethostbyname(name);
+  if (!info) {
+    *output = PrintfToNewString("Error: gethostbyname failed, error is \"%s\"",
+                                hstrerror(h_errno));
+    return 2;
+  }
+
+  addr_type = info->h_addrtype == AF_INET ? "AF_INET" : "AF_INET6";
+
+  non_variable_len = strlen("gethostbyname") + 1
+    + strlen(info->h_name) + 1 + strlen(addr_type);
+  output_len = non_variable_len;
+
+  addr_list = (struct in_addr **)info->h_addr_list;
+  for (i = 0; addr_list[i] != NULL; i++) {
+    output_len += 1; // for the divider
+    if (info->h_addrtype == AF_INET) {
+      output_len += strlen(inet_ntoa(*addr_list[i]));
+    } else { // IPv6
+      inet_ntop(AF_INET6, addr_list[i], inet6_addr_str, INET6_ADDRSTRLEN);
+      output_len += strlen(inet6_addr_str);
+    }
+  }
+
+  *output = (char*) calloc(output_len + 1, 1);
+  if (!*output) {
+    *output = PrintfToNewString("Error: out of memory.");
+    return 3;
+  }
+  snprintf(*output, non_variable_len + 1, "gethostbyname\1%s\1%s",
+           info->h_name, addr_type);
+
+  current_pos = non_variable_len;
+  for (i = 0; addr_list[i] != NULL; i++) {
+    if (info->h_addrtype == AF_INET) {
+      current_pos += sprintf(*output + current_pos,
+                             "\1%s", inet_ntoa(*addr_list[i]));
+    } else { // IPv6
+      inet_ntop(AF_INET6, addr_list[i], inet6_addr_str, INET6_ADDRSTRLEN);
+      sprintf(*output + current_pos, "\1%s", inet6_addr_str);
+    }
+  }
   return 0;
 }

@@ -5,6 +5,8 @@
 #ifndef LIBRARIES_NACL_IO_OSSOCKET_H_
 #define LIBRARIES_NACL_IO_OSSOCKET_H_
 
+#include <sys/types.h>
+
 #if defined(__native_client__)
 #include <arpa/inet.h>
 #include <netdb.h>

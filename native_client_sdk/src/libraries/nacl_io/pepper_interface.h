@@ -5,7 +5,9 @@
 #ifndef LIBRARIES_NACL_IO_PEPPER_INTERFACE_H_
 #define LIBRARIES_NACL_IO_PEPPER_INTERFACE_H_
 
+#include <ppapi/c/pp_bool.h>
 #include <ppapi/c/pp_completion_callback.h>
+#include <ppapi/c/pp_errors.h>
 #include <ppapi/c/pp_file_info.h>
 #include <ppapi/c/pp_instance.h>
 #include <ppapi/c/pp_resource.h>
@@ -14,8 +16,10 @@
 #include <ppapi/c/ppb_file_io.h>
 #include <ppapi/c/ppb_file_ref.h>
 #include <ppapi/c/ppb_file_system.h>
+#include <ppapi/c/ppb_host_resolver.h>
 #include <ppapi/c/ppb_messaging.h>
 #include <ppapi/c/ppb_messaging.h>
+#include <ppapi/c/ppb_net_address.h>
 #include <ppapi/c/ppb_url_loader.h>
 #include <ppapi/c/ppb_url_request_info.h>
 #include <ppapi/c/ppb_url_response_info.h>

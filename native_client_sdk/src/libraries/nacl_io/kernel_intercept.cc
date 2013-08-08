@@ -272,6 +272,10 @@ int ki_connect(int fd, const struct sockaddr* addr, socklen_t len) {
   return s_kp->connect(fd, addr, len);
 }
 
+struct hostent* ki_gethostbyname(const char* name) {
+  return s_kp->gethostbyname(name);
+}
+
 int ki_getpeername(int fd, struct sockaddr* addr, socklen_t* len) {
   return s_kp->getpeername(fd, addr, len);
 }
@@ -281,6 +285,14 @@ int ki_getsockname(int fd, struct sockaddr* addr, socklen_t* len) {
 }
 int ki_getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len) {
   return s_kp->getsockopt(fd, lvl, optname, optval, len);
+}
+
+void ki_herror(const char *s) {
+  return s_kp->herror(s);
+}
+
+const char *ki_hstrerror(int err) {
+  return s_kp->hstrerror(err);
 }
 
 int ki_listen(int fd, int backlog) {
@@ -329,4 +341,4 @@ int ki_socket(int domain, int type, int protocol) {
 int ki_socketpair(int domain, int type, int protocol, int* sv) {
   return s_kp->socketpair(domain, type, protocol, sv);
 }
-#endif // PROVIDES_SOCKET_API
+#endif  // PROVIDES_SOCKET_API

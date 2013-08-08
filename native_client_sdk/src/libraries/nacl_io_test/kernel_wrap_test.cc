@@ -327,6 +327,11 @@ TEST_F(KernelWrapTest, connect) {
   connect(DUMMY_FD, NULL, 456);
 }
 
+TEST_F(KernelWrapTest, gethostbyname) {
+  EXPECT_CALL(mock, gethostbyname(NULL)).Times(1);
+  gethostbyname(NULL);
+}
+
 TEST_F(KernelWrapTest, getpeername) {
   EXPECT_CALL(mock, getpeername(DUMMY_FD, NULL, NULL)).Times(1);
   getpeername(DUMMY_FD, NULL, NULL);
@@ -340,6 +345,16 @@ TEST_F(KernelWrapTest, getsockname) {
 TEST_F(KernelWrapTest, getsockopt) {
   EXPECT_CALL(mock, getsockopt(DUMMY_FD, 456, 789, NULL, NULL)).Times(1);
   getsockopt(DUMMY_FD, 456, 789, NULL, NULL);
+}
+
+TEST_F(KernelWrapTest, herror) {
+  EXPECT_CALL(mock, herror(NULL)).Times(1);
+  herror(NULL);
+}
+
+TEST_F(KernelWrapTest, hstrerror) {
+  EXPECT_CALL(mock, hstrerror(123)).Times(1);
+  hstrerror(123);
 }
 
 TEST_F(KernelWrapTest, listen) {

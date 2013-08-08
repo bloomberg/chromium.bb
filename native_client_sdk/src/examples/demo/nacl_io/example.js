@@ -194,6 +194,22 @@ function mkdirResult(dirname) {
   common.logMessage('Directory ' + dirname + ' created successfully.');
 }
 
+function gethostbyname(e) {
+  var name = document.getElementById('gethostbynameName').value;
+  nacl_module.postMessage(makeCall('gethostbyname', name));
+}
+
+
+function gethostbynameResult(name, addr_type) {
+  common.logMessage('gethostbyname returned successfully\n');
+  common.logMessage('h_name = ' + name + '.\n');
+  common.logMessage('h_addr_type = ' + addr_type + '.\n');
+  for (var i = 2; i < arguments.length; i++) {
+    common.logMessage('Address number ' + (i-1) + ' = ' + arguments[i] + '.\n');
+  }
+  common.logMessage('\n');
+}
+
 /**
  * Return true when |s| starts with the string |prefix|.
  *

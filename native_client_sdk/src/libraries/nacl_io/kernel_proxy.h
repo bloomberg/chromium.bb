@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "nacl_io/host_resolver.h"
 #include "nacl_io/kernel_object.h"
 #include "nacl_io/mount_factory.h"
 #include "nacl_io/ossocket.h"
@@ -133,6 +134,7 @@ class KernelProxy : protected KernelObject {
   virtual int accept(int fd, struct sockaddr* addr, socklen_t* len);
   virtual int bind(int fd, const struct sockaddr* addr, socklen_t len);
   virtual int connect(int fd, const struct sockaddr* addr, socklen_t len);
+  virtual struct hostent* gethostbyname(const char* name);
   virtual int getpeername(int fd, struct sockaddr* addr, socklen_t* len);
   virtual int getsockname(int fd, struct sockaddr* addr, socklen_t* len);
   virtual int getsockopt(int fd,
@@ -140,6 +142,8 @@ class KernelProxy : protected KernelObject {
                          int optname,
                          void* optval,
                          socklen_t* len);
+  virtual void herror(const char* s);
+  virtual const char* hstrerror(int err);
   virtual int listen(int fd, int backlog);
   virtual ssize_t recv(int fd,
                        void* buf,
@@ -168,13 +172,16 @@ class KernelProxy : protected KernelObject {
   virtual int shutdown(int fd, int how);
   virtual int socket(int domain, int type, int protocol);
   virtual int socketpair(int domain, int type, int protocol, int* sv);
-#endif // PROVIDES_SOCKET_API
+#endif  // PROVIDES_SOCKET_API
 
  protected:
   MountFactoryMap_t factories_;
   int dev_;
   PepperInterface* ppapi_;
   static KernelProxy *s_instance_;
+#ifdef PROVIDES_SOCKET_API
+  HostResolver host_resolver_;
+#endif
 
 #ifdef PROVIDES_SOCKET_API
   virtual int AcquireSocketHandle(int fd, ScopedKernelHandle* handle);

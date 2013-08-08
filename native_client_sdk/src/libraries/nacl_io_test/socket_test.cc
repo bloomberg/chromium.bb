@@ -38,7 +38,7 @@ class SocketTest : public ::testing::Test {
   KernelProxy* kp_;
 };
 
-} // namespace
+}  // namespace
 
 TEST_F(SocketTest, Accept) {
   struct sockaddr addr = {};
@@ -126,6 +126,11 @@ TEST_F(SocketTest, Getsockopt) {
   EXPECT_EQ(errno, EBADF);
   EXPECT_LT(ki_getsockopt(0, SOL_SOCKET, SO_ACCEPTCONN, optval, &len), 0);
   EXPECT_EQ(errno, ENOTSOCK);
+}
+
+TEST_F(SocketTest, Hstrerror) {
+  EXPECT_STREQ(ki_hstrerror(2718),
+               "Unknown error in gethostbyname: 2718.");
 }
 
 TEST_F(SocketTest, Listen) {
@@ -259,8 +264,9 @@ TEST_F(SocketTest, Socketpair) {
   EXPECT_EQ(errno, EPROTONOSUPPORT);
 }
 
-// These functions don't go through KernelProxy, so they don't require a test
-// fixture
+// These utility functions are only used for newlib (glibc provides its own
+// implementations of these functions).
+#if !defined(__GLIBC__)
 
 static struct in_addr generate_ipv4_addr(int tuple1, int tuple2,
                                          int tuple3, int tuple4) {
@@ -366,4 +372,5 @@ TEST(SocketUtilityFunctions, Inet_ntop_failure) {
   EXPECT_EQ(errno, ENOSPC);
 }
 
-#endif // PROVIDES_SOCKETPAIR_API
+#endif  // !defined(__GLIBC__)
+#endif  // PROVIDES_SOCKETPAIR_API

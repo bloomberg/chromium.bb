@@ -20,5 +20,6 @@ int HandleOpendir(int num_params, char** params, char** output);
 int HandleReaddir(int num_params, char** params, char** output);
 int HandleClosedir(int num_params, char** params, char** output);
 int HandleMkdir(int num_params, char** params, char** output);
+int HandleGethostbyname(int num_params, char** params, char** output);
 
 #endif /* HANDLERS_H_ */

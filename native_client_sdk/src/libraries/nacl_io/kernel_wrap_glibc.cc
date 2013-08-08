@@ -292,6 +292,10 @@ int connect(int fd, const struct sockaddr* addr, socklen_t len) {
   return ki_connect(fd, addr, len);
 }
 
+struct hostent* gethostbyname(const char* name) {
+  return ki_gethostbyname(name);
+}
+
 int getpeername(int fd, struct sockaddr* addr, socklen_t* len) {
   return ki_getpeername(fd, addr, len);
 }
@@ -299,8 +303,17 @@ int getpeername(int fd, struct sockaddr* addr, socklen_t* len) {
 int getsockname(int fd, struct sockaddr* addr, socklen_t* len) {
   return ki_getsockname(fd, addr, len);
 }
+
 int getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len) {
   return ki_getsockopt(fd, lvl, optname, optval, len);
+}
+
+void herror(const char *s) {
+  return ki_herror(s);
+}
+
+const char *hstrerror(int err) {
+  return ki_hstrerror(err);
 }
 
 int listen(int fd, int backlog) {

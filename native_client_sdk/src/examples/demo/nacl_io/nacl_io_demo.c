@@ -52,6 +52,7 @@ static FuncNameMapping g_function_map[] = {
   {"readdir", HandleReaddir},
   {"closedir", HandleClosedir},
   {"mkdir", HandleMkdir},
+  {"gethostbyname", HandleGethostbyname},
   {NULL, NULL},
 };
 

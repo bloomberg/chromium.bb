@@ -63,9 +63,12 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD3(accept, int(int, struct sockaddr*, socklen_t*));
   MOCK_METHOD3(bind, int(int, const struct sockaddr*, socklen_t));
   MOCK_METHOD3(connect, int(int, const struct sockaddr*, socklen_t));
+  MOCK_METHOD1(gethostbyname, struct hostent*(const char*));
   MOCK_METHOD3(getpeername, int(int, struct sockaddr*, socklen_t*));
   MOCK_METHOD3(getsockname, int(int, struct sockaddr*, socklen_t*));
   MOCK_METHOD5(getsockopt, int(int, int, int, void*, socklen_t*));
+  MOCK_METHOD1(herror, void(const char*));
+  MOCK_METHOD1(hstrerror, const char*(int));
   MOCK_METHOD2(listen, int(int, int));
   MOCK_METHOD4(recv, ssize_t(int, void*, size_t, int));
   MOCK_METHOD6(recvfrom, ssize_t(int, void*, size_t, int,
