@@ -68,6 +68,10 @@ class AutocompleteInput {
     // The new tab page in which this omnibox interaction first started
     // with the user having focus in the fakebox.
     INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS = 8,
+    // The user is on a search result page that's not doing search term
+    // replacement, meaning the URL of the page should've appeared in the
+    // omnibox before the user started editing it, not the search terms.
+    SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT = 9
   };
 
   AutocompleteInput();

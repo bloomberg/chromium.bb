@@ -228,6 +228,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   // NOTE: At least in unittest mode, this may return NULL.
   TemplateURL* GetDefaultSearchProvider();
 
+  // Returns true if the |url| is a search results page from the default search
+  // provider.
+  bool IsSearchResultsPageFromDefaultSearchProvider(const GURL& url);
+
   // Returns true if the default search is managed through group policy.
   bool is_default_search_managed() const { return is_default_search_managed_; }
 

@@ -1514,16 +1514,6 @@ void MetricsService::LogLoadStarted(content::WebContents* web_contents) {
   IncrementLongPrefsValue(prefs::kUninstallMetricsPageLoadCount);
   // We need to save the prefs, as page load count is a critical stat, and it
   // might be lost due to a crash :-(.
-
-  // Track whether the page loaded is a search results page.
-  if (web_contents) {
-    SearchTabHelper* search_tab_helper =
-        SearchTabHelper::FromWebContents(web_contents);
-    if (search_tab_helper) {
-      if (search_tab_helper->model()->mode().is_search_results())
-        content::RecordAction(content::UserMetricsAction("PageLoadSRP"));
-    }
-  }
 }
 
 void MetricsService::LogRendererCrash(content::RenderProcessHost* host,

@@ -690,6 +690,12 @@ TemplateURL* TemplateURLService::GetDefaultSearchProvider() {
   return initial_default_search_provider_.get();
 }
 
+bool TemplateURLService::IsSearchResultsPageFromDefaultSearchProvider(
+    const GURL& url) {
+  TemplateURL* default_provider = GetDefaultSearchProvider();
+  return default_provider && default_provider->IsSearchURL(url);
+}
+
 TemplateURL* TemplateURLService::FindNewDefaultSearchProvider() {
   // See if the prepopulated default still exists.
   scoped_ptr<TemplateURL> prepopulated_default(

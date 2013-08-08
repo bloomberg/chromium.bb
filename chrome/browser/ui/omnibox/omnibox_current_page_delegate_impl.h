@@ -21,6 +21,7 @@ class OmniboxCurrentPageDelegateImpl : public OmniboxCurrentPageDelegate {
   virtual bool CurrentPageExists() const OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual bool IsInstantNTP() const OVERRIDE;
+  virtual bool IsSearchResultsPage() const OVERRIDE;
   virtual bool IsLoading() const OVERRIDE;
   virtual content::NavigationController&
       GetNavigationController() const OVERRIDE;

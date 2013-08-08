@@ -163,6 +163,9 @@ OmniboxEventProto::PageClassification AsOmniboxEventPageClassification(
     case AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS:
       return OmniboxEventProto::
           INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS;
+    case AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT:
+      return OmniboxEventProto::
+          SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
   }
   return OmniboxEventProto::INVALID_SPEC;
 }

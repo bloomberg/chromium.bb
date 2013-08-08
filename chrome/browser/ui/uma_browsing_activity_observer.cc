@@ -6,14 +6,19 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/user_metrics.h"
 
 namespace chrome {
 namespace {
@@ -47,6 +52,20 @@ void UMABrowsingActivityObserver::Observe(
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     const content::LoadCommittedDetails& load =
         *content::Details<content::LoadCommittedDetails>(details).ptr();
+
+    content::NavigationController* controller =
+      content::Source<content::NavigationController>(source).ptr();
+    // Track whether the page loaded is a search results page (SRP). Track
+    // the non-SRP navigations as well so there is a control.
+    content::RecordAction(content::UserMetricsAction("NavEntryCommitted"));
+    if (TemplateURLServiceFactory::GetForProfile(
+            Profile::FromBrowserContext(controller->GetBrowserContext()))->
+            IsSearchResultsPageFromDefaultSearchProvider(
+                load.entry->GetURL())) {
+      content::RecordAction(
+          content::UserMetricsAction("NavEntryCommitted.SRP"));
+    }
+
     if (!load.is_navigation_to_different_page())
       return;  // Don't log for subframes or other trivial types.
 

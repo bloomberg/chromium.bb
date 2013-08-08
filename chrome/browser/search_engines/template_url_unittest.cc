@@ -1191,3 +1191,35 @@ TEST_F(TemplateURLTest, ReplacePageClassification) {
   result = url.url_ref().ReplaceSearchTerms(search_terms_args);
   EXPECT_EQ("http://www.google.com/?pgcl=3&q=foo", result);
 }
+
+// Test the IsSearchResults function.
+TEST_F(TemplateURLTest, IsSearchResults) {
+  TemplateURLData data;
+  data.SetURL("http://bar/search?q={searchTerms}");
+  data.instant_url = "http://bar/instant#q={searchTerms}";
+  data.alternate_urls.push_back("http://bar/?q={searchTerms}");
+  data.alternate_urls.push_back("http://bar/#q={searchTerms}");
+  data.alternate_urls.push_back("http://bar/search#q{searchTerms}");
+  data.alternate_urls.push_back("http://bar/webhp#q={searchTerms}");
+  TemplateURL search_provider(NULL, data);
+
+  const struct {
+    const char* const url;
+    bool result;
+  } url_data[] = {
+    { "http://bar/search?q=foo&oq=foo", true, },
+    { "http://bar/?q=foo&oq=foo", true, },
+    { "http://bar/#output=search&q=foo&oq=foo", true, },
+    { "http://bar/webhp#q=foo&oq=foo", true, },
+    { "http://bar/#q=foo&oq=foo", true, },
+    { "http://bar/?ext=foo&q=foo#ref=bar", true, },
+    { "http://bar/url?url=http://www.foo.com/&q=foo#ref=bar", false, },
+    { "http://bar/", false, },
+    { "http://foo/", false, },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(url_data); ++i) {
+    EXPECT_EQ(url_data[i].result,
+              search_provider.IsSearchURL(GURL(url_data[i].url)));
+  }
+}

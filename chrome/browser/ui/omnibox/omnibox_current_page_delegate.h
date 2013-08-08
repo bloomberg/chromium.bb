@@ -35,6 +35,9 @@ class OmniboxCurrentPageDelegate {
   // Returns true if the visible entry is a New Tab Page rendered by Instant.
   virtual bool IsInstantNTP() const = 0;
 
+  // Returns true if the committed entry is a search results page.
+  virtual bool IsSearchResultsPage() const = 0;
+
   // Returns whether the current page is loading.
   virtual bool IsLoading() const = 0;
 

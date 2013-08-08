@@ -728,12 +728,11 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
 
     // Track whether the destination URL sends us to a search results page
     // using the default search provider.
-    TemplateURL* default_provider =
-        TemplateURLServiceFactory::GetForProfile(profile_)->
-            GetDefaultSearchProvider();
-    if (default_provider && default_provider->IsSearchURL(destination_url))
+    if (TemplateURLServiceFactory::GetForProfile(profile_)->
+        IsSearchResultsPageFromDefaultSearchProvider(destination_url)) {
       content::RecordAction(
           UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
+    }
 
     // This calls RevertAll again.
     base::AutoReset<bool> tmp(&in_revert_, true);
@@ -1293,6 +1292,9 @@ AutocompleteInput::PageClassification OmniboxEditModel::ClassifyPage() const {
     return AutocompleteInput::HOMEPAGE;
   if (view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(true)) {
     return AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
+  }
+  if (delegate_->IsSearchResultsPage()) {
+    return AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
   }
   return AutocompleteInput::OTHER;
 }

@@ -11,6 +11,8 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -38,6 +40,13 @@ const GURL& OmniboxCurrentPageDelegateImpl::GetURL() const {
 
 bool OmniboxCurrentPageDelegateImpl::IsInstantNTP() const {
   return chrome::IsInstantNTP(controller_->GetWebContents());
+}
+
+bool OmniboxCurrentPageDelegateImpl::IsSearchResultsPage() const {
+  Profile* profile = Profile::FromBrowserContext(
+      controller_->GetWebContents()->GetBrowserContext());
+  return TemplateURLServiceFactory::GetForProfile(profile)->
+      IsSearchResultsPageFromDefaultSearchProvider(GetURL());
 }
 
 bool OmniboxCurrentPageDelegateImpl::IsLoading() const {
