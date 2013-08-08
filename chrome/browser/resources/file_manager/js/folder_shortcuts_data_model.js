@@ -56,6 +56,7 @@ function FolderShortcutsDataModel() {
       if (this.array_.length == list.length) {
         var changed = false;
         for (var i = 0; i < this.array_.length; i++) {
+          // Same item check: must be exact match.
           if (this.array_[i] != list[i]) {
             changed = true;
             break;
@@ -103,11 +104,27 @@ FolderShortcutsDataModel.prototype = {
    */
   getIndex: function(value) {
     for (var i = 0; i < this.length; i++) {
-      if (this.array_[i].localeCompare(value) == 0) {
+      // Same item check: must be exact match.
+      if (this.array_[i] == value) {
         return i;
       }
     }
     return -1;
+  },
+
+  /**
+   * Compares 2 strings and returns a number indicating one string comes before
+   * or after or is the same as the other string in sort order.
+   *
+   * @param {string} a String1.
+   * @param {string} b String2.
+   * @return {boolean} Return -1, if String1 < String2. Return 0, if String1 ==
+   *     String2. Otherwise, return 1.
+   */
+  compare: function(a, b) {
+    return a.localeCompare(b,
+                           undefined,  // locale parameter, use default locale.
+                           {usage: 'sort', numeric: true});
   },
 
   /**
@@ -122,11 +139,13 @@ FolderShortcutsDataModel.prototype = {
     var oldArray = this.array_.slice(0);  // Shallow copy.
     var addedIndex = -1;
     for (var i = 0; i < this.length; i++) {
-      // Since the array is sorted, new item will be added just before the first
-      // larger item. If the same item exists, do nothing.
-      if (this.array_[i].localeCompare(value) == 0) {
+      // Same item check: must be exact match.
+      if (this.array_[i] == value)
         return i;
-      } else if (this.array_[i].localeCompare(value) >= 0) {
+
+      // Since the array is sorted, new item will be added just before the first
+      // larger item.
+      if (this.compare(this.array_[i], value) >= 0) {
         this.array_.splice(i, 0, value);
         addedIndex = i;
         break;
@@ -153,6 +172,7 @@ FolderShortcutsDataModel.prototype = {
     var removedIndex = -1;
     var oldArray = this.array_.slice(0);  // Shallow copy.
     for (var i = 0; i < this.length; i++) {
+      // Same item check: must be exact match.
       if (this.array_[i] == value) {
         this.array_.splice(i, 1);
         removedIndex = i;
@@ -214,20 +234,23 @@ FolderShortcutsDataModel.prototype = {
       }
 
       while (newIndex < newArray.length) {
+        // Unchanged item, which exists in both new and old array. But the
+        // index may be changed.
         if (oldArray[oldIndex] == newArray[newIndex]) {
-          // Unchanged item, which exists in both new and old array. But the
-          // index may be changed.
           permutation[oldIndex] = newIndex;
           newIndex++;
           break;
-        } else if (oldArray[oldIndex] < newArray[newIndex]) {
-          // oldArray[oldIndex] is deleted, which is not in the new array.
+        }
+
+        // oldArray[oldIndex] is deleted, which is not in the new array.
+        if (this.compare(oldArray[oldIndex], newArray[newIndex]) < 0) {
           permutation[oldIndex] = -1;
           break;
-        } else {  // oldArray[oldIndex] > newArray[newIndex]
-          // newArray[newIndex] is added, which is not in the old array.
-          newIndex++;
         }
+
+        // In the case of this.compare(oldArray[oldIndex]) > 0:
+        // newArray[newIndex] is added, which is not in the old array.
+        newIndex++;
       }
     }
     return permutation;
