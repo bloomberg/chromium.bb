@@ -59,7 +59,7 @@ static const int defaultCols = 20;
 // This function returns number of characters considering this.
 static inline unsigned computeLengthForSubmission(const String& text, unsigned numberOfLineBreaks)
 {
-    return numGraphemeClusters(text) + numberOfLineBreaks;
+    return text.length() + numberOfLineBreaks;
 }
 
 static unsigned numberOfLineBreaks(const String& text)
@@ -75,12 +75,7 @@ static unsigned numberOfLineBreaks(const String& text)
 
 static inline unsigned computeLengthForSubmission(const String& text)
 {
-    return numGraphemeClusters(text) + numberOfLineBreaks(text);
-}
-
-static inline unsigned upperBoundForLengthForSubmission(const String& text, unsigned numberOfLineBreaks)
-{
-    return text.length() + numberOfLineBreaks;
+    return text.length() + numberOfLineBreaks(text);
 }
 
 HTMLTextAreaElement::HTMLTextAreaElement(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
@@ -294,12 +289,10 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*
     unsigned unsignedMaxLength = static_cast<unsigned>(signedMaxLength);
 
     const String& currentValue = innerTextValue();
-    unsigned numberOfLineBreaksInCurrentValue = numberOfLineBreaks(currentValue);
-    if (upperBoundForLengthForSubmission(currentValue, numberOfLineBreaksInCurrentValue)
-        + upperBoundForLengthForSubmission(event->text(), numberOfLineBreaks(event->text())) < unsignedMaxLength)
+    unsigned currentLength = computeLengthForSubmission(currentValue);
+    if (currentLength + computeLengthForSubmission(event->text()) < unsignedMaxLength)
         return;
 
-    unsigned currentLength = computeLengthForSubmission(currentValue, numberOfLineBreaksInCurrentValue);
     // selectionLength represents the selection length of this text field to be
     // removed by this insertion.
     // If the text field has no focus, we don't need to take account of the
@@ -314,7 +307,9 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*
 
 String HTMLTextAreaElement::sanitizeUserInputValue(const String& proposedValue, unsigned maxLength)
 {
-    return proposedValue.left(numCharactersInGraphemeClusters(proposedValue, maxLength));
+    if (maxLength > 0 && U16_IS_LEAD(proposedValue[maxLength - 1]))
+        --maxLength;
+    return proposedValue.left(maxLength);
 }
 
 HTMLElement* HTMLTextAreaElement::innerTextElement() const
@@ -484,10 +479,7 @@ bool HTMLTextAreaElement::tooLong(const String& value, NeedsToCheckDirtyFlag che
     int max = maxLength();
     if (max < 0)
         return false;
-    unsigned unsignedMax = static_cast<unsigned>(max);
-    unsigned numberOfLineBreaksInValue = numberOfLineBreaks(value);
-    return upperBoundForLengthForSubmission(value, numberOfLineBreaksInValue) > unsignedMax
-        && computeLengthForSubmission(value, numberOfLineBreaksInValue) > unsignedMax;
+    return computeLengthForSubmission(value) > static_cast<unsigned>(max);
 }
 
 bool HTMLTextAreaElement::isValidValue(const String& candidate) const

@@ -357,7 +357,9 @@ static bool isASCIILineBreak(UChar c)
 
 static String limitLength(const String& string, int maxLength)
 {
-    unsigned newLength = numCharactersInGraphemeClusters(string, maxLength);
+    unsigned newLength = maxLength;
+    // FIXME: We should not truncate the string at a control character. It's not
+    // compatible with IE and Firefox.
     for (unsigned i = 0; i < newLength; ++i) {
         const UChar current = string[i];
         if (current < ' ' && current != '\t') {
@@ -365,6 +367,8 @@ static String limitLength(const String& string, int maxLength)
             break;
         }
     }
+    if (newLength > 0 && U16_IS_LEAD(string[newLength - 1]))
+        --newLength;
     return string.left(newLength);
 }
 
@@ -377,17 +381,17 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* 
 {
     // Make sure that the text to be inserted will not violate the maxLength.
 
-    // We use RenderTextControlSingleLine::text() instead of InputElement::value()
-    // because they can be mismatched by sanitizeValue() in
-    // HTMLInputElement::subtreeHasChanged() in some cases.
-    unsigned oldLength = numGraphemeClusters(element()->innerTextValue());
+    // We use HTMLInputElement::innerTextValue() instead of
+    // HTMLInputElement::value() because they can be mismatched by
+    // sanitizeValue() in HTMLInputElement::subtreeHasChanged() in some cases.
+    unsigned oldLength = element()->innerTextValue().length();
 
     // selectionLength represents the selection length of this text field to be
     // removed by this insertion.
     // If the text field has no focus, we don't need to take account of the
     // selection length. The selection is the source of text drag-and-drop in
     // that case, and nothing in the text field will be removed.
-    unsigned selectionLength = element()->focused() ? numGraphemeClusters(plainText(element()->document()->frame()->selection()->selection().toNormalizedRange().get())) : 0;
+    unsigned selectionLength = element()->focused() ? plainText(element()->document()->frame()->selection()->selection().toNormalizedRange().get()).length() : 0;
     ASSERT(oldLength >= selectionLength);
 
     // Selected characters will be removed by the next text event.

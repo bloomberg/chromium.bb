@@ -112,18 +112,18 @@ document.execCommand('insertLineBreak');
 shouldBe('textArea.value', '"\\n\\n\\n"');
 
 // According to the HTML5 specification, maxLength is code-point length.
-// However WebKit handles it as grapheme length.
+// Blink follows it though WebKit handles it as grapheme length.
 
 // fancyX should be treated as 1 grapheme.
 var fancyX = "x\u0305\u0332";// + String.fromCharCode(0x305) + String.fromCharCode(0x332);
 // u10000 is one character consisted of a surrogate pair.
 var u10000 = "\ud800\udc00";
 
-// Inserts 5 code-points in UTF-16
+debug('Inserts 2 normal characters + a combining letter with 3 code points into a maxlength=3 element.')
 createFocusedTextAreaWithMaxLength(3);
 document.execCommand('insertText', false, 'AB' + fancyX);
-shouldBe('textArea.value', '"AB" + fancyX');
-shouldBe('textArea.value.length', '5');
+shouldBeEqualToString('textArea.value', 'ABx');
+shouldBe('textArea.value.length', '3');
 
 createFocusedTextAreaWithMaxLength(3);
 textArea.value = 'AB' + fancyX;
@@ -131,11 +131,11 @@ textArea.setSelectionRange(2, 5);  // Select fancyX
 document.execCommand('insertText', false, 'CDE');
 shouldBe('textArea.value', '"ABC"');
 
-// Inserts 4 code-points in UTF-16
+debug('Inserts 2 normal characters + one surrogate pair into a maxlength=3 element');
 createFocusedTextAreaWithMaxLength(3);
 document.execCommand('insertText', false, 'AB' + u10000);
-shouldBe('textArea.value', '"AB" + u10000');
-shouldBe('textArea.value.length', '4');
+shouldBeEqualToString('textArea.value', 'AB');
+shouldBe('textArea.value.length', '2');
 
 createFocusedTextAreaWithMaxLength(3);
 textArea.value = 'AB' + u10000;
