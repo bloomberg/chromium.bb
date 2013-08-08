@@ -1,18 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file contains the definition for CppBindingExample, which is used in
-// cpp_bound_class_unittest.
-
-#include "cpp_binding_example.h"
+#include "content/test/cpp_binding_example.h"
 
 #include <stdio.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 
-namespace webkit_glue {
+using webkit_glue::CppArgumentList;
+using webkit_glue::CppBoundClass;
+using webkit_glue::CppVariant;
+
+namespace content {
 
 namespace {
 
@@ -32,7 +33,7 @@ class PropertyCallbackExample : public CppBoundClass::PropertyCallback {
   CppVariant value_;
 };
 
-}
+}  // namespace
 
 CppBindingExample::CppBindingExample() {
   // Map properties.  It's recommended, but not required, that the JavaScript
@@ -134,4 +135,4 @@ void CppBindingExample::fallbackMethod(const CppArgumentList& args,
   printf("Error: unknown JavaScript method invoked.\n");
 }
 
-}  // namespace webkit_glue
+}  // namespace content

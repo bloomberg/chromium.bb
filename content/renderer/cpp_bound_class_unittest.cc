@@ -10,13 +10,12 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/test/render_view_test.h"
+#include "content/test/cpp_binding_example.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "webkit/renderer/cpp_binding_example.h"
 
 using webkit_glue::CppArgumentList;
-using webkit_glue::CppBindingExample;
 using webkit_glue::CppVariant;
 
 namespace content {

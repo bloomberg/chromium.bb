@@ -1,6 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#ifndef CONTENT_TEST_CPP_BINDING_EXAMPLE_H_
+#define CONTENT_TEST_CPP_BINDING_EXAMPLE_H_
 
 /*
   CppBindingExample class:
@@ -30,14 +33,11 @@
   </script>
 */
 
-#ifndef CPP_BINDING_EXAMPLE_H__
-#define CPP_BINDING_EXAMPLE_H__
-
 #include "webkit/renderer/cpp_bound_class.h"
 
-namespace webkit_glue {
+namespace content {
 
-class CppBindingExample : public CppBoundClass {
+class CppBindingExample : public webkit_glue::CppBoundClass {
  public:
   // The default constructor initializes the property and method lists needed
   // to bind this class to a JS object.
@@ -55,28 +55,32 @@ class CppBindingExample : public CppBoundClass {
   //
 
   // Returns the value that was passed in as its first (only) argument.
-  void echoValue(const CppArgumentList& args, CppVariant* result);
+  void echoValue(const webkit_glue::CppArgumentList& args,
+                 webkit_glue::CppVariant* result);
 
   // Returns a hard-coded value of the same type (bool, number (double),
   // string, or null) that was passed in as an argument.
-  void echoType(const CppArgumentList& args, CppVariant* result);
+  void echoType(const webkit_glue::CppArgumentList& args,
+                webkit_glue::CppVariant* result);
 
   // Returns the sum of the (first) two arguments as a double, if they are both
   // numbers (integers or doubles).  Otherwise returns null.
-  void plus(const CppArgumentList& args, CppVariant* result);
+  void plus(const webkit_glue::CppArgumentList& args,
+            webkit_glue::CppVariant* result);
 
   // Always returns the same value -- an example of a read-only property.
-  void same(CppVariant* result);
+  void same(webkit_glue::CppVariant* result);
 
   // Invoked when a nonexistent method is called on this example object, this
   // prints an error message.
-  void fallbackMethod(const CppArgumentList& args, CppVariant* result);
+  void fallbackMethod(const webkit_glue::CppArgumentList& args,
+                      webkit_glue::CppVariant* result);
 
   // These properties will also be exposed to JavaScript.
-  CppVariant my_value;
-  CppVariant my_other_value;
+  webkit_glue::CppVariant my_value;
+  webkit_glue::CppVariant my_other_value;
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // CPP_BINDING_EXAMPLE_H__
+#endif  // CONTENT_TEST_CPP_BINDING_EXAMPLE_H_
