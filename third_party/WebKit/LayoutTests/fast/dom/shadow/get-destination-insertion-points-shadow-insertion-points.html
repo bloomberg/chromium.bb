@@ -16,8 +16,8 @@ document.body.appendChild(
                         createShadowRoot(
                             createDOM('shadow', {'id': 'shadow'})))));
 
-shouldBeEqualAsArray(getNodeInShadowTreeStack('host/child').getDestinationInsertionPoints(),
-                     [getNodeInShadowTreeStack('host//shadow')]);
+shouldBeEqualAsArray(getNodeInTreeOfTrees('host/child').getDestinationInsertionPoints(),
+                     [getNodeInTreeOfTrees('host//shadow')]);
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </body>

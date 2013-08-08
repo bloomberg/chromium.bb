@@ -31,12 +31,12 @@ function testBasic()
                     createDOM('div', {'id': 'target'})))));
 
     // before
-    getNodeInShadowTreeStack('host/').applyAuthorStyles = false;
-    borderColorShouldBe(getNodeInShadowTreeStack('host/target'), 'rgb(0, 0, 0)');
+    getNodeInTreeOfTrees('host/').applyAuthorStyles = false;
+    borderColorShouldBe(getNodeInTreeOfTrees('host/target'), 'rgb(0, 0, 0)');
 
     // after
-    getNodeInShadowTreeStack('host/').applyAuthorStyles = true;
-    borderColorShouldBe(getNodeInShadowTreeStack('host/target'), 'rgb(255, 0, 0)');
+    getNodeInTreeOfTrees('host/').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInTreeOfTrees('host/target'), 'rgb(255, 0, 0)');
 
     cleanUp();
 }
@@ -54,12 +54,12 @@ function testEnclosingShadow()
                         createDOM('div', {'id': 'target'}))))));
                 
     // before
-    getNodeInShadowTreeStack('host/enclosed/').applyAuthorStyles = false;
-    borderColorShouldBe(getNodeInShadowTreeStack('host/enclosed/target'), 'rgb(0, 0, 0)');
+    getNodeInTreeOfTrees('host/enclosed/').applyAuthorStyles = false;
+    borderColorShouldBe(getNodeInTreeOfTrees('host/enclosed/target'), 'rgb(0, 0, 0)');
 
     // after
-    getNodeInShadowTreeStack('host/enclosed/').applyAuthorStyles = true;
-    borderColorShouldBe(getNodeInShadowTreeStack('host/enclosed/target'), 'rgb(255, 0, 0)');
+    getNodeInTreeOfTrees('host/enclosed/').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInTreeOfTrees('host/enclosed/target'), 'rgb(255, 0, 0)');
 
     cleanUp();
 }
@@ -82,17 +82,17 @@ function testEnclosingShadowWithScoped()
 
 
     // before
-    getNodeInShadowTreeStack('host/outerInScope/').applyAuthorStyles = false;
-    getNodeInShadowTreeStack('host/outerOutOfScope/').applyAuthorStyles = false;
+    getNodeInTreeOfTrees('host/outerInScope/').applyAuthorStyles = false;
+    getNodeInTreeOfTrees('host/outerOutOfScope/').applyAuthorStyles = false;
     
-    borderColorShouldBe(getNodeInShadowTreeStack('host/outerInScope/targetInScope'), 'rgb(0, 0, 0)');
-    borderColorShouldBe(getNodeInShadowTreeStack('host/outerOutOfScope/targetOutOfScope'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host/outerInScope/targetInScope'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host/outerOutOfScope/targetOutOfScope'), 'rgb(0, 0, 0)');
 
     // after
-    getNodeInShadowTreeStack('host/outerInScope/').applyAuthorStyles = true;
-    getNodeInShadowTreeStack('host/outerOutOfScope/').applyAuthorStyles = true;
-    borderColorShouldBe(getNodeInShadowTreeStack('host/outerInScope/targetInScope'), 'rgb(255, 0, 0)');
-    borderColorShouldBe(getNodeInShadowTreeStack('host/outerOutOfScope/targetOutOfScope'), 'rgb(0, 0, 0)');
+    getNodeInTreeOfTrees('host/outerInScope/').applyAuthorStyles = true;
+    getNodeInTreeOfTrees('host/outerOutOfScope/').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInTreeOfTrees('host/outerInScope/targetInScope'), 'rgb(255, 0, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host/outerOutOfScope/targetOutOfScope'), 'rgb(0, 0, 0)');
 
     cleanUp();
 }
@@ -114,20 +114,20 @@ function testNestedShadow()
                                 createShadowRoot(
                                     createDOM('div', {'id': 'target'})))))))));
 
-    getNodeInShadowTreeStack('host/').applyAuthorStyles = false;
-    getNodeInShadowTreeStack('host/outerMost/').applyAuthorStyles = false;
-    getNodeInShadowTreeStack('host/outerMost/outer/').applyAuthorStyles = false;
+    getNodeInTreeOfTrees('host/').applyAuthorStyles = false;
+    getNodeInTreeOfTrees('host/outerMost/').applyAuthorStyles = false;
+    getNodeInTreeOfTrees('host/outerMost/outer/').applyAuthorStyles = false;
 
     // No styles should be applied.
-    borderColorShouldBe(getNodeInShadowTreeStack('host/outerMost/outer/target'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host/outerMost/outer/target'), 'rgb(0, 0, 0)');
 
-    getNodeInShadowTreeStack('host/outerMost/outer/').applyAuthorStyles = true;
+    getNodeInTreeOfTrees('host/outerMost/outer/').applyAuthorStyles = true;
     // A style in document should be applied.
-    borderColorShouldBe(getNodeInShadowTreeStack('host/outerMost/outer/target'), 'rgb(0, 0, 255)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host/outerMost/outer/target'), 'rgb(0, 0, 255)');
 
-    getNodeInShadowTreeStack('host/outerMost/').applyAuthorStyles = true;
+    getNodeInTreeOfTrees('host/outerMost/').applyAuthorStyles = true;
     // Not depend on apply-author-styles flags of parent shadow trees.
-    borderColorShouldBe(getNodeInShadowTreeStack('host/outerMost/outer/target'), 'rgb(0, 0, 255)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host/outerMost/outer/target'), 'rgb(0, 0, 255)');
 
     cleanUp();
 }
@@ -153,14 +153,14 @@ function testMultipleShadow()
                 document.createTextNode('div { border: 1px solid red; }')),
             createDOM('div', {})));
 
-    getNodeInShadowTreeStack('host/').applyAuthorStyles = false;
-    getNodeInShadowTreeStack('host//').applyAuthorStyles = false;
-    getNodeInShadowTreeStack('host///').applyAuthorStyles = false;
+    getNodeInTreeOfTrees('host/').applyAuthorStyles = false;
+    getNodeInTreeOfTrees('host//').applyAuthorStyles = false;
+    getNodeInTreeOfTrees('host///').applyAuthorStyles = false;
 
     // before
-    borderColorShouldBe(getNodeInShadowTreeStack('host/oldestShadow'), 'rgb(0, 0, 0)');
-    borderColorShouldBe(getNodeInShadowTreeStack('host//olderShadow'), 'rgb(0, 0, 255)');
-    borderColorShouldBe(getNodeInShadowTreeStack('host///target'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host/oldestShadow'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host//olderShadow'), 'rgb(0, 0, 255)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host///target'), 'rgb(0, 0, 0)');
 
     // document ---+--- oldestShadow
     //             |
@@ -169,24 +169,24 @@ function testMultipleShadow()
     //             +--- shadow
 
     // apply-author-styles affects between shadow and document.
-    getNodeInShadowTreeStack('host///').applyAuthorStyles = true;
-    borderColorShouldBe(getNodeInShadowTreeStack('host/oldestShadow'), 'rgb(0, 0, 0)');
-    borderColorShouldBe(getNodeInShadowTreeStack('host//olderShadow'), 'rgb(0, 0, 255)');
-    borderColorShouldBe(getNodeInShadowTreeStack('host///target'), 'rgb(255, 0, 0)');
+    getNodeInTreeOfTrees('host///').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInTreeOfTrees('host/oldestShadow'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host//olderShadow'), 'rgb(0, 0, 255)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host///target'), 'rgb(255, 0, 0)');
 
     // apply-author-styles affects between older shadow and document.
-    getNodeInShadowTreeStack('host///').applyAuthorStyles = false;
-    getNodeInShadowTreeStack('host//').applyAuthorStyles = true;
-    borderColorShouldBe(getNodeInShadowTreeStack('host/oldestShadow'), 'rgb(0, 0, 0)');
-    borderColorShouldBe(getNodeInShadowTreeStack('host//olderShadow'), 'rgb(0, 0, 255)');
-    borderColorShouldBe(getNodeInShadowTreeStack('host///target'), 'rgb(0, 0, 0)');
+    getNodeInTreeOfTrees('host///').applyAuthorStyles = false;
+    getNodeInTreeOfTrees('host//').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInTreeOfTrees('host/oldestShadow'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host//olderShadow'), 'rgb(0, 0, 255)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host///target'), 'rgb(0, 0, 0)');
 
     // apply-author-styles affects between oldest shadow and document.
-    getNodeInShadowTreeStack('host//').applyAuthorStyles = false;
-    getNodeInShadowTreeStack('host/').applyAuthorStyles = true;
-    borderColorShouldBe(getNodeInShadowTreeStack('host/oldestShadow'), 'rgb(255, 0, 0)');
-    borderColorShouldBe(getNodeInShadowTreeStack('host//olderShadow'), 'rgb(0, 0, 255)');
-    borderColorShouldBe(getNodeInShadowTreeStack('host///target'), 'rgb(0, 0, 0)');
+    getNodeInTreeOfTrees('host//').applyAuthorStyles = false;
+    getNodeInTreeOfTrees('host/').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInTreeOfTrees('host/oldestShadow'), 'rgb(255, 0, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host//olderShadow'), 'rgb(0, 0, 255)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host///target'), 'rgb(0, 0, 0)');
 
     cleanUp();
 }
@@ -213,16 +213,16 @@ function testOrderOfApplyStyle()
                                         document.createTextNode('div { border: 1px solid yellow; }')),
                                     createDOM('div', {'id': 'target'})))))))));
   
-    getNodeInShadowTreeStack('host/').applyAuthorStyles = true;
-    getNodeInShadowTreeStack('host/outerMost/').applyAuthorStyles = true;
-    getNodeInShadowTreeStack('host/outerMost/outer/').applyAuthorStyles = true;
+    getNodeInTreeOfTrees('host/').applyAuthorStyles = true;
+    getNodeInTreeOfTrees('host/outerMost/').applyAuthorStyles = true;
+    getNodeInTreeOfTrees('host/outerMost/outer/').applyAuthorStyles = true;
 
     // The last scoped style should be applied.
-    borderColorShouldBe(getNodeInShadowTreeStack('host/outerMost/outer/target'), 'rgb(255, 255, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host/outerMost/outer/target'), 'rgb(255, 255, 0)');
 
-    getNodeInShadowTreeStack('host/outerMost/outer/').innerHTML = '<div id="target">target</div>';
+    getNodeInTreeOfTrees('host/outerMost/outer/').innerHTML = '<div id="target">target</div>';
     // The outer's scoped style should be applied.
-    borderColorShouldBe(getNodeInShadowTreeStack('host/outerMost/outer/target'), 'rgb(0, 128, 0)');
+    borderColorShouldBe(getNodeInTreeOfTrees('host/outerMost/outer/target'), 'rgb(0, 128, 0)');
 
     cleanUp();
 }

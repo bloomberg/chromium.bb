@@ -16,7 +16,7 @@ document.body.appendChild(
                         createDOM('div', {'id': 'child-1'}))));
 
 shouldBeEqualAsArray(document.getElementById('child-1').getDestinationInsertionPoints(),
-                     [getNodeInShadowTreeStack('host-1/content-1')]);
+                     [getNodeInTreeOfTrees('host-1/content-1')]);
 
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

@@ -56,7 +56,7 @@ var events = ['abort', 'select', 'change', 'reset', 'resize', 'scroll', 'selects
 function addEventListeners(nodes)
 {
     for (var i = 0; i < nodes.length; ++i) {
-        var node = getNodeInShadowTreeStack(nodes[i]);
+        var node = getNodeInTreeOfTrees(nodes[i]);
         for (var j = 0; j < events.length; ++j)
             node.addEventListener(events[j], recordEvent, false);
     }
@@ -83,7 +83,7 @@ function testEventsShoudBeStoppedAtShadowBoundary()
         eventRecords = {};
         var event = document.createEvent('UIEvent');
         event.initEvent(events[i], true, false);
-        getNodeInShadowTreeStack('host/target').dispatchEvent(event);
+        getNodeInTreeOfTrees('host/target').dispatchEvent(event);
         dumpDispatchedEvent(events[i]);
     }
 
@@ -109,7 +109,7 @@ function testEventsFiredOnDistributedNodesShouldNotBeStoppedAtShadowBoundary()
     eventRecords = {};
     var event = document.createEvent('UIEvent');
     event.initEvent('selectstart', true, false);
-    getNodeInShadowTreeStack('host1/distributed-child').dispatchEvent(event);
+    getNodeInTreeOfTrees('host1/distributed-child').dispatchEvent(event);
     dumpDispatchedEvent('selectstart');
 }
 

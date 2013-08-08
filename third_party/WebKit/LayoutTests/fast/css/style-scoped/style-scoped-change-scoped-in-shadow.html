@@ -31,8 +31,8 @@ function testScopedStyle()
                     createDOM('div', {'id': 'E'})),
                 createDOM('div', {'id': 'F'}))));
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
     cleanUp();
 }
 
@@ -48,8 +48,8 @@ function testStyle()
                             document.createTextNode('div { color: red; }')))),
                 createDOM('div', {'id': 'F'}))));
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
     cleanUp();
 }
 
@@ -73,9 +73,9 @@ function testStyleWithMultipleShadowRoots()
                     createDOM('shadow', {}),
                     createDOM('div', {'id': 'G'})))));
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host//G'), 'rgb(0, 0, 255)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host//G'), 'rgb(0, 0, 255)');
     cleanUp();
 }
 
@@ -97,10 +97,10 @@ function testScopedStyleWithNestedShadowRoots()
                             createDOM('div', {'id': 'H'})))),
                 createDOM('div', {'id': 'F'}))));
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(0, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E/G'), 'rgb(0, 0, 255)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E/H'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E/G'), 'rgb(0, 0, 255)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E/H'), 'rgb(255, 0, 0)');
     cleanUp();
 }
 
@@ -122,10 +122,10 @@ function testStyleWithNestedShadowRoots()
                             createDOM('div', {'id': 'H'})))),
                 createDOM('div', {'id': 'F'}))));
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E/G'), 'rgb(0, 0, 255)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E/H'), 'rgb(0, 0, 255)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E/G'), 'rgb(0, 0, 255)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E/H'), 'rgb(0, 0, 255)');
     cleanUp();
 }
 
@@ -141,26 +141,26 @@ function testChangeScopedAttributeOnline()
                     createDOM('div', {'id': 'E'})),
                 createDOM('div', {'id': 'F'}))));
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
     document.body.offsetLeft;
 
     // changing from scoped to scoped.
-    getNodeInShadowTreeStack('host/style-in-shadow').setAttribute('scoped', 'scoped');
+    getNodeInTreeOfTrees('host/style-in-shadow').setAttribute('scoped', 'scoped');
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
 
     // removing scoped.
-    getNodeInShadowTreeStack('host/style-in-shadow').removeAttribute('scoped');
+    getNodeInTreeOfTrees('host/style-in-shadow').removeAttribute('scoped');
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
 
     // changing from not scoped to scoped.
-    getNodeInShadowTreeStack('host/style-in-shadow').setAttribute('scoped', 'scoped');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(0, 0, 0)');
+    getNodeInTreeOfTrees('host/style-in-shadow').setAttribute('scoped', 'scoped');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
     cleanUp();
 }
 
@@ -177,15 +177,15 @@ function testRemoveScopedStyle()
                 createDOM('div', {'id': 'F'}))));
 
     // before
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
 
-    var styleInShadow = getNodeInShadowTreeStack('host/style-in-shadow');
+    var styleInShadow = getNodeInTreeOfTrees('host/style-in-shadow');
     styleInShadow.parentNode.removeChild(styleInShadow);
 
     // after
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(0, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
     cleanUp();
 }
 
@@ -202,15 +202,15 @@ function testRemoveStyle()
                 createDOM('div', {'id': 'F'}))));
 
     // before
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
 
-    var styleInShadow = getNodeInShadowTreeStack('host/style-in-shadow');
+    var styleInShadow = getNodeInTreeOfTrees('host/style-in-shadow');
     styleInShadow.parentNode.removeChild(styleInShadow);
 
     // after
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(0, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
     cleanUp();
 }
 
@@ -227,10 +227,10 @@ function testInsertScopedStyle()
     var style = document.createElement('style');
     style.innerHTML = 'div { color: red; }';
     style.setAttribute('scoped', 'scoped');
-    getNodeInShadowTreeStack('host/D').appendChild(style);
+    getNodeInTreeOfTrees('host/D').appendChild(style);
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
     cleanUp();
 }
 
@@ -246,10 +246,10 @@ function testInsertStyle()
 
     var style = document.createElement('style');
     style.innerHTML = 'div { color: red; }';
-    getNodeInShadowTreeStack('host/D').appendChild(style);
+    getNodeInTreeOfTrees('host/D').appendChild(style);
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
     cleanUp();
 }
 
@@ -265,20 +265,20 @@ function testChangeScopedAttributeOffline()
                     createDOM('div', {'id': 'E'})),
                 createDOM('div', {'id': 'F'}))));
 
-    var style = getNodeInShadowTreeStack('host/style-in-shadow');
+    var style = getNodeInTreeOfTrees('host/style-in-shadow');
     style.parentNode.removeChild(style);
     style.removeAttribute('scoped');
-    getNodeInShadowTreeStack('host/D').appendChild(style);
+    getNodeInTreeOfTrees('host/D').appendChild(style);
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(255, 0, 0)');
 
     style.parentNode.removeChild(style);
     style.setAttribute('scoped', 'scoped');
-    getNodeInShadowTreeStack('host/D').appendChild(style);
+    getNodeInTreeOfTrees('host/D').appendChild(style);
 
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/E'), 'rgb(255, 0, 0)');
-    shouldHaveTextColor(getNodeInShadowTreeStack('host/F'), 'rgb(0, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/E'), 'rgb(255, 0, 0)');
+    shouldHaveTextColor(getNodeInTreeOfTrees('host/F'), 'rgb(0, 0, 0)');
     cleanUp();
 }
 

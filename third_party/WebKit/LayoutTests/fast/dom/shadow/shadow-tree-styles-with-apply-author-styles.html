@@ -14,7 +14,7 @@ description('Test for issue 247275: shadow tree styles selects shadow host when 
 var sandbox = document.getElementById('sandbox');
 
 function borderColorOf(selector) {
-    return window.getComputedStyle(getNodeInShadowTreeStack(selector)).borderColor;
+    return window.getComputedStyle(getNodeInTreeOfTrees(selector)).borderColor;
 }
 
 function shouldHaveBorderColor(selector, color) {
@@ -83,6 +83,3 @@ cleanUp();
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </html>
-
-
-

@@ -30,44 +30,44 @@ document.body.appendChild(
             createDOM('p', {'id':'childInTreeThree', 'tabindex':'3'})))
 );
 
-getNodeInShadowTreeStack('shadowHostA').onblur = function() { debug("shadowHostA onblur called!"); }
-getNodeInShadowTreeStack('shadowHostA/shadowHostB').onblur = function() { debug("shadowHostB onblur called!"); }
+getNodeInTreeOfTrees('shadowHostA').onblur = function() { debug("shadowHostA onblur called!"); }
+getNodeInTreeOfTrees('shadowHostA/shadowHostB').onblur = function() { debug("shadowHostB onblur called!"); }
 
 // childInTreeOne foucsed - shadowHostA blurred
-evalAndLog("getNodeInShadowTreeStack('shadowHostA/childInTreeOne').focus()");
+evalAndLog("getNodeInTreeOfTrees('shadowHostA/childInTreeOne').focus()");
 shouldBeEqualToString("document.activeElement.id", "shadowHostA");
-evalAndLog("getNodeInShadowTreeStack('shadowHostA').blur();");
+evalAndLog("getNodeInTreeOfTrees('shadowHostA').blur();");
 shouldBe("document.activeElement", "document.body");
-shouldBe("getNodeInShadowTreeStack('shadowHostA/').activeElement", "null");
-shouldBe("getNodeInShadowTreeStack('shadowHostA/shadowHostB/').activeElement", "null");
-shouldBe("getNodeInShadowTreeStack('shadowHostC/').activeElement", "null");
+shouldBe("getNodeInTreeOfTrees('shadowHostA/').activeElement", "null");
+shouldBe("getNodeInTreeOfTrees('shadowHostA/shadowHostB/').activeElement", "null");
+shouldBe("getNodeInTreeOfTrees('shadowHostC/').activeElement", "null");
 
 // childInTreeTwo foucsed - shadowHostB blurred
-evalAndLog("getNodeInShadowTreeStack('shadowHostA/shadowHostB/childInTreeTwo').focus()");
+evalAndLog("getNodeInTreeOfTrees('shadowHostA/shadowHostB/childInTreeTwo').focus()");
 shouldBeEqualToString("document.activeElement.id", "shadowHostA");
-evalAndLog("getNodeInShadowTreeStack('shadowHostA/shadowHostB').blur();");
+evalAndLog("getNodeInTreeOfTrees('shadowHostA/shadowHostB').blur();");
 shouldBe("document.activeElement", "document.body");
-shouldBe("getNodeInShadowTreeStack('shadowHostA/').activeElement", "null");
-shouldBe("getNodeInShadowTreeStack('shadowHostA/shadowHostB/').activeElement", "null");
-shouldBe("getNodeInShadowTreeStack('shadowHostC/').activeElement", "null");
+shouldBe("getNodeInTreeOfTrees('shadowHostA/').activeElement", "null");
+shouldBe("getNodeInTreeOfTrees('shadowHostA/shadowHostB/').activeElement", "null");
+shouldBe("getNodeInTreeOfTrees('shadowHostC/').activeElement", "null");
 
 // childInTreeTwo foucsed - shadowHostA blurred
-evalAndLog("getNodeInShadowTreeStack('shadowHostA/shadowHostB/childInTreeTwo').focus()");
+evalAndLog("getNodeInTreeOfTrees('shadowHostA/shadowHostB/childInTreeTwo').focus()");
 shouldBeEqualToString("document.activeElement.id", "shadowHostA");
-evalAndLog("getNodeInShadowTreeStack('shadowHostA').blur();");
+evalAndLog("getNodeInTreeOfTrees('shadowHostA').blur();");
 shouldBe("document.activeElement", "document.body");
-shouldBe("getNodeInShadowTreeStack('shadowHostA/').activeElement", "null");
-shouldBe("getNodeInShadowTreeStack('shadowHostA/shadowHostB/').activeElement", "null");
-shouldBe("getNodeInShadowTreeStack('shadowHostC/').activeElement", "null");
+shouldBe("getNodeInTreeOfTrees('shadowHostA/').activeElement", "null");
+shouldBe("getNodeInTreeOfTrees('shadowHostA/shadowHostB/').activeElement", "null");
+shouldBe("getNodeInTreeOfTrees('shadowHostC/').activeElement", "null");
 
 // childInTreeThree foucsed - shadowHostA blurred
-evalAndLog("getNodeInShadowTreeStack('shadowHostC/childInTreeThree').focus()");
+evalAndLog("getNodeInTreeOfTrees('shadowHostC/childInTreeThree').focus()");
 shouldBeEqualToString("document.activeElement.id", "shadowHostC");
-evalAndLog("getNodeInShadowTreeStack('shadowHostA').blur();");
+evalAndLog("getNodeInTreeOfTrees('shadowHostA').blur();");
 shouldBeEqualToString("document.activeElement.id", "shadowHostC");
-shouldBe("getNodeInShadowTreeStack('shadowHostA/').activeElement", "null");
-shouldBe("getNodeInShadowTreeStack('shadowHostA/shadowHostB/').activeElement", "null");
-shouldBeEqualToString("getNodeInShadowTreeStack('shadowHostC/').activeElement.id", "childInTreeThree");
+shouldBe("getNodeInTreeOfTrees('shadowHostA/').activeElement", "null");
+shouldBe("getNodeInTreeOfTrees('shadowHostA/shadowHostB/').activeElement", "null");
+shouldBeEqualToString("getNodeInTreeOfTrees('shadowHostC/').activeElement.id", "childInTreeThree");
 
 var successfullyParsed = true;
 </script>

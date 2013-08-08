@@ -10,7 +10,7 @@ jsTestIsAsync = true;
 
 function addTouchEventListeners(name)
 {
-    var node = getNodeInShadowTreeStack(name);
+    var node = getNodeInTreeOfTrees(name);
     node.addEventListener('touchstart', recordEvent, false);
 }
 

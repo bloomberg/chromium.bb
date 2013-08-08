@@ -22,30 +22,30 @@ document.getElementById('sandbox').appendChild(
 
 
 // Comparing a document with a node in a shadow tree.
-shouldBeTrue('document.contains(getNodeInShadowTreeStack("shadowHostA/"))');
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/").contains(document)');
-shouldBeTrue('document.contains(getNodeInShadowTreeStack("shadowHostA/divA"))');
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/divA").contains(document)');
+shouldBeTrue('document.contains(getNodeInTreeOfTrees("shadowHostA/"))');
+shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/").contains(document)');
+shouldBeTrue('document.contains(getNodeInTreeOfTrees("shadowHostA/divA"))');
+shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/divA").contains(document)');
 
 // Comparing a node in document with a node in a shadow tree.
-shouldBeTrue('getNodeInShadowTreeStack("shadowHostA/").contains(getNodeInShadowTreeStack("shadowHostA/divA"))');
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/divA").contains(getNodeInShadowTreeStack("shadowHostA/"))');
+shouldBeTrue('getNodeInTreeOfTrees("shadowHostA/").contains(getNodeInTreeOfTrees("shadowHostA/divA"))');
+shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/divA").contains(getNodeInTreeOfTrees("shadowHostA/"))');
 
 // Comparing a node in a shadow tree with a node in a shadow tree enclosing the first tree.
-shouldBeTrue('getNodeInShadowTreeStack("shadowHostA/").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/"))');
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostB/").contains(getNodeInShadowTreeStack("shadowHostA/"))');
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/divA").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/divB"))');
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostB/divB").contains(getNodeInShadowTreeStack("shadowHostA/divA"))');
+shouldBeTrue('getNodeInTreeOfTrees("shadowHostA/").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB/"))');
+shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostB/").contains(getNodeInTreeOfTrees("shadowHostA/"))');
+shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/divA").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB/divB"))');
+shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostB/divB").contains(getNodeInTreeOfTrees("shadowHostA/divA"))');
 
 // Comparing a node in a shadow tree with a node in a sibling shadow tree.
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostB/").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostC/"))');
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostC/").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/"))');
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostB/divB").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostC/divC"))');
-shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostC/divC").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/divB"))');
+shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostB/").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostC/"))');
+shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostC/").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB/"))');
+shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostB/divB").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostC/divC"))');
+shouldBeFalse('getNodeInTreeOfTrees("shadowHostA/shadowHostC/divC").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB/divB"))');
 
 // Self-comparing a node in a shadow tree.
-shouldBeTrue('getNodeInShadowTreeStack("shadowHostA/shadowHostB").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB"))');
-shouldBeTrue('getNodeInShadowTreeStack("shadowHostA/shadowHostB/").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/"))');
+shouldBeTrue('getNodeInTreeOfTrees("shadowHostA/shadowHostB").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB"))');
+shouldBeTrue('getNodeInTreeOfTrees("shadowHostA/shadowHostB/").contains(getNodeInTreeOfTrees("shadowHostA/shadowHostB/"))');
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </body>

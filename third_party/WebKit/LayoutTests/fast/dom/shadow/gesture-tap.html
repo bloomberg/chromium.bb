@@ -28,7 +28,7 @@ sandbox.offsetLeft;
 
 function gestureTap(elementId)
 {
-    var element = getNodeInShadowTreeStack(elementId);
+    var element = getNodeInTreeOfTrees(elementId);
     if (window.eventSender) {
         eventSender.gestureTap(element.offsetLeft + element.offsetWidth / 2, element.offsetTop + element.offsetHeight / 2);
         eventSender.leapForward(10);

@@ -146,9 +146,9 @@ testComposedShadowTree(
               createDOM('div', {'id': 'c'})));
 
 debug('Test for traversal, starting with a fallback element which is not used.');
-showComposedShadowTree(getNodeInShadowTreeStack('a/f1'));
-showNextNode(getNodeInShadowTreeStack('a/f1'));
-showNextNode(getNodeInShadowTreeStack('a/f2'));
+showComposedShadowTree(getNodeInTreeOfTrees('a/f1'));
+showNextNode(getNodeInTreeOfTrees('a/f1'));
+showNextNode(getNodeInTreeOfTrees('a/f2'));
 debug('');
 
 debug('Test for Nested ShadowRoots.');
@@ -192,7 +192,7 @@ testComposedShadowTree(
                   createDOM('div', {'id': 'd'}))));
 
 debug('Test for traversal, starting with a node in an orphaned shadow subtree.');
-showComposedShadowTree(getNodeInShadowTreeStack('a/b'));
+showComposedShadowTree(getNodeInTreeOfTrees('a/b'));
 
 debug('Test for a content element which does not select any nodes nor have fallback elements.');
 testComposedShadowTree(

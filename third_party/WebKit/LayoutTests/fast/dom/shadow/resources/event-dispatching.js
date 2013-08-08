@@ -131,7 +131,7 @@ function dumpComposedShadowTree(node, indent)
 function addEventListeners(nodes)
 {
     for (var i = 0; i < nodes.length; ++i) {
-        var node = getNodeInShadowTreeStack(nodes[i]);
+        var node = getNodeInTreeOfTrees(nodes[i]);
         node.addEventListener('click', recordEvent, false);
         node.addEventListener('dragstart', recordEvent, false);
         node.addEventListener('mouseout', recordEvent, false);
@@ -162,10 +162,10 @@ function moveMouse(oldElementId, newElementId)
 {
     clearEventRecords();
     debug('\n' + 'Moving mouse from ' + oldElementId + ' to ' + newElementId);
-    moveMouseOver(getNodeInShadowTreeStack(oldElementId));
+    moveMouseOver(getNodeInTreeOfTrees(oldElementId));
 
     clearEventRecords();
-    moveMouseOver(getNodeInShadowTreeStack(newElementId));
+    moveMouseOver(getNodeInTreeOfTrees(newElementId));
 
     debugDispatchedEvent('mouseout');
     debugDispatchedEvent('mouseover');

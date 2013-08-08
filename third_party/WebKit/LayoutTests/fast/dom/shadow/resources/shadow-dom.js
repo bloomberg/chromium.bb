@@ -51,7 +51,7 @@ function isIframeElement(element)
 
 // You can spefify youngerShadowRoot by consecutive slashes.
 // See LayoutTests/fast/dom/shadow/get-element-by-id-in-shadow-root.html for actual usages.
-function getNodeInShadowTreeStack(path)
+function getNodeInTreeOfTrees(path)
 {
     var ids = path.split('/');
     var node = document.getElementById(ids[0]);
@@ -122,7 +122,7 @@ function innermostActiveElement(element)
 
 function isInnermostActiveElement(id)
 {
-    var element = getNodeInShadowTreeStack(id);
+    var element = getNodeInTreeOfTrees(id);
     if (!element) {
         debug('FAIL: There is no such element with id: '+ from);
         return false;
@@ -136,7 +136,7 @@ function isInnermostActiveElement(id)
 function shouldNavigateFocus(from, to, direction)
 {
     debug('Should move from ' + from + ' to ' + to + ' in ' + direction);
-    var fromElement = getNodeInShadowTreeStack(from);
+    var fromElement = getNodeInTreeOfTrees(from);
     if (!fromElement) {
       debug('FAIL: There is no such element with id: '+ from);
       return;
