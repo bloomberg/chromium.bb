@@ -1143,10 +1143,13 @@ void ImmersiveModeControllerAsh::SetRenderWindowTopInsetsForTouch(
   content::WebContents* contents = delegate_->GetWebContents();
   if (contents) {
     aura::Window* window = contents->GetView()->GetContentNativeView();
-    gfx::Insets inset(top_inset, 0, 0, 0);
-    window->SetHitTestBoundsOverrideOuter(
-        window->hit_test_bounds_override_outer_mouse(),
-        inset);
+    // |window| is NULL if the renderer crashed.
+    if (window) {
+      gfx::Insets inset(top_inset, 0, 0, 0);
+      window->SetHitTestBoundsOverrideOuter(
+          window->hit_test_bounds_override_outer_mouse(),
+          inset);
+    }
   }
 }
 
