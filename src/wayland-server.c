@@ -746,6 +746,8 @@ wl_display_destroy(struct wl_display *display)
 	wl_list_for_each_safe(global, gnext, &display->global_list, link)
 		free(global);
 
+	wl_array_release(&display->additional_shm_formats);
+
 	free(display);
 }
 
