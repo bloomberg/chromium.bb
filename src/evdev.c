@@ -454,7 +454,11 @@ evdev_handle_device(struct evdev_device *device)
 			device->abs.max_y = absinfo.maximum;
 			device->caps |= EVDEV_MOTION_ABS;
 		}
-		if (TEST_BIT(abs_bits, ABS_MT_SLOT)) {
+                /* We only handle the slotted Protocol B in weston.
+                   Devices with ABS_MT_POSITION_* but not ABS_MT_SLOT
+                   require mtdev for conversion. */
+		if (TEST_BIT(abs_bits, ABS_MT_POSITION_X) &&
+		    TEST_BIT(abs_bits, ABS_MT_POSITION_Y)) {
 			ioctl(device->fd, EVIOCGABS(ABS_MT_POSITION_X),
 			      &absinfo);
 			device->abs.min_x = absinfo.minimum;
