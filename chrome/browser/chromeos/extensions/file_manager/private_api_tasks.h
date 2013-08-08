@@ -85,7 +85,11 @@ class GetFileTasksFunction : public LoggedAsyncExtensionFunction {
   // Find the list of drive apps that can be used with the given file types. If
   // a default task is set in the result list, then |default_already_set| is set
   // to true.
-  bool FindDriveAppTasks(const FileInfoList& file_info_list,
+  //
+  // "taskId" field in |result_list| will look like
+  // "<drive-app-id>|drive|open-with" (See also file_tasks.h).
+  // "driveApp" field in |result_list| will be set to "true".
+  void FindDriveAppTasks(const FileInfoList& file_info_list,
                          ListValue* result_list,
                          bool* default_already_set);
 

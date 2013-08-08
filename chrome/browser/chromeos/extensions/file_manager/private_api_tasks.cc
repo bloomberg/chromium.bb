@@ -73,8 +73,8 @@ void LogDefaultTask(const std::set<std::string>& mime_types,
   }
 }
 
-// Returns a task id for the web app with |app_id|.
-std::string MakeWebAppTaskId(const std::string& app_id) {
+// Returns a task id for the Drive app with |app_id|.
+std::string MakeDriveAppTaskId(const std::string& app_id) {
   // TODO(gspencer): For now, the action id is always "open-with", but we
   // could add any actions that the drive app supports.
   return file_tasks::MakeTaskID(
@@ -243,7 +243,7 @@ void GetFileTasksFunction::GetAvailableDriveTasks(
         GURL icon_url = util::FindPreferredIcon(app_info.app_icons,
                                                 util::kPreferredIconSize);
         task_info_map->insert(std::pair<std::string, TaskInfo>(
-            MakeWebAppTaskId(app_info.app_id),
+            MakeDriveAppTaskId(app_info.app_id),
             TaskInfo(app_info.app_name, icon_url)));
       }
     } else {
@@ -251,7 +251,7 @@ void GetFileTasksFunction::GetAvailableDriveTasks(
       // based on the task id.
       std::set<std::string> task_id_set;
       for (size_t j = 0; j < app_info_list.size(); ++j) {
-        task_id_set.insert(MakeWebAppTaskId(app_info_list[j]->app_id));
+        task_id_set.insert(MakeDriveAppTaskId(app_info_list[j]->app_id));
       }
       for (TaskInfoMap::iterator iter = task_info_map->begin();
            iter != task_info_map->end(); ) {
@@ -315,11 +315,7 @@ void GetFileTasksFunction::CreateDriveTasks(
   }
 }
 
-// Find special tasks here for Drive (Blox) apps. Iterate through matching drive
-// apps and add them, with generated task ids. Extension ids will be the app_ids
-// from drive. We'll know that they are drive apps because the extension id will
-// begin with kDriveTaskExtensionPrefix.
-bool GetFileTasksFunction::FindDriveAppTasks(
+void GetFileTasksFunction::FindDriveAppTasks(
     const FileInfoList& file_info_list,
     ListValue* result_list,
     bool* default_already_set) {
@@ -327,7 +323,7 @@ bool GetFileTasksFunction::FindDriveAppTasks(
   DCHECK(default_already_set);
 
   if (file_info_list.empty())
-    return true;
+    return;
 
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
@@ -335,7 +331,7 @@ bool GetFileTasksFunction::FindDriveAppTasks(
   // case because there might be other extension tasks, even if we don't have
   // any to add.
   if (!integration_service || !integration_service->drive_app_registry())
-    return true;
+    return;
 
   drive::DriveAppRegistry* registry =
       integration_service->drive_app_registry();
@@ -348,7 +344,6 @@ bool GetFileTasksFunction::FindDriveAppTasks(
   FindDefaultDriveTasks(file_info_list, task_info_map, &default_tasks);
   CreateDriveTasks(
       task_info_map, default_tasks, result_list, default_already_set);
-  return true;
 }
 
 bool GetFileTasksFunction::FindAppTasks(
@@ -487,10 +482,8 @@ bool GetFileTasksFunction::RunImpl() {
   // when setting the default app.
   bool default_already_set = false;
   // Google document are not opened by drive apps but file manager.
-  if (!has_google_document) {
-    if (!FindDriveAppTasks(info_list, result_list, &default_already_set))
-      return false;
-  }
+  if (!has_google_document)
+    FindDriveAppTasks(info_list, result_list, &default_already_set);
 
   // Take the union of platform app file handlers, and all previous Drive
   // and extension tasks. As above, we know there aren't duplicates because
