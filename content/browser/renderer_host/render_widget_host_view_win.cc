@@ -404,6 +404,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       weak_factory_(this),
       is_loading_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
       can_compose_inline_(true),
       is_fullscreen_(false),
       ignore_mouse_movement_(true),
@@ -692,9 +693,12 @@ void RenderWidgetHostViewWin::TextInputTypeChanged(
     bool can_compose_inline,
     ui::TextInputMode input_mode) {
   if (text_input_type_ != type ||
+      text_input_mode_ != input_mode ||
       can_compose_inline_ != can_compose_inline) {
-    const bool text_input_type_changed = (text_input_type_ != type);
+    const bool text_input_type_changed = (text_input_type_ != type) ||
+                                         (text_input_mode_ != input_mode);
     text_input_type_ = type;
+    text_input_mode_ = input_mode;
     can_compose_inline_ = can_compose_inline;
     UpdateIMEState();
     if (text_input_type_changed)
@@ -3155,6 +3159,8 @@ void RenderWidgetHostViewWin::UpdateIMEState() {
   } else {
     imm32_manager_->DisableIME(m_hWnd);
   }
+
+  imm32_manager_->SetTextInputMode(m_hWnd, text_input_mode_);
 }
 
 void RenderWidgetHostViewWin::UpdateInputScopeIfNecessary(

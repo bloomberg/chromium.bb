@@ -77,7 +77,7 @@ struct CompositionText;
 class UI_EXPORT IMM32Manager {
  public:
   IMM32Manager();
-  ~IMM32Manager();
+  virtual ~IMM32Manager();
 
   // Retrieves whether or not there is an ongoing composition.
   bool is_composing() const { return is_composing_; }
@@ -241,7 +241,7 @@ class UI_EXPORT IMM32Manager {
   base::i18n::TextDirection GetTextDirection() const;
 
   // Sets conversion status corresponding to |input_mode|.
-  void SetTextInputMode(HWND window_handle, TextInputMode input_mode);
+  virtual void SetTextInputMode(HWND window_handle, TextInputMode input_mode);
 
   // Helper functions ----------------------------------------------------------
 
