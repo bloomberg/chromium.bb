@@ -17,7 +17,6 @@ UIAutomatorOptions = collections.namedtuple('UIAutomatorOptions', [
     'test_data',
     'save_perf_json',
     'screenshot_failures',
-    'disable_assertions',
     'uiautomator_jar',
     'uiautomator_info_jar',
     'package_name'])

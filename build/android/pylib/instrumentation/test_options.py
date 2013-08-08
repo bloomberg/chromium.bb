@@ -17,7 +17,6 @@ InstrumentationOptions = collections.namedtuple('InstrumentationOptions', [
     'test_data',
     'save_perf_json',
     'screenshot_failures',
-    'disable_assertions',
     'wait_for_debugger',
     'test_apk',
     'test_apk_path',

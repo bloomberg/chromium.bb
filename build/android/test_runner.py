@@ -68,13 +68,6 @@ def AddCommonOptions(option_parser):
                            default=0,
                            action='count',
                            help='Verbose level (multiple times for more)')
-  profilers = ['devicestatsmonitor', 'chrometrace', 'dumpheap', 'smaps',
-               'traceview']
-  option_parser.add_option('--profiler', dest='profilers', action='append',
-                           choices=profilers,
-                           help=('Profiling tool to run during test. Pass '
-                                 'multiple times to run multiple profilers. '
-                                 'Available profilers: %s' % profilers))
   option_parser.add_option('--tool',
                            dest='tool',
                            help=('Run the test under a tool '
@@ -172,10 +165,6 @@ def AddJavaTestOptions(option_parser):
                                  'kept. When this is run via a sharder '
                                  'the test server ports should be kept and '
                                  'should not be reset.'))
-  # TODO(gkanwar): This option is deprecated. Remove it in the future.
-  option_parser.add_option('--disable_assertions', action='store_true',
-                           help=('(DEPRECATED) Run with java assertions '
-                                 'disabled.'))
   option_parser.add_option('--test_data', action='append', default=[],
                            help=('Each instance defines a directory of test '
                                  'data that should be copied to the target(s) '
@@ -228,9 +217,6 @@ def AddInstrumentationTestOptions(option_parser):
   option_parser.add_option('-w', '--wait_debugger', dest='wait_for_debugger',
                            action='store_true',
                            help='Wait for debugger.')
-  #TODO(craigdh): Remove option once -I is no longer passed downstream.
-  option_parser.add_option('-I', dest='install_apk', action='store_true',
-                           help='(DEPRECATED) Install the test apk.')
   option_parser.add_option(
       '--test-apk', dest='test_apk',
       help=('The name of the apk containing the tests '
@@ -293,7 +279,6 @@ def ProcessInstrumentationOptions(options, error_func):
       options.test_data,
       options.save_perf_json,
       options.screenshot_failures,
-      options.disable_assertions,
       options.wait_for_debugger,
       options.test_apk,
       options.test_apk_path,
@@ -363,7 +348,6 @@ def ProcessUIAutomatorOptions(options, error_func):
       options.test_data,
       options.save_perf_json,
       options.screenshot_failures,
-      options.disable_assertions,
       options.uiautomator_jar,
       options.uiautomator_info_jar,
       options.package_name)

@@ -126,8 +126,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       logging.warning('Unable to enable java asserts for %s, non rooted device',
                       self.device)
     else:
-      if self.adb.SetJavaAssertsEnabled(
-          enable=not self.options.disable_assertions):
+      if self.adb.SetJavaAssertsEnabled(True):
         self.adb.Reboot(full_reboot=False)
 
     # We give different default value to launch HTTP server based on shard index
