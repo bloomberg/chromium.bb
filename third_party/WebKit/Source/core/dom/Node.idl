@@ -56,7 +56,7 @@
     [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Node appendChild(Node newChild);
 
     boolean            hasChildNodes();
-    [DeliverCustomElementCallbacks, PerWorldBindings]
+    [CustomElementCallbacks=Deliver, PerWorldBindings]
     Node               cloneNode(optional boolean deep);
     void               normalize();
 
@@ -72,7 +72,7 @@
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString       baseURI;
 
              // FIXME: the spec says this can also raise on retrieval.
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException, DeliverCustomElementCallbacks] attribute DOMString       textContent;
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException, CustomElementCallbacks=Deliver] attribute DOMString       textContent;
 
     boolean            isSameNode([Default=Undefined] optional Node other);
     boolean            isEqualNode([Default=Undefined] optional Node other);

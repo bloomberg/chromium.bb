@@ -33,6 +33,7 @@ ConstructorRaisesException
 ConstructorTemplate=Event|TypedArray
 Custom
 CustomConstructor
+CustomElementCallbacks=Deliver|None
 CustomEnumerateProperty
 CustomGetter
 CustomIsReachable
@@ -40,7 +41,6 @@ CustomLegacyCall
 CustomSetter
 CustomToV8
 Default=NullString|Undefined
-DeliverCustomElementCallbacks
 DependentLifetime
 DeprecateAs=*
 DoNotCheckConstants

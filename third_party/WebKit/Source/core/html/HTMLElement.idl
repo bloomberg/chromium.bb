@@ -33,14 +33,14 @@
              [Reflect] attribute DOMString accessKey;
 
     // Extensions
-             [TreatNullAs=NullString, DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
+             [TreatNullAs=NullString, CustomElementCallbacks=Deliver, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
              [TreatNullAs=NullString, SetterRaisesException] attribute DOMString innerText;
-             [TreatNullAs=NullString, DeliverCustomElementCallbacks, SetterRaisesException] attribute DOMString outerHTML;
+             [TreatNullAs=NullString, CustomElementCallbacks=Deliver, SetterRaisesException] attribute DOMString outerHTML;
              [TreatNullAs=NullString, SetterRaisesException] attribute DOMString outerText;
 
     [RaisesException] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
                                   [Default=Undefined] optional Element element);
-    [DeliverCustomElementCallbacks, RaisesException] void insertAdjacentHTML([Default=Undefined] optional DOMString where,
+    [CustomElementCallbacks=Deliver, RaisesException] void insertAdjacentHTML([Default=Undefined] optional DOMString where,
                             [Default=Undefined] optional DOMString html);
     [RaisesException] void insertAdjacentText([Default=Undefined] optional DOMString where,
                             [Default=Undefined] optional DOMString text);
