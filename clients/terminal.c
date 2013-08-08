@@ -841,6 +841,10 @@ terminal_send_selection(struct terminal *terminal, int fd)
 	int len;
 
 	fp = fdopen(fd, "w");
+	if (fp == NULL){
+		close(fd);
+		return;
+	}
 	for (row = 0; row < terminal->height; row++) {
 		p_row = terminal_get_row(terminal, row);
 		for (col = 0; col < terminal->width; col++) {
