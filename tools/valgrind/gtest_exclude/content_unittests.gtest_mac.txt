@@ -50,3 +50,6 @@ MacSandboxTest.FontLoadingTest
 
 # http://crbug.com/247685
 ScreenCaptureDeviceTest.Capture
+
+# http://crbug.com/270254
+DeviceOrientationEventPumpTest.DidStartPolling
