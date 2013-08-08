@@ -86,7 +86,7 @@ public:
     void textZoomOut(const CppArgumentList&, CppVariant*);
     void zoomPageIn(const CppArgumentList&, CppVariant*);
     void zoomPageOut(const CppArgumentList&, CppVariant*);
-    void scalePageBy(const CppArgumentList&, CppVariant*);
+    void setPageScaleFactor(const CppArgumentList&, CppVariant*);
 
     void mouseDragBegin(const CppArgumentList&, CppVariant*);
     void mouseScrollBy(const CppArgumentList&, CppVariant*);

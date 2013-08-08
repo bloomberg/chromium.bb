@@ -22,8 +22,8 @@
         // Force a layout.
         document.body.offsetLeft;
 
-        if (window.internals)
-            window.internals.setPageScaleFactor(2, 0, 0);
+        if (window.eventSender)
+            window.eventSender.setPageScaleFactor(2, 0, 0);
 
         shouldBe("window.document.body.scrollTop", "0");
 

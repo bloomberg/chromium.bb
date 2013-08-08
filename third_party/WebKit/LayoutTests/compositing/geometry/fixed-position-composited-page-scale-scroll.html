@@ -14,9 +14,9 @@
 }
 </style>
 <script>
-  if (window.internals) {
+  if (window.internals && window.eventSender) {
     window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
-    window.internals.setPageScaleFactor(2, 0, 0);
+    window.eventSender.setPageScaleFactor(2, 0, 0);
   }
   function test() {
     window.scrollTo(100,100);

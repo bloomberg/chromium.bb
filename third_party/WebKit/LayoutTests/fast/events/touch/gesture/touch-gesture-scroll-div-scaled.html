@@ -107,9 +107,8 @@ function runTest()
 {
     var scaleFactor = 2.0;
     var scaleOffset = 0;
-    if (window.internals) {
-       window.internals.setPageScaleFactor(scaleFactor, scaleOffset, scaleOffset);
-    }
+    if (window.eventSender)
+      eventSender.setPageScaleFactor(scaleFactor, scaleOffset, scaleOffset);
 
     movingdiv = document.getElementById('movingbox');
     movingdiv.addEventListener("scroll", recordScroll);

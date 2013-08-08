@@ -39,8 +39,8 @@
             setTimeout(scalePage, 20);
         }
         function scalePage() {
-            if (window.internals)
-                window.internals.setPageScaleFactor(3, 0, 0);
+            if (window.eventSender)
+                window.eventSender.setPageScaleFactor(3, 0, 0);
             setTimeout(changeFixedLayoutSize, 20);
         }
         function changeFixedLayoutSize() {

@@ -23,9 +23,8 @@
         function scaleWithEventSender() {
             var scaleFactor = 0.5;
             var scaleOffset = 0;
-            if (window.internals) {
-                 window.internals.setPageScaleFactor(scaleFactor, scaleOffset, scaleOffset);
-            }
+            if (window.eventSender)
+                eventSender.setPageScaleFactor(scaleFactor, scaleOffset, scaleOffset);
         }
 
         function test() {

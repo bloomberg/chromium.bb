@@ -7,16 +7,16 @@
     }
     
     function load() {
-        if (!window.internals)
+        if (!window.eventSender)
             return;
 
-        window.internals.setPageScaleFactor(2, 0, 0);
+        window.eventSender.setPageScaleFactor(2, 0, 0);
         
         setTimeout(increasePageScale, 0);
     }
     
     function increasePageScale() {
-        window.internals.setPageScaleFactor(4, 0, 0);
+        window.eventSender.setPageScaleFactor(4, 0, 0);
         
         if (window.testRunner)
             testRunner.notifyDone();

@@ -14,7 +14,7 @@
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
   }
-  if (window.internals) {
+  if (window.internals && window.eventSender) {
     window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
     window.internals.settings.setFixedPositionCreatesStackingContext(true);
 
@@ -23,11 +23,11 @@
 
       document.getElementById("layerTree").innerText = internals.layerTreeAsText(document);
 
-      window.internals.setPageScaleFactor(0.5, 0, 0);
+      window.eventSender.setPageScaleFactor(0.5, 0, 0);
       setTimeout(function() {
         document.getElementById("layerTreeScaledDown").innerText = internals.layerTreeAsText(document);
 
-        window.internals.setPageScaleFactor(1.5, 0, 0);
+        window.eventSender.setPageScaleFactor(1.5, 0, 0);
         setTimeout(function() {
           document.getElementById("layerTreeScaledUp").innerText = internals.layerTreeAsText(document);
           testRunner.notifyDone();

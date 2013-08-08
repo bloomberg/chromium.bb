@@ -13,9 +13,9 @@
 }
 </style>
 <script>
-  if (window.internals) {
+  if (window.internals && window.eventSender) {
     window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
-    window.internals.setPageScaleFactor(0.5, 0, 0);
+    window.eventSender.setPageScaleFactor(0.5, 0, 0);
   }
   if (window.testRunner)
     testRunner.dumpAsText(true);

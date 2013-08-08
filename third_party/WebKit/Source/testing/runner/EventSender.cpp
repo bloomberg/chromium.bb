@@ -301,7 +301,7 @@ EventSender::EventSender()
     bindMethod("gestureTwoFingerTap", &EventSender::gestureTwoFingerTap);
     bindMethod("zoomPageIn", &EventSender::zoomPageIn);
     bindMethod("zoomPageOut", &EventSender::zoomPageOut);
-    bindMethod("scalePageBy", &EventSender::scalePageBy);
+    bindMethod("setPageScaleFactor", &EventSender::setPageScaleFactor);
 
     bindProperty("forceLayoutOnEvents", &forceLayoutOnEvents);
 
@@ -777,7 +777,7 @@ void EventSender::zoomPageOut(const CppArgumentList&, CppVariant* result)
     result->setNull();
 }
 
-void EventSender::scalePageBy(const CppArgumentList& arguments, CppVariant* result)
+void EventSender::setPageScaleFactor(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() < 3 || !arguments[0].isNumber() || !arguments[1].isNumber() || !arguments[2].isNumber())
         return;
@@ -785,6 +785,7 @@ void EventSender::scalePageBy(const CppArgumentList& arguments, CppVariant* resu
     float scaleFactor = static_cast<float>(arguments[0].toDouble());
     int x = arguments[1].toInt32();
     int y = arguments[2].toInt32();
+    webview()->setPageScaleFactorLimits(scaleFactor, scaleFactor);
     webview()->setPageScaleFactor(scaleFactor, WebPoint(x, y));
     result->setNull();
 }

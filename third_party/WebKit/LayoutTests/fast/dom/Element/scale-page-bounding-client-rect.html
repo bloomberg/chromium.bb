@@ -3,13 +3,13 @@
 <script>
 function testRects()
 {
-    if (!window.testRunner || !window.internals)
+    if (!window.testRunner || !window.eventSender)
         return;
     testRunner.dumpAsText();
     
     var div = document.getElementById("div");
     var rect = div.getBoundingClientRect();
-    window.internals.setPageScaleFactor(2, 0, 0);
+    window.eventSender.setPageScaleFactor(2, 0, 0);
     var scaledRect = div.getBoundingClientRect();
 
     var result = document.getElementById("result");

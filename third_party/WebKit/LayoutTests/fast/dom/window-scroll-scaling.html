@@ -23,8 +23,8 @@
         var originalScrollHeight = body.scrollHeight;
 
         var scale = 1.1;
-        if (window.internals)
-            window.internals.setPageScaleFactor(scale, 0, 0);
+        if (window.eventSender)
+            window.eventSender.setPageScaleFactor(scale, 0, 0);
 
         // As we have increased the scale factor, the innerWidth will be less
         // as fewer CSS pixels will be rendered in the same viewport, so

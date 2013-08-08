@@ -28,14 +28,14 @@
 <div class="percentage_size" style="right:10%;bottom:5%"></div>
 <script>
 function runTest() {
-    if (window.internals) {
+    if (window.internals && window.eventSender) {
         window.internals.settings.setFixedElementsLayoutRelativeToFrame(true);
 
         // Force scrollbar to hide and re-layout immediately.
-        window.internals.setPageScaleFactor(0.1, 0, 0);
+        window.eventSender.setPageScaleFactor(0.1, 0, 0);
         document.body.offsetTop;
 
-        window.internals.setPageScaleFactor(0.5, 0, 0);
+        window.eventSender.setPageScaleFactor(0.5, 0, 0);
     }
 }
 </script>

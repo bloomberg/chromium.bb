@@ -2,10 +2,10 @@
 <head>
     <script>
     function init() {
-        if (!window.internals)
+        if (!window.eventSender)
             return;
 
-        window.internals.setPageScaleFactor(2, 0, 0);
+        window.eventSender.setPageScaleFactor(2, 0, 0);
     }
     window.onload = init;
     </script>

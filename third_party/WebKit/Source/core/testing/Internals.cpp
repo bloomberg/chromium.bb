@@ -1815,17 +1815,6 @@ void Internals::setDeviceScaleFactor(float scaleFactor, ExceptionState& es)
     page->setDeviceScaleFactor(scaleFactor);
 }
 
-void Internals::setPageScaleFactor(float scaleFactor, int x, int y, ExceptionState& es)
-{
-    Document* document = contextDocument();
-    if (!document || !document->page()) {
-        es.throwDOMException(InvalidAccessError);
-        return;
-    }
-    Page* page = document->page();
-    page->setPageScaleFactor(scaleFactor, IntPoint(x, y));
-}
-
 void Internals::setIsCursorVisible(Document* document, bool isVisible, ExceptionState& es)
 {
     if (!document || !document->page()) {
