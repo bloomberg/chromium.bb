@@ -32,7 +32,7 @@ function test()
             callback: getDocument
         });
     };
-    
+
     function getDocument(result)
     {
         step({
@@ -42,13 +42,13 @@ function test()
             callback: makeDeferredCallback(getInitialLayerTree)
         });
     };
-    
+
     function getInitialLayerTree(result)
     {
         documentNode = result.root;
         step({
             name: "Get the initial layer tree",
-            command: "LayerTree.layersForNode",
+            command: "LayerTree.getLayers",
             parameters: {"nodeId": documentNode.nodeId},
             callback: gotInitialLayerTree
         });
@@ -72,7 +72,7 @@ function test()
     {
         step({
             name: "Get the modified layer tree",
-            command: "LayerTree.layersForNode",
+            command: "LayerTree.getLayers",
             parameters: {"nodeId": documentNode.nodeId},
             callback: gotModifiedLayerTree
         });
@@ -144,17 +144,18 @@ function test()
     {
         function replacer(key, value)
         {
-            if (key === "layerId" || key === "nodeId" || key === "memory" || key === "paintCount")
+
+            if (["layerId", "parentLayerId", "nodeId", "paintCount"].indexOf(key) >= 0)
                 return typeof(value);
 
             // some values differ based on port, but the ones we most
             // care about will always be less or equal 100.
             if ((key === "width" || key === "height") && value > 100) 
                 return typeof(value);
-            
+
             return value;
         };
-        
+
         InspectorTest.log("\n" + JSON.stringify(layers, replacer, "    "));
     };
 
@@ -172,7 +173,7 @@ function test()
             test.callback(messageObject.result);
         });
     };
-    
+
     // Makes next step deferred to let backend do its asynchronous processing and sending us all pending notifications.
     // Scheduling on timer with no delay is enough deferring.
     function makeDeferredCallback(callback)

@@ -138,7 +138,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     m_agents.append(InspectorInputAgent::create(m_instrumentingAgents.get(), m_state.get(), page, inspectorClient));
 
-    m_agents.append(InspectorLayerTreeAgent::create(m_instrumentingAgents.get(), m_state.get()));
+    m_agents.append(InspectorLayerTreeAgent::create(m_instrumentingAgents.get(), m_state.get(), domAgent, page));
 
     ASSERT_ARG(inspectorClient, inspectorClient);
     m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), pageScriptDebugServer);

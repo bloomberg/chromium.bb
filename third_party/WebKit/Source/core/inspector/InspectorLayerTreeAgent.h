@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,59 +41,47 @@
 
 namespace WebCore {
 
+class InspectorDOMAgent;
 class InstrumentingAgents;
+class Page;
 
 typedef String ErrorString;
 
 class InspectorLayerTreeAgent : public InspectorBaseAgent<InspectorLayerTreeAgent>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
 public:
-    static PassOwnPtr<InspectorLayerTreeAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state)
+    static PassOwnPtr<InspectorLayerTreeAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent* domAgent, Page* page)
     {
-        return adoptPtr(new InspectorLayerTreeAgent(instrumentingAgents, state));
+        return adoptPtr(new InspectorLayerTreeAgent(instrumentingAgents, state, domAgent, page));
     }
     ~InspectorLayerTreeAgent();
 
     virtual void setFrontend(InspectorFrontend*);
     virtual void clearFrontend();
     virtual void restore();
-    void reset();
 
     void didCommitLoad(Frame*, DocumentLoader*);
     void layerTreeDidChange();
-    void renderLayerDestroyed(const RenderLayer*);
-    void pseudoElementDestroyed(PseudoElement*);
 
     // Called from the front-end.
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
-    virtual void layersForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
-    virtual void reasonsForCompositingLayer(ErrorString*, const String& layerId, RefPtr<TypeBuilder::LayerTree::CompositingReasons>&);
+    virtual void getLayers(ErrorString*, const int* nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
 
 private:
-    InspectorLayerTreeAgent(InstrumentingAgents*, InspectorCompositeState*);
-
-    // RenderLayer-related methods.
-    String bind(const RenderLayer*);
-    void unbind(const RenderLayer*);
+    InspectorLayerTreeAgent(InstrumentingAgents*, InspectorCompositeState*, InspectorDOMAgent*, Page*);
 
     void gatherLayersUsingRenderObjectHierarchy(ErrorString*, RenderObject*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     void gatherLayersUsingRenderLayerHierarchy(ErrorString*, RenderLayer*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
-
-    PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(ErrorString*, RenderLayer*);
-    PassRefPtr<TypeBuilder::LayerTree::IntRect> buildObjectForIntRect(const IntRect&);
+    void gatherLayersUsingGraphicsLayerHierarchy(ErrorString*, GraphicsLayer*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
+    void addRenderLayerBacking(ErrorString*, RenderLayerBacking*, Node*, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
 
     int idForNode(ErrorString*, Node*);
 
-    String bindPseudoElement(PseudoElement*);
-    void unbindPseudoElement(PseudoElement*);
-
     InspectorFrontend::LayerTree* m_frontend;
+    Page* m_page;
+    InspectorDOMAgent* m_domAgent;
 
     HashMap<const RenderLayer*, String> m_documentLayerToIdMap;
-    HashMap<String, const RenderLayer*> m_idToLayer;
-
-    HashMap<PseudoElement*, String> m_pseudoElementToIdMap;
-    HashMap<String, PseudoElement*> m_idToPseudoElement;
 };
 
 } // namespace WebCore

@@ -410,12 +410,6 @@ interface InspectorInstrumentation {
 
     [LayerTree]
     void layerTreeDidChange(Page*);
-
-    [LayerTree]
-    void renderLayerDestroyed(Page*, const RenderLayer*);
-
-    [LayerTree]
-    void pseudoElementDestroyed(Page*, PseudoElement*);
 }
 
 interface InspectorConsoleInstrumentation {

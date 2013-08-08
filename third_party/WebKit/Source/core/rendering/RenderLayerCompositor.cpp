@@ -471,9 +471,6 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
 
 void RenderLayerCompositor::layerBecameNonComposited(const RenderLayer* renderLayer)
 {
-    // Inform the inspector that the given RenderLayer was destroyed.
-    InspectorInstrumentation::renderLayerDestroyed(page(), renderLayer);
-
     ASSERT(m_compositedLayerCount > 0);
     --m_compositedLayerCount;
 }

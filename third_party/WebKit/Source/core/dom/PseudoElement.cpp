@@ -28,7 +28,6 @@
 #include "core/dom/PseudoElement.h"
 
 #include "core/dom/NodeRenderingContext.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderQuote.h"
 #include "core/rendering/style/ContentData.h"
@@ -66,7 +65,6 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
 
 PseudoElement::~PseudoElement()
 {
-    InspectorInstrumentation::pseudoElementDestroyed(document()->page(), this);
 }
 
 PassRefPtr<RenderStyle> PseudoElement::customStyleForRenderer()
