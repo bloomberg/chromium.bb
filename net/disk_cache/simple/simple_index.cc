@@ -199,28 +199,30 @@ int32 SimpleIndex::GetEntryCount() const {
   return entries_set_.size();
 }
 
-void SimpleIndex::Insert(uint64 entry_hash) {
+void SimpleIndex::Insert(const std::string& key) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // Upon insert we don't know yet the size of the entry.
   // It will be updated later when the SimpleEntryImpl finishes opening or
   // creating the new entry, and then UpdateEntrySize will be called.
+  const uint64 hash_key = simple_util::GetEntryHashKey(key);
   InsertInEntrySet(
-      entry_hash, EntryMetadata(base::Time::Now(), 0), &entries_set_);
+      hash_key, EntryMetadata(base::Time::Now(), 0), &entries_set_);
   if (!initialized_)
-    removed_entries_.erase(entry_hash);
+    removed_entries_.erase(hash_key);
   PostponeWritingToDisk();
 }
 
-void SimpleIndex::Remove(uint64 entry_hash) {
+void SimpleIndex::Remove(const std::string& key) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  EntrySet::iterator it = entries_set_.find(entry_hash);
+  const uint64 hash_key = simple_util::GetEntryHashKey(key);
+  EntrySet::iterator it = entries_set_.find(hash_key);
   if (it != entries_set_.end()) {
     UpdateEntryIteratorSize(&it, 0);
     entries_set_.erase(it);
   }
 
   if (!initialized_)
-    removed_entries_.insert(entry_hash);
+    removed_entries_.insert(hash_key);
   PostponeWritingToDisk();
 }
 
@@ -230,11 +232,11 @@ bool SimpleIndex::Has(uint64 hash) const {
   return !initialized_ || entries_set_.count(hash) > 0;
 }
 
-bool SimpleIndex::UseIfExists(uint64 entry_hash) {
+bool SimpleIndex::UseIfExists(const std::string& key) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // Always update the last used time, even if it is during initialization.
   // It will be merged later.
-  EntrySet::iterator it = entries_set_.find(entry_hash);
+  EntrySet::iterator it = entries_set_.find(simple_util::GetEntryHashKey(key));
   if (it == entries_set_.end())
     // If not initialized, always return true, forcing it to go to the disk.
     return !initialized_;
@@ -290,9 +292,9 @@ void SimpleIndex::StartEvictionIfNeeded() {
       base::Bind(&SimpleIndex::EvictionDone, AsWeakPtr()));
 }
 
-bool SimpleIndex::UpdateEntrySize(uint64 entry_hash, uint64 entry_size) {
+bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  EntrySet::iterator it = entries_set_.find(entry_hash);
+  EntrySet::iterator it = entries_set_.find(simple_util::GetEntryHashKey(key));
   if (it == entries_set_.end())
     return false;
 
@@ -316,11 +318,11 @@ void SimpleIndex::EvictionDone(int result) {
 
 // static
 void SimpleIndex::InsertInEntrySet(
-    uint64 entry_hash,
+    uint64 hash_key,
     const disk_cache::EntryMetadata& entry_metadata,
     EntrySet* entry_set) {
   DCHECK(entry_set);
-  entry_set->insert(std::make_pair(entry_hash, entry_metadata));
+  entry_set->insert(std::make_pair(hash_key, entry_metadata));
 }
 
 void SimpleIndex::PostponeWritingToDisk() {

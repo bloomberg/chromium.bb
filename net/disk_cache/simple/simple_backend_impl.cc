@@ -380,7 +380,7 @@ void SimpleBackendImpl::GetStats(
 }
 
 void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
-  index_->UseIfExists(simple_util::GetEntryHashKey(key));
+  index_->UseIfExists(key);
 }
 
 void SimpleBackendImpl::InitializeIndex(const CompletionCallback& callback,

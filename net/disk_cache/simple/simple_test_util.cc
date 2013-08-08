@@ -8,6 +8,7 @@
 #include "net/disk_cache/simple/simple_util.h"
 
 namespace disk_cache {
+
 namespace simple_util {
 
 bool CreateCorruptFileForTests(const std::string& key,
@@ -29,4 +30,5 @@ bool CreateCorruptFileForTests(const std::string& key,
 }
 
 }  // namespace simple_backend
+
 }  // namespace disk_cache
