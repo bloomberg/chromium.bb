@@ -23,8 +23,13 @@
  */
 
 /* Use 4K more than the minimum to allow breakpad to run. */
-#define SIGNAL_STACK_SIZE (SIGSTKSZ + 4096)
+static uint32_t g_signal_stack_size = SIGSTKSZ + 4096;
+
 #define STACK_GUARD_SIZE NACL_PAGESIZE
+
+void NaClSignalStackSetSize(uint32_t size) {
+  g_signal_stack_size = size;
+}
 
 int NaClSignalStackAllocate(void **result) {
   /*
@@ -39,7 +44,7 @@ int NaClSignalStackAllocate(void **result) {
    * occurrence of the signal handler both overrunning and doing so in
    * an exploitable way.
    */
-  uint8_t *stack = mmap(NULL, SIGNAL_STACK_SIZE + STACK_GUARD_SIZE,
+  uint8_t *stack = mmap(NULL, g_signal_stack_size + STACK_GUARD_SIZE,
                         PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON,
                         -1, 0);
   if (stack == MAP_FAILED) {
@@ -56,7 +61,7 @@ int NaClSignalStackAllocate(void **result) {
 
 void NaClSignalStackFree(void *stack) {
   CHECK(stack != NULL);
-  if (munmap(stack, SIGNAL_STACK_SIZE + STACK_GUARD_SIZE) != 0) {
+  if (munmap(stack, g_signal_stack_size + STACK_GUARD_SIZE) != 0) {
     NaClLog(LOG_FATAL, "Failed to munmap() signal stack:\n\t%s\n",
             strerror(errno));
   }
@@ -71,7 +76,7 @@ void NaClSignalStackRegister(void *stack) {
    * untrusted code's %esp/%rsp value.
    */
   stack_t st;
-  st.ss_size = SIGNAL_STACK_SIZE;
+  st.ss_size = g_signal_stack_size;
   st.ss_sp = ((uint8_t *) stack) + STACK_GUARD_SIZE;
   st.ss_flags = 0;
   if (sigaltstack(&st, NULL) != 0) {

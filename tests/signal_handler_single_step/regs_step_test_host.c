@@ -328,6 +328,11 @@ int main(int argc, char **argv) {
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
   NaClSignalHandlerInit();
+  /*
+   * Make the signal stack large enough that fprintf() works when
+   * RegsAssertEqual() fails.
+   */
+  NaClSignalStackSetSize(0x100000);
   NaClSignalHandlerSet(TrapSignalHandler);
 
   /*

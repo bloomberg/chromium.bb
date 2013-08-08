@@ -86,6 +86,14 @@ typedef void (*NaClSignalHandler)(int sig_num,
 
 
 /*
+ * This allows setting a larger signal stack size than the default.
+ * This is for use by tests which may want to call functions such as
+ * fprintf() to print debugging info in the event of a failure,
+ * because fprintf() requires a larger stack.
+ */
+void NaClSignalStackSetSize(uint32_t size);
+
+/*
  * Allocates a stack suitable for passing to
  * NaClSignalStackRegister(), for use as a stack for signal handlers.
  * This can be called in any thread.
