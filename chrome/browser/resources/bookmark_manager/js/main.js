@@ -1297,6 +1297,7 @@ function initializeBookmarkManager() {
     canOpenNewWindows = result;
   });
 
+  cr.ui.FocusOutlineManager.forDocument(document);
   initializeSplitter();
   bmm.addBookmarkModelListeners();
   dnd.init(selectItemsAfterUserAction);

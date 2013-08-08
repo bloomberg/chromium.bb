@@ -269,6 +269,10 @@ list > .folder > .label,
   width: 32px;
 }
 
+html:not(.focus-outline-visible) .logo:focus {
+  outline: none;
+}
+
 .header form {
   float: left;
   margin: 14px 2px 0 2px;
