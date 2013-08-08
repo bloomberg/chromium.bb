@@ -1232,6 +1232,8 @@ crbug.com/253619 fast/loader/subresource-load-failed-crash.html [ Skip ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-count.html [ Pass Failure ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-fixed-layout.html [ Pass Failure ]
 
+crbug.com/256226 [ Debug ] webmidi/requestmidiaccess.html [ Crash Pass ]
+
 crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
 
 crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Failure ]
