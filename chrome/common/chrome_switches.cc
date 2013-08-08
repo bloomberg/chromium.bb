@@ -145,6 +145,10 @@ const char kAutomationClientChannelID[]     = "automation-channel";
 const char kAutomationReinitializeOnChannelError[] =
     "automation-reinitialize-on-channel-error";
 
+// Similar to kNoFirstRun, but also drops the First Run beacon so that first run
+// will not occur in subsequent runs either.
+const char kCancelFirstRun[]                = "cancel-first-run";
+
 // How often (in seconds) to check for updates. Should only be used for testing
 // purposes.
 const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
@@ -809,7 +813,8 @@ const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 const char kForceAppMode[]                  = "force-app-mode";
 
 // Displays the First Run experience when the browser is started, regardless of
-// whether or not it's actually the First Run (this overrides kNoFirstRun).
+// whether or not it's actually the First Run (this overrides kNoFirstRun and
+// kCancelFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
 
 // Tries to load cloud policy for every signed in user, regardless of whether

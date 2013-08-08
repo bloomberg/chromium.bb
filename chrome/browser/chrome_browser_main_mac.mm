@@ -229,7 +229,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   [[KeystoneGlue defaultKeystoneGlue] registerWithKeystone];
 
   // Disk image installation is sort of a first-run task, so it shares the
-  // kNoFirstRun switch.
+  // no first run switches.
   //
   // This needs to be done after the resource bundle is initialized (for
   // access to localizations in the UI) and after Keystone is initialized
@@ -240,7 +240,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   // anyone tries doing anything silly like firing off an import job, and
   // before anything creating preferences like Local State in order for the
   // relaunched installed application to still consider itself as first-run.
-  if (!parsed_command_line().HasSwitch(switches::kNoFirstRun)) {
+  if (!first_run::IsFirstRunSuppressed(parsed_command_line())) {
     if (MaybeInstallFromDiskImage()) {
       // The application was installed and the installed copy has been
       // launched.  This process is now obsolete.  Exit.

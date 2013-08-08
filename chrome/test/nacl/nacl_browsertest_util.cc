@@ -203,7 +203,6 @@ NaClBrowserTestBase::~NaClBrowserTestBase() {
 }
 
 void NaClBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kNoFirstRun);
   command_line->AppendSwitch(switches::kEnableNaCl);
 }
 

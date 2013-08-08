@@ -56,6 +56,7 @@ extern const char kAuthServerWhitelist[];
 extern const char kAutoLaunchAtStartup[];
 extern const char kAutomationClientChannelID[];
 extern const char kAutomationReinitializeOnChannelError[];
+extern const char kCancelFirstRun[];
 extern const char kCheckForUpdateIntervalSec[];
 extern const char kCheckCloudPrintConnectorPolicy[];
 extern const char kChromeFrame[];

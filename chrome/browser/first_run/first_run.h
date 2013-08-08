@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 
+class CommandLine;
 class GURL;
 class Profile;
 
@@ -83,6 +84,10 @@ struct MasterPrefs {
 
 // Returns true if this is the first time chrome is run for this user.
 bool IsChromeFirstRun();
+
+// Returns true if |command_line|'s switches explicitly specify that first run
+// should be suppressed in the current run.
+bool IsFirstRunSuppressed(const CommandLine& command_line);
 
 // Creates the first run sentinel if needed. This should only be called after
 // the process singleton has been grabbed by the current process

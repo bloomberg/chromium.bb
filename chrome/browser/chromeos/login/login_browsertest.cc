@@ -65,7 +65,6 @@ class LoginUserTest : public LoginTestBase {
     command_line->AppendSwitchASCII(
         chromeos::switches::kLoginUser, "TestUser@gmail.com");
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
-    command_line->AppendSwitch(::switches::kNoFirstRun);
   }
 };
 
@@ -75,7 +74,6 @@ class LoginGuestTest : public LoginTestBase {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitch(::switches::kIncognito);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
-    command_line->AppendSwitch(::switches::kNoFirstRun);
   }
 };
 

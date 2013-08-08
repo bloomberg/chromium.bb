@@ -1111,7 +1111,7 @@ installer::InstallStatus UninstallProducts(
         // trigger Active Setup and make sure the system-level Chrome doesn't go
         // through first run.
         trigger_active_setup = true;
-        system_level_cmd.AppendSwitch(::switches::kNoFirstRun);
+        system_level_cmd.AppendSwitch(::switches::kCancelFirstRun);
       }
     }
   }

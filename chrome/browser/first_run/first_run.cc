@@ -598,14 +598,20 @@ bool IsChromeFirstRun() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kForceFirstRun)) {
     internal::first_run_ = internal::FIRST_RUN_TRUE;
-  } else if (command_line->HasSwitch(switches::kNoFirstRun)) {
+  } else if (command_line->HasSwitch(switches::kCancelFirstRun)) {
     internal::first_run_ = internal::FIRST_RUN_CANCEL;
-  } else if (internal::GetFirstRunSentinelFilePath(&first_run_sentinel) &&
+  } else if (!command_line->HasSwitch(switches::kNoFirstRun) &&
+             internal::GetFirstRunSentinelFilePath(&first_run_sentinel) &&
              !base::PathExists(first_run_sentinel)) {
     internal::first_run_ = internal::FIRST_RUN_TRUE;
   }
 
   return internal::first_run_ == internal::FIRST_RUN_TRUE;
+}
+
+bool IsFirstRunSuppressed(const CommandLine& command_line) {
+  return command_line.HasSwitch(switches::kCancelFirstRun) ||
+      command_line.HasSwitch(switches::kNoFirstRun);
 }
 
 void CreateSentinelIfNeeded() {
