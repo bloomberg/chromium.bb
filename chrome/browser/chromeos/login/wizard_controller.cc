@@ -21,7 +21,6 @@
 #include "base/values.h"
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -60,9 +59,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -186,10 +182,6 @@ void WizardController::Init(
     is_out_of_box_ = true;
 
   AdvanceToScreen(first_screen_name);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
       first_screen_name.empty())
     ShowWrongHWIDScreen();

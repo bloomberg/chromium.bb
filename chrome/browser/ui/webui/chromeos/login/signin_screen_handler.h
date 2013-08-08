@@ -314,9 +314,7 @@ class SigninScreenHandler
   void HandleAccountPickerReady();
   void HandleWallpaperReady();
   void HandleLoginWebuiReady();
-  void HandleDemoWebuiReady();
   void HandleSignOutUser();
-  void HandleUserImagesLoaded();
   void HandleNetworkErrorShown();
   void HandleOpenProxySettings();
   void HandleLoginVisible(const std::string& source);

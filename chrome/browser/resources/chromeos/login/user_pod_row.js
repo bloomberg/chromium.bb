@@ -1537,7 +1537,6 @@ cr.define('login', function() {
       this.podsWithPendingImages_.splice(index, 1);
       if (this.podsWithPendingImages_.length == 0) {
         this.classList.remove('images-loading');
-        chrome.send('userImagesLoaded');
       }
     }
   };

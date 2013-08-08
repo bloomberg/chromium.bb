@@ -855,9 +855,7 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleAccountPickerReady);
   AddCallback("wallpaperReady", &SigninScreenHandler::HandleWallpaperReady);
   AddCallback("loginWebuiReady", &SigninScreenHandler::HandleLoginWebuiReady);
-  AddCallback("demoWebuiReady", &SigninScreenHandler::HandleDemoWebuiReady);
   AddCallback("signOutUser", &SigninScreenHandler::HandleSignOutUser);
-  AddCallback("userImagesLoaded", &SigninScreenHandler::HandleUserImagesLoaded);
   AddCallback("networkErrorShown",
               &SigninScreenHandler::HandleNetworkErrorShown);
   AddCallback("openProxySettings",
@@ -1514,23 +1512,9 @@ void SigninScreenHandler::HandleLoginWebuiReady() {
     SubmitLoginFormForTest();
 }
 
-void SigninScreenHandler::HandleDemoWebuiReady() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_DEMO_WEBUI_LOADED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-}
-
 void SigninScreenHandler::HandleSignOutUser() {
   if (delegate_)
     delegate_->Signout();
-}
-
-void SigninScreenHandler::HandleUserImagesLoaded() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 }
 
 void SigninScreenHandler::HandleNetworkErrorShown() {
