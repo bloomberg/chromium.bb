@@ -185,7 +185,11 @@ void Canvas2DLayerBridge::flush()
 
 WebGraphicsContext3D* Canvas2DLayerBridge::context()
 {
-    isValid(); // To ensure rate limiter is disabled if context is lost.
+    // Check on m_layer is necessary because context() may be called during
+    // the destruction of m_layer
+    if (m_layer) {
+        isValid(); // To ensure rate limiter is disabled if context is lost.
+    }
     return m_context->webContext();
 }
 
