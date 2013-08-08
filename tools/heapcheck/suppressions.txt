@@ -640,20 +640,6 @@
   fun:chromeos::input_method::InputMethodConfigurationTest_TestInitialize_Test::TestBody
 }
 {
-   bug_181691
-   Heapcheck:Leak
-   ...
-   fun:InitThread
-   fun:ShCompile
-   fun:gpu::gles2::ShaderTranslator::Translate
-   fun:gpu::gles2::ProgramManager::ForceCompileShader
-   fun:gpu::gles2::ProgramManager::DoCompileShader
-   fun:gpu::gles2::GLES2DecoderImpl::DoCompileShader
-   fun:gpu::gles2::GLES2DecoderImpl::HandleCompileShader
-   fun:gpu::gles2::GLES2DecoderImpl::DoCommand
-   fun:gpu::CommandParser::ProcessCommand
-}
-{
    bug_233532
    Heapcheck:Leak
    ...

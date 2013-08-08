@@ -6276,17 +6276,6 @@
    fun:_ZN2v88internal8Debugger18CallCEventCallbackENS_10DebugEventENS0_6HandleINS0_6ObjectEEES5_PNS_5Debug10ClientDataE
 }
 {
-   bug_181691
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_Z10InitThreadv
-   fun:ShCompile
-   fun:_ZN3gpu5gles216ShaderTranslator9TranslateEPKc
-   fun:_ZN3gpu5gles214ProgramManager18ForceCompileShaderEPKSsPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
-   fun:_ZN3gpu5gles214ProgramManager15DoCompileShaderEPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
-}
-{
    bug_184264
    Memcheck:Leak
    fun:_Znw*
@@ -6545,44 +6534,6 @@
    fun:_ZN7content69CompositingIOSurfaceTransformerTest_ShaderProgramsCompileAndLink_TestD1Ev
    fun:_ZN7content69CompositingIOSurfaceTransformerTest_ShaderProgramsCompileAndLink_TestD0Ev
    fun:_ZN7testing4Test11DeleteSelf_Ev
-}
-{
-   bug_230366a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z28InitializeGlobalParseContextv
-   fun:_Z10InitThreadv
-   fun:ShCompile
-   fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl25AngleValidateShaderSourceEPNS1_17ShaderSourceEntryE
-   fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl13compileShaderEj
-   fun:_ZN2cc18ProgramBindingBase10LoadShaderEPN6WebKit20WebGraphicsContext3DEjRKSs
-   fun:_ZN2cc18ProgramBindingBase4InitEPN6WebKit20WebGraphicsContext3DERKSsS5_
-   fun:_ZN2cc14ProgramBindingINS_26VertexShaderPosTexIdentityENS_21FragmentShaderRGBATexEEC1EPN6WebKit20WebGraphicsContext3DENS_17TexCoordPrecisionE
-   fun:_ZN2cc24AcceleratedTextureCopierC1EPN6WebKit20WebGraphicsContext3DEbi
-   fun:_ZN2cc24AcceleratedTextureCopier6CreateEPN6WebKit20WebGraphicsContext3DEbi
-   fun:_ZN2cc16ResourceProvider10InitializeEi
-   fun:_ZN2cc16ResourceProvider6CreateEPNS_13OutputSurfaceEi
-   fun:_ZN2cc17LayerTreeHostImpl18InitializeRendererE10scoped_ptrINS_13OutputSurfaceEN4base14DefaultDeleterIS2_EEE
-   fun:_ZN2cc11ThreadProxy30InitializeRendererOnImplThreadEPNS_15CompletionEventEPbPNS_20RendererCapabilitiesE
-}
-{
-   bug_230366b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z21InitializeGlobalPoolsv
-   fun:_Z10InitThreadv
-   fun:ShCompile
-   fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl25AngleValidateShaderSourceEPNS1_17ShaderSourceEntryE
-   fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl13compileShaderEj
-   fun:_ZN2cc18ProgramBindingBase10LoadShaderEPN6WebKit20WebGraphicsContext3DEjRKSs
-   fun:_ZN2cc18ProgramBindingBase4InitEPN6WebKit20WebGraphicsContext3DERKSsS5_
-   fun:_ZN2cc14ProgramBindingINS_26VertexShaderPosTexIdentityENS_21FragmentShaderRGBATexEEC1EPN6WebKit20WebGraphicsContext3DENS_17TexCoordPrecisionE
-   fun:_ZN2cc24AcceleratedTextureCopierC1EPN6WebKit20WebGraphicsContext3DEbi
-   fun:_ZN2cc24AcceleratedTextureCopier6CreateEPN6WebKit20WebGraphicsContext3DEbi
-   fun:_ZN2cc16ResourceProvider10InitializeEi
-   fun:_ZN2cc16ResourceProvider6CreateEPNS_13OutputSurfaceEi
-   fun:_ZN2cc17LayerTreeHostImpl18InitializeRendererE10scoped_ptrINS_13OutputSurfaceEN4base14DefaultDeleterIS2_EEE
-   fun:_ZN2cc11ThreadProxy30InitializeRendererOnImplThreadEPNS_15CompletionEventEPbPNS_20RendererCapabilitiesE
 }
 {
    bug_233541
