@@ -802,6 +802,7 @@ class ManifestVersionedSyncStage(SyncStage):
 
   def ForceVersion(self, version):
     """Creates a manifest manager from given version and returns manifest."""
+    cros_build_lib.PrintBuildbotStepText(version)
     return ManifestVersionedSyncStage.manifest_manager.BootstrapFromVersion(
         version)
 
@@ -843,6 +844,12 @@ class ManifestVersionedSyncStage(SyncStage):
     url_prefix = 'http://chromeos-images.corp.google.com/diff/report?'
     url = url_prefix + 'from=%s&to=%s' % (previous_version, target_version)
     cros_build_lib.PrintBuildbotLink('Blamelist', url)
+    # The testManifestVersionedSyncOnePartBranch interacts badly with this
+    # function.  It doesn't fully initialize self.manifest_manager which
+    # causes target_version to be None.  Since there isn't a clean fix in
+    # either direction, just throw this through str().  In the normal case,
+    # it's already a string anyways.
+    cros_build_lib.PrintBuildbotStepText(str(target_version))
 
     return to_return
 
