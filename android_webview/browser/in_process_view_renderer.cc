@@ -305,7 +305,6 @@ bool InProcessViewRenderer::InitializeHwDraw() {
 
 void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawGL");
-  DCHECK(visible_);
 
   manager_key_ = g_view_renderer_manager.Get().DidDrawGL(manager_key_, this);
 
@@ -330,8 +329,19 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     }
   }
 
-  if (draw_info->mode == AwDrawGLInfo::kModeProcess)
+  if (draw_info->mode == AwDrawGLInfo::kModeProcess) {
+    TRACE_EVENT_INSTANT0(
+        "android_webview", "EarlyOut_ModeProcess", TRACE_EVENT_SCOPE_THREAD);
     return;
+  }
+
+  UpdateCachedGlobalVisibleRect();
+  if (cached_global_visible_rect_.IsEmpty()) {
+    TRACE_EVENT_INSTANT0("android_webview",
+                         "EarlyOut_EmptyVisibleRect",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return;
+  }
 
   // DrawGL may be called without OnDraw, so cancel |fallback_tick_| here as
   // well just to be safe.
@@ -361,6 +371,15 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
                       draw_info->clip_top,
                       draw_info->clip_right - draw_info->clip_left,
                       draw_info->clip_bottom - draw_info->clip_top);
+
+  // Assume we always draw the full visible rect if we are drawing into a layer.
+  bool drew_full_visible_rect = true;
+
+  if (!draw_info->is_layer) {
+    clip_rect.Intersect(cached_global_visible_rect_);
+    drew_full_visible_rect = clip_rect.Contains(cached_global_visible_rect_);
+  }
+
   block_invalidates_ = true;
   // TODO(joth): Check return value.
   compositor_->DemandDrawHw(gfx::Size(draw_info->width, draw_info->height),
@@ -370,8 +389,6 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   block_invalidates_ = false;
   gl_surface_->ResetBackingFrameBufferObject();
 
-  UpdateCachedGlobalVisibleRect();
-  bool drew_full_visible_rect = clip_rect.Contains(cached_global_visible_rect_);
   EnsureContinuousInvalidation(draw_info, !drew_full_visible_rect);
 }
 

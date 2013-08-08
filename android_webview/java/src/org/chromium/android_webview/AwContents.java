@@ -664,7 +664,10 @@ public class AwContents {
 
     @CalledByNative
     private void updateGlobalVisibleRect() {
-        mContainerView.getGlobalVisibleRect(sLocalGlobalVisibleRect);
+        if (!mContainerView.getGlobalVisibleRect(sLocalGlobalVisibleRect)) {
+            sLocalGlobalVisibleRect.setEmpty();
+        }
+
         nativeSetGlobalVisibleRect(mNativeAwContents, sLocalGlobalVisibleRect.left,
                 sLocalGlobalVisibleRect.top, sLocalGlobalVisibleRect.right,
                 sLocalGlobalVisibleRect.bottom);
