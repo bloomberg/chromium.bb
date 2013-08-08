@@ -26,6 +26,8 @@ from pylib.gtest import test_options as gtest_test_options
 from pylib.host_driven import setup as host_driven_setup
 from pylib.instrumentation import setup as instrumentation_setup
 from pylib.instrumentation import test_options as instrumentation_test_options
+from pylib.monkey import setup as monkey_setup
+from pylib.monkey import test_options as monkey_test_options
 from pylib.uiautomator import setup as uiautomator_setup
 from pylib.uiautomator import test_options as uiautomator_test_options
 from pylib.utils import report_results
@@ -315,7 +317,7 @@ def ProcessUIAutomatorOptions(options, error_func):
 
   Returns:
     A UIAutomatorOptions named tuple which contains all options relevant to
-    instrumentation tests.
+    uiautomator tests.
   """
 
   ProcessJavaTestOptions(options, error_func)
@@ -351,6 +353,63 @@ def ProcessUIAutomatorOptions(options, error_func):
       options.uiautomator_jar,
       options.uiautomator_info_jar,
       options.package_name)
+
+
+def AddMonkeyTestOptions(option_parser):
+  """Adds monkey test options to |option_parser|."""
+  option_parser.add_option('--package-name', help='Allowed package.')
+  option_parser.add_option(
+      '--activity-name', default='com.google.android.apps.chrome.Main',
+      help='Name of the activity to start [default: %default].')
+  option_parser.add_option(
+      '--event-count', default=10000, type='int',
+      help='Number of events to generate [default: %default].')
+  option_parser.add_option(
+      '--category', default='',
+      help='A list of allowed categories [default: %default].')
+  option_parser.add_option(
+      '--throttle', default=100, type='int',
+      help='Delay between events (ms) [default: %default]. ')
+  option_parser.add_option(
+      '--seed', type='int',
+      help=('Seed value for pseudo-random generator. Same seed value generates '
+            'the same sequence of events. Seed is randomized by default.'))
+  option_parser.add_option(
+      '--extra-args', default='',
+      help=('String of other args to pass to the command verbatim '
+            '[default: "%default"].'))
+
+  AddCommonOptions(option_parser)
+
+
+def ProcessMonkeyTestOptions(options, error_func):
+  """Processes all monkey test options.
+
+  Args:
+    options: optparse.Options object.
+    error_func: Function to call with the error message in case of an error.
+
+  Returns:
+    A MonkeyOptions named tuple which contains all options relevant to
+    monkey tests.
+  """
+  if not options.package_name:
+    error_func('Package name is required.')
+
+  category = options.category
+  if category:
+    category = options.category.split(',')
+
+  return monkey_test_options.MonkeyOptions(
+      options.build_type,
+      options.verbose_count,
+      options.package_name,
+      options.activity_name,
+      options.event_count,
+      category,
+      options.throttle,
+      options.seed,
+      options.extra_args)
 
 
 def _RunGTests(options, error_func):
@@ -450,9 +509,6 @@ def _RunUIAutomatorTests(options, error_func):
   """Subcommand of RunTestsCommands which runs uiautomator tests."""
   uiautomator_options = ProcessUIAutomatorOptions(options, error_func)
 
-  results = base_test_result.TestRunResults()
-  exit_code = 0
-
   runner_factory, tests = uiautomator_setup.Setup(uiautomator_options)
 
   results, exit_code = test_dispatcher.RunTests(
@@ -471,6 +527,25 @@ def _RunUIAutomatorTests(options, error_func):
       flakiness_server=options.flakiness_dashboard_server)
 
   return exit_code
+
+
+def _RunMonkeyTests(options, error_func):
+  """Subcommand of RunTestsCommands which runs monkey tests."""
+  monkey_options = ProcessMonkeyTestOptions(options, error_func)
+
+  runner_factory, tests = monkey_setup.Setup(monkey_options)
+
+  results, exit_code = test_dispatcher.RunTests(
+      tests, runner_factory, False, None, shard=False)
+
+  report_results.LogFull(
+      results=results,
+      test_type='Monkey',
+      test_package='Monkey',
+      build_type=options.build_type)
+
+  return exit_code
+
 
 
 def RunTestsCommand(command, options, args, option_parser):
@@ -504,6 +579,8 @@ def RunTestsCommand(command, options, args, option_parser):
     return _RunInstrumentationTests(options, option_parser.error)
   elif command == 'uiautomator':
     return _RunUIAutomatorTests(options, option_parser.error)
+  elif command == 'monkey':
+    return _RunMonkeyTests(options, option_parser.error)
   else:
     raise Exception('Unknown test type.')
 
@@ -560,6 +637,8 @@ VALID_COMMANDS = {
         AddInstrumentationTestOptions, RunTestsCommand),
     'uiautomator': CommandFunctionTuple(
         AddUIAutomatorTestOptions, RunTestsCommand),
+    'monkey': CommandFunctionTuple(
+        AddMonkeyTestOptions, RunTestsCommand),
     'help': CommandFunctionTuple(lambda option_parser: None, HelpCommand)
     }
 
