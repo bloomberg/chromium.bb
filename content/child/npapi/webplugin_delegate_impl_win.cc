@@ -947,10 +947,10 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
     // Get the invalid rect which is in screen coordinates and convert to
     // window coordinates.
     gfx::Rect invalid_rect;
-    invalid_rect.set_x(wparam >> 16);
-    invalid_rect.set_y(wparam & 0xFFFF);
-    invalid_rect.set_width(lparam >> 16);
-    invalid_rect.set_height(lparam & 0xFFFF);
+    invalid_rect.set_x(static_cast<short>(LOWORD(wparam)));
+    invalid_rect.set_y(static_cast<short>(HIWORD(wparam)));
+    invalid_rect.set_width(static_cast<short>(LOWORD(lparam)));
+    invalid_rect.set_height(static_cast<short>(HIWORD(lparam)));
 
     RECT window_rect;
     GetWindowRect(hwnd, &window_rect);

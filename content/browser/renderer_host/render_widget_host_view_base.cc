@@ -171,8 +171,8 @@ BOOL CALLBACK PaintEnumChildProc(HWND hwnd, LPARAM lparam) {
   gfx::Rect* rect = reinterpret_cast<gfx::Rect*>(lparam);
   gfx::Rect rect_in_pixels = ui::win::DIPToScreenRect(*rect);
   static UINT msg = RegisterWindowMessage(kPaintMessageName);
-  WPARAM wparam = rect_in_pixels.x() << 16 | rect_in_pixels.y();
-  lparam = rect_in_pixels.width() << 16 | rect_in_pixels.height();
+  WPARAM wparam = MAKEWPARAM(rect_in_pixels.x(), rect_in_pixels.y());
+  lparam = MAKELPARAM(rect_in_pixels.width(), rect_in_pixels.height());
 
   // SendMessage gets the message across much quicker than PostMessage, since it
   // doesn't get queued.  When the plugin thread calls PeekMessage or other
