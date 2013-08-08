@@ -625,7 +625,6 @@ DirectoryTree.prototype.selectByEntryInternal_ = function(entry) {
         if (!DirectoryTreeUtil.searchAndSelectByEntry(
             this.items, this.currentEntry_))
           this.selectedItem = null;
-        cr.dispatchSimpleEvent(this, 'content-updated');
       }.bind(this),
       onError);
 };
@@ -677,7 +676,6 @@ DirectoryTree.prototype.onFilterChanged_ = function() {
     return;
 
   this.redraw(true /* recursive */);
-  cr.dispatchSimpleEvent(this, 'content-updated');
 };
 
 /**
@@ -725,10 +723,8 @@ DirectoryTree.prototype.clearTree_ = function(redraw) {
   this.selectedItem = null;
   this.entries_ = [];
 
-  if (redraw) {
+  if (redraw)
     this.redraw(false);
-    cr.dispatchSimpleEvent(this, 'content-updated');
-  }
 };
 
 /**
