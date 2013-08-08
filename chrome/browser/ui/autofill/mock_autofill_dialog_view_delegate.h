@@ -22,6 +22,7 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_CONST_METHOD0(CancelButtonText, string16());
   MOCK_CONST_METHOD0(ConfirmButtonText, string16());
   MOCK_CONST_METHOD0(SaveLocallyText, string16());
+  MOCK_CONST_METHOD0(SaveLocallyTooltip, string16());
   MOCK_METHOD0(LegalDocumentsText, string16());
   MOCK_CONST_METHOD0(SignedInState, DialogSignedInState());
   MOCK_CONST_METHOD0(ShouldShowSpinner, bool());

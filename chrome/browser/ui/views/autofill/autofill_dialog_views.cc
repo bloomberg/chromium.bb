@@ -1115,6 +1115,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogViewDelegate* delegate)
       overlay_view_(NULL),
       button_strip_extra_view_(NULL),
       save_in_chrome_checkbox_(NULL),
+      save_in_chrome_checkbox_container_(NULL),
       button_strip_image_(NULL),
       autocheckout_steps_area_(NULL),
       autocheckout_progress_bar_view_(NULL),
@@ -1697,10 +1698,18 @@ void AutofillDialogViews::InitChildViews() {
   button_strip_extra_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
+  save_in_chrome_checkbox_container_ = new views::View();
+  save_in_chrome_checkbox_container_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 7));
+  button_strip_extra_view_->AddChildView(save_in_chrome_checkbox_container_);
+
   save_in_chrome_checkbox_ =
       new views::Checkbox(delegate_->SaveLocallyText());
   save_in_chrome_checkbox_->SetChecked(true);
-  button_strip_extra_view_->AddChildView(save_in_chrome_checkbox_);
+  save_in_chrome_checkbox_container_->AddChildView(save_in_chrome_checkbox_);
+
+  save_in_chrome_checkbox_container_->AddChildView(
+      new TooltipIcon(delegate_->SaveLocallyTooltip()));
 
   button_strip_image_ = new views::ImageView();
   button_strip_extra_view_->AddChildView(button_strip_image_);
@@ -2188,7 +2197,7 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
 }
 
 void AutofillDialogViews::UpdateButtonStripExtraView() {
-  save_in_chrome_checkbox_->SetVisible(
+  save_in_chrome_checkbox_container_->SetVisible(
       delegate_->ShouldOfferToSaveInChrome());
 
   gfx::Image image = delegate_->ButtonStripImage();

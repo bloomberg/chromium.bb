@@ -596,6 +596,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // database. It lives in |extra_view_|.
   views::Checkbox* save_in_chrome_checkbox_;
 
+  // Holds the above checkbox and an associated tooltip icon.
+  views::View* save_in_chrome_checkbox_container_;
+
   // Used to display an image in the button strip extra view.
   views::ImageView* button_strip_image_;
 

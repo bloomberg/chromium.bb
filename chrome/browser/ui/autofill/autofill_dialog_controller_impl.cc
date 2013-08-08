@@ -754,6 +754,10 @@ string16 AutofillDialogControllerImpl::SaveLocallyText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX);
 }
 
+string16 AutofillDialogControllerImpl::SaveLocallyTooltip() const {
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_TOOLTIP);
+}
+
 string16 AutofillDialogControllerImpl::LegalDocumentsText() {
   if (!IsPayingWithWallet() || autocheckout_state_ != AUTOCHECKOUT_NOT_STARTED)
     return string16();

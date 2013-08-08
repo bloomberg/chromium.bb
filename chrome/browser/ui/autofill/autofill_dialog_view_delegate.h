@@ -46,6 +46,7 @@ class AutofillDialogViewDelegate {
   virtual string16 CancelButtonText() const = 0;
   virtual string16 ConfirmButtonText() const = 0;
   virtual string16 SaveLocallyText() const = 0;
+  virtual string16 SaveLocallyTooltip() const = 0;
   virtual string16 LegalDocumentsText() = 0;
 
   // State ---------------------------------------------------------------------
