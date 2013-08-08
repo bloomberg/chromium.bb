@@ -674,8 +674,7 @@ static const size_t kInitialVectorSize = 16;
         else if (other.size() > capacity()) {
             clear();
             reserveCapacity(other.size());
-            if (!begin())
-                return *this;
+            ASSERT(begin());
         }
 
 // Works around an assert in VS2010. See https://connect.microsoft.com/VisualStudio/feedback/details/558044/std-copy-should-not-check-dest-when-first-last
@@ -707,8 +706,7 @@ static const size_t kInitialVectorSize = 16;
         else if (other.size() > capacity()) {
             clear();
             reserveCapacity(other.size());
-            if (!begin())
-                return *this;
+            ASSERT(begin());
         }
 
 // Works around an assert in VS2010. See https://connect.microsoft.com/VisualStudio/feedback/details/558044/std-copy-should-not-check-dest-when-first-last
@@ -784,8 +782,7 @@ static const size_t kInitialVectorSize = 16;
         else if (newSize > capacity()) {
             clear();
             reserveCapacity(newSize);
-            if (!begin())
-                return;
+            ASSERT(begin());
         }
 
         std::fill(begin(), end(), val);
@@ -918,8 +915,7 @@ static const size_t kInitialVectorSize = 16;
         size_t newSize = m_size + dataSize;
         if (newSize > capacity()) {
             data = expandCapacity(newSize, data);
-            if (!begin())
-                return;
+            ASSERT(begin());
         }
         RELEASE_ASSERT(newSize >= m_size);
         T* dest = end();
@@ -931,7 +927,7 @@ static const size_t kInitialVectorSize = 16;
     template<typename T, size_t inlineCapacity> template<typename U>
     ALWAYS_INLINE void Vector<T, inlineCapacity>::append(const U& val)
     {
-        if (size() != capacity()) {
+        if (LIKELY(size() != capacity())) {
             new (NotNull, end()) T(val);
             ++m_size;
             return;
@@ -947,8 +943,7 @@ static const size_t kInitialVectorSize = 16;
 
         const U* ptr = &val;
         ptr = expandCapacity(size() + 1, ptr);
-        if (!begin())
-            return;
+        ASSERT(begin());
 
         new (NotNull, end()) T(*ptr);
         ++m_size;
@@ -988,8 +983,7 @@ static const size_t kInitialVectorSize = 16;
         size_t newSize = m_size + dataSize;
         if (newSize > capacity()) {
             data = expandCapacity(newSize, data);
-            if (!begin())
-                return;
+            ASSERT(begin());
         }
         RELEASE_ASSERT(newSize >= m_size);
         T* spot = begin() + position;
@@ -1006,8 +1000,7 @@ static const size_t kInitialVectorSize = 16;
         const U* data = &val;
         if (size() == capacity()) {
             data = expandCapacity(size() + 1, data);
-            if (!begin())
-                return;
+            ASSERT(begin());
         }
         T* spot = begin() + position;
         TypeOperations::moveOverlapping(spot, end(), spot + 1);
