@@ -3005,6 +3005,8 @@
             'platform/graphics/skia/SkiaUtils.cpp',
             'platform/graphics/skia/SkiaUtils.h',
             'platform/graphics/transforms/IdentityTransformOperation.h',
+            'platform/graphics/transforms/InterpolatedTransformOperation.h',
+            'platform/graphics/transforms/InterpolatedTransformOperation.cpp',
             'platform/graphics/transforms/Matrix3DTransformOperation.cpp',
             'platform/graphics/transforms/Matrix3DTransformOperation.h',
             'platform/graphics/transforms/MatrixTransformOperation.cpp',

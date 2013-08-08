@@ -48,6 +48,7 @@ public:
         RotateX, RotateY, Rotate3D,
         Matrix3D,
         Perspective,
+        Interpolated,
         Identity, None
     };
 
@@ -77,7 +78,8 @@ public:
             || opType == RotateY
             || opType == Rotate3D
             || opType == Matrix3D
-            || opType == Perspective;
+            || opType == Perspective
+            || opType == Interpolated;
     }
 };
 

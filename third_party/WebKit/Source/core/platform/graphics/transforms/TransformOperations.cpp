@@ -24,7 +24,7 @@
 
 #include <algorithm>
 #include "core/platform/graphics/transforms/IdentityTransformOperation.h"
-#include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
+#include "core/platform/graphics/transforms/InterpolatedTransformOperation.h"
 
 using namespace std;
 
@@ -90,25 +90,14 @@ TransformOperations TransformOperations::blendByMatchingOperations(const Transfo
     return result;
 }
 
-TransformOperations TransformOperations::blendByUsingMatrixInterpolation(const TransformOperations& from, double progress, const LayoutSize& size) const
+TransformOperations TransformOperations::blendByUsingMatrixInterpolation(const TransformOperations& from, double progress) const
 {
     TransformOperations result;
-
-    // Convert the TransformOperations into matrices
-    TransformationMatrix fromTransform;
-    TransformationMatrix toTransform;
-    from.apply(size, fromTransform);
-    apply(size, toTransform);
-
-    toTransform.blend(fromTransform, progress);
-
-    // Append the result
-    result.operations().append(Matrix3DTransformOperation::create(toTransform));
-
+    result.operations().append(InterpolatedTransformOperation::create(from, *this, progress));
     return result;
 }
 
-TransformOperations TransformOperations::blend(const TransformOperations& from, double progress, const LayoutSize& size) const
+TransformOperations TransformOperations::blend(const TransformOperations& from, double progress) const
 {
     if (from == *this)
         return *this;
@@ -116,7 +105,7 @@ TransformOperations TransformOperations::blend(const TransformOperations& from, 
     if (from.size() && from.operationsMatch(*this))
         return blendByMatchingOperations(from, progress);
 
-    return blendByUsingMatrixInterpolation(from, progress, size);
+    return blendByUsingMatrixInterpolation(from, progress);
 }
 
 } // namespace WebCore

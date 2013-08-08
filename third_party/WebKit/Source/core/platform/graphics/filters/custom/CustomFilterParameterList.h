@@ -44,7 +44,7 @@ public:
     explicit CustomFilterParameterList(size_t);
 
     bool checkAlphabeticalOrder() const;
-    void blend(const CustomFilterParameterList& from, double progress, const LayoutSize&, CustomFilterParameterList& resultList) const;
+    void blend(const CustomFilterParameterList& from, double progress, CustomFilterParameterList& resultList) const;
     bool operator==(const CustomFilterParameterList&) const;
 };
 

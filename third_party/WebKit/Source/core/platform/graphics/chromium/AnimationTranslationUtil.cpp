@@ -30,6 +30,7 @@
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
+#include "core/platform/graphics/transforms/InterpolatedTransformOperation.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
 #include "core/platform/graphics/transforms/MatrixTransformOperation.h"
 #include "core/platform/graphics/transforms/PerspectiveTransformOperation.h"
@@ -112,6 +113,12 @@ PassOwnPtr<WebTransformOperations> toWebTransformOperations(const TransformOpera
         case TransformOperation::Perspective: {
             PerspectiveTransformOperation* transform = static_cast<PerspectiveTransformOperation*>(transformOperations.operations()[j].get());
             webTransformOperations->appendPerspective(floatValueForLength(transform->perspective(), 0));
+            break;
+        }
+        case TransformOperation::Interpolated: {
+            TransformationMatrix m;
+            transformOperations.operations()[j]->apply(m, boxSize);
+            webTransformOperations->appendMatrix(TransformSkMatrix44Conversions::convert(m));
             break;
         }
         case TransformOperation::Identity:

@@ -46,7 +46,7 @@ public:
         return adoptRef(new CustomFilterTransformParameter(name));
     }
 
-    virtual PassRefPtr<CustomFilterParameter> blend(const CustomFilterParameter* fromParameter, double progress, const LayoutSize& size)
+    virtual PassRefPtr<CustomFilterParameter> blend(const CustomFilterParameter* fromParameter, double progress)
     {
         if (!fromParameter || !isSameType(*fromParameter))
             return this;
@@ -59,7 +59,7 @@ public:
 
         RefPtr<CustomFilterTransformParameter> result = CustomFilterTransformParameter::create(name());
         if (from.size() && to.size())
-            result->setOperations(to.blend(from, progress, size));
+            result->setOperations(to.blend(from, progress));
         else
             result->setOperations(progress > 0.5 ? to : from);
         return result;

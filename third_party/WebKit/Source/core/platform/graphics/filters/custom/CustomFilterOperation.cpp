@@ -53,7 +53,7 @@ CustomFilterOperation::~CustomFilterOperation()
 {
 }
 
-PassRefPtr<FilterOperation> CustomFilterOperation::blend(const FilterOperation* from, double progress, const LayoutSize& size, bool blendToPassthrough)
+PassRefPtr<FilterOperation> CustomFilterOperation::blend(const FilterOperation* from, double progress, bool blendToPassthrough)
 {
     // FIXME: There's no way to decide what is the "passthrough filter" for shaders using the current CSS Syntax.
     // https://bugs.webkit.org/show_bug.cgi?id=84903
@@ -69,7 +69,7 @@ PassRefPtr<FilterOperation> CustomFilterOperation::blend(const FilterOperation* 
         return this;
 
     CustomFilterParameterList animatedParameters;
-    m_parameters.blend(fromOp->m_parameters, progress, size, animatedParameters);
+    m_parameters.blend(fromOp->m_parameters, progress, animatedParameters);
     return CustomFilterOperation::create(m_program, animatedParameters, m_meshRows, m_meshColumns, m_meshType);
 }
 

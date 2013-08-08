@@ -61,9 +61,8 @@ public:
 
     virtual bool affectsOpacity() const { return true; }
     virtual bool movesPixels() const { return true; }
-    virtual bool blendingNeedsRendererSize() const { return true; }
 
-    virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress, const LayoutSize&, bool blendToPassthrough = false);
+    virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress, bool blendToPassthrough = false);
 
 protected:
     CustomFilterOperation(PassRefPtr<CustomFilterProgram>, const CustomFilterParameterList&, unsigned meshRows, unsigned meshColumns, CustomFilterMeshType);

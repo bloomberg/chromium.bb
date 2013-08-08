@@ -30,7 +30,6 @@
 #ifndef ValidatedCustomFilterOperation_h
 #define ValidatedCustomFilterOperation_h
 
-#include "core/platform/graphics/LayoutSize.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterParameterList.h"
@@ -51,9 +50,8 @@ public:
 
     virtual bool affectsOpacity() const { return true; }
     virtual bool movesPixels() const { return true; }
-    virtual bool blendingNeedsRendererSize() const { return true; }
 
-    virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress, const LayoutSize&, bool blendToPassthrough = false);
+    virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress, bool blendToPassthrough = false);
 
     CustomFilterValidatedProgram* validatedProgram() const { return m_validatedProgram.get(); }
     const CustomFilterParameterList& parameters() const { return m_parameters; }

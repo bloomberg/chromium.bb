@@ -68,7 +68,7 @@ bool CustomFilterParameterList::checkAlphabeticalOrder() const
 }
 
 void CustomFilterParameterList::blend(const CustomFilterParameterList& fromList,
-    double progress, const LayoutSize& frameSize, CustomFilterParameterList& resultList) const
+    double progress, CustomFilterParameterList& resultList) const
 {
     // This method expects both lists to be sorted by parameter name and the result list is also sorted.
     ASSERT(checkAlphabeticalOrder());
@@ -78,7 +78,7 @@ void CustomFilterParameterList::blend(const CustomFilterParameterList& fromList,
         CustomFilterParameter* paramFrom = fromList.at(fromListIndex).get();
         CustomFilterParameter* paramTo = at(toListIndex).get();
         if (paramFrom->name() == paramTo->name()) {
-            resultList.append(paramTo->blend(paramFrom, progress, frameSize));
+            resultList.append(paramTo->blend(paramFrom, progress));
             ++fromListIndex;
             ++toListIndex;
             continue;
