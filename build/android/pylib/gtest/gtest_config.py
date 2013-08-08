@@ -6,7 +6,6 @@
 
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
-    'content_browsertests',
 ]
 
 # Do not modify this list without approval of an android owner.
@@ -30,4 +29,5 @@ STABLE_TEST_SUITES = [
     'webkit_unit_tests',
     'breakpad_unittests',
     'sandbox_linux_unittests',
+    'content_browsertests',
 ]
