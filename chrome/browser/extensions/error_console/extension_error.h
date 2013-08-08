@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_EXTENSION_ERROR_H_
-#define EXTENSIONS_BROWSER_EXTENSION_ERROR_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_ERROR_CONSOLE_EXTENSION_ERROR_H_
+#define CHROME_BROWSER_EXTENSIONS_ERROR_CONSOLE_EXTENSION_ERROR_H_
 
 #include <string>
 #include <vector>
@@ -33,15 +33,12 @@ class ExtensionError {
 
  protected:
   ExtensionError(Type type,
-                 const std::string& extension_id,
                  bool from_incognito,
                  const base::string16& source,
                  const base::string16& message);
 
   // Which type of error this is.
   Type type_;
-  // The ID of the extension which caused the error.
-  std::string extension_id_;
   // Whether or not the error was caused while incognito.
   bool from_incognito_;
   // The source for the error; this can be a script, web page, or manifest file.
@@ -50,18 +47,27 @@ class ExtensionError {
   base::string16 source_;
   // The error message itself.
   base::string16 message_;
+  // The ID of the extension which caused the error. This may be absent, since
+  // we can't always know the id (such as when a manifest fails to parse).
+  std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionError);
 };
 
 class ManifestParsingError : public ExtensionError {
  public:
-  ManifestParsingError(const std::string& extension_id,
-                       const base::string16& message);
+  ManifestParsingError(bool from_incognito,
+                       const base::string16& source,
+                       const base::string16& message,
+                       size_t line_number);
   virtual ~ManifestParsingError();
 
   virtual std::string PrintForTest() const OVERRIDE;
+
+  size_t line_number() const { return line_number_; }
  private:
+  size_t line_number_;
+
   DISALLOW_COPY_AND_ASSIGN(ManifestParsingError);
 };
 
@@ -118,4 +124,4 @@ class JavascriptRuntimeError : public ExtensionError {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_EXTENSION_ERROR_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_ERROR_CONSOLE_EXTENSION_ERROR_H_

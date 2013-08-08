@@ -5,17 +5,16 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ERROR_CONSOLE_ERROR_CONSOLE_H_
 #define CHROME_BROWSER_EXTENSIONS_ERROR_CONSOLE_ERROR_CONSOLE_H_
 
-#include <deque>
-#include <map>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/extension_error.h"
 
 namespace content {
 class NotificationDetails;
@@ -27,16 +26,17 @@ class Profile;
 
 namespace extensions {
 class ErrorConsoleUnitTest;
+class ExtensionError;
 
 // The ErrorConsole is a central object to which all extension errors are
 // reported. This includes errors detected in extensions core, as well as
 // runtime Javascript errors.
 // This class is owned by ExtensionSystem, making it, in effect, a
 // BrowserContext-keyed service.
-class ErrorConsole : public content::NotificationObserver {
+class ErrorConsole : content::NotificationObserver {
  public:
-  typedef std::deque<const ExtensionError*> ErrorList;
-  typedef std::map<std::string, ErrorList> ErrorMap;
+  typedef ScopedVector<ExtensionError> ErrorList;
+  typedef std::vector<const ExtensionError*> WeakErrorList;
 
   class Observer {
    public:
@@ -55,18 +55,24 @@ class ErrorConsole : public content::NotificationObserver {
   static ErrorConsole* Get(Profile* profile);
 
   // Report an extension error, and add it to the list.
-  void ReportError(scoped_ptr<const ExtensionError> error);
+  void ReportError(scoped_ptr<ExtensionError> error);
 
   // Get a collection of weak pointers to all errors relating to the extension
   // with the given |extension_id|.
-  const ErrorList& GetErrorsForExtension(const std::string& extension_id) const;
+  WeakErrorList GetErrorsForExtension(const std::string& extension_id) const;
+
+  // Remove an error from the list of observed errors.
+  void RemoveError(const ExtensionError* error);
+
+  // Remove all errors from the list of observed errors.
+  void RemoveAllErrors();
 
   // Add or remove observers of the ErrorConsole to be notified of any errors
   // added.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  const ErrorMap& errors() { return errors_; }
+  const ErrorList& errors() { return errors_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ErrorConsoleUnitTest, AddAndRemoveErrors);
@@ -74,12 +80,6 @@ class ErrorConsole : public content::NotificationObserver {
   // Remove all errors which happened while incognito; we have to do this once
   // the incognito profile is destroyed.
   void RemoveIncognitoErrors();
-
-  // Remove all errors relating to a particular |extension_id|.
-  void RemoveErrorsForExtension(const std::string& extension_id);
-
-  // Remove all errors for all extensions.
-  void RemoveAllErrors();
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -93,7 +93,7 @@ class ErrorConsole : public content::NotificationObserver {
   ObserverList<Observer> observers_;
 
   // The errors which we have received so far.
-  ErrorMap errors_;
+  ErrorList errors_;
 
   // The profile with which the ErrorConsole is associated. Only collect errors
   // from extensions and RenderViews associated with this Profile (and it's
