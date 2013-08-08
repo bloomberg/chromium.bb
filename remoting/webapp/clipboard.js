@@ -75,6 +75,7 @@ remoting.Clipboard.prototype.startSession = function() {
  */
 remoting.Clipboard.prototype.toHost = function(clipboardData) {
   if (!clipboardData || !clipboardData.types || !clipboardData.getData) {
+    console.log('Got invalid clipboardData.');
     return;
   }
   if (!remoting.clientSession || !remoting.clientSession.plugin) {
@@ -83,17 +84,22 @@ remoting.Clipboard.prototype.toHost = function(clipboardData) {
   var plugin = remoting.clientSession.plugin;
   for (var i = 0; i < clipboardData.types.length; i++) {
     var type = clipboardData.types[i];
+    var item = clipboardData.getData(type);
+    if (!item) {
+      item = "";
+    }
+    console.log('Got clipboard from OS, type: ' + type +
+                ' length: ' + item.length + ' new: ' +
+                (item != this.previousContent) + ' blocking-send: ' +
+                this.blockOneClipboardSend_);
     // The browser presents text clipboard items as 'text/plain'.
     if (type == this.ItemTypes.TEXT_TYPE) {
-      var item = clipboardData.getData(type);
-      if (!item) {
-        item = "";
-      }
       // Don't send the same item more than once. Otherwise the item may be
       // sent to and fro indefinitely.
       if (item != this.previousContent) {
         if (!this.blockOneClipboardSend_) {
           // The plugin's JSON reader emits UTF-8.
+          console.log('Sending clipboard to host.');
           plugin.sendClipboardItem(this.ItemTypes.TEXT_UTF8_TYPE, item);
         }
         this.previousContent = item;
@@ -114,6 +120,9 @@ remoting.Clipboard.prototype.toHost = function(clipboardData) {
 remoting.Clipboard.prototype.fromHost = function(mimeType, item) {
   // The plugin's JSON layer will correctly convert only UTF-8 data sent from
   // the host.
+  console.log('Got clipboard from host, type: ' + mimeType +
+              ' length: ' + item.length + ' new: ' +
+              (item != this.previousContent));
   if (mimeType != this.ItemTypes.TEXT_UTF8_TYPE) {
     return;
   }
@@ -134,12 +143,14 @@ remoting.Clipboard.prototype.fromHost = function(mimeType, item) {
  */
 remoting.Clipboard.prototype.toOs = function(clipboardData) {
   if (!this.itemFromHostTextPending) {
+    console.log('Got unexpected clipboard copy event.');
     return false;
   }
   // The JSON layer between the plugin and this webapp converts UTF-8 to the
   // JS string encoding. The browser will convert JS strings to the correct
   // encoding, per OS and locale conventions, provided the data type is
   // 'text/plain'.
+  console.log('Setting OS clipboard, length: ' + this.previousContent.length);
   clipboardData.setData(this.ItemTypes.TEXT_TYPE, this.previousContent);
   this.itemFromHostTextPending = false;
   return true;
@@ -156,6 +167,7 @@ remoting.Clipboard.prototype.toOs = function(clipboardData) {
 remoting.Clipboard.prototype.initiateToHost = function() {
   // It would be cleaner to send a paste command to the plugin element,
   // but that's not supported.
+  console.log('Initiating clipboard paste.');
   document.execCommand("paste");
 };
 
@@ -170,6 +182,7 @@ remoting.Clipboard.prototype.initiateToHost = function() {
 remoting.Clipboard.prototype.initiateToOs = function() {
   // It would be cleaner to send a paste command to the plugin element,
   // but that's not supported.
+  console.log('Initiating clipboard copy.');
   document.execCommand("copy");
 };
 
