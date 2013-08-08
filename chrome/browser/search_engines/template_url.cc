@@ -73,6 +73,7 @@ const char kGoogleOmniboxStartMarginParameter[] =
     "google:omniboxStartMarginParameter";
 const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
+const char kGooglePageClassificationParameter[] = "google:pageClassification";
 const char kGoogleRLZParameter[] = "google:RLZ";
 const char kGoogleSearchClient[] = "google:searchClient";
 const char kGoogleSearchFieldtrialParameter[] =
@@ -192,6 +193,7 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(const string16& search_terms)
       accepted_suggestion(NO_SUGGESTIONS_AVAILABLE),
       cursor_position(string16::npos),
       omnibox_start_margin(-1),
+      page_classification(AutocompleteInput::INVALID_SPEC),
       append_extra_query_params(false) {
 }
 
@@ -561,6 +563,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kGoogleOriginalQueryForSuggestionParameter) {
     replacements->push_back(Replacement(GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
                                         start));
+  } else if (parameter == kGooglePageClassificationParameter) {
+    replacements->push_back(Replacement(GOOGLE_PAGE_CLASSIFICATION, start));
   } else if (parameter == kGoogleRLZParameter) {
     replacements->push_back(Replacement(GOOGLE_RLZ, start));
   } else if (parameter == kGoogleSearchClient) {
@@ -863,6 +867,15 @@ std::string TemplateURLRef::HandleReplacements(
             !search_terms_args.assisted_query_stats.empty()) {
           HandleReplacement(
               "oq", UTF16ToUTF8(encoded_original_query), *i, &url);
+        }
+        break;
+
+      case GOOGLE_PAGE_CLASSIFICATION:
+        if (search_terms_args.page_classification !=
+            AutocompleteInput::INVALID_SPEC) {
+          HandleReplacement(
+              "pgcl", base::IntToString(search_terms_args.page_classification),
+              *i, &url);
         }
         break;
 

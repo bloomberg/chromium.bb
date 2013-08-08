@@ -1168,3 +1168,26 @@ TEST_F(TemplateURLTest, ExtraQueryParams) {
   EXPECT_EQ("http://www.google.com/search?q=abc#oq=def&x",
             url.url_ref().ReplaceSearchTerms(search_terms));
 }
+
+// Tests replacing pageClassification.
+TEST_F(TemplateURLTest, ReplacePageClassification) {
+  TemplateURLData data;
+  data.input_encodings.push_back("UTF-8");
+  data.SetURL("{google:baseURL}?{google:pageClassification}q={searchTerms}");
+  TemplateURL url(NULL, data);
+  EXPECT_TRUE(url.url_ref().IsValid());
+  ASSERT_TRUE(url.url_ref().SupportsReplacement());
+  TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foo"));
+
+  std::string result = url.url_ref().ReplaceSearchTerms(search_terms_args);
+  EXPECT_EQ("http://www.google.com/?q=foo", result);
+
+  search_terms_args.page_classification = AutocompleteInput::NEW_TAB_PAGE;
+  result = url.url_ref().ReplaceSearchTerms(search_terms_args);
+  EXPECT_EQ("http://www.google.com/?pgcl=1&q=foo", result);
+
+  search_terms_args.page_classification =
+      AutocompleteInput::HOMEPAGE;
+  result = url.url_ref().ReplaceSearchTerms(search_terms_args);
+  EXPECT_EQ("http://www.google.com/?pgcl=3&q=foo", result);
+}

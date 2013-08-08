@@ -11,6 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "url/gurl.h"
 #include "url/url_parse.h"
@@ -94,6 +95,9 @@ class TemplateURLRef {
     // The URL of the current webpage to be used for experimental zero-prefix
     // suggestions.
     std::string zero_prefix_url;
+
+    // Which omnibox the user used to type the prefix.
+    AutocompleteInput::PageClassification page_classification;
 
     // If set, ReplaceSearchTerms() will automatically append any extra query
     // params specified via the --extra-search-query-params command-line
@@ -238,6 +242,7 @@ class TemplateURLRef {
     GOOGLE_NTP_IS_THEMED,
     GOOGLE_OMNIBOX_START_MARGIN,
     GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
+    GOOGLE_PAGE_CLASSIFICATION,
     GOOGLE_RLZ,
     GOOGLE_SEARCH_CLIENT,
     GOOGLE_SEARCH_FIELDTRIAL_GROUP,
