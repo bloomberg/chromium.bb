@@ -463,8 +463,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual const string16 GetLocallyManagedUserMessage() const OVERRIDE {
     if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
         return string16();
-    return l10n_util::GetStringFUTF16(IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE,
-                                      GetLocallyManagedUserManagerName());
+    return l10n_util::GetStringFUTF16(
+        IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE,
+        UTF8ToUTF16(GetLocallyManagedUserManager()));
   }
 
   virtual bool SystemShouldUpgrade() const OVERRIDE {

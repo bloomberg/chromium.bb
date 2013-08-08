@@ -51,6 +51,10 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
       "managedUserCreationFlowGotitButtonTitle",
        IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_GOT_IT_BUTTON_TITLE);
 
+  builder->Add("createManagedUserIntroTextTitle",
+               IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_TITLE);
+  builder->Add("createManagedUserIntroAlternateText",
+               IDS_CREATE_LOCALLY_MANAGED_INTRO_ALTERNATE_TEXT);
   builder->Add("createManagedUserIntroText1",
                IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_1);
   builder->Add("createManagedUserIntroManagerItem1",

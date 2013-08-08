@@ -45,7 +45,7 @@
   line-height: 24px;
 }
 
-#managed-user-creation strong {
+#managed-user-creation-created-1 strong {
   color: #000;
   font-weight: normal;
 }
@@ -85,7 +85,16 @@
 }
 
 #managed-user-creation-intro .below-marketing {
-  margin: 40px 40px 0;
+  margin: 20px 40px 0;
+}
+
+#managed-user-creation-intro-alternate-text {
+  margin-bottom: 12px;
+  margin-top: 12px;
+}
+
+#managed-user-creation-intro-text-3 {
+  margin-top: 12px;
 }
 
 #managed-user-creation-created-1 .below-marketing {

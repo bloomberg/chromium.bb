@@ -471,6 +471,15 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_NO_MANAGER_TEXT" desc="Text shown when supervised user can be created, but no users that can be manager exist.">
     At least one account must exist on this device before creating a supervised user.
   </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_TITLE" desc="Supervised user dialog, intro page, title">
+    What is a supervised user?
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_ALTERNATE_TEXT" desc="Supervised user dialog, intro page, first paragraph">
+    A supervised user can explore the web with your guidance. As the manager of a supervised user, you can
+    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>allow or prohibit<ph name="END_BOLD">&lt;/strong&gt;</ph> certain websites,
+    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>review<ph name="END_BOLD">&lt;/strong&gt;</ph> websites the supervised user has visited, and
+    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>manage<ph name="END_BOLD">&lt;/strong&gt;</ph> other settings.
+  </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_1" desc="Supervised user dialog, intro page, first paragraph">
     A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can:
   </message>
@@ -485,8 +494,7 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_2" desc="Supervised user dialog, intro page, second paragraph">
     Creating a supervised user does not create a Google Account, and their settings
-    and data will not follow them to other devices with Chrome Sync. Currently,
-    a supervised user applies only to this installation of Chrome, on this device.
+    and data will not follow them to other devices with Chrome Sync. A supervised user applies only to this device.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_3" desc="Supervised user dialog, intro page, third paragraph">
     After you create a new supervised user, you can manage the settings at any time from any device at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
@@ -501,7 +509,7 @@ Press any key to continue exploring.
     Enter password
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE" desc="Supervised user dialog, new user page, title for name of new user">
-    Create an name -
+    Create a name -
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_EXPLANATION" desc="Supervised user dialog, new user page, explanation for name of new user">
     This supervised user will be managed by <ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph>.
@@ -596,16 +604,19 @@ Press any key to continue exploring.
     Retry
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_AUTH_PROGRESS_MESSAGE" desc="Text shown next to progress indicator upon manager authentication.">
-    Authenticating...
+    Authenticating
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_PROGRESS_MESSAGE" desc="Text shown next to progress indicator upon supervised user creation.">
-    Creating profile...
+    Creating supervised user
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_TIMEOUT_MESSAGE" desc="Text shown at the place of progess indicator if creation takes too long and should be cancelled.">
     Profile takes too long to create. You may want to cancel process and retry later.
   </message>
   <message name="IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE" desc="Text for notifications showing that this user is locally managed">
-    This supervised user is managed by <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph>. Usage and browsing history can be viewed by the manager.
+    This user is supervised by <ph name="MANAGER_EMAIL">$1<ex>user@example.com</ex></ph>. Usage and history from this user can be reviewed by the manager on chrome.com.
+  </message>
+  <message name="IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING" desc="Warning text that is shown on login screen trying to sign in as a supervised user that has expired token">
+    This supervised user may have been deleted or disabled by the manager. Please contact the manager if you would like to continue signing in as this user.
   </message>
   <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove supervised user.">
     All files and local data associated with the supervised user will be permanently

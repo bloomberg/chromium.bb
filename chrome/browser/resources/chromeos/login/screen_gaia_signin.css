@@ -115,6 +115,7 @@
   margin-top: 16px;
 }
 
-#createManagedUserLinkPlaceholder {
+#createManagedUserLinkPlaceholder,
+#createManagedUserNoManagerText {
   margin-top: 10px;
 }

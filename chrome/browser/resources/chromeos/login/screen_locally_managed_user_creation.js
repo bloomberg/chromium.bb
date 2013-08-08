@@ -488,12 +488,14 @@ login.createScreen('LocallyManagedUserCreationScreen',
         return;
 
       var managerId = selectedPod.user.username;
+      var managerDisplayId = selectedPod.user.emailAddress;
       var managerPassword = selectedPod.passwordElement.value;
       if (managerPassword.empty)
         return;
 
       this.disabled = true;
       this.context_.managerId = managerId;
+      this.context_.managerDisplayId = managerDisplayId;
       this.context_.managerName = selectedPod.user.displayName;
       chrome.send('authenticateManagerInLocallyManagedUserCreationFlow',
           [managerId, managerPassword]);
@@ -855,19 +857,22 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     updateText_: function() {
-      var managerId = this.context_.managerId;
+      var managerDisplayId = this.context_.managerDisplayId;
+      this.updateElementText_('intro-alternate-text',
+                              'createManagedUserIntroAlternateText');
       this.updateElementText_('created-1-text-1',
-          'createManagedUserCreated1Text1',
-          this.context_.managedName);
+                              'createManagedUserCreated1Text1',
+                              this.context_.managedName);
       this.updateElementText_('created-1-text-2',
-          'createManagedUserCreated1Text2',
-          loadTimeData.getString('managementURL'), this.context_.managedName);
+                              'createManagedUserCreated1Text2',
+                              loadTimeData.getString('managementURL'),
+                              this.context_.managedName);
       this.updateElementText_('created-1-text-3',
-          'createManagedUserCreated1Text3',
-          managerId);
+                              'createManagedUserCreated1Text3',
+                              managerDisplayId);
       this.updateElementText_('name-explanation',
-          'createManagedUserNameExplanation',
-          managerId);
+                              'createManagedUserNameExplanation',
+                              managerDisplayId);
     },
 
     updateElementText_: function(localId, templateName) {
