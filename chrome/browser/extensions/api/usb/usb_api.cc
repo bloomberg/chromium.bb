@@ -89,7 +89,7 @@ static const size_t kMaxTransferLength = 100 * 1024 * 1024;
 static const int kMaxPackets = 4 * 1024 * 1024;
 static const int kMaxPacketLength = 64 * 1024;
 
-static UsbDeviceHandle* device_for_test_ = NULL;
+static UsbDevice* device_for_test_ = NULL;
 
 static bool ConvertDirectionToApi(const UsbEndpointDirection& input,
                                   Direction* output) {
@@ -410,7 +410,7 @@ UsbFindDevicesFunction::UsbFindDevicesFunction() {}
 
 UsbFindDevicesFunction::~UsbFindDevicesFunction() {}
 
-void UsbFindDevicesFunction::SetDeviceForTest(UsbDeviceHandle* device) {
+void UsbFindDevicesFunction::SetDeviceForTest(UsbDevice* device) {
   device_for_test_ = device;
 }
 
@@ -426,7 +426,7 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
   if (device_for_test_) {
     UsbDeviceResource* const resource = new UsbDeviceResource(
         extension_->id(),
-        device_for_test_);
+        device_for_test_->Open());
 
     Device device;
     result_->Append(PopulateDevice(manager_->Add(resource), 0, 0));
@@ -472,23 +472,22 @@ void UsbFindDevicesFunction::EnumerateDevices(
                             this)));
 }
 
-
 void UsbFindDevicesFunction::OnEnumerationCompleted(
     ScopedDeviceVector devices) {
+  for (size_t i = 0; i < devices->size(); ++i)
+    device_handles_.push_back(devices->at(i)->Open());
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&UsbFindDevicesFunction::OnCompleted,
-                 this,
-                 base::Passed(devices.Pass())));
+      base::Bind(&UsbFindDevicesFunction::OnCompleted, this));
 }
 
-void UsbFindDevicesFunction::OnCompleted(
-    ScopedDeviceVector devices) {
-  for (size_t i = 0; i < devices->size(); ++i) {
-    UsbDeviceHandle* const device = devices->at(i).get();
+void UsbFindDevicesFunction::OnCompleted() {
+  for (size_t i = 0; i < device_handles_.size(); ++i) {
+    UsbDeviceHandle* const device_handle = device_handles_[i].get();
     UsbDeviceResource* const resource =
-        new UsbDeviceResource(extension_->id(), device);
+        new UsbDeviceResource(extension_->id(), device_handle);
 
     result_->Append(PopulateDevice(manager_->Add(resource),
                                    parameters_->options.vendor_id,
@@ -521,8 +520,8 @@ void UsbListInterfacesFunction::AsyncWorkStart() {
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&UsbDeviceHandle::ListInterfaces,
-                 resource->device(),
+      base::Bind(&UsbDevice::ListInterfaces,
+                 resource->device()->device(),
                  config_),
       base::Bind(&UsbListInterfacesFunction::OnCompleted, this));
 }
@@ -652,10 +651,10 @@ void UsbCloseDeviceFunction::AsyncWorkStart() {
       FROM_HERE,
       base::Bind(&UsbDeviceHandle::Close, resource->device()),
       base::Bind(&UsbCloseDeviceFunction::OnCompleted, this));
-  RemoveUsbDeviceResource(parameters_->device.handle);
 }
 
 void UsbCloseDeviceFunction::OnCompleted() {
+  RemoveUsbDeviceResource(parameters_->device.handle);
   AsyncWorkCompleted();
 }
 

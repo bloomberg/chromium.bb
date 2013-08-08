@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/usb/usb_device_handle.h"
+#include "chrome/browser/usb/usb_device.h"
 
 namespace base {
 
@@ -28,54 +28,38 @@ class UsbContext;
 // competition for the same USB device.
 class UsbService {
  public:
-  typedef scoped_ptr<std::vector<scoped_refptr<UsbDeviceHandle> > >
+  typedef scoped_ptr<std::vector<scoped_refptr<UsbDevice> > >
       ScopedDeviceVector;
+
   // Must be called on FILE thread.
   static UsbService* GetInstance();
 
   // Find all of the devices attached to the system that are identified by
   // |vendor_id| and |product_id|, inserting them into |devices|. Clears
   // |devices| before use. Calls |callback| once |devices| is populated.
+  // The result will be sorted by id in increasing order. Must be called on
+  // FILE thread.
   void FindDevices(
       const uint16 vendor_id,
       const uint16 product_id,
       int interface_id,
       const base::Callback<void(ScopedDeviceVector vector)>& callback);
 
-  // Find all of the devices attached to the system, inserting them into
-  // |devices|. Clears |devices| before use.
-  void EnumerateDevices(std::vector<scoped_refptr<UsbDeviceHandle> >* devices);
-
-  // This function should not be called by normal code. It is invoked by a
-  // UsbDevice's Close function and disposes of the associated platform handle.
-  void CloseDevice(scoped_refptr<UsbDeviceHandle> device);
+  // Get all of the devices attached to the system, inserting them into
+  // |devices|. Clears |devices| before use. The result will be sorted by id
+  // in increasing order. Must be called on FILE thread.
+  void GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices);
 
  private:
-  UsbService();
-  virtual ~UsbService();
   friend struct DefaultSingletonTraits<UsbService>;
   friend class base::DeleteHelper<UsbService>;
 
-  // RefCountedPlatformUsbDevice takes care of managing the underlying reference
-  // count of a single PlatformUsbDevice. This allows us to construct things
-  // like vectors of RefCountedPlatformUsbDevices and not worry about having to
-  // explicitly unreference them after use.
-  class RefCountedPlatformUsbDevice {
-   public:
-    explicit RefCountedPlatformUsbDevice(PlatformUsbDevice device);
-    RefCountedPlatformUsbDevice(const RefCountedPlatformUsbDevice& other);
-    virtual ~RefCountedPlatformUsbDevice();
-    PlatformUsbDevice device();
-
-   private:
-    PlatformUsbDevice device_;
-  };
-
-  typedef std::vector<RefCountedPlatformUsbDevice> DeviceVector;
+  UsbService();
+  virtual ~UsbService();
 
   // Return true if |device|'s vendor and product identifiers match |vendor_id|
   // and |product_id|.
-  static bool DeviceMatches(PlatformUsbDevice device,
+  static bool DeviceMatches(scoped_refptr<UsbDevice> device,
                             const uint16 vendor_id,
                             const uint16 product_id);
 
@@ -97,21 +81,13 @@ class UsbService {
       const base::Callback<void(ScopedDeviceVector vector)>& callback,
       bool success);
 
-  // Populates |output| with the result of enumerating all attached USB devices.
-  void EnumerateDevicesImpl(DeviceVector* output);
-
-  // If a UsbDevice wrapper corresponding to |device| has already been created,
-  // returns it. Otherwise, opens the device, creates a wrapper, and associates
-  // the wrapper with the device internally.
-  UsbDeviceHandle* LookupOrCreateDevice(PlatformUsbDevice device);
+  // Enumerate USB devices from OS and Update devices_ map.
+  void RefreshDevices();
 
   scoped_refptr<UsbContext> context_;
 
-  // The devices_ map contains scoped_refptrs to all open devices, indicated by
-  // their vendor and product id. This allows for reusing an open device without
-  // creating another platform handle for it.
-  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDeviceHandle> >
-      DeviceMap;
+  // The map from PlatformUsbDevices to UsbDevices.
+  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDevice> > DeviceMap;
   DeviceMap devices_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbService);
