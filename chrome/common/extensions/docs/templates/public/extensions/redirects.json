@@ -1,5 +1,8 @@
 {
   "": "index.html",
+  "experimental.infobars.html": "infobars.html",
+  "experimental_infobars.html": "infobars.html",
+  "experimental.systemInfo_storage.html": "system_storage.html",
   "experimental_systemInfo_storage.html": "system_storage.html",
   "systemInfo_cpu.html": "system_cpu.html",
   "systemInfo_memory.html": "system_memory.html"
