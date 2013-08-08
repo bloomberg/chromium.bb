@@ -104,7 +104,8 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     // Since we cannot create a wrapper in the intermediate timing, we need to skip
     // creating a wrapper for |event|.
     DOMWrapperWorld* world = DOMWrapperWorld::current();
-    if (world && firstWindow->document()->frame()->script()->existingWindowShell(world)) {
+    Frame* frame = firstWindow->document()->frame();
+    if (world && frame && frame->script()->existingWindowShell(world)) {
         v8::Local<v8::Value> wrappedEvent = toV8(event.get(), v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
         if (!wrappedEvent.IsEmpty()) {
             ASSERT(wrappedEvent->IsObject());
