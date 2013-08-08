@@ -254,14 +254,14 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
 }
 
 void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator op, const FloatRect& destRect)
+    const FloatPoint& phase, CompositeOperator op, const FloatRect& destRect, BlendMode blendMode)
 {
     if (!isValid())
         return;
 
     const SkBitmap& bitmap = *m_context->bitmap();
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
-    image->drawPattern(context, srcRect, scale, phase, op, destRect);
+    image->drawPattern(context, srcRect, scale, phase, op, destRect, blendMode);
 }
 
 void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace)

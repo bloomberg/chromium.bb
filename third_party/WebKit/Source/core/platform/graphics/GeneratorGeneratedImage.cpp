@@ -139,7 +139,7 @@ void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const Fl
     }
 
     // Tile the image buffer into the context.
-    m_cachedImageBuffer->drawPattern(destContext, adjustedSrcRect, scaleWithoutCTM, phase, compositeOp, destRect);
+    m_cachedImageBuffer->drawPattern(destContext, adjustedSrcRect, scaleWithoutCTM, phase, compositeOp, destRect, blendMode);
     m_cacheTimer.restart();
 }
 

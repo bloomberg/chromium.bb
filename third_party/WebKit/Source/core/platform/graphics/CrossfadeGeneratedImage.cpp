@@ -80,10 +80,10 @@ void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context)
     context->endTransparencyLayer();
 }
 
-void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode)
+void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)
 {
     GraphicsContextStateSaver stateSaver(*context);
-    context->setCompositeOperation(compositeOp);
+    context->setCompositeOperation(compositeOp, blendMode);
     context->clip(dstRect);
     context->translate(dstRect.x(), dstRect.y());
     if (dstRect.size() != srcRect.size())
@@ -93,7 +93,7 @@ void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& ds
     drawCrossfade(context);
 }
 
-void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode)
+void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode blendMode)
 {
     OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(m_size, 1, context->isAccelerated() ? Accelerated : Unaccelerated);
     if (!imageBuffer)
@@ -104,7 +104,7 @@ void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatR
     drawCrossfade(graphicsContext);
 
     // Tile the image buffer into the context.
-    imageBuffer->drawPattern(context, srcRect, scale, phase, compositeOp, dstRect);
+    imageBuffer->drawPattern(context, srcRect, scale, phase, compositeOp, dstRect, blendMode);
 }
 
 }

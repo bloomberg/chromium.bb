@@ -159,7 +159,7 @@ PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize, float zoom, const FloatRect& srcRect,
-    const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect)
+    const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode blendMode)
 {
     FloatRect zoomedContainerRect = FloatRect(FloatPoint(), containerSize);
     zoomedContainerRect.scale(zoom);
@@ -186,7 +186,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     FloatRect scaledSrcRect = srcRect;
     scaledSrcRect.scale(imageBufferScale.width(), imageBufferScale.height());
 
-    image->drawPattern(context, scaledSrcRect, scaleWithoutCTM, phase, compositeOp, dstRect);
+    image->drawPattern(context, scaledSrcRect, scaleWithoutCTM, phase, compositeOp, dstRect, blendMode);
 }
 
 void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)
