@@ -813,11 +813,9 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			XCB_EVENT_MASK_KEYMAP_STATE |
 			XCB_EVENT_MASK_FOCUS_CHANGE;
 
-	output = malloc(sizeof *output);
+	output = zalloc(sizeof *output);
 	if (output == NULL)
 		return NULL;
-
-	memset(output, 0, sizeof *output);
 
 	output->mode.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
@@ -1464,11 +1462,9 @@ x11_compositor_create(struct wl_display *display,
 
 	weston_log("initializing x11 backend\n");
 
-	c = malloc(sizeof *c);
+	c = zalloc(sizeof *c);
 	if (c == NULL)
 		return NULL;
-
-	memset(c, 0, sizeof *c);
 
 	if (weston_compositor_init(&c->base, display, argc, argv, config) < 0)
 		goto err_free;

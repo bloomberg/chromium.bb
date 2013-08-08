@@ -1608,8 +1608,7 @@ widget_create(struct window *window, struct surface *surface, void *data)
 {
 	struct widget *widget;
 
-	widget = xmalloc(sizeof *widget);
-	memset(widget, 0, sizeof *widget);
+	widget = xzalloc(sizeof *widget);
 	widget->window = window;
 	widget->surface = surface;
 	widget->user_data = data;
@@ -2390,9 +2389,7 @@ frame_button_create(struct frame *frame, void *data, enum frame_button_action ty
 	struct frame_button *frame_button;
 	const char *icon = data;
 
-	frame_button = xmalloc(sizeof *frame_button);
-	memset(frame_button, 0, sizeof *frame_button);
-
+	frame_button = xzalloc (sizeof *frame_button);
 	frame_button->icon = cairo_image_surface_create_from_png(icon);
 	frame_button->widget = widget_add_widget(frame->widget, frame_button);
 	frame_button->frame = frame;
@@ -2621,9 +2618,7 @@ frame_create(struct window *window, void *data)
 {
 	struct frame *frame;
 
-	frame = xmalloc(sizeof *frame);
-	memset(frame, 0, sizeof *frame);
-
+	frame = xzalloc(sizeof *frame);
 	frame->widget = window_add_widget(window, frame);
 	frame->child = widget_add_widget(frame->widget, data);
 
@@ -4209,8 +4204,7 @@ window_create_internal(struct display *display,
 	struct window *window;
 	struct surface *surface;
 
-	window = xmalloc(sizeof *window);
-	memset(window, 0, sizeof *window);
+	window = xzalloc(sizeof *window);
 	wl_list_init(&window->subsurface_list);
 	window->display = display;
 	window->parent = parent;
@@ -4562,11 +4556,10 @@ display_add_output(struct display *d, uint32_t id)
 {
 	struct output *output;
 
-	output = malloc(sizeof *output);
+	output = zalloc(sizeof *output);
 	if (output == NULL)
 		return;
 
-	memset(output, 0, sizeof *output);
 	output->display = d;
 	output->scale = 1;
 	output->output =
@@ -4692,11 +4685,10 @@ display_add_input(struct display *d, uint32_t id)
 {
 	struct input *input;
 
-	input = malloc(sizeof *input);
+	input = zalloc(sizeof *input);
 	if (input == NULL)
 		return;
 
-	memset(input, 0, sizeof *input);
 	input->display = d;
 	input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 1);
 	input->pointer_focus = NULL;
@@ -4998,11 +4990,9 @@ display_create(int *argc, char *argv[])
 
 	wl_log_set_handler_client(log_handler);
 
-	d = malloc(sizeof *d);
+	d = zalloc(sizeof *d);
 	if (d == NULL)
 		return NULL;
-
-        memset(d, 0, sizeof *d);
 
 	d->display = wl_display_connect(NULL);
 	if (d->display == NULL) {
@@ -5351,6 +5341,12 @@ void *
 xmalloc(size_t s)
 {
 	return fail_on_null(malloc(s));
+}
+
+void *
+xzalloc(size_t s)
+{
+	return fail_on_null(zalloc(s));
 }
 
 char *

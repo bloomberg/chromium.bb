@@ -567,9 +567,7 @@ dnd_create(struct display *display)
 	int32_t width, height;
 	unsigned int i;
 
-	dnd = xmalloc(sizeof *dnd);
-	memset(dnd, 0, sizeof *dnd);
-
+	dnd = xzalloc(sizeof *dnd);
 	dnd->window = window_create(display);
 	dnd->widget = frame_create(dnd->window, dnd);
 	window_set_title(dnd->window, "Wayland Drag and Drop Demo");

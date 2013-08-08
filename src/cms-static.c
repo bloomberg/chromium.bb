@@ -94,10 +94,9 @@ module_init(struct weston_compositor *ec,
 	weston_log("cms-static: initialized\n");
 
 	/* create local state object */
-	cms = malloc(sizeof *cms);
+	cms = zalloc(sizeof *cms);
 	if (cms == NULL)
 		return -1;
-	memset(cms, 0, sizeof *cms);
 
 	cms->ec = ec;
 	cms->destroy_listener.notify = cms_notifier_destroy;

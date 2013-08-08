@@ -409,8 +409,7 @@ panel_add_clock(struct panel *panel)
 		return;
 	}
 
-	clock = xmalloc(sizeof *clock);
-	memset(clock, 0, sizeof *clock);
+	clock = xzalloc(sizeof *clock);
 	clock->panel = panel;
 	panel->clock = clock;
 	clock->clock_fd = timerfd;
@@ -512,8 +511,7 @@ panel_create(struct desktop *desktop)
 	struct panel *panel;
 	struct weston_config_section *s;
 
-	panel = xmalloc(sizeof *panel);
-	memset(panel, 0, sizeof *panel);
+	panel = xzalloc(sizeof *panel);
 
 	panel->base.configure = panel_configure;
 	panel->window = window_create_custom(desktop->display);
@@ -582,8 +580,7 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 	char *start, *p, *eq, **ps;
 	int i, j, k;
 
-	launcher = xmalloc(sizeof *launcher);
-	memset(launcher, 0, sizeof *launcher);
+	launcher = xzalloc(sizeof *launcher);
 	launcher->icon = load_icon_or_fallback(icon);
 	launcher->path = strdup(path);
 
@@ -841,8 +838,7 @@ unlock_dialog_create(struct desktop *desktop)
 	struct display *display = desktop->display;
 	struct unlock_dialog *dialog;
 
-	dialog = xmalloc(sizeof *dialog);
-	memset(dialog, 0, sizeof *dialog);
+	dialog = xzalloc(sizeof *dialog);
 
 	dialog->window = window_create_custom(display);
 	dialog->widget = frame_create(dialog->window, dialog);
@@ -987,9 +983,7 @@ background_create(struct desktop *desktop)
 	struct weston_config_section *s;
 	char *type;
 
-	background = xmalloc(sizeof *background);
-	memset(background, 0, sizeof *background);
-
+	background = xzalloc(sizeof *background);
 	background->base.configure = background_configure;
 	background->window = window_create_custom(desktop->display);
 	background->widget = window_add_widget(background->window, background);

@@ -338,11 +338,10 @@ udev_seat_create(struct weston_compositor *c, const char *seat_name)
 {
 	struct udev_seat *seat;
 
-	seat = malloc(sizeof *seat);
+	seat = zalloc(sizeof *seat);
 
 	if (!seat)
 		return NULL;
-	memset(seat, 0, sizeof *seat);
 	weston_seat_init(&seat->base, c, seat_name);
 	seat->base.led_update = drm_led_update;
 

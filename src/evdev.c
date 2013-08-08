@@ -552,10 +552,9 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 	struct weston_compositor *ec;
 	char devname[256] = "unknown";
 
-	device = malloc(sizeof *device);
+	device = zalloc(sizeof *device);
 	if (device == NULL)
 		return NULL;
-	memset(device, 0, sizeof *device);
 
 	ec = seat->compositor;
 	device->output =

@@ -465,12 +465,11 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 
 	stride = output->current->width;
 	size = stride * 4 * output->current->height;
-	recorder->frame = malloc(size);
+	recorder->frame = zalloc(size);
 	recorder->rect = malloc(size);
 	recorder->total = 0;
 	recorder->count = 0;
 	recorder->output = output;
-	memset(recorder->frame, 0, size);
 
 	if (do_yflip)
 		recorder->tmpbuf = NULL;

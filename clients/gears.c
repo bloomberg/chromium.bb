@@ -401,8 +401,7 @@ gears_create(struct display *display)
 	struct timeval tv;
 	int i;
 
-	gears = malloc(sizeof *gears);
-	memset(gears, 0, sizeof *gears);
+	gears = zalloc(sizeof *gears);
 	gears->d = display;
 	gears->window = window_create(display);
 	gears->widget = frame_create(gears->window, gears);

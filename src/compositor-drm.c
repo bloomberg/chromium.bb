@@ -234,7 +234,7 @@ drm_fb_create_dumb(struct drm_compositor *ec, unsigned width, unsigned height)
 	struct drm_mode_destroy_dumb destroy_arg;
 	struct drm_mode_map_dumb map_arg;
 
-	fb = calloc(1, sizeof *fb);
+	fb = zalloc(sizeof *fb);
 	if (!fb)
 		return NULL;
 
@@ -1771,11 +1771,10 @@ create_output_for_connector(struct drm_compositor *ec,
 		return -1;
 	}
 
-	output = malloc(sizeof *output);
+	output = zalloc(sizeof *output);
 	if (output == NULL)
 		return -1;
 
-	memset(output, 0, sizeof *output);
 	output->base.subpixel = drm_subpixel_to_wayland(connector->subpixel);
 	output->base.make = "unknown";
 	output->base.model = "unknown";
@@ -2000,7 +1999,7 @@ create_sprites(struct drm_compositor *ec)
 		if (!plane)
 			continue;
 
-		sprite = malloc(sizeof(*sprite) + ((sizeof(uint32_t)) *
+		sprite = zalloc(sizeof(*sprite) + ((sizeof(uint32_t)) *
 						   plane->count_formats));
 		if (!sprite) {
 			weston_log("%s: out of memory\n",
@@ -2008,8 +2007,6 @@ create_sprites(struct drm_compositor *ec)
 			free(plane);
 			continue;
 		}
-
-		memset(sprite, 0, sizeof *sprite);
 
 		sprite->possible_crtcs = plane->possible_crtcs;
 		sprite->plane_id = plane->plane_id;
@@ -2451,10 +2448,9 @@ drm_compositor_create(struct wl_display *display,
 
 	weston_log("initializing drm backend\n");
 
-	ec = malloc(sizeof *ec);
+	ec = zalloc(sizeof *ec);
 	if (ec == NULL)
 		return NULL;
-	memset(ec, 0, sizeof *ec);
 
 	/* KMS support for sprites is not complete yet, so disable the
 	 * functionality for now. */

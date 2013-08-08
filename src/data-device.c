@@ -382,13 +382,12 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
-	drag = malloc(sizeof *drag);
+	drag = zalloc(sizeof *drag);
 	if (drag == NULL) {
 		wl_resource_post_no_memory(resource);
 		return;
 	}
 
-	memset(drag, 0, sizeof *drag);
 	drag->grab.interface = &drag_grab_interface;
 	drag->client = client;
 

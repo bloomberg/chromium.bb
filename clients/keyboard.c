@@ -836,9 +836,7 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 
 	layout = get_current_layout(virtual_keyboard);
 
-	keyboard = xmalloc(sizeof *keyboard);
-	memset(keyboard, 0, sizeof *keyboard);
-
+	keyboard = xzalloc(sizeof *keyboard);
 	keyboard->keyboard = virtual_keyboard;
 	keyboard->window = window_create_custom(virtual_keyboard->display);
 	keyboard->widget = window_add_widget(keyboard->window, keyboard);

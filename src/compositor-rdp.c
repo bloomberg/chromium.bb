@@ -445,10 +445,9 @@ rdp_compositor_create_output(struct rdp_compositor *c, int width, int height,
 	struct wl_event_loop *loop;
 	struct weston_mode *currentMode, *next;
 
-	output = malloc(sizeof *output);
+	output = zalloc(sizeof *output);
 	if (output == NULL)
 		return -1;
-	memset(output, 0, sizeof *output);
 
 	wl_list_init(&output->peers);
 	wl_list_init(&output->base.mode_list);
@@ -991,11 +990,9 @@ rdp_compositor_create(struct wl_display *display,
 	char *fd_str;
 	int fd;
 
-	c = malloc(sizeof *c);
+	c = zalloc(sizeof *c);
 	if (c == NULL)
 		return NULL;
-
-	memset(c, 0, sizeof *c);
 
 	if (weston_compositor_init(&c->base, display, argc, argv, wconfig) < 0)
 		goto err_free;

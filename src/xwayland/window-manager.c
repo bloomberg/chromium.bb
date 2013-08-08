@@ -990,7 +990,7 @@ weston_wm_window_create(struct weston_wm *wm,
 	xcb_get_geometry_cookie_t geometry_cookie;
 	xcb_get_geometry_reply_t *geometry_reply;
 
-	window = malloc(sizeof *window);
+	window = zalloc(sizeof *window);
 	if (window == NULL) {
 		wm_log("failed to allocate window\n");
 		return;
@@ -1001,7 +1001,6 @@ weston_wm_window_create(struct weston_wm *wm,
 	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, id, XCB_CW_EVENT_MASK, values);
 
-	memset(window, 0, sizeof *window);
 	window->wm = wm;
 	window->id = id;
 	window->properties_dirty = 1;
@@ -1701,11 +1700,10 @@ weston_wm_create(struct weston_xserver *wxs)
 	int sv[2];
 	xcb_atom_t supported[3];
 
-	wm = malloc(sizeof *wm);
+	wm = zalloc(sizeof *wm);
 	if (wm == NULL)
 		return NULL;
 
-	memset(wm, 0, sizeof *wm);
 	wm->server = wxs;
 	wm->window_hash = hash_table_create();
 	if (wm->window_hash == NULL) {

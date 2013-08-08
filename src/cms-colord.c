@@ -494,10 +494,9 @@ module_init(struct weston_compositor *ec,
 	weston_log("colord: initialized\n");
 
 	/* create local state object */
-	cms = malloc(sizeof *cms);
+	cms = zalloc(sizeof *cms);
 	if (cms == NULL)
 		return -1;
-	memset(cms, 0, sizeof *cms);
 	cms->ec = ec;
 #if !GLIB_CHECK_VERSION(2,36,0)
 	g_type_init();

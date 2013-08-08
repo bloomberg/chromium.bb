@@ -132,11 +132,10 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	char filename[16];
 	struct vt_stat vts;
 
-	tty = malloc(sizeof *tty);
+	tty = zalloc(sizeof *tty);
 	if (tty == NULL)
 		return NULL;
 
-	memset(tty, 0, sizeof *tty);
 	tty->compositor = compositor;
 	tty->vt_func = vt_func;
 

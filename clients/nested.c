@@ -404,13 +404,12 @@ compositor_create_surface(struct wl_client *client,
 	struct nested *nested = wl_resource_get_user_data(resource);
 	struct nested_surface *surface;
 	
-	surface = malloc(sizeof *surface);
+	surface = zalloc(sizeof *surface);
 	if (surface == NULL) {
 		wl_resource_post_no_memory(resource);
 		return;
 	}
 
-	memset(surface, 0, sizeof *surface);
 	surface->nested = nested;
 
 	display_acquire_window_surface(nested->display,
@@ -568,10 +567,9 @@ nested_create(struct display *display)
 {
 	struct nested *nested;
 
-	nested = malloc(sizeof *nested);
+	nested = zalloc(sizeof *nested);
 	if (nested == NULL)
 		return nested;
-	memset(nested, 0, sizeof *nested);
 
 	nested->window = window_create(display);
 	nested->widget = frame_create(nested->window, nested);

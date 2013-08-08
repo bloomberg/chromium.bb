@@ -249,10 +249,9 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 {
 	struct wayland_output *output;
 
-	output = malloc(sizeof *output);
+	output = zalloc(sizeof *output);
 	if (output == NULL)
 		return -1;
-	memset(output, 0, sizeof *output);
 
 	output->mode.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
@@ -629,11 +628,9 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 {
 	struct wayland_input *input;
 
-	input = malloc(sizeof *input);
+	input = zalloc(sizeof *input);
 	if (input == NULL)
 		return;
-
-	memset(input, 0, sizeof *input);
 
 	weston_seat_init(&input->base, &c->base, "default");
 	input->compositor = c;
@@ -725,11 +722,9 @@ wayland_compositor_create(struct wl_display *display,
 	struct wl_event_loop *loop;
 	int fd;
 
-	c = malloc(sizeof *c);
+	c = zalloc(sizeof *c);
 	if (c == NULL)
 		return NULL;
-
-	memset(c, 0, sizeof *c);
 
 	if (weston_compositor_init(&c->base, display, argc, argv,
 				   config) < 0)

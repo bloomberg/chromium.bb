@@ -4443,11 +4443,10 @@ module_init(struct weston_compositor *ec,
 	unsigned int i;
 	struct wl_event_loop *loop;
 
-	shell = malloc(sizeof *shell);
+	shell = zalloc(sizeof *shell);
 	if (shell == NULL)
 		return -1;
 
-	memset(shell, 0, sizeof *shell);
 	shell->compositor = ec;
 
 	shell->destroy_listener.notify = shell_destroy;

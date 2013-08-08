@@ -527,11 +527,10 @@ module_init(struct weston_compositor *compositor,
 	struct tablet_shell *shell;
 	struct wl_event_loop *loop;
 
-	shell = malloc(sizeof *shell);
+	shell = zalloc(sizeof *shell);
 	if (shell == NULL)
 		return -1;
 
-	memset(shell, 0, sizeof *shell);
 	shell->compositor = compositor;
 
 	shell->destroy_listener.notify = tablet_shell_destroy;

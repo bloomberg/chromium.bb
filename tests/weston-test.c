@@ -232,11 +232,10 @@ module_init(struct weston_compositor *ec,
 	struct weston_test *test;
 	struct wl_event_loop *loop;
 
-	test = malloc(sizeof *test);
+	test = zalloc(sizeof *test);
 	if (test == NULL)
 		return -1;
 
-	memset(test, 0, sizeof *test);
 	test->compositor = ec;
 	weston_layer_init(&test->layer, &ec->cursor_layer.link);
 

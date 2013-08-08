@@ -95,10 +95,9 @@ headless_compositor_create_output(struct headless_compositor *c,
 	struct headless_output *output;
 	struct wl_event_loop *loop;
 
-	output = malloc(sizeof *output);
+	output = zalloc(sizeof *output);
 	if (output == NULL)
 		return -1;
-	memset(output, 0, sizeof *output);
 
 	output->mode.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
@@ -161,11 +160,9 @@ headless_compositor_create(struct wl_display *display,
 {
 	struct headless_compositor *c;
 
-	c = calloc(1, sizeof *c);
+	c = zalloc(sizeof *c);
 	if (c == NULL)
 		return NULL;
-
-	memset(c, 0, sizeof *c);
 
 	if (weston_compositor_init(&c->base, display, argc, argv, config) < 0)
 		goto err_free;

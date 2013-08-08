@@ -598,11 +598,10 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 {
 	struct rpi_seat *seat;
 
-	seat = malloc(sizeof *seat);
+	seat = zalloc(sizeof *seat);
 	if (seat == NULL)
 		return;
 
-	memset(seat, 0, sizeof *seat);
 	weston_seat_init(&seat->base, c, "default");
 	seat->base.led_update = rpi_led_update;
 

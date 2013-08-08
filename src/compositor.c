@@ -1077,9 +1077,7 @@ weston_buffer_from_resource(struct wl_resource *resource)
 		buffer = container_of(listener, struct weston_buffer,
 				      destroy_listener);
 	} else {
-		buffer = malloc(sizeof *buffer);
-		memset(buffer, 0, sizeof *buffer);
-
+		buffer = zalloc(sizeof *buffer);
 		buffer->resource = resource;
 		wl_signal_init(&buffer->destroy_signal);
 		buffer->destroy_listener.notify = weston_buffer_destroy_handler;

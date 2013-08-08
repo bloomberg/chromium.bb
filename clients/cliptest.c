@@ -791,9 +791,7 @@ cliptest_create(struct display *display)
 {
 	struct cliptest *cliptest;
 
-	cliptest = xmalloc(sizeof *cliptest);
-	memset(cliptest, 0, sizeof *cliptest);
-
+	cliptest = xzalloc(sizeof *cliptest);
 	cliptest->surface.geometry = &cliptest->geometry;
 	cliptest->surface.transform.enabled = 0;
 	geometry_init(&cliptest->geometry);

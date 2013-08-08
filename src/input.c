@@ -307,11 +307,10 @@ weston_pointer_create(void)
 {
 	struct weston_pointer *pointer;
 
-	pointer = malloc(sizeof *pointer);
+	pointer = zalloc(sizeof *pointer);
 	if (pointer == NULL)
 		return NULL;
 
-	memset(pointer, 0, sizeof *pointer);
 	wl_list_init(&pointer->resource_list);
 	pointer->focus_listener.notify = lose_pointer_focus;
 	pointer->default_grab.interface = &default_pointer_grab_interface;
@@ -345,11 +344,10 @@ weston_keyboard_create(void)
 {
 	struct weston_keyboard *keyboard;
 
-	keyboard = malloc(sizeof *keyboard);
+	keyboard = zalloc(sizeof *keyboard);
 	if (keyboard == NULL)
 	    return NULL;
 
-	memset(keyboard, 0, sizeof *keyboard);
 	wl_list_init(&keyboard->resource_list);
 	wl_array_init(&keyboard->keys);
 	keyboard->focus_listener.notify = lose_keyboard_focus;
@@ -376,11 +374,10 @@ weston_touch_create(void)
 {
 	struct weston_touch *touch;
 
-	touch = malloc(sizeof *touch);
+	touch = zalloc(sizeof *touch);
 	if (touch == NULL)
 		return NULL;
 
-	memset(touch, 0, sizeof *touch);
 	wl_list_init(&touch->resource_list);
 	touch->focus_listener.notify = lose_touch_focus;
 	touch->default_grab.interface = &default_touch_grab_interface;

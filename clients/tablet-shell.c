@@ -230,9 +230,7 @@ homescreen_create(struct tablet *tablet)
 {
 	struct homescreen *homescreen;
 
-	homescreen = xmalloc(sizeof *homescreen);
-	memset(homescreen, 0, sizeof *homescreen);
-
+	homescreen = zalloc (sizeof *homescreen);
 	homescreen->window = window_create_custom(tablet->display);
 	homescreen->widget =
 		window_add_widget(homescreen->window, homescreen);
@@ -248,9 +246,7 @@ lockscreen_create(struct tablet *tablet)
 {
 	struct lockscreen *lockscreen;
 
-	lockscreen = xmalloc(sizeof *lockscreen);
-	memset(lockscreen, 0, sizeof *lockscreen);
-
+	lockscreen = zalloc (sizeof *lockscreen);
 	lockscreen->window = window_create_custom(tablet->display);
 	lockscreen->widget =
 		window_add_widget(lockscreen->window, lockscreen);

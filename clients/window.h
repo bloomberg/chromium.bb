@@ -27,6 +27,7 @@
 #include <wayland-client.h>
 #include <cairo.h>
 #include "../shared/config-parser.h"
+#include "../shared/zalloc.h"
 #include "subsurface-client-protocol.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
@@ -57,6 +58,8 @@ void *
 fail_on_null(void *p);
 void *
 xmalloc(size_t s);
+void *
+xzalloc(size_t s);
 char *
 xstrdup(const char *s);
 

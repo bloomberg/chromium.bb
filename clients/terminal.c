@@ -710,12 +710,10 @@ terminal_resize_cells(struct terminal *terminal, int width, int height)
 
 	data_pitch = width * sizeof(union utf8_char);
 	size = data_pitch * height;
-	data = malloc(size);
+	data = zalloc(size);
 	attr_pitch = width * sizeof(struct attr);
 	data_attr = malloc(attr_pitch * height);
-	tab_ruler = malloc(width);
-	memset(data, 0, size);
-	memset(tab_ruler, 0, width);
+	tab_ruler = zalloc(width);
 	attr_init(data_attr, terminal->curr_attr, width * height);
 	if (terminal->data && terminal->data_attr) {
 		if (width > terminal->width)
@@ -2552,9 +2550,7 @@ terminal_create(struct display *display)
 	cairo_t *cr;
 	cairo_text_extents_t text_extents;
 
-	terminal = xmalloc(sizeof *terminal);
-
-	memset(terminal, 0, sizeof *terminal);
+	terminal = xzalloc(sizeof *terminal);
 	terminal->color_scheme = &DEFAULT_COLORS;
 	terminal_init(terminal);
 	terminal->margin_top = 0;
