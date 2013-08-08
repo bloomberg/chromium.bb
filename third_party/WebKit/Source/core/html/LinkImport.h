@@ -28,67 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLImport_h
-#define HTMLImport_h
+#ifndef LinkImport_h
+#define LinkImport_h
 
-#include "wtf/Vector.h"
+#include "core/html/LinkResource.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class Frame;
 class Document;
-class Frame;
-class HTMLImportRoot;
-class HTMLImportsController;
+class HTMLImportLoader;
 
-class HTMLImport {
+//
+// A LinkResource subclasss used for @rel=import.
+//
+class LinkImport : public LinkResource {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    static bool unblock(HTMLImport*);
 
-    virtual ~HTMLImport() { }
+    static PassRefPtr<LinkImport> create(HTMLLinkElement* owner);
 
-    Frame* frame();
-    Document* master();
-    HTMLImportsController* controller();
+    explicit LinkImport(HTMLLinkElement* owner);
+    virtual ~LinkImport();
 
-    bool isLoaded() const { return !isBlocked() && !isProcessing(); }
-    bool isBlocked() const { return m_blocked; }
-    void appendChild(HTMLImport*);
+    // LinkResource
+    virtual void process() OVERRIDE;
+    virtual Type type() const OVERRIDE { return Import; }
+    virtual void ownerRemoved() OVERRIDE;
 
-    virtual HTMLImportRoot* root() = 0;
-    virtual HTMLImport* parent() const = 0;
-    virtual Document* document() const = 0;
-    virtual void wasDetachedFromDocument() = 0;
-    virtual void didFinishParsing() = 0;
-    virtual bool isProcessing() const = 0;
-
-protected:
-    HTMLImport()
-        : m_blocked(false)
-    { }
+    Document* importedDocument() const;
 
 private:
-    static void block(HTMLImport*);
-
-    void blockAfter(HTMLImport* child);
-    void block();
-    void unblock();
-    void didUnblock();
-
-    bool arePredecessorsLoaded() const;
-    bool areChilrenLoaded() const;
-    bool hasChildren() const { return !m_children.isEmpty(); }
-
-    Vector<HTMLImport*> m_children;
-    bool m_blocked; // If any of decendants or predecessors is in processing, it is blocked.
-};
-
-class HTMLImportRoot : public HTMLImport {
-public:
-    virtual void importWasDisposed() = 0;
-    virtual HTMLImportsController* toController() = 0;
+    RefPtr<HTMLImportLoader> m_loader;
 };
 
 } // namespace WebCore
 
-#endif // HTMLImport_h
+#endif // LinkImport_h

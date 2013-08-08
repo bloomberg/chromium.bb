@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/html/HTMLImport.h"
 
-#include "core/html/HTMLImportsController.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 
@@ -42,7 +42,12 @@ Frame* HTMLImport::frame()
 
 Document* HTMLImport::master()
 {
-    return controller()->document();
+    return root()->document();
+}
+
+HTMLImportsController* HTMLImport::controller()
+{
+    return root()->toController();
 }
 
 void HTMLImport::appendChild(HTMLImport* child)

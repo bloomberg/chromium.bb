@@ -37,7 +37,7 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventSender.h"
-#include "core/html/HTMLImportsController.h"
+#include "core/html/LinkImport.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"

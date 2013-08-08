@@ -28,31 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLImportsController_h
-#define HTMLImportsController_h
+#ifndef HTMLImportLoader_h
+#define HTMLImportLoader_h
 
 #include "core/html/HTMLImport.h"
-#include "core/html/LinkResource.h"
 #include "core/loader/cache/CachedRawResource.h"
-#include "core/platform/Supplementable.h"
-#include "core/platform/Timer.h"
-#include "wtf/FastAllocBase.h"
-#include "wtf/PassOwnPtr.h"
+#include "core/loader/cache/ResourcePtr.h"
+#include "weborigin/KURL.h"
+#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class ScriptExecutionContext;
-class ResourceFetcher;
-class HTMLImportLoader;
+class DocumentWriter;
 
-class HTMLImportsController : public HTMLImportRoot, public Supplement<ScriptExecutionContext> {
-    WTF_MAKE_FAST_ALLOCATED;
+class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public HTMLImport, public CachedRawResourceClient {
 public:
-    static void provideTo(Document*);
+    enum State {
+        StateLoading,
+        StateWritten,
+        StateError,
+        StateReady
+    };
 
-    explicit HTMLImportsController(Document*);
-    virtual ~HTMLImportsController();
+    HTMLImportLoader(HTMLImport*, const KURL&, const ResourcePtr<CachedRawResource>&);
+    virtual ~HTMLImportLoader();
+
+    Document* importedDocument() const;
+    const KURL& url() const { return m_url; }
+
+    void importDestroyed();
+    bool isDone() const { return m_state == StateReady || m_state == StateError; }
 
     // HTMLImport
     virtual HTMLImportRoot* root() OVERRIDE;
@@ -61,30 +67,29 @@ public:
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;
     virtual bool isProcessing() const OVERRIDE;
-    // HTMLImportRoot
-    virtual void importWasDisposed() OVERRIDE;
-    virtual HTMLImportsController* toController() { return this; }
-
-    PassRefPtr<HTMLImportLoader> createLoader(HTMLImport* parent, const KURL&, const ResourcePtr<CachedRawResource>&);
-    void showSecurityErrorMessage(const String&);
-    PassRefPtr<HTMLImportLoader> findLinkFor(const KURL&) const;
-    SecurityOrigin* securityOrigin() const;
-    ResourceFetcher* fetcher() const;
-
-    void scheduleUnblock();
-    void unblockTimerFired(Timer<HTMLImportsController>*);
 
 private:
-    void clear();
 
-    Document* m_master;
-    Timer<HTMLImportsController> m_unblockTimer;
+    // CachedRawResourceClient
+    virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
+    virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
+    virtual void notifyFinished(Resource*) OVERRIDE;
 
-    // List of import which has been loaded or being loaded.
-    typedef Vector<RefPtr<HTMLImportLoader> > ImportList;
-    ImportList m_imports;
+    State startWritingAndParsing(const ResourceResponse&);
+    State finishWriting();
+    State finishParsing();
+
+    void setState(State);
+    void dispose();
+
+    HTMLImport* m_parent;
+    State m_state;
+    KURL m_url;
+    ResourcePtr<CachedRawResource> m_resource;
+    RefPtr<Document> m_importedDocument;
+    RefPtr<DocumentWriter> m_writer;
 };
 
 } // namespace WebCore
 
-#endif // HTMLImportsController_h
+#endif // HTMLImportLoader_h
