@@ -8,9 +8,9 @@ PASS access.inputs().length is 1
 PASS access.outputs().length is 1
 PASS input attributes are correct
 PASS output attributes are correct
+PASS navigator.requestMIDIAccess() did not throw exception.
+PASS navigator.requestMIDIAccess() did not throw exception.
 PASS requestMIDIAccess() was correctly blocked for System Exclusive access with error [object DOMError].
-PASS navigator.requestMIDIAccess() did not throw exception.
-PASS navigator.requestMIDIAccess() did not throw exception.
 PASS successfullyParsed is true
 
 TEST COMPLETE
