@@ -70,13 +70,14 @@
 
                   // Append media data for the current position.
                   test.expectEvent(sourceBuffer, "updateend", "sourceBuffer");
+                  test.expectEvent(mediaElement, "seeked", "mediaElement finished seek");
+                  test.expectEvent(mediaElement, "playing", "mediaElement playing");
                   sourceBuffer.appendBuffer(secondSegment);
               });
 
               test.waitForExpectedEvents(function()
               {
                   test.expectEvent(mediaSource, "sourceended", "mediaSource ended");
-                  test.expectEvent(mediaElement, "playing", "mediaElement playing");
                   mediaSource.endOfStream();
               });
 
