@@ -242,8 +242,11 @@
             }, {
               'dependencies': [
                 '<@(chromium_child_dependencies)',
-                '../content/content.gyp:content_app_child',
+                '../content/content.gyp:content_app_both',
                 '../content/content.gyp:content_worker',
+              ],
+              'dependencies!': [
+                '../content/content.gyp:content_app_browser',
               ],
             }],
             ['OS=="mac" and component!="shared_library"', {
