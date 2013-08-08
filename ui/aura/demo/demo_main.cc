@@ -11,6 +11,7 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
@@ -116,6 +117,8 @@ int DemoMain() {
       test_screen->CreateRootWindowForPrimaryDisplay());
   scoped_ptr<DemoStackingClient> stacking_client(new DemoStackingClient(
       root_window.get()));
+  aura::FocusManager focus_manager;
+  aura::client::SetFocusClient(root_window.get(), &focus_manager);
 
   // Create a hierarchy of test windows.
   DemoWindowDelegate window_delegate1(SK_ColorBLUE);
