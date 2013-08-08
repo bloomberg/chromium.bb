@@ -42,11 +42,16 @@ bool ResourceMessageFilter::HandleMessage(const IPC::Message& msg,
                                           HostMessageContext* context) {
   scoped_refptr<base::TaskRunner> runner = OverrideTaskRunnerForMessage(msg);
   if (runner.get()) {
-    // TODO(raymes): We need to make a copy so the context can be used on other
-    // threads. It would be better to have a thread-safe refcounted context.
-    HostMessageContext context_copy = *context;
-    runner->PostTask(FROM_HERE, base::Bind(
-        &ResourceMessageFilter::DispatchMessage, this, msg, context_copy));
+    if (runner->RunsTasksOnCurrentThread()) {
+      DispatchMessage(msg, *context);
+    } else {
+      // TODO(raymes): We need to make a copy so the context can be used on
+      // other threads. It would be better to have a thread-safe refcounted
+      // context.
+      HostMessageContext context_copy = *context;
+      runner->PostTask(FROM_HERE, base::Bind(
+          &ResourceMessageFilter::DispatchMessage, this, msg, context_copy));
+    }
     return true;
   }
 
