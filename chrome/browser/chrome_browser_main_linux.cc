@@ -23,6 +23,7 @@
 #include "chromeos/chromeos_switches.h"
 #else
 #include "chrome/browser/storage_monitor/storage_monitor_linux.h"
+#include "chrome/browser/sxs_linux.h"
 #include "content/public/browser/browser_thread.h"
 #endif
 
@@ -113,6 +114,11 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   content::BrowserThread::PostTask(content::BrowserThread::FILE,
                                    FROM_HERE,
                                    base::Bind(&GetLinuxDistroCallback));
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&sxs_linux::AddChannelMarkToUserDataDir));
 #endif
 
   if (IsCrashReportingEnabled(local_state()))
