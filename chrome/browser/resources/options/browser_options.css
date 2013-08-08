@@ -11,6 +11,7 @@
   max-width: 400px;
   overflow: hidden;
   text-overflow: ellipsis;
+  vertical-align: top;
 }
 
 #default-browser-state {
