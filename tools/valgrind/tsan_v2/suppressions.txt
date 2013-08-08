@@ -12,6 +12,9 @@ race:base/threading/watchdog_unittest.cc
 # Races in libevent, http://crbug.com/23244
 race:libevent/event.c
 
+# http://crbug.com/46840
+race:history::HistoryBackend::DeleteFTSIndexDatabases
+
 # http://crbug.com/84094
 race:sqlite3StatusSet
 race:pcache1EnforceMaxPage
@@ -93,5 +96,16 @@ race:base::debug::TraceEventTestFixture_TraceSamplingScope_Test::TestBody
 # http://crbug.com/257543
 race:*GetObjectFromEntryAddress
 
+# http://crbug.com/268924
+race:base::g_power_monitor
+race:base::PowerMonitor::PowerMonitor
+race:base::PowerMonitor::AddObserver
+
 # http://crbug.com/268941
 race:tracked_objects::ThreadData::tls_index_
+
+# http://crbug.com/269965
+race:DesktopMediaPickerModelTest_UpdateThumbnail_Test
+
+# http://crbug.com/270037
+race:gLibCleanupFunctions
