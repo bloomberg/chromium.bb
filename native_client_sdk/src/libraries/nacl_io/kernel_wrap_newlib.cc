@@ -9,6 +9,7 @@
 #if defined(__native_client__) && !defined(__GLIBC__)
 
 #include "nacl_io/kernel_wrap.h"
+#include <assert.h>
 #include <dirent.h>
 #include <errno.h>
 #include <irt.h>
@@ -25,9 +26,14 @@ EXTERN_C_BEGIN
 // Macro to get the WRAP function
 #define WRAP(name) __nacl_irt_##name##_wrap
 
-// Declare REAL function pointer and assign it the REAL function.
+// Declare REAL function pointer.
 #define DECLARE_REAL_PTR(group, name) \
-  typeof(__libnacl_irt_##group.name) REAL(name) = __libnacl_irt_##group.name;
+  typeof(__libnacl_irt_##group.name) REAL(name);
+
+// Assign the REAL function pointer.
+#define ASSIGN_REAL_PTR(group, name) \
+  assert(__libnacl_irt_##group.name != NULL); \
+  REAL(name) = __libnacl_irt_##group.name;
 
 // Switch IRT's pointer to the REAL pointer
 #define USE_REAL(group, name) \
@@ -273,16 +279,21 @@ uint64_t usec_since_epoch() {
 }
 
 static bool s_wrapped = false;
+static bool s_assigned = false;
 void kernel_wrap_init() {
   if (!s_wrapped) {
-    EXPAND_SYMBOL_LIST_OPERATION(USE_WRAP);
+    if (!s_assigned) {
+      EXPAND_SYMBOL_LIST_OPERATION(ASSIGN_REAL_PTR)
+      s_assigned = true;
+    }
+    EXPAND_SYMBOL_LIST_OPERATION(USE_WRAP)
     s_wrapped = true;
   }
 }
 
 void kernel_wrap_uninit() {
   if (s_wrapped) {
-    EXPAND_SYMBOL_LIST_OPERATION(USE_REAL);
+    EXPAND_SYMBOL_LIST_OPERATION(USE_REAL)
     s_wrapped = false;
   }
 }
