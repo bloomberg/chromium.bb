@@ -30,7 +30,9 @@
 #include "V8History.h"
 #include "V8Location.h"
 #include "V8Window.h"
+#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCController.h"
@@ -97,10 +99,17 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();
     String resource = shouldUseDocumentURL ? firstWindow->document()->url() : toWebCoreString(resourceName);
     RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resource, message->GetLineNumber(), message->GetStartColumn());
-    v8::Local<v8::Value> wrappedEvent = toV8(event.get(), v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
-    if (!wrappedEvent.IsEmpty()) {
-        ASSERT(wrappedEvent->IsObject());
-        v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(), data);
+
+    // messageHandlerInMainThread can be called while we're creating a new context.
+    // Since we cannot create a wrapper in the intermediate timing, we need to skip
+    // creating a wrapper for |event|.
+    DOMWrapperWorld* world = DOMWrapperWorld::current();
+    if (world && firstWindow->document()->frame()->script()->existingWindowShell(world)) {
+        v8::Local<v8::Value> wrappedEvent = toV8(event.get(), v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
+        if (!wrappedEvent.IsEmpty()) {
+            ASSERT(wrappedEvent->IsObject());
+            v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(), data);
+        }
     }
     AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
     firstWindow->document()->reportException(event.release(), callStack, corsStatus);
