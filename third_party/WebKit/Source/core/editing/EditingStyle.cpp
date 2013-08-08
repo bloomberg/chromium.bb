@@ -58,16 +58,10 @@ namespace WebCore {
 
 // Editing style properties must be preserved during editing operation.
 // e.g. when a user inserts a new paragraph, all properties listed here must be copied to the new paragraph.
-// NOTE: Use editingProperties() to respect runtime enabling of properties.
-static const unsigned nonInheritedStaticPropertiesCount = 2;
-
+// NOTE: Use either allEditingProperties() or inheritableEditingProperties() to
+// respect runtime enabling of properties.
 static const CSSPropertyID staticEditingProperties[] = {
-    // NOTE: inheritableEditingProperties depends on these two properties being first.
-    // If you change this list, make sure to update nonInheritedPropertyCount.
     CSSPropertyBackgroundColor,
-    CSSPropertyTextDecoration,
-
-    // CSS inheritable properties
     CSSPropertyColor,
     CSSPropertyFontFamily,
     CSSPropertyFontSize,
@@ -78,6 +72,7 @@ static const CSSPropertyID staticEditingProperties[] = {
     CSSPropertyLineHeight,
     CSSPropertyOrphans,
     CSSPropertyTextAlign,
+    CSSPropertyTextDecoration,
     CSSPropertyTextIndent,
     CSSPropertyTextTransform,
     CSSPropertyWhiteSpace,
@@ -102,8 +97,16 @@ static const Vector<CSSPropertyID>& allEditingProperties()
 static const Vector<CSSPropertyID>& inheritableEditingProperties()
 {
     DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
-    if (properties.isEmpty())
-        RuntimeCSSEnabled::filterEnabledCSSPropertiesIntoVector(staticEditingProperties + nonInheritedStaticPropertiesCount, WTF_ARRAY_LENGTH(staticEditingProperties) - nonInheritedStaticPropertiesCount, properties);
+    if (properties.isEmpty()) {
+        RuntimeCSSEnabled::filterEnabledCSSPropertiesIntoVector(staticEditingProperties, WTF_ARRAY_LENGTH(staticEditingProperties), properties);
+        for (size_t index = 0; index < properties.size();) {
+            if (!CSSProperty::isInheritedProperty(properties[index])) {
+                properties.remove(index);
+                continue;
+            }
+            ++index;
+        }
+    }
     return properties;
 }
 
