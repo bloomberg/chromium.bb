@@ -156,6 +156,8 @@ public:
 //  Media Source.
     void closeMediaSource();
 
+    void durationChanged(double duration);
+
     void webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState&);
     void webkitGenerateKeyRequest(const String& keySystem, ExceptionState&);
     void webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState&);
@@ -483,6 +485,9 @@ private:
 
     unsigned m_previousProgress;
     double m_previousProgressTime;
+
+    // Cached duration to suppress duplicate events if duration unchanged.
+    double m_duration;
 
     // The last time a timeupdate event was sent (wall clock).
     double m_lastTimeUpdateEventWallTime;

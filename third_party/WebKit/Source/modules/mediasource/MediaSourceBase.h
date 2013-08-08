@@ -59,7 +59,7 @@ public:
     bool isOpen() const;
 
     // HTMLMediaSource
-    virtual bool attachToElement() OVERRIDE;
+    virtual bool attachToElement(HTMLMediaElement*) OVERRIDE;
     virtual void setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate>) OVERRIDE;
     virtual void close() OVERRIDE;
     virtual bool isClosed() const OVERRIDE;
@@ -106,7 +106,7 @@ private:
     EventTargetData m_eventTargetData;
     AtomicString m_readyState;
     OwnPtr<GenericEventQueue> m_asyncEventQueue;
-    bool m_attached;
+    HTMLMediaElement* m_attachedElement;
 };
 
 }

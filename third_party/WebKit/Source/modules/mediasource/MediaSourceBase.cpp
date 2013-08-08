@@ -47,7 +47,7 @@ MediaSourceBase::MediaSourceBase(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
     , m_readyState(closedKeyword())
     , m_asyncEventQueue(GenericEventQueue::create(this))
-    , m_attached(false)
+    , m_attachedElement(0)
 {
 }
 
@@ -77,7 +77,7 @@ void MediaSourceBase::setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate> mediaSour
 {
     ASSERT(mediaSourcePrivate);
     ASSERT(!m_private);
-    ASSERT(m_attached);
+    ASSERT(m_attachedElement);
     m_private = mediaSourcePrivate;
     setReadyState(openKeyword());
 }
@@ -151,6 +151,10 @@ void MediaSourceBase::setDuration(double duration, ExceptionState& es)
         es.throwDOMException(InvalidStateError);
         return;
     }
+
+    // Synchronously process duration change algorithm to enforce any required
+    // seek is started prior to returning.
+    m_attachedElement->durationChanged(duration);
     m_private->setDuration(duration);
 }
 
@@ -164,7 +168,7 @@ void MediaSourceBase::setReadyState(const AtomicString& state)
 
     if (state == closedKeyword()) {
         m_private.clear();
-        m_attached = false;
+        m_attachedElement = 0;
     }
 
     if (oldState == state)
@@ -221,14 +225,14 @@ void MediaSourceBase::close()
     setReadyState(closedKeyword());
 }
 
-bool MediaSourceBase::attachToElement()
+bool MediaSourceBase::attachToElement(HTMLMediaElement* element)
 {
-    if (m_attached)
+    if (m_attachedElement)
         return false;
 
     ASSERT(isClosed());
 
-    m_attached = true;
+    m_attachedElement = element;
     return true;
 }
 

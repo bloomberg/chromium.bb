@@ -255,6 +255,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_volume(1.0f)
     , m_lastSeekTime(0)
     , m_previousProgressTime(numeric_limits<double>::max())
+    , m_duration(numeric_limits<double>::quiet_NaN())
     , m_lastTimeUpdateEventWallTime(0)
     , m_lastTimeUpdateEventMovieTime(numeric_limits<double>::max())
     , m_loadState(WaitingForSource)
@@ -713,6 +714,7 @@ void HTMLMediaElement::prepareForLoad()
 
     m_playedTimeRanges = TimeRanges::create();
     m_lastSeekTime = 0;
+    m_duration = numeric_limits<double>::quiet_NaN();
 
     // The spec doesn't say to block the load event until we actually run the asynchronous section
     // algorithm, but do it now because we won't start that until after the timer fires and the
@@ -889,7 +891,7 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
         m_mediaSource = HTMLMediaSource::lookup(url.string());
 
     if (m_mediaSource) {
-        if (m_mediaSource->attachToElement()) {
+        if (m_mediaSource->attachToElement(this)) {
             m_player->load(url, m_mediaSource);
         } else {
             // Forget our reference to the MediaSource, so we leave it alone
@@ -1894,6 +1896,8 @@ void HTMLMediaElement::seek(double time, ExceptionState& es)
     if (noSeekRequired) {
         if (time == now) {
             scheduleEvent(eventNames().seekingEvent);
+            // FIXME: There must be a stable state before timeupdate+seeked are dispatched and seeking
+            // is reset to false. See http://crbug.com/266631
             scheduleTimeupdateEvent(false);
             scheduleEvent(eventNames().seekedEvent);
         }
@@ -2025,6 +2029,16 @@ double HTMLMediaElement::duration() const
 {
     if (!m_player || m_readyState < HAVE_METADATA)
         return numeric_limits<double>::quiet_NaN();
+
+    // FIXME: Refactor so m_duration is kept current (in both MSE and
+    // non-MSE cases) once we have transitioned from HAVE_NOTHING ->
+    // HAVE_METADATA. Currently, m_duration may be out of date for at least MSE
+    // case because MediaSourceBase and SourceBuffer do not notify the element
+    // directly upon duration changes caused by endOfStream, remove, or append
+    // operations; rather the notification is triggered by the WebMediaPlayer
+    // implementation observing that the underlying engine has updated duration
+    // and notifying the element to consult its MediaSource for current
+    // duration. See http://crbug.com/266644
 
     if (m_mediaSource)
         return m_mediaSource->duration();
@@ -3127,7 +3141,18 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
 void HTMLMediaElement::mediaPlayerDurationChanged()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerDurationChanged");
+    durationChanged(duration());
+}
 
+void HTMLMediaElement::durationChanged(double duration)
+{
+    LOG(Media, "HTMLMediaElement::durationChanged(%f)", duration);
+
+    // Abort if duration unchanged.
+    if (m_duration == duration)
+        return;
+
+    m_duration = duration;
     scheduleEvent(eventNames().durationchangeEvent);
 
     if (hasMediaControls())
@@ -3135,10 +3160,8 @@ void HTMLMediaElement::mediaPlayerDurationChanged()
     if (renderer())
         renderer()->updateFromElement();
 
-    double now = currentTime();
-    double dur = duration();
-    if (now > dur)
-        seek(dur, IGNORE_EXCEPTION);
+    if (currentTime() > duration)
+        seek(duration, IGNORE_EXCEPTION);
 }
 
 void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
