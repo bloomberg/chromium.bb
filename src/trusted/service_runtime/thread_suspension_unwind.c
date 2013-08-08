@@ -7,6 +7,7 @@
 #include "native_client/src/trusted/service_runtime/thread_suspension_unwind.h"
 
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/tramp_arm.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_64/tramp_64.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -14,7 +15,8 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 || \
+    NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
 static void GetNaClSyscallSeg(struct NaClApp *nap,
                               uintptr_t *nacl_syscall_seg,
@@ -69,6 +71,13 @@ static int Unwind(struct NaClAppThread *natp, struct NaClSignalContext *regs,
     regs->stack_ptr += 8;  /* Pop user return address */
     return 1;
   }
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  if (regs->prog_ctr >= NACL_TRAMPOLINE_START &&
+      regs->prog_ctr < NACL_TRAMPOLINE_END) {
+    *unwind_case = NACL_UNWIND_in_trampoline;
+    regs->prog_ctr = NaClSandboxCodeAddr(nap, regs->lr);
+    return 1;
+  }
 #endif
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
@@ -104,12 +113,14 @@ static int Unwind(struct NaClAppThread *natp, struct NaClSignalContext *regs,
   if (regs->prog_ctr >= nacl_syscall_seg &&
       regs->prog_ctr < nacl_syscall_seg_regs_saved) {
     *unwind_case = NACL_UNWIND_in_syscallseg;
-    if (NACL_BUILD_SUBARCH == 32) {
-      /* Pop user + trampoline return addresses */
-      regs->stack_ptr += 4 + 8;
-    } else {
-      /* Pop user return address. */
-      regs->stack_ptr += 8;
+    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86) {
+      if (NACL_BUILD_SUBARCH == 32) {
+        /* Pop user + trampoline return addresses */
+        regs->stack_ptr += 4 + 8;
+      } else {
+        /* Pop user return address. */
+        regs->stack_ptr += 8;
+      }
     }
     return 1;
   }
@@ -127,34 +138,36 @@ static int Unwind(struct NaClAppThread *natp, struct NaClSignalContext *regs,
 void NaClGetRegistersForContextSwitch(struct NaClAppThread *natp,
                                       struct NaClSignalContext *regs,
                                       enum NaClUnwindCase *unwind_case) {
-  nacl_reg_t user_ret;
-
   if (Unwind(natp, regs, unwind_case)) {
     NaClSignalContextUnsetClobberedRegisters(regs);
   } else {
     NaClThreadContextToSignalContext(&natp->user, regs);
   }
 
-  /*
-   * Read the return address from the untrusted stack.
-   * NaClCopyInFromUser() can fault or return an error here, but only
-   * if the thread was suspended just before it was about to crash.
-   * This can happen if untrusted code JMP'd to the trampoline with a
-   * bad stack pointer or if the thread was racing with an munmap().
-   */
-  user_ret = 0;
-  if (!NaClCopyInFromUser(natp->nap, &user_ret,
-                          (uint32_t) (regs->stack_ptr + NACL_USERRET_FIX),
-                          sizeof(user_ret))) {
-    NaClLog(LOG_WARNING, "NaClGetRegistersForContextSwitch: "
-            "Failed to read return address; using dummy value\n");
+  if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 ||
+      (NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm &&
+       *unwind_case != NACL_UNWIND_in_trampoline)) {
+    /*
+     * Read the return address from the untrusted stack.
+     * NaClCopyInFromUser() can fault or return an error here, but only
+     * if the thread was suspended just before it was about to crash.
+     * This can happen if untrusted code JMP'd to the trampoline with a
+     * bad stack pointer or if the thread was racing with an munmap().
+     */
+    nacl_reg_t user_ret = 0;
+    if (!NaClCopyInFromUser(natp->nap, &user_ret,
+                            (uint32_t) (regs->stack_ptr + NACL_USERRET_FIX),
+                            sizeof(user_ret))) {
+      NaClLog(LOG_WARNING, "NaClGetRegistersForContextSwitch: "
+              "Failed to read return address; using dummy value\n");
+    }
+    regs->prog_ctr = NaClSandboxCodeAddr(natp->nap, user_ret);
   }
-  regs->prog_ctr = NaClSandboxCodeAddr(natp->nap, user_ret);
 }
 
 #else
 
-/* TODO(mseaborn): Extend this to handle ARM and MIPS. */
+/* TODO(mseaborn): Extend this to handle MIPS. */
 void NaClGetRegistersForContextSwitch(struct NaClAppThread *natp,
                                       struct NaClSignalContext *regs,
                                       enum NaClUnwindCase *unwind_case) {

@@ -288,21 +288,11 @@ static void TrapSignalHandler(int signal,
     NaClGetRegistersForContextSwitch(g_natp, &context, &unwind_case);
 
     str = NaClUnwindCaseToString(unwind_case);
-    /* TODO(mseaborn): Make this work fully for ARM. */
-    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm) {
-      if (str == NULL) {
-        str = "?";
-      }
-    } else {
-      CHECK(str != NULL);
-    }
+    CHECK(str != NULL);
     SignalSafeWrite(str, strlen(str));
     SignalSafeLogStringLiteral("\n");
 
-    /* TODO(mseaborn): Make this work fully for ARM. */
-    if (NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm) {
-      RegsAssertEqual(&context, expected_regs);
-    }
+    RegsAssertEqual(&context, expected_regs);
   }
 }
 

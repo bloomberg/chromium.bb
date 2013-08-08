@@ -40,6 +40,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   /* store thread state to the nacl_user entry */
   stmia r0, NACL_CALLEE_SAVE_LIST
   /* if r0 is NULL, we would have faulted here */
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
 
   /*
    * Store the untrusted fpscr state and load the trusted fpscr into r2.
