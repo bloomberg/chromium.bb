@@ -52,7 +52,7 @@ h3 {
   -webkit-padding-start: 64px;
   background-image:
       url('../../../../ui/webui/resources/images/2x/search.png');
-  background-position: left 16px center;
+  background-position: 16px center;
   background-repeat: no-repeat;
   background-size: 32px;
   border: 0;
@@ -240,6 +240,13 @@ h3:first-of-type {
 
 .entry .bookmark-section {
   display: none;
+}
+
+.entry .time {
+  line-height: 60px;
+  min-width: 90px;
+  text-align: inherit;
+  width: 90px;
 }
 
 @media only screen and (max-width:600px) {

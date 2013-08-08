@@ -352,6 +352,7 @@ html[dir='rtl'] .site-domain {
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
+  width: 60px;
 }
 
 html[dir='rtl'] .entry .time {
