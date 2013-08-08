@@ -23,6 +23,7 @@
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/sad_plugin.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -37,7 +38,6 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "webkit/plugins/sad_plugin.h"
 
 #if defined (OS_WIN)
 #include "base/sys_info.h"
@@ -1091,7 +1091,7 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
     // content_shell does not have the sad plugin bitmap, so we'll paint black
     // instead to make it clear that something went wrong.
     if (sad_guest_) {
-      webkit::PaintSadPlugin(canvas, plugin_rect_, *sad_guest_);
+      PaintSadPlugin(canvas, plugin_rect_, *sad_guest_);
       return;
     }
   }

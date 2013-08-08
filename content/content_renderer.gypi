@@ -27,7 +27,6 @@
     '../webkit/storage_renderer.gyp:webkit_storage_renderer',
     '../webkit/support/webkit_support.gyp:glue',
     '../webkit/support/webkit_support.gyp:glue_child',
-    '../webkit/support/webkit_support.gyp:plugins',
   ],
   'include_dirs': [
     '..',
@@ -478,6 +477,8 @@
     'renderer/renderer_webkitplatformsupport_impl.h',
     'renderer/rendering_benchmark.cc',
     'renderer/rendering_benchmark.h',
+    'renderer/sad_plugin.cc',
+    'renderer/sad_plugin.h',
     'renderer/savable_resources.cc',
     'renderer/savable_resources.h',
     'renderer/scoped_clipboard_writer_glue.cc',

@@ -593,7 +593,6 @@
             '../webkit/storage_renderer.gyp:webkit_storage_renderer',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:glue_child',
-            '../webkit/support/webkit_support.gyp:plugins',
             '../webkit/plugins/webkit_plugins.gyp:plugins_common',
           ],
         }],

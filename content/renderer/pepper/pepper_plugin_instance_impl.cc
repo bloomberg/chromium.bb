@@ -45,6 +45,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "content/renderer/sad_plugin.h"
 #include "media/base/audio_hardware_config.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
@@ -111,7 +112,6 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "v8/include/v8.h"
 #include "webkit/plugins/plugin_constants.h"
-#include "webkit/plugins/sad_plugin.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 #if defined(OS_MACOSX)
@@ -609,7 +609,7 @@ void PepperPluginInstanceImpl::Paint(WebCanvas* canvas,
     if (!sad_plugin_)  // Lazily initialize bitmap.
       sad_plugin_ = GetContentClient()->renderer()->GetSadPluginBitmap();
     if (sad_plugin_)
-      webkit::PaintSadPlugin(canvas, plugin_rect, *sad_plugin_);
+      PaintSadPlugin(canvas, plugin_rect, *sad_plugin_);
     return;
   }
 

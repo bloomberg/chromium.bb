@@ -147,7 +147,6 @@
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
-        'plugins',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',

@@ -181,9 +181,6 @@ class WebPluginDelegateProxy
   // Helper function that sends the UpdateGeometry message.
   void SendUpdateGeometry(bool bitmaps_changed);
 
-  // Draw a graphic indicating a crashed plugin.
-  void PaintSadPlugin(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
-
   // Copies the given rectangle from the back-buffer transport_stores_ bitmap to
   // the front-buffer transport_stores_ bitmap.
   void CopyFromBackBufferToFrontBuffer(const gfx::Rect& rect);

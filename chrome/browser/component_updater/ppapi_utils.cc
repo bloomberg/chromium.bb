@@ -1,7 +1,7 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "webkit/common/plugins/ppapi/ppapi_utils.h"
+#include "chrome/browser/component_updater/ppapi_utils.h"
 
 #include <cstring>
 
@@ -105,9 +105,6 @@
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/thunk/thunk.h"
 
-namespace webkit {
-namespace ppapi {
-
 bool IsSupportedPepperInterface(const char* name) {
   // TODO(brettw) put these in a hash map for better performance.
   #define UNPROXIED_IFACE(api_name, iface_str, iface_struct) \
@@ -134,6 +131,3 @@ bool IsSupportedPepperInterface(const char* name) {
   #undef LEGACY_IFACE
   return false;
 }
-
-}  // namespace ppapi
-}  // namespace webkit

@@ -1,4 +1,5 @@
 include_rules = [
   "+ppapi/shared_impl/ppapi_permissions.h",
+  "+ppapi/thunk",
   "+third_party/widevine"
 ]

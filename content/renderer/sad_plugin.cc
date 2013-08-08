@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/sad_plugin.h"
+#include "content/renderer/sad_plugin.h"
 
 #include <algorithm>
 
@@ -11,7 +11,7 @@
 #include "ui/gfx/blit.h"
 #include "ui/gfx/rect.h"
 
-namespace webkit {
+namespace content {
 
 void PaintSadPlugin(WebKit::WebCanvas* webcanvas,
                     const gfx::Rect& plugin_rect,
@@ -36,4 +36,4 @@ void PaintSadPlugin(WebKit::WebCanvas* webcanvas,
       SkIntToScalar(std::max(0, (height - sad_plugin_bitmap.height()) / 2)));
 }
 
-}  // namespace webkit
+}  // namespace content

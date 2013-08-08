@@ -35,6 +35,7 @@
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/renderer/sad_plugin.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/mime_util.h"
 #include "skia/ext/platform_canvas.h"
@@ -52,7 +53,6 @@
 #include "webkit/common/cursors/webcursor.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/plugin_constants.h"
-#include "webkit/plugins/sad_plugin.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
@@ -681,7 +681,11 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
   // If the plugin is no longer connected (channel crashed) draw a crashed
   // plugin bitmap
   if (!channel_host_.get() || !channel_host_->channel_valid()) {
-    PaintSadPlugin(canvas, rect);
+    // Lazily load the sad plugin image.
+    if (!sad_plugin_)
+      sad_plugin_ = GetContentClient()->renderer()->GetSadPluginBitmap();
+    if (sad_plugin_)
+      PaintSadPlugin(canvas, plugin_rect_, *sad_plugin_);
     return;
   }
 
@@ -1009,15 +1013,6 @@ void WebPluginDelegateProxy::OnGetCookies(const GURL& url,
   DCHECK(cookies);
   if (plugin_)
     *cookies = plugin_->GetCookies(url, first_party_for_cookies);
-}
-
-void WebPluginDelegateProxy::PaintSadPlugin(WebKit::WebCanvas* native_context,
-                                            const gfx::Rect& rect) {
-  // Lazily load the sad plugin image.
-  if (!sad_plugin_)
-    sad_plugin_ = GetContentClient()->renderer()->GetSadPluginBitmap();
-  if (sad_plugin_)
-    webkit::PaintSadPlugin(native_context, plugin_rect_, *sad_plugin_);
 }
 
 void WebPluginDelegateProxy::CopyFromBackBufferToFrontBuffer(

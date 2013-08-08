@@ -34,7 +34,6 @@
         '<(DEPTH)/webkit/storage_renderer.gyp:webkit_storage_renderer',
         'glue',
         'glue_child',
-        'plugins',
         'webkit_support_common',
       ],
       'include_dirs': [

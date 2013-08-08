@@ -28,8 +28,6 @@
         '../plugins/plugin_constants.h',
         '../plugins/plugin_switches.cc',
         '../plugins/plugin_switches.h',
-        '../common/plugins/ppapi/ppapi_utils.cc',
-        '../common/plugins/ppapi/ppapi_utils.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
