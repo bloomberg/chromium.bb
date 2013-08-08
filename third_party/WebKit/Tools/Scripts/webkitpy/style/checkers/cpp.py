@@ -1695,8 +1695,10 @@ def check_function_definition_and_pass_ptr(type_text, row, location_description,
        error: The function to call with any errors found.
     """
     match_ref_or_own_ptr = '(?=\W|^)(Ref|Own)Ptr(?=\W)'
+    exceptions = '(?:&|\*|\*\s*=\s*0)$'
     bad_type_usage = search(match_ref_or_own_ptr, type_text)
-    if not bad_type_usage or type_text.endswith('&') or type_text.endswith('*'):
+    exception_usage = search(exceptions, type_text)
+    if not bad_type_usage or exception_usage:
         return
     type_name = bad_type_usage.group(0)
     error(row, 'readability/pass_ptr', 5,

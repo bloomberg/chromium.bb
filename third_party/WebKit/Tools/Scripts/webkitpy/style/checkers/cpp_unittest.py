@@ -3571,6 +3571,16 @@ class PassPtrTest(CppStyleTestBase):
             '{\n'
             '}',
             '')
+        self.assert_pass_ptr_check(
+            'int myFunction(RefPtr<Type1>* = 0)\n'
+            '{\n'
+            '}',
+            '')
+        self.assert_pass_ptr_check(
+            'int myFunction(RefPtr<Type1>*    =  0)\n'
+            '{\n'
+            '}',
+            '')
 
     def test_own_ptr_parameter_value(self):
         self.assert_pass_ptr_check(
