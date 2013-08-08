@@ -63,7 +63,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::BrowserThread;
 using content::DevToolsAgentHost;
 
 
@@ -249,9 +248,10 @@ DevToolsWindow::~DevToolsWindow() {
   DCHECK(it != instances->end());
   instances->erase(it);
 
-  IndexingJobsMap::const_iterator jobs_it = indexing_jobs_.begin();
-  for (; jobs_it != indexing_jobs_.end(); ++jobs_it)
+  for (IndexingJobsMap::const_iterator jobs_it(indexing_jobs_.begin());
+       jobs_it != indexing_jobs_.end(); ++jobs_it) {
     jobs_it->second->Stop();
+  }
   indexing_jobs_.clear();
 }
 
@@ -970,32 +970,32 @@ void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
 
 void DevToolsWindow::IndexPath(int request_id,
                                const std::string& file_system_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
     IndexingDone(request_id, file_system_path);
     return;
   }
-  scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob> indexing_job =
-      file_system_indexer_->IndexPath(
-          file_system_path,
-          Bind(&DevToolsWindow::IndexingTotalWorkCalculated,
-               weak_factory_.GetWeakPtr(),
-               request_id,
-               file_system_path),
-          Bind(&DevToolsWindow::IndexingWorked,
-               weak_factory_.GetWeakPtr(),
-               request_id,
-               file_system_path),
-          Bind(&DevToolsWindow::IndexingDone,
-               weak_factory_.GetWeakPtr(),
-               request_id,
-               file_system_path));
-  indexing_jobs_[request_id] = indexing_job;
+  indexing_jobs_[request_id] =
+      scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob>(
+          file_system_indexer_->IndexPath(
+              file_system_path,
+              Bind(&DevToolsWindow::IndexingTotalWorkCalculated,
+                   weak_factory_.GetWeakPtr(),
+                   request_id,
+                   file_system_path),
+              Bind(&DevToolsWindow::IndexingWorked,
+                   weak_factory_.GetWeakPtr(),
+                   request_id,
+                   file_system_path),
+              Bind(&DevToolsWindow::IndexingDone,
+                   weak_factory_.GetWeakPtr(),
+                   request_id,
+                   file_system_path)));
 }
 
 void DevToolsWindow::StopIndexing(int request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   IndexingJobsMap::iterator it = indexing_jobs_.find(request_id);
   if (it == indexing_jobs_.end())
     return;
@@ -1006,7 +1006,7 @@ void DevToolsWindow::StopIndexing(int request_id) {
 void DevToolsWindow::SearchInPath(int request_id,
                                   const std::string& file_system_path,
                                   const std::string& query) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
     SearchCompleted(request_id, file_system_path, std::vector<std::string>());
@@ -1056,7 +1056,7 @@ void DevToolsWindow::IndexingTotalWorkCalculated(
     int request_id,
     const std::string& file_system_path,
     int total_work) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::FundamentalValue request_id_value(request_id);
   StringValue file_system_path_value(file_system_path);
   base::FundamentalValue total_work_value(total_work);
@@ -1068,7 +1068,7 @@ void DevToolsWindow::IndexingTotalWorkCalculated(
 void DevToolsWindow::IndexingWorked(int request_id,
                                     const std::string& file_system_path,
                                     int worked) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::FundamentalValue request_id_value(request_id);
   StringValue file_system_path_value(file_system_path);
   base::FundamentalValue worked_value(worked);
@@ -1079,7 +1079,7 @@ void DevToolsWindow::IndexingWorked(int request_id,
 void DevToolsWindow::IndexingDone(int request_id,
                                   const std::string& file_system_path) {
   indexing_jobs_.erase(request_id);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::FundamentalValue request_id_value(request_id);
   StringValue file_system_path_value(file_system_path);
   CallClientFunction("InspectorFrontendAPI.indexingDone", &request_id_value,
@@ -1090,10 +1090,10 @@ void DevToolsWindow::SearchCompleted(
     int request_id,
     const std::string& file_system_path,
     const std::vector<std::string>& file_paths) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ListValue file_paths_value;
-  std::vector<std::string>::const_iterator it = file_paths.begin();
-  for (; it != file_paths.end(); ++it) {
+  for (std::vector<std::string>::const_iterator it(file_paths.begin());
+       it != file_paths.end(); ++it) {
     file_paths_value.AppendString(*it);
   }
   base::FundamentalValue request_id_value(request_id);
