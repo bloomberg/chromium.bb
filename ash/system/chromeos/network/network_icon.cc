@@ -411,8 +411,8 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(const NetworkState* network,
   const std::string& technology = network->network_technology();
   if (technology == flimflam::kNetworkTechnologyEvdo) {
     id = IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
+        IDR_AURA_UBER_TRAY_NETWORK_EVDO_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_EVDO_LIGHT;
   } else if (technology == flimflam::kNetworkTechnology1Xrtt) {
     id = IDR_AURA_UBER_TRAY_NETWORK_1X;
   } else if (technology == flimflam::kNetworkTechnologyGprs) {
