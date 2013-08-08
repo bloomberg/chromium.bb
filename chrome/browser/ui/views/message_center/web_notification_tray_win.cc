@@ -38,8 +38,6 @@ void WebNotificationTray::DisplayFirstRunBalloon() {
   if (win_version == base::win::VERSION_PRE_XP)
     return;
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
   // StatusIconWin uses NIIF_LARGE_ICON if the version is >= vista.  According
   // to http://msdn.microsoft.com/en-us/library/windows/desktop/bb773352.aspx:
   // This corresponds to the icon with dimensions SM_CXICON x SM_CYICON. If
