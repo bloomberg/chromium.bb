@@ -35,6 +35,49 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     return frame.Pass();
   }
 
+  scoped_ptr<DelegatedFrameData> CreateInvalidFrameData(
+      gfx::Rect root_output_rect,
+      gfx::Rect root_damage_rect) {
+    scoped_ptr<DelegatedFrameData> frame(new DelegatedFrameData);
+
+    scoped_ptr<RenderPass> root_pass(RenderPass::Create());
+    root_pass->SetNew(RenderPass::Id(1, 1),
+                      root_output_rect,
+                      root_damage_rect,
+                      gfx::Transform());
+
+    scoped_ptr<SharedQuadState> shared_quad_state = SharedQuadState::Create();
+
+    gfx::Rect rect = root_output_rect;
+    gfx::Rect opaque_rect = root_output_rect;
+    // An invalid resource id! The resource isn't part of the frame.
+    unsigned resource_id = 5;
+    bool premultiplied_alpha = false;
+    gfx::PointF uv_top_left = gfx::PointF(0.f, 0.f);
+    gfx::PointF uv_bottom_right = gfx::PointF(1.f, 1.f);
+    SkColor background_color = 0;
+    float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
+    bool flipped = false;
+
+    scoped_ptr<TextureDrawQuad> invalid_draw_quad = TextureDrawQuad::Create();
+    invalid_draw_quad->SetNew(shared_quad_state.get(),
+                              rect,
+                              opaque_rect,
+                              resource_id,
+                              premultiplied_alpha,
+                              uv_top_left,
+                              uv_bottom_right,
+                              background_color,
+                              vertex_opacity,
+                              flipped);
+    root_pass->quad_list.push_back(invalid_draw_quad.PassAs<DrawQuad>());
+
+    root_pass->shared_quad_state_list.push_back(shared_quad_state.Pass());
+
+    frame->render_pass_list.push_back(root_pass.Pass());
+    return frame.Pass();
+  }
+
   void AddTransferableResource(DelegatedFrameData* frame,
                                ResourceProvider::ResourceId resource_id) {
     TransferableResource resource;
@@ -267,13 +310,18 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
                                                  gfx::Rect(5, 5, 1, 1)));
         break;
       case 13:
+        // An invalid frame isn't used, so it should not cause damage.
+        delegated_->SetFrameData(CreateInvalidFrameData(gfx::Rect(0, 0, 10, 10),
+                                                        gfx::Rect(5, 5, 1, 1)));
+        break;
+      case 14:
         // Should create gfx::Rect(1, 1, 2, 2) of damage. The frame size is
         // 5x5 and the display size is now set to 10x10, so this should result
         // in a gfx::Rect(2, 2, 4, 4) damage rect.
         delegated_->SetFrameData(CreateFrameData(gfx::Rect(0, 0, 5, 5),
                                                  gfx::Rect(1, 1, 2, 2)));
         break;
-      case 14:
+      case 15:
         // Should create zero damage.
         layer_tree_host()->SetNeedsCommit();
         break;
@@ -352,10 +400,14 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
                   damage_rect.ToString());
         break;
       case 13:
-        EXPECT_EQ(gfx::RectF(2.f, 2.f, 4.f, 4.f).ToString(),
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 0.f, 0.f).ToString(),
                   damage_rect.ToString());
         break;
       case 14:
+        EXPECT_EQ(gfx::RectF(2.f, 2.f, 4.f, 4.f).ToString(),
+                  damage_rect.ToString());
+        break;
+      case 15:
         EXPECT_EQ(gfx::RectF(0.f, 0.f, 0.f, 0.f).ToString(),
                   damage_rect.ToString());
         EndTest();

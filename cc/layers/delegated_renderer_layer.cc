@@ -41,28 +41,19 @@ void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
 
   delegated_impl->SetDisplaySize(display_size_);
 
-  if (!frame_data_) {
-    delegated_impl->SetFrameData(scoped_ptr<DelegatedFrameData>(),
-                                 gfx::Rect(),
-                                 &unused_resources_for_child_compositor_);
-  } else if (frame_size_.IsEmpty()) {
-    scoped_ptr<DelegatedFrameData> empty_frame(new DelegatedFrameData);
-    delegated_impl->SetFrameData(empty_frame.Pass(),
-                                 gfx::Rect(),
-                                 &unused_resources_for_child_compositor_);
-  } else {
-    delegated_impl->SetFrameData(frame_data_.Pass(),
-                                 damage_in_frame_,
-                                 &unused_resources_for_child_compositor_);
-  }
+  if (frame_data_)
+    delegated_impl->SetFrameData(frame_data_.Pass(), damage_in_frame_);
   frame_data_.reset();
   damage_in_frame_ = gfx::RectF();
+
+  delegated_impl->CollectUnusedResources(
+      &unused_resources_for_child_compositor_);
 
   if (client_)
     client_->DidCommitFrameData();
 
   // TODO(danakj): TakeUnusedResourcesForChildCompositor requires a push
-  // properties to happen in order to push up newly unused resources returned
+  // properties to happen in order to collect unused resources returned
   // from the parent compositor. crbug.com/259090
   needs_push_properties_ = true;
 }

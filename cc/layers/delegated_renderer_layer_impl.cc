@@ -92,8 +92,13 @@ void DelegatedRendererLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
 void DelegatedRendererLayerImpl::SetFrameData(
     scoped_ptr<DelegatedFrameData> frame_data,
-    gfx::RectF damage_in_frame,
-    TransferableResourceArray* resources_for_ack) {
+    gfx::RectF damage_in_frame) {
+  DCHECK(frame_data);
+
+  // A frame with an empty root render pass is invalid.
+  DCHECK(frame_data->render_pass_list.empty() ||
+         !frame_data->render_pass_list.back()->output_rect.IsEmpty());
+
   CreateChildIdIfNeeded();
   DCHECK(child_id_);
 
@@ -101,47 +106,52 @@ void DelegatedRendererLayerImpl::SetFrameData(
     const ResourceProvider::ResourceIdMap& resource_map =
         resource_provider->GetChildToParentMap(child_id_);
 
-  if (frame_data) {
-    // A frame with an empty root render pass is invalid.
-    DCHECK(frame_data->render_pass_list.empty() ||
-           !frame_data->render_pass_list.back()->output_rect.IsEmpty());
+  resource_provider->ReceiveFromChild(child_id_, frame_data->resource_list);
 
-    // Display size is already set so we can compute what the damage rect
-    // will be in layer space.
-    if (!frame_data->render_pass_list.empty()) {
-      RenderPass* new_root_pass = frame_data->render_pass_list.back();
-      gfx::RectF damage_in_layer = MathUtil::MapClippedRect(
-          DelegatedFrameToLayerSpaceTransform(
-              new_root_pass->output_rect.size()),
-          damage_in_frame);
-      set_update_rect(gfx::UnionRects(update_rect(), damage_in_layer));
-    }
-
-    resource_provider->ReceiveFromChild(child_id_, frame_data->resource_list);
-
-    bool invalid_frame = false;
-    ResourceProvider::ResourceIdSet used_resources;
-    DrawQuad::ResourceIteratorCallback remap_resources_to_parent_callback =
-        base::Bind(&ResourceRemapHelper,
-                   &invalid_frame,
-                   resource_map,
-                   &used_resources);
-    for (size_t i = 0; i < frame_data->render_pass_list.size(); ++i) {
-      RenderPass* pass = frame_data->render_pass_list[i];
-      for (size_t j = 0; j < pass->quad_list.size(); ++j) {
-        DrawQuad* quad = pass->quad_list[j];
-        quad->IterateResources(remap_resources_to_parent_callback);
-      }
-    }
-
-    if (!invalid_frame) {
-      // Save the remapped quads on the layer. This steals the quads and render
-      // passes from the frame_data.
-      SetRenderPasses(&frame_data->render_pass_list);
-      resources_.swap(used_resources);
-      have_render_passes_to_push_ = true;
+  bool invalid_frame = false;
+  ResourceProvider::ResourceIdSet used_resources;
+  DrawQuad::ResourceIteratorCallback remap_resources_to_parent_callback =
+      base::Bind(&ResourceRemapHelper,
+                 &invalid_frame,
+                 resource_map,
+                 &used_resources);
+  for (size_t i = 0; i < frame_data->render_pass_list.size(); ++i) {
+    RenderPass* pass = frame_data->render_pass_list[i];
+    for (size_t j = 0; j < pass->quad_list.size(); ++j) {
+      DrawQuad* quad = pass->quad_list[j];
+      quad->IterateResources(remap_resources_to_parent_callback);
     }
   }
+
+  if (invalid_frame)
+    return;
+
+  // Display size is already set so we can compute what the damage rect
+  // will be in layer space.
+  if (!frame_data->render_pass_list.empty()) {
+    RenderPass* new_root_pass = frame_data->render_pass_list.back();
+    gfx::RectF damage_in_layer = MathUtil::MapClippedRect(
+        DelegatedFrameToLayerSpaceTransform(
+            new_root_pass->output_rect.size()),
+        damage_in_frame);
+    set_update_rect(gfx::UnionRects(update_rect(), damage_in_layer));
+  }
+
+  // Save the remapped quads on the layer. This steals the quads and render
+  // passes from the frame_data.
+  SetRenderPasses(&frame_data->render_pass_list);
+  resources_.swap(used_resources);
+  have_render_passes_to_push_ = true;
+}
+
+void DelegatedRendererLayerImpl::CollectUnusedResources(
+    TransferableResourceArray* resources_for_ack) {
+  CreateChildIdIfNeeded();
+  DCHECK(child_id_);
+
+  ResourceProvider* resource_provider = layer_tree_impl()->resource_provider();
+    const ResourceProvider::ResourceIdMap& resource_map =
+        resource_provider->GetChildToParentMap(child_id_);
 
   ResourceProvider::ResourceIdArray unused_resources;
   for (ResourceProvider::ResourceIdMap::const_iterator it =

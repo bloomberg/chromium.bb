@@ -40,7 +40,8 @@ void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
   }
 
   TransferableResourceArray resources_for_ack;
-  SetFrameData(delegated_frame.Pass(), gfx::RectF(), &resources_for_ack);
+  SetFrameData(delegated_frame.Pass(), gfx::RectF());
+  CollectUnusedResources(&resources_for_ack);
 }
 
 }  // namespace cc
