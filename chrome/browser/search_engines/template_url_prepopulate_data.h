@@ -32,11 +32,9 @@ enum LogoSize {
 };
 
 #if defined(OS_ANDROID)
-
 // This must be called early only once. |country_code| is the country code at
 // install following the ISO-3166 specification.
 void InitCountryCode(const std::string& country_code);
-
 #endif
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

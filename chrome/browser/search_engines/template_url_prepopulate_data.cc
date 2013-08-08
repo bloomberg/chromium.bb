@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -41,14 +42,17 @@
 
 namespace TemplateURLPrepopulateData {
 
+
+// Helpers --------------------------------------------------------------------
+
+namespace {
+
 // NOTE: You should probably not change the data in this file without changing
 // |kCurrentDataVersion| in prepopulated_engines.json. See comments in
 // GetDataVersion() below!
 
-// Lists of engines per country ////////////////////////////////////////////////
-
-// Put these in order with most interesting/important first.  The default will
-// be the first engine.
+// Put the engines within each country in order with most interesting/important
+// first.  The default will be the first engine.
 
 // Default (for countries with no better engine set)
 const PrepopulatedEngine* engines_default[] =
@@ -483,7 +487,6 @@ const PrepopulatedEngine* engines_ZA[] =
 const PrepopulatedEngine* engines_ZW[] =
     { &google, &yahoo, &bing, };
 
-
 // A list of all the engines that we know about.
 const PrepopulatedEngine* kAllEngines[] =
     { // Prepopulated engines:
@@ -518,8 +521,14 @@ const PrepopulatedEngine* kAllEngines[] =
       &all_by, &aport, &avg, &avg_i, &conduit, &icq, &meta_ua, &metabot_ru,
       &nigma, &qip, &ukr_net, &webalta, &yandex_tr };
 
+const struct LogoURLs {
+  const char* const logo_100_percent_url;
+  const char* const logo_200_percent_url;
+} google_logos = {
+  "https://www.google.com/images/chrome_search/google_logo.png",
+  "https://www.google.com/images/chrome_search/google_logo_2x.png",
+};
 
-// Geographic mappings /////////////////////////////////////////////////////////
 
 // Please refer to ISO 3166-1 for information about the two-character country
 // codes; http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 is useful. In the
@@ -639,16 +648,6 @@ int g_country_code_at_install = kCountryIDUnknown;
 
 int GetCurrentCountryID() {
   return g_country_code_at_install;
-}
-
-void InitCountryCode(const std::string& country_code) {
-  if (country_code.size() != 2) {
-    DLOG(ERROR) << "Invalid country code: " << country_code;
-    g_country_code_at_install = kCountryIDUnknown;
-  } else {
-    g_country_code_at_install =
-        CountryCharsToCountryIDWithUpdate(country_code[0], country_code[1]);
-  }
 }
 
 #elif defined(OS_POSIX)
@@ -1073,47 +1072,6 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
   }
 }
 
-
-// Logo URLs ///////////////////////////////////////////////////////////////////
-
-struct LogoURLs {
-  const char* const logo_100_percent_url;
-  const char* const logo_200_percent_url;
-};
-
-const LogoURLs google_logos = {
-  "https://www.google.com/images/chrome_search/google_logo.png",
-  "https://www.google.com/images/chrome_search/google_logo_2x.png",
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kCountryIDAtInstall,
-      kCountryIDUnknown,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kSearchProviderOverrides,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kSearchProviderOverridesVersion,
-      -1,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  // Obsolete pref, for migration.
-  registry->RegisterIntegerPref(
-      prefs::kGeoIDAtInstall,
-      -1,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-}
-
-int GetDataVersion(PrefService* prefs) {
-  // Allow tests to override the local version.
-  return (prefs && prefs->HasPrefPath(prefs::kSearchProviderOverridesVersion)) ?
-      prefs->GetInteger(prefs::kSearchProviderOverridesVersion) :
-      kCurrentDataVersion;
-}
-
 TemplateURL* MakePrepopulatedTemplateURL(
     Profile* profile,
     const string16& name,
@@ -1220,16 +1178,6 @@ void GetPrepopulatedTemplateFromPrefs(Profile* profile,
   }
 }
 
-void ClearPrepopulatedEnginesInPrefs(Profile* profile) {
-  if (!profile)
-    return;
-
-  PrefService* prefs = profile->GetPrefs();
-  DCHECK(prefs);
-  prefs->ClearPref(prefs::kSearchProviderOverrides);
-  prefs->ClearPref(prefs::kSearchProviderOverridesVersion);
-}
-
 // The caller owns the returned TemplateURL.
 TemplateURL* MakePrepopulatedTemplateURLFromPrepopulateEngine(
     Profile* profile,
@@ -1247,6 +1195,55 @@ TemplateURL* MakePrepopulatedTemplateURLFromPrepopulateEngine(
       engine.suggest_url_post_params, engine.instant_url_post_params,
       engine.image_url_post_params, engine.favicon_url, engine.encoding,
       alternate_urls, engine.search_terms_replacement_key, engine.id);
+}
+
+bool SameDomain(const GURL& given_url, const GURL& prepopulated_url) {
+  return prepopulated_url.is_valid() &&
+      net::registry_controlled_domains::SameDomainOrHost(
+          given_url, prepopulated_url,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
+
+}  // namespace
+
+
+// Global functions -----------------------------------------------------------
+
+#if defined(OS_ANDROID)
+void InitCountryCode(const std::string& country_code) {
+  if (country_code.size() != 2) {
+    DLOG(ERROR) << "Invalid country code: " << country_code;
+    g_country_code_at_install = kCountryIDUnknown;
+  } else {
+    g_country_code_at_install =
+        CountryCharsToCountryIDWithUpdate(country_code[0], country_code[1]);
+  }
+}
+#endif
+
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kCountryIDAtInstall,
+      kCountryIDUnknown,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kSearchProviderOverrides,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kSearchProviderOverridesVersion,
+      -1,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  // Obsolete pref, for migration.
+  registry->RegisterIntegerPref(
+      prefs::kGeoIDAtInstall,
+      -1,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+int GetDataVersion(PrefService* prefs) {
+  // Allow tests to override the local version.
+  return (prefs && prefs->HasPrefPath(prefs::kSearchProviderOverridesVersion)) ?
+      prefs->GetInteger(prefs::kSearchProviderOverridesVersion) :
+      kCurrentDataVersion;
 }
 
 void GetPrepopulatedEngines(Profile* profile,
@@ -1267,6 +1264,16 @@ void GetPrepopulatedEngines(Profile* profile,
     t_urls->push_back(
         MakePrepopulatedTemplateURLFromPrepopulateEngine(profile, *engines[i]));
   }
+}
+
+void ClearPrepopulatedEnginesInPrefs(Profile* profile) {
+  if (!profile)
+    return;
+
+  PrefService* prefs = profile->GetPrefs();
+  DCHECK(prefs);
+  prefs->ClearPref(prefs::kSearchProviderOverrides);
+  prefs->ClearPref(prefs::kSearchProviderOverridesVersion);
 }
 
 TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile) {
@@ -1302,8 +1309,8 @@ SearchEngineType GetEngineType(const std::string& url) {
   if (!as_gurl.is_valid())
     return SEARCH_ENGINE_OTHER;
 
-  // Check using origins, in order to more aggressively match search engine
-  // types for data imported from other browsers.
+  // Check using TLD+1s, in order to more aggressively match search engine types
+  // for data imported from other browsers.
   //
   // First special-case Google, because the prepopulate URL for it will not
   // convert to a GURL and thus won't have an origin.  Instead see if the
@@ -1313,11 +1320,16 @@ SearchEngineType GetEngineType(const std::string& url) {
     return google.type;
 
   // Now check the rest of the prepopulate data.
-  GURL origin(as_gurl.GetOrigin());
   for (size_t i = 0; i < arraysize(kAllEngines); ++i) {
-    GURL engine_url(kAllEngines[i]->search_url);
-    if (engine_url.is_valid() && (origin == engine_url.GetOrigin()))
+    // First check the main search URL.
+    if (SameDomain(as_gurl, GURL(kAllEngines[i]->search_url)))
       return kAllEngines[i]->type;
+
+    // Then check the alternate URLs.
+    for (size_t j = 0; j < kAllEngines[i]->alternate_urls_size; ++j) {
+      if (SameDomain(as_gurl, GURL(kAllEngines[i]->alternate_urls[j])))
+        return kAllEngines[i]->type;
+    }
   }
 
   return SEARCH_ENGINE_OTHER;
