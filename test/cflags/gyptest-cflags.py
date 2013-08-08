@@ -10,6 +10,7 @@ the use of the environment during regeneration when the gyp file changes.
 """
 
 import os
+import sys
 import TestGyp
 
 env_stack = []
@@ -22,9 +23,12 @@ def PushEnv():
 def PopEnv():
   os.eniron=env_stack.pop()
 
-# Regenerating build files when a gyp file changes is currently only supported
-# by the make generator.
-test = TestGyp.TestGyp(formats=['make'])
+formats = ['make']
+if sys.platform.startswith('linux'):
+  # Only Linux ninja generator supports CFLAGS.
+  formats.append('ninja')
+
+test = TestGyp.TestGyp(formats=formats)
 
 try:
   PushEnv()
