@@ -903,6 +903,7 @@ bool DocumentLoader::maybeLoadEmpty()
 
 void DocumentLoader::startLoadingMainResource()
 {
+    RefPtr<DocumentLoader> protect(this);
     m_mainDocumentError = ResourceError();
     timing()->markNavigationStart();
     ASSERT(!m_mainResource);

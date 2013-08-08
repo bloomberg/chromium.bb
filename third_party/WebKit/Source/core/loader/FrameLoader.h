@@ -260,7 +260,6 @@ private:
     void didAllowNavigationViaBeforeUnloadConfirmationPanel() { m_hasAllowedNavigationViaBeforeUnloadConfirmationPanel = true; }
     void clearAllowNavigationViaBeforeUnloadConfirmationPanel() { m_hasAllowedNavigationViaBeforeUnloadConfirmationPanel = false; }
 
-    void checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState>, FrameLoadType);
     void checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction&, bool isNewNavigation);
     void checkNewWindowPolicyAndContinue(PassRefPtr<FormState>, const String& frameName, const NavigationAction&);
 
