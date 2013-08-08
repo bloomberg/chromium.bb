@@ -127,7 +127,7 @@ bool HTMLImportsController::isProcessing() const
     return m_master->parsing();
 }
 
-void HTMLImportsController::importWasDisposed() OVERRIDE
+void HTMLImportsController::importWasDisposed()
 {
     scheduleUnblock();
 }
