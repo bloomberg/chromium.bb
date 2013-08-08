@@ -297,8 +297,6 @@
         'ime/input_method_bridge.h',
         'ime/input_method_delegate.h',
         'ime/input_method.h',
-        'ime/input_method_win.cc',
-        'ime/input_method_win.h',
         'ime/mock_input_method.cc',
         'ime/mock_input_method.h',
         'layout/box_layout.cc',
