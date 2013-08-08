@@ -999,7 +999,7 @@ public:
     void decrementActiveParserCount();
 
     void setContextFeatures(PassRefPtr<ContextFeatures>);
-    ContextFeatures* contextFeatures() { return m_contextFeatures.get(); }
+    ContextFeatures* contextFeatures() const { return m_contextFeatures.get(); }
 
     DocumentSharedObjectPool* sharedObjectPool() { return m_sharedObjectPool.get(); }
 
@@ -1041,6 +1041,8 @@ protected:
 
     virtual void dispose() OVERRIDE;
 
+    virtual PassRefPtr<Document> cloneDocumentWithoutChildren();
+
 private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
@@ -1060,6 +1062,7 @@ private:
     virtual NodeType nodeType() const;
     virtual bool childTypeAllowed(NodeType) const;
     virtual PassRefPtr<Node> cloneNode(bool deep = true);
+    void cloneDataFromDocument(const Document&);
 
     virtual void refScriptExecutionContext() { ref(); }
     virtual void derefScriptExecutionContext() { deref(); }

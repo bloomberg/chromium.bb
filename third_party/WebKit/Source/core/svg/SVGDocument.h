@@ -47,6 +47,8 @@ public:
     void startPan(const FloatPoint& start);
     void updatePan(const FloatPoint& pos) const;
 
+    virtual PassRefPtr<Document> cloneDocumentWithoutChildren() OVERRIDE FINAL;
+
 private:
     SVGDocument(const DocumentInit&);
 

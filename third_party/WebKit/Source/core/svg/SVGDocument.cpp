@@ -94,6 +94,11 @@ void SVGDocument::updatePan(const FloatPoint& pos) const
     }
 }
 
+PassRefPtr<Document> SVGDocument::cloneDocumentWithoutChildren()
+{
+    return create();
+}
+
 bool SVGDocument::childShouldCreateRenderer(const NodeRenderingContext& childContext) const
 {
     if (childContext.node()->hasTagName(SVGNames::svgTag))
