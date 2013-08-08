@@ -79,7 +79,12 @@ class WebContents : public PageNavigator,
     CreateParams(BrowserContext* context, SiteInstance* site);
 
     BrowserContext* browser_context;
+
+    // Specifying a SiteInstance here is optional.  It can be set to avoid an
+    // extra process swap if the first navigation is expected to require a
+    // privileged process.
     SiteInstance* site_instance;
+
     WebContents* opener;
     int routing_id;
     int main_frame_routing_id;
