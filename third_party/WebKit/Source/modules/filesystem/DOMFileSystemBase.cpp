@@ -38,7 +38,7 @@
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
 #include "modules/filesystem/EntriesCallback.h"
-#include "modules/filesystem/EntryArray.h"
+#include "modules/filesystem/Entry.h"
 #include "modules/filesystem/EntryBase.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"

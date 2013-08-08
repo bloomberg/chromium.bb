@@ -207,8 +207,7 @@ function runOperationTest(fileSystem, testCase, successCallback, errorCallback)
             if (this.expectedErrorCode)
                 testFailed('Unexpectedly succeeded while ' + this.stage);
 
-            for (var i = 0; i < entries.length; ++i)
-                this.readEntries.push(entries[i]);
+            this.readEntries.push.apply(this.readEntries, entries);
 
             if (entries.length) {
                 this.currentReader.readEntries(bindCallback(this, this.testReadEntriesSuccessCallback), bindCallback(this, this.testErrorCallback));

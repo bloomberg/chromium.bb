@@ -31,17 +31,18 @@
 #ifndef HTMLInputElementFileSystem_h
 #define HTMLInputElementFileSystem_h
 
+#include "modules/filesystem/EntriesCallback.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-class EntryArray;
+class Entry;
 class HTMLInputElement;
 class ScriptExecutionContext;
 
 class HTMLInputElementFileSystem {
 public:
-    static PassRefPtr<EntryArray> webkitEntries(ScriptExecutionContext*, HTMLInputElement*);
+    static EntryVector webkitEntries(ScriptExecutionContext*, HTMLInputElement*);
 
 private:
     HTMLInputElementFileSystem();

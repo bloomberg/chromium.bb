@@ -101,7 +101,7 @@ private:
             return true;
         }
 
-        virtual bool handleEvent(CallbackArg* arg)
+        virtual bool handleEvent(CallbackArg arg)
         {
             m_helper->setResult(ResultType::create(arg));
             return true;
@@ -174,11 +174,11 @@ struct EmptyObserverType {
     }
 };
 
-typedef SyncCallbackHelper<EntryCallback, AsyncFileSystem, Entry, EntrySync> EntrySyncCallbackHelper;
-typedef SyncCallbackHelper<EntriesCallback, AsyncFileSystem, EntryArray, EntryArraySync> EntriesSyncCallbackHelper;
-typedef SyncCallbackHelper<MetadataCallback, AsyncFileSystem, Metadata, Metadata> MetadataSyncCallbackHelper;
-typedef SyncCallbackHelper<VoidCallback, AsyncFileSystem, EmptyType, EmptyType> VoidSyncCallbackHelper;
-typedef SyncCallbackHelper<FileSystemCallback, EmptyObserverType, DOMFileSystem, DOMFileSystemSync> FileSystemSyncCallbackHelper;
+typedef SyncCallbackHelper<EntryCallback, AsyncFileSystem, Entry*, EntrySync> EntrySyncCallbackHelper;
+typedef SyncCallbackHelper<EntriesCallback, AsyncFileSystem, const EntryVector&, EntryArraySync> EntriesSyncCallbackHelper;
+typedef SyncCallbackHelper<MetadataCallback, AsyncFileSystem, Metadata*, Metadata> MetadataSyncCallbackHelper;
+typedef SyncCallbackHelper<VoidCallback, AsyncFileSystem, EmptyType*, EmptyType> VoidSyncCallbackHelper;
+typedef SyncCallbackHelper<FileSystemCallback, EmptyObserverType, DOMFileSystem*, DOMFileSystemSync> FileSystemSyncCallbackHelper;
 
 } // namespace WebCore
 

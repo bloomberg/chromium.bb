@@ -31,17 +31,15 @@
 #include "config.h"
 #include "modules/filesystem/EntryArraySync.h"
 
-#include "modules/filesystem/EntryArray.h"
+#include "modules/filesystem/Entry.h"
 
 namespace WebCore {
 
-PassRefPtr<EntryArraySync> EntryArraySync::create(EntryArray* entries)
+PassRefPtr<EntryArraySync> EntryArraySync::create(const EntryVector& entries)
 {
     RefPtr<EntryArraySync> entriesSync = adoptRef(new EntryArraySync());
-    if (entries) {
-        for (unsigned i = 0; i < entries->length(); ++i)
-            entriesSync->append(EntrySync::create(entries->item(i)));
-    }
+    for (size_t i = 0; i < entries.size(); ++i)
+        entriesSync->append(EntrySync::create(entries[i].get()));
     return entriesSync.release();
 }
 

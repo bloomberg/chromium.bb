@@ -126,7 +126,7 @@ def cpp_value_to_js_value(data_type, cpp_value, isolate, creation_context=''):
         return 'v8::Number::New(%s)' % cpp_value
     if data_type == 'DOMString':
         return 'v8String(%s, %s)' % (cpp_value, isolate)
-    if sequence_type(data_type):
+    if array_or_sequence_type(data_type):
         return 'v8Array(%s, %s)' % (cpp_value, isolate)
     return 'toV8(%s, %s, %s)' % (cpp_value, creation_context, isolate)
 
@@ -146,8 +146,8 @@ def generate_conditional_string(interface_or_attribute_or_operation):
 def includes_for_type(data_type):
     if primitive_type(data_type) or data_type == 'DOMString':
         return set()
-    if sequence_type(data_type):
-        return includes_for_type(sequence_type(data_type))
+    if array_or_sequence_type(data_type):
+        return includes_for_type(array_or_sequence_type(data_type))
     return set(['V8%s.h' % data_type])
 
 
@@ -173,6 +173,16 @@ def sequence_type(data_type):
     return matched.group(1)
 
 
+def array_type(data_type):
+    matched = re.match(r'([\w\d_\s]+)\[\]', data_type)
+    if not matched:
+        return None
+    return matched.group(1)
+
+
+def array_or_sequence_type(data_type):
+    return array_type(data_type) or sequence_type(data_type)
+
 def cpp_type(data_type, pointer_type):
     """Returns the C++ type corresponding to the IDL type.
 
@@ -184,8 +194,8 @@ def cpp_type(data_type, pointer_type):
     """
     if data_type in CPP_TYPE_SPECIAL_CONVERSION_RULES:
         return CPP_TYPE_SPECIAL_CONVERSION_RULES[data_type]
-    if sequence_type(data_type):
-        return 'Vector<%s >' % cpp_type(sequence_type(data_type), 'RefPtr')
+    if array_or_sequence_type(data_type):
+        return 'const Vector<%s >&' % cpp_type(array_or_sequence_type(data_type), 'RefPtr')
     if pointer_type == 'raw':
         return data_type + '*'
     if pointer_type in ['RefPtr', 'PassRefPtr']:

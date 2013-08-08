@@ -29,5 +29,5 @@
  */
 
 callback interface EntriesCallback {
-    boolean handleEvent(EntryArray entries);
+    boolean handleEvent(Entry[] entries);
 };

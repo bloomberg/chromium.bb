@@ -38,24 +38,24 @@
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/EntryArray.h"
+#include "modules/filesystem/Entry.h"
 #include "modules/filesystem/FileEntry.h"
 
 namespace WebCore {
 
 // static
-PassRefPtr<EntryArray> HTMLInputElementFileSystem::webkitEntries(ScriptExecutionContext* scriptExecutionContext, HTMLInputElement* input)
+EntryVector HTMLInputElementFileSystem::webkitEntries(ScriptExecutionContext* scriptExecutionContext, HTMLInputElement* input)
 {
-    RefPtr<EntryArray> array = EntryArray::create();
+    EntryVector entries;
     FileList* files = input->files();
 
     if (!files)
-        return array;
+        return entries;
 
     RefPtr<DOMFileSystem> filesystem = DOMFileSystem::createIsolatedFileSystem(scriptExecutionContext, input->droppedFileSystemId());
     if (!filesystem) {
         // Drag-drop isolated filesystem is not available.
-        return array;
+        return entries;
     }
 
     for (unsigned i = 0; i < files->length(); ++i) {
@@ -69,11 +69,11 @@ PassRefPtr<EntryArray> HTMLInputElementFileSystem::webkitEntries(ScriptExecution
         // The dropped entries are mapped as top-level entries in the isolated filesystem.
         String virtualPath = DOMFilePath::append("/", file->name());
         if (metadata.type == FileMetadata::TypeDirectory)
-            array->append(DirectoryEntry::create(filesystem, virtualPath));
+            entries.append(DirectoryEntry::create(filesystem, virtualPath));
         else
-            array->append(FileEntry::create(filesystem, virtualPath));
+            entries.append(FileEntry::create(filesystem, virtualPath));
     }
-    return array;
+    return entries;
 }
 
 HTMLInputElementFileSystem::HTMLInputElementFileSystem()

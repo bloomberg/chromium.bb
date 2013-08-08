@@ -36,7 +36,7 @@ class MediaStreamTrackSourcesResponse;
 class MediaStreamTrackSourcesCallback : public RefCounted<MediaStreamTrackSourcesCallback> {
 public:
     virtual ~MediaStreamTrackSourcesCallback() { }
-    virtual bool handleEvent(SourceInfoVector) = 0;
+    virtual bool handleEvent(const SourceInfoVector&) = 0;
 };
 
 } // namespace WebCore

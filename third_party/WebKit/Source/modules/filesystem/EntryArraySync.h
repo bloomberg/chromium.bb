@@ -32,13 +32,12 @@
 #define EntryArraySync_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/EntrySync.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
-
-class EntryArray;
 
 class EntryArraySync : public RefCounted<EntryArraySync>, public ScriptWrappable {
 public:
@@ -47,7 +46,7 @@ public:
         return adoptRef(new EntryArraySync());
     }
 
-    static PassRefPtr<EntryArraySync> create(EntryArray*);
+    static PassRefPtr<EntryArraySync> create(const EntryVector&);
 
     unsigned length() const { return m_entries.size(); }
     EntrySync* item(unsigned index) const;

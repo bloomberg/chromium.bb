@@ -26,7 +26,6 @@ function successCallback(fs)
 
     reader.readEntries(function(entries) {
         window.entries = entries;
-        shouldThrow("entries.item()");
 
         fileSystem.root.getFile("/test", { create: true }, function(entry) {
             window.entry = entry;

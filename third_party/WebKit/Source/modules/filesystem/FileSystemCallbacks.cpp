@@ -42,7 +42,7 @@
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReader.h"
 #include "modules/filesystem/EntriesCallback.h"
-#include "modules/filesystem/EntryArray.h"
+#include "modules/filesystem/Entry.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntry.h"
@@ -111,7 +111,6 @@ EntriesCallbacks::EntriesCallbacks(PassRefPtr<EntriesCallback> successCallback, 
     , m_successCallback(successCallback)
     , m_directoryReader(directoryReader)
     , m_basePath(basePath)
-    , m_entries(EntryArray::create())
 {
     ASSERT(m_directoryReader);
 }
@@ -119,16 +118,16 @@ EntriesCallbacks::EntriesCallbacks(PassRefPtr<EntriesCallback> successCallback, 
 void EntriesCallbacks::didReadDirectoryEntry(const String& name, bool isDirectory)
 {
     if (isDirectory)
-        m_entries->append(DirectoryEntry::create(m_directoryReader->filesystem(), DOMFilePath::append(m_basePath, name)));
+        m_entries.append(DirectoryEntry::create(m_directoryReader->filesystem(), DOMFilePath::append(m_basePath, name)));
     else
-        m_entries->append(FileEntry::create(m_directoryReader->filesystem(), DOMFilePath::append(m_basePath, name)));
+        m_entries.append(FileEntry::create(m_directoryReader->filesystem(), DOMFilePath::append(m_basePath, name)));
 }
 
 void EntriesCallbacks::didReadDirectoryEntries(bool hasMore)
 {
     m_directoryReader->setHasMoreEntries(hasMore);
     if (m_successCallback)
-        m_successCallback->handleEvent(m_entries.get());
+        m_successCallback->handleEvent(m_entries);
 }
 
 // FileSystemCallbacks --------------------------------------------------------

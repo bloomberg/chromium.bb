@@ -42,12 +42,13 @@ function verifyTestResult()
     }
 }
 
-function entriesCallback(entries)
+var entries;
+function entriesCallback(_entries)
 {
     entriesCallbackCount++;
-
-    for (var i = 0; i < entries.length; ++i)
-        resultEntries.push(entries[i]);
+    entries = _entries;
+    shouldBe("entries.__proto__", "Array.prototype");
+    resultEntries.push.apply(resultEntries, entries);
 
     if (entries.length) {
         readEntriesCount++;

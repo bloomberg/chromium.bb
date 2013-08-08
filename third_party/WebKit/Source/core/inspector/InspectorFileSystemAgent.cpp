@@ -48,7 +48,7 @@
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReader.h"
 #include "modules/filesystem/EntriesCallback.h"
-#include "modules/filesystem/EntryArray.h"
+#include "modules/filesystem/Entry.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileCallback.h"
@@ -82,14 +82,14 @@ namespace {
 template<typename BaseCallback, typename Handler, typename Argument>
 class CallbackDispatcher : public BaseCallback {
 public:
-    typedef bool (Handler::*HandlingMethod)(Argument*);
+    typedef bool (Handler::*HandlingMethod)(Argument);
 
     static PassRefPtr<CallbackDispatcher> create(PassRefPtr<Handler> handler, HandlingMethod handlingMethod)
     {
         return adoptRef(new CallbackDispatcher(handler, handlingMethod));
     }
 
-    virtual bool handleEvent(Argument* argument) OVERRIDE
+    virtual bool handleEvent(Argument argument) OVERRIDE
     {
         return (m_handler.get()->*m_handlingMethod)(argument);
     }
@@ -107,7 +107,7 @@ template<typename BaseCallback>
 class CallbackDispatcherFactory {
 public:
     template<typename Handler, typename Argument>
-    static PassRefPtr<CallbackDispatcher<BaseCallback, Handler, Argument> > create(Handler* handler, bool (Handler::*handlingMethod)(Argument*))
+    static PassRefPtr<CallbackDispatcher<BaseCallback, Handler, Argument> > create(Handler* handler, bool (Handler::*handlingMethod)(Argument))
     {
         return CallbackDispatcher<BaseCallback, Handler, Argument>::create(PassRefPtr<Handler>(handler), handlingMethod);
     }
@@ -199,7 +199,7 @@ private:
     }
 
     bool didGetEntry(Entry*);
-    bool didReadDirectoryEntries(EntryArray*);
+    bool didReadDirectoryEntries(const EntryVector&);
 
     void reportResult(FileError::ErrorCode errorCode, PassRefPtr<Array<TypeBuilder::FileSystem::Entry> > entries = 0)
     {
@@ -261,15 +261,15 @@ void DirectoryContentRequest::readDirectoryEntries()
     m_directoryReader->readEntries(successCallback, errorCallback);
 }
 
-bool DirectoryContentRequest::didReadDirectoryEntries(EntryArray* entries)
+bool DirectoryContentRequest::didReadDirectoryEntries(const EntryVector& entries)
 {
-    if (!entries->length()) {
+    if (entries.isEmpty()) {
         reportResult(static_cast<FileError::ErrorCode>(0), m_entries);
         return true;
     }
 
-    for (unsigned i = 0; i < entries->length(); ++i) {
-        Entry* entry = entries->item(i);
+    for (size_t i = 0; i < entries.size(); ++i) {
+        RefPtr<Entry> entry = entries[i];
         RefPtr<TypeBuilder::FileSystem::Entry> entryForFrontend = TypeBuilder::FileSystem::Entry::create()
             .setUrl(entry->toURL())
             .setName(entry->name())

@@ -33,7 +33,7 @@
 
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/EntriesCallback.h"
-#include "modules/filesystem/EntryArray.h"
+#include "modules/filesystem/Entry.h"
 #include "modules/filesystem/ErrorCallback.h"
 
 namespace WebCore {
@@ -47,7 +47,7 @@ DirectoryReader::DirectoryReader(PassRefPtr<DOMFileSystemBase> fileSystem, const
 void DirectoryReader::readEntries(PassRefPtr<EntriesCallback> entriesCallback, PassRefPtr<ErrorCallback> errorCallback)
 {
     if (!m_hasMoreEntries) {
-        filesystem()->scheduleCallback(entriesCallback, EntryArray::create());
+        filesystem()->scheduleCallback(entriesCallback, EntryVector());
         return;
     }
     filesystem()->readDirectory(this, m_fullPath, entriesCallback, errorCallback);

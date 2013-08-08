@@ -32,15 +32,17 @@
 #define EntriesCallback_h
 
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class EntryArray;
+class Entry;
+typedef Vector<RefPtr<Entry> > EntryVector;
 
 class EntriesCallback : public RefCounted<EntriesCallback> {
 public:
     virtual ~EntriesCallback() { }
-    virtual bool handleEvent(EntryArray*) = 0;
+    virtual bool handleEvent(const EntryVector&) = 0;
 };
 
 } // namespace

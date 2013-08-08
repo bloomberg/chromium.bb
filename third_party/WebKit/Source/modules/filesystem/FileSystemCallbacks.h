@@ -32,6 +32,7 @@
 #define FileSystemCallbacks_h
 
 #include "core/platform/AsyncFileSystemCallbacks.h"
+#include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/FileSystemType.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
@@ -43,7 +44,6 @@ class AsyncFileWriter;
 class DOMFileSystemBase;
 class DirectoryReaderBase;
 class EntriesCallback;
-class EntryArray;
 class EntryCallback;
 class ErrorCallback;
 struct FileMetadata;
@@ -105,7 +105,7 @@ private:
     RefPtr<EntriesCallback> m_successCallback;
     RefPtr<DirectoryReaderBase> m_directoryReader;
     String m_basePath;
-    RefPtr<EntryArray> m_entries;
+    EntryVector m_entries;
 };
 
 class FileSystemCallbacks : public FileSystemCallbacksBase {
