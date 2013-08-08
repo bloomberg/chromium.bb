@@ -1521,6 +1521,7 @@ TEST_F(AutofillDialogControllerTest, EditAutofillProfile) {
 
 // Tests that adding an autofill profile and then submitting works.
 TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
+  SwitchToAutofill();
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
 
   AutofillProfile full_profile(test::GetVerifiedProfile());
@@ -1567,6 +1568,7 @@ TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
 // Makes sure that a newly added email address gets added to an existing profile
 // (as opposed to creating its own profile). http://crbug.com/240926
 TEST_F(AutofillDialogControllerTest, AddEmail) {
+  SwitchToAutofill();
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
   AutofillProfile full_profile(test::GetVerifiedProfile());
@@ -2078,6 +2080,7 @@ TEST_F(AutofillDialogControllerTest, AutofillTypes) {
 }
 
 TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
+  SwitchToAutofill();
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
 
   AutofillProfile full_profile(test::GetVerifiedProfile());
