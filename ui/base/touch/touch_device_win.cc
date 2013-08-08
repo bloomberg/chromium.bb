@@ -10,8 +10,8 @@ namespace ui {
 
 bool IsTouchDevicePresent() {
   int value = GetSystemMetrics(SM_DIGITIZER);
-  return (value & (NID_READY | NID_INTEGRATED_TOUCH)) ==
-             (NID_READY | NID_INTEGRATED_TOUCH);
+  return (value & NID_READY) &&
+      ((value & NID_INTEGRATED_TOUCH) || (value & NID_EXTERNAL_TOUCH));
 }
 
 }  // namespace ui
