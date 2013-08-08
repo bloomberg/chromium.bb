@@ -15,6 +15,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/focus_manager.h"
@@ -32,6 +33,39 @@ const int DockedWindowLayoutManager::kMinDockGap = 2;
 const int kWindowIdealSpacing = 4;
 
 namespace {
+
+const SkColor kDockBackgroundColor = SkColorSetARGB(0xff, 0x10, 0x10, 0x10);
+const float kDockBackgroundOpacity = 0.5f;
+
+class DockedBackgroundWidget : public views::Widget {
+ public:
+  explicit DockedBackgroundWidget(aura::Window* container) {
+    InitWidget(container);
+  }
+
+ private:
+  void InitWidget(aura::Window* parent) {
+    views::Widget::InitParams params;
+    params.type = views::Widget::InitParams::TYPE_POPUP;
+    params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+    params.can_activate = false;
+    params.keep_on_top = false;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.parent = parent;
+    params.accept_events = false;
+    set_focus_on_creation(false);
+    Init(params);
+    DCHECK_EQ(GetNativeView()->GetRootWindow(), parent->GetRootWindow());
+    views::View* content_view = new views::View;
+    content_view->set_background(
+        views::Background::CreateSolidBackground(kDockBackgroundColor));
+    SetContentsView(content_view);
+    GetNativeWindow()->layer()->SetOpacity(kDockBackgroundOpacity);
+    Hide();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DockedBackgroundWidget);
+};
 
 DockedWindowLayoutManager* GetDockLayoutManager(aura::Window* window,
                                                 const gfx::Point& location) {
@@ -69,7 +103,8 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       shelf_hidden_(false),
       docked_width_(0),
       alignment_(DOCKED_ALIGNMENT_NONE),
-      last_active_window_(NULL) {
+      last_active_window_(NULL),
+      background_widget_(new DockedBackgroundWidget(dock_container_)) {
   DCHECK(dock_container);
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       AddObserver(this);
@@ -546,6 +581,17 @@ void DockedWindowLayoutManager::UpdateDockBounds() {
       DockedWindowLayoutManagerObserver,
       observer_list_,
       OnDockBoundsChanging(bounds));
+
+  // Show or hide background for docked area.
+  gfx::Rect background_bounds(docked_bounds_);
+  const gfx::Rect work_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
+  background_bounds.set_height(work_area.height());
+  background_widget_->SetBounds(background_bounds);
+  if (docked_width_ > 0)
+    background_widget_->Show();
+  else
+    background_widget_->Hide();
 }
 
 void DockedWindowLayoutManager::UpdateStacking(aura::Window* active_window) {
@@ -571,13 +617,15 @@ void DockedWindowLayoutManager::UpdateStacking(aura::Window* active_window) {
   for (aura::Window::Windows::const_iterator it =
            dock_container_->children().begin();
        it != dock_container_->children().end(); ++it) {
+    if (!IsUsedByLayout(*it))
+      continue;
     gfx::Rect bounds = (*it)->bounds();
     window_ordering.insert(std::make_pair(bounds.y() + bounds.height() / 2,
                                           *it));
   }
   int active_center_y = active_window->bounds().CenterPoint().y();
 
-  aura::Window* previous_window = NULL;
+  aura::Window* previous_window = background_widget_->GetNativeWindow();
   for (std::map<int, aura::Window*>::const_iterator it =
        window_ordering.begin();
        it != window_ordering.end() && it->first < active_center_y; ++it) {

@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
@@ -26,6 +27,10 @@ class Window;
 
 namespace gfx {
 class Point;
+}
+
+namespace views {
+class Widget;
 }
 
 namespace ash {
@@ -181,6 +186,9 @@ class ASH_EXPORT DockedWindowLayoutManager
   // The last active window. Used to maintain stacking order even if no windows
   // are currently focused.
   aura::Window* last_active_window_;
+
+  // Widget used to paint a background for the docked area.
+  scoped_ptr<views::Widget> background_widget_;
 
   // Observers of dock bounds changes.
   ObserverList<DockedWindowLayoutManagerObserver> observer_list_;
