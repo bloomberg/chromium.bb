@@ -46,6 +46,7 @@ weston_SOURCES =				\
 	pixman-renderer.h			\
 	../shared/matrix.c			\
 	../shared/matrix.h			\
+	../shared/zalloc.h			\
 	weston-launch.h				\
 	weston-egl-ext.h
 

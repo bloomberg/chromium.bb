@@ -37,6 +37,7 @@ extern "C" {
 #include "version.h"
 #include "matrix.h"
 #include "config-parser.h"
+#include "zalloc.h"
 
 #ifndef MIN
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
