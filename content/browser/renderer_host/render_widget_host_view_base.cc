@@ -218,6 +218,10 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     return;
   }
 
+#if defined(USE_AURA)
+  std::vector<RECT> invalidate_rects;
+#endif
+
   for (size_t i = 0; i < moves.size(); ++i) {
     unsigned long flags = 0;
     const WebPluginGeometry& move = moves[i];
@@ -290,6 +294,19 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
       // Note: System will own the hrgn after we call SetWindowRgn,
       // so we don't need to call DeleteObject(hrgn)
       ::SetWindowRgn(window, hrgn, !move.clip_rect.IsEmpty());
+
+#if defined(USE_AURA)
+      // When using the software compositor, if the clipping rectangle is empty
+      // then DeferWindowPos won't redraw the newly uncovered area under the
+      // plugin.
+      if (clip_rect_in_pixel.IsEmpty() &&
+          !GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
+        RECT r;
+        GetClientRect(window, &r);
+        MapWindowPoints(window, parent, reinterpret_cast<POINT*>(&r), 2);
+        invalidate_rects.push_back(r);
+      }
+#endif
     } else {
       flags |= SWP_NOMOVE;
       flags |= SWP_NOSIZE;
@@ -321,6 +338,13 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
       GetWindowRect(move.window, &r);
       gfx::Rect gr(r);
       PaintEnumChildProc(move.window, reinterpret_cast<LPARAM>(&gr));
+    }
+  } else {
+      for (size_t i = 0; i < invalidate_rects.size(); ++i) {
+      ::RedrawWindow(
+          parent, &invalidate_rects[i], NULL,
+          // These flags are from WebPluginDelegateImpl::NativeWndProc.
+          RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_FRAME | RDW_UPDATENOW);
     }
   }
 #endif
