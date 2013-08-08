@@ -56,7 +56,6 @@ extern const char kDefaultPromptText[];
 extern const char kId[];
 extern const char kInitialHeight[];
 extern const char kInitialWidth[];
-extern const char kIsTopLevel[];
 extern const char kLastUnlockedBySelf[];
 extern const char kMessageText[];
 extern const char kMessageType[];

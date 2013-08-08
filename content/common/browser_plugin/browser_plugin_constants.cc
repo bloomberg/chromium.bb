@@ -47,16 +47,13 @@ const char kAttributeSrc[] = "src";
 const char kEventDialog[] = "dialog";
 const char kEventNewWindow[] = "newwindow";
 const char kEventRequestPermission[] = "permissionrequest";
-const char kEventResponsive[] = "responsive";
 const char kEventSizeChanged[] = "sizechanged";
-const char kEventUnresponsive[] = "unresponsive";
 
 // Parameters/properties on events.
 const char kDefaultPromptText[] = "defaultPromptText";
 const char kId[] = "id";
 const char kInitialHeight[] = "initialHeight";
 const char kInitialWidth[] = "initialWidth";
-const char kIsTopLevel[] = "isTopLevel";
 const char kLastUnlockedBySelf[] = "lastUnlockedBySelf";
 const char kMessageText[] = "messageText";
 const char kMessageType[] = "messageType";
