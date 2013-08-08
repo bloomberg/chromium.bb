@@ -12,6 +12,7 @@
    it depends on the pnacl_irt_shim.
 """
 
+import json
 import logging
 import optparse
 import os
@@ -121,21 +122,13 @@ def DetermineInstallerArches(target_arch):
 
 ######################################################################
 
-def IsValidVersion(version):
-  """ Return true if the version is a valid ID (a quad like 0.0.0.0).
-  """
-  pat = re.compile('^\d+\.\d+\.\d+\.\d+$')
-  return pat.search(version)
-
-
-######################################################################
-
 class PnaclPackaging(object):
 
   package_base = os.path.dirname(__file__)
 
-  # Pnacl-specific info - set from the command line.
+  # File paths that are set from the command line.
   pnacl_template = None
+  tool_revisions = None
 
   # Agreed-upon name for pnacl-specific info.
   pnacl_json = 'pnacl.json'
@@ -145,20 +138,40 @@ class PnaclPackaging(object):
     PnaclPackaging.pnacl_template = path
 
   @staticmethod
-  def GeneratePnaclInfo(target_dir, version, arch, is_installer=False):
-    pnacl_template_fd = open(PnaclPackaging.pnacl_template, 'r')
-    pnacl_template = pnacl_template_fd.read()
-    pnacl_template_fd.close()
-    if is_installer:
+  def SetToolsRevisionPath(path):
+    PnaclPackaging.tool_revisions = path
+
+  @staticmethod
+  def PnaclToolsRevision():
+    with open(PnaclPackaging.tool_revisions, 'r') as f:
+      for line in f.read().splitlines():
+        if line.startswith('PNACL_VERSION'):
+          _, version = line.split('=')
+          # CWS happens to use version quads, so make it a quad too.
+          # However, each component of the quad is limited to 64K max.
+          # Try to handle a bit more.
+          max_version = 2 ** 16
+          version = int(version)
+          version_more = version / max_version
+          version = version % max_version
+          return '0.1.%d.%d' % (version_more, version)
+    raise Exception('Cannot find PNACL_VERSION in TOOL_REVISIONS file: %s' %
+                    PnaclPackaging.tool_revisions)
+
+  @staticmethod
+  def GeneratePnaclInfo(target_dir, abi_version, arch):
+    # A note on versions: pnacl_version is the version of translator built
+    # by the NaCl repo, while abi_version is bumped when the NaCl sandbox
+    # actually changes.
+    pnacl_version = PnaclPackaging.PnaclToolsRevision()
+    with open(PnaclPackaging.pnacl_template, 'r') as pnacl_template_fd:
+      pnacl_template = json.load(pnacl_template_fd)
       out_name = J(target_dir, UseWhitelistedChars(PnaclPackaging.pnacl_json,
                                                    None))
-    else:
-      out_name = J(target_dir, PnaclPackaging.pnacl_json)
-    output_fd = open(out_name, 'w')
-    output_fd.write(pnacl_template % { "abi-version" : version,
-                                       "arch" : arch, })
-    output_fd.close()
-
+      with open(out_name, 'w') as output_fd:
+        pnacl_template['pnacl-arch'] = arch
+        pnacl_template['pnacl-version'] = pnacl_version
+        json.dump(pnacl_template, output_fd, sort_keys=True, indent=4)
 
 
 ######################################################################
@@ -286,8 +299,7 @@ def BuildInstallerStyle(version_quad, lib_overrides, arches):
   # Hack around the fact that there may be more than one arch, on Windows.
   if len(arches) == 1:
     arches = arches[0]
-  PnaclPackaging.GeneratePnaclInfo(PnaclDirs.OutputDir(), version_quad,
-                                   arches, is_installer=True)
+  PnaclPackaging.GeneratePnaclInfo(PnaclDirs.OutputDir(), version_quad, arches)
 
 
 ######################################################################
@@ -314,6 +326,8 @@ def Main():
   parser.add_option('--info_template_path',
                     dest='info_template_path', default=None,
                     help='Path of the info template file')
+  parser.add_option('--tool_revisions_path', dest='tool_revisions_path',
+                    default=None, help='Location of NaCl TOOL_REVISIONS file.')
   parser.add_option('-v', '--verbose', dest='verbose', default=False,
                     action='store_true',
                     help='Print verbose debug messages.')
@@ -336,6 +350,9 @@ def Main():
   if options.info_template_path:
     PnaclPackaging.SetPnaclInfoTemplatePath(options.info_template_path)
 
+  if options.tool_revisions_path:
+    PnaclPackaging.SetToolsRevisionPath(options.tool_revisions_path)
+
   lib_overrides = {}
   for o in options.lib_overrides:
     arch, override_lib = o.split(',')
@@ -353,13 +370,10 @@ def Main():
     parser.print_help()
     parser.error('Incorrect number of arguments')
 
-  version_quad = args[0]
-  if not IsValidVersion(version_quad):
-    print 'Invalid version format: %s\n' % version_quad
-    return 1
+  abi_version = int(args[0])
 
   arches = DetermineInstallerArches(options.target_arch)
-  BuildInstallerStyle(version_quad, lib_overrides, arches)
+  BuildInstallerStyle(abi_version, lib_overrides, arches)
   return 0
 
 

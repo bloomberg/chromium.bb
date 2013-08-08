@@ -19,7 +19,7 @@
           '../../../../../native_client/tools.gyp:prep_toolchain',
         ],
         'sources': [
-          '../../../../../native_client/pnacl/driver/pnacl_info_template.json',
+          'pnacl_component_crx_gen.py',
         ],
         # We could use 'copies', but we want to rename the files
         # in a white-listed way first.  Thus use a script.
@@ -30,6 +30,8 @@
               'pnacl_component_crx_gen.py',
               # A stamp file representing the contents of pnacl_translator.
               '<(DEPTH)/native_client/toolchain/pnacl_translator/SOURCE_SHA1',
+              '<(DEPTH)/native_client/pnacl/driver/pnacl_info_template.json',
+              '<(DEPTH)/native_client/TOOL_REVISIONS',
             ],
             'conditions': [
                 # On windows we need both ia32 and x64.
@@ -142,9 +144,10 @@
               '--dest=<(PRODUCT_DIR)/pnacl',
               '<@(lib_overrides)',
               '--target_arch=<(target_arch)',
-              '--info_template_path=../../../../../native_client/pnacl/driver/pnacl_info_template.json',
+              '--info_template_path=<(DEPTH)/native_client/pnacl/driver/pnacl_info_template.json',
+              '--tool_revisions_path=<(DEPTH)/native_client/TOOL_REVISIONS',
               # ABI Version Number.
-              '0.0.0.1',
+              '1',
             ],
           },
         ],
