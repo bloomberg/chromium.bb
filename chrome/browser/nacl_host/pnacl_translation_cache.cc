@@ -400,9 +400,8 @@ std::string PnaclTranslationCache::GetKey(const nacl::PnaclCacheInfo& info) {
   if (!info.pexe_url.is_valid() || info.abi_version < 0 || info.opt_level < 0)
     return std::string();
   std::string retval("ABI:");
-  retval += IntToString(info.abi_version) + ";" +
-      "opt:" + IntToString(info.opt_level) + ";" +
-      "URL:";
+  retval += IntToString(info.abi_version) + ";" + "opt:" +
+            IntToString(info.opt_level) + ";" + "URL:";
   // Filter the username, password, and ref components from the URL
   GURL::Replacements replacements;
   replacements.ClearUsername();
@@ -419,11 +418,11 @@ std::string PnaclTranslationCache::GetKey(const nacl::PnaclCacheInfo& info) {
     memset(&exploded, 0, sizeof(exploded));
   }
   retval += "modified:" + IntToString(exploded.year) + ":" +
-      IntToString(exploded.month) + ":" +
-      IntToString(exploded.day_of_month) + ":" +
-      IntToString(exploded.hour) + ":" + IntToString(exploded.minute) + ":" +
-      IntToString(exploded.second) + ":" +
-      IntToString(exploded.millisecond) + ":UTC;";
+            IntToString(exploded.month) + ":" +
+            IntToString(exploded.day_of_month) + ":" +
+            IntToString(exploded.hour) + ":" + IntToString(exploded.minute) +
+            ":" + IntToString(exploded.second) + ":" +
+            IntToString(exploded.millisecond) + ":UTC;";
   retval += "etag:" + info.etag;
   return retval;
 }

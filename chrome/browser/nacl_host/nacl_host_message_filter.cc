@@ -11,6 +11,7 @@
 #include "chrome/browser/nacl_host/pnacl_host.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "extensions/common/constants.h"
+#include "ipc/ipc_platform_file.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -134,12 +135,13 @@ void NaClHostMessageFilter::OnGetReadonlyPnaclFd(
 // NaClHostMsg_NaClCreateTemporaryFile sync message.
 void NaClHostMessageFilter::SyncReturnTemporaryFile(
     IPC::Message* reply_msg,
-    IPC::PlatformFileForTransit fd) {
-  if (fd == IPC::InvalidPlatformFileForTransit()) {
+    base::PlatformFile fd) {
+  if (fd == base::kInvalidPlatformFileValue) {
     reply_msg->set_reply_error();
   } else {
     NaClHostMsg_NaClCreateTemporaryFile::WriteReplyParams(
-        reply_msg, fd);
+        reply_msg,
+        IPC::GetFileHandleForProcess(fd, PeerHandle(), true));
   }
   Send(reply_msg);
 }
@@ -147,22 +149,21 @@ void NaClHostMessageFilter::SyncReturnTemporaryFile(
 void NaClHostMessageFilter::OnNaClCreateTemporaryFile(
     IPC::Message* reply_msg) {
   PnaclHost::GetInstance()->CreateTemporaryFile(
-      PeerHandle(),
       base::Bind(&NaClHostMessageFilter::SyncReturnTemporaryFile,
                  this,
                  reply_msg));
 }
 
-// For now, GetNexeFd cache requests always set is_hit to false and returns
-// a new temporary file via a NaClViewMsg_NexeTempFileReply message.
-// A future CL will implement the cache lookup logic (and use the currently-
-// unused parameters)
-// See also https://code.google.com/p/nativeclient/issues/detail?id=3372
 void NaClHostMessageFilter::AsyncReturnTemporaryFile(
     int pp_instance,
-    IPC::PlatformFileForTransit fd,
+    base::PlatformFile fd,
     bool is_hit) {
-  Send(new NaClViewMsg_NexeTempFileReply(pp_instance, is_hit, fd));
+  Send(new NaClViewMsg_NexeTempFileReply(
+      pp_instance,
+      is_hit,
+      // Don't close our copy of the handle, because PnaclHost will use it
+      // when the translation finishes.
+      IPC::GetFileHandleForProcess(fd, PeerHandle(), false)));
 }
 
 void NaClHostMessageFilter::OnGetNexeFd(
@@ -177,7 +178,6 @@ void NaClHostMessageFilter::OnGetNexeFd(
   }
   PnaclHost::GetInstance()->GetNexeFd(
       render_process_id_,
-      PeerHandle(),
       render_view_id,
       pp_instance,
       cache_info,

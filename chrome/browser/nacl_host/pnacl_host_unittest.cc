@@ -4,6 +4,7 @@
 
 #include "chrome/browser/nacl_host/pnacl_host.h"
 
+#include <stdio.h>
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -12,12 +13,18 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#define snprintf _snprintf
+#endif
+
 namespace pnacl {
 
 class PnaclHostTest : public testing::Test {
  protected:
   PnaclHostTest()
-      : temp_callback_count_(0),
+      : host_(NULL),
+        temp_callback_count_(0),
+        write_callback_count_(0),
         thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
   virtual void SetUp() {
     host_ = new PnaclHost();
@@ -26,78 +33,250 @@ class PnaclHostTest : public testing::Test {
     EXPECT_EQ(host_->cache_state_, PnaclHost::CacheReady);
   }
   virtual void TearDown() {
-    ExpectPendingTranslations(0);
+    EXPECT_EQ(0U, host_->pending_translations());
     delete host_;
   }
-  // Utilities for inspecting internal state of the pnacl host
-  void ExpectPendingTranslations(size_t count) {
-    EXPECT_EQ(count, host_->pending_translations_.size());
-  }
-  void ExpectCallbackCount(int count) {
-    EXPECT_EQ(count, temp_callback_count_);
+  // Flush the blocking pool first, then any tasks it posted to the IO thread.
+  // Do 2 rounds of flushing, because some operations require 2 trips back and
+  // forth between the threads.
+  void FlushQueues() {
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
   }
 
  public:  // Required for derived classes to bind this method
-  void CallbackExpectMiss(IPC::PlatformFileForTransit fd, bool is_hit) {
-    temp_callback_count_++;
+  // Callbacks used by tests which call GetNexeFd.
+  // CallbackExpectMiss checks that the fd is valid and a miss is reported,
+  // and also writes some data into the file, which is read back by
+  // CallbackExpectHit
+  void CallbackExpectMiss(base::PlatformFile fd, bool is_hit) {
     EXPECT_FALSE(is_hit);
-    EXPECT_FALSE(fd == IPC::InvalidPlatformFileForTransit());
+    ASSERT_FALSE(fd == base::kInvalidPlatformFileValue);
+    base::PlatformFileInfo info;
+    EXPECT_TRUE(base::GetPlatformFileInfo(fd, &info));
+    EXPECT_FALSE(info.is_directory);
+    EXPECT_EQ(0LL, info.size);
+    char str[16];
+    memset(str, 0x0, 16);
+    snprintf(str, 16, "testdata%d", ++write_callback_count_);
+    EXPECT_EQ(16, base::WritePlatformFile(fd, 0, str, 16));
+    temp_callback_count_++;
+  }
+  void CallbackExpectHit(base::PlatformFile fd, bool is_hit) {
+    EXPECT_TRUE(is_hit);
+    ASSERT_FALSE(fd == base::kInvalidPlatformFileValue);
+    base::PlatformFileInfo info;
+    EXPECT_TRUE(base::GetPlatformFileInfo(fd, &info));
+    EXPECT_FALSE(info.is_directory);
+    EXPECT_EQ(16LL, info.size);
+    char data[16];
+    memset(data, 0x0, 16);
+    char str[16];
+    memset(str, 0x0, 16);
+    snprintf(str, 16, "testdata%d", write_callback_count_);
+    EXPECT_EQ(16, base::ReadPlatformFile(fd, 0, data, 16));
+    EXPECT_STREQ(str, data);
+    temp_callback_count_++;
   }
 
  protected:
   PnaclHost* host_;
   int temp_callback_count_;
+  int write_callback_count_;
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
 };
 
-#define EXPECT_PENDING_TRANSLATIONS(n) \
-  do {                                 \
-    SCOPED_TRACE("");                  \
-    ExpectPendingTranslations(n);      \
+static nacl::PnaclCacheInfo GetTestCacheInfo() {
+  nacl::PnaclCacheInfo info;
+  info.pexe_url = GURL("http://www.google.com");
+  info.abi_version = 0;
+  info.opt_level = 0;
+  return info;
+}
+
+#define GET_NEXE_FD(renderer, instance, info, expect_hit)           \
+  do {                                                              \
+    SCOPED_TRACE("");                                               \
+    host_->GetNexeFd(                                               \
+        renderer,                                                   \
+        0, /* ignore render_view_id for now */                      \
+        instance,                                                   \
+        info,                                                       \
+        base::Bind(expect_hit ? &PnaclHostTest::CallbackExpectHit   \
+                              : &PnaclHostTest::CallbackExpectMiss, \
+                   base::Unretained(this)));                        \
   } while (0)
 
-// We don't do actual caching yet, but just return a new temp file with a miss
 TEST_F(PnaclHostTest, BasicMiss) {
-  nacl::PnaclCacheInfo info;
-  host_->GetNexeFd(
-      0,
-      base::ProcessHandle(),
-      0,
-      0,
-      info,
-      base::Bind(&PnaclHostTest::CallbackExpectMiss, base::Unretained(this)));
-
-  EXPECT_PENDING_TRANSLATIONS(1);
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_PENDING_TRANSLATIONS(1);
-  ExpectCallbackCount(1);
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  // Test cold miss.
+  GET_NEXE_FD(0, 0, info, false);
+  EXPECT_EQ(1U, host_->pending_translations());
+  FlushQueues();
+  EXPECT_EQ(1U, host_->pending_translations());
+  EXPECT_EQ(1, temp_callback_count_);
   host_->TranslationFinished(0, 0, true);
-  EXPECT_PENDING_TRANSLATIONS(0);
+  FlushQueues();
+  EXPECT_EQ(0U, host_->pending_translations());
+  // Test that a different cache info field also misses.
+  info.etag = std::string("something else");
+  GET_NEXE_FD(0, 0, info, false);
+  FlushQueues();
+  EXPECT_EQ(2, temp_callback_count_);
+  EXPECT_EQ(1U, host_->pending_translations());
   host_->RendererClosing(0);
 }
 
 TEST_F(PnaclHostTest, BadArguments) {
-  nacl::PnaclCacheInfo info;
-  host_->GetNexeFd(
-      0,
-      base::ProcessHandle(),
-      0,
-      0,
-      info,
-      base::Bind(&PnaclHostTest::CallbackExpectMiss, base::Unretained(this)));
-
-  EXPECT_PENDING_TRANSLATIONS(1);
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  GET_NEXE_FD(0, 0, info, false);
+  EXPECT_EQ(1U, host_->pending_translations());
   host_->TranslationFinished(0, 1, true);  // nonexistent translation
-  EXPECT_PENDING_TRANSLATIONS(1);
+  EXPECT_EQ(1U, host_->pending_translations());
   host_->RendererClosing(1);  // nonexistent renderer
-  EXPECT_PENDING_TRANSLATIONS(1);
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::RunLoop().RunUntilIdle();
-  ExpectCallbackCount(1);
+  EXPECT_EQ(1U, host_->pending_translations());
+  FlushQueues();
+  EXPECT_EQ(1, temp_callback_count_);
   host_->RendererClosing(0);  // close without finishing
-  EXPECT_PENDING_TRANSLATIONS(0);
+}
+
+TEST_F(PnaclHostTest, BasicHit) {
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  GET_NEXE_FD(0, 0, info, false);
+  FlushQueues();
+  EXPECT_EQ(1, temp_callback_count_);
+  host_->TranslationFinished(0, 0, true);
+  FlushQueues();
+  GET_NEXE_FD(0, 1, info, true);
+  FlushQueues();
+  EXPECT_EQ(2, temp_callback_count_);
+  EXPECT_EQ(0U, host_->pending_translations());
+}
+
+TEST_F(PnaclHostTest, TranslationErrors) {
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  info.pexe_url = GURL("http://www.google.com");
+  GET_NEXE_FD(0, 0, info, false);
+  // Early abort, before temp file request returns
+  host_->TranslationFinished(0, 0, false);
+  FlushQueues();
+  EXPECT_EQ(0U, host_->pending_translations());
+  EXPECT_EQ(0, temp_callback_count_);
+  // Check that another request for the same info misses successfully.
+  GET_NEXE_FD(0, 0, info, false);
+  FlushQueues();
+  host_->TranslationFinished(0, 0, true);
+  FlushQueues();
+  EXPECT_EQ(1, temp_callback_count_);
+  EXPECT_EQ(0U, host_->pending_translations());
+
+  // Now try sending the error after the temp file request returns
+  info.abi_version = 222;
+  GET_NEXE_FD(0, 0, info, false);
+  FlushQueues();
+  EXPECT_EQ(2, temp_callback_count_);
+  host_->TranslationFinished(0, 0, false);
+  FlushQueues();
+  EXPECT_EQ(0U, host_->pending_translations());
+  // Check another successful miss
+  GET_NEXE_FD(0, 0, info, false);
+  FlushQueues();
+  EXPECT_EQ(3, temp_callback_count_);
+  host_->TranslationFinished(0, 0, false);
+  EXPECT_EQ(0U, host_->pending_translations());
+}
+
+TEST_F(PnaclHostTest, OverlappedMissesAfterTempReturn) {
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  GET_NEXE_FD(0, 0, info, false);
+  FlushQueues();
+  EXPECT_EQ(1, temp_callback_count_);
+  EXPECT_EQ(1U, host_->pending_translations());
+  // Test that a second request for the same nexe while the first one is still
+  // outstanding eventually hits.
+  GET_NEXE_FD(0, 1, info, true);
+  FlushQueues();
+  EXPECT_EQ(2U, host_->pending_translations());
+  // The temp file should not be returned to the second request until after the
+  // first is finished translating.
+  EXPECT_EQ(1, temp_callback_count_);
+  host_->TranslationFinished(0, 0, true);
+  FlushQueues();
+  EXPECT_EQ(2, temp_callback_count_);
+  EXPECT_EQ(0U, host_->pending_translations());
+}
+
+TEST_F(PnaclHostTest, OverlappedMissesBeforeTempReturn) {
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  GET_NEXE_FD(0, 0, info, false);
+  // Send the 2nd fd request before the first one returns a temp file.
+  GET_NEXE_FD(0, 1, info, true);
+  FlushQueues();
+  EXPECT_EQ(1, temp_callback_count_);
+  EXPECT_EQ(2U, host_->pending_translations());
+  FlushQueues();
+  EXPECT_EQ(2U, host_->pending_translations());
+  EXPECT_EQ(1, temp_callback_count_);
+  host_->TranslationFinished(0, 0, true);
+  FlushQueues();
+  EXPECT_EQ(2, temp_callback_count_);
+  EXPECT_EQ(0U, host_->pending_translations());
+}
+
+TEST_F(PnaclHostTest, OverlappedHitsBeforeTempReturn) {
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  // Store one in the cache and complete it.
+  GET_NEXE_FD(0, 0, info, false);
+  FlushQueues();
+  EXPECT_EQ(1, temp_callback_count_);
+  host_->TranslationFinished(0, 0, true);
+  FlushQueues();
+  EXPECT_EQ(0U, host_->pending_translations());
+  GET_NEXE_FD(0, 0, info, true);
+  // Request the second before the first temp file returns.
+  GET_NEXE_FD(0, 1, info, true);
+  FlushQueues();
+  EXPECT_EQ(3, temp_callback_count_);
+  EXPECT_EQ(0U, host_->pending_translations());
+}
+
+TEST_F(PnaclHostTest, OverlappedHitsAfterTempReturn) {
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  // Store one in the cache and complete it.
+  GET_NEXE_FD(0, 0, info, false);
+  FlushQueues();
+  EXPECT_EQ(1, temp_callback_count_);
+  host_->TranslationFinished(0, 0, true);
+  FlushQueues();
+  EXPECT_EQ(0U, host_->pending_translations());
+  GET_NEXE_FD(0, 0, info, true);
+  FlushQueues();
+  GET_NEXE_FD(0, 1, info, true);
+  FlushQueues();
+  EXPECT_EQ(3, temp_callback_count_);
+  EXPECT_EQ(0U, host_->pending_translations());
+}
+
+TEST_F(PnaclHostTest, OverlappedMissesRendererClosing) {
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  GET_NEXE_FD(0, 0, info, false);
+  // Send the 2nd fd request from a different renderer.
+  // Test that it eventually gets an fd after the first renderer closes.
+  GET_NEXE_FD(1, 1, info, false);
+  FlushQueues();
+  EXPECT_EQ(1, temp_callback_count_);
+  EXPECT_EQ(2U, host_->pending_translations());
+  FlushQueues();
+  EXPECT_EQ(2U, host_->pending_translations());
+  EXPECT_EQ(1, temp_callback_count_);
+  host_->RendererClosing(0);
+  FlushQueues();
+  EXPECT_EQ(2, temp_callback_count_);
+  EXPECT_EQ(1U, host_->pending_translations());
+  host_->RendererClosing(1);
 }
 
 }  // namespace pnacl

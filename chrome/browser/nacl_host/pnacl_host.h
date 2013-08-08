@@ -15,6 +15,10 @@
 #include "components/nacl/common/pnacl_types.h"
 #include "ipc/ipc_platform_file.h"
 
+namespace net {
+class DrainableIOBuffer;
+}
+
 namespace pnacl {
 class PnaclHostTest;
 class PnaclTranslationCache;
@@ -25,28 +29,28 @@ class PnaclTranslationCache;
 // called on the IO thread.
 class PnaclHost {
  public:
-  typedef base::Callback<void(IPC::PlatformFileForTransit)> TempFileCallback;
-  typedef base::Callback<void(IPC::PlatformFileForTransit, bool is_hit)>
-      NexeFdCallback;
+  typedef base::Callback<void(base::PlatformFile)> TempFileCallback;
+  typedef base::Callback<void(base::PlatformFile, bool is_hit)> NexeFdCallback;
 
   static PnaclHost* GetInstance();
 
   PnaclHost();
   ~PnaclHost();
+
+  // Initialize cache backend. GetNexeFd will also initialize the backend if
+  // necessary, but calling Init ahead of time will minimize the latency.
   void Init();
 
   // Creates a temporary file that will be deleted when the last handle
-  // is closed, or earlier. Returns a PlatformFileForTransit usable by the
-  // process identified by |process_handle|.
-  void CreateTemporaryFile(base::ProcessHandle process_handle,
-                           TempFileCallback cb);
+  // is closed, or earlier. Returns a PlatformFile handle.
+  void CreateTemporaryFile(TempFileCallback cb);
 
   // Create a temporary file, which will be deleted by the time the last
   // handle is closed (or earlier on POSIX systems), to use for the nexe
   // with the cache information given in |cache_info|. The specific instance
   // is identified by the combination of |render_process_id| and |pp_instance|.
-  // Returns by calling |cb| with a PlatformFileForTransit usable by the process
-  // identified by |process_handle|. If the nexe is already present
+  // Returns by calling |cb| with a PlatformFile handle.
+  // If the nexe is already present
   // in the cache, |is_hit| is set to true and the contents of the nexe
   // have been copied into the temporary file. Otherwise |is_hit| is set to
   // false and the temporary file will be writeable.
@@ -55,8 +59,10 @@ class PnaclHost {
   // If the cache request was a miss, the caller is expected to call
   // TranslationFinished after it finishes translation to allow the nexe to be
   // stored in the cache.
+  // The returned temp fd may be closed at any time by PnaclHost, so it should
+  // be duplicated (e.g. with IPC::GetFileHandleForProcess) before the callback
+  // returns.
   void GetNexeFd(int render_process_id,
-                 base::ProcessHandle process_handle,
                  int render_view_id,
                  int pp_instance,
                  const nacl::PnaclCacheInfo& cache_info,
@@ -70,8 +76,12 @@ class PnaclHost {
                            bool success);
 
   // Called when the renderer identified by |render_process_id| is closing.
-  // Clean up any outstanding translations for that renderer.
+  // Clean up any outstanding translations for that renderer. If there are no
+  // more pending translations, the backend is freed, allowing it to flush.
   void RendererClosing(int render_process_id);
+
+  // Return the number of tracked translations or FD requests currently pending.
+  size_t pending_translations() { return pending_translations_.size(); }
 
  private:
   // PnaclHost is a singleton because there is only one translation cache, and
@@ -84,13 +94,19 @@ class PnaclHost {
     CacheInitializing,
     CacheReady
   };
-  struct PendingTranslation {
+  class PendingTranslation {
    public:
     PendingTranslation();
     ~PendingTranslation();
+    base::ProcessHandle process_handle;
     int render_view_id;
-    IPC::PlatformFileForTransit nexe_fd;
+    base::PlatformFile nexe_fd;
+    bool got_nexe_fd;
+    bool got_cache_reply;
+    bool got_cache_hit;
+    scoped_refptr<net::DrainableIOBuffer> nexe_read_buffer;
     NexeFdCallback callback;
+    std::string cache_key;
     nacl::PnaclCacheInfo cache_info;
   };
 
@@ -98,11 +114,32 @@ class PnaclHost {
   typedef std::map<TranslationID, PendingTranslation> PendingTranslationMap;
 
   void InitForTest(base::FilePath temp_dir);
-  void OnCacheInitialized(int error);
-  static IPC::PlatformFileForTransit DoCreateTemporaryFile(
-      base::ProcessHandle process_handle,
-      base::FilePath temp_dir_);
-  void ReturnMiss(TranslationID id, IPC::PlatformFileForTransit fd);
+  void OnCacheInitialized(int net_error);
+
+  static base::PlatformFile DoCreateTemporaryFile(base::FilePath temp_dir_);
+
+  // GetNexeFd common steps
+  void SendCacheQueryAndTempFileRequest(const std::string& key,
+                                        const TranslationID& id);
+  void OnCacheQueryReturn(const TranslationID& id,
+                          int net_error,
+                          scoped_refptr<net::DrainableIOBuffer> buffer);
+  void OnTempFileReturn(const TranslationID& id, base::PlatformFile fd);
+  void CheckCacheQueryReady(const PendingTranslationMap::iterator& entry);
+
+  // GetNexeFd miss path
+  void ReturnMiss(const PendingTranslationMap::iterator& entry);
+  static scoped_refptr<net::DrainableIOBuffer> CopyFileToBuffer(
+      base::PlatformFile fd);
+  void StoreTranslatedNexe(TranslationID id,
+                           scoped_refptr<net::DrainableIOBuffer>);
+  void OnTranslatedNexeStored(const TranslationID& id, int net_error);
+  void RequeryMatchingTranslations(const std::string& key);
+
+  // GetNexeFd hit path
+  static int CopyBufferToFile(base::PlatformFile fd,
+                              scoped_refptr<net::DrainableIOBuffer> buffer);
+  void OnBufferCopiedToTempFile(const TranslationID& id, int file_error);
 
   CacheState cache_state_;
   base::FilePath temp_dir_;

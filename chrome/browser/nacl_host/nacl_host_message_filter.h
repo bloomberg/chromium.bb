@@ -7,8 +7,8 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/platform_file.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "ipc/ipc_platform_file.h"
 
 class ExtensionInfoMap;
 class GURL;
@@ -70,9 +70,9 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
       int instance,
       const nacl::PnaclInstallProgress& progress);
   void SyncReturnTemporaryFile(IPC::Message* reply_msg,
-                               IPC::PlatformFileForTransit fd);
+                               base::PlatformFile fd);
   void AsyncReturnTemporaryFile(int pp_instance,
-                                IPC::PlatformFileForTransit fd,
+                                base::PlatformFile fd,
                                 bool is_hit);
 #endif
   int render_process_id_;
