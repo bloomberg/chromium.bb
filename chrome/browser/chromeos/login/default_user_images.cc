@@ -127,7 +127,7 @@ std::string GetDefaultImageUrl(int index) {
   return GetDefaultImageString(index, kDefaultUrlPrefix);
 }
 
-bool IsDefaultImageUrl(const std::string url, int* image_id) {
+bool IsDefaultImageUrl(const std::string& url, int* image_id) {
   if (url == kZeroDefaultUrl) {
     *image_id = 0;
     return true;

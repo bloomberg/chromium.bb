@@ -31,7 +31,7 @@ std::string GetDefaultImageUrl(int index);
 
 // Checks if the given URL points to one of the default images. If it is,
 // returns true and its index through |image_id|. If not, returns false.
-bool IsDefaultImageUrl(const std::string url, int* image_id);
+bool IsDefaultImageUrl(const std::string& url, int* image_id);
 
 // Returns bitmap of default user image with specified index.
 const gfx::ImageSkia& GetDefaultImage(int index);
