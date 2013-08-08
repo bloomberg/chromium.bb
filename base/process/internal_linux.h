@@ -11,6 +11,10 @@
 #include "base/files/file_path.h"
 
 namespace base {
+
+class Time;
+class TimeDelta;
+
 namespace internal {
 
 // "/proc"
@@ -49,6 +53,7 @@ enum ProcStatsFields {
   VM_UTIME          = 13,  // Time scheduled in user mode in clock ticks.
   VM_STIME          = 14,  // Time scheduled in kernel mode in clock ticks.
   VM_NUMTHREADS     = 19,  // Number of threads.
+  VM_STARTTIME      = 21,  // The time the process started in clock ticks.
   VM_VSIZE          = 22,  // Virtual memory size in bytes.
   VM_RSS            = 23,  // Resident Set Size in pages.
 };
@@ -71,6 +76,12 @@ int ReadProcStatsAndGetFieldAsInt(pid_t pid,
 // Same as ReadProcStatsAndGetFieldAsInt() but for size_t values.
 size_t ReadProcStatsAndGetFieldAsSizeT(pid_t pid,
                                        ProcStatsFields field_num);
+
+// Returns the time that the OS started. Clock ticks are relative to this.
+Time GetBootTime();
+
+// Converts Linux clock ticks to a wall time delta.
+TimeDelta ClockTicksToTimeDelta(int clock_ticks);
 
 }  // namespace internal
 }  // namespace base

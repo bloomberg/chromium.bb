@@ -1211,25 +1211,24 @@ void Browser::OnWindowDidShow() {
     return;
   window_has_shown_ = true;
 
-// CurrentProcessInfo::CreationTime() is currently only implemented on Mac and
-// Windows.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// CurrentProcessInfo::CreationTime() is missing on some platforms.
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
   // Measure the latency from startup till the first browser window becomes
   // visible.
   static bool is_first_browser_window = true;
   if (is_first_browser_window &&
       !startup_metric_utils::WasNonBrowserUIDisplayed()) {
     is_first_browser_window = false;
-    const base::Time* process_creation_time =
+    const base::Time process_creation_time =
         base::CurrentProcessInfo::CreationTime();
 
-    if (process_creation_time) {
+    if (!process_creation_time.is_null()) {
       UMA_HISTOGRAM_LONG_TIMES(
           "Startup.BrowserWindowDisplay",
-          base::Time::Now() - *process_creation_time);
+          base::Time::Now() - process_creation_time);
     }
   }
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 
   // Nothing to do for non-tabbed windows.
   if (!is_type_tabbed())

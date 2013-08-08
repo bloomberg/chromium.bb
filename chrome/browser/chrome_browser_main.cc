@@ -689,17 +689,17 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
 
   bool is_first_run = first_run::IsChromeFirstRun();
 
-// CurrentProcessInfo::CreationTime() is currently only implemented on Mac and
-// Windows.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  const base::Time* process_creation_time =
+// CurrentProcessInfo::CreationTime() is currently only implemented on some
+// platforms.
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+  const base::Time process_creation_time =
       base::CurrentProcessInfo::CreationTime();
 
-  if (!is_first_run && process_creation_time) {
+  if (!is_first_run && !process_creation_time.is_null()) {
     RecordPreReadExperimentTime("Startup.BrowserMessageLoopStartTime",
-        base::Time::Now() - *process_creation_time);
+        base::Time::Now() - process_creation_time);
   }
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 
   // Record collected startup metrics.
   startup_metric_utils::OnBrowserStartupComplete(is_first_run);

@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 
 namespace base {
 namespace internal {
@@ -47,17 +49,21 @@ pid_t ProcDirSlotToPid(const char* d_name) {
   return pid;
 }
 
-bool ReadProcStats(pid_t pid, std::string* buffer) {
+bool ReadProcFile(const FilePath& file, std::string* buffer) {
   buffer->clear();
   // Synchronously reading files in /proc is safe.
   ThreadRestrictions::ScopedAllowIO allow_io;
 
-  FilePath stat_file = internal::GetProcPidDir(pid).Append(kStatFile);
-  if (!file_util::ReadFileToString(stat_file, buffer)) {
-    DLOG(WARNING) << "Failed to get process stats.";
+  if (!file_util::ReadFileToString(file, buffer)) {
+    DLOG(WARNING) << "Failed to read " << file.MaybeAsASCII();
     return false;
   }
   return !buffer->empty();
+}
+
+bool ReadProcStats(pid_t pid, std::string* buffer) {
+  FilePath stat_file = internal::GetProcPidDir(pid).Append(kStatFile);
+  return ReadProcFile(stat_file, buffer);
 }
 
 bool ParseProcStats(const std::string& stats_data,
@@ -98,6 +104,17 @@ bool ParseProcStats(const std::string& stats_data,
   return true;
 }
 
+typedef std::map<std::string, std::string> ProcStatMap;
+void ParseProcStat(const std::string& contents, ProcStatMap* output) {
+  typedef std::pair<std::string, std::string> StringPair;
+  std::vector<StringPair> key_value_pairs;
+  SplitStringIntoKeyValuePairs(contents, ' ', '\n', &key_value_pairs);
+  for (size_t i = 0; i < key_value_pairs.size(); ++i) {
+    const StringPair& key_value_pair = key_value_pairs[i];
+    output->insert(key_value_pair);
+  }
+}
+
 int GetProcStatsFieldAsInt(const std::vector<std::string>& proc_stats,
                            ProcStatsFields field_num) {
   DCHECK_GE(field_num, VM_PPID);
@@ -136,6 +153,37 @@ size_t ReadProcStatsAndGetFieldAsSizeT(pid_t pid,
   if (!ParseProcStats(stats_data, &proc_stats))
     return 0;
   return GetProcStatsFieldAsSizeT(proc_stats, field_num);
+}
+
+Time GetBootTime() {
+  FilePath path("/proc/stat");
+  std::string contents;
+  if (!ReadProcFile(path, &contents))
+    return Time();
+  ProcStatMap proc_stat;
+  ParseProcStat(contents, &proc_stat);
+  ProcStatMap::const_iterator btime_it = proc_stat.find("btime");
+  if (btime_it == proc_stat.end())
+    return Time();
+  int btime;
+  if (!StringToInt(btime_it->second, &btime))
+    return Time();
+  return Time::FromTimeT(btime);
+}
+
+TimeDelta ClockTicksToTimeDelta(int clock_ticks) {
+  // This queries the /proc-specific scaling factor which is
+  // conceptually the system hertz.  To dump this value on another
+  // system, try
+  //   od -t dL /proc/self/auxv
+  // and look for the number after 17 in the output; mine is
+  //   0000040          17         100           3   134512692
+  // which means the answer is 100.
+  // It may be the case that this value is always 100.
+  static const int kHertz = sysconf(_SC_CLK_TCK);
+
+  return TimeDelta::FromMicroseconds(
+      Time::kMicrosecondsPerSecond * clock_ticks / kHertz);
 }
 
 }  // namespace internal

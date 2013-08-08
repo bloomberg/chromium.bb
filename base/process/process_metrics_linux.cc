@@ -167,16 +167,6 @@ bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
 }
 
 double ProcessMetrics::GetCPUUsage() {
-  // This queries the /proc-specific scaling factor which is
-  // conceptually the system hertz.  To dump this value on another
-  // system, try
-  //   od -t dL /proc/self/auxv
-  // and look for the number after 17 in the output; mine is
-  //   0000040          17         100           3   134512692
-  // which means the answer is 100.
-  // It may be the case that this value is always 100.
-  static const int kHertz = sysconf(_SC_CLK_TCK);
-
   struct timeval now;
   int retval = gettimeofday(&now, NULL);
   if (retval)
@@ -200,8 +190,10 @@ double ProcessMetrics::GetCPUUsage() {
   // We have the number of jiffies in the time period.  Convert to percentage.
   // Note this means we will go *over* 100 in the case where multiple threads
   // are together adding to more than one CPU's worth.
-  int percentage = 100 * (cpu - last_cpu_) /
-      (kHertz * TimeDelta::FromMicroseconds(time_delta).InSecondsF());
+  TimeDelta cpu_time = internal::ClockTicksToTimeDelta(cpu);
+  TimeDelta last_cpu_time = internal::ClockTicksToTimeDelta(last_cpu_);
+  int percentage = 100 * (cpu_time - last_cpu_time).InSecondsF() /
+      TimeDelta::FromMicroseconds(time_delta).InSecondsF();
 
   last_time_ = time;
   last_cpu_ = cpu;

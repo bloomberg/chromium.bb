@@ -12,32 +12,20 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
-namespace {
+namespace base {
 
-using base::Time;
-
-// Returns the process creation time, or NULL if an error occurred.
-Time* ProcessCreationTimeInternal() {
+//static
+const Time CurrentProcessInfo::CreationTime() {
   int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
   size_t len = 0;
   if (sysctl(mib, arraysize(mib), NULL, &len, NULL, 0) < 0)
-    return NULL;
+    return Time();
 
   scoped_ptr_malloc<struct kinfo_proc>
       proc(static_cast<struct kinfo_proc*>(malloc(len)));
   if (sysctl(mib, arraysize(mib), proc.get(), &len, NULL, 0) < 0)
-    return NULL;
-  return new Time(Time::FromTimeVal(proc->kp_proc.p_un.__p_starttime));
-}
-
-}  // namespace
-
-namespace base {
-
-//static
-const Time* CurrentProcessInfo::CreationTime() {
-  static Time* process_creation_time = ProcessCreationTimeInternal();
-  return process_creation_time;
+    return Time();
+  return Time::FromTimeVal(proc->kp_proc.p_un.__p_starttime);
 }
 
 }  // namespace base

@@ -417,6 +417,7 @@
           'process/process_handle_posix.cc',
           'process/process_handle_win.cc',
           'process/process_info.h',
+          'process/process_info_linux.cc',
           'process/process_info_mac.cc',
           'process/process_info_win.cc',
           'process/process_iterator.cc',

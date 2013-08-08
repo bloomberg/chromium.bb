@@ -47,11 +47,12 @@ void AppListService::RecordShowTimings(const CommandLine& command_line) {
     else
       UMA_HISTOGRAM_LONG_TIMES("Startup.ShowAppListWarmStart", elapsed);
   } else {
-    // base::CurrentProcessInfo::CreationTime() is only defined on win/mac.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+    // base::CurrentProcessInfo::CreationTime() is only defined on some
+    // platforms.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
     UMA_HISTOGRAM_LONG_TIMES(
         "Startup.ShowAppListColdStart",
-        base::Time::Now() - *base::CurrentProcessInfo::CreationTime());
+        base::Time::Now() - base::CurrentProcessInfo::CreationTime());
 #endif
   }
 }

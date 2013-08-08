@@ -9,29 +9,17 @@
 #include "base/basictypes.h"
 #include "base/time/time.h"
 
-namespace {
+namespace base {
 
-using base::Time;
-
-// Returns the process creation time, or NULL if an error occurred.
-Time* ProcessCreationTimeInternal() {
+//static
+const Time CurrentProcessInfo::CreationTime() {
   FILETIME creation_time = {};
   FILETIME ignore = {};
   if (::GetProcessTimes(::GetCurrentProcess(), &creation_time, &ignore,
       &ignore, &ignore) == false)
-    return NULL;
+    return Time();
 
-  return new Time(Time::FromFileTime(creation_time));
-}
-
-}  // namespace
-
-namespace base {
-
-//static
-const Time* CurrentProcessInfo::CreationTime() {
-  static Time* process_creation_time = ProcessCreationTimeInternal();
-  return process_creation_time;
+  return Time::FromFileTime(creation_time);
 }
 
 }  // namespace base

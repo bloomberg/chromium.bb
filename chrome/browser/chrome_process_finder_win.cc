@@ -149,7 +149,7 @@ NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
   command_line.AppendSwitchASCII(
       switches::kOriginalProcessStartTime,
       base::Int64ToString(
-          base::CurrentProcessInfo::CreationTime()->ToInternalValue()));
+          base::CurrentProcessInfo::CreationTime().ToInternalValue()));
 
   if (fast_start)
     command_line.AppendSwitch(switches::kFastStart);
