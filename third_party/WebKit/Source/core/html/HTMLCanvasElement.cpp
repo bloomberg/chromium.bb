@@ -120,10 +120,10 @@ RenderObject* HTMLCanvasElement::createRenderer(RenderStyle* style)
     return HTMLElement::createRenderer(style);
 }
 
-void HTMLCanvasElement::attach(const AttachContext& context)
+Node::InsertionNotificationRequest HTMLCanvasElement::insertedInto(ContainerNode* node)
 {
     setIsInCanvasSubtree(true);
-    HTMLElement::attach(context);
+    return HTMLElement::insertedInto(node);
 }
 
 void HTMLCanvasElement::addObserver(CanvasObserver* observer)

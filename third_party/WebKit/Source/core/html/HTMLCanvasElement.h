@@ -133,12 +133,13 @@ public:
 
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
 
+    InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+
 private:
     HTMLCanvasElement(const QualifiedName&, Document*);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*);
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
     void reset();

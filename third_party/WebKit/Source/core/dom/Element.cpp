@@ -1255,6 +1255,9 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
             updateLabel(scope, nullAtom, fastGetAttribute(forAttr));
     }
 
+    if (parentElement() && parentElement()->isInCanvasSubtree())
+        setIsInCanvasSubtree(true);
+
     return InsertionDone;
 }
 
@@ -1304,6 +1307,9 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         if (isUpgradedCustomElement())
             CustomElement::didLeaveDocument(this, insertionPoint->document());
     }
+
+    if (hasRareData())
+        elementRareData()->setIsInCanvasSubtree(false);
 }
 
 void Element::attach(const AttachContext& context)
@@ -1313,9 +1319,6 @@ void Element::attach(const AttachContext& context)
     WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
 
     NodeRenderingContext(this, context.resolvedStyle).createRendererForElementIfNeeded();
-
-    if (parentElement() && parentElement()->isInCanvasSubtree())
-        setIsInCanvasSubtree(true);
 
     createPseudoElementIfNeeded(BEFORE);
 
@@ -1363,7 +1366,6 @@ void Element::detach(const AttachContext& context)
         data->setPseudoElement(BEFORE, 0);
         data->setPseudoElement(AFTER, 0);
         data->setPseudoElement(BACKDROP, 0);
-        data->setIsInCanvasSubtree(false);
         data->resetComputedStyle();
         data->resetDynamicRestyleObservations();
         data->setIsInsideRegion(false);
