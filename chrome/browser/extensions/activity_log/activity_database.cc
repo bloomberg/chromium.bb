@@ -91,8 +91,10 @@ void ActivityDatabase::LogInitFailure() {
   SoftFailureClose();
 }
 
-void ActivityDatabase::NotifyAction() {
-  if (valid_db_ && !batch_mode_) {
+void ActivityDatabase::AdviseFlush(int size) {
+  if (!valid_db_)
+    return;
+  if (!batch_mode_ || size == kFlushImmediately) {
     if (!delegate_->FlushDatabase(&db_))
       SoftFailureClose();
   }

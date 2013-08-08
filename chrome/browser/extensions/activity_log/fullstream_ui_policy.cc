@@ -31,32 +31,6 @@ using content::BrowserThread;
 
 namespace constants = activity_log_constants;
 
-namespace {
-
-// Key strings for passing parameters to the ProcessAction member function.
-const char kKeyReason[] =         "fsuip.reason";
-const char kKeyDomainAction[] =   "fsuip.domact";
-const char kKeyURLTitle[] =       "fsuip.urltitle";
-const char kKeyDetailsString[] =  "fsuip.details";
-
-// Obsolete database tables: these should be dropped from the database if
-// found.
-const char* kObsoleteTables[] = {"activitylog_apis", "activitylog_blocked",
-                                 "activitylog_urls"};
-
-std::string Serialize(const base::Value* value) {
-  std::string value_as_text;
-  if (!value) {
-    value_as_text = "null";
-  } else {
-    JSONStringValueSerializer serializer(&value_as_text);
-    serializer.SerializeAndOmitBinaryValues(*value);
-  }
-  return value_as_text;
-}
-
-}  // namespace
-
 namespace extensions {
 
 const char* FullStreamUIPolicy::kTableName = "activitylog_full";
@@ -68,7 +42,8 @@ const char* FullStreamUIPolicy::kTableFieldTypes[] = {
   "LONGVARCHAR NOT NULL", "INTEGER", "INTEGER", "LONGVARCHAR", "LONGVARCHAR",
   "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR"
 };
-const int FullStreamUIPolicy::kTableFieldCount = arraysize(kTableContentFields);
+const int FullStreamUIPolicy::kTableFieldCount =
+    arraysize(FullStreamUIPolicy::kTableContentFields);
 
 FullStreamUIPolicy::FullStreamUIPolicy(Profile* profile)
     : ActivityLogDatabasePolicy(
@@ -78,17 +53,8 @@ FullStreamUIPolicy::FullStreamUIPolicy(Profile* profile)
 FullStreamUIPolicy::~FullStreamUIPolicy() {}
 
 bool FullStreamUIPolicy::InitDatabase(sql::Connection* db) {
-  // Drop old database tables.
-  for (size_t i = 0; i < arraysize(kObsoleteTables); i++) {
-    const char* table_name = kObsoleteTables[i];
-    if (db->DoesTableExist(table_name)) {
-      std::string drop_statement =
-          base::StringPrintf("DROP TABLE %s", table_name);
-      if (!db->Execute(drop_statement.c_str())) {
-        return false;
-      }
-    }
-  }
+  if (!Util::DropObsoleteTables(db))
+    return false;
 
   // Create the unified activity log entry table.
   return ActivityDatabase::InitializeTable(db,
@@ -113,13 +79,6 @@ bool FullStreamUIPolicy::FlushDatabase(sql::Connection* db) {
   sql::Statement statement(db->GetCachedStatement(
       sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
 
-  url_canon::Replacements<char> url_sanitizer;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionActivityLogTesting)) {
-    url_sanitizer.ClearQuery();
-    url_sanitizer.ClearRef();
-  }
-
   Action::ActionVector::size_type i;
   for (i = 0; i != queued_actions_.size(); ++i) {
     const Action& action = *queued_actions_[i];
@@ -129,29 +88,21 @@ bool FullStreamUIPolicy::FlushDatabase(sql::Connection* db) {
     statement.BindInt(2, static_cast<int>(action.action_type()));
     statement.BindString(3, action.api_name());
     if (action.args()) {
-      statement.BindString(4, Serialize(action.args()));
+      statement.BindString(4, Util::Serialize(action.args()));
     }
-    if (action.page_url().is_valid()) {
-      if (action.page_incognito()) {
-        statement.BindString(5, constants::kIncognitoUrl);
-      } else {
-        statement.BindString(
-            5, action.page_url().ReplaceComponents(url_sanitizer).spec());
-      }
+    std::string page_url_string = action.SerializePageUrl();
+    if (!page_url_string.empty()) {
+      statement.BindString(5, page_url_string);
     }
-    if (!action.page_title().empty() && !action.page_incognito()) {
+    if (!action.page_title().empty()) {
       statement.BindString(6, action.page_title());
     }
-    if (action.arg_url().is_valid()) {
-      if (action.arg_incognito()) {
-        statement.BindString(7, constants::kIncognitoUrl);
-      } else {
-        statement.BindString(
-            7, action.arg_url().ReplaceComponents(url_sanitizer).spec());
-      }
+    std::string arg_url_string = action.SerializePageUrl();
+    if (!arg_url_string.empty()) {
+      statement.BindString(5, arg_url_string);
     }
     if (action.other()) {
-      statement.BindString(8, Serialize(action.other()));
+      statement.BindString(8, Util::Serialize(action.other()));
     }
 
     if (!statement.Run()) {
@@ -170,6 +121,10 @@ bool FullStreamUIPolicy::FlushDatabase(sql::Connection* db) {
 scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadData(
     const std::string& extension_id,
     const int days_ago) {
+  // Ensure data is flushed to the database first so that we query over all
+  // data.
+  activity_database()->AdviseFlush(ActivityDatabase::kFlushImmediately);
+
   DCHECK_GE(days_ago, 0);
   scoped_ptr<Action::ActionVector> actions(new Action::ActionVector());
 
@@ -178,21 +133,9 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadData(
     return actions.Pass();
   }
 
-  // Compute the time bounds for that day.
-  base::Time morning_midnight = Now().LocalMidnight();
-  int64 early_bound = 0;
-  int64 late_bound = 0;
-  if (days_ago == 0) {
-      early_bound = morning_midnight.ToInternalValue();
-      late_bound = base::Time::Max().ToInternalValue();
-  } else {
-      base::Time early_time = morning_midnight -
-          base::TimeDelta::FromDays(days_ago);
-      base::Time late_time = morning_midnight -
-          base::TimeDelta::FromDays(days_ago-1);
-      early_bound = early_time.ToInternalValue();
-      late_bound = late_time.ToInternalValue();
-  }
+  int64 early_bound;
+  int64 late_bound;
+  Util::ComputeDatabaseTimeBounds(Now(), days_ago, &early_bound, &late_bound);
   std::string query_str = base::StringPrintf(
       "SELECT time, action_type, api_name, args, page_url, page_title, "
       "arg_url, other "
@@ -223,13 +166,9 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadData(
       }
     }
 
-    GURL page_url(query.ColumnString(4));
-    action->set_page_url(page_url);
-
+    action->ParsePageUrl(query.ColumnString(4));
     action->set_page_title(query.ColumnString(5));
-
-    GURL arg_url(query.ColumnString(6));
-    action->set_arg_url(arg_url);
+    action->ParseArgUrl(query.ColumnString(6));
 
     if (query.ColumnType(7) != sql::COLUMN_TYPE_NULL) {
       scoped_ptr<Value> parsed_value(
@@ -277,22 +216,6 @@ void FullStreamUIPolicy::ReadData(
       callback);
 }
 
-std::string FullStreamUIPolicy::GetKey(ActivityLogPolicy::KeyType key_ty) const
-{
-  switch (key_ty) {
-    case PARAM_KEY_REASON:
-      return std::string(kKeyReason);
-    case PARAM_KEY_DOM_ACTION:
-      return std::string(kKeyDomainAction);
-    case PARAM_KEY_URL_TITLE:
-      return std::string(kKeyURLTitle);
-    case PARAM_KEY_DETAILS_STRING:
-      return std::string(kKeyDetailsString);
-    default:
-      return std::string();
-  }
-}
-
 scoped_refptr<Action> FullStreamUIPolicy::ProcessArguments(
     scoped_refptr<Action> action) const {
   return action;
@@ -310,7 +233,7 @@ void FullStreamUIPolicy::ProcessAction(scoped_refptr<Action> action) {
 void FullStreamUIPolicy::QueueAction(scoped_refptr<Action> action) {
   if (activity_database()->is_db_valid()) {
     queued_actions_.push_back(action);
-    activity_database()->NotifyAction();
+    activity_database()->AdviseFlush(queued_actions_.size());
   }
 }
 

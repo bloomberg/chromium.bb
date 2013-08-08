@@ -81,7 +81,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     if (log_arguments)
       activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
     else
-      activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_NOARGS);
+      activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_COUNTS);
   }
 
   static void Arguments_Prerender(

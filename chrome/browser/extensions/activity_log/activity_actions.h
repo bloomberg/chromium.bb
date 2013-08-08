@@ -98,12 +98,20 @@ class Action : public base::RefCountedThreadSafe<Action> {
   void set_other(scoped_ptr<DictionaryValue> other);
   DictionaryValue* mutable_other();
 
+  // Helper methods for serializing and deserializing URLs into strings.  If
+  // the URL is marked as incognito, then the string is prefixed with
+  // kIncognitoUrl ("<incognito>").
+  std::string SerializePageUrl() const;
+  void ParsePageUrl(const std::string& url);
+  std::string SerializeArgUrl() const;
+  void ParseArgUrl(const std::string& url);
+
   // Flatten the activity's type-specific fields into an ExtensionActivity.
   scoped_ptr<api::activity_log_private::ExtensionActivity>
       ConvertToExtensionActivity();
 
   // Print an action as a regular string for debugging purposes.
-  std::string PrintForDebug();
+  virtual std::string PrintForDebug() const;
 
  protected:
   virtual ~Action();

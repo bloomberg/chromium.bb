@@ -11,9 +11,9 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
-#include "chrome/browser/extensions/activity_log/api_name_constants.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -35,63 +35,6 @@ std::string Serialize(const base::Value* value) {
   }
   return value_as_text;
 }
-
-// Sets up the hashmap for mapping extension strings to "ints". The hashmap is
-// only set up once because it's quite long; the value is then cached.
-class APINameMap {
- public:
-  APINameMap() {
-    SetupMap();
-  }
-
-  // activity_log_api_name_constants.h lists all known API calls as of 5/17.
-  // This code maps each of those API calls (and events) to short strings
-  // (integers converted to strings). They're all strings because (1) sqlite
-  // databases are all strings underneath anyway and (2) the Lookup function
-  // will simply return the original api_call string if we don't have it in our
-  // lookup table.
-  void SetupMap() {
-    for (size_t i = 0;
-         i < arraysize(activity_log_api_name_constants::kNames);
-         ++i) {
-      std::string name =
-          std::string(activity_log_api_name_constants::kNames[i]);
-      std::string num = base::IntToString(i);
-      names_to_nums_[name] = num;
-      nums_to_names_[num] = name;
-    }
-  }
-
-  static APINameMap* GetInstance() {
-    return Singleton<APINameMap>::get();
-  }
-
-  // This matches an api call to a number, if it's in the lookup table. If not,
-  // it returns the original api call.
-  const std::string& ApiToShortname(const std::string& api_call) {
-    std::map<std::string, std::string>::iterator it =
-        names_to_nums_.find(api_call);
-    if (it == names_to_nums_.end())
-      return api_call;
-    else
-      return it->second;
-  }
-
-  // This matches a number to an API call -- it's the opposite of
-  // ApiToShortname.
-  const std::string& ShortnameToApi(const std::string& shortname) {
-    std::map<std::string, std::string>::iterator it =
-        nums_to_names_.find(shortname);
-    if (it == nums_to_names_.end())
-      return shortname;
-    else
-      return it->second;
-  }
-
- private:
-  std::map<std::string, std::string> names_to_nums_;  // <name, number label>
-  std::map<std::string, std::string> nums_to_names_;  // <number label, name>
-};
 
 }  // namespace
 
@@ -161,6 +104,30 @@ DictionaryValue* Action::mutable_other() {
     other_.reset(new DictionaryValue());
   }
   return other_.get();
+}
+
+std::string Action::SerializePageUrl() const {
+  return (page_incognito() ? constants::kIncognitoUrl : "") + page_url().spec();
+}
+
+void Action::ParsePageUrl(const std::string& url) {
+  set_page_incognito(StartsWithASCII(url, constants::kIncognitoUrl, true));
+  if (page_incognito())
+    set_page_url(GURL(url.substr(strlen(constants::kIncognitoUrl))));
+  else
+    set_page_url(GURL(url));
+}
+
+std::string Action::SerializeArgUrl() const {
+  return (arg_incognito() ? constants::kIncognitoUrl : "") + arg_url().spec();
+}
+
+void Action::ParseArgUrl(const std::string& url) {
+  set_arg_incognito(StartsWithASCII(url, constants::kIncognitoUrl, true));
+  if (arg_incognito())
+    set_arg_url(GURL(url.substr(strlen(constants::kIncognitoUrl))));
+  else
+    set_arg_url(GURL(url));
 }
 
 scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
@@ -246,7 +213,7 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
   return result.Pass();
 }
 
-std::string Action::PrintForDebug() {
+std::string Action::PrintForDebug() const {
   std::string result = "ID=" + extension_id() + " CATEGORY=";
   switch (action_type_) {
     case ACTION_API_CALL:

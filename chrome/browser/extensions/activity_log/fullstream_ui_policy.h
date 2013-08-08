@@ -16,6 +16,11 @@ namespace extensions {
 
 // A policy for logging the full stream of actions, including all arguments.
 // It's mostly intended to be used in testing and analysis.
+//
+// NOTE: The FullStreamUIPolicy deliberately keeps almost all information,
+// including some data that could be privacy sensitive (full URLs including
+// incognito URLs, full headers when WebRequest is used, etc.).  It should not
+// be used during normal browsing if users care about privacy.
 class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
  public:
   // For more info about these member functions, see the super class.
@@ -34,9 +39,6 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
       const base::Callback
           <void(scoped_ptr<Action::ActionVector>)>& callback) OVERRIDE;
 
-  // Returns the actual key for a given key type
-  virtual std::string GetKey(ActivityLogPolicy::KeyType key_id) const OVERRIDE;
-
   virtual void Close() OVERRIDE;
 
   // Database table schema.
@@ -50,8 +52,8 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
   // ActivityDatabase class for an overall discussion of how cleanup works.
   virtual ~FullStreamUIPolicy();
 
-  // The ActivityDatabase::PolicyDelegate interface.  These are always called
-  // from the database thread.
+  // The ActivityDatabase::Delegate interface.  These are always called from
+  // the database thread.
   virtual bool InitDatabase(sql::Connection* db) OVERRIDE;
   virtual bool FlushDatabase(sql::Connection* db) OVERRIDE;
   virtual void OnDatabaseFailure() OVERRIDE;

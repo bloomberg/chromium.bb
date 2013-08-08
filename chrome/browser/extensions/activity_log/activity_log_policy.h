@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_POLICY_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_POLICY_H_
 
+#include <set>
 #include <string>
 
 #include "base/bind.h"
@@ -51,21 +52,8 @@ class ActivityLogPolicy {
  public:
   enum PolicyType {
     POLICY_FULLSTREAM,
-    POLICY_NOARGS,
+    POLICY_COUNTS,
     POLICY_INVALID,
-  };
-
-  // For all subclasses, add all the key types they might support here.
-  // The actual key is returned by calling GetKey(KeyType).  The subclasses
-  // are free to return an empty string for keys they don't support.
-  // For every key added here, you should update the GetKey member function
-  // for at least one policy.
-  enum KeyType {
-    PARAM_KEY_REASON,      // Why an action was blocked
-    PARAM_KEY_DOM_ACTION,  // Getter, Setter, Method,...
-    PARAM_KEY_URL_TITLE,
-    PARAM_KEY_DETAILS_STRING,
-    PARAM_KEY_EXTRA,
   };
 
   // Parameters are the profile and the thread that will be used to execute
@@ -99,10 +87,52 @@ class ActivityLogPolicy {
       const base::Callback
           <void(scoped_ptr<Action::ActionVector>)>& callback) = 0;
 
-  virtual std::string GetKey(KeyType key_id) const;
-
   // For unit testing only.
-  void SetClockForTesting(base::Clock* clock) { testing_clock_ = clock; }
+  void SetClockForTesting(scoped_ptr<base::Clock> clock);
+
+  // A collection of methods that are useful for implementing policies.  These
+  // are all static methods; the ActivityLogPolicy::Util class cannot be
+  // instantiated.  This is nested within ActivityLogPolicy to make calling
+  // these methods more convenient from within a policy, but they are public.
+  class Util {
+   public:
+    // Serialize a Value as a JSON string.  Returns an empty string if value is
+    // null.
+    static std::string Serialize(const base::Value* value);
+
+    // Removes potentially privacy-sensitive data that should not be logged.
+    // This should generally be called on an Action before logging, unless
+    // debugging flags are enabled.  Modifies the Action object in place; if
+    // the action might be shared with other users, it is up to the caller to
+    // call ->Clone() first.
+    static void StripPrivacySensitiveFields(scoped_refptr<Action> action);
+
+    // Strip arguments from most API actions, preserving actions only for a
+    // whitelisted set.  Modifies the Action object in-place.
+    static void StripArguments(const std::set<std::string>& api_whitelist,
+                               scoped_refptr<Action> action);
+
+    // Given a base day (timestamp at local midnight), computes the timestamp
+    // at midnight the given number of days before or after.
+    static base::Time AddDays(const base::Time& base_date, int days);
+
+    // Compute the time bounds that should be used for a database query to
+    // cover a time range days_ago days in the past, relative to the specified
+    // time.
+    static void ComputeDatabaseTimeBounds(const base::Time& now,
+                                          int days_ago,
+                                          int64* early_bound,
+                                          int64* late_bound);
+
+    // Deletes obsolete database tables from an activity log database.  This
+    // can be used in InitDatabase() methods of ActivityLogDatabasePolicy
+    // subclasses to clean up data from old versions of the activity logging
+    // code.  Returns true on success, false on database error.
+    static bool DropObsoleteTables(sql::Connection* db);
+
+   private:
+    DISALLOW_IMPLICIT_CONSTRUCTORS(Util);
+  };
 
  protected:
   // An ActivityLogPolicy is not directly destroyed.  Instead, call Close()
@@ -118,7 +148,7 @@ class ActivityLogPolicy {
   // Support for a mock clock for testing purposes.  This is used by ReadData
   // to determine the date for "today" when when interpreting date ranges to
   // fetch.  This has no effect on batching of writes to the database.
-  base::Clock* testing_clock_;
+  scoped_ptr<base::Clock> testing_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLogPolicy);
 };

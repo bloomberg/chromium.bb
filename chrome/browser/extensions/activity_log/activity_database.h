@@ -75,10 +75,13 @@ class ActivityDatabase {
 
     // Initializes the database schema; this gives a policy a chance to create
     // or update database tables as needed.  Should return true on success.
+    // Will be called from within a database transaction.
     virtual bool InitDatabase(sql::Connection* db) = 0;
 
     // Requests that the policy flush any pending actions to the database.
-    // Should return true on success or false on a database error.
+    // Should return true on success or false on a database error.  Will not be
+    // called from a transaction (the implementation may wish to use a
+    // transaction for the flush).
     virtual bool FlushDatabase(sql::Connection* db) = 0;
 
     // Called if the database encounters a permanent error; the policy should
@@ -93,6 +96,9 @@ class ActivityDatabase {
     virtual void OnDatabaseClose() = 0;
   };
 
+  // Value to be passed to AdviseFlush below to force a database flush.
+  static const int kFlushImmediately = -1;
+
   // Need to call Init to actually use the ActivityDatabase.  The Delegate
   // provides hooks for an ActivityLogPolicy to control the database schema and
   // reads/writes.
@@ -106,11 +112,13 @@ class ActivityDatabase {
   void Close();
 
   // Inform the database that there may be additional data which could be
-  // written out.
-  // TODO(mvrable): Add a method to force a database flush, or perhaps pass
-  // hints to the database about how much data is queued up so the database can
-  // flush before the timeout if there is a large amount of data?
-  void NotifyAction();
+  // written out.  The size parameter should indicate (approximately) how many
+  // records are queued to be written; the database may use this information to
+  // schedule a flush early if too much data is queueing up.  A value of
+  // kFlushImmediately will force an immediate call into
+  // Delegate::FlushDatabase(); otherwise, it is up to the database to
+  // determine when to flush.
+  void AdviseFlush(int size);
 
   // Turns off batch I/O writing mode. This should only be used in unit tests,
   // browser tests, or in our special --enable-extension-activity-log-testing
@@ -188,6 +196,7 @@ class ActivityDatabase {
   friend class ActivityLogDatabasePolicy;
   FRIEND_TEST_ALL_PREFIXES(ActivityDatabaseTest, BatchModeOff);
   FRIEND_TEST_ALL_PREFIXES(ActivityDatabaseTest, BatchModeOn);
+  FRIEND_TEST_ALL_PREFIXES(ActivityDatabaseTest, BatchModeFlush);
   DISALLOW_COPY_AND_ASSIGN(ActivityDatabase);
 };
 

@@ -103,7 +103,7 @@ bool ActivityDatabaseTestPolicy::FlushDatabase(sql::Connection* db) {
 void ActivityDatabaseTestPolicy::Record(ActivityDatabase* db,
                                         scoped_refptr<Action> action) {
   queue_.push_back(action);
-  db->NotifyAction();
+  db->AdviseFlush(queue_.size());
 }
 
 class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
@@ -151,7 +151,8 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
     std::string sql_str = "SELECT COUNT(*) FROM " +
                           std::string(ActivityDatabaseTestPolicy::kTableName) +
                           " WHERE api_name LIKE ?";
-    sql::Statement statement(db->GetUniqueStatement(sql_str.c_str()));
+    sql::Statement statement(db->GetCachedStatement(
+        sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
     statement.BindString(0, api_name_pattern);
     if (!statement.Step())
       return -1;
@@ -241,6 +242,27 @@ TEST_F(ActivityDatabaseTest, BatchModeOn) {
   // Artificially trigger and then stop the timer.
   activity_db->SetTimerForTesting(0);
   base::MessageLoop::current()->RunUntilIdle();
+  ASSERT_EQ(1, CountActions(&activity_db->db_, "brewster"));
+
+  activity_db->Close();
+}
+
+TEST_F(ActivityDatabaseTest, BatchModeFlush) {
+  base::ScopedTempDir temp_dir;
+  base::FilePath db_file;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  db_file = temp_dir.path().AppendASCII("ActivityFlush.db");
+  base::DeleteFile(db_file, false);
+
+  // Record some actions
+  ActivityDatabase* activity_db = OpenDatabase(db_file);
+  activity_db->SetBatchModeForTesting(true);
+  scoped_refptr<Action> action = CreateAction(base::Time::Now(), "brewster");
+  Record(activity_db, action);
+  ASSERT_EQ(0, CountActions(&activity_db->db_, "brewster"));
+
+  // Request an immediate database flush.
+  activity_db->AdviseFlush(ActivityDatabase::kFlushImmediately);
   ASSERT_EQ(1, CountActions(&activity_db->db_, "brewster"));
 
   activity_db->Close();

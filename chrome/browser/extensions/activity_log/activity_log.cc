@@ -14,7 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
-#include "chrome/browser/extensions/activity_log/stream_noargs_ui_policy.h"
+#include "chrome/browser/extensions/activity_log/counting_policy.h"
+#include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -240,8 +241,8 @@ void ActivityLog::SetDefaultPolicy(ActivityLogPolicy::PolicyType policy_type) {
       case ActivityLogPolicy::POLICY_FULLSTREAM:
         policy_ = new FullStreamUIPolicy(profile_);
         break;
-      case ActivityLogPolicy::POLICY_NOARGS:
-        policy_ = new StreamWithoutArgsUIPolicy(profile_);
+      case ActivityLogPolicy::POLICY_COUNTS:
+        policy_ = new CountingPolicy(profile_);
         break;
       default:
         NOTREACHED();
@@ -302,7 +303,7 @@ void ActivityLog::ChooseDefaultPolicy() {
   if (testing_mode_)
     SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
   else
-    SetDefaultPolicy(ActivityLogPolicy::POLICY_NOARGS);
+    SetDefaultPolicy(ActivityLogPolicy::POLICY_COUNTS);
 }
 
 void ActivityLog::Shutdown() {
