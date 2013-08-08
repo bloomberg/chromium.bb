@@ -5405,48 +5405,6 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   }
 }
 
-// Check that our ClientHello doesn't get too large because that's known to
-// cause issues.
-TEST_F(HTTPSRequestTest, ClientHelloTest) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  SpawnedTestServer test_server(
-      SpawnedTestServer::TYPE_HTTPS,
-      ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-  ASSERT_TRUE(test_server.Start());
-
-  // NPN/ALPN strings need to be enabled in order for the size of the handshake
-  // to be accurate as ALPN includes these strings in the handshake. This will
-  // be reset by NetTestSuite.
-  HttpStreamFactory::EnableNpnSpdy4a2();
-
-  TestDelegate d;
-  URLRequest r(
-      test_server.GetURL("client-hello-length"), &d, &default_context_);
-
-  r.Start();
-  EXPECT_TRUE(r.is_pending());
-
-  base::MessageLoop::current()->Run();
-
-  // The response will be a single, base 10 number which is the number of bytes
-  // in the ClientHello, including the handshake message type byte and 3 byte
-  // length at the beginning.
-
-  EXPECT_EQ(1, d.response_started_count());
-  unsigned client_hello_length;
-  ASSERT_TRUE(base::StringToUint(d.data_received(), &client_hello_length));
-  // We add the overhead of an SNI extension because the request is sent to
-  // 127.0.0.1 and so doesn't have one otherwise.
-  const unsigned sni_overhead = 2 /* extension type */ +
-                                2 /* extension length */ +
-                                4 /* lengths in the server_name extension */ +
-                                strlen("www.wellsfargo.com");
-  static const unsigned session_id_overhead = 32;
-
-  EXPECT_GT(256u, client_hello_length + sni_overhead + session_id_overhead);
-}
-
 class TestSSLConfigService : public SSLConfigService {
  public:
   TestSSLConfigService(bool ev_enabled,

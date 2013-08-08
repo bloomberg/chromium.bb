@@ -131,9 +131,6 @@ class ClientHello(HandshakeMsg):
         self.compression_methods = []   # a list of 8-bit values
         self.srp_username = None        # a string
         self.channel_id = False
-        # client_hello_length is the length of the ClientHello record - i.e.
-        # including the handshake type byte and 3 byte handshake length.
-        self.client_hello_length = 0
 
     def create(self, version, random, session_id, cipher_suites,
                certificate_types=None, srp_username=None):
@@ -162,11 +159,6 @@ class ClientHello(HandshakeMsg):
 
             #We're not doing a stopLengthCheck() for SSLv2, oh well..
         else:
-            self.client_hello_length = len(p.bytes) - p.index
-            # Account for the handshake type byte which has already been
-            # removed.
-            self.client_hello_length += 1
-
             p.startLengthCheck(3)
             self.client_version = (p.get(1), p.get(1))
             self.random = p.getFixBytes(32)

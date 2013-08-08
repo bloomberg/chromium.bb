@@ -34,5 +34,3 @@ Local Modifications:
 - patches/tls_intolerant.patch: allow TLSLite to simulate a TLS-intolerant server.
 - patches/channel_id.patch: add basic ChannelID support. (Signatures are not
   checked.)
-- patches/record_client_hello_length.patch - record the length of the client's
-  ClientHello when connecting.
