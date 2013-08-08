@@ -385,6 +385,14 @@ base::string16 WalletErrorMessage(wallet::WalletClient::ErrorType error_type) {
     case wallet::WalletClient::BUYER_ACCOUNT_ERROR:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_BUYER_ACCOUNT_ERROR);
 
+    case wallet::WalletClient::BUYER_LEGAL_ADDRESS_NOT_SUPPORTED:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WALLET_BUYER_COUNTRY_NOT_SUPPORTED);
+
+    case wallet::WalletClient::UNSUPPORTED_MERCHANT:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WALLET_UNSUPPORTED_MERCHANT);
+
     case wallet::WalletClient::BAD_REQUEST:
       return l10n_util::GetStringFUTF16(
           IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
@@ -394,6 +402,10 @@ base::string16 WalletErrorMessage(wallet::WalletClient::ErrorType error_type) {
       return l10n_util::GetStringFUTF16(
           IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
           ASCIIToUTF16("42"));
+
+    case wallet::WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS);
 
     case wallet::WalletClient::UNSUPPORTED_API_VERSION:
       return l10n_util::GetStringFUTF16(

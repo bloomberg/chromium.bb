@@ -105,6 +105,8 @@ WalletClient::ErrorType StringToErrorType(const std::string& error_type) {
                       &trimmed);
   if (LowerCaseEqualsASCII(trimmed, "buyer_account_error"))
     return WalletClient::BUYER_ACCOUNT_ERROR;
+  if (LowerCaseEqualsASCII(trimmed, "unsupported_merchant"))
+    return WalletClient::UNSUPPORTED_MERCHANT;
   if (LowerCaseEqualsASCII(trimmed, "internal_error"))
     return WalletClient::INTERNAL_ERROR;
   if (LowerCaseEqualsASCII(trimmed, "invalid_params"))
@@ -113,7 +115,24 @@ WalletClient::ErrorType StringToErrorType(const std::string& error_type) {
     return WalletClient::SERVICE_UNAVAILABLE;
   if (LowerCaseEqualsASCII(trimmed, "unsupported_api_version"))
     return WalletClient::UNSUPPORTED_API_VERSION;
+
   return WalletClient::UNKNOWN_ERROR;
+}
+
+// Get the more specific WalletClient::ErrorType when the error is
+// |BUYER_ACCOUNT_ERROR|.
+WalletClient::ErrorType BuyerErrorStringToErrorType(
+    const std::string& buyer_error_type) {
+  std::string trimmed;
+  TrimWhitespaceASCII(buyer_error_type,
+                      TRIM_ALL,
+                      &trimmed);
+  if (LowerCaseEqualsASCII(trimmed, "bla_country_not_supported"))
+    return WalletClient::BUYER_LEGAL_ADDRESS_NOT_SUPPORTED;
+  if (LowerCaseEqualsASCII(trimmed, "buyer_kyc_error"))
+    return WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS;
+
+  return WalletClient::BUYER_ACCOUNT_ERROR;
 }
 
 // Gets and parses required actions from a SaveToWallet response. Returns
@@ -161,16 +180,22 @@ AutofillMetrics::WalletErrorMetric ErrorTypeToUmaMetric(
   switch (error_type) {
     case WalletClient::BAD_REQUEST:
       return AutofillMetrics::WALLET_BAD_REQUEST;
+    case WalletClient::BUYER_LEGAL_ADDRESS_NOT_SUPPORTED:
+      return AutofillMetrics::WALLET_BUYER_LEGAL_ADDRESS_NOT_SUPPORTED;
     case WalletClient::BUYER_ACCOUNT_ERROR:
       return AutofillMetrics::WALLET_BUYER_ACCOUNT_ERROR;
     case WalletClient::INTERNAL_ERROR:
       return AutofillMetrics::WALLET_INTERNAL_ERROR;
     case WalletClient::INVALID_PARAMS:
       return AutofillMetrics::WALLET_INVALID_PARAMS;
+    case WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS:
+      return AutofillMetrics::WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS;
     case WalletClient::SERVICE_UNAVAILABLE:
       return AutofillMetrics::WALLET_SERVICE_UNAVAILABLE;
     case WalletClient::UNSUPPORTED_API_VERSION:
       return AutofillMetrics::WALLET_UNSUPPORTED_API_VERSION;
+    case WalletClient::UNSUPPORTED_MERCHANT:
+      return AutofillMetrics::WALLET_UNSUPPORTED_MERCHANT;
     case WalletClient::MALFORMED_RESPONSE:
       return AutofillMetrics::WALLET_MALFORMED_RESPONSE;
     case WalletClient::NETWORK_ERROR:
@@ -220,6 +245,7 @@ AutofillMetrics::WalletRequiredActionMetric RequiredActionToUmaMetric(
 const char kAcceptedLegalDocumentKey[] = "accepted_legal_document";
 const char kApiKeyKey[] = "api_key";
 const char kAuthResultKey[] = "auth_result";
+const char kBuyerErrorTypeKey[] = "wallet_error.buyer_error_type";
 const char kEncryptedOtpKey[] = "encrypted_otp";
 const char kErrorTypeKey[] = "wallet_error.error_type";
 const char kFeatureKey[] = "feature";
@@ -669,13 +695,24 @@ void WalletClient::OnURLFetchComplete(
       if (response_code == net::HTTP_INTERNAL_SERVER_ERROR) {
         request_type_ = NO_PENDING_REQUEST;
 
-        std::string error_type;
-        if (!response_dict->GetString(kErrorTypeKey, &error_type)) {
+        std::string error_type_string;
+        if (!response_dict->GetString(kErrorTypeKey, &error_type_string)) {
           HandleWalletError(UNKNOWN_ERROR);
           return;
         }
+        WalletClient::ErrorType error_type =
+            StringToErrorType(error_type_string);
+        if (error_type == BUYER_ACCOUNT_ERROR) {
+          // If the error_type is |BUYER_ACCOUNT_ERROR|, then buyer_error_type
+          // field contains more specific information about the error.
+          std::string buyer_error_type_string;
+          if (response_dict->GetString(kBuyerErrorTypeKey,
+                                       &buyer_error_type_string)) {
+            error_type = BuyerErrorStringToErrorType(buyer_error_type_string);
+          }
+        }
 
-        HandleWalletError(StringToErrorType(error_type));
+        HandleWalletError(error_type);
         return;
       }
       break;
@@ -794,6 +831,9 @@ void WalletClient::HandleWalletError(WalletClient::ErrorType error_type) {
     case WalletClient::BAD_REQUEST:
       error_message = "WALLET_BAD_REQUEST";
       break;
+    case WalletClient::BUYER_LEGAL_ADDRESS_NOT_SUPPORTED:
+      error_message = "WALLET_BUYER_LEGAL_ADDRESS_NOT_SUPPORTED";
+      break;
     case WalletClient::BUYER_ACCOUNT_ERROR:
       error_message = "WALLET_BUYER_ACCOUNT_ERROR";
       break;
@@ -803,11 +843,17 @@ void WalletClient::HandleWalletError(WalletClient::ErrorType error_type) {
     case WalletClient::INVALID_PARAMS:
       error_message = "WALLET_INVALID_PARAMS";
       break;
+    case WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS:
+      error_message = "WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS";
+      break;
     case WalletClient::SERVICE_UNAVAILABLE:
       error_message = "WALLET_SERVICE_UNAVAILABLE";
       break;
     case WalletClient::UNSUPPORTED_API_VERSION:
       error_message = "WALLET_UNSUPPORTED_API_VERSION";
+      break;
+    case WalletClient::UNSUPPORTED_MERCHANT:
+      error_message = "WALLET_UNSUPPORTED_MERCHANT";
       break;
     case WalletClient::MALFORMED_RESPONSE:
       error_message = "WALLET_MALFORMED_RESPONSE";

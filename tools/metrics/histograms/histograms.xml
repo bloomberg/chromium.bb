@@ -22435,6 +22435,9 @@ other types of suffix sets.
   <int value="8" label="Spending limit exceeded"/>
   <int value="9" label="Unsupported API version"/>
   <int value="10" label="Unknown error"/>
+  <int value="11" label="Unsupported merchant"/>
+  <int value="12" label="Unsupported buyer legal address"/>
+  <int value="13" label="Unverified know your customer status"/>
 </enum>
 
 <enum name="WalletRequiredActions" type="int">

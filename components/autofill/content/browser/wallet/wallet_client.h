@@ -75,8 +75,15 @@ class WalletClient : public net::URLFetcherDelegate {
   // The type of error returned by Online Wallet.
   enum ErrorType {
     // Errors to display to users.
-    BUYER_ACCOUNT_ERROR,      // Risk deny, unsupported country, or account
-                              // closed.
+    BUYER_ACCOUNT_ERROR,                // Risk deny, unsupported country, or
+                                        // account closed.
+    BUYER_LEGAL_ADDRESS_NOT_SUPPORTED,  // User's Buyer Legal Address is
+                                        // unsupported by Online Wallet.
+    UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS,  // User's "know your customer" KYC
+                                           // state is not verified (either
+                                           // KYC_REFER or KYC_FAIL).
+    UNSUPPORTED_MERCHANT,               // Merchant is blacklisted due to
+                                        // compliance violation.
 
     // API errors.
     BAD_REQUEST,              // Request was very malformed or sent to the

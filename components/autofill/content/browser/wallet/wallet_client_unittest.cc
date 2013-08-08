@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/autocheckout_steps.h"
@@ -794,6 +795,58 @@ class WalletClientTest : public testing::Test {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
+  void TestWalletErrorCode(
+      const std::string& error_type_string,
+      const std::string& buyer_error_type_string,
+      WalletClient::ErrorType expected_error_type,
+      AutofillMetrics::WalletErrorMetric expected_autofill_metric) {
+    static const char kResponseTemplate[] =
+        "{"
+        "  \"error_type\":\"APPLICATION_ERROR\","
+        "  \"error_detail\":\"error_detail\","
+        "  \"application_error\":\"application_error\","
+        "  \"debug_data\":"
+        "  {"
+        "    \"debug_message\":\"debug_message\","
+        "    \"stack_trace\":\"stack_trace\""
+        "  },"
+        "  \"application_error_data\":\"application_error_data\","
+        "  \"wallet_error\":"
+        "  {"
+        "    \"error_type\":\"%s\","
+        "    %s"  // Placeholder for |user_error_type|.
+        "    \"error_detail\":\"error_detail\","
+        "    \"message_for_user\":"
+        "    {"
+        "      \"text\":\"text\","
+        "      \"subtext\":\"subtext\","
+        "      \"details\":\"details\""
+        "    }"
+        "  }"
+        "}";
+    EXPECT_CALL(delegate_, OnWalletError(expected_error_type)).Times(1);
+    delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
+    delegate_.ExpectBaselineMetrics();
+    delegate_.ExpectWalletErrorMetric(expected_autofill_metric);
+
+    std::vector<AutocheckoutStatistic> statistics;
+    wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
+                                           GURL(kMerchantUrl),
+                                           statistics,
+                                           "google_transaction_id");
+    std::string buyer_error;
+    if (!buyer_error_type_string.empty()) {
+      buyer_error = base::StringPrintf("\"buyer_error_type\":\"%s\",",
+                                       buyer_error_type_string.c_str());
+    }
+    std::string response = base::StringPrintf(kResponseTemplate,
+                                              error_type_string.c_str(),
+                                              buyer_error.c_str());
+    VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
+                           kSendAutocheckoutStatusOfSuccessValidRequest,
+                           response);
+  }
+
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<WalletClient> wallet_client_;
@@ -819,22 +872,98 @@ class WalletClientTest : public testing::Test {
   net::TestURLFetcherFactory factory_;
 };
 
-TEST_F(WalletClientTest, WalletError) {
-  EXPECT_CALL(delegate_, OnWalletError(
-      WalletClient::SERVICE_UNAVAILABLE)).Times(1);
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
-  delegate_.ExpectBaselineMetrics();
-  delegate_.ExpectWalletErrorMetric(
-      AutofillMetrics::WALLET_SERVICE_UNAVAILABLE);
+TEST_F(WalletClientTest, WalletErrorCodes) {
+  struct {
+    std::string error_type_string;
+    std::string buyer_error_type_string;
+    WalletClient::ErrorType expected_error_type;
+    AutofillMetrics::WalletErrorMetric expected_autofill_metric;
+  } test_cases[] = {
+      // General |BUYER_ACCOUNT_ERROR| with no |buyer_error_type_string|.
+      {
+          "buyer_account_error",
+          "",
+          WalletClient::BUYER_ACCOUNT_ERROR,
+          AutofillMetrics::WALLET_BUYER_ACCOUNT_ERROR
+      },
+      // |BUYER_ACCOUNT_ERROR| with "buyer_legal_address_not_supported" in
+      // buyer_error_type field.
+      {
+          "buyer_account_error",
+          "bla_country_not_supported",
+          WalletClient::BUYER_LEGAL_ADDRESS_NOT_SUPPORTED,
+          AutofillMetrics::WALLET_BUYER_LEGAL_ADDRESS_NOT_SUPPORTED
+      },
+      // |BUYER_ACCOUNT_ERROR| with KYC error code in buyer_error_type field.
+      {
+          "buyer_account_error",
+          "buyer_kyc_error",
+          WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS,
+          AutofillMetrics::WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS
+      },
+      // |BUYER_ACCOUNT_ERROR| with un-recognizable |buyer_error_type|.
+      {
+          "buyer_account_error",
+          "random_string",
+          WalletClient::BUYER_ACCOUNT_ERROR,
+          AutofillMetrics::WALLET_BUYER_ACCOUNT_ERROR
+      },
+      // The following are other error types we could get from Wallet.
+      {
+          "unsupported_merchant",
+          "",
+          WalletClient::UNSUPPORTED_MERCHANT,
+          AutofillMetrics::WALLET_UNSUPPORTED_MERCHANT
+      },
+      {
+          "internal_error",
+          "",
+          WalletClient::INTERNAL_ERROR,
+          AutofillMetrics::WALLET_INTERNAL_ERROR
+      },
+      {
+          "invalid_params",
+          "",
+          WalletClient::INVALID_PARAMS,
+          AutofillMetrics::WALLET_INVALID_PARAMS
+      },
+      {
+          "service_unavailable",
+          "",
+          WalletClient::SERVICE_UNAVAILABLE,
+          AutofillMetrics::WALLET_SERVICE_UNAVAILABLE
+      },
+      {
+          "unsupported_api_version",
+          "",
+          WalletClient::UNSUPPORTED_API_VERSION,
+          AutofillMetrics::WALLET_UNSUPPORTED_API_VERSION
+      },
+      // Any un-recognizable |error_type| is a |UNKNOWN_ERROR|.
+      {
+          "random_string_1",
+          "",
+          WalletClient::UNKNOWN_ERROR,
+          AutofillMetrics::WALLET_UNKNOWN_ERROR
+      },
+      {
+          "random_string_2",
+          "",
+          WalletClient::UNKNOWN_ERROR,
+          AutofillMetrics::WALLET_UNKNOWN_ERROR
+      },
+  };
 
-  std::vector<AutocheckoutStatistic> statistics;
-  wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
-                                         GURL(kMerchantUrl),
-                                         statistics,
-                                         "google_transaction_id");
-  VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
-                         kSendAutocheckoutStatusOfSuccessValidRequest,
-                         kErrorResponse);
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    SCOPED_TRACE(
+        base::StringPrintf("%s - %s",
+                           test_cases[i].error_type_string.c_str(),
+                           test_cases[i].buyer_error_type_string.c_str()));
+    TestWalletErrorCode(test_cases[i].error_type_string,
+                        test_cases[i].buyer_error_type_string,
+                        test_cases[i].expected_error_type,
+                        test_cases[i].expected_autofill_metric);
+  }
 }
 
 TEST_F(WalletClientTest, WalletErrorResponseMissing) {
