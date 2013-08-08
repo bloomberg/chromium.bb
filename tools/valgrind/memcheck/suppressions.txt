@@ -7243,3 +7243,21 @@
    fun:_ZN4base8internal17IncomingTaskQueue18AddToIncomingQueueERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEENS_9TimeDeltaEb
    fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
 }
+{
+   bug_269884a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN24SkColorFilterImageFilter6CreateEP13SkColorFilterP13SkImageFilterPK7SkIRect
+   fun:_ZN7WebCore22SkiaImageFilterBuilder19transformColorSpaceEP13SkImageFilterNS_10ColorSpaceES3_
+   fun:_ZN7WebCore22SkiaImageFilterBuilder5buildERKNS_16FilterOperationsE
+}
+{
+   bug_269884b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN19SkPerlinNoiseShader15CreateTubulenceEffifPK7SkTSizeIiE
+   fun:_ZN7WebCore12FETurbulence12createShaderERKNS_7IntRectE
+   fun:_ZN7WebCore12FETurbulence17createImageFilterEPNS_22SkiaImageFilterBuilderE
+   fun:_ZN7WebCore22SkiaImageFilterBuilder5buildEPNS_12FilterEffectENS_10ColorSpaceE
+   fun:_ZN7WebCore22SkiaImageFilterBuilder5buildERKNS_16FilterOperationsE
+}
