@@ -296,7 +296,7 @@
     // FIXME: When it's ready to remove WebKitShadowRoot, get rid of both constructors from Window.idl and remove
     // [NoInterfaceObject] from ShadowRoot interface definition.
     [EnabledAtRuntime=ShadowDOM] attribute ShadowRootConstructor ShadowRoot;
-    attribute ShadowRootConstructor WebKitShadowRoot;
+    [MeasureAs=PrefixedShadowRootConstructor] attribute ShadowRootConstructor WebKitShadowRoot;
 
     // window.toString() requires special handling in V8
     [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
