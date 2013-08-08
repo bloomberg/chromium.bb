@@ -28,6 +28,7 @@
 #include "core/html/canvas/WebGLFramebuffer.h"
 
 #include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {
@@ -48,6 +49,7 @@ namespace {
         virtual GC3Dsizei getWidth() const;
         virtual GC3Dsizei getHeight() const;
         virtual GC3Denum getFormat() const;
+        virtual GC3Denum getType() const;
         virtual WebGLSharedObject* getObject() const;
         virtual bool isSharedObject(WebGLSharedObject*) const;
         virtual bool isValid() const;
@@ -144,6 +146,12 @@ namespace {
             context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, attachment, GraphicsContext3D::RENDERBUFFER, 0);
     }
 
+    GC3Denum WebGLRenderbufferAttachment::getType() const
+    {
+        notImplemented();
+        return 0;
+    }
+
     class WebGLTextureAttachment : public WebGLFramebuffer::WebGLAttachment {
     public:
         static PassRefPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLTexture*, GC3Denum target, GC3Dint level);
@@ -153,6 +161,7 @@ namespace {
         virtual GC3Dsizei getWidth() const;
         virtual GC3Dsizei getHeight() const;
         virtual GC3Denum getFormat() const;
+        virtual GC3Denum getType() const;
         virtual WebGLSharedObject* getObject() const;
         virtual bool isSharedObject(WebGLSharedObject*) const;
         virtual bool isValid() const;
@@ -242,28 +251,21 @@ namespace {
             context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, attachment, m_target, 0, m_level);
     }
 
-    bool isAttachmentComplete(WebGLFramebuffer::WebGLAttachment* attachedObject, GC3Denum attachment, const char** reason)
+    GC3Denum WebGLTextureAttachment::getType() const
     {
-        ASSERT(attachedObject && attachedObject->isValid());
-        ASSERT(reason);
-        GC3Denum format = attachedObject->getFormat();
-        unsigned need = GraphicsContext3D::getClearBitsByAttachmentType(attachment);
-        unsigned have = GraphicsContext3D::getClearBitsByFormat(format);
+        return m_texture->getType(m_target, m_level);
+    }
 
-        if ((need & have) != need) {
-            *reason = "attachment type is not correct for attachment";
+    bool isColorRenderable(GC3Denum internalformat)
+    {
+        switch (internalformat) {
+        case GraphicsContext3D::RGBA4:
+        case GraphicsContext3D::RGB5_A1:
+        case GraphicsContext3D::RGB565:
+            return true;
+        default:
             return false;
         }
-        if (!attachedObject->getWidth() || !attachedObject->getHeight()) {
-            *reason = "attachment has a 0 dimension";
-            return false;
-        }
-        if ((attachment == GraphicsContext3D::DEPTH_ATTACHMENT || attachment == GraphicsContext3D::STENCIL_ATTACHMENT)
-            && format == GraphicsContext3D::DEPTH_STENCIL) {
-          *reason = "attachment DEPTH_STENCIL not allowed on DEPTH or STENCIL attachment";
-          return false;
-        }
-        return true;
     }
 
 } // anonymous namespace
@@ -334,6 +336,92 @@ WebGLSharedObject* WebGLFramebuffer::getAttachmentObject(GC3Denum attachment) co
         return 0;
     WebGLAttachment* attachmentObject = getAttachment(attachment);
     return attachmentObject ? attachmentObject->getObject() : 0;
+}
+
+bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GC3Denum attachment, const char** reason) const
+{
+    ASSERT(attachedObject && attachedObject->isValid());
+    ASSERT(reason);
+
+    GC3Denum internalformat = attachedObject->getFormat();
+    WebGLSharedObject* object = attachedObject->getObject();
+    ASSERT(object && (object->isTexture() || object->isRenderbuffer()));
+
+    if (attachment == GraphicsContext3D::DEPTH_ATTACHMENT) {
+        if (object->isRenderbuffer()) {
+            if (internalformat != GraphicsContext3D::DEPTH_COMPONENT16) {
+                *reason = "the internalformat of the attached renderbuffer is not DEPTH_COMPONENT16";
+                return false;
+            }
+        } else if (object->isTexture()) {
+            GC3Denum type = attachedObject->getType();
+            if (!(context()->m_webglDepthTexture && internalformat == GraphicsContext3D::DEPTH_COMPONENT
+                && (type == GraphicsContext3D::UNSIGNED_SHORT || type == GraphicsContext3D::UNSIGNED_INT))) {
+                *reason = "the attached texture is not a depth texture";
+                return false;
+            }
+        }
+    } else if (attachment == GraphicsContext3D::STENCIL_ATTACHMENT) {
+        // Depend on the underlying GL drivers to check stencil textures
+        // and check renderbuffer type here only.
+        if (object->isRenderbuffer()) {
+            if (internalformat != GraphicsContext3D::STENCIL_INDEX8) {
+                *reason = "the internalformat of the attached renderbuffer is not STENCIL_INDEX8";
+                return false;
+            }
+        }
+    } else if (attachment == GraphicsContext3D::DEPTH_STENCIL_ATTACHMENT) {
+        if (object->isRenderbuffer()) {
+            if (internalformat != GraphicsContext3D::DEPTH_STENCIL) {
+                *reason = "the internalformat of the attached renderbuffer is not DEPTH_STENCIL";
+                return false;
+            }
+        } else if (object->isTexture()) {
+            GC3Denum type = attachedObject->getType();
+            if (!(context()->m_webglDepthTexture && internalformat == GraphicsContext3D::DEPTH_STENCIL
+                && type == GraphicsContext3D::UNSIGNED_INT_24_8)) {
+                *reason = "the attached texture is not a DEPTH_STENCIL texture";
+                return false;
+            }
+        }
+    } else if (attachment == GraphicsContext3D::COLOR_ATTACHMENT0
+        || (context()->m_webglDrawBuffers && attachment > GraphicsContext3D::COLOR_ATTACHMENT0
+            && attachment < static_cast<GC3Denum>(GraphicsContext3D::COLOR_ATTACHMENT0 + context()->getMaxColorAttachments()))) {
+        if (object->isRenderbuffer()) {
+            if (!isColorRenderable(internalformat)) {
+                *reason = "the internalformat of the attached renderbuffer is not color-renderable";
+                return false;
+            }
+        } else if (object->isTexture()) {
+            GC3Denum type = attachedObject->getType();
+            if (internalformat != GraphicsContext3D::RGBA && internalformat != GraphicsContext3D::RGB) {
+                *reason = "the internalformat of the attached texture is not color-renderable";
+                return false;
+            }
+            // TODO: WEBGL_color_buffer_float and EXT_color_buffer_half_float extensions have not been implemented in
+            // WebGL yet. It would be better to depend on the underlying GL drivers to check on rendering to floating point textures
+            // and add the check back to WebGL when above two extensions are implemented.
+            // Assume UNSIGNED_BYTE is renderable here without the need to explicitly check if GL_OES_rgb8_rgba8 extension is supported.
+            if (type != GraphicsContext3D::UNSIGNED_BYTE
+                && type != GraphicsContext3D::UNSIGNED_SHORT_5_6_5
+                && type != GraphicsContext3D::UNSIGNED_SHORT_4_4_4_4
+                && type != GraphicsContext3D::UNSIGNED_SHORT_5_5_5_1
+                && !(type == GraphicsContext3D::FLOAT && context()->m_oesTextureFloat)
+                && !(type == GraphicsContext3D::HALF_FLOAT_OES && context()->m_oesTextureHalfFloat)) {
+                *reason = "unsupported type: The attached texture is not supported to be rendered to";
+                return false;
+            }
+        }
+    } else {
+        *reason = "unknown framebuffer attachment point";
+        return false;
+    }
+
+    if (!attachedObject->getWidth() || !attachedObject->getHeight()) {
+        *reason = "attachment has a 0 dimension";
+        return false;
+    }
+    return true;
 }
 
 WebGLFramebuffer::WebGLAttachment* WebGLFramebuffer::getAttachment(GC3Denum attachment) const

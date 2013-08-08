@@ -703,7 +703,6 @@ public:
     // determine this.
     Extensions3D* getExtensions();
 
-    static unsigned getClearBitsByAttachmentType(GC3Denum);
     static unsigned getClearBitsByFormat(GC3Denum);
 
     enum ChannelBits {

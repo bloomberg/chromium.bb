@@ -46,6 +46,11 @@ public:
         virtual GC3Dsizei getWidth() const = 0;
         virtual GC3Dsizei getHeight() const = 0;
         virtual GC3Denum getFormat() const = 0;
+        // For texture attachment, getType() returns the type of the attached texture.
+        // For renderbuffer attachment, the type of the renderbuffer may vary with GL implementation.
+        // To avoid confusion, it would be better to not implement getType() for renderbuffer attachment and
+        // we should always use the internalformat of the renderbuffer and avoid using getType() API.
+        virtual GC3Denum getType() const = 0;
         virtual WebGLSharedObject* getObject() const = 0;
         virtual bool isSharedObject(WebGLSharedObject*) const = 0;
         virtual bool isValid() const = 0;
@@ -109,6 +114,7 @@ private:
     virtual bool isFramebuffer() const { return true; }
 
     WebGLAttachment* getAttachment(GC3Denum) const;
+    bool isAttachmentComplete(WebGLAttachment* attachedObject, GC3Denum attachment, const char** reason) const;
 
     // Check if the framebuffer is currently bound.
     bool isBound() const;
