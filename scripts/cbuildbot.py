@@ -1184,6 +1184,9 @@ def _FinishParsing(options, args):
   options.build_targets = args[:]
 
   if constants.BRANCH_UTIL_CONFIG in options.build_targets:
+    if options.remote:
+      cros_build_lib.Die(
+          'Running branch-util as a remote tryjob is not yet supported.')
     if len(options.build_targets) > 1:
       cros_build_lib.Die(
           'Cannot run branch-util with any other configs.')
