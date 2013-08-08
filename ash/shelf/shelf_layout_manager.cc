@@ -594,20 +594,6 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
 
   StopAutoHideTimer();
 
-  // The transition of background from auto-hide to visible is janky if the
-  // transition also cause the shelf's slide animation from the bottom edge.
-  // This happens if:
-  //  - shelf is hidden
-  //  - or, shelf is visible but workspace state is maximized
-  bool keep_maximized = state_.window_state == state.window_state &&
-      state_.window_state == WORKSPACE_WINDOW_STATE_MAXIMIZED;
-  BackgroundAnimator::ChangeType change_type =
-      (state_.visibility_state == SHELF_AUTO_HIDE &&
-       state.visibility_state == SHELF_VISIBLE &&
-       (state_.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN ||
-        keep_maximized)) ?
-      BackgroundAnimator::CHANGE_IMMEDIATE : BackgroundAnimator::CHANGE_ANIMATE;
-
   State old_state = state_;
   state_ = state;
   TargetBounds target_bounds;
@@ -631,23 +617,37 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   status_animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-  // Delay updating the background when going from SHELF_AUTO_HIDE_SHOWN to
-  // SHELF_AUTO_HIDE_HIDDEN until the shelf animates out. Otherwise during the
-  // animation you see the background change.
-  // Also delay the animation when the shelf was hidden, and has just been made
-  // visible (e.g. using a gesture-drag).
-  // But do not delay if the transition happens when a window is maximized.
-  bool delay_shelf_update =
-      state.visibility_state == SHELF_AUTO_HIDE &&
-      state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN &&
-      old_state.visibility_state == SHELF_AUTO_HIDE;
+  BackgroundAnimator::ChangeType change_type =
+      BackgroundAnimator::CHANGE_ANIMATE;
+  bool delay_background_change = false;
 
-  if (!keep_maximized && state.visibility_state == SHELF_VISIBLE &&
-      old_state.visibility_state == SHELF_AUTO_HIDE &&
-      old_state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN)
-    delay_shelf_update = true;
+  // Do not animate the background when:
+  // - Going from a hidden / auto hidden shelf in fullscreen to a visible shelf
+  //   in maximized mode.
+  // - Going from an auto hidden shelf in maximized mode to a visible shelf in
+  //   maximized mode.
+  if (state.visibility_state == SHELF_VISIBLE &&
+      state.window_state == WORKSPACE_WINDOW_STATE_MAXIMIZED &&
+      old_state.visibility_state != SHELF_VISIBLE) {
+    change_type = BackgroundAnimator::CHANGE_IMMEDIATE;
+  } else {
+    // Delay updating the background when going from SHELF_AUTO_HIDE_SHOWN to
+    // SHELF_AUTO_HIDE_HIDDEN until the shelf animates out. Otherwise during the
+    // animation you see the background change.
+    // Also delay the animation when the shelf was hidden, and has just been
+    // made visible (e.g. using a gesture-drag).
+    if (state.visibility_state == SHELF_AUTO_HIDE &&
+        state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN &&
+        old_state.visibility_state == SHELF_AUTO_HIDE) {
+      delay_background_change = true;
+    } else if (state.visibility_state == SHELF_VISIBLE &&
+               old_state.visibility_state == SHELF_AUTO_HIDE &&
+               old_state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
+      delay_background_change = true;
+    }
+  }
 
-  if (delay_shelf_update) {
+  if (delay_background_change) {
     if (update_shelf_observer_)
       update_shelf_observer_->Detach();
     // UpdateShelfBackground deletes itself when the animation is done.
@@ -666,7 +666,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       root_window_, target_bounds.work_area_insets);
   UpdateHitTestBounds();
-  if (!delay_shelf_update)
+  if (!delay_background_change)
     UpdateShelfBackground(change_type);
 
   // OnAutoHideStateChanged Should be emitted when:
