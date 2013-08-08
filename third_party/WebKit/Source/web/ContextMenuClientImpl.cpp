@@ -110,7 +110,7 @@ static bool isASingleWord(const String& text)
 static String selectMisspelledWord(Frame* selectedFrame)
 {
     // First select from selectedText to check for multiple word selection.
-    String misspelledWord = selectedFrame->editor()->selectedText().stripWhiteSpace();
+    String misspelledWord = selectedFrame->selectedText().stripWhiteSpace();
 
     // If some texts were already selected, we don't change the selection.
     if (!misspelledWord.isEmpty()) {
@@ -131,7 +131,7 @@ static String selectMisspelledWord(Frame* selectedFrame)
         return misspelledWord; // It is empty.
 
     WebFrameImpl::selectWordAroundPosition(selectedFrame, pos);
-    misspelledWord = selectedFrame->editor()->selectedText().stripWhiteSpace();
+    misspelledWord = selectedFrame->selectedText().stripWhiteSpace();
 
 #if OS(DARWIN)
     // If misspelled word is still empty, then that portion should not be
@@ -292,7 +292,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
 
     if (r.isSelected()) {
         if (!r.innerNonSharedNode()->hasTagName(HTMLNames::inputTag) || !toHTMLInputElement(r.innerNonSharedNode())->isPasswordField())
-            data.selectedText = selectedFrame->editor()->selectedText().stripWhiteSpace();
+            data.selectedText = selectedFrame->selectedText().stripWhiteSpace();
     }
 
     if (r.isContentEditable()) {

@@ -716,7 +716,7 @@ bool DragController::populateDragClipboard(Frame* src, const DragState& state, c
 
     if (state.m_dragType == DragSourceActionSelection) {
         if (enclosingTextFormControl(src->selection()->start())) {
-            clipboard->writePlainText(src->editor()->selectedTextForClipboard());
+            clipboard->writePlainText(src->selectedTextForClipboard());
         } else {
             RefPtr<Range> selectionRange = src->selection()->toNormalizedRange();
             ASSERT(selectionRange);

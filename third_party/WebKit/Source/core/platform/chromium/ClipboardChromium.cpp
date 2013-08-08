@@ -34,7 +34,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/StringCallback.h"
-#include "core/editing/Editor.h"
 #include "core/editing/markup.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
@@ -436,7 +435,7 @@ void ClipboardChromium::writeRange(Range* selectedRange, Frame* frame)
 
     m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange, 0, AnnotateForInterchange, false, ResolveNonLocalURLs), frame->document()->url());
 
-    String str = frame->editor()->selectedTextForClipboard();
+    String str = frame->selectedTextForClipboard();
 #if OS(WINDOWS)
     replaceNewlinesWithWindowsStyleNewlines(str);
 #endif

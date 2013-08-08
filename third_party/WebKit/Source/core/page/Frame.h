@@ -152,6 +152,9 @@ namespace WebCore {
         PassOwnPtr<DragImage> nodeImage(Node*);
         PassOwnPtr<DragImage> dragImageForSelection();
 
+        String selectedText() const;
+        String selectedTextForClipboard() const;
+
         VisiblePosition visiblePositionForPoint(const IntPoint& framePoint);
         Document* documentAtPoint(const IntPoint& windowPoint);
         PassRefPtr<Range> rangeForPoint(const IntPoint& framePoint);

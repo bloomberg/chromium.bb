@@ -38,6 +38,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
 #include "core/editing/RenderedPosition.h"
+#include "core/editing/TextIterator.h"
 #include "core/editing/TypingCommand.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -1747,6 +1748,24 @@ PassRefPtr<MutableStylePropertySet> FrameSelection::copyTypingStyle() const
     if (!m_typingStyle || !m_typingStyle->style())
         return 0;
     return m_typingStyle->style()->mutableCopy();
+}
+
+static String extractSelectedText(const FrameSelection& selection, TextIteratorBehavior behavior)
+{
+    // We remove '\0' characters because they are not visibly rendered to the user.
+    return plainText(selection.toNormalizedRange().get(), behavior).replace(0, "");
+}
+
+String FrameSelection::selectedText() const
+{
+    return extractSelectedText(*this, TextIteratorDefaultBehavior);
+}
+
+String FrameSelection::selectedTextForClipboard() const
+{
+    if (m_frame->settings() && m_frame->settings()->selectionIncludesAltImageText())
+        return extractSelectedText(*this, TextIteratorEmitsImageAltText);
+    return selectedText();
 }
 
 bool FrameSelection::shouldDeleteSelection(const VisibleSelection& selection) const

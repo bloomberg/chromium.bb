@@ -38,7 +38,6 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
-#include "core/editing/Editor.h"
 #include "core/editing/markup.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
@@ -86,7 +85,7 @@ void Pasteboard::writeSelection(Range* selectedRange, bool canSmartCopyOrDelete,
 {
     String html = createMarkup(selectedRange, 0, AnnotateForInterchange, false, ResolveNonLocalURLs);
     KURL url = selectedRange->startContainer()->document()->url();
-    String plainText = shouldSerializeSelectedTextForClipboard == IncludeImageAltTextForClipboard ? frame->editor()->selectedTextForClipboard() : frame->editor()->selectedText();
+    String plainText = shouldSerializeSelectedTextForClipboard == IncludeImageAltTextForClipboard ? frame->selectedTextForClipboard() : frame->selectedText();
 #if OS(WINDOWS)
     replaceNewlinesWithWindowsStyleNewlines(plainText);
 #endif

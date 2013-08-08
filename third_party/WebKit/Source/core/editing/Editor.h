@@ -289,8 +289,6 @@ public:
 
     Node* findEventTargetFrom(const VisibleSelection& selection) const;
 
-    String selectedText() const;
-    String selectedTextForClipboard() const;
     bool findString(const String&, FindOptions);
     // FIXME: Switch callers over to the FindOptions version and retire this one.
     bool findString(const String&, bool forward, bool caseFlag, bool wrapFlag, bool startInSelection);
@@ -360,8 +358,6 @@ private:
     void revealSelectionAfterEditingOperation(const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded, RevealExtentOption = DoNotRevealExtent);
     void markMisspellingsOrBadGrammar(const VisibleSelection&, bool checkSpelling, RefPtr<Range>& firstMisspellingRange);
     TextCheckingTypeMask resolveTextCheckingTypeMask(TextCheckingTypeMask);
-
-    String selectedText(TextIteratorBehavior) const;
 
     void selectComposition();
     enum FinishCompositionMode { ConfirmComposition, CancelComposition };

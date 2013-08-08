@@ -2350,7 +2350,7 @@ bool WebViewImpl::setCompositionFromExistingText(int compositionStart, int compo
     caretOrSelectionRange(&location, &length);
     editor->setIgnoreCompositionSelectionChange(true);
     editor->setSelectionOffsets(compositionStart, compositionEnd);
-    String text = editor->selectedText();
+    String text = focused->selectedText();
     editor->setComposition(text, CompositionUnderlineVectorBuilder(underlines), 0, 0);
     // Need to set setIgnoreCompositionSelectionChange(true) again because setComposition resets it to false.
     editor->setIgnoreCompositionSelectionChange(true);
