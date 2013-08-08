@@ -1254,11 +1254,16 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         MakeTuple(1, 1, 1, 4, END_OF_STREAM_RESET, CS_RESET, false, false)));
 
+// This hangs on Exynos, preventing further testing and wasting test machine
+// time.
+// TODO(ihf): Enable again once http://crbug.com/269754 is fixed.
+#if defined(ARCH_CPU_X86_FAMILY)
 // Test that Reset() before the first Decode() works fine.
 INSTANTIATE_TEST_CASE_P(
     ResetBeforeDecode, VideoDecodeAcceleratorTest,
     ::testing::Values(
         MakeTuple(1, 1, 1, 1, START_OF_STREAM_RESET, CS_RESET, false, false)));
+#endif  // ARCH_CPU_X86_FAMILY
 
 // Test that Reset() mid-stream works fine and doesn't affect decoding even when
 // Decode() calls are made during the reset.
