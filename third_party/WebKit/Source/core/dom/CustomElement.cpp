@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-Vector<AtomicString>& CustomElement::additionalCustomTagNames()
+Vector<AtomicString>& CustomElement::allowedCustomTagNames()
 {
     DEFINE_STATIC_LOCAL(Vector<AtomicString>, tagNames, ());
     return tagNames;
@@ -51,13 +51,16 @@ void CustomElement::allowTagName(const AtomicString& localName)
     AtomicString lower = localName.lower();
     if (isCustomTagName(lower))
         return;
-    additionalCustomTagNames().append(lower);
+    allowedCustomTagNames().append(lower);
 }
 
 bool CustomElement::isValidTypeName(const AtomicString& name)
 {
-    if (notFound != additionalCustomTagNames().find(name))
+    if (notFound != allowedCustomTagNames().find(name))
         return true;
+
+    if (allowedCustomTagNames().size() > 0)
+        return false;
 
     if (notFound == name.find('-'))
         return false;

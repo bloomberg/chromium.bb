@@ -70,7 +70,7 @@ public:
 private:
     CustomElement();
 
-    static Vector<AtomicString>& additionalCustomTagNames();
+    static Vector<AtomicString>& allowedCustomTagNames();
 
     // Maps resolved elements to their definitions
 
