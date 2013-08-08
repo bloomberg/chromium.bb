@@ -75,6 +75,15 @@ shouldBe("rules1.item(3).cssText", "'60% { left: 60px; }'");
 shouldBe("rules1.item(4).cssText", "'20% { left: 50px; }'");
 
 debug("");
+debug("Insert invalid rules");
+keyframes1.insertRule("foo");
+keyframes1.insertRule("foo { left: 30px; }");
+keyframes1.insertRule("-10% { left: 30px; }");
+keyframes1.insertRule("10% { left: 30px; }");
+shouldBe("rules1.length", "6");
+shouldBe("rules1.item(5).cssText", "'10% { left: 30px; }'");
+
+debug("");
 
 var keyframes2 = document.styleSheets.item(0).cssRules.item(1);
 
@@ -211,6 +220,26 @@ shouldBe("rules2.length", "2");
 shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
 // FIXME: Should we leave keyText unchanged when attempting to set to an invalid string?
 shouldBe("rules2.item(0).keyText", "'40%, -50%, 60%'");
+shouldBe("rules2.item(1).keyText", "'90%,100%'");
+
+debug("");
+debug("Set a keyframe key with an invalid value");
+
+rules2.item(0).keyText = "foo";
+shouldBe("rules2.length", "2");
+shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+// FIXME: Should we leave keyText unchanged when attempting to set to an invalid string?
+shouldBe("rules2.item(0).keyText", "'foo'");
+shouldBe("rules2.item(1).keyText", "'90%,100%'");
+
+debug("");
+debug("Set a keyframe key with a null value");
+
+rules2.item(0).keyText = null;
+shouldBe("rules2.length", "2");
+shouldBe("rules2.item(0).type", "window.CSSRule.WEBKIT_KEYFRAME_RULE");
+// FIXME: Should we leave keyText unchanged when attempting to set to something invalid?
+shouldBe("rules2.item(0).keyText", "'null'");
 shouldBe("rules2.item(1).keyText", "'90%,100%'");
 
 </script>

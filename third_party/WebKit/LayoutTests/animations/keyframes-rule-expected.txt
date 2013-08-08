@@ -24,6 +24,10 @@ PASS rules1.item(2).cssText is '30% { left: 30px; }'
 PASS rules1.item(3).cssText is '60% { left: 60px; }'
 PASS rules1.item(4).cssText is '20% { left: 50px; }'
 
+Insert invalid rules
+PASS rules1.length is 6
+PASS rules1.item(5).cssText is '10% { left: 30px; }'
+
 PASS keyframes2.type is window.CSSRule.WEBKIT_KEYFRAMES_RULE
 PASS keyframes2.name is 'test2'
 
@@ -97,6 +101,18 @@ Set a keyframe key with an out-of-range value
 PASS rules2.length is 2
 PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
 PASS rules2.item(0).keyText is '40%, -50%, 60%'
+PASS rules2.item(1).keyText is '90%,100%'
+
+Set a keyframe key with an invalid value
+PASS rules2.length is 2
+PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules2.item(0).keyText is 'foo'
+PASS rules2.item(1).keyText is '90%,100%'
+
+Set a keyframe key with a null value
+PASS rules2.length is 2
+PASS rules2.item(0).type is window.CSSRule.WEBKIT_KEYFRAME_RULE
+PASS rules2.item(0).keyText is 'null'
 PASS rules2.item(1).keyText is '90%,100%'
 PASS successfullyParsed is true
 
