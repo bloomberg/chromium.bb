@@ -23,21 +23,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CachedTextTrack_h
-#define CachedTextTrack_h
+#include "config.h"
 
-#include "core/loader/cache/Resource.h"
+#include "core/loader/cache/TextTrackResource.h"
+
+#include "core/loader/cache/ResourceClient.h"
+#include "core/loader/cache/ResourceClientWalker.h"
 
 namespace WebCore {
 
-class CachedTextTrack : public Resource {
-public:
-    CachedTextTrack(const ResourceRequest&);
-    virtual ~CachedTextTrack();
+TextTrackResource::TextTrackResource(const ResourceRequest& resourceRequest)
+    : Resource(resourceRequest, TextTrack)
+{
+}
 
-    virtual void appendData(const char*, int) OVERRIDE;
-};
+TextTrackResource::~TextTrackResource()
+{
+}
+
+void TextTrackResource::appendData(const char* data, int length)
+{
+    Resource::appendData(data, length);
+    ResourceClientWalker<ResourceClient> walker(m_clients);
+    while (ResourceClient *client = walker.next())
+        client->deprecatedDidReceiveResource(this);
+}
 
 }
 
-#endif

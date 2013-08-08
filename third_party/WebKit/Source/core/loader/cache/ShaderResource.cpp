@@ -28,26 +28,34 @@
  */
 
 #include "config.h"
+#include "core/loader/cache/ShaderResource.h"
 
-#include "core/rendering/style/StyleCachedShader.h"
-
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/loader/cache/CachedShader.h"
+#include "core/loader/TextResourceDecoder.h"
+#include "core/platform/SharedBuffer.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
-
-StyleCachedShader::StyleCachedShader(CachedShader* shader)
-    : m_shader(shader)
+ShaderResource::ShaderResource(const ResourceRequest& resourceRequest)
+    : Resource(resourceRequest, Shader)
+    , m_decoder(TextResourceDecoder::create("application/shader"))
 {
-     m_isCachedShader = true;
 }
 
-PassRefPtr<CSSValue> StyleCachedShader::cssValue() const
+ShaderResource::~ShaderResource()
 {
-    return CSSPrimitiveValue::create(m_shader->url().string(), CSSPrimitiveValue::CSS_URI);
+}
+
+const String& ShaderResource::shaderString()
+{
+    if (m_shaderString.isNull() && m_data) {
+        StringBuilder builder;
+        builder.append(m_decoder->decode(m_data->data(), m_data->size()));
+        builder.append(m_decoder->flush());
+        m_shaderString = builder.toString();
+    }
+
+    return m_shaderString;
 }
 
 } // namespace WebCore
-
-

@@ -21,7 +21,7 @@
 #define SVGFontFaceUriElement_h
 
 #if ENABLE(SVG_FONTS)
-#include "core/loader/cache/CachedFont.h"
+#include "core/loader/cache/FontResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/svg/SVGElement.h"
 
@@ -29,7 +29,7 @@ namespace WebCore {
 
 class CSSFontFaceSrcValue;
 
-class SVGFontFaceUriElement FINAL : public SVGElement, public CachedFontClient {
+class SVGFontFaceUriElement FINAL : public SVGElement, public FontResourceClient {
 public:
     static PassRefPtr<SVGFontFaceUriElement> create(const QualifiedName&, Document*);
 
@@ -48,7 +48,7 @@ private:
 
     void loadFont();
 
-    ResourcePtr<CachedFont> m_cachedFont;
+    ResourcePtr<FontResource> m_resource;
 };
 
 } // namespace WebCore

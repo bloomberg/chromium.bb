@@ -52,12 +52,12 @@ void WebFontInfo::setSubpixelPositioning(bool subpixelPositioning)
     useSubpixelPositioning = subpixelPositioning;
 }
 
-class CachedFont {
+class FontResource {
 public:
     // Note: We pass the charset explicitly as callers
-    // should not create CachedFont entries without knowing
+    // should not create FontResource entries without knowing
     // that the FcPattern contains a valid charset.
-    CachedFont(FcPattern* pattern, FcCharSet* charSet)
+    FontResource(FcPattern* pattern, FcCharSet* charSet)
         : m_supportedCharacters(charSet)
     {
         ASSERT(pattern);
@@ -110,17 +110,17 @@ private:
 };
 
 
-class CachedFontSet {
-    WTF_MAKE_NONCOPYABLE(CachedFontSet);
+class FontResourceSet {
+    WTF_MAKE_NONCOPYABLE(FontResourceSet);
 public:
-    // CachedFontSet takes ownership of the passed FcFontSet.
-    static PassOwnPtr<CachedFontSet> createForLocale(const char* locale)
+    // FontResourceSet takes ownership of the passed FcFontSet.
+    static PassOwnPtr<FontResourceSet> createForLocale(const char* locale)
     {
         FcFontSet* fontSet = createFcFontSetForLocale(locale);
-        return adoptPtr(new CachedFontSet(fontSet));
+        return adoptPtr(new FontResourceSet(fontSet));
     }
 
-    ~CachedFontSet()
+    ~FontResourceSet()
     {
         m_fallbackList.clear();
         FcFontSetDestroy(m_fontSet);
@@ -128,7 +128,7 @@ public:
 
     WebFontFamily familyForChar(WebUChar32 c)
     {
-        Vector<CachedFont>::iterator itr = m_fallbackList.begin();
+        Vector<FontResource>::iterator itr = m_fallbackList.begin();
         for (; itr != m_fallbackList.end(); itr++) {
             if (itr->hasGlyphForCharacter(c))
                 return itr->family();
@@ -165,7 +165,7 @@ private:
         return fontSet;
     }
 
-    CachedFontSet(FcFontSet* fontSet)
+    explicit FontResourceSet(FcFontSet* fontSet)
         : m_fontSet(fontSet)
     {
         fillFallbackList();
@@ -203,7 +203,7 @@ private:
             FcBool addsGlyphs = FcFalse;
             // FcCharSetMerge returns false on failure (out of memory, etc.)
             if (!FcCharSetMerge(allGlyphs, charSet, &addsGlyphs) || addsGlyphs)
-                m_fallbackList.append(CachedFont(pattern, charSet));
+                m_fallbackList.append(FontResource(pattern, charSet));
         }
         // FIXME: We could cache allGlyphs, or even send it to the renderer
         // to avoid it needing to call us for glyphs we won't have.
@@ -211,10 +211,10 @@ private:
     }
 
     FcFontSet* m_fontSet; // Owned by this object.
-    // CachedFont has a FcCharset* which points into the FcFontSet.
+    // FontResource has a FcCharset* which points into the FcFontSet.
     // If the FcFontSet is ever destoryed, the fallbackList
     // must be cleared first.
-    Vector<CachedFont> m_fallbackList;
+    Vector<FontResource> m_fallbackList;
 };
 
 class FontSetCache {
@@ -227,9 +227,9 @@ public:
 
     WebFontFamily fontFamilyForCharInLocale(WebUChar32 c, const char* locale)
     {
-        LocaleToCachedFont::iterator itr = m_setsByLocale.find(locale);
+        LocaleToFontResource::iterator itr = m_setsByLocale.find(locale);
         if (itr == m_setsByLocale.end()) {
-            OwnPtr<CachedFontSet> newEntry = CachedFontSet::createForLocale(locale);
+            OwnPtr<FontResourceSet> newEntry = FontResourceSet::createForLocale(locale);
             itr = m_setsByLocale.add(locale, newEntry.release()).iterator;
         }
         return itr.get()->value->familyForChar(c);
@@ -240,8 +240,8 @@ private:
     // FIXME: This shouldn't need to be AtomicString, but
     // currently HashTraits<const char*> isn't smart enough
     // to hash the string (only does pointer compares).
-    typedef HashMap<AtomicString, OwnPtr<CachedFontSet> > LocaleToCachedFont;
-    LocaleToCachedFont m_setsByLocale;
+    typedef HashMap<AtomicString, OwnPtr<FontResourceSet> > LocaleToFontResource;
+    LocaleToFontResource m_setsByLocale;
 };
 
 void WebFontInfo::familyForChar(WebUChar32 c, const char* locale, WebFontFamily* family)

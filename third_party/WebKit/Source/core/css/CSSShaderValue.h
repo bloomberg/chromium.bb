@@ -36,7 +36,7 @@ namespace WebCore {
 
 class ResourceFetcher;
 class KURL;
-class StyleCachedShader;
+class StyleFetchedShader;
 class StyleShader;
 
 class CSSShaderValue : public CSSValue {
@@ -48,7 +48,7 @@ public:
     void setFormat(const String& format) { m_format = format; }
 
     KURL completeURL(ResourceFetcher*) const;
-    StyleCachedShader* cachedShader(ResourceFetcher*);
+    StyleFetchedShader* resource(ResourceFetcher*);
     StyleShader* cachedOrPendingShader();
 
     String customCssText() const;

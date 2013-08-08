@@ -24,9 +24,9 @@
 
 #include "FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
-#include "core/loader/cache/CachedXSLStyleSheet.h"
 #include "core/loader/cache/FetchRequest.h"
 #include "core/loader/cache/ResourceFetcher.h"
+#include "core/loader/cache/XSLStyleSheetResource.h"
 #include "core/xml/XSLStyleSheet.h"
 
 namespace WebCore {
@@ -34,7 +34,7 @@ namespace WebCore {
 XSLImportRule::XSLImportRule(XSLStyleSheet* parent, const String& href)
     : m_parentStyleSheet(parent)
     , m_strHref(href)
-    , m_cachedSheet(0)
+    , m_resource(0)
     , m_loading(false)
 {
 }
@@ -44,8 +44,8 @@ XSLImportRule::~XSLImportRule()
     if (m_styleSheet)
         m_styleSheet->setParentStyleSheet(0);
 
-    if (m_cachedSheet)
-        m_cachedSheet->removeClient(this);
+    if (m_resource)
+        m_resource->removeClient(this);
 }
 
 void XSLImportRule::setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet)
@@ -99,10 +99,10 @@ void XSLImportRule::loadSheet()
     }
 
     FetchRequest request(ResourceRequest(fetcher->document()->completeURL(absHref)), FetchInitiatorTypeNames::xml);
-    m_cachedSheet = fetcher->requestXSLStyleSheet(request);
+    m_resource = fetcher->requestXSLStyleSheet(request);
 
-    if (m_cachedSheet) {
-        m_cachedSheet->addClient(this);
+    if (m_resource) {
+        m_resource->addClient(this);
 
         // If the imported sheet is in the cache, then setXSLStyleSheet gets called,
         // and the sheet even gets parsed (via parseString).  In this case we have

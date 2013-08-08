@@ -2054,13 +2054,13 @@ String CanvasRenderingContext2D::font() const
 
 void CanvasRenderingContext2D::setFont(const String& newFont)
 {
-    MutableStylePropertyMap::iterator i = m_cachedFonts.find(newFont);
-    RefPtr<MutableStylePropertySet> parsedStyle = i != m_cachedFonts.end() ? i->value : 0;
+    MutableStylePropertyMap::iterator i = m_fetchedFonts.find(newFont);
+    RefPtr<MutableStylePropertySet> parsedStyle = i != m_fetchedFonts.end() ? i->value : 0;
 
     if (!parsedStyle) {
         parsedStyle = MutableStylePropertySet::create();
         CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, newFont, true, strictToCSSParserMode(!m_usesCSSCompatibilityParseMode), 0);
-        m_cachedFonts.add(newFont, parsedStyle);
+        m_fetchedFonts.add(newFont, parsedStyle);
     }
     if (parsedStyle->isEmpty())
         return;

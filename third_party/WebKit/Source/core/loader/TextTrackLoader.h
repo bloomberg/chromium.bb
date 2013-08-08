@@ -27,9 +27,9 @@
 #define TextTrackLoader_h
 
 #include "core/html/track/WebVTTParser.h"
-#include "core/loader/cache/CachedTextTrack.h"
 #include "core/loader/cache/ResourceClient.h"
 #include "core/loader/cache/ResourcePtr.h"
+#include "core/loader/cache/TextTrackResource.h"
 #include "core/platform/Timer.h"
 #include "wtf/OwnPtr.h"
 
@@ -93,7 +93,7 @@ private:
 
     TextTrackLoaderClient* m_client;
     OwnPtr<WebVTTParser> m_cueParser;
-    ResourcePtr<CachedTextTrack> m_cachedCueData;
+    ResourcePtr<TextTrackResource> m_cachedCueData;
     ScriptExecutionContext* m_scriptExecutionContext;
     Timer<TextTrackLoader> m_cueLoadTimer;
     String m_crossOriginMode;

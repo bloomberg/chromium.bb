@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class CachedFont;
+class FontResource;
 class Document;
 class SVGFontFaceElement;
 
@@ -69,7 +69,7 @@ public:
 
     bool hasFailedOrCanceledSubresources() const;
 
-    CachedFont* cachedFont(Document*);
+    FontResource* fetch(Document*);
 
     bool equals(const CSSFontFaceSrcValue&) const;
 
@@ -88,7 +88,7 @@ private:
     String m_format;
     bool m_isLocal;
 
-    ResourcePtr<CachedFont> m_cachedFont;
+    ResourcePtr<FontResource> m_fetched;
 
 #if ENABLE(SVG_FONTS)
     SVGFontFaceElement* m_svgFontFaceElement;

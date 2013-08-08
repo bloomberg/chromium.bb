@@ -34,7 +34,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/loader/cache/CachedDocument.h"
+#include "core/loader/cache/DocumentResource.h"
 #include "core/loader/cache/FetchRequest.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/rendering/svg/RenderSVGResource.h"
@@ -98,7 +98,7 @@ PassRefPtr<SVGUseElement> SVGUseElement::create(const QualifiedName& tagName, Do
 
 SVGUseElement::~SVGUseElement()
 {
-    setCachedDocument(0);
+    setDocumentResource(0);
 
     clearResourceReferences();
 }
@@ -196,12 +196,12 @@ Document* SVGUseElement::referencedDocument() const
 
 Document* SVGUseElement::externalDocument() const
 {
-    if (m_cachedDocument && m_cachedDocument->isLoaded()) {
+    if (m_resource && m_resource->isLoaded()) {
         // Gracefully handle error condition.
-        if (m_cachedDocument->errorOccurred())
+        if (m_resource->errorOccurred())
             return 0;
-        ASSERT(m_cachedDocument->document());
-        return m_cachedDocument->document();
+        ASSERT(m_resource->document());
+        return m_resource->document();
     }
     return 0;
 }
@@ -235,10 +235,11 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
             KURL url = document()->completeURL(hrefCurrentValue());
             if (url.hasFragmentIdentifier()) {
                 FetchRequest request(ResourceRequest(url.string()), localName());
-                setCachedDocument(document()->fetcher()->requestSVGDocument(request));
+                setDocumentResource(document()->fetcher()->requestSVGDocument(request));
             }
-        } else
-            setCachedDocument(0);
+        } else {
+            setDocumentResource(0);
+        }
 
         if (!m_wasInsertedByParser)
             buildPendingResource();
@@ -271,7 +272,7 @@ static void dumpInstanceTree(unsigned int& depth, String& text, SVGElementInstan
     ASSERT(element);
 
     if (element->hasTagName(SVGNames::useTag)) {
-        if (toSVGUseElement(element)->cachedDocumentIsStillLoading())
+        if (toSVGUseElement(element)->resourceIsStillLoading())
             return;
     }
 
@@ -704,7 +705,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
     // to walk it completely and expand all <use> elements.
     if (element->hasTagName(SVGNames::useTag)) {
         SVGUseElement* use = toSVGUseElement(element);
-        ASSERT(!use->cachedDocumentIsStillLoading());
+        ASSERT(!use->resourceIsStillLoading());
 
         Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefCurrentValue(), referencedDocument());
         SVGElement* target = 0;
@@ -947,9 +948,9 @@ void SVGUseElement::notifyFinished(Resource* resource)
         SVGExternalResourcesRequired::dispatchLoadEvent(this);
 }
 
-bool SVGUseElement::cachedDocumentIsStillLoading()
+bool SVGUseElement::resourceIsStillLoading()
 {
-    if (m_cachedDocument && m_cachedDocument->isLoading())
+    if (m_resource && m_resource->isLoading())
         return true;
     return false;
 }
@@ -958,8 +959,8 @@ bool SVGUseElement::instanceTreeIsLoading(SVGElementInstance* targetElementInsta
 {
     for (SVGElementInstance* instance = targetElementInstance->firstChild(); instance; instance = instance->nextSibling()) {
         if (SVGUseElement* use = instance->correspondingUseElement()) {
-             if (use->cachedDocumentIsStillLoading())
-                 return true;
+            if (use->resourceIsStillLoading())
+                return true;
         }
         if (instance->hasChildNodes())
             instanceTreeIsLoading(instance);
@@ -977,17 +978,17 @@ void SVGUseElement::finishParsingChildren()
     }
 }
 
-void SVGUseElement::setCachedDocument(ResourcePtr<CachedDocument> cachedDocument)
+void SVGUseElement::setDocumentResource(ResourcePtr<DocumentResource> resource)
 {
-    if (m_cachedDocument == cachedDocument)
+    if (m_resource == resource)
         return;
 
-    if (m_cachedDocument)
-        m_cachedDocument->removeClient(this);
+    if (m_resource)
+        m_resource->removeClient(this);
 
-    m_cachedDocument = cachedDocument;
-    if (m_cachedDocument)
-        m_cachedDocument->addClient(this);
+    m_resource = resource;
+    if (m_resource)
+        m_resource->addClient(this);
 }
 
 }

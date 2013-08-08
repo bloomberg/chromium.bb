@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class CachedFont;
+class FontResource;
 class CSSFontFaceRule;
 class CSSFontFaceSource;
 class Dictionary;

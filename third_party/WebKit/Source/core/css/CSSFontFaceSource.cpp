@@ -28,7 +28,7 @@
 
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
-#include "core/loader/cache/CachedFont.h"
+#include "core/loader/cache/FontResource.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
@@ -44,7 +44,7 @@
 
 namespace WebCore {
 
-CSSFontFaceSource::CSSFontFaceSource(const String& str, CachedFont* font)
+CSSFontFaceSource::CSSFontFaceSource(const String& str, FontResource* font)
     : m_string(str)
     , m_font(font)
     , m_face(0)
@@ -85,15 +85,15 @@ bool CSSFontFaceSource::isValid() const
     return true;
 }
 
-void CSSFontFaceSource::didStartFontLoad(CachedFont*)
+void CSSFontFaceSource::didStartFontLoad(FontResource*)
 {
     // Avoid duplicated reports when multiple CSSFontFaceSource are registered
-    // at this CachedFont.
+    // at this FontResource.
     if (!m_fontDataTable.isEmpty())
         m_histograms.loadStarted();
 }
 
-void CSSFontFaceSource::fontLoaded(CachedFont*)
+void CSSFontFaceSource::fontLoaded(FontResource*)
 {
     if (!m_fontDataTable.isEmpty())
         m_histograms.recordRemoteFont(m_font.get());
@@ -116,7 +116,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     ) {
         // We're local. Just return a SimpleFontData from the normal cache.
         // We don't want to check alternate font family names here, so pass true as the checkingAlternateName parameter.
-        RefPtr<SimpleFontData> fontData = fontCache()->getCachedFontData(fontDescription, m_string, true);
+        RefPtr<SimpleFontData> fontData = fontCache()->getFontResourceData(fontDescription, m_string, true);
         m_histograms.recordLocalFont(fontData);
         return fontData;
     }
@@ -248,7 +248,7 @@ void CSSFontFaceSource::FontLoadHistograms::recordLocalFont(bool loadSuccess)
     }
 }
 
-void CSSFontFaceSource::FontLoadHistograms::recordRemoteFont(const CachedFont* font)
+void CSSFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource* font)
 {
     if (m_loadStartTime > 0 && font && !font->isLoading()) {
         int duration = static_cast<int>(currentTimeMS() - m_loadStartTime);
@@ -257,7 +257,7 @@ void CSSFontFaceSource::FontLoadHistograms::recordRemoteFont(const CachedFont* f
     }
 }
 
-const char* CSSFontFaceSource::FontLoadHistograms::histogramName(const CachedFont* font)
+const char* CSSFontFaceSource::FontLoadHistograms::histogramName(const FontResource* font)
 {
     if (font->errorOccurred())
         return "WebFont.DownloadTime.LoadError";

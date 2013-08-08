@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CachedFont_h
-#define CachedFont_h
+#ifndef FontResource_h
+#define FontResource_h
 
 #include "core/loader/cache/Resource.h"
 #include "core/loader/cache/ResourceClient.h"
@@ -40,10 +40,10 @@ class SVGDocument;
 class SVGFontElement;
 class FontCustomPlatformData;
 
-class CachedFont : public Resource {
+class FontResource : public Resource {
 public:
-    CachedFont(const ResourceRequest&);
-    virtual ~CachedFont();
+    FontResource(const ResourceRequest&);
+    virtual ~FontResource();
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 
@@ -67,19 +67,19 @@ private:
     bool m_loadInitiated;
 
 #if ENABLE(SVG_FONTS)
-    RefPtr<SVGDocument> m_externalSVGDocument;
+    RefPtr<WebCore::SVGDocument> m_externalSVGDocument;
 #endif
 
     friend class MemoryCache;
 };
 
-class CachedFontClient : public ResourceClient {
+class FontResourceClient : public ResourceClient {
 public:
-    virtual ~CachedFontClient() { }
+    virtual ~FontResourceClient() { }
     static ResourceClientType expectedType() { return FontType; }
     virtual ResourceClientType resourceClientType() const { return expectedType(); }
-    virtual void fontLoaded(CachedFont*) { }
-    virtual void didStartFontLoad(CachedFont*) { }
+    virtual void fontLoaded(FontResource*) { }
+    virtual void didStartFontLoad(FontResource*) { }
 };
 
 }

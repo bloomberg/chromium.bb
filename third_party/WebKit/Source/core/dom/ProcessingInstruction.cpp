@@ -28,9 +28,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/loader/cache/CachedXSLStyleSheet.h"
 #include "core/loader/cache/FetchRequest.h"
 #include "core/loader/cache/ResourceFetcher.h"
+#include "core/loader/cache/XSLStyleSheetResource.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/parser/XMLDocumentParser.h" // for parseAttributes()
 

@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CachedShader_h
-#define CachedShader_h
+#ifndef ShaderResource_h
+#define ShaderResource_h
 
 #include "core/loader/cache/Resource.h"
 
@@ -36,10 +36,10 @@ namespace WebCore {
 
 class TextResourceDecoder;
 
-class CachedShader : public Resource {
+class ShaderResource : public Resource {
 public:
-    CachedShader(const ResourceRequest&);
-    virtual ~CachedShader();
+    ShaderResource(const ResourceRequest&);
+    virtual ~ShaderResource();
 
     const String& shaderString();
 
@@ -51,4 +51,4 @@ private:
 }
 
 
-#endif // CachedShader_h
+#endif // ShaderResource_h

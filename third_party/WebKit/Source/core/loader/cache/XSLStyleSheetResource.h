@@ -23,32 +23,32 @@
     pages from the web. It has a memory cache for these objects.
 */
 
-#ifndef CachedXSLStyleSheet_h
-#define CachedXSLStyleSheet_h
+#ifndef XSLStyleSheetResource_h
+#define XSLStyleSheetResource_h
 
 #include "core/loader/cache/Resource.h"
 
 namespace WebCore {
 
 class ResourceFetcher;
-    class TextResourceDecoder;
+class TextResourceDecoder;
 
-    class CachedXSLStyleSheet : public Resource {
-    public:
-        CachedXSLStyleSheet(const ResourceRequest&);
+class XSLStyleSheetResource : public Resource {
+public:
+    XSLStyleSheetResource(const ResourceRequest&);
 
-        const String& sheet() const { return m_sheet; }
+    const String& sheet() const { return m_sheet; }
 
-        virtual void didAddClient(ResourceClient*);
-        virtual void setEncoding(const String&);
-        virtual String encoding() const;
+    virtual void didAddClient(ResourceClient*);
+    virtual void setEncoding(const String&);
+    virtual String encoding() const;
 
-    protected:
-        virtual void checkNotify();
+protected:
+    virtual void checkNotify();
 
-        String m_sheet;
-        RefPtr<TextResourceDecoder> m_decoder;
-    };
+    String m_sheet;
+    RefPtr<TextResourceDecoder> m_decoder;
+};
 
 } // namespace WebCore
 

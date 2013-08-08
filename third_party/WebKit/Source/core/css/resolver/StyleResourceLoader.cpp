@@ -37,9 +37,9 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleCachedImage.h"
 #include "core/rendering/style/StyleCachedImageSet.h"
-#include "core/rendering/style/StyleCachedShader.h"
 #include "core/rendering/style/StyleCustomFilterProgram.h"
 #include "core/rendering/style/StyleCustomFilterProgramCache.h"
+#include "core/rendering/style/StyleFetchedShader.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
 #include "core/rendering/style/StylePendingShader.h"
@@ -66,12 +66,12 @@ void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, cons
             CSSSVGDocumentValue* value = elementStyleResources.pendingSVGDocuments().get(referenceFilter);
             if (!value)
                 continue;
-            CachedDocument* cachedDocument = value->load(m_fetcher);
-            if (!cachedDocument)
+            DocumentResource* resource = value->load(m_fetcher);
+            if (!resource)
                 continue;
 
-            // Stash the CachedDocument on the reference filter.
-            referenceFilter->setCachedSVGDocumentReference(adoptPtr(new CachedSVGDocumentReference(cachedDocument)));
+            // Stash the DocumentResource on the reference filter.
+            referenceFilter->setDocumentResourceReference(adoptPtr(new DocumentResourceReference(resource)));
         }
     }
 }
@@ -218,7 +218,7 @@ void StyleResourceLoader::loadPendingShaders(RenderStyle* style, const ElementSt
             CustomFilterOperation* customFilter = static_cast<CustomFilterOperation*>(filterOperation.get());
             ASSERT(customFilter->program());
             StyleCustomFilterProgram* program = static_cast<StyleCustomFilterProgram*>(customFilter->program());
-            // Note that the StylePendingShaders could be already resolved to StyleCachedShaders. That's because the rule was matched before.
+            // Note that the StylePendingShaders could be already resolved to StyleFetchedShaders. That's because the rule was matched before.
             // However, the StyleCustomFilterProgram that was initially created could have been removed from the cache in the meanwhile,
             // meaning that we get a new StyleCustomFilterProgram here that is not yet in the cache, but already has loaded StyleShaders.
             if (!program->hasPendingShaders() && program->inCache())
@@ -229,11 +229,11 @@ void StyleResourceLoader::loadPendingShaders(RenderStyle* style, const ElementSt
             } else {
                 if (program->vertexShader() && program->vertexShader()->isPendingShader()) {
                     CSSShaderValue* shaderValue = static_cast<StylePendingShader*>(program->vertexShader())->cssShaderValue();
-                    program->setVertexShader(shaderValue->cachedShader(m_fetcher));
+                    program->setVertexShader(shaderValue->resource(m_fetcher));
                 }
                 if (program->fragmentShader() && program->fragmentShader()->isPendingShader()) {
                     CSSShaderValue* shaderValue = static_cast<StylePendingShader*>(program->fragmentShader())->cssShaderValue();
-                    program->setFragmentShader(shaderValue->cachedShader(m_fetcher));
+                    program->setFragmentShader(shaderValue->resource(m_fetcher));
                 }
                 m_customFilterProgramCache->add(program);
             }

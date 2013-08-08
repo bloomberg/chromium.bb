@@ -341,7 +341,7 @@ private:
     unsigned m_unrealizedSaveCount;
     bool m_usesCSSCompatibilityParseMode;
     bool m_hasAlpha;
-    MutableStylePropertyMap m_cachedFonts;
+    MutableStylePropertyMap m_fetchedFonts;
 };
 
 } // namespace WebCore

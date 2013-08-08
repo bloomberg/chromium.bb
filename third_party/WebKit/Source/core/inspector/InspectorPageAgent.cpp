@@ -55,9 +55,9 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/FontResource.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/loader/cache/Resource.h"
 #include "core/loader/cache/ResourceFetcher.h"
@@ -268,7 +268,7 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::resourceTypeJson(Inspe
         return TypeBuilder::Page::ResourceType::Document;
     case ImageResource:
         return TypeBuilder::Page::ResourceType::Image;
-    case FontResource:
+    case Font:
         return TypeBuilder::Page::ResourceType::Font;
     case StylesheetResource:
         return TypeBuilder::Page::ResourceType::Stylesheet;
@@ -289,8 +289,8 @@ InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Re
     switch (cachedResource.type()) {
     case Resource::ImageResource:
         return InspectorPageAgent::ImageResource;
-    case Resource::FontResource:
-        return InspectorPageAgent::FontResource;
+    case Resource::Font:
+        return InspectorPageAgent::Font;
     case Resource::CSSStyleSheet:
         // Fall through.
     case Resource::XSLStyleSheet:
@@ -499,9 +499,9 @@ static Vector<Resource*> cachedResourcesForFrame(Frame* frame)
             if (static_cast<CachedImage*>(cachedResource)->stillNeedsLoad())
                 continue;
             break;
-        case Resource::FontResource:
+        case Resource::Font:
             // Skip fonts that were referenced in CSS but never used/downloaded.
-            if (static_cast<CachedFont*>(cachedResource)->stillNeedsLoad())
+            if (static_cast<FontResource*>(cachedResource)->stillNeedsLoad())
                 continue;
             break;
         default:

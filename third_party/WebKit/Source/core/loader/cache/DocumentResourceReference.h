@@ -23,21 +23,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CachedSVGDocumentReference_h
-#define CachedSVGDocumentReference_h
+#ifndef DocumentResourceReference_h
+#define DocumentResourceReference_h
 
-#include "core/loader/cache/CachedDocument.h"
+#include "core/loader/cache/DocumentResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 
 namespace WebCore {
 
-class CachedSVGDocumentReference : public CachedDocumentClient {
+class DocumentResourceReference : public DocumentResourceClient {
 public:
-    CachedSVGDocumentReference(CachedDocument* document) : m_document(document) { m_document->addClient(this); }
-    virtual ~CachedSVGDocumentReference() { m_document->removeClient(this); }
-    CachedDocument* document() { return m_document.get(); }
+    DocumentResourceReference(DocumentResource* document) : m_document(document) { m_document->addClient(this); }
+    virtual ~DocumentResourceReference() { m_document->removeClient(this); }
+    DocumentResource* document() { return m_document.get(); }
 private:
-    ResourcePtr<CachedDocument> m_document;
+    ResourcePtr<DocumentResource> m_document;
 };
 
 };

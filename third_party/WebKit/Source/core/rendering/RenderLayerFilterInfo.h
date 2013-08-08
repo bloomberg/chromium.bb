@@ -31,7 +31,7 @@
 #define RenderLayerFilterInfo_h
 
 #include "core/dom/Element.h"
-#include "core/loader/cache/CachedDocument.h"
+#include "core/loader/cache/DocumentResource.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramClient.h"
@@ -48,7 +48,7 @@ class RenderLayerFilterInfo;
 
 typedef HashMap<const RenderLayer*, RenderLayerFilterInfo*> RenderLayerFilterInfoMap;
 
-class RenderLayerFilterInfo : public CustomFilterProgramClient, public CachedDocumentClient {
+class RenderLayerFilterInfo : public CustomFilterProgramClient, public DocumentResourceClient {
 public:
     static RenderLayerFilterInfo* filterInfoForRenderLayer(const RenderLayer*);
     static RenderLayerFilterInfo* createFilterInfoForRenderLayerIfNeeded(RenderLayer*);
@@ -85,7 +85,7 @@ private:
 
     static RenderLayerFilterInfoMap* s_filterMap;
     Vector<RefPtr<Element> > m_internalSVGReferences;
-    Vector<ResourcePtr<CachedDocument> > m_externalSVGReferences;
+    Vector<ResourcePtr<DocumentResource> > m_externalSVGReferences;
 };
 
 } // namespace WebCore

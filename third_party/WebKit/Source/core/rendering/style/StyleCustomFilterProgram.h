@@ -30,9 +30,9 @@
 #ifndef StyleCustomFilterProgram_h
 #define StyleCustomFilterProgram_h
 
-#include "core/loader/cache/CachedShader.h"
 #include "core/loader/cache/ResourceClient.h"
 #include "core/loader/cache/ResourcePtr.h"
+#include "core/loader/cache/ShaderResource.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include "core/rendering/style/StyleShader.h"
 #include "weborigin/KURL.h"
@@ -86,8 +86,8 @@ public:
     {
         // Do not use the Resource:isLoaded method here, because it actually means !isLoading(),
         // so missing and canceled resources will have isLoaded set to true, even if they are not loaded yet.
-        ASSERT(!m_vertexShader || m_vertexShader->isCachedShader());
-        ASSERT(!m_fragmentShader || m_fragmentShader->isCachedShader());
+        ASSERT(!m_vertexShader || m_vertexShader->isShaderResource());
+        ASSERT(!m_fragmentShader || m_fragmentShader->isShaderResource());
         ASSERT(m_cachedVertexShader.get() || m_cachedFragmentShader.get());
         return (!m_cachedVertexShader.get() || m_isVertexShaderLoaded)
             && (!m_cachedFragmentShader.get() || m_isFragmentShaderLoaded);
@@ -96,11 +96,11 @@ public:
     virtual void willHaveClients()
     {
         if (m_vertexShader) {
-            m_cachedVertexShader = m_vertexShader->cachedShader();
+            m_cachedVertexShader = m_vertexShader->resource();
             m_cachedVertexShader->addClient(this);
         }
         if (m_fragmentShader) {
-            m_cachedFragmentShader = m_fragmentShader->cachedShader();
+            m_cachedFragmentShader = m_fragmentShader->resource();
             m_cachedFragmentShader->addClient(this);
         }
     }
@@ -164,8 +164,8 @@ private:
     RefPtr<StyleShader> m_vertexShader;
     RefPtr<StyleShader> m_fragmentShader;
 
-    ResourcePtr<CachedShader> m_cachedVertexShader;
-    ResourcePtr<CachedShader> m_cachedFragmentShader;
+    ResourcePtr<ShaderResource> m_cachedVertexShader;
+    ResourcePtr<ShaderResource> m_cachedFragmentShader;
 
     // The URLs form the key of the StyleCustomFilterProgram in the cache and are used
     // to lookup the StyleCustomFilterProgram when it's removed from the cache.

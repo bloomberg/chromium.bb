@@ -26,7 +26,7 @@
 #define CSSSVGDocumentValue_h
 
 #include "core/css/CSSValue.h"
-#include "core/loader/cache/CachedDocument.h"
+#include "core/loader/cache/DocumentResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 
 namespace WebCore {
@@ -38,8 +38,8 @@ public:
     static PassRefPtr<CSSSVGDocumentValue> create(const String& url) { return adoptRef(new CSSSVGDocumentValue(url)); }
     ~CSSSVGDocumentValue();
 
-    CachedDocument* cachedSVGDocument() const { return m_document.get(); }
-    CachedDocument* load(ResourceFetcher*);
+    DocumentResource* cachedSVGDocument() const { return m_document.get(); }
+    DocumentResource* load(ResourceFetcher*);
 
     String customCssText() const;
     const String& url() const { return m_url; }
@@ -50,7 +50,7 @@ private:
     CSSSVGDocumentValue(const String& url);
 
     String m_url;
-    ResourcePtr<CachedDocument> m_document;
+    ResourcePtr<DocumentResource> m_document;
     bool m_loadRequested;
 };
 

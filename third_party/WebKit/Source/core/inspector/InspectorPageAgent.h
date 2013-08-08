@@ -67,7 +67,7 @@ public:
         DocumentResource,
         StylesheetResource,
         ImageResource,
-        FontResource,
+        Font,
         ScriptResource,
         XHRResource,
         WebSocketResource,

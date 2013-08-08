@@ -62,14 +62,14 @@ public:
         ImageResource,
         CSSStyleSheet,
         Script,
-        FontResource,
+        Font,
         RawResource,
-        SVGDocumentResource,
+        SVGDocument,
         XSLStyleSheet,
         LinkPrefetch,
         LinkSubresource,
-        TextTrackResource,
-        ShaderResource,
+        TextTrack,
+        Shader,
         ImportResource
     };
 

@@ -42,7 +42,7 @@
 
 namespace WebCore {
 
-class CachedShader;
+class ShaderResource;
 class CustomFilterProgram;
 class Document;
 class GraphicsContext;

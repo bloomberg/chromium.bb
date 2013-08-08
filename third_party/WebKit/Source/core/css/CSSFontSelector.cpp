@@ -44,7 +44,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/cache/CachedFont.h"
+#include "core/loader/cache/FontResource.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
@@ -211,9 +211,9 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
             Settings* settings = m_document ? m_document->frame() ? m_document->frame()->settings() : 0 : 0;
             bool allowDownloading = foundSVGFont || (settings && settings->downloadableBinaryFontsEnabled());
             if (allowDownloading && item->isSupportedFormat() && m_document) {
-                CachedFont* cachedFont = item->cachedFont(m_document);
-                if (cachedFont) {
-                    source = adoptPtr(new CSSFontFaceSource(item->resource(), cachedFont));
+                FontResource* fetched = item->fetch(m_document);
+                if (fetched) {
+                    source = adoptPtr(new CSSFontFaceSource(item->resource(), fetched));
 #if ENABLE(SVG_FONTS)
                     if (foundSVGFont)
                         source->setHasExternalSVGFont(true);
@@ -379,7 +379,7 @@ static PassRefPtr<FontData> fontDataForGenericFamily(Document* document, const F
          genericFamily = settings->standardFontFamily(script);
 
     if (!genericFamily.isEmpty())
-        return fontCache()->getCachedFontData(fontDescription, genericFamily);
+        return fontCache()->getFontResourceData(fontDescription, genericFamily);
 
     return 0;
 }
@@ -567,7 +567,7 @@ void CSSFontSelector::clearDocument()
     m_document = 0;
 }
 
-void CSSFontSelector::beginLoadingFontSoon(CachedFont* font)
+void CSSFontSelector::beginLoadingFontSoon(FontResource* font)
 {
     if (!m_document)
         return;
@@ -582,7 +582,7 @@ void CSSFontSelector::beginLoadingFontSoon(CachedFont* font)
 
 void CSSFontSelector::beginLoadTimerFired(Timer<WebCore::CSSFontSelector>*)
 {
-    Vector<ResourcePtr<CachedFont> > fontsToBeginLoading;
+    Vector<ResourcePtr<FontResource> > fontsToBeginLoading;
     fontsToBeginLoading.swap(m_fontsToBeginLoading);
 
     // CSSFontSelector could get deleted via beginLoadIfNeeded() or loadDone() unless protected.

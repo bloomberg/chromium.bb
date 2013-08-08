@@ -117,7 +117,7 @@ void FontFallbackList::setPlatformFont(const FontPlatformData& platformData)
 {
     m_familyIndex = cAllFamiliesScanned;
     ASSERT(fontCache()->generation() == m_generation);
-    RefPtr<FontData> fontData = fontCache()->getCachedFontData(&platformData);
+    RefPtr<FontData> fontData = fontCache()->getFontResourceData(&platformData);
     m_fontList.append(fontData);
 }
 

@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/loader/cache/CachedFont.h"
+#include "core/loader/cache/FontResource.h"
 
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/ResourceClient.h"
@@ -43,43 +43,43 @@
 
 namespace WebCore {
 
-CachedFont::CachedFont(const ResourceRequest& resourceRequest)
-    : Resource(resourceRequest, FontResource)
+FontResource::FontResource(const ResourceRequest& resourceRequest)
+    : Resource(resourceRequest, Font)
     , m_loadInitiated(false)
 {
 }
 
-CachedFont::~CachedFont()
+FontResource::~FontResource()
 {
 }
 
-void CachedFont::load(ResourceFetcher*, const ResourceLoaderOptions& options)
+void FontResource::load(ResourceFetcher*, const ResourceLoaderOptions& options)
 {
-    // Don't load the file yet.  Wait for an access before triggering the load.
+    // Don't load the file yet. Wait for an access before triggering the load.
     setLoading(true);
     m_options = options;
 }
 
-void CachedFont::didAddClient(ResourceClient* c)
+void FontResource::didAddClient(ResourceClient* c)
 {
-    ASSERT(c->resourceClientType() == CachedFontClient::expectedType());
+    ASSERT(c->resourceClientType() == FontResourceClient::expectedType());
     if (!isLoading())
-        static_cast<CachedFontClient*>(c)->fontLoaded(this);
+        static_cast<FontResourceClient*>(c)->fontLoaded(this);
 }
 
-void CachedFont::beginLoadIfNeeded(ResourceFetcher* dl)
+void FontResource::beginLoadIfNeeded(ResourceFetcher* dl)
 {
     if (!m_loadInitiated) {
         m_loadInitiated = true;
         Resource::load(dl, m_options);
 
-        ResourceClientWalker<CachedFontClient> walker(m_clients);
-        while (CachedFontClient* client = walker.next())
+        ResourceClientWalker<FontResourceClient> walker(m_clients);
+        while (FontResourceClient* client = walker.next())
             client->didStartFontLoad(this);
     }
 }
 
-bool CachedFont::ensureCustomFontData()
+bool FontResource::ensureCustomFontData()
 {
     if (!m_fontData && !errorOccurred() && !isLoading() && m_data) {
         m_fontData = FontCustomPlatformData::create(m_data.get());
@@ -89,7 +89,7 @@ bool CachedFont::ensureCustomFontData()
     return m_fontData;
 }
 
-FontPlatformData CachedFont::platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation orientation, FontWidthVariant widthVariant)
+FontPlatformData FontResource::platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation orientation, FontWidthVariant widthVariant)
 {
 #if ENABLE(SVG_FONTS)
     if (m_externalSVGDocument)
@@ -100,7 +100,7 @@ FontPlatformData CachedFont::platformDataFromCustomData(float size, bool bold, b
 }
 
 #if ENABLE(SVG_FONTS)
-bool CachedFont::ensureSVGFontData()
+bool FontResource::ensureSVGFontData()
 {
     if (!m_externalSVGDocument && !errorOccurred() && !isLoading() && m_data) {
         m_externalSVGDocument = SVGDocument::create();
@@ -118,7 +118,7 @@ bool CachedFont::ensureSVGFontData()
     return m_externalSVGDocument;
 }
 
-SVGFontElement* CachedFont::getSVGFontById(const String& fontName) const
+SVGFontElement* FontResource::getSVGFontById(const String& fontName) const
 {
     RefPtr<NodeList> list = m_externalSVGDocument->getElementsByTagNameNS(SVGNames::fontTag.namespaceURI(), SVGNames::fontTag.localName());
     if (!list)
@@ -148,17 +148,17 @@ SVGFontElement* CachedFont::getSVGFontById(const String& fontName) const
 }
 #endif
 
-void CachedFont::allClientsRemoved()
+void FontResource::allClientsRemoved()
 {
     m_fontData.clear();
     Resource::allClientsRemoved();
 }
 
-void CachedFont::checkNotify()
+void FontResource::checkNotify()
 {
-    ResourceClientWalker<CachedFontClient> w(m_clients);
-    while (CachedFontClient* c = w.next())
-         c->fontLoaded(this);
+    ResourceClientWalker<FontResourceClient> w(m_clients);
+    while (FontResourceClient* c = w.next())
+        c->fontLoaded(this);
 }
 
 }

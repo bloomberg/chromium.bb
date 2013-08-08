@@ -22,7 +22,7 @@
 
 #include "config.h"
 
-#include "core/loader/cache/CachedDocument.h"
+#include "core/loader/cache/DocumentResource.h"
 
 #include "core/loader/cache/ResourceClient.h"
 #include "core/loader/cache/ResourcePtr.h"
@@ -32,29 +32,29 @@
 
 namespace WebCore {
 
-CachedDocument::CachedDocument(const ResourceRequest& request, Type type)
+DocumentResource::DocumentResource(const ResourceRequest& request, Type type)
     : Resource(request, type)
     , m_decoder(TextResourceDecoder::create("application/xml"))
 {
     // FIXME: We'll support more types to support HTMLImports.
-    ASSERT(type == SVGDocumentResource);
+    ASSERT(type == SVGDocument);
 }
 
-CachedDocument::~CachedDocument()
+DocumentResource::~DocumentResource()
 {
 }
 
-void CachedDocument::setEncoding(const String& chs)
+void DocumentResource::setEncoding(const String& chs)
 {
     m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);
 }
 
-String CachedDocument::encoding() const
+String DocumentResource::encoding() const
 {
     return m_decoder->encoding().name();
 }
 
-void CachedDocument::checkNotify()
+void DocumentResource::checkNotify()
 {
     if (m_data) {
         StringBuilder decodedText;
@@ -67,10 +67,10 @@ void CachedDocument::checkNotify()
     Resource::checkNotify();
 }
 
-PassRefPtr<Document> CachedDocument::createDocument(const KURL& url)
+PassRefPtr<Document> DocumentResource::createDocument(const KURL& url)
 {
     switch (type()) {
-    case SVGDocumentResource:
+    case SVGDocument:
         return SVGDocument::create(DocumentInit(url));
     default:
         // FIXME: We'll add more types to support HTMLImports.

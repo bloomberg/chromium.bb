@@ -40,16 +40,16 @@
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/loader/cache/CachedDocument.h"
-#include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedScript.h"
-#include "core/loader/cache/CachedShader.h"
-#include "core/loader/cache/CachedTextTrack.h"
-#include "core/loader/cache/CachedXSLStyleSheet.h"
+#include "core/loader/cache/DocumentResource.h"
 #include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/FontResource.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/ShaderResource.h"
+#include "core/loader/cache/TextTrackResource.h"
+#include "core/loader/cache/XSLStyleSheetResource.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
@@ -77,23 +77,23 @@ static Resource* createResource(Resource::Type type, const ResourceRequest& requ
         return new CachedCSSStyleSheet(request, charset);
     case Resource::Script:
         return new CachedScript(request, charset);
-    case Resource::SVGDocumentResource:
-        return new CachedDocument(request, Resource::SVGDocumentResource);
-    case Resource::FontResource:
-        return new CachedFont(request);
+    case Resource::SVGDocument:
+        return new DocumentResource(request, Resource::SVGDocument);
+    case Resource::Font:
+        return new FontResource(request);
     case Resource::RawResource:
     case Resource::MainResource:
         return new CachedRawResource(request, type);
     case Resource::XSLStyleSheet:
-        return new CachedXSLStyleSheet(request);
+        return new XSLStyleSheetResource(request);
     case Resource::LinkPrefetch:
         return new Resource(request, Resource::LinkPrefetch);
     case Resource::LinkSubresource:
         return new Resource(request, Resource::LinkSubresource);
-    case Resource::TextTrackResource:
-        return new CachedTextTrack(request);
-    case Resource::ShaderResource:
-        return new CachedShader(request);
+    case Resource::TextTrack:
+        return new TextTrackResource(request);
+    case Resource::Shader:
+        return new ShaderResource(request);
     case Resource::ImportResource:
         return new CachedRawResource(request, type);
     }
@@ -113,7 +113,7 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
     case Resource::CSSStyleSheet:
         return ResourceLoadPriorityHigh;
     case Resource::Script:
-    case Resource::FontResource:
+    case Resource::Font:
     case Resource::RawResource:
     case Resource::ImportResource:
         return ResourceLoadPriorityMedium;
@@ -121,15 +121,15 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
         return request.forPreload() ? ResourceLoadPriorityVeryLow : ResourceLoadPriorityLow;
     case Resource::XSLStyleSheet:
         return ResourceLoadPriorityHigh;
-    case Resource::SVGDocumentResource:
+    case Resource::SVGDocument:
         return ResourceLoadPriorityLow;
     case Resource::LinkPrefetch:
         return ResourceLoadPriorityVeryLow;
     case Resource::LinkSubresource:
         return ResourceLoadPriorityLow;
-    case Resource::TextTrackResource:
+    case Resource::TextTrack:
         return ResourceLoadPriorityLow;
-    case Resource::ShaderResource:
+    case Resource::Shader:
         return ResourceLoadPriorityMedium;
     }
     ASSERT_NOT_REACHED();
@@ -230,19 +230,19 @@ void ResourceFetcher::preCacheDataURIImage(const FetchRequest& request)
         memoryCache()->add(resource);
 }
 
-ResourcePtr<CachedFont> ResourceFetcher::requestFont(FetchRequest& request)
+ResourcePtr<FontResource> ResourceFetcher::requestFont(FetchRequest& request)
 {
-    return static_cast<CachedFont*>(requestResource(Resource::FontResource, request).get());
+    return static_cast<FontResource*>(requestResource(Resource::Font, request).get());
 }
 
-ResourcePtr<CachedTextTrack> ResourceFetcher::requestTextTrack(FetchRequest& request)
+ResourcePtr<TextTrackResource> ResourceFetcher::requestTextTrack(FetchRequest& request)
 {
-    return static_cast<CachedTextTrack*>(requestResource(Resource::TextTrackResource, request).get());
+    return static_cast<TextTrackResource*>(requestResource(Resource::TextTrack, request).get());
 }
 
-ResourcePtr<CachedShader> ResourceFetcher::requestShader(FetchRequest& request)
+ResourcePtr<ShaderResource> ResourceFetcher::requestShader(FetchRequest& request)
 {
-    return static_cast<CachedShader*>(requestResource(Resource::ShaderResource, request).get());
+    return static_cast<ShaderResource*>(requestResource(Resource::Shader, request).get());
 }
 
 ResourcePtr<CachedRawResource> ResourceFetcher::requestImport(FetchRequest& request)
@@ -274,14 +274,14 @@ ResourcePtr<CachedScript> ResourceFetcher::requestScript(FetchRequest& request)
     return static_cast<CachedScript*>(requestResource(Resource::Script, request).get());
 }
 
-ResourcePtr<CachedXSLStyleSheet> ResourceFetcher::requestXSLStyleSheet(FetchRequest& request)
+ResourcePtr<XSLStyleSheetResource> ResourceFetcher::requestXSLStyleSheet(FetchRequest& request)
 {
-    return static_cast<CachedXSLStyleSheet*>(requestResource(Resource::XSLStyleSheet, request).get());
+    return static_cast<XSLStyleSheetResource*>(requestResource(Resource::XSLStyleSheet, request).get());
 }
 
-ResourcePtr<CachedDocument> ResourceFetcher::requestSVGDocument(FetchRequest& request)
+ResourcePtr<DocumentResource> ResourceFetcher::requestSVGDocument(FetchRequest& request)
 {
-    return static_cast<CachedDocument*>(requestResource(Resource::SVGDocumentResource, request).get());
+    return static_cast<DocumentResource*>(requestResource(Resource::SVGDocument, request).get());
 }
 
 ResourcePtr<Resource> ResourceFetcher::requestLinkResource(Resource::Type type, FetchRequest& request)
@@ -306,7 +306,7 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url)
     switch (type) {
     case Resource::Script:
     case Resource::XSLStyleSheet:
-    case Resource::SVGDocumentResource:
+    case Resource::SVGDocument:
     case Resource::CSSStyleSheet:
     case Resource::ImportResource:
         // These resource can inject script into the current document (Script,
@@ -317,11 +317,11 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url)
         }
 
         break;
-    case Resource::TextTrackResource:
-    case Resource::ShaderResource:
+    case Resource::TextTrack:
+    case Resource::Shader:
     case Resource::RawResource:
     case Resource::ImageResource:
-    case Resource::FontResource: {
+    case Resource::Font: {
         // These resources can corrupt only the frame's pixels.
         if (Frame* f = frame()) {
             Frame* top = f->tree()->top();
@@ -359,21 +359,21 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     case Resource::ImageResource:
     case Resource::CSSStyleSheet:
     case Resource::Script:
-    case Resource::FontResource:
+    case Resource::Font:
     case Resource::RawResource:
     case Resource::LinkPrefetch:
     case Resource::LinkSubresource:
-    case Resource::TextTrackResource:
-    case Resource::ShaderResource:
+    case Resource::TextTrack:
+    case Resource::Shader:
     case Resource::ImportResource:
         // By default these types of resources can be loaded from any origin.
-        // FIXME: Are we sure about Resource::FontResource?
+        // FIXME: Are we sure about Resource::Font?
         if (options.requestOriginPolicy == RestrictToSameOrigin && !m_document->securityOrigin()->canRequest(url)) {
             printAccessDeniedMessage(url);
             return false;
         }
         break;
-    case Resource::SVGDocumentResource:
+    case Resource::SVGDocument:
     case Resource::XSLStyleSheet:
         if (!m_document->securityOrigin()->canRequest(url)) {
             printAccessDeniedMessage(url);
@@ -400,18 +400,18 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
             }
         }
         break;
-    case Resource::ShaderResource:
+    case Resource::Shader:
         // Since shaders are referenced from CSS Styles use the same rules here.
     case Resource::CSSStyleSheet:
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowStyleFromSource(url))
             return false;
         break;
-    case Resource::SVGDocumentResource:
+    case Resource::SVGDocument:
     case Resource::ImageResource:
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowImageFromSource(url))
             return false;
         break;
-    case Resource::FontResource: {
+    case Resource::Font: {
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowFontFromSource(url))
             return false;
         break;
@@ -421,7 +421,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     case Resource::LinkPrefetch:
     case Resource::LinkSubresource:
         break;
-    case Resource::TextTrackResource:
+    case Resource::TextTrack:
         // Cues aren't called out in the CPS spec yet, but they only work with a media element
         // so use the media policy.
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowMediaFromSource(url))
@@ -592,13 +592,13 @@ void ResourceFetcher::determineTargetType(ResourceRequest& request, Resource::Ty
     case Resource::Script:
         targetType = ResourceRequest::TargetIsScript;
         break;
-    case Resource::FontResource:
-        targetType = ResourceRequest::TargetIsFontResource;
+    case Resource::Font:
+        targetType = ResourceRequest::TargetIsFont;
         break;
     case Resource::ImageResource:
         targetType = ResourceRequest::TargetIsImage;
         break;
-    case Resource::ShaderResource:
+    case Resource::Shader:
     case Resource::RawResource:
     case Resource::ImportResource:
         targetType = ResourceRequest::TargetIsSubresource;
@@ -609,10 +609,10 @@ void ResourceFetcher::determineTargetType(ResourceRequest& request, Resource::Ty
     case Resource::LinkSubresource:
         targetType = ResourceRequest::TargetIsSubresource;
         break;
-    case Resource::TextTrackResource:
+    case Resource::TextTrack:
         targetType = ResourceRequest::TargetIsTextTrack;
         break;
-    case Resource::SVGDocumentResource:
+    case Resource::SVGDocument:
         targetType = ResourceRequest::TargetIsImage;
         break;
     default:

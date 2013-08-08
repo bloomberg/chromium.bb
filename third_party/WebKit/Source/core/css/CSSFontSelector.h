@@ -39,7 +39,7 @@ namespace WebCore {
 class CSSFontFace;
 class CSSFontFaceRule;
 class CSSSegmentedFontFace;
-class CachedFont;
+class FontResource;
 class Document;
 class FontDescription;
 class StyleRuleFontFace;
@@ -71,7 +71,7 @@ public:
 
     Document* document() const { return m_document; }
 
-    void beginLoadingFontSoon(CachedFont*);
+    void beginLoadingFontSoon(FontResource*);
 
 private:
     CSSFontSelector(Document*);
@@ -86,7 +86,7 @@ private:
     HashMap<String, OwnPtr<HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_fonts;
     HashSet<FontSelectorClient*> m_clients;
 
-    Vector<ResourcePtr<CachedFont> > m_fontsToBeginLoading;
+    Vector<ResourcePtr<FontResource> > m_fontsToBeginLoading;
     Timer<CSSFontSelector> m_beginLoadingTimer;
 
     unsigned m_version;

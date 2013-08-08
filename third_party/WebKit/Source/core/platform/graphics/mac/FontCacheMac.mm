@@ -170,7 +170,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
         !font.isPlatformFont() && (traits & NSFontItalicTrait) && !(substituteFontTraits & NSFontItalicTrait),
         platformData.m_orientation);
 
-    return getCachedFontData(&alternateFont, DoNotRetain);
+    return getFontResourceData(&alternateFont, DoNotRetain);
 }
 
 PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const Font& font)
@@ -186,7 +186,7 @@ PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const Font& fon
             DEFINE_STATIC_LOCAL(AtomicString, geezaStr, ("Geeza Pro", AtomicString::ConstructFromLiteral));
             for (int j = 0; j < 3 && !simpleFontData; ++j)
                 if (currFamily->family().contains(*matchWords[j], false))
-                    simpleFontData = getCachedFontData(font.fontDescription(), geezaStr);
+                    simpleFontData = getFontResourceData(font.fontDescription(), geezaStr);
         }
         currFamily = currFamily->next();
     }
@@ -200,7 +200,7 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
 
     // FIXME: Would be even better to somehow get the user's default font here.  For now we'll pick
     // the default that the user would get without changing any prefs.
-    RefPtr<SimpleFontData> simpleFontData = getCachedFontData(fontDescription, timesStr, false, shouldRetain);
+    RefPtr<SimpleFontData> simpleFontData = getFontResourceData(fontDescription, timesStr, false, shouldRetain);
     if (simpleFontData)
         return simpleFontData.release();
 
@@ -209,7 +209,7 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     // guaranteed to be there, according to Nathan Taylor. This is good enough
     // to avoid a crash at least.
     DEFINE_STATIC_LOCAL(AtomicString, lucidaGrandeStr, ("Lucida Grande", AtomicString::ConstructFromLiteral));
-    return getCachedFontData(fontDescription, lucidaGrandeStr, false, shouldRetain);
+    return getFontResourceData(fontDescription, lucidaGrandeStr, false, shouldRetain);
 }
 
 void FontCache::getTraitsInFamily(const AtomicString& familyName, Vector<unsigned>& traitsMasks)

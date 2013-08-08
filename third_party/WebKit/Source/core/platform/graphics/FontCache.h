@@ -75,7 +75,7 @@ public:
 
     void getTraitsInFamily(const AtomicString&, Vector<unsigned>&);
 
-    PassRefPtr<SimpleFontData> getCachedFontData(const FontDescription&, const AtomicString&, bool checkingAlternateName = false, ShouldRetain = Retain);
+    PassRefPtr<SimpleFontData> getFontResourceData(const FontDescription&, const AtomicString&, bool checkingAlternateName = false, ShouldRetain = Retain);
     PassRefPtr<SimpleFontData> getLastResortFallbackFont(const FontDescription&, ShouldRetain = Retain);
     SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
 
@@ -120,13 +120,13 @@ private:
     void purgeInactiveFontDataIfNeeded();
 
     // FIXME: This method should eventually be removed.
-    FontPlatformData* getCachedFontPlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
+    FontPlatformData* getFontResourcePlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
 
     // These methods are implemented by each platform.
     PassRefPtr<SimpleFontData> getSimilarFontPlatformData(const Font&);
     FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family);
 
-    PassRefPtr<SimpleFontData> getCachedFontData(const FontPlatformData*, ShouldRetain = Retain);
+    PassRefPtr<SimpleFontData> getFontResourceData(const FontPlatformData*, ShouldRetain = Retain);
     const FontPlatformData* getFallbackFontData(const FontDescription&);
 
     // Don't purge if this count is > 0;
@@ -135,7 +135,7 @@ private:
 #if OS(DARWIN) || OS(ANDROID)
     friend class ComplexTextController;
 #endif
-    friend class SimpleFontData; // For getCachedFontData(const FontPlatformData*)
+    friend class SimpleFontData; // For getFontResourceData(const FontPlatformData*)
     friend class FontFallbackList;
 };
 

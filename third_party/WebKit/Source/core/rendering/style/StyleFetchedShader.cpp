@@ -27,31 +27,27 @@
  * SUCH DAMAGE.
  */
 
-#ifndef StyleCachedShader_h
-#define StyleCachedShader_h
+#include "config.h"
 
-#include "core/loader/cache/ResourcePtr.h"
-#include "core/rendering/style/StyleShader.h"
+#include "core/rendering/style/StyleFetchedShader.h"
+
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/loader/cache/ShaderResource.h"
 
 namespace WebCore {
 
-class CachedShader;
 
-class StyleCachedShader : public StyleShader {
-public:
-    // FIXME: Keep a reference to the actual CachedShader in this class.
-    static PassRefPtr<StyleCachedShader> create(CachedShader* shader) { return adoptRef(new StyleCachedShader(shader)); }
-
-    virtual PassRefPtr<CSSValue> cssValue() const;
-
-    virtual CachedShader* cachedShader() const { return m_shader.get(); }
-
-private:
-    StyleCachedShader(CachedShader*);
-
-    ResourcePtr<CachedShader> m_shader;
-};
-
+StyleFetchedShader::StyleFetchedShader(ShaderResource* shader)
+    : m_shader(shader)
+{
+    m_isShaderResource = true;
 }
 
-#endif // StyleCachedShader_h
+PassRefPtr<CSSValue> StyleFetchedShader::cssValue() const
+{
+    return CSSPrimitiveValue::create(m_shader->url().string(), CSSPrimitiveValue::CSS_URI);
+}
+
+} // namespace WebCore
+
+

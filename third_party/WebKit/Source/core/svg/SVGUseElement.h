@@ -22,7 +22,7 @@
 #define SVGUseElement_h
 
 #include "SVGNames.h"
-#include "core/loader/cache/CachedDocument.h"
+#include "core/loader/cache/DocumentResource.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
@@ -31,13 +31,13 @@
 
 namespace WebCore {
 
-class CachedDocument;
+class DocumentResource;
 class SVGElementInstance;
 
 class SVGUseElement FINAL : public SVGGraphicsElement,
                             public SVGExternalResourcesRequired,
                             public SVGURIReference,
-                            public CachedDocumentClient {
+                            public DocumentResourceClient {
 public:
     static PassRefPtr<SVGUseElement> create(const QualifiedName&, Document*, bool wasInsertedByParser);
     virtual ~SVGUseElement();
@@ -104,12 +104,12 @@ private:
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
-    bool cachedDocumentIsStillLoading();
+    bool resourceIsStillLoading();
     Document* externalDocument() const;
     bool instanceTreeIsLoading(SVGElementInstance*);
     virtual void notifyFinished(Resource*);
     Document* referencedDocument() const;
-    void setCachedDocument(ResourcePtr<CachedDocument>);
+    void setDocumentResource(ResourcePtr<DocumentResource>);
 
     // SVGExternalResourcesRequired
     virtual void setHaveFiredLoadEvent(bool haveFiredLoadEvent) { m_haveFiredLoadEvent = haveFiredLoadEvent; }
@@ -121,7 +121,7 @@ private:
     bool m_haveFiredLoadEvent;
     bool m_needsShadowTreeRecreation;
     RefPtr<SVGElementInstance> m_targetElementInstance;
-    ResourcePtr<CachedDocument> m_cachedDocument;
+    ResourcePtr<DocumentResource> m_resource;
     Timer<SVGElement> m_svgLoadEventTimer;
 };
 

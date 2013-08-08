@@ -29,7 +29,7 @@
 #include "FetchInitiatorTypeNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
-#include "core/loader/cache/CachedDocument.h"
+#include "core/loader/cache/DocumentResource.h"
 #include "core/loader/cache/FetchRequest.h"
 #include "core/loader/cache/ResourceFetcher.h"
 
@@ -46,7 +46,7 @@ CSSSVGDocumentValue::~CSSSVGDocumentValue()
 {
 }
 
-CachedDocument* CSSSVGDocumentValue::load(ResourceFetcher* loader)
+DocumentResource* CSSSVGDocumentValue::load(ResourceFetcher* loader)
 {
     ASSERT(loader);
 

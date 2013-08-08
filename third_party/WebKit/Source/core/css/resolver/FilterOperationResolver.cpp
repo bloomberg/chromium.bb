@@ -409,7 +409,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
                 if (!svgDocumentValue->loadRequested())
                     state.elementStyleResources().addPendingSVGDocument(operation.get(), svgDocumentValue);
                 else if (svgDocumentValue->cachedSVGDocument())
-                    operation->setCachedSVGDocumentReference(adoptPtr(new CachedSVGDocumentReference(svgDocumentValue->cachedSVGDocument())));
+                    operation->setDocumentResourceReference(adoptPtr(new DocumentResourceReference(svgDocumentValue->cachedSVGDocument())));
             }
             operations.operations().append(operation);
             continue;

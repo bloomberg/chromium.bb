@@ -102,7 +102,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
     SkString skiaFamilyName;
     if (!SkGetFallbackFamilyNameForChar(c, &skiaFamilyName) || skiaFamilyName.isEmpty())
         return 0;
-    return getCachedFontData(getCachedFontPlatformData(font.fontDescription(), AtomicString(skiaFamilyName.c_str()), DoNotRetain), DoNotRetain);
+    return getFontResourceData(getFontResourcePlatformData(font.fontDescription(), AtomicString(skiaFamilyName.c_str()), DoNotRetain), DoNotRetain);
 }
 
 PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const Font& font)
@@ -114,7 +114,7 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
 {
     const FontPlatformData* fontPlatformData = getFallbackFontData(description);
     ASSERT(fontPlatformData);
-    return getCachedFontData(fontPlatformData, shouldRetain);
+    return getFontResourceData(fontPlatformData, shouldRetain);
 }
 
 void FontCache::getTraitsInFamily(const AtomicString& familyName, Vector<unsigned>& traitsMasks)

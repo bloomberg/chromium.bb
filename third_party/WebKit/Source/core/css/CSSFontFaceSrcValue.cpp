@@ -30,8 +30,8 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
-#include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/FontResource.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/platform/graphics/FontCustomPlatformData.h"
 #include "core/svg/SVGFontFaceElement.h"
@@ -89,18 +89,18 @@ void CSSFontFaceSrcValue::addSubresourceStyleURLs(ListHashSet<KURL>& urls, const
 
 bool CSSFontFaceSrcValue::hasFailedOrCanceledSubresources() const
 {
-    if (!m_cachedFont)
+    if (!m_fetched)
         return false;
-    return m_cachedFont->loadFailedOrCanceled();
+    return m_fetched->loadFailedOrCanceled();
 }
 
-CachedFont* CSSFontFaceSrcValue::cachedFont(Document* document)
+FontResource* CSSFontFaceSrcValue::fetch(Document* document)
 {
-    if (!m_cachedFont) {
+    if (!m_fetched) {
         FetchRequest request(ResourceRequest(document->completeURL(m_resource)), FetchInitiatorTypeNames::css);
-        m_cachedFont = document->fetcher()->requestFont(request);
+        m_fetched = document->fetcher()->requestFont(request);
     }
-    return m_cachedFont.get();
+    return m_fetched.get();
 }
 
 bool CSSFontFaceSrcValue::equals(const CSSFontFaceSrcValue& other) const

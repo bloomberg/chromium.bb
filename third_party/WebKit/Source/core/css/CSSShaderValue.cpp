@@ -36,7 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/loader/cache/FetchRequest.h"
 #include "core/loader/cache/ResourceFetcher.h"
-#include "core/rendering/style/StyleCachedShader.h"
+#include "core/rendering/style/StyleFetchedShader.h"
 #include "core/rendering/style/StylePendingShader.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -58,7 +58,7 @@ KURL CSSShaderValue::completeURL(ResourceFetcher* loader) const
     return loader->document()->completeURL(m_url);
 }
 
-StyleCachedShader* CSSShaderValue::cachedShader(ResourceFetcher* loader)
+StyleFetchedShader* CSSShaderValue::resource(ResourceFetcher* loader)
 {
     ASSERT(loader);
 
@@ -66,11 +66,11 @@ StyleCachedShader* CSSShaderValue::cachedShader(ResourceFetcher* loader)
         m_accessedShader = true;
 
         FetchRequest request(ResourceRequest(completeURL(loader)), FetchInitiatorTypeNames::css);
-        if (ResourcePtr<CachedShader> cachedShader = loader->requestShader(request))
-            m_shader = StyleCachedShader::create(cachedShader.get());
+        if (ResourcePtr<ShaderResource> resource = loader->requestShader(request))
+            m_shader = StyleFetchedShader::create(resource.get());
     }
 
-    return (m_shader && m_shader->isCachedShader()) ? static_cast<StyleCachedShader*>(m_shader.get()) : 0;
+    return (m_shader && m_shader->isShaderResource()) ? static_cast<StyleFetchedShader*>(m_shader.get()) : 0;
 }
 
 StyleShader* CSSShaderValue::cachedOrPendingShader()

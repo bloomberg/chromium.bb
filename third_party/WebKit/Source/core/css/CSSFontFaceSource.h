@@ -26,7 +26,7 @@
 #ifndef CSSFontFaceSource_h
 #define CSSFontFaceSource_h
 
-#include "core/loader/cache/CachedFont.h"
+#include "core/loader/cache/FontResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "wtf/HashMap.h"
@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-class CachedFont;
+class FontResource;
 class CSSFontFace;
 class CSSFontSelector;
 class FontDescription;
@@ -45,9 +45,9 @@ class SVGFontFaceElement;
 #endif
 
 
-class CSSFontFaceSource : public CachedFontClient {
+class CSSFontFaceSource : public FontResourceClient {
 public:
-    CSSFontFaceSource(const String&, CachedFont* = 0);
+    CSSFontFaceSource(const String&, FontResource* = 0);
     virtual ~CSSFontFaceSource();
 
     bool isLoaded() const;
@@ -57,8 +57,8 @@ public:
 
     void setFontFace(CSSFontFace* face) { m_face = face; }
 
-    virtual void didStartFontLoad(CachedFont*) OVERRIDE;
-    virtual void fontLoaded(CachedFont*);
+    virtual void didStartFontLoad(FontResource*) OVERRIDE;
+    virtual void fontLoaded(FontResource*);
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&, bool syntheticBold, bool syntheticItalic, CSSFontSelector*);
 
@@ -80,16 +80,16 @@ private:
         FontLoadHistograms() : m_loadStartTime(0) { }
         void loadStarted();
         void recordLocalFont(bool loadSuccess);
-        void recordRemoteFont(const CachedFont*);
+        void recordRemoteFont(const FontResource*);
     private:
-        const char* histogramName(const CachedFont*);
+        const char* histogramName(const FontResource*);
         double m_loadStartTime;
     };
 
     void startLoadingTimerFired(Timer<CSSFontFaceSource>*);
 
     AtomicString m_string; // URI for remote, built-in font name for local.
-    ResourcePtr<CachedFont> m_font; // For remote fonts, a pointer to our cached resource.
+    ResourcePtr<FontResource> m_font; // For remote fonts, a pointer to our cached resource.
     CSSFontFace* m_face; // Our owning font face.
     HashMap<unsigned, RefPtr<SimpleFontData> > m_fontDataTable; // The hash key is composed of size synthetic styles.
     FontLoadHistograms m_histograms;

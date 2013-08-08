@@ -56,7 +56,7 @@ namespace WebCore {
             TargetIsSubresource, // Resource is a generic subresource. (Generally a specific type should be specified)
             TargetIsStyleSheet,
             TargetIsScript,
-            TargetIsFontResource,
+            TargetIsFont,
             TargetIsImage,
             TargetIsObject,
             TargetIsMedia,

@@ -25,7 +25,7 @@
 */
 
 #include "config.h"
-#include "core/loader/cache/CachedXSLStyleSheet.h"
+#include "core/loader/cache/XSLStyleSheetResource.h"
 
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-CachedXSLStyleSheet::CachedXSLStyleSheet(const ResourceRequest& resourceRequest)
+XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, XSLStyleSheet)
     , m_decoder(TextResourceDecoder::create("text/xsl"))
 {
@@ -46,24 +46,24 @@ CachedXSLStyleSheet::CachedXSLStyleSheet(const ResourceRequest& resourceRequest)
     setAccept(acceptXSLT);
 }
 
-void CachedXSLStyleSheet::didAddClient(ResourceClient* c)
+void XSLStyleSheetResource::didAddClient(ResourceClient* c)
 {
     ASSERT(c->resourceClientType() == CachedStyleSheetClient::expectedType());
     if (!isLoading())
         static_cast<CachedStyleSheetClient*>(c)->setXSLStyleSheet(m_resourceRequest.url(), m_response.url(), m_sheet);
 }
 
-void CachedXSLStyleSheet::setEncoding(const String& chs)
+void XSLStyleSheetResource::setEncoding(const String& chs)
 {
     m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);
 }
 
-String CachedXSLStyleSheet::encoding() const
+String XSLStyleSheetResource::encoding() const
 {
     return m_decoder->encoding().name();
 }
 
-void CachedXSLStyleSheet::checkNotify()
+void XSLStyleSheetResource::checkNotify()
 {
     if (m_data.get()) {
         m_sheet = m_decoder->decode(m_data->data(), encodedSize());

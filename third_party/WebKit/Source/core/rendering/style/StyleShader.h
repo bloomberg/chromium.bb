@@ -34,27 +34,27 @@
 
 namespace WebCore {
 
-class CachedShader;
+class ShaderResource;
 class CSSValue;
 
 class StyleShader : public RefCounted<StyleShader> {
 public:
     virtual ~StyleShader() { }
 
-    ALWAYS_INLINE bool isCachedShader() const { return m_isCachedShader; }
+    ALWAYS_INLINE bool isShaderResource() const { return m_isShaderResource; }
     ALWAYS_INLINE bool isPendingShader() const { return m_isPendingShader; }
 
     virtual PassRefPtr<CSSValue> cssValue() const = 0;
 
-    virtual CachedShader* cachedShader() const { return 0; }
+    virtual ShaderResource* resource() const { return 0; }
 
 protected:
     StyleShader()
-        : m_isCachedShader(false)
+        : m_isShaderResource(false)
         , m_isPendingShader(false)
     {
     }
-    bool m_isCachedShader : 1;
+    bool m_isShaderResource : 1;
     bool m_isPendingShader : 1;
 };
 

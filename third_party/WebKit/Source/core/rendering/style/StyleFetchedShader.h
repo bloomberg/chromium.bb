@@ -27,35 +27,31 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/loader/cache/CachedShader.h"
+#ifndef StyleFetchedShader_h
+#define StyleFetchedShader_h
 
-#include "core/loader/TextResourceDecoder.h"
-#include "core/platform/SharedBuffer.h"
-#include "wtf/text/StringBuilder.h"
+#include "core/loader/cache/ResourcePtr.h"
+#include "core/rendering/style/StyleShader.h"
 
 namespace WebCore {
 
-CachedShader::CachedShader(const ResourceRequest& resourceRequest)
-    : Resource(resourceRequest, ShaderResource)
-    , m_decoder(TextResourceDecoder::create("application/shader"))
-{
+class ShaderResource;
+
+class StyleFetchedShader : public StyleShader {
+public:
+    // FIXME: Keep a reference to the actual ShaderResource in this class.
+    static PassRefPtr<StyleFetchedShader> create(ShaderResource* shader) { return adoptRef(new StyleFetchedShader(shader)); }
+
+    virtual PassRefPtr<CSSValue> cssValue() const;
+
+    virtual ShaderResource* resource() const { return m_shader.get(); }
+
+private:
+    StyleFetchedShader(ShaderResource*);
+
+    ResourcePtr<ShaderResource> m_shader;
+};
+
 }
 
-CachedShader::~CachedShader()
-{
-}
-
-const String& CachedShader::shaderString()
-{
-    if (m_shaderString.isNull() && m_data) {
-        StringBuilder builder;
-        builder.append(m_decoder->decode(m_data->data(), m_data->size()));
-        builder.append(m_decoder->flush());
-        m_shaderString = builder.toString();
-    }
-
-    return m_shaderString;
-}
-
-} // namespace WebCore
+#endif // StyleFetchedShader_h

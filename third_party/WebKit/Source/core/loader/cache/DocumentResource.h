@@ -20,8 +20,8 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef CachedDocument_h
-#define CachedDocument_h
+#ifndef DocumentResource_h
+#define DocumentResource_h
 
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/Resource.h"
@@ -32,10 +32,10 @@ namespace WebCore {
 
 class Document;
 
-class CachedDocument : public Resource {
+class DocumentResource : public Resource {
 public:
-    CachedDocument(const ResourceRequest&, Type);
-    virtual ~CachedDocument();
+    DocumentResource(const ResourceRequest&, Type);
+    virtual ~DocumentResource();
 
     Document* document() const { return m_document.get(); }
 
@@ -50,13 +50,13 @@ private:
     RefPtr<TextResourceDecoder> m_decoder;
 };
 
-class CachedDocumentClient : public ResourceClient {
+class DocumentResourceClient : public ResourceClient {
 public:
-    virtual ~CachedDocumentClient() { }
+    virtual ~DocumentResourceClient() { }
     static ResourceClientType expectedType() { return DocumentType; }
     virtual ResourceClientType resourceClientType() const { return expectedType(); }
 };
 
 }
 
-#endif // CachedDocument_h
+#endif // DocumentResource_h

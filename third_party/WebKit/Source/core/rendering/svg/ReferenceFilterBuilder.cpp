@@ -33,8 +33,8 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Element.h"
-#include "core/loader/cache/CachedDocument.h"
-#include "core/loader/cache/CachedSVGDocumentReference.h"
+#include "core/loader/cache/DocumentResource.h"
+#include "core/loader/cache/DocumentResourceReference.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/SourceAlpha.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
@@ -92,8 +92,8 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
     Document* document = renderer->document();
     ASSERT(document);
 
-    CachedSVGDocumentReference* cachedSVGDocumentReference = filterOperation->cachedSVGDocumentReference();
-    CachedDocument* cachedSVGDocument = cachedSVGDocumentReference ? cachedSVGDocumentReference->document() : 0;
+    DocumentResourceReference* documentResourceReference = filterOperation->documentResourceReference();
+    DocumentResource* cachedSVGDocument = documentResourceReference ? documentResourceReference->document() : 0;
 
     // If we have an SVG document, this is an external reference. Otherwise
     // we look up the referenced node in the current document.

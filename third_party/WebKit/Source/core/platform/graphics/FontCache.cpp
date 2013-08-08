@@ -176,7 +176,7 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
     return emptyAtom;
 }
 
-FontPlatformData* FontCache::getCachedFontPlatformData(const FontDescription& fontDescription,
+FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& fontDescription,
                                                        const AtomicString& passedFamilyName,
                                                        bool checkingAlternateName)
 {
@@ -214,7 +214,7 @@ FontPlatformData* FontCache::getCachedFontPlatformData(const FontDescription& fo
         // e.g., Arial/Helvetica, Courier/Courier New, etc.  Try looking up the font under the aliased name.
         const AtomicString& alternateName = alternateFamilyName(familyName);
         if (!alternateName.isEmpty())
-            result = getCachedFontPlatformData(fontDescription, alternateName, true);
+            result = getFontResourcePlatformData(fontDescription, alternateName, true);
         if (result)
             gFontPlatformDataCache->set(key, new FontPlatformData(*result)); // Cache the result under the old name.
     }
@@ -291,16 +291,16 @@ const int cTargetInactiveFontData = 200;
 #endif
 static ListHashSet<RefPtr<SimpleFontData> >* gInactiveFontData = 0;
 
-PassRefPtr<SimpleFontData> FontCache::getCachedFontData(const FontDescription& fontDescription, const AtomicString& family, bool checkingAlternateName, ShouldRetain shouldRetain)
+PassRefPtr<SimpleFontData> FontCache::getFontResourceData(const FontDescription& fontDescription, const AtomicString& family, bool checkingAlternateName, ShouldRetain shouldRetain)
 {
-    FontPlatformData* platformData = getCachedFontPlatformData(fontDescription, family, checkingAlternateName);
+    FontPlatformData* platformData = getFontResourcePlatformData(fontDescription, family, checkingAlternateName);
     if (!platformData)
         return 0;
 
-    return getCachedFontData(platformData, shouldRetain);
+    return getFontResourceData(platformData, shouldRetain);
 }
 
-PassRefPtr<SimpleFontData> FontCache::getCachedFontData(const FontPlatformData* platformData, ShouldRetain shouldRetain)
+PassRefPtr<SimpleFontData> FontCache::getFontResourceData(const FontPlatformData* platformData, ShouldRetain shouldRetain)
 {
     if (!platformData)
         return 0;
@@ -470,7 +470,7 @@ PassRefPtr<FontData> FontCache::getFontData(const Font& font, int& familyIndex, 
                 result = fontSelector->getFontData(font.fontDescription(), currFamily->family());
 
             if (!result)
-                result = getCachedFontData(font.fontDescription(), currFamily->family());
+                result = getFontResourceData(font.fontDescription(), currFamily->family());
         }
         currFamily = currFamily->next();
     }
@@ -564,14 +564,14 @@ const FontPlatformData* FontCache::getFallbackFontData(const FontDescription& de
     FontPlatformData* fontPlatformData = 0;
     switch (description.genericFamily()) {
     case FontDescription::SerifFamily:
-        fontPlatformData = getCachedFontPlatformData(description, serifStr);
+        fontPlatformData = getFontResourcePlatformData(description, serifStr);
         break;
     case FontDescription::MonospaceFamily:
-        fontPlatformData = getCachedFontPlatformData(description, monospaceStr);
+        fontPlatformData = getFontResourcePlatformData(description, monospaceStr);
         break;
     case FontDescription::SansSerifFamily:
     default:
-        fontPlatformData = getCachedFontPlatformData(description, sansStr);
+        fontPlatformData = getFontResourcePlatformData(description, sansStr);
         break;
     }
 

@@ -74,13 +74,13 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
         description.setItalic(FontItalicOff);
     }
 
-    FontPlatformData* substitutePlatformData = getCachedFontPlatformData(description, atomicFamily, DoNotRetain);
+    FontPlatformData* substitutePlatformData = getFontResourcePlatformData(description, atomicFamily, DoNotRetain);
     if (!substitutePlatformData)
         return 0;
     FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
     platformData.setFakeBold(shouldSetFakeBold);
     platformData.setFakeItalic(shouldSetFakeItalic);
-    return getCachedFontData(&platformData, DoNotRetain);
+    return getFontResourceData(&platformData, DoNotRetain);
 }
 
 PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const Font& font)
@@ -94,11 +94,11 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     if (!fontPlatformData) {
         // we should at least have Arial; this is the SkFontHost_fontconfig last resort fallback
         DEFINE_STATIC_LOCAL(const AtomicString, arialStr, ("Arial", AtomicString::ConstructFromLiteral));
-        fontPlatformData = getCachedFontPlatformData(description, arialStr);
+        fontPlatformData = getFontResourcePlatformData(description, arialStr);
     }
 
     ASSERT(fontPlatformData);
-    return getCachedFontData(fontPlatformData, shouldRetain);
+    return getFontResourceData(fontPlatformData, shouldRetain);
 }
 
 void FontCache::getTraitsInFamily(const AtomicString& familyName,

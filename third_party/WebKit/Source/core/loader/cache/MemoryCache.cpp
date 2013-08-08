@@ -536,7 +536,7 @@ MemoryCache::Statistics MemoryCache::getStatistics()
         case Resource::XSLStyleSheet:
             stats.xslStyleSheets.addResource(resource);
             break;
-        case Resource::FontResource:
+        case Resource::Font:
             stats.fonts.addResource(resource);
             break;
         default:

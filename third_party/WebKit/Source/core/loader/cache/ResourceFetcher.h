@@ -42,14 +42,14 @@
 namespace WebCore {
 
 class CachedCSSStyleSheet;
-class CachedDocument;
-class CachedFont;
+class DocumentResource;
+class FontResource;
 class CachedImage;
 class CachedRawResource;
 class CachedScript;
-class CachedShader;
-class CachedTextTrack;
-class CachedXSLStyleSheet;
+class ShaderResource;
+class TextTrackResource;
+class XSLStyleSheetResource;
 class Document;
 class DocumentLoader;
 class Frame;
@@ -82,14 +82,14 @@ public:
     ResourcePtr<CachedCSSStyleSheet> requestCSSStyleSheet(FetchRequest&);
     ResourcePtr<CachedCSSStyleSheet> requestUserCSSStyleSheet(FetchRequest&);
     ResourcePtr<CachedScript> requestScript(FetchRequest&);
-    ResourcePtr<CachedFont> requestFont(FetchRequest&);
+    ResourcePtr<FontResource> requestFont(FetchRequest&);
     ResourcePtr<CachedRawResource> requestRawResource(FetchRequest&);
     ResourcePtr<CachedRawResource> requestMainResource(FetchRequest&);
-    ResourcePtr<CachedDocument> requestSVGDocument(FetchRequest&);
-    ResourcePtr<CachedXSLStyleSheet> requestXSLStyleSheet(FetchRequest&);
+    ResourcePtr<DocumentResource> requestSVGDocument(FetchRequest&);
+    ResourcePtr<XSLStyleSheetResource> requestXSLStyleSheet(FetchRequest&);
     ResourcePtr<Resource> requestLinkResource(Resource::Type, FetchRequest&);
-    ResourcePtr<CachedTextTrack> requestTextTrack(FetchRequest&);
-    ResourcePtr<CachedShader> requestShader(FetchRequest&);
+    ResourcePtr<TextTrackResource> requestTextTrack(FetchRequest&);
+    ResourcePtr<ShaderResource> requestShader(FetchRequest&);
     ResourcePtr<CachedRawResource> requestImport(FetchRequest&);
 
     // Logs an access denied message to the console for the specified URL.

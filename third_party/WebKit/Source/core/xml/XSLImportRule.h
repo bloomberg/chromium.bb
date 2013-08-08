@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class CachedXSLStyleSheet;
+class XSLStyleSheetResource;
 
 class XSLImportRule : private CachedStyleSheetClient {
     WTF_MAKE_FAST_ALLOCATED;
@@ -59,7 +59,7 @@ private:
     XSLStyleSheet* m_parentStyleSheet;
     String m_strHref;
     RefPtr<XSLStyleSheet> m_styleSheet;
-    ResourcePtr<CachedXSLStyleSheet> m_cachedSheet;
+    ResourcePtr<XSLStyleSheetResource> m_resource;
     bool m_loading;
 };
 
