@@ -5330,7 +5330,7 @@ void *
 fail_on_null(void *p)
 {
 	if (p == NULL) {
-		fprintf(stderr, "wayland-scanner: out of memory\n");
+		fprintf(stderr, "%s: out of memory\n", program_invocation_short_name);
 		exit(EXIT_FAILURE);
 	}
 
