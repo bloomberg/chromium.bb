@@ -1464,7 +1464,9 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Heade
         // header1,header2 OR header1
         //        ^                  ^
         OwnPtr<CSPDirectiveList> policy = CSPDirectiveList::create(this, begin, position, type);
-        if (!policy->isReportOnly() && !policy->allowEval(0, SuppressReport))
+
+        // We disable 'eval()' even in the case of report-only policies, and rely on the check in the V8Initializer::codeGenerationCheckCallbackInMainThread callback to determine whether the call should execute or not.
+        if (!policy->allowEval(0, SuppressReport))
             m_scriptExecutionContext->disableEval(policy->evalDisabledErrorMessage());
 
         m_policies.append(policy.release());
