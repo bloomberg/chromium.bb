@@ -34,8 +34,7 @@ inlineAbsoluteChildContainer[0]: #document (13, 375, 262, 12)
 inlineAbsoluteChildContainer[1]: #document (320, 376, 252, 12)
 
 list[0]: #document (13, 396, 290, 14)
-list[1]: #document (341, 398, 5, 10)
-list[2]: #document (354, 397, 248, 12)
+list[1]: #document (341, 397, 261, 12)
 
 styleModified[0]: #document (13, 420, 290, 22)
 

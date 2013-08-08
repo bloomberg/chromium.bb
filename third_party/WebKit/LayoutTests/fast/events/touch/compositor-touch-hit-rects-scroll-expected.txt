@@ -4,9 +4,11 @@ scrollContent[0]: DIV#scroll1 (1, 14, 273, 12)
 
 nestedContent[0]: DIV#scroll2b (1, 31, 256, 12)
 
-overflowWithHandler[0]: DIV#overflowWithHandler (0, 0, 273, 52)
-overflowWithHandler[1]: DIV#overflowWithHandler (1, 33, 256, 22)
-overflowWithHandler[2]: DIV#overflowWithHandler (1, 55, 256, 62)
+overflowwithhandler[0]: DIV#scroll4 (1, 11, 273, 52)
+overflowwithhandler[1]: DIV#overflowwithhandler (1, 1, 256, 116)
+
+overflowwithborder[0]: DIV#overflowwithborder (6, 6, 263, 124)
+overflowwithborder[1]: #document (13, 251, 290, 70)
 
 withTransform[0]: DIV#transformed (0, 0, 271, 12)
 withTransform[1]: DIV#scroll3 (1, 14, 273, 14)

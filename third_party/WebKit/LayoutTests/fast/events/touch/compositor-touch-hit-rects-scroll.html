@@ -9,6 +9,10 @@
   border: 1px solid lightgrey;
   height: 50px;
 }
+#overflowwithborder {
+  border: 6px solid lightblue;
+  padding: 4px;
+}
 #transformed {
   -webkit-transform: translate3d(10px, 10px, 0);
 }
@@ -37,12 +41,17 @@ overflow scroll elements.
   </div>
   <div id="scroll4" class="scroll">
     <div style='height: 10px;'></div>
-    <div id="overflowWithHandler" class="scroll testcase">
+    <div id="overflowwithhandler" class="scroll testcase">
       <div style='height: 30px;'></div>
-      <div>Overflow div with a touch handler</div>
+      <div>overflow div with a touch handler</div>
       <div style='height: 60px;'></div>
     </div>
     <div style='height: 50px;'></div>
+  </div>
+  <div id="overflowwithborder" class="scroll testcase">
+    <div style='height: 30px;'></div>
+    <div>overflow div with a touch handler and large border</div>
+    <div style='height: 60px;'></div>
   </div>
   <!-- Note this case needs to be last because the transform can disable
        accelerated overflow scrolling of any following elements -->
@@ -87,6 +96,12 @@ preRunHandlerForTest['overflowWithHandler'] = function(e) {
   checkForRectUpdate(false, function() {
     document.getElementById('scroll4').scrollTop = 20;
     document.getElementById('overflowWithHandler').scrollTop = 18;
+  });
+};
+
+preRunHandlerForTest['overflowwithborder'] = function(e) {
+  checkForRectUpdate(false, function() {
+    document.getElementById('overflowwithborder').scrollTop = 18;
   });
 };
 

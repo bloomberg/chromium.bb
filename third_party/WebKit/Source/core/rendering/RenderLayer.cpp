@@ -6310,6 +6310,33 @@ void RenderLayer::filterNeedsRepaint()
         renderer()->repaint();
 }
 
+void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
+{
+    if (!size().isEmpty()) {
+        Vector<LayoutRect> rect;
+
+        if (renderBox() && renderBox()->scrollsOverflow()) {
+            // For scrolling layers, rects are taken to be in the space of the contents.
+            // We need to include both the entire contents, and also the bounding box
+            // of the layer in the space of it's parent (eg. for border / scroll bars).
+            rect.append(m_overflowRect);
+            rects.set(this, rect);
+            if (const RenderLayer* parentLayer = parent()) {
+                LayerHitTestRects::iterator iter = rects.find(parentLayer);
+                if (iter == rects.end())
+                    iter = rects.add(parentLayer, Vector<LayoutRect>()).iterator;
+                iter->value.append(boundingBox(parentLayer));
+            }
+        } else {
+            rect.append(localBoundingBox());
+            rects.set(this, rect);
+        }
+    }
+
+    for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
+        child->addLayerHitTestRects(rects);
+}
+
 } // namespace WebCore
 
 #ifndef NDEBUG

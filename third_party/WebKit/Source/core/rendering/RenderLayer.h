@@ -811,6 +811,8 @@ public:
 
     void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
 
+    void addLayerHitTestRects(LayerHitTestRects&) const;
+
 private:
     enum CollectLayersBehavior {
         ForceLayerToStackingContainer,

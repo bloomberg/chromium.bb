@@ -342,7 +342,6 @@ static void convertLayerRectsToEnclosingCompositedLayer(const LayerHitTestRects&
         LayerHitTestRects::iterator compIter = compositorRects.find(compositedLayer);
         if (compIter == compositorRects.end())
             compIter = compositorRects.add(compositedLayer, Vector<LayoutRect>()).iterator;
-
         // Transform each rect to the co-ordinate space of it's enclosing composited layer.
         // Ideally we'd compute a transformation matrix once and re-use it for each rect.
         // RenderGeometryMap can be used for this (but needs to be updated to support crossing
@@ -359,6 +358,8 @@ static void convertLayerRectsToEnclosingCompositedLayer(const LayerHitTestRects&
     }
 }
 
+// Note that in principle this could be called more often than computeTouchEventTargetRects, for
+// example during a non-composited scroll (although that's not yet implemented - crbug.com/261307).
 void ScrollingCoordinator::setTouchEventTargetRects(const LayerHitTestRects& layerRects)
 {
     TRACE_EVENT0("input", "ScrollingCoordinator::setTouchEventTargetRects");
@@ -446,7 +447,6 @@ bool ScrollingCoordinator::coordinatesScrollingForFrameView(FrameView* frameView
 
 Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(const Frame* frame, const IntPoint& frameLocation) const
 {
-    TRACE_EVENT0("input", "ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion");
     Region shouldHandleScrollGestureOnMainThreadRegion;
     FrameView* frameView = frame->view();
     if (!frameView)
@@ -540,7 +540,15 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
             ASSERT(target != document);
             accumulateDocumentTouchEventTargetRects(rects, toDocument(target));
         } else if (RenderObject* renderer = target->renderer()) {
-            renderer->computeLayerHitTestRects(rects);
+            // If the set also contains one of our ancestor nodes then processing
+            // this node would be redundant.
+            bool hasTouchEventTargetAncestor = false;
+            for (Node* ancestor = target->parentNode(); ancestor && !hasTouchEventTargetAncestor; ancestor = ancestor->parentNode()) {
+                if (targets->contains(ancestor))
+                    hasTouchEventTargetAncestor = true;
+            }
+            if (!hasTouchEventTargetAncestor)
+                renderer->computeLayerHitTestRects(rects);
         }
     }
 
