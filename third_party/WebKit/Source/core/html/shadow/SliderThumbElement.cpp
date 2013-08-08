@@ -252,15 +252,15 @@ void SliderThumbElement::dragFrom(const LayoutPoint& point)
 
 void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
 {
-    HTMLInputElement* input = hostInput();
-    HTMLElement* trackElement = sliderTrackElementOf(input);
+    RefPtr<HTMLInputElement> input(hostInput());
+    HTMLElement* trackElement = sliderTrackElementOf(input.get());
 
     if (!input->renderer() || !renderBox() || !trackElement->renderBox())
         return;
 
     input->setTextAsOfLastFormControlChangeEvent(input->value());
     LayoutPoint offset = roundedLayoutPoint(input->renderer()->absoluteToLocal(point, UseTransforms));
-    bool isVertical = hasVerticalAppearance(input);
+    bool isVertical = hasVerticalAppearance(input.get());
     bool isLeftToRightDirection = renderBox()->style()->isLeftToRightDirection();
     LayoutUnit trackSize;
     LayoutUnit position;
@@ -307,7 +307,8 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
 
     // FIXME: This is no longer being set from renderer. Consider updating the method name.
     input->setValueFromRenderer(valueString);
-    renderer()->setNeedsLayout(true);
+    if (renderer())
+        renderer()->setNeedsLayout(true);
     input->dispatchFormControlChangeEvent();
 }
 
