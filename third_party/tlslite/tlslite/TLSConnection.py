@@ -1108,6 +1108,7 @@ class TLSConnection(TLSRecordLayer):
             else:
                 break
         clientHello = result
+        self.client_hello_length = clientHello.client_hello_length
 
         #If client's version is too low, reject it
         if clientHello.client_version < settings.minVersion:

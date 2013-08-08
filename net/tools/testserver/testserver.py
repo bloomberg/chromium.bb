@@ -274,6 +274,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.ClientRedirectHandler,
       self.MultipartHandler,
       self.GetSSLSessionCacheHandler,
+      self.GetSSLClientHelloSizeHandler,
       self.SSLManySmallRecords,
       self.GetChannelID,
       self.CloseSocketHandler,
@@ -1387,6 +1388,20 @@ class TestPageHandler(testserver_base.BasePageHandler):
     except AttributeError:
       self.wfile.write('Pass --https-record-resume in order to use' +
                        ' this request')
+    return True
+
+  def GetSSLClientHelloSizeHandler(self):
+    """Send a reply containing the length of the ClientHello record."""
+
+    if not self._ShouldHandleRequest('/client-hello-length'):
+      return False
+
+    self.send_response(200)
+    self.send_header('Content-Type', 'text/plain')
+    self.end_headers()
+
+    self.wfile.write('%d' % self.server.tlsConnection.client_hello_length)
+
     return True
 
   def SSLManySmallRecords(self):

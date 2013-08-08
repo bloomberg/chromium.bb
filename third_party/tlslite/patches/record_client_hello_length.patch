@@ -1,0 +1,38 @@
+diff --git a/third_party/tlslite/tlslite/TLSConnection.py b/third_party/tlslite/tlslite/TLSConnection.py
+index e882e2c..ffe43a1 100644
+--- a/third_party/tlslite/tlslite/TLSConnection.py
++++ b/third_party/tlslite/tlslite/TLSConnection.py
+@@ -1108,6 +1108,7 @@ class TLSConnection(TLSRecordLayer):
+             else:
+                 break
+         clientHello = result
++        self.client_hello_length = clientHello.client_hello_length
+ 
+         #If client's version is too low, reject it
+         if clientHello.client_version < settings.minVersion:
+diff --git a/third_party/tlslite/tlslite/messages.py b/third_party/tlslite/tlslite/messages.py
+index fa4d817..fc23f4c 100644
+--- a/third_party/tlslite/tlslite/messages.py
++++ b/third_party/tlslite/tlslite/messages.py
+@@ -131,6 +131,9 @@ class ClientHello(HandshakeMsg):
+         self.compression_methods = []   # a list of 8-bit values
+         self.srp_username = None        # a string
+         self.channel_id = False
++        # client_hello_length is the length of the ClientHello record - i.e.
++        # including the handshake type byte and 3 byte handshake length.
++        self.client_hello_length = 0
+ 
+     def create(self, version, random, session_id, cipher_suites,
+                certificate_types=None, srp_username=None):
+@@ -159,6 +162,11 @@ class ClientHello(HandshakeMsg):
+ 
+             #We're not doing a stopLengthCheck() for SSLv2, oh well..
+         else:
++            self.client_hello_length = len(p.bytes) - p.index
++            # Account for the handshake type byte which has already been
++            # removed.
++            self.client_hello_length += 1
++
+             p.startLengthCheck(3)
+             self.client_version = (p.get(1), p.get(1))
+             self.random = p.getFixBytes(32)

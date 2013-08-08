@@ -207,9 +207,7 @@ void FilterDisabledTests() {
 
     // HTTPS tests temporarily disabled due to the certificate error dialog.
     // TODO(tommi): The tests currently fail though, so need to fix.
-    "HTTPSRequestTest.HTTPSMismatchedTest",
-    "HTTPSRequestTest.HTTPSExpiredTest",
-    "HTTPSRequestTest.ClientAuthTest",
+    "HTTPSRequestTest.*",
 
     // More HTTPS tests failing due to certificate dialogs.
     // http://crbug.com/102991
