@@ -59,6 +59,16 @@ double ScriptProfile::idleTime() const
     return m_idleTime;
 }
 
+double ScriptProfile::startTime() const
+{
+    return static_cast<double>(m_profile->GetStartTime()) / 1000000;
+}
+
+double ScriptProfile::endTime() const
+{
+    return static_cast<double>(m_profile->GetEndTime()) / 1000000;
+}
+
 static PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor(const v8::CpuProfileNode* node)
 {
     v8::HandleScope handleScope;
@@ -75,8 +85,7 @@ static PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor
         .setScriptId(String::number(node->GetScriptId()))
         .setUrl(toWebCoreString(node->GetScriptResourceName()))
         .setLineNumber(node->GetLineNumber())
-        .setTotalTime(node->GetTotalTime())
-        .setSelfTime(node->GetSelfTime())
+        .setHitCount(node->GetSelfSamplesCount())
         .setCallUID(node->GetCallUid())
         .setChildren(children.release());
     result->setId(node->GetNodeId());

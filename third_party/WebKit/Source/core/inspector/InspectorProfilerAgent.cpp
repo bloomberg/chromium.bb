@@ -162,7 +162,9 @@ void InspectorProfilerAgent::getCPUProfile(ErrorString* errorString, int rawUid,
     }
     profileObject = TypeBuilder::Profiler::CPUProfile::create()
         .setHead(it->value->buildInspectorObjectForHead())
-        .setIdleTime(it->value->idleTime());
+        .setIdleTime(it->value->idleTime())
+        .setStartTime(it->value->startTime())
+        .setEndTime(it->value->endTime());
     profileObject->setSamples(it->value->buildInspectorObjectForSamples());
 }
 

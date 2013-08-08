@@ -53,6 +53,9 @@ public:
     unsigned int uid() const;
     double idleTime() const;
 
+    double startTime() const;
+    double endTime() const;
+
     PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectForHead() const;
     PassRefPtr<TypeBuilder::Array<int> > buildInspectorObjectForSamples() const;
 
