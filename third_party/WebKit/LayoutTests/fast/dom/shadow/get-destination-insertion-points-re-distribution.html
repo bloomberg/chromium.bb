@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<script>
+description("Tests for getDestinationInsertionPoints() which involves re-distribution.");
+
+document.body.appendChild(
+    createDOM('div', {},
+              createDOM('div', {'id': 'host-1'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'host-2'},
+                                      createShadowRoot(
+                                          createDOM('content', {'id': 'content-2'})),
+                                      createDOM('content', {'id': 'content-1'}))),
+                        createDOM('div', {'id': 'child-1'}))));
+
+shouldBeEqualAsArray(document.getElementById('child-1').getDestinationInsertionPoints(),
+                     [getNodeInShadowTreeStack('host-1/content-1'), getNodeInShadowTreeStack('host-1/host-2/content-2')]);
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

@@ -109,6 +109,7 @@
     [EnabledAtRuntime=ShadowDOM, Reflect, PerWorldBindings] attribute DOMString pseudo;
     [EnabledAtRuntime=ShadowDOM, RaisesException] ShadowRoot createShadowRoot();
     [EnabledAtRuntime=ShadowDOM, PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
+    [EnabledAtRuntime=ShadowDOM, PerWorldBindings] NodeList getDestinationInsertionPoints();
 
     // To-be-deprecated prefixed Shadow DOM API
     [Reflect=pseudo, ImplementedAs=pseudo, PerWorldBindings, MeasureAs=ShadowDOMPrefixedPseudo] attribute DOMString webkitPseudo;
@@ -209,4 +210,3 @@
 
 Element implements ParentNode;
 Element implements ChildNode;
-

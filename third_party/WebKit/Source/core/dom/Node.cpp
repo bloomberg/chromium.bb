@@ -2622,6 +2622,22 @@ void Node::updateAncestorConnectedSubframeCountForInsertion() const
         node->incrementConnectedSubframeCount(count);
 }
 
+PassRefPtr<NodeList> Node::getDestinationInsertionPoints()
+{
+    document()->updateDistributionForNodeIfNeeded(this);
+    Vector<InsertionPoint*, 8> insertionPoints;
+    collectInsertionPointsWhereNodeIsDistributed(this, insertionPoints);
+    for (size_t i = 0; i < insertionPoints.size(); ++i) {
+        InsertionPoint* insertionPoint = insertionPoints[i];
+        ASSERT(insertionPoint->containingShadowRoot());
+        if (insertionPoint->containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot)
+            return StaticNodeList::createEmpty();
+    }
+    Vector<RefPtr<Node> > asNodes;
+    asNodes.appendRange(insertionPoints.begin(), insertionPoints.end());
+    return StaticNodeList::adopt(asNodes);
+}
+
 void Node::registerScopedHTMLStyleChild()
 {
     setHasScopedHTMLStyleChild(true);

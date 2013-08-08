@@ -711,6 +711,8 @@ public:
     void updateAncestorConnectedSubframeCountForRemoval() const;
     void updateAncestorConnectedSubframeCountForInsertion() const;
 
+    PassRefPtr<NodeList> getDestinationInsertionPoints();
+
 private:
     enum NodeFlags {
         IsTextFlag = 1,

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<script>
+description("Tests for getDestinationInsertionPoints().");
+
+document.body.appendChild(
+    createDOM('div', {},
+              createDOM('div', {'id': 'host-1'},
+                        createShadowRoot(
+                            createDOM('content', {'id': 'content-1'})),
+                        createDOM('div', {'id': 'child-1'}))));
+
+shouldBeEqualAsArray(document.getElementById('child-1').getDestinationInsertionPoints(),
+                     [getNodeInShadowTreeStack('host-1/content-1')]);
+
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

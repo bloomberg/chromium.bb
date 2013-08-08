@@ -90,6 +90,17 @@ function dumpNodeList(nodeList) {
     return result;
 }
 
+function shouldBeEqualAsArray(nodeList, expectedNodes)
+{
+    // FIXME: Avoid polluting the global namespace.
+    window.nodeList = nodeList;
+    window.expectedNodes = expectedNodes;
+    shouldBe("nodeList.length", "expectedNodes.length");
+    for (var i = 0; i < nodeList.length; ++i) {
+        shouldBe("nodeList.item(" + i + ")", "expectedNodes[" + i + "]");
+    }
+}
+
 function innermostActiveElement(element)
 {
     element = element || document.activeElement;

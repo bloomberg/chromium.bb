@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<details id="d"><div id="e"></div></details>
+<script>
+description('Tests that getDestinationInsertionPoints() does not leak insertion points in user agent shadow tree');
+
+document.body.offsetLeft;
+
+var e = document.querySelector('#e');
+shouldBeZero('e.getDestinationInsertionPoints().length');
+
+successfullyParsed = true;
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>
