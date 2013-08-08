@@ -668,8 +668,11 @@ ScriptValue ScriptController::executeScriptInMainWorld(const ScriptSourceCode& s
     if (v8Context.IsEmpty())
         return ScriptValue();
 
-    v8::Context::Scope scope(v8Context);
     RefPtr<Frame> protect(m_frame);
+    if (m_frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument())
+        m_frame->loader()->didAccessInitialDocument();
+
+    v8::Context::Scope scope(v8Context);
     v8::Local<v8::Value> object = compileAndRunScript(sourceCode, corsStatus);
 
     m_sourceURL = savedSourceURL;

@@ -3294,6 +3294,22 @@ TEST_F(WebFrameTest, DidAccessInitialDocumentNavigator)
     m_webView = 0;
 }
 
+TEST_F(WebFrameTest, DidAccessInitialDocumentViaJavascriptUrl)
+{
+    TestAccessInitialDocumentWebFrameClient webFrameClient;
+    m_webView = FrameTestHelpers::createWebView(true, &webFrameClient);
+    runPendingTasks();
+    EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
+
+    // Access the initial document from a javascript: URL.
+    FrameTestHelpers::loadFrame(m_webView->mainFrame(), "javascript:document.body.appendChild(document.createTextNode('Modified'))");
+    runPendingTasks();
+    EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
+
+    m_webView->close();
+    m_webView = 0;
+}
+
 class TestMainFrameUserOrProgrammaticScrollFrameClient : public WebFrameClient {
 public:
     TestMainFrameUserOrProgrammaticScrollFrameClient() { reset(); }
