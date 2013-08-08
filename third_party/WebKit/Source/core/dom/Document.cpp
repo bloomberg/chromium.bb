@@ -3617,14 +3617,12 @@ String Document::domain() const
 void Document::setDomain(const String& newDomain, ExceptionState& es)
 {
     if (SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(securityOrigin()->protocol())) {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, "'document.domain' assignment is forbidden for the '" + securityOrigin()->protocol() + "' scheme.");
         return;
     }
 
     // Both NS and IE specify that changing the domain is only allowed when
     // the new domain is a suffix of the old domain.
-
-    // FIXME: We should add logging indicating why a domain was not allowed.
 
     // If the new domain is the same as the old domain, still call
     // securityOrigin()->setDomainForDOM. This will change the
@@ -3641,24 +3639,25 @@ void Document::setDomain(const String& newDomain, ExceptionState& es)
 
     int oldLength = domain().length();
     int newLength = newDomain.length();
-    // e.g. newDomain = webkit.org (10) and domain() = www.webkit.org (14)
+    String exceptionMessage =  "'document.domain' assignment failed: '" + newDomain + "' is not a suffix of '" + domain() + "'.";
+    // e.g. newDomain = subdomain.www.example.com (25) and domain() = www.example.com (15)
     if (newLength >= oldLength) {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, exceptionMessage);
         return;
     }
 
     String test = domain();
-    // Check that it's a subdomain, not e.g. "ebkit.org"
+    // Check that it's a complete suffix, not e.g. "ample.com"
     if (test[oldLength - newLength - 1] != '.') {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, exceptionMessage);
         return;
     }
 
-    // Now test is "webkit.org" from domain()
+    // Now test is "example.com" from domain()
     // and we check that it's the same thing as newDomain
     test.remove(0, oldLength - newLength);
     if (test != newDomain) {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, exceptionMessage);
         return;
     }
 
