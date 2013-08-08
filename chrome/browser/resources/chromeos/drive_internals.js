@@ -3,6 +3,20 @@
 // found in the LICENSE file.
 
 /**
+ * Converts a number in bytes to a string in megabytes split by comma into
+ * three digit block.
+ * @param {number} bytes The number in bytes.
+ * @return {string} Formatted string in megabytes.
+ */
+function ToMegaByteString(bytes) {
+  var mb = Math.floor(bytes / (1 << 20));
+  return mb.toString().replace(
+      /\d+?(?=(\d{3})+$)/g,  // Digit sequence (\d+) followed (?=) by 3n digits.
+      function(three_digit_block) { return three_digit_block + ','; }
+  );
+}
+
+/**
  * Updates the Drive related Flags section.
  * @param {Array} flags List of dictionaries describing flags.
  */
@@ -55,7 +69,8 @@ function updateGCacheContents(gcacheContents, gcacheSummary) {
     tbody.appendChild(tr);
   }
 
-  $('gcache-summary-total-size').textContent = gcacheSummary['total_size'];
+  $('gcache-summary-total-size').textContent =
+      ToMegaByteString(gcacheSummary['total_size']);
 }
 
 /**
@@ -91,7 +106,7 @@ function updateCacheContents(cacheEntry) {
  * stogage.
  */
 function updateLocalStorageUsage(localStorageSummary) {
-  var freeSpaceInMB = localStorageSummary.free_space / (1 << 20);
+  var freeSpaceInMB = ToMegaByteString(localStorageSummary.free_space);
   $('local-storage-freespace').innerText = freeSpaceInMB;
 }
 
@@ -123,8 +138,8 @@ function updateInFlightOperations(inFlightOperations) {
     tr.appendChild(createElementFromText('td', operation.state));
     var progress = operation.progress_current + '/' + operation.progress_total;
     if (operation.progress_total > 0) {
-      progress += ' (' +
-          (operation.progress_current / operation.progress_total * 100) + '%)';
+      var percent = operation.progress_current / operation.progress_total * 100;
+      progress += ' (' + Math.round(percent) + '%)';
     }
     tr.appendChild(createElementFromText('td', progress));
 
@@ -137,8 +152,8 @@ function updateInFlightOperations(inFlightOperations) {
  * @param {Object} aboutResource Dictionary describing about resource.
  */
 function updateAboutResource(aboutResource) {
-  var quotaTotalInMb = aboutResource['account-quota-total'] / (1 << 20);
-  var quotaUsedInMb = aboutResource['account-quota-used'] / (1 << 20);
+  var quotaTotalInMb = ToMegaByteString(aboutResource['account-quota-total']);
+  var quotaUsedInMb = ToMegaByteString(aboutResource['account-quota-used']);
 
   $('account-quota-info').textContent =
       quotaUsedInMb + ' / ' + quotaTotalInMb + ' (MB)';

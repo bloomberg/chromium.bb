@@ -11,14 +11,6 @@
     <h1>Drive Internals</h1>
     <ul id='toc'></ul>
 
-    <h2 id='drive-related-flags-section'>Drive related Flags</h2>
-    <ul id='drive-related-flags'>
-    </ul>
-
-    <h2 id='drive-related-preferences-section'>Drive related Preferences</h2>
-    <ul id='drive-related-preferences'>
-    </ul>
-
     <h2 id='authentication-status-section'>Authentication Status</h2>
     <ul>
       <li>
@@ -33,32 +25,20 @@
 
     <h2 id='account-information-section'>Account Information</h2>
     <ul>
-      <li>Quota Information: <span id='account-quota-info'></span></li>
-      <li>Largest Changestamp (remote):
+      <li>Remote Changestamp:
         <span id='account-largest-changestamp-remote'></span>
       </li>
+      <li>Quota Information: <span id='account-quota-info'></span></li>
       <li>Root Resource Id: <span id='root-resource-id'></span></li>
     </ul>
 
-    <h2 id='app-list-section'>Application List</h2>
-    <ul>
-      <li>ETag: <span id='app-list-etag'></span></li>
-    </ul>
-    <table>
-      <tbody id='app-list-items'>
-        <tr>
-          <th>App Name</th>
-          <th>App ID</th>
-          <th>Object Type</th>
-          <th>Support Create</th>
-        </tr>
-      </tbody>
-    </table>
-
     <h2 id='local-metadata-section'>Local Metadata</h2>
     <ul>
-      <li>Largest Changestamp (local):
+      <li>Local Changestamp:
         <span id='account-largest-changestamp-local'></span>
+      </li>
+      <li>Local Free Space:
+        <span id='local-storage-freespace'></span> MB
       </li>
     </ul>
 
@@ -85,6 +65,10 @@
       </tbody>
     </table>
 
+    <h2 id='file-system-contents-section'>File System Contents</h2>
+    <button id='button-show-file-entries'>Show</button>
+    <div id='file-system-contents'></div>
+
     <h2 id='gcache-contents-section'>GCache Contents</h2>
     <table>
       <tbody id='gcache-contents'>
@@ -100,13 +84,9 @@
     <ul>
       <li>
         Total Size:
-        <span id='gcache-summary-total-size'>(calculating...)</span> bytes.
+        <span id='gcache-summary-total-size'>(calculating...)</span> MB.
       </li>
     </ul>
-
-    <h2 id='file-system-contents-section'>File System Contents</h2>
-    <button id='button-show-file-entries'>Show</button>
-    <div id='file-system-contents'></div>
 
     <h2 id='cache-contents-section'>Cache Contents</h2>
     <table>
@@ -117,14 +97,32 @@
           <th>Present</th>
           <th>Pinned</th>
           <th>Dirty</th>
-          <th>Mounted</th>
-          <th>Persistent</th>
         </tr>
       </tbody>
     </table>
 
-    <h2 id='local-storage-usage-section'>Local Storage Usage</h2>
-    <div>Free space: <span id='local-storage-freespace'></span> MB</div>
+    <h2 id='drive-related-flags-section'>Drive related Flags</h2>
+    <ul id='drive-related-flags'>
+    </ul>
+
+    <h2 id='drive-related-preferences-section'>Drive related Preferences</h2>
+    <ul id='drive-related-preferences'>
+    </ul>
+
+    <h2 id='app-list-section'>Application List</h2>
+    <ul>
+      <li>ETag: <span id='app-list-etag'></span></li>
+    </ul>
+    <table>
+      <tbody id='app-list-items'>
+        <tr>
+          <th>App Name</th>
+          <th>App ID</th>
+          <th>Object Type</th>
+          <th>Support Create</th>
+        </tr>
+      </tbody>
+    </table>
 
     <h2 id='event-log-section'>Event Log</h2>
     <ul id='event-log'>
