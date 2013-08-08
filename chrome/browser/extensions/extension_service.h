@@ -766,7 +766,7 @@ class ExtensionService
   // Disables the extension if the privilege level has increased
   // (e.g., due to an upgrade).
   void CheckPermissionsIncrease(const extensions::Extension* extension,
-                                bool is_upgrade);
+                                bool is_extension_installed);
 
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();

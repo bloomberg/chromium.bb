@@ -2035,13 +2035,17 @@ void ExtensionService::AddExtension(const Extension* extension) {
   }
 
   bool is_extension_upgrade = false;
-  if (const Extension* old = GetInstalledExtension(extension->id())) {
-    is_extension_upgrade = true;
-    DCHECK_NE(extension, old);
+  bool is_extension_installed = false;
+  const Extension* old = GetInstalledExtension(extension->id());
+  if (old) {
+    is_extension_installed = true;
+    int version_compare_result =
+        extension->version()->CompareTo(*(old->version()));
+    is_extension_upgrade = version_compare_result > 0;
     // Other than for unpacked extensions, CrxInstaller should have guaranteed
     // that we aren't downgrading.
     if (!Manifest::IsUnpackedLocation(extension->location()))
-      CHECK_GE(extension->version()->CompareTo(*(old->version())), 0);
+      CHECK_GE(version_compare_result, 0);
   }
   SetBeingUpgraded(extension, is_extension_upgrade);
 
@@ -2056,9 +2060,9 @@ void ExtensionService::AddExtension(const Extension* extension) {
 
   // Check if the extension's privileges have changed and mark the
   // extension disabled if necessary.
-  CheckPermissionsIncrease(extension, is_extension_upgrade);
+  CheckPermissionsIncrease(extension, is_extension_installed);
 
-  if (is_extension_upgrade && !reloading) {
+  if (is_extension_installed && !reloading) {
     // To upgrade an extension in place, unload the old one and then load the
     // new one.  ReloadExtension disables the extension, which is sufficient.
     UnloadExtension(extension->id(), extension_misc::UNLOAD_REASON_UPDATE);
@@ -2161,7 +2165,7 @@ void ExtensionService::UpdateActivePermissions(const Extension* extension) {
 }
 
 void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
-                                                bool is_extension_upgrade) {
+                                                bool is_extension_installed) {
   UpdateActivePermissions(extension);
 
   // We keep track of all permissions the user has granted each extension.
@@ -2188,7 +2192,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
 
   bool auto_grant_permission =
-      (!is_extension_upgrade && extension->was_installed_by_default()) ||
+      (!is_extension_installed && extension->was_installed_by_default()) ||
       chrome::IsRunningInForcedAppMode();
   // Silently grant all active permissions to default apps only on install.
   // After install they should behave like other apps.
@@ -2216,7 +2220,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
         extension->GetActivePermissions().get(), extension->GetType());
   }
 
-  if (is_extension_upgrade) {
+  if (is_extension_installed) {
     // If the extension was already disabled, suppress any alerts for becoming
     // disabled on permissions increase.
     bool previously_disabled =
