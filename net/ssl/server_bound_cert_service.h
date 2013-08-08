@@ -121,6 +121,7 @@ class NET_EXPORT ServerBoundCertService
   uint64 requests() const { return requests_; }
   uint64 cert_store_hits() const { return cert_store_hits_; }
   uint64 inflight_joins() const { return inflight_joins_; }
+  uint64 workers_created() const { return workers_created_; }
 
  private:
   // Cancels the specified request. |req| is the handle stored by
@@ -153,6 +154,7 @@ class NET_EXPORT ServerBoundCertService
   uint64 requests_;
   uint64 cert_store_hits_;
   uint64 inflight_joins_;
+  uint64 workers_created_;
 
   bool is_system_time_valid_;
 

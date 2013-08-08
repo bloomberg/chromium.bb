@@ -510,10 +510,8 @@ TEST_F(ServerBoundCertServiceTest, Expiration) {
 TEST_F(ServerBoundCertServiceTest, AsyncStoreGetNoCertsInStore) {
   MockServerBoundCertStoreWithAsyncGet* mock_store =
       new MockServerBoundCertStoreWithAsyncGet();
-  scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool(
-      new base::SequencedWorkerPool(3, "ServerBoundCertServiceTest"));
-  scoped_ptr<ServerBoundCertService> service(
-      new ServerBoundCertService(mock_store, sequenced_worker_pool));
+  service_ = scoped_ptr<ServerBoundCertService>(
+      new ServerBoundCertService(mock_store, sequenced_worker_pool_));
 
   std::string host("encrypted.google.com");
 
@@ -523,8 +521,8 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetNoCertsInStore) {
 
   // Asynchronous completion with no certs in the store.
   std::string private_key_info, der_cert;
-  EXPECT_EQ(0, service->cert_count());
-  error = service->GetDomainBoundCert(
+  EXPECT_EQ(0, service_->cert_count());
+  error = service_->GetDomainBoundCert(
       host, &private_key_info, &der_cert, callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle.is_active());
@@ -534,7 +532,7 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetNoCertsInStore) {
 
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(1, service->cert_count());
+  EXPECT_EQ(1, service_->cert_count());
   EXPECT_FALSE(private_key_info.empty());
   EXPECT_FALSE(der_cert.empty());
   EXPECT_FALSE(request_handle.is_active());
@@ -543,10 +541,8 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetNoCertsInStore) {
 TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOneCertInStore) {
   MockServerBoundCertStoreWithAsyncGet* mock_store =
       new MockServerBoundCertStoreWithAsyncGet();
-  scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool(
-      new base::SequencedWorkerPool(3, "ServerBoundCertServiceTest"));
-  scoped_ptr<ServerBoundCertService> service(
-      new ServerBoundCertService(mock_store, sequenced_worker_pool));
+  service_ = scoped_ptr<ServerBoundCertService>(
+      new ServerBoundCertService(mock_store, sequenced_worker_pool_));
 
   std::string host("encrypted.google.com");
 
@@ -556,8 +552,8 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOneCertInStore) {
 
   // Asynchronous completion with a cert in the store.
   std::string private_key_info, der_cert;
-  EXPECT_EQ(0, service->cert_count());
-  error = service->GetDomainBoundCert(
+  EXPECT_EQ(0, service_->cert_count());
+  error = service_->GetDomainBoundCert(
       host, &private_key_info, &der_cert, callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle.is_active());
@@ -567,7 +563,12 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOneCertInStore) {
 
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
-  EXPECT_EQ(1, service->cert_count());
+  EXPECT_EQ(1, service_->cert_count());
+  EXPECT_EQ(1u, service_->requests());
+  EXPECT_EQ(1u, service_->cert_store_hits());
+  // Because the cert was found in the store, no new workers should have been
+  // created.
+  EXPECT_EQ(0u, service_->workers_created());
   EXPECT_STREQ("ab", private_key_info.c_str());
   EXPECT_STREQ("cd", der_cert.c_str());
   EXPECT_FALSE(request_handle.is_active());

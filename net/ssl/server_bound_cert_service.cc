@@ -366,7 +366,8 @@ ServerBoundCertService::ServerBoundCertService(
       weak_ptr_factory_(this),
       requests_(0),
       cert_store_hits_(0),
-      inflight_joins_(0) {
+      inflight_joins_(0),
+      workers_created_(0) {
   base::Time start = base::Time::Now();
   base::Time end = start + base::TimeDelta::FromDays(
       kValidityPeriodInDays + kSystemTimeValidityBufferInDays);
@@ -455,6 +456,7 @@ int ServerBoundCertService::GetDomainBoundCert(
 
   if (err == ERR_FILE_NOT_FOUND) {
     // Sync lookup did not find a valid cert.  Start generating a new one.
+    workers_created_++;
     ServerBoundCertServiceWorker* worker = new ServerBoundCertServiceWorker(
         domain,
         base::Bind(&ServerBoundCertService::GeneratedServerBoundCert,
@@ -507,8 +509,10 @@ void ServerBoundCertService::GotServerBoundCert(
     cert_store_hits_++;
     // ServerBoundCertServiceRequest::Post will do the histograms and stuff.
     HandleResult(OK, server_identifier, key, cert);
+    return;
   }
   // Async lookup did not find a valid cert. Start generating a new one.
+  workers_created_++;
   ServerBoundCertServiceWorker* worker = new ServerBoundCertServiceWorker(
       server_identifier,
       base::Bind(&ServerBoundCertService::GeneratedServerBoundCert,
