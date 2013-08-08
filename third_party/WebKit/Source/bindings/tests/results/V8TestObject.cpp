@@ -3762,6 +3762,30 @@ static void methodWithCallbackAndOptionalArgMethodCallback(const v8::FunctionCal
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void methodWithNullableCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(args.Holder());
+    if (args.Length() <= 0 || !(args[0]->IsFunction() || args[0]->IsNull())) {
+        throwTypeError(args.GetIsolate());
+        return;
+    }
+    RefPtr<TestCallback> callback = args[0]->IsNull() ? 0 : V8TestCallback::create(args[0], getScriptExecutionContext());
+    imp->methodWithNullableCallbackArg(callback);
+
+    return;
+}
+
+static void methodWithNullableCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::methodWithNullableCallbackArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void staticMethodWithCallbackAndOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     RefPtr<TestCallback> callback;
@@ -5489,6 +5513,7 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjectMethods[] = {
     {"methodWithCallbackArg", TestObjV8Internal::methodWithCallbackArgMethodCallback, 0, 1},
     {"methodWithNonCallbackArgAndCallbackArg", TestObjV8Internal::methodWithNonCallbackArgAndCallbackArgMethodCallback, 0, 2},
     {"methodWithCallbackAndOptionalArg", TestObjV8Internal::methodWithCallbackAndOptionalArgMethodCallback, 0, 0},
+    {"methodWithNullableCallbackArg", TestObjV8Internal::methodWithNullableCallbackArgMethodCallback, 0, 1},
     {"methodWithEnforceRangeInt8", TestObjV8Internal::methodWithEnforceRangeInt8MethodCallback, 0, 1},
     {"methodWithEnforceRangeUInt8", TestObjV8Internal::methodWithEnforceRangeUInt8MethodCallback, 0, 1},
     {"methodWithEnforceRangeInt32", TestObjV8Internal::methodWithEnforceRangeInt32MethodCallback, 0, 1},

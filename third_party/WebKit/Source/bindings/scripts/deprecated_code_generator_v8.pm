@@ -2334,11 +2334,19 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(args[$paramIndex], getScriptExecutionContext());\n";
                 $parameterCheckString .= "    }\n";
             } else {
-                $parameterCheckString .= "    if (args.Length() <= $paramIndex || !args[$paramIndex]->IsFunction()) {\n";
+                $parameterCheckString .= "    if (args.Length() <= $paramIndex || ";
+                if ($parameter->isNullable) {
+                    $parameterCheckString .= "!(args[$paramIndex]->IsFunction() || args[$paramIndex]->IsNull())";
+                } else {
+                    $parameterCheckString .= "!args[$paramIndex]->IsFunction()";
+                }
+                $parameterCheckString .= ") {\n";
                 $parameterCheckString .= "        throwTypeError(args.GetIsolate());\n";
                 $parameterCheckString .= "        return;\n";
                 $parameterCheckString .= "    }\n";
-                $parameterCheckString .= "    RefPtr<" . $parameter->type . "> $parameterName = ${v8ClassName}::create(args[$paramIndex], getScriptExecutionContext());\n";
+                $parameterCheckString .= "    RefPtr<" . $parameter->type . "> $parameterName = ";
+                $parameterCheckString .= "args[$paramIndex]->IsNull() ? 0 : " if $parameter->isNullable;
+                $parameterCheckString .= "${v8ClassName}::create(args[$paramIndex], getScriptExecutionContext());\n";
             }
         } elsif ($parameter->extendedAttributes->{"Clamp"}) {
                 my $nativeValue = "${parameterName}NativeValue";

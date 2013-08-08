@@ -148,6 +148,7 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     void    methodWithCallbackArg(TestCallback callback);
     void    methodWithNonCallbackArgAndCallbackArg(long nonCallback, TestCallback callback);
     void    methodWithCallbackAndOptionalArg(optional TestCallback callback);
+    void    methodWithNullableCallbackArg(TestCallback? callback);
     // static methods with Callback parameter
     static void    staticMethodWithCallbackAndOptionalArg(optional TestCallback callback);
     static void    staticMethodWithCallbackArg(TestCallback callback);

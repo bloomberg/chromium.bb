@@ -1,30 +1,21 @@
 <!DOCTYPE html>
 <html>
+<head>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+</head>
 <body>
-<div>This tests the basic functionality and properties of DataTransferItems for string data with drag and drop. This test requires DRT.</div>
-
 <input id="source1" value="Lorem ipsum">Lorem ipsum</input>
 <input id="source2" value="http://example.com"></input>
 <div id="destination" style="min-height:100px; border: solid 1px black">Drop text here if you test this manually</div>
 
-<div id="console"></div>
-
 <script>
+description('This tests the basic functionality and properties of DataTransferItems for string data with drag and drop. This test requires DRT.')
+
+window.jsTestIsAsync = true;
+
 var testSources = [ 'source1', 'source2' ];
 var testIndex = 0;
 var expectedDroppedText = '';
-
-function log(text)
-{
-    var console = document.getElementById('console');
-    console.appendChild(document.createTextNode(text));
-    console.appendChild(document.createElement('br'));
-}
-
-function test(expect, actual)
-{
-    log((expect == actual ? 'PASS' : 'FAIL') + ': "' + expect + '" == "' + actual + '"');
-}
 
 function startTest()
 {
@@ -34,8 +25,6 @@ function startTest()
 
     if (!window.testRunner)
         return;
-    testRunner.waitUntilDone();
-    testRunner.dumpAsText();
 
     runNextTest();
 }
@@ -43,14 +32,14 @@ function startTest()
 function runNextTest()
 {
     if (testIndex == testSources.length) {
-        testRunner.notifyDone();
+        finishJSTest();
         return;
     }
 
     var sourceId = testSources[testIndex++];
     var source = document.getElementById(sourceId);
     expectedDroppedText = source.value;
-    log('Dragging text in ' + sourceId + ': ' + source.value);
+    debug('Dragging text in ' + sourceId + ': ' + source.value);
 
     // Drag a text in the source element.
     source.setSelectionRange(0, source.value.length);
@@ -72,23 +61,28 @@ function handleDragOver(e)
     e.preventDefault();
 }
 
+var currentItem;
 function handleDrop(e)
 {
     e.stopPropagation();
     e.preventDefault();
 
-    log('Verifying contents of DataTransferItems...');
+    debug('Verifying contents of DataTransferItems...');
 
     var items = e.dataTransfer.items;
     var remaining = items.length;
 
     for (var i = 0; i < items.length; ++i) {
-        log('items.length: ' + items.length);
-        log('items[' + i + '].kind: ' + items[i].kind);
-        log('items[' + i + '].type: ' + items[i].type);
+        debug('items.length: ' + items.length);
+        debug('items[' + i + '].kind: ' + items[i].kind);
+        debug('items[' + i + '].type: ' + items[i].type);
 
+        currentItem = items[i];
+        shouldThrow('currentItem.getAsString()', '"TypeError: Not enough arguments"');
+        shouldNotThrow('currentItem.getAsString(null)');
         items[i].getAsString(function(data) {
-            test(expectedDroppedText, data);
+            window.stringData = data;
+            shouldBeEqualToString('stringData', expectedDroppedText);
             if (--remaining == 0 && window.testRunner)
                 runNextTest();
         });
@@ -98,5 +92,6 @@ function handleDrop(e)
 startTest();
 
 </script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
 </body>
 </html>
