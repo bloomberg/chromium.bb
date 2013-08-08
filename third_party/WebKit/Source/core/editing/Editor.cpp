@@ -2291,15 +2291,7 @@ void Editor::respondToChangedSelection(const VisibleSelection& oldSelection, Fra
             && oldSelection.start().deprecatedNode()
             && oldSelection.start().anchorNode()->inDocument()
             && !isSelectionInTextField(oldSelection)) {
-            VisiblePosition oldStart(oldSelection.visibleStart());
-            VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
-            if (oldAdjacentWords != newAdjacentWords) {
-                if (isContinuousGrammarCheckingEnabled) {
-                    VisibleSelection oldSelectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
-                    markMisspellingsAndBadGrammar(oldAdjacentWords, oldSelectedSentence != newSelectedSentence, oldSelectedSentence);
-                } else
-                    markMisspellingsAndBadGrammar(oldAdjacentWords, false, oldAdjacentWords);
-            }
+            spellCheckOldSelection(oldSelection, newAdjacentWords, newSelectedSentence);
         }
 
         if (!textChecker() || textChecker()->shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling)) {
@@ -2321,6 +2313,34 @@ void Editor::respondToChangedSelection(const VisibleSelection& oldSelection, Fra
     cancelCompositionIfSelectionIsInvalid();
 
     notifyComponentsOnChangedSelection(oldSelection, options);
+}
+
+void Editor::spellCheckAfterBlur()
+{
+    if (!m_frame->selection()->selection().isContentEditable())
+        return;
+
+    if (isSelectionInTextField(m_frame->selection()->selection())) {
+        // textFieldDidEndEditing() and textFieldDidBeginEditing() handle this.
+        return;
+    }
+
+    VisibleSelection empty;
+    spellCheckOldSelection(m_frame->selection()->selection(), empty, empty);
+}
+
+void Editor::spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords, const VisibleSelection& newSelectedSentence)
+{
+    VisiblePosition oldStart(oldSelection.visibleStart());
+    VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
+    if (oldAdjacentWords  != newAdjacentWords) {
+        if (isContinuousSpellCheckingEnabled() && isGrammarCheckingEnabled()) {
+            VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
+            markMisspellingsAndBadGrammar(oldAdjacentWords, selectedSentence != newSelectedSentence, selectedSentence);
+        } else {
+            markMisspellingsAndBadGrammar(oldAdjacentWords, false, oldAdjacentWords);
+        }
+    }
 }
 
 static Node* findFirstMarkable(Node* node)

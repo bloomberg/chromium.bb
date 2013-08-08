@@ -1,0 +1,11 @@
+Last word written in an editable in one frame should be spellchecked when focusing other frame. To test manually type some misspelled word in one frame and focus other frame. The word should be marked.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.markerCountForNode(testEditable1.childNodes[0], "spelling") is 0
+PASS internals.markerCountForNode(testEditable1.childNodes[0], "spelling") is 1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+ 
