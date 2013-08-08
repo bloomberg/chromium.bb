@@ -50,6 +50,7 @@ class MessageCenterSettingsController
   virtual size_t GetNotifierGroupCount() const OVERRIDE;
   virtual const message_center::NotifierGroup& GetNotifierGroupAt(
       size_t index) const OVERRIDE;
+  virtual bool IsNotifierGroupActiveAt(size_t index) const OVERRIDE;
   virtual void SwitchToNotifierGroup(size_t index) OVERRIDE;
   virtual const message_center::NotifierGroup& GetActiveNotifierGroup() const
       OVERRIDE;

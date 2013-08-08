@@ -99,6 +99,12 @@ const int kCorrectedCheckmarkPadding =
 
 // Returns the NSButton corresponding to the checkbox for |notifiers_[index]|.
 - (NSButton*)buttonForNotifierAtIndex:(size_t)index;
+
+// Update the contents view.
+- (void)updateView;
+
+// Handler for the notifier group dropdown menu.
+- (void)notifierGroupSelectionChanged:(id)sender;
 @end
 
 namespace message_center {
@@ -110,16 +116,20 @@ void NotifierSettingsObserverMac::UpdateIconImage(const NotifierId& notifier_id,
   [settings_controller_ setIcon:icon.AsNSImage() forNotifierId:notifier_id];
 }
 
-void NotifierSettingsObserverMac::NotifierGroupChanged() {}
+void NotifierSettingsObserverMac::NotifierGroupChanged() {
+  [settings_controller_ updateView];
+}
 
 }  // namespace message_center
 
 @implementation MCSettingsController
 
-- (id)initWithProvider:(message_center::NotifierSettingsProvider*)provider {
+- (id)initWithProvider:(message_center::NotifierSettingsProvider*)provider
+    trayViewController:(MCTrayViewController*)trayViewController {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     observer_.reset(new message_center::NotifierSettingsObserverMac(self));
     provider_ = provider;
+    trayViewController_ = trayViewController;
     provider_->AddObserver(observer_.get());
   }
   return self;
@@ -140,6 +150,11 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {}
   [label setSelectable:NO];
   [label setAutoresizingMask:NSViewMinYMargin];
   return label;
+}
+
+- (void)updateView {
+  notifiers_.clear();
+  [trayViewController_ updateSettings];
 }
 
 - (void)loadView {
@@ -187,14 +202,49 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {}
   [detailsText_ setFont:
       [NSFont messageFontOfSize:message_center::kMessageFontSize]];
 
+  size_t groupCount = provider_->GetNotifierGroupCount();
   [detailsText_ setStringValue:l10n_util::GetNSString(
-      IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION)];
+      groupCount > 1 ? IDS_MESSAGE_CENTER_SETTINGS_DESCRIPTION_MULTIUSER
+                     : IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION)];
   [detailsText_ sizeToFit];
   subheaderFrame = [detailsText_ frame];
   subheaderFrame.origin.y =
       NSMinY(headerFrame) - message_center::kTextTopPadding -
       NSHeight(subheaderFrame);
   [[self view] addSubview:detailsText_];
+
+  // Profile switcher is only needed for more than one profile.
+  NSRect dropDownButtonFrame = subheaderFrame;
+  if (groupCount > 1) {
+    dropDownButtonFrame = NSMakeRect(
+        kMarginWidth, kMarginWidth, NSWidth(fullFrame), NSHeight(fullFrame));
+    groupDropDownButton_.reset(
+        [[NSPopUpButton alloc] initWithFrame:dropDownButtonFrame
+                                   pullsDown:YES]);
+    [groupDropDownButton_ setAction:@selector(notifierGroupSelectionChanged:)];
+    [groupDropDownButton_ setTarget:self];
+    // Add a dummy item for pull-down.
+    [groupDropDownButton_ addItemWithTitle:@""];
+    string16 title;
+    for (size_t i = 0; i < groupCount; ++i) {
+      const message_center::NotifierGroup& group =
+          provider_->GetNotifierGroupAt(i);
+      string16 item = group.login_info.empty() ? group.name : group.login_info;
+      [groupDropDownButton_ addItemWithTitle:base::SysUTF16ToNSString(item)];
+      if (provider_->IsNotifierGroupActiveAt(i)) {
+        title = item;
+        [[groupDropDownButton_ lastItem] setState:NSOnState];
+      }
+    }
+    [groupDropDownButton_ setTitle:base::SysUTF16ToNSString(title)];
+    [groupDropDownButton_ sizeToFit];
+    dropDownButtonFrame = [groupDropDownButton_ frame];
+    dropDownButtonFrame.origin.y =
+        NSMinY(subheaderFrame) - message_center::kTextTopPadding -
+        NSHeight(dropDownButtonFrame);
+    dropDownButtonFrame.size.width = NSWidth(fullFrame) - 2 * kMarginWidth;
+    [[self view] addSubview:groupDropDownButton_];
+  }
 
   // Document view for the notifier settings.
   CGFloat y = 0;
@@ -233,7 +283,7 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {}
   NSRect scrollFrame = documentFrame;
   scrollFrame.origin.y = kMarginWidth;
   CGFloat remainingHeight =
-      NSMinY(subheaderFrame) - message_center::kTextTopPadding -
+      NSMinY(dropDownButtonFrame) - message_center::kTextTopPadding -
       NSMinY(scrollFrame);
 
   if (NSHeight(documentFrame) < remainingHeight) {
@@ -241,6 +291,7 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {}
     CGFloat delta = remainingHeight - NSHeight(documentFrame);
     headerFrame.origin.y -= delta;
     subheaderFrame.origin.y -= delta;
+    dropDownButtonFrame.origin.y -= delta;
     fullFrame.size.height -= delta;
   } else {
     scrollFrame.size.height = remainingHeight;
@@ -266,6 +317,7 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {}
   [[self view] addSubview:scrollView_];
   [settingsText_ setFrame:headerFrame];
   [detailsText_ setFrame:subheaderFrame];
+  [groupDropDownButton_ setFrame:dropDownButtonFrame];
 }
 
 - (void)checkboxClicked:(id)sender {
@@ -274,6 +326,10 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {}
 }
 
 // Testing API /////////////////////////////////////////////////////////////////
+
+- (NSPopUpButton*)groupDropDownButton {
+  return groupDropDownButton_;
+}
 
 - (NSScrollView*)scrollView {
   return scrollView_;
@@ -303,6 +359,13 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {}
   // last.
   NSView* view = [subviews objectAtIndex:notifiers_.size() - 1 - index];
   return base::mac::ObjCCastStrict<NSButton>(view);
+}
+
+- (void)notifierGroupSelectionChanged:(id)sender {
+  DCHECK_EQ(groupDropDownButton_.get(), sender);
+  NSPopUpButton* button = static_cast<NSPopUpButton*>(sender);
+  // The first item is a dummy item.
+  provider_->SwitchToNotifierGroup([button indexOfSelectedItem] - 1);
 }
 
 @end

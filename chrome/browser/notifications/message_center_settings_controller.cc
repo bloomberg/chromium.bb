@@ -132,6 +132,11 @@ MessageCenterSettingsController::GetNotifierGroupAt(size_t index) const {
   return *(notifier_groups_[index]);
 }
 
+bool MessageCenterSettingsController::IsNotifierGroupActiveAt(
+    size_t index) const {
+  return current_notifier_group_ == index;
+}
+
 const message_center::NotifierGroup&
 MessageCenterSettingsController::GetActiveNotifierGroup() const {
   DCHECK_LT(current_notifier_group_, notifier_groups_.size());

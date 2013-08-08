@@ -125,6 +125,10 @@ MESSAGE_CENTER_EXPORT
 // Action for the settings button.
 - (void)showSettings:(id)sender;
 
+// Updates the settings dialog in response to contents change due to something
+// like selecting a different profile.
+- (void)updateSettings;
+
 // Hides the settings dialog if it's open.
 - (void)hideSettings:(id)sender;
 

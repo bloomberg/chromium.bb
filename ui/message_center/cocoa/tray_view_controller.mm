@@ -273,7 +273,8 @@ const CGFloat kTrayBottomMargin = 75;
   message_center::NotifierSettingsProvider* provider =
       messageCenter_->GetNotifierSettingsProvider();
   settingsController_.reset(
-      [[MCSettingsController alloc] initWithProvider:provider]);
+      [[MCSettingsController alloc] initWithProvider:provider
+                                  trayViewController:self]);
 
   [[self view] addSubview:[settingsController_ view]];
 
@@ -287,6 +288,17 @@ const CGFloat kTrayBottomMargin = 75;
   [scrollView_ setHidden:YES];
 
   [[[self view] window] recalculateKeyViewLoop];
+
+  [self updateTrayViewAndWindow];
+}
+
+- (void)updateSettings {
+  // TODO(jianli): This class should not be calling -loadView, but instead
+  // should just observe a resize notification.
+  // (http://crbug.com/270251)
+  [[settingsController_ view] removeFromSuperview];
+  [settingsController_ loadView];
+  [[self view] addSubview:[settingsController_ view]];
 
   [self updateTrayViewAndWindow];
 }

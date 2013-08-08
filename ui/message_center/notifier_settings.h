@@ -142,6 +142,9 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsProvider {
   virtual const message_center::NotifierGroup& GetNotifierGroupAt(
       size_t index) const = 0;
 
+  // Returns true if the notifier group at |index| is active.
+  virtual bool IsNotifierGroupActiveAt(size_t index) const = 0;
+
   // Informs the settings provider that further requests to GetNotifierList
   // should return notifiers for the specified notifier group.
   virtual void SwitchToNotifierGroup(size_t index) = 0;

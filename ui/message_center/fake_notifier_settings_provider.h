@@ -13,12 +13,14 @@ namespace message_center {
 // notifiers and records which callbacks were called. For use in tests.
 class FakeNotifierSettingsProvider : public NotifierSettingsProvider {
  public:
+  FakeNotifierSettingsProvider();
   FakeNotifierSettingsProvider(const std::vector<Notifier*>& notifiers);
   virtual ~FakeNotifierSettingsProvider();
 
   virtual size_t GetNotifierGroupCount() const OVERRIDE;
   virtual const message_center::NotifierGroup& GetNotifierGroupAt(
       size_t index) const OVERRIDE;
+  virtual bool IsNotifierGroupActiveAt(size_t index) const OVERRIDE;
   virtual void SwitchToNotifierGroup(size_t index) OVERRIDE;
   virtual const message_center::NotifierGroup& GetActiveNotifierGroup() const
       OVERRIDE;
@@ -35,11 +37,21 @@ class FakeNotifierSettingsProvider : public NotifierSettingsProvider {
   bool WasEnabled(const Notifier& notifier);
   int closed_called_count();
 
+  void AddGroup(NotifierGroup* group, const std::vector<Notifier*>& notifiers);
+
  private:
-  std::vector<Notifier*> notifiers_;
+  struct NotifierGroupItem {
+    NotifierGroup* group;
+    std::vector<Notifier*> notifiers;
+
+    NotifierGroupItem();
+    ~NotifierGroupItem();
+  };
+
   std::map<const Notifier*, bool> enabled_;
-  const NotifierGroup notifier_group_;
+  std::vector<NotifierGroupItem> items_;
   int closed_called_count_;
+  size_t active_item_index_;
 };
 
 }  // namespace message_center

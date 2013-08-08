@@ -9,36 +9,62 @@
 
 namespace message_center {
 
+FakeNotifierSettingsProvider::NotifierGroupItem::NotifierGroupItem() {
+}
+
+FakeNotifierSettingsProvider::NotifierGroupItem::~NotifierGroupItem() {
+}
+
+FakeNotifierSettingsProvider::FakeNotifierSettingsProvider() {
+}
+
 FakeNotifierSettingsProvider::FakeNotifierSettingsProvider(
     const std::vector<Notifier*>& notifiers)
-    : notifiers_(notifiers),
-      notifier_group_(gfx::Image(),
-                      UTF8ToUTF16("Fake name"),
-                      UTF8ToUTF16("fake@email.com"),
-                      true),
-      closed_called_count_(0) {}
+    : closed_called_count_(0),
+      active_item_index_(0) {
+  NotifierGroupItem item;
+  item.group = new NotifierGroup(gfx::Image(),
+                                 UTF8ToUTF16("Fake name"),
+                                 UTF8ToUTF16("fake@email.com"),
+                                 true);
+  item.notifiers = notifiers;
+  items_.push_back(item);
+}
 
-FakeNotifierSettingsProvider::~FakeNotifierSettingsProvider() {}
+FakeNotifierSettingsProvider::~FakeNotifierSettingsProvider() {
+  for (size_t i = 0; i < items_.size(); ++i) {
+    delete items_[i].group;
+  }
+}
 
-size_t FakeNotifierSettingsProvider::GetNotifierGroupCount() const { return 1; }
+size_t FakeNotifierSettingsProvider::GetNotifierGroupCount() const {
+  return items_.size();
+}
 
 const message_center::NotifierGroup&
 FakeNotifierSettingsProvider::GetNotifierGroupAt(size_t index) const {
-  return notifier_group_;
+  return *(items_[index].group);
 }
 
-void FakeNotifierSettingsProvider::SwitchToNotifierGroup(size_t index) {}
+bool FakeNotifierSettingsProvider::IsNotifierGroupActiveAt(
+    size_t index) const {
+  return active_item_index_ == index;
+}
+
+void FakeNotifierSettingsProvider::SwitchToNotifierGroup(size_t index) {
+  active_item_index_ = index;
+}
 
 const message_center::NotifierGroup&
 FakeNotifierSettingsProvider::GetActiveNotifierGroup() const {
-  return notifier_group_;
+  return *(items_[active_item_index_].group);
 }
 
 void FakeNotifierSettingsProvider::GetNotifierList(
     std::vector<Notifier*>* notifiers) {
   notifiers->clear();
-  for (size_t i = 0; i < notifiers_.size(); ++i)
-    notifiers->push_back(notifiers_[i]);
+  for (size_t i = 0; i < items_[active_item_index_].notifiers.size(); ++i)
+    notifiers->push_back(items_[active_item_index_].notifiers[i]);
 }
 
 void FakeNotifierSettingsProvider::SetNotifierEnabled(const Notifier& notifier,
@@ -60,6 +86,14 @@ void FakeNotifierSettingsProvider::RemoveObserver(
 
 bool FakeNotifierSettingsProvider::WasEnabled(const Notifier& notifier) {
   return enabled_[&notifier];
+}
+
+void FakeNotifierSettingsProvider::AddGroup(
+    NotifierGroup* group, const std::vector<Notifier*>& notifiers) {
+  NotifierGroupItem item;
+  item.group = group;
+  item.notifiers = notifiers;
+  items_.push_back(item);
 }
 
 int FakeNotifierSettingsProvider::closed_called_count() {

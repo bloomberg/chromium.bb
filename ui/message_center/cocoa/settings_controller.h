@@ -13,6 +13,7 @@
 #include "ui/message_center/notifier_settings.h"
 
 @class MCSettingsController;
+@class MCTrayViewController;
 
 namespace message_center {
 
@@ -43,12 +44,16 @@ MESSAGE_CENTER_EXPORT
  @private
   scoped_ptr<message_center::NotifierSettingsObserverMac> observer_;
   message_center::NotifierSettingsProvider* provider_;
+  MCTrayViewController* trayViewController_;  // Weak. Owns us.
 
   // The "Settings" text at the top.
   base::scoped_nsobject<NSTextField> settingsText_;
 
   // The smaller text below the "Settings" text.
   base::scoped_nsobject<NSTextField> detailsText_;
+
+  // The profile switcher.
+  base::scoped_nsobject<NSPopUpButton> groupDropDownButton_;
 
   // Container for all the checkboxes.
   base::scoped_nsobject<NSScrollView> scrollView_;
@@ -57,13 +62,15 @@ MESSAGE_CENTER_EXPORT
 }
 
 // Designated initializer.
-- (id)initWithProvider:(message_center::NotifierSettingsProvider*)provider;
+- (id)initWithProvider:(message_center::NotifierSettingsProvider*)provider
+    trayViewController:(MCTrayViewController*)trayViewController;
 
 @end
 
 // Testing API /////////////////////////////////////////////////////////////////
 
 @interface MCSettingsController (TestingAPI)
+- (NSPopUpButton*)groupDropDownButton;
 - (NSScrollView*)scrollView;
 @end
 
