@@ -47,7 +47,6 @@ public:
     PassRefPtr<Text> replaceWholeText(const String&);
 
     bool recalcTextStyle(StyleChange);
-    void createTextRendererIfNeeded();
     bool textRendererIsNeeded(const NodeRenderingContext&);
     virtual RenderText* createTextRenderer(RenderStyle*);
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData);

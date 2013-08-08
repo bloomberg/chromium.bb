@@ -784,8 +784,6 @@ private:
     void detachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
     void detachAttrNodeAtIndex(Attr*, size_t index);
 
-    void createRendererIfNeeded(const AttachContext&);
-
     bool isJavaScriptURLAttribute(const Attribute&) const;
 
     RefPtr<ElementData> m_elementData;

@@ -250,11 +250,6 @@ static bool isSVGText(Text* text)
     return parentOrShadowHostNode->isSVGElement() && !parentOrShadowHostNode->hasTagName(SVGNames::foreignObjectTag);
 }
 
-void Text::createTextRendererIfNeeded()
-{
-    NodeRenderingContext(this).createRendererForTextIfNeeded();
-}
-
 RenderText* Text::createTextRenderer(RenderStyle* style)
 {
     if (isSVGText(this) || isSVGShadowText(this))
@@ -268,7 +263,7 @@ RenderText* Text::createTextRenderer(RenderStyle* style)
 
 void Text::attach(const AttachContext& context)
 {
-    createTextRendererIfNeeded();
+    NodeRenderingContext(this, context.resolvedStyle).createRendererForTextIfNeeded();
     CharacterData::attach(context);
 }
 

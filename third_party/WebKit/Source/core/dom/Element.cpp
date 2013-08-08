@@ -1306,18 +1306,13 @@ void Element::removedFrom(ContainerNode* insertionPoint)
     }
 }
 
-void Element::createRendererIfNeeded(const AttachContext& context)
-{
-    NodeRenderingContext(this, context.resolvedStyle).createRendererForElementIfNeeded();
-}
-
 void Element::attach(const AttachContext& context)
 {
     PostAttachCallbackDisabler callbackDisabler(this);
     StyleResolverParentPusher parentPusher(this);
     WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
 
-    createRendererIfNeeded(context);
+    NodeRenderingContext(this, context.resolvedStyle).createRendererForElementIfNeeded();
 
     if (parentElement() && parentElement()->isInCanvasSubtree())
         setIsInCanvasSubtree(true);

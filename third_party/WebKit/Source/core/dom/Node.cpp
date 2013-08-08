@@ -1063,7 +1063,7 @@ void Node::attach(const AttachContext&)
             if (!next->isTextNode())
                 continue;
             ASSERT(!next->renderer());
-            toText(next)->createTextRendererIfNeeded();
+            toText(next)->reattach();
             // If we again decided not to create a renderer for next, we can bail out the loop,
             // because it won't affect the result of Text::textRendererIsNeeded() for the rest
             // of sibling nodes.
