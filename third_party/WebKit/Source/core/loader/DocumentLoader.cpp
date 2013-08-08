@@ -621,6 +621,7 @@ void DocumentLoader::ensureWriter(const String& mimeType, const KURL& overriding
 
     // Call receivedFirstData() exactly once per load.
     frameLoader()->receivedFirstData();
+    m_frame->document()->maybeHandleHttpRefresh(m_response.httpHeaderField("Refresh"), Document::HttpRefreshFromHeader);
 }
 
 void DocumentLoader::commitData(const char* bytes, size_t length)

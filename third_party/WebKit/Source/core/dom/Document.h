@@ -1032,6 +1032,12 @@ public:
     PassRefPtr<FontLoader> fontloader();
     DocumentLifecycleNotifier* lifecycleNotifier();
 
+    enum HttpRefreshType {
+        HttpRefreshFromHeader,
+        HttpRefreshFromMetaTag
+    };
+    void maybeHandleHttpRefresh(const String&, HttpRefreshType);
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
