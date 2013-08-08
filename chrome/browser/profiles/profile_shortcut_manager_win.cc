@@ -527,7 +527,6 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
   ListDesktopShortcutsWithCommandLine(chrome_exe, command_line, false,
                                       &shortcuts);
 
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
   for (size_t i = 0; i < shortcuts.size(); ++i) {
     // Use base::DeleteFile() instead of ShellUtil::RemoveShortcut(), as the
     // latter causes non-profile taskbar shortcuts to be unpinned.
