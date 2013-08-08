@@ -29,10 +29,7 @@ class TrayLocallyManagedUser : public SystemTrayItem,
 
   // Overridden from SystemTrayItem.
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateNotificationView(
-     user::LoginStatus status) OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
-  virtual void DestroyNotificationView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
 
   // Overridden from ViewClickListener.
@@ -40,7 +37,6 @@ class TrayLocallyManagedUser : public SystemTrayItem,
 
  private:
   LabelTrayView* tray_view_;
-  views::View* notification_view_;
   // Previous login status to avoid showing notification upon unlock.
   user::LoginStatus status_;
 
@@ -51,4 +47,3 @@ class TrayLocallyManagedUser : public SystemTrayItem,
 } // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_LOCALLY_MANAGED_TRAY_LOCALLY_MANAGED_USER_H
-

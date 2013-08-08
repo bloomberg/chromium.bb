@@ -10,46 +10,39 @@
 #include "ash/system/user/login_status.h"
 #include "base/logging.h"
 #include "grit/ash_resources.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_delegate.h"
+
+using message_center::Notification;
 
 namespace ash {
 namespace internal {
-
 namespace {
 
-class ManagedUserNotificationView : public TrayNotificationView {
- public:
-  explicit ManagedUserNotificationView(TrayLocallyManagedUser* tray_managed)
-      : TrayNotificationView(tray_managed, IDR_AURA_UBER_TRAY_MANAGED_USER),
-        tray_managed_(tray_managed) {
-    CreateMessageView();
-    InitView(message_view_);
-  }
+const char kLocallyManagedUserNotificationId[] =
+    "chrome://user/locally-managed";
 
-  void Update() {
-    CreateMessageView();
-    UpdateView(message_view_);
-  }
-
- private:
-  void CreateMessageView() {
-    message_view_ = new LabelTrayView(tray_managed_, 0);
-    base::string16 message = Shell::GetInstance()->system_tray_delegate()->
-        GetLocallyManagedUserMessage();
-    message_view_->SetMessage(message);
-  }
-
-  LabelTrayView* message_view_;
-  TrayLocallyManagedUser* tray_managed_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManagedUserNotificationView);
-};
+void CreateOrUpdateNotification(const base::string16& new_message) {
+  scoped_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kLocallyManagedUserNotificationId,
+      new_message,
+      base::string16() /* body is empty */,
+      gfx::Image() /* icon */,
+      base::string16() /* display_source */,
+      std::string() /* extension_id */,
+      message_center::RichNotificationData(),
+      NULL /* no delegate */));
+  notification->SetSystemPriority();
+  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+}
 
 } // namespace
 
 TrayLocallyManagedUser::TrayLocallyManagedUser(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       tray_view_(NULL),
-      notification_view_(NULL),
       status_(ash::user::LOGGED_IN_NONE) {
 }
 
@@ -61,17 +54,10 @@ void TrayLocallyManagedUser::UpdateMessage() {
       GetLocallyManagedUserMessage();
   if (tray_view_)
     tray_view_->SetMessage(message);
-  if (notification_view_)
-    tray_view_->SetMessage(message);
-}
-
-views::View* TrayLocallyManagedUser::CreateNotificationView(
-    user::LoginStatus status) {
-  CHECK(!notification_view_);
-  if (status != ash::user::LOGGED_IN_LOCALLY_MANAGED)
-    return NULL;
-  notification_view_ = new ManagedUserNotificationView(this);
-  return notification_view_;
+  if (message_center::MessageCenter::Get()->HasNotification(
+          kLocallyManagedUserNotificationId)) {
+    CreateOrUpdateNotification(message);
+  }
 }
 
 views::View* TrayLocallyManagedUser::CreateDefaultView(
@@ -89,10 +75,6 @@ void TrayLocallyManagedUser::DestroyDefaultView() {
   tray_view_ = NULL;
 }
 
-void TrayLocallyManagedUser::DestroyNotificationView() {
-  notification_view_ = NULL;
-}
-
 void TrayLocallyManagedUser::OnViewClicked(views::View* sender) {
   Shell::GetInstance()->system_tray_delegate()->ShowLocallyManagedUserInfo();
 }
@@ -103,11 +85,11 @@ void TrayLocallyManagedUser::UpdateAfterLoginStatusChange(
     return;
   if (status == ash::user::LOGGED_IN_LOCALLY_MANAGED &&
       status_ != ash::user::LOGGED_IN_LOCKED) {
-    ShowNotificationView();
+    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+    CreateOrUpdateNotification(delegate->GetLocallyManagedUserMessage());
   }
   status_ = status;
 }
 
 } // namespace internal
 } // namespace ash
-
