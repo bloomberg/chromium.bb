@@ -1,11 +1,14 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Unit tests for |Misspelling| object.
+
+#include "chrome/browser/spellchecker/misspelling.h"
 
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/spellchecker/misspelling.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(MisspellingTest, SerializeTest) {
@@ -28,4 +31,22 @@ TEST(MisspellingTest, SerializeTest) {
 
   scoped_ptr<base::DictionaryValue> serialized(misspelling.Serialize());
   EXPECT_TRUE(serialized->Equals(expected.get()));
+}
+
+TEST(MisspellingTest, GetMisspelledStringTest) {
+  Misspelling misspelling;
+  misspelling.context = ASCIIToUTF16("How doe sit know");
+  misspelling.location = 4;
+  misspelling.length = 7;
+  EXPECT_EQ(ASCIIToUTF16("doe sit"), misspelling.GetMisspelledString());
+
+  misspelling.length = 0;
+  EXPECT_EQ(string16(), misspelling.GetMisspelledString());
+
+  misspelling.location = misspelling.context.length();
+  misspelling.length = 7;
+  EXPECT_EQ(string16(), misspelling.GetMisspelledString());
+
+  misspelling.location = misspelling.context.length() + 1;
+  EXPECT_EQ(string16(), misspelling.GetMisspelledString());
 }

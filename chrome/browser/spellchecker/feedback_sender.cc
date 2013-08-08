@@ -1,6 +1,31 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// The |FeedbackSender| object stores the user feedback to spellcheck
+// suggestions in a |Feedback| object.
+//
+// When spelling service returns spellcheck results, these results first arrive
+// in |FeedbackSender| to assign hash identifiers for each
+// misspelling-suggestion pair. If the spelling service identifies the same
+// misspelling as already displayed to the user, then |FeedbackSender| reuses
+// the same hash identifiers to avoid duplication. It detects the duplicates by
+// comparing misspelling offsets in text. Spelling service can return duplicates
+// because we request spellcheck for whole paragraphs, as context around a
+// misspelled word is important to the spellcheck algorithm.
+//
+// All feedback is initially pending. When a user acts upon a misspelling such
+// that the misspelling is no longer displayed (red squiggly line goes away),
+// then the feedback for this misspelling is finalized. All finalized feedback
+// is erased after being sent to the spelling service. Pending feedback is kept
+// around for |kSessionHours| hours and then finalized even if user did not act
+// on the misspellings.
+//
+// |FeedbackSender| periodically requests a list of hashes of all remaining
+// misspellings in renderers. When a renderer responds with a list of hashes,
+// |FeedbackSender| uses the list to determine which misspellings are no longer
+// displayed to the user and sends the current state of user feedback to the
+// spelling service.
 
 #include "chrome/browser/spellchecker/feedback_sender.h"
 
@@ -13,6 +38,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/spellchecker/word_trimmer.h"
 #include "chrome/common/chrome_switches.h"
@@ -38,11 +64,11 @@ const int kMinIntervalSeconds = 5;
 // Returns a hash of |session_start|, the current timestamp, and
 // |suggestion_index|.
 uint32 BuildHash(const base::Time& session_start, size_t suggestion_index) {
-  std::stringstream hash_data;
-  hash_data << session_start.ToTimeT()
-            << base::Time::Now().ToTimeT()
-            << suggestion_index;
-  return base::Hash(hash_data.str());
+  return base::Hash(
+      base::StringPrintf("%" PRId64 "%" PRId64 "%" PRIuS,
+                         session_start.ToInternalValue(),
+                         base::Time::Now().ToInternalValue(),
+                         suggestion_index));
 }
 
 // Returns a pending feedback data structure for the spellcheck |result| and
@@ -66,10 +92,11 @@ base::ListValue* BuildSuggestionInfo(
     const std::vector<Misspelling>& suggestions,
     bool is_first_feedback_batch) {
   base::ListValue* list = new base::ListValue;
-  for (std::vector<Misspelling>::const_iterator it = suggestions.begin();
-       it != suggestions.end();
-       ++it) {
-    base::DictionaryValue* suggestion = it->Serialize();
+  for (std::vector<Misspelling>::const_iterator suggestion_it =
+           suggestions.begin();
+       suggestion_it != suggestions.end();
+       ++suggestion_it) {
+    base::DictionaryValue* suggestion = suggestion_it->Serialize();
     suggestion->SetBoolean("isFirstInSession", is_first_feedback_batch);
     suggestion->SetBoolean("isAutoCorrection", false);
     list->Append(suggestion);
@@ -99,6 +126,16 @@ base::Value* BuildFeedbackValue(base::DictionaryValue* params) {
   result->SetString("method", "spelling.feedback");
   result->SetString("apiVersion", "v2");
   return result;
+}
+
+// Returns true if the misspelling location is within text bounds.
+bool IsInBounds(int misspelling_location,
+                int misspelling_length,
+                size_t text_length) {
+  return misspelling_location >= 0 && misspelling_length > 0 &&
+         static_cast<size_t>(misspelling_location) < text_length &&
+         static_cast<size_t>(misspelling_location + misspelling_length) <=
+             text_length;
 }
 
 }  // namespace
@@ -172,16 +209,16 @@ void FeedbackSender::AddedToDictionary(uint32 hash) {
     return;
   misspelling->action.type = SpellcheckAction::TYPE_ADD_TO_DICT;
   misspelling->timestamp = base::Time::Now();
-  const std::set<uint32>& misspellings = feedback_.FindMisspellings(
-      misspelling->context.substr(misspelling->location, misspelling->length));
-  for (std::set<uint32>::const_iterator it = misspellings.begin();
-       it != misspellings.end();
-       ++it) {
-    Misspelling* duplicate_misspelling = feedback_.GetMisspelling(*it);
-    if (duplicate_misspelling && !duplicate_misspelling->action.IsFinal()) {
-      duplicate_misspelling->action.type = SpellcheckAction::TYPE_ADD_TO_DICT;
-      duplicate_misspelling->timestamp = misspelling->timestamp;
-    }
+  const std::set<uint32>& hashes =
+      feedback_.FindMisspellings(misspelling->GetMisspelledString());
+  for (std::set<uint32>::const_iterator hash_it = hashes.begin();
+       hash_it != hashes.end();
+       ++hash_it) {
+    Misspelling* duplicate_misspelling = feedback_.GetMisspelling(*hash_it);
+    if (!duplicate_misspelling || duplicate_misspelling->action.IsFinal())
+      continue;
+    duplicate_misspelling->action.type = SpellcheckAction::TYPE_ADD_TO_DICT;
+    duplicate_misspelling->timestamp = misspelling->timestamp;
   }
 }
 
@@ -236,39 +273,41 @@ void FeedbackSender::OnReceiveDocumentMarkers(
 }
 
 void FeedbackSender::OnSpellcheckResults(
-    std::vector<SpellCheckResult>* results,
     int renderer_process_id,
     const string16& text,
-    const std::vector<SpellCheckMarker>& markers) {
+    const std::vector<SpellCheckMarker>& markers,
+    std::vector<SpellCheckResult>* results) {
   // Don't collect feedback if not going to send it.
   if (!timer_.IsRunning())
     return;
 
   // Generate a map of marker offsets to marker hashes. This map helps to
   // efficiently lookup feedback data based on the position of the misspelling
-  // in text
+  // in text.
   typedef std::map<size_t, uint32> MarkerMap;
   MarkerMap marker_map;
   for (size_t i = 0; i < markers.size(); ++i)
     marker_map[markers[i].offset] = markers[i].hash;
 
-  for (std::vector<SpellCheckResult>::iterator result_iter = results->begin();
-       result_iter != results->end();
-       ++result_iter) {
-    MarkerMap::iterator marker_iter = marker_map.find(result_iter->location);
-    if (marker_iter != marker_map.end() &&
-        feedback_.HasMisspelling(marker_iter->second)) {
+  for (std::vector<SpellCheckResult>::iterator result_it = results->begin();
+       result_it != results->end();
+       ++result_it) {
+    if (!IsInBounds(result_it->location, result_it->length, text.length()))
+      continue;
+    MarkerMap::const_iterator marker_it = marker_map.find(result_it->location);
+    if (marker_it != marker_map.end() &&
+        feedback_.HasMisspelling(marker_it->second)) {
       // If the renderer already has a marker for this spellcheck result, then
       // set the hash of the spellcheck result to be the same as the marker.
-      result_iter->hash = marker_iter->second;
+      result_it->hash = marker_it->second;
     } else {
       // If the renderer does not yet have a marker for this spellcheck result,
       // then generate a new hash for the spellcheck result.
-      result_iter->hash = BuildHash(session_start_, ++misspelling_counter_);
+      result_it->hash = BuildHash(session_start_, ++misspelling_counter_);
     }
     // Save the feedback data for the spellcheck result.
     feedback_.AddMisspelling(renderer_process_id,
-                             BuildFeedback(*result_iter, text));
+                             BuildFeedback(*result_it, text));
   }
 }
 
@@ -280,31 +319,31 @@ void FeedbackSender::OnLanguageCountryChange(const std::string& language,
 }
 
 void FeedbackSender::OnURLFetchComplete(const net::URLFetcher* source) {
-  for (ScopedVector<net::URLFetcher>::iterator it = senders_.begin();
-       it != senders_.end();
-       ++it) {
-    if (*it == source) {
-      senders_.erase(it);
-      break;
+  for (ScopedVector<net::URLFetcher>::iterator sender_it = senders_.begin();
+       sender_it != senders_.end();
+       ++sender_it) {
+    if (*sender_it == source) {
+      senders_.erase(sender_it);
+      return;
     }
   }
+  delete source;
 }
 
 void FeedbackSender::RequestDocumentMarkers() {
   // Request document markers from all the renderers that are still alive.
-  std::vector<int> alive_renderers;
+  std::set<int> alive_renderers;
   for (content::RenderProcessHost::iterator it(
            content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd();
        it.Advance()) {
-    alive_renderers.push_back(it.GetCurrentValue()->GetID());
+    alive_renderers.insert(it.GetCurrentValue()->GetID());
     it.GetCurrentValue()->Send(new SpellCheckMsg_RequestDocumentMarkers());
   }
 
   // Asynchronously send out the feedback for all the renderers that are no
   // longer alive.
   std::vector<int> known_renderers = feedback_.GetRendersWithMisspellings();
-  std::sort(alive_renderers.begin(), alive_renderers.end());
   std::sort(known_renderers.begin(), known_renderers.end());
   std::vector<int> dead_renderers;
   std::set_difference(known_renderers.begin(),

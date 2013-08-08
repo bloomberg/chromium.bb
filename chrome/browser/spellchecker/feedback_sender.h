@@ -1,6 +1,13 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// An object to record and send user feedback to spelling service. The spelling
+// service uses the feedback to improve its suggestions.
+//
+// Assigns uint32 hash identifiers to spelling suggestions from spelling service
+// and stores these suggestions. Records user's actions on these suggestions.
+// Periodically sends batches of user feedback to the spelling service.
 
 #ifndef CHROME_BROWSER_SPELLCHECKER_FEEDBACK_SENDER_H_
 #define CHROME_BROWSER_SPELLCHECKER_FEEDBACK_SENDER_H_
@@ -27,14 +34,26 @@ class URLRequestContextGetter;
 
 namespace spellcheck {
 
-// Constants for the feedback field trial.
-static const char kFeedbackFieldTrialName[] = "SpellingServiceFeedback";
-static const char kFeedbackFieldTrialEnabledGroupName[] = "Enabled";
+namespace {
 
-// Manages sending feedback to the spelling service.
+// Constants for the feedback field trial.
+const char kFeedbackFieldTrialName[] = "SpellingServiceFeedback";
+const char kFeedbackFieldTrialEnabledGroupName[] = "Enabled";
+
+}  // namespace
+
+// Stores and sends user feedback to the spelling service. Sample usage:
+//    FeedbackSender sender(profile.GetRequestContext(), language, country);
+//    sender.OnSpellcheckResults(spellcheck_results_from_spelling_service,
+//                               renderer_process_id,
+//                               spellchecked_text,
+//                               existing_hashes);
+//    sender.SelectedSuggestion(hash, suggestion_index);
 class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
                        public net::URLFetcherDelegate {
  public:
+  // Constructs a feedback sender. Keeps |request_context| in a scoped_refptr,
+  // because URLRequestContextGetter implements RefcountedThreadSafe.
   FeedbackSender(net::URLRequestContextGetter* request_context,
                  const std::string& language,
                  const std::string& country);
@@ -72,11 +91,12 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
 
   // Generates feedback data based on spellcheck results. The new feedback data
   // is pending. Sets hash identifiers for |results|. Called when spelling
-  // service client receives results from the spelling service.
-  void OnSpellcheckResults(std::vector<SpellCheckResult>* results,
-                           int renderer_process_id,
+  // service client receives results from the spelling service. Does not take
+  // ownership of |results|.
+  void OnSpellcheckResults(int renderer_process_id,
                            const string16& text,
-                           const std::vector<SpellCheckMarker>& markers);
+                           const std::vector<SpellCheckMarker>& markers,
+                           std::vector<SpellCheckResult>* results);
 
   // Receives updated language and country code for feedback. Finalizes and
   // sends out all of the feedback data.
@@ -86,7 +106,7 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
  private:
   friend class FeedbackSenderTest;
 
-  // net::URLFetcherDelegate implementation.
+  // net::URLFetcherDelegate implementation. Takes ownership of |source|.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Requests the document markers from all of the renderers to determine which
@@ -102,7 +122,7 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
   void SendFeedback(const std::vector<Misspelling>& feedback_data,
                     bool is_first_feedback_batch);
 
-  // Request context for the feedback senders.
+  // URL request context for the feedback senders.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // The language of text. The string is a BCP 47 language tag.

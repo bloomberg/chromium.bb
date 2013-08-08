@@ -1,6 +1,11 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// The |Misspelling| object stores the misspelling, a spellcheck suggestion for
+// it, and user's action on it. The misspelling is stored as |context|,
+// |location|, and |length| instead of only misspelled text, because the
+// spellcheck algorithm uses the context.
 
 #include "chrome/browser/spellchecker/misspelling.h"
 
@@ -58,4 +63,12 @@ base::DictionaryValue* Misspelling::Serialize() const {
   result->Set("suggestions", BuildSuggestionsValue(suggestions));
   result->Set("userActions", BuildUserActionValue(action));
   return result;
+}
+
+string16 Misspelling::GetMisspelledString() const {
+  // Feedback sender does not create Misspelling objects for spellcheck results
+  // that are out-of-bounds of checked text length.
+  if (location > context.length())
+    return string16();
+  return context.substr(location, length);
 }

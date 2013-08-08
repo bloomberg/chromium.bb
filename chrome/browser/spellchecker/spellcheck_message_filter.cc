@@ -140,7 +140,7 @@ void SpellCheckMessageFilter::OnTextCheckComplete(
     return;
   std::vector<SpellCheckResult> results_copy = results;
   spellcheck->GetFeedbackSender()->OnSpellcheckResults(
-      &results_copy, render_process_id_, text, markers);
+      render_process_id_, text, markers, &results_copy);
 
   // Erase custom dictionary words from the spellcheck results and record
   // in-dictionary feedback.

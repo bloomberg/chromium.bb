@@ -1,6 +1,18 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// The |Feedback| object keeps track of each instance of user feedback in a map
+// |misspellings_|. This is a map from uint32 hashes to |Misspelling| objects.
+//
+// Each misspelling should be present in only one renderer process. The
+// |Feedback| objects keeps track of misspelling-renderer relationship in the
+// |renderers_| map of renderer process identifiers to a set of hashes.
+//
+// When the user adds a misspelling to their custom dictionary, all of the
+// |Misspelling| objects with the same misspelled string are updated. The
+// |Feedback| object facilitates efficient access to these misspellings through
+// a |text_| map of misspelled strings to a set of hashes.
 
 #include "chrome/browser/spellchecker/feedback.h"
 
@@ -16,76 +28,86 @@ Feedback::~Feedback() {
 }
 
 Misspelling* Feedback::GetMisspelling(uint32 hash) {
-  HashMisspellingMap::iterator it = misspellings_.find(hash);
-  if (it == misspellings_.end())
+  HashMisspellingMap::iterator misspelling_it = misspellings_.find(hash);
+  if (misspelling_it == misspellings_.end())
     return NULL;
-  return &it->second;
+  return &misspelling_it->second;
 }
 
 void Feedback::FinalizeRemovedMisspellings(
     int renderer_process_id,
     const std::vector<uint32>& remaining_markers) {
-  RendererHashesMap::iterator i = renderers_.find(renderer_process_id);
-  if (i == renderers_.end() || i->second.empty())
+  RendererHashesMap::iterator renderer_it =
+      renderers_.find(renderer_process_id);
+  if (renderer_it == renderers_.end() || renderer_it->second.empty())
     return;
-  HashCollection remaining_set(remaining_markers.begin(),
-                               remaining_markers.end());
-  std::vector<uint32> removed_markers;
-  std::set_difference(i->second.begin(),
-                      i->second.end(),
-                      remaining_set.begin(),
-                      remaining_set.end(),
-                      std::back_inserter(removed_markers));
-  for (std::vector<uint32>::const_iterator j = removed_markers.begin();
-       j != removed_markers.end();
-       ++j) {
-    HashMisspellingMap::iterator k = misspellings_.find(*j);
-    if (k != misspellings_.end() && !k->second.action.IsFinal())
-      k->second.action.Finalize();
+  HashCollection& renderer_hashes = renderer_it->second;
+  HashCollection remaining_hashes(remaining_markers.begin(),
+                                  remaining_markers.end());
+  std::vector<uint32> removed_hashes;
+  std::set_difference(renderer_hashes.begin(),
+                      renderer_hashes.end(),
+                      remaining_hashes.begin(),
+                      remaining_hashes.end(),
+                      std::back_inserter(removed_hashes));
+  for (std::vector<uint32>::const_iterator hash_it = removed_hashes.begin();
+       hash_it != removed_hashes.end();
+       ++hash_it) {
+    HashMisspellingMap::iterator misspelling_it = misspellings_.find(*hash_it);
+    if (misspelling_it != misspellings_.end() &&
+        !misspelling_it->second.action.IsFinal()) {
+      misspelling_it->second.action.Finalize();
+    }
   }
 }
 
 bool Feedback::RendererHasMisspellings(int renderer_process_id) const {
-  RendererHashesMap::const_iterator it = renderers_.find(renderer_process_id);
-  return it != renderers_.end() && !it->second.empty();
+  RendererHashesMap::const_iterator renderer_it =
+      renderers_.find(renderer_process_id);
+  return renderer_it != renderers_.end() && !renderer_it->second.empty();
 }
 
 std::vector<Misspelling> Feedback::GetMisspellingsInRenderer(
     int renderer_process_id) const {
-  std::vector<Misspelling> result;
-  RendererHashesMap::const_iterator i = renderers_.find(renderer_process_id);
-  if (i == renderers_.end() || i->second.empty())
-    return result;
-  for (HashCollection::const_iterator j = i->second.begin();
-       j != i->second.end();
-       ++j) {
-    HashMisspellingMap::const_iterator k = misspellings_.find(*j);
-    if (k != misspellings_.end())
-      result.push_back(k->second);
+  std::vector<Misspelling> misspellings_in_renderer;
+  RendererHashesMap::const_iterator renderer_it =
+      renderers_.find(renderer_process_id);
+  if (renderer_it == renderers_.end() || renderer_it->second.empty())
+    return misspellings_in_renderer;
+  const HashCollection& renderer_hashes = renderer_it->second;
+  for (HashCollection::const_iterator hash_it = renderer_hashes.begin();
+       hash_it != renderer_hashes.end();
+       ++hash_it) {
+    HashMisspellingMap::const_iterator misspelling_it =
+        misspellings_.find(*hash_it);
+    if (misspelling_it != misspellings_.end())
+      misspellings_in_renderer.push_back(misspelling_it->second);
   }
-  return result;
+  return misspellings_in_renderer;
 }
 
 void Feedback::EraseFinalizedMisspellings(int renderer_process_id) {
-  RendererHashesMap::iterator i = renderers_.find(renderer_process_id);
-  if (i == renderers_.end() || i->second.empty())
+  RendererHashesMap::iterator renderer_it =
+      renderers_.find(renderer_process_id);
+  if (renderer_it == renderers_.end())
     return;
-  HashCollection pending;
-  for (HashCollection::const_iterator j = i->second.begin();
-       j != i->second.end();
-       ++j) {
-    HashMisspellingMap::iterator k = misspellings_.find(*j);
-    if (k != misspellings_.end()) {
-      if (k->second.action.IsFinal()) {
-        text_[k->second.context.substr(k->second.location, k->second.length)]
-            .erase(k->first);
-        misspellings_.erase(k);
-      } else {
-        pending.insert(*j);
-      }
-    }
+  HashCollection& renderer_hashes = renderer_it->second;
+  for (HashCollection::const_iterator hash_it = renderer_hashes.begin();
+       hash_it != renderer_hashes.end();) {
+    HashMisspellingMap::iterator misspelling_it = misspellings_.find(*hash_it);
+    HashCollection::iterator erasable_hash_it = hash_it;
+    ++hash_it;
+    if (misspelling_it == misspellings_.end())
+      continue;
+    const Misspelling& misspelling = misspelling_it->second;
+    if (!misspelling.action.IsFinal())
+      continue;
+    renderer_hashes.erase(erasable_hash_it);
+    text_[misspelling.GetMisspelledString()].erase(misspelling.hash);
+    misspellings_.erase(misspelling_it);
   }
-  i->second.swap(pending);
+  if (renderer_hashes.empty())
+    renderers_.erase(renderer_it);
 }
 
 bool Feedback::HasMisspelling(uint32 hash) const {
@@ -94,10 +116,24 @@ bool Feedback::HasMisspelling(uint32 hash) const {
 
 void Feedback::AddMisspelling(int renderer_process_id,
                               const Misspelling& misspelling) {
+  HashMisspellingMap::iterator misspelling_it =
+      misspellings_.find(misspelling.hash);
+  if (misspelling_it != misspellings_.end()) {
+    const Misspelling& existing_misspelling = misspelling_it->second;
+    text_[existing_misspelling.GetMisspelledString()].erase(misspelling.hash);
+    for (RendererHashesMap::iterator renderer_it = renderers_.begin();
+         renderer_it != renderers_.end();) {
+      HashCollection& renderer_hashes = renderer_it->second;
+      RendererHashesMap::iterator erasable_renderer_it = renderer_it;
+      ++renderer_it;
+      renderer_hashes.erase(misspelling.hash);
+      if (renderer_hashes.empty())
+        renderers_.erase(erasable_renderer_it);
+    }
+  }
   misspellings_[misspelling.hash] = misspelling;
+  text_[misspelling.GetMisspelledString()].insert(misspelling.hash);
   renderers_[renderer_process_id].insert(misspelling.hash);
-  text_[misspelling.context.substr(
-      misspelling.location, misspelling.length)].insert(misspelling.hash);
 }
 
 bool Feedback::Empty() const {
@@ -105,44 +141,46 @@ bool Feedback::Empty() const {
 }
 
 std::vector<int> Feedback::GetRendersWithMisspellings() const {
-  std::vector<int> result;
-  for (RendererHashesMap::const_iterator it = renderers_.begin();
-       it != renderers_.end();
-       ++it) {
-    if (!it->second.empty())
-      result.push_back(it->first);
+  std::vector<int> renderers_with_misspellings;
+  for (RendererHashesMap::const_iterator renderer_it = renderers_.begin();
+       renderer_it != renderers_.end();
+       ++renderer_it) {
+    if (!renderer_it->second.empty())
+      renderers_with_misspellings.push_back(renderer_it->first);
   }
-  return result;
+  return renderers_with_misspellings;
 }
 
 void Feedback::FinalizeAllMisspellings() {
-  for (HashMisspellingMap::iterator it = misspellings_.begin();
-       it != misspellings_.end();
-       ++it) {
-    if (!it->second.action.IsFinal())
-      it->second.action.Finalize();
+  for (HashMisspellingMap::iterator misspelling_it = misspellings_.begin();
+       misspelling_it != misspellings_.end();
+       ++misspelling_it) {
+    if (!misspelling_it->second.action.IsFinal())
+      misspelling_it->second.action.Finalize();
   }
 }
 
 std::vector<Misspelling> Feedback::GetAllMisspellings() const {
-  std::vector<Misspelling> result;
-  for (HashMisspellingMap::const_iterator it = misspellings_.begin();
-       it != misspellings_.end();
-       ++it) {
-    result.push_back(it->second);
+  std::vector<Misspelling> all_misspellings;
+  for (HashMisspellingMap::const_iterator misspelling_it =
+           misspellings_.begin();
+       misspelling_it != misspellings_.end();
+       ++misspelling_it) {
+    all_misspellings.push_back(misspelling_it->second);
   }
-  return result;
+  return all_misspellings;
 }
 
 void Feedback::Clear() {
   misspellings_.clear();
-  renderers_.clear();
   text_.clear();
+  renderers_.clear();
 }
 
 const std::set<uint32>& Feedback::FindMisspellings(
-    const string16& misspelled_text) {
-  return text_[misspelled_text];
+    const string16& misspelled_text) const {
+  const TextHashesMap::const_iterator text_it = text_.find(misspelled_text);
+  return text_it == text_.end() ? empty_hash_collection_ : text_it->second;
 }
 
 }  // namespace spellcheck

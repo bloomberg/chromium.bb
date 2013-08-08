@@ -170,10 +170,10 @@ void SpellingRequest::OnRemoteCheckCompleted(
       SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
   if (spellcheck_service) {
     spellcheck_service->GetFeedbackSender()->OnSpellcheckResults(
-        &remote_results_,
         render_process_id_,
         text,
-        markers_);
+        markers_,
+        &remote_results_);
   }
 
   OnCheckCompleted();

@@ -1,9 +1,12 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Unit tests for |Feedback| object.
+
+#include "chrome/browser/spellchecker/feedback.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/spellchecker/feedback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace spellcheck {
@@ -11,13 +14,14 @@ namespace spellcheck {
 namespace {
 
 // Identifier for a renderer process.
-static const int kRendererProcessId = 7;
+const int kRendererProcessId = 7;
 
 // Hash identifier for a misspelling.
-static const uint32 kMisspellingHash = 42;
+const uint32 kMisspellingHash = 42;
 
 }  // namespace
 
+// A test fixture to help keep the tests simple.
 class FeedbackTest : public testing::Test {
  public:
   FeedbackTest() {}
@@ -225,9 +229,7 @@ TEST_F(FeedbackTest, FindMisspellingsByText) {
     EXPECT_NE(static_cast<Misspelling*>(NULL), misspelling);
     EXPECT_TRUE(misspelling->hash >= kMisspellingHash &&
                 misspelling->hash <= hash);
-    EXPECT_EQ(kMisspelledWord,
-              misspelling->context.substr(misspelling->location,
-                                          misspelling->length));
+    EXPECT_EQ(kMisspelledWord, misspelling->GetMisspelledString());
   }
 }
 
