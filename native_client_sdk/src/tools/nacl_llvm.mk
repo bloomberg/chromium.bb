@@ -95,9 +95,11 @@ endef
 #
 define LINKER_RULE
 all: $(1).pexe
-$(1).pexe: $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
-	$(call LOG,LINK,$(1).bc,$(PNACL_LINK) -o $(1).bc $(2) $(foreach path,$(5),-L$(path)/pnacl/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(6))
-	$(call LOG,FINALIZE,$(1).pexe,$(PNACL_FINALIZE) -o $(1).pexe $(1).bc)
+$(1).pexe: $(1).bc
+	$(call LOG,FINALIZE,$$@,$(PNACL_FINALIZE) -o $$@ $$^)
+
+$(1).bc: $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(call LOG,LINK,$$@,$(PNACL_LINK) -o $$@ $(2) $(foreach path,$(5),-L$(path)/pnacl/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
 
 
