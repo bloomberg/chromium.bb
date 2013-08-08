@@ -8,9 +8,19 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
+
+using message_center::Notification;
 
 namespace ash {
 namespace internal {
+namespace {
+
+const char kScreenCaptureNotificationId[] = "chrome://screen/capture";
+
+}  // namespace
 
 ScreenCaptureTrayItem::ScreenCaptureTrayItem(SystemTray* system_tray)
     : ScreenTrayItem(system_tray) {
@@ -33,7 +43,6 @@ views::View* ScreenCaptureTrayItem::CreateDefaultView(
     user::LoginStatus status) {
   set_default_view(new tray::ScreenStatusView(
       this,
-      tray::ScreenStatusView::VIEW_DEFAULT,
       IDR_AURA_UBER_TRAY_DISPLAY,
       screen_capture_status_,
       l10n_util::GetStringUTF16(
@@ -41,15 +50,27 @@ views::View* ScreenCaptureTrayItem::CreateDefaultView(
   return default_view();
 }
 
-views::View* ScreenCaptureTrayItem::CreateNotificationView(
-    user::LoginStatus status) {
-  set_notification_view(new tray::ScreenNotificationView(
-      this,
-      IDR_AURA_UBER_TRAY_DISPLAY,
+void ScreenCaptureTrayItem::CreateOrUpdateNotification() {
+  message_center::RichNotificationData data;
+  data.buttons.push_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP)));
+  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
+  scoped_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kScreenCaptureNotificationId,
       screen_capture_status_,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP)));
-  return notification_view();
+      base::string16() /* body is blank */,
+      resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
+      base::string16() /* display_source */,
+      std::string() /* extension_id */,
+      data,
+      new tray::ScreenNotificationDelegate(this)));
+  notification->SetSystemPriority();
+  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+}
+
+std::string ScreenCaptureTrayItem::GetNotificationId() {
+  return kScreenCaptureNotificationId;
 }
 
 void ScreenCaptureTrayItem::OnScreenCaptureStart(

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/point.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -177,12 +178,9 @@ void TestNotificationView(ScreenTrayItemTest* test) {
   ScreenTrayItem* tray_item = test->tray_item();
 
   test->StartSession();
-  EXPECT_TRUE(tray_item->notification_view()->visible());
-
-  // Clicking on the notification view should dismiss the view
-  ClickViewCenter(tray_item->notification_view());
-  EXPECT_FALSE(tray_item->notification_view());
-
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+  EXPECT_TRUE(message_center->HasNotification(tray_item->GetNotificationId()));
   test->StopSession();
 }
 

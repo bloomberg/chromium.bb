@@ -8,9 +8,19 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
+
+using message_center::Notification;
 
 namespace ash {
 namespace internal {
+namespace {
+
+const char kScreenShareNotificationId[] = "chrome://screen/share";
+
+}
 
 ScreenShareTrayItem::ScreenShareTrayItem(SystemTray* system_tray)
     : ScreenTrayItem(system_tray) {
@@ -32,7 +42,6 @@ views::View* ScreenShareTrayItem::CreateTrayView(user::LoginStatus status) {
 views::View* ScreenShareTrayItem::CreateDefaultView(user::LoginStatus status) {
   set_default_view(new tray::ScreenStatusView(
       this,
-      tray::ScreenStatusView::VIEW_DEFAULT,
       IDR_AURA_UBER_TRAY_DISPLAY,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED),
@@ -41,8 +50,7 @@ views::View* ScreenShareTrayItem::CreateDefaultView(user::LoginStatus status) {
   return default_view();
 }
 
-views::View* ScreenShareTrayItem::CreateNotificationView(
-    user::LoginStatus status) {
+void ScreenShareTrayItem::CreateOrUpdateNotification() {
   base::string16 help_label_text;
   if (!helper_name_.empty()) {
     help_label_text = l10n_util::GetStringFUTF16(
@@ -53,13 +61,26 @@ views::View* ScreenShareTrayItem::CreateNotificationView(
         IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED);
   }
 
-  set_notification_view(new tray::ScreenNotificationView(
-      this,
-      IDR_AURA_UBER_TRAY_DISPLAY,
+  message_center::RichNotificationData data;
+  data.buttons.push_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP)));
+  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
+  scoped_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kScreenShareNotificationId,
       help_label_text,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_SCREEN_SHARE_STOP)));
-  return notification_view();
+      base::string16() /* body is blank */,
+      resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
+      base::string16() /* display_source */,
+      std::string() /* extension_id */,
+      data,
+      new tray::ScreenNotificationDelegate(this)));
+  notification->SetSystemPriority();
+  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+}
+
+std::string ScreenShareTrayItem::GetNotificationId() {
+  return kScreenShareNotificationId;
 }
 
 void ScreenShareTrayItem::OnScreenShareStart(

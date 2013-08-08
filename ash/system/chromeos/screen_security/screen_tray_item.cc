@@ -7,14 +7,12 @@
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace {
-const int kStopButtonRightPaddingDefaultView = 18;
-const int kStopButtonRightPaddingNotificationView = 0;
-const int kStopButtonLeftPaddingNotificationView = 4;
-const int kVerticalPaddingScreenCaptureNotitification = 12;
+const int kStopButtonRightPadding = 18;
 }  // namespace
 
 namespace ash {
@@ -43,7 +41,6 @@ void ScreenTrayView::Update() {
 
 // ScreenStatusView implementations.
 ScreenStatusView::ScreenStatusView(ScreenTrayItem* screen_tray_item,
-                                   ViewType view_type,
                                    int icon_id,
                                    const base::string16& label_text,
                                    const base::string16& stop_button_text)
@@ -51,7 +48,6 @@ ScreenStatusView::ScreenStatusView(ScreenTrayItem* screen_tray_item,
       icon_(NULL),
       label_(NULL),
       stop_button_(NULL),
-      view_type_(view_type),
       icon_id_(icon_id),
       label_text_(label_text),
       stop_button_text_(stop_button_text) {
@@ -65,18 +61,10 @@ ScreenStatusView::~ScreenStatusView() {
 void ScreenStatusView::Layout() {
   views::View::Layout();
 
-  int stop_button_right_padding =
-      view_type_ == VIEW_DEFAULT ?
-          kStopButtonRightPaddingDefaultView :
-          kStopButtonRightPaddingNotificationView;
-  int stop_button_left_padding =
-      view_type_ == VIEW_DEFAULT ?
-          kTrayPopupPaddingBetweenItems :
-          kStopButtonLeftPaddingNotificationView;
   // Give the stop button the space it requests.
   gfx::Size stop_size = stop_button_->GetPreferredSize();
   gfx::Rect stop_bounds(stop_size);
-  stop_bounds.set_x(width() - stop_size.width() - stop_button_right_padding);
+  stop_bounds.set_x(width() - stop_size.width() - kStopButtonRightPadding);
   stop_bounds.set_y((height() - stop_size.height()) / 2);
   stop_button_->SetBoundsRect(stop_bounds);
 
@@ -84,7 +72,7 @@ void ScreenStatusView::Layout() {
   if (label_->bounds().Intersects(stop_button_->bounds())) {
     gfx::Rect label_bounds = label_->bounds();
     label_bounds.set_width(
-        stop_button_->x() - stop_button_left_padding - label_->x());
+        stop_button_->x() - kTrayPopupPaddingBetweenItems - label_->x());
     label_->SetBoundsRect(label_bounds);
   }
 }
@@ -99,22 +87,13 @@ void ScreenStatusView::ButtonPressed(
 void ScreenStatusView::CreateItems() {
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  if (view_type_ == VIEW_DEFAULT) {
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                          kTrayPopupPaddingHorizontal,
-                                          0,
-                                          kTrayPopupPaddingBetweenItems));
-    icon_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
-    icon_->SetImage(bundle.GetImageNamed(icon_id_).ToImageSkia());
-    AddChildView(icon_);
-  } else {
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal,
-                             0,
-                             kVerticalPaddingScreenCaptureNotitification,
-                             0));
-  }
-
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                        kTrayPopupPaddingHorizontal,
+                                        0,
+                                        kTrayPopupPaddingBetweenItems));
+  icon_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
+  icon_->SetImage(bundle.GetImageNamed(icon_id_).ToImageSkia());
+  AddChildView(icon_);
   label_ = new views::Label;
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_->SetMultiLine(true);
@@ -126,40 +105,34 @@ void ScreenStatusView::CreateItems() {
 }
 
 void ScreenStatusView::Update() {
-  if (view_type_ == VIEW_DEFAULT) {
-    // Hide the notification bubble when the ash tray bubble opens.
-    screen_tray_item_->HideNotificationView();
-    SetVisible(screen_tray_item_->is_started());
-  }
+  // Hide the notification bubble when the ash tray bubble opens.
+  screen_tray_item_->HideNotificationView();
+  SetVisible(screen_tray_item_->is_started());
 }
 
-
-// ScreenNotificationView implementations.
-ScreenNotificationView::ScreenNotificationView(
-    ScreenTrayItem* screen_tray_item,
-    int icon_id,
-    const base::string16& label_text,
-    const base::string16& stop_button_text)
-        : TrayNotificationView(screen_tray_item, icon_id),
-          screen_tray_item_(screen_tray_item) {
-  screen_status_view_ = new ScreenStatusView(
-      screen_tray_item,
-      ScreenStatusView::VIEW_NOTIFICATION,
-      icon_id,
-      label_text,
-      stop_button_text);
-  InitView(screen_status_view_);
-  Update();
+ScreenNotificationDelegate::ScreenNotificationDelegate(
+    ScreenTrayItem* screen_tray)
+  : screen_tray_(screen_tray) {
 }
 
-ScreenNotificationView::~ScreenNotificationView() {
+ScreenNotificationDelegate::~ScreenNotificationDelegate() {
 }
 
-void ScreenNotificationView::Update() {
-  if (screen_tray_item_->is_started())
-    screen_status_view_->Update();
-  else
-    screen_tray_item_->HideNotificationView();
+void ScreenNotificationDelegate::Display() {
+}
+
+void ScreenNotificationDelegate::Error() {
+}
+
+void ScreenNotificationDelegate::Close(bool by_user) {
+}
+
+void ScreenNotificationDelegate::Click() {
+}
+
+void ScreenNotificationDelegate::ButtonClick(int button_index) {
+  DCHECK_EQ(0, button_index);
+  screen_tray_->Stop();
 }
 
 }  // namespace tray
@@ -168,7 +141,6 @@ ScreenTrayItem::ScreenTrayItem(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       tray_view_(NULL),
       default_view_(NULL),
-      notification_view_(NULL),
       is_started_(false),
       stop_callback_(base::Bind(&base::DoNothing)) {
 }
@@ -180,8 +152,12 @@ void ScreenTrayItem::Update() {
     tray_view_->Update();
   if (default_view_)
     default_view_->Update();
-  if (notification_view_)
-    notification_view_->Update();
+  if (is_started_) {
+    CreateOrUpdateNotification();
+  } else {
+    message_center::MessageCenter::Get()->RemoveNotification(
+        GetNotificationId(), false /* by_user */);
+  }
 }
 
 void ScreenTrayItem::Start(const base::Closure& stop_callback) {
@@ -196,7 +172,7 @@ void ScreenTrayItem::Start(const base::Closure& stop_callback) {
 
   if (!system_tray()->HasSystemBubbleType(
       SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
-    ShowNotificationView();
+    CreateOrUpdateNotification();
   }
 }
 
@@ -218,10 +194,6 @@ void ScreenTrayItem::DestroyTrayView() {
 
 void ScreenTrayItem::DestroyDefaultView() {
   default_view_ = NULL;
-}
-
-void ScreenTrayItem::DestroyNotificationView() {
-  notification_view_ = NULL;
 }
 
 }  // namespace internal

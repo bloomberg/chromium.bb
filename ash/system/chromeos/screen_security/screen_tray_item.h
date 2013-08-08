@@ -11,6 +11,7 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_popup_label_button.h"
+#include "ui/message_center/notification_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 
@@ -41,13 +42,7 @@ class ScreenTrayView : public TrayItemView {
 class ScreenStatusView : public views::View,
                          public views::ButtonListener {
  public:
-  enum ViewType {
-      VIEW_DEFAULT,
-      VIEW_NOTIFICATION
-  };
-
   ScreenStatusView(ScreenTrayItem* screen_tray_item,
-                   ViewType view_type,
                    int icon_id,
                    const base::string16& label_text,
                    const base::string16& stop_button_text);
@@ -68,7 +63,6 @@ class ScreenStatusView : public views::View,
   views::ImageView* icon_;
   views::Label* label_;
   TrayPopupLabelButton* stop_button_;
-  ViewType view_type_;
   int icon_id_;
   base::string16 label_text_;
   base::string16 stop_button_text_;
@@ -76,21 +70,24 @@ class ScreenStatusView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(ScreenStatusView);
 };
 
-class ScreenNotificationView : public TrayNotificationView {
+class ScreenNotificationDelegate : public message_center::NotificationDelegate {
  public:
-  ScreenNotificationView(ScreenTrayItem* screen_tray_item,
-                         int icon_id,
-                         const base::string16& label_text,
-                         const base::string16& stop_button_text);
-  virtual ~ScreenNotificationView();
+  explicit ScreenNotificationDelegate(ScreenTrayItem* screen_tray);
 
-  void Update();
+  // message_center::NotificationDelegate overrides:
+  virtual void Display() OVERRIDE;
+  virtual void Error() OVERRIDE;
+  virtual void Close(bool by_user) OVERRIDE;
+  virtual void Click() OVERRIDE;
+  virtual void ButtonClick(int button_index) OVERRIDE;
+
+ protected:
+  virtual ~ScreenNotificationDelegate();
 
  private:
-  ScreenTrayItem* screen_tray_item_;
-  ScreenStatusView* screen_status_view_;
+  ScreenTrayItem* screen_tray_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenNotificationView);
+  DISALLOW_COPY_AND_ASSIGN(ScreenNotificationDelegate);
 };
 
 }  // namespace tray
@@ -114,13 +111,6 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
     default_view_ = default_view;
   }
 
-  tray::ScreenNotificationView* notification_view() {
-    return notification_view_;
-  }
-  void set_notification_view(tray::ScreenNotificationView* notification_view) {
-    notification_view_ = notification_view;
-  }
-
   bool is_started() const { return is_started_; }
   void set_is_started(bool is_started) { is_started_ = is_started; }
 
@@ -128,20 +118,21 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   void Start(const base::Closure& stop_callback);
   void Stop();
 
+  // Creates or updates the notification for the tray item.
+  virtual void CreateOrUpdateNotification() = 0;
+
+  // Returns the id of the notification for the tray item.
+  virtual std::string GetNotificationId() = 0;
+
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE = 0;
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE = 0;
-  virtual views::View* CreateNotificationView(
-      user::LoginStatus status) OVERRIDE = 0;
-
   virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
-  virtual void DestroyNotificationView() OVERRIDE;
 
  private:
   tray::ScreenTrayView* tray_view_;
   tray::ScreenStatusView* default_view_;
-  tray::ScreenNotificationView* notification_view_;
   bool is_started_;
   base::Closure stop_callback_;
 
