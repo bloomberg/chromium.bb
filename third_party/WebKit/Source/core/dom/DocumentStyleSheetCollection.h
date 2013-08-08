@@ -64,6 +64,7 @@ public:
 
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
     void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode = 0);
+    void modifiedStyleSheetCandidateNode(Node*);
 
     void clearPageUserSheet();
     void updatePageUserSheet();
@@ -87,7 +88,7 @@ public:
         RemovePendingSheetNotifyImmediately,
         RemovePendingSheetNotifyLater
     };
-    void removePendingSheet(RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
+    void removePendingSheet(Node* styleSheetCandidateNode, RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
 
     bool hasPendingSheets() const { return m_pendingStylesheets > 0; }
 
@@ -105,8 +106,21 @@ public:
     void combineCSSFeatureFlags(const RuleFeatureSet&);
     void resetCSSFeatureFlags(const RuleFeatureSet&);
 
+    void didModifySeamlessParentStyleSheet() { m_needsUpdateDocumentStyleSheets = true; }
+    void didRemoveShadowRoot(ShadowRoot*);
+    void appendActiveAuthorStyleSheets(StyleResolver*);
+    void getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const;
+
 private:
     DocumentStyleSheetCollection(Document*);
+
+    StyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope*);
+    StyleSheetCollection* styleSheetCollectionFor(TreeScope*);
+    void activeStyleSheetsUpdatedForInspector();
+    bool shouldUpdateStyleSheetCollectionForShadow(StyleResolverUpdateMode);
+
+    typedef ListHashSet<TreeScope*, 16> TreeScopeSet;
+    static void insertTreeScopeInDocumentOrder(TreeScopeSet&, TreeScope*);
 
     Document* m_document;
 
@@ -125,10 +139,14 @@ private:
     Vector<RefPtr<CSSStyleSheet> > m_userStyleSheets;
     Vector<RefPtr<CSSStyleSheet> > m_authorStyleSheets;
 
-    bool m_hadActiveLoadingStylesheet;
     bool m_needsUpdateActiveStylesheetsOnStyleRecalc;
 
-    StyleSheetCollection m_collectionForDocument;
+    StyleSheetCollectionForDocument m_collectionForDocument;
+    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> > m_styleSheetCollectionMap;
+
+    TreeScopeSet m_dirtyTreeScopes;
+    TreeScopeSet m_activeTreeScopes;
+    bool m_needsUpdateDocumentStyleSheets;
 
     String m_preferredStylesheetSetName;
     String m_selectedStylesheetSetName;

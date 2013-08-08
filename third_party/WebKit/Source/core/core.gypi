@@ -1922,6 +1922,8 @@
             'dom/SecurityPolicyViolationEvent.h',
             'dom/SelectorQuery.cpp',
             'dom/SelectorQuery.h',
+            'dom/ShadowStyleSheetCollection.cpp',
+            'dom/ShadowStyleSheetCollection.h',
             'dom/SimulatedClickOptions.h',
             'dom/SpaceSplitString.cpp',
             'dom/StaticNodeList.cpp',

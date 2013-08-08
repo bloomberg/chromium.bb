@@ -170,7 +170,7 @@ void ProcessingInstruction::checkStyleSheet()
             else {
                 // The request may have been denied if (for example) the stylesheet is local and the document is remote.
                 m_loading = false;
-                document()->styleSheetCollection()->removePendingSheet();
+                document()->styleSheetCollection()->removePendingSheet(this);
             }
         }
     }
@@ -188,7 +188,7 @@ bool ProcessingInstruction::isLoading() const
 bool ProcessingInstruction::sheetLoaded()
 {
     if (!isLoading()) {
-        document()->styleSheetCollection()->removePendingSheet();
+        document()->styleSheetCollection()->removePendingSheet(this);
         return true;
     }
     return false;

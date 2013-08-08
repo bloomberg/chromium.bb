@@ -149,6 +149,17 @@ inline ShadowRoot* toShadowRoot(Node* node)
     return const_cast<ShadowRoot*>(toShadowRoot(static_cast<const Node*>(node)));
 }
 
+inline const ShadowRoot* toShadowRoot(const TreeScope* treeScope)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!treeScope || (treeScope->rootNode() && treeScope->rootNode()->isShadowRoot()));
+    return static_cast<const ShadowRoot*>(treeScope);
+}
+
+inline ShadowRoot* toShadowRoot(TreeScope* treeScope)
+{
+    return const_cast<ShadowRoot*>(toShadowRoot(static_cast<const TreeScope*>(treeScope)));
+}
+
 } // namespace
 
 #endif
