@@ -182,7 +182,9 @@ if ragel_involved:
     include_dir = rl_instruction_file.dir.get_abspath()
     assert include_dir == byte_machines.dir.get_abspath()
 
-    rl_file = env.File('%s_x86_%s.rl' % (automaton, bits))
+    # Don't use env.File because filename is written "as is" in XML file.
+    # We want relative path there, not an absolute one!
+    rl_file = 'src/trusted/validator_ragel/%s_x86_%s.rl' % (automaton, bits)
 
     (xml_file,) = env.AutoDepsCommand(
         '%s/%s_x86_%s.xml' % (gen_dir, automaton, bits),

@@ -1,4 +1,4 @@
-<ragel version="6.7" filename="/home/khim/work/nacl/native_client/src/trusted/validator_ragel/validator_x86_64.rl" lang="C">
+<ragel version="6.7" filename="src/trusted/validator_ragel/validator_x86_64.rl" lang="C">
 <ragel_def name="x86_64_validator">
   <alphtype>uchar</alphtype>
   <p_expr><text> current_position</text></p_expr>
