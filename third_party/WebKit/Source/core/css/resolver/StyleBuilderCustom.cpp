@@ -37,7 +37,7 @@
  */
 
 #include "config.h"
-#include "core/css/resolver/StyleBuilder.h"
+#include "core/css/resolver/StyleBuilderCustom.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
@@ -64,6 +64,7 @@
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 #include "core/css/resolver/FontBuilder.h"
+#include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/page/Frame.h"
@@ -822,6 +823,81 @@ void StyleBuilderFunctions::applyValueCSSPropetyWebkitTextUnderlinePosition(Styl
     state.style()->setTextUnderlinePosition(static_cast<TextUnderlinePosition>(t));
 }
 #endif // CSS3_TEXT
+
+Length StyleBuilderConverter::convertLength(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    Length result = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    ASSERT(!result.isUndefined());
+    result.setQuirk(primitiveValue->isQuirkValue());
+    return result;
+}
+
+Length StyleBuilderConverter::convertLengthOrAuto(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    Length result = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    ASSERT(!result.isUndefined());
+    result.setQuirk(primitiveValue->isQuirkValue());
+    return result;
+}
+
+Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    switch (primitiveValue->getValueID()) {
+    case CSSValueInvalid:
+        return convertLength(state, value);
+    case CSSValueIntrinsic:
+        return Length(Intrinsic);
+    case CSSValueMinIntrinsic:
+        return Length(MinIntrinsic);
+    case CSSValueWebkitMinContent:
+        return Length(MinContent);
+    case CSSValueWebkitMaxContent:
+        return Length(MaxContent);
+    case CSSValueWebkitFillAvailable:
+        return Length(FillAvailable);
+    case CSSValueWebkitFitContent:
+        return Length(FitContent);
+    case CSSValueAuto:
+        return Length(Auto);
+    default:
+        ASSERT_NOT_REACHED();
+        return Length();
+    }
+}
+
+Length StyleBuilderConverter::convertLengthMaxSizing(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID() == CSSValueNone)
+        return Length(Undefined);
+    return convertLengthSizing(state, value);
+}
+
+LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    Pair* pair = primitiveValue->getPairValue();
+    Length radiusWidth = pair->first()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length radiusHeight = pair->second()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    float width = radiusWidth.value();
+    float height = radiusHeight.value();
+    ASSERT(width >= 0 && height >= 0);
+    if (width <= 0 || height <= 0)
+        return LengthSize(Length(0, Fixed), Length(0, Fixed));
+    return LengthSize(radiusWidth, radiusHeight);
+}
+
+float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID() == CSSValueNormal)
+        return 0;
+    float zoom = state.useSVGZoomRules() ? 1.0f : state.style()->effectiveZoom();
+    return primitiveValue->computeLength<float>(state.style(), state.rootElementStyle(), zoom);
+}
 
 
 // Everything below this line is from the old StyleResolver::applyProperty

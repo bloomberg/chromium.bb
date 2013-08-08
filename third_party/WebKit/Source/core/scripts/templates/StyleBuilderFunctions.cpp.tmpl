@@ -243,39 +243,6 @@ namespace WebCore {
 {{ apply_value_border_image_source("CSSPropertyBorderImageSource") }}
 {{ apply_value_border_image_source("CSSPropertyWebkitMaskBoxImageSource") }}
 
-{%- macro apply_value_border_radius(property_id) %}
-{{ declare_value_function(property_id) }}
-{
-    {%- set property = properties[property_id] %}
-    if (!value->isPrimitiveValue())
-        return;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Pair* pair = primitiveValue->getPairValue();
-    if (!pair || !pair->first() || !pair->second())
-        return;
-
-    Length radiusWidth = pair->first()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
-    Length radiusHeight = pair->second()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
-    int width = radiusWidth.value();
-    int height = radiusHeight.value();
-    if (width < 0 || height < 0)
-        return;
-    if (!width)
-        radiusHeight = radiusWidth; // Null out the other value.
-    else if (!height)
-        radiusWidth = radiusHeight; // Null out the other value.
-
-    LengthSize size(radiusWidth, radiusHeight);
-    {{ set_value(property) }}(size);
-}
-{%- endmacro %}
-
-{{ apply_value_border_radius("CSSPropertyBorderBottomLeftRadius") }}
-{{ apply_value_border_radius("CSSPropertyBorderBottomRightRadius") }}
-{{ apply_value_border_radius("CSSPropertyBorderTopLeftRadius") }}
-{{ apply_value_border_radius("CSSPropertyBorderTopRightRadius") }}
-
 {%- macro apply_color(property_id, default_getter="color", initial_color=none, inherit_color=false) %}
 {%- set property = properties[property_id] %}
 {%- set visited_link_setter = "setVisitedLink" + property.camel_case_name %}
@@ -333,24 +300,6 @@ namespace WebCore {
 {{ apply_color("CSSPropertyWebkitTextEmphasisColor") }}
 {{ apply_color("CSSPropertyWebkitTextFillColor") }}
 {{ apply_color("CSSPropertyWebkitTextStrokeColor") }}
-
-{%- macro apply_value_compute_length(property_id) %}
-{{ declare_value_function(property_id) }}
-{
-    {%- set property = properties[property_id] %}
-    if (!value->isPrimitiveValue())
-        return;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    float zoom = state.style()->effectiveZoom();
-    {{ set_value(property) }}(primitiveValue->computeLength<{{property.type_name}}>(state.style(), state.rootElementStyle(), zoom));
-}
-{%- endmacro %}
-
-{{ apply_value_compute_length("CSSPropertyOutlineOffset") }}
-{{ apply_value_compute_length("CSSPropertyWebkitBorderHorizontalSpacing") }}
-{{ apply_value_compute_length("CSSPropertyWebkitBorderVerticalSpacing") }}
-{{ apply_value_compute_length("CSSPropertyWebkitTransformOriginZ") }}
 
 {%- macro apply_counter(property_id, action) %}
 {%- set property = properties[property_id] %}
@@ -525,48 +474,6 @@ namespace WebCore {
 {{ apply_font("CSSPropertyWebkitFontKerning", "Kerning", "FontDescription::AutoKerning", "FontDescription::Kerning") }}
 {{ apply_font("CSSPropertyWebkitFontSmoothing", "FontSmoothing", "AutoSmoothing", "FontSmoothingMode") }}
 
-{%- macro apply_value_line_width(property_id) %}
-{{ declare_value_function(property_id) }}
-{
-    {%- set property = properties[property_id] %}
-    {%- set T = property.type_name %}
-    if (!value->isPrimitiveValue())
-        return;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    CSSValueID valueID = primitiveValue->getValueID();
-    {{ T }} length;
-    if (valueID == CSSValueThin) {
-        length = 1;
-    } else if (valueID == CSSValueMedium) {
-        length = 3;
-    } else if (valueID == CSSValueThick) {
-        length = 5;
-    } else if (valueID == CSSValueInvalid) {
-        float zoom = state.style()->effectiveZoom();
-        // Any original result that was >= 1 should not be allowed to fall below 1.
-        // This keeps border lines from vanishing.
-        length = primitiveValue->computeLength<{{T}}>(state.style(), state.rootElementStyle(), zoom);
-        if (zoom < 1.0f && length < 1.0) {
-            {{ T }} originalLength = primitiveValue->computeLength<{{T}}>(state.style(), state.rootElementStyle(), 1.0);
-            if (originalLength >= 1.0)
-                length = 1.0;
-        }
-    } else {
-        ASSERT_NOT_REACHED();
-        length = 0;
-    }
-    {{ set_value(property) }}(length);
-}
-{%- endmacro %}
-
-{{ apply_value_line_width("CSSPropertyBorderBottomWidth") }}
-{{ apply_value_line_width("CSSPropertyBorderLeftWidth") }}
-{{ apply_value_line_width("CSSPropertyBorderRightWidth") }}
-{{ apply_value_line_width("CSSPropertyBorderTopWidth") }}
-{{ apply_value_line_width("CSSPropertyOutlineWidth") }}
-{{ apply_value_line_width("CSSPropertyWebkitColumnRuleWidth") }}
-
 {%- macro apply_value_number(property_id, id_for_minus_one) %}
 {{ declare_value_function(property_id) }}
 {
@@ -605,48 +512,5 @@ namespace WebCore {
 
 {{ apply_value_shape("CSSPropertyWebkitShapeInside") }}
 {{ apply_value_shape("CSSPropertyWebkitShapeOutside") }}
-
-{%- macro apply_value_spacing(property_id) %}
-{{ declare_value_function(property_id) }}
-{
-    {%- set property = properties[property_id] %}
-    {%- set T = property.type_name %}
-    if (!value->isPrimitiveValue())
-        return;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    {{ T }} length;
-    if (primitiveValue->getValueID() == CSSValueNormal) {
-        length = 0;
-    } else {
-        float zoom = state.useSVGZoomRules() ? 1.0f : state.style()->effectiveZoom();
-        length = primitiveValue->computeLength<{{T}}>(state.style(), state.rootElementStyle(), zoom);
-    }
-    {{ set_value(property) }}(length);
-}
-{%- endmacro %}
-
-{{ apply_value_spacing("CSSPropertyLetterSpacing") }}
-{{ apply_value_spacing("CSSPropertyWordSpacing") }}
-
-{%- macro apply_value_string(property_id, id_for_none) %}
-{{ declare_value_function(property_id) }}
-{
-    {%- set property = properties[property_id] %}
-    if (!value->isPrimitiveValue())
-        return;
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == {{id_for_none}})
-        {{ set_value(property) }}(nullAtom);
-    else
-        {{ set_value(property) }}(primitiveValue->getStringValue());
-}
-{%- endmacro %}
-
-{{ apply_value_string("CSSPropertyWebkitHighlight", "CSSValueNone") }}
-{{ apply_value_string("CSSPropertyWebkitHyphenateCharacter", "CSSValueAuto") }}
-{{ apply_value_string("CSSPropertyWebkitLineGrid", "CSSValueNone") }}
-{{ apply_value_string("CSSPropertyWebkitFlowFrom", "CSSValueNone") }}
-{{ apply_value_string("CSSPropertyWebkitFlowInto", "CSSValueNone") }}
 
 } // namespace WebCore

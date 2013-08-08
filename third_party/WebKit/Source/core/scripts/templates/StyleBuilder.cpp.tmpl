@@ -21,56 +21,6 @@
 
 namespace WebCore {
 
-{%- macro apply_value_length(property) -%}
-    if (!value->isPrimitiveValue())
-        return;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Length length;
-    switch(primitiveValue->getValueID()) {
-
-{%- if property.use_none %}
-    case CSSValueNone:
-        length = Length(Undefined);
-        break;
-{%- endif %}
-
-{%- if property.use_intrinsic %}
-    case CSSValueIntrinsic:
-        length = Length(Intrinsic);
-        break;
-    case CSSValueMinIntrinsic:
-        length = Length(MinIntrinsic);
-        break;
-    case CSSValueWebkitMinContent:
-        length = Length(MinContent);
-        break;
-    case CSSValueWebkitMaxContent:
-        length = Length(MaxContent);
-        break;
-    case CSSValueWebkitFillAvailable:
-        length = Length(FillAvailable);
-        break;
-    case CSSValueWebkitFitContent:
-        length = Length(FitContent);
-        break;
-{%- endif %}
-
-{%- if property.use_auto %}
-    case CSSValueAuto:
-        break; // default ctor is auto
-{%- endif %}
-
-    case CSSValueInvalid:
-        length = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
-        length.setQuirk(primitiveValue->isQuirkValue());
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-    {{ set_value(property) }}(length);
-{%- endmacro %}
-
 {%- for property_id, property in properties.items() if not property.use_handlers_for %}
 {%- call wrap_with_condition(property.condition) %}
 {%- set apply_type = property.apply_type %}
@@ -100,8 +50,8 @@ void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolverState& stat
 {%- if not property.custom_value %}
 void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolverState& state, CSSValue* value)
 {
-{%- if apply_type == "length" %}
-    {{ apply_value_length(property) }}
+{%- if property.converter %}
+    {{ set_value(property) }}(StyleBuilderConverter::{{property.converter}}(state, value));
 {%- else %}
     {{ set_value(property) }}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
 {%- endif %}

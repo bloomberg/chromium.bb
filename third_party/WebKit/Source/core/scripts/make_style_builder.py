@@ -38,11 +38,7 @@ class StyleBuilderWriter(in_generator.Writer):
     class_name = 'StyleBuilder'
 
     valid_values = {
-        'apply_type': ['default', 'length'],
         'svg': [True, False],
-        'use_none': [True, False],
-        'use_intrinsic': [True, False],
-        'use_auto': [True, False],
         'custom_all': [True, False],
         'custom_initial': [True, False],
         'custom_inherit': [True, False],
@@ -50,10 +46,10 @@ class StyleBuilderWriter(in_generator.Writer):
     }
     defaults = {
         'condition': None,
-        'apply_type': 'default',
         'name_for_methods': None,
         'use_handlers_for': None,
         'svg': False,
+        'converter': None,
 # These depend on property name by default
         'type_name': None,
         'getter': None,
@@ -65,10 +61,6 @@ class StyleBuilderWriter(in_generator.Writer):
         'custom_initial': False,
         'custom_inherit': False,
         'custom_value': False,
-# For the length apply type. Will get moved out to StyleBuilderFunctions.cpp.tmpl
-        'use_none': False,
-        'use_intrinsic': False,
-        'use_auto': False,
     }
 
     def __init__(self, in_files, enabled_conditions):

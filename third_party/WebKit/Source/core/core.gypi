@@ -765,6 +765,7 @@
             'css/resolver/StyleAdjuster.cpp',
             'css/resolver/StyleAdjuster.h',
             'css/resolver/StyleBuilderCustom.cpp',
+            'css/resolver/StyleBuilderCustom.h',
             'css/resolver/StyleResolver.cpp',
             'css/resolver/StyleResolver.h',
             'css/resolver/StyleResolverState.cpp',

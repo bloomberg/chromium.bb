@@ -1,6 +1,11 @@
 {% from "macros.tmpl" import wrap_with_condition, license -%}
 {{ license() }}
 
+#ifndef StyleBuilderFunctions_h
+#define StyleBuilderFunctions_h
+
+#include "core/css/resolver/StyleBuilderCustom.h"
+
 namespace WebCore {
 
 class CSSValue;
@@ -20,3 +25,5 @@ public:
 };
 
 } // namespace WebCore
+
+#endif
