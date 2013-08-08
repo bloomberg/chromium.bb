@@ -115,6 +115,13 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
     if (function.IsEmpty())
         return v8::Local<v8::Function>();
 
+    if (type->parentClass) {
+        v8::Local<v8::Object> proto = constructorForType(const_cast<WrapperTypeInfo*>(type->parentClass));
+        if (proto.IsEmpty())
+            return v8::Local<v8::Function>();
+        function->SetPrototype(proto);
+    }
+
     v8::Local<v8::Value> prototypeValue = function->Get(v8::String::NewSymbol("prototype"));
     if (!prototypeValue.IsEmpty() && prototypeValue->IsObject()) {
         v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(prototypeValue);

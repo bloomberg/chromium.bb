@@ -4,7 +4,7 @@
 
 description('This tests that setting the proto of a built in constructor is not reset');
 
-shouldBe('Object.getPrototypeOf(HTMLElement)', 'Function.prototype');
+shouldBe('Object.getPrototypeOf(HTMLElement)', 'Element');
 
 var proto = new Number(42);
 HTMLElement.__proto__ = proto;

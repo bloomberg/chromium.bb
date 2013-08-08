@@ -1,0 +1,19 @@
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+
+<script>
+description("Tests the prototype chain of interface objects");
+
+shouldBe('Object.getPrototypeOf(HTMLBodyElement)', 'HTMLElement');
+shouldBe('Object.getPrototypeOf(HTMLElement)', 'Element');
+shouldBe('Object.getPrototypeOf(Element)', 'Node');
+shouldBe('Object.getPrototypeOf(Node)', 'EventTarget');
+shouldBe('Object.getPrototypeOf(EventTarget)', 'Function.prototype');
+
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
