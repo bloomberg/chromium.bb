@@ -73,7 +73,6 @@ void WebAuthFlow::Start() {
   // in OnShellWindowAdded.
   std::string random_bytes;
   crypto::RandBytes(WriteInto(&random_bytes, 33), 32);
-  std::string key;
   bool success = base::Base64Encode(random_bytes, &shell_window_key_);
   DCHECK(success);
 
