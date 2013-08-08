@@ -329,10 +329,10 @@ void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t oldSize, si
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     return realloc(ptr, newSize);
 #else
-    size_t oldIndex = oldSize >> kBucketShift;
+    size_t oldIndex = partitionAllocRoundup(oldSize) >> kBucketShift;
     if (oldIndex > kNumBuckets)
         oldIndex = kNumBuckets;
-    size_t newIndex = newSize >> kBucketShift;
+    size_t newIndex = partitionAllocRoundup(newSize) >> kBucketShift;
     if (newIndex > kNumBuckets)
         newIndex = kNumBuckets;
 

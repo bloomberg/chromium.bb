@@ -385,10 +385,12 @@ TEST(WTF_PartitionAlloc, GenericAlloc)
     EXPECT_EQ(ptr, newPtr);
     newPtr = partitionReallocGeneric(&root, ptr, 2, 1);
     EXPECT_EQ(ptr, newPtr);
+    newPtr = partitionReallocGeneric(&root, ptr, 1, WTF::kAllocationGranularity);
+    EXPECT_EQ(ptr, newPtr);
 
     // Change the size of the realloc, switching buckets.
-    newPtr = partitionReallocGeneric(&root, ptr, 1, WTF::kAllocationGranularity + 1);
-    EXPECT_TRUE(newPtr != ptr);
+    newPtr = partitionReallocGeneric(&root, ptr, WTF::kAllocationGranularity, WTF::kAllocationGranularity + 1);
+    EXPECT_NE(newPtr, ptr);
     // Check that the realloc copied correctly.
     char* newCharPtr = static_cast<char*>(newPtr);
     EXPECT_EQ(*newCharPtr, 'A');
@@ -411,7 +413,7 @@ TEST(WTF_PartitionAlloc, GenericAlloc)
     // Upsize the realloc to outside the partition.
     ptr = newPtr;
     newPtr = partitionReallocGeneric(&root, ptr, 1, WTF::kMaxAllocation + 1);
-    EXPECT_TRUE(newPtr != ptr);
+    EXPECT_NE(newPtr, ptr);
     newCharPtr = static_cast<char*>(newPtr);
     EXPECT_EQ(*newCharPtr, 'C');
     *newCharPtr = 'D';
@@ -431,7 +433,7 @@ TEST(WTF_PartitionAlloc, GenericAlloc)
     // Downsize the realloc to inside the partition.
     ptr = newPtr;
     newPtr = partitionReallocGeneric(&root, ptr, WTF::kMaxAllocation * 2, 1);
-    EXPECT_TRUE(newPtr != ptr);
+    EXPECT_NE(newPtr, ptr);
     EXPECT_EQ(newPtr, origPtr);
     newCharPtr = static_cast<char*>(newPtr);
     EXPECT_EQ(*newCharPtr, 'F');
