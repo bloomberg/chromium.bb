@@ -58,13 +58,6 @@ static inline bool nodeCanBeDistributed(const Node* node)
     return false;
 }
 
-ComposedShadowTreeWalker ComposedShadowTreeWalker::fromFirstChild(const Node* node, Policy policy)
-{
-    ComposedShadowTreeWalker walker(node, policy);
-    walker.firstChild();
-    return walker;
-}
-
 void ComposedShadowTreeWalker::firstChild()
 {
     assertPrecondition();

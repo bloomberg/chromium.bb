@@ -54,10 +54,6 @@ public:
 
     ComposedShadowTreeWalker(const Node*, Policy = CrossUpperBoundary, StartPolicy = CannotStartFromShadowBoundary);
 
-    // For a common use case such as:
-    // for (ComposedShadowTreeWalker walker = ComposedShadowTreeWalker::fromFirstChild(node); walker.get(); walker.nextSibling())
-    static ComposedShadowTreeWalker fromFirstChild(const Node*, Policy = CrossUpperBoundary);
-
     Node* get() const { return const_cast<Node*>(m_node); }
 
     void firstChild();
