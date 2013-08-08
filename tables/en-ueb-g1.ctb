@@ -39,8 +39,6 @@ singleletterital 46-25
 firstwordbold 456-456
 lastwordboldbefore 456
 lenboldphrase 4
-begcomp 456-346
-endcomp 456-156
 
 # literary forms of the decimal digits
 include litdigits6Dots.uti
@@ -282,30 +280,6 @@ sign ⊵ 456-456-345 Is not normal subgroup or equal
 # Organized by Unicode values.
 
 # special character sequences
-compbrl :// URLs
-compbrl ()
-compbrl www.
-compbrl ::
-compbrl .com
-compbrl .edu
-compbrl .gov
-compbrl .ini
-compbrl .mil
-compbrl .net
-compbrl .org
-compbrl .doc
-compbrl .xml
-compbrl .xsl
-compbrl .htm
-compbrl .html
-compbrl .tex
-compbrl .txt
-compbrl .gif
-compbrl .jpg
-compbrl .png
-compbrl .wav
-compbrl .tar
-compbrl .zip
 
 context "\e"$a *
 always \\_ 56 letter sign before Roman page numbers
