@@ -20,6 +20,8 @@ import org.chromium.ui.WindowAndroid;
  * parent classes.
  */
 public abstract class TabBase {
+    public static final int INVALID_TAB_ID = -1;
+
     private final WindowAndroid mWindowAndroid;
     private int mNativeTabAndroid;
 
