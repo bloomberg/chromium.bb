@@ -37,7 +37,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/custom/V8PromiseCustom.h"
-#include "wtf/MainThread.h"
 
 #include <v8.h>
 
@@ -64,7 +63,6 @@ ScriptPromiseResolver::~ScriptPromiseResolver()
 
 PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptExecutionContext* context)
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     ASSERT(context);
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -73,7 +71,6 @@ PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptExecutionC
 
 PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create()
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     return adoptRef(new ScriptPromiseResolver(v8::Object::New(), isolate));
@@ -81,14 +78,12 @@ PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create()
 
 bool ScriptPromiseResolver::isPending() const
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     return isPendingInternal();
 }
 
 void ScriptPromiseResolver::detach()
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     detachPromise();
     reject(v8::Undefined(m_isolate));
@@ -97,7 +92,6 @@ void ScriptPromiseResolver::detach()
 
 void ScriptPromiseResolver::fulfill(v8::Handle<v8::Value> value)
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     if (!isPendingInternal())
         return;
@@ -107,7 +101,6 @@ void ScriptPromiseResolver::fulfill(v8::Handle<v8::Value> value)
 
 void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     if (!isPendingInternal())
         return;
@@ -117,7 +110,6 @@ void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 
 void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     if (!isPendingInternal())
         return;
@@ -127,28 +119,24 @@ void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
 
 void ScriptPromiseResolver::fulfill(ScriptValue value)
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     fulfill(value.v8Value());
 }
 
 void ScriptPromiseResolver::resolve(ScriptValue value)
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     resolve(value.v8Value());
 }
 
 void ScriptPromiseResolver::reject(ScriptValue value)
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     reject(value.v8Value());
 }
 
 bool ScriptPromiseResolver::isPendingInternal() const
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     if (m_resolver.isEmpty())
         return false;

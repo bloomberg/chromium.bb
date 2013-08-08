@@ -35,7 +35,6 @@
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
-#include "wtf/MainThread.h"
 #include "wtf/RefPtr.h"
 
 #include <v8.h>
@@ -119,7 +118,6 @@ private:
 template<typename T>
 void ScriptPromiseResolver::fulfill(PassRefPtr<T> value)
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     fulfill(toV8(value.get(), v8::Object::New(), m_isolate));
 }
@@ -127,7 +125,6 @@ void ScriptPromiseResolver::fulfill(PassRefPtr<T> value)
 template<typename T>
 void ScriptPromiseResolver::resolve(PassRefPtr<T> value)
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     resolve(toV8(value.get(), v8::Object::New(), m_isolate));
 }
@@ -135,7 +132,6 @@ void ScriptPromiseResolver::resolve(PassRefPtr<T> value)
 template<typename T>
 void ScriptPromiseResolver::reject(PassRefPtr<T> value)
 {
-    ASSERT(isMainThread());
     ASSERT(v8::Context::InContext());
     reject(toV8(value.get(), v8::Object::New(), m_isolate));
 }

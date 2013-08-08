@@ -35,6 +35,7 @@
 #include "V8PromiseResolver.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8PerIsolateData.h"
 #include "bindings/v8/V8ScriptRunner.h"
@@ -42,6 +43,7 @@
 #include "core/dom/Document.h"
 #include "core/page/DOMWindow.h"
 #include "core/platform/Task.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 #include <v8.h>
@@ -73,12 +75,20 @@ private:
 
 void PromiseTask::performTask(ScriptExecutionContext* context)
 {
-    ASSERT(context && context->isDocument());
+    ASSERT(context);
     if (context->activeDOMObjectsAreStopped())
         return;
-    ScriptState* state = mainWorldScriptState(static_cast<Document*>(context)->frame());
-    v8::HandleScope handleScope;
+
+    ScriptState* state = 0;
+    if (context->isDocument()) {
+        state = mainWorldScriptState(static_cast<Document*>(context)->frame());
+    } else {
+        ASSERT(context->isWorkerGlobalScope());
+        state = scriptStateFromWorkerGlobalScope(toWorkerGlobalScope(context));
+    }
     ASSERT(state);
+
+    v8::HandleScope handleScope;
     v8::Handle<v8::Context> v8Context = state->context();
     v8::Context::Scope scope(v8Context);
     v8::Isolate* isolate = v8Context->GetIsolate();
@@ -88,11 +98,9 @@ void PromiseTask::performTask(ScriptExecutionContext* context)
 
 v8::Handle<v8::Value> postTask(v8::Handle<v8::Function> callback, v8::Handle<v8::Object> receiver, v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    DOMWindow* window = activeDOMWindow();
-    ASSERT(window);
-    Document* document = window->document();
-    ASSERT(document);
-    document->postTask(adoptPtr(new PromiseTask(callback, receiver, value)));
+    ScriptExecutionContext* scriptExecutionContext = getScriptExecutionContext();
+    ASSERT(scriptExecutionContext && scriptExecutionContext->isContextThread());
+    scriptExecutionContext->postTask(adoptPtr(new PromiseTask(callback, receiver, value)));
     return v8::Undefined(isolate);
 }
 

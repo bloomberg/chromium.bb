@@ -29,6 +29,7 @@
  */
 
 [
+   GlobalContext=Window&WorkerGlobalScope,
    EnabledAtRuntime=promise
 ] interface PromiseResolver {
    [Custom] void fulfill(optional any value);
