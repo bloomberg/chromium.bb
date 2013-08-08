@@ -73,6 +73,10 @@ class AutoThread;
 
 namespace base {
 
+namespace android {
+class JavaHandlerThread;
+}
+
 class SequencedWorkerPool;
 class SimpleThread;
 class Thread;
@@ -185,6 +189,7 @@ class BASE_EXPORT ThreadRestrictions {
   friend class Thread;
   friend class ThreadTestHelper;
   friend class PlatformThread;
+  friend class android::JavaHandlerThread;
 
   // END ALLOWED USAGE.
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

@@ -58,6 +58,8 @@
           'android/jni_string.h',
           'android/memory_pressure_listener_android.cc',
           'android/memory_pressure_listener_android.h',
+          'android/java_handler_thread.cc',
+          'android/java_handler_thread.h',
           'android/path_service_android.cc',
           'android/path_service_android.h',
           'android/path_utils.cc',

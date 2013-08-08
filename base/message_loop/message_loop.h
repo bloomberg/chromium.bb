@@ -109,10 +109,19 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   //   This type of ML also supports asynchronous IO.  See also
   //   MessageLoopForIO.
   //
+  // TYPE_JAVA
+  //   This type of ML is backed by a Java message handler which is responsible
+  //   for running the tasks added to the ML. This is only for use on Android.
+  //   TYPE_JAVA behaves in essence like TYPE_UI, except during construction
+  //   where it does not use the main thread specific pump factory.
+  //
   enum Type {
     TYPE_DEFAULT,
     TYPE_UI,
-    TYPE_IO
+    TYPE_IO,
+#if defined(OS_ANDROID)
+    TYPE_JAVA,
+#endif // defined(OS_ANDROID)
   };
 
   // Normally, it is not necessary to instantiate a MessageLoop.  Instead, it

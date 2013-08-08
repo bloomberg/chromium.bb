@@ -92,7 +92,7 @@ MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = NULL;
 // time for every task that is added to the MessageLoop incoming queue.
 bool AlwaysNotifyPump(MessageLoop::Type type) {
 #if defined(OS_ANDROID)
-  return type == MessageLoop::TYPE_UI;
+  return type == MessageLoop::TYPE_UI || type == MessageLoop::TYPE_JAVA;
 #else
   return false;
 #endif
@@ -184,6 +184,10 @@ MessageLoop::MessageLoop(Type type)
       pump_.reset(MESSAGE_PUMP_UI);
   } else if (type_ == TYPE_IO) {
     pump_.reset(MESSAGE_PUMP_IO);
+#if defined(OS_ANDROID)
+  } else if (type_ == TYPE_JAVA) {
+    pump_.reset(MESSAGE_PUMP_UI);
+#endif
   } else {
     DCHECK_EQ(TYPE_DEFAULT, type_);
     pump_.reset(new MessagePumpDefault());
