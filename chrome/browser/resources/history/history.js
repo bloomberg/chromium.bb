@@ -17,6 +17,9 @@
 // with IDs greater than this will be included in this bucket.
 /** @const */ var UMA_MAX_BUCKET_VALUE = 1000;
 
+// The largest bucket value for a UMA histogram that is a subset of above.
+/** @const */ var UMA_MAX_SUBSET_BUCKET_VALUE = 100;
+
 // TODO(glen): Get rid of these global references, replace with a controller
 //     or just make the classes own more of the page.
 var historyModel;
@@ -62,14 +65,15 @@ function recordUmaAction(actionDesc) {
  * Record a histogram value in UMA. If specified value is larger than the max
  * bucket value, record the value in the largest bucket.
  * @param {string} histogram The name of the histogram to be recorded in.
+ * @param {integer} maxBucketValue The max value for the last histogram bucket.
  * @param {integer} value The value to record in the histogram.
  */
 
-function recordUmaHistogram(histogram, value) {
+function recordUmaHistogram(histogram, maxBucketValue, value) {
   chrome.send('metricsHandler:recordInHistogram',
               [histogram,
-              ((value > UMA_MAX_BUCKET_VALUE) ? UMA_MAX_BUCKET_VALUE : value),
-              UMA_MAX_BUCKET_VALUE]);
+              ((value > maxBucketValue) ? maxBucketValue : value),
+              maxBucketValue]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -343,7 +347,14 @@ Visit.prototype.getTitleDOM_ = function(isSearchResult) {
     recordUmaAction('HistoryPage_EntryLinkClick');
     // Record the ID of the entry to signify how many entries are above this
     // link on the page.
-    recordUmaHistogram('HistoryPage.ClickPosition', integerId);
+    recordUmaHistogram('HistoryPage.ClickPosition',
+                       UMA_MAX_BUCKET_VALUE,
+                       integerId);
+    if (integerId <= UMA_MAX_SUBSET_BUCKET_VALUE) {
+      recordUmaHistogram('HistoryPage.ClickPositionSubset',
+                         UMA_MAX_SUBSET_BUCKET_VALUE,
+                         integerId);
+    }
   });
   link.addEventListener('contextmenu', function() {
     recordUmaAction('HistoryPage_EntryLinkRightClick');
@@ -1661,7 +1672,14 @@ function removeItems() {
     var integerId = parseInt(entry.visit.id_, 10);
     // Record the ID of the entry to signify how many entries are above this
     // link on the page.
-    recordUmaHistogram('HistoryPage.RemoveEntryPosition', integerId);
+    recordUmaHistogram('HistoryPage.RemoveEntryPosition',
+                       UMA_MAX_BUCKET_VALUE,
+                       integerId);
+    if (integerId <= UMA_MAX_SUBSET_BUCKET_VALUE) {
+      recordUmaHistogram('HistoryPage.RemoveEntryPositionSubset',
+                         UMA_MAX_SUBSET_BUCKET_VALUE,
+                         integerId);
+    }
     if (entry.parentNode.className == 'search-results')
       recordUmaAction('HistoryPage_SearchResultRemove');
   }

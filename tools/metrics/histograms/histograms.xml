@@ -4073,6 +4073,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="HistoryPage.ClickPositionSubset">
+  <summary>
+    Subset of the Click Position histogram. Contains only the first smaller
+    subset of entries on the page. Number of entries that the clicked entry is
+    older than in History page. Last bucket is entries of that value or higher.
+  </summary>
+</histogram>
+
 <histogram name="HistoryPage.OtherDevicesMenu" enum="NtpOtherSessionsType">
   <summary>
     Histogram for usage of the section in the history page that allows the user
@@ -4085,6 +4093,16 @@ other types of suffix sets.
     Number of entries that the deleted entry is older than in History page. Last
     bucket is any entry of that value or higher. Confirmed removal is not
     guaranteed, just an initiation of 'Remove selected items'.
+  </summary>
+</histogram>
+
+<histogram name="HistoryPage.RemoveEntryPositionSubset">
+  <summary>
+    Subset of Remove Entry Position histogram. Contains only the first smaller
+    subset of entries on the page. Number of entries that the deleted entry is
+    older than in History page. Last bucket is any entry of that value or
+    higher. Confirmed removal is not guaranteed, just an initiation of 'Remove
+    selected items'.
   </summary>
 </histogram>
 
