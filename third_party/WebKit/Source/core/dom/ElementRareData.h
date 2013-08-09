@@ -46,7 +46,7 @@ public:
     void setPseudoElement(PseudoId, PassRefPtr<PseudoElement>);
     PseudoElement* pseudoElement(PseudoId) const;
 
-    void resetComputedStyle();
+    void resetStyleState();
     void resetDynamicRestyleObservations();
 
     short tabIndex() const { return m_tabIndex; }
@@ -109,6 +109,7 @@ public:
 
     RenderStyle* computedStyle() const { return m_computedStyle.get(); }
     void setComputedStyle(PassRefPtr<RenderStyle> computedStyle) { m_computedStyle = computedStyle; }
+    void clearComputedStyle() { m_computedStyle = 0; }
 
     ClassList* classList() const { return m_classList.get(); }
     void setClassList(PassOwnPtr<ClassList> classList) { m_classList = classList; }
@@ -275,7 +276,7 @@ inline void ElementRareData::releasePseudoElement(PseudoElement* element)
     element->setParentOrShadowHostNode(0);
 }
 
-inline void ElementRareData::resetComputedStyle()
+inline void ElementRareData::resetStyleState()
 {
     setComputedStyle(0);
     setStyleAffectedByEmpty(false);
