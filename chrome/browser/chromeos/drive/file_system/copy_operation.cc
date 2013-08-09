@@ -314,8 +314,6 @@ void CopyOperation::MoveEntryFromRootDirectory(
     const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK_EQ(util::GetDriveMyDriveRootPath().value(),
-            file_path.DirName().value());
 
   // Return if there is an error or |dir_path| is the root directory.
   if (error != FILE_ERROR_OK ||
@@ -323,6 +321,9 @@ void CopyOperation::MoveEntryFromRootDirectory(
     callback.Run(error);
     return;
   }
+
+  DCHECK_EQ(util::GetDriveMyDriveRootPath().value(),
+            file_path.DirName().value()) << file_path.value();
 
   move_operation_->Move(file_path,
                         directory_path.Append(file_path.BaseName()),
