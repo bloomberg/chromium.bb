@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
@@ -44,8 +44,8 @@ namespace {
 extensions::WindowController* GetShellWindowController(
     const WebContents* contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  extensions::ShellWindowRegistry* registry =
-      extensions::ShellWindowRegistry::Get(profile);
+  apps::ShellWindowRegistry* registry =
+      apps::ShellWindowRegistry::Get(profile);
   if (!registry)
     return NULL;
   ShellWindow* shell_window =

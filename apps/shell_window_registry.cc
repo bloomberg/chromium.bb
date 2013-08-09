@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/extension.h"
@@ -17,8 +17,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
-using apps::ShellWindow;
-
 namespace {
 
 // Create a key that identifies a ShellWindow in a RenderViewHost across App
@@ -27,9 +25,9 @@ namespace {
 // |id|, the chrome-extension://extension-id/page.html URL will be used. If the
 // RenderViewHost is not for a ShellWindow, return an empty string.
 std::string GetWindowKeyForRenderViewHost(
-    const extensions::ShellWindowRegistry* registry,
+    const apps::ShellWindowRegistry* registry,
     content::RenderViewHost* render_view_host) {
-  ShellWindow* shell_window =
+  apps::ShellWindow* shell_window =
       registry->GetShellWindowForRenderViewHost(render_view_host);
   if (!shell_window)
     return std::string(); // Not a ShellWindow.
@@ -45,7 +43,7 @@ std::string GetWindowKeyForRenderViewHost(
 
 }  // namespace
 
-namespace extensions {
+namespace apps {
 
 ShellWindowRegistry::ShellWindowRegistry(Profile* profile)
     : profile_(profile),

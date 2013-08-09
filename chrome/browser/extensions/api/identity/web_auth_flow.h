@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/shell_window_registry.h"
+#include "apps/shell_window_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -45,7 +45,7 @@ namespace extensions {
 // a window. If a window would be required, the flow fails.
 class WebAuthFlow : public content::NotificationObserver,
                     public content::WebContentsObserver,
-                    public ShellWindowRegistry::Observer {
+                    public apps::ShellWindowRegistry::Observer {
  public:
   enum Mode {
     INTERACTIVE,  // Show UI to the user if necessary.
@@ -91,7 +91,7 @@ class WebAuthFlow : public content::NotificationObserver,
  private:
   friend class ::WebAuthFlowTest;
 
-  // ShellWindowRegistry::Observer implementation.
+  // ::ShellWindowRegistry::Observer implementation.
   virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE;
   virtual void OnShellWindowIconChanged(apps::ShellWindow* shell_window)
       OVERRIDE;

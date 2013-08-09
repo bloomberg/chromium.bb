@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-#include "chrome/browser/extensions/shell_window_registry.h"
+#include "apps/shell_window_registry.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window_observer.h"
 
@@ -34,7 +34,7 @@ class ShellWindowLauncherItemController;
 // aura window manager. It handles adding and removing launcher items from
 // ChromeLauncherController.
 class ShellWindowLauncherController
-    : public extensions::ShellWindowRegistry::Observer,
+    : public apps::ShellWindowRegistry::Observer,
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver {
  public:
@@ -68,7 +68,7 @@ class ShellWindowLauncherController
   ShellWindowLauncherItemController* ControllerForWindow(aura::Window* window);
 
   ChromeLauncherController* owner_;
-  extensions::ShellWindowRegistry* registry_;  // Unowned convenience pointer
+  apps::ShellWindowRegistry* registry_;  // Unowned convenience pointer
   aura::client::ActivationClient* activation_client_;
 
   // Map of app launcher id to controller.

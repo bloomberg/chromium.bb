@@ -8,6 +8,7 @@
 #include "apps/app_restore_service.h"
 #include "apps/saved_files_service.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/auto_reset.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/management_policy.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
@@ -1037,13 +1037,13 @@ void ExtensionSettingsHandler::GetShellWindowPagesForExtensionProfile(
     const Extension* extension,
     Profile* profile,
     std::vector<ExtensionPage>* result) {
-  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile);
+  apps::ShellWindowRegistry* registry = apps::ShellWindowRegistry::Get(profile);
   if (!registry) return;
 
-  const ShellWindowRegistry::ShellWindowList windows =
+  const apps::ShellWindowRegistry::ShellWindowList windows =
       registry->GetShellWindowsForApp(extension->id());
 
-  for (ShellWindowRegistry::const_iterator it = windows.begin();
+  for (apps::ShellWindowRegistry::const_iterator it = windows.begin();
        it != windows.end(); ++it) {
     WebContents* web_contents = (*it)->web_contents();
     RenderViewHost* host = web_contents->GetRenderViewHost();

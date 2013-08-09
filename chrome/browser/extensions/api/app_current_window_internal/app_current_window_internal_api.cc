@@ -6,8 +6,8 @@
 
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/command_line.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/common/extensions/api/app_current_window_internal.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
@@ -32,7 +32,8 @@ const char kDevChannelOnly[] =
 }  // namespace
 
 bool AppCurrentWindowInternalExtensionFunction::RunImpl() {
-  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
+  apps::ShellWindowRegistry* registry =
+      apps::ShellWindowRegistry::Get(profile());
   DCHECK(registry);
   content::RenderViewHost* rvh = render_view_host();
   if (!rvh)

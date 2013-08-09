@@ -10,9 +10,9 @@
 
 #include "apps/app_lifetime_monitor.h"
 #include "apps/app_shim/app_shim_handler_mac.h"
+#include "apps/shell_window_registry.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -47,7 +47,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
     virtual void LoadProfileAsync(const base::FilePath& path,
                                   base::Callback<void(Profile*)> callback);
 
-    virtual extensions::ShellWindowRegistry::ShellWindowList GetWindows(
+    virtual ShellWindowRegistry::ShellWindowList GetWindows(
         Profile* profile, const std::string& extension_id);
 
     virtual const extensions::Extension* GetAppExtension(

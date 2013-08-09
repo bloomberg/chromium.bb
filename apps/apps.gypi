@@ -70,6 +70,8 @@
         'shell_window.h',
         'shell_window_geometry_cache.cc',
         'shell_window_geometry_cache.h',
+        'shell_window_registry.cc',
+        'shell_window_registry.h',
         'switches.cc',
         'switches.h',
       ],

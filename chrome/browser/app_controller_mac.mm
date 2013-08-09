@@ -6,6 +6,7 @@
 
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
@@ -388,7 +388,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
-  using extensions::ShellWindowRegistry;
+  using apps::ShellWindowRegistry;
 
   // If there are no windows, quit immediately.
   if (chrome::BrowserIterator().done() &&
@@ -1425,7 +1425,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 - (void)showOrHideMenuItemsForPackagedApp:(NSNotification*)notification {
   NSMenu* mainMenu = [NSApp mainMenu];
   apps::ShellWindow* shellWindow =
-      extensions::ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
+      apps::ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
           [notification object]);
 
   if (!shellWindow) {

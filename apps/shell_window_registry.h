@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SHELL_WINDOW_REGISTRY_H_
-#define CHROME_BROWSER_EXTENSIONS_SHELL_WINDOW_REGISTRY_H_
+#ifndef APPS_SHELL_WINDOW_REGISTRY_H_
+#define APPS_SHELL_WINDOW_REGISTRY_H_
 
 #include <list>
 
@@ -17,16 +17,14 @@
 
 class Profile;
 
-namespace apps {
-class ShellWindow;
-}
-
 namespace content {
 class DevToolsAgentHost;
 class RenderViewHost;
 }
 
-namespace extensions {
+namespace apps {
+
+class ShellWindow;
 
 // The ShellWindowRegistry tracks the ShellWindows for all platform apps for a
 // particular profile.
@@ -150,4 +148,4 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SHELL_WINDOW_REGISTRY_H_
+#endif  // APPS_SHELL_WINDOW_REGISTRY_H_

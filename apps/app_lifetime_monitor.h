@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "apps/shell_window_registry.h"
 #include "base/observer_list.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -26,7 +26,7 @@ namespace apps {
 // events.
 class AppLifetimeMonitor : public BrowserContextKeyedService,
                            public content::NotificationObserver,
-                           public extensions::ShellWindowRegistry::Observer {
+                           public ShellWindowRegistry::Observer {
  public:
   class Observer {
    public:
@@ -61,7 +61,7 @@ class AppLifetimeMonitor : public BrowserContextKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // extensions::ShellWindowRegistry::Observer overrides:
+  // ShellWindowRegistry::Observer overrides:
   virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
   virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE;
   virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;

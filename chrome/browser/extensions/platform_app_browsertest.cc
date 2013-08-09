@@ -5,6 +5,7 @@
 #include "apps/launcher.h"
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -48,6 +48,7 @@
 #include "url/gurl.h"
 
 using apps::ShellWindow;
+using apps::ShellWindowRegistry;
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 

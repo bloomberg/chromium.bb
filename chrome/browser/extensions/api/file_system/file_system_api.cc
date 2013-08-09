@@ -6,6 +6,7 @@
 
 #include "apps/saved_files_service.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_paths.h"
@@ -741,7 +741,8 @@ void FileSystemChooseEntryFunction::ShowPicker(
   // platform-app only.
   content::WebContents* web_contents = NULL;
   if (extension_->is_platform_app()) {
-    ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
+    apps::ShellWindowRegistry* registry =
+        apps::ShellWindowRegistry::Get(profile());
     DCHECK(registry);
     ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
         render_view_host());

@@ -15,7 +15,6 @@ namespace apps {
 
 using extensions::Extension;
 using extensions::ExtensionHost;
-using extensions::ShellWindowRegistry;
 
 AppLifetimeMonitor::AppLifetimeMonitor(Profile* profile)
     : profile_(profile) {

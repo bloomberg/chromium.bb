@@ -6,13 +6,13 @@
 
 #include "apps/native_app_window.h"
 #include "apps/shell_window_geometry_cache.h"
+#include "apps/shell_window_registry.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -194,7 +194,7 @@ void ShellWindow::Init(const GURL& url,
 
   UpdateExtensionAppIcon();
 
-  extensions::ShellWindowRegistry::Get(profile_)->AddShellWindow(this);
+  ShellWindowRegistry::Get(profile_)->AddShellWindow(this);
 }
 
 ShellWindow::~ShellWindow() {
@@ -280,7 +280,7 @@ void ShellWindow::RequestToLockMouse(WebContents* web_contents,
 }
 
 void ShellWindow::OnNativeClose() {
-  extensions::ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
+  ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
   if (shell_window_contents_)
     shell_window_contents_->NativeWindowClosed();
   delete this;
@@ -293,7 +293,7 @@ void ShellWindow::OnNativeWindowChanged() {
 }
 
 void ShellWindow::OnNativeWindowActivated() {
-  extensions::ShellWindowRegistry::Get(profile_)->ShellWindowActivated(this);
+  ShellWindowRegistry::Get(profile_)->ShellWindowActivated(this);
 }
 
 scoped_ptr<gfx::Image> ShellWindow::GetAppListIcon() {
@@ -374,7 +374,7 @@ void ShellWindow::UpdateAppIcon(const gfx::Image& image) {
     return;
   app_icon_ = image;
   native_app_window_->UpdateWindowIcon();
-  extensions::ShellWindowRegistry::Get(profile_)->ShellWindowIconChanged(this);
+  ShellWindowRegistry::Get(profile_)->ShellWindowIconChanged(this);
 }
 
 void ShellWindow::Fullscreen() {

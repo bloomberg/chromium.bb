@@ -6,11 +6,11 @@
 
 #include "apps/app_window_contents.h"
 #include "apps/native_app_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -20,6 +20,7 @@
 #include "extensions/common/switches.h"
 
 using apps::ShellWindow;
+using apps::ShellWindowRegistry;
 using content::WebContents;
 
 namespace utils = extension_function_test_utils;

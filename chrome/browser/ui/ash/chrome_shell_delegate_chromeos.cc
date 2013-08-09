@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
 #include "apps/native_app_window.h"
+#include "apps/shell_window_registry.h"
 #include "ash/keyboard_overlay/keyboard_overlay_view.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/ash/caps_lock_delegate_chromeos.h"
@@ -70,9 +70,9 @@ void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
     }
   } else {
     Profile* const profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-    const extensions::ShellWindowRegistry* const registry =
-        extensions::ShellWindowRegistry::Get(profile);
-    const extensions::ShellWindowRegistry::ShellWindowList list =
+    const apps::ShellWindowRegistry* const registry =
+        apps::ShellWindowRegistry::Get(profile);
+    const apps::ShellWindowRegistry::ShellWindowList list =
         registry->GetShellWindowsForApp(kFileBrowserDomain);
     if (list.empty()) {
       // Open the new window.

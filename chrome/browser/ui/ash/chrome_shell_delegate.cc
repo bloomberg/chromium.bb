@@ -6,6 +6,7 @@
 
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "ash/ash_switches.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/launcher/launcher_types.h"
@@ -21,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -187,7 +187,7 @@ void ChromeShellDelegate::ToggleFullscreen() {
   }
 
   // |window| may belong to a shell window.
-  apps::ShellWindow* shell_window = extensions::ShellWindowRegistry::
+  apps::ShellWindow* shell_window = apps::ShellWindowRegistry::
       GetShellWindowForNativeWindowAnyProfile(window);
   if (shell_window) {
     if (is_fullscreen)

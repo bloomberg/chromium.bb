@@ -6,6 +6,7 @@
 
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"

@@ -59,7 +59,6 @@
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_updater.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/update_observer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"

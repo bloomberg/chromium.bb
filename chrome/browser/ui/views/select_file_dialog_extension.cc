@@ -6,6 +6,7 @@
 
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -270,7 +270,7 @@ void SelectFileDialogExtension::SelectFileImpl(
     if (!owner_browser) {
       // If an owner_window was supplied but we couldn't find a browser, this
       // could be for a shell window.
-      shell_window = extensions::ShellWindowRegistry::
+      shell_window = apps::ShellWindowRegistry::
           GetShellWindowForNativeWindowAnyProfile(owner_window);
     }
   }

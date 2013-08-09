@@ -6,6 +6,7 @@
 
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
@@ -72,16 +72,16 @@ class TestEvent : public ui::Event {
 };
 
 class TestShellWindowRegistryObserver
-    : public extensions::ShellWindowRegistry::Observer {
+    : public apps::ShellWindowRegistry::Observer {
  public:
   explicit TestShellWindowRegistryObserver(Profile* profile)
       : profile_(profile),
         icon_updates_(0) {
-    extensions::ShellWindowRegistry::Get(profile_)->AddObserver(this);
+    apps::ShellWindowRegistry::Get(profile_)->AddObserver(this);
   }
 
   virtual ~TestShellWindowRegistryObserver() {
-    extensions::ShellWindowRegistry::Get(profile_)->RemoveObserver(this);
+    apps::ShellWindowRegistry::Get(profile_)->RemoveObserver(this);
   }
 
   // Overridden from ShellWindowRegistry::Observer:

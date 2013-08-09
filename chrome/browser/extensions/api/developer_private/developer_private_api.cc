@@ -8,6 +8,7 @@
 #include "apps/app_restore_service.h"
 #include "apps/saved_files_service.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/management_policy.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/platform_util.h"
@@ -67,6 +67,7 @@
 #include "webkit/common/blob/shareable_file_reference.h"
 
 using apps::ShellWindow;
+using apps::ShellWindowRegistry;
 using content::RenderViewHost;
 
 namespace extensions {

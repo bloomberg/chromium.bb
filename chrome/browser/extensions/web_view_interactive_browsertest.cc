@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -59,8 +59,8 @@ class WebViewInteractiveTest
   }
 
   gfx::NativeWindow GetPlatformAppWindow() {
-    const extensions::ShellWindowRegistry::ShellWindowList& shell_windows =
-        extensions::ShellWindowRegistry::Get(
+    const apps::ShellWindowRegistry::ShellWindowList& shell_windows =
+        apps::ShellWindowRegistry::Get(
             browser()->profile())->shell_windows();
     return (*shell_windows.begin())->GetNativeWindow();
   }

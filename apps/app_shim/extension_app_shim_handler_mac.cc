@@ -9,6 +9,7 @@
 #include "apps/app_shim/app_shim_messages.h"
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -44,7 +44,7 @@ void ProfileLoadedCallback(base::Callback<void(Profile*)> callback,
 
 void TerminateIfNoShellWindows() {
   bool shell_windows_left =
-      extensions::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(0);
+      apps::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(0);
   if (!shell_windows_left)
     chrome::AttemptExit();
 }
@@ -53,7 +53,7 @@ void TerminateIfNoShellWindows() {
 
 namespace apps {
 
-typedef extensions::ShellWindowRegistry::ShellWindowList ShellWindowList;
+typedef ShellWindowRegistry::ShellWindowList ShellWindowList;
 
 bool ExtensionAppShimHandler::Delegate::ProfileExistsForPath(
     const base::FilePath& path) {
@@ -89,8 +89,7 @@ void ExtensionAppShimHandler::Delegate::LoadProfileAsync(
 ShellWindowList ExtensionAppShimHandler::Delegate::GetWindows(
     Profile* profile,
     const std::string& extension_id) {
-  return extensions::ShellWindowRegistry::Get(profile)->
-      GetShellWindowsForApp(extension_id);
+  return ShellWindowRegistry::Get(profile)->GetShellWindowsForApp(extension_id);
 }
 
 const extensions::Extension*
@@ -167,7 +166,7 @@ void ExtensionAppShimHandler::QuitAppForWindow(ShellWindow* shell_window) {
     handler->OnShimQuit(host);
   } else {
     // App shims might be disabled or the shim is still starting up.
-    extensions::ShellWindowRegistry::Get(shell_window->profile())->
+    ShellWindowRegistry::Get(shell_window->profile())->
         CloseAllShellWindowsForApp(shell_window->extension_id());
   }
 }
@@ -305,7 +304,7 @@ void ExtensionAppShimHandler::OnShimQuit(Host* host) {
   const std::string& app_id = host->GetAppId();
   const ShellWindowList windows =
       delegate_->GetWindows(profile, app_id);
-  for (extensions::ShellWindowRegistry::const_iterator it = windows.begin();
+  for (ShellWindowRegistry::const_iterator it = windows.begin();
        it != windows.end(); ++it) {
     (*it)->GetBaseWindow()->Close();
   }

@@ -6,12 +6,12 @@
 
 #include "apps/app_load_service_factory.h"
 #include "apps/launcher.h"
+#include "apps/shell_window_registry.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
@@ -125,7 +125,7 @@ void AppLoadService::Observe(int type,
 }
 
 bool AppLoadService::HasShellWindows(const std::string& extension_id) {
-  return !extensions::ShellWindowRegistry::Get(profile_)->
+  return !ShellWindowRegistry::Get(profile_)->
       GetShellWindowsForApp(extension_id).empty();
 }
 

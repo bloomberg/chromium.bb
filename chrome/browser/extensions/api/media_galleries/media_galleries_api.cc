@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
@@ -214,7 +214,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
     // If there is no WebContentsModalDialogManager, then this contents is
     // probably the background page for an app. Try to find a shell window to
     // host the dialog.
-    ShellWindow* window = ShellWindowRegistry::Get(profile())->
+    ShellWindow* window = apps::ShellWindowRegistry::Get(profile())->
         GetCurrentShellWindowForApp(GetExtension()->id());
     if (window) {
       contents = window->web_contents();

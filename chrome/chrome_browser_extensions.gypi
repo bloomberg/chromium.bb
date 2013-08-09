@@ -745,8 +745,6 @@
         'browser/extensions/script_bubble_controller.h',
         'browser/extensions/script_executor.cc',
         'browser/extensions/script_executor.h',
-        'browser/extensions/shell_window_registry.cc',
-        'browser/extensions/shell_window_registry.h',
         'browser/extensions/standard_management_policy_provider.cc',
         'browser/extensions/standard_management_policy_provider.h',
         'browser/extensions/startup_helper.cc',

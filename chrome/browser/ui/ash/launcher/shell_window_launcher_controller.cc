@@ -28,7 +28,7 @@ std::string GetAppLauncherId(ShellWindow* shell_window) {
 ShellWindowLauncherController::ShellWindowLauncherController(
     ChromeLauncherController* owner)
     : owner_(owner),
-      registry_(extensions::ShellWindowRegistry::Get(owner->profile())),
+      registry_(apps::ShellWindowRegistry::Get(owner->profile())),
       activation_client_(NULL) {
   registry_->AddObserver(this);
   if (ash::Shell::HasInstance()) {

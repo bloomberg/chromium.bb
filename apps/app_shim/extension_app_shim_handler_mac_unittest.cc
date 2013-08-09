@@ -16,7 +16,7 @@
 namespace apps {
 
 using extensions::Extension;
-typedef extensions::ShellWindowRegistry::ShellWindowList ShellWindowList;
+typedef ShellWindowRegistry::ShellWindowList ShellWindowList;
 
 using ::testing::_;
 using ::testing::Invoke;

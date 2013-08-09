@@ -10,6 +10,7 @@
 
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
@@ -22,7 +23,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_credit_card_bubble_controller.h"
@@ -247,7 +247,7 @@ ui::BaseWindow* GetBaseWindowForWebContents(
   gfx::NativeWindow native_window =
       web_contents->GetView()->GetTopLevelNativeWindow();
   apps::ShellWindow* shell_window =
-      extensions::ShellWindowRegistry::
+      apps::ShellWindowRegistry::
           GetShellWindowForNativeWindowAnyProfile(native_window);
   return shell_window->GetBaseWindow();
 }

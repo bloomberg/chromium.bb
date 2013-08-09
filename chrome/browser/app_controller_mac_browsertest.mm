@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "apps/shell_window_registry.h"
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -11,7 +12,6 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
   // When an app is focused, all Chrome menu items should be hidden, and a menu
   // item for the app should be added.
   apps::ShellWindow* app_1_shell_window =
-      extensions::ShellWindowRegistry::Get(profile())->
+      apps::ShellWindowRegistry::Get(profile())->
           GetShellWindowsForApp(app_1->id()).front();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
 
   // When another app is focused, the menu item for the app should change.
   apps::ShellWindow* app_2_shell_window =
-      extensions::ShellWindowRegistry::Get(profile())->
+      apps::ShellWindowRegistry::Get(profile())->
           GetShellWindowsForApp(app_2->id()).front();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
       InstallAndLaunchPlatformApp("minimal");
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 
-  NSWindow* app_window = extensions::ShellWindowRegistry::Get(profile())->
+  NSWindow* app_window = apps::ShellWindowRegistry::Get(profile())->
       GetShellWindowsForApp(app->id()).front()->GetNativeWindow();
   NSWindow* browser_window = browser()->window()->GetNativeWindow();
 

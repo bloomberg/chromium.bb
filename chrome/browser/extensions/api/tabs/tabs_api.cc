@@ -93,9 +93,9 @@
 #endif  // OS_WIN
 
 #if defined(USE_ASH)
+#include "apps/shell_window_registry.h"
 #include "ash/ash_switches.h"
 #include "chrome/browser/extensions/api/tabs/ash_panel_contents.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #endif
 
 using apps::ShellWindow;
