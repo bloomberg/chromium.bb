@@ -316,7 +316,7 @@ void OpenFileBrowserImpl(const base::FilePath& path,
   // Some values of |action_id| are not listed in the manifest and are used
   // to parameterize the behavior when opening the Files app window.
   ExecuteHandler(profile, kFileBrowserDomain, action_id, url,
-                 file_tasks::kTaskFile);
+                 file_tasks::kFileBrowserHandlerTaskType);
 }
 
 Browser* GetBrowserForUrl(GURL target_url) {
@@ -371,10 +371,10 @@ bool ExecuteDefaultAppHandler(Profile* profile,
          i != file_handlers.end(); ++i) {
       const extensions::FileHandlerInfo* handler = *i;
       std::string task_id = file_tasks::MakeTaskID(extension->id(),
-          file_tasks::kTaskApp, handler->id);
+          file_tasks::kFileHandlerTaskType, handler->id);
       if (task_id == default_task_id) {
         ExecuteHandler(profile, extension->id(), handler->id, url,
-                       file_tasks::kTaskApp);
+                       file_tasks::kFileHandlerTaskType);
         return true;
 
       } else if (!first_handler) {
@@ -385,7 +385,7 @@ bool ExecuteDefaultAppHandler(Profile* profile,
   }
   if (first_handler) {
     ExecuteHandler(profile, extension_for_first_handler->id(),
-                   first_handler->id, url, file_tasks::kTaskApp);
+                   first_handler->id, url, file_tasks::kFileHandlerTaskType);
     return true;
   }
   return false;
@@ -411,14 +411,14 @@ bool ExecuteExtensionHandler(Profile* profile,
         action_id == kFileBrowserPlayTaskId ||
         action_id == kFileBrowserWatchTaskId) {
       ExecuteHandler(profile, extension_id, action_id, url,
-                     file_tasks::kTaskFile);
+                     file_tasks::kFileBrowserHandlerTaskType);
       return true;
     }
     return ExecuteBuiltinHandler(browser, path);
   }
 
   ExecuteHandler(profile, extension_id, action_id, url,
-                 file_tasks::kTaskFile);
+                 file_tasks::kFileBrowserHandlerTaskType);
   return true;
 }
 
@@ -447,7 +447,9 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
   }
 
   std::string handler_task_id = file_tasks::MakeTaskID(
-        handler->extension_id(), file_tasks::kTaskFile, handler->id());
+        handler->extension_id(),
+        file_tasks::kFileBrowserHandlerTaskType,
+        handler->id());
   if (handler_task_id != default_task_id &&
       !file_tasks::IsFallbackFileBrowserHandler(handler) &&
       ExecuteDefaultAppHandler(

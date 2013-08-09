@@ -78,7 +78,7 @@ std::string MakeDriveAppTaskId(const std::string& app_id) {
   // TODO(gspencer): For now, the action id is always "open-with", but we
   // could add any actions that the drive app supports.
   return file_tasks::MakeTaskID(
-      app_id, file_tasks::kTaskDrive, "open-with");
+      app_id, file_tasks::kDriveTaskType, "open-with");
 }
 
 // Gets the mime types for the given file paths.
@@ -389,7 +389,7 @@ void GetFileTasksFunction::FindFileHandlerTasks(
          i != file_handlers.end(); ++i) {
       DictionaryValue* task = new DictionaryValue;
       std::string task_id = file_tasks::MakeTaskID(
-          extension->id(), file_tasks::kTaskApp, (*i)->id);
+          extension->id(), file_tasks::kFileHandlerTaskType, (*i)->id);
       task->SetString("taskId", task_id);
       task->SetString("title", (*i)->title);
       if (!(*default_already_set) && ContainsKey(default_tasks, task_id)) {
@@ -446,7 +446,7 @@ void GetFileTasksFunction::FindFileBrowserHandlerTasks(
     CHECK(extension);
     DictionaryValue* task = new DictionaryValue;
     task->SetString("taskId", file_tasks::MakeTaskID(
-        extension_id, file_tasks::kTaskFile, handler->id()));
+        extension_id, file_tasks::kFileBrowserHandlerTaskType, handler->id()));
     task->SetString("title", handler->title());
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.

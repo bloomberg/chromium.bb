@@ -52,9 +52,15 @@ using fileapi::FileSystemURL;
 namespace file_manager {
 namespace file_tasks {
 
-const char kTaskFile[] = "file";
-const char kTaskDrive[] = "drive";
-const char kTaskApp[] = "app";
+// The values "file" and "app" are confusing, but cannot be changed easily as
+// these are used in default task IDs stored in preferences.
+//
+// TODO(satorux): We should rename them to "file_browser_handler" and
+// "file_handler" respectively when switching from preferences to
+// chrome.storage crbug.com/267359
+const char kFileBrowserHandlerTaskType[] = "file";
+const char kFileHandlerTaskType[] = "app";
+const char kDriveTaskType[] = "drive";
 
 namespace {
 
@@ -190,7 +196,7 @@ FileBrowserHandlerList::iterator FindHandler(
   return iter;
 }
 
-// ExtensionTaskExecutor executes tasks with kTaskFile type.
+// ExtensionTaskExecutor executes tasks with kFileBrowserHandlerTaskType type.
 class ExtensionTaskExecutor {
  public:
   ExtensionTaskExecutor(Profile* profile,
@@ -565,9 +571,9 @@ std::string GetDefaultTaskIdFromPrefs(Profile* profile,
 std::string MakeTaskID(const std::string& extension_id,
                        const std::string& task_type,
                        const std::string& action_id) {
-  DCHECK(task_type == kTaskFile ||
-         task_type == kTaskDrive ||
-         task_type == kTaskApp);
+  DCHECK(task_type == kFileBrowserHandlerTaskType ||
+         task_type == kDriveTaskType ||
+         task_type == kFileHandlerTaskType);
   return base::StringPrintf("%s|%s|%s",
                             extension_id.c_str(),
                             task_type.c_str(),
@@ -586,13 +592,13 @@ bool CrackTaskID(const std::string& task_id,
   if (count == 2) {
     if (StartsWithASCII(result[0], kDriveTaskExtensionPrefix, true)) {
       if (task_type)
-        *task_type = kTaskDrive;
+        *task_type = kDriveTaskType;
 
       if (extension_id)
         *extension_id = result[0].substr(kDriveTaskExtensionPrefixLength);
     } else {
       if (task_type)
-        *task_type = kTaskFile;
+        *task_type = kFileBrowserHandlerTaskType;
 
       if (extension_id)
         *extension_id = result[0];
@@ -612,9 +618,9 @@ bool CrackTaskID(const std::string& task_id,
 
   if (task_type) {
     *task_type = result[1];
-    DCHECK(*task_type == kTaskFile ||
-           *task_type == kTaskDrive ||
-           *task_type == kTaskApp);
+    DCHECK(*task_type == kFileBrowserHandlerTaskType ||
+           *task_type == kDriveTaskType ||
+           *task_type == kFileHandlerTaskType);
   }
 
   if (action_id)
@@ -644,7 +650,7 @@ FileBrowserHandlerList FindDefaultFileBrowserHandlers(
   for (size_t i = 0; i < common_handlers.size(); ++i) {
     const FileBrowserHandler* handler = common_handlers[i];
     std::string task_id = MakeTaskID(handler->extension_id(),
-                                     kTaskFile,
+                                     kFileBrowserHandlerTaskType,
                                      handler->id());
     std::set<std::string>::iterator default_iter = default_ids.find(task_id);
     if (default_iter != default_ids.end()) {
@@ -757,7 +763,7 @@ bool ExecuteFileTask(Profile* profile,
     return false;
 
   // drive::FileTaskExecutor is responsible to handle drive tasks.
-  if (task_type == kTaskDrive) {
+  if (task_type == kDriveTaskType) {
     DCHECK_EQ("open-with", action_id);
     drive::FileTaskExecutor* executor =
         new drive::FileTaskExecutor(profile, extension_id);
@@ -774,7 +780,7 @@ bool ExecuteFileTask(Profile* profile,
     return false;
 
   // Execute the task.
-  if (task_type == kTaskFile) {
+  if (task_type == kFileBrowserHandlerTaskType) {
     // Forbid calling undeclared handlers.
     if (!FindFileBrowserHandler(extension, action_id))
       return false;
@@ -782,7 +788,7 @@ bool ExecuteFileTask(Profile* profile,
     (new ExtensionTaskExecutor(
         profile, extension, tab_id, action_id))->Execute(file_urls, done);
     return true;
-  } else if (task_type == kTaskApp) {
+  } else if (task_type == kFileHandlerTaskType) {
     for (size_t i = 0; i != file_urls.size(); ++i) {
       apps::LaunchPlatformAppWithFileHandler(
           profile, extension, action_id, file_urls[i].path());

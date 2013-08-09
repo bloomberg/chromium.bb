@@ -80,9 +80,10 @@
 // (Files.app) and the latter looks like "419782477519" (Pixlr Editor).
 //
 // <task-type> is either of
-// - "file" - Files.app built-in handler
+// - "file" - File browser handler - app/extension declaring
+//            "file_browser_handlers" in manifest.
+// - "app" - File handler - app declaring "file_handlers" in manifest.json.
 // - "drive" - Drive App
-// - "app" - Regular Chrome Extension/App ID
 //
 // <task-action-id> is an ID string used for identifying actions provided
 // from a single Chrome Extension/App. In other words, a single
@@ -131,11 +132,11 @@ namespace file_tasks {
 // Tasks are stored as a vector in order of priorities.
 typedef std::vector<const FileBrowserHandler*> FileBrowserHandlerList;
 
-// Specifies the task type for a task id that represents some file action, Drive
-// action, or Web Intent action.
-extern const char kTaskFile[];
-extern const char kTaskDrive[];
-extern const char kTaskApp[];
+// Task types encoded in task IDs. See also the comment at the beginning of
+// the file about <task-type>.
+extern const char kFileBrowserHandlerTaskType[];
+extern const char kFileHandlerTaskType[];
+extern const char kDriveTaskType[];
 
 // Returns true if the given file browser handler should be used as a
 // fallback. Such handlers are Files.app's internal handlers as well as quick
@@ -157,8 +158,9 @@ std::string GetDefaultTaskIdFromPrefs(Profile* profile,
                                       const std::string& mime_type,
                                       const std::string& suffix);
 
-// Generates task id for the action specified by the extension. The |task_type|
-// must be one of kTaskFile, kTaskDrive or kTaskApp.
+// Generates task id for the action specified by the extension. The
+// |task_type| must be one of kFileBrowserHandlerTaskType, kDriveTaskType or
+// kFileHandlerTaskType.
 std::string MakeTaskID(const std::string& extension_id,
                        const std::string& task_type,
                        const std::string& action_id);
