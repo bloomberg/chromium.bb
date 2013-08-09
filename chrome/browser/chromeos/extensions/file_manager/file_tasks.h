@@ -137,9 +137,10 @@ extern const char kTaskFile[];
 extern const char kTaskDrive[];
 extern const char kTaskApp[];
 
-// Returns true if the task should be used as a fallback. Such tasks are
-// Files.app's internal handlers as well as quick office extensions.
-bool IsFallbackTask(const FileBrowserHandler* task);
+// Returns true if the given file browser handler should be used as a
+// fallback. Such handlers are Files.app's internal handlers as well as quick
+// office extensions.
+bool IsFallbackFileBrowserHandler(const FileBrowserHandler* handler);
 
 // Update the default file handler for the given sets of suffixes and MIME
 // types.
@@ -173,16 +174,19 @@ bool CrackTaskID(const std::string& task_id,
                  std::string* task_type,
                  std::string* action_id);
 
-// This generates a list of default tasks (tasks set as default by the user in
-// prefs) from the |common_tasks|.
-FileBrowserHandlerList FindDefaultTasks(
+// Finds file browser handlers set as default from |common_tasks| for
+// |file_list|. If no handlers are set as default, choose the the firstly
+// found fallback handler as default.
+FileBrowserHandlerList FindDefaultFileBrowserHandlers(
     Profile* profile,
     const std::vector<base::FilePath>& files_list,
     const FileBrowserHandlerList& common_tasks);
 
-// This generates list of tasks common for all files in |file_list|.
-FileBrowserHandlerList FindCommonTasks(Profile* profile,
-                                       const std::vector<GURL>& files_list);
+// Returns the list of file browser handlers that can open all files in
+// |file_list|.
+FileBrowserHandlerList FindCommonFileBrowserHandlers(
+    Profile* profile,
+    const std::vector<GURL>& files_list);
 
 // Finds a file browser handler for a file whose URL is |url| and whose path
 // is |path|. Returns the default handler if one is defined (The default

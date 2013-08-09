@@ -449,7 +449,7 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
   std::string handler_task_id = file_tasks::MakeTaskID(
         handler->extension_id(), file_tasks::kTaskFile, handler->id());
   if (handler_task_id != default_task_id &&
-      !file_tasks::IsFallbackTask(handler) &&
+      !file_tasks::IsFallbackFileBrowserHandler(handler) &&
       ExecuteDefaultAppHandler(
           profile, path, url, mime_type, default_task_id)) {
     return true;
