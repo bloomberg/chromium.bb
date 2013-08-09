@@ -390,14 +390,9 @@ void DesktopRootWindowHostWin::OnNativeWidgetBlur() {
 
 void DesktopRootWindowHostWin::SetInactiveRenderingDisabled(
     bool disable_inactive) {
-  // We call DefWindowProc of WM_NCACTIVATE to paint the caption as active or
-  // inactive. This is safe with the only sideeffect being the
-  // WM_GETTEXT message which is sent by DefWindowProc to get the text to be
-  // displayed on the caption.
-  ::DefWindowProc(message_handler_->hwnd(),
-                  WM_NCACTIVATE,
-                  !!disable_inactive,
-                  0);
+  // Force the non-client area (most notably the title bar) to paint as either
+  // active or inactive, depending on the input.
+  SendMessage(message_handler_->hwnd(), WM_NCACTIVATE, !!disable_inactive, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
