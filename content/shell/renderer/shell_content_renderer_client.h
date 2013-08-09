@@ -54,7 +54,7 @@ class ShellContentRendererClient : public ContentRendererClient {
   virtual WebKit::WebCrypto* OverrideWebCrypto() OVERRIDE;
   virtual WebKit::WebThemeEngine* OverrideThemeEngine() OVERRIDE;
   virtual bool AllowBrowserPlugin(
-      WebKit::WebPluginContainer* container) const OVERRIDE;
+      WebKit::WebPluginContainer* container) OVERRIDE;
 
  private:
    void WebTestProxyCreated(RenderView* render_view,

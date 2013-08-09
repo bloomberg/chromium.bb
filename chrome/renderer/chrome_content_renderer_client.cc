@@ -1085,7 +1085,7 @@ ChromeContentRendererClient::GetPrescientNetworking() {
 
 bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
     const content::RenderView* render_view,
-    WebKit::WebPageVisibilityState* override_state) const {
+    WebKit::WebPageVisibilityState* override_state) {
   if (!prerender::PrerenderHelper::IsPrerendering(render_view))
     return false;
 
@@ -1226,8 +1226,16 @@ const void* ChromeContentRendererClient::CreatePPAPIInterface(
   return NULL;
 }
 
+bool ChromeContentRendererClient::IsExternalPepperPlugin(
+    const std::string& module_name) {
+  // TODO(bbudge) remove this when the trusted NaCl plugin has been removed.
+  // We must defer certain plugin events for NaCl instances since we switch
+  // from the in-process to the out-of-process proxy after instantiating them.
+  return module_name == "Native Client";
+}
+
 bool ChromeContentRendererClient::IsPluginAllowedToCallRequestOSFileHandle(
-    WebKit::WebPluginContainer* container) const {
+    WebKit::WebPluginContainer* container) {
 #if defined(ENABLE_PLUGINS)
   if (!container)
     return false;
@@ -1250,7 +1258,7 @@ ChromeContentRendererClient::OverrideSpeechSynthesizer(
 }
 
 bool ChromeContentRendererClient::AllowBrowserPlugin(
-    WebKit::WebPluginContainer* container) const {
+    WebKit::WebPluginContainer* container) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserPluginForAllViewTypes))
     return true;
@@ -1276,7 +1284,7 @@ bool ChromeContentRendererClient::AllowBrowserPlugin(
 }
 
 bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
-    const GURL& url) const {
+    const GURL& url) {
 #if !defined(OS_ANDROID)
   std::string host = url.host();
   // Allow only the Hangouts app to use the MediaStream APIs. It's OK to check

@@ -138,7 +138,7 @@ ContentRendererClient::GetPrescientNetworking() {
 
 bool ContentRendererClient::ShouldOverridePageVisibilityState(
     const RenderView* render_view,
-    WebKit::WebPageVisibilityState* override_state) const {
+    WebKit::WebPageVisibilityState* override_state) {
   return false;
 }
 
@@ -163,17 +163,22 @@ const void* ContentRendererClient::CreatePPAPIInterface(
   return NULL;
 }
 
+bool ContentRendererClient::IsExternalPepperPlugin(
+    const std::string& module_name) {
+  return false;
+}
+
 bool ContentRendererClient::IsPluginAllowedToCallRequestOSFileHandle(
-    WebKit::WebPluginContainer* container) const {
+    WebKit::WebPluginContainer* container) {
   return false;
 }
 
 bool ContentRendererClient::AllowBrowserPlugin(
-    WebKit::WebPluginContainer* container) const {
+    WebKit::WebPluginContainer* container) {
   return false;
 }
 
-bool ContentRendererClient::AllowPepperMediaStreamAPI(const GURL& url) const {
+bool ContentRendererClient::AllowPepperMediaStreamAPI(const GURL& url) {
   return false;
 }
 

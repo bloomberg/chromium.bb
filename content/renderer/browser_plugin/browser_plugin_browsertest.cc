@@ -60,8 +60,8 @@ class TestContentRendererClient : public ContentRendererClient {
   }
   virtual ~TestContentRendererClient() {
   }
-  virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container) const
-      OVERRIDE {
+  virtual bool AllowBrowserPlugin(
+      WebKit::WebPluginContainer* container) OVERRIDE {
     // Allow BrowserPlugin for tests.
     return true;
   }

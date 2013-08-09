@@ -504,11 +504,11 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual ~PepperPluginInstanceImpl();
 
   // Class to record document load notifications and play them back once the
-  // real document loader becomes available. Used only by NaCl instances.
-  class NaClDocumentLoader : public WebKit::WebURLLoaderClient {
+  // real document loader becomes available. Used only by external instances.
+  class ExternalDocumentLoader : public WebKit::WebURLLoaderClient {
    public:
-    NaClDocumentLoader();
-    virtual ~NaClDocumentLoader();
+    ExternalDocumentLoader();
+    virtual ~ExternalDocumentLoader();
 
     void ReplayReceivedData(WebURLLoaderClient* document_loader);
 
@@ -830,10 +830,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Non-owning pointer to the document loader, if any.
   WebKit::WebURLLoaderClient* document_loader_;
-  // State for deferring document loads. Used only by NaCl instances.
-  WebKit::WebURLResponse nacl_document_response_;
-  scoped_ptr<NaClDocumentLoader> nacl_document_loader_;
-  bool nacl_document_load_;
+  // State for deferring document loads. Used only by external instances.
+  WebKit::WebURLResponse external_document_response_;
+  scoped_ptr<ExternalDocumentLoader> external_document_loader_;
+  bool external_document_load_;
 
   // The ContentDecryptorDelegate forwards PPP_ContentDecryptor_Private
   // calls and handles PPB_ContentDecryptor_Private calls.

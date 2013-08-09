@@ -188,7 +188,7 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
 }
 
 bool ShellContentRendererClient::AllowBrowserPlugin(
-    WebKit::WebPluginContainer* container) const {
+    WebKit::WebPluginContainer* container) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserPluginForAllViewTypes)) {
     // Allow BrowserPlugin if forced by command line flag. This is generally

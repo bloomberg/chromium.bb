@@ -373,14 +373,14 @@ PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
                                       plugin_url);
 }
 
-PepperPluginInstanceImpl::NaClDocumentLoader::NaClDocumentLoader()
+PepperPluginInstanceImpl::ExternalDocumentLoader::ExternalDocumentLoader()
     : finished_loading_(false) {
 }
 
-PepperPluginInstanceImpl::NaClDocumentLoader::~NaClDocumentLoader(){
+PepperPluginInstanceImpl::ExternalDocumentLoader::~ExternalDocumentLoader() {
 }
 
-void PepperPluginInstanceImpl::NaClDocumentLoader::ReplayReceivedData(
+void PepperPluginInstanceImpl::ExternalDocumentLoader::ReplayReceivedData(
     WebURLLoaderClient* document_loader) {
   for (std::list<std::string>::iterator it = data_.begin();
        it != data_.end(); ++it) {
@@ -396,7 +396,7 @@ void PepperPluginInstanceImpl::NaClDocumentLoader::ReplayReceivedData(
   }
 }
 
-void PepperPluginInstanceImpl::NaClDocumentLoader::didReceiveData(
+void PepperPluginInstanceImpl::ExternalDocumentLoader::didReceiveData(
     WebURLLoader* loader,
     const char* data,
     int data_length,
@@ -404,14 +404,14 @@ void PepperPluginInstanceImpl::NaClDocumentLoader::didReceiveData(
   data_.push_back(std::string(data, data_length));
 }
 
-void PepperPluginInstanceImpl::NaClDocumentLoader::didFinishLoading(
+void PepperPluginInstanceImpl::ExternalDocumentLoader::didFinishLoading(
     WebURLLoader* loader,
     double finish_time) {
   DCHECK(!finished_loading_);
   finished_loading_ = true;
 }
 
-void PepperPluginInstanceImpl::NaClDocumentLoader::didFail(
+void PepperPluginInstanceImpl::ExternalDocumentLoader::didFail(
     WebURLLoader* loader,
     const WebURLError& error) {
   DCHECK(!error_.get());
@@ -488,7 +488,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       selection_anchor_(0),
       pending_user_gesture_(0.0),
       document_loader_(NULL),
-      nacl_document_load_(false),
+      external_document_load_(false),
       npp_(new NPP_t),
       isolate_(v8::Isolate::GetCurrent()) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
@@ -517,11 +517,9 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
   resource_creation_ = host_impl->CreateInProcessResourceCreationAPI(this);
 
-  // TODO(bbudge) remove this when the trusted NaCl plugin has been removed.
-  // We must defer certain plugin events for NaCl instances since we switch
-  // from the in-process to the out-of-process proxy after instantiating them.
-  if (module->name() == "Native Client")
-    nacl_document_load_ = true;
+  if (GetContentClient()->renderer() &&  // NULL in unit tests.
+      GetContentClient()->renderer()->IsExternalPepperPlugin(module->name()))
+    external_document_load_ = true;
 }
 
 PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
@@ -732,12 +730,12 @@ bool PepperPluginInstanceImpl::Initialize(
 bool PepperPluginInstanceImpl::HandleDocumentLoad(
     const WebKit::WebURLResponse& response) {
   DCHECK(!document_loader_);
-  if (nacl_document_load_) {
-    // The NaCl proxy isn't available, so save the response and record document
-    // load notifications for later replay.
-    nacl_document_response_ = response;
-    nacl_document_loader_.reset(new NaClDocumentLoader());
-    document_loader_ = nacl_document_loader_.get();
+  if (external_document_load_) {
+    // The external proxy isn't available, so save the response and record
+    // document load notifications for later replay.
+    external_document_response_ = response;
+    external_document_loader_.reset(new ExternalDocumentLoader());
+    document_loader_ = external_document_loader_.get();
     return true;
   }
 
@@ -2556,16 +2554,16 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   view_change_weak_ptr_factory_.InvalidateWeakPtrs();
   SendDidChangeView();
 
-  DCHECK(nacl_document_load_);
-  nacl_document_load_ = false;
-  if (!nacl_document_response_.isNull()) {
+  DCHECK(external_document_load_);
+  external_document_load_ = false;
+  if (!external_document_response_.isNull()) {
     document_loader_ = NULL;
     // Pass the response to the new proxy.
-    HandleDocumentLoad(nacl_document_response_);
-    nacl_document_response_ = WebKit::WebURLResponse();
+    HandleDocumentLoad(external_document_response_);
+    external_document_response_ = WebKit::WebURLResponse();
     // Replay any document load events we've received to the real loader.
-    nacl_document_loader_->ReplayReceivedData(document_loader_);
-    nacl_document_loader_.reset(NULL);
+    external_document_loader_->ReplayReceivedData(document_loader_);
+    external_document_loader_.reset(NULL);
   }
 
   return PP_EXTERNAL_PLUGIN_OK;

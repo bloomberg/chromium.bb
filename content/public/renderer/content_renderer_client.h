@@ -209,7 +209,7 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual WebKit::WebPrescientNetworking* GetPrescientNetworking();
   virtual bool ShouldOverridePageVisibilityState(
       const RenderView* render_view,
-      WebKit::WebPageVisibilityState* override_state) const;
+      WebKit::WebPageVisibilityState* override_state);
 
   // Return true if the GetCookie request will be handled by the embedder.
   // Cookies are returned in the cookie parameter.
@@ -229,16 +229,20 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual const void* CreatePPAPIInterface(
       const std::string& interface_name);
 
+  // Returns true if the given Pepper plugin is external (requiring special
+  // startup steps).
+  virtual bool IsExternalPepperPlugin(const std::string& module_name);
+
   // Returns true if plugin living in the container can use
   // pp::FileIO::RequestOSFileHandle.
   virtual bool IsPluginAllowedToCallRequestOSFileHandle(
-      WebKit::WebPluginContainer* container) const;
+      WebKit::WebPluginContainer* container);
 
   // Returns whether BrowserPlugin should be allowed within the |container|.
-  virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container) const;
+  virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container);
 
   // Returns true if the page at |url| can use Pepper MediaStream APIs.
-  virtual bool AllowPepperMediaStreamAPI(const GURL& url) const;
+  virtual bool AllowPepperMediaStreamAPI(const GURL& url);
 };
 
 }  // namespace content

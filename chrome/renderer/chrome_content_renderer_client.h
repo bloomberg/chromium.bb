@@ -116,7 +116,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual WebKit::WebPrescientNetworking* GetPrescientNetworking() OVERRIDE;
   virtual bool ShouldOverridePageVisibilityState(
       const content::RenderView* render_view,
-      WebKit::WebPageVisibilityState* override_state) const OVERRIDE;
+      WebKit::WebPageVisibilityState* override_state) OVERRIDE;
   virtual bool HandleGetCookieRequest(content::RenderView* sender,
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
@@ -126,16 +126,17 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                       const GURL& first_party_for_cookies,
                                       const std::string& value) OVERRIDE;
   virtual bool AllowBrowserPlugin(
-      WebKit::WebPluginContainer* container) const OVERRIDE;
+      WebKit::WebPluginContainer* container) OVERRIDE;
   virtual const void* CreatePPAPIInterface(
       const std::string& interface_name) OVERRIDE;
+  virtual bool IsExternalPepperPlugin(const std::string& module_name) OVERRIDE;
   // TODO(victorhsieh): move to ChromeContentBrowserClient once we migrate
   // PPAPI FileIO host to browser.
   virtual bool IsPluginAllowedToCallRequestOSFileHandle(
-      WebKit::WebPluginContainer* container) const OVERRIDE;
+      WebKit::WebPluginContainer* container) OVERRIDE;
   virtual WebKit::WebSpeechSynthesizer* OverrideSpeechSynthesizer(
       WebKit::WebSpeechSynthesizerClient* client) OVERRIDE;
-  virtual bool AllowPepperMediaStreamAPI(const GURL& url) const OVERRIDE;
+  virtual bool AllowPepperMediaStreamAPI(const GURL& url) OVERRIDE;
 
   // For testing.
   void SetExtensionDispatcher(extensions::Dispatcher* extension_dispatcher);
