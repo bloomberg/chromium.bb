@@ -825,7 +825,9 @@ void WizardController::AutoLaunchKioskApp() {
   KioskAppManager::App app_data;
   std::string app_id = KioskAppManager::Get()->GetAutoLaunchApp();
   CHECK(KioskAppManager::Get()->GetApp(app_id, &app_data));
-  ExistingUserController::current_controller()->PrepareKioskAppLaunch();
+  if (ExistingUserController::current_controller())
+    ExistingUserController::current_controller()->PrepareKioskAppLaunch();
+
   // KioskAppLauncher deletes itself when done.
   (new KioskAppLauncher(KioskAppManager::Get(), app_id))->Start();
 }
