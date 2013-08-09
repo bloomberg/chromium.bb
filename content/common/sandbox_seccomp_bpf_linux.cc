@@ -1781,6 +1781,10 @@ bool EnableArmGpuBrokerPolicyCallback() {
   return true;
 }
 
+// Files needed by the ARM GPU userspace.
+static const char kLibGlesPath[] = "/usr/lib/libGLESv2.so.2";
+static const char kLibEglPath[] = "/usr/lib/libEGL.so.1";
+
 void AddArmMaliGpuWhitelist(std::vector<std::string>* read_whitelist,
                             std::vector<std::string>* write_whitelist) {
   // Device file needed by the ARM GPU userspace.
@@ -1831,13 +1835,11 @@ void AddArmGpuWhitelist(std::vector<std::string>* read_whitelist,
                         std::vector<std::string>* write_whitelist) {
   // On ARM we're enabling the sandbox before the X connection is made,
   // so we need to allow access to |.Xauthority|.
-  static const char kXAutorityPath[] = "/home/chronos/.Xauthority";
+  static const char kXAuthorityPath[] = "/home/chronos/.Xauthority";
+  static const char kLdSoCache[] = "/etc/ld.so.cache";
 
-  // Files needed by the ARM GPU userspace.
-  static const char kLibGlesPath[] = "/usr/lib/libGLESv2.so.2";
-  static const char kLibEglPath[] = "/usr/lib/libEGL.so.1";
-
-  read_whitelist->push_back(kXAutorityPath);
+  read_whitelist->push_back(kXAuthorityPath);
+  read_whitelist->push_back(kLdSoCache);
   read_whitelist->push_back(kLibGlesPath);
   read_whitelist->push_back(kLibEglPath);
 
@@ -1910,6 +1912,11 @@ void WarmupPolicy(Sandbox::EvaluateSyscall policy,
              policy == ArmGpuProcessPolicyWithShmat) {
     // Create a new broker process.
     InitGpuBrokerProcess(policy, broker_process);
+
+    // Preload the GL libraries. These are in the read whitelist but we have to
+    // preload them anyways to work around ld.so bugs. See crbug.com/268439.
+    dlopen(kLibGlesPath, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
+    dlopen(kLibEglPath, RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
 
     // Preload the Tegra libraries.
     dlopen("/usr/lib/libnvrm.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);
