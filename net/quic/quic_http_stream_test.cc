@@ -324,7 +324,6 @@ TEST_F(QuicHttpStreamTest, GetRequest) {
   SetRequestString("GET", "/");
   AddWrite(SYNCHRONOUS, ConstructDataPacket(1, true, kFin, 0,
                                             request_data_));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(2, 2, 1));
   Initialize();
 
   request_.method = "GET";
@@ -366,7 +365,6 @@ TEST_F(QuicHttpStreamTest, GetRequest) {
 TEST_F(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
   SetRequestString("GET", "/");
   AddWrite(SYNCHRONOUS, ConstructDataPacket(1, true, kFin, 0, request_data_));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(2, 2, 1));
   Initialize();
 
   request_.method = "GET";
@@ -412,7 +410,7 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2, true, kFin,
                                             request_data_.length(),
                                             kUploadData));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 1));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 3, 1));
 
   Initialize();
 
@@ -473,7 +471,7 @@ TEST_F(QuicHttpStreamTest, SendChunkedPostRequest) {
   AddWrite(SYNCHRONOUS, ConstructDataPacket(3, true, kFin,
                                             request_data_.length() + chunk_size,
                                             kUploadData));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(4, 2, 1));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(4, 3, 1));
 
   Initialize();
 
@@ -528,7 +526,6 @@ TEST_F(QuicHttpStreamTest, SendChunkedPostRequest) {
 TEST_F(QuicHttpStreamTest, DestroyedEarly) {
   SetRequestString("GET", "/");
   AddWrite(SYNCHRONOUS, ConstructDataPacket(1, true, kFin, 0, request_data_));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(2, 2, 1));
   use_closing_stream_ = true;
   Initialize();
 

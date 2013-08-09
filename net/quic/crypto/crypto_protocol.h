@@ -48,8 +48,12 @@ const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');  // TCP cubic
 const QuicTag kINAR = TAG('I', 'N', 'A', 'R');  // Inter arrival
 
 // Proof types (i.e. certificate types)
-const QuicTag kX509 = TAG('X', '5', '0', '9');  // X.509 certificate
-const QuicTag kX59R = TAG('X', '5', '9', 'R');  // X.509  - RSA only
+// NOTE: although it would be silly to do so, specifying both kX509 and kX59R
+// is allowed and is equivalent to specifying only kX509.
+const QuicTag kX509 = TAG('X', '5', '0', '9');  // X.509 certificate, all key
+                                                // types
+const QuicTag kX59R = TAG('X', '5', '9', 'R');  // X.509 certificate, RSA keys
+                                                // only
 const QuicTag kCHID = TAG('C', 'H', 'I', 'D');  // Channel ID.
 
 // Client hello tags

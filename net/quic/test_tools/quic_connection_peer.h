@@ -84,6 +84,8 @@ class QuicConnectionPeer {
 
   static QuicConnectionHelperInterface* GetHelper(QuicConnection* connection);
 
+  static QuicFramer* GetFramer(QuicConnection* connection);
+
   // Set last_header_->fec_group = fec_group and return connection->GetFecGroup
   static QuicFecGroup* GetFecGroup(QuicConnection* connection, int fec_group);
 

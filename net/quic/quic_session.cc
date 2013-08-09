@@ -77,19 +77,20 @@ QuicSession::QuicSession(QuicConnection* connection,
     : connection_(connection),
       visitor_shim_(new VisitorShim(this)),
       config_(config),
-      max_open_streams_(kDefaultMaxStreamsPerConnection),
+      max_open_streams_(config_.max_streams_per_connection()),
       next_stream_id_(is_server ? 2 : 3),
       is_server_(is_server),
       largest_peer_created_stream_id_(0),
       error_(QUIC_NO_ERROR),
       goaway_received_(false),
       goaway_sent_(false) {
-  set_max_open_streams(config_.max_streams_per_connection());
 
   connection_->set_visitor(visitor_shim_.get());
   connection_->SetIdleNetworkTimeout(config_.idle_connection_state_lifetime());
-  connection_->SetOverallConnectionTimeout(
-      config_.max_time_before_crypto_handshake());
+  if (connection_->connected()) {
+    connection_->SetOverallConnectionTimeout(
+        config_.max_time_before_crypto_handshake());
+  }
   // TODO(satyamshekhar): Set congestion control and ICSL also.
 }
 
@@ -149,6 +150,7 @@ bool QuicSession::OnPacket(const IPEndPoint& self_address,
     if (!stream) {
       connection()->SendConnectionClose(
           QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
+      return false;
     }
     stream->OnDecompressorAvailable();
   }

@@ -116,9 +116,7 @@ QuicPacketEntropyHash QuicReceivedPacketManager::EntropyHash(
 void QuicReceivedPacketManager::RecalculateEntropyHash(
     QuicPacketSequenceNumber peer_least_unacked,
     QuicPacketEntropyHash entropy_hash) {
-  DLOG_IF(WARNING, peer_least_unacked > received_info_.largest_observed)
-      << "Prematurely updating the entropy manager before registering the "
-      << "entropy of the containing packet creates a temporary inconsistency.";
+  DCHECK_LE(peer_least_unacked, received_info_.largest_observed);
   if (peer_least_unacked < largest_sequence_number_) {
     DLOG(INFO) << "Ignoring received peer_least_unacked:" << peer_least_unacked
                << " less than largest_peer_sequence_number:"

@@ -17,8 +17,9 @@ const QuicByteCount kNoNBytesInFlight = 0;
 
 class TcpCubicSenderPeer : public TcpCubicSender {
  public:
+  // TODO(ianswett): Remove 10000 once b/10075719 is fixed.
   TcpCubicSenderPeer(const QuicClock* clock, bool reno)
-      : TcpCubicSender(clock, reno) {
+      : TcpCubicSender(clock, reno, 10000) {
   }
   using TcpCubicSender::AvailableCongestionWindow;
   using TcpCubicSender::CongestionWindow;
@@ -35,6 +36,7 @@ class TcpCubicSenderTest : public ::testing::Test {
        sequence_number_(1),
        acked_sequence_number_(0) {
   }
+
   void SendAvailableCongestionWindow() {
     QuicByteCount bytes_to_send = sender_->AvailableCongestionWindow();
     while (bytes_to_send > 0) {
@@ -138,8 +140,8 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
     SendAvailableCongestionWindow();
     AckNPackets(2);
   }
-  QuicByteCount expected_congestion_window = kDefaultWindowTCP +
-      (kMaxPacketSize * 2 * kNumberOfAck);
+  QuicByteCount expected_congestion_window =
+      kDefaultWindowTCP + (kMaxPacketSize * 2 * kNumberOfAck);
   EXPECT_EQ(expected_congestion_window, sender_->CongestionWindow());
   // We should now have fallen out of slow start.
   SendAvailableCongestionWindow();

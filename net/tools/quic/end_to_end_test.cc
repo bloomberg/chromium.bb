@@ -422,8 +422,14 @@ TEST_P(EndToEndTest, LargePost) {
     return;
   }
 
-  // FLAGS_fake_packet_loss_percentage = 30;
+  // Connect with lower fake packet loss than we'd like to test.  Until
+  // b/10126687 is fixed, losing handshake packets is pretty brutal.
+  // FLAGS_fake_packet_loss_percentage = 5;
   ASSERT_TRUE(Initialize());
+
+  // Wait for the server SHLO before upping the packet loss.
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  // FLAGS_fake_packet_loss_percentage = 30;
 
   string body;
   GenerateBody(&body, 10240);
@@ -493,7 +499,7 @@ TEST_P(EndToEndTest, InvalidStream) {
   HTTPMessage request(HttpConstants::HTTP_1_1,
                       HttpConstants::POST, "/foo");
   request.AddBody(body, true);
-  // Force the client to write with a stream ID belonging to a nonexistant
+  // Force the client to write with a stream ID belonging to a nonexistent
   // server-side stream.
   QuicSessionPeer::SetNextStreamId(client_->client()->session(), 2);
 

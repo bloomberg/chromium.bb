@@ -530,6 +530,9 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   void SetupAbandonFecTimer(QuicPacketSequenceNumber sequence_number);
 
+  // Clears any accumulated frames from the last received packet.
+  void ClearLastFrames();
+
   // Called from OnCanWrite and WriteIfNotBlocked to write queued packets.
   // Returns false if the socket has become blocked.
   bool DoWrite();
@@ -555,6 +558,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // revive and process the packet.
   void MaybeProcessRevivedPacket();
 
+  void ProcessAckFrame(const QuicAckFrame& incoming_ack);
+
   void HandleAckForSentPackets(const QuicAckFrame& incoming_ack,
                                SequenceNumberSet* acked_packets);
   void HandleAckForSentFecPackets(const QuicAckFrame& incoming_ack,
@@ -563,7 +568,12 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Update the |sent_info| for an outgoing ack.
   void UpdateSentPacketInfo(SentPacketInfo* sent_info);
 
-  void MaybeSendAckInResponseToPacket();
+  // Checks if the last packet should instigate an ack.
+  bool ShouldLastPacketInstigateAck();
+
+  // Sends any packets which are a response to the last packet, including both
+  // acks and pending writes if an ack opened the congestion window.
+  void MaybeSendInResponseToPacket(bool last_packet_should_instigate_ack);
 
   void MaybeAbandonFecPacket(QuicPacketSequenceNumber sequence_number);
 
@@ -589,6 +599,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   size_t last_size_;  // Size of the last received packet.
   QuicPacketHeader last_header_;
   std::vector<QuicStreamFrame> last_stream_frames_;
+  std::vector<QuicAckFrame> last_ack_frames_;
+  std::vector<QuicCongestionFeedbackFrame> last_congestion_frames_;
+  std::vector<QuicRstStreamFrame> last_rst_frames_;
+  std::vector<QuicGoAwayFrame> last_goaway_frames_;
 
   QuicCongestionFeedbackFrame outgoing_congestion_feedback_;
 

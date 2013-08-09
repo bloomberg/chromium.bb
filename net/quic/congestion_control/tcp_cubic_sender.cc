@@ -12,7 +12,6 @@ const int64 kHybridStartLowWindow = 16;
 const QuicByteCount kMaxSegmentSize = kMaxPacketSize;
 const QuicByteCount kDefaultReceiveWindow = 64000;
 const int64 kInitialCongestionWindow = 10;
-const int64 kMaxCongestionWindow = 10000;
 const int kMaxBurstLength = 3;
 const int kInitialRttMs = 60;  // At a typical RTT 60 ms.
 const float kAlpha = 0.125f;
@@ -21,7 +20,10 @@ const float kBeta = 0.25f;
 const float kOneMinusBeta = (1 - kBeta);
 };  // namespace
 
-TcpCubicSender::TcpCubicSender(const QuicClock* clock, bool reno)
+TcpCubicSender::TcpCubicSender(
+    const QuicClock* clock,
+    bool reno,
+    QuicTcpCongestionWindow max_tcp_congestion_window)
     : hybrid_slow_start_(clock),
       cubic_(clock),
       reno_(reno),
@@ -32,7 +34,8 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock, bool reno)
       update_end_sequence_number_(true),
       end_sequence_number_(0),
       congestion_window_(kInitialCongestionWindow),
-      slowstart_threshold_(kMaxCongestionWindow),
+      slowstart_threshold_(max_tcp_congestion_window),
+      max_tcp_congestion_window_(max_tcp_congestion_window),
       delay_min_(QuicTime::Delta::Zero()),
       smoothed_rtt_(QuicTime::Delta::Zero()),
       mean_deviation_(QuicTime::Delta::Zero()) {
@@ -191,13 +194,13 @@ void TcpCubicSender::CongestionAvoidance(QuicPacketSequenceNumber ack) {
       hybrid_slow_start_.Reset(end_sequence_number_);
     }
     // congestion_window_cnt is the number of acks since last change of snd_cwnd
-    if (congestion_window_ < kMaxCongestionWindow) {
+    if (congestion_window_ < max_tcp_congestion_window_) {
       // TCP slow start, exponentail growth, increase by one for each ACK.
       congestion_window_++;
     }
     DLOG(INFO) << "Slow start; congestion window:" << congestion_window_;
   } else {
-    if (congestion_window_ < kMaxCongestionWindow) {
+    if (congestion_window_ < max_tcp_congestion_window_) {
       if (reno_) {
         // Classic Reno congestion avoidance provided for testing.
         if (congestion_window_count_ >= congestion_window_) {

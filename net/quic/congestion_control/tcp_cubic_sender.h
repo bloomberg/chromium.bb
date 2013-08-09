@@ -26,8 +26,10 @@ class TcpCubicSenderPeer;
 
 class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
  public:
-  // Reno option provided for testing.
-  TcpCubicSender(const QuicClock* clock, bool reno);
+  // Reno option and max_tcp_congestion_window are provided for testing.
+  TcpCubicSender(const QuicClock* clock,
+                 bool reno,
+                 QuicTcpCongestionWindow max_tcp_congestion_window);
   virtual ~TcpCubicSender();
 
   // Start implementation of SendAlgorithmInterface.
@@ -93,6 +95,9 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // Slow start congestion window in packets.
   QuicTcpCongestionWindow slowstart_threshold_;
+
+  // Maximum number of outstanding packets for tcp.
+  QuicTcpCongestionWindow max_tcp_congestion_window_;
 
   // Min RTT during this session.
   QuicTime::Delta delay_min_;

@@ -275,7 +275,8 @@ void QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
     if (error == EAGAIN || error == EWOULDBLOCK) {
       is_write_blocked_ = true;
     } else {
-      LOG(WARNING) << "Received unknown error while sending reset packet:"
+      LOG(WARNING) << "Received unknown error while sending reset packet to "
+                   << queued_packet->client_address().ToString() << ": "
                    << strerror(error);
     }
   }

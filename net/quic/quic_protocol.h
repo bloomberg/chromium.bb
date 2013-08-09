@@ -424,7 +424,15 @@ struct NET_EXPORT_PRIVATE QuicPublicResetPacket {
 
 enum QuicVersionNegotiationState {
   START_NEGOTIATION = 0,
-  SENT_NEGOTIATION_PACKET,
+  // Server-side this implies we've sent a version negotiation packet and are
+  // waiting on the client to select a compatible version.  Client-side this
+  // implies we've gotten a version negotiation packet, are retransmitting the
+  // initial packets with a supported version and are waiting for our first
+  // packet from the server.
+  NEGOTIATION_IN_PROGRESS,
+  // This indicates this endpoint has received a packet from the peer with a
+  // version this endpoint supports.  Version negotiation is complete, and the
+  // version number will no longer be sent with future packets.
   NEGOTIATED_VERSION
 };
 

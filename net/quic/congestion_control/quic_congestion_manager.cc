@@ -20,7 +20,7 @@ static const int kDefaultRetransmissionTimeMs = 500;
 // define the minimum RTO to 200ms, we will use the same until we have data to
 // support a higher or lower value.
 static const int kMinRetransmissionTimeMs = 200;
-static const int kMaxRetransmissionTimeMs = 10000;
+static const int kMaxRetransmissionTimeMs = 60000;
 static const size_t kMaxRetransmissions = 10;
 static const size_t kTailDropWindowSize = 5;
 static const size_t kTailDropMaxRetransmissions = 4;
@@ -176,6 +176,7 @@ const QuicTime::Delta QuicCongestionManager::GetRetransmissionDelay(
       retransmission_delay.ToMilliseconds() * static_cast<size_t>(
           (1 << min<size_t>(number_retransmissions, kMaxRetransmissions))));
 
+  // TODO(rch): This code should move to |send_algorithm_|.
   if (retransmission_delay.ToMilliseconds() < kMinRetransmissionTimeMs) {
     return QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs);
   }

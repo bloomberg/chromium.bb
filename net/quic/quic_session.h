@@ -197,10 +197,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     return max_open_streams_;
   }
 
-  void set_max_open_streams(size_t max_open_streams) {
-    max_open_streams_ = max_open_streams;
-  }
-
  private:
   friend class test::QuicSessionPeer;
   friend class VisitorShim;

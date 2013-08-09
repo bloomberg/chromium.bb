@@ -27,6 +27,9 @@ class NET_EXPORT_PRIVATE ProofSource {
   //
   // The signature uses SHA-256 as the hash function when the key is ECDSA.
   //
+  // If |ecdsa_ok| is true, the signature may use an ECDSA key. Otherwise, the
+  // signature must use an RSA key.
+  //
   // |out_certs| is a pointer to a pointer, not a pointer to an array.
   //
   // The number of certificate chains is expected to be small and fixed thus
