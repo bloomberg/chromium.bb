@@ -22,6 +22,7 @@
 #include "content/renderer/pepper/quota_file_io.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_io.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -142,6 +143,7 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
                                    PP_Instance instance,
                                    PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
+      renderer_ppapi_host_(host),
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       quota_policy_(quota::kQuotaLimitTypeUnknown),
@@ -520,16 +522,13 @@ int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
       quota_policy_ != quota::kQuotaLimitTypeUnlimited)
     return PP_ERROR_FAILED;
 
-  RendererPpapiHost* renderer_ppapi_host =
-      RendererPpapiHost::GetForPPInstance(pp_instance());
-
   // Whitelist to make it privately accessible.
   if (!GetContentClient()->renderer()->IsPluginAllowedToCallRequestOSFileHandle(
-          renderer_ppapi_host->GetContainerForInstance(pp_instance())))
+          renderer_ppapi_host_->GetContainerForInstance(pp_instance())))
     return PP_ERROR_NOACCESS;
 
   IPC::PlatformFileForTransit file =
-      renderer_ppapi_host->ShareHandleWithRemote(file_, false);
+      renderer_ppapi_host_->ShareHandleWithRemote(file_, false);
   if (file == IPC::InvalidPlatformFileForTransit())
     return PP_ERROR_FAILED;
   ppapi::host::ReplyMessageContext reply_context =
@@ -582,11 +581,26 @@ void PepperFileIOHost::ExecutePlatformOpenFileCallback(
   file_ = file.ReleaseValue();
 
   DCHECK(!quota_file_io_.get());
-  if (file_ != base::kInvalidPlatformFileValue &&
-      (file_system_type_ == PP_FILESYSTEMTYPE_LOCALTEMPORARY ||
-       file_system_type_ == PP_FILESYSTEMTYPE_LOCALPERSISTENT)) {
-    quota_file_io_.reset(new QuotaFileIO(
-        new QuotaFileIODelegate, file_, file_system_url_, file_system_type_));
+  if (file_ != base::kInvalidPlatformFileValue) {
+    if (file_system_type_ == PP_FILESYSTEMTYPE_LOCALTEMPORARY ||
+        file_system_type_ == PP_FILESYSTEMTYPE_LOCALPERSISTENT) {
+      quota_file_io_.reset(new QuotaFileIO(
+          new QuotaFileIODelegate, file_, file_system_url_, file_system_type_));
+    }
+
+    IPC::PlatformFileForTransit file_for_transit =
+        renderer_ppapi_host_->ShareHandleWithRemote(file_, false);
+    if (!(file_for_transit == IPC::InvalidPlatformFileForTransit())) {
+      // Send the file descriptor to the plugin process. This is used in the
+      // plugin for any file operations that can be done there.
+      // IMPORTANT: Clear PP_FILEOPENFLAG_WRITE and PP_FILEOPENFLAG_APPEND so
+      // the plugin can't write and so bypass our quota checks.
+      int32_t no_write_flags =
+          open_flags_ & ~(PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_APPEND);
+      ppapi::proxy::SerializedHandle file_handle;
+      file_handle.set_file_handle(file_for_transit, no_write_flags);
+      reply_context.params.AppendHandle(file_handle);
+    }
   }
 
   reply_context.params.set_result(pp_error);

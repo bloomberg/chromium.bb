@@ -72,8 +72,9 @@ class PPAPI_PROXY_EXPORT FileIOResource
                         const PP_ArrayOutput& array_output,
                         scoped_refptr<TrackedCallback> callback);
 
-  // Handlers of reply messages. Note that all of them have a callback
-  // parameters bound when call to the host.
+  void CloseFileHandle();
+
+  // Reply message handlers for operations that are done in the host.
   void OnPluginMsgGeneralComplete(scoped_refptr<TrackedCallback> callback,
                                   const ResourceMessageReplyParams& params);
   void OnPluginMsgOpenFileComplete(scoped_refptr<TrackedCallback> callback,
@@ -91,6 +92,8 @@ class PPAPI_PROXY_EXPORT FileIOResource
       PP_FileHandle* output_handle,
       const ResourceMessageReplyParams& params);
 
+  PP_FileHandle file_handle_;
+  PP_FileSystemType file_system_type_;
   FileIOStateManager state_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FileIOResource);

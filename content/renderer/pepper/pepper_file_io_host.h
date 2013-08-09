@@ -108,6 +108,8 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
                                     base::PlatformFileError error_code,
                                     int bytes_written);
 
+  RendererPpapiHost* renderer_ppapi_host_;
+
   base::PlatformFile file_;
 
   // The file system type specified in the Open() call. This will be
