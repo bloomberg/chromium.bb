@@ -165,9 +165,6 @@ void ShadowRoot::recalcStyle(StyleChange change)
 
     if (!attached()) {
         attach();
-        // attach recalculates the style for all children. No need to do it twice.
-        clearNeedsStyleRecalc();
-        clearChildNeedsStyleRecalc();
         return;
     }
 

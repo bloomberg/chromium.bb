@@ -1469,10 +1469,6 @@ bool Element::recalcStyle(StyleChange change)
             reattachContext.resolvedStyle = newStyle.get();
             reattach(reattachContext);
 
-            // attach recalculates the style for all children. No need to do it twice.
-            clearNeedsStyleRecalc();
-            clearChildNeedsStyleRecalc();
-
             if (hasCustomStyleCallbacks())
                 didRecalcStyle(change);
             return true;
