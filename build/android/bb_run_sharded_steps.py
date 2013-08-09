@@ -54,7 +54,6 @@ import os
 import signal
 import shutil
 import sys
-import time
 
 from pylib import android_commands
 from pylib import cmd_helper
@@ -175,18 +174,6 @@ def _KillPendingServers():
           os.kill(int(pid), signal.SIGQUIT)
         except Exception as e:
           logging.warning('Failed killing %s %s %s', server, pid, e)
-  # Restart the adb server with full trace, and redirect stderr to stdout
-  # so the extra tracing won't confuse higher up layers.
-  os.environ['ADB_TRACE'] = 'all'
-  cmd_helper.RunCmd(['adb', 'kill-server'])
-  cmd_helper.RunCmd(['adb', 'start-server'])
-  cmd_helper.RunCmd(['adb', 'root'])
-  i = 1
-  while not android_commands.GetAttachedDevices():
-    time.sleep(i)
-    i *= 2
-    if i > 10:
-      break
 
 
 def main(argv):

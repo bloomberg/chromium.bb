@@ -22,7 +22,6 @@ import subprocess
 import tempfile
 import threading
 import time
-import sys
 
 # local imports
 import errors
@@ -94,15 +93,12 @@ def RunOnce(cmd, timeout_time=None, return_output=True, stdin_input=None):
     stdin_dest = subprocess.PIPE
   else:
     stdin_dest = None
-  stderr_dest = subprocess.STDOUT
-  if os.environ.get('ADB_TRACE'):
-    stderr_dest = sys.stdout
   pipe = subprocess.Popen(
       cmd,
       executable='/bin/bash',
       stdin=stdin_dest,
       stdout=output_dest,
-      stderr=stderr_dest,
+      stderr=subprocess.STDOUT,
       shell=True, close_fds=True,
       preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
 
