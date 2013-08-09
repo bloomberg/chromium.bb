@@ -23,6 +23,20 @@ using testing::_;
 
 namespace net {
 namespace test {
+namespace {
+
+// No-op alarm implementation used by MockHelper.
+class TestAlarm : public QuicAlarm {
+ public:
+  explicit TestAlarm(QuicAlarm::Delegate* delegate)
+      : QuicAlarm(delegate) {
+  }
+
+  virtual void SetImpl() OVERRIDE {}
+  virtual void CancelImpl() OVERRIDE {}
+};
+
+}  // namespace
 
 MockFramerVisitor::MockFramerVisitor() {
   // By default, we want to accept packets.
@@ -179,6 +193,10 @@ const QuicClock* MockHelper::GetClock() const {
 
 QuicRandom* MockHelper::GetRandomGenerator() {
   return &random_generator_;
+}
+
+QuicAlarm* MockHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
+  return new TestAlarm(delegate);
 }
 
 void MockHelper::AdvanceTime(QuicTime::Delta delta) {

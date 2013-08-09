@@ -14,6 +14,7 @@ namespace net {
 
 struct QuicAckFrame;
 struct QuicPacketHeader;
+class QuicAlarm;
 class QuicConnection;
 class QuicConnectionHelperInterface;
 class QuicConnectionVisitorInterface;
@@ -88,6 +89,11 @@ class QuicConnectionPeer {
 
   // Set last_header_->fec_group = fec_group and return connection->GetFecGroup
   static QuicFecGroup* GetFecGroup(QuicConnection* connection, int fec_group);
+
+  static QuicAlarm* GetAckAlarm(QuicConnection* connection);
+  static QuicAlarm* GetRetransmissionAlarm(QuicConnection* connection);
+  static QuicAlarm* GetSendAlarm(QuicConnection* connection);
+  static QuicAlarm* GetTimeoutAlarm(QuicConnection* connection);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);

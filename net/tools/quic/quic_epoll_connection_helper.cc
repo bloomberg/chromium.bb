@@ -17,80 +17,50 @@
 namespace net {
 namespace tools {
 
-// This alarm will be scheduled any time a data-bearing packet is sent out.
-// When the alarm goes off, the connection checks to see if the oldest packets
-// have been acked, and retransmit them if they have not.
-class RetransmissionAlarm : public EpollAlarm {
+namespace {
+
+class QuicEpollAlarm : public QuicAlarm {
  public:
-  explicit RetransmissionAlarm(QuicConnection* connection)
-      : connection_(connection) {
+  QuicEpollAlarm(EpollServer* epoll_server,
+                 QuicAlarm::Delegate* delegate)
+      : QuicAlarm(delegate),
+        epoll_server_(epoll_server),
+        epoll_alarm_impl_(this) {}
+
+ protected:
+  virtual void SetImpl() OVERRIDE {
+    DCHECK(deadline().IsInitialized());
+    epoll_server_->RegisterAlarm(
+        deadline().Subtract(QuicTime::Zero()).ToMicroseconds(),
+        &epoll_alarm_impl_);
   }
 
-  virtual int64 OnAlarm() OVERRIDE {
-    EpollAlarm::OnAlarm();
-    // This is safe because this code is Google3 specific, and the
-    // Google3 QuicTime's epoch is the unix epoch.
-    return connection_->OnRetransmissionTimeout().Subtract(
-        QuicTime::Zero()).ToMicroseconds();
+  virtual void CancelImpl() OVERRIDE {
+    DCHECK(!deadline().IsInitialized());
+    epoll_alarm_impl_.UnregisterIfRegistered();
   }
 
  private:
-  QuicConnection* connection_;
+  class EpollAlarmImpl : public EpollAlarm {
+   public:
+    explicit EpollAlarmImpl(QuicEpollAlarm* alarm) : alarm_(alarm) {}
+
+    virtual int64 OnAlarm() OVERRIDE {
+      EpollAlarm::OnAlarm();
+      alarm_->Fire();
+      // Fire will take care of registering the alarm, if needed.
+      return 0;
+    }
+
+   private:
+    QuicEpollAlarm* alarm_;
+  };
+
+  EpollServer* epoll_server_;
+  EpollAlarmImpl epoll_alarm_impl_;
 };
 
-// An alarm that is scheduled when the sent scheduler requires a
-// a delay before sending packets and fires when the packet may be sent.
-class SendAlarm : public EpollAlarm {
- public:
-  explicit SendAlarm(QuicConnection* connection)
-      : connection_(connection) {
-  }
-
-  virtual int64 OnAlarm() OVERRIDE {
-    EpollAlarm::OnAlarm();
-    connection_->OnCanWrite();
-    // Never reschedule the alarm, since OnCanWrite does that.
-    return 0;
-  }
-
- private:
-  QuicConnection* connection_;
-};
-
-// An alarm which fires when the connection may have timed out.
-class TimeoutAlarm : public EpollAlarm {
- public:
-  explicit TimeoutAlarm(QuicConnection* connection)
-      : connection_(connection) {
-  }
-
-  virtual int64 OnAlarm() OVERRIDE {
-    EpollAlarm::OnAlarm();
-    connection_->CheckForTimeout();
-    // Never reschedule the alarm, since CheckForTimeout does that.
-    return 0;
-  }
-
- private:
-  QuicConnection* connection_;
-};
-
-// An alarm that is scheduled to send an ack if a timeout occurs.
-class AckAlarm : public EpollAlarm {
- public:
-  explicit AckAlarm(QuicConnection* connection)
-      : connection_(connection) {
-  }
-
-  virtual int64 OnAlarm() OVERRIDE {
-    EpollAlarm::OnAlarm();
-    connection_->SendAck();
-    return 0;
-  }
-
- private:
-  QuicConnection* connection_;
-};
+}  // namespace
 
 QuicEpollConnectionHelper::QuicEpollConnectionHelper(
   int fd, EpollServer* epoll_server)
@@ -118,10 +88,6 @@ QuicEpollConnectionHelper::~QuicEpollConnectionHelper() {
 void QuicEpollConnectionHelper::SetConnection(QuicConnection* connection) {
   DCHECK(!connection_);
   connection_ = connection;
-  timeout_alarm_.reset(new TimeoutAlarm(connection));
-  send_alarm_.reset(new SendAlarm(connection));
-  ack_alarm_.reset(new AckAlarm(connection));
-  retransmission_alarm_.reset(new RetransmissionAlarm(connection_));
 }
 
 const QuicClock* QuicEpollConnectionHelper::GetClock() const {
@@ -165,43 +131,9 @@ bool QuicEpollConnectionHelper::IsWriteBlocked(int error) {
   return error == EAGAIN || error == EWOULDBLOCK;
 }
 
-void QuicEpollConnectionHelper::SetRetransmissionAlarm(QuicTime::Delta delay) {
-  if (!retransmission_alarm_->registered()) {
-    epoll_server_->RegisterAlarmApproximateDelta(delay.ToMicroseconds(),
-                                                 retransmission_alarm_.get());
-  }
-}
-
-void QuicEpollConnectionHelper::SetAckAlarm(QuicTime::Delta delay) {
-  if (!ack_alarm_->registered()) {
-    epoll_server_->RegisterAlarmApproximateDelta(
-        delay.ToMicroseconds(), ack_alarm_.get());
-  }
-}
-
-void QuicEpollConnectionHelper::ClearAckAlarm() {
-  ack_alarm_->UnregisterIfRegistered();
-}
-
-void QuicEpollConnectionHelper::SetSendAlarm(QuicTime alarm_time) {
-  send_alarm_->UnregisterIfRegistered();
-  epoll_server_->RegisterAlarm(
-      alarm_time.Subtract(QuicTime::Zero()).ToMicroseconds(),
-      send_alarm_.get());
-}
-
-void QuicEpollConnectionHelper::SetTimeoutAlarm(QuicTime::Delta delay) {
-  timeout_alarm_->UnregisterIfRegistered();
-  epoll_server_->RegisterAlarmApproximateDelta(delay.ToMicroseconds(),
-                                               timeout_alarm_.get());
-}
-
-bool QuicEpollConnectionHelper::IsSendAlarmSet() {
-  return send_alarm_->registered();
-}
-
-void QuicEpollConnectionHelper::UnregisterSendAlarmIfRegistered() {
-  send_alarm_->UnregisterIfRegistered();
+QuicAlarm* QuicEpollConnectionHelper::CreateAlarm(
+    QuicAlarm::Delegate* delegate) {
+  return new QuicEpollAlarm(epoll_server_, delegate);
 }
 
 }  // namespace tools

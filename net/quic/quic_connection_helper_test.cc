@@ -25,6 +25,21 @@ namespace test {
 const char kData[] = "foo";
 const bool kFromPeer = true;
 
+class TestDelegate : public QuicAlarm::Delegate {
+ public:
+  TestDelegate() : fired_(false) {}
+
+  virtual QuicTime OnAlarm() OVERRIDE {
+    fired_ = true;
+    return QuicTime::Zero();
+  }
+
+  bool fired() const { return fired_; }
+
+ private:
+  bool fired_;
+};
+
 class TestConnection : public QuicConnection {
  public:
   TestConnection(QuicGuid guid,
@@ -218,85 +233,69 @@ TEST_F(QuicConnectionHelperTest, GetRandomGenerator) {
   EXPECT_EQ(&random_generator_, helper_->GetRandomGenerator());
 }
 
-TEST_F(QuicConnectionHelperTest, IsSendAlarmSet) {
-  EXPECT_FALSE(helper_->IsSendAlarmSet());
-}
-
-TEST_F(QuicConnectionHelperTest, SetSendAlarm) {
-  helper_->SetSendAlarm(
-      clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(1)));
-  EXPECT_TRUE(helper_->IsSendAlarmSet());
-}
-
-TEST_F(QuicConnectionHelperTest, UnregisterSendAlarmIfRegistered) {
-  helper_->SetSendAlarm(
-      clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(1)));
-  helper_->UnregisterSendAlarmIfRegistered() ;
-  EXPECT_FALSE(helper_->IsSendAlarmSet());
-}
-
-TEST_F(QuicConnectionHelperTest, SetAckAlarm) {
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(1));
-  Initialize();
+TEST_F(QuicConnectionHelperTest, CreateAlarm) {
+  TestDelegate* delegate = new TestDelegate();
+  scoped_ptr<QuicAlarm> alarm(helper_->CreateAlarm(delegate));
 
   // The timeout alarm task is always posted.
   ASSERT_EQ(1u, runner_->GetPostedTasks().size());
 
-  QuicTime::Delta delta(QuicTime::Delta::FromMilliseconds(10));
-  helper_->SetAckAlarm(delta);
+  QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
+  alarm->Set(clock_.Now().Add(delta));
 
-  // Verify that the ack alarm task has been posted.
+  // Verify that the alarm task has been posted.
   ASSERT_EQ(2u, runner_->GetPostedTasks().size());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(delta.ToMicroseconds()),
             runner_->GetPostedTasks()[1].delay);
 
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
   runner_->RunNextTask();
-  EXPECT_EQ(QuicTime::Zero().Add(delta), clock_.ApproximateNow());
+  EXPECT_EQ(QuicTime::Zero().Add(delta), clock_.Now());
+  EXPECT_TRUE(delegate->fired());
 }
 
-TEST_F(QuicConnectionHelperTest, ClearAckAlarm) {
-  Initialize();
+TEST_F(QuicConnectionHelperTest, CreateAlarmAndCancel) {
+  TestDelegate* delegate = new TestDelegate();
+  scoped_ptr<QuicAlarm> alarm(helper_->CreateAlarm(delegate));
 
-  // Verify that the timeout alarm task has been posted.
-  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+  QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
+  alarm->Set(clock_.Now().Add(delta));
+  alarm->Cancel();
 
-  QuicTime::Delta delta(QuicTime::Delta::FromMilliseconds(10));
-  helper_->SetAckAlarm(delta);
+  // The alarm task should still be posted.
+  ASSERT_EQ(2u, runner_->GetPostedTasks().size());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(delta.ToMicroseconds()),
+            runner_->GetPostedTasks()[1].delay);
 
-  helper_->ClearAckAlarm();
-
-  // When the AckAlarm actually fires, no ack will be sent.
   runner_->RunNextTask();
-  EXPECT_EQ(QuicTime::Zero().Add(delta), clock_.ApproximateNow());
+  EXPECT_EQ(QuicTime::Zero().Add(delta), clock_.Now());
+  EXPECT_FALSE(delegate->fired());
 }
 
-TEST_F(QuicConnectionHelperTest, ResetAckAlarm) {
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(1));
-  Initialize();
+TEST_F(QuicConnectionHelperTest, CreateAlarmAndReset) {
+  TestDelegate* delegate = new TestDelegate();
+  scoped_ptr<QuicAlarm> alarm(helper_->CreateAlarm(delegate));
 
-  // Verify that the timeout alarm task has been posted.
-  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+  QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
+  alarm->Set(clock_.Now().Add(delta));
+  alarm->Cancel();
+  QuicTime::Delta new_delta = QuicTime::Delta::FromMicroseconds(3);
+  alarm->Set(clock_.Now().Add(new_delta));
 
-  QuicTime::Delta delta1(QuicTime::Delta::FromMilliseconds(10));
-  QuicTime::Delta delta2(QuicTime::Delta::FromMilliseconds(20));
-  helper_->SetAckAlarm(delta1);
-  helper_->ClearAckAlarm();
-  helper_->SetAckAlarm(delta2);
-  // We should only have 1 ack alarm task posted.
+  // The alarm task should still be posted.
+  ASSERT_EQ(2u, runner_->GetPostedTasks().size());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(delta.ToMicroseconds()),
+            runner_->GetPostedTasks()[1].delay);
+
+  runner_->RunNextTask();
+  EXPECT_EQ(QuicTime::Zero().Add(delta), clock_.Now());
+  EXPECT_FALSE(delegate->fired());
+
+  // The alarm task should be posted again.
   ASSERT_EQ(2u, runner_->GetPostedTasks().size());
 
-  // The task will execute at delta1, but will not send and ack,
-  // but it will reschedule itself for delta2
   runner_->RunNextTask();
-  EXPECT_EQ(QuicTime::Zero().Add(delta1), clock_.ApproximateNow());
-
-  // Verify that the ack alarm task has been re-posted.
-  ASSERT_EQ(2u, runner_->GetPostedTasks().size());
-
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
-  runner_->RunNextTask();
-  EXPECT_EQ(QuicTime::Zero().Add(delta2), clock_.ApproximateNow());
+  EXPECT_EQ(QuicTime::Zero().Add(new_delta), clock_.Now());
+  EXPECT_TRUE(delegate->fired());
 }
 
 TEST_F(QuicConnectionHelperTest, TestRetransmission) {

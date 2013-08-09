@@ -156,5 +156,26 @@ QuicFecGroup* QuicConnectionPeer::GetFecGroup(QuicConnection* connection,
   return connection->GetFecGroup();
 }
 
+// static
+QuicAlarm* QuicConnectionPeer::GetAckAlarm(QuicConnection* connection) {
+  return connection->ack_alarm_.get();
+}
+
+// static
+QuicAlarm* QuicConnectionPeer::GetRetransmissionAlarm(
+    QuicConnection* connection) {
+  return connection->retransmission_alarm_.get();
+}
+
+// static
+QuicAlarm* QuicConnectionPeer::GetSendAlarm(QuicConnection* connection) {
+  return connection->send_alarm_.get();
+}
+
+// static
+QuicAlarm* QuicConnectionPeer::GetTimeoutAlarm(QuicConnection* connection) {
+  return connection->timeout_alarm_.get();
+}
+
 }  // namespace test
 }  // namespace net

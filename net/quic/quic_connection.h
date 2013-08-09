@@ -27,6 +27,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/congestion_control/quic_congestion_manager.h"
+#include "net/quic/quic_alarm.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
@@ -167,38 +168,10 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   // as EAGAIN or ERR_IO_PENDING.
   virtual bool IsWriteBlocked(int error) = 0;
 
-  // Sets up an alarm to retransmit a packet if we haven't received an ack
-  // in the expected time frame.  Implementations must invoke
-  // OnRetransmissionAlarm when the alarm fires.  Implementations must also
-  // handle the case where |this| is deleted before the alarm fires.  If the
-  // alarm is already set, this call is a no-op.
-  virtual void SetRetransmissionAlarm(QuicTime::Delta delay) = 0;
-
-  // Sets an alarm to send packets at |alarm_time|.  Implementations must
-  // invoke OnCanWrite when the alarm fires.  Implementations must also
-  // handle the case where |this| is deleted before the alarm fires.
-  virtual void SetSendAlarm(QuicTime alarm_time) = 0;
-
-  // Sets an alarm which fires when the connection may have timed out.
-  // Implementations must call CheckForTimeout() and then reregister the alarm
-  // if the connection has not yet timed out.
-  virtual void SetTimeoutAlarm(QuicTime::Delta delay) = 0;
-
-  // Returns true if a send alarm is currently set.
-  virtual bool IsSendAlarmSet() = 0;
-
-  // If a send alarm is currently set, this method unregisters it.  If
-  // no send alarm is set, it does nothing.
-  virtual void UnregisterSendAlarmIfRegistered() = 0;
-
-  // Sets an alarm which fires when an Ack may need to be sent.
-  // Implementations must call SendAck() when the alarm fires.
-  // If the alarm is already registered for a shorter timeout, this call is a
-  // no-op.
-  virtual void SetAckAlarm(QuicTime::Delta delay) = 0;
-
-  // Clears the ack alarm if it was set.  If it was not set, this is a no-op.
-  virtual void ClearAckAlarm() = 0;
+  // Creates a new platform-specific alarm which will be configured to
+  // notify |delegate| when the alarm fires.  Caller takes ownership
+  // of the new alarm, which will not yet be "set" to fire.
+  virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) = 0;
 };
 
 class NET_EXPORT_PRIVATE QuicConnection
@@ -653,6 +626,16 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   QuicReceivedPacketManager received_packet_manager_;
   QuicSentEntropyManager sent_entropy_manager_;
+
+  // An alarm that fires when an ACK should be sent to the peer.
+  scoped_ptr<QuicAlarm> ack_alarm_;
+  // An alarm that fires when a packet needs to be retransmitted.
+  scoped_ptr<QuicAlarm> retransmission_alarm_;
+  // An alarm that is scheduled when the sent scheduler requires a
+  // a delay before sending packets and fires when the packet may be sent.
+  scoped_ptr<QuicAlarm> send_alarm_;
+  // An alarm that fires when the connection may have timed out.
+  scoped_ptr<QuicAlarm> timeout_alarm_;
 
   QuicConnectionVisitorInterface* visitor_;
   QuicConnectionDebugVisitorInterface* debug_visitor_;

@@ -62,6 +62,74 @@ bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   return delta <= kMaxPacketGap;
 }
 
+
+// An alarm that is scheduled to send an ack if a timeout occurs.
+class AckAlarm : public QuicAlarm::Delegate {
+ public:
+  explicit AckAlarm(QuicConnection* connection)
+      : connection_(connection) {
+  }
+
+  virtual QuicTime OnAlarm() OVERRIDE {
+    connection_->SendAck();
+    return QuicTime::Zero();
+  }
+
+ private:
+  QuicConnection* connection_;
+};
+
+// This alarm will be scheduled any time a data-bearing packet is sent out.
+// When the alarm goes off, the connection checks to see if the oldest packets
+// have been acked, and retransmit them if they have not.
+class RetransmissionAlarm : public QuicAlarm::Delegate {
+ public:
+  explicit RetransmissionAlarm(QuicConnection* connection)
+      : connection_(connection) {
+  }
+
+  virtual QuicTime OnAlarm() OVERRIDE {
+    return connection_->OnRetransmissionTimeout();
+  }
+
+ private:
+  QuicConnection* connection_;
+};
+
+// An alarm that is scheduled when the sent scheduler requires a
+// a delay before sending packets and fires when the packet may be sent.
+class SendAlarm : public QuicAlarm::Delegate {
+ public:
+  explicit SendAlarm(QuicConnection* connection)
+      : connection_(connection) {
+  }
+
+  virtual QuicTime OnAlarm() OVERRIDE {
+    connection_->OnCanWrite();
+    // Never reschedule the alarm, since OnCanWrite does that.
+    return QuicTime::Zero();
+  }
+
+ private:
+  QuicConnection* connection_;
+};
+
+class TimeoutAlarm : public QuicAlarm::Delegate {
+ public:
+  explicit TimeoutAlarm(QuicConnection* connection)
+      : connection_(connection) {
+  }
+
+  virtual QuicTime OnAlarm() OVERRIDE {
+    connection_->CheckForTimeout();
+    // Never reschedule the alarm, since CheckForTimeout does that.
+    return QuicTime::Zero();
+  }
+
+ private:
+  QuicConnection* connection_;
+};
+
 }  // namespace
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
@@ -83,6 +151,10 @@ QuicConnection::QuicConnection(QuicGuid guid,
       largest_seen_packet_with_ack_(0),
       handling_retransmission_timeout_(false),
       write_blocked_(false),
+      ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
+      retransmission_alarm_(helper->CreateAlarm(new RetransmissionAlarm(this))),
+      send_alarm_(helper->CreateAlarm(new SendAlarm(this))),
+      timeout_alarm_(helper->CreateAlarm(new TimeoutAlarm(this))),
       debug_visitor_(NULL),
       packet_creator_(guid_, &framer_, random_generator_, is_server),
       packet_generator_(this, NULL, &packet_creator_),
@@ -101,7 +173,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       send_ack_in_response_to_packet_(false),
       address_migrating_(false) {
   helper_->SetConnection(this);
-  helper_->SetTimeoutAlarm(idle_network_timeout_);
+  timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
 
@@ -687,10 +759,11 @@ void QuicConnection::MaybeSendInResponseToPacket(
         time_of_last_received_packet_, NOT_RETRANSMISSION,
         HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     if (delay.IsZero()) {
-      helper_->UnregisterSendAlarmIfRegistered();
+      send_alarm_->Cancel();
       WriteIfNotBlocked();
     } else if (!delay.IsInfinite()) {
-      helper_->SetSendAlarm(time_of_last_received_packet_.Add(delay));
+      send_alarm_->Cancel();
+      send_alarm_->Set(time_of_last_received_packet_.Add(delay));
     }
   }
 
@@ -703,7 +776,10 @@ void QuicConnection::MaybeSendInResponseToPacket(
   } else if (!last_stream_frames_.empty()) {
     // TODO(alyssar) this case should really be "if the packet contained any
     // non-ack frame", rather than "if the packet contained a stream frame"
-    helper_->SetAckAlarm(congestion_manager_.DefaultRetransmissionTime());
+    if (!ack_alarm_->IsSet()) {
+      ack_alarm_->Set(clock_->ApproximateNow().Add(
+          congestion_manager_.DefaultRetransmissionTime()));
+    }
   }
   send_ack_in_response_to_packet_ = !send_ack_in_response_to_packet_;
 }
@@ -820,7 +896,8 @@ bool QuicConnection::DoWrite() {
       // We're not write blocked, but some stream didn't write out all of its
       // bytes.  Register for 'immediate' resumption so we'll keep writing after
       // other quic connections have had a chance to use the socket.
-      helper_->SetSendAlarm(clock_->ApproximateNow());
+      send_alarm_->Cancel();
+      send_alarm_->Set(clock_->ApproximateNow());
     }
   }
 
@@ -970,7 +1047,7 @@ bool QuicConnection::CanWrite(Retransmission retransmission,
                               IsHandshake handshake) {
   // TODO(ianswett): If the packet is a retransmit, the current send alarm may
   // be too long.
-  if (write_blocked_ || helper_->IsSendAlarmSet()) {
+  if (write_blocked_ || send_alarm_->IsSet()) {
     return false;
   }
 
@@ -983,7 +1060,8 @@ bool QuicConnection::CanWrite(Retransmission retransmission,
 
   // If the scheduler requires a delay, then we can not send this packet now.
   if (!delay.IsZero()) {
-    helper_->SetSendAlarm(now.Add(delay));
+    send_alarm_->Cancel();
+    send_alarm_->Set(now.Add(delay));
     return false;
   }
   return true;
@@ -1023,8 +1101,9 @@ void QuicConnection::SetupRetransmission(
   // Do not set the retransmisson alarm if we're already handling the
   // retransmission alarm because the retransmission alarm will be reset when
   // OnRetransmissionTimeout completes.
-  if (!handling_retransmission_timeout_) {
-    helper_->SetRetransmissionAlarm(retransmission_delay);
+  if (!handling_retransmission_timeout_ && !retransmission_alarm_->IsSet()) {
+    retransmission_alarm_->Set(
+        clock_->ApproximateNow().Add(retransmission_delay));
   }
   // TODO(satyamshekhar): restore packet reordering with Ian's TODO in
   // SendStreamData().
@@ -1239,7 +1318,7 @@ void QuicConnection::UpdateSentPacketInfo(SentPacketInfo* sent_info) {
 }
 
 void QuicConnection::SendAck() {
-  helper_->ClearAckAlarm();
+  ack_alarm_->Cancel();
 
   // TODO(rch): delay this until the CreateFeedbackFrame
   // method is invoked.  This requires changes SetShouldSendAck
@@ -1570,7 +1649,8 @@ bool QuicConnection::CheckForTimeout() {
     }
   }
 
-  helper_->SetTimeoutAlarm(timeout);
+  timeout_alarm_->Cancel();
+  timeout_alarm_->Set(clock_->ApproximateNow().Add(timeout));
   return false;
 }
 

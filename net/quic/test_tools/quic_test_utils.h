@@ -206,13 +206,8 @@ class MockHelper : public QuicConnectionHelperInterface {
                                       int* error));
   MOCK_METHOD0(IsWriteBlockedDataBuffered, bool());
   MOCK_METHOD1(IsWriteBlocked, bool(int));
-  MOCK_METHOD1(SetRetransmissionAlarm, void(QuicTime::Delta delay));
-  MOCK_METHOD1(SetAckAlarm, void(QuicTime::Delta delay));
-  MOCK_METHOD1(SetSendAlarm, void(QuicTime alarm_time));
-  MOCK_METHOD1(SetTimeoutAlarm, void(QuicTime::Delta delay));
-  MOCK_METHOD0(IsSendAlarmSet, bool());
-  MOCK_METHOD0(UnregisterSendAlarmIfRegistered, void());
-  MOCK_METHOD0(ClearAckAlarm, void());
+  virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate);
+
  private:
   MockClock clock_;
   MockRandom random_generator_;

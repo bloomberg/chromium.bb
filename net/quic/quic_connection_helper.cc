@@ -14,6 +14,72 @@
 
 namespace net {
 
+namespace {
+
+class QuicChromeAlarm : public QuicAlarm {
+ public:
+  QuicChromeAlarm(const QuicClock* clock,
+                  base::TaskRunner* task_runner,
+                  QuicAlarm::Delegate* delegate)
+      : QuicAlarm(delegate),
+        clock_(clock),
+        task_runner_(task_runner),
+        task_posted_(false),
+        weak_factory_(this) {}
+
+ protected:
+  virtual void SetImpl() OVERRIDE {
+    DCHECK(deadline().IsInitialized());
+    if (task_posted_) {
+      // Since tasks can not be un-posted, OnAlarm will be invoked which
+      // will notice that deadline has not yet been reached, and will set
+      // the alarm for the new deadline.
+      return;
+    }
+
+    int64 delay_us = deadline().Subtract(clock_->Now()).ToMicroseconds();
+    if (delay_us < 0) {
+      delay_us = 0;
+    }
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&QuicChromeAlarm::OnAlarm, weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMicroseconds(delay_us));
+    task_posted_ = true;
+  }
+
+  virtual void CancelImpl() OVERRIDE {
+    DCHECK(!deadline().IsInitialized());
+    // Since tasks can not be un-posted, OnAlarm will be invoked which
+    // will notice that deadline is not Initialized and will do nothing.
+  }
+
+ private:
+  void OnAlarm() {
+    DCHECK(task_posted_);
+    task_posted_ = false;
+    // The alarm may have been cancelled.
+    if (!deadline().IsInitialized()) {
+      return;
+    }
+
+    // The alarm may have been re-set to a later time.
+    if (clock_->Now() < deadline()) {
+      SetImpl();
+      return;
+    }
+
+    Fire();
+  }
+
+  const QuicClock* clock_;
+  base::TaskRunner* task_runner_;
+  bool task_posted_;
+  base::WeakPtrFactory<QuicChromeAlarm> weak_factory_;
+};
+
+}  // namespace
+
 QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
                                            const QuicClock* clock,
                                            QuicRandom* random_generator,
@@ -22,13 +88,7 @@ QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
       task_runner_(task_runner),
       socket_(socket),
       clock_(clock),
-      random_generator_(random_generator),
-      send_alarm_registered_(false),
-      timeout_alarm_registered_(false),
-      retransmission_alarm_registered_(false),
-      retransmission_alarm_running_(false),
-      ack_alarm_registered_(false),
-      ack_alarm_time_(QuicTime::Zero()) {
+      random_generator_(random_generator) {
 }
 
 QuicConnectionHelper::~QuicConnectionHelper() {
@@ -81,107 +141,8 @@ bool QuicConnectionHelper::IsWriteBlocked(int error) {
   return error == ERR_IO_PENDING;
 }
 
-void QuicConnectionHelper::SetRetransmissionAlarm(QuicTime::Delta delay) {
-  if (!retransmission_alarm_registered_) {
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&QuicConnectionHelper::OnRetransmissionAlarm,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMicroseconds(delay.ToMicroseconds()));
-  }
-}
-
-void QuicConnectionHelper::SetAckAlarm(QuicTime::Delta delay) {
-  ack_alarm_time_ = clock_->Now().Add(delay);
-  if (!ack_alarm_registered_) {
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&QuicConnectionHelper::OnAckAlarm,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMicroseconds(delay.ToMicroseconds()));
-  }
-  ack_alarm_registered_ = true;
-}
-
-void QuicConnectionHelper::ClearAckAlarm() {
-  ack_alarm_time_ = QuicTime::Zero();
-}
-
-void QuicConnectionHelper::SetSendAlarm(QuicTime alarm_time) {
-  send_alarm_registered_ = true;
-  int64 delay_us = alarm_time.Subtract(clock_->Now()).ToMicroseconds();
-  if (delay_us < 0) {
-    delay_us = 0;
-  }
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&QuicConnectionHelper::OnSendAlarm,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMicroseconds(delay_us));
-}
-
-void QuicConnectionHelper::SetTimeoutAlarm(QuicTime::Delta delay) {
-  // CheckForTimeout will call SetTimeoutAlarm for the remaining time if alarm
-  // goes off before the delay.
-  if (timeout_alarm_registered_)
-    return;
-  timeout_alarm_registered_ = true;
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&QuicConnectionHelper::OnTimeoutAlarm,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMicroseconds(delay.ToMicroseconds()));
-}
-
-bool QuicConnectionHelper::IsSendAlarmSet() {
-  return send_alarm_registered_;
-}
-
-void QuicConnectionHelper::UnregisterSendAlarmIfRegistered() {
-  send_alarm_registered_ = false;
-}
-
-void QuicConnectionHelper::OnRetransmissionAlarm() {
-  QuicTime when = connection_->OnRetransmissionTimeout();
-  if (!when.IsInitialized()) {
-    return;
-  }
-  QuicTime now = clock_->Now();
-  QuicTime::Delta delta(when.Subtract(now));
-  if (delta < QuicTime::Delta::FromSeconds(0)) {
-    delta = QuicTime::Delta::FromSeconds(0);
-  }
-  SetRetransmissionAlarm(delta);
-}
-
-void QuicConnectionHelper::OnSendAlarm() {
-  if (send_alarm_registered_) {
-    send_alarm_registered_ = false;
-    connection_->OnCanWrite();
-  }
-}
-
-void QuicConnectionHelper::OnTimeoutAlarm() {
-  timeout_alarm_registered_ = false;
-  connection_->CheckForTimeout();
-}
-
-void QuicConnectionHelper::OnAckAlarm() {
-  ack_alarm_registered_ = false;
-  // Alarm may have been cleared.
-  if (!ack_alarm_time_.IsInitialized()) {
-    return;
-  }
-
-  // Alarm may have been reset to a later time.
-  QuicTime now = clock_->Now();
-  if (now < ack_alarm_time_) {
-    SetAckAlarm(ack_alarm_time_.Subtract(now));
-    return;
-  }
-
-  ack_alarm_time_ = QuicTime::Zero();
-  connection_->SendAck();
+QuicAlarm* QuicConnectionHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
+  return new QuicChromeAlarm(clock_, task_runner_, delegate);
 }
 
 void QuicConnectionHelper::OnWriteComplete(int result) {
