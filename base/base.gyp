@@ -877,6 +877,8 @@
         'test/null_task_runner.h',
         'test/perf_test_suite.cc',
         'test/perf_test_suite.h',
+        'test/power_monitor_test_base.cc',
+        'test/power_monitor_test_base.h',
         'test/scoped_locale.cc',
         'test/scoped_locale.h',
         'test/scoped_path_override.cc',

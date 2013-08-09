@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/power_monitor/power_monitor_test_base.h"
+#include "base/test/power_monitor_test_base.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/common/power_monitor_messages.h"
 #include "ipc/ipc_sender.h"

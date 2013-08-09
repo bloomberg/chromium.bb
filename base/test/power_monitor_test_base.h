@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef BASE_TEST_POWER_MONITOR_TEST_BASE_H_
+#define BASE_TEST_POWER_MONITOR_TEST_BASE_H_
+
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 
 namespace base {
 
-class BASE_EXPORT PowerMonitorTestSource : public PowerMonitorSource {
+class PowerMonitorTestSource : public PowerMonitorSource {
  public:
   PowerMonitorTestSource();
   virtual ~PowerMonitorTestSource();
@@ -24,7 +27,7 @@ class BASE_EXPORT PowerMonitorTestSource : public PowerMonitorSource {
   MessageLoop message_loop_;
 };
 
-class BASE_EXPORT PowerMonitorTestObserver : public PowerObserver {
+class PowerMonitorTestObserver : public PowerObserver {
  public:
   PowerMonitorTestObserver();
   virtual ~PowerMonitorTestObserver();
@@ -48,3 +51,5 @@ class BASE_EXPORT PowerMonitorTestObserver : public PowerObserver {
 };
 
 }  // namespace base
+
+#endif  // BASE_TEST_POWER_MONITOR_TEST_BASE_H_
