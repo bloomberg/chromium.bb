@@ -65,6 +65,7 @@ class TestShellTab : public TabAndroid {
   virtual void ShowSyncSettings() OVERRIDE;
   virtual void ShowTermsOfService() OVERRIDE;
   virtual bool ShouldWelcomePageLinkToTermsOfService() OVERRIDE;
+  virtual void OnNewTabPageReady() OVERRIDE;
 
   virtual void RunExternalProtocolDialog(const GURL& url) OVERRIDE;
 

@@ -75,6 +75,9 @@ class TabAndroid {
   // of service and the privacy notice.
   virtual bool ShouldWelcomePageLinkToTermsOfService() = 0;
 
+  // Called to notify that the new tab page has completely rendered.
+  virtual void OnNewTabPageReady() = 0;
+
   // Called when the common ExternalProtocolHandler wants to
   // run the external protocol dialog.
   // TODO(jknotten): Remove this method. Making it non-abstract, so that

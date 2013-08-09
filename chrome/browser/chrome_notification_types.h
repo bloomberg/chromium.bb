@@ -150,17 +150,6 @@ enum NotificationType {
   // starting and finishing all painting.
   NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD,
 
-#if defined(OS_ANDROID)
-  // Indicates that the new tab page is ready.  This is different than
-  // NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD as the NTP might do some more in-page
-  // navigations after it's done loading, potentially causing flakyness in tests
-  // that would navigate as soon as the NTP is done loading.
-  // When this notification happen, it guarantees the page is not going to do
-  // any further navigation.
-  // The source is the WebContents containing the NTP.
-  NOTIFICATION_NEW_TAB_READY,
-#endif
-
   // Used to fire notifications about how long various events took to
   // complete.  E.g., this is used to get more fine grained timings from the
   // new tab page.  The source is a WebContents and the details is a

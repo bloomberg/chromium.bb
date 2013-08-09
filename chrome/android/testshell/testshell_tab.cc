@@ -89,6 +89,10 @@ bool TestShellTab::ShouldWelcomePageLinkToTermsOfService() {
   return false;
 }
 
+void TestShellTab::OnNewTabPageReady() {
+  NOTIMPLEMENTED();
+}
+
 void TestShellTab::RunExternalProtocolDialog(const GURL& url) {
   NOTIMPLEMENTED();
 }

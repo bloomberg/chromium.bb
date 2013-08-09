@@ -7,8 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "content/public/browser/notification_service.h"
+#include "chrome/browser/android/tab_android.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
@@ -36,10 +35,10 @@ void NewTabPageReadyHandler::HandleNewTabPageTitleLoaded(
 
 void NewTabPageReadyHandler::HandleNewTabPageReady(
     const ListValue* args) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_NEW_TAB_READY,
-      content::Source<content::WebContents>(web_ui()->GetWebContents()),
-      content::NotificationService::NoDetails());
+  TabAndroid* tab = TabAndroid::FromWebContents(web_ui()->GetWebContents());
+  if (!tab)
+    return;
+  tab->OnNewTabPageReady();
 }
 
 void NewTabPageReadyHandler::HandleNewTabPageUnexpectedNavigation(
