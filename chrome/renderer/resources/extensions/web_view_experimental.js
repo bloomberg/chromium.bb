@@ -41,7 +41,7 @@ WebView.prototype.setupWebRequestEvents_ = function() {
                 self.viewInstanceId_);
       }
       return self[webRequestEvent.name + '_'];
-    }
+    };
   };
 
   // Populate the WebRequest events from the API definition.
@@ -52,7 +52,6 @@ WebView.prototype.setupWebRequestEvents_ = function() {
         webRequestSchema.events[i].name,
         {
           get: webRequestEvent,
-          configuable: false,
           enumerable: true
         }
     );
@@ -61,7 +60,6 @@ WebView.prototype.setupWebRequestEvents_ = function() {
         webRequestSchema.events[i].name,
         {
           get: webRequestEvent,
-          configuable: false,
           enumerable: true
         }
     );
@@ -71,7 +69,6 @@ WebView.prototype.setupWebRequestEvents_ = function() {
       'request',
       {
         value: request,
-        configurable: false,
         enumerable: true,
         writable: false
       }
@@ -114,7 +111,7 @@ WebView.prototype.setupDialogEvent_ = function() {
     if (browserPluginNode['-internal-setPermission'](requestId, false, '')) {
       showWarningMessage(dialogType);
     }
-  }
+  };
 
   browserPluginNode.addEventListener('-internal-dialog', function(e) {
     var evt = new Event('dialog', { bubbles: true, cancelable: true });
