@@ -402,7 +402,8 @@ void WorkerPool::CheckForCompletedTasks() {
 
 void WorkerPool::ProcessCompletedTasks(
     const TaskVector& completed_tasks) {
-  TRACE_EVENT0("cc", "WorkerPool::ProcessCompletedTasks");
+  TRACE_EVENT1("cc", "WorkerPool::ProcessCompletedTasks",
+               "completed_task_count", completed_tasks.size());
 
   // Worker pool instance is not reentrant while processing completed tasks.
   in_dispatch_completion_callbacks_ = true;
