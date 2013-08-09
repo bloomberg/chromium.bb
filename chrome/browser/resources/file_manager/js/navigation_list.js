@@ -213,26 +213,46 @@ function NavigationList() {
 /**
  * NavigationList inherits cr.ui.List.
  */
-NavigationList.prototype.__proto__ = cr.ui.List.prototype;
+NavigationList.prototype = {
+  __proto__: cr.ui.List.prototype,
+
+  set dataModel(dataModel) {
+    if (!this.boundHandleListChanged_)
+      this.boundHandleListChanged_ = this.onListContentChanged_.bind(this);
+
+    if (this.dataModel_) {
+      dataModel.removeEventListener('change', this.boundHandleListChanged_);
+      dataModel.removeEventListener('permuted', this.boundHandleListChanged_);
+    }
+
+    dataModel.addEventListener('change', this.boundHandleListChanged_);
+    dataModel.addEventListener('permuted', this.boundHandleListChanged_);
+
+    var parentSetter = cr.ui.List.prototype.__lookupSetter__('dataModel');
+    return parentSetter.call(this, dataModel);
+  },
+
+  get dataModel() {
+    return this.dataModel_;
+  }
+
+  // TODO(yoshiki): Add a setter of 'directoryModel'.
+};
 
 /**
  * @param {HTMLElement} el Element to be DirectoryItem.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
- * @param {cr.ui.ArrayDataModel} pinnedFolderModel Current model of the pinned
  *     folders.
  */
-NavigationList.decorate = function(el, directoryModel, pinnedFolderModel) {
+NavigationList.decorate = function(el, directoryModel) {
   el.__proto__ = NavigationList.prototype;
-  el.decorate(directoryModel, pinnedFolderModel);
+  el.decorate(directoryModel);
 };
 
 /**
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
- * @param {cr.ui.ArrayDataModel} pinnedFolderModel Current model of the pinned
- *     folders.
  */
-NavigationList.prototype.decorate =
-    function(directoryModel, pinnedFolderModel) {
+NavigationList.prototype.decorate = function(directoryModel) {
   cr.ui.List.decorate(this);
   this.__proto__ = NavigationList.prototype;
 
@@ -258,16 +278,6 @@ NavigationList.prototype.decorate =
   this.itemConstructor = function(path) {
     return self.renderRoot_(path);
   };
-
-  this.pinnedItemList_ = pinnedFolderModel;
-
-  this.dataModel =
-      new NavigationListModel(this.directoryModel_.getRootsList(),
-                              this.pinnedItemList_);
-  this.dataModel.addEventListener(
-      'change', this.onDataModelChanged_.bind(this));
-  this.dataModel.addEventListener(
-      'permuted', this.onDataModelChanged_.bind(this));
 };
 
 /**
@@ -376,7 +386,7 @@ NavigationList.prototype.onCurrentDirectoryChanged_ = function(event) {
  * @param {Event} event The event.
  * @private
  */
-NavigationList.prototype.onDataModelChanged_ = function(event) {
+NavigationList.prototype.onListContentChanged_ = function(event) {
   this.selectBestMatchItem_();
 };
 

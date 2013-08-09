@@ -1183,9 +1183,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
 
     this.navigationList_ = this.dialogDom_.querySelector('#volume-list');
-    NavigationList.decorate(this.navigationList_,
-                            this.directoryModel_,
-                            this.folderShortcutsModel_);
+    NavigationList.decorate(this.navigationList_, this.directoryModel_);
+    this.navigationList_.dataModel =
+        new NavigationListModel(this.directoryModel_.getRootsList(),
+                                this.folderShortcutsModel_);
   };
 
   /**
