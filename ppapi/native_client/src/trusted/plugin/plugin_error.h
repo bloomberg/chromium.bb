@@ -96,6 +96,7 @@ enum PluginErrorCode {
   ERROR_PNACL_NOT_ENABLED = 68,
   ERROR_MANIFEST_NOACCESS_URL = 69,
   ERROR_NEXE_NOACCESS_URL = 70,
+  ERROR_PNACL_CRASH_THROTTLED = 71,
   // If you add a code, read the enum comment above on how to update histograms.
   ERROR_MAX
 };

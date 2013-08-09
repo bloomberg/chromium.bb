@@ -55,6 +55,7 @@
 
 #include "ppapi/native_client/src/trusted/plugin/file_utils.h"
 #include "ppapi/native_client/src/trusted/plugin/json_manifest.h"
+#include "ppapi/native_client/src/trusted/plugin/module_ppapi.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "ppapi/native_client/src/trusted/plugin/nexe_arch.h"
@@ -1009,6 +1010,10 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
   // invocation will just be a no-op, since all the crash log will
   // have been received and we'll just get an EOF indication.
   CopyCrashLogToJsConsole();
+
+  // Remember the nexe crash time, which helps determine the need to throttle.
+  ModulePpapi* module_ppapi = static_cast<ModulePpapi*>(pp::Module::Get());
+  module_ppapi->RegisterPluginCrash();
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
@@ -1204,15 +1209,25 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
     EnqueueProgressEvent(kProgressEventProgress);
     if (pnacl_options.translate()) {
       if (this->nacl_interface()->IsPnaclEnabled()) {
-        pp::CompletionCallback translate_callback =
-            callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
-        // Will always call the callback on success or failure.
-        pnacl_coordinator_.reset(
-            PnaclCoordinator::BitcodeToNative(this,
-                                              program_url,
-                                              pnacl_options,
-                                              translate_callback));
-        return;
+        // Check whether PNaCl has been crashing "frequently".  If so, report
+        // a load error.
+        ModulePpapi* module_ppapi =
+            static_cast<ModulePpapi*>(pp::Module::Get());
+        if (module_ppapi->IsPluginUnstable()) {
+          error_info.SetReport(ERROR_PNACL_CRASH_THROTTLED,
+                               "PNaCl has been temporarily disabled because too"
+                               " many crashes have been observed.");
+        } else {
+          pp::CompletionCallback translate_callback =
+              callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
+          // Will always call the callback on success or failure.
+          pnacl_coordinator_.reset(
+              PnaclCoordinator::BitcodeToNative(this,
+                                                program_url,
+                                                pnacl_options,
+                                                translate_callback));
+          return;
+        }
       } else {
         error_info.SetReport(ERROR_PNACL_NOT_ENABLED,
                              "PNaCl has been disabled (e.g., by setting "
