@@ -963,7 +963,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, NoAutofillForReadOnlyFields) {
 //   1. Fill form using a saved profile.
 //   2. Reset the form.
 //   3. Fill form using a saved profile.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FormFillableOnReset) {
+// Flakily times out: http://crbug.com/270341
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DISABLED_FormFillableOnReset) {
   ASSERT_TRUE(test_server()->Start());
 
   CreateTestProfile();
@@ -990,8 +991,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FormFillableOnReset) {
 }
 
 // Test Autofill distinguishes a middle initial in a name.
+// Flakily times out: http://crbug.com/270341
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       DistinguishMiddleInitialWithinName) {
+                       DISABLED_DistinguishMiddleInitialWithinName) {
   ASSERT_TRUE(test_server()->Start());
 
   CreateTestProfile();
@@ -1006,8 +1008,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Test forms with multiple email addresses are filled properly.
 // Entire form should be filled with one user gesture.
+// Flakily times out: http://crbug.com/270341
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MultipleEmailFilledByOneUserGesture) {
+                       DISABLED_MultipleEmailFilledByOneUserGesture) {
   ASSERT_TRUE(test_server()->Start());
 
   std::string email("bsmith@gmail.com");
