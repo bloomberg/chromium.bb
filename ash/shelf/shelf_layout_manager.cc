@@ -283,7 +283,8 @@ void ShelfLayoutManager::LayoutShelf() {
   if (shelf_->launcher())
     shelf_->launcher()->SetLauncherViewBounds(
         target_bounds.launcher_bounds_in_shelf);
-  GetLayer(shelf_->status_area_widget())->SetOpacity(target_bounds.opacity);
+  GetLayer(shelf_->status_area_widget())->SetOpacity(
+      target_bounds.status_opacity);
   // TODO(harrym): Once status area widget is a child view of shelf
   // this can be simplified.
   gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
@@ -574,12 +575,6 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   state.window_state = workspace_controller_ ?
       workspace_controller_->GetWindowState() : WORKSPACE_WINDOW_STATE_DEFAULT;
 
-  // It's possible for SetState() when a window becomes maximized but the state
-  // won't have changed value. Do the dimming check before the early exit.
-  shelf_->SetDimsShelf(
-      (state.visibility_state == SHELF_VISIBLE) &&
-      state.window_state == WORKSPACE_WINDOW_STATE_MAXIMIZED);
-
   if (state_.Equals(state))
     return;  // Nothing changed.
 
@@ -634,18 +629,11 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
       old_state.visibility_state != SHELF_VISIBLE) {
     change_type = BackgroundAnimator::CHANGE_IMMEDIATE;
   } else {
-    // Delay updating the background when going from SHELF_AUTO_HIDE_SHOWN to
-    // SHELF_AUTO_HIDE_HIDDEN until the shelf animates out. Otherwise during the
-    // animation you see the background change.
-    // Also delay the animation when the shelf was hidden, and has just been
-    // made visible (e.g. using a gesture-drag).
-    if (state.visibility_state == SHELF_AUTO_HIDE &&
-        state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN &&
-        old_state.visibility_state == SHELF_AUTO_HIDE) {
-      delay_background_change = true;
-    } else if (state.visibility_state == SHELF_VISIBLE &&
-               old_state.visibility_state == SHELF_AUTO_HIDE &&
-               old_state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
+    // Delay the animation when the shelf was hidden, and has just been made
+    // visible (e.g. using a gesture-drag).
+    if (state.visibility_state == SHELF_VISIBLE &&
+        old_state.visibility_state == SHELF_AUTO_HIDE &&
+        old_state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
       delay_background_change = true;
     }
   }
@@ -656,7 +644,14 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     // UpdateShelfBackground deletes itself when the animation is done.
     update_shelf_observer_ = new UpdateShelfObserver(this);
     status_animation_setter.AddObserver(update_shelf_observer_);
+  } else {
+    UpdateShelfBackground(change_type);
   }
+
+  shelf_->SetDimsShelf(
+      state.visibility_state == SHELF_VISIBLE &&
+      state.window_state == WORKSPACE_WINDOW_STATE_MAXIMIZED);
+
   ui::Layer* layer = GetLayer(shelf_->status_area_widget());
   // TODO(harrym): Remove when status_area is view (crbug.com/180422).
   gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
@@ -669,8 +664,6 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       root_window_, target_bounds.work_area_insets);
   UpdateHitTestBounds();
-  if (!delay_background_change)
-    UpdateShelfBackground(change_type);
 
   // OnAutoHideStateChanged Should be emitted when:
   //  - firstly state changed to auto-hide from other state
@@ -795,7 +788,8 @@ void ShelfLayoutManager::CalculateTargetBounds(
        state.visibility_state == SHELF_AUTO_HIDE) ? 1.0f : 0.0f;
   target_bounds->status_opacity =
       (state.visibility_state == SHELF_AUTO_HIDE &&
-       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) ?
+       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN &&
+       gesture_drag_status_ != GESTURE_DRAG_IN_PROGRESS) ?
       0.0f : target_bounds->opacity;
 
   if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS)
