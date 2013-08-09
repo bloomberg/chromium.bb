@@ -57,7 +57,7 @@ cr.define('cr.ui', function() {
      * @type {boolean}
      * @private
      */
-    focusByKeyboard_: false,
+    focusByKeyboard_: true,
 
     /**
      * Whether the focus outline should be visible.
