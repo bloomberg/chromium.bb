@@ -8,8 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/metrics/variations/variations_util.h"
+#include "chrome/common/metrics/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_variations {
@@ -66,34 +65,27 @@ Study CreateStudyWithFlagGroups(int default_group_probability,
 TEST(VariationsSeedProcessorTest, CheckStudyChannel) {
   VariationsSeedProcessor seed_processor;
 
-  const chrome::VersionInfo::Channel channels[] = {
-    chrome::VersionInfo::CHANNEL_CANARY,
-    chrome::VersionInfo::CHANNEL_DEV,
-    chrome::VersionInfo::CHANNEL_BETA,
-    chrome::VersionInfo::CHANNEL_STABLE,
-  };
-  const Study_Channel study_channels[] = {
+  const Study_Channel channels[] = {
     Study_Channel_CANARY,
     Study_Channel_DEV,
     Study_Channel_BETA,
     Study_Channel_STABLE,
   };
-  ASSERT_EQ(arraysize(channels), arraysize(study_channels));
   bool channel_added[arraysize(channels)] = { 0 };
 
   Study_Filter filter;
 
-  // Check in the forwarded order. The loop cond is <= arraysize(study_channels)
+  // Check in the forwarded order. The loop cond is <= arraysize(channels)
   // instead of < so that the result of adding the last channel gets checked.
-  for (size_t i = 0; i <= arraysize(study_channels); ++i) {
+  for (size_t i = 0; i <= arraysize(channels); ++i) {
     for (size_t j = 0; j < arraysize(channels); ++j) {
       const bool expected = channel_added[j] || filter.channel_size() == 0;
       const bool result = seed_processor.CheckStudyChannel(filter, channels[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
 
-    if (i < arraysize(study_channels)) {
-      filter.add_channel(study_channels[i]);
+    if (i < arraysize(channels)) {
+      filter.add_channel(channels[i]);
       channel_added[i] = true;
     }
   }
@@ -101,16 +93,16 @@ TEST(VariationsSeedProcessorTest, CheckStudyChannel) {
   // Do the same check in the reverse order.
   filter.clear_channel();
   memset(&channel_added, 0, sizeof(channel_added));
-  for (size_t i = 0; i <= arraysize(study_channels); ++i) {
+  for (size_t i = 0; i <= arraysize(channels); ++i) {
     for (size_t j = 0; j < arraysize(channels); ++j) {
       const bool expected = channel_added[j] || filter.channel_size() == 0;
       const bool result = seed_processor.CheckStudyChannel(filter, channels[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
 
-    if (i < arraysize(study_channels)) {
-      const int index = arraysize(study_channels) - i - 1;
-      filter.add_channel(study_channels[index]);
+    if (i < arraysize(channels)) {
+      const int index = arraysize(channels) - i - 1;
+      filter.add_channel(channels[index]);
       channel_added[index] = true;
     }
   }
@@ -275,12 +267,13 @@ TEST(VariationsSeedProcessorTest, CheckStudyVersion) {
   Study_Filter filter;
 
   // Min/max version not set should result in true.
-  EXPECT_TRUE(seed_processor.CheckStudyVersion(filter, "1.2.3"));
+  EXPECT_TRUE(seed_processor.CheckStudyVersion(filter, base::Version("1.2.3")));
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(min_test_cases); ++i) {
     filter.set_min_version(min_test_cases[i].min_version);
     const bool result =
-        seed_processor.CheckStudyVersion(filter, min_test_cases[i].version);
+        seed_processor.CheckStudyVersion(filter,
+                                         Version(min_test_cases[i].version));
     EXPECT_EQ(min_test_cases[i].expected_result, result) <<
         "Min. version case " << i << " failed!";
   }
@@ -289,7 +282,8 @@ TEST(VariationsSeedProcessorTest, CheckStudyVersion) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(max_test_cases); ++i) {
     filter.set_max_version(max_test_cases[i].max_version);
     const bool result =
-        seed_processor.CheckStudyVersion(filter, max_test_cases[i].version);
+        seed_processor.CheckStudyVersion(filter,
+                                         Version(max_test_cases[i].version));
     EXPECT_EQ(max_test_cases[i].expected_result, result) <<
         "Max version case " << i << " failed!";
   }
@@ -302,13 +296,15 @@ TEST(VariationsSeedProcessorTest, CheckStudyVersion) {
 
       if (!min_test_cases[i].expected_result) {
         const bool result =
-            seed_processor.CheckStudyVersion(filter, min_test_cases[i].version);
+            seed_processor.CheckStudyVersion(
+                filter, Version(min_test_cases[i].version));
         EXPECT_FALSE(result) << "Case " << i << "," << j << " failed!";
       }
 
       if (!max_test_cases[j].expected_result) {
         const bool result =
-            seed_processor.CheckStudyVersion(filter, max_test_cases[j].version);
+            seed_processor.CheckStudyVersion(
+                filter, Version(max_test_cases[j].version));
         EXPECT_FALSE(result) << "Case " << i << "," << j << " failed!";
       }
     }
@@ -413,14 +409,15 @@ TEST(VariationsSeedProcessorTest, NonExpiredStudyPrioritizedOverExpiredStudy) {
   const base::Time year_ago =
       base::Time::Now() - base::TimeDelta::FromDays(365);
 
+  const base::Version version("20.0.0.0");
+
   // Check that adding [expired, non-expired] activates the non-expired one.
   ASSERT_EQ(std::string(), base::FieldTrialList::FindFullName(kTrialName));
   {
     base::FieldTrialList field_trial_list(NULL);
     study1->set_expiry_date(TimeToProtoTime(year_ago));
     seed_processor.CreateTrialsFromSeed(seed, "en-CA", base::Time::Now(),
-                                        chrome::VersionInfo(),
-                                        chrome::VersionInfo::GetChannel());
+                                        version, Study_Channel_STABLE);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 
@@ -431,8 +428,7 @@ TEST(VariationsSeedProcessorTest, NonExpiredStudyPrioritizedOverExpiredStudy) {
     study1->clear_expiry_date();
     study2->set_expiry_date(TimeToProtoTime(year_ago));
     seed_processor.CreateTrialsFromSeed(seed, "en-CA", base::Time::Now(),
-                                        chrome::VersionInfo(),
-                                        chrome::VersionInfo::GetChannel());
+                                        version, Study_Channel_STABLE);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 }

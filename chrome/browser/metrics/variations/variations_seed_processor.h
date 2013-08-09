@@ -11,9 +11,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
+#include "base/version.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
-#include "chrome/common/chrome_version_info.h"
 
 namespace chrome_variations {
 
@@ -28,8 +28,8 @@ class VariationsSeedProcessor {
   void CreateTrialsFromSeed(const TrialsSeed& seed,
                             const std::string& locale,
                             const base::Time& reference_date,
-                            const chrome::VersionInfo& version_info,
-                            chrome::VersionInfo::Channel channel);
+                            const base::Version& version,
+                            Study_Channel channel);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyChannel);
@@ -50,8 +50,7 @@ class VariationsSeedProcessor {
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, VariationParams);
 
   // Checks whether a study is applicable for the given |channel| per |filter|.
-  bool CheckStudyChannel(const Study_Filter& filter,
-                         chrome::VersionInfo::Channel channel);
+  bool CheckStudyChannel(const Study_Filter& filter, Study_Channel channel);
 
   // Checks whether a study is applicable for the given |locale| per |filter|.
   bool CheckStudyLocale(const Study_Filter& filter, const std::string& locale);
@@ -65,7 +64,7 @@ class VariationsSeedProcessor {
 
   // Checks whether a study is applicable for the given version per |filter|.
   bool CheckStudyVersion(const Study_Filter& filter,
-                         const std::string& version_string);
+                         const base::Version& version);
 
   // Creates and registers a field trial from the |study| data. Disables the
   // trial if |is_expired| is true.
@@ -81,8 +80,8 @@ class VariationsSeedProcessor {
   bool ShouldAddStudy(const Study& study,
                       const std::string& locale,
                       const base::Time& reference_date,
-                      const chrome::VersionInfo& version_info,
-                      chrome::VersionInfo::Channel channel);
+                      const base::Version& version,
+                      Study_Channel channel);
 
   // Validates the sanity of |study| and computes the total probability.
   bool ValidateStudyAndComputeTotalProbability(

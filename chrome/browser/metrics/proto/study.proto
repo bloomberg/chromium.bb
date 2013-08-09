@@ -93,6 +93,9 @@ message Study {
   // Possible Chrome release channels.
   // See: http://dev.chromium.org/getting-involved/dev-channel
   enum Channel {
+    // UNKNOWN value is defined here for the benefit of code using this enum
+    // type, but is not actually meant to be encoded in the protobuf.
+    UNKNOWN = -1;
     CANARY = 0;
     DEV = 1;
     BETA = 2;

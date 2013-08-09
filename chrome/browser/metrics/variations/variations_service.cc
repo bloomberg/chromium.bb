@@ -59,24 +59,32 @@ const int64 kServerTimeResolutionMs = 1000;
 // that channel value. Otherwise, if the fake channel flag is provided, this
 // will return the fake channel. Failing that, this will return the UNKNOWN
 // channel.
-chrome::VersionInfo::Channel GetChannelForVariations() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel != chrome::VersionInfo::CHANNEL_UNKNOWN)
-    return channel;
-  std::string forced_channel =
+Study_Channel GetChannelForVariations() {
+  switch (chrome::VersionInfo::GetChannel()) {
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      return Study_Channel_CANARY;
+    case chrome::VersionInfo::CHANNEL_DEV:
+      return Study_Channel_DEV;
+    case chrome::VersionInfo::CHANNEL_BETA:
+      return Study_Channel_BETA;
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      return Study_Channel_STABLE;
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+      break;
+  }
+  const std::string forced_channel =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kFakeVariationsChannel);
   if (forced_channel == "stable")
-    channel = chrome::VersionInfo::CHANNEL_STABLE;
-  else if (forced_channel == "beta")
-    channel = chrome::VersionInfo::CHANNEL_BETA;
-  else if (forced_channel == "dev")
-    channel = chrome::VersionInfo::CHANNEL_DEV;
-  else if (forced_channel == "canary")
-    channel = chrome::VersionInfo::CHANNEL_CANARY;
-  else
-    DVLOG(1) << "Invalid channel provided: " << forced_channel;
-  return channel;
+    return Study_Channel_STABLE;
+  if (forced_channel == "beta")
+    return Study_Channel_BETA;
+  if (forced_channel == "dev")
+    return Study_Channel_DEV;
+  if (forced_channel == "canary")
+    return Study_Channel_CANARY;
+  DVLOG(1) << "Invalid channel provided: " << forced_channel;
+  return Study_Channel_UNKNOWN;
 }
 
 // Returns a string that will be used for the value of the 'osname' URL param
@@ -196,9 +204,13 @@ bool VariationsService::CreateTrialsFromSeed() {
   if (!current_version_info.is_valid())
     return false;
 
+  const base::Version current_version(current_version_info.Version());
+  if (!current_version.IsValid())
+    return false;
+
   VariationsSeedProcessor().CreateTrialsFromSeed(
       seed, g_browser_process->GetApplicationLocale(), reference_date,
-      current_version_info, GetChannelForVariations());
+      current_version, GetChannelForVariations());
 
   // Log the "freshness" of the seed that was just used. The freshness is the
   // time between the last successful seed download and now.

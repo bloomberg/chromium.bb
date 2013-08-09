@@ -12,32 +12,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/version.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/common/metrics/variations/variations_associated_data.h"
 
 namespace chrome_variations {
 
 namespace {
-
-// Maps Study_Channel enum values to corresponding chrome::VersionInfo::Channel
-// enum values.
-chrome::VersionInfo::Channel ConvertStudyChannelToVersionChannel(
-    Study_Channel study_channel) {
-  switch (study_channel) {
-    case Study_Channel_CANARY:
-      return chrome::VersionInfo::CHANNEL_CANARY;
-    case Study_Channel_DEV:
-      return chrome::VersionInfo::CHANNEL_DEV;
-    case Study_Channel_BETA:
-      return chrome::VersionInfo::CHANNEL_BETA;
-    case Study_Channel_STABLE:
-      return chrome::VersionInfo::CHANNEL_STABLE;
-  }
-  // All enum values of |study_channel| were handled above.
-  NOTREACHED();
-  return chrome::VersionInfo::CHANNEL_UNKNOWN;
-}
 
 Study_Platform GetCurrentPlatform() {
 #if defined(OS_WIN)
@@ -76,8 +56,10 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
     const TrialsSeed& seed,
     const std::string& locale,
     const base::Time& reference_date,
-    const chrome::VersionInfo& version_info,
-    chrome::VersionInfo::Channel channel) {
+    const base::Version& version,
+    Study_Channel channel) {
+  DCHECK(version.IsValid());
+
   // Add expired studies (in a disabled state) only after all the non-expired
   // studies have been added (and do not add an expired study if a corresponding
   // non-expired study got added). This way, if there's both an expired and a
@@ -87,7 +69,7 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
 
   for (int i = 0; i < seed.study_size(); ++i) {
     const Study& study = seed.study(i);
-    if (!ShouldAddStudy(study, locale, reference_date, version_info, channel))
+    if (!ShouldAddStudy(study, locale, reference_date, version, channel))
       continue;
 
     if (IsStudyExpired(study, reference_date)) {
@@ -104,15 +86,14 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
   }
 }
 
-bool VariationsSeedProcessor::CheckStudyChannel(
-    const Study_Filter& filter,
-    chrome::VersionInfo::Channel channel) {
+bool VariationsSeedProcessor::CheckStudyChannel(const Study_Filter& filter,
+                                                Study_Channel channel) {
   // An empty channel list matches all channels.
   if (filter.channel_size() == 0)
     return true;
 
   for (int i = 0; i < filter.channel_size(); ++i) {
-    if (ConvertStudyChannelToVersionChannel(filter.channel(i)) == channel)
+    if (filter.channel(i) == channel)
       return true;
   }
   return false;
@@ -160,13 +141,7 @@ bool VariationsSeedProcessor::CheckStudyStartDate(
 
 bool VariationsSeedProcessor::CheckStudyVersion(
     const Study_Filter& filter,
-    const std::string& version_string) {
-  const Version version(version_string);
-  if (!version.IsValid()) {
-    NOTREACHED();
-    return false;
-  }
-
+    const base::Version& version) {
   if (filter.has_min_version()) {
     if (version.CompareToWildcardString(filter.min_version()) < 0)
       return false;
@@ -276,8 +251,8 @@ bool VariationsSeedProcessor::ShouldAddStudy(
     const Study& study,
     const std::string& locale,
     const base::Time& reference_date,
-    const chrome::VersionInfo& version_info,
-    chrome::VersionInfo::Channel channel) {
+    const base::Version& version,
+    Study_Channel channel) {
   if (study.has_filter()) {
     if (!CheckStudyChannel(study.filter(), channel)) {
       DVLOG(1) << "Filtered out study " << study.name() << " due to channel.";
@@ -294,7 +269,7 @@ bool VariationsSeedProcessor::ShouldAddStudy(
       return false;
     }
 
-    if (!CheckStudyVersion(study.filter(), version_info.Version())) {
+    if (!CheckStudyVersion(study.filter(), version)) {
       DVLOG(1) << "Filtered out study " << study.name() << " due to version.";
       return false;
     }
