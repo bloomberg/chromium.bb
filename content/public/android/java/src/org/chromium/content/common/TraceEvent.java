@@ -25,6 +25,10 @@ public class TraceEvent {
 
     private static volatile boolean sEnabled = false;
 
+    // Enable this locally if you want to see main thread Looper Idle stats in the trace
+    // and in logcat. Disabled by default as it creates GC and logcat churn.
+    private static final boolean TRACE_IDLE_EVENTS = false;
+
     /**
      * A class that records, traces and logs statistics about the main Looper.
      * The output of this class can be used in a number of interesting ways:
@@ -86,6 +90,7 @@ public class TraceEvent {
         // This method can only execute on the looper thread, because that is
         // the only thread that is permitted to call Looper.myqueue().
         private final void syncIdleMonitoring() {
+            if (!TRACE_IDLE_EVENTS) return;
             if (sEnabled && !mIdleMonitorAttached) {
                 // approximate start time for computational purposes
                 mLastIdleStartedAt = SystemClock.elapsedRealtime();
