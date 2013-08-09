@@ -637,7 +637,7 @@
         }],
         ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
           'sources': [
-            'browser/renderer_host/media/desktop_capture_device_unittest.cc',
+            'browser/renderer_host/media/screen_capture_device_unittest.cc',
           ],
           'dependencies': [
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
