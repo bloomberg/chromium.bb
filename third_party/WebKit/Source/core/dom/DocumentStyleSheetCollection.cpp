@@ -306,7 +306,8 @@ void DocumentStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool c
     if (!node->inDocument())
         return;
 
-    TreeScope* treeScope = node->treeScope();
+    TreeScope* treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
+    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
 
     StyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
     ASSERT(collection);
@@ -324,6 +325,8 @@ void DocumentStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool c
 void DocumentStyleSheetCollection::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
 {
     TreeScope* treeScope = scopingNode ? scopingNode->treeScope() : m_document;
+    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+
     StyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
     ASSERT(collection);
     collection->removeStyleSheetCandidateNode(node, scopingNode);
