@@ -26,6 +26,7 @@ class RecordingProofVerifier : public net::ProofVerifier {
  public:
   // ProofVerifier interface.
   virtual net::ProofVerifier::Status VerifyProof(
+      net::QuicVersion version,
       const string& hostname,
       const string& server_config,
       const vector<string>& certs,

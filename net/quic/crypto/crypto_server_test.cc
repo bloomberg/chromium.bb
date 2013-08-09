@@ -72,8 +72,8 @@ class CryptoServerTest : public ::testing::Test {
   void ShouldSucceed(const CryptoHandshakeMessage& message) {
     string error_details;
     QuicErrorCode error = config_.ProcessClientHello(
-        message, 1 /* GUID */, addr_, &clock_,
-        rand_, &params_, &out_, &error_details);
+        message, QuicVersionMax(), 1 /* GUID */, addr_,
+        &clock_, rand_, &params_, &out_, &error_details);
 
     ASSERT_EQ(error, QUIC_NO_ERROR)
         << "Message failed with error " << error_details << ": "
@@ -84,8 +84,8 @@ class CryptoServerTest : public ::testing::Test {
                             const CryptoHandshakeMessage& message) {
     string error_details;
     QuicErrorCode error = config_.ProcessClientHello(
-        message, 1 /* GUID */, addr_, &clock_,
-        rand_, &params_, &out_, &error_details);
+        message, QuicVersionMax(), 1 /* GUID */, addr_,
+        &clock_, rand_, &params_, &out_, &error_details);
 
     ASSERT_NE(error, QUIC_NO_ERROR)
         << "Message didn't fail: " << message.DebugString();

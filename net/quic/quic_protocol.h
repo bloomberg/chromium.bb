@@ -180,14 +180,16 @@ enum QuicPacketPrivateFlags {
 // The available versions of QUIC. Guaranteed that the integer value of the enum
 // will match the version number.
 // When adding a new version to this enum you should add it to
-// kSupportedVersions (if appropriate), and also add a new case to the helper
-// methods QuicVersionToQuicTag, and QuicTagToQuicVersion.
+// kSupportedQuicVersions (if appropriate), and also add a new case to the
+// helper methods QuicVersionToQuicTag, QuicTagToQuicVersion, and
+// QuicVersionToString.
 enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
   QUIC_VERSION_6 = 6,
-  QUIC_VERSION_7 = 7,  // Current version.
+  QUIC_VERSION_7 = 7,
+  QUIC_VERSION_8 = 8,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -195,7 +197,7 @@ enum QuicVersion {
 // element, with subsequent elements in descending order (versions can be
 // skipped as necessary).
 static const QuicVersion kSupportedQuicVersions[] =
-    {QUIC_VERSION_7, QUIC_VERSION_6};
+    {QUIC_VERSION_8, QUIC_VERSION_7, QUIC_VERSION_6};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 

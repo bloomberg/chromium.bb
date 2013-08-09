@@ -56,8 +56,8 @@ TEST(QuicProtocolTest, QuicVersionToQuicTag) {
 #endif
 
   // Explicitly test a specific version.
-  EXPECT_EQ(MakeQuicTag('Q', '0', '0', '6'),
-            QuicVersionToQuicTag(QUIC_VERSION_6));
+  EXPECT_EQ(MakeQuicTag('Q', '0', '0', '7'),
+            QuicVersionToQuicTag(QUIC_VERSION_7));
 
   // Loop over all supported versions and make sure that we never hit the
   // default case (i.e. all supported versions should be successfully converted
@@ -95,8 +95,8 @@ TEST(QuicProtocolTest, QuicTagToQuicVersion) {
 #endif
 
   // Explicitly test specific versions.
-  EXPECT_EQ(QUIC_VERSION_6,
-            QuicTagToQuicVersion(MakeQuicTag('Q', '0', '0', '6')));
+  EXPECT_EQ(QUIC_VERSION_7,
+            QuicTagToQuicVersion(MakeQuicTag('Q', '0', '0', '7')));
 
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
     const QuicVersion& version = kSupportedQuicVersions[i];
@@ -127,16 +127,16 @@ TEST(QuicProtocolTest, QuicTagToQuicVersionUnsupported) {
 }
 
 TEST(QuicProtocolTest, QuicVersionToString) {
-  EXPECT_EQ("QUIC_VERSION_6",
-            QuicVersionToString(QUIC_VERSION_6));
+  EXPECT_EQ("QUIC_VERSION_7",
+            QuicVersionToString(QUIC_VERSION_7));
   EXPECT_EQ("QUIC_VERSION_UNSUPPORTED",
             QuicVersionToString(QUIC_VERSION_UNSUPPORTED));
 
-  QuicVersion single_version[] = {QUIC_VERSION_6};
-  EXPECT_EQ("QUIC_VERSION_6,", QuicVersionArrayToString(single_version,
+  QuicVersion single_version[] = {QUIC_VERSION_7};
+  EXPECT_EQ("QUIC_VERSION_7,", QuicVersionArrayToString(single_version,
                                    arraysize(single_version)));
-  QuicVersion multiple_versions[] = {QUIC_VERSION_7, QUIC_VERSION_6};
-  EXPECT_EQ("QUIC_VERSION_7,QUIC_VERSION_6,",
+  QuicVersion multiple_versions[] = {QUIC_VERSION_8, QUIC_VERSION_7};
+  EXPECT_EQ("QUIC_VERSION_8,QUIC_VERSION_7,",
             QuicVersionArrayToString(multiple_versions,
                                      arraysize(multiple_versions)));
 }

@@ -129,6 +129,7 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
     string* error_details) {
   return crypto_config_.ProcessClientHello(
       message,
+      session()->connection()->version(),
       session()->connection()->guid(),
       session()->connection()->peer_address(),
       session()->connection()->clock(),

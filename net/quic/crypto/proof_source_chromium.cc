@@ -12,7 +12,8 @@ namespace net {
 ProofSourceChromium::ProofSourceChromium() {
 }
 
-bool ProofSourceChromium::GetProof(const string& hostname,
+bool ProofSourceChromium::GetProof(QuicVersion version,
+                                   const string& hostname,
                                    const string& server_config,
                                    bool ecdsa_ok,
                                    const vector<string>** out_certs,

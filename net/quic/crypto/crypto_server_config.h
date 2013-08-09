@@ -116,6 +116,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // an error code is returned.
   //
   // client_hello: the incoming client hello message.
+  // version: the QUIC version for the connection. TODO(wtc): Remove once
+  //     QUIC_VERSION_7 and before are removed.
   // guid: the GUID for the connection, which is used in key derivation.
   // client_ip: the IP address of the client, which is used to generate and
   //     validate source-address tokens.
@@ -127,6 +129,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // out: the resulting handshake message (either REJ or SHLO)
   // error_details: used to store a string describing any error.
   QuicErrorCode ProcessClientHello(const CryptoHandshakeMessage& client_hello,
+                                   QuicVersion version,
                                    QuicGuid guid,
                                    const IPEndPoint& client_ip,
                                    const QuicClock* clock,
@@ -259,6 +262,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
   void BuildRejection(
+      QuicVersion version,
       const scoped_refptr<Config>& config,
       const CryptoHandshakeMessage& client_hello,
       const ClientHelloInfo& info,
