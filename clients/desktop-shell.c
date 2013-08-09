@@ -318,6 +318,31 @@ panel_launcher_button_handler(struct widget *widget,
 	widget_schedule_redraw(widget);
 	if (state == WL_POINTER_BUTTON_STATE_RELEASED)
 		panel_launcher_activate(launcher);
+
+}
+
+static void
+panel_launcher_touch_down_handler(struct widget *widget, uint32_t serial,
+				  uint32_t time, int32_t id,
+				  float x, float y, void *data)
+{
+	struct panel_launcher *launcher;
+
+	launcher = widget_get_user_data(widget);
+	launcher->focused = 1;
+	widget_schedule_redraw(widget);
+}
+
+static void
+panel_launcher_touch_up_handler(struct widget *widget, uint32_t serial,
+				uint32_t time, int32_t id, void *data)
+{
+	struct panel_launcher *launcher;
+
+	launcher = widget_get_user_data(widget);
+	launcher->focused = 0;
+	widget_schedule_redraw(widget);
+	panel_launcher_activate(launcher);
 }
 
 static void
@@ -637,6 +662,10 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 				   panel_launcher_leave_handler);
 	widget_set_button_handler(launcher->widget,
 				    panel_launcher_button_handler);
+	widget_set_touch_down_handler(launcher->widget,
+				      panel_launcher_touch_down_handler);
+	widget_set_touch_up_handler(launcher->widget,
+				    panel_launcher_touch_up_handler);
 	widget_set_redraw_handler(launcher->widget,
 				  panel_launcher_redraw_handler);
 	widget_set_motion_handler(launcher->widget,
