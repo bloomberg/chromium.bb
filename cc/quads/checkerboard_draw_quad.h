@@ -35,6 +35,7 @@ class CC_EXPORT CheckerboardDrawQuad : public DrawQuad {
   static const CheckerboardDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
+  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
   CheckerboardDrawQuad();
 };
 

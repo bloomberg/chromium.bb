@@ -20,6 +20,10 @@
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
 
+namespace base {
+class Value;
+};
+
 namespace cc {
 
 class DrawQuad;
@@ -47,6 +51,7 @@ class CC_EXPORT RenderPass {
     int index;
 
     Id(int layer_id, int index) : layer_id(layer_id), index(index) {}
+    void* AsTracingId() const;
 
     bool operator==(const Id& other) const {
       return layer_id == other.layer_id && index == other.index;
@@ -78,6 +83,8 @@ class CC_EXPORT RenderPass {
               const gfx::Transform& transform_to_root_target,
               bool has_transparent_background,
               bool has_occlusion_from_outside_target_surface);
+
+  scoped_ptr<base::Value> AsValue() const;
 
   // Uniquely identifies the render pass in the compositor's current frame.
   Id id;

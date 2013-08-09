@@ -39,6 +39,7 @@ class CC_EXPORT DebugBorderDrawQuad : public DrawQuad {
 
  private:
   DebugBorderDrawQuad();
+  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 
 }  // namespace cc

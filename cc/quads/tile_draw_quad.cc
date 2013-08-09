@@ -5,6 +5,7 @@
 #include "cc/quads/tile_draw_quad.h"
 
 #include "base/logging.h"
+#include "base/values.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
@@ -56,6 +57,11 @@ void TileDrawQuad::IterateResources(
 const TileDrawQuad* TileDrawQuad::MaterialCast(const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::TILED_CONTENT);
   return static_cast<const TileDrawQuad*>(quad);
+}
+
+void TileDrawQuad::ExtendValue(base::DictionaryValue* value) const {
+  ContentDrawQuadBase::ExtendValue(value);
+  value->SetInteger("resource_id", resource_id);
 }
 
 }  // namespace cc

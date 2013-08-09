@@ -10,12 +10,24 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/resources/resource_provider.h"
 
+namespace base {
+class Value;
+class DictionaryValue;
+}
+
 namespace cc {
 
 // DrawQuad is a bag of data used for drawing a quad. Because different
 // materials need different bits of per-quad data to render, classes that derive
 // from DrawQuad store additional data in their derived instance. The Material
 // enum is used to "safely" downcast to the derived class.
+// Note: quads contain rects and sizes, which live in different spaces. There is
+// the "content space", which is the arbitrary space in which the quad's
+// geometry is defined (generally related to the layer that produced the quad,
+// e.g. the content space for TiledLayerImpls, or the geometry space for
+// PictureLayerImpls). There is also the "target space", which is the space, in
+// "physical" pixels, of the render target where the quads is drawn. The quad's
+// transform maps the content space to the target space.
 class CC_EXPORT DrawQuad {
  public:
   enum Material {
@@ -51,14 +63,15 @@ class CC_EXPORT DrawQuad {
   Material material;
 
   // This rect, after applying the quad_transform(), gives the geometry that
-  // this quad should draw to.
+  // this quad should draw to. This rect lives in content space.
   gfx::Rect rect;
 
-  // This specifies the region of the quad that is opaque.
+  // This specifies the region of the quad that is opaque. This rect lives in
+  // content space.
   gfx::Rect opaque_rect;
 
   // Allows changing the rect that gets drawn to make it smaller. This value
-  // should be clipped to |rect|.
+  // should be clipped to |rect|. This rect lives in content space.
   gfx::Rect visible_rect;
 
   // By default blending is used when some part of the quad is not opaque.
@@ -111,6 +124,8 @@ class CC_EXPORT DrawQuad {
     return IsLeftEdge() || IsTopEdge() || IsRightEdge() || IsBottomEdge();
   }
 
+  scoped_ptr<base::Value> AsValue() const;
+
  protected:
   DrawQuad();
 
@@ -120,6 +135,7 @@ class CC_EXPORT DrawQuad {
               gfx::Rect opaque_rect,
               gfx::Rect visible_rect,
               bool needs_blending);
+  virtual void ExtendValue(base::DictionaryValue* value) const = 0;
 };
 
 }  // namespace cc

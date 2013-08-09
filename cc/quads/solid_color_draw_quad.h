@@ -39,6 +39,7 @@ class CC_EXPORT SolidColorDrawQuad : public DrawQuad {
 
  private:
   SolidColorDrawQuad();
+  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 
 }  // namespace cc

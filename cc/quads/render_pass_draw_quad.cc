@@ -4,6 +4,10 @@
 
 #include "cc/quads/render_pass_draw_quad.h"
 
+#include "base/values.h"
+#include "cc/base/math_util.h"
+#include "cc/debug/traced_value.h"
+
 namespace cc {
 
 RenderPassDrawQuad::RenderPassDrawQuad()
@@ -91,6 +95,21 @@ const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK_EQ(quad->material, DrawQuad::RENDER_PASS);
   return static_cast<const RenderPassDrawQuad*>(quad);
+}
+
+void RenderPassDrawQuad::ExtendValue(base::DictionaryValue* value) const {
+  value->Set("render_pass_id",
+             TracedValue::CreateIDRef(render_pass_id.AsTracingId()).release());
+  value->SetBoolean("is_replica", is_replica);
+  value->SetInteger("mask_resource_id", mask_resource_id);
+  value->Set("contents_changed_since_last_frame",
+             MathUtil::AsValue(contents_changed_since_last_frame).release());
+  value->Set("mask_uv_rect", MathUtil::AsValue(mask_uv_rect).release());
+  value->Set("filters", filters.AsValue().release());
+  // TODO(piman): dump SkImageFilters rather than just indicating if there are
+  // any or not.
+  value->SetBoolean("has_filter", !!filter);
+  value->Set("background_filters", background_filters.AsValue().release());
 }
 
 }  // namespace cc

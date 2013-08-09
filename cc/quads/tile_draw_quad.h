@@ -41,6 +41,7 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
 
  private:
   TileDrawQuad();
+  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 
 }  // namespace cc

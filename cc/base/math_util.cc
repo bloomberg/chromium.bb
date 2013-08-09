@@ -487,6 +487,13 @@ scoped_ptr<base::Value> MathUtil::AsValue(gfx::Size s) {
   return res.PassAs<base::Value>();
 }
 
+scoped_ptr<base::Value> MathUtil::AsValue(gfx::SizeF s) {
+  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+  res->SetDouble("width", s.width());
+  res->SetDouble("height", s.height());
+  return res.PassAs<base::Value>();
+}
+
 scoped_ptr<base::Value> MathUtil::AsValue(gfx::Rect r) {
   scoped_ptr<base::ListValue> res(new base::ListValue());
   res->AppendInteger(r.x());
@@ -543,6 +550,16 @@ scoped_ptr<base::Value> MathUtil::AsValue(const gfx::RectF& rect) {
   res->AppendDouble(rect.y());
   res->AppendDouble(rect.width());
   res->AppendDouble(rect.height());
+  return res.PassAs<base::Value>();
+}
+
+scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Transform& transform) {
+  scoped_ptr<base::ListValue> res(new base::ListValue());
+  const SkMatrix44& m = transform.matrix();
+  for (int row = 0; row < 4; ++row) {
+    for (int col = 0; col < 4; ++col)
+      res->AppendDouble(m.getDouble(row, col));
+  }
   return res.PassAs<base::Value>();
 }
 

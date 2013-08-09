@@ -48,6 +48,7 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
 
  private:
   IOSurfaceDrawQuad();
+  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 
 }  // namespace cc

@@ -4,8 +4,10 @@
 
 #include <cmath>
 
-#include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
+
+#include "base/values.h"
+#include "cc/output/filter_operation.h"
 
 namespace cc {
 
@@ -143,6 +145,13 @@ FilterOperations FilterOperations::Blend(const FilterOperations& from,
   }
 
   return blended_filters;
+}
+
+scoped_ptr<base::Value> FilterOperations::AsValue() const {
+  scoped_ptr<base::ListValue> value(new ListValue);
+  for (size_t i = 0; i < operations_.size(); ++i)
+    value->Append(operations_[i].AsValue().release());
+  return value.PassAs<base::Value>();
 }
 
 }  // namespace cc

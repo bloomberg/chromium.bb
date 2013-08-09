@@ -21,6 +21,11 @@ class TracedValue : public base::debug::ConvertableToTraceFormat {
   static scoped_ptr<base::Value> CreateIDRef(const void* id);
   static void MakeDictIntoImplicitSnapshot(
       base::DictionaryValue* dict, const char* object_name, const void* id);
+  static void MakeDictIntoImplicitSnapshotWithCategory(
+      const char* category,
+      base::DictionaryValue* dict,
+      const char* object_name,
+      const void* id);
   static scoped_ptr<ConvertableToTraceFormat> FromValue(
       base::Value* value);
 

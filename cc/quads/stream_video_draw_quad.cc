@@ -5,6 +5,8 @@
 #include "cc/quads/stream_video_draw_quad.h"
 
 #include "base/logging.h"
+#include "base/values.h"
+#include "cc/base/math_util.h"
 
 namespace cc {
 
@@ -49,6 +51,11 @@ const StreamVideoDrawQuad* StreamVideoDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::STREAM_VIDEO_CONTENT);
   return static_cast<const StreamVideoDrawQuad*>(quad);
+}
+
+void StreamVideoDrawQuad::ExtendValue(base::DictionaryValue* value) const {
+  value->SetInteger("resource_id", resource_id);
+  value->Set("matrix", MathUtil::AsValue(matrix).release());
 }
 
 }  // namespace cc

@@ -58,6 +58,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
 
  private:
   PictureDrawQuad();
+  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 
 }  // namespace cc

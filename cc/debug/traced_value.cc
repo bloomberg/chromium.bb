@@ -21,6 +21,15 @@ void TracedValue::MakeDictIntoImplicitSnapshot(
   dict->SetString("id", base::StringPrintf("%s/%p", object_name, id));
 }
 
+void TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
+    const char* category,
+    base::DictionaryValue* dict,
+    const char* object_name,
+    const void* id) {
+  dict->SetString("cat", category);
+  MakeDictIntoImplicitSnapshot(dict, object_name, id);
+}
+
 scoped_ptr<base::debug::ConvertableToTraceFormat> TracedValue::FromValue(
     base::Value* value) {
   TracedValue* ptr = new TracedValue(value);

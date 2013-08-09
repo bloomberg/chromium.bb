@@ -52,6 +52,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
 
  private:
   YUVVideoDrawQuad();
+  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 
 }  // namespace cc

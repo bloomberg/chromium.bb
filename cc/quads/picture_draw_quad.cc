@@ -4,6 +4,9 @@
 
 #include "cc/quads/picture_draw_quad.h"
 
+#include "base/values.h"
+#include "cc/base/math_util.h"
+
 namespace cc {
 
 PictureDrawQuad::PictureDrawQuad() {
@@ -66,6 +69,15 @@ void PictureDrawQuad::IterateResources(
 const PictureDrawQuad* PictureDrawQuad::MaterialCast(const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::PICTURE_CONTENT);
   return static_cast<const PictureDrawQuad*>(quad);
+}
+
+void PictureDrawQuad::ExtendValue(base::DictionaryValue* value) const {
+  ContentDrawQuadBase::ExtendValue(value);
+  value->Set("content_rect", MathUtil::AsValue(content_rect).release());
+  value->SetDouble("contents_scale", contents_scale);
+  value->SetBoolean("can_draw_direct_to_backbuffer",
+                    can_draw_direct_to_backbuffer);
+  // TODO(piman): picture_pile?
 }
 
 }  // namespace cc

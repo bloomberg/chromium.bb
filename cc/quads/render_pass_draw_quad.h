@@ -72,6 +72,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
 
  private:
   RenderPassDrawQuad();
+  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 
 }  // namespace cc

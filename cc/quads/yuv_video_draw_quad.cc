@@ -5,6 +5,8 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 
 #include "base/logging.h"
+#include "base/values.h"
+#include "cc/base/math_util.h"
 
 namespace cc {
 
@@ -70,6 +72,14 @@ const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::YUV_VIDEO_CONTENT);
   return static_cast<const YUVVideoDrawQuad*>(quad);
+}
+
+void YUVVideoDrawQuad::ExtendValue(base::DictionaryValue* value) const {
+  value->Set("tex_scale", MathUtil::AsValue(tex_scale).release());
+  value->SetInteger("y_plane_resource_id", y_plane_resource_id);
+  value->SetInteger("u_plane_resource_id", u_plane_resource_id);
+  value->SetInteger("v_plane_resource_id", v_plane_resource_id);
+  value->SetInteger("a_plane_resource_id", a_plane_resource_id);
 }
 
 }  // namespace cc

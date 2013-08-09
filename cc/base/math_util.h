@@ -156,11 +156,13 @@ class CC_EXPORT MathUtil {
 
   // Conversion to value.
   static scoped_ptr<base::Value> AsValue(gfx::Size s);
+  static scoped_ptr<base::Value> AsValue(gfx::SizeF s);
   static scoped_ptr<base::Value> AsValue(gfx::Rect r);
   static bool FromValue(const base::Value*, gfx::Rect* out_rect);
   static scoped_ptr<base::Value> AsValue(gfx::PointF q);
   static scoped_ptr<base::Value> AsValue(const gfx::QuadF& q);
   static scoped_ptr<base::Value> AsValue(const gfx::RectF& rect);
+  static scoped_ptr<base::Value> AsValue(const gfx::Transform& transform);
 
   // Returns a base::Value representation of the floating point value.
   // If the value is inf, returns max double/float representation.

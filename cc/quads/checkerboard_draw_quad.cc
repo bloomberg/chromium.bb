@@ -5,6 +5,7 @@
 #include "cc/quads/checkerboard_draw_quad.h"
 
 #include "base/logging.h"
+#include "base/values.h"
 
 namespace cc {
 
@@ -43,6 +44,10 @@ const CheckerboardDrawQuad* CheckerboardDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::CHECKERBOARD);
   return static_cast<const CheckerboardDrawQuad*>(quad);
+}
+
+void CheckerboardDrawQuad::ExtendValue(base::DictionaryValue* value) const {
+  value->SetInteger("color", color);
 }
 
 }  // namespace cc

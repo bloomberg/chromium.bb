@@ -5,6 +5,8 @@
 #include "cc/quads/content_draw_quad_base.h"
 
 #include "base/logging.h"
+#include "base/values.h"
+#include "cc/base/math_util.h"
 
 namespace cc {
 
@@ -45,6 +47,12 @@ void ContentDrawQuadBase::SetAll(const SharedQuadState* shared_quad_state,
   this->tex_coord_rect = tex_coord_rect;
   this->texture_size = texture_size;
   this->swizzle_contents = swizzle_contents;
+}
+
+void ContentDrawQuadBase::ExtendValue(base::DictionaryValue* value) const {
+  value->Set("tex_coord_rect", MathUtil::AsValue(tex_coord_rect).release());
+  value->Set("texture_size", MathUtil::AsValue(texture_size).release());
+  value->SetBoolean("swizzle_contents", swizzle_contents);
 }
 
 }  // namespace cc

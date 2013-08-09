@@ -139,6 +139,7 @@ class CC_EXPORT LayerTreeHostImpl
   struct CC_EXPORT FrameData : public RenderPassSink {
     FrameData();
     virtual ~FrameData();
+    scoped_ptr<base::Value> AsValue() const;
 
     std::vector<gfx::Rect> occluding_screen_space_rects;
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
@@ -371,7 +372,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual base::TimeTicks CurrentPhysicalTimeTicks() const;
 
-  scoped_ptr<base::Value> AsValue() const;
+  scoped_ptr<base::Value> AsValue() const { return AsValueWithFrame(NULL); }
+  scoped_ptr<base::Value> AsValueWithFrame(FrameData* frame) const;
   scoped_ptr<base::Value> ActivationStateAsValue() const;
 
   bool page_scale_animation_active() const { return !!page_scale_animation_; }

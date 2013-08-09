@@ -5,6 +5,8 @@
 #include "cc/quads/texture_draw_quad.h"
 
 #include "base/logging.h"
+#include "base/values.h"
+#include "cc/base/math_util.h"
 #include "ui/gfx/vector2d_f.h"
 
 namespace cc {
@@ -154,6 +156,19 @@ bool TextureDrawQuad::PerformClipping() {
                    static_cast<int>(clipped_rect.width() + 0.5f),
                    static_cast<int>(clipped_rect.height() + 0.5f));
   return true;
+}
+
+void TextureDrawQuad::ExtendValue(base::DictionaryValue* value) const {
+  value->SetInteger("resource_id", resource_id);
+  value->SetBoolean("premultiplied_alpha", premultiplied_alpha);
+  value->Set("uv_top_left", MathUtil::AsValue(uv_top_left).release());
+  value->Set("uv_bottom_right", MathUtil::AsValue(uv_bottom_right).release());
+  value->SetInteger("background_color", background_color);
+  scoped_ptr<ListValue> vertex_opacity_value(new ListValue);
+  for (size_t i = 0; i < 4; ++i)
+    vertex_opacity_value->AppendDouble(vertex_opacity[i]);
+  value->Set("vertex_opacity", vertex_opacity_value.release());
+  value->SetBoolean("flipped", flipped);
 }
 
 }  // namespace cc

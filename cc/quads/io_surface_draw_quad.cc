@@ -5,6 +5,8 @@
 #include "cc/quads/io_surface_draw_quad.h"
 
 #include "base/logging.h"
+#include "base/values.h"
+#include "cc/base/math_util.h"
 
 namespace cc {
 
@@ -56,6 +58,22 @@ const IOSurfaceDrawQuad* IOSurfaceDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::IO_SURFACE_CONTENT);
   return static_cast<const IOSurfaceDrawQuad*>(quad);
+}
+
+void IOSurfaceDrawQuad::ExtendValue(base::DictionaryValue* value) const {
+  value->Set("io_surface_size", MathUtil::AsValue(io_surface_size).release());
+  value->SetInteger("io_surface_resource_id", io_surface_resource_id);
+  const char* orientation_string = NULL;
+  switch (orientation) {
+    case FLIPPED:
+      orientation_string = "flipped";
+      break;
+    case UNFLIPPED:
+      orientation_string = "unflipped";
+      break;
+  }
+
+  value->SetString("orientation", orientation_string);
 }
 
 }  // namespace cc

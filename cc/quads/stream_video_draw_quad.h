@@ -40,6 +40,7 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
 
  private:
   StreamVideoDrawQuad();
+  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 
 }  // namespace cc

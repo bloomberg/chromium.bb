@@ -8,7 +8,12 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/output/filter_operation.h"
+
+namespace base {
+class Value;
+}
 
 namespace cc {
 
@@ -61,6 +66,8 @@ class CC_EXPORT FilterOperations {
   // lengths or if there is a type mismatch at some position, returns a copy
   // of this.
   FilterOperations Blend(const FilterOperations& from, double progress) const;
+
+  scoped_ptr<base::Value> AsValue() const;
 
  private:
   std::vector<FilterOperation> operations_;

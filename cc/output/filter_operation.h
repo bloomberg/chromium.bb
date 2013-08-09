@@ -6,10 +6,15 @@
 #define CC_OUTPUT_FILTER_OPERATION_H_
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/point.h"
+
+namespace base {
+class Value;
+}
 
 namespace cc {
 
@@ -160,6 +165,8 @@ class CC_EXPORT FilterOperation {
   static FilterOperation Blend(const FilterOperation* from,
                                const FilterOperation* to,
                                double progress);
+
+  scoped_ptr<base::Value> AsValue() const;
 
  private:
   FilterOperation(FilterType type, float amount);

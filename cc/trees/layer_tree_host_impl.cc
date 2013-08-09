@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -435,6 +436,25 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
         render_surface_layer->filters(),
         render_surface_layer->filter().get());
   }
+}
+
+scoped_ptr<base::Value> LayerTreeHostImpl::FrameData::AsValue() const {
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  value->SetBoolean("contains_incomplete_tile", contains_incomplete_tile);
+  value->SetBoolean("has_no_damage", has_no_damage);
+
+  // Quad data can be quite large, so only dump render passes if we select
+  // cc.debug.quads.
+  bool quads_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"), &quads_enabled);
+  if (quads_enabled) {
+    scoped_ptr<base::ListValue> render_pass_list(new base::ListValue());
+    for (size_t i = 0; i < render_passes.size(); ++i)
+      render_pass_list->Append(render_passes[i]->AsValue().release());
+    value->Set("render_passes", render_pass_list.release());
+  }
+  return value.PassAs<base::Value>();
 }
 
 void LayerTreeHostImpl::FrameData::AppendRenderPass(
@@ -1257,8 +1277,9 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   }
 
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", this,
-      TracedValue::FromValue(AsValue().release()));
+      TRACE_DISABLED_BY_DEFAULT("cc.debug") ","
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"), "cc::LayerTreeHostImpl",
+      this, TracedValue::FromValue(AsValueWithFrame(frame).release()));
 
   // Because the contents of the HUD depend on everything else in the frame, the
   // contents of its texture are updated as the last thing before the frame is
@@ -2431,7 +2452,8 @@ base::TimeTicks LayerTreeHostImpl::CurrentPhysicalTimeTicks() const {
   return base::TimeTicks::Now();
 }
 
-scoped_ptr<base::Value> LayerTreeHostImpl::AsValue() const {
+scoped_ptr<base::Value> LayerTreeHostImpl::AsValueWithFrame(
+    FrameData* frame) const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   if (this->pending_tree_)
       state->Set("activation_state", ActivationStateAsValue().release());
@@ -2442,6 +2464,8 @@ scoped_ptr<base::Value> LayerTreeHostImpl::AsValue() const {
   state->Set("active_tree", active_tree_->AsValue().release());
   if (pending_tree_)
     state->Set("pending_tree", pending_tree_->AsValue().release());
+  if (frame)
+    state->Set("frame", frame->AsValue().release());
   return state.PassAs<base::Value>();
 }
 

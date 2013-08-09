@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/output/filter_operation.h"
 #include "third_party/skia/include/core/SkMath.h"
@@ -215,6 +216,42 @@ FilterOperation FilterOperation::Blend(const FilterOperation* from,
   }
 
   return blended_filter;
+}
+
+scoped_ptr<base::Value> FilterOperation::AsValue() const {
+  scoped_ptr<base::DictionaryValue> value(new DictionaryValue);
+  value->SetInteger("type", type_);
+  switch (type_) {
+    case FilterOperation::GRAYSCALE:
+    case FilterOperation::SEPIA:
+    case FilterOperation::SATURATE:
+    case FilterOperation::HUE_ROTATE:
+    case FilterOperation::INVERT:
+    case FilterOperation::BRIGHTNESS:
+    case FilterOperation::CONTRAST:
+    case FilterOperation::OPACITY:
+    case FilterOperation::BLUR:
+    case FilterOperation::SATURATING_BRIGHTNESS:
+      value->SetDouble("amount", amount_);
+      break;
+    case FilterOperation::DROP_SHADOW:
+      value->SetDouble("std_deviation", amount_);
+      value->Set("offset", MathUtil::AsValue(drop_shadow_offset_).release());
+      value->SetInteger("color", drop_shadow_color_);
+      break;
+    case FilterOperation::COLOR_MATRIX: {
+      scoped_ptr<ListValue> matrix(new ListValue);
+      for (size_t i = 0; i < arraysize(matrix_); ++i)
+        matrix->AppendDouble(matrix_[i]);
+      value->Set("matrix", matrix.release());
+      break;
+    }
+    case FilterOperation::ZOOM:
+      value->SetDouble("amount", amount_);
+      value->SetDouble("inset", zoom_inset_);
+      break;
+  }
+  return value.PassAs<base::Value>();
 }
 
 }  // namespace cc

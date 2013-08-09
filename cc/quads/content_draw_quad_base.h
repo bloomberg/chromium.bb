@@ -41,6 +41,7 @@ class CC_EXPORT ContentDrawQuadBase : public DrawQuad {
  protected:
   ContentDrawQuadBase();
   virtual ~ContentDrawQuadBase();
+  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 
 }  // namespace cc
