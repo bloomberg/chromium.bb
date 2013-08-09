@@ -20,7 +20,37 @@ static int nacl_irt_stat(const char *pathname, struct stat *st) {
   return -NACL_SYSCALL(stat)(pathname, st);
 }
 
+static int nacl_irt_mkdir(const char *pathname, mode_t mode) {
+  return -NACL_SYSCALL(mkdir)(pathname, mode);
+}
+
+static int nacl_irt_rmdir(const char *pathname) {
+  return -NACL_SYSCALL(rmdir)(pathname);
+}
+
+static int nacl_irt_chdir(const char *pathname) {
+  return -NACL_SYSCALL(chdir)(pathname);
+}
+
+static int nacl_irt_getcwd(char *pathname, size_t len) {
+  return -NACL_SYSCALL(getcwd)(pathname, len);
+}
+
+static int nacl_irt_unlink(const char *pathname) {
+  return -NACL_SYSCALL(unlink)(pathname);
+}
+
 const struct nacl_irt_filename nacl_irt_filename = {
   nacl_irt_open,
   nacl_irt_stat,
+};
+
+const struct nacl_irt_dev_filename nacl_irt_dev_filename = {
+  nacl_irt_open,
+  nacl_irt_stat,
+  nacl_irt_mkdir,
+  nacl_irt_rmdir,
+  nacl_irt_chdir,
+  nacl_irt_getcwd,
+  nacl_irt_unlink,
 };

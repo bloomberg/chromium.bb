@@ -24,6 +24,7 @@ if env.Bit('bitcode'):
 # object code bloat or possibly multiple definitions.
 
 SRCS_NEWLIB_SYSCALL =  [
+    'chdir.c',
     'clock.c',
     'clock_getres.c',
     'clock_gettime.c',
@@ -31,23 +32,28 @@ SRCS_NEWLIB_SYSCALL =  [
     'dup.c',
     '_exit.c',
     'fstat.c',
+    'getcwd.c',
     'getdents.c',
     'getpagesize.c',
     'getpid.c',
     'gettimeofday.c',
     'lock.c',
     'lseek.c',
+    'mkdir.c',
     'mmap.c',
     'mprotect.c',
     'munmap.c',
     'nanosleep.c',
     'nacl_interface_query.c',
+    'nacl_irt_filename.c',
     'open.c',
     'read.c',
+    'rmdir.c',
     'sbrk.c',
     'sched_yield.c',
     'stat.c',
     'sysconf.c',
+    'unlink.c',
     'write.c',
 ]
 

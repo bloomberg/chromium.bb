@@ -16,15 +16,18 @@ extern TYPE_nacl_irt_query __nacl_irt_query;
 
 extern struct nacl_irt_basic __libnacl_irt_basic;
 extern struct nacl_irt_fdio __libnacl_irt_fdio;
-extern struct nacl_irt_filename __libnacl_irt_filename;
+extern struct nacl_irt_dev_filename __libnacl_irt_dev_filename;
 extern struct nacl_irt_memory __libnacl_irt_memory;
 extern struct nacl_irt_tls __libnacl_irt_tls;
 extern struct nacl_irt_clock __libnacl_irt_clock;
 extern struct nacl_irt_dev_getpid __libnacl_irt_dev_getpid;
 
+extern int __libnacl_irt_query(const char *interface,
+                               void *table, size_t table_size);
 extern void __libnacl_mandatory_irt_query(const char *interface_ident,
                                           void *table, size_t table_size);
 extern void __libnacl_irt_init(Elf32_auxv_t *auxv);
+extern void __libnacl_irt_filename_init(void);
 
 /*
  * NACL_OPTIONAL_FN is used to create libc wrapper functions.

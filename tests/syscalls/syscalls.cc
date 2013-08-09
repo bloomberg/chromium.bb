@@ -83,8 +83,9 @@ bool test2() {
   return true;
 }
 
-// TODO(sbc): remove this restriction once IRT interface is added.
-#if TESTS_USE_IRT
+// TODO(sbc): remove this restriction once glibc is updated to
+// use dev-filename-0.2
+#if TESTS_USE_IRT && defined(__GLIBC__)
 
 bool test_chdir() {
   return passed("test_chdir", "all");

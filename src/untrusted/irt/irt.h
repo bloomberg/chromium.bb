@@ -120,18 +120,31 @@ struct nacl_irt_fdio {
  * NACL_DANGEROUS_ENABLE_FILE_ACCESS is set, which enables an unsafe
  * debugging mode.
  *
- * As with "irt-fdio", there are two query strings for the
- * "irt-filename" interface.  Under PNaCl, this interface is only
- * available via the "-dev" query string.  The non-"dev" query string
- * is made available to non-PNaCl NaCl apps only for compatibility,
- * because existing nexes abort on startup if "irt-filename" is not
- * available.
+ * Under PNaCl, this interface is not available. This interface is made
+ * available to non-PNaCl NaCl apps only for compatibility, because
+ * existing nexes abort on startup if "irt-filename" is not available.
  */
 #define NACL_IRT_FILENAME_v0_1      "nacl-irt-filename-0.1"
-#define NACL_IRT_DEV_FILENAME_v0_1  "nacl-irt-dev-filename-0.1"
 struct nacl_irt_filename {
   int (*open)(const char *pathname, int oflag, mode_t cmode, int *newfd);
   int (*stat)(const char *pathname, struct stat *);
+};
+
+/*
+ * The "irt-dev-filename" is similiar to "irt-filename" but provides
+ * additional functions, including those that do directory manipulation.
+ * Inside Chromium, requests for this interface may fail, or may return
+ * functions which always return errors.
+ */
+#define NACL_IRT_DEV_FILENAME_v0_2      "nacl-irt-dev-filename-0.2"
+struct nacl_irt_dev_filename {
+  int (*open)(const char *pathname, int oflag, mode_t cmode, int *newfd);
+  int (*stat)(const char *pathname, struct stat *);
+  int (*mkdir)(const char *pathname, mode_t mode);
+  int (*rmdir)(const char *pathname);
+  int (*chdir)(const char *pathname);
+  int (*getcwd)(char *pathname, size_t len);
+  int (*unlink)(const char *pathname);
 };
 
 /*

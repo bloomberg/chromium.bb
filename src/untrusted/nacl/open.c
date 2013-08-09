@@ -23,7 +23,15 @@ int open(char const *pathname, int flags, ...) {
     va_end(ap);
   }
 
-  error = __libnacl_irt_filename.open(pathname, flags, mode, &fd);
+  if (__libnacl_irt_dev_filename.open == NULL) {
+    __libnacl_irt_filename_init();
+    if (__libnacl_irt_dev_filename.open == NULL) {
+      errno = ENOSYS;
+      return -1;
+    }
+  }
+
+  error = __libnacl_irt_dev_filename.open(pathname, flags, mode, &fd);
   if (error) {
     errno = error;
     return -1;

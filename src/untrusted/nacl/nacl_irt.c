@@ -12,15 +12,6 @@
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
-static int stub_open(const char *pathname, int oflag, mode_t cmode,
-                     int *newfd) {
-  return ENOSYS;
-}
-
-static int stub_stat(const char *pathname, struct stat *st) {
-  return ENOSYS;
-}
-
 static int stub_close(int fd) {
   return ENOSYS;
 }
@@ -59,11 +50,7 @@ struct nacl_irt_memory __libnacl_irt_memory;
 struct nacl_irt_tls __libnacl_irt_tls;
 struct nacl_irt_clock __libnacl_irt_clock;
 struct nacl_irt_dev_getpid __libnacl_irt_dev_getpid;
-
-struct nacl_irt_filename __libnacl_irt_filename = {
-  stub_open,
-  stub_stat,
-};
+struct nacl_irt_dev_filename __libnacl_irt_dev_filename;
 
 struct nacl_irt_fdio __libnacl_irt_fdio = {
   stub_close,
@@ -165,10 +152,9 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
   grok_auxv(auxv);
 
   /*
-   * The "fdio" and "filename" interfaces don't do anything useful in
-   * Chromium (with the exception that write() sometimes produces
-   * useful debugging output for stdout/stderr), so don't abort if
-   * they are not available.
+   * The "fdio" interface doesn't do anything useful in Chromium (with the
+   * exception that write() sometimes produces useful debugging output for
+   * stdout/stderr), so don't abort if the it is not available.
    *
    * We query for "fdio" early on so that write() can produce a useful
    * debugging message if any other IRT queries fail.
@@ -177,11 +163,6 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
                            sizeof(__libnacl_irt_fdio))) {
     __libnacl_irt_query(NACL_IRT_DEV_FDIO_v0_1, &__libnacl_irt_fdio,
                         sizeof(__libnacl_irt_fdio));
-  }
-  if (!__libnacl_irt_query(NACL_IRT_FILENAME_v0_1, &__libnacl_irt_filename,
-                           sizeof(__libnacl_irt_filename))) {
-    __libnacl_irt_query(NACL_IRT_DEV_FILENAME_v0_1, &__libnacl_irt_filename,
-                        sizeof(__libnacl_irt_filename));
   }
 
   DO_QUERY(NACL_IRT_BASIC_v0_1, basic);
