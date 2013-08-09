@@ -1051,9 +1051,6 @@ enum NotificationType {
   NOTIFICATION_ASH_SESSION_ENDED,
 #endif
 
-  // Sent when a new web store promo has been loaded.
-  NOTIFICATION_WEB_STORE_PROMO_LOADED,
-
   // Protocol Handler Registry -----------------------------------------------
   // Sent when a ProtocolHandlerRegistry is changed. The source is the profile.
   NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
