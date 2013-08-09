@@ -355,8 +355,8 @@
         <include name="IDR_SET_AS_DEFAULT_BROWSER_HTML" file="resources\set_as_default_browser.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       </if>
       <if expr="not is_android and not pp_ifdef('ios') and not pp_ifdef('chromeos')">
-        <include name="IDR_USER_CHOOSER_JS" file="resources\user_chooser\user_chooser.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_USER_CHOOSER_HTML" file="resources\user_chooser\user_chooser.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_USER_MANAGER_JS" file="resources\user_manager\user_manager.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_USER_MANAGER_HTML" file="resources\user_manager\user_manager.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       </if>
       <include name="IDR_MANAGED_MODE_BLOCK_INTERSTITIAL_HTML" file="resources\managed_mode_block_interstitial.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_HTML" file="resources\profile_signin_confirmation.html" type="BINDATA" />

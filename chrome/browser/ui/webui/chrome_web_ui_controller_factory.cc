@@ -46,7 +46,7 @@
 #include "chrome/browser/ui/webui/profiler_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_ui.h"
-#include "chrome/browser/ui/webui/signin/user_chooser_ui.h"
+#include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
@@ -393,10 +393,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
-  if (url.host() == chrome::kChromeUIUserChooserHost &&
+  if (url.host() == chrome::kChromeUIUserManagerHost &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNewProfileManagement))
-    return &NewWebUI<UserChooserUI>;
+    return &NewWebUI<UserManagerUI>;
 #endif
 
   if (url.host() == chrome::kChromeUIChromeURLsHost ||

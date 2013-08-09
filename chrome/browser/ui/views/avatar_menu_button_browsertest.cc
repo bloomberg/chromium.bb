@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, LaunchUserManagerScreen) {
   EXPECT_EQ(starting_tab_count + 1, final_tab_count);
 
   GURL tab_url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
-  EXPECT_EQ(std::string(chrome::kChromeUIUserChooserURL), tab_url.spec());
+  EXPECT_EQ(std::string(chrome::kChromeUIUserManagerURL), tab_url.spec());
 }
 
 INSTANTIATE_TEST_CASE_P(Old, AvatarMenuButtonTest, testing::Values(false));

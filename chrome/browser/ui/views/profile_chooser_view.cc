@@ -119,7 +119,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   if (sender == guest_button_view_) {
     avatar_menu_model_->SwitchToGuestProfileWindow(browser_);
   } else if (sender == users_button_view_) {
-    chrome::ShowSingletonTab(browser_, GURL(chrome::kChromeUIUserChooserURL));
+    chrome::ShowSingletonTab(browser_, GURL(chrome::kChromeUIUserManagerURL));
   } else {
     DCHECK_EQ(sender, signout_current_profile_view_);
     avatar_menu_model_->BeginSignOut();

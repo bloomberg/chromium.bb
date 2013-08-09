@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_CHOOSER_SCREEN_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_CHOOSER_SCREEN_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_MANAGER_SCREEN_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_MANAGER_SCREEN_HANDLER_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,10 +15,10 @@ class FilePath;
 class ListValue;
 }
 
-class UserChooserScreenHandler : public content::WebUIMessageHandler {
+class UserManagerScreenHandler : public content::WebUIMessageHandler {
  public:
-  UserChooserScreenHandler();
-  virtual ~UserChooserScreenHandler();
+  UserManagerScreenHandler();
+  virtual ~UserManagerScreenHandler();
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
@@ -43,7 +43,7 @@ class UserChooserScreenHandler : public content::WebUIMessageHandler {
   // modified, so that the displayed user pods can be updated.
   scoped_ptr<ProfileUpdateObserver> profileInfoCacheObserver_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserChooserScreenHandler);
+  DISALLOW_COPY_AND_ASSIGN(UserManagerScreenHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_CHOOSER_SCREEN_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_MANAGER_SCREEN_HANDLER_H_

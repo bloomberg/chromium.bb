@@ -31,7 +31,7 @@ cr.define('cr.ui', function() {
    * Shows the given screen.
    * @param {Object} screen Screen params dict, e.g. {id: screenId, data: data}
    */
-  Oobe.showUserChooserScreen = function() {
+  Oobe.showUserManagerScreen = function() {
     Oobe.getInstance().showScreen({id: 'account-picker',
                                    data: {disableAddUser: false}});
     // The ChromeOS account-picker will hide the AddUser button if a user is
@@ -89,14 +89,14 @@ cr.define('cr.ui', function() {
   };
 });
 
-cr.define('UserChooser', function() {
+cr.define('UserManager', function() {
   'use strict';
 
   function initialize() {
     login.AccountPickerScreen.register();
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));
-    chrome.send('userChooserInitialize');
+    chrome.send('userManagerInitialize');
   }
 
   // Return an object with all of the exports.
@@ -116,4 +116,4 @@ disableTextSelectAndDrag(function(e) {
          /text|password|search/.test(src.type);
 });
 
-document.addEventListener('DOMContentLoaded', UserChooser.initialize);
+document.addEventListener('DOMContentLoaded', UserManager.initialize);

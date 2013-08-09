@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/signin/user_chooser_ui.h"
+#include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/signin/user_chooser_screen_handler.h"
+#include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -18,17 +18,17 @@
 namespace {
   // JS file names.
   const char kStringsJSPath[] = "strings.js";
-  const char kUserChooserJSPath[] = "user_chooser.js";
+  const char kUserManagerJSPath[] = "user_manager.js";
   const char kHeaderBarJSPath[] = "header_bar.js";
   const char kAccountPickerJSPath[] = "screen_account_picker.js";
 }
 
-UserChooserUI::UserChooserUI(content::WebUI* web_ui)
+UserManagerUI::UserManagerUI(content::WebUI* web_ui)
   : WebUIController(web_ui) {
   // The web_ui object takes ownership of the handler, and will
   // destroy it when it (the WebUI) is destroyed.
-  user_chooser_screen_handler_ = new UserChooserScreenHandler();
-  web_ui->AddMessageHandler(user_chooser_screen_handler_);
+  user_manager_screen_handler_ = new UserManagerScreenHandler();
+  web_ui->AddMessageHandler(user_manager_screen_handler_);
 
   base::DictionaryValue localized_strings;
   GetLocalizedStrings(&localized_strings);
@@ -44,26 +44,26 @@ UserChooserUI::UserChooserUI(content::WebUI* web_ui)
 #endif
 }
 
-UserChooserUI::~UserChooserUI() {
+UserManagerUI::~UserManagerUI() {
 }
 
-content::WebUIDataSource* UserChooserUI::CreateUIDataSource(
+content::WebUIDataSource* UserManagerUI::CreateUIDataSource(
     const base::DictionaryValue& localized_strings) {
   content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIUserChooserHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIUserManagerHost);
   source->SetUseJsonJSFormatV2();
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath(kStringsJSPath);
 
-  source->SetDefaultResource(IDR_USER_CHOOSER_HTML);
-  source->AddResourcePath(kUserChooserJSPath, IDR_USER_CHOOSER_JS);
+  source->SetDefaultResource(IDR_USER_MANAGER_HTML);
+  source->AddResourcePath(kUserManagerJSPath, IDR_USER_MANAGER_JS);
 
   return source;
 }
 
-void UserChooserUI::GetLocalizedStrings(
+void UserManagerUI::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
-  user_chooser_screen_handler_->GetLocalizedValues(localized_strings);
+  user_manager_screen_handler_->GetLocalizedValues(localized_strings);
   webui::SetFontAndTextDirection(localized_strings);
 
 #if defined(GOOGLE_CHROME_BUILD)

@@ -14227,7 +14227,7 @@ You need to be signed in to use this feature.
       Sign in again
     </message>
     <message name="IDS_PROFILES_CREATE_MANAGED_FROM_EXISTING_LABEL" desc="Label for the 'Select an exisiting managed user' checkbox. During managed user creation a custodian will have an option to select an existing managed profile rather creating a new one.">
-      Select an existing managed user: 
+      Select an existing managed user:
     </message>
     <message name="IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX" desc="Create Shortcut checkbox when creating a new profile">
       Create a desktop shortcut for this user
@@ -14273,7 +14273,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     </message>
 
     <if expr="not is_android and not pp_ifdef('ios') and not pp_ifdef('chromeos')">
-      <!-- User chooser web UI -->
+      <!-- User manager web UI -->
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
           Add User
@@ -14302,6 +14302,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           Remove this user
         </message>
       </if>
+      <message name="IDS_USER_MANAGER_SCREEN_TITLE" desc="String to be displayed in the title bar of the user manager page">
+        User Manager
+      </message>
       <message name="IDS_GO_INCOGNITO_BUTTON" desc="Text shown on Chrome OS login screen button that launches guest session. Should be short.">
         Browse as Guest
       </message>

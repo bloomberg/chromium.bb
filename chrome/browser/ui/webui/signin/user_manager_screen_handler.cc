@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/signin/user_chooser_screen_handler.h"
+#include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 
 #include "base/bind.h"
 #include "base/value_conversions.h"
@@ -56,11 +56,11 @@ const char kSourceGaiaSignin[] = "gaia-signin";
 const char kSourceAccountPicker[] = "account-picker";
 
 // JS API callback names.
-const char kJsApiUserChooserInitialize[] = "userChooserInitialize";
-const char kJsApiUserChooserAddUser[] = "addUser";
-const char kJsApiUserChooserLaunchGuest[] = "launchGuest";
-const char kJsApiUserChooserLaunchUser[] = "launchUser";
-const char kJsApiUserChooserRemoveUser[] = "removeUser";
+const char kJsApiUserManagerInitialize[] = "userManagerInitialize";
+const char kJsApiUserManagerAddUser[] = "addUser";
+const char kJsApiUserManagerLaunchGuest[] = "launchGuest";
+const char kJsApiUserManagerLaunchUser[] = "launchUser";
+const char kJsApiUserManagerRemoveUser[] = "removeUser";
 
 const size_t kAvatarIconSize = 160;
 
@@ -99,15 +99,15 @@ std::string GetAvatarImageAtIndex(
 
 // ProfileUpdateObserver ------------------------------------------------------
 
-class UserChooserScreenHandler::ProfileUpdateObserver
+class UserManagerScreenHandler::ProfileUpdateObserver
     : public ProfileInfoCacheObserver {
  public:
   ProfileUpdateObserver(
-      ProfileManager* profile_manager, UserChooserScreenHandler* handler)
+      ProfileManager* profile_manager, UserManagerScreenHandler* handler)
       : profile_manager_(profile_manager),
-        user_chooser_handler_(handler) {
+        user_manager_handler_(handler) {
     DCHECK(profile_manager_);
-    DCHECK(user_chooser_handler_);
+    DCHECK(user_manager_handler_);
     profile_manager_->GetProfileInfoCache().AddObserver(this);
   }
 
@@ -121,12 +121,12 @@ class UserChooserScreenHandler::ProfileUpdateObserver
   // If any change has been made to a profile, propagate it to all the
   // visible user manager screens.
   virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE {
-    user_chooser_handler_->SendUserList();
+    user_manager_handler_->SendUserList();
   }
 
   virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
                                    const string16& profile_name) OVERRIDE {
-    user_chooser_handler_->SendUserList();
+    user_manager_handler_->SendUserList();
   }
 
   virtual void OnProfileWillBeRemoved(
@@ -137,45 +137,45 @@ class UserChooserScreenHandler::ProfileUpdateObserver
 
   virtual void OnProfileNameChanged(const base::FilePath& profile_path,
                                     const string16& old_profile_name) OVERRIDE {
-    user_chooser_handler_->SendUserList();
+    user_manager_handler_->SendUserList();
   }
 
   virtual void OnProfileAvatarChanged(
       const base::FilePath& profile_path) OVERRIDE {
-    user_chooser_handler_->SendUserList();
+    user_manager_handler_->SendUserList();
   }
 
   ProfileManager* profile_manager_;
 
-  UserChooserScreenHandler* user_chooser_handler_;  // Weak; owns us.
+  UserManagerScreenHandler* user_manager_handler_;  // Weak; owns us.
 
   DISALLOW_COPY_AND_ASSIGN(ProfileUpdateObserver);
 };
 
-// UserChooserScreenHandler ---------------------------------------------------
+// UserManagerScreenHandler ---------------------------------------------------
 
-UserChooserScreenHandler::UserChooserScreenHandler() {
+UserManagerScreenHandler::UserManagerScreenHandler() {
   profileInfoCacheObserver_.reset(
-      new UserChooserScreenHandler::ProfileUpdateObserver(
+      new UserManagerScreenHandler::ProfileUpdateObserver(
           g_browser_process->profile_manager(), this));
 }
 
-UserChooserScreenHandler::~UserChooserScreenHandler() {
+UserManagerScreenHandler::~UserManagerScreenHandler() {
 }
 
-void UserChooserScreenHandler::HandleInitialize(const base::ListValue* args) {
+void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   SendUserList();
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showUserChooserScreen");
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showUserManagerScreen");
 }
 
-void UserChooserScreenHandler::HandleAddUser(const base::ListValue* args) {
+void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
   // TODO(noms): Should redirect to a sign in page.
   chrome::ShowSingletonTab(chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents()),
       GURL("chrome://settings/createProfile"));
 }
 
-void UserChooserScreenHandler::HandleRemoveUser(const base::ListValue* args) {
+void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   DCHECK(args);
   const Value* profile_path_value;
   if (!args->Get(0, &profile_path_value))
@@ -203,12 +203,12 @@ void UserChooserScreenHandler::HandleRemoveUser(const base::ListValue* args) {
       base::Bind(&OpenNewWindowForProfile, desktop_type));
 }
 
-void UserChooserScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
+void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
   AvatarMenuModel::SwitchToGuestProfileWindow(
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 
-void UserChooserScreenHandler::HandleLaunchUser(const base::ListValue* args) {
+void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   string16 emailAddress;
   string16 displayName;
 
@@ -232,21 +232,21 @@ void UserChooserScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   }
 }
 
-void UserChooserScreenHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(kJsApiUserChooserInitialize,
-      base::Bind(&UserChooserScreenHandler::HandleInitialize,
+void UserManagerScreenHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(kJsApiUserManagerInitialize,
+      base::Bind(&UserManagerScreenHandler::HandleInitialize,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserChooserAddUser,
-      base::Bind(&UserChooserScreenHandler::HandleAddUser,
+  web_ui()->RegisterMessageCallback(kJsApiUserManagerAddUser,
+      base::Bind(&UserManagerScreenHandler::HandleAddUser,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserChooserLaunchGuest,
-      base::Bind(&UserChooserScreenHandler::HandleLaunchGuest,
+  web_ui()->RegisterMessageCallback(kJsApiUserManagerLaunchGuest,
+      base::Bind(&UserManagerScreenHandler::HandleLaunchGuest,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserChooserLaunchUser,
-      base::Bind(&UserChooserScreenHandler::HandleLaunchUser,
+  web_ui()->RegisterMessageCallback(kJsApiUserManagerLaunchUser,
+      base::Bind(&UserManagerScreenHandler::HandleLaunchUser,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserChooserRemoveUser,
-      base::Bind(&UserChooserScreenHandler::HandleRemoveUser,
+  web_ui()->RegisterMessageCallback(kJsApiUserManagerRemoveUser,
+      base::Bind(&UserManagerScreenHandler::HandleRemoveUser,
                  base::Unretained(this)));
 
   const content::WebUI::MessageCallback& kDoNothingCallback =
@@ -263,7 +263,7 @@ void UserChooserScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("loginVisible", kDoNothingCallback);
 }
 
-void UserChooserScreenHandler::GetLocalizedValues(
+void UserManagerScreenHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   // For Control Bar.
   localized_strings->SetString("signedIn",
@@ -281,7 +281,8 @@ void UserChooserScreenHandler::GetLocalizedValues(
   // For AccountPickerScreen.
   localized_strings->SetString("screenType", "login-add-user");
   localized_strings->SetString("highlightStrength", "normal");
-  localized_strings->SetString("title", "User Chooser");
+  localized_strings->SetString("title",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_SCREEN_TITLE));
   localized_strings->SetString("passwordHint",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
   localized_strings->SetString("podMenuButtonAccessibleName",
@@ -309,7 +310,7 @@ void UserChooserScreenHandler::GetLocalizedValues(
   localized_strings->SetString("publicAccountEnterAccessibleName", string16());
  }
 
-void UserChooserScreenHandler::SendUserList() {
+void UserManagerScreenHandler::SendUserList() {
   ListValue users_list;
   base::FilePath active_profile_path =
       web_ui()->GetWebContents()->GetBrowserContext()->GetPath();
