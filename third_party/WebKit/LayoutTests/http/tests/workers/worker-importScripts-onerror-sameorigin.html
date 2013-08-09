@@ -18,19 +18,20 @@
         worker.onmessage = function (e) {
             workerOnerror = e.data;
             shouldBeEqualToString("workerOnerror.message", "Uncaught This is a custom error message.");
-            shouldBeEqualToString("workerOnerror.filename", "http://127.0.0.1:8000/workers/resources/worker-importscripts-onerror-sameorigin.js");
-            shouldEvaluateTo("workerOnerror.lineno", 5);
-            shouldEvaluateTo("workerOnerror.column", 0);
+            shouldBeEqualToString("workerOnerror.filename", "http://127.0.0.1:8000/workers/resources/worker-importScripts-throw.js");
+            shouldEvaluateTo("workerOnerror.lineno", 1);
+            shouldEvaluateTo("workerOnerror.colno", 0);
+            shouldBeNull("workerOnerror.error");
         };
 
         var onerrorMessage, onerrorURL, onerrorLine;
         worker.onerror = function (e) {
-            onerrorMessage = e.message;
-            onerrorURL = e.filename;
-            onerrorLine = e.lineno;
-            shouldBeEqualToString("onerrorMessage", "Uncaught This is a custom error message.");
-            shouldBeEqualToString("onerrorURL", "http://127.0.0.1:8000/workers/resources/worker-importscripts-onerror-sameorigin.js");
-            shouldEvaluateTo("onerrorLine", 5);
+            pageOnerror = e;
+            shouldBeEqualToString("pageOnerror.message", "Uncaught This is a custom error message.");
+            shouldBeEqualToString("pageOnerror.filename", "http://127.0.0.1:8000/workers/resources/worker-importScripts-throw.js");
+            shouldEvaluateTo("pageOnerror.lineno", 1);
+            shouldEvaluateTo("pageOnerror.colno", 0);
+            shouldBeNull("pageOnerror.error");
 
             e.preventDefault();
             finishJSTest();

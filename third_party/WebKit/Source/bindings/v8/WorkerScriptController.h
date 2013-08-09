@@ -33,10 +33,11 @@
 
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
-#include <v8.h>
+#include "core/dom/ErrorEvent.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Threading.h"
 #include "wtf/text/TextPosition.h"
+#include <v8.h>
 
 namespace WebCore {
 
@@ -53,7 +54,6 @@ namespace WebCore {
         }
 
         bool hadException;
-        ScriptValue exception;
         String errorMessage;
         int lineNumber;
         int columnNumber;
@@ -67,9 +67,9 @@ namespace WebCore {
 
         WorkerGlobalScope* workerGlobalScope() { return m_workerGlobalScope; }
 
-        void evaluate(const ScriptSourceCode&, ScriptValue* = 0);
+        void evaluate(const ScriptSourceCode&, RefPtr<ErrorEvent>* = 0);
 
-        void setException(const ScriptValue&);
+        void rethrowExceptionFromImportedScript(PassRefPtr<ErrorEvent>);
 
         // Async request to terminate a future JS execution. Eventually causes termination
         // exception raised during JS execution, if the worker thread happens to run JS.
@@ -113,6 +113,7 @@ namespace WebCore {
         bool m_executionForbidden;
         bool m_executionScheduledToTerminate;
         mutable Mutex m_scheduledTerminationMutex;
+        RefPtr<ErrorEvent> m_errorEventFromImportedScript;
     };
 
 } // namespace WebCore

@@ -4,12 +4,15 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS workerOnerror.message is "Uncaught This is a custom error message."
-PASS workerOnerror.filename is "http://127.0.0.1:8000/workers/resources/worker-importscripts-onerror-sameorigin.js"
-PASS workerOnerror.lineno is 5
-PASS workerOnerror.column is 0
-PASS onerrorMessage is "Uncaught This is a custom error message."
-PASS onerrorURL is "http://127.0.0.1:8000/workers/resources/worker-importscripts-onerror-sameorigin.js"
-PASS onerrorLine is 5
+PASS workerOnerror.filename is "http://127.0.0.1:8000/workers/resources/worker-importScripts-throw.js"
+PASS workerOnerror.lineno is 1
+PASS workerOnerror.colno is 0
+PASS workerOnerror.error is null
+PASS pageOnerror.message is "Uncaught This is a custom error message."
+PASS pageOnerror.filename is "http://127.0.0.1:8000/workers/resources/worker-importScripts-throw.js"
+PASS pageOnerror.lineno is 1
+PASS pageOnerror.colno is 0
+PASS pageOnerror.error is null
 PASS successfullyParsed is true
 
 TEST COMPLETE

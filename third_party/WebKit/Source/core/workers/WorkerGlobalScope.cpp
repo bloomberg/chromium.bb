@@ -214,10 +214,10 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
 
         InspectorInstrumentation::scriptImported(scriptExecutionContext(), scriptLoader->identifier(), scriptLoader->script());
 
-        ScriptValue exception;
-        m_script->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &exception);
-        if (!exception.hasNoValue()) {
-            m_script->setException(exception);
+        RefPtr<ErrorEvent> errorEvent;
+        m_script->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent);
+        if (errorEvent) {
+            m_script->rethrowExceptionFromImportedScript(errorEvent.release());
             return;
         }
     }
