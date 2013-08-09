@@ -28,6 +28,13 @@ var NodeType = {
 var ELEMENT_KEY = 'ELEMENT';
 
 /**
+ * True if shadow dom is enabled.
+ * @const
+ * @type {boolean}
+ */
+var SHADOW_DOM_ENABLED = typeof WebKitShadowRoot === 'function';
+
+/**
  * A cache which maps IDs <-> cached objects for the purpose of identifying
  * a script object remotely.
  * @constructor
@@ -79,16 +86,39 @@ Cache.prototype = {
   clearStale: function() {
     for (var id in this.cache_) {
       var node = this.cache_[id];
-      while (node) {
-        if (node == document)
-          break;
-        node = node.parentNode;
-      }
-      if (!node)
+      if (!this.isNodeReachable_(node))
         delete this.cache_[id];
     }
+  },
+
+  /**
+    * @private
+    * @param {!Node} node The node to check.
+    * @return {boolean} If the nodes is reachable.
+    */
+  isNodeReachable_: function(node) {
+    var nodeRoot = getNodeRoot(node);
+    if (nodeRoot == document)
+      return true;
+    else if (SHADOW_DOM_ENABLED && nodeRoot instanceof WebKitShadowRoot)
+      return true;
+
+    return false;
   }
 };
+
+/**
+ * Returns the root element of the node.  Found by traversing parentNodes until
+ * a node with no parent is found.  This node is considered the root.
+ * @param {!Node} node The node to find the root element for.
+ * @return {!Node} The root node.
+ */
+function getNodeRoot(node) {
+  while (node.parentNode) {
+    node = node.parentNode;
+  }
+  return node;
+}
 
 /**
  * Returns the global object cache for the page.
@@ -114,9 +144,11 @@ function getPageCache(opt_doc) {
 function wrap(value) {
   if (typeof(value) == 'object' && value != null) {
     var nodeType = value['nodeType'];
-    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT) {
+    if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT
+        || (SHADOW_DOM_ENABLED && value instanceof WebKitShadowRoot)) {
       var wrapped = {};
-      wrapped[ELEMENT_KEY] = getPageCache(value.ownerDocument).storeItem(value);
+      var root = getNodeRoot(value);
+      wrapped[ELEMENT_KEY] = getPageCache(root).storeItem(value);
       return wrapped;
     }
 
@@ -157,6 +189,8 @@ function unwrap(value, cache) {
  * between cached object reference IDs and actual JS objects. The cache will
  * automatically be pruned each call to remove stale references.
  *
+ * @param  {Array.<string>} shadowHostIds The host ids of the nested shadow
+ *     DOMs the function should be executed in the context of.
  * @param {function(...[*]) : *} func The function to invoke.
  * @param {!Array.<*>} args The array of arguments to supply to the function,
  *     which will be unwrapped before invoking the function.
@@ -167,9 +201,18 @@ function unwrap(value, cache) {
  *     unwrapped return was specified, this will be the function's pure return
  *     value.
  */
-function callFunction(func, args, opt_unwrappedReturn) {
+function callFunction(shadowHostIds, func, args, opt_unwrappedReturn) {
   var cache = getPageCache();
   cache.clearStale();
+  if (shadowHostIds && SHADOW_DOM_ENABLED) {
+    for (var i = 0; i < shadowHostIds.length; i++) {
+      var host = cache.retrieveItem(shadowHostIds[i]);
+      // TODO(zachconrad): Use the olderShadowRoot API when available to check
+      // all of the shadow roots.
+      cache = getPageCache(host.webkitShadowRoot);
+      cache.clearStale();
+    }
+  }
 
   if (opt_unwrappedReturn)
     return func.apply(null, unwrap(args, cache));

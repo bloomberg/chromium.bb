@@ -173,8 +173,9 @@ Status WebViewImpl::CallFunction(const std::string& frame,
                                  scoped_ptr<base::Value>* result) {
   std::string json;
   base::JSONWriter::Write(&args, &json);
+  // TODO(zachconrad): Second null should be array of shadow host ids.
   std::string expression = base::StringPrintf(
-      "(%s).apply(null, [%s, %s])",
+      "(%s).apply(null, [null, %s, %s])",
       kCallFunctionScript,
       function.c_str(),
       json.c_str());
@@ -595,8 +596,9 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
                              int* node_id) {
   std::string json;
   base::JSONWriter::Write(&args, &json);
+  // TODO(zachconrad): Second null should be array of shadow host ids.
   std::string expression = base::StringPrintf(
-      "(%s).apply(null, [%s, %s, true])",
+      "(%s).apply(null, [null, %s, %s, true])",
       kCallFunctionScript,
       function.c_str(),
       json.c_str());
