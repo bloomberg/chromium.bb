@@ -333,7 +333,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   void ShowEditUiIfBadSuggestion(DialogSection section);
 
   // Whether the |value| of |input| should be preserved on account change.
-  bool InputWasEdited(const DetailInput& input,
+  bool InputWasEdited(ServerFieldType type,
                       const base::string16& value);
 
   // Takes a snapshot of the newly inputted user data in |view_| (if it exists).

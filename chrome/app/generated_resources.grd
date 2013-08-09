@@ -9778,6 +9778,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER" desc="The placeholder/label text for credit card number in the requestAutocomplete dialog.">
         Card number
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH" desc="The placeholder/label text for credit card expiration month in the requestAutocomplete dialog.">
+        Month
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR" desc="The placeholder/label text for credit card expiration year in the requestAutocomplete dialog.">
+        Year
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC" desc="The placeholder/label text for credit card verification code in the requestAutocomplete dialog.">
         CVC
       </message>

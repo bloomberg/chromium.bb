@@ -78,27 +78,38 @@ TEST_F(AutofillSectionContainerTest, ModelsPopulateComboboxes) {
   using namespace testing;
 
   const DetailInput kTestInputs[] = {
-    { 2, CREDIT_CARD_EXP_MONTH }
+    { 2, CREDIT_CARD_EXP_MONTH },
+    { 3, CREDIT_CARD_EXP_4_DIGIT_YEAR }
   };
 
   DetailInputs inputs;
   inputs.push_back(kTestInputs[0]);
+  inputs.push_back(kTestInputs[1]);
 
-  autofill::MonthComboboxModel comboModel;
+  autofill::MonthComboboxModel monthComboModel;
+  autofill::YearComboboxModel yearComboModel;
   EXPECT_CALL(delegate_, RequestedFieldsForSection(section_))
       .WillOnce(ReturnRef(inputs));
   EXPECT_CALL(delegate_, ComboboxModelForAutofillType(CREDIT_CARD_EXP_MONTH))
-      .WillRepeatedly(Return(&comboModel));
+      .WillRepeatedly(Return(&monthComboModel));
+  EXPECT_CALL(
+    delegate_, ComboboxModelForAutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR))
+      .WillRepeatedly(Return(&yearComboModel));
   ResetContainer();
 
   NSPopUpButton* popup = base::mac::ObjCCastStrict<NSPopUpButton>(
       [container_ getField:CREDIT_CARD_EXP_MONTH]);
   EXPECT_EQ(13, [popup numberOfItems]);
-  EXPECT_NSEQ(@"", [popup itemTitleAtIndex:0]);
+  EXPECT_NSEQ(@"Month", [popup itemTitleAtIndex:0]);
   EXPECT_NSEQ(@"01", [popup itemTitleAtIndex:1]);
   EXPECT_NSEQ(@"02", [popup itemTitleAtIndex:2]);
   EXPECT_NSEQ(@"03", [popup itemTitleAtIndex:3]);
   EXPECT_NSEQ(@"12", [popup itemTitleAtIndex:12]);
+
+  NSPopUpButton* yearPopup = base::mac::ObjCCastStrict<NSPopUpButton>(
+      [container_ getField:CREDIT_CARD_EXP_4_DIGIT_YEAR]);
+  EXPECT_EQ(11, [yearPopup numberOfItems]);
+  EXPECT_NSEQ(@"Year", [yearPopup itemTitleAtIndex:0]);
 };
 
 TEST_F(AutofillSectionContainerTest, OutputMatchesDefinition) {

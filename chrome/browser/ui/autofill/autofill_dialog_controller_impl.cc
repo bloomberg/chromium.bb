@@ -569,8 +569,9 @@ void AutofillDialogControllerImpl::Show() {
 
   const DetailInput kCCInputs[] = {
     { 2, CREDIT_CARD_NUMBER, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
-    { 3, CREDIT_CARD_EXP_MONTH },
-    { 3, CREDIT_CARD_EXP_4_DIGIT_YEAR },
+    { 3, CREDIT_CARD_EXP_MONTH, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH },
+    { 3, CREDIT_CARD_EXP_4_DIGIT_YEAR,
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR },
     { 3, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC,
       1.5 },
   };
@@ -1115,13 +1116,13 @@ void AutofillDialogControllerImpl::ShowEditUiIfBadSuggestion(
   }
 }
 
-bool AutofillDialogControllerImpl::InputWasEdited(const DetailInput& input,
+bool AutofillDialogControllerImpl::InputWasEdited(ServerFieldType type,
                                                   const base::string16& value) {
   if (value.empty())
     return false;
 
-  // If this is a combobox at the default value, don't preserve.
-  ui::ComboboxModel* model = ComboboxModelForAutofillType(input.type);
+  // If this is a combobox at the default value, don't preserve it.
+  ui::ComboboxModel* model = ComboboxModelForAutofillType(type);
   if (model && model->GetItemAt(model->GetDefaultIndex()) == value)
     return false;
 
@@ -1144,7 +1145,7 @@ DetailOutputMap AutofillDialogControllerImpl::TakeUserInputSnapshot() {
     // Remove fields that are empty, at their default values, or invalid.
     for (DetailOutputMap::iterator it = outputs.begin(); it != outputs.end();
          ++it) {
-      if (InputWasEdited(*it->first, it->second) &&
+      if (InputWasEdited(it->first->type, it->second) &&
           InputValidityMessage(section, it->first->type, it->second).empty()) {
         snapshot.insert(std::make_pair(it->first, it->second));
       }
@@ -1169,7 +1170,7 @@ void AutofillDialogControllerImpl::RestoreUserInputFromSnapshot(
     wrapper.FillInputs(inputs);
 
     for (size_t i = 0; i < inputs->size(); ++i) {
-      if (InputWasEdited((*inputs)[i], (*inputs)[i].initial_value)) {
+      if (InputWasEdited((*inputs)[i].type, (*inputs)[i].initial_value)) {
         SuggestionsMenuModelForSection(section)->SetCheckedItem(kAddNewItemKey);
         break;
       }
@@ -1615,7 +1616,17 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
     }
 
     case CREDIT_CARD_EXP_MONTH:
+      if (!InputWasEdited(CREDIT_CARD_EXP_MONTH, value)) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_VALIDATION_MISSING_VALUE);
+      }
+      break;
+
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      if (!InputWasEdited(CREDIT_CARD_EXP_4_DIGIT_YEAR, value)) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_VALIDATION_MISSING_VALUE);
+      }
       break;
 
     case CREDIT_CARD_VERIFICATION_CODE:
@@ -1685,11 +1696,16 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
   std::map<ServerFieldType, string16> field_values;
   for (DetailOutputMap::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
-    // Skip empty fields in edit mode.
-    if (validation_type == VALIDATE_EDIT && iter->second.empty())
-      continue;
-
     const ServerFieldType type = iter->first->type;
+
+    // Skip empty/unchanged fields in edit mode. Ignore country code as it
+    // always has a value.
+    if (validation_type == VALIDATE_EDIT &&
+        !InputWasEdited(type, iter->second) &&
+        ComboboxModelForAutofillType(type) != &country_combobox_model_) {
+      continue;
+    }
+
     string16 message = InputValidityMessage(section, type, iter->second);
     if (!message.empty())
       invalid_messages[type] = message;
@@ -1701,6 +1717,10 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
   // never supposed to have 2-digit years, so not checked).
   if (field_values.count(CREDIT_CARD_EXP_4_DIGIT_YEAR) &&
       field_values.count(CREDIT_CARD_EXP_MONTH) &&
+      InputWasEdited(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                     field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR]) &&
+      InputWasEdited(CREDIT_CARD_EXP_MONTH,
+                     field_values[CREDIT_CARD_EXP_MONTH]) &&
       !IsCreditCardExpirationValid(field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
                                    field_values[CREDIT_CARD_EXP_MONTH])) {
     // The dialog shows the same error message for the month and year fields.
