@@ -287,14 +287,6 @@ int ki_getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len) {
   return s_kp->getsockopt(fd, lvl, optname, optval, len);
 }
 
-void ki_herror(const char *s) {
-  return s_kp->herror(s);
-}
-
-const char *ki_hstrerror(int err) {
-  return s_kp->hstrerror(err);
-}
-
 int ki_listen(int fd, int backlog) {
   return s_kp->listen(fd, backlog);
 }

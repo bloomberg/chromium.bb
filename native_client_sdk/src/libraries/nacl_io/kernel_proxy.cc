@@ -975,14 +975,6 @@ int KernelProxy::getsockopt(int fd,
   return -1;
 }
 
-void KernelProxy::herror(const char* s) {
-  return host_resolver_.herror(s);
-}
-
-const char* KernelProxy::hstrerror(int err) {
-  return host_resolver_.hstrerror(err);
-}
-
 int KernelProxy::listen(int fd, int backlog) {
   ScopedKernelHandle handle;
   if (AcquireSocketHandle(fd, &handle) == -1)

@@ -85,8 +85,6 @@ struct hostent* ki_gethostbyname(const char* name);
 int ki_getpeername(int fd, struct sockaddr* addr, socklen_t* len);
 int ki_getsockname(int fd, struct sockaddr* addr, socklen_t* len);
 int ki_getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len);
-void ki_herror(const char *s);
-const char *ki_hstrerror(int err);
 int ki_listen(int fd, int backlog);
 ssize_t ki_recv(int fd, void* buf, size_t len, int flags);
 ssize_t ki_recvfrom(int fd, void* buf, size_t len, int flags,

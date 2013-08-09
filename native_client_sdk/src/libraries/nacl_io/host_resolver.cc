@@ -4,12 +4,8 @@
 
 #include "nacl_io/host_resolver.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <sstream>
-#include <string>
 
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/ossocket.h"
@@ -174,51 +170,6 @@ void HostResolver::hostent_cleanup() {
   hostent_.h_name = NULL;
   hostent_.h_aliases = NULL;
   hostent_.h_addr_list = NULL;
-}
-
-void HostResolver::herror(const char* s) {
-  if (s) {
-    fprintf(stderr, "%s: ", s);
-  }
-
-  fprintf(stderr, "%s\n", hstrerror(h_errno));
-}
-
-const char* HostResolver::hstrerror(int err) {
-  // These error message texts are taken straight from the man page
-  const char* host_not_found_msg =
-    "The specified host is unknown.";
-  const char* no_address_msg =
-    "The requested name is valid but does not have an IP address.";
-  const char* no_recovery_msg =
-    "A nonrecoverable name server error occurred.";
-  const char* try_again_msg =
-    "A temporary error occurred on an authoritative name server. "
-    "Try again later.";
-  const char* internal_msg =
-    "Internal error in gethostbyname.";
-  const char* unknown_msg_base =
-    "Unknown error in gethostbyname: ";
-
-  switch (err) {
-    case HOST_NOT_FOUND:
-      return host_not_found_msg;
-    case NO_ADDRESS:
-      return no_address_msg;
-    case NO_RECOVERY:
-      return no_recovery_msg;
-    case TRY_AGAIN:
-      return try_again_msg;
-    case NETDB_INTERNAL:
-      return internal_msg;
-    default:
-      std::stringstream msg;
-      msg << unknown_msg_base << err << ".";
-
-      static std::string unknown_msg;
-      unknown_msg.assign(msg.str());
-      return unknown_msg.c_str();
-  }
 }
 
 }  // namespace nacl_io

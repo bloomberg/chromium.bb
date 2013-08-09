@@ -20,8 +20,6 @@ class HostResolver {
   void Init(PepperInterface* ppapi);
 
   struct hostent* gethostbyname(const char* name);
-  static void herror(const char* s);
-  static const char* hstrerror(int err);
 
  private:
   void hostent_initialize();

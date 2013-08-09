@@ -128,11 +128,6 @@ TEST_F(SocketTest, Getsockopt) {
   EXPECT_EQ(errno, ENOTSOCK);
 }
 
-TEST_F(SocketTest, Hstrerror) {
-  EXPECT_STREQ(ki_hstrerror(2718),
-               "Unknown error in gethostbyname: 2718.");
-}
-
 TEST_F(SocketTest, Listen) {
   EXPECT_LT(ki_listen(-1, 123), 0);
   EXPECT_EQ(errno, EBADF);
@@ -267,6 +262,11 @@ TEST_F(SocketTest, Socketpair) {
 // These utility functions are only used for newlib (glibc provides its own
 // implementations of these functions).
 #if !defined(__GLIBC__)
+
+TEST(SocketUtilityFunctions, Hstrerror) {
+  EXPECT_STREQ(hstrerror(2718),
+               "Unknown error in gethostbyname: 2718.");
+}
 
 TEST(SocketUtilityFunctions, Htonl) {
   uint32_t host_long = 0x44332211;

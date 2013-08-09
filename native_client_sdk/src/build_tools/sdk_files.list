@@ -884,7 +884,7 @@ src/nacl_io/syscalls/getsockname.c
 src/nacl_io/syscalls/getsockopt.c
 src/nacl_io/syscalls/getwd.c
 src/nacl_io/syscalls/herror.c
-src/nacl_io/syscalls/hstrerror.c
+src/nacl_io/syscalls/hstrerror.cc
 src/nacl_io/syscalls/htonl.c
 src/nacl_io/syscalls/htons.c
 src/nacl_io/syscalls/inet_ntoa.cc

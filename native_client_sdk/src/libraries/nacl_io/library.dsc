@@ -56,7 +56,7 @@
         "syscalls/getsockopt.c",
         "syscalls/getwd.c",
         "syscalls/herror.c",
-        "syscalls/hstrerror.c",
+        "syscalls/hstrerror.cc",
         "syscalls/htonl.c",
         "syscalls/htons.c",
         "syscalls/inet_ntoa.cc",

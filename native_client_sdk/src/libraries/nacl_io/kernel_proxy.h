@@ -142,8 +142,6 @@ class KernelProxy : protected KernelObject {
                          int optname,
                          void* optval,
                          socklen_t* len);
-  virtual void herror(const char* s);
-  virtual const char* hstrerror(int err);
   virtual int listen(int fd, int backlog);
   virtual ssize_t recv(int fd,
                        void* buf,

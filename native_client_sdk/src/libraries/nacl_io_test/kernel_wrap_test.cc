@@ -347,16 +347,6 @@ TEST_F(KernelWrapTest, getsockopt) {
   getsockopt(DUMMY_FD, 456, 789, NULL, NULL);
 }
 
-TEST_F(KernelWrapTest, herror) {
-  EXPECT_CALL(mock, herror(NULL)).Times(1);
-  herror(NULL);
-}
-
-TEST_F(KernelWrapTest, hstrerror) {
-  EXPECT_CALL(mock, hstrerror(123)).Times(1);
-  hstrerror(123);
-}
-
 TEST_F(KernelWrapTest, listen) {
   EXPECT_CALL(mock, listen(DUMMY_FD, 456)).Times(1);
   listen(DUMMY_FD, 456);

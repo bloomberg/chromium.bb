@@ -2,13 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#include "nacl_io/kernel_intercept.h"
-#include "nacl_io/kernel_wrap.h"
+#include "nacl_io/ossocket.h"
 
 #ifdef PROVIDES_SOCKET_API
 
-void herror(const char *s) {
-  return ki_herror(s);
+#include <stdio.h>
+
+void herror(const char* s) {
+  if (s) {
+    fprintf(stderr, "%s: ", s);
+  }
+
+  fprintf(stderr, "%s\n", hstrerror(h_errno));
 }
 
-#endif
+#endif /* PROVIDES_SOCKET_API */

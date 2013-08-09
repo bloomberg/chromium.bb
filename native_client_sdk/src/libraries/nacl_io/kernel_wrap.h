@@ -106,8 +106,6 @@ struct hostent* gethostbyname(const char* name);
 int getpeername(int fd, struct sockaddr* addr, socklen_t* len);
 int getsockname(int fd, struct sockaddr* addr, socklen_t* len);
 int getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len);
-void herror(const char *s);
-const char *hstrerror(int err);
 int listen(int fd, int backlog);
 ssize_t recv(int fd, void* buf, size_t len, int flags);
 ssize_t recvfrom(int fd, void* buf, size_t len, int flags,
