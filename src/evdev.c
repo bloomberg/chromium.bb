@@ -45,7 +45,7 @@ evdev_led_update(struct evdev_device *device, enum weston_led leds)
 		{ LED_CAPS_LOCK, LED_CAPSL },
 		{ LED_SCROLL_LOCK, LED_SCROLLL },
 	};
-	struct input_event ev[ARRAY_LENGTH(map)];
+	struct input_event ev[ARRAY_LENGTH(map) + 1];
 	unsigned int i;
 
 	if (!device->caps & EVDEV_KEYBOARD)
@@ -57,6 +57,8 @@ evdev_led_update(struct evdev_device *device, enum weston_led leds)
 		ev[i].code = map[i].evdev;
 		ev[i].value = !!(leds & map[i].weston);
 	}
+	ev[i].type = EV_SYN;
+	ev[i].code = SYN_REPORT;
 
 	i = write(device->fd, ev, sizeof ev);
 	(void)i; /* no, we really don't care about the return value */
