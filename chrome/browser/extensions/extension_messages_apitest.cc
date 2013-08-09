@@ -342,10 +342,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
             CanConnectAndSendMessages(not_connectable->id()));
 
-  // Unloading the extension is the same as it never existing - so the bindings
-  // will no longer exist.
   DisableExtension(chromium_connectable->id());
-  EXPECT_EQ(NAMESPACE_NOT_DEFINED,
+  EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
             CanConnectAndSendMessages(chromium_connectable->id()));
 
   EnableExtension(chromium_connectable->id());
