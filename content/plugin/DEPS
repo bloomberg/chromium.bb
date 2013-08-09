@@ -6,6 +6,5 @@ include_rules = [
   "+skia/ext",
   "+third_party/npapi",
   "+webkit/glue",
-  "+webkit/plugins",
 ]
 

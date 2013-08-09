@@ -19,6 +19,5 @@ include_rules = [
   "+sandbox/win/src",
   "+sandbox/win/tests",
   "+webkit/glue",
-  "+webkit/plugins",
   "+win8/test",
 ]

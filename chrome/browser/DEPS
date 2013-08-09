@@ -52,7 +52,6 @@ include_rules = [
   # TODO(stuartmorgan): Remove these by refactoring necessary code out of
   # webkit/. See crbug.com/146251
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "+webkit/plugins",  # Defines some types that are marshalled over IPC.
 
   # TODO(kinuko): Remove all other webkit/* dependencies after we cleaned
   # up webkit/. crbug.com/239710

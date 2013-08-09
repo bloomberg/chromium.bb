@@ -9,7 +9,6 @@ include_rules = [
   "+sql",
   "+third_party/libjingle",
   "+third_party/libphonenumber",  # For phone number i18n.
-  "+webkit/plugins/webplugininfo.h",
 ]
 
 specific_include_rules = {
