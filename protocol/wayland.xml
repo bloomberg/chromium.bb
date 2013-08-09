@@ -1015,10 +1015,10 @@
 
 	Destroying the wl_buffer after wl_buffer.release does not change
 	the surface contents. However, if the client destroys the
-	wl_buffer before receiving wl_buffer.release, the surface
+	wl_buffer before receiving the wl_buffer.release event, the surface
 	contents become undefined immediately.
 
-	Only if wl_surface.attach is sent with a NULL wl_buffer, the
+	If wl_surface.attach is sent with a NULL wl_buffer, the
 	following wl_surface.commit will remove the surface content.
       </description>
 
