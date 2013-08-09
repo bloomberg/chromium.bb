@@ -357,12 +357,7 @@ Element* TreeScope::findAnchor(const String& name)
 
 bool TreeScope::applyAuthorStyles() const
 {
-    return true;
-}
-
-bool TreeScope::resetStyleInheritance() const
-{
-    return false;
+    return !rootNode()->isShadowRoot() || toShadowRoot(rootNode())->applyAuthorStyles();
 }
 
 void TreeScope::adoptIfNeeded(Node* node)

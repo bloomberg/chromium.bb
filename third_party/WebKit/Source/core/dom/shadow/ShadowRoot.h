@@ -60,9 +60,9 @@ public:
 
     void recalcStyle(StyleChange);
 
-    virtual bool applyAuthorStyles() const OVERRIDE { return m_applyAuthorStyles; }
+    bool applyAuthorStyles() const { return m_applyAuthorStyles; }
     void setApplyAuthorStyles(bool);
-    virtual bool resetStyleInheritance() const OVERRIDE { return m_resetStyleInheritance; }
+    bool resetStyleInheritance() const { return m_resetStyleInheritance; }
     void setResetStyleInheritance(bool);
 
     Element* host() const { return toElement(parentOrShadowHostNode()); }
