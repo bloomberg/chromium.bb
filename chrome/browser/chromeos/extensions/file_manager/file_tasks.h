@@ -137,8 +137,6 @@ extern const char kTaskFile[];
 extern const char kTaskDrive[];
 extern const char kTaskApp[];
 
-void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id);
-
 // Returns true if the task should be used as a fallback. Such tasks are
 // Files.app's internal handlers as well as quick office extensions.
 bool IsFallbackTask(const FileBrowserHandler* task);
