@@ -229,7 +229,7 @@ RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
 
 void RenderViewDevToolsAgentHost::AboutToNavigateRenderView(
     RenderViewHost* dest_rvh) {
-  if (!render_view_host_)
+  if (!render_view_host_ || !IsAttached())
     return;
 
   if (render_view_host_ == dest_rvh && static_cast<RenderViewHostImpl*>(
