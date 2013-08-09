@@ -45,6 +45,13 @@ var DriveSubRootDirectory = {
 var PathUtil = {};
 
 /**
+ * The path to the default directory.
+ * @type {string}
+ * @const
+ */
+PathUtil.DEFAULT_DIRECTORY = RootDirectory.DOWNLOADS;
+
+/**
  * Checks if the given path represents a special search. Fake entries in
  * RootDirectory correspond to special searches.
  * @param {string} path Path to check.

@@ -226,7 +226,7 @@ DirectoryModel.prototype.setDriveEnabled = function(enabled) {
   this.taskQueue_.run(this.updateRoots_.bind(this));
   if (!enabled && (this.getCurrentRootType() == RootType.DRIVE ||
                    this.getCurrentRootType() == RootType.DRIVE_OFFLINE))
-    this.changeDirectory(this.getDefaultDirectory());
+    this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
 };
 
 /**
@@ -1077,7 +1077,7 @@ DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
   var EXISTS = true;
 
   var changeToDefault = function(leafName) {
-    var def = self.getDefaultDirectory();
+    var def = PathUtil.DEFAULT_DIRECTORY;
     self.resolveDirectory(def, function(directoryEntry) {
       resolveCallback(def, leafName, !EXISTS);
       changeDirectoryEntry(directoryEntry, INITIAL);
@@ -1127,20 +1127,6 @@ DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
       changeToDefault(leafName);
     }
   });
-};
-
-/**
- * Sets up the default path.
- */
-DirectoryModel.prototype.setupDefaultPath = function() {
-  this.setupPath(this.getDefaultDirectory());
-};
-
-/**
- * @return {string} The default directory.
- */
-DirectoryModel.prototype.getDefaultDirectory = function() {
-  return RootDirectory.DOWNLOADS;
 };
 
 /**
@@ -1223,7 +1209,7 @@ DirectoryModel.prototype.onMountChanged_ = function(callback) {
 
     if ((rootType == RootType.ARCHIVE || rootType == RootType.REMOVABLE) &&
         !this.volumeManager_.isMounted(this.getCurrentRootPath())) {
-      this.changeDirectory(this.getDefaultDirectory());
+      this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
     }
 
     callback();
@@ -1413,7 +1399,7 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
 
     } else {
       // Unknown path.
-      this.changeDirectory(this.getDefaultDirectory());
+      this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
       return;
     }
 

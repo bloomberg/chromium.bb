@@ -1576,10 +1576,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
 
     if (!path) {
-      path = this.directoryModel_.getDefaultDirectory();
+      path = PathUtil.DEFAULT_DIRECTORY;
     } else if (path.indexOf('/') == -1) {
       // Path is a file name.
-      path = this.directoryModel_.getDefaultDirectory() + '/' + path;
+      path = PathUtil.DEFAULT_DIRECTORY + '/' + path;
     }
 
     // In the FULL_PAGE mode if the hash path points to a file we might have
