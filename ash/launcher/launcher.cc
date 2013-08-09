@@ -142,10 +142,6 @@ bool Launcher::IsVisible() const {
   return launcher_view_->visible();
 }
 
-void Launcher::SchedulePaint() {
-  launcher_view_->SchedulePaintForAllButtons();
-}
-
 views::View* Launcher::GetAppListButtonView() const {
   return launcher_view_->GetAppListButtonView();
 }

@@ -465,15 +465,6 @@ void LauncherView::OnShelfAlignmentChanged() {
     overflow_bubble_->Hide();
 }
 
-void LauncherView::SchedulePaintForAllButtons() {
-  if (first_visible_index_ >= 0) {
-    for (int i = first_visible_index_; i <= last_visible_index_; ++i)
-      view_model_->view_at(i)->SchedulePaint();
-  }
-  if (overflow_button_ && overflow_button_->visible())
-    overflow_button_->SchedulePaint();
-}
-
 gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
   int index = model_->ItemIndexByID(id);
   if (index == -1 || (index > last_visible_index_ &&

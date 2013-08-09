@@ -541,10 +541,8 @@ void ShelfWidget::SetAlignment(ShelfAlignment alignment) {
 
 void ShelfWidget::SetDimsShelf(bool dimming) {
   delegate_view_->SetDimmed(dimming);
-  // Repaint all children, allowing updates to reflect dimmed state eg:
-  // status area background, app list button and overflow button.
   if (launcher_)
-    launcher_->SchedulePaint();
+    launcher_->GetAppListButtonView()->SchedulePaint();
   status_area_widget_->GetContentsView()->SchedulePaint();
 }
 
