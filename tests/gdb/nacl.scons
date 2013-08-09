@@ -34,11 +34,6 @@ if not env.AllowNonStableBitcode():
 if env.Bit('bitcode'):
   env.Append(LINKFLAGS=['-O0'])
   env.Append(TRANSLATEFLAGS=['-O0'])
-  # TODO(stichnot): Remove the -sfi-hide-sandbox-base=0 option when
-  # NaCl gdb can unwind through x86-64 sandbox-hiding prologs.
-  # BUG=https://code.google.com/p/nativeclient/issues/detail?id=3600
-  if env.Bit('target_x86_64'):
-    env.Append(TRANSLATEFLAGS=['-sfi-hide-sandbox-base=0'])
 
 test_args = ['--gdb', env['GDB'],
              '--output_dir', env.subst('${TARGET_ROOT}/test_results')]
