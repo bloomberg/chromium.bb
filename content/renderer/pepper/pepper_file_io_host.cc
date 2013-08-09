@@ -17,9 +17,11 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/ppb_file_ref_impl.h"
+#include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/quota_file_io.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
@@ -37,7 +39,6 @@ using ppapi::FileIOStateManager;
 using ppapi::PPTimeToTime;
 using ppapi::host::ReplyMessageContext;
 using ppapi::thunk::EnterResourceNoLock;
-using ppapi::thunk::PPB_FileRef_API;
 
 namespace {
 
@@ -144,6 +145,7 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
                                    PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
+      plugin_instance_(HostGlobals::Get()->GetInstance(instance)),
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       quota_policy_(quota::kQuotaLimitTypeUnknown),
@@ -240,46 +242,66 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
     return PP_ERROR_BADARGUMENT;
   }
 
-  EnterResourceNoLock<PPB_FileRef_API> enter(file_ref_resource, true);
-  if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
+  RenderView* render_view =
+      renderer_ppapi_host_->GetRenderViewForInstance(pp_instance());
+  PepperBrowserConnection* browser_connection =
+      PepperBrowserConnection::Get(render_view);
+  int child_process_id = plugin_instance_->module()->GetPluginChildId();
 
-  PPB_FileRef_API* file_ref_api = enter.object();
-  PP_FileSystemType type = file_ref_api->GetFileSystemType();
-  if (type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
-      type != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
-      type != PP_FILESYSTEMTYPE_EXTERNAL &&
-      type != PP_FILESYSTEMTYPE_ISOLATED)
-    return PP_ERROR_FAILED;
-  file_system_type_ = type;
+  // Explicitly set child_process_id to 0 if we're running in process. This is
+  // necessary in the case where we're a host for a resource in "the trusted
+  // NaCl plugin". In that case, we may have already done work for the
+  // untrusted plugin, and the call above will give a non-zero
+  // child_process_id.
+  if (renderer_ppapi_host_->IsRunningInProcess())
+    child_process_id = 0;
 
-  PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(file_ref_api);
-  if (file_ref->HasValidFileSystem()) {
-    file_system_url_ = file_ref->GetFileSystemURL();
+  std::vector<PP_Resource> resources;
+  resources.push_back(file_ref_resource);
+  browser_connection->SendBrowserFileRefGetInfo(
+      child_process_id,
+      resources,
+      base::Bind(&PepperFileIOHost::DidGetFileRefInfo,
+                 weak_factory_.GetWeakPtr(),
+                 context->MakeReplyMessageContext(),
+                 platform_file_flags));
+  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
+  return PP_OK_COMPLETIONPENDING;
+}
 
+void PepperFileIOHost::DidGetFileRefInfo(
+    ppapi::host::ReplyMessageContext reply_context,
+    int platform_file_flags,
+    const std::vector<ppapi::FileRefDetailedInfo>& infos) {
+  if (infos.size() != 1) {
+    reply_context.params.set_result(PP_ERROR_FAILED);
+    host()->SendReply(reply_context,
+                      PpapiPluginMsg_FileIO_OpenReply());
+    return;
+  }
+
+  file_system_type_ = infos[0].file_system_type;
+  if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
+    file_system_url_ = GURL(infos[0].file_system_url_spec);
     FileSystemDispatcher* file_system_dispatcher =
         ChildThread::current()->file_system_dispatcher();
+
     AsyncOpenFileSystemURLCallback callback = base::Bind(
         &PepperFileIOHost::ExecutePlatformOpenFileSystemURLCallback,
         weak_factory_.GetWeakPtr(),
-        context->MakeReplyMessageContext());
+        reply_context);
     file_system_dispatcher->OpenFile(
         file_system_url_, platform_file_flags,
         base::Bind(&DidOpenFileSystemURL, callback),
         base::Bind(&DidFailOpenFileSystemURL, callback));
   } else {
-    if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL)
-      return PP_ERROR_FAILED;
     int message_id = pending_async_open_files_.Add(new AsyncOpenFileCallback(
         base::Bind(&PepperFileIOHost::ExecutePlatformOpenFileCallback,
                     weak_factory_.GetWeakPtr(),
-                    context->MakeReplyMessageContext())));
+                    reply_context)));
     RenderThreadImpl::current()->Send(new ViewHostMsg_AsyncOpenPepperFile(
-        routing_id_, file_ref->GetSystemPath(), open_flags, message_id));
+        routing_id_, infos[0].external_path, open_flags_, message_id));
   }
-
-  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
-  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PepperFileIOHost::OnHostMsgQuery(

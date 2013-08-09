@@ -36,7 +36,6 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
-#include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/ppp_pdf.h"
@@ -768,6 +767,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
   DCHECK(pending_host_id);
 
   DataFromWebURLResponse(
+      host_impl,
       pp_instance(),
       response,
       base::Bind(&PepperPluginInstanceImpl::DidDataFromWebURLResponse,
@@ -2607,13 +2607,6 @@ base::FilePath PepperPluginInstanceImpl::GetModulePath() {
   return module_->path();
 }
 
-PP_Resource PepperPluginInstanceImpl::CreateExternalFileReference(
-    const base::FilePath& external_file_path) {
-  PPB_FileRef_Impl* ref = PPB_FileRef_Impl::CreateExternal(
-      pp_instance(), external_file_path, "");
-  return ref->GetReference();
-}
-
 PP_Resource PepperPluginInstanceImpl::CreateImage(gfx::ImageSkia* source_image,
                                                   float scale) {
   ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(scale);
@@ -2750,8 +2743,12 @@ int32_t PepperPluginInstanceImpl::Navigate(
   ppapi::URLRequestInfoData completed_request = request;
 
   WebURLRequest web_request;
-  if (!CreateWebURLRequest(&completed_request, frame, &web_request))
+  if (!CreateWebURLRequest(pp_instance_,
+                           &completed_request,
+                           frame,
+                           &web_request)) {
     return PP_ERROR_FAILED;
+  }
   web_request.setFirstPartyForCookies(document.firstPartyForCookies());
   web_request.setHasUserGesture(from_user_action);
 

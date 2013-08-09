@@ -49,6 +49,9 @@ class PepperInProcessResourceCreation : public ResourceCreationImpl {
       PP_FileChooserMode_Dev mode,
       const PP_Var& accept_types) OVERRIDE;
   virtual PP_Resource CreateFileIO(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateFileRef(
+      PP_Instance instance,
+      const ppapi::FileRefCreateInfo& create_info) OVERRIDE;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
                                        PP_FileSystemType type) OVERRIDE;
   virtual PP_Resource CreateGraphics2D(

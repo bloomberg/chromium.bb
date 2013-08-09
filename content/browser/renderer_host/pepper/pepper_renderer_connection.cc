@@ -16,7 +16,9 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/proxy/resource_message_params.h"
+#include "ppapi/shared_impl/file_ref_detailed_info.h"
 
 namespace content {
 
@@ -76,6 +78,8 @@ bool PepperRendererConnection::OnMessageReceived(const IPC::Message& msg,
                         OnMsgCreateResourceHostFromHost)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_FileRef_GetInfoForRenderer,
                         OnMsgFileRefGetInfoForRenderer)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_FileRef_SyncGetInfoForRenderer,
+                        OnMsgFileRefSyncGetInfoForRenderer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidCreateInProcessInstance,
                         OnMsgDidCreateInProcessInstance)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDeleteInProcessInstance,
@@ -132,12 +136,20 @@ void PepperRendererConnection::OnMsgFileRefGetInfoForRenderer(
     int child_process_id,
     int32_t sequence,
     const std::vector<PP_Resource>& resources) {
-  std::vector<PP_Resource> out_resources;
-  std::vector<PP_FileSystemType> fs_types;
-  std::vector<std::string> file_system_url_specs;
-  std::vector<base::FilePath> external_paths;
+  std::vector<ppapi::FileRefDetailedInfo> infos;
+  OnMsgFileRefSyncGetInfoForRenderer(child_process_id, resources, &infos);
+  Send(new PpapiHostMsg_FileRef_GetInfoForRendererReply(
+       routing_id,
+       sequence,
+       infos));
+}
 
+void PepperRendererConnection::OnMsgFileRefSyncGetInfoForRenderer(
+    int child_process_id,
+    const std::vector<PP_Resource>& resources,
+    std::vector<ppapi::FileRefDetailedInfo>* out_infos) {
   BrowserPpapiHostImpl* host = GetHostForChildProcess(child_process_id);
+
   if (host) {
     for (size_t i = 0; i < resources.size(); ++i) {
       ppapi::host::ResourceHost* resource_host =
@@ -145,20 +157,15 @@ void PepperRendererConnection::OnMsgFileRefGetInfoForRenderer(
       if (resource_host && resource_host->IsFileRefHost()) {
         PepperFileRefHost* file_ref_host =
             static_cast<PepperFileRefHost*>(resource_host);
-        out_resources.push_back(resources[i]);
-        fs_types.push_back(file_ref_host->GetFileSystemType());
-        file_system_url_specs.push_back(file_ref_host->GetFileSystemURLSpec());
-        external_paths.push_back(file_ref_host->GetExternalPath());
+        ppapi::FileRefDetailedInfo info;
+        info.resource = resources[i];
+        info.file_system_type = file_ref_host->GetFileSystemType();
+        info.file_system_url_spec = file_ref_host->GetFileSystemURLSpec();
+        info.external_path = file_ref_host->GetExternalPath();
+        out_infos->push_back(info);
       }
     }
   }
-  Send(new PpapiHostMsg_FileRef_GetInfoForRendererReply(
-       routing_id,
-       sequence,
-       out_resources,
-       fs_types,
-       file_system_url_specs,
-       external_paths));
 }
 
 void PepperRendererConnection::OnMsgDidCreateInProcessInstance(
