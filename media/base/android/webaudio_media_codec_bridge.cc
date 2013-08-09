@@ -17,6 +17,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "jni/WebAudioMediaCodecBridge_jni.h"
 #include "media/base/android/webaudio_media_codec_info.h"
 
@@ -148,15 +149,35 @@ void WebAudioMediaCodecBridge::OnChunkDecoded(
     JNIEnv* env,
     jobject /*java object*/,
     jobject buf,
-    jint buf_size) {
+    jint buf_size,
+    jint input_channel_count,
+    jint output_channel_count) {
 
   if (buf_size <= 0 || !buf)
     return;
 
   int8_t* buffer =
       static_cast<int8_t*>(env->GetDirectBufferAddress(buf));
-
   size_t count = static_cast<size_t>(buf_size);
+  std::vector<int16_t> decoded_data;
+
+  if (input_channel_count == 1 && output_channel_count == 2) {
+    // See crbug.com/266006.  The file has one channel, but the
+    // decoder decided to return two channels.  To be consistent with
+    // the number of channels in the file, only send one channel (the
+    // first).
+    int16_t* data = static_cast<int16_t*>(env->GetDirectBufferAddress(buf));
+    int frame_count  = buf_size / sizeof(*data) / 2;
+
+    decoded_data.resize(frame_count);
+    for (int k = 0; k < frame_count; ++k) {
+      decoded_data[k] = *data;
+      data += 2;
+    }
+    buffer = reinterpret_cast<int8_t*>(vector_as_array(&decoded_data));
+    DCHECK(buffer);
+    count = frame_count * sizeof(*data);
+  }
 
   // Write out the data to the pipe in small chunks if necessary.
   while (count > 0) {

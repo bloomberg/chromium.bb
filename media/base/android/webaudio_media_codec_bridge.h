@@ -41,7 +41,9 @@ class MEDIA_EXPORT WebAudioMediaCodecBridge {
   void OnChunkDecoded(JNIEnv* env,
                       jobject /*java object*/,
                       jobject buf,
-                      jint buf_size);
+                      jint buf_size,
+                      jint input_channel_count,
+                      jint output_channel_count);
 
   void InitializeDestination(JNIEnv* env,
                              jobject /*java object*/,
