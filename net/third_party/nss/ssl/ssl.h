@@ -208,6 +208,11 @@ SSL_IMPORT SECStatus SSL_SetNextProtoCallback(PRFileDesc *fd,
  * uses ALPN to select a protocol, SSL_GetNextProto will return
  * SSL_NEXT_PROTO_SELECTED as the state.
  *
+ * Since NPN uses the first protocol as the fallback protocol, when sending an
+ * ALPN extension, the first protocol is moved to the end of the list. This
+ * indicates that the fallback protocol is the least preferred. The other
+ * protocols should be in preference order.
+ *
  * The supported protocols are specified in |data| in wire-format (8-bit
  * length-prefixed). For example: "\010http/1.1\006spdy/2". */
 SSL_IMPORT SECStatus SSL_SetNextProtoNego(PRFileDesc *fd,

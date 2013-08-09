@@ -724,6 +724,7 @@ static PRInt32
 ssl3_ClientSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
 {
     PRInt32 extension_length;
+    unsigned char *alpn_protos = NULL;
 
     /* Renegotiations do not send this extension. */
     if (!ss->opt.nextProtoNego.data || ss->firstHsDone) {
@@ -735,15 +736,38 @@ ssl3_ClientSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
                        ss->opt.nextProtoNego.len;
 
     if (append && maxBytes >= extension_length) {
+	/* NPN requires that the client's fallback protocol is first in the
+	 * list. However, ALPN sends protocols in preference order. So we
+	 * allocate a buffer and move the first protocol to the end of the
+	 * list. */
 	SECStatus rv;
+	const unsigned int len = ss->opt.nextProtoNego.len;
+
+	alpn_protos = PORT_Alloc(len);
+	if (alpn_protos == NULL) {
+	    return SECFailure;
+	}
+	if (len > 0) {
+	    /* Each protocol string is prefixed with a single byte length. */
+	    unsigned int i = ss->opt.nextProtoNego.data[0] + 1;
+	    if (i <= len) {
+		memcpy(alpn_protos, &ss->opt.nextProtoNego.data[i], len - i);
+		memcpy(alpn_protos + len - i, ss->opt.nextProtoNego.data, i);
+	    } else {
+		/* This seems to be invalid data so we'll send as-is. */
+		memcpy(alpn_protos, ss->opt.nextProtoNego.data, len);
+	    }
+	}
+
 	rv = ssl3_AppendHandshakeNumber(ss, ssl_app_layer_protocol_xtn, 2);
 	if (rv != SECSuccess)
 	    goto loser;
 	rv = ssl3_AppendHandshakeNumber(ss, extension_length - 4, 2);
 	if (rv != SECSuccess)
 	    goto loser;
-	rv = ssl3_AppendHandshakeVariable(ss, ss->opt.nextProtoNego.data,
-					  ss->opt.nextProtoNego.len, 2);
+	rv = ssl3_AppendHandshakeVariable(ss, alpn_protos, len, 2);
+	PORT_Free(alpn_protos);
+	alpn_protos = NULL;
 	if (rv != SECSuccess)
 	    goto loser;
 	ss->xtnData.advertised[ss->xtnData.numAdvertised++] =
@@ -755,6 +779,8 @@ ssl3_ClientSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
     return extension_length;
 
 loser:
+    if (alpn_protos)
+	PORT_Free(alpn_protos);
     return -1;
 }
 

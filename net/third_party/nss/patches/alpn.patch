@@ -16,7 +16,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
 diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
 --- a/nss/lib/ssl/ssl3ext.c	2013-07-31 14:10:00.342814862 -0700
 +++ b/nss/lib/ssl/ssl3ext.c	2013-07-31 14:28:56.549496061 -0700
-@@ -52,8 +52,12 @@ static SECStatus ssl3_HandleRenegotiatio
+@@ -53,8 +53,12 @@ static SECStatus ssl3_HandleRenegotiationInfoXtn(sslSocket *ss,
      PRUint16 ex_type, SECItem *data);
  static SECStatus ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss,
  			PRUint16 ex_type, SECItem *data);
@@ -29,30 +29,15 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
  static PRInt32 ssl3_ClientSendNextProtoNegoXtn(sslSocket *ss, PRBool append,
  					       PRUint32 maxBytes);
  static PRInt32 ssl3_SendUseSRTPXtn(sslSocket *ss, PRBool append,
-@@ -246,14 +250,15 @@ static const ssl3HelloExtensionHandler c
- /* These two tables are used by the client, to handle server hello
-  * extensions. */
- static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
--    { ssl_server_name_xtn,        &ssl3_HandleServerNameXtn },
-+    { ssl_server_name_xtn,            &ssl3_HandleServerNameXtn },
-     /* TODO: add a handler for ssl_ec_point_formats_xtn */
--    { ssl_session_ticket_xtn,     &ssl3_ClientHandleSessionTicketXtn },
--    { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
--    { ssl_next_proto_nego_xtn,    &ssl3_ClientHandleNextProtoNegoXtn },
--    { ssl_use_srtp_xtn,           &ssl3_HandleUseSRTPXtn },
--    { ssl_channel_id_xtn,         &ssl3_ClientHandleChannelIDXtn },
--    { ssl_cert_status_xtn,        &ssl3_ClientHandleStatusRequestXtn },
-+    { ssl_session_ticket_xtn,         &ssl3_ClientHandleSessionTicketXtn },
-+    { ssl_renegotiation_info_xtn,     &ssl3_HandleRenegotiationInfoXtn },
-+    { ssl_next_proto_nego_xtn,        &ssl3_ClientHandleNextProtoNegoXtn },
-+    { ssl_app_layer_protocol_xtn,     &ssl3_ClientHandleAppProtoXtn },
-+    { ssl_use_srtp_xtn,               &ssl3_HandleUseSRTPXtn },
-+    { ssl_channel_id_xtn,             &ssl3_ClientHandleChannelIDXtn },
-+    { ssl_cert_status_xtn,            &ssl3_ClientHandleStatusRequestXtn },
-     { -1, NULL }
- };
- 
-@@ -270,17 +275,18 @@ static const ssl3HelloExtensionHandler s
+@@ -252,6 +256,7 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
+     { ssl_session_ticket_xtn,     &ssl3_ClientHandleSessionTicketXtn },
+     { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
+     { ssl_next_proto_nego_xtn,    &ssl3_ClientHandleNextProtoNegoXtn },
++    { ssl_app_layer_protocol_xtn, &ssl3_ClientHandleAppProtoXtn },
+     { ssl_use_srtp_xtn,           &ssl3_HandleUseSRTPXtn },
+     { ssl_channel_id_xtn,         &ssl3_ClientHandleChannelIDXtn },
+     { ssl_cert_status_xtn,        &ssl3_ClientHandleStatusRequestXtn },
+@@ -271,18 +276,19 @@ static const ssl3HelloExtensionHandler serverHelloHandlersSSL3[] = {
   */
  static const 
  ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
@@ -71,16 +56,18 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
 -    { ssl_use_srtp_xtn,           &ssl3_SendUseSRTPXtn },
 -    { ssl_channel_id_xtn,         &ssl3_ClientSendChannelIDXtn },
 -    { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn },
+-    { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn }
 +    { ssl_session_ticket_xtn,         &ssl3_SendSessionTicketXtn },
 +    { ssl_next_proto_nego_xtn,        &ssl3_ClientSendNextProtoNegoXtn },
 +    { ssl_app_layer_protocol_xtn,     &ssl3_ClientSendAppProtoXtn },
 +    { ssl_use_srtp_xtn,               &ssl3_SendUseSRTPXtn },
 +    { ssl_channel_id_xtn,             &ssl3_ClientSendChannelIDXtn },
 +    { ssl_cert_status_xtn,            &ssl3_ClientSendStatusRequestXtn },
-     { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn }
++    { ssl_signature_algorithms_xtn,   &ssl3_ClientSendSigAlgsXtn }
      /* any extra entries will appear as { 0, NULL }    */
  };
-@@ -605,6 +611,11 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSoc
+ 
+@@ -606,6 +612,11 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
  
      PORT_Assert(!ss->firstHsDone);
  
@@ -92,7 +79,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
      rv = ssl3_ValidateNextProtoNego(data->data, data->len);
      if (rv != SECSuccess)
  	return rv;
-@@ -638,6 +649,44 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSoc
+@@ -639,6 +650,44 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
      return SECITEM_CopyItem(NULL, &ss->ssl3.nextProto, &result);
  }
  
@@ -137,21 +124,15 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
  static PRInt32
  ssl3_ClientSendNextProtoNegoXtn(sslSocket * ss, PRBool append,
  				PRUint32 maxBytes)
-@@ -664,6 +713,44 @@ ssl3_ClientSendNextProtoNegoXtn(sslSocke
-     } else if (maxBytes < extension_length) {
- 	return 0;
-     }
-+
-+    return extension_length;
-+
-+loser:
-+    return -1;
-+}
-+
+@@ -672,6 +721,70 @@ loser:
+     return -1;
+ }
+ 
 +static PRInt32
 +ssl3_ClientSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
 +{
 +    PRInt32 extension_length;
++    unsigned char *alpn_protos = NULL;
 +
 +    /* Renegotiations do not send this extension. */
 +    if (!ss->opt.nextProtoNego.data || ss->firstHsDone) {
@@ -163,15 +144,38 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
 +                       ss->opt.nextProtoNego.len;
 +
 +    if (append && maxBytes >= extension_length) {
++	/* NPN requires that the client's fallback protocol is first in the
++	 * list. However, ALPN sends protocols in preference order. So we
++	 * allocate a buffer and move the first protocol to the end of the
++	 * list. */
 +	SECStatus rv;
++	const unsigned int len = ss->opt.nextProtoNego.len;
++
++	alpn_protos = PORT_Alloc(len);
++	if (alpn_protos == NULL) {
++	    return SECFailure;
++	}
++	if (len > 0) {
++	    /* Each protocol string is prefixed with a single byte length. */
++	    unsigned int i = ss->opt.nextProtoNego.data[0] + 1;
++	    if (i <= len) {
++		memcpy(alpn_protos, &ss->opt.nextProtoNego.data[i], len - i);
++		memcpy(alpn_protos + len - i, ss->opt.nextProtoNego.data, i);
++	    } else {
++		/* This seems to be invalid data so we'll send as-is. */
++		memcpy(alpn_protos, ss->opt.nextProtoNego.data, len);
++	    }
++	}
++
 +	rv = ssl3_AppendHandshakeNumber(ss, ssl_app_layer_protocol_xtn, 2);
 +	if (rv != SECSuccess)
 +	    goto loser;
 +	rv = ssl3_AppendHandshakeNumber(ss, extension_length - 4, 2);
 +	if (rv != SECSuccess)
 +	    goto loser;
-+	rv = ssl3_AppendHandshakeVariable(ss, ss->opt.nextProtoNego.data,
-+					  ss->opt.nextProtoNego.len, 2);
++	rv = ssl3_AppendHandshakeVariable(ss, alpn_protos, len, 2);
++	PORT_Free(alpn_protos);
++	alpn_protos = NULL;
 +	if (rv != SECSuccess)
 +	    goto loser;
 +	ss->xtnData.advertised[ss->xtnData.numAdvertised++] =
@@ -179,13 +183,22 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
 +    } else if (maxBytes < extension_length) {
 +	return 0;
 +    }
- 
-     return extension_length;
- 
++
++    return extension_length;
++
++loser:
++    if (alpn_protos)
++	PORT_Free(alpn_protos);
++    return -1;
++}
++
+ static SECStatus
+ ssl3_ClientHandleChannelIDXtn(sslSocket *ss, PRUint16 ex_type,
+ 			     SECItem *data)
 diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
 --- a/nss/lib/ssl/ssl.h	2013-07-31 14:10:35.113325316 -0700
 +++ b/nss/lib/ssl/ssl.h	2013-07-31 14:28:56.589496647 -0700
-@@ -203,6 +203,11 @@ SSL_IMPORT SECStatus SSL_SetNextProtoCal
+@@ -203,6 +203,16 @@ SSL_IMPORT SECStatus SSL_SetNextProtoCal
   * protocol in server-preference order. If no matching protocol is found it
   * selects the first supported protocol.
   *
@@ -193,6 +206,11 @@ diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
 + * The same set of protocols will be advertised via ALPN and, if the server
 + * uses ALPN to select a protocol, SSL_GetNextProto will return
 + * SSL_NEXT_PROTO_SELECTED as the state.
++ *
++ * Since NPN uses the first protocol as the fallback protocol, when sending an
++ * ALPN extension, the first protocol is moved to the end of the list. This
++ * indicates that the fallback protocol is the least preferred. The other
++ * protocols should be in preference order.
 + *
   * The supported protocols are specified in |data| in wire-format (8-bit
   * length-prefixed). For example: "\010http/1.1\006spdy/2". */
