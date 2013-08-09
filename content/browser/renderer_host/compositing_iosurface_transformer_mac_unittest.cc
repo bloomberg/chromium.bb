@@ -144,7 +144,7 @@ GLuint CreateTextureWithImage(const SkBitmap& bitmap) {
 }
 
 // Read back a texture from the GPU, returning the image data as an SkBitmap.
-SkBitmap ReadBackTexture(GLuint texture, const gfx::Size& size) {
+SkBitmap ReadBackTexture(GLuint texture, const gfx::Size& size, GLenum format) {
   SkBitmap result;
   result.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
   CHECK(result.allocPixels());
@@ -162,7 +162,7 @@ SkBitmap ReadBackTexture(GLuint texture, const gfx::Size& size) {
   {
     SkAutoLockPixels lock_result(result);
     EXPECT_NO_GL_ERROR(glReadPixels(
-        0, 0, size.width(), size.height(), GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
+        0, 0, size.width(), size.height(), format, GL_UNSIGNED_INT_8_8_8_8_REV,
         result.getPixels()));
   }
 
@@ -303,7 +303,8 @@ class CompositingIOSurfaceTransformerTest : public testing::Test {
         original_texture, src_rect, dst_size, &scaled_texture));
     EXPECT_NE(0u, scaled_texture);
     CGLFlushDrawable(context_);  // Account for some buggy driver impls.
-    const SkBitmap result_bitmap = ReadBackTexture(scaled_texture, dst_size);
+    const SkBitmap result_bitmap =
+        ReadBackTexture(scaled_texture, dst_size, GL_BGRA);
     EXPECT_NO_GL_ERROR(glDeleteTextures(1, &original_texture));
 
     // Compare the image read back to the version produced by a known-working
@@ -344,9 +345,13 @@ class CompositingIOSurfaceTransformerTest : public testing::Test {
 
     // Read-back the texture for each plane.
     CGLFlushDrawable(context_);  // Account for some buggy driver impls.
-    const SkBitmap result_y_bitmap = ReadBackTexture(texture_y, packed_y_size);
-    const SkBitmap result_u_bitmap = ReadBackTexture(texture_u, packed_uv_size);
-    const SkBitmap result_v_bitmap = ReadBackTexture(texture_v, packed_uv_size);
+    const GLenum format = shader_program_cache_->rgb_to_yv12_output_format();
+    const SkBitmap result_y_bitmap =
+        ReadBackTexture(texture_y, packed_y_size, format);
+    const SkBitmap result_u_bitmap =
+        ReadBackTexture(texture_u, packed_uv_size, format);
+    const SkBitmap result_v_bitmap =
+        ReadBackTexture(texture_v, packed_uv_size, format);
 
     // Compare the Y, U, and V planes read-back to the version produced by a
     // known-working software implementation.  Allow up to 2 lines of mismatch
@@ -485,35 +490,43 @@ TEST_F(CompositingIOSurfaceTransformerTest, ResizesTexturesCorrectly) {
 }
 
 TEST_F(CompositingIOSurfaceTransformerTest, TransformsRGBToYV12) {
-  for (size_t i = 0; i < arraysize(kTestParameters); ++i) {
-    SCOPED_TRACE(::testing::Message() << "kTestParameters[" << i << ']');
+  static const GLenum kOutputFormats[] = { GL_BGRA, GL_RGBA };
 
-    const TestParameters& params = kTestParameters[i];
-    const gfx::Size src_size(params.src_width, params.src_height);
-    const gfx::Size dst_size(params.scaled_width, params.scaled_height);
-    const SkBitmap src_bitmap = GenerateTestPatternBitmap(src_size);
+  for (size_t i = 0; i < arraysize(kOutputFormats); ++i) {
+    SCOPED_TRACE(::testing::Message() << "kOutputFormats[" << i << ']');
 
-    // Full texture resize test.
-    RunTransformRGBToYV12Test(src_bitmap, gfx::Rect(src_size), dst_size);
-    // Subrect resize test: missing top row in source.
-    RunTransformRGBToYV12Test(
-        src_bitmap, gfx::Rect(0, 1, params.src_width, params.src_height - 1),
-        dst_size);
-    // Subrect resize test: missing left column in source.
-    RunTransformRGBToYV12Test(
-        src_bitmap, gfx::Rect(1, 0, params.src_width - 1, params.src_height),
-        dst_size);
-    // Subrect resize test: missing top+bottom rows, and left column in
-    // source.
-    RunTransformRGBToYV12Test(
-        src_bitmap,
-        gfx::Rect(1, 1, params.src_width - 1, params.src_height - 2),
-        dst_size);
-    // Subrect resize test: missing top row, and left+right columns in source.
-    RunTransformRGBToYV12Test(
-        src_bitmap,
-        gfx::Rect(1, 1, params.src_width - 2, params.src_height - 1),
-        dst_size);
+    shader_program_cache()->SetOutputFormatForTesting(kOutputFormats[i]);
+
+    for (size_t j = 0; j < arraysize(kTestParameters); ++j) {
+      SCOPED_TRACE(::testing::Message() << "kTestParameters[" << j << ']');
+
+      const TestParameters& params = kTestParameters[j];
+      const gfx::Size src_size(params.src_width, params.src_height);
+      const gfx::Size dst_size(params.scaled_width, params.scaled_height);
+      const SkBitmap src_bitmap = GenerateTestPatternBitmap(src_size);
+
+      // Full texture resize test.
+      RunTransformRGBToYV12Test(src_bitmap, gfx::Rect(src_size), dst_size);
+      // Subrect resize test: missing top row in source.
+      RunTransformRGBToYV12Test(
+          src_bitmap, gfx::Rect(0, 1, params.src_width, params.src_height - 1),
+          dst_size);
+      // Subrect resize test: missing left column in source.
+      RunTransformRGBToYV12Test(
+          src_bitmap, gfx::Rect(1, 0, params.src_width - 1, params.src_height),
+          dst_size);
+      // Subrect resize test: missing top+bottom rows, and left column in
+      // source.
+      RunTransformRGBToYV12Test(
+          src_bitmap,
+          gfx::Rect(1, 1, params.src_width - 1, params.src_height - 2),
+          dst_size);
+      // Subrect resize test: missing top row, and left+right columns in source.
+      RunTransformRGBToYV12Test(
+          src_bitmap,
+          gfx::Rect(1, 1, params.src_width - 2, params.src_height - 1),
+          dst_size);
+    }
   }
 }
 

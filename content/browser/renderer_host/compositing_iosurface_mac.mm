@@ -173,6 +173,7 @@ CompositingIOSurfaceMac::CopyContext::CopyContext(
     const scoped_refptr<CompositingIOSurfaceContext>& context)
   : transformer(new CompositingIOSurfaceTransformer(
         GL_TEXTURE_RECTANGLE_ARB, true, context->shader_program_cache())),
+    output_readback_format(GL_BGRA),
     num_outputs(0),
     fence(0),
     cycles_elapsed(0) {
@@ -744,7 +745,13 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
   DCHECK_NE(bitmap_output != NULL, video_frame_output.get() != NULL);
   DCHECK(!done_callback.is_null());
 
-  const bool async_copy = IsAsynchronousReadbackSupported();
+  // SWIZZLE_RGBA_FOR_ASYNC_READPIXELS workaround: Fall-back to synchronous
+  // readback for SkBitmap output since the Blit shader program doesn't support
+  // switchable output formats.
+  const bool require_sync_copy_for_workaround = bitmap_output &&
+      context_->shader_program_cache()->rgb_to_yv12_output_format() == GL_RGBA;
+  const bool async_copy = !require_sync_copy_for_workaround &&
+      IsAsynchronousReadbackSupported();
   TRACE_EVENT2(
       "browser", "CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext",
       "output", bitmap_output ? "SkBitmap (ARGB)" : "VideoFrame (YV12)",
@@ -780,6 +787,7 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
     if (copy_context->transformer->ResizeBilinear(
             texture_, src_rect, dst_pixel_rect.size(),
             &copy_context->output_textures[0])) {
+      copy_context->output_readback_format = GL_BGRA;
       copy_context->num_outputs = 1;
       copy_context->output_texture_sizes[0] = dst_pixel_rect.size();
     }
@@ -791,6 +799,8 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
             &copy_context->output_textures[2],
             &copy_context->output_texture_sizes[0],
             &copy_context->output_texture_sizes[1])) {
+      copy_context->output_readback_format =
+          context_->shader_program_cache()->rgb_to_yv12_output_format();
       copy_context->num_outputs = 3;
       copy_context->output_texture_sizes[2] =
           copy_context->output_texture_sizes[1];
@@ -851,7 +861,8 @@ void CompositingIOSurfaceMac::AsynchronousReadbackForCopy(
     glReadPixels(0, 0,
                  copy_context->output_texture_sizes[i].width(),
                  copy_context->output_texture_sizes[i].height(),
-                 GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
+                 copy_context->output_readback_format,
+                 GL_UNSIGNED_INT_8_8_8_8_REV, 0);
     CHECK_AND_SAVE_GL_ERROR();
   }
 
@@ -993,8 +1004,9 @@ bool CompositingIOSurfaceMac::SynchronousReadbackForCopy(
     glReadPixels(0, 0,
                  copy_context->output_texture_sizes[i].width(),
                  copy_context->output_texture_sizes[i].height(),
-                 GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
-                 buf); CHECK_AND_SAVE_GL_ERROR();
+                 copy_context->output_readback_format,
+                 GL_UNSIGNED_INT_8_8_8_8_REV, buf);
+    CHECK_AND_SAVE_GL_ERROR();
     if (video_frame_output.get()) {
       if (!temp_readback_buffer) {
         // Apply letterbox black-out around view region.

@@ -11,18 +11,27 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 
 namespace content {
 
 namespace {
 
 // Convenience macro allowing GLSL programs to be specified inline, and to be
-// automatically converted into string form by the C preprocessor.  As required
-// by the spec, add the version directive to the beginning of each program to
-// activate the expected syntax and built-in features.  GLSL version 1.2 is the
-// latest version supported by MacOS 10.6.
-#define GLSL_PROGRAM_AS_STRING(shader_code) "#version 120\n" #shader_code
+// automatically converted into string form by the C preprocessor.
+#define GLSL_PROGRAM_AS_STRING(shader_code) #shader_code
 
+// As required by the spec, add the version directive to the beginning of each
+// program to activate the expected syntax and built-in features.  GLSL version
+// 1.2 is the latest version supported by MacOS 10.6.
+const char kVersionDirective[] = "#version 120\n";
+
+// Allow switchable output swizzling from RGBToYV12 fragment shaders (needed for
+// workaround; see comments in CompositingIOSurfaceShaderPrograms ctor).
+const char kOutputSwizzleMacroNormal[] = "#define OUTPUT_PIXEL_ORDERING bgra\n";
+const char kOutputSwizzleMacroSwapRB[] = "#define OUTPUT_PIXEL_ORDERING rgba\n";
 
 // Only the bare-bones calculations here for speed.
 const char kvsBlit[] = GLSL_PROGRAM_AS_STRING(
@@ -144,8 +153,7 @@ const char kRGBtoYV12_fsConvertRGBtoY8UV44[] = GLSL_PROGRAM_AS_STRING(
       vec2 vv = vec2(dot(blended_pixel0, rgb_to_v),
                      dot(blended_pixel1, rgb_to_v)) / 2.0;
 
-      // Note: Packaging the result to account for BGRA byte ordering.
-      gl_FragData[0] = yyyy.bgra;
+      gl_FragData[0] = yyyy.OUTPUT_PIXEL_ORDERING;
       gl_FragData[1] = vec4(uu, vv) + uv_bias;
     }
 );
@@ -178,9 +186,8 @@ const char kRGBtoYV12_fsConvertUV44toU2V2[] = GLSL_PROGRAM_AS_STRING(
       // sampler takes care of that.
       vec4 lo_uuvv = texture2DRect(texture_, texture_coord0);
       vec4 hi_uuvv = texture2DRect(texture_, texture_coord1);
-      // Note: Packaging the result to account for BGRA byte ordering.
-      gl_FragData[0] = vec4(lo_uuvv.rg, hi_uuvv.rg).bgra;
-      gl_FragData[1] = vec4(lo_uuvv.ba, hi_uuvv.ba).bgra;
+      gl_FragData[0] = vec4(lo_uuvv.rg, hi_uuvv.rg).OUTPUT_PIXEL_ORDERING;
+      gl_FragData[1] = vec4(lo_uuvv.ba, hi_uuvv.ba).OUTPUT_PIXEL_ORDERING;
     }
 );
 
@@ -219,7 +226,8 @@ const char* kFragmentShaderSourceCodeMap[] = {
   kRGBtoYV12_fsConvertUV44toU2V2,
 };
 
-GLuint CompileShaderGLSL(ShaderProgram shader_program, GLenum shader_type) {
+GLuint CompileShaderGLSL(ShaderProgram shader_program, GLenum shader_type,
+                         bool output_swap_rb) {
   TRACE_EVENT2("gpu", "CompileShaderGLSL",
                "program", shader_program,
                "type", shader_type == GL_VERTEX_SHADER ? "vertex" : "fragment");
@@ -231,11 +239,21 @@ GLuint CompileShaderGLSL(ShaderProgram shader_program, GLenum shader_type) {
   DCHECK_NE(shader, 0u);
 
   // Select and compile the shader program source code.
-  glShaderSource(shader,
-                 1,
-                 (shader_type == GL_VERTEX_SHADER ? kVertexShaderSourceCodeMap :
-                      kFragmentShaderSourceCodeMap) + shader_program,
-                 NULL);
+  if (shader_type == GL_VERTEX_SHADER) {
+    const GLchar* source_snippets[] = {
+      kVersionDirective,
+      kVertexShaderSourceCodeMap[shader_program],
+    };
+    glShaderSource(shader, arraysize(source_snippets), source_snippets, NULL);
+  } else {
+    DCHECK(shader_type == GL_FRAGMENT_SHADER);
+    const GLchar* source_snippets[] = {
+      kVersionDirective,
+      output_swap_rb ? kOutputSwizzleMacroSwapRB : kOutputSwizzleMacroNormal,
+      kFragmentShaderSourceCodeMap[shader_program],
+    };
+    glShaderSource(shader, arraysize(source_snippets), source_snippets, NULL);
+  }
   glCompileShader(shader);
 
   // Check for successful compilation.  On error in debug builds, pull the info
@@ -265,12 +283,14 @@ GLuint CompileShaderGLSL(ShaderProgram shader_program, GLenum shader_type) {
   return shader;
 }
 
-GLuint CompileAndLinkProgram(ShaderProgram which) {
+GLuint CompileAndLinkProgram(ShaderProgram which, bool output_swap_rb) {
   TRACE_EVENT1("gpu", "CompileAndLinkProgram", "program", which);
 
   // Compile and link a new shader program.
-  const GLuint vertex_shader = CompileShaderGLSL(which, GL_VERTEX_SHADER);
-  const GLuint fragment_shader = CompileShaderGLSL(which, GL_FRAGMENT_SHADER);
+  const GLuint vertex_shader =
+      CompileShaderGLSL(which, GL_VERTEX_SHADER, false);
+  const GLuint fragment_shader =
+      CompileShaderGLSL(which, GL_FRAGMENT_SHADER, output_swap_rb);
   const GLuint program = glCreateProgram();
   DCHECK_NE(program, 0u);
   glAttachShader(program, vertex_shader);
@@ -295,7 +315,8 @@ GLuint CompileAndLinkProgram(ShaderProgram which) {
 }  // namespace
 
 
-CompositingIOSurfaceShaderPrograms::CompositingIOSurfaceShaderPrograms() {
+CompositingIOSurfaceShaderPrograms::CompositingIOSurfaceShaderPrograms()
+    : rgb_to_yv12_output_format_(GL_BGRA) {
   COMPILE_ASSERT(kNumShaderPrograms == NUM_SHADER_PROGRAMS,
                  header_constant_disagrees_with_enum);
   COMPILE_ASSERT(arraysize(kVertexShaderSourceCodeMap) == NUM_SHADER_PROGRAMS,
@@ -308,6 +329,22 @@ CompositingIOSurfaceShaderPrograms::CompositingIOSurfaceShaderPrograms() {
     texture_var_locations_[i] = -1;
   for (size_t i = 0; i < arraysize(texel_scale_x_var_locations_); ++i)
     texel_scale_x_var_locations_[i] = -1;
+
+  // Look for the swizzle_rgba_for_async_readpixels driver bug workaround and
+  // modify rgb_to_yv12_output_format_ if necessary.
+  // See: http://crbug.com/265115
+  GpuDataManagerImpl* const manager = GpuDataManagerImpl::GetInstance();
+  if (manager) {
+    base::ListValue workarounds;
+    manager->GetDriverBugWorkarounds(&workarounds);
+    base::ListValue::const_iterator it = workarounds.Find(
+        base::StringValue(gpu::GpuDriverBugWorkaroundTypeToString(
+            gpu::SWIZZLE_RGBA_FOR_ASYNC_READPIXELS)));
+    if (it != workarounds.end())
+      rgb_to_yv12_output_format_ = GL_RGBA;
+  }
+  DVLOG(1) << "Using RGBToYV12 fragment shader output format: "
+           << (rgb_to_yv12_output_format_ == GL_BGRA ? "BGRA" : "RGBA");
 }
 
 CompositingIOSurfaceShaderPrograms::~CompositingIOSurfaceShaderPrograms() {
@@ -371,10 +408,17 @@ bool CompositingIOSurfaceShaderPrograms::UseRGBToYV12Program(
   return true;
 }
 
+void CompositingIOSurfaceShaderPrograms::SetOutputFormatForTesting(
+    GLenum format) {
+  rgb_to_yv12_output_format_ = format;
+  Reset();
+}
+
 GLuint CompositingIOSurfaceShaderPrograms::GetShaderProgram(int which) {
   if (shader_programs_[which] == 0u) {
     shader_programs_[which] =
-        CompileAndLinkProgram(static_cast<ShaderProgram>(which));
+        CompileAndLinkProgram(static_cast<ShaderProgram>(which),
+                              rgb_to_yv12_output_format_ == GL_RGBA);
     DCHECK_NE(shader_programs_[which], 0u)
         << "Failed to create ShaderProgram " << which;
   }

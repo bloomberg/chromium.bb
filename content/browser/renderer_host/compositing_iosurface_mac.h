@@ -203,6 +203,7 @@ class CompositingIOSurfaceMac {
     void PrepareForAsynchronousReadback();
 
     const scoped_ptr<CompositingIOSurfaceTransformer> transformer;
+    GLenum output_readback_format;
     int num_outputs;
     GLuint output_textures[3];  // Not owned.
     // Note: For YUV, the |output_texture_sizes| widths are in terms of 4-byte
