@@ -323,7 +323,7 @@ void DocumentStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool c
 
 void DocumentStyleSheetCollection::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
 {
-    TreeScope* treeScope = node->treeScope();
+    TreeScope* treeScope = scopingNode ? scopingNode->treeScope() : m_document;
     StyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
     ASSERT(collection);
     collection->removeStyleSheetCandidateNode(node, scopingNode);
