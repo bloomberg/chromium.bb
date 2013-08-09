@@ -431,11 +431,12 @@ static void TestGettingRegisterSnapshotInSyscallContextSwitch(
       RegsUnsetNonCalleeSavedRegisters(&regs);
     }
     /*
-     * TODO(mseaborn): Enable the RegsAssertEqual() check for ARM/MIPS
+     * TODO(mseaborn): Enable the RegsAssertEqual() check for MIPS
      * once NaClGetRegistersForContextSwitch() is implemented for
-     * those architectures.
+     * MIPS.
      */
-    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86) {
+    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 ||
+        NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm) {
       RegsAssertEqual(&regs, &test_shm->expected_regs);
     }
 
