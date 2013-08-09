@@ -123,9 +123,11 @@
 #include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ImageLoader.h"
 #include "core/loader/Prerenderer.h"
 #include "core/loader/TextResourceDecoder.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -408,8 +410,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_markers(adoptPtr(new DocumentMarkerController))
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
     , m_cssTarget(0)
-    , m_processingLoadEvent(false)
-    , m_loadEventFinished(false)
+    , m_loadEventProgress(LoadEventNotRun)
     , m_startTime(currentTime())
     , m_overMinimumLayoutThreshold(false)
     , m_scriptRunner(ScriptRunner::create(this))
@@ -2083,6 +2084,8 @@ void Document::open(Document* ownerDocument)
 
     if (m_frame)
         m_frame->loader()->didExplicitOpen();
+    if (m_loadEventProgress != LoadEventInProgress && m_loadEventProgress != UnloadEventInProgress)
+        m_loadEventProgress = LoadEventNotRun;
 }
 
 void Document::detachParser()
@@ -2214,7 +2217,11 @@ void Document::implicitClose()
     }
 
     bool wasLocationChangePending = frame() && frame()->navigationScheduler()->locationChangePending();
-    bool doload = !parsing() && m_parser && !m_processingLoadEvent && !wasLocationChangePending;
+    bool doload = !parsing() && m_parser && !processingLoadEvent() && !wasLocationChangePending;
+
+    // If the load was blocked because of a pending location change and the location change triggers a same document
+    // navigation, don't fire load events after the same document navigation completes (unless there's an explicit open).
+    m_loadEventProgress = LoadEventTried;
 
     if (!doload)
         return;
@@ -2223,7 +2230,7 @@ void Document::implicitClose()
     // attached Document) to be destroyed.
     RefPtr<DOMWindow> protect(this->domWindow());
 
-    m_processingLoadEvent = true;
+    m_loadEventProgress = LoadEventInProgress;
 
     ScriptableDocumentParser* parser = scriptableDocumentParser();
     m_wellFormed = parser && parser->wellFormed();
@@ -2255,12 +2262,14 @@ void Document::implicitClose()
     enqueuePageshowEvent(PageshowEventNotPersisted);
     enqueuePopstateEvent(m_pendingStateObject ? m_pendingStateObject.release() : SerializedScriptValue::nullValue());
 
-    if (f)
-        f->loader()->handledOnloadEvents();
+    if (frame()) {
+        frame()->loader()->client()->dispatchDidHandleOnloadEvents();
+        loader()->applicationCacheHost()->stopDeferringEvents();
+    }
 
     // An event handler may have removed the frame
     if (!frame()) {
-        m_processingLoadEvent = false;
+        m_loadEventProgress = LoadEventCompleted;
         return;
     }
 
@@ -2271,12 +2280,11 @@ void Document::implicitClose()
     if (frame()->navigationScheduler()->locationChangePending() && elapsedTime() < cLayoutScheduleThreshold) {
         // Just bail out. Before or during the onload we were shifted to another page.
         // The old i-Bench suite does this. When this happens don't bother painting or laying out.
-        m_processingLoadEvent = false;
+        m_loadEventProgress = LoadEventCompleted;
         view()->unscheduleRelayout();
         return;
     }
 
-    frame()->loader()->checkCallImplicitClose();
     RenderObject* renderObject = renderer();
 
     // We used to force a synchronous display and flush here.  This really isn't
@@ -2291,7 +2299,7 @@ void Document::implicitClose()
             view()->layout();
     }
 
-    m_processingLoadEvent = false;
+    m_loadEventProgress = LoadEventCompleted;
 
     if (f && renderObject && AXObjectCache::accessibilityEnabled()) {
         // The AX cache may have been cleared at this point, but we need to make sure it contains an
@@ -3512,7 +3520,6 @@ void Document::dispatchWindowLoadEvent()
     if (!domWindow)
         return;
     domWindow->dispatchLoadEvent();
-    m_loadEventFinished = true;
 }
 
 void Document::addMutationEventListenerTypeIfEnabled(ListenerType listenerType)

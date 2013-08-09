@@ -101,7 +101,6 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_isStopping(false)
     , m_isClientRedirect(false)
     , m_replacesCurrentHistoryItem(false)
-    , m_wasOnloadHandled(false)
     , m_loadingMainResource(false)
     , m_timeOfLastDataReceived(0.0)
     , m_identifierForLoadWithoutResourceLoader(0)
@@ -977,12 +976,6 @@ void DocumentLoader::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loa
     checkLoadComplete();
     if (Frame* frame = m_frame)
         frame->loader()->checkLoadComplete();
-}
-
-void DocumentLoader::handledOnloadEvents()
-{
-    m_wasOnloadHandled = true;
-    applicationCacheHost()->stopDeferringEvents();
 }
 
 DocumentWriter* DocumentLoader::beginWriting(const String& mimeType, const String& encoding, const KURL& url)

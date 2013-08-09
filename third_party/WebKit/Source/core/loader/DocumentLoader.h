@@ -119,8 +119,6 @@ namespace WebCore {
         void setIsClientRedirect(bool isClientRedirect) { m_isClientRedirect = isClientRedirect; }
         bool replacesCurrentHistoryItem() const { return m_replacesCurrentHistoryItem; }
         void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) { m_replacesCurrentHistoryItem = replacesCurrentHistoryItem; }
-        void handledOnloadEvents();
-        bool wasOnloadHandled() { return m_wasOnloadHandled; }
         bool isLoadingInAPISense() const;
         void setTitle(const StringWithDirection&);
         const String& overrideEncoding() const { return m_overrideEncoding; }
@@ -252,10 +250,6 @@ namespace WebCore {
         bool m_isStopping;
         bool m_isClientRedirect;
         bool m_replacesCurrentHistoryItem;
-
-        // FIXME: Document::m_processingLoadEvent and DocumentLoader::m_wasOnloadHandled are roughly the same
-        // and should be merged.
-        bool m_wasOnloadHandled;
 
         StringWithDirection m_pageTitle;
 

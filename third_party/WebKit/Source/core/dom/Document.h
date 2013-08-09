@@ -909,8 +909,20 @@ public:
 
     void statePopped(PassRefPtr<SerializedScriptValue>);
 
-    bool processingLoadEvent() const { return m_processingLoadEvent; }
-    bool loadEventFinished() const { return m_loadEventFinished; }
+    enum LoadEventProgress {
+        LoadEventNotRun,
+        LoadEventTried,
+        LoadEventInProgress,
+        LoadEventCompleted,
+        UnloadEventInProgress,
+        UnloadEventHandled
+    };
+    bool loadEventStillNeeded() const { return m_loadEventProgress == LoadEventNotRun; }
+    bool processingLoadEvent() const { return m_loadEventProgress == LoadEventInProgress; }
+    bool loadEventFinished() const { return m_loadEventProgress >= LoadEventCompleted; }
+    bool unloadEventStillNeeded() const { return m_loadEventProgress >= LoadEventTried && m_loadEventProgress <= UnloadEventInProgress; }
+    void unloadEventStarted() { m_loadEventProgress = UnloadEventInProgress; }
+    void unloadEventWasHandled() { m_loadEventProgress = UnloadEventHandled; }
 
     virtual bool isContextThread() const;
     virtual bool isJSExecutionForbidden() const { return false; }
@@ -1234,12 +1246,7 @@ private:
 
     Element* m_cssTarget;
 
-    // FIXME: Merge these 2 variables into an enum. Also, FrameLoader::m_didCallImplicitClose
-    // is almost a duplication of this data, so that should probably get merged in too.
-    // FIXME: Document::m_processingLoadEvent and DocumentLoader::m_wasOnloadHandled are roughly the same
-    // and should be merged.
-    bool m_processingLoadEvent;
-    bool m_loadEventFinished;
+    LoadEventProgress m_loadEventProgress;
 
     RefPtr<SerializedScriptValue> m_pendingStateObject;
     double m_startTime;

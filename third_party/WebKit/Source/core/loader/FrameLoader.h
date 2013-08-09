@@ -174,7 +174,6 @@ public:
 
     void receivedFirstData();
 
-    void handledOnloadEvents();
     String userAgent(const KURL&) const;
 
     void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*);
@@ -192,8 +191,6 @@ public:
     void setOpener(Frame*);
 
     void resetMultipleFormSubmissionProtection();
-
-    void checkCallImplicitClose();
 
     void frameDetached();
 
@@ -319,8 +316,6 @@ private:
 
     String m_outgoingReferrer;
 
-    bool m_didCallImplicitClose;
-    bool m_wasUnloadEventEmitted;
     PageDismissalType m_pageDismissalEventBeingDispatched;
     bool m_isComplete;
 

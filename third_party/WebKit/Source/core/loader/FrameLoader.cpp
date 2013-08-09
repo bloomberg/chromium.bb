@@ -160,8 +160,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_state(FrameStateProvisional)
     , m_loadType(FrameLoadTypeStandard)
     , m_inStopAllLoaders(false)
-    , m_didCallImplicitClose(true)
-    , m_wasUnloadEventEmitted(false)
     , m_pageDismissalEventBeingDispatched(NoDismissal)
     , m_isComplete(false)
     , m_containsPlugins(false)
@@ -288,7 +286,8 @@ void FrameLoader::stopLoading(UnloadEventPolicy unloadEventPolicy)
 
     if (unloadEventPolicy != UnloadEventPolicyNone) {
         if (m_frame->document()) {
-            if (m_didCallImplicitClose && !m_wasUnloadEventEmitted) {
+            if (m_frame->document()->unloadEventStillNeeded()) {
+                m_frame->document()->unloadEventStarted();
                 Element* currentFocusedElement = m_frame->document()->focusedElement();
                 if (currentFocusedElement && currentFocusedElement->hasTagName(inputTag))
                     toHTMLInputElement(currentFocusedElement)->endEditing();
@@ -314,9 +313,10 @@ void FrameLoader::stopLoading(UnloadEventPolicy unloadEventPolicy)
                     }
                 }
                 m_pageDismissalEventBeingDispatched = NoDismissal;
-                if (m_frame->document())
+                if (m_frame->document()) {
                     m_frame->document()->updateStyleIfNeeded();
-                m_wasUnloadEventEmitted = true;
+                    m_frame->document()->unloadEventWasHandled();
+                }
             }
         }
 
@@ -332,7 +332,6 @@ void FrameLoader::stopLoading(UnloadEventPolicy unloadEventPolicy)
     }
 
     m_isComplete = true; // to avoid calling completed() in finishedParsing()
-    m_didCallImplicitClose = true; // don't want that one either
 
     if (m_frame->document() && m_frame->document()->parsing()) {
         finishedParsing();
@@ -379,7 +378,6 @@ bool FrameLoader::closeURL()
 void FrameLoader::didExplicitOpen()
 {
     m_isComplete = false;
-    m_didCallImplicitClose = false;
 
     // Calling document.open counts as committing the first real document load.
     if (!m_stateMachine.committedFirstRealDocumentLoad())
@@ -476,7 +474,6 @@ void FrameLoader::didBeginDocument(bool dispatch)
 {
     m_needsClear = true;
     m_isComplete = false;
-    m_didCallImplicitClose = false;
     m_frame->document()->setReadyState(Document::Loading);
 
     if (history()->currentItem() && m_loadType == FrameLoadTypeBackForward)
@@ -589,8 +586,8 @@ void FrameLoader::checkCompleted()
     m_isComplete = true;
     m_requestedHistoryItem = 0;
     m_frame->document()->setReadyState(Document::Complete);
-
-    checkCallImplicitClose(); // if we didn't do it before
+    if (m_frame->document()->loadEventStillNeeded())
+        m_frame->document()->implicitClose();
 
     m_frame->navigationScheduler()->startTimer();
 
@@ -635,19 +632,6 @@ void FrameLoader::scheduleCheckLoadComplete()
 {
     m_shouldCallCheckLoadComplete = true;
     startCheckCompleteTimer();
-}
-
-void FrameLoader::checkCallImplicitClose()
-{
-    if (m_didCallImplicitClose || m_frame->document()->parsing() || m_frame->document()->isDelayingLoadEvent())
-        return;
-
-    if (!allChildrenAreComplete())
-        return; // still got a frame running -> too early
-
-    m_didCallImplicitClose = true;
-    m_wasUnloadEventEmitted = false;
-    m_frame->document()->implicitClose();
 }
 
 String FrameLoader::outgoingReferrer() const
@@ -740,7 +724,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     // Generate start and stop notifications only when loader is completed so that we
     // don't fire them for fragment redirection that happens in window.onload handler.
     // See https://bugs.webkit.org/show_bug.cgi?id=31838
-    if (m_documentLoader->wasOnloadHandled())
+    if (m_frame->document()->loadEventFinished())
         m_client->postProgressStartedNotification();
 
     m_documentLoader->clearRedirectChain();
@@ -750,7 +734,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
 
     m_client->dispatchDidNavigateWithinPage();
 
-    if (m_documentLoader->wasOnloadHandled())
+    if (m_frame->document()->loadEventFinished())
         m_client->postProgressFinishedNotification();
 }
 
@@ -1137,7 +1121,6 @@ void FrameLoader::commitProvisionalLoad()
         window->setStatus(String());
         window->setDefaultStatus(String());
     }
-    m_didCallImplicitClose = false;
     started();
 }
 
@@ -1322,14 +1305,6 @@ String FrameLoader::userAgent(const KURL& url) const
     String userAgent = m_client->userAgent(url);
     InspectorInstrumentation::applyUserAgentOverride(m_frame, &userAgent);
     return userAgent;
-}
-
-void FrameLoader::handledOnloadEvents()
-{
-    m_client->dispatchDidHandleOnloadEvents();
-
-    if (documentLoader())
-        documentLoader()->handledOnloadEvents();
 }
 
 void FrameLoader::frameDetached()

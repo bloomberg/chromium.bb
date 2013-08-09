@@ -140,7 +140,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     RefPtr<Frame> childFrame = parentFrame->loader()->client()->createFrame(url, frameName, this, referrer, allowScrollingInContentFrame(), marginWidth(), marginHeight());
 
     if (!childFrame)  {
-        parentFrame->loader()->checkCallImplicitClose();
+        parentFrame->loader()->checkCompleted();
         return false;
     }
 
@@ -156,8 +156,6 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     FrameView* view = childFrame->view();
     if (renderObject && renderObject->isWidget() && view)
         toRenderWidget(renderObject)->setWidget(view);
-
-    parentFrame->loader()->checkCallImplicitClose();
 
     // Some loads are performed synchronously (e.g., about:blank and loads
     // cancelled by returning a null ResourceRequest from requestFromDelegate).

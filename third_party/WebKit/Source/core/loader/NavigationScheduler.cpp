@@ -313,7 +313,7 @@ bool NavigationScheduler::mustLockBackForwardList(Frame* targetFrame)
 {
     // Non-user navigation before the page has finished firing onload should not create a new back/forward item.
     // See https://webkit.org/b/42861 for the original motivation for this.
-    if (!ScriptController::processingUserGesture() && targetFrame->loader()->documentLoader() && !targetFrame->loader()->documentLoader()->wasOnloadHandled())
+    if (!ScriptController::processingUserGesture() && !targetFrame->document()->loadEventFinished())
         return true;
 
     // Navigation of a subframe during loading of an ancestor frame does not create a new back/forward item.
