@@ -1,41 +1,17 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
- <head>
+<!DOCTYPE html>
+<script src="../js/resources/js-test-pre.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
+
+description('This test checks that custom data on reachable DOM nodes is not lost during GC.');
+
+var xmlDoc = document.implementation.createDocument('', 'doc', null);
+var xmlNode = xmlDoc.documentElement;
+xmlNode.ownerDocument.data = 1;
+xmlDoc = null;
+
+gc();
+
+shouldBe('xmlNode.ownerDocument.data', '1');
+
 </script>
-  <script type="text/javascript">
-    var xmlNode = null;
-
-    loadData();
-    setTimeout("testData()", 0);
-
-    function testData() {
-        var i = 0;
-        var s;
-        while (i < 5000) {
-            i = i+1.11;
-            s = s + " ";
-        }
-        
-        document.write(xmlNode.ownerDocument.data ? "<p>SUCCESS</p>" : "<p>FAILURE</p>");
-        if (window.testRunner)
-             testRunner.notifyDone();
-    }
-
-    function loadData() {
-        var xmlDoc = document.implementation.createDocument("", "doc", null);
-        if (!xmlDoc.documentElement)
-            xmlDoc.appendChild(document.createElement("doc"));
-        xmlNode = xmlDoc.documentElement;
-        xmlNode.ownerDocument.data = 1;
-     }
-  </script>
- </head>
- <body>
-This test checks that custom data on reachable DOM nodes is not lost during GC. If it passes, it should say SUCCESS below.
- </body>
-</html>
+<script src="../js/resources/js-test-post.js"></script>
