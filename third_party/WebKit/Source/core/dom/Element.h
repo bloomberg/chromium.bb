@@ -49,6 +49,7 @@ class Element;
 class ElementRareData;
 class ElementShadow;
 class ExceptionState;
+class HTMLDocument;
 class Image;
 class InputMethodContext;
 class IntSize;
@@ -720,9 +721,12 @@ private:
     void synchronizeAttribute(const QualifiedName&) const;
     void synchronizeAttribute(const AtomicString& localName) const;
 
-    void updateId(const AtomicString& oldId, const AtomicString& newId);
-    void updateId(TreeScope*, const AtomicString& oldId, const AtomicString& newId);
     void updateName(const AtomicString& oldName, const AtomicString& newName);
+    void updateNameForTreeScope(TreeScope*, const AtomicString& oldName, const AtomicString& newName);
+    void updateNameForDocument(HTMLDocument*, const AtomicString& oldName, const AtomicString& newName);
+    void updateId(const AtomicString& oldId, const AtomicString& newId);
+    void updateIdForTreeScope(TreeScope*, const AtomicString& oldId, const AtomicString& newId);
+    void updateIdForDocument(HTMLDocument*, const AtomicString& oldId, const AtomicString& newId);
     void updateLabel(TreeScope*, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue);
 
     void scrollByUnits(int units, ScrollGranularity);
