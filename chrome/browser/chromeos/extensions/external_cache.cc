@@ -34,10 +34,12 @@ const char kCRXFileExtension[] = ".crx";
 
 ExternalCache::ExternalCache(const std::string& cache_dir,
                              net::URLRequestContextGetter* request_context,
-                             Delegate* delegate)
+                             Delegate* delegate,
+                             bool always_check_updates)
     : cache_dir_(cache_dir),
       request_context_(request_context),
       delegate_(delegate),
+      always_check_updates_(always_check_updates),
       cached_extensions_(new base::DictionaryValue()),
       weak_ptr_factory_(this),
       worker_pool_token_(
@@ -54,7 +56,17 @@ ExternalCache::~ExternalCache() {
 void ExternalCache::UpdateExtensionsList(
     scoped_ptr<base::DictionaryValue> prefs) {
   extensions_ = prefs.Pass();
-  CheckCacheNow();
+  if (extensions_->empty()) {
+    // Don't check cache and clear it if there are no extensions in the list.
+    // It is important case because login to supervised user shouldn't clear
+    // cache for normal users.
+    // TODO(dpolukhin): introduce reference counting to preserve cache elements
+    // when they are not needed for current user but needed for other users.
+    cached_extensions_->Clear();
+    UpdateExtensionLoader();
+  } else {
+    CheckCacheNow();
+  }
 }
 
 void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
@@ -78,9 +90,12 @@ void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
       UpdateExtensionLoader();
 
       // The file will be downloaded again on the next restart.
-      content::BrowserThread::PostTask(
-          content::BrowserThread::FILE, FROM_HERE,
-          base::Bind(base::IgnoreResult(base::DeleteFile), path, true));
+      if (base::FilePath(cache_dir_).IsParent(path)) {
+        // Don't delete files out of cache_dir_.
+        content::BrowserThread::PostTask(
+            content::BrowserThread::FILE, FROM_HERE,
+            base::Bind(base::IgnoreResult(base::DeleteFile), path, true));
+      }
 
       // Don't try to DownloadMissingExtensions() from here,
       // since it can cause a fail/retry loop.
@@ -202,10 +217,10 @@ void ExternalCache::BlockingCheckCacheInternal(const std::string& cache_dir,
     if (!file_util::CreateDirectory(dir)) {
       LOG(ERROR) << "Failed to create ExternalCache directory at "
                  << dir.value();
-
-      // Nothing else to do. Cache won't be used.
-      return;
     }
+
+    // Nothing else to do. Cache won't be used.
+    return;
   }
 
   // Enumerate all the files in the cache |dir|, including directories
@@ -271,27 +286,35 @@ void ExternalCache::BlockingCheckCacheInternal(const std::string& cache_dir,
       entry->SetString(extensions::ExternalProviderImpl::kExternalVersion,
                        version);
       entry->SetString(extensions::ExternalProviderImpl::kExternalCrx,
-                        path.value());
+                       path.value());
       if (extension_urls::IsWebstoreUpdateUrl(GURL(update_url))) {
         entry->SetBoolean(extensions::ExternalProviderImpl::kIsFromWebstore,
-                         true);
+                          true);
       }
     } else if (
         entry->GetString(extensions::ExternalProviderImpl::kExternalVersion,
                          &prev_version_string) &&
         entry->GetString(extensions::ExternalProviderImpl::kExternalCrx,
                          &prev_crx)) {
-      LOG(ERROR) << "Found two ExternalCache files for the same extension, "
-                    "will erase the oldest version";
       Version prev_version(prev_version_string);
       Version curr_version(version);
       DCHECK(prev_version.IsValid());
       DCHECK(curr_version.IsValid());
-      if (prev_version.CompareTo(curr_version) < 0) {
-        base::DeleteFile(base::FilePath(prev_crx), true /* recursive */);
+      if (prev_version.CompareTo(curr_version) <= 0) {
+        VLOG(1) << "ExternalCache found old cached version "
+                << prev_version_string << " path: " << prev_crx;
+        base::FilePath prev_crx_file(prev_crx);
+        if (dir.IsParent(prev_crx_file)) {
+          // Only delete old cached files under cache_dir_ folder.
+          base::DeleteFile(base::FilePath(prev_crx), true /* recursive */);
+        }
+        entry->SetString(extensions::ExternalProviderImpl::kExternalVersion,
+                         version);
         entry->SetString(extensions::ExternalProviderImpl::kExternalCrx,
                          path.value());
       } else {
+        VLOG(1) << "ExternalCache found old cached version "
+                << version << " path: " << path.value();
         base::DeleteFile(path, true /* recursive */);
       }
     } else {
@@ -322,12 +345,18 @@ void ExternalCache::OnCacheUpdated(scoped_ptr<base::DictionaryValue> prefs) {
 
     // Check for updates for all extensions configured except for extensions
     // marked as keep_if_present.
-    std::string update_url;
     if (downloader_ &&
-        !entry->HasKey(extensions::ExternalProviderImpl::kKeepIfPresent) &&
-        entry->GetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                         &update_url)) {
-      downloader_->AddPendingExtension(it.key(), GURL(update_url), 0);
+        !entry->HasKey(extensions::ExternalProviderImpl::kKeepIfPresent)) {
+      GURL update_url;
+      std::string external_update_url;
+      if (entry->GetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+                           &external_update_url)) {
+        update_url = GURL(external_update_url);
+      } else if (always_check_updates_) {
+        update_url = extension_urls::GetWebstoreUpdateUrl();
+      }
+      if (update_url.is_valid())
+        downloader_->AddPendingExtension(it.key(), update_url, 0);
     }
 
     base::DictionaryValue* cached_entry = NULL;
@@ -410,9 +439,7 @@ void ExternalCache::OnCacheEntryInstalled(const std::string& id,
 
   base::DictionaryValue* entry = NULL;
   std::string update_url;
-  if (!extensions_->GetDictionary(id, &entry) ||
-      !entry->GetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                        &update_url)) {
+  if (!extensions_->GetDictionary(id, &entry)) {
     LOG(ERROR) << "ExternalCache cannot find entry for extension " << id;
     return;
   }

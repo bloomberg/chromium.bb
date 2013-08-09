@@ -47,9 +47,12 @@ class ExternalCache : public content::NotificationObserver,
   };
 
   // The |request_context| is used for the update checks.
+  // By default updates are checked for the extensions with external_update_url.
+  // If |always_check_webstore| set, updates will be check for external_crx too.
   ExternalCache(const std::string& cache_dir,
                 net::URLRequestContextGetter* request_context,
-                Delegate* delegate);
+                Delegate* delegate,
+                bool always_check_updates);
   virtual ~ExternalCache();
 
   // Returns already cached extensions.
@@ -149,6 +152,9 @@ class ExternalCache : public content::NotificationObserver,
 
   // Delegate that would like to get notifications about cache updates.
   Delegate* delegate_;
+
+  // Updates needs to be check for the extensions with external_crx too.
+  bool always_check_updates_;
 
   // This is the list of extensions currently configured.
   scoped_ptr<base::DictionaryValue> extensions_;

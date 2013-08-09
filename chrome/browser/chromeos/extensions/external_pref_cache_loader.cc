@@ -38,7 +38,7 @@ void ExternalPrefCacheLoader::LoadFinished() {
   if (!external_cache_.get()) {
     external_cache_.reset(new ExternalCache(kPreinstalledAppsCacheDir,
         g_browser_process->system_request_context(),
-        this));
+        this, true));
   }
 
   external_cache_->UpdateExtensionsList(prefs_.Pass());

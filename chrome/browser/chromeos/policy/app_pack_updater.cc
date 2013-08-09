@@ -66,7 +66,7 @@ AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
     : weak_ptr_factory_(this),
       created_extension_loader_(false),
       install_attributes_(install_attributes),
-      external_cache_(kAppPackCacheDir, request_context, this) {
+      external_cache_(kAppPackCacheDir, request_context, this, false) {
   chromeos::CrosSettings::Get()->AddSettingsObserver(chromeos::kAppPack, this);
 
   if (install_attributes_->GetMode() == DEVICE_MODE_RETAIL_KIOSK) {
