@@ -1,0 +1,28 @@
+Tests that non-standard mixed-cased properties are displayed in the Styles pane.
+
+[expanded] 
+-webkit-font-smoothing: antialiased;
+    #container - antialiased inherited-mixed…perties.html:4
+color: rgb(0, 0, 0);
+    Style Attribute - blAck 
+display: block;
+    div - block user agent stylesheet
+
+[expanded] 
+element.style  { ()
+
+[expanded] 
+div  { (user agent stylesheet)
+display: block;
+
+======== Inherited from div#container ========
+[expanded] 
+Style Attribute  { ()
+CoLoR: blAck;
+
+[expanded] 
+#container  { (inherited-mixed…perties.html:4 -> inherited-mixed-case-properties.html:4:1)
+-webkit-FONT-smoothing: antialiased;
+
+
+
