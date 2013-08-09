@@ -8,8 +8,7 @@
  */
 
 label Chrome {
-  M21 = 1.0,
-  M29 = 1.1
+  M21 = 1.0
 };
 
 // TODO(raymes): This is deprecated by the PPB_Flash_DRM interface. Remove this
@@ -22,7 +21,7 @@ interface PPB_Flash_DeviceID {
    * string in |*id| and will call the completion callback. On failure the
    * given var will be PP_VARTYPE_UNDEFINED.
    */
-  [version=1.0, deprecate=1.1]
+  [version=1.0]
   int32_t GetDeviceID([in] PP_Resource device_id,
                       [out] PP_Var id,
                       [in] PP_CompletionCallback callback);

@@ -2699,8 +2699,6 @@ static int32_t Pnacl_M21_PPB_Flash_DeviceID_GetDeviceID(PP_Resource device_id, s
 
 /* End wrapper methods for PPB_Flash_DeviceID_1_0 */
 
-/* Not generating wrapper methods for PPB_Flash_DeviceID_1_1 */
-
 /* Begin wrapper methods for PPB_Flash_DRM_1_0 */
 
 static PP_Resource Pnacl_M29_PPB_Flash_DRM_Create(PP_Instance instance) {
@@ -4615,8 +4613,6 @@ struct PPB_Flash_DeviceID_1_0 Pnacl_Wrappers_PPB_Flash_DeviceID_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M21_PPB_Flash_DeviceID_Create,
     .GetDeviceID = (int32_t (*)(PP_Resource device_id, struct PP_Var* id, struct PP_CompletionCallback callback))&Pnacl_M21_PPB_Flash_DeviceID_GetDeviceID
 };
-
-/* Not generating wrapper interface for PPB_Flash_DeviceID_1_1 */
 
 struct PPB_Flash_DRM_1_0 Pnacl_Wrappers_PPB_Flash_DRM_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M29_PPB_Flash_DRM_Create,
