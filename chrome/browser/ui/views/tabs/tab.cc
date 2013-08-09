@@ -238,6 +238,10 @@ const int kImmersiveBarHeight = 2;
 const SkColor kImmersiveActiveTabColor = SkColorSetRGB(235, 235, 235);
 const SkColor kImmersiveInactiveTabColor = SkColorSetRGB(190, 190, 190);
 
+// The minimum opacity (out of 1) when a tab (either active or inactive) is
+// throbbing in the immersive mode light strip.
+const double kImmersiveTabMinThrobOpacity = 0.66;
+
 // Number of steps in the immersive mode loading animation.
 const int kImmersiveLoadingStepCount = 32;
 
@@ -1115,9 +1119,13 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
 
 void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
   // Use transparency for the draw-attention animation.
-  int alpha = (tab_animation_ && tab_animation_->is_animating())
-                  ? static_cast<int>(GetThrobValue() * 255)
-                  : 255;
+  int alpha = 255;
+  if (tab_animation_ &&
+      tab_animation_->is_animating() &&
+      !data().mini) {
+    alpha = tab_animation_->CurrentValueBetween(
+        255, static_cast<int>(255 * kImmersiveTabMinThrobOpacity));
+  }
 
   // Draw a gray rectangle to represent the tab. This works for mini-tabs as
   // well as regular ones. The active tab has a brigher bar.
