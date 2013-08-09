@@ -59,7 +59,7 @@ std::string GetMachineStatistic(const std::string& key) {
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
   if (!provider->GetMachineStatistic(key, &value))
-    LOG(WARNING) << "Failed to get machine statistic " << key;
+    return std::string();
 
   return value;
 }
@@ -70,10 +70,8 @@ bool GetMachineFlag(const std::string& key, bool default_value) {
   bool value = default_value;
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  if (!provider->GetMachineFlag(key, &value)) {
-    LOG(WARNING) << "Failed to get machine flag " << key;
+  if (!provider->GetMachineFlag(key, &value))
     return default_value;
-  }
 
   return value;
 }
