@@ -22,7 +22,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
 #include "chrome/browser/component_updater/component_updater_ping_manager.h"
@@ -31,7 +30,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "net/base/escape.h"
@@ -398,11 +396,6 @@ ComponentUpdateService::Status CrxUpdateService::Start() {
 
   NotifyComponentObservers(ComponentObserver::COMPONENT_UPDATER_STARTED, 0);
 
-  content::NotificationService::current()->Notify(
-    chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED,
-    content::Source<ComponentUpdateService>(this),
-    content::NotificationService::NoDetails());
-
   timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(config_->InitialDelay()),
                this, &CrxUpdateService::ProcessPendingItems);
   return kOk;
@@ -439,10 +432,6 @@ void CrxUpdateService::ScheduleNextRun(bool step_delay) {
   if (!step_delay) {
     NotifyComponentObservers(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0);
 
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
-        content::Source<ComponentUpdateService>(this),
-        content::NotificationService::NoDetails());
     // Zero is only used for unit tests.
     if (0 == delay)
       return;
@@ -791,11 +780,6 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
       crx->component.observer->OnEvent(
           ComponentObserver::COMPONENT_UPDATE_FOUND, 0);
     }
-
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND,
-        content::Source<std::string>(&crx->id),
-        content::NotificationService::NoDetails());
   }
 
   // All the components that are not mentioned in the manifest we
@@ -872,11 +856,6 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
       crx->component.observer->OnEvent(
           ComponentObserver::COMPONENT_UPDATE_READY, 0);
     }
-
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_COMPONENT_UPDATE_READY,
-        content::Source<std::string>(&context->id),
-        content::NotificationService::NoDetails());
 
     // Why unretained? See comment at top of file.
     BrowserThread::PostDelayedTask(

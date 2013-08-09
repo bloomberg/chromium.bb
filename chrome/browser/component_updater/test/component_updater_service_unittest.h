@@ -19,7 +19,6 @@
 #include "chrome/browser/component_updater/test/component_patcher_mock.h"
 #include "chrome/browser/component_updater/test/url_request_post_interceptor.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_notification_tracker.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -119,8 +118,6 @@ class ComponentUpdaterTest : public testing::Test {
   // Makes the full path to a component updater test file.
   const base::FilePath test_file(const char* file);
 
-  content::TestNotificationTracker& notification_tracker();
-
   TestConfigurator* test_configurator();
 
   ComponentUpdateService::Status RegisterComponent(CrxComponent* com,
@@ -133,7 +130,6 @@ class ComponentUpdaterTest : public testing::Test {
  private:
   TestConfigurator* test_config_;
   base::FilePath test_data_dir_;
-  content::TestNotificationTracker notification_tracker_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;

@@ -10,11 +10,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/test/test_installer.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/browser/notification_service.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "libxml/globals.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -22,7 +20,6 @@
 #include "url/gurl.h"
 
 using content::BrowserThread;
-using content::TestNotificationTracker;
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -145,18 +142,6 @@ ComponentUpdaterTest::ComponentUpdaterTest()
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII("components");
 
-  // Subscribe to all component updater notifications.
-  const int notifications[] = {
-    chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED,
-    chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
-    chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND,
-    chrome::NOTIFICATION_COMPONENT_UPDATE_READY
-  };
-
-  for (int ix = 0; ix != arraysize(notifications); ++ix) {
-    notification_tracker_.ListenFor(
-        notifications[ix], content::NotificationService::AllSources());
-  }
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   io_thread_.StartIOThread();
@@ -178,10 +163,6 @@ ComponentUpdateService* ComponentUpdaterTest::component_updater() {
   // Makes the full path to a component updater test file.
 const base::FilePath ComponentUpdaterTest::test_file(const char* file) {
   return test_data_dir_.AppendASCII(file);
-}
-
-TestNotificationTracker& ComponentUpdaterTest::notification_tracker() {
-  return notification_tracker_;
 }
 
 TestConfigurator* ComponentUpdaterTest::test_configurator() {
@@ -254,18 +235,14 @@ bool PingChecker::Test(net::URLRequest* request) {
 // be created and destroyed with no side effects.
 TEST_F(ComponentUpdaterTest, VerifyFixture) {
   EXPECT_TRUE(component_updater() != NULL);
-  EXPECT_EQ(0ul, notification_tracker().size());
 }
 
 // Verify that the component updater can be caught in a quick
-// start-shutdown situation. Failure of this test will be a crash. Also
-// if there is no work to do, there are no notifications generated.
+// start-shutdown situation. Failure of this test will be a crash.
 TEST_F(ComponentUpdaterTest, StartStop) {
   component_updater()->Start();
   message_loop_.RunUntilIdle();
   component_updater()->Stop();
-
-  EXPECT_EQ(0ul, notification_tracker().size());
 }
 
 // Verify that when the server has no updates, we go back to sleep and
@@ -300,20 +277,11 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
               .Times(1);
   component_updater()->Start();
 
-  ASSERT_EQ(1ul, notification_tracker().size());
-  TestNotificationTracker::Event ev1 = notification_tracker().at(0);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev1.type);
-
   EXPECT_CALL(observer,
               OnEvent(ComponentObserver::COMPONENT_UPDATER_SLEEPING, 0))
               .Times(2);
   message_loop_.Run();
 
-  ASSERT_EQ(3ul, notification_tracker().size());
-  TestNotificationTracker::Event ev2 = notification_tracker().at(1);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
-  TestNotificationTracker::Event ev3 = notification_tracker().at(2);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
   EXPECT_EQ(2, interceptor.GetHitCount());
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
@@ -327,7 +295,6 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   interceptor.SetResponse(expected_update_url,
                           test_file("updatecheck_reply_empty"));
 
-  notification_tracker().Reset();
   test_configurator()->SetLoopCount(2);
 
   EXPECT_CALL(observer,
@@ -340,13 +307,6 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
               .Times(2);
   message_loop_.Run();
 
-  ASSERT_EQ(3ul, notification_tracker().size());
-  ev1 = notification_tracker().at(0);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev1.type);
-  ev2 = notification_tracker().at(1);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
-  ev3 = notification_tracker().at(2);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
   EXPECT_EQ(4, interceptor.GetHitCount());
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
@@ -356,9 +316,9 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 }
 
 // Verify that we can check for updates and install one component. Besides
-// the notifications above NOTIFICATION_COMPONENT_UPDATE_FOUND and
-// NOTIFICATION_COMPONENT_UPDATE_READY should have been fired. We do two loops
-// so the second time around there should be nothing left to do.
+// the notifications above COMPONENT_UPDATE_FOUND and COMPONENT_UPDATE_READY
+// should have been fired. We do two loops so the second time around there
+// should be nothing left to do.
 // We also check that only 3 non-ping network requests are issued:
 // 1- manifest check
 // 2- download crx
@@ -441,23 +401,6 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   EXPECT_EQ(3, interceptor.GetHitCount());
   EXPECT_EQ(1, ping_checker.NumHits());
   EXPECT_EQ(0, ping_checker.NumMisses());
-
-  ASSERT_EQ(5ul, notification_tracker().size());
-
-  TestNotificationTracker::Event ev0 = notification_tracker().at(0);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
-
-  TestNotificationTracker::Event ev1 = notification_tracker().at(1);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND, ev1.type);
-
-  TestNotificationTracker::Event ev2 = notification_tracker().at(2);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_READY, ev2.type);
-
-  TestNotificationTracker::Event ev3 = notification_tracker().at(3);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
-
-  TestNotificationTracker::Event ev4 = notification_tracker().at(4);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev4.type);
 
   component_updater()->Stop();
 }
@@ -587,23 +530,6 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
 
   EXPECT_EQ(3, interceptor.GetHitCount());
 
-  ASSERT_EQ(5ul, notification_tracker().size());
-
-  TestNotificationTracker::Event ev0= notification_tracker().at(0);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
-
-  TestNotificationTracker::Event ev1 = notification_tracker().at(1);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev1.type);
-
-  TestNotificationTracker::Event ev2 = notification_tracker().at(2);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND, ev2.type);
-
-  TestNotificationTracker::Event ev3 = notification_tracker().at(3);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_READY, ev3.type);
-
-  TestNotificationTracker::Event ev4 = notification_tracker().at(4);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev4.type);
-
   // Also check what happens if previous check too soon.
   test_configurator()->SetOnDemandTime(60 * 60);
   EXPECT_EQ(ComponentUpdateService::kError,
@@ -643,7 +569,6 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   // No update: error from no server response
   interceptor.SetResponse(expected_update_url_3,
                           test_file("updatecheck_reply_empty"));
-  notification_tracker().Reset();
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
   EXPECT_EQ(ComponentUpdateService::kOk,
@@ -651,11 +576,6 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
 
   message_loop_.Run();
 
-  ASSERT_EQ(2ul, notification_tracker().size());
-  ev0 = notification_tracker().at(0);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
-  ev1 = notification_tracker().at(1);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev1.type);
   component_updater()->Stop();
 
   // No update: already updated to 1.0 so nothing new
@@ -682,7 +602,6 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
 
   interceptor.SetResponse(expected_update_url_3,
                           test_file("updatecheck_reply_1.xml"));
-  notification_tracker().Reset();
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
   EXPECT_EQ(ComponentUpdateService::kOk,
@@ -692,11 +611,7 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
 
   EXPECT_EQ(1, ping_checker.NumHits());
   EXPECT_EQ(0, ping_checker.NumMisses());
-  ASSERT_EQ(2ul, notification_tracker().size());
-  ev0 = notification_tracker().at(0);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
-  ev1 = notification_tracker().at(1);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev1.type);
+
   component_updater()->Stop();
 }
 
@@ -790,23 +705,6 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   EXPECT_EQ(0, ping_checker.NumMisses());
   EXPECT_EQ(3, interceptor.GetHitCount());
 
-  ASSERT_EQ(5ul, notification_tracker().size());
-
-  TestNotificationTracker::Event ev0 = notification_tracker().at(0);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
-
-  TestNotificationTracker::Event ev1 = notification_tracker().at(1);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND, ev1.type);
-
-  TestNotificationTracker::Event ev2 = notification_tracker().at(2);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_READY, ev2.type);
-
-  TestNotificationTracker::Event ev3 = notification_tracker().at(3);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
-
-  TestNotificationTracker::Event ev4 = notification_tracker().at(4);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev4.type);
-
   component_updater()->Stop();
 
   // Now re-register, pretending to be an even newer version (2.2)
@@ -849,20 +747,10 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   interceptor.SetResponse(expected_update_url_3,
                           test_file("updatecheck_reply_1.xml"));
 
-  notification_tracker().Reset();
-
   // Loop once just to notice the check happening with the re-register version.
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
   message_loop_.Run();
-
-  ASSERT_EQ(2ul, notification_tracker().size());
-
-  ev0 = notification_tracker().at(0);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
-
-  ev1 = notification_tracker().at(1);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev1.type);
 
   EXPECT_EQ(4, interceptor.GetHitCount());
 
@@ -954,7 +842,6 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
 // There should be one ping for the first attempted update.
 
 TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
-
   std::map<std::string, std::string> map;
   map.insert(std::pair<std::string, std::string>("eventtype", "\"3\""));
   map.insert(std::pair<std::string, std::string>("eventresult", "\"1\""));
