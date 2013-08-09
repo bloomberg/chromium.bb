@@ -802,6 +802,8 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
   min-width: 22px;
   opacity: 0.6;
   padding-left: 26px;
+  position: relative;
+  z-index: 10;
 }
 
 .downloads-warning {

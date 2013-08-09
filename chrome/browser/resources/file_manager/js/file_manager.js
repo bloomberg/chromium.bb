@@ -2668,9 +2668,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.scanUpdatedTimer_ = null;
     }
 
-    if (!this.spinner_.hidden) {
+    if (this.spinner_.hidden) {
       this.cancelSpinnerTimeout_();
-      this.showSpinner_(false);
       this.showSpinnerTimeout_ =
           setTimeout(this.showSpinner_.bind(this, true), 500);
     }
