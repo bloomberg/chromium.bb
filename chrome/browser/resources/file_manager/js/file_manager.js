@@ -1184,9 +1184,24 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.navigationList_ = this.dialogDom_.querySelector('#volume-list');
     NavigationList.decorate(this.navigationList_, this.directoryModel_);
+    this.navigationList_.fileManager = this;
     this.navigationList_.dataModel =
         new NavigationListModel(this.directoryModel_.getRootsList(),
                                 this.folderShortcutsModel_);
+
+    this.navigationList_.addEventListener(
+        'shortcut-target-not-found',
+        function(e) {
+          var path = e.path;
+          var label = e.label;
+          this.confirm.showWithTitle(
+            label,
+            str('SHORTCUT_TARGET_UNAVAILABLE'),
+            // 'Yes' is clicked.
+            function() {
+              this.removeFolderShortcut(path);
+            }.bind(this));
+        }.bind(this));
   };
 
   /**

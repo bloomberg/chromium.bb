@@ -66,7 +66,8 @@ function NavigationListModel(volumesList, pinnedList) {
  */
 NavigationListModel.prototype = {
   __proto__: cr.EventTarget.prototype,
-  get length() { return this.length_(); }
+  get length() { return this.length_(); },
+  get folderShortcutList() { return this.pinnedList_; }
 };
 
 /**
@@ -234,7 +235,7 @@ NavigationList.prototype = {
 
   get dataModel() {
     return this.dataModel_;
-  }
+  },
 
   // TODO(yoshiki): Add a setter of 'directoryModel'.
 };
@@ -256,6 +257,7 @@ NavigationList.prototype.decorate = function(directoryModel) {
   cr.ui.List.decorate(this);
   this.__proto__ = NavigationList.prototype;
 
+  this.fileManager_ = null;
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = VolumeManager.getInstance();
   this.selectionModel = new cr.ui.ListSingleSelectionModel();
@@ -292,9 +294,8 @@ NavigationList.prototype.renderRoot_ = function(path) {
   item.setPath(path);
 
   var handleClick = function() {
-    if (item.selected && path !== this.directoryModel_.getCurrentDirPath()) {
-      this.directoryModel_.changeDirectory(path);
-    }
+    if (item.selected && path !== this.directoryModel_.getCurrentDirPath())
+      this.changeDirectory_(path);
   }.bind(this);
   item.addEventListener('click', handleClick);
 
@@ -311,6 +312,25 @@ NavigationList.prototype.renderRoot_ = function(path) {
     item.maybeSetContextMenu(this.contextMenu_);
 
   return item;
+};
+
+/**
+ * Changes the current directory to the given path.
+ * If the given path is not found, a 'shortcut-target-not-found' event is
+ * fired.
+ *
+ * @param {string} path Path of the directory to be chagned to.
+ * @private
+ */
+NavigationList.prototype.changeDirectory_ = function(path) {
+  var onErrorCallback = function() {
+    var e = new Event('shortcut-target-not-found');
+    e.path = path;
+    e.label = PathUtil.getFolderLabel(path);
+    this.dispatchEvent(e);
+  }.bind(this);
+
+  this.directoryModel_.changeDirectory(path, onErrorCallback);
 };
 
 /**
@@ -344,7 +364,7 @@ NavigationList.prototype.selectByIndex = function(index) {
   if (this.directoryModel_.getCurrentDirEntry().fullPath == newPath)
     return false;
 
-  this.directoryModel_.changeDirectory(newPath);
+  this.changeDirectory_(newPath);
   return true;
 };
 
