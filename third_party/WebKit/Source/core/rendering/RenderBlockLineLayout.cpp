@@ -3315,8 +3315,8 @@ void RenderBlock::addOverflowFromInlineChildren()
         endPadding = 1;
     for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
         addLayoutOverflow(curr->paddedLayoutOverflowRect(endPadding));
-        if (!hasOverflowClip())
-            addVisualOverflow(curr->visualOverflowRect(curr->lineTop(), curr->lineBottom()));
+        LayoutRect visualOverflow = curr->visualOverflowRect(curr->lineTop(), curr->lineBottom());
+        addContentsVisualOverflow(visualOverflow);
     }
 }
 

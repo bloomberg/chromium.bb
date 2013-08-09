@@ -1714,8 +1714,7 @@ void RenderBlock::addOverflowFromChildren()
         if (columnCount(colInfo)) {
             LayoutRect lastRect = columnRectAt(colInfo, columnCount(colInfo) - 1);
             addLayoutOverflow(lastRect);
-            if (!hasOverflowClip())
-                addVisualOverflow(lastRect);
+            addContentsVisualOverflow(lastRect);
         }
     }
 }
@@ -1753,7 +1752,7 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeF
     if (textIndent < 0) {
         LayoutRect clientRect(noOverflowRect());
         LayoutRect rectToApply = LayoutRect(clientRect.x() + min<LayoutUnit>(0, textIndent), clientRect.y(), clientRect.width() - min<LayoutUnit>(0, textIndent), clientRect.height());
-        addVisualOverflow(rectToApply);
+        addContentsVisualOverflow(rectToApply);
     }
 
     // Add visual overflow from box-shadow and border-image-outset.
@@ -2904,7 +2903,13 @@ void RenderBlock::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
             return;
     }
 
-    bool pushedClip = pushContentsClip(paintInfo, adjustedPaintOffset);
+    // There are some cases where not all clipped visual overflow is accounted for.
+    // FIXME: reduce the number of such cases.
+    ContentsClipBehavior contentsClipBehavior = ForceContentsClip;
+    if (hasOverflowClip() && !hasControlClip() && !(shouldPaintSelectionGaps() && phase == PaintPhaseForeground) && !hasCaret())
+        contentsClipBehavior = SkipContentsClipIfPossible;
+
+    bool pushedClip = pushContentsClip(paintInfo, adjustedPaintOffset, contentsClipBehavior);
     paintObject(paintInfo, adjustedPaintOffset);
     if (pushedClip)
         popContentsClip(paintInfo, phase, adjustedPaintOffset);
@@ -3097,8 +3102,7 @@ void RenderBlock::paintChild(RenderBox* child, PaintInfo& paintInfo, const Layou
         child->paint(paintInfo, childPoint);
 }
 
-
-void RenderBlock::paintCaret(PaintInfo& paintInfo, const LayoutPoint& paintOffset, CaretType type)
+bool RenderBlock::hasCaret(CaretType type) const
 {
     // Paint the caret if the FrameSelection says so or if caret browsing is enabled
     bool caretBrowsing = frame()->settings() && frame()->settings()->caretBrowsingEnabled();
@@ -3111,13 +3115,18 @@ void RenderBlock::paintCaret(PaintInfo& paintInfo, const LayoutPoint& paintOffse
         caretPainter = frame()->page()->dragCaretController()->caretRenderer();
         isContentEditable = frame()->page()->dragCaretController()->isContentEditable();
     }
+    return caretPainter == this && (isContentEditable || caretBrowsing);
+}
 
-    if (caretPainter == this && (isContentEditable || caretBrowsing)) {
-        if (type == CursorCaret)
-            frame()->selection()->paintCaret(paintInfo.context, paintOffset, paintInfo.rect);
-        else
-            frame()->page()->dragCaretController()->paintDragCaret(frame(), paintInfo.context, paintOffset, paintInfo.rect);
-    }
+void RenderBlock::paintCaret(PaintInfo& paintInfo, const LayoutPoint& paintOffset, CaretType type)
+{
+    if (!hasCaret(type))
+        return;
+
+    if (type == CursorCaret)
+        frame()->selection()->paintCaret(paintInfo.context, paintOffset, paintInfo.rect);
+    else
+        frame()->page()->dragCaretController()->paintDragCaret(frame(), paintInfo.context, paintOffset, paintInfo.rect);
 }
 
 void RenderBlock::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)

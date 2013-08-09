@@ -27,6 +27,7 @@
 
 #include "config.h"
 #include "core/platform/graphics/RoundedRect.h"
+#include "wtf/Assertions.h"
 
 #include <algorithm>
 
@@ -148,6 +149,16 @@ RoundedRect::RoundedRect(const IntRect& rect, const IntSize& topLeft, const IntS
     : m_rect(rect)
     , m_radii(topLeft, topRight, bottomLeft, bottomRight)
 {
+}
+
+IntRect RoundedRect::radiusCenterRect() const
+{
+    ASSERT(isRenderable());
+    int minX = m_rect.x() + max(m_radii.topLeft().width(), m_radii.bottomLeft().width());
+    int minY = m_rect.y() + max(m_radii.topLeft().height(), m_radii.topRight().height());
+    int maxX = m_rect.maxX() - max(m_radii.topRight().width(), m_radii.bottomRight().width());
+    int maxY = m_rect.maxY() - max(m_radii.bottomLeft().height(), m_radii.bottomRight().height());
+    return IntRect(minX, minY, maxX - minX, maxY - minY);
 }
 
 void RoundedRect::includeLogicalEdges(const Radii& edges, bool isHorizontal, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)

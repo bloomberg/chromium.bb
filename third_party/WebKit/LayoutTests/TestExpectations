@@ -603,6 +603,9 @@ webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html
 
 webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ ImageOnlyFailure ]
 
+crbug.com/238732 fast/forms/placeholder-position.html [ NeedsRebaseline ]
+crbug.com/238732 [ Mac ] editing/selection/select-across-readonly-input-3.html [ NeedsRebaseline ]
+
 # IETC grid layout
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83913 ietestcenter/css3/grid/grid-items-003.htm [ ImageOnlyFailure ]

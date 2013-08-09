@@ -82,6 +82,9 @@ public:
     bool isRounded() const { return !m_radii.isZero(); }
     bool isEmpty() const { return m_rect.isEmpty(); }
 
+    // Returns a quickly computed rect enclosed by the rounded rect.
+    IntRect radiusCenterRect() const;
+
     void setRect(const IntRect& rect) { m_rect = rect; }
     void setRadii(const Radii& radii) { m_radii = radii; }
 

@@ -881,6 +881,9 @@ private:
     void paintSelection(PaintInfo&, const LayoutPoint&);
     void paintCaret(PaintInfo&, const LayoutPoint&, CaretType);
 
+    bool hasCaret() const { return hasCaret(CursorCaret) || hasCaret(DragCaret); }
+    bool hasCaret(CaretType) const;
+
     FloatingObject* insertFloatingObject(RenderBox*);
     void removeFloatingObject(RenderBox*);
     void removeFloatingObjectsBelow(FloatingObject*, int logicalOffset);

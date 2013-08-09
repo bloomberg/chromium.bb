@@ -40,6 +40,8 @@ enum OverlayScrollbarSizeRelevancy { IgnoreOverlayScrollbarSize, IncludeOverlayS
 
 enum ShouldComputePreferred { ComputeActual, ComputePreferred };
 
+enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
+
 class RenderBox : public RenderBoxModelObject {
 public:
     explicit RenderBox(ContainerNode*);
@@ -186,8 +188,13 @@ public:
 
     LayoutRect overflowRectForPaintRejection() const;
 
+    LayoutRect contentsVisualOverflowRect() const { return m_overflow ? m_overflow->contentsVisualOverflowRect() : LayoutRect(); }
+
     void addLayoutOverflow(const LayoutRect&);
     void addVisualOverflow(const LayoutRect&);
+
+    // Clipped by the contents clip, if one exists.
+    void addContentsVisualOverflow(const LayoutRect&);
 
     void addVisualEffectOverflow();
     void addOverflowFromChild(RenderBox* child) { addOverflowFromChild(child, child->locationOffset()); }
@@ -470,7 +477,7 @@ public:
     LayoutRect clipRect(const LayoutPoint& location, RenderRegion*);
     virtual bool hasControlClip() const { return false; }
     virtual LayoutRect controlClipRect(const LayoutPoint&) const { return LayoutRect(); }
-    bool pushContentsClip(PaintInfo&, const LayoutPoint& accumulatedOffset);
+    bool pushContentsClip(PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
     void popContentsClip(PaintInfo&, PaintPhase originalPhase, const LayoutPoint& accumulatedOffset);
 
     virtual void paintObject(PaintInfo&, const LayoutPoint&) { ASSERT_NOT_REACHED(); }

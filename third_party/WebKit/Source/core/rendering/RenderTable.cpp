@@ -637,7 +637,7 @@ void RenderTable::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
             return;
     }
 
-    bool pushedClip = pushContentsClip(paintInfo, adjustedPaintOffset);
+    bool pushedClip = pushContentsClip(paintInfo, adjustedPaintOffset, ForceContentsClip);
     paintObject(paintInfo, adjustedPaintOffset);
     if (pushedClip)
         popContentsClip(paintInfo, paintPhase, adjustedPaintOffset);

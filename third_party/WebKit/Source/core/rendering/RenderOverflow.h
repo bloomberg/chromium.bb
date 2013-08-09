@@ -48,6 +48,7 @@ public:
 
     const LayoutRect layoutOverflowRect() const { return m_layoutOverflow; }
     const LayoutRect visualOverflowRect() const { return m_visualOverflow; }
+    LayoutRect contentsVisualOverflowRect() const { return m_contentsVisualOverflow; }
 
     void setMinYLayoutOverflow(LayoutUnit overflow) { m_layoutOverflow.setY(overflow); }
     void setMaxYLayoutOverflow(LayoutUnit overflow) { m_layoutOverflow.setHeight(overflow - m_layoutOverflow.y()); }
@@ -63,6 +64,7 @@ public:
 
     void addLayoutOverflow(const LayoutRect&);
     void addVisualOverflow(const LayoutRect&);
+    void addContentsVisualOverflow(const LayoutRect& rect) { m_contentsVisualOverflow.unite(rect); }
 
     void setLayoutOverflow(const LayoutRect&);
     void setVisualOverflow(const LayoutRect&);
@@ -73,6 +75,7 @@ public:
 private:
     LayoutRect m_layoutOverflow;
     LayoutRect m_visualOverflow;
+    LayoutRect m_contentsVisualOverflow;
 
     LayoutUnit m_layoutClientAfterEdge;
 };
@@ -81,6 +84,7 @@ inline void RenderOverflow::move(LayoutUnit dx, LayoutUnit dy)
 {
     m_layoutOverflow.move(dx, dy);
     m_visualOverflow.move(dx, dy);
+    m_contentsVisualOverflow.move(dx, dy);
 }
 
 inline void RenderOverflow::addLayoutOverflow(const LayoutRect& rect)

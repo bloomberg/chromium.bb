@@ -392,16 +392,16 @@ void RenderListItem::positionListMarker()
             bool propagateLayoutOverflow = true;
             do {
                 o = o->parentBox();
-                if (o->hasOverflowClip())
-                    propagateVisualOverflow = false;
                 if (o->isRenderBlock()) {
                     if (propagateVisualOverflow)
-                        toRenderBlock(o)->addVisualOverflow(markerRect);
+                        toRenderBlock(o)->addContentsVisualOverflow(markerRect);
                     if (propagateLayoutOverflow)
                         toRenderBlock(o)->addLayoutOverflow(markerRect);
                 }
-                if (o->hasOverflowClip())
+                if (o->hasOverflowClip()) {
                     propagateLayoutOverflow = false;
+                    propagateVisualOverflow = false;
+                }
                 if (o->hasSelfPaintingLayer())
                     propagateVisualOverflow = false;
                 markerRect.moveBy(-o->location());
