@@ -281,6 +281,26 @@ NavigationList.prototype.decorate = function(directoryModel) {
 };
 
 /**
+ * This overrides Node.removeChild().
+ * Instead of just removing the given child, this method adds a fade-out
+ * animation and removes the child after animation completes.
+ *
+ * @param {NavigationListItem} item List item to be removed.
+ * @override
+ */
+NavigationList.prototype.removeChild = function(item) {
+  var removeElement = function(e) {
+    // Must keep the animation name 'fadeOut' in sync with the css.
+    if (e.animationName == 'fadeOut')
+      Node.prototype.removeChild.call(this, item);
+  }.bind(this);
+
+  item.addEventListener('webkitAnimationEnd', removeElement, false);
+  // Must keep the class name 'fadeout' in sync with the css.
+  item.classList.add('fadeout');
+};
+
+/**
  * Creates an element of a navigation list. This method is called from
  * cr.ui.List internally.
  * @param {string} path Path of the directory to be rendered.
