@@ -85,10 +85,10 @@ bool PrivetHttpServer::Start(uint16 port) {
 
   if (server_->GetLocalAddress(&address) != net::OK) {
     NOTREACHED() << "Cannot start HTTP server";
-  } else {
-    VLOG(1) << "Address of HTTP server: " << address.ToString();
+    return false;
   }
 
+  VLOG(1) << "Address of HTTP server: " << address.ToString();
   return true;
 }
 

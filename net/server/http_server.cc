@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
+#include "net/base/net_errors.h"
 #include "net/server/http_connection.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
@@ -24,7 +25,6 @@ HttpServer::HttpServer(const StreamListenSocketFactory& factory,
                        HttpServer::Delegate* delegate)
     : delegate_(delegate),
       server_(factory.CreateAndListen(this)) {
-  DCHECK(server_.get());
 }
 
 void HttpServer::AcceptWebSocket(
@@ -89,6 +89,8 @@ void HttpServer::Close(int connection_id) {
 }
 
 int HttpServer::GetLocalAddress(IPEndPoint* address) {
+  if (!server_)
+    return ERR_SOCKET_NOT_CONNECTED;
   return server_->GetLocalAddress(address);
 }
 
