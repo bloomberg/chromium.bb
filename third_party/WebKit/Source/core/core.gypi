@@ -2586,8 +2586,6 @@
             'platform/ScrollableArea.cpp',
             'platform/Scrollbar.cpp',
             'platform/ScrollbarTheme.cpp',
-            'platform/ScrollbarThemeComposite.cpp',
-            'platform/ScrollbarThemeComposite.h',
             'platform/SecureTextInput.cpp',
             'platform/SecureTextInput.h',
             'platform/SerializedResource.h',

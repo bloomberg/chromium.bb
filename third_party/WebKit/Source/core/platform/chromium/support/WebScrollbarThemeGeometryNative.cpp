@@ -27,7 +27,7 @@
 
 #include "core/platform/chromium/support/WebScrollbarThemeGeometryNative.h"
 
-#include "core/platform/ScrollbarThemeComposite.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/support/WebScrollbarThemeClientImpl.h"
 #include "public/platform/WebScrollbar.h"
 
@@ -35,12 +35,12 @@ using namespace WebCore;
 
 namespace WebKit {
 
-PassOwnPtr<WebKit::WebScrollbarThemeGeometryNative> WebScrollbarThemeGeometryNative::create(WebCore::ScrollbarThemeComposite* theme)
+PassOwnPtr<WebKit::WebScrollbarThemeGeometryNative> WebScrollbarThemeGeometryNative::create(WebCore::ScrollbarTheme* theme)
 {
     return adoptPtr(new WebScrollbarThemeGeometryNative(theme));
 }
 
-WebScrollbarThemeGeometryNative::WebScrollbarThemeGeometryNative(WebCore::ScrollbarThemeComposite* theme)
+WebScrollbarThemeGeometryNative::WebScrollbarThemeGeometryNative(WebCore::ScrollbarTheme* theme)
     : m_theme(theme)
 {
 }

@@ -37,23 +37,23 @@ namespace WebCore {
 
 class ScrollbarThemeMacNonOverlayAPI : public ScrollbarThemeMacCommon {
 public:
-    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar);
-    virtual bool usesOverlayScrollbars() const { return false; }
-    virtual ScrollbarButtonsPlacement buttonsPlacement() const;
+    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) OVERRIDE;
+    virtual bool usesOverlayScrollbars() const OVERRIDE { return false; }
+    virtual ScrollbarButtonsPlacement buttonsPlacement() const OVERRIDE;
 
-    virtual bool paint(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect);
+    virtual bool paint(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect) OVERRIDE;
 
 protected:
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false);
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false);
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false);
+    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
+    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
 
-    virtual void updateButtonPlacement();
+    virtual void updateButtonPlacement() OVERRIDE;
 
-    virtual bool hasButtons(ScrollbarThemeClient*);
-    virtual bool hasThumb(ScrollbarThemeClient*);
+    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE;
+    virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE;
 
-    virtual int minimumThumbLength(ScrollbarThemeClient*);
+    virtual int minimumThumbLength(ScrollbarThemeClient*) OVERRIDE;
 };
 
 }

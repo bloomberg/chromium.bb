@@ -31,7 +31,7 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
-class ScrollbarThemeComposite;
+class ScrollbarTheme;
 }
 
 namespace WebKit {
@@ -40,7 +40,7 @@ class WebScrollbar;
 
 class WebScrollbarThemeGeometryNative : public WebScrollbarThemeGeometry {
 public:
-    static PassOwnPtr<WebScrollbarThemeGeometryNative> create(WebCore::ScrollbarThemeComposite*);
+    static PassOwnPtr<WebScrollbarThemeGeometryNative> create(WebCore::ScrollbarTheme*);
 
     // WebScrollbarThemeGeometry overrides
     virtual WebScrollbarThemeGeometryNative* clone() const OVERRIDE;
@@ -62,12 +62,12 @@ public:
     virtual void splitTrack(WebScrollbar*, const WebRect& track, WebRect& startTrack, WebRect& thumb, WebRect& endTrack) OVERRIDE;
 
 private:
-    explicit WebScrollbarThemeGeometryNative(WebCore::ScrollbarThemeComposite*);
+    explicit WebScrollbarThemeGeometryNative(WebCore::ScrollbarTheme*);
 
     // The theme is not owned by this class. It is assumed that the theme is a
     // static pointer and its lifetime is essentially infinite. Only thread-safe
     // functions on the theme can be called by this theme.
-    WebCore::ScrollbarThemeComposite* m_theme;
+    WebCore::ScrollbarTheme* m_theme;
 };
 
 } // namespace WebKit

@@ -26,28 +26,28 @@
 #ifndef ScrollbarThemeChromiumOverlay_h
 #define ScrollbarThemeChromiumOverlay_h
 
-#include "core/platform/chromium/ScrollbarThemeChromium.h"
+#include "core/platform/ScrollbarTheme.h"
 
 namespace WebCore {
 
 // This scrollbar theme is used to get overlay scrollbar for platforms other
 // than Mac. Mac's overlay scrollbars are in ScrollbarThemeMac*.
-class ScrollbarThemeChromiumOverlay : public ScrollbarThemeComposite {
+class ScrollbarThemeChromiumOverlay : public ScrollbarTheme {
 public:
-    virtual int scrollbarThickness(ScrollbarControlSize);
-    virtual bool usesOverlayScrollbars() const;
+    virtual int scrollbarThickness(ScrollbarControlSize) OVERRIDE;
+    virtual bool usesOverlayScrollbars() const OVERRIDE;
 
-    virtual int thumbPosition(ScrollbarThemeClient*);
-    virtual int thumbLength(ScrollbarThemeClient*);
+    virtual int thumbPosition(ScrollbarThemeClient*) OVERRIDE;
+    virtual int thumbLength(ScrollbarThemeClient*) OVERRIDE;
 
-    virtual bool hasButtons(ScrollbarThemeClient*) { return false; };
-    virtual bool hasThumb(ScrollbarThemeClient*);
+    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE { return false; };
+    virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE;
 
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false);
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false);
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false);
+    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
 
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
+    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
 };
 
 } // namespace WebCore

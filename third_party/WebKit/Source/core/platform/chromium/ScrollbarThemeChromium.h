@@ -31,28 +31,29 @@
 #ifndef ScrollbarThemeChromium_h
 #define ScrollbarThemeChromium_h
 
-#include "core/platform/ScrollbarThemeComposite.h"
+#include "core/platform/ScrollbarTheme.h"
 
 namespace WebCore {
 
-    class PlatformMouseEvent;
+class PlatformMouseEvent;
 
-    // This class contains the scrollbar code which is shared between Chromium
-    // Windows and Linux.
-    class ScrollbarThemeChromium : public ScrollbarThemeComposite {
-    protected:
-        virtual bool hasButtons(ScrollbarThemeClient*) { return true; }
-        virtual bool hasThumb(ScrollbarThemeClient*);
+// This class contains the scrollbar code which is shared between Chromium
+// Windows and Linux.
+class ScrollbarThemeChromium : public ScrollbarTheme {
+protected:
+    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE { return true; }
+    virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE;
 
-        virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false);
-        virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false);
-        virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false);
+    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
 
-        virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
-        virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
+    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
 
-        virtual IntSize buttonSize(ScrollbarThemeClient*) = 0;
-    };
+    virtual IntSize buttonSize(ScrollbarThemeClient*) = 0;
+};
+
 } // namespace WebCore
 
 #endif

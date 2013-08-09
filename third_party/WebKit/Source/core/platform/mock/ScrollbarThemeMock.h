@@ -26,29 +26,29 @@
 #ifndef ScrollbarThemeMock_h
 #define ScrollbarThemeMock_h
 
-#include "core/platform/ScrollbarThemeComposite.h"
+#include "core/platform/ScrollbarTheme.h"
 
 namespace WebCore {
 
 // Scrollbar theme used in image snapshots, to eliminate appearance differences between platforms.
-class ScrollbarThemeMock : public ScrollbarThemeComposite {
+class ScrollbarThemeMock : public ScrollbarTheme {
 public:
-    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar);
+    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) OVERRIDE;
     virtual bool usesOverlayScrollbars() const OVERRIDE;
 
 protected:
-    virtual bool hasButtons(ScrollbarThemeClient*) { return false; }
-    virtual bool hasThumb(ScrollbarThemeClient*) { return true; }
+    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE { return false; }
+    virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE { return true; }
 
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) { return IntRect(); }
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) { return IntRect(); }
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false);
+    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) OVERRIDE { return IntRect(); }
+    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) OVERRIDE { return IntRect(); }
+    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
 
-    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
+    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
 
 private:
-    virtual bool isMockTheme() const { return true; }
+    virtual bool isMockTheme() const OVERRIDE FINAL { return true; }
 };
 
 }

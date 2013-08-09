@@ -29,7 +29,7 @@
 #include "WebCanvas.h"
 
 namespace WebCore {
-class ScrollbarThemeComposite;
+class ScrollbarTheme;
 class Scrollbar;
 };
 
@@ -63,7 +63,7 @@ public:
     WEBKIT_EXPORT void paintThumb(WebCanvas*, const WebRect&);
 
 #if WEBKIT_IMPLEMENTATION
-    WebScrollbarThemePainter(WebCore::ScrollbarThemeComposite*, WebCore::Scrollbar*);
+    WebScrollbarThemePainter(WebCore::ScrollbarTheme*, WebCore::Scrollbar*);
 #endif
 
 private:
@@ -71,7 +71,7 @@ private:
     // static pointer and its lifetime is essentially infinite. The functions
     // called from the painter may not be thread-safe, so all calls must be made
     // from the same thread that it is created on.
-    WebCore::ScrollbarThemeComposite* m_theme;
+    WebCore::ScrollbarTheme* m_theme;
 
     // It is assumed that the constructor of this paint object is responsible
     // for the lifetime of this scrollbar. The painter has to use the real

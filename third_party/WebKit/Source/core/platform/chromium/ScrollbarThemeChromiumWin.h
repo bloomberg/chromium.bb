@@ -34,24 +34,26 @@
 #include "core/platform/chromium/ScrollbarThemeChromium.h"
 
 namespace WebCore {
-    class ScrollbarThemeChromiumWin : public ScrollbarThemeChromium {
-    public:
-        virtual int scrollbarThickness(ScrollbarControlSize);
-        virtual bool invalidateOnMouseEnterExit();
-        virtual bool shouldSnapBackToDragOrigin(ScrollbarThemeClient*, const PlatformMouseEvent&);
 
-    protected:
-        virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart);
-        virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart);
-        virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
-        virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&);
-        virtual IntSize buttonSize(ScrollbarThemeClient*);
+class ScrollbarThemeChromiumWin : public ScrollbarThemeChromium {
+public:
+    virtual int scrollbarThickness(ScrollbarControlSize) OVERRIDE;
+    virtual bool invalidateOnMouseEnterExit() OVERRIDE;
+    virtual bool shouldSnapBackToDragOrigin(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
 
-    private:
-        int getThemeState(ScrollbarThemeClient*, ScrollbarPart) const;
-        int getThemeArrowState(ScrollbarThemeClient*, ScrollbarPart) const;
-        int getClassicThemeState(ScrollbarThemeClient*, ScrollbarPart) const;
-    };
+protected:
+    virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
+    virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
+    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
+    virtual IntSize buttonSize(ScrollbarThemeClient*) OVERRIDE;
+
+private:
+    int getThemeState(ScrollbarThemeClient*, ScrollbarPart) const;
+    int getThemeArrowState(ScrollbarThemeClient*, ScrollbarPart) const;
+    int getClassicThemeState(ScrollbarThemeClient*, ScrollbarPart) const;
+};
+
 } // namespace WebCore
 
 #endif

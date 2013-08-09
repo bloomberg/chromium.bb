@@ -26,32 +26,32 @@
 #ifndef ScrollbarThemeMac_h
 #define ScrollbarThemeMac_h
 
-#include "core/platform/ScrollbarThemeComposite.h"
+#include "core/platform/ScrollbarTheme.h"
 
 namespace WebCore {
 
-class ScrollbarThemeMacCommon : public ScrollbarThemeComposite {
+class ScrollbarThemeMacCommon : public ScrollbarTheme {
 public:
     ScrollbarThemeMacCommon();
     virtual ~ScrollbarThemeMacCommon();
 
-    virtual void registerScrollbar(ScrollbarThemeClient*);
-    virtual void unregisterScrollbar(ScrollbarThemeClient*);
+    virtual void registerScrollbar(ScrollbarThemeClient*) OVERRIDE;
+    virtual void unregisterScrollbar(ScrollbarThemeClient*) OVERRIDE;
     void preferencesChanged();
 
-    virtual bool supportsControlTints() const { return true; }
+    virtual bool supportsControlTints() const OVERRIDE { return true; }
 
-    virtual double initialAutoscrollTimerDelay();
-    virtual double autoscrollTimerDelay();
+    virtual double initialAutoscrollTimerDelay() OVERRIDE;
+    virtual double autoscrollTimerDelay() OVERRIDE;
 
-    virtual void paintOverhangAreas(ScrollView*, GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);
+    virtual void paintOverhangAreas(ScrollView*, GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
     virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
 
 protected:
-    virtual int maxOverlapBetweenPages() { return 40; }
+    virtual int maxOverlapBetweenPages() OVERRIDE { return 40; }
 
-    virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&);
-    virtual bool shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent&);
+    virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
+    virtual bool shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
     int scrollbarPartToHIPressedState(ScrollbarPart);
 
     virtual void updateButtonPlacement() { }

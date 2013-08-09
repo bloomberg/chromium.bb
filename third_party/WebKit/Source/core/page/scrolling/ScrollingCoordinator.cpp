@@ -36,7 +36,7 @@
 #include "core/page/Page.h"
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollAnimator.h"
-#include "core/platform/ScrollbarThemeComposite.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/chromium/support/WebScrollbarImpl.h"
 #include "core/platform/chromium/support/WebScrollbarThemeGeometryNative.h"
@@ -198,10 +198,9 @@ void ScrollingCoordinator::removeWebScrollbarLayer(ScrollableArea* scrollableAre
 
 static PassOwnPtr<WebScrollbarLayer> createScrollbarLayer(Scrollbar* scrollbar)
 {
-    // All Chromium scrollbar themes derive from ScrollbarThemeComposite.
-    ScrollbarThemeComposite* themeComposite = static_cast<ScrollbarThemeComposite*>(scrollbar->theme());
-    WebKit::WebScrollbarThemePainter painter(themeComposite, scrollbar);
-    OwnPtr<WebKit::WebScrollbarThemeGeometry> geometry(WebKit::WebScrollbarThemeGeometryNative::create(themeComposite));
+    ScrollbarTheme* theme = scrollbar->theme();
+    WebKit::WebScrollbarThemePainter painter(theme, scrollbar);
+    OwnPtr<WebKit::WebScrollbarThemeGeometry> geometry(WebKit::WebScrollbarThemeGeometryNative::create(theme));
 
     OwnPtr<WebScrollbarLayer> scrollbarLayer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createScrollbarLayer(new WebKit::WebScrollbarImpl(scrollbar), painter, geometry.leakPtr()));
     GraphicsLayer::registerContentsLayer(scrollbarLayer->layer());

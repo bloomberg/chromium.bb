@@ -28,7 +28,7 @@
 #include "public/platform/WebScrollbarThemePainter.h"
 
 #include "core/platform/Scrollbar.h"
-#include "core/platform/ScrollbarThemeComposite.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "public/platform/WebRect.h"
 
@@ -116,7 +116,7 @@ void WebScrollbarThemePainter::paintThumb(WebCanvas* canvas, const WebRect& rect
     m_theme->paintThumb(&context, m_scrollbar, IntRect(rect));
 }
 
-WebScrollbarThemePainter::WebScrollbarThemePainter(WebCore::ScrollbarThemeComposite* theme, WebCore::Scrollbar* scrollbar)
+WebScrollbarThemePainter::WebScrollbarThemePainter(WebCore::ScrollbarTheme* theme, WebCore::Scrollbar* scrollbar)
     : m_theme(theme)
     , m_scrollbar(scrollbar)
 {
