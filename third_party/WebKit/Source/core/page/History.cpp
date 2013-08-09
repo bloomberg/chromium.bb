@@ -146,7 +146,7 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
 
     KURL fullURL = urlForState(urlString);
     if (!fullURL.isValid() || !m_frame->document()->securityOrigin()->canRequest(fullURL)) {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, "A history state object with URL '" + fullURL.elidedString() + "' cannot be created in a document with origin '" + m_frame->document()->securityOrigin()->toString() + "'.");
         return;
     }
     m_frame->loader()->updateForSameDocumentNavigation(fullURL, sameDocumentNavigationSource, data, title);
